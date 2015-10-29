@@ -734,14 +734,14 @@
                             </div>
                             <p:dataTable id="changedTermsAccessTable" styleClass="dvnDifferanceTable" var="diffArray" value="#{DatasetPage.datasetVersionDifference.changedTermsAccess}">
                                 <p:column styleClass="versionValue">
-                                            <h:outputText value="#{diffArray[0]}" />
-                                        </p:column>
-                                        <p:column styleClass="versionDetails">
-                                            <h:outputText value="#{diffArray[1]}" />
-                                        </p:column>
-                                        <p:column styleClass="versionDetails" >
-                                            <h:outputText value="#{diffArray[2]}"/>
-                                        </p:column>
+                                    <h:outputText value="#{diffArray[0]}" />
+                                </p:column>
+                                <p:column styleClass="versionDetails">
+                                    <h:outputText value="#{diffArray[1]}" />
+                                </p:column>
+                                <p:column styleClass="versionDetails" >
+                                    <h:outputText value="#{diffArray[2]}"/>
+                                </p:column>
                             </p:dataTable>
                         </div>
                         <div class="button-block margin-bottom">
@@ -751,22 +751,34 @@
                     
                     <p:dialog id="selectFilesForDownload" styleClass="smallPopUp" 
                               header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForDownload" modal ="true">
-                        #{bundle['dataset.noSelectedFilesForDownload']}
+                        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.noSelectedFilesForDownload']}</p>
+                        <div class="button-block">
+                            <p:commandButton value="#{bundle.close}" onclick="selectFilesForDownload.hide()"/>
+                        </div>
                     </p:dialog> 
                     
                     <p:dialog id="selectFilesForRequestAccess" styleClass="smallPopUp" 
                               header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForRequestAccess" modal ="true">
-                        #{bundle['dataset.noSelectedFilesForRequestAccess']}
+                        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.noSelectedFilesForRequestAccess']}</p>
+                        <div class="button-block">
+                            <p:commandButton value="#{bundle.close}" onclick="selectFilesForRequestAccess.hide()"/>
+                        </div>
                     </p:dialog> 
                     
                     <p:dialog id="selectFilesForDelete" styleClass="smallPopUp" 
                               header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForDelete" modal ="true">
-                        #{bundle['dataset.noSelectedFilesForDelete']}
+                        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.noSelectedFilesForDelete']}</p>
+                        <div class="button-block">
+                            <p:commandButton value="#{bundle.close}" onclick="selectFilesForDelete.hide()"/>
+                        </div>
                     </p:dialog> 
                     
                     <p:dialog id="selectFilesForEditMetadata" styleClass="smallPopUp" 
                               header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForEditMetadata" modal ="true">
-                        #{bundle['dataset.noSelectedFilesForMetadataEdit']}
+                        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.noSelectedFilesForMetadataEdit']}</p>
+                        <div class="button-block">
+                            <p:commandButton value="#{bundle.close}" onclick="selectFilesForEditMetadata.hide()"/>
+                        </div>
                     </p:dialog> 
                     
                     <!-- We no longer need this remoteCommand; see my comments in the javascript method testFilesSelectedForEditMetadata() -->
@@ -825,7 +837,6 @@
                             <p:commandButton id="fileTagsPopupCancelButton" value="#{bundle.cancel}" onclick="fileTagsPopup.hide()" actionListener="#{DatasetPage.clearFileMetadataSelectedForTagsPopup()}"/>
                         </div>
                     </p:dialog>
-
 
                     <!-- Request Access Sign Up/Log In Button -->
                     <p:dialog header="#{bundle['file.requestAccess']}" widgetVar="accessSignUpLogIn_popup" modal="true">
