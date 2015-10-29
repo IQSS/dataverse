@@ -14,7 +14,7 @@
     <!-- Upload (removed - L.A. 4.2) -->
     <!-- Files Table -->
     <p:dataTable id="filesTable" 
-                 scrollRows="#{DatasetPage.numberOfFilesToShow}" scrollable="true" liveScroll="true"
+                 scrollRows="25" scrollable="true" liveScroll="true"
                  scrollHeight="92%" scrollWidth="100%"
                  value="#{DatasetPage.sortButtonEnabled ? DatasetPage.fileMetadatas : DatasetPage.fileMetadatasSearch}"
                  rowIndexVar="rowNum" rowKey="#{fileMetadata.dataFile.storageIdentifier}"
@@ -478,11 +478,6 @@
             </div>
             <!-- END: button-block -->
         </p:column>
-        <f:facet name="footer">
-        <p:commandLink  id="togscrollbutton" update="filesTable" action="#{DatasetPage.showAll()}"> 
-            <h:outputText value="Show All"/>
-        </p:commandLink>
-        </f:facet>
     </p:dataTable>
     <script type="text/javascript">
         function testFilesSelectedForEditMetadata2(){
