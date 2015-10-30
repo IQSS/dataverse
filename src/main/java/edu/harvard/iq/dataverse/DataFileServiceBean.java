@@ -169,14 +169,22 @@ public class DataFileServiceBean implements java.io.Serializable {
     }
     
     public List<FileMetadata> findFileMetadataByDatasetVersionIdLabelSearchTerm(Long datasetVersionId, String searchTerm, String userSuppliedSortField, String userSuppliedSortOrder){
-        
-        List <FileMetadata> retList = new ArrayList();
-        for (Integer id : findFileMetadataIdsByDatasetVersionIdLabelSearchTerm(datasetVersionId, searchTerm, userSuppliedSortField, userSuppliedSortOrder)){
-           retList.add( (FileMetadata) em.find(FileMetadata.class, id.longValue()));
-        }
-        return retList;
+        FileSortFieldAndOrder sortFieldAndOrder = new FileSortFieldAndOrder(userSuppliedSortField, userSuppliedSortOrder);
 
+        String sortField = sortFieldAndOrder.getSortField();
+        String sortOrder = sortFieldAndOrder.getSortOrder();
+        String searchClause = "";
+        if(searchTerm != null && !searchTerm.isEmpty()){
+            searchClause = " and  (lower(o.label) like '%" + searchTerm.toLowerCase() + "%' or lower(o.description) like '%" + searchTerm.toLowerCase() + "%')";
+        }
         
+        String queryString = "select o from FileMetadata o where o.datasetVersion.id = :datasetVersionId"
+                + searchClause
+                + " order by o." + sortField + " " + sortOrder;
+        TypedQuery query = em.createQuery(queryString, FileMetadata.class); 
+        query.setParameter("datasetVersionId", datasetVersionId);
+        
+        return query.getResultList();
     }
     
     public List<Integer> findFileMetadataIdsByDatasetVersionIdLabelSearchTerm(Long datasetVersionId, String searchTerm, String userSuppliedSortField, String userSuppliedSortOrder){
@@ -192,7 +200,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         Query query = em.createNativeQuery("select o.id from FileMetadata o where o.datasetVersion_id = "  + datasetVersionId
                 + searchClause
                 + " order by o." + sortField + " " + sortOrder);
-        System.out.print(query.toString());
+        //System.out.print(query.toString());
         
         return query.getResultList();
     }
@@ -285,7 +293,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         }
         dataTableResults = null; 
         
-        logger.info("Retrieved "+dataTables.size()+" DataTable objects.");
+        logger.fine("Retrieved "+dataTables.size()+" DataTable objects.");
         
         i = 0; 
         List<Object[]> dataTagsResults = em.createNativeQuery("SELECT t0.DATAFILE_ID, t0.TYPE FROM DataFileTag t0, dvObject t1 WHERE (t1.ID = t0.DATAFILE_ID) AND (t1.OWNER_ID="+ owner.getId() + ")").getResultList();
@@ -300,7 +308,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         }
         dataTagsResults = null;
         
-        logger.info("Retrieved "+i+" data tags.");
+        logger.fine("Retrieved "+i+" data tags.");
         
         i = 0; 
         
@@ -419,19 +427,19 @@ public class DataFileServiceBean implements java.io.Serializable {
         owner.setFiles(dataFiles);
         fileResults = null; 
         
-        logger.info("Retrieved and cached "+i+" datafiles.");
+        logger.fine("Retrieved and cached "+i+" datafiles.");
 
         i = 0; 
         for (DataFileCategory fileCategory : owner.getCategories()) {
-            //logger.info("category: id="+fileCategory.getId());
+            //logger.fine("category: id="+fileCategory.getId());
             categoryMap.put(fileCategory.getId(), i++);
         }
         
-        logger.info("Retreived "+i+" file categories attached to the dataset.");
+        logger.fine("Retreived "+i+" file categories attached to the dataset.");
         
         for (DatasetVersion version : owner.getVersions()) {
             version.setFileMetadatas(retrieveFileMetadataForVersion(owner, version, filesMap, categoryMap));
-            logger.info("Retrieved "+version.getFileMetadatas().size()+" filemetadatas for the version "+version.getId());
+            logger.fine("Retrieved "+version.getFileMetadatas().size()+" filemetadatas for the version "+version.getId());
         }
     }
     
@@ -466,7 +474,7 @@ public class DataFileServiceBean implements java.io.Serializable {
             categoryMetaMap.get(filemeta_id).add(category_id);
             i++;
         }
-        logger.info("Retrieved and mapped "+i+" file categories attached to files in the version "+version.getId());
+        logger.fine("Retrieved and mapped "+i+" file categories attached to files in the version "+version.getId());
         categoryResults = null;
         
         List<Object[]> metadataResults = em.createNativeQuery("select id, datafile_id, DESCRIPTION, LABEL, RESTRICTED from FileMetadata where datasetversion_id = "+version.getId()).getResultList();
@@ -525,7 +533,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         
         metadataResults = null;
         
-        logger.info("Retrieved "+retList.size()+" file metadatas for version "+version.getId()+" (inside the retrieveFileMetadataForVersion method).");
+        logger.fine("Retrieved "+retList.size()+" file metadatas for version "+version.getId()+" (inside the retrieveFileMetadataForVersion method).");
                 
         
         Collections.sort(retList, FileMetadata.compareByLabel);

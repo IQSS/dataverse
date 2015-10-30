@@ -1223,7 +1223,7 @@ public class DatasetPage implements java.io.Serializable {
                 // Set Working Version and Dataset by PersistentID
                 dataset = datasetService.findByGlobalId(persistentId);
                 if (dataset != null) {
-                    logger.info("retrived dataset, id="+dataset.getId());
+                    logger.fine("retrived dataset, id="+dataset.getId());
                 }
                 retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(dataset.getVersions(), version);
                 //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByPersistentId(persistentId, version);
