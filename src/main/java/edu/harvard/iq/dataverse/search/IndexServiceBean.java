@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
+import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetLinkingServiceBean;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
@@ -735,6 +736,63 @@ public class IndexServiceBean {
                             // do not strip HTML
                             solrInputDocument.addField(solrFieldSearchable, dsf.getValuesWithoutNaValues());
                             if (dsfType.getSolrField().isFacetable()) {
+                                if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.topicClassValue)) {
+                                    /**
+                                     * @todo Right now the "Topic Classification
+                                     * Term" facet of the Murray dataverse looks
+                                     * odd, showing facets like this:
+                                     *
+                                     * - 1 (231)
+                                     *
+                                     * - mra (177)
+                                     *
+                                     * - yes (159)
+                                     *
+                                     * - mixed (155)
+                                     *
+                                     * - female, male (153)
+                                     *
+                                     * These are the values coming from
+                                     * dsf.getValuesWithoutNaValues() which we
+                                     * will log below. One suggestion is to have
+                                     * it look more like this:
+                                     *
+                                     * - 1 (Generations) (231)
+                                     *
+                                     * - mra (177)
+                                     *
+                                     * - yes (Follow-up permitted) (159)
+                                     *
+                                     * etc.
+                                     *
+                                     * However, with the logging below we only
+                                     * see values like "1" and "yes" and never
+                                     * "Generations" or "Follow-up permitted".
+                                     * Something like this will appear in the
+                                     * logs:
+                                     *
+                                     * topicClassValue gets [50 or fewer]
+                                     *
+                                     * topicClassValue gets [female]
+                                     *
+                                     * topicClassValue gets [mixed]
+                                     *
+                                     * topicClassValue gets [middle]
+                                     *
+                                     * topicClassValue gets [1]
+                                     *
+                                     * topicClassValue gets [yes]
+                                     *
+                                     * So the question is, how do we get at
+                                     * "Generations" from "1"? OR "Follow-up
+                                     * permitted" from "yes"?
+                                     *
+                                     * See
+                                     * https://github.com/IQSS/dataverse/issues/2160
+                                     * for more on this issue.
+                                     */
+                                    logger.fine(dsf.getDatasetFieldType().getName() + " gets " + dsf.getValuesWithoutNaValues());
+                                }
                                 solrInputDocument.addField(solrFieldFacetable, dsf.getValuesWithoutNaValues());
                             }
                         }
