@@ -14,10 +14,7 @@ public class XmlValidatorTest {
     public void testValidateXml() throws IOException, SAXException {
         String dir = "src/test/java/edu/harvard/iq/dataverse/export/ddi/";
         assertEquals(true, XmlValidator.validateXml(dir + "dataset-finch1.xml", dir + "Version2-0.xsd"));
-        boolean validXmlIsBeingGenerated = false;
-        if (validXmlIsBeingGenerated) {
-            assertEquals(true, XmlValidator.validateXml(dir + "dataset-spruce1.xml", dir + "Version2-0.xsd"));
-        }
+        assertEquals(true, XmlValidator.validateXml(dir + "dataset-spruce1.xml", dir + "Version2-0.xsd"));
     }
 
 }
