@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
@@ -55,6 +57,20 @@ public class SolrIndexServiceBean {
 
     public static String numRowsClearedByClearAllIndexTimes = "numRowsClearedByClearAllIndexTimes";
     public static String messageString = "message";
+    private SolrServer solrServer;
+    
+    @PostConstruct
+    public void init(){
+        solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
+    }
+    
+    @PreDestroy
+    public void close(){
+        if(solrServer != null){
+            solrServer.shutdown();
+            solrServer = null;
+        }
+    }
 
     /**
      * @deprecated Now that MyData has shipped in 4.1 we have no plans to change
@@ -358,7 +374,6 @@ public class SolrIndexServiceBean {
             return;
         }
         logger.fine("persisting to Solr...");
-        SolrServer solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
         /**
          * @todo Do something with these responses from Solr.
          */
@@ -500,7 +515,6 @@ public class SolrIndexServiceBean {
         if (solrIdsToDelete.isEmpty()) {
             return new IndexResponse("nothing to delete");
         }
-        SolrServer solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
         try {
             solrServer.deleteById(solrIdsToDelete);
         } catch (SolrServerException | IOException ex) {
@@ -519,10 +533,9 @@ public class SolrIndexServiceBean {
 
     public JsonObjectBuilder deleteAllFromSolrAndResetIndexTimes() throws SolrServerException, IOException {
         JsonObjectBuilder response = Json.createObjectBuilder();
-        SolrServer server = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
         logger.info("attempting to delete all Solr documents before a complete re-index");
-        server.deleteByQuery("*:*");
-        server.commit();
+        solrServer.deleteByQuery("*:*");
+        solrServer.commit();
         int numRowsAffected = dvObjectService.clearAllIndexTimes();
         response.add(numRowsClearedByClearAllIndexTimes, numRowsAffected);
         response.add(messageString, "Solr index and database index timestamps cleared.");

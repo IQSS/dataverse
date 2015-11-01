@@ -31,6 +31,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.ejb.EJB;
 import javax.ejb.EJBTransactionRolledbackException;
 import javax.ejb.Stateless;
@@ -81,6 +83,20 @@ public class SearchServiceBean {
     SystemConfig systemConfig;
 
     public static final JsfHelper JH = new JsfHelper();
+    private SolrServer solrServer;
+    
+    @PostConstruct
+    public void init(){
+        solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
+    }
+    
+    @PreDestroy
+    public void close(){
+        if(solrServer != null){
+            solrServer.shutdown();
+            solrServer = null;
+        }
+    }
 
     /**
      * Import note: "onlyDatatRelatedToMe" relies on filterQueries for providing
@@ -110,7 +126,6 @@ public class SearchServiceBean {
             throw new IllegalArgumentException("numResultsPerPage must be 1 or greater");
         }
 
-        SolrServer solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
         SolrQuery solrQuery = new SolrQuery();
         query = SearchUtil.sanitizeQuery(query);
         solrQuery.setQuery(query);
