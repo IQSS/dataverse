@@ -1,11 +1,11 @@
 #metadataBlock	name	dataverseAlias	displayName												
 	custom_hbgdki	HBGDki	HBGDki Custom Metadata												
 #datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	showabovefold	required	parent	metadatablock_id
-	hbgdkiStudyName	Name of Study	Name of the study.	Limit to 20 characters.	text	0		TRUE	FALSE	FALSE	FALSE	TRUE	TRUE		custom_hbgdki
-	hbgdkiStudyRegistry	Study Registry	ICTRP number or DOI number for study publication.		none	1		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		custom_hbgdki
-	hbgdkiStudyRegistryType	ID Type	Study ID Type: ICTRP or DOI.		text	2		TRUE	TRUE	FALSE	FALSE	TRUE	TRUE	hbgdkiStudyRegistry	custom_hbgdki
-	hbgdkiStudyRegistryNumber	ID Number	Study ID Number: ICTRP number or DOI number		text	3		TRUE	FALSE	FALSE	FALSE	TRUE	TRUE	hbgdkiStudyRegistry	custom_hbgdki
-	hbgdkiStudyType	Type of study	Type of study.		text	4		TRUE	TRUE	TRUE	TRUE	TRUE	TRUE		custom_hbgdki
+	hbgdkiStudyName	Name of Study	Name of the study.	Limit to 20 characters.	text	0		TRUE	FALSE	FALSE	FALSE	TRUE	FALSE		custom_hbgdki
+	hbgdkiStudyRegistry	Study Registry	Which study registry was used?		none	1		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		custom_hbgdki
+	hbgdkiStudyRegistryType	ID Type	Which study registry was used?		text	2		TRUE	TRUE	FALSE	FALSE	TRUE	FALSE	hbgdkiStudyRegistry	custom_hbgdki
+	hbgdkiStudyRegistryNumber	ID Number	ID number for the study per the registry.		text	3		TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	hbgdkiStudyRegistry	custom_hbgdki
+	hbgdkiStudyType	Type of study	Type of study.		text	4		TRUE	TRUE	TRUE	TRUE	TRUE	FALSE		custom_hbgdki
 	hbgdkiIntervention	Intervention	If an interventional study, describe the interventions.		textbox	5		TRUE	FALSE	FALSE	FALSE	TRUE	FALSE		custom_hbgdki
 	hbgdkiLowerLimitAge	Lower limit of age at enrollment	Lower limit of age at enrollment.		int	6		TRUE	FALSE	FALSE	FALSE	TRUE	FALSE		custom_hbgdki
 	hbgdkiUnitsLowerLimitAge	Units for lower age limit	Units for lower age limit.		text	7		TRUE	FALSE	FALSE	FALSE	TRUE	FALSE		custom_hbgdki
@@ -25,8 +25,23 @@
 	hbgdkiInfantChildhoodMorbidity	Morbidity in infancy and childhood	Morbidity in infancy and childhood		text	21		TRUE	TRUE	FALSE	FALSE	TRUE	FALSE		custom_hbgdki
 	hbgdkiWaterSanHygiene	Water, sanitation and hygiene standards	Water, sanitation and hygiene standards		text	22		TRUE	TRUE	FALSE	FALSE	TRUE	FALSE		custom_hbgdki
 #controlledVocabulary	DatasetField	Value	identifier	displayOrder											
-	hbgdkiStudyRegistryType	ICTRP	hbgdki_study_registry_type_ICTRP	0											
-	hbgdkiStudyRegistryType	DOI	hbgdki_study_registry_type_DOI	1											
+	hbgdkiStudyRegistryType	International Clinical Trials Registry Platform (ICTRP)	hbgdki_study_registry_type_ICTRP	0											
+	hbgdkiStudyRegistryType	Australian New Zealand Clinical Trials Registry (ANZCTR)	hbgdki_study_registry_type_ANZCTR	1											
+	hbgdkiStudyRegistryType	Brazilian Clinical Trials Registry (ReBec)	hbgdki_study_registry_type_ReBec	2											
+	hbgdkiStudyRegistryType	Chinese Clinical Trial Registry (ChiCTR)	hbgdki_study_registry_type_ChiCTR	3											
+	hbgdkiStudyRegistryType	Clinical Research Information Service (CRiS), Republic of Korea	hbgdki_study_registry_type_CRiS	4											
+	hbgdkiStudyRegistryType	Clinical Trials Registry - India (CTRI)	hbgdki_study_registry_type_CTRI	5											
+	hbgdkiStudyRegistryType	Cuban Public Registry of Clinical Trials (RPCEC)	hbgdki_study_registry_type_RPCEC	6											
+	hbgdkiStudyRegistryType	EU Clinical Trials Register (EU-CTR)	hbgdki_study_registry_type_EU-CTR	7											
+	hbgdkiStudyRegistryType	German Clinical Trials Register (DRKS)	hbgdki_study_registry_type_DRKS	8											
+	hbgdkiStudyRegistryType	Iranian Registry of Clinical Trials (IRCT)	hbgdki_study_registry_type_IRCT	9											
+	hbgdkiStudyRegistryType	ISRCTN	hbgdki_study_registry_type_ISRCTN	10											
+	hbgdkiStudyRegistryType	Japan Primary Registries Network (JPRN)	hbgdki_study_registry_type_JPRN	11											
+	hbgdkiStudyRegistryType	Pan African Clinical Trial Registry (PACTR)	hbgdki_study_registry_type_PACTR	12											
+	hbgdkiStudyRegistryType	Sri Lanka Clinical Trials Registry (SLCTR)	hbgdki_study_registry_type_SLCTR	13											
+	hbgdkiStudyRegistryType	Thai Clinical Trials Registry (TCTR)	hbgdki_study_registry_type_TCTR	14											
+	hbgdkiStudyRegistryType	The Netherlands National Trial Register (NTR)	hbgdki_study_registry_type_NTR	15											
+    	hbgdkiStudyRegistryType	US Clinical Trials Registry (clinicaltrials.gov)	hbgdki_study_registry_type_USCTR	16											
 	hbgdkiStudyType	Interventional	hbgdki_interventional	0											
 	hbgdkiStudyType	Observational	hbgdki_observational	1											
 	hbgdkiStudyType	Case Control	hbgdki_case_control	2											
