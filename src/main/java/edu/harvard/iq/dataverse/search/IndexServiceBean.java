@@ -38,6 +38,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.ejb.AsyncResult;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -99,7 +101,21 @@ public class IndexServiceBean {
     private static final String DRAFT_STRING = "Draft";
     private static final String IN_REVIEW_STRING = "In Review";
     private static final String DEACCESSIONED_STRING = "Deaccessioned";
-    private Dataverse rootDataverseCached;
+    private Dataverse rootDataverseCached; 
+    private SolrServer solrServer;
+    
+    @PostConstruct
+    public void init(){
+        solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
+    }
+    
+    @PreDestroy
+    public void close(){
+        if(solrServer != null){
+            solrServer.shutdown();
+            solrServer = null;
+        }
+    }
 
     @TransactionAttribute(REQUIRES_NEW)
     public Future<String> indexDataverseInNewTransaction(Dataverse dataverse) {
@@ -193,12 +209,10 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.SUBTREE, dataversePaths);
         docs.add(solrInputDocument);
 
-        SolrServer server = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
-
         String status;
         try {
             if (dataverse.getId() != null) {
-                server.add(docs);
+                solrServer.add(docs);
             } else {
                 logger.info("WARNING: indexing of a dataverse with no id attempted");
             }
@@ -208,7 +222,7 @@ public class IndexServiceBean {
             return new AsyncResult<>(status);
         }
         try {
-            server.commit();
+            solrServer.commit();
         } catch (SolrServerException | IOException ex) {
             status = ex.toString();
             logger.info(status);
@@ -998,15 +1012,13 @@ public class IndexServiceBean {
             }
         }
 
-        SolrServer server = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
-
         try {
-            server.add(docs);
+            solrServer.add(docs);
         } catch (SolrServerException | IOException ex) {
             return ex.toString();
         }
         try {
-            server.commit();
+            solrServer.commit();
         } catch (SolrServerException | IOException ex) {
             return ex.toString();
         }
@@ -1099,17 +1111,15 @@ public class IndexServiceBean {
     }
 
     public String delete(Dataverse doomed) {
-        SolrServer server = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
-
         logger.fine("deleting Solr document for dataverse " + doomed.getId());
         UpdateResponse updateResponse;
         try {
-            updateResponse = server.deleteById(solrDocIdentifierDataverse + doomed.getId());
+            updateResponse = solrServer.deleteById(solrDocIdentifierDataverse + doomed.getId());
         } catch (SolrServerException | IOException ex) {
             return ex.toString();
         }
         try {
-            server.commit();
+            solrServer.commit();
         } catch (SolrServerException | IOException ex) {
             return ex.toString();
         }
@@ -1125,17 +1135,16 @@ public class IndexServiceBean {
      * https://github.com/IQSS/dataverse/issues/142
      */
     public String removeSolrDocFromIndex(String doomed) {
-        SolrServer server = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
-
+        
         logger.fine("deleting Solr document: " + doomed);
         UpdateResponse updateResponse;
         try {
-            updateResponse = server.deleteById(doomed);
+            updateResponse = solrServer.deleteById(doomed);
         } catch (SolrServerException | IOException ex) {
             return ex.toString();
         }
         try {
-            server.commit();
+            solrServer.commit();
         } catch (SolrServerException | IOException ex) {
             return ex.toString();
         }
@@ -1341,7 +1350,6 @@ public class IndexServiceBean {
     }
 
     private List<Long> findDvObjectInSolrOnly(String type) throws SearchException {
-        SolrServer solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery("*");
         solrQuery.setRows(Integer.MAX_VALUE);
@@ -1372,7 +1380,6 @@ public class IndexServiceBean {
     }
 
     private List<String> findFilesOfParentDataset(long parentDatasetId) throws SearchException {
-        SolrServer solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery("*");
         solrQuery.setRows(Integer.MAX_VALUE);
