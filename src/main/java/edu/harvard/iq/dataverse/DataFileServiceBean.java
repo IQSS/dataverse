@@ -7,14 +7,21 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.search.SortBy;
 import edu.harvard.iq.dataverse.util.FileSortFieldAndOrder;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -43,6 +50,8 @@ public class DataFileServiceBean implements java.io.Serializable {
     DatasetServiceBean datasetService;
     @EJB
     PermissionServiceBean permissionService;
+    @EJB
+    UserServiceBean userService; 
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -144,7 +153,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         query.setParameter("studyId", studyId);
         return query.getResultList();
     }  
-
+    
     public List<FileMetadata> findFileMetadataByDatasetVersionId(Long datasetVersionId, int maxResults, String userSuppliedSortField, String userSuppliedSortOrder) {
         FileSortFieldAndOrder sortFieldAndOrder = new FileSortFieldAndOrder(userSuppliedSortField, userSuppliedSortOrder);
         String sortField = sortFieldAndOrder.getSortField();
@@ -159,6 +168,61 @@ public class DataFileServiceBean implements java.io.Serializable {
         return query.getResultList();
     }
     
+    public List<FileMetadata> findFileMetadataByDatasetVersionIdLabelSearchTerm(Long datasetVersionId, String searchTerm, String userSuppliedSortField, String userSuppliedSortOrder){
+        
+        List <FileMetadata> retList = new ArrayList();
+        for (Integer id : findFileMetadataIdsByDatasetVersionIdLabelSearchTerm(datasetVersionId, searchTerm, userSuppliedSortField, userSuppliedSortOrder)){
+           retList.add( (FileMetadata) em.find(FileMetadata.class, id.longValue()));
+        }
+        return retList;
+
+        
+    }
+    
+    public List<Integer> findFileMetadataIdsByDatasetVersionIdLabelSearchTerm(Long datasetVersionId, String searchTerm, String userSuppliedSortField, String userSuppliedSortOrder){
+        FileSortFieldAndOrder sortFieldAndOrder = new FileSortFieldAndOrder(userSuppliedSortField, userSuppliedSortOrder);
+
+        String sortField = sortFieldAndOrder.getSortField();
+        String sortOrder = sortFieldAndOrder.getSortOrder();
+        String searchClause = "";
+        if(searchTerm != null && !searchTerm.isEmpty()){
+            searchClause = " and  (lower(o.label) like '%" + searchTerm.toLowerCase() + "%' or lower(o.description) like '%" + searchTerm.toLowerCase() + "%')";
+        }
+        
+        Query query = em.createNativeQuery("select o.id from FileMetadata o where o.datasetVersion_id = "  + datasetVersionId
+                + searchClause
+                + " order by o." + sortField + " " + sortOrder);
+        System.out.print(query.toString());
+        
+        return query.getResultList();
+    }
+        
+    
+    public List<FileMetadata> findFileMetadataByDatasetVersionIdLazy(Long datasetVersionId, int maxResults, String userSuppliedSortField, String userSuppliedSortOrder, int firstResult) {
+        FileSortFieldAndOrder sortFieldAndOrder = new FileSortFieldAndOrder(userSuppliedSortField, userSuppliedSortOrder);
+        String sortField = sortFieldAndOrder.getSortField();
+        String sortOrder = sortFieldAndOrder.getSortOrder();
+
+        if (maxResults < 0) {
+            // return all results if user asks for negative number of results
+            maxResults = 0;
+        }
+        TypedQuery query = em.createQuery("select o from FileMetadata o where o.datasetVersion.id = :datasetVersionId order by o." + sortField + " " + sortOrder, FileMetadata.class);
+        query.setParameter("datasetVersionId", datasetVersionId);
+        query.setMaxResults(maxResults);
+
+        query.setFirstResult(firstResult);
+
+        List retList = query.getResultList();
+        return retList;
+    }
+    
+    public Long findCountByDatasetVersionId(Long datasetVersionId){
+        return (Long) em.createNativeQuery("select count(*)  from FileMetadata fmd "
+                + " where fmd.datasetVersion_id = " + datasetVersionId
+                + ";").getSingleResult();
+    }
+
     public FileMetadata findFileMetadataByFileAndVersionId(Long dataFileId, Long datasetVersionId) {
         Query query = em.createQuery("select object(o) from FileMetadata as o where o.dataFile.id = :dataFileId and o.datasetVersion.id = :datasetVersionId");
         query.setParameter("dataFileId", dataFileId);
@@ -175,6 +239,300 @@ public class DataFileServiceBean implements java.io.Serializable {
         return (FileMetadata) query.getSingleResult();
     }
 
+    /* 
+     * This is an experimental method for populating the versions of 
+     * the datafile with the filemetadatas, optimized for making as few db 
+     * queries as possible. 
+     * It should only be used to retrieve filemetadata for the DatasetPage!
+     * It is not guaranteed to adequately perform anywhere else. 
+    */
+    public void findFileMetadataOptimizedExperimental(Dataset owner) { //, DatasetVersion version) {
+        List<DataFile> dataFiles = new ArrayList<>();
+        List<DataTable> dataTables = new ArrayList<>();
+        //List<FileMetadata> retList = new ArrayList<>(); 
+        
+        // TODO: 
+        //  replace these maps with simple lists and run binary search on them. -- 4.2.1
+        
+        Map<Long, AuthenticatedUser> userMap = new HashMap<>(); 
+        Map<Long, Integer> filesMap = new HashMap<>();
+        Map<Long, Integer> datatableMap = new HashMap<>();
+        Map<Long, Integer> categoryMap = new HashMap<>();
+        Map<Long, Set<Integer>> fileTagMap = new HashMap<>();
+        
+        List<String> fileTagLabels = DataFileTag.listTags();
+        
+        
+        int i = 0; 
+        
+        List<Object[]> dataTableResults = em.createNativeQuery("SELECT t0.ID, t0.DATAFILE_ID, t0.UNF, t0.CASEQUANTITY, t0.VARQUANTITY FROM dataTable t0, dataFile t1, dvObject t2 WHERE ((t0.DATAFILE_ID = t1.ID) AND (t1.ID = t2.ID) AND (t2.OWNER_ID = " + owner.getId() + "))").getResultList();
+        
+        for (Object[] result : dataTableResults) {
+            DataTable dataTable = new DataTable(); 
+            Long fileId = (Long)result[1];
+
+            dataTable.setId(((Integer)result[0]).longValue());
+            
+            dataTable.setUnf((String)result[2]);
+            
+            dataTable.setCaseQuantity((Long)result[3]);
+            
+            dataTable.setVarQuantity((Long)result[4]);
+            
+            dataTables.add(dataTable);
+            datatableMap.put(fileId, i++);
+            
+        }
+        dataTableResults = null; 
+        
+        logger.info("Retrieved "+dataTables.size()+" DataTable objects.");
+        
+        i = 0; 
+        List<Object[]> dataTagsResults = em.createNativeQuery("SELECT t0.DATAFILE_ID, t0.TYPE FROM DataFileTag t0, dvObject t1 WHERE (t1.ID = t0.DATAFILE_ID) AND (t1.OWNER_ID="+ owner.getId() + ")").getResultList();
+        for (Object[] result : dataTagsResults) {
+            Long datafile_id = (Long) result[0];
+            Integer tagtype_id = (Integer) result[1];
+            if (fileTagMap.get(datafile_id) == null) {
+                fileTagMap.put(datafile_id, new HashSet<Integer>());
+            }
+            fileTagMap.get(datafile_id).add(tagtype_id);
+            i++; 
+        }
+        dataTagsResults = null;
+        
+        logger.info("Retrieved "+i+" data tags.");
+        
+        i = 0; 
+        
+        List<Object[]> fileResults = em.createNativeQuery("SELECT t0.ID, t0.CREATEDATE, t0.INDEXTIME, t0.MODIFICATIONTIME, t0.PERMISSIONINDEXTIME, t0.PERMISSIONMODIFICATIONTIME, t0.PUBLICATIONDATE, t0.CREATOR_ID, t0.RELEASEUSER_ID, t1.CONTENTTYPE, t1.FILESYSTEMNAME, t1.FILESIZE, t1.INGESTSTATUS, t1.MD5, t1.RESTRICTED FROM DVOBJECT t0, DATAFILE t1 WHERE ((t0.OWNER_ID = " + owner.getId() + ") AND ((t1.ID = t0.ID) AND (t0.DTYPE = 'DataFile')))").getResultList(); 
+    
+        for (Object[] result : fileResults) {
+            Integer file_id = (Integer) result[0];
+            
+            DataFile dataFile = new DataFile();
+            
+            dataFile.setId(file_id.longValue());
+            
+            Timestamp createDate = (Timestamp) result[1];
+            Timestamp indexTime = (Timestamp) result[2];
+            Timestamp modificationTime = (Timestamp) result[3];
+            Timestamp permissionIndexTime = (Timestamp) result[4];
+            Timestamp permissionModificationTime = (Timestamp) result[5];
+            Timestamp publicationDate = (Timestamp) result[6];
+            
+            dataFile.setCreateDate(createDate);
+            dataFile.setIndexTime(indexTime);
+            dataFile.setModificationTime(modificationTime);
+            dataFile.setPermissionIndexTime(permissionIndexTime);
+            dataFile.setPermissionModificationTime(permissionModificationTime);
+            dataFile.setPublicationDate(publicationDate);
+            
+            Long creatorId = (Long) result[7]; 
+            if (creatorId != null) {
+                AuthenticatedUser creator = userMap.get(creatorId);
+                if (creator == null) {
+                    creator = userService.find(creatorId);
+                    if (creator != null) {
+                        userMap.put(creatorId, creator);
+                    }
+                }
+                if (creator != null) {
+                    dataFile.setCreator(creator);
+                }
+            }
+            
+            dataFile.setOwner(owner);
+            
+            Long releaseUserId = (Long) result[8]; 
+            if (releaseUserId != null) {
+                AuthenticatedUser releaseUser = userMap.get(releaseUserId);
+                if (releaseUser == null) {
+                    releaseUser = userService.find(releaseUserId);
+                    if (releaseUser != null) {
+                        userMap.put(releaseUserId, releaseUser);
+                    }
+                }
+                if (releaseUser != null) {
+                    dataFile.setReleaseUser(releaseUser);
+                }
+            }
+            
+            String contentType = (String) result[9]; 
+            
+            if (contentType != null) {
+                dataFile.setContentType(contentType);
+            }
+            
+            String storageIdentifier = (String) result[10];
+            
+            if (storageIdentifier != null) {
+                dataFile.setStorageIdentifier(storageIdentifier);
+            }
+            
+            Long fileSize = (Long) result[11];
+            
+            if (fileSize != null) {
+                dataFile.setFilesize(fileSize);
+            }
+            
+            if (result[12] != null) {
+                String ingestStatusString = (String) result[12];
+                dataFile.setIngestStatus(ingestStatusString.charAt(0));
+            }
+            
+            String md5 = (String) result[13]; 
+            
+            if (md5 != null) {
+                dataFile.setmd5(md5);
+            }
+            
+            Boolean restricted = (Boolean) result[14];
+            if (restricted != null) {
+                dataFile.setRestricted(restricted);
+            }
+            
+            // TODO: 
+            // - if ingest status is "bad", look up the ingest report; 
+            // - is it a dedicated thumbnail for the dataset? (do we ever need that info?? - not on the dataset page, I don't think...)
+            
+            // Is this a tabular file? 
+            
+            if (datatableMap.get(dataFile.getId()) != null) {
+                dataTables.get(datatableMap.get(dataFile.getId())).setDataFile(dataFile);
+                dataFile.setDataTable(dataTables.get(datatableMap.get(dataFile.getId())));
+                
+            }            
+
+            if (fileTagMap.get(dataFile.getId()) != null) {
+                for (Integer tag_id : fileTagMap.get(dataFile.getId())) {
+                    DataFileTag tag = new DataFileTag();
+                    tag.setTypeByLabel(fileTagLabels.get(tag_id));
+                    tag.setDataFile(dataFile);
+                    dataFile.addTag(tag);
+                }
+            }            
+            dataFile.setFileAccessRequesters(retrieveFileAccessRequesters(dataFile));              
+            dataFiles.add(dataFile);
+            filesMap.put(dataFile.getId(), i++);
+        } 
+        
+        owner.setFiles(dataFiles);
+        fileResults = null; 
+        
+        logger.info("Retrieved and cached "+i+" datafiles.");
+
+        i = 0; 
+        for (DataFileCategory fileCategory : owner.getCategories()) {
+            //logger.info("category: id="+fileCategory.getId());
+            categoryMap.put(fileCategory.getId(), i++);
+        }
+        
+        logger.info("Retreived "+i+" file categories attached to the dataset.");
+        
+        for (DatasetVersion version : owner.getVersions()) {
+            version.setFileMetadatas(retrieveFileMetadataForVersion(owner, version, filesMap, categoryMap));
+            logger.info("Retrieved "+version.getFileMetadatas().size()+" filemetadatas for the version "+version.getId());
+        }
+    }
+    
+     private List<AuthenticatedUser> retrieveFileAccessRequesters(DataFile fileIn){
+        List<AuthenticatedUser> retList = new ArrayList<>();
+        
+        List<Object> requesters  = em.createNativeQuery("select authenticated_user_id from fileaccessrequests where datafile_id = "+fileIn.getId()).getResultList();
+        
+        for (Object userIdObj : requesters){
+            Long userId = (Long) userIdObj;
+            AuthenticatedUser user = userService.find(userId);
+            if (user != null){
+                retList.add(user);
+            }
+        }
+        
+        return retList;
+    }
+    
+    private List<FileMetadata> retrieveFileMetadataForVersion(Dataset dataset, DatasetVersion version, Map<Long, Integer> filesMap, Map<Long, Integer> categoryMap) {
+        List<FileMetadata> retList = new ArrayList<>();
+        Map<Long, Set<Long>> categoryMetaMap = new HashMap<>();
+        
+        List<Object[]> categoryResults = em.createNativeQuery("select t0.filecategories_id, t0.filemetadatas_id from filemetadata_datafilecategory t0, filemetadata t1 where (t0.filemetadatas_id = t1.id) AND (t1.datasetversion_id = "+version.getId()+")").getResultList();
+        int i = 0;
+        for (Object[] result : categoryResults) {
+            Long category_id = (Long) result[0];
+            Long filemeta_id = (Long) result[1];
+            if (categoryMetaMap.get(filemeta_id) == null) {
+                categoryMetaMap.put(filemeta_id, new HashSet<Long>());
+            }
+            categoryMetaMap.get(filemeta_id).add(category_id);
+            i++;
+        }
+        logger.info("Retrieved and mapped "+i+" file categories attached to files in the version "+version.getId());
+        categoryResults = null;
+        
+        List<Object[]> metadataResults = em.createNativeQuery("select id, datafile_id, DESCRIPTION, LABEL, RESTRICTED from FileMetadata where datasetversion_id = "+version.getId()).getResultList();
+        
+        for (Object[] result : metadataResults) {
+            Integer filemeta_id = (Integer) result[0];
+            
+            if (filemeta_id == null) {
+                continue;
+            }
+            
+            Long file_id = (Long) result[1];
+            if (file_id == null) {
+                continue;
+            }
+            
+            Integer file_list_id = filesMap.get(file_id);
+            if (file_list_id == null) {
+                continue;
+            }
+            FileMetadata fileMetadata = new FileMetadata();
+            fileMetadata.setId(filemeta_id.longValue());
+            fileMetadata.setCategories(new LinkedList<DataFileCategory>());
+
+            if (categoryMetaMap.get(fileMetadata.getId()) != null) {
+                for (Long cat_id : categoryMetaMap.get(fileMetadata.getId())) {
+                    if (categoryMap.get(cat_id) != null) {
+                        fileMetadata.getCategories().add(dataset.getCategories().get(categoryMap.get(cat_id)));
+                    }
+                }
+            }
+
+            fileMetadata.setDatasetVersion(version);
+            
+            fileMetadata.setDataFile(dataset.getFiles().get(file_list_id));
+            
+            String description = (String) result[2]; 
+            
+            if (description != null) {
+                fileMetadata.setDescription(description);
+            }
+            
+            String label = (String) result[3];
+            
+            if (label != null) {
+                fileMetadata.setLabel(label);
+            }
+                        
+            Boolean restricted = (Boolean) result[4];
+            if (restricted != null) {
+                fileMetadata.setRestricted(restricted);
+            }
+            
+            retList.add(fileMetadata);
+        }
+        
+        metadataResults = null;
+        
+        logger.info("Retrieved "+retList.size()+" file metadatas for version "+version.getId()+" (inside the retrieveFileMetadataForVersion method).");
+                
+        
+        Collections.sort(retList, FileMetadata.compareByLabel);
+        
+        return retList; 
+    }
+    
     public List<DataFile> findIngestsInProgress() {
         if ( em.isOpen() ) {
             Query query = em.createQuery("select object(o) from DataFile as o where o.ingestStatus =:scheduledStatusCode or o.ingestStatus =:progressStatusCode order by o.id");
@@ -217,7 +575,7 @@ public class DataFileServiceBean implements java.io.Serializable {
     }
 
     /* 
-     Convenience methods for merging and removing of individual file metadatas, 
+     Convenience methods for merging and removingindividual file metadatas, 
      without touching the rest of the DataFile object:
     */
     
@@ -310,7 +668,7 @@ public class DataFileServiceBean implements java.io.Serializable {
      * ready to be downloaded. (it will try to generate a thumbnail for supported
      * file types, if not yet available)
     */
-    public boolean isThumbnailAvailable (DataFile file, User user) {
+    public boolean isThumbnailAvailable (DataFile file) {
         if (file == null) {
             return false; 
         } 
@@ -322,13 +680,24 @@ public class DataFileServiceBean implements java.io.Serializable {
             return false;
         }
         
+        /*
+         Checking the permission here was resulting in extra queries; 
+         it is now the responsibility of the client - such as the DatasetPage - 
+         to make sure the permission check out, before calling this method.
+         (or *after* calling this method? - checking permissions costs db 
+         queries; checking if the thumbnail is available may cost cpu time, if 
+         it has to be generated on the fly - so you have to figure out which 
+         is more important... 
+        TODO: adding a boolean flag isImageAlreadyGenerated to the DataFile 
+         db table should help with this. -- L.A. 4.2.1
+        
         // Also, thumbnails are only shown to users who have permission to see 
         // the full-size image file. So before we do anything else, let's
         // do some authentication and authorization:        
         if (!permissionService.userOn(user, file).has(Permission.DownloadFile)) { 
             logger.fine("No permission to download the file.");
             return false; 
-        }
+        }*/
         
         
         

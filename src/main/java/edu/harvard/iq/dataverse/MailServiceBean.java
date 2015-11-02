@@ -323,6 +323,18 @@ public class MailServiceBean implements java.io.Serializable {
                 pattern = ResourceBundle.getBundle("Bundle").getString("notification.email.assignRole");
                 String[] paramArrayAssignRole = {joinedRoleNames, dvObjTypeStr, dvObj.getDisplayName(), dvObjURL};
                 messageText += MessageFormat.format(pattern, paramArrayAssignRole);
+                if (joinedRoleNames.contains("File Downloader")){
+                    if (dvObjTypeStr.equals("dataset")){
+                         pattern = ResourceBundle.getBundle("Bundle").getString("notification.access.granted.fileDownloader.additionalDataset");
+                         String[]  paramArrayAssignRoleDS = {" "};
+                        messageText += MessageFormat.format(pattern, paramArrayAssignRoleDS);
+                    }
+                    if (dvObjTypeStr.equals("dataverse")){
+                        pattern = ResourceBundle.getBundle("Bundle").getString("notification.access.granted.fileDownloader.additionalDataverse");
+                         String[]  paramArrayAssignRoleDV = {" "};
+                        messageText += MessageFormat.format(pattern, paramArrayAssignRoleDV);
+                    }                   
+                }
                 return messageText;
             case REVOKEROLE:
                 dvObj = (DvObject) targetObject;

@@ -42,9 +42,16 @@ Settings
 ApplicationPrivacyPolicyUrl
 ---------------------------
 
-Specify a URL where users can read your Privacy Policy.
+Specify a URL where users can read your Privacy Policy, linked from the bottom of the page.
 
 ``curl -X PUT -d http://best-practices.dataverse.org/harvard-policies/harvard-privacy-policy.html http://localhost:8080/api/admin/settings/:ApplicationPrivacyPolicyUrl``
+
+ApplicationTermsOfUse
+---------------------
+
+Upload a text file containing the Terms of Use to be displayed at sign up.
+
+``curl -X PUT -d@/tmp/apptou.html http://localhost:8080/api/admin/settings/:ApplicationTermsOfUse``
 
 ApiTermsOfUse
 -------------

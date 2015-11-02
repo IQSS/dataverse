@@ -256,7 +256,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
      * @param version
      * @return boolean
      */
-    private boolean isVersionAskingForDraft(String version){
+    public boolean isVersionAskingForDraft(String version){
         
         if (version == null){
             return false;
@@ -544,7 +544,63 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         
     }
     
-    
+    public RetrieveDatasetVersionResponse selectRequestedVersion(List<DatasetVersion> versions, String versionTag) {
+        
+        Long[] versionNumbers = parseVersionNumber(versionTag);
+        Long majorVersion = null; 
+        Long minorVersion = null; 
+        
+        if (versionNumbers != null && versionNumbers.length == 2) { 
+            majorVersion = versionNumbers[0];
+            minorVersion = versionNumbers[1];
+        }
+        
+        for (DatasetVersion version : versions) {
+
+            if (this.isVersionAskingForDraft(versionTag)) {
+
+                if (version.isDraft()) {
+                    return new RetrieveDatasetVersionResponse(version, versionTag);
+                }
+
+            } else if (majorVersion != null && minorVersion != null) {
+                if (majorVersion.equals(version.getVersionNumber()) && minorVersion.equals(version.getMinorVersionNumber()) && (version.isReleased() || version.isDeaccessioned())) {
+                    return new RetrieveDatasetVersionResponse(version, versionTag);
+                }
+            } else if (majorVersion != null) {
+                if (majorVersion.equals(version.getVersionNumber()) && version.isReleased()) {
+                    return new RetrieveDatasetVersionResponse(version, versionTag);
+                }
+                //
+            }
+        }
+        
+        // second pass - grab the first  released version:
+        
+        for (DatasetVersion version : versions) {
+            if (version.isReleased()) {
+                return new RetrieveDatasetVersionResponse(version, versionTag);
+            }
+        }
+        
+        // third pass - grab the first (latest!) deaccessioned version
+        
+        for (DatasetVersion version : versions) {
+            if (version.isDeaccessioned()) {
+                return new RetrieveDatasetVersionResponse(version, versionTag);
+            }
+        }
+            
+        // fourth pass -  draft is the last choice:
+        
+        for (DatasetVersion version : versions) {
+            if (version.isDraft()) {
+                return new RetrieveDatasetVersionResponse(version, versionTag);
+            }
+        }    
+        
+        return null; 
+    }
      
      /**
      * Find a DatasetVersion using the persisentID and version string

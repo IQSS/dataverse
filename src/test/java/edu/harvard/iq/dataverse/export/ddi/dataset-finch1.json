@@ -1,0 +1,91 @@
+{
+  "id": 11,
+  "identifier": "PCA2E3",
+  "persistentUrl": "http://dx.doi.org/10.5072/FK2/PCA2E3",
+  "protocol": "doi",
+  "authority": "10.5072/FK2",
+  "datasetVersion": {
+    "id": 2,
+    "versionNumber": 1,
+    "versionMinorNumber": 0,
+    "versionState": "RELEASED",
+    "productionDate": "Production Date",
+    "lastUpdateTime": "2015-09-24T17:07:57Z",
+    "releaseTime": "2015-09-24T17:07:57Z",
+    "createTime": "2015-09-24T16:47:51Z",
+    "metadataBlocks": {
+      "citation": {
+        "displayName": "Citation Metadata",
+        "fields": [
+          {
+            "typeName": "title",
+            "multiple": false,
+            "typeClass": "primitive",
+            "value": "Darwin's Finches"
+          },
+          {
+            "typeName": "author",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "authorName": {
+                  "typeName": "authorName",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Finch, Fiona"
+                },
+                "authorAffiliation": {
+                  "typeName": "authorAffiliation",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Birds Inc."
+                }
+              }
+            ]
+          },
+          {
+            "typeName": "datasetContact",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "datasetContactEmail": {
+                  "typeName": "datasetContactEmail",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "finch@mailinator.com"
+                }
+              }
+            ]
+          },
+          {
+            "typeName": "dsDescription",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "dsDescriptionValue": {
+                  "typeName": "dsDescriptionValue",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Darwin's finches (also known as the Galápagos finches) are a group of about fifteen species of passerine birds."
+                }
+              }
+            ]
+          },
+          {
+            "typeName": "subject",
+            "multiple": true,
+            "typeClass": "controlledVocabulary",
+            "value": [
+              "Medicine, Health and Life Sciences"
+            ]
+          }
+        ]
+      }
+    },
+    "files": [],
+    "citation": "Finch, Fiona, 2015, \"Darwin's Finches\", http://dx.doi.org/10.5072/FK2/PCA2E3,  Root Dataverse,  V1"
+  }
+}

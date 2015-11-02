@@ -554,6 +554,12 @@ public class EditDatafilesPage implements java.io.Serializable {
                 }
             }
             fmd.setRestricted(restricted);
+            if (workingVersion.isDraft() && !fmd.getDataFile().isReleased()) {
+                // We do not really need to check that the working version is 
+                // a draft here - it must be a draft, if we've gotten this
+                // far. But just in case. -- L.A. 4.2.1
+                fmd.getDataFile().setRestricted(restricted);
+            }
         }
         if (fileNames != null) {
             String successMessage = JH.localize("file.restricted.success");

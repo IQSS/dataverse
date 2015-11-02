@@ -213,15 +213,26 @@
                                                         <f:param value="#{item.theObject.getAlias()}"/>
                                                         <f:param value="#{item.theObject.getDisplayName()}"/>
                                                     </h:outputFormat>  
+                                                    <ui:fragment rendered="#{item.roleString == 'File Downloader'}">
+                                                        <h:outputFormat value="#{bundle['notification.access.granted.fileDownloader.additionalDataverse']}" escape="false">
+                                                            <f:param value=" "/>
+                                                        </h:outputFormat> 
+                                                    </ui:fragment>
                                                     </ui:fragment>
                                                     <ui:fragment rendered="#{item.theObject.isInstanceofDataset()}">
-                                                    <f:param value="#{item.roleString}"/>
-                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
-                                                    <h:outputFormat value="#{bundle['notification.access.granted.dataset']}" escape="false">
                                                         <f:param value="#{item.roleString}"/>
-                                                        <f:param value="#{item.theObject.getGlobalId()}"/>
-                                                        <f:param value="#{item.theObject.getDisplayName()}"/>
-                                                    </h:outputFormat>  
+                                                        <i class="icon-dataset text-icon-inline text-muted"></i>
+                                                        <h:outputFormat value="#{bundle['notification.access.granted.dataset']}" escape="false">
+                                                            <f:param value="#{item.roleString}"/>
+                                                            <f:param value="#{item.theObject.getGlobalId()}"/>
+                                                            <f:param value="#{item.theObject.getDisplayName()}"/>
+                                                        </h:outputFormat> 
+                                                        <ui:fragment rendered="#{item.roleString == 'File Downloader'}">
+                                                            <h:outputText value="" />
+                                                            <h:outputFormat value="#{bundle['notification.access.granted.fileDownloader.additionalDataset']}" escape="false">
+                                                                <f:param value=" "/>
+                                                            </h:outputFormat> 
+                                                    </ui:fragment>
                                                     </ui:fragment>
                                                     <ui:fragment rendered="#{item.theObject.isInstanceofDataFile()}">
                                                     <f:param value="#{item.roleString}"/>
@@ -232,6 +243,7 @@
                                                         <f:param value="#{item.theObject.getOwner().getDisplayName()}"/>
                                                     </h:outputFormat>  
                                                     </ui:fragment>
+
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'REVOKEROLE'}">
                                                     <ui:fragment rendered="#{item.theObject.isInstanceofDataverse()}">

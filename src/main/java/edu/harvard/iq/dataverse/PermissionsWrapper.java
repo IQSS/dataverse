@@ -35,9 +35,9 @@ public class PermissionsWrapper implements java.io.Serializable {
 
     private final Map<Long, Map<Class<? extends Command>, Boolean>> commandMap = new HashMap<>();
 
-    // Map to track whether a DvObject has "Permission.DownloadFile" 
-    //
+    // Maps for caching permissions lookup results:
     private final Map<Long, Boolean> fileDownloadPermissionMap = new HashMap<>(); // { DvObject.id : Boolean }
+    private final Map<String, Boolean> datasetPermissionMap = new HashMap<>(); // { Permission human_name : Boolean }
 
     /**
      * Check if the current Dataset can Issue Commands
@@ -131,6 +131,51 @@ public class PermissionsWrapper implements java.io.Serializable {
         return permissionService.userOn(u, ds).has(Permission.ManageDatasetPermissions);
     }
 
+    public boolean canViewUnpublishedDataset(User user, Dataset dataset) {
+        return doesSessionUserHaveDataSetPermission(user, dataset, Permission.ViewUnpublishedDataset);
+    }
+    
+    public boolean canUpdateDataset(User user, Dataset dataset) {
+        return doesSessionUserHaveDataSetPermission(user, dataset, Permission.EditDataset);
+    }
+    
+            
+    
+    /**
+     * (Using Raman's implementation in DatasetPage - moving it here, so that 
+     * other components could use this optimization -- L.A. 4.2.1)
+     * 
+     * Check Dataset related permissions
+     * 
+     * @param user
+     * @param dataset
+     * @param permissionToCheck
+     * @return 
+     */
+    public boolean doesSessionUserHaveDataSetPermission(User user, Dataset dataset, Permission permissionToCheck){
+        if (permissionToCheck == null){
+            return false;
+        }
+               
+        String permName = permissionToCheck.getHumanName();
+       
+        // Has this check already been done? 
+        // 
+        if (this.datasetPermissionMap.containsKey(permName)){
+            // Yes, return previous answer
+            return this.datasetPermissionMap.get(permName);
+        }
+        
+        // Check the permission
+        //
+        boolean hasPermission = this.permissionService.userOn(user, dataset).has(permissionToCheck);
+
+        // Save the permission
+        this.datasetPermissionMap.put(permName, hasPermission);
+        
+        // return true/false
+        return hasPermission;
+    }
     /**
      *  Does this dvoObject have "Permission.DownloadFile"?
      * @param dvo

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<codeBook xmlns="http://www.icpsr.umich.edu/DDI" version="2.0">
+  <stdyDscr>
+    <citation>
+      <titlStmt>
+        <titl>Darwin's Finches</titl>
+        <IDNo agency="doi">10.5072/FK2/PCA2E3</IDNo>
+      </titlStmt>
+      <rspStmt>
+        <AuthEnty>Finch, Fiona</AuthEnty>
+      </rspStmt>
+      <biblCit>Finch, Fiona, 2015, "Darwin's Finches", http://dx.doi.org/10.5072/FK2/PCA2E3,  Root Dataverse,  V1</biblCit>
+    </citation>
+  </stdyDscr>
+</codeBook>

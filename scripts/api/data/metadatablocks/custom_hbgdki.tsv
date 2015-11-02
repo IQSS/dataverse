@@ -1,0 +1,57 @@
+#metadataBlock	name	dataverseAlias	displayName												
+	custom_hbgdki	HBGDki	HBGDki Custom Metadata												
+#datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	showabovefold	required	parent	metadatablock_id
+	hbgdkiStudyName	Name of Study	Name of the study.	Limit to 20 characters.	text	0		TRUE	FALSE	FALSE	FALSE	TRUE	TRUE		custom_hbgdki
+	hbgdkiStudyRegistry	Study Registry	ICTRP number or DOI number for study publication.		none	1		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		custom_hbgdki
+	hbgdkiStudyRegistryType	ID Type	Study ID Type: ICTRP or DOI.		text	2		TRUE	TRUE	FALSE	FALSE	TRUE	TRUE	hbgdkiStudyRegistry	custom_hbgdki
+	hbgdkiStudyRegistryNumber	ID Number	Study ID Number: ICTRP number or DOI number		text	3		TRUE	FALSE	FALSE	FALSE	TRUE	TRUE	hbgdkiStudyRegistry	custom_hbgdki
+	hbgdkiStudyType	Type of study	Type of study.		text	4		TRUE	TRUE	TRUE	TRUE	TRUE	TRUE		custom_hbgdki
+	hbgdkiIntervention	Intervention	If an interventional study, describe the interventions.		textbox	5		TRUE	FALSE	FALSE	FALSE	TRUE	FALSE		custom_hbgdki
+	hbgdkiLowerLimitAge	Lower limit of age at enrollment	Lower limit of age at enrollment.		int	6		TRUE	FALSE	FALSE	FALSE	TRUE	FALSE		custom_hbgdki
+	hbgdkiUnitsLowerLimitAge	Units for lower age limit	Units for lower age limit.		text	7		TRUE	FALSE	FALSE	FALSE	TRUE	FALSE		custom_hbgdki
+	hbgdkiUpperLimitAge	Upper limit of age at enrollment	Upper limit of age at enrollment.		int	8		TRUE	FALSE	FALSE	FALSE	TRUE	FALSE		custom_hbgdki
+	hbgdkiUnitsUpperLimitAge	Units for upper age limit	Units for upper age limit.		text	9		TRUE	FALSE	FALSE	FALSE	TRUE	FALSE		custom_hbgdki
+	hbgdkiOther	Other entry criteria	Other entry criteria.		textbox	10		TRUE	FALSE	FALSE	FALSE	TRUE	FALSE		custom_hbgdki
+	hbgdkiBiosampleType	Types of biosamples collected, if any	Types of biosamples used (e.g., Blood, Stool,...).		text	11		TRUE	FALSE	TRUE	TRUE	TRUE	FALSE		custom_hbgdki
+	hbgdkiGestationalAge	Gestational age	Gestational age		text	12		TRUE	TRUE	FALSE	FALSE	TRUE	FALSE		custom_hbgdki
+	hbgdkiAnthropometry	Anthropometry	Anthropometry		text	13		TRUE	TRUE	FALSE	FALSE	TRUE	FALSE		custom_hbgdki
+	hbgdkiBirthWeight	Birth weight	Birth weight		text	14		TRUE	TRUE	FALSE	FALSE	TRUE	FALSE		custom_hbgdki
+	hbgdkiNeurocognitiveDev	Neurocognitive development	Neurocognitive development		text	15		TRUE	TRUE	FALSE	FALSE	TRUE	FALSE		custom_hbgdki
+	hbgdkiMaternalChar	Maternal characteristics	Dataset parameters can include: age, height, weight, obstetric history.		text	16		TRUE	TRUE	FALSE	FALSE	TRUE	FALSE		custom_hbgdki
+	hbgdkiPregnancyBirth	Pregnancy and birth	Dataset parameters can include: Morbidity, nutrition, ANC, delivery method and setting.		text	17		TRUE	TRUE	FALSE	FALSE	TRUE	FALSE		custom_hbgdki
+	hbgdkiSocioeconomicChar	Socioeconomic characteristics	Socioeconomic characteristics		text	18		TRUE	TRUE	FALSE	FALSE	TRUE	FALSE		custom_hbgdki
+	hbgdkiFeedingCare	Feeding care & practice	Feeding care & practice		text	19		TRUE	TRUE	FALSE	FALSE	TRUE	FALSE		custom_hbgdki
+	hbgdkiImmunizations	Immunizations	Immunizations		text	20		TRUE	TRUE	FALSE	FALSE	TRUE	FALSE		custom_hbgdki
+	hbgdkiInfantChildhoodMorbidity	Morbidity in infancy and childhood	Morbidity in infancy and childhood		text	21		TRUE	TRUE	FALSE	FALSE	TRUE	FALSE		custom_hbgdki
+	hbgdkiWaterSanHygiene	Water, sanitation and hygiene standards	Water, sanitation and hygiene standards		text	22		TRUE	TRUE	FALSE	FALSE	TRUE	FALSE		custom_hbgdki
+#controlledVocabulary	DatasetField	Value	identifier	displayOrder											
+	hbgdkiStudyRegistryType	ICTRP	hbgdki_study_registry_type_ICTRP	0											
+	hbgdkiStudyRegistryType	DOI	hbgdki_study_registry_type_DOI	1											
+	hbgdkiStudyType	Interventional	hbgdki_interventional	0											
+	hbgdkiStudyType	Observational	hbgdki_observational	1											
+	hbgdkiStudyType	Case Control	hbgdki_case_control	2											
+	hbgdkiStudyType	Meta-analysis	hbgdki_meta_analysis	3											
+	hbgdkiStudyType	Demographic & Health Survey	hbgdki_demographic_health_survey	4											
+	hbgdkiStudyType	Other Survey	hbgdki_other_survey	5											
+	hbgdkiGestationalAge	Yes	hbgdki_gestation_y	0											
+	hbgdkiGestationalAge	No	hbgdki_gestation_n	1											
+	hbgdkiAnthropometry	Yes	hbgdki_anthropometry_y	0											
+	hbgdkiAnthropometry	No	hbgdki_anthropometry_n	1											
+	hbgdkiBirthWeight	Yes	hbgdki_birth_weight_y	0											
+	hbgdkiBirthWeight	No	hbgdki_birth_weight_n	1											
+	hbgdkiNeurocognitiveDev	Yes	hbgdki_neurocognitive_dev_y	0											
+	hbgdkiNeurocognitiveDev	No	hbgdki_neurocognitive_dev_n	1											
+	hbgdkiMaternalChar	Yes	hbgdki_maternal_char_y	0											
+	hbgdkiMaternalChar	No	hbgdki_maternal_char_ n	1											
+	hbgdkiPregnancyBirth	Yes	hbgdki_pregnancy_birth_y	0											
+	hbgdkiPregnancyBirth	No	hbgdki_pregnancy_birth_ n	1											
+	hbgdkiSocioeconomicChar	Yes	hbgdki_socioeconomic_char_y	0											
+	hbgdkiSocioeconomicChar	No	hbgdki_socioeconomic_char_n	1											
+	hbgdkiFeedingCare	Yes	hbgdki_feeding_care_y	0											
+	hbgdkiFeedingCare	No	hbgdki_feeding_care_n	1											
+	hbgdkiImmunizations	Yes	hbgdki_immunizations_y	0											
+	hbgdkiImmunizations	No	hbgdki_immunizations_n	1											
+	hbgdkiInfantChildhoodMorbidity	Yes	hbgdki_infant_childhood_morbidity_y	0											
+	hbgdkiInfantChildhoodMorbidity	No	hbgdki_infant_childhood_morbidity_n	1											
+	hbgdkiWaterSanHygiene	Yes	hbgdki_water_san_hygiene_y	0											
+	hbgdkiWaterSanHygiene	No	hbgdki_water_san_hygiene_n	1											

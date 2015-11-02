@@ -36,10 +36,12 @@ public class DatasetVersionDTO {
     String contactForAccess;
     String sizeOfCollection;
     String studyCompletion; 
+    String citation;
     boolean inReview;
     
     Map<String,MetadataBlockDTO> metadataBlocks;
     List<FileMetadataDTO> fileMetadatas;
+    List<FileDTO> files;
 
     public boolean isInReview() {
         return inReview;
@@ -169,6 +171,14 @@ public class DatasetVersionDTO {
         this.studyCompletion = studyCompletion;
     }
 
+    public String getCitation() {
+        return citation;
+    }
+
+    public void setCitation(String citation) {
+        this.citation = citation;
+    }
+
     public String getUNF() {
         return UNF;
     }
@@ -185,8 +195,14 @@ public class DatasetVersionDTO {
         this.fileMetadatas = fileMetadatas;
     }
 
-    
-    
+    public List<FileDTO> getFiles() {
+        return files;
+    }
+
+    public void setFiles(List<FileDTO> files) {
+        this.files = files;
+    }
+
     public String getArchiveNote() {
         return archiveNote;
     }

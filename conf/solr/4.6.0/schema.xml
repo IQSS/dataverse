@@ -431,6 +431,29 @@
    <field name="gsdStudentProgram" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="gsdTags" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="gsdTypes" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="hbgdkiAnthropometry" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="hbgdkiBiosampleType" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="hbgdkiBirthWeight" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="hbgdkiFeedingCare" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="hbgdkiGestationalAge" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="hbgdkiImmunizations" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="hbgdkiInfantChildhoodMorbidity" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="hbgdkiIntervention" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="hbgdkiLowerLimitAge" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="hbgdkiMaternalChar" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="hbgdkiNeurocognitiveDev" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="hbgdkiOther" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="hbgdkiPregnancyBirth" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="hbgdkiSocioeconomicChar" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="hbgdkiStudyName" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="hbgdkiStudyRegistry" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="hbgdkiStudyRegistryNumber" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="hbgdkiStudyRegistryType" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="hbgdkiStudyType" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="hbgdkiUnitsLowerLimitAge" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="hbgdkiUnitsUpperLimitAge" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="hbgdkiUpperLimitAge" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="hbgdkiWaterSanHygiene" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="journalArticleType" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="journalIssue" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="journalPubDate" type="text_en" multiValued="true" stored="true" indexed="true"/>
@@ -702,6 +725,29 @@
    <copyField source="gsdStudentProgram" dest="text" maxChars="3000"/>
    <copyField source="gsdTags" dest="text" maxChars="3000"/>
    <copyField source="gsdTypes" dest="text" maxChars="3000"/>
+   <copyField source="hbgdkiAnthropometry" dest="text" maxChars="3000"/>
+   <copyField source="hbgdkiBiosampleType" dest="text" maxChars="3000"/>
+   <copyField source="hbgdkiBirthWeight" dest="text" maxChars="3000"/>
+   <copyField source="hbgdkiFeedingCare" dest="text" maxChars="3000"/>
+   <copyField source="hbgdkiGestationalAge" dest="text" maxChars="3000"/>
+   <copyField source="hbgdkiImmunizations" dest="text" maxChars="3000"/>
+   <copyField source="hbgdkiInfantChildhoodMorbidity" dest="text" maxChars="3000"/>
+   <copyField source="hbgdkiIntervention" dest="text" maxChars="3000"/>
+   <copyField source="hbgdkiLowerLimitAge" dest="text" maxChars="3000"/>
+   <copyField source="hbgdkiMaternalChar" dest="text" maxChars="3000"/>
+   <copyField source="hbgdkiNeurocognitiveDev" dest="text" maxChars="3000"/>
+   <copyField source="hbgdkiOther" dest="text" maxChars="3000"/>
+   <copyField source="hbgdkiPregnancyBirth" dest="text" maxChars="3000"/>
+   <copyField source="hbgdkiSocioeconomicChar" dest="text" maxChars="3000"/>
+   <copyField source="hbgdkiStudyName" dest="text" maxChars="3000"/>
+   <copyField source="hbgdkiStudyRegistry" dest="text" maxChars="3000"/>
+   <copyField source="hbgdkiStudyRegistryNumber" dest="text" maxChars="3000"/>
+   <copyField source="hbgdkiStudyRegistryType" dest="text" maxChars="3000"/>
+   <copyField source="hbgdkiStudyType" dest="text" maxChars="3000"/>
+   <copyField source="hbgdkiUnitsLowerLimitAge" dest="text" maxChars="3000"/>
+   <copyField source="hbgdkiUnitsUpperLimitAge" dest="text" maxChars="3000"/>
+   <copyField source="hbgdkiUpperLimitAge" dest="text" maxChars="3000"/>
+   <copyField source="hbgdkiWaterSanHygiene" dest="text" maxChars="3000"/>
    <copyField source="journalArticleType" dest="text" maxChars="3000"/>
    <copyField source="journalIssue" dest="text" maxChars="3000"/>
    <copyField source="journalPubDate" dest="text" maxChars="3000"/>

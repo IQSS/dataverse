@@ -248,7 +248,7 @@ to
 c. Edit the following lines in dataexplore/rook/rookutils.R: 
 ************************************************************
 
-``url <- paste("https://dataverse-demo.iq.harvard.edu/custom/preprocess_dir/preprocessSubset_",sessionid,".txt",sep="")``
+``url <- paste("https://demo.dataverse.org/custom/preprocess_dir/preprocessSubset_",sessionid,".txt",sep="")``
 
 and 
 

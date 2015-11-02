@@ -20,8 +20,6 @@ import static com.jayway.restassured.RestAssured.given;
 import com.jayway.restassured.path.xml.XmlPath;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
@@ -30,6 +28,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import static junit.framework.Assert.assertEquals;
+import org.junit.Ignore;
 
 public class BatchImportIT {
 
@@ -75,7 +74,7 @@ public class BatchImportIT {
         apiToken2 = createdUser2.getString("data." + apiTokenKey);
         username2 = createdUser2.getString("data.user." + usernameKey);
 
-        dataverseAlias = importDirectoryAndDataverseAliasMustMatch;
+        dataverseAlias = "dv" + getRandomIdentifier();
         Response createDataverseResponse = createDataverse(dataverseAlias, apiToken1);
 //        createDataverseResponse.prettyPrint();
 //        assertEquals(201, createDataverseResponse.getStatusCode());
@@ -90,7 +89,7 @@ public class BatchImportIT {
         }
 
         Response destroyDatasetResponse = destroyDataset(datasetId, apiToken1);
-//        destroyDatasetResponse.prettyPrint();
+        destroyDatasetResponse.prettyPrint();
 //        assertEquals(200, destroyDatasetResponse.getStatusCode());
 
         Response deleteDataverseResponse = deleteDataverse(dataverseAlias, apiToken1);
@@ -138,16 +137,32 @@ public class BatchImportIT {
             String title = JsonPath.from(datasetAsJsonResponse.body().asString()).getString("data.latestVersion.metadataBlocks.citation.fields[0].value");
             String persistentUrl = JsonPath.from(datasetAsJsonResponse.body().asString()).getString("data.persistentUrl");
             logger.info(title + " - " + persistentUrl);
-            Response datasetAsDdi = getDatasetAsDdi(persistentIdentifier, apiToken1);
-//            datasetAsDdi.prettyPrint();
+            boolean ddiFromDto = false;
+            Response datasetAsDdi = getDatasetAsDdi(persistentIdentifier, ddiFromDto, apiToken1);
+            String minimalDdiMethod = datasetAsDdi.prettyPrint();
 
+            ddiFromDto = true;
+            Response datasetAsDdiFromDto = getDatasetAsDdi(persistentIdentifier, ddiFromDto, apiToken1);
+            String fromDto = datasetAsDdiFromDto.prettyPrint();
+
+            /**
+             * Parity with the minimal DDI export is a step along the way. It
+             * demonstrates that we are producing valid DDI according to
+             * http://guides.dataverse.org/en/latest/developers/tools.html#msv
+             * but the next step will be producing a full DDI similar to what is
+             * being imported in this round trip test.
+             */
+            boolean parityWithMinimalDdiExport = false;
+            if (parityWithMinimalDdiExport) {
+                assertEquals(minimalDdiMethod, fromDto);
+            }
 //            File originalFile = new File(absoluteDirectoryPath).listFiles()[0];
 //            String originalPretty = prettyFormat(new String(Files.readAllBytes(Paths.get(originalFile.getAbsolutePath()))));
 //            String exportedPretty = prettyFormat(datasetAsDdi.body().asString());
 //            logger.fine("original: " + originalPretty);
 //            logger.fine("exported: " + exportedPretty);
-            boolean exportDdiComplete = false;
-            if (exportDdiComplete) {
+            boolean doneWithDdiExportIssue2579 = false;
+            if (doneWithDdiExportIssue2579) {
                 /**
                  * @todo Implement DDI export
                  * https://github.com/IQSS/dataverse/issues/2579
@@ -155,7 +170,8 @@ public class BatchImportIT {
 //                assertEquals(exportedPretty, originalPretty);
             }
         } else {
-            Response datasetAsDdi = getDatasetAsDdi("junkDoi", apiToken1);
+            boolean ddiFromDto = false;
+            Response datasetAsDdi = getDatasetAsDdi("junkDoi", ddiFromDto, apiToken1);
             datasetAsDdi.prettyPrint();
             assertEquals(404, datasetAsDdi.getStatusCode());
         }
@@ -183,11 +199,12 @@ public class BatchImportIT {
 
     @Test
     public void ensureDdiExportIsSuperuserOnlyForNow() throws Exception {
-        Response datasetAsDdiNonSuperuser = getDatasetAsDdi("junkDoi", apiToken2);
+        boolean ddiFromDto = false;
+        Response datasetAsDdiNonSuperuser = getDatasetAsDdi("junkDoi", ddiFromDto, apiToken2);
 //        datasetAsDdiNonSuperuser.prettyPrint();
         assertEquals(403, datasetAsDdiNonSuperuser.getStatusCode());
 
-        Response datasetAsDdiInvalidApiToken = getDatasetAsDdi("junkDoi", "junkToken");
+        Response datasetAsDdiInvalidApiToken = getDatasetAsDdi("junkDoi", ddiFromDto, "junkToken");
 //        datasetAsDdiInvalidApiToken.prettyPrint();
         assertEquals(403, datasetAsDdiInvalidApiToken.getStatusCode());
     }
@@ -199,7 +216,7 @@ public class BatchImportIT {
         logger.info(parentDataverse + "dataverse targeted for import of " + filename);
         Response response = given()
                 .contentType("application/atom+xml")
-                .get("/api/batch/migrate/?dv=" + parentDataverse + "&key=" + apiToken + "&path=" + filename);
+                .get("/api/batch/migrate/?dv=" + parentDataverse + "&key=" + apiToken + "&path=" + filename + "&createDV=true");
         return response;
     }
 
@@ -272,10 +289,10 @@ public class BatchImportIT {
         return response;
     }
 
-    private Response getDatasetAsDdi(String persistentIdentifier, String apiToken) {
+    private Response getDatasetAsDdi(String persistentIdentifier, boolean dto, String apiToken) {
         Response response = given()
                 .header(keyString, apiToken)
-                .get("/api/datasets/ddi?persistentId=" + persistentIdentifier);
+                .get("/api/datasets/ddi?persistentId=" + persistentIdentifier + "&dto=" + dto);
         return response;
     }
 

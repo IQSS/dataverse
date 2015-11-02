@@ -1,6 +1,8 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+import edu.harvard.iq.dataverse.util.MailUtil;
 import java.util.Random;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -12,6 +14,7 @@ import javax.faces.validator.ValidatorException;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.mail.internet.InternetAddress;
 
 import org.apache.commons.validator.routines.EmailValidator;
 
@@ -36,6 +39,9 @@ public class SendFeedbackDialog implements java.io.Serializable {
     
     @EJB
     MailServiceBean mailService;
+    @EJB
+    SettingsServiceBean settingsService;
+    
     @EJB
     DataverseServiceBean dataverseService; 
     @Inject DataverseSession dataverseSession;
@@ -195,7 +201,13 @@ public class SendFeedbackDialog implements java.io.Serializable {
             }
         }
         if (email.isEmpty()) {
-            email = defaultRecipientEmail;
+                String systemEmail =  settingsService.getValueForKey(SettingsServiceBean.Key.SystemEmail);
+                InternetAddress systemAddress =  MailUtil.parseSystemAddress(systemEmail);
+                if (systemAddress != null){
+                    email = systemAddress.toString();
+                } else{
+                    email = defaultRecipientEmail;
+                }
         }
         if (isLoggedIn() && userMessage!=null) {
             mailService.sendMail(loggedInUserEmail(), email, getMessageSubject(), userMessage);
