@@ -301,7 +301,11 @@ public class DatasetPage implements java.io.Serializable {
         }
         return false;
     }
-    
+
+    public boolean isMetadataExportEnabled() {
+        return metadataExportEnabled;
+    }
+
     public String getDataverseSiteUrl() {
         return this.dataverseSiteUrl;
     }
@@ -1200,12 +1204,18 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     private boolean readOnly = true; 
-    
+    private boolean metadataExportEnabled;
+
     public String init() {
         // logger.fine("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
         String nonNullDefaultIfKeyNotFound = "";
         this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSize();
         setDataverseSiteUrl(systemConfig.getDataverseSiteUrl());
+        /**
+         * For now having DDI export enabled is a proxy for having any metadata
+         * export enabled (JSON, Dublin Core, etc.).
+         */
+        metadataExportEnabled = systemConfig.isDdiExportEnabled();
 
         guestbookResponse = new GuestbookResponse();
         protocol = settingsService.getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
@@ -2954,6 +2964,18 @@ public class DatasetPage implements java.io.Serializable {
         String dataURL = myHostURL + "/api/access/datafile/" + fileid;
 
         return dataURL;
+    }
+
+    public String getMetadataAsJsonUrl() {
+        if (dataset != null) {
+            Long datasetId = dataset.getId();
+            if (datasetId != null) {
+                String myHostURL = getDataverseSiteUrl();
+                String metadataAsJsonUrl = myHostURL + "/api/datasets/" + datasetId;
+                return metadataAsJsonUrl;
+            }
+        }
+        return null;
     }
 
     private FileMetadata fileMetadataSelected = null;
