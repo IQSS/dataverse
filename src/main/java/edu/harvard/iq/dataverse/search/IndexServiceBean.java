@@ -751,63 +751,14 @@ public class IndexServiceBean {
                             solrInputDocument.addField(solrFieldSearchable, dsf.getValuesWithoutNaValues());
                             if (dsfType.getSolrField().isFacetable()) {
                                 if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.topicClassValue)) {
-                                    /**
-                                     * @todo Right now the "Topic Classification
-                                     * Term" facet of the Murray dataverse looks
-                                     * odd, showing facets like this:
-                                     *
-                                     * - 1 (231)
-                                     *
-                                     * - mra (177)
-                                     *
-                                     * - yes (159)
-                                     *
-                                     * - mixed (155)
-                                     *
-                                     * - female, male (153)
-                                     *
-                                     * These are the values coming from
-                                     * dsf.getValuesWithoutNaValues() which we
-                                     * will log below. One suggestion is to have
-                                     * it look more like this:
-                                     *
-                                     * - 1 (Generations) (231)
-                                     *
-                                     * - mra (177)
-                                     *
-                                     * - yes (Follow-up permitted) (159)
-                                     *
-                                     * etc.
-                                     *
-                                     * However, with the logging below we only
-                                     * see values like "1" and "yes" and never
-                                     * "Generations" or "Follow-up permitted".
-                                     * Something like this will appear in the
-                                     * logs:
-                                     *
-                                     * topicClassValue gets [50 or fewer]
-                                     *
-                                     * topicClassValue gets [female]
-                                     *
-                                     * topicClassValue gets [mixed]
-                                     *
-                                     * topicClassValue gets [middle]
-                                     *
-                                     * topicClassValue gets [1]
-                                     *
-                                     * topicClassValue gets [yes]
-                                     *
-                                     * So the question is, how do we get at
-                                     * "Generations" from "1"? OR "Follow-up
-                                     * permitted" from "yes"?
-                                     *
-                                     * See
-                                     * https://github.com/IQSS/dataverse/issues/2160
-                                     * for more on this issue.
-                                     */
-                                    logger.fine(dsf.getDatasetFieldType().getName() + " gets " + dsf.getValuesWithoutNaValues());
+                                    String topicClassificationTerm = getTopicClassificationTermOrTermAndVocabulary(dsf);
+                                    if (topicClassificationTerm != null) {
+                                        logger.fine(solrFieldFacetable + " gets " + topicClassificationTerm);
+                                        solrInputDocument.addField(solrFieldFacetable, topicClassificationTerm);
+                                    }
+                                } else {
+                                    solrInputDocument.addField(solrFieldFacetable, dsf.getValuesWithoutNaValues());
                                 }
-                                solrInputDocument.addField(solrFieldFacetable, dsf.getValuesWithoutNaValues());
                             }
                         }
                     }
@@ -1027,6 +978,35 @@ public class IndexServiceBean {
 
 //        return "indexed dataset " + dataset.getId() + " as " + solrDocId + "\nindexFilesResults for " + solrDocId + ":" + fileInfo.toString();
         return "indexed dataset " + dataset.getId() + " as " + datasetSolrDocId + ". filesIndexed: " + filesIndexed;
+    }
+
+    /**
+     * If the "Topic Classification" has a "Vocabulary", return both the "Term"
+     * and the "Vocabulary" with the latter in parentheses. For example, the
+     * Murray Research Archive uses "1 (Generations)" and "yes (Follow-up
+     * permitted)".
+     */
+    private String getTopicClassificationTermOrTermAndVocabulary(DatasetField topicClassDatasetField) {
+        String finalValue = null;
+        String topicClassVocab = null;
+        String topicClassValue = null;
+        for (DatasetField sibling : topicClassDatasetField.getParentDatasetFieldCompoundValue().getChildDatasetFields()) {
+            DatasetFieldType datasetFieldType = sibling.getDatasetFieldType();
+            String name = datasetFieldType.getName();
+            if (name.equals(DatasetFieldConstant.topicClassVocab)) {
+                topicClassVocab = sibling.getDisplayValue();
+            } else if (name.equals(DatasetFieldConstant.topicClassValue)) {
+                topicClassValue = sibling.getDisplayValue();
+            }
+            if (topicClassValue != null) {
+                if (topicClassVocab != null) {
+                    finalValue = topicClassValue + " (" + topicClassVocab + ")";
+                } else {
+                    finalValue = topicClassValue;
+                }
+            }
+        }
+        return finalValue;
     }
 
     public List<String> findPathSegments(Dataverse dataverse, List<String> segments) {
