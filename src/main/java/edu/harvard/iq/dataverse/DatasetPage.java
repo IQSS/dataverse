@@ -2062,6 +2062,10 @@ public class DatasetPage implements java.io.Serializable {
             return "";
         }
         linkingDataverse = dataverseService.find(linkingDataverseId);
+        if (readOnly) {
+            // Pass a "real", non-readonly dataset the the LinkDatasetCommand: 
+            dataset = datasetService.find(dataset.getId());
+        }
         LinkDatasetCommand cmd = new LinkDatasetCommand(dvRequestService.getDataverseRequest(), linkingDataverse, dataset);
         try {
             commandEngine.submit(cmd);
