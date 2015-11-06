@@ -1035,8 +1035,8 @@ chdir($cwd);
 print "\nOK, done!\n";
 
 # FIXME: don't just sleep... figure out if the app is up yet.
-print "\n--Sleeping for 3 minutes--\n";
-sleep 180;
+print "\n--Sleeping for 1 minute--\n";
+sleep 60;
 
 # Populate the metadata block field values, create users
 # and dataverses:

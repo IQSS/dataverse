@@ -6,19 +6,21 @@ import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
+import edu.harvard.iq.dataverse.LanguageBean;
 
 public class BundleUtil {
 
     private static final Logger logger = Logger.getLogger(BundleUtil.class.getCanonicalName());
 
     private static final String defaultBundleFile = "Bundle";
-    private static final Locale defaultLocale = Locale.US;
 
     public static String getStringFromBundle(String key) {
         return getStringFromBundle(key, null);
     }
 
     public static String getStringFromBundle(String key, List<String> arguments) {
+    	LanguageBean languageBean = new LanguageBean();
+    	Locale defaultLocale = languageBean.getLocale();
         ResourceBundle bundle = ResourceBundle.getBundle(defaultBundleFile, defaultLocale);
         return getStringFromBundle(key, arguments, bundle);
 

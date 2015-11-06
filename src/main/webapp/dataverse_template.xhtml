@@ -6,7 +6,7 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       lang="en">
-
+<f:view locale="#{language.locale}">
     <h:head>
         <f:facet name="first">
             <title><h:outputText value="#{pageTitle}"/></title>
@@ -29,7 +29,7 @@
 
     <h:body>
       
-        <f:loadBundle basename="Bundle" var="bundle"/>
+        
         <a href="#content" class="sr-only">#{bundle['body.skip']}</a>
         <ui:include src="dataverse_header.xhtml">            
             <ui:param name="dataverse" value="#{dataverse != null ? dataverse : dataverseServiceBean.findRootDataverse()}"/>
@@ -136,4 +136,6 @@
         <ui:include src="google-analytics-snippet.xhtml"></ui:include>                         
 
     </h:body>
+    
+    </f:view>
 </html>

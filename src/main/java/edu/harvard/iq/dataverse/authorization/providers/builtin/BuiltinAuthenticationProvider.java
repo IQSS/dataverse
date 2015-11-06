@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.passwordreset.PasswordResetException;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.Set;
 
 /**
@@ -26,8 +27,8 @@ import java.util.Set;
 public class BuiltinAuthenticationProvider implements CredentialsAuthenticationProvider, UserLister, GroupProvider {
     
     public static final String PROVIDER_ID = "builtin";
-    private static final String KEY_USERNAME = "Username";
-    private static final String KEY_PASSWORD = "Password";
+    private static final String KEY_USERNAME = "Username"; //BundleUtil.getStringFromBundle("user.username"); 
+    private static final String KEY_PASSWORD = "Password"; //BundleUtil.getStringFromBundle("passwd");
     private static final List<Credential> CREDENTIALS_LIST = Arrays.asList( new Credential(KEY_USERNAME), new Credential(KEY_PASSWORD, true) );
       
     final BuiltinUserServiceBean bean;

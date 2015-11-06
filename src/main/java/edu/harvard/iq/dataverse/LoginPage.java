@@ -171,7 +171,7 @@ public class LoginPage implements java.io.Serializable {
             AuthenticationResponse response = ex.getResponse();
             switch ( response.getStatus() ) {
                 case FAIL:
-                    JsfHelper.addErrorMessage(JH.localize("login.invaliduserpassword"));
+                	JsfHelper.addErrorMessage(JH.localize("login.invaliduserpassword"));
                     return null;
                 case ERROR:
                     JsfHelper.addErrorMessage(JH.localize("login.error"));

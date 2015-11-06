@@ -19,6 +19,7 @@ import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import edu.harvard.iq.dataverse.search.SolrField;
 /**
  *
  * @author skraffmiller
@@ -42,7 +43,9 @@ public class MetadataBlock implements Serializable {
     private String name;
     @Column( nullable = false )
     private String displayName;
-
+    @Column( nullable = false )
+    private String frenchdisplayName;
+    
     public Long getId() {
         return id;
     }
@@ -78,10 +81,31 @@ public class MetadataBlock implements Serializable {
     }
 
     public String getDisplayName() {
-        return displayName;
+        SolrField solrField = new SolrField();
+    	String language = solrField.getLanguage();
+    	String output = "";
+    	 
+    		if(language.equals("fr"))
+    		{
+    			output =    frenchdisplayName;
+    		}
+    		else
+    		{
+    			output =   displayName;
+    		}
+    		return output ;
+    	 
+        
     }
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
+    }
+    
+    public String getfrenchDisplayName() {
+        return frenchdisplayName;
+    }
+    public void setfrenchDisplayName(String frenchdisplayName) {
+        this.frenchdisplayName = frenchdisplayName;
     }
     
     public boolean isRequired() {
