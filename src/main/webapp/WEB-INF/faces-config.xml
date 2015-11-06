@@ -11,6 +11,7 @@
         <locale-config>
             <default-locale>en</default-locale>
             <supported-locale>zh_CN</supported-locale>
+            <supported-locale>es_ES</supported-locale>
         </locale-config>
     </application>
     <render-kit>

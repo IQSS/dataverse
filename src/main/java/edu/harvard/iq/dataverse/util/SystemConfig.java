@@ -367,13 +367,13 @@ public class SystemConfig {
     }
     
     public String getApplicationTermsOfUse() {
-        String saneDefaultForAppTermsOfUse = "There are no Terms of Use for this Dataverse installation.";
+	String saneDefaultForAppTermsOfUse = ResourceBundle.getBundle("Bundle").getString("system.NoTerms");
         String appTermsOfUse = settingsService.getValueForKey(SettingsServiceBean.Key.ApplicationTermsOfUse, saneDefaultForAppTermsOfUse);
         return appTermsOfUse;
     }
 
     public String getApiTermsOfUse() {
-        String saneDefaultForApiTermsOfUse = "There are no API Terms of Use for this Dataverse installation.";
+        String saneDefaultForApiTermsOfUse = ResourceBundle.getBundle("Bundle").getString("system.NoAPITerms");
         String apiTermsOfUse = settingsService.getValueForKey(SettingsServiceBean.Key.ApiTermsOfUse, saneDefaultForApiTermsOfUse);
         return apiTermsOfUse;
     }

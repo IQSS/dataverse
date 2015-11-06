@@ -18,12 +18,27 @@ public class BundleUtil {
         return getStringFromBundle(key, null);
     }
 
+    public static String getStringFromBundle(String key, boolean useDefaultLocale) {
+        return getStringFromBundle(key, null, useDefaultLocale);
+    }
+
     public static String getStringFromBundle(String key, List<String> arguments) {
-        ResourceBundle bundle = ResourceBundle.getBundle(defaultBundleFile, defaultLocale);
+//        ResourceBundle bundle = ResourceBundle.getBundle(defaultBundleFile, defaultLocale);
+        ResourceBundle bundle = ResourceBundle.getBundle(defaultBundleFile);
         return getStringFromBundle(key, arguments, bundle);
 
     }
 
+    public static String getStringFromBundle(String key, List<String> arguments, boolean useDefaultLocale) {
+        ResourceBundle bundle;
+        if (useDefaultLocale)
+            bundle = ResourceBundle.getBundle(defaultBundleFile, defaultLocale);
+        else
+            bundle = ResourceBundle.getBundle(defaultBundleFile);
+        return getStringFromBundle(key, arguments, bundle);
+    }
+
+    
     public static String getStringFromBundle(String key, List<String> arguments, ResourceBundle bundle) {
         if (key == null || key.isEmpty()) {
             return null;

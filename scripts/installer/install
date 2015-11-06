@@ -108,7 +108,8 @@ my %POSTGRES_DRIVERS = (
     "9_0", "postgresql-9.0-802.jdbc4.jar",
     "9_1", "postgresql-9.1-902.jdbc4.jar",
     "9_2", "postgresql-9.1-902.jdbc4.jar",
-    "9_3", "postgresql-9.1-902.jdbc4.jar"
+    "9_3", "postgresql-9.1-902.jdbc4.jar",
+    "9_4", "postgresql-9.1-902.jdbc4.jar"
 );
 
 # A few preliminary checks:
