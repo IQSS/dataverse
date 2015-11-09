@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.UserNotification.Type;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
@@ -25,6 +26,9 @@ import javax.persistence.TypedQuery;
 @Stateless
 @Named
 public class UserNotificationServiceBean {
+
+    private static final Logger logger = Logger.getLogger(UserNotificationServiceBean.class.getCanonicalName());
+
     @EJB
     MailServiceBean mailService;
     @PersistenceContext(unitName = "VDCNet-ejbPU")
@@ -81,9 +85,11 @@ public class UserNotificationServiceBean {
         userNotification.setType(type);
         userNotification.setObjectId(objectId);
         if (mailService.sendNotificationEmail(userNotification)) {
+            logger.fine("email was sent");
             userNotification.setEmailed(true);
             save(userNotification);
         } else {
+            logger.fine("email was not sent");
             save(userNotification);
         }
     }
