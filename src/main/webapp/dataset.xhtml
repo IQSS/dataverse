@@ -101,10 +101,14 @@
                                             </p:commandLink>
                                         </li>
                                     </ui:fragment>
-                                    <ui:fragment rendered="#{DatasetPage.dataset.released and !empty(DatasetPage.releasedVersionTabList) and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
+                                    <ui:fragment rendered="#{DatasetPage.dataset.released and DatasetPage.existReleasedVersion and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
                                         <li class="divider"></li>
                                         <li>
-                                            <p:commandLink id="deaccessionDatasetLink" onclick="PF('deaccessionBlock').show()">
+                                            <p:commandLink id="deaccessionDatasetLink" onclick="PF('deaccessionBlock').show()"
+                                                           action="#{DatasetPage.updateReleasedVersions()}"
+                                                           oncomplete="PF('deaccessionBlock').show();bind_bsui_components();"
+                                                           update="deaccessionBlock"
+                                                           >
                                                 <h:outputText value="#{bundle['dataset.editBtn.itemLabel.deaccession']}" />
                                             </p:commandLink>
                                         </li>

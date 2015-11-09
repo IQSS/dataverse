@@ -361,6 +361,12 @@ public class DatasetPage implements java.io.Serializable {
     public void setDataversesForLinking(List<Dataverse> dataversesForLinking) {
         this.dataversesForLinking = dataversesForLinking;
     }
+    
+    public void updateReleasedVersions(){
+        
+        setReleasedVersionTabList(resetReleasedVersionTabList());
+        
+    }
 
     public void updateLinkableDataverses() {
         dataversesForLinking = new ArrayList();
@@ -1314,7 +1320,8 @@ public class DatasetPage implements java.io.Serializable {
             datasetVersionUI = datasetVersionUI.initDatasetVersionUI(workingVersion, false);
             updateDatasetFieldInputLevels();
             displayCitation = dataset.getCitation(true, workingVersion);
-            //moving setVersionTabList to tab change event
+            setExistReleasedVersion(resetExistRealeaseVersion());
+                        //moving setVersionTabList to tab change event
             //setVersionTabList(resetVersionTabList());
             //setReleasedVersionTabList(resetReleasedVersionTabList());
             //SEK - lazymodel may be needed for datascroller in future release
@@ -1768,13 +1775,15 @@ public class DatasetPage implements java.io.Serializable {
             if (selectedDeaccessionVersions == null) {
                 for (DatasetVersion dv : this.dataset.getVersions()) {
                     if (dv.isReleased()) {
-                        cmd = new DeaccessionDatasetVersionCommand(dvRequestService.getDataverseRequest(), setDatasetVersionDeaccessionReasonAndURL(dv), true);
+                        DatasetVersion deaccession = datasetVersionService.find(dv.getId());
+                        cmd = new DeaccessionDatasetVersionCommand(dvRequestService.getDataverseRequest(), setDatasetVersionDeaccessionReasonAndURL(deaccession), true);
                         DatasetVersion datasetv = commandEngine.submit(cmd);
                     }
                 }
             } else {
                 for (DatasetVersion dv : selectedDeaccessionVersions) {
-                    cmd = new DeaccessionDatasetVersionCommand(dvRequestService.getDataverseRequest(), setDatasetVersionDeaccessionReasonAndURL(dv), false);
+                    DatasetVersion deaccession = datasetVersionService.find(dv.getId());
+                    cmd = new DeaccessionDatasetVersionCommand(dvRequestService.getDataverseRequest(), setDatasetVersionDeaccessionReasonAndURL(deaccession), false);
                     DatasetVersion datasetv = commandEngine.submit(cmd);
                 }
             }
@@ -2834,6 +2843,27 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
         return contNames;
+    }
+    
+    private boolean existReleasedVersion;
+
+    public boolean isExistReleasedVersion() {
+        return existReleasedVersion;
+    }
+
+    public void setExistReleasedVersion(boolean existReleasedVersion) {
+        this.existReleasedVersion = existReleasedVersion;
+    }
+    
+    private boolean resetExistRealeaseVersion(){
+
+        for (DatasetVersion version : dataset.getVersions()) {
+            if (version.isReleased() || version.isArchived()) {
+                return true;
+            }
+        }
+        return false;
+        
     }
 
     private List<DatasetVersion> resetReleasedVersionTabList() {
