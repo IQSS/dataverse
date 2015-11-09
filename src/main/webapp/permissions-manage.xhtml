@@ -157,7 +157,7 @@
                                         <ui:repeat id="roleList" value="#{managePermissionsPage.availableRoles}" var="role">
                                             <f:passThroughAttribute name="class" value="list-unstyled" />
                                             <div class="form-group col-sm-12 #{!empty role.owner ? 'bg-info' : 'bg-warning'}">
-                                                <span class="highlightBold">#{role.name}</span>
+                                                <span class="highlightBold">#{bundle[role.name] ? role.name : bundle[role.name]}</span><!-- Hack to translate values from the database -->
                                                 <h:outputText value=" - #{role.description}" rendered="#{!empty role.description}"/>
                                                 <p:commandLink title="#{bundle['dataverse.permissions.roles.edit']}" styleClass="icon-inline-action bootstrap-button-tooltip"
                                                                rendered="#{!empty role.owner and managePermissionsPage.dvObject.instanceofDataverse and permissionsWrapper.canManagePermissions(role.owner)
