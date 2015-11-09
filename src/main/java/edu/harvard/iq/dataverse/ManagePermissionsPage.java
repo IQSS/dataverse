@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -164,13 +165,13 @@ public class ManagePermissionsPage implements java.io.Serializable {
     private void revokeRole(RoleAssignment ra) {
         try {
             commandEngine.submit(new RevokeRoleCommand(ra, dvRequestService.getDataverseRequest()));
-            JsfHelper.addSuccessMessage(ra.getRole().getName() + java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("Bundle").getString("permission.roleWasRemoved"), new Object[] {roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier()).getDisplayInfo().getTitle()}));
+            JsfHelper.addSuccessMessage(java.text.MessageFormat.format(ResourceBundle.getBundle("Bundle").getString("permission.roleWasRemoved"), new Object[] {ra.getRole().getName(), roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier()).getDisplayInfo().getTitle()}));
             RoleAssignee assignee = roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier());
             notifyRoleChange(assignee, UserNotification.Type.REVOKEROLE);
         } catch (PermissionException ex) {
-            JH.addMessage(FacesMessage.SEVERITY_ERROR, java.util.ResourceBundle.getBundle("Bundle").getString("permission.roleNotAbleToBeRemoved"), java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("Bundle").getString("permission.permissionsMissing"), new Object[] {ex.getRequiredPermissions().toString()}));
+            JH.addMessage(FacesMessage.SEVERITY_ERROR, ResourceBundle.getBundle("Bundle").getString("permission.roleNotAbleToBeRemoved"), java.text.MessageFormat.format(ResourceBundle.getBundle("Bundle").getString("permission.permissionsMissing"), new Object[] {ex.getRequiredPermissions().toString()}));
         } catch (CommandException ex) {
-            JH.addMessage(FacesMessage.SEVERITY_FATAL, java.util.ResourceBundle.getBundle("Bundle").getString("permission.roleNotAbleToBeRemoved"));
+            JH.addMessage(FacesMessage.SEVERITY_FATAL, ResourceBundle.getBundle("Bundle").getString("permission.roleNotAbleToBeRemoved"));
             logger.log(Level.SEVERE, "Error removing role assignment: " + ex.getMessage(), ex);
         }
     }
@@ -279,13 +280,13 @@ public class ManagePermissionsPage implements java.io.Serializable {
             if (!defaultRole.equals(dv.getDefaultContributorRole())) {
                 try {
                     commandEngine.submit(new UpdateDataverseDefaultContributorRoleCommand(defaultRole, dvRequestService.getDataverseRequest(), dv));
-                    JsfHelper.addSuccessMessage(java.util.ResourceBundle.getBundle("Bundle").getString("permission.defaultPermissionDataverseUpdated"));
+                    JsfHelper.addSuccessMessage(ResourceBundle.getBundle("Bundle").getString("permission.defaultPermissionDataverseUpdated"));
                 } catch (PermissionException ex) {
-                    JH.addMessage(FacesMessage.SEVERITY_ERROR, java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("Bundle").getString("permission.CannotAssigntDefaultPermissions"), 
-                            java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("Bundle").getString("permission.permissionsMissing"), 
+                    JH.addMessage(FacesMessage.SEVERITY_ERROR, java.text.MessageFormat.format(ResourceBundle.getBundle("Bundle").getString("permission.CannotAssigntDefaultPermissions"), 
+                            java.text.MessageFormat.format(ResourceBundle.getBundle("Bundle").getString("permission.permissionsMissing"), 
                             new Object[] {ex.getRequiredPermissions().toString()})));
                 } catch (CommandException ex) {
-                    JH.addMessage(FacesMessage.SEVERITY_FATAL, java.util.ResourceBundle.getBundle("Bundle").getString("permission.CannotAssigntDefaultPermissions"));
+                    JH.addMessage(FacesMessage.SEVERITY_FATAL, ResourceBundle.getBundle("Bundle").getString("permission.CannotAssigntDefaultPermissions"));
                     logger.log(Level.SEVERE, "Error assigning default permissions: " + ex.getMessage(), ex);
                 }
             }
@@ -418,16 +419,16 @@ public class ManagePermissionsPage implements java.io.Serializable {
     private void assignRole(RoleAssignee ra, DataverseRole r) {
         try {
             commandEngine.submit(new AssignRoleCommand(ra, r, dvObject, dvRequestService.getDataverseRequest()));
-            JsfHelper.addSuccessMessage(r.getName() + java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("Bundle").getString("permission.roleAssignedToFor"), new Object[] {ra.getDisplayInfo().getTitle(), dvObject.getDisplayName()}));
+            JsfHelper.addSuccessMessage(java.text.MessageFormat.format(ResourceBundle.getBundle("Bundle").getString("permission.roleAssignedToFor"), new Object[] {r.getName(), ra.getDisplayInfo().getTitle(), dvObject.getDisplayName()}));
             // don't notify if role = file downloader and object is not released
             if (!(r.getAlias().equals(DataverseRole.FILE_DOWNLOADER) && !dvObject.isReleased()) ){
                             notifyRoleChange(ra, UserNotification.Type.ASSIGNROLE);
             }
 
         } catch (PermissionException ex) {
-            JH.addMessage(FacesMessage.SEVERITY_ERROR, java.util.ResourceBundle.getBundle("Bundle").getString("permission.roleNotAbleToBeAssigned"), java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("Bundle").getString("permission.permissionsMissing"), new Object[] {ex.getRequiredPermissions().toString()}));
+            JH.addMessage(FacesMessage.SEVERITY_ERROR, ResourceBundle.getBundle("Bundle").getString("permission.roleNotAbleToBeAssigned"), java.text.MessageFormat.format(ResourceBundle.getBundle("Bundle").getString("permission.permissionsMissing"), new Object[] {ex.getRequiredPermissions().toString()}));
         } catch (CommandException ex) {
-            JH.addMessage(FacesMessage.SEVERITY_FATAL, java.util.ResourceBundle.getBundle("Bundle").getString("permission.roleNotAbleToBeAssigned"));
+            JH.addMessage(FacesMessage.SEVERITY_FATAL, ResourceBundle.getBundle("Bundle").getString("permission.roleNotAbleToBeAssigned"));
             logger.log(Level.SEVERE, "Error removing role assignment: " + ex.getMessage(), ex);
         }
         
@@ -477,13 +478,13 @@ public class ManagePermissionsPage implements java.io.Serializable {
                 role.addPermission(Permission.valueOf(pmsnStr));
             }
             try {
-                String roleState = role.getId() != null ? java.util.ResourceBundle.getBundle("Bundle").getString("permission.updated") : java.util.ResourceBundle.getBundle("Bundle").getString("permission.created");
+                String roleState = role.getId() != null ? ResourceBundle.getBundle("Bundle").getString("permission.updated") : ResourceBundle.getBundle("Bundle").getString("permission.created");
                 setRole(commandEngine.submit(new CreateRoleCommand(role, dvRequestService.getDataverseRequest(), (Dataverse) role.getOwner())));
-                JsfHelper.addSuccessMessage(java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("Bundle").getString("permission.roleWas"), new Object[] {roleState}));
+                JsfHelper.addSuccessMessage(java.text.MessageFormat.format(ResourceBundle.getBundle("Bundle").getString("permission.roleWas"), new Object[] {roleState}));
             } catch (PermissionException ex) {
-                JH.addMessage(FacesMessage.SEVERITY_ERROR, java.util.ResourceBundle.getBundle("Bundle").getString("permission.roleNotSaved"), java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("Bundle").getString("permission.permissionsMissing"), new Object[] {ex.getRequiredPermissions().toString()}));
+                JH.addMessage(FacesMessage.SEVERITY_ERROR, ResourceBundle.getBundle("Bundle").getString("permission.roleNotSaved"), java.text.MessageFormat.format(ResourceBundle.getBundle("Bundle").getString("permission.permissionsMissing"), new Object[] {ex.getRequiredPermissions().toString()}));
             } catch (CommandException ex) {
-                JH.addMessage(FacesMessage.SEVERITY_FATAL, java.util.ResourceBundle.getBundle("Bundle").getString("permission.roleNotSaved"));
+                JH.addMessage(FacesMessage.SEVERITY_FATAL, ResourceBundle.getBundle("Bundle").getString("permission.roleNotSaved"));
                 logger.log(Level.SEVERE, "Error saving role: " + ex.getMessage(), ex);
             }
         }
