@@ -70,7 +70,7 @@
                      <div class="checkbox" style="margin-top:3px;margin-bottom:0;">
                             <input style="margin-left:0;" name="published_states" id="id_cbox_#{pstate[1]}" type="checkbox" value="#{pstate[0]}" checked="checked"  />
                         <label>
-                            <a class="mydata_pubstate_label"> #{bundle[pstate[0]] ? pstate[0] : bundle[pstate[0]]} <span id="id_#{pstate[1]}_count"></span></a>
+                            <a class="mydata_pubstate_label"> #{bundle[pstate[0]] ? pstate[0] : bundle[pstate[0]]}   <!--Hack to translate values from the database  --><span id="id_#{pstate[1]}_count"></span></a>
                         </label>
                     </div>                   
                 </ui:repeat>
@@ -83,7 +83,7 @@
                 <div class="checkbox" style="margin-top:3px;margin-bottom:0;">
                     <input style="margin-left:0;" name="role_ids" id="id_cbox_#{roleInfoList[2]}" type="checkbox" value="#{roleInfoList[0]}" checked="checked" />
                     <label>
-                        <a class="mydata_role_label">#{bundle[roleInfoList[1]] ? roleInfoList[1] : bundle[roleInfoList[1]]}</a>
+                        <a class="mydata_role_label">#{bundle[roleInfoList[1]] ? roleInfoList[1] : bundle[roleInfoList[1]]}  <!--Hack to translate values from the database  --></a>
                     </label>                    
                 </div>    
             </ui:repeat>
