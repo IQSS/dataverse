@@ -74,7 +74,7 @@
         <p:dialog id="statusInfo" header="#{settingsWrapper.get(':StatusMessageHeader')}" widgetVar="statusInfo" modal="true">
             <p><h:outputText value="#{settingsWrapper.get(':StatusMessageText')}" escape="false"/></p>
             <div class="button-block">
-                <button type="button" onclick="statusInfo.hide()" class="btn btn-default" value="#{bundle.close}">
+                <button type="button" onclick="PF('statusInfo').hide()" class="btn btn-default" value="#{bundle.close}">
                     #{bundle.close}
                 </button>
             </div>

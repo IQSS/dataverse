@@ -1623,6 +1623,20 @@ public class DatasetPage implements java.io.Serializable {
         readOnly = false;
     }
     
+    private Integer chunkSize = 25;
+
+    public Integer getChunkSize() {
+        return chunkSize;
+    }
+
+    public void setChunkSize(Integer chunkSize) {
+        this.chunkSize = chunkSize;
+    }
+    
+    public void viewAllButtonPress(){
+        setChunkSize(fileMetadatasSearch.size());
+    }
+    
      private int activeTabIndex;
 
     public int getActiveTabIndex() {

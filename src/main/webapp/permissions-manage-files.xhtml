@@ -40,7 +40,7 @@
                                     <p:commandLink type="button" id="userGroupsAdd" styleClass="btn btn-default pull-right"
                                                    actionListener="#{manageFilePermissionsPage.initAssignDialog}"
                                                    update="assignDialog"
-                                                   oncomplete="assignWidget.show();handleResizeDialog('assignDialog');bind_bsui_components();">
+                                                   oncomplete="PF('assignWidget').show();handleResizeDialog('assignDialog');bind_bsui_components();">
                                         <span class="glyphicon glyphicon-user"/> #{bundle['dataverse.permissionsFiles.usersOrGroups.assignBtn']}
                                     </p:commandLink>
                                     <p class="help-block clearfix">#{bundle['dataverse.permissionsFiles.usersOrGroups.description']}</p>
@@ -62,7 +62,7 @@
                                                     <p:commandLink type="button" id="viewUserGroups"
                                                                    actionListener="#{manageFilePermissionsPage.initAssignDialogForFileRequester(access.key)}"
                                                                    update=":#{p:component('assignDialog')}"
-                                                                   oncomplete="assignWidget.show();">
+                                                                   oncomplete="PF('assignWidget').show();">
                                                         <h:outputText value="#{access.value.size()} #{access.value.size() eq 1 ?  bundle['dataverse.permissionsFiles.usersOrGroups.file'] : bundle['dataverse.permissionsFiles.usersOrGroups.files']}"/>
                                                     </p:commandLink>
                                                 </p:column>
@@ -94,7 +94,7 @@
                                                     <p:commandLink id="viewUserGroups"
                                                                    actionListener="#{manageFilePermissionsPage.initViewRemoveDialogByRoleAssignee(ra.key, ra.value)}"
                                                                    update=":#{p:component('viewRemoveDialog')}"
-                                                                   oncomplete="viewRemoveWidget.show();">
+                                                                   oncomplete="PF('viewRemoveWidget').show();">
                                                         <h:outputText value="#{ra.value.size()} #{ra.value.size() eq 1 ?  bundle['dataverse.permissionsFiles.usersOrGroups.file'] : bundle['dataverse.permissionsFiles.usersOrGroups.files']}"/>
                                                     </p:commandLink>
                                                 </p:column>
@@ -102,7 +102,7 @@
                                                     <p:commandLink type="button" styleClass="btn btn-default"
                                                                    update=":#{p:component('userGroups')} :#{p:component('restrictedFiles')} @([id$=Messages])"
                                                                    actionListener="#{manageFilePermissionsPage.showUserGroupMessages}"
-                                                                   onclick="confirmation.show()">
+                                                                   onclick="PF('confirmation').show()">
                                                                    <f:setPropertyActionListener value="#{ra.value}" target="#{manageFilePermissionsPage.selectedRoleAssignmentRows}" />
                                                         <span class="glyphicon glyphicon-remove"/> #{bundle['dataverse.permissionsFiles.viewRemoveDialog.removeBtn']}
                                                     </p:commandLink>
@@ -153,7 +153,7 @@
                                             <p:commandLink type="button" id="viewUserGroups"
                                                            actionListener="#{manageFilePermissionsPage.initViewRemoveDialogByFile(fileEntry.key, fileEntry.value)}"
                                                            update=":#{p:component('viewRemoveDialog')}"
-                                                           oncomplete="viewRemoveWidget.show();">
+                                                           oncomplete="PF('viewRemoveWidget').show();">
                                                 <h:outputText value="#{fileEntry.value.size()} #{fileEntry.value.size() eq 1 ?  bundle['dataverse.permissionsFiles.files.roleAssignee'] : bundle['dataverse.permissionsFiles.files.roleAssignees']}"/>
                                             </p:commandLink>
                                         </p:column>
@@ -161,7 +161,7 @@
                                             <p:commandLink type="button" styleClass="btn btn-default"
                                                            actionListener="#{manageFilePermissionsPage.initAssignDialogByFile(fileEntry.key)}"
                                                            update=":#{p:component('assignDialog')}"
-                                                           oncomplete="assignWidget.show();handleResizeDialog('assignDialog');bind_bsui_components();"><span class="glyphicon glyphicon-plus"/> #{bundle['dataverse.permissionsFiles.files.assignBtn']}</p:commandLink>
+                                                           oncomplete="PF('assignWidget').show();handleResizeDialog('assignDialog');bind_bsui_components();"><span class="glyphicon glyphicon-plus"/> #{bundle['dataverse.permissionsFiles.files.assignBtn']}</p:commandLink>
                                         </p:column>
                                     </p:dataTable>
                                 </div>
@@ -173,8 +173,8 @@
                         <div>
                             <p:dataTable id="assignedRoles" var="roleAssignment" value="#{manageFilePermissionsPage.roleAssignments}"
                                          selection="#{manageFilePermissionsPage.selectedRoleAssignmentRows}" rowKey="#{roleAssignment.id}"
-                                         scrollable="true" scrollHeight="300">
-                                <p:column selectionMode="multiple" style="width:2%;text-align:center" disabledSelection="#{!roleAssignment.definitionPoint.instanceofDataFile}"/>
+                                         scrollable="true" scrollHeight="300" disabledSelection="#{!roleAssignment.definitionPoint.instanceofDataFile}">
+                                <p:column selectionMode="multiple" style="width:2%;text-align:center"  />
                                 <p:column width="98%" headerText="#{bundle['dataverse.permissionsFiles.usersOrGroups.tabHeader.userOrGroup']}" rendered="#{!empty manageFilePermissionsPage.selectedFile}">
                                     <h:outputText value="#{roleAssignment.assigneeDisplayInfo.title}"/>
                                 </p:column>
@@ -186,8 +186,8 @@
                         <div class="button-block">
                             <p:commandLink type="button" styleClass="btn btn-default" value="#{bundle['dataverse.permissionsFiles.viewRemoveDialog.removeBtn']}"
                                            update="userGroups restrictedFiles @([id$=Messages])"
-                                           onclick="confirmation.show()"/>
-                            <button type="button" class="btn btn-default" onclick="viewRemoveWidget.hide()" value="Cancel">#{bundle.cancel}</button>
+                                           onclick="PF('confirmation').show()"/>
+                            <button type="button" class="btn btn-default" onclick="PF('viewRemoveWidget').hide()" value="Cancel">#{bundle.cancel}</button>
                         </div>
                     </p:dialog>
                     <!-- Assign Users/Groups Popup -->
@@ -243,18 +243,18 @@
                                 <p:commandLink type="button" styleClass="btn btn-default" rendered="#{empty manageFilePermissionsPage.fileRequester}"
                                                value="#{bundle['dataverse.permissionsFiles.assignDialog.grantBtn']}"
                                                update="assignRoleContent userGroups restrictedFiles @([id$=Messages])"
-                                               actionListener="#{manageFilePermissionsPage.grantAccess}" oncomplete="if (args &amp;&amp; !args.validationFailed) assignWidget.hide();">
+                                               actionListener="#{manageFilePermissionsPage.grantAccess}" oncomplete="if (args &amp;&amp; !args.validationFailed) PF('assignWidget').hide();">
                                     <f:param name="DO_VALIDATION" value="true"/>
                                 </p:commandLink>
                                 <p:commandLink type="button" styleClass="btn btn-default" rendered="#{!empty manageFilePermissionsPage.fileRequester}"
                                                value="#{bundle['dataverse.permissionsFiles.assignDialog.grantBtn']}"
                                                update="assignRoleContent userGroups restrictedFiles @([id$=Messages])"
-                                               actionListener="#{manageFilePermissionsPage.grantAccessToRequests(manageFilePermissionsPage.fileRequester)}" oncomplete="assignWidget.hide();"/>
+                                               actionListener="#{manageFilePermissionsPage.grantAccessToRequests(manageFilePermissionsPage.fileRequester)}" oncomplete="PF('assignWidget').hide();"/>
                                 <p:commandLink type="button" styleClass="btn btn-default" rendered="#{!empty manageFilePermissionsPage.fileRequester}"
                                                value="#{bundle['dataverse.permissionsFiles.assignDialog.rejectBtn']}"
                                                update="assignRoleContent userGroups restrictedFiles @([id$=Messages])"
-                                               actionListener="#{manageFilePermissionsPage.rejectAccessToRequests(manageFilePermissionsPage.fileRequester)}" oncomplete="assignWidget.hide();"/>
-                                <button type="button" class="btn btn-default" onclick="assignWidget.hide()" value="Cancel">#{bundle.cancel}</button>
+                                               actionListener="#{manageFilePermissionsPage.rejectAccessToRequests(manageFilePermissionsPage.fileRequester)}" oncomplete="PF('assignWidget').hide();"/>
+                                <button type="button" class="btn btn-default" onclick="PF('assignWidget').hide()" value="Cancel">#{bundle.cancel}</button>
                             </div>
                         </p:fragment>
                     </p:dialog>
@@ -263,12 +263,12 @@
                             <span class="glyphicon glyphicon-warning-sign text-danger"/> <span class="text-danger">#{bundle['dataverse.permissionsFiles.viewRemoveDialog.removeBtn.confirmation']}</span>
                         </p>
                         <div class="button-block">
-                            <p:commandButton value="#{bundle.continue}" onclick="confirmation.hide()"
+                            <p:commandButton value="#{bundle.continue}" onclick="PF('confirmation').hide()"
                                              action="#{manageFilePermissionsPage.removeRoleAssignments()}"
                                              process="@this"
                                              update=":#{p:component('userGroups')} :#{p:component('restrictedFiles')} @([id$=Messages])"
-                                             oncomplete="viewRemoveWidget.hide();"/>
-                            <p:commandButton type="button" value="#{bundle.cancel}" onclick="confirmation.hide()" />
+                                             oncomplete="PF('viewRemoveWidget').hide();"/>
+                            <p:commandButton type="button" value="#{bundle.cancel}" onclick="PF('confirmation').hide()" />
                         </div>
                     </p:dialog>
                 </h:form>

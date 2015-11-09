@@ -211,7 +211,7 @@
                                            type="button" styleClass="btn btn-default btn-sm"
                                            actionListener="#{EditDatafilesPage.setFileMetadataSelectedForTagsPopup(fileMetadata)}"
                                            update=":datasetForm:editFileTagsPopup"
-                                           oncomplete="editFileTagsPopup.show();bind_bsui_components();">
+                                           oncomplete="PF('editFileTagsPopup').show();bind_bsui_components();">
                                 <span class="glyphicon glyphicon-tag"/> #{bundle['file.editTags']}
                             </p:commandLink>
 
@@ -220,7 +220,7 @@
                                            type="button" styleClass="btn btn-default"
                                            actionListener="#{EditDatafilesPage.setFileMetadataSelectedForThumbnailPopup(fileMetadata)}"
                                            update=":datasetForm:fileSetThumbnail"
-                                           oncomplete="fileSetThumbnail.show()">
+                                           oncomplete="PF('fileSetThumbnail').show()">
                                 <span class="glyphicon glyphicon-file"/> #{bundle['file.setThumbnail']}
                             </p:commandLink>
 
@@ -230,7 +230,7 @@
                                            type="button" styleClass="btn btn-default"
                                            actionListener="#{EditDatafilesPage.setFileMetadataSelectedForIngestOptionsPopup(fileMetadata)}"
                                            update=":datasetForm:fileAdvancedOptions"
-                                           oncomplete="fileAdvancedOptions.show()">
+                                            oncomplete="PF('fileAdvancedOptions').show()">
                                 <span class="glyphicon glyphicon-cog"/> #{bundle['file.advancedIngestOptions']}
                             </p:commandLink>
                         </div>
@@ -254,9 +254,9 @@
             <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.failed.tip']}</p>
         </ui:fragment>
         <div class="button-block">
-            <p:commandButton value="#{bundle.continue}" onclick="deleteFileConfirmation.hide()" oncomplete="window.scrollTo(0, 0);"
+            <p:commandButton value="#{bundle.continue}" onclick="PF('deleteFileConfirmation').hide()" oncomplete="window.scrollTo(0, 0);"
                              update=":#{p:component('filesTable')},:messagePanel" action="#{EditDatafilesPage.deleteFiles()}" />
-            <p:commandButton value="#{bundle.cancel}" onclick="deleteFileConfirmation.hide()" type="button" />
+            <p:commandButton value="#{bundle.cancel}" onclick="PF('deleteFileConfirmation').hide()" type="button" />
         </div>
     </p:dialog>
 
@@ -285,8 +285,8 @@
                 </div>
             </div>
             <div class="button-block">
-                <p:commandButton value="#{bundle.continue}" onclick="editFileAccessPopup.hide()" update=":datasetForm,:messagePanel" action="#{EditDatafilesPage.saveWithTermsOfUse()}" />
-                <p:commandButton value="#{bundle.cancel}" onclick="editFileAccessPopup.hide()" type="button" />
+                <p:commandButton value="#{bundle.continue}" onclick="PF('editFileAccessPopup').hide()" update=":datasetForm,:messagePanel" action="#{EditDatafilesPage.saveWithTermsOfUse()}" />
+                <p:commandButton value="#{bundle.cancel}" onclick="PF('editFileAccessPopup').hide()" type="button" />>
             </div>
         </ui:fragment>
     </p:dialog>
@@ -470,9 +470,8 @@
             </div>
         </div>
         <div class="button-block">
-            <p:commandButton id="fileAdvancedOptionsSaveButton" value="#{bundle.saveChanges}" oncomplete="fileAdvancedOptions.hide()" update=":datasetForm:filesTable,:messagePanel" actionListener="#{EditDatafilesPage.saveAdvancedOptions()}"/>
-            <p:commandButton id="fileAdvancedOptionsCancelButton" value="#{bundle.cancel}" onclick="fileAdvancedOptions.hide()" actionListener="#{EditDatafilesPage.clearFileMetadataSelectedForIngestOptionsPopup()}"/>
-        </div>
+            <p:commandButton id="fileAdvancedOptionsSaveButton" value="#{bundle.saveChanges}" oncomplete="PF('fileAdvancedOptions').hide()" update=":datasetForm:filesTable,:messagePanel" actionListener="#{EditDatafilesPage.saveAdvancedOptions()}"/>
+            <p:commandButton id="fileAdvancedOptionsCancelButton" value="#{bundle.cancel}" onclick="PF('fileAdvancedOptions').hide()" actionListener="#{EditDatafilesPage.clearFileMetadataSelectedForIngestOptionsPopup()}"/>        </div>
     </p:dialog> <!-- end of "advanced options" dialogue -->
 
     <p:dialog id="fileSetThumbnail" styleClass="smallPopUp" header="#{bundle['file.setThumbnail.header']}" widgetVar="fileSetThumbnail" modal="true">
@@ -490,8 +489,8 @@
             </div>
         </div>
         <div class="button-block">
-            <p:commandButton id="fileSetThumbnailSaveBtn" value="#{bundle.saveChanges}" oncomplete="fileSetThumbnail.hide()" update=":datasetForm:filesTable,:messagePanel" actionListener="#{EditDatafilesPage.saveAsDesignatedThumbnail()}"/>
-            <p:commandButton id="fileSetThumbnailCancelBtn" value="#{bundle.cancel}" onclick="fileSetThumbnail.hide()" actionListener="#{EditDatafilesPage.clearFileMetadataSelectedForThumbnailPopup()}"/>
+            <p:commandButton id="fileSetThumbnailSaveBtn" value="#{bundle.saveChanges}" oncomplete="PF('fileSetThumbnail').hide()" update=":datasetForm:filesTable,:messagePanel" actionListener="#{EditDatafilesPage.saveAsDesignatedThumbnail()}"/>
+            <p:commandButton id="fileSetThumbnailCancelBtn" value="#{bundle.cancel}" onclick="PF('fileSetThumbnail').hide()" actionListener="#{EditDatafilesPage.clearFileMetadataSelectedForThumbnailPopup()}"/>
         </div>
     </p:dialog>
 
@@ -542,8 +541,8 @@
             </div>
         </div>
         <div class="button-block">
-            <p:commandButton id="editFileTagsPopupSaveButton" value="#{bundle.saveChanges}" oncomplete="editFileTagsPopup.hide()" update=":datasetForm:filesTable" actionListener="#{EditDatafilesPage.saveFileTagsAndCategories()}"/>
-            <p:commandButton id="editFileTagsPopupCancelButton" value="#{bundle.cancel}" onclick="editFileTagsPopup.hide()" actionListener="#{EditDatafilesPage.clearFileMetadataSelectedForTagsPopup()}"/>
+            <p:commandButton id="editFileTagsPopupSaveButton" value="#{bundle.saveChanges}" oncomplete="PF('editFileTagsPopup').hide()" update=":datasetForm:filesTable" actionListener="#{EditDatafilesPage.saveFileTagsAndCategories()}"/>
+            <p:commandButton id="editFileTagsPopupCancelButton" value="#{bundle.cancel}" onclick="PF('editFileTagsPopup').hide()" actionListener="#{EditDatafilesPage.clearFileMetadataSelectedForTagsPopup()}"/>
         </div>
     </p:dialog>
 
@@ -551,13 +550,13 @@
     <script type="text/javascript">
 
                 function openDialog() {
-                    details.show();
+                    PF('details').show();
                 }
 
                 function testCheckBoxes() {
-                    var count = versionsTable.getSelectedRowsCount();
+                    var count = PF('versionsTable').getSelectedRowsCount();
                     if (count !== 2) {
-                        compareTwo.show();
+                        PF('compareTwo').show();
                     } else {
                         $('button[id$="compareVersions"]').trigger('click');
                     }
@@ -565,15 +564,15 @@
 
 
                 function checkFilesSelected() {
-                    var count = filesTable.getSelectedRowsCount();
+                    var count = PF('filesTable').getSelectedRowsCount();
                     if (count > 0) {
-                        deleteFileConfirmation.show();
+                        PF('deleteFileConfirmation').show();
                     }
                 }
 
                 function checkNewlyRestricted() {
                     if ($('input[id$="showAccessPopup"]').val() === 'true') {
-                        editFileAccessPopup.show();
+                        PF('editFileAccessPopup').show();
                     }
                     else {
                         $('button[id$="datasetSave"]').trigger('click');

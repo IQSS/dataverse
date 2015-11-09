@@ -96,7 +96,7 @@
                                     <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip" 
                                                    title="#{bundle['dataset.manageTemplates.tab.action.btn.view']}" 
                                                    action="#{manageTemplatesPage.viewSelectedTemplate(template)}"
-                                                   oncomplete="viewTemplate.show();bind_tooltip_popover();bind_bsui_components();"
+                                                   oncomplete="PF('viewTemplate').show();bind_tooltip_popover();bind_bsui_components();"
                                                    update=":manageTemplatesForm">
                                         <span class="glyphicon glyphicon-eye-open"></span>
                                     </p:commandLink>
@@ -131,7 +131,7 @@
                                                    update="@form,:messagePanel"
                                                    action="#{manageTemplatesPage.setSelectedTemplate(template)}"
                                                    rendered="#{manageTemplatesPage.dataverse.id eq template.dataverse.id}"
-                                                   oncomplete="deleteConfirmation.show();bind_tooltip_popover();bind_bsui_components();">
+                                                   oncomplete="PF('deleteConfirmation').show();bind_tooltip_popover();bind_bsui_components();">
                                         <span class="glyphicon glyphicon-trash"></span>
                                     </p:commandLink>
                                 </div>
@@ -156,8 +156,8 @@
                             </ul>
                         </ui:fragment>
                         <div class="button-block">
-                            <p:commandButton value="#{bundle.continue}" onclick="deleteConfirmation.hide()" action="#{manageTemplatesPage.deleteTemplate()}" update="@all" />
-                            <p:commandButton value="#{bundle.cancel}" onclick="deleteConfirmation.hide()" type="button" />
+                            <p:commandButton value="#{bundle.continue}" onclick="PF('deleteConfirmation').hide()" action="#{manageTemplatesPage.deleteTemplate()}" update="@all" />
+                            <p:commandButton value="#{bundle.cancel}" onclick="PF('deleteConfirmation').hide()" type="button" />
                         </div>
                     </p:dialog>
 
@@ -185,7 +185,7 @@
                             <ui:param name="termsOfUseAndAccess" value="#{TemplatePage.template.termsOfUseAndAccess}" />
                         </ui:include>
                         <div class="button-block">
-                            <p:commandButton type="button" value="#{bundle.close}" onclick="viewTemplate.hide()" />
+                            <p:commandButton type="button" value="#{bundle.close}" onclick="PF('viewTemplate').hide()" />
                         </div>
                     </p:dialog>
                 </h:form>
