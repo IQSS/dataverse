@@ -3524,7 +3524,7 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public boolean isFileAccessRequestMultiButtonRequired(){
-        if (!isSessionUserAuthenticated()){
+        if (!isSessionUserAuthenticated() || !dataset.isFileAccessRequest()){
             return false;
         }
         if (workingVersion == null) {
@@ -3542,7 +3542,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public boolean isFileAccessRequestMultiButtonEnabled(){
-        if (!isSessionUserAuthenticated()){
+        if (!isSessionUserAuthenticated() || !dataset.isFileAccessRequest()){
             return false;
         }
         if( this.selectedRestrictedFiles == null || this.selectedRestrictedFiles.isEmpty() ){
