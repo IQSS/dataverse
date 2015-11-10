@@ -67,13 +67,13 @@
                         </div>
                         <p:dataTable id="allTemplates" var="template" value="#{manageTemplatesPage.templates}" widgetVar="allTemplates"
                                      rendered="#{!empty manageTemplatesPage.templates}" style="overflow:visible">
-                            <p:column width="35%" sortBy="name" headerText="#{bundle['dataset.manageTemplates.tab.header.templte']}">
+                            <p:column width="30%" sortBy="#{template.name}" headerText="#{bundle['dataset.manageTemplates.tab.header.templte']}">
                                 <h:outputText value="#{template.name}" />
                             </p:column>
-                            <p:column width="15%" class="text-center" sortBy="createDate" headerText="#{bundle['dataset.manageTemplates.tab.header.date']}">
+                            <p:column width="17%" class="text-center" sortBy="#{template.createDate}" headerText="#{bundle['dataset.manageTemplates.tab.header.date']}">
                                 <h:outputText value="#{template.createDate}" />
                             </p:column>
-                            <p:column width="10%" class="text-center" sortBy="usageCount" headerText="#{bundle['dataset.manageTemplates.tab.header.usage']}">
+                            <p:column width="13%" class="text-center" sortBy="#{template.usageCount}" headerText="#{bundle['dataset.manageTemplates.tab.header.usage']}">
                                 <h:outputText value="#{template.usageCount}" />
                             </p:column>
                             <p:column width="40%" class="text-center" headerText="#{bundle['dataset.manageTemplates.tab.header.action']}" style="overflow:visible">

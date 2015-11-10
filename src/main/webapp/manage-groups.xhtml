@@ -58,16 +58,16 @@
 
                         <p:dataTable id="allGroups" var="explicitGroup" value="#{manageGroupsPage.explicitGroups}"
                                      rendered="#{!empty manageGroupsPage.explicitGroups}">
-                            <p:column width="31%" sortBy="displayName" headerText="#{bundle['dataverse.manageGroups.tab.header.name']}">
+                            <p:column width="30%" sortBy="#{explicitGroup.displayName}" headerText="#{bundle['dataverse.manageGroups.tab.header.name']}">
                                 <h:outputText value="#{explicitGroup.displayName}" />
                             </p:column>
-                            <p:column width="8%" sortBy="identifier" headerText="#{bundle['dataverse.manageGroups.tab.header.id']}">
+                            <p:column width="20%" sortBy="#{explicitGroup.getIdentifier()}" headerText="#{bundle['dataverse.manageGroups.tab.header.id']}">
                                 <h:outputText value="#{explicitGroup.getIdentifier()}" />
                             </p:column>
-                            <p:column width="8%" class="text-center" headerText="#{bundle['dataverse.manageGroups.tab.header.membership']}">
+                            <p:column width="20%" class="text-center" headerText="#{bundle['dataverse.manageGroups.tab.header.membership']}">
                                 <h:outputText value="#{manageGroupsPage.getMembershipString(explicitGroup)}" />
                             </p:column>
-                            <p:column width="8%" class="col-manage-action text-center" headerText="#{bundle['dataverse.manageGroups.tab.header.action']}">
+                            <p:column width="30%" class="col-manage-action text-center" headerText="#{bundle['dataverse.manageGroups.tab.header.action']}">
                                 <div class="button-block">
                                     <div class="btn-group" role="group">
                                         <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"

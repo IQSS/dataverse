@@ -68,19 +68,19 @@
                         
                         <p:dataTable id="allGuestbooks" var="guestbook" value="#{manageGuestbooksPage.guestbooks}"
                                      rendered="#{!empty manageGuestbooksPage.guestbooks}">
-                            <p:column width="31%" sortBy="name" headerText="#{bundle['dataset.manageGuestbooks.tab.header.name']}">
+                            <p:column width="25%" sortBy="#{guestbook.name}" headerText="#{bundle['dataset.manageGuestbooks.tab.header.name']}">
                                 <h:outputText value="#{guestbook.name}" />
                             </p:column>
-                            <p:column width="13%" sortBy="createDate" headerText="#{bundle['dataset.manageGuestbooks.tab.header.date']}">
+                            <p:column width="17%" sortBy="#{guestbook.createDate}" headerText="#{bundle['dataset.manageGuestbooks.tab.header.date']}">
                                 <h:outputText value="#{guestbook.createDate}" />
                             </p:column>
-                            <p:column width="8%" class="text-center" sortBy="usageCount" headerText="#{bundle['dataset.manageGuestbooks.tab.header.usage']}">
+                            <p:column width="9%" class="text-center" sortBy="#{guestbook.usageCount}" headerText="#{bundle['dataset.manageGuestbooks.tab.header.usage']}">
                                 <h:outputText value="#{guestbook.usageCount}" />
                             </p:column>
-                            <p:column width="10%" class="text-center" sortBy="usageCount" headerText="#{bundle['dataset.manageGuestbooks.tab.header.responses']}">
+                            <p:column width="13%" class="text-center" sortBy="#{guestbook.responseCount}" headerText="#{bundle['dataset.manageGuestbooks.tab.header.responses']}">
                                 <h:outputText value="#{guestbook.responseCount}" />
                             </p:column>
-                            <p:column width="38%" class="col-manage-action text-center" headerText="#{bundle['dataset.manageGuestbooks.tab.header.action']}">
+                            <p:column width="36%" class="col-manage-action text-center" headerText="#{bundle['dataset.manageGuestbooks.tab.header.action']}">
                                 <div class="button-block">
                                     <p:commandLink type="button" styleClass="btn btn-default"
                                                    value="#{bundle['dataset.manageGuestbooks.tab.action.btn.enable']}"
