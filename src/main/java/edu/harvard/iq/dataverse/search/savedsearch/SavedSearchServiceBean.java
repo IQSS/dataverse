@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.faces.context.FacesContext;
 import javax.inject.Named;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -53,7 +54,7 @@ public class SavedSearchServiceBean {
     EjbDataverseEngine commandEngine;
     @Context
     HttpServletRequest httpReq;
-    
+
     private final String resultString = "result";
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
@@ -143,6 +144,7 @@ public class SavedSearchServiceBean {
                 infoPerHit.add(hitInfo);
                 break;
             }
+            mutateHttpRequestSoJsfCanMakeLinks();
             DataverseRequest dvReq = new DataverseRequest(savedSearch.getCreator(), httpReq);
             if (dvObjectThatDefinitionPointWillLinkTo.isInstanceofDataverse()) {
                 Dataverse dataverseToLinkTo = (Dataverse) dvObjectThatDefinitionPointWillLinkTo;
@@ -184,6 +186,30 @@ public class SavedSearchServiceBean {
         savedSearchArrayBuilder.add(info);
         response.add("hits for saved search id " + savedSearch.getId(), savedSearchArrayBuilder);
         return response;
+    }
+
+    /**
+     * This method fixes the "java.lang.IllegalStateException: Not inside a
+     * request scope" issue reported at
+     * https://github.com/IQSS/dataverse/issues/2718 where it was impossible to
+     * use the "Link Dataset" feature from JSF.
+     */
+    private void mutateHttpRequestSoJsfCanMakeLinks() {
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        if (facesContext != null) {
+            httpReq = (HttpServletRequest) facesContext.getExternalContext().getRequest();
+        } else {
+            /**
+             * No-op. When the "makeLinksForSingleSavedSearch" method is called
+             * from the API such as from `curl -X PUT
+             * http://localhost:8080/api/admin/savedsearches/makelinks/all` is
+             * is expected that facesContext will be null and it is not
+             * necessary to mutate the httpReq. The links are able to be made
+             * (in the datasetlinkingdataverse table, for example) and we don't
+             * get "java.lang.IllegalStateException: Not inside a request
+             * scope". It works fine.
+             */
+        }
     }
 
     private SolrQueryResponse findHits(SavedSearch savedSearch) throws SearchException {
