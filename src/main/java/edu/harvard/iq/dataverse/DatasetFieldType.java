@@ -12,6 +12,7 @@ import java.util.TreeMap;
 import javax.faces.model.SelectItem;
 import javax.persistence.*;
 
+
 /**
  * Defines the meaning and constraints of a metadata field and its values.
  * @author Stephen Kraffmiller
@@ -63,6 +64,12 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     @Column(name = "title", columnDefinition = "TEXT")
     private String title;
 
+    /**
+     * A longer, human-friendlier name. Punctuation allowed.
+     */
+    @Column(name = "frenchtitle" )
+    private String frenchtitle;
+    
     /**
      * A user-friendly Description; will be used for
      * mouse-overs, etc.
@@ -131,8 +138,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     public void setOptionSelectItems(List<SelectItem> optionSelectItems) {
         this.optionSelectItems = optionSelectItems;
     }
-    
-    
+      
     
 
     
@@ -175,11 +181,31 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     }
 
     public String getTitle() {
-        return title;
+    	 SolrField solrField = new SolrField();
+     	String language = solrField.getLanguage();
+    	String output = "";
+
+    	if(language.equals("fr"))
+    	{
+    		output =    frenchtitle;
+    	}
+    	else
+    	{
+    		output =   title;
+    	}
+    	return output ;
     }
 
     public void setTitle(String title) {
         this.title = title;
+    }
+    
+    public String getFrenchTitle() {
+        return frenchtitle;
+    }
+
+    public void setFrenchTitle(String frenchtitle) {
+        this.frenchtitle = frenchtitle;
     }
 
     public String getDescription() {
@@ -470,11 +496,30 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     }
     
     public String getDisplayName() {
-        if (isHasParent() && !parentDatasetFieldType.getTitle().equals(title)) {
-        return parentDatasetFieldType.getTitle() + " " + title;
-        } else {
-            return title;
-        }
+    	 SolrField solrField = new SolrField();
+     	String language = solrField.getLanguage();
+    	String output = "";
+    	if (isHasParent() && !parentDatasetFieldType.getTitle().equals(title)) {
+    		if(language.equals("fr"))
+    		{
+    			output = parentDatasetFieldType.getFrenchTitle()     +"-" +frenchtitle;
+    		}
+    		else
+    		{
+    			output =  parentDatasetFieldType.getTitle()     +"-" +title;
+    		}
+    		return output ;
+    	} else {
+    		if(language.equals("fr"))
+    		{
+    			output =    frenchtitle;
+    		}
+    		else
+    		{
+    			output =   title;
+    		}
+    		return output ;
+    	}
     }
 
     public SolrField getSolrField() {

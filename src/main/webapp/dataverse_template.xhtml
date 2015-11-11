@@ -7,6 +7,7 @@
       xmlns:p="http://primefaces.org/ui"
       lang="en">
 
+    <f:view locale="#{language.locale}">
     <h:head>
         <f:facet name="first">
             <title><h:outputText value="#{pageTitle}"/></title>
@@ -136,4 +137,5 @@
         <ui:include src="google-analytics-snippet.xhtml"></ui:include>                         
 
     </h:body>
+    </f:view>
 </html>
