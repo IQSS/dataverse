@@ -343,7 +343,7 @@ public class BuiltinUserPage implements java.io.Serializable {
             
             ((UIInput) toValidate).setValid(false);
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, 
-                bundle.getString("userPage.passwordError"), bundle.getString("userPage.passwordBlankRetype"));
+                JH.localize("userPage.passwordError"), JH.localize("userPage.passwordBlankRetype"));
             context.addMessage(toValidate.getClientId(context), message);
             return;
             
@@ -355,7 +355,7 @@ public class BuiltinUserPage implements java.io.Serializable {
         
         if ( ! PasswordEncryption.getVersion(builtinUser.getPasswordEncryptionVersion()).check(password, builtinUser.getEncryptedPassword()) ) {
             ((UIInput) toValidate).setValid(false);
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, bundle.getString("userPage.passwordError"), bundle.getString("userPage.passwordIncorrect"));
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, JH.localize("userPage.passwordError"), JH.localize("userPage.passwordIncorrect"));
             context.addMessage(toValidate.getClientId(context), message);
         }
     }
@@ -368,7 +368,7 @@ public class BuiltinUserPage implements java.io.Serializable {
             ((UIInput) toValidate).setValid(false);
 
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, 
-                bundle.getString("userPage.passwordError"), bundle.getString("userPage.newPasswordBlankRetype"));
+                JH.localize("userPage.passwordError"), JH.localize("userPage.newPasswordBlankRetype"));
             context.addMessage(toValidate.getClientId(context), message);
             return;
             
@@ -386,8 +386,8 @@ public class BuiltinUserPage implements java.io.Serializable {
         boolean passwordIsComplexEnough = password!= null && validator.validatePassword(password);
         if (!passwordIsComplexEnough) {
             ((UIInput) toValidate).setValid(false);
-            String messageDetail = java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("Bundle").getString("userPage.passwordNotComplex"), new Object[] {minPasswordLength});
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, bundle.getString("userPage.passwordError"), messageDetail);
+            String messageDetail = java.text.MessageFormat.format(JH.localize("userPage.passwordNotComplex"), new Object[] {minPasswordLength});
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, JH.localize("userPage.passwordError"), messageDetail);
             context.addMessage(toValidate.getClientId(context), message);
         }
     }
@@ -458,9 +458,9 @@ public class BuiltinUserPage implements java.io.Serializable {
         } else {
             authSvc.updateAuthenticatedUser(currentUser, builtinUser.getDisplayInfo());
             editMode = null;
-            String msg = ResourceBundle.getBundle("Bundle").getString("userPage.informationUpdated");
+            String msg = bundle.getString("userPage.informationUpdated");
             if (passwordChanged) {
-                msg = ResourceBundle.getBundle("Bundle").getString("userPage.passwordChanged");
+                msg = bundle.getString("userPage.passwordChanged");
             }
             JsfHelper.addFlashMessage(msg);
             return null;            

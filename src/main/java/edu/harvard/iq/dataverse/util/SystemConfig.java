@@ -367,13 +367,13 @@ public class SystemConfig {
     }
     
     public String getApplicationTermsOfUse() {
-	String saneDefaultForAppTermsOfUse = ResourceBundle.getBundle("Bundle").getString("system.NoTerms");
+	String saneDefaultForAppTermsOfUse = ResourceBundle.getBundle("Bundle").getString("system.app.terms");
         String appTermsOfUse = settingsService.getValueForKey(SettingsServiceBean.Key.ApplicationTermsOfUse, saneDefaultForAppTermsOfUse);
         return appTermsOfUse;
     }
 
     public String getApiTermsOfUse() {
-        String saneDefaultForApiTermsOfUse = ResourceBundle.getBundle("Bundle").getString("system.NoAPITerms");
+        String saneDefaultForApiTermsOfUse = ResourceBundle.getBundle("Bundle").getString("system.api.terms");
         String apiTermsOfUse = settingsService.getValueForKey(SettingsServiceBean.Key.ApiTermsOfUse, saneDefaultForApiTermsOfUse);
         return apiTermsOfUse;
     }
