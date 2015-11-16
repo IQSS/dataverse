@@ -104,7 +104,9 @@ span.glyphicon[data-toggle='tooltip'] {cursor: default;}
 .dropdown-submenu {
     position: relative;
 }
-
+.dropdown-submenu.pull-left {
+    width: 100%;
+}
 .dropdown-submenu>.dropdown-menu {
     top: 0;
     left: 100%;
@@ -113,6 +115,10 @@ span.glyphicon[data-toggle='tooltip'] {cursor: default;}
     -webkit-border-radius: 0 6px 6px 6px;
     -moz-border-radius: 0 6px 6px;
     border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+    float: right;
+    min-width: 100%;
 }
 
 .dropdown-submenu:hover>.dropdown-menu {
