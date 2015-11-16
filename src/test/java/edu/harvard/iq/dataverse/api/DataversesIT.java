@@ -71,13 +71,8 @@ public class DataversesIT {
 //        createDataverse1Response.prettyPrint();
         dataverseAlias2 = dataverseAlias1.toUpperCase();
         Response createDataverse2Response = createDataverse(dataverseAlias2, apiToken1);
-        boolean issue2598fixed = false;
-        if (issue2598fixed) {
-            createDataverse2Response.prettyPrint();
-            assertEquals(400, createDataverse2Response.getStatusCode());
-        } else {
-            assertEquals(201, createDataverse2Response.getStatusCode());
-        }
+        createDataverse2Response.prettyPrint();
+        assertEquals(400, createDataverse2Response.getStatusCode());
     }
 
     private static Response createUser(String username, String firstName, String lastName) {

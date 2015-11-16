@@ -1,0 +1,4 @@
+-- By executing this you can use `@Column(columnDefinition = "citext")`
+-- on an entity but it didn't seem to enforce any sort of uniqueness constraint.
+-- It's PostgreSQL-specific anyway, so we are abandoning this approach.
+-- CREATE EXTENSION IF NOT EXISTS citext;
