@@ -12,9 +12,8 @@ echo "Adding Shibboleth yum repo"
 cp /dataverse/conf/vagrant/etc/yum.repos.d/shibboleth.repo /etc/yum.repos.d
 cp /dataverse/conf/vagrant/etc/yum.repos.d/epel-apache-maven.repo /etc/yum.repos.d
 yum install -y java-1.8.0-openjdk-devel postgresql-server apache-maven httpd mod_ssl shibboleth shibboleth-embedded-ds
-# TODO: find a more robust way to make Java 8 the default! https://github.com/IQSS/dataverse/issues/2151
-echo 2 | alternatives --config java
-echo 2 | alternatives --config javac
+alternatives --set java /usr/lib/jvm/jre-1.8.0-openjdk.x86_64/bin/java
+alternatives --set javac /usr/lib/jvm/java-1.8.0-openjdk.x86_64/bin/javac
 java -version
 javac -version
 service postgresql initdb
