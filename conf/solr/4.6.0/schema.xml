@@ -285,16 +285,16 @@
    <!-- We index parentid and parentname as a debugging aid in case we want to match on it with an explict query like curl 'http://localhost:8983/solr/collection1/select?rows=100&wt=json&indent=true&q=parentid%3A42' or curl 'http://localhost:8983/solr/collection1/select?rows=100&wt=json&indent=true&q=parentname%3Abirds' -->
    <!-- TODO: store parentid as a long instead of a string  -->
    <field name="parentId" type="string" stored="true" indexed="true" multiValued="false"/>
-   <field name="parentIdentifier" type="string" stored="true" indexed="false" multiValued="false"/>
+   <field name="parentIdentifier" type="string" stored="true" indexed="true" multiValued="false"/>
    <field name="parentName" type="string" stored="true" indexed="false" multiValued="false"/>
    <field name="parentCitation" type="string" stored="true" indexed="false" multiValued="false"/>
    <field name="citation" type="string" stored="true" indexed="false" multiValued="false"/>
-   <field name="identifier" type="string" stored="true" indexed="false" multiValued="false"/>
+   <field name="identifier" type="string" stored="true" indexed="true" multiValued="false"/>
    <field name="persistentUrl" type="string" stored="true" indexed="false" multiValued="false"/>
-   <field name="unf" type="string" stored="true" indexed="false" multiValued="false"/>
-   <field name="fileSizeInBytes" type="long" stored="true" indexed="false" multiValued="false"/>
-   <field name="fileMd5" type="string" stored="true" indexed="false" multiValued="false"/>
-   <field name="fileContentType" type="string" stored="true" indexed="false" multiValued="false"/>
+   <field name="unf" type="string" stored="true" indexed="true" multiValued="false"/>
+   <field name="fileSizeInBytes" type="long" stored="true" indexed="true" multiValued="false"/>
+   <field name="fileMd5" type="string" stored="true" indexed="true" multiValued="false"/>
+   <field name="fileContentType" type="string" stored="true" indexed="true" multiValued="false"/>
    <field name="deaccessionReason" type="string" stored="true" indexed="false" multiValued="false"/>
 
    <!-- Added for Dataverse 4.0 alpha 1. This is a required field so we don't have to go to the database to get the database id of the entity. On cards we use the id in links -->
@@ -431,6 +431,29 @@
    <field name="gsdStudentProgram" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="gsdTags" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="gsdTypes" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="hbgdkiAnthropometry" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="hbgdkiBiosampleType" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="hbgdkiBirthWeight" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="hbgdkiFeedingCare" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="hbgdkiGestationalAge" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="hbgdkiImmunizations" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="hbgdkiInfantChildhoodMorbidity" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="hbgdkiIntervention" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="hbgdkiLowerLimitAge" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="hbgdkiMaternalChar" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="hbgdkiNeurocognitiveDev" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="hbgdkiOther" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="hbgdkiPregnancyBirth" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="hbgdkiSocioeconomicChar" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="hbgdkiStudyName" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="hbgdkiStudyRegistry" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="hbgdkiStudyRegistryNumber" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="hbgdkiStudyRegistryType" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="hbgdkiStudyType" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="hbgdkiUnitsLowerLimitAge" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="hbgdkiUnitsUpperLimitAge" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="hbgdkiUpperLimitAge" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="hbgdkiWaterSanHygiene" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="journalArticleType" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="journalIssue" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="journalPubDate" type="text_en" multiValued="true" stored="true" indexed="true"/>
@@ -702,6 +725,29 @@
    <copyField source="gsdStudentProgram" dest="text" maxChars="3000"/>
    <copyField source="gsdTags" dest="text" maxChars="3000"/>
    <copyField source="gsdTypes" dest="text" maxChars="3000"/>
+   <copyField source="hbgdkiAnthropometry" dest="text" maxChars="3000"/>
+   <copyField source="hbgdkiBiosampleType" dest="text" maxChars="3000"/>
+   <copyField source="hbgdkiBirthWeight" dest="text" maxChars="3000"/>
+   <copyField source="hbgdkiFeedingCare" dest="text" maxChars="3000"/>
+   <copyField source="hbgdkiGestationalAge" dest="text" maxChars="3000"/>
+   <copyField source="hbgdkiImmunizations" dest="text" maxChars="3000"/>
+   <copyField source="hbgdkiInfantChildhoodMorbidity" dest="text" maxChars="3000"/>
+   <copyField source="hbgdkiIntervention" dest="text" maxChars="3000"/>
+   <copyField source="hbgdkiLowerLimitAge" dest="text" maxChars="3000"/>
+   <copyField source="hbgdkiMaternalChar" dest="text" maxChars="3000"/>
+   <copyField source="hbgdkiNeurocognitiveDev" dest="text" maxChars="3000"/>
+   <copyField source="hbgdkiOther" dest="text" maxChars="3000"/>
+   <copyField source="hbgdkiPregnancyBirth" dest="text" maxChars="3000"/>
+   <copyField source="hbgdkiSocioeconomicChar" dest="text" maxChars="3000"/>
+   <copyField source="hbgdkiStudyName" dest="text" maxChars="3000"/>
+   <copyField source="hbgdkiStudyRegistry" dest="text" maxChars="3000"/>
+   <copyField source="hbgdkiStudyRegistryNumber" dest="text" maxChars="3000"/>
+   <copyField source="hbgdkiStudyRegistryType" dest="text" maxChars="3000"/>
+   <copyField source="hbgdkiStudyType" dest="text" maxChars="3000"/>
+   <copyField source="hbgdkiUnitsLowerLimitAge" dest="text" maxChars="3000"/>
+   <copyField source="hbgdkiUnitsUpperLimitAge" dest="text" maxChars="3000"/>
+   <copyField source="hbgdkiUpperLimitAge" dest="text" maxChars="3000"/>
+   <copyField source="hbgdkiWaterSanHygiene" dest="text" maxChars="3000"/>
    <copyField source="journalArticleType" dest="text" maxChars="3000"/>
    <copyField source="journalIssue" dest="text" maxChars="3000"/>
    <copyField source="journalPubDate" dest="text" maxChars="3000"/>

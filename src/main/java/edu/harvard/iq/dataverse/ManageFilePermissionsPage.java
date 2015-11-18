@@ -130,7 +130,8 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
                
         for (DataFile file : dataset.getFiles()) {
             // only include if the file is restricted (or it's draft version is restricted)
-            if (file.isRestricted() || file.getFileMetadata().isRestricted()) {
+            //Added a null check in case there are files that have no metadata records SEK 
+                if (file.getFileMetadata() != null && (file.isRestricted() || file.getFileMetadata().isRestricted())) {
                 // we get the direct role assignments assigned to the file
                 List<RoleAssignment> ras = roleService.directRoleAssignments(file);
                 List raList = new ArrayList<>(ras.size());

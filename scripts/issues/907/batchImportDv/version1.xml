@@ -1,0 +1,193 @@
+<?xml version='1.0' encoding='UTF-8'?><codeBook xmlns="http://www.icpsr.umich.edu/DDI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.icpsr.umich.edu/DDI http://www.icpsr.umich.edu/DDI/Version2-0.xsd" version="2.0" source="DVN_3_0">
+    <docDscr>
+        <citation>
+            <titlStmt>
+                <titl>Black Professional Women, 1969 </titl>
+                <IDNo agency="handle">hdl:1902.1/00012</IDNo>
+            </titlStmt>
+            <distStmt>
+                <distrbtr>IQSS Test Dataverse Network</distrbtr>
+                <distDate date="2014-02-12">2014-02-12</distDate>
+            </distStmt>
+            <verStmt source="DVN">
+                <version date="2014-02-13" type="RELEASED">3</version>
+                <verResp>Dwayne</verResp>
+            </verStmt>
+            <verStmt source="DVN">
+                <version date="2013-09-20" type="ARCHIVED">2</version>
+                <verResp>Dwayne</verResp>
+                <notes type="DVN:ARCHIVE_NOTE" subject="Archive Note">Replaced by version 3</notes>
+                <notes type="DVN:ARCHIVE_DATE" subject="Archive Date">2014-02-13</notes>
+            </verStmt>
+            <verStmt source="DVN">
+                <version date="2010-04-22" type="ARCHIVED">1</version>
+                <verResp>sonia, IQSSdvnAdmin</verResp>
+                <notes type="DVN:VERSION_NOTE" subject="Version Note">Initial version</notes>
+                <notes type="DVN:ARCHIVE_NOTE" subject="Archive Note">Replaced by version 2</notes>
+                <notes type="DVN:ARCHIVE_DATE" subject="Archive Date">2013-09-20</notes>
+            </verStmt>
+            <biblCit format="DVN">Cynthia Fuchs Epstein, 1983, "Black Professional Women, 1969 ", http://hdl.handle.net/1902.1/00012 Murray Research Archive [Distributor] V1 [Version]</biblCit>
+            <holdings URI="http://dvn-4.hmdc.harvard.edu/dvn/study?globalId=hdl:1902.1/00012"/>
+        </citation>
+    </docDscr>
+    <stdyDscr>
+        <citation>
+            <titlStmt>
+                <titl>Black Professional Women, 1969 </titl>
+                <IDNo agency="handle">hdl:1902.1/00012</IDNo>
+                <IDNo>00012</IDNo>
+            </titlStmt>
+            <rspStmt>
+                <AuthEnty>Cynthia Fuchs Epstein</AuthEnty>
+            </rspStmt>
+            <prodStmt>
+                <producer>Cynthia Fuchs Epstein<ExtLink URI="http://www.asanet.org/page.ww?section=Presidents&amp;name=Cynthia+Fuchs+Epstein"/></producer>
+            </prodStmt>
+            <distStmt>
+                <distrbtr>Murray Research Archive<ExtLink URI="http://www.murray.harvard.edu"/>
+                    <ExtLink URI="http://murray.harvard.edu/files/murray/banner146x48.png" role="image"/>
+                </distrbtr>
+                <contact email="mra_support@help.hmdc.harvard.edu"></contact>
+                <depDate date="1983">1983</depDate>
+                <distDate date="1983">1983</distDate>
+            </distStmt>
+            <verStmt source="DVN">
+                <version date="2010-04-22" type="ARCHIVED">1</version>
+            </verStmt>
+        </citation>
+        <stdyInfo>
+            <subject>
+                <keyword>Achievement</keyword>
+                <keyword>African American</keyword>
+                <keyword>Women</keyword>
+                <keyword>Professional</keyword>
+                <topcClas>mra murraydiversity</topcClas>
+                <topcClas vocab="Sampsize" vocabURI="http://www.murray.harvard.edu/vocabulary">50 or fewer</topcClas>
+                <topcClas vocab="Gender" vocabURI="http://www.murray.harvard.edu/vocabulary">female</topcClas>
+                <topcClas vocab="Age" vocabURI="http://www.murray.harvard.edu/vocabulary">mixed</topcClas>
+                <topcClas vocab="Race" vocabURI="http://www.murray.harvard.edu/vocabulary">African American</topcClas>
+                <topcClas vocab="SES" vocabURI="http://www.murray.harvard.edu/vocabulary">middle</topcClas>
+                <topcClas vocab="Generations" vocabURI="http://www.murray.harvard.edu/vocabulary">1</topcClas>
+                <topcClas vocab="Follow-up permitted" vocabURI="http://www.murray.harvard.edu/vocabulary">yes</topcClas>
+                <topcClas vocab="Education" vocabURI="http://authorities.loc.gov/">Women and education</topcClas>
+                <topcClas vocabURI="http://authorities.loc.gov/">Work</topcClas>
+                <topcClas vocab="Family. Marriage. Women." vocabURI="http://authorities.loc.gov/">Women</topcClas>
+            </subject>
+            <abstract>The purpose of this study was to explore the special conditions which enable African American professional women to create a self-image and achievement value system, the problems attendant to traditional female roles, and the reinforcing components of the work situation. The study was also conducted in order to test the findings of a similar study the researcher did with White women lawyers, also archived at the Murray Center (see Related Studies below).&lt;br /></abstract>
+            <abstract>&lt;br />  In 1969, the researcher interviewed 35 African American women in the following professions: law, medicine, dentistry, university teaching, journalism, business, and social service administration. Nursing, social work, and teaching at other than the university level were excluded.&lt;br /></abstract>
+            <abstract>&lt;br />  A structured, open-ended interview was employed. The questions included nature of work, clients, disadvantages of being a woman, disadvantages of being African American, relationships at work, professional associations, community organizations, education, demographics, family life, income, and dual-career conflict.&lt;br /></abstract>
+            <abstract>&lt;br />  The Murray Archive holds additional analogue materials for this study: original record paper data for 35 women, including interviews and other descriptive materials. The Murray Archive also holds audiotaped interviews. If you would like to access these materials, please apply to use the data.</abstract>
+            <sumDscr>
+                <timePrd event="start" date="1969">1969</timePrd>
+                <collDate event="start" date="1969">1969</collDate>
+                <nation>United States</nation>
+                <anlyUnit>individuals</anlyUnit>
+                <dataKind>field study</dataKind>
+            </sumDscr>
+        </stdyInfo>
+        <method>
+            <dataColl>
+                <sampProc>quota sample</sampProc>
+                <collMode>interview</collMode>
+            </dataColl>
+        </method>
+        <dataAccs>
+            <setAvail>
+                <origArch>Henry A. Murray Research Archive, Institute for Quantitative Social Sciences, Harvard University</origArch>
+                <avlStatus>Available</avlStatus>
+            </setAvail>
+            <useStmt>
+                <specPerm>Submission of the following &lt;a href= "http://www.murray.harvard.edu/application"  target="_blank">Application For The Use Of Data&lt;/a> is required to access the data from this study.</specPerm>
+                <restrctn>I will use these data solely for the purposes stated in my application to use data, detailed in a written research proposal. I will honor all agreements and conditions made between the Contributor of the Data and the study participants, and between the Contributor of the Data and the Henry A. Murray Research Archive, Harvard University, as specified in the Memorandum of Agreement.</restrctn>
+                <contact>&lt;a href="mailto:mra@help.hmdc.harvard.edu">Manager of Operations&lt;/a>, the Henry A. Murray Research Archive, Institute for Quantitative Social Sciences, 1737 Cambridge St, Cambridge, MA 02138, USA.</contact>
+                <citReq>I will include a bibliographic citation acknowledging the use of these data in any publication or presentation in which these data are used. Such citations will appear in footnotes or in the reference section of any such manuscript. I understand the guideline in "How to Cite This Dataset" described in the Summary of this study.</citReq>
+                <deposReq>Murray Research Archive will list my publication and manuscripts on the Archive website when I submit a bibliographic citation or title of the manuscript, and indicate the Henry A. Murray Research Archive data used. Doing this will also help Henry A. Murray Research Archive to provide funding agencies with essential information about use of archival resources, to fulfill requirements of some memoranda of agreement, and to promote the broader exchange of information about research activities.</deposReq>
+                <conditions>The data are available without additional conditions other than those stated in the "Restrictions" Terms of Use above.</conditions>
+            </useStmt>
+            <notes level="dv" type="DVN:TOU" subject="Terms Of Use">&lt;div style="padding-left: 30px;">
+&lt;ul style="list-style-type: decimal;" >&lt;li>
+                The Murray Archive (the Distributor) has granted me a revocable license to use this dataset solely for the purposes of conducting research, and the Distributor may terminate this license at any time and for any reason.
+&lt;/li>
+&lt;li>
+                I will use the dataset solely for statistical analysis and reporting of aggregated information, and not for investigation of specific individuals or organizations, except when identification is authorized in writing by the Distributor.  
+&lt;/li>
+&lt;li>I will produce no links among the Distributor’s datasets or among the Distributor’s data and other datasets that could identify individuals or organizations.
+&lt;/li>
+&lt;li>I represent that neither I, nor anyone I know, has any prior knowledge of the possible identities of any study participants in any dataset that I am being licensed to use.  
+&lt;/li>
+&lt;li>
+                I will not knowingly divulge any information that could be used to identify individual participants in the study, nor will I attempt to identify or contact any study participant, and I agree to use any precautions necessary to prevent such identification.
+&lt;/li>
+&lt;li>
+                I will make no use of the identity of any person or establishment discovered inadvertently.  If I suspect that I might recognize or know a study participant, I will immediately inform the Distributor, and I will not use or retain a copy of data regarding that study participant.  If these measures to resolve an identity disclosure are not sufficient, the Distributor may terminate my use of the dataset.
+&lt;/li>
+&lt;li>
+                I will not reproduce the dataset except as is necessary for my scholarly purposes.  I will destroy the dataset upon the completion of my scholarly work with it.
+&lt;/li>
+&lt;li>
+                I will not share data from the dataset (in any form or by any means) with any third party, including other members of my research team, as I understand that all users of data must obtain the data directly from the Distributor.
+&lt;/li>
+&lt;li>
+                I will make appropriate acknowledgement of the contributor of the dataset as well as the Distributor in any manuscript or presentation (published or unpublished) using the citation standard documented here: &lt;a  href="http://thedata.org/citation"> http://thedata.org/citation&lt;/a>
+&lt;/li>
+&lt;li>
+                THE DISTRIBUTOR MAKES NO WARRANTIES, EXPRESS OR IMPLIED, BY OPERATION OF LAW OR OTHERWISE, REGARDING OR RELATING TO THE DATASET.  
+&lt;/li>
+&lt;/ul>
+&lt;/div></notes>
+            <notes level="dvn" type="DVN:TOU" subject="Terms Of Use">&lt;b>IQSS Dataverse Network Terms and Conditions&lt;/b>
+
+&lt;p>By downloading these Materials, I agree to the following:&lt;/p>
+
+&lt;ol>
+&lt;li>I will not use the Materials to
+&lt;ol type="a">
+&lt;li>obtain information that could directly or indirectly identify subjects.&lt;/li>
+&lt;li>produce links among the Distributor's datasets or among the Distributor's data and other datasets that could identify individuals or organizations.&lt;/li>
+&lt;li>obtain information about, or further contact with, subjects known to me except where the use and/or release of such identifying information has no potential for constituting an unwarranted invasion of privacy and/or breach of confidentiality.&lt;/li>
+&lt;/ol>
+&lt;/li>
+&lt;li>I agree not to download any Materials where prohibited by applicable law.&lt;/li>
+&lt;li>I agree not to use the Materials in any way prohibited by applicable law.&lt;/li>
+&lt;li>I agree that any books, articles, conference papers, theses, dissertations, reports, or other publications that I create which employ data reference the bibliographic citation accompanying this data. These citations include the data authors, data identifier, and other information accord with the Recommended Standard (&lt;strong>http://thedata.org/citation/standard&lt;/strong>) for social science data.&lt;/li>
+&lt;li>THE DISTRIBUTOR MAKES NO WARRANTIES, EXPRESS OR IMPLIED, BY OPERATION OF LAW OR OTHERWISE, REGARDING OR RELATING TO THE DATASET&lt;/li>
+&lt;/ol>
+            </notes>
+        </dataAccs>
+        <othrStdyMat>
+            <relStdy>Cynthia Fuchs Epstein, 1983, "Women in Law, 1965-1980", hdl:1902.1/00168 Murray Research Archive [Distributor]. &lt;a href="http://dvn.iq.harvard.edu/dvn/dv/mra/faces/study/StudyPage.jsp?studyId=441" target= "_new">study available here&lt;/a>
+            </relStdy>
+        </othrStdyMat>
+    </stdyDscr>
+    <otherMat level="study" URI="http://dvn-4.hmdc.harvard.edu/dvn/dv/mra/FileDownload/00012Epstein-Professional-Measures.pdf?fileId=8336">
+        <labl>00012Epstein-Professional-Measures.pdf</labl>
+        <txt>Collection of blank measures used in the study</txt>
+        <notes type="vdc:category">1. Documentation</notes>
+    </otherMat>
+    <otherMat level="study" URI="http://dvn-4.hmdc.harvard.edu/dvn/dv/mra/FileDownload/00012Epstein-Professional-StudyDescription.pdf?fileId=8345">
+        <labl>00012Epstein-Professional-StudyDescription.pdf</labl>
+        <txt>Overview: abstract, research methodology, publications, and other info.</txt>
+        <notes type="vdc:category">1. Documentation</notes>
+    </otherMat>
+    <otherMat level="study" URI="http://dvn-4.hmdc.harvard.edu/dvn/dv/mra/FileDownload/00012Epstein-Professional-MeasuresForm.pdf?fileId=8356">
+        <labl>00012Epstein-Professional-MeasuresForm.pdf</labl>
+        <txt>Usage guidelines relating to measures created by study investigators</txt>
+        <notes type="vdc:category">2. Supplemental Documentation</notes>
+    </otherMat>
+    <otherMat level="study" URI="http://dvn-4.hmdc.harvard.edu/dvn/dv/mra/FileDownload/00012Epstein-Professional-BoxCoverSheets.pdf?fileId=8351">
+        <labl>00012Epstein-Professional-BoxCoverSheets.pdf</labl>
+        <txt>Describes contents of each box of a paper data set</txt>
+        <notes type="vdc:category">2. Supplemental Documentation</notes>
+    </otherMat>
+    <otherMat level="study" URI="http://dvn-4.hmdc.harvard.edu/dvn/dv/mra/FileDownload/00012Epstein-Professional-MemoOfAgreement.pdf?fileId=8352">
+        <labl>00012Epstein-Professional-MemoOfAgreement.pdf</labl>
+        <txt>Legal agreement between data depositor and the Murray Archive</txt>
+        <notes type="vdc:category">3. Detailed Usage Terms</notes>
+    </otherMat>
+    <otherMat level="study" URI="http://dvn-4.hmdc.harvard.edu/dvn/dv/mra/FileDownload/RM2562+Epstein?fileId=8359">
+        <labl>RM2562 Epstein</labl>
+        <txt>Box cover sheet for DVD's of .wavs from audio originals</txt>
+        <notes type="vdc:category">5.Other Resources</notes>
+        <notes type="LOCKSS:CRAWLING" level="file" subject="LOCKSS Permission">restricted</notes>
+    </otherMat>
+</codeBook>

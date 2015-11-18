@@ -67,5 +67,18 @@ public class DatasetVersionTest {
         Collections.sort(actual, DatasetVersion.compareByVersion);
         assertEquals( expected, actual );
     }
+
+    @Test
+    public void testIsInReview() {
+        DatasetVersion draft = new DatasetVersion();
+        draft.setVersionState(DatasetVersion.VersionState.DRAFT);
+        draft.setInReview(true);
+        assertEquals(true, draft.isInReview());
+
+        DatasetVersion nonDraft = new DatasetVersion();
+        nonDraft.setVersionState(DatasetVersion.VersionState.RELEASED);
+        nonDraft.setInReview(true);
+        assertEquals(false, nonDraft.isInReview());
+    }
     
 }

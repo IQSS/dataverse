@@ -141,7 +141,7 @@ public class ManageGroupsPage implements java.io.Serializable {
                 JH.addMessage(FacesMessage.SEVERITY_FATAL, failMessage);
             }
         } else {
-            System.out.print("Selected group is null");
+            logger.info("Selected group is null");
         }
     }
 
@@ -356,14 +356,10 @@ public class ManageGroupsPage implements java.io.Serializable {
 
     public void saveExplicitGroup(ActionEvent ae) {
         ExplicitGroup eg = selectedGroup;
-            System.out.println("1111111111");
 
         if ( getSelectedGroupAddRoleAssignees() != null ) {
-            System.out.println("is this shit empty thos");
-
             try {
                 for ( RoleAssignee ra : getSelectedGroupAddRoleAssignees() ) {
-                    System.out.println("some stuff yo that's been added");
                     eg.add( ra );
                 }
             } catch ( GroupException ge ) {

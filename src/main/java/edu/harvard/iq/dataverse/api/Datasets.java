@@ -24,8 +24,13 @@ import edu.harvard.iq.dataverse.engine.command.impl.ListVersionsCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetTargetURLCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
+import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
+import edu.harvard.iq.dataverse.export.ddi.DdiExportUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
 import java.io.StringReader;
 import java.util.List;
 import java.util.Map;
@@ -41,7 +46,9 @@ import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 @Path("datasets")
@@ -57,6 +64,12 @@ public class Datasets extends AbstractApiBean {
     
     @EJB
     DOIEZIdServiceBean doiEZIdServiceBean;
+
+    @EJB
+    DDIExportServiceBean ddiExportService;
+
+    @EJB
+    SystemConfig systemConfig;
 
     /**
      * Used to consolidate the way we parse and handle dataset versions.
@@ -400,4 +413,53 @@ public class Datasets extends AbstractApiBean {
         }   
         return dataset;
     }
+
+    /**
+     * @todo Implement this for real as part of
+     * https://github.com/IQSS/dataverse/issues/2579
+     */
+    @GET
+    @Path("ddi")
+    @Produces({"application/xml", "application/json"})
+    public Response getDdi(@QueryParam("id") long id, @QueryParam("persistentId") String persistentId, @QueryParam("dto") boolean dto) {
+        boolean ddiExportEnabled = systemConfig.isDdiExportEnabled();
+        if (!ddiExportEnabled) {
+            return errorResponse(Response.Status.FORBIDDEN, "Disabled");
+        }
+        try {
+            User u = findUserOrDie();
+            if (!u.isSuperuser()) {
+                return errorResponse(Response.Status.FORBIDDEN, "Not a superuser");
+            }
+
+            logger.fine("looking up " + persistentId);
+            Dataset dataset = datasetService.findByGlobalId(persistentId);
+            if (dataset == null) {
+                return errorResponse(Response.Status.NOT_FOUND, "A dataset with the persistentId " + persistentId + " could not be found.");
+            }
+
+            String xml = "<codeBook>XML_BEING_COOKED</codeBook>";
+            if (dto) {
+                /**
+                 * @todo We can only assume that this should not be hard-coded
+                 * to getLatestVersion
+                 */
+                final JsonObjectBuilder datasetAsJson = jsonAsDatasetDto(dataset.getLatestVersion());
+                xml = DdiExportUtil.datasetDtoAsJson2ddi(datasetAsJson.build().toString());
+            } else {
+                OutputStream outputStream = new ByteArrayOutputStream();
+                ddiExportService.exportDataset(dataset.getId(), outputStream, null, null);
+                xml = outputStream.toString();
+            }
+            logger.fine("xml to return: " + xml);
+
+            return Response.ok()
+                    .entity(xml)
+                    .type(MediaType.APPLICATION_XML).
+                    build();
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
+
 }

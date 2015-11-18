@@ -1,0 +1,59 @@
+#!/bin/sh
+# Test scenario: User "spruce" has marked "trees.png" as restricted*
+# and has given "finch" the File Downloader role on "trees.png" at the file level
+# but has not yet published the dataset.
+#
+# * Marking files as restricted can only be done through the GUI: https://github.com/IQSS/dataverse/issues/2497
+#
+# Here is where "trees.png" lives:
+# * Root Dataverse (entityId:1)
+#    * Trees Dataverse (entityId:7)
+#       * Spruce Dataverse (entityId:8)
+#          * Spruce Goose (entityId:10)
+#             * trees.png (entityId:12)
+#
+# Unknowns:
+# - What is the behavior if you give the File Downloader role at the dataset level?
+# - What is the behavior if you give the File Downloader role at the dataverse level?
+
+SPRUCE_STORY="spruce uploaded the file in the first place and should be able to download it."
+SPARROW_STORY="sparrow has no special access and should not be able to download the file because a) it isn't published and b) it's restricted"
+FINCH_STORY="finch has the DownloadFile permission but should not be able to download the file because the dataset is unpublished"
+
+FORBIDDEN=403
+. scripts/search/export-keys
+
+API_TOKEN=$SPRUCEKEY
+echo "sparrow is attempting to download the file (should be forbidden)"
+# Can't use header: https://github.com/IQSS/dataverse/issues/2662
+# curl -H "X-Dataverse-key:$API_TOKEN" http://localhost:8080/api/access/datafile/12 
+SPRUCE_OUT=$(curl --write-out %{http_code} --silent --output /dev/null http://localhost:8080/api/access/datafile/12?key=$API_TOKEN )
+if [ $SPRUCE_OUT -ne $FORBIDDEN ]; then
+  echo "Good. $SPRUCE_STORY"
+else
+  echo "Bug. $SPRUCE_STORY"
+fi
+
+echo "---"
+
+# Yes, all this could be refactored to make it DRY.
+API_TOKEN=$SPARROWKEY
+echo "sparrow is attempting to download the file (should be forbidden)"
+SPARROW_OUT=$(curl --write-out %{http_code} --silent --output /dev/null http://localhost:8080/api/access/datafile/12?key=$API_TOKEN )
+if [ $SPARROW_OUT -eq $FORBIDDEN ]; then
+  echo "Good. $SPARROW_STORY"
+else
+  echo "Bug. $SPARROW_STORY"
+fi
+
+echo "---"
+
+API_TOKEN=$FINCHKEY
+echo "finch is attempting to download the file (should be forbidden)"
+FINCH_OUT=$(curl --write-out %{http_code} --silent --output /dev/null http://localhost:8080/api/access/datafile/12?key=$API_TOKEN )
+#curl -s -i http://localhost:8080/api/access/datafile/12?key=$API_TOKEN | head | grep ^Content-Type
+if [ $FINCH_OUT -eq $FORBIDDEN ]; then
+  echo "Good. $FINCH_STORY"
+else
+  echo "Bug. $FINCH_STORY"
+fi

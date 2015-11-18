@@ -96,6 +96,15 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
         }
 
         if (theDataset.getPublicationDate() == null) {
+            //Before setting dataset to released send notifications to users with download file
+            List<RoleAssignment> ras = ctxt.roles().directRoleAssignments(theDataset);
+            for (RoleAssignment ra : ras) {
+                if (ra.getRole().permissions().contains(Permission.DownloadFile)) {
+                    for (AuthenticatedUser au : ctxt.roleAssignees().getExplicitUsers(ctxt.roleAssignees().getRoleAssignee(ra.getAssigneeIdentifier()))) {
+                        ctxt.notifications().sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.ASSIGNROLE, theDataset.getId());
+                    }
+                }
+            }
             theDataset.setPublicationDate(new Timestamp(new Date().getTime()));
             theDataset.setReleaseUser((AuthenticatedUser) getUser());
             if (!minorRelease) {
@@ -114,11 +123,14 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
                 theDataset.getEditVersion().setMinorVersionNumber(new Long(theDataset.getMinorVersionNumber() + 1));
             }
         }
-        
+
+
         Timestamp updateTime = new Timestamp(new Date().getTime());
         theDataset.getEditVersion().setReleaseTime(updateTime);
         theDataset.getEditVersion().setLastUpdateTime(updateTime);
         theDataset.setModificationTime(updateTime);
+        //set inReview to False because it is now published
+        theDataset.getEditVersion().setInReview(false);
         theDataset.getEditVersion().setVersionState(DatasetVersion.VersionState.RELEASED);
 
         for (DataFile dataFile : theDataset.getFiles()) {
@@ -142,7 +154,7 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
                 dataFile.setRestricted(dataFile.getFileMetadata().isRestricted());
             }
         }
-        
+
         theDataset.setFileAccessRequest(theDataset.getLatestVersion().getTermsOfUseAndAccess().isFileAccessRequest());
         Dataset savedDataset = ctxt.em().merge(theDataset);
 

@@ -20,6 +20,10 @@ public class UserServiceBean {
     
     @EJB IndexServiceBean indexService;
 
+    public AuthenticatedUser find(Object pk) {
+        return (AuthenticatedUser) em.find(AuthenticatedUser.class, pk);
+    }    
+
     public AuthenticatedUser save( AuthenticatedUser user ) {
         if ( user.getId() == null ) {
             em.persist(this);

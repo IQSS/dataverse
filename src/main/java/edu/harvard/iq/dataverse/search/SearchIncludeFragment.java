@@ -12,8 +12,8 @@ import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.SettingsWrapper;
+import edu.harvard.iq.dataverse.authorization.Permission;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -45,12 +45,10 @@ public class SearchIncludeFragment implements java.io.Serializable {
     DataFileServiceBean dataFileService;
     @EJB
     PermissionServiceBean permissionService;
-    @EJB
-    SettingsServiceBean settingsService;
-    @EJB
-    SystemConfig systemConfig;
     @Inject
     DataverseSession session;
+    @Inject
+    SettingsWrapper settingsWrapper;
 
     private String browseModeString = "browse";
     private String searchModeString = "search";
@@ -84,8 +82,8 @@ public class SearchIncludeFragment implements java.io.Serializable {
     private String searchFieldRelevance = SearchFields.RELEVANCE;
 //    private String searchFieldReleaseDate = SearchFields.RELEASE_DATE_YYYY;
     private String searchFieldReleaseOrCreateDate = SearchFields.RELEASE_OR_CREATE_DATE;
-    final private String ASCENDING = "asc";
-    final private String DESCENDING = "desc";
+    final private String ASCENDING = SortOrder.asc.toString();
+    final private String DESCENDING = SortOrder.desc.toString();
     private String typeFilterQuery;
     private Long facetCountDataverses = 0L;
     private Long facetCountDatasets = 0L;
@@ -93,7 +91,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
     Map<String, Long> previewCountbyType = new HashMap<>();
     private SolrQueryResponse solrQueryResponseAllTypes;
     private String sortField;
-    private String sortOrder;
+    private SortOrder sortOrder;
     private String currentSort;
     private String currentSortFriendly;
     private int page = 1;
@@ -174,7 +172,12 @@ public class SearchIncludeFragment implements java.io.Serializable {
         dataverseRedirectPage = StringUtils.isBlank(dataverseRedirectPage) ? "dataverse.xhtml" : dataverseRedirectPage;
         String optionalDataverseScope = "&alias=" + dataverse.getAlias();
 
-        return dataverseRedirectPage + "?faces-redirect=true&q=" + query + optionalDataverseScope;
+        String qParam = "";
+        if (query != null) {
+            qParam = "&q=" + query;
+        }
+
+        return dataverseRedirectPage + "?faces-redirect=true&q=" + qParam + optionalDataverseScope;
 
     }
 
@@ -201,7 +204,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 sortField = searchFieldReleaseOrCreateDate;
             }
             if (sortOrder == null) {
-                sortOrder = DESCENDING;
+                sortOrder = SortOrder.desc;
             }
             if (selectedTypesString == null || selectedTypesString.isEmpty()) {
                 selectedTypesString = "dataverses:datasets";
@@ -212,7 +215,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 sortField = searchFieldRelevance;
             }
             if (sortOrder == null) {
-                sortOrder = DESCENDING;
+                sortOrder = SortOrder.desc;
             }
             if (selectedTypesString == null || selectedTypesString.isEmpty()) {
                 selectedTypesString = "dataverses:datasets:files";
@@ -287,8 +290,8 @@ public class SearchIncludeFragment implements java.io.Serializable {
              * https://github.com/IQSS/dataverse/issues/84
              */
             int numRows = 10;
-            solrQueryResponse = searchService.search(session.getUser(), dataverse, queryToPassToSolr, filterQueriesFinal, sortField, sortOrder, paginationStart, onlyDataRelatedToMe, numRows);
-            solrQueryResponseAllTypes = searchService.search(session.getUser(), dataverse, queryToPassToSolr, filterQueriesFinalAllTypes, sortField, sortOrder, paginationStart, onlyDataRelatedToMe, numRows);
+            solrQueryResponse = searchService.search(session.getUser(), dataverse, queryToPassToSolr, filterQueriesFinal, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows);
+            solrQueryResponseAllTypes = searchService.search(session.getUser(), dataverse, queryToPassToSolr, filterQueriesFinalAllTypes, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows);
         } catch (SearchException ex) {
             Throwable cause = ex;
             StringBuilder sb = new StringBuilder();
@@ -807,16 +810,38 @@ public class SearchIncludeFragment implements java.io.Serializable {
     }
 
     public String getSortOrder() {
-        return sortOrder;
+        if (sortOrder != null) {
+            return sortOrder.toString();
+        } else {
+            return null;
+        }
     }
 
-    public void setSortOrder(String sortOrder) {
-        this.sortOrder = sortOrder;
+    /**
+     * Allow only valid values to be set.
+     *
+     * Rather than passing in a String and converting it to an enum in this
+     * method we could write a converter:
+     * http://stackoverflow.com/questions/8609378/jsf-2-0-view-parameters-to-pass-objects
+     */
+    public void setSortOrder(String sortOrderSupplied) {
+        if (sortOrderSupplied != null) {
+            if (sortOrderSupplied.equals(SortOrder.asc.toString())) {
+                this.sortOrder = SortOrder.asc;
+            }
+            if (sortOrderSupplied.equals(SortOrder.desc.toString())) {
+                this.sortOrder = SortOrder.desc;
+            }
+        }
     }
 
+    /**
+     * @todo this method doesn't seem to be in use and can probably be deleted.
+     */
+    @Deprecated
     public String getCurrentSortFriendly() {
         String friendlySortField = sortField;
-        String friendlySortOrder = sortOrder;
+        String friendlySortOrder = sortOrder.toString();
         if (sortField.equals(SearchFields.NAME_SORT)) {
             friendlySortField = "Name";
             if (sortOrder.equals(ASCENDING)) {
@@ -902,7 +927,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
 
     public boolean isDebug() {
         return (debug && session.getUser().isSuperuser())
-                || systemConfig.isDebugEnabled();
+                || settingsWrapper.isTrueForKey(":Debug", false);
     }
 
     public void setDebug(boolean debug) {
@@ -1109,7 +1134,9 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 result.setDisplayImage(datasetService.isDatasetCardImageAvailable(datasetVersionService.find(result.getDatasetVersionId()), session.getUser()));
                 valueSet = true;
             } else if (result.getType().equals("files") && result.getEntity() instanceof DataFile) {
-                result.setDisplayImage(dataFileService.isThumbnailAvailable((DataFile) result.getEntity(), session.getUser()));
+                // TODO: 
+                // use permissionsWrapper?  -- L.A. 4.2.1
+                result.setDisplayImage(dataFileService.isThumbnailAvailable((DataFile) result.getEntity()) && permissionService.userOn(this.session.getUser(), (DataFile) result.getEntity()).has(Permission.DownloadFile));
                 valueSet = true;
             }
 
@@ -1118,4 +1145,9 @@ public class SearchIncludeFragment implements java.io.Serializable {
             }
         }
     }
+
+    public enum SortOrder {
+        asc, desc
+    };
+
 }

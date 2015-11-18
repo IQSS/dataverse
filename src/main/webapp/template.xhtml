@@ -60,8 +60,12 @@
                             </p:tab>
                                 <p:tab id="termsTab" title="#{bundle['file.dataFilesTab.terms.header']}"
                                    rendered="#{empty TemplatePage.editMode or TemplatePage.editMode == 'LICENSE' or TemplatePage.editMode == 'LICENSEADD'}}">
-                                <ui:include src="dataset-license-terms.xhtml"></ui:include>
-                            </p:tab>
+                                    <ui:include src="dataset-license-terms.xhtml" >
+                                        <ui:param name="editMode" value="#{!empty TemplatePage.editMode ? 'LICENSE': ''}"/>
+                                        <ui:param name="termsOfUseAndAccess" value="#{TemplatePage.template.termsOfUseAndAccess}"/>
+                                        <ui:param name="datasetPage" value="false"/>               
+                                    </ui:include>
+                                </p:tab>                           
                         </p:tabView>
                     </ui:fragment>
                     <!-- Tabs -->

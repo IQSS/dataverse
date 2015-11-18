@@ -40,7 +40,7 @@
 
                     <!-- Create/Save Dataset Button Panel -->
                     <div class="button-block">
-                        <p:commandButton tabindex="1000" id="save" value="#{bundle.saveChanges}" onclick="checkNewlyRestricted();" />
+                        <p:commandButton tabindex="1000" id="save" value="#{bundle.saveChanges}" onclick="checkNewlyRestricted();blockFileForm.show();" />
                         <p:commandButton tabindex="1000" id="cancel" value="#{bundle.cancel}" action="#{EditDatafilesPage.cancel}" process="@this" update="@form" oncomplete="javascript:post_cancel_edit_files_or_metadata()">
                         </p:commandButton>
                         <p:commandButton value="Direct" id="datasetSave"
@@ -52,6 +52,8 @@
                     <!-- END: Create/Save Dataset Button Panel -->
 
                 </h:form>
+                
+                <p:blockUI block="datasetForm" widgetVar="blockFileForm"/>
 
             </ui:define>
         </ui:composition>

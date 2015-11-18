@@ -29,7 +29,7 @@
         <p:commandButton value="Direct" id="compareVersions"
                          style="display:none"
                          update=":datasetForm"
-                         oncomplete="detailsBlocks.show();post_differences();"
+                         oncomplete="PF('detailsBlocks').show();post_differences();"
                          actionListener="#{DatasetPage.compareVersionDifferences()}">
         </p:commandButton>
     </div>
@@ -106,7 +106,7 @@
             </ui:fragment>
             <p:commandLink rendered="#{(!empty(versionTab.defaultVersionDifference)) and DatasetPage.versionTabListForPostLoad.size() > (rowNum + 1)}"
                            actionListener="#{DatasetPage.updateVersionDifferences(versionTab, null)}"
-                           oncomplete="detailsBlocks.show();post_differences();"
+                           oncomplete="PF('detailsBlocks').show();post_differences();"
                            update=":datasetForm"
                            value="#{bundle['file.dataFilesTab.versions.viewDetails.btn']}"></p:commandLink>
         </p:column><!-- end: description column -->        

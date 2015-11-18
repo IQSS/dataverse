@@ -235,7 +235,7 @@ public class DatasetVersionUI implements Serializable {
 
 
     public String getRelPublicationCitation() {
-        if (!this.datasetRelPublications.isEmpty()) {
+        if (this.datasetRelPublications != null && !this.datasetRelPublications.isEmpty()) {
             return this.getDatasetRelPublications().get(0).getText();
         } else {
             return "";

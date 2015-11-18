@@ -25,3 +25,12 @@ specialpermissions, studycompletion, termsofaccess, termsofuse
 update datasetversion set termsofuseandaccess_id = id;
 
 SELECT setval(pg_get_serial_sequence('termsofuseandaccess', 'id'), coalesce(max(id),0) + 1, false) FROM datasetversion;
+
+/*-------------------------------------------
+Clean up bad data where datasets in review 
+did NOT have their flags reset
+on publish
+*/-------------------------------------------
+
+UPDATE datasetversion SET inreview = false where inreview = true
+and versionstate = 'RELEASED';

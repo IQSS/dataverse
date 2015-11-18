@@ -204,7 +204,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                     boolean useChunkedTransfer = false; 
                     //if ((contentSize = getFileSize(di, accessObject.getVarHeader())) > 0) {
                     if ((contentSize = getContentSize(accessObject)) > 0) {
-                        logger.info("Content size (retrieved from the AccessObject): "+contentSize);
+                        logger.fine("Content size (retrieved from the AccessObject): "+contentSize);
                         httpHeaders.add("Content-Length", contentSize); 
                     } else {
                         //httpHeaders.add("Transfer-encoding", "chunked");

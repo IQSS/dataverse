@@ -104,7 +104,7 @@ Adding a New Dataset
    You can also upload your files directly from your Dropbox. **Tip:** You can drag and drop or select multiple files at a time from your desktop,
    directly into the upload widget. Your files will appear below the "Select Files to Add" button where you can add a
    description and tags (via the "Edit Tag" button) for each file. Additionally, an MD5 checksum will be added for each file. If you upload a tabular file a :ref:`Universal Numerical Fingerprint (UNF) <unf>` will be added to this file.
-#. Click the "Add Dataset" button when you are done. Your unpublished dataset is now created. 
+#. Click the "Save Dataset" button when you are done. Your unpublished dataset is now created. 
 
 Note 1: You can add additional metadata once you have completed the initial dataset creation by going to Edit Dataset > Metadata. 
 
@@ -118,28 +118,27 @@ We currently only support the following HTML tags for any of our textbox meatdat
 Edit Dataset
 ==================
 
-Go to your dataset page and click on the "Edit Dataset" button. There, depending on your level of permissions for this dataset,
-you will have the following options:
+Go to the dataset you would like to edit where you will see the listing of files. Select the files you would like to edit by using either the Select All checkbox or individually selecting files. Next, click on the Edit button above the files and select if you would like to:
 
-- Files (Upload or Edit Data): to add or edit files in this dataset.
-- Metadata: to add/edit metadata including additional metadata than was not previously available during Dataset Creation.
-- Terms: to view or modify the Waiver (if using CC0), Terms of Use, Terms of Access and Guestbook of this dataset.
-- Permissions: to view or modify the permissions and roles of this dataset and for individual files within.
-- Delete Dataset (only available before your Dataset is published)
-- Deaccession Dataset (only when your Dataset is published, see below)
+- Delete the selected files
+- Edit the file metadata (file name, description) for the selected files
+- Restrict the selected files
+- Unrestrict the selected files (only if the selected files are restricted)
+- Add tags to the selected files
 
-You can also directly select the Files, Metadata, Terms or Versions tabs found below the dataset summary information
-to specifically edit any of those parts of your dataset.
+All of these actions, besides editing file metadata, will happen within this page and not bring you to another page. If you restrict files, you will also be asked to fill out the Terms of Access for the files. If Terms of Access already exist, you will be asked to confirm them.
+
+Upload New Files
+===================
+
+To upload new files to a dataset, go the dataset you want to update and click on the Upload Files Button in the files tab. From there you will be brought to the Upload page for the dataset. Once you have uploaded files, you will be able to edit the file metadata, restrict, add tags, or delete them before saving.
 
 .. _license-terms:
 
 Terms
 =======================
 
-In the Terms tab, which can also be found by clicking on the Edit dropdown button of a Dataset, you can setup how users can use your data 
-once they have downloaded it (CC0 waiver or custom Terms of Use), how they can access your data if you have files that 
-are restricted (terms of access), and enable a Guestbook for your dataset so that you can track who is using your data and for
-what purposes. These are explained in further detail below:
+In the Terms tab, which can also be found by clicking on the Edit dropdown button of a Dataset, you can setup how users can use your data once they have downloaded it (CC0 waiver or custom Terms of Use), how they can access your data if you have files that are restricted (terms of access), and enable a Guestbook for your dataset so that you can track who is using your data and for what purposes. These are explained in further detail below:
 
 CC0 Waiver + Dataset Terms of Use 
 ---------------------------------------------------------------

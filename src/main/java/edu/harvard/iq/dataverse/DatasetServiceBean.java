@@ -6,6 +6,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
@@ -60,6 +61,9 @@ public class DatasetServiceBean implements java.io.Serializable {
     
     @EJB
     DataFileServiceBean fileService; 
+    
+    @EJB
+    PermissionServiceBean permissionService;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -125,12 +129,14 @@ public class DatasetServiceBean implements java.io.Serializable {
         int index2 = globalId.indexOf(separator, index1 + 1);
         int index3 = 0;
         if (index1 == -1) {            
-            throw new EJBException("Error parsing identifier: " + globalId + ". ':' not found in string");
+            logger.info("Error parsing identifier: " + globalId + ". ':' not found in string");
+            return null;
         } else {
             protocol = globalId.substring(0, index1);
         }
         if (index2 == -1 ) {
-            throw new EJBException("Error parsing identifier: " + globalId + ". Second separator not found in string");
+            logger.info("Error parsing identifier: " + globalId + ". Second separator not found in string");
+            return null;
         } else {
             if (index2 != -1) {
                 authority = globalId.substring(index1 + 1, index2);
@@ -444,6 +450,46 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
     }
     
+    /*
+    getTitleFromLatestVersion methods use native query to return a dataset title
+    
+        There are two versions:
+     1) The version with datasetId param only will return the title regardless of version state
+     2)The version with the param 'includeDraft' boolean  will return the most recently published title if the param is set to false
+    If no Title found return empty string - protects against calling with
+    include draft = false with no published version
+    */
+    
+    public String getTitleFromLatestVersion(Long datasetId){
+        return getTitleFromLatestVersion(datasetId, true);
+    }
+    
+    public String getTitleFromLatestVersion(Long datasetId, boolean includeDraft){
+
+        String whereDraft = "";
+        //This clause will exclude draft versions from the select
+        if (!includeDraft) {
+            whereDraft = " and v.versionstate !='DRAFT' ";
+        }
+        
+        try {
+            return (String) em.createNativeQuery("select dfv.value  from dataset d "
+                + " join datasetversion v on d.id = v.dataset_id "
+                + " join datasetfield df on v.id = df.datasetversion_id "
+                + " join datasetfieldvalue dfv on df.id = dfv.datasetfield_id "
+                + " join datasetfieldtype dft on df.datasetfieldtype_id  = dft.id "
+                + " where dft.name = '" + DatasetFieldConstant.title + "' and  v.dataset_id =" + datasetId
+                + whereDraft
+                + " order by v.versionnumber desc, v.minorVersionNumber desc limit 1 "
+                + ";").getSingleResult();
+
+        } catch (Exception ex) {
+            logger.info("exception trying to get title from latest version: " + ex);
+            return "";
+        }
+
+    }
+    
     
     public boolean isDatasetCardImageAvailable(DatasetVersion datasetVersion, User user) {        
         if (datasetVersion == null) {
@@ -467,7 +513,13 @@ public class DatasetServiceBean implements java.io.Serializable {
         for (FileMetadata fileMetadata : fileMetadatas) {
             DataFile dataFile = fileMetadata.getDataFile();
             
-            if (fileService.isThumbnailAvailable(dataFile, user)) {
+            // TODO: use permissionsWrapper here - ? 
+            // (we are looking up these download permissions on individual files, 
+            // true, and those are unique... but the wrapper may be able to save 
+            // us some queries when it determines the download permission on the
+            // dataset as a whole? -- L.A. 4.2.1
+            
+            if (fileService.isThumbnailAvailable(dataFile) && permissionService.userOn(user, dataFile).has(Permission.DownloadFile)) { //, user)) {
                 return true;
             }
  

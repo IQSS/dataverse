@@ -22,7 +22,7 @@ List the dataverses
 ```python
 from dataverse_api_link import DataverseAPILink
 
-server_with_api = 'dataverse-demo.iq.harvard.edu'
+server_with_api = 'demo.dataverse.org'
 dal = DataverseAPILink(server_with_api, use_https=False, apikey='admin')
 json_text = dal.list_dataverses()
 print json_text

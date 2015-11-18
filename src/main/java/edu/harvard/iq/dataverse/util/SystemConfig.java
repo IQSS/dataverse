@@ -379,10 +379,18 @@ public class SystemConfig {
         return apiTermsOfUse;
     }
 
+    // TODO: 
+    // remove this method!
+    // pages should be using settingsWrapper.get(":ApplicationPrivacyPolicyUrl") instead. -- 4.2.1
     public String getApplicationPrivacyPolicyUrl() {
         String saneDefaultForPrivacyPolicyUrl = null;
         String appPrivacyPolicyUrl = settingsService.getValueForKey(SettingsServiceBean.Key.ApplicationPrivacyPolicyUrl, saneDefaultForPrivacyPolicyUrl);
         return appPrivacyPolicyUrl;
+    }
+
+    public boolean isDdiExportEnabled() {
+        boolean safeDefaultIfKeyNotFound = false;
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.DdiExportEnabled, safeDefaultIfKeyNotFound);
     }
 
     public boolean isShibEnabled() {
@@ -395,9 +403,17 @@ public class SystemConfig {
         return settingsService.isTrueForKey(SettingsServiceBean.Key.ShibUseHeaders, safeDefaultIfKeyNotFound);
     }
 
+    // TODO: 
+    // remove these method! 
+    // pages should be using settingsWrapper.isTrueForKey(":Debug", false) instead. -- 4.2.1
     public boolean isDebugEnabled() {
         boolean safeDefaultIfKeyNotFound = false;
         return settingsService.isTrueForKey(SettingsServiceBean.Key.Debug, safeDefaultIfKeyNotFound);
+    }
+
+    public boolean myDataDoesNotUsePermissionDocs() {
+        boolean safeDefaultIfKeyNotFound = false;
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.MyDataDoesNotUseSolrPermissionDocs, safeDefaultIfKeyNotFound);
     }
 
     public boolean isFilesOnDatasetPageFromSolr() {

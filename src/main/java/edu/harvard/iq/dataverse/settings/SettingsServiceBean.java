@@ -44,7 +44,16 @@ public class SettingsServiceBean {
         * Domain name specific code for Google Analytics
         */
         GoogleAnalyticsCode,
-        
+
+        /**
+         * Revert to MyData *not* using the Solr "permission documents" which
+         * was the behavior in Dataverse 4.2. Starting to use Solr permission
+         * documents in MyData has been introduced in 4.2.1 as a fix for
+         * https://github.com/IQSS/dataverse/issues/2649 where the "File
+         * Downloader" role was exposing cards for unpublished datasets when it
+         * shouldn't.
+         */
+        MyDataDoesNotUseSolrPermissionDocs,
         /**
          * Experimental: Allow non-public search with a key/token using the
          * Search API. See also https://github.com/IQSS/dataverse/issues/1299
@@ -114,6 +123,10 @@ public class SettingsServiceBean {
         SolrHostColonPort,
         /** Key for limiting the number of bytes uploaded via the Data Deposit API, UI (web site and . */
         MaxFileUploadSizeInBytes,
+        /**
+         * Experimental: Key for if DDI export is enabled or disabled.
+         */
+        DdiExportEnabled,
         /** Key for if Shibboleth is enabled or disabled. */
         ShibEnabled,
         /** Key for if Shibboleth is enabled or disabled. */

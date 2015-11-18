@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<codeBook xmlns="http://www.icpsr.umich.edu/DDI" version="2.0">
+  <stdyDscr>
+    <citation>
+      <titlStmt>
+        <titl>Spruce Goose</titl>
+        <IDNo agency="doi">10.5072/FK2/OZDVMO</IDNo>
+      </titlStmt>
+      <rspStmt>
+        <AuthEnty>Spruce, Sabrina</AuthEnty>
+      </rspStmt>
+      <biblCit>Spruce, Sabrina, 2015, "Spruce Goose", http://dx.doi.org/10.5072/FK2/OZDVMO,  Root Dataverse,  V1</biblCit>
+    </citation>
+  </stdyDscr>
+  <dataDscr/>
+  <otherMat ID="f12">
+    <labl>trees.png</labl>
+    <txt/>
+  </otherMat>
+</codeBook>
