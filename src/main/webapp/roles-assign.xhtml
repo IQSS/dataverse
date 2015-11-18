@@ -51,7 +51,7 @@
                                                   value="#{managePermissionsPage.selectedRoleId}"
                                                   required="#{param['DO_ASSIGN_VALIDATION']}"
                                                   requiredMessage="#{bundle['dataverse.permissions.usersOrGroups.assignDialog.role.requiredMsg']}">
-                                    <f:selectItems value="#{managePermissionsPage.availableRoles}" var="role" itemValue="#{role.id}" itemLabel="#{role.name}"/>
+                                    <f:selectItems value="#{managePermissionsPage.availableRoles}" var="role" itemValue="#{role.id}" itemLabel="#{(bundle [role.name].startsWith("???")) ? role.name : bundle [role.name]}"/> <!-- Hack to translate values from the database -->
                                     <p:ajax update="roleDetails" process="@this"/>
                                 </p:selectOneRadio>
                                 <p:message for="assignRoleRadios" display="text"/>
@@ -61,7 +61,7 @@
                             <p:fragment id="roleDetails">
                                 <div id="assignRolePermissionLabels">
                                     <p class="help-block">#{bundle['dataverse.permissions.usersOrGroups.assignDialog.role.description']}</p>
-                                    <span class="highlightBold">#{managePermissionsPage.assignedRole.name}</span>
+                                    <span class="highlightBold">#{(bundle[managePermissionsPage.assignedRole.name].startsWith("???")) ? managePermissionsPage.assignedRole.name : bundle[managePermissionsPage.assignedRole.name]}</span>  <!-- Hack to translate values from the database -->
                                     <div class="margin-bottom">
                                         <ui:repeat value="#{managePermissionsPage.assignedRole.permissions().toArray()}" var="prm">
                                             <span class="label label-default">#{prm}</span>

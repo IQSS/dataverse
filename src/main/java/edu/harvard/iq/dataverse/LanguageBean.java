@@ -10,15 +10,22 @@ import javax.faces.context.FacesContext;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+import javax.faces.component.UIViewRoot;
  
 @ManagedBean(name="language")
 @SessionScoped
 public class LanguageBean implements Serializable{
-	private static final Logger logger = Logger.getLogger(LanguageBean.class.getName());
-	private static final long serialVersionUID = 1L;
-	
-	FacesContext context = FacesContext.getCurrentInstance();
-	private Locale locale = context.getViewRoot().getLocale();
+    private static final Logger logger = Logger.getLogger(LanguageBean.class.getName());
+    private static final long serialVersionUID = 1L;
+
+    static FacesContext context = FacesContext.getCurrentInstance();
+    static private Locale locale;
+    static {
+        if (context== null)
+          locale= new Locale ("en_US");
+        else
+          locale= context.getViewRoot().getLocale();
+    }
 	
     public Locale getLocale() {
         return locale;

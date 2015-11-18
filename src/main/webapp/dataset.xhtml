@@ -801,7 +801,7 @@
                                 <div class="col-sm-8">
                                     <p:selectCheckboxMenu id="fileTagsMenuDS" styleClass="form-control"
                                                           value="#{DatasetPage.selectedTags}" label="#{bundle.select}">
-                                        <f:selectItems value="#{DatasetPage.dataset.categoriesByName}"/>
+                                        <f:selectItems value="#{bundle[DatasetPage.dataset.categoriesByName]}"/>
                                     </p:selectCheckboxMenu>
                                     <p:message for="fileTagsMenuDS" display="text" />
                                 </div>
@@ -1083,7 +1083,7 @@
                         </div>
                     </p:dialog>
 
-                   <p:dialog id="accessPopup" header="File Restrictions" widgetVar="accessPopup" modal="true">
+                   <p:dialog id="accessPopup" header="#{bundle['file.dataFilesTab.fileRestrictions']}" widgetVar="accessPopup" modal="true">
                        <ui:fragment rendered="#{DatasetPage.editMode == 'CREATE' or empty DatasetPage.editMode }">
                             <div class="form-horizontal">
                                 <div class="form-group">

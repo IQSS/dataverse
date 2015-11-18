@@ -56,7 +56,7 @@
                             <ui:repeat id="credentialsContainer2" value="#{LoginPage.filledCredentials}" var="fc">
                                 <div class="form-group">
                                     <label class="col-sm-3 control-label" for="credValue">
-                                        #{fc.credential.title}
+                                        #{bundle[fc.credential.title]}
                                     </label>
                                     <div class="col-sm-8">
                                         <h:inputText rendered="#{not fc.credential.secret}" value="#{fc.value}" id="credValue" styleClass="form-control"/>

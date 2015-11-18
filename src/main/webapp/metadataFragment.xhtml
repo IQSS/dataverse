@@ -45,7 +45,7 @@
                             <div class="form-group">
                                 <label for="metadata_#{dsf.datasetFieldType.name}" class="col-sm-3 control-label">
                                     <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{dsf.datasetFieldType.description}">
-                                        #{dsf.datasetFieldType.title}
+                                         #{(bundle[dsf.datasetFieldType.title].startsWith("???")) ? dsf.datasetFieldType.title : bundle[dsf.datasetFieldType.title]} <!-- Hack to translate values from the database -->
                                     </span>
                                 </label>
                                 <!-- Primitive datasetFields -->
@@ -94,7 +94,7 @@
                                                                  or (!datasetPage) }">                
 
                     <div data-toggle="collapse" data-target="#panelCollapse#{block.index}" class="panel-heading text-info">
-                        #{metadataBlockVal.key.displayName} <span class="glyphicon #{block.first?'glyphicon-chevron-up':'glyphicon-chevron-down'}"/>
+                        #{(bundle[metadataBlockVal.key.displayName].startsWith("???")) ? metadataBlockVal.key.displayName : bundle[metadataBlockVal.key.displayName]} <span class="glyphicon #{block.first?'glyphicon-chevron-up':'glyphicon-chevron-down'}"/> <!-- Hack to translate values from the database -->
                     </div>
                     <div id="panelCollapse#{block.index}" class="collapse #{block.first || editMode == 'CREATE'?'in':''}">
                         <div class="panel-body">
@@ -106,7 +106,7 @@
                                     <div class="form-group">
                                         <label for="metadata_#{dsf.datasetFieldType.name}" class="col-sm-3 control-label">
                                             <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{dsf.datasetFieldType.description}">
-                                                #{dsf.datasetFieldType.title}
+                                                #{(bundle[dsf.datasetFieldType.title].startsWith("???")) ? dsf.datasetFieldType.title : bundle[dsf.datasetFieldType.title]} <!-- Hack to translate values from the database -->
                                             </span>
                                             <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{dsf.required  or dsf.datasetFieldType.hasRequiredChildren }" />
                                         </label>
@@ -185,7 +185,9 @@
                                                                     </p>
                                                                 </ui:fragment>
                                                                 <label class="control-label" for="metadata_#{subdsf.datasetFieldType.name}">
-                                                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{subdsf.datasetFieldType.description}">#{subdsf.datasetFieldType.title}</span>
+                                                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{subdsf.datasetFieldType.description}">
+                                                                        #{(bundle[subdsf.datasetFieldType.title].startsWith("???")) ? subdsf.datasetFieldType.title : bundle[subdsf.datasetFieldType.title]} <!-- Hack to translate values from the database -->
+                                                                    </span>
                                                                     <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{subdsf.required}" />
                                                                 </label>
                                                                 <ui:fragment rendered="#{!subdsf.datasetFieldType.controlledVocabulary}">
