@@ -944,13 +944,13 @@ public class SearchIncludeFragment implements java.io.Serializable {
 
     public boolean publishedSelected() {
         String expected = SearchFields.PUBLICATION_STATUS + ":\"" + getPUBLISHED() + "\"";
-        logger.info("published expected: " + expected + " actual: " + selectedTypesList);
+        logger.fine("published expected: " + expected + " actual: " + selectedTypesList);
         return filterQueries.contains(SearchFields.PUBLICATION_STATUS + ":\"" + getPUBLISHED() + "\"");
     }
 
     public boolean unpublishedSelected() {
         String expected = SearchFields.PUBLICATION_STATUS + ":\"" + getUNPUBLISHED() + "\"";
-        logger.info("unpublished expected: " + expected + " actual: " + selectedTypesList);
+        logger.fine("unpublished expected: " + expected + " actual: " + selectedTypesList);
         return filterQueries.contains(SearchFields.PUBLICATION_STATUS + ":\"" + getUNPUBLISHED() + "\"");
     }
 

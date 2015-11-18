@@ -838,15 +838,11 @@ public class Access extends AbstractApiBean {
         
         if (!restricted) {
             // And if they are not published, they can still be downloaded, if the user
-            // has the permission to view unpublished versions:
+            // has the permission to view unpublished versions! (this case will 
+            // be handled below)
             if (published) { 
                 return true;
             }
-         
-            if (permissionService.on(df.getOwner()).has(Permission.ViewUnpublishedDataset)) {
-                return true;
-            }
-            return false;
         }
         
         AuthenticatedUser user = null;
@@ -878,38 +874,105 @@ public class Access extends AbstractApiBean {
         } else {
             logger.fine("Session is null.");
         } 
-                
-        if (permissionService.on(df).has(Permission.DownloadFile)) {
+        
+        AuthenticatedUser apiTokenUser = null;
+        
+        if ((apiToken != null)&&(apiToken.length()!=64)) {
+            // We'll also try to obtain the user information from the API token, 
+            // if supplied: 
+        
+            apiTokenUser = findUserByApiToken(apiToken);
+            
+            if (apiTokenUser == null) {
+                logger.warning("API token-based auth: Unable to find a user with the API token provided.");
+            }
+        }
+        
+        // OK, let's revisit the case of non-restricted files, this time in        
+        // an unpublished version:         
+        // (if (published) was already addressed above)
+        
+        if (!restricted) {
+            // If the file is not published, they can still download the file, if the user
+            // has the permission to view unpublished versions:
+            
+            if (permissionService.userOn(user, df.getOwner()).has(Permission.ViewUnpublishedDataset)) {
+                if (user != null) {
+                    // it's not unthinkable, that a null user (i.e., guest user) could be given
+                    // the ViewUnpublished permission!
+                    logger.fine("Session-based auth: user "+user.getName()+" has access rights on the non-restricted, unpublished datafile.");
+                }
+                return true;
+            }
+            
+            if (apiTokenUser != null) {
+                if (permissionService.userOn(apiTokenUser, df.getOwner()).has(Permission.ViewUnpublishedDataset)) {
+                    logger.fine("Session-based auth: user "+apiTokenUser.getName()+" has access rights on the non-restricted, unpublished datafile.");
+                    return true;
+                }
+            }
+            
+            // We don't want to return false just yet. 
+            // If all else fails, we'll want to use the special WorldMapAuth 
+            // token authentication before we give up. 
+            //return false;
+        } else {
+            
+            // OK, this is a restricted file. 
+            
+            boolean hasAccessToRestrictedBySession = false; 
+            boolean hasAccessToRestrictedByToken = false; 
+            
+            if (permissionService.on(df).has(Permission.DownloadFile)) {
             // Note: PermissionServiceBean.on(Datafile df) will obtain the 
             // User from the Session object, just like in the code fragment 
             // above. That's why it's not passed along as an argument.
-            if (published) {
-                if (user != null) {
-                    logger.fine("Session-based auth: user "+user.getName()+" has access rights on the requested datafile.");
-                } else {
-                    logger.fine("Session-based auth: guest user is granted access to the datafile.");
-                }
-                return true; 
-            } else {
-                // if the file is NOT published, we will let them download the 
-                // file ONLY if they also have the permission to view 
-                // unpublished verions:
-                if (permissionService.on(df.getOwner()).has(Permission.ViewUnpublishedDataset)) {
-                    if (user != null) {
-                        logger.fine("Session-based auth: user " + user.getName() + " has access rights on the (unpublished) datafile.");
+                hasAccessToRestrictedBySession = true; 
+            } else if (apiTokenUser != null && permissionService.userOn(apiTokenUser, df).has(Permission.DownloadFile)) {
+                hasAccessToRestrictedByToken = true; 
+            }
+            
+            if (hasAccessToRestrictedBySession || hasAccessToRestrictedByToken) {
+                if (published) {
+                    if (hasAccessToRestrictedBySession) {
+                        if (user != null) {
+                            logger.fine("Session-based auth: user "+user.getName()+" is granted access to the restricted, published datafile.");
+                        } else {
+                            logger.fine("Session-based auth: guest user is granted access to the restricted, published datafile.");
+                        }
                     } else {
-                        logger.fine("Session-based auth: guest user is granted access to the (unpublished) datafile.");
+                        logger.fine("Token-based auth: user "+apiTokenUser.getName()+" is granted access to the restricted, published datafile.");
                     }
-                    return true; 
+                    return true;
+                } else {
+                    // if the file is NOT published, we will let them download the 
+                    // file ONLY if they also have the permission to view 
+                    // unpublished verions:
+                    // Note that the code below does not allow a case where it is the
+                    // session user that has the permission on the file, and the API token 
+                    // user with the ViewUnpublished permission, or vice versa!
+                    if (hasAccessToRestrictedBySession) {
+                        if (permissionService.on(df.getOwner()).has(Permission.ViewUnpublishedDataset)) {
+                            if (user != null) {
+                                logger.fine("Session-based auth: user " + user.getName() + " is granted access to the restricted, unpublished datafile.");
+                            } else {
+                                logger.fine("Session-based auth: guest user is granted access to the restricted, unpublished datafile.");
+                            }
+                            return true;
+                        } 
+                    } else {
+                        if (apiTokenUser != null && permissionService.userOn(apiTokenUser, df.getOwner()).has(Permission.ViewUnpublishedDataset)) {
+                            logger.fine("Token-based auth: user " + apiTokenUser.getName() + " is granted access to the restricted, unpublished datafile.");    
+                        }
+                    }
                 }
             }
         } 
         
-        // if that failed, we'll still check if the download can be authorized based
-        // on any tokens they have:
         
-        // TODO: maybe we should check for tokens FIRST? - otherwise we are always
-        // performing a guest authorization lookup. -- 4.2.1
+        // And if all that failed, we'll still check if the download can be authorized based
+        // on the special WorldMap token:
+
         
         if ((apiToken != null)&&(apiToken.length()==64)){
             /* 
@@ -963,50 +1026,18 @@ public class Access extends AbstractApiBean {
         
         if (user != null) {
             logger.fine("Session-based auth: user " + user.getName() + " has NO access rights on the requested datafile.");
-        } else {
+        } 
+        
+        if (apiTokenUser != null) {
+            logger.fine("Token-based auth: user " + apiTokenUser.getName() + " has NO access rights on the requested datafile.");
+        } 
+        
+        if (user == null && apiTokenUser == null) {
             logger.fine("Unauthenticated access: No guest access to the datafile.");
         }
         
         return false; 
     }
-            // preserving comments added by Phil, before passing the ticket #2648 to me: -- L.A., 4.2.1
-            // - should be removed after the code is reviewed and we've determined that it's now 
-            // doing the right thing. 
-
-            /**
-             * We want the DownloadFile permission to only apply to *published*
-             * files. This is a change/desire that is being introduced in 4.2.1.
-             * If the file has not been published yet, assigning the
-             * DownloadFile permission should have no effect. See
-             * https://github.com/IQSS/dataverse/issues/2648 for details. This
-             * is also why we don't show it in MyData and defer notifications
-             * until the dataset is published. See
-             * https://github.com/IQSS/dataverse/issues/2645 for more discussion
-             * about the change.
-             */
-            /*
-             if (!df.isReleased()) {
-                    logger.fine("API token-based auth: User " + user.getName() + " is not authorized to access the datafile. The DownloadFile permission has been granted but the file/dataset has not 
-been published.");
-            /**
-             * Throwing "forbidden" is commented out because if we throw
-             * forbidden here it fixed the bug at
-             * https://github.com/IQSS/dataverse/issues/2648 (see note above)
-             * but introduces a regression in which the user who uploaded the
-             * file in the first place can no longer download the file. See
-             * scripts/issues/2648/reproduce for some tests to exercise this
-             * code. Can we safely comment out the throwing of "forbidden" below
-             * if we only throw "forbidden" if the user is not the owner of the
-             * file? Should we check some other permission that will serve as a
-             * proxy to mean that the user is the owner of the file?
-             *
-             * It has been suggested that all of this logic might exist in the
-             * canDownloadFile method in DatasetPage or perhaps the
-             * hasDownloadFilePermission method in PermissionsWrapper. Probably
-             * all of business rules should be consolidated into one place so
-             * there is only one code path to troubleshoot.
-             */
-//                    throw new WebApplicationException(Response.Status.FORBIDDEN);
-            
+    
             
 }

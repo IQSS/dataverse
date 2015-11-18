@@ -24,11 +24,20 @@ public class AutoCompleteBean implements java.io.Serializable {
 
     @EJB
     SystemConfig systemConfig;
+    
+    private static SolrServer solrServer;
+    
+    public SolrServer getSolrServer(){
+        if(solrServer == null){
+            solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
+        }
+        return solrServer;
+    }
 
     public List<String> complete(String query) {
         List<String> results = new ArrayList<>();
 
-        SolrServer solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
+        solrServer = getSolrServer();
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setParam("qt", "/terms");
         solrQuery.setTermsLower(query);
