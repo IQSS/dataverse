@@ -908,7 +908,8 @@
                                         <div class="col-sm-6">
                                             <p:inputText id="guestbookuser_nameText" required="#{param['DO_GB_VALIDATION'] and DatasetPage.dataset.guestbook.nameRequired}" 
                                                          styleClass="form-control" value="#{DatasetPage.guestbookResponse.name}"
-                                                         requiredMessage="#{bundle['requiredField']}"/>
+                                                         requiredMessage="#{bundle['requiredField']}"
+                                                         validator="#{DatasetPage.guestbookResponseValidator}"/>
                                             <p:message id="nameMessages" for="guestbookuser_nameText" display="text"/>
                                         </div>
                                     </div>
@@ -921,7 +922,8 @@
                                     <div class="col-sm-6">
                                         <h:inputText id="guestbookuser_email" required="#{param['DO_GB_VALIDATION'] and DatasetPage.dataset.guestbook.emailRequired}"
                                                      styleClass="form-control" value="#{DatasetPage.guestbookResponse.email}"
-                                                     requiredMessage="#{bundle['requiredField']}"/>
+                                                     requiredMessage="#{bundle['requiredField']}"
+                                                     validator="#{DatasetPage.guestbookResponseValidator}"/>
                                         <p:message id="emailMessages" for="guestbookuser_email" display="text"/>
                                     </div>
                                 </div>
@@ -933,7 +935,9 @@
                                     <div class="col-sm-6">
                                         <h:inputText id="guestbookuser_institution" required="#{param['DO_GB_VALIDATION'] and DatasetPage.dataset.guestbook.institutionRequired}"
                                                      styleClass="form-control" value="#{DatasetPage.guestbookResponse.institution}"
-                                                     requiredMessage="#{bundle['requiredField']}"/>
+                                                     requiredMessage="#{bundle['requiredField']}"
+                                                     validator="#{DatasetPage.guestbookResponseValidator}"
+                                                     />
                                         <p:message id="institutionMessages" for="guestbookuser_institution" display="text"/>
                                     </div>
                                 </div>
@@ -945,7 +949,9 @@
                                     <div class="col-sm-6">
                                         <h:inputText id="guestbookuser_position"  required="#{param['DO_GB_VALIDATION'] and DatasetPage.dataset.guestbook.positionRequired}"
                                                      styleClass="form-control" value="#{DatasetPage.guestbookResponse.position}"
-                                                     requiredMessage="#{bundle['requiredField']}"/>
+                                                     requiredMessage="#{bundle['requiredField']}"
+                                                     validator="#{DatasetPage.guestbookResponseValidator}"
+                                                    />
                                         <p:message id="positionMessages" for="guestbookuser_position" display="text"/>
                                     </div>
                                 </div>

@@ -32,6 +32,7 @@ public class CustomQuestionResponse implements Serializable {
     @JoinColumn(nullable = false)
     private CustomQuestion customQuestion;
     
+    @Column(name = "response", columnDefinition = "TEXT", nullable = true)
     private String response;
 
     public Long getId() {

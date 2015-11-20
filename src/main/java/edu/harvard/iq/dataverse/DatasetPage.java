@@ -77,6 +77,8 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import javax.faces.model.SelectItem;
 import java.util.logging.Level;
+import javax.faces.component.UIComponent;
+import javax.faces.component.UIInput;
 import org.primefaces.component.tabview.TabView;
 import org.primefaces.event.TabChangeEvent;
 import org.primefaces.model.LazyDataModel;
@@ -652,6 +654,16 @@ public class DatasetPage implements java.io.Serializable {
 
     public void reset() {
         dataset.setGuestbook(null);
+    }
+    
+    public void guestbookResponseValidator(FacesContext context, UIComponent toValidate, Object value) {
+        String response = (String) value;
+
+        if (response != null && response.length() > 255) {
+            ((UIInput) toValidate).setValid(false);
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, JH.localize("dataset.guestbookResponse.guestbook.responseTooLong"), null);
+            context.addMessage(toValidate.getClientId(context), message);
+        }
     }
 
     public String getGlobalId() {
