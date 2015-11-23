@@ -687,7 +687,6 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
             return thumbnailFileId;
         }
         
-        logger.fine("if thumbnail generation is not disabled, we'll try to generate (or find) us a thumbnail;");
         if (!systemConfig.isThumbnailGenerationDisabledForImages()) {
             // OK, let's try and generate an image thumbnail!
             long imageThumbnailSizeLimit = systemConfig.getThumbnailSizeLimitImage();
@@ -699,7 +698,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
                         + "AND df.id = o.id "
                         + "AND fm.datasetversion_id = dv.id "
                         + "AND fm.datafile_id = df.id "
-                        + "AND o.previewImageAvailable = false "
+                        // + "AND o.previewImageAvailable = false "
                         + "AND df.contenttype LIKE 'image/%' "
                         + "AND NOT df.contenttype = 'image/fits' "
                         + "AND df.filesize < " + imageThumbnailSizeLimit + " "
@@ -709,6 +708,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
             }
             
             if (thumbnailFileId != null) {
+                logger.fine("obtained file id: "+thumbnailFileId);
                 DataFile thumbnailFile = datafileService.find(thumbnailFileId);
                 if (thumbnailFile != null) {
                     if (datafileService.isThumbnailAvailable(thumbnailFile)) {
@@ -730,7 +730,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
                         + "AND df.id = o.id "
                         + "AND fm.datasetversion_id = dv.id "
                         + "AND fm.datafile_id = df.id "
-                        + "AND o.previewImageAvailable = false "
+                        // + "AND o.previewImageAvailable = false "
                         + "AND df.contenttype = 'application/pdf' "
                         + "AND df.filesize < " + imageThumbnailSizeLimit + " "
                         + "ORDER BY df.filesize ASC LIMIT 1;").getSingleResult();
