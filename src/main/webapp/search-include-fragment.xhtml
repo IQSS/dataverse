@@ -500,7 +500,6 @@
                                 <span class="icon-dataset text-info pull-right" title="#{bundle.dataset}"/>
 
                                 <a href="#{result.datasetUrl}" target="#{showFacets == true ? '_self' : '_blank'}">
-                                    <h:outputText value="URL: #{result.imageUrl}" rendered="#{result.displayImage}"/>
                                     <h:outputText value="#{result.title}" style="padding:4px 0;" rendered="#{result.titleHighlightSnippet == null}"/>
                                     <h:outputText value="#{result.titleHighlightSnippet}" style="padding:4px 0;" rendered="#{result.titleHighlightSnippet != null}" escape="false"/>
                                     <h:outputText value=" (#{result.entityId})" style="padding:4px 0;" rendered="#{SearchIncludeFragment.debug == true}"/></a>
