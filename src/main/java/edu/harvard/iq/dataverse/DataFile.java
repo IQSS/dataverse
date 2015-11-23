@@ -105,7 +105,6 @@ public class DataFile extends DvObject {
     
     @OneToOne(mappedBy = "thumbnailFile")
     private Dataset thumbnailForDataset;
-    
 
     public DataFile() {
         this.fileMetadatas = new ArrayList<>();
@@ -550,6 +549,14 @@ public class DataFile extends DvObject {
         // if it's something that's not a filesystem path (URL, etc.) - 
         // then it's a harvested object. 
         // -- L.A. 4.0 
+        
+        // OK, here: (4.2.2)
+        // (storageIdentifier is not nullable - so no need to check for null
+        // pointers below):
+        if (this.getStorageIdentifier().startsWith("http://") || this.getStorageIdentifier().startsWith("https://")) {
+            return true;
+        }
+        
         Dataset ownerDataset = this.getOwner();
         if (ownerDataset != null) {
             return ownerDataset.isHarvested(); 

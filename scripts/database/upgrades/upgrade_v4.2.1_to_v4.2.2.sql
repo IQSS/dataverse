@@ -17,3 +17,7 @@ CREATE UNIQUE INDEX one_draft_version_per_dataset ON datasetversion
 ALTER TABLE customquestionresponse
     ALTER COLUMN response TYPE text;
 
+-- A new boolean in the DvObject table, to indicate that we have a generated thumbnail/preview image 
+-- for this object. 
+-- Added by Leonid, Nov. 23 2015
+ALTER TABLE dvobject ADD COLUMN previewImageAvailable BOOLEAN;

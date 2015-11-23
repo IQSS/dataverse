@@ -451,7 +451,7 @@
                             </div>
                             <div class="card-preview-icon-block text-center">
                                 <h:outputLink value="#{dataversePage}?alias=#{result.dataverseAlias}" target="#{showFacets == true ? '_self' : '_blank'}">
-                                    <p:graphicImage value="/api/access/dvCardImage/#{result.entityId}" rendered="#{result.displayImage}"/>
+                                    <p:graphicImage value="#{result.imageUrl}" rendered="#{result.displayImage}"/>
                                     <span class="icon-dataverse text-brand" jsf:rendered="#{!result.displayImage}"/>
                                 </h:outputLink>
                             </div>
@@ -500,6 +500,7 @@
                                 <span class="icon-dataset text-info pull-right" title="#{bundle.dataset}"/>
 
                                 <a href="#{result.datasetUrl}" target="#{showFacets == true ? '_self' : '_blank'}">
+                                    <h:outputText value="URL: #{result.imageUrl}" rendered="#{result.displayImage}"/>
                                     <h:outputText value="#{result.title}" style="padding:4px 0;" rendered="#{result.titleHighlightSnippet == null}"/>
                                     <h:outputText value="#{result.titleHighlightSnippet}" style="padding:4px 0;" rendered="#{result.titleHighlightSnippet != null}" escape="false"/>
                                     <h:outputText value=" (#{result.entityId})" style="padding:4px 0;" rendered="#{SearchIncludeFragment.debug == true}"/></a>
@@ -511,7 +512,8 @@
                             </div>
                             <div class="card-preview-icon-block text-center">
                                 <a href="#{result.datasetUrl}" target="#{showFacets == true ? '_self' : '_blank'}">
-                                    <p:graphicImage value="/api/access/dsCardImage/#{result.datasetVersionId}" rendered="#{result.displayImage}"/>
+                                    <p:graphicImage value="#{result.imageUrl}" rendered="#{result.displayImage}"/>
+                                    
                                     <span class="icon-dataset text-info" jsf:rendered="#{!result.displayImage}"/>
                                 </a>
                             </div>
@@ -586,7 +588,7 @@
                             <div class="card-preview-icon-block text-center">
                                 <h:outputLink value="#{result.fileUrl}" target="#{showFacets == true ? '_self' : '_blank'}"
                                               rendered="#{result.displayImage}">
-                                    <p:graphicImage value="/api/access/fileCardImage/#{result.entityId}" />
+                                    <p:graphicImage value="#{result.imageUrl}" />
                                 </h:outputLink>
                                 <span class="icon-#{dataFileServiceBean.getFileClass(result.entity)} text-muted h1"
                                       jsf:rendered="#{!result.displayImage}"/>
@@ -596,7 +598,7 @@
                             <div class="card-preview-icon-block text-center">
                                 <h:outputLink value="#{result.fileDatasetUrl}" target="#{showFacets == true ? '_self' : '_blank'}"
                                               rendered="#{result.displayImage}">
-                                    <p:graphicImage value="/api/access/fileCardImage/#{result.entityId}" />
+                                    <p:graphicImage value="#{result.imageUrl}" />
                                 </h:outputLink>
                                 <span class="icon-#{dataFileServiceBean.getFileClass(result.entity)} text-muted h1"
                                       jsf:rendered="#{!result.displayImage}"/>
