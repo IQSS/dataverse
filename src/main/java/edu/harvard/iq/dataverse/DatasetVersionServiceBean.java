@@ -671,31 +671,36 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         
         try {
             thumbnailFileId = (Long)em.createNativeQuery("SELECT df.id "
-                + "FROM datafile df, filemetadata fm, datasetversion dv "
+                + "FROM datafile df, filemetadata fm, datasetversion dv, dvobject o "
                 + "WHERE dv.id = " + versionId + " "
+                + "AND df.id = o.id "
                 + "AND fm.datasetversion_id = dv.id "
                 + "AND fm.datafile_id = df.id "
-                + "AND df.thumbnailGenerated = true "
+                + "AND o.previewImageAvailable = true "
                 + "ORDER BY df.id LIMIT 1;").getSingleResult();
         } catch (Exception ex) {
             thumbnailFileId = null;
         }
         
         if (thumbnailFileId != null) {
+            logger.fine("DatasetVersionService,getThumbnailByVersionid(): found already generated thumbnail for version "+versionId+": "+thumbnailFileId);
             return thumbnailFileId;
         }
         
+        logger.fine("if thumbnail generation is not disabled, we'll try to generate (or find) us a thumbnail;");
         if (!systemConfig.isThumbnailGenerationDisabledForImages()) {
             // OK, let's try and generate an image thumbnail!
             long imageThumbnailSizeLimit = systemConfig.getThumbnailSizeLimitImage();
+
             try {
                 thumbnailFileId = (Long) em.createNativeQuery("SELECT df.id "
-                        + "FROM datafile df, filemetadata fm, datasetversion dv "
+                        + "FROM datafile df, filemetadata fm, datasetversion dv, dvobject o "
                         + "WHERE dv.id = " + versionId + " "
+                        + "AND df.id = o.id "
                         + "AND fm.datasetversion_id = dv.id "
                         + "AND fm.datafile_id = df.id "
-                        + "AND df.thumbnailGenerated = false "
-                        + "AND df.contenttype LIKE 'image/%' " 
+                        + "AND o.previewImageAvailable = false "
+                        + "AND df.contenttype LIKE 'image/%' "
                         + "AND NOT df.contenttype = 'image/fits' "
                         + "AND df.filesize < " + imageThumbnailSizeLimit + " "
                         + "ORDER BY df.filesize ASC LIMIT 1;").getSingleResult();
@@ -720,11 +725,12 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
             long imageThumbnailSizeLimit = systemConfig.getThumbnailSizeLimitPDF();
             try {
                 thumbnailFileId = (Long) em.createNativeQuery("SELECT df.id "
-                        + "FROM datafile df, filemetadata fm, datasetversion dv "
+                        + "FROM datafile df, filemetadata fm, datasetversion dv, dvobject o "
                         + "WHERE dv.id = " + versionId + " "
+                        + "AND df.id = o.id "
                         + "AND fm.datasetversion_id = dv.id "
                         + "AND fm.datafile_id = df.id "
-                        + "AND df.thumbnailGenerated = false "
+                        + "AND o.previewImageAvailable = false "
                         + "AND df.contenttype = 'application/pdf' "
                         + "AND df.filesize < " + imageThumbnailSizeLimit + " "
                         + "ORDER BY df.filesize ASC LIMIT 1;").getSingleResult();
