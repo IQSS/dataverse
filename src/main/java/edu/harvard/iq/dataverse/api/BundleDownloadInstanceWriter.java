@@ -94,7 +94,7 @@ public class BundleDownloadInstanceWriter implements MessageBodyWriter<BundleDow
                     // Now, the original format: 
                     String origFormat = null; 
                     try {
-                        DataFileIO accessObjectOrig = StoredOriginalFile.retrieve(sf, (FileAccessIO) accessObject);
+                        DataFileIO accessObjectOrig = StoredOriginalFile.retreive(accessObject); //.retrieve(sf, (FileAccessIO) accessObject);
                         if (accessObjectOrig != null) {
                             instream = accessObjectOrig.getInputStream();
                             if (instream != null) {

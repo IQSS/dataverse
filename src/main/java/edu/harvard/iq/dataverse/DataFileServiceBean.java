@@ -273,7 +273,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         
         int i = 0; 
         
-        List<Object[]> dataTableResults = em.createNativeQuery("SELECT t0.ID, t0.DATAFILE_ID, t0.UNF, t0.CASEQUANTITY, t0.VARQUANTITY FROM dataTable t0, dataFile t1, dvObject t2 WHERE ((t0.DATAFILE_ID = t1.ID) AND (t1.ID = t2.ID) AND (t2.OWNER_ID = " + owner.getId() + "))").getResultList();
+        List<Object[]> dataTableResults = em.createNativeQuery("SELECT t0.ID, t0.DATAFILE_ID, t0.UNF, t0.CASEQUANTITY, t0.VARQUANTITY, t0.ORIGINALFILEFORMAT FROM dataTable t0, dataFile t1, dvObject t2 WHERE ((t0.DATAFILE_ID = t1.ID) AND (t1.ID = t2.ID) AND (t2.OWNER_ID = " + owner.getId() + "))").getResultList();
         
         for (Object[] result : dataTableResults) {
             DataTable dataTable = new DataTable(); 
@@ -286,6 +286,8 @@ public class DataFileServiceBean implements java.io.Serializable {
             dataTable.setCaseQuantity((Long)result[3]);
             
             dataTable.setVarQuantity((Long)result[4]);
+            
+            dataTable.setOriginalFileFormat((String)result[5]);
             
             dataTables.add(dataTable);
             datatableMap.put(fileId, i++);
@@ -652,6 +654,10 @@ public class DataFileServiceBean implements java.io.Serializable {
             return false;
         }
         
+        if (file.isHarvested() || "".equals(file.getStorageIdentifier())) {
+            return false;
+        }
+        
         String contentType = file.getContentType();
         
         // Some browsers (Chrome?) seem to identify FITS files as mime
@@ -681,6 +687,13 @@ public class DataFileServiceBean implements java.io.Serializable {
             return false; 
         } 
         
+        // If this file already has the "thumbnail generated" flag set,
+        // we'll just trust that:
+        
+        if (file.isPreviewImageAvailable()) {
+            return true;
+        }
+        
         // If thumbnails are not even supported for this class of files, 
         // there's notthing to talk about: 
         
@@ -697,7 +710,7 @@ public class DataFileServiceBean implements java.io.Serializable {
          it has to be generated on the fly - so you have to figure out which 
          is more important... 
         TODO: adding a boolean flag isImageAlreadyGenerated to the DataFile 
-         db table should help with this. -- L.A. 4.2.1
+         db table should help with this. -- L.A. 4.2.1 DONE: 4.2.2
         
         // Also, thumbnails are only shown to users who have permission to see 
         // the full-size image file. So before we do anything else, let's
@@ -709,7 +722,13 @@ public class DataFileServiceBean implements java.io.Serializable {
         
         
         
-       return ImageThumbConverter.isThumbnailAvailable(file);      
+       if (ImageThumbConverter.isThumbnailAvailable(file)) {
+           file.setPreviewImageAvailable(true);
+           file = em.merge(file);
+           // (should this be done here? - TODO:)
+           return true;
+       }
+       return false;
     }
 
     

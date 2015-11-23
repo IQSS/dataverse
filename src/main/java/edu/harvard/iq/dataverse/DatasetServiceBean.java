@@ -490,6 +490,17 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     }
     
+    public Long getDatasetVersionCardImage(Long versionId, User user) {
+        if (versionId == null) {
+            return null;
+        }
+        
+        
+        
+        return null;
+    }
+    
+    
     
     public boolean isDatasetCardImageAvailable(DatasetVersion datasetVersion, User user) {        
         if (datasetVersion == null) {

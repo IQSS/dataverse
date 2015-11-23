@@ -232,7 +232,7 @@ public class DataverseServiceBean implements java.io.Serializable {
         return systemConfig.getVersion(true);
     }
            
-    public boolean isDataverseCardImageAvailable(Dataverse dataverse, User user) {    
+    public boolean isDataverseLogoThumbnailAvailable(Dataverse dataverse, User user) {    
         if (dataverse == null) {
             return false; 
         }
@@ -262,7 +262,7 @@ public class DataverseServiceBean implements java.io.Serializable {
         // Discuss/Decide if we really want to do this - i.e., go through every
         // file in every dataset below... 
         // -- L.A. 4.0 beta14
-        
+        /*
         for (Dataset dataset : datasetService.findPublishedByOwnerId(dataverse.getId())) {
             if (dataset != null) {
                 DatasetVersion releasedVersion = dataset.getReleasedVersion();
@@ -273,7 +273,7 @@ public class DataverseServiceBean implements java.io.Serializable {
                     }
                 }
             }
-        }        
+        }   */     
         
         return false; 
     }
