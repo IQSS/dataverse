@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
-import javax.faces.context.FacesContext;
 import javax.inject.Named;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -34,7 +33,6 @@ import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.core.Context;
 
 @Stateless
 @Named
@@ -52,8 +50,6 @@ public class SavedSearchServiceBean {
     DataverseLinkingServiceBean dataverseLinkingService;
     @EJB
     EjbDataverseEngine commandEngine;
-    @Context
-    HttpServletRequest httpReq;
 
     private final String resultString = "result";
 
@@ -120,14 +116,30 @@ public class SavedSearchServiceBean {
         List<SavedSearch> allSavedSearches = findAll();
         JsonArrayBuilder savedSearchArrayBuilder = Json.createArrayBuilder();
         for (SavedSearch savedSearch : allSavedSearches) {
-            JsonObjectBuilder perSavedSearchResponse = makeLinksForSingleSavedSearch(savedSearch, debugFlag);
+            DataverseRequest dataverseRequest = new DataverseRequest(savedSearch.getCreator(), getHttpServletRequest());
+            JsonObjectBuilder perSavedSearchResponse = makeLinksForSingleSavedSearch(dataverseRequest, savedSearch, debugFlag);
             savedSearchArrayBuilder.add(perSavedSearchResponse);
         }
         response.add("hits by saved search", savedSearchArrayBuilder);
         return response;
     }
 
-    public JsonObjectBuilder makeLinksForSingleSavedSearch(SavedSearch savedSearch, boolean debugFlag) throws SearchException, CommandException {
+    /**
+     * The "Saved Search" and highly related "Linked Dataverses and Linked
+     * Datasets" features can be thought of as periodic execution of the
+     * LinkDataverseCommand and LinkDatasetCommand. As of this writing that
+     * periodic execution can be triggered via a cron job but we'd like to put
+     * it on an EJB timer as part of
+     * https://github.com/IQSS/dataverse/issues/2543 .
+     *
+     * The commands are executed by the creator of the SavedSearch. What happens
+     * if the users loses the permission that the command requires? Should the
+     * commands continue to be executed periodically as some "system" user?
+     *
+     * @return Debug information in the form of a JSON object, which is much
+     * more structured that a simple String.
+     */
+    public JsonObjectBuilder makeLinksForSingleSavedSearch(DataverseRequest dvReq, SavedSearch savedSearch, boolean debugFlag) throws SearchException, CommandException {
         JsonObjectBuilder response = Json.createObjectBuilder();
         JsonArrayBuilder savedSearchArrayBuilder = Json.createArrayBuilder();
         JsonArrayBuilder infoPerHit = Json.createArrayBuilder();
@@ -144,8 +156,6 @@ public class SavedSearchServiceBean {
                 infoPerHit.add(hitInfo);
                 break;
             }
-            mutateHttpRequestSoJsfCanMakeLinks();
-            DataverseRequest dvReq = new DataverseRequest(savedSearch.getCreator(), httpReq);
             if (dvObjectThatDefinitionPointWillLinkTo.isInstanceofDataverse()) {
                 Dataverse dataverseToLinkTo = (Dataverse) dvObjectThatDefinitionPointWillLinkTo;
                 if (wouldResultInLinkingToItself(savedSearch.getDefinitionPoint(), dataverseToLinkTo)) {
@@ -186,30 +196,6 @@ public class SavedSearchServiceBean {
         savedSearchArrayBuilder.add(info);
         response.add("hits for saved search id " + savedSearch.getId(), savedSearchArrayBuilder);
         return response;
-    }
-
-    /**
-     * This method fixes the "java.lang.IllegalStateException: Not inside a
-     * request scope" issue reported at
-     * https://github.com/IQSS/dataverse/issues/2718 where it was impossible to
-     * use the "Link Dataset" feature from JSF.
-     */
-    private void mutateHttpRequestSoJsfCanMakeLinks() {
-        FacesContext facesContext = FacesContext.getCurrentInstance();
-        if (facesContext != null) {
-            httpReq = (HttpServletRequest) facesContext.getExternalContext().getRequest();
-        } else {
-            /**
-             * No-op. When the "makeLinksForSingleSavedSearch" method is called
-             * from the API such as from `curl -X PUT
-             * http://localhost:8080/api/admin/savedsearches/makelinks/all` is
-             * is expected that facesContext will be null and it is not
-             * necessary to mutate the httpReq. The links are able to be made
-             * (in the datasetlinkingdataverse table, for example) and we don't
-             * get "java.lang.IllegalStateException: Not inside a request
-             * scope". It works fine.
-             */
-        }
     }
 
     private SolrQueryResponse findHits(SavedSearch savedSearch) throws SearchException {
@@ -301,6 +287,18 @@ public class SavedSearchServiceBean {
      */
     private boolean datasetAncestorAlreadyLinked(Dataverse definitionPoint, Dataset datasetToLinkTo) {
         return false;
+    }
+
+    public static HttpServletRequest getHttpServletRequest() {
+        /**
+         * This HttpServletRequest object is purposefully set to null. "There's
+         * another issue here, though - the IP address. The request is sent from
+         * a cron job - I assume localhost? - and it's source IP address is
+         * different from the one the user may have, and quite possibly more
+         * privileged. It maybe safest to pass in a null http request at this
+         * stage." -- michbarsinai
+         */
+        return null;
     }
 
 }

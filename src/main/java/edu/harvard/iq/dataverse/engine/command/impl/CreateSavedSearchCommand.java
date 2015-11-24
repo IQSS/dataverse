@@ -41,7 +41,8 @@ public class CreateSavedSearchCommand extends AbstractCommand<SavedSearch> {
         SavedSearch persistedSavedSearch = ctxt.savedSearches().save(savedSearchToCreate);
         if (persistedSavedSearch != null) {
             try {
-                JsonObjectBuilder result = ctxt.savedSearches().makeLinksForSingleSavedSearch(persistedSavedSearch, true);
+                DataverseRequest dataverseRequest = new DataverseRequest(savedSearchToCreate.getCreator(), SavedSearchServiceBean.getHttpServletRequest());
+                JsonObjectBuilder result = ctxt.savedSearches().makeLinksForSingleSavedSearch(dataverseRequest, persistedSavedSearch, true);
                 logger.log(Level.INFO, "result from attempt to make links from saved search: {0}", result.build().toString());
             } catch (SearchException ex) {
                 logger.info(ex.getLocalizedMessage());
