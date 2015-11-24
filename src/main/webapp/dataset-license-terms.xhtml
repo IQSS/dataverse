@@ -486,7 +486,7 @@
                                            <p:commandLink type="button" styleClass="btn btn-default pull-right"
                                                           value="#{bundle['file.dataFilesTab.terms.list.guestbook.viewBtn']}"
                                                           action="#{DatasetPage.viewSelectedGuestbook(DatasetPage.dataset.guestbook)}"
-                                                          update=":datasetForm" oncomplete="viewGuestbook.show();bind_bsui_components();"/>
+                                                          update=":datasetForm" oncomplete="PF('viewGuestbook').show();bind_bsui_components();"/>
                                        </div>
                                    </div>
                                </ui:fragment>
@@ -519,7 +519,7 @@
                                            <p:commandLink type="button" styleClass="btn btn-default pull-right"
                                                           value="#{bundle['file.dataFilesTab.terms.list.guestbook.viewBtn']}"
                                                           action="#{DatasetPage.viewSelectedGuestbook(guestbook)}"
-                                                          update=":datasetForm" oncomplete="viewGuestbook.show();bind_bsui_components();"/>
+                                                          update=":datasetForm" oncomplete="PF('viewGuestbook').show();bind_bsui_components();"/>
                                        </p:column>
                                    </p:dataTable>
                                </ui:fragment>
@@ -571,7 +571,7 @@
             </div>
         </div>
         <div class="button-block">
-            <button type="button" onclick="viewGuestbook.hide()" class="btn btn-default" value="#{bundle.close}">
+            <button type="button" onclick="PF('viewGuestbook').hide()" class="btn btn-default" value="#{bundle.close}">
                 #{bundle.close}
             </button>
         </div>
