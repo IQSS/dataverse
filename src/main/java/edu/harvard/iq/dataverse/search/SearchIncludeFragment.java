@@ -15,6 +15,10 @@ import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.SettingsWrapper;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
+import edu.harvard.iq.dataverse.dataaccess.FileAccessIO;
+import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -27,6 +31,7 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import org.apache.commons.lang.StringUtils;
+import org.primefaces.util.Base64;
 
 @ViewScoped
 @Named("SearchIncludeFragment")
@@ -1128,6 +1133,8 @@ public class SearchIncludeFragment implements java.io.Serializable {
 
     public void setDisplayCardValues() {
         int i = 0;
+        dvobjectThumbnailsMap = new HashMap<>();
+        dvobjectViewMap = new HashMap<>();
         for (SolrSearchResult result : searchResultsList) {
             logger.info("checking DisplayImage for the search result "+i++);
             boolean valueSet = false;
@@ -1154,58 +1161,96 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 logger.warning("Index result / entity mismatch (id:resultType) - " + result.getId() + ":" + result.getType());
             }
         }
+        dvobjectThumbnailsMap = null;
+        dvobjectViewMap = null;
     }
     
-    private final Map<Long, Long> datasetThumbnailsMap = new HashMap<>();
+    private Map<Long, String> dvobjectThumbnailsMap = null;
+    private Map<Long, DvObject> dvobjectViewMap = null;
     
-    private static String FILE_CARD_IMAGE_URL = "/api/access/fileCardImage/";
-    private static String DATASET_CARD_IMAGE_URL = "/api/access/dsCardImage/";
-    private static String DATAVERSE_CARD_IMAGE_URL = "/api/access/dvCardImage/";
+    //private static String FILE_CARD_IMAGE_URL = "/api/access/fileCardImage/";
+    //private static String DATASET_CARD_IMAGE_URL = "/api/access/dsCardImage/";
+    //private static String DATAVERSE_CARD_IMAGE_URL = "/api/access/dvCardImage/";
     
     private String getAssignedDatasetImage(Dataset dataset) {
         if (dataset == null) {
             return null;
-        }
+        }        
         
-        Long datasetId = dataset.getId();
-        Long assignedThumbnailFileId = null;
-        
-        if (this.datasetThumbnailsMap.containsKey(datasetId)){
-            // Yes, return previous answer
-            //logger.info("using cached result for ... "+datasetId);
-            assignedThumbnailFileId = this.datasetThumbnailsMap.get(datasetId);
-            if (assignedThumbnailFileId.longValue() > 0) {
-                return FILE_CARD_IMAGE_URL + assignedThumbnailFileId;
-            }
-            return null;
-        }
-        
-        DataFile thumbnailFile = dataset.getThumbnailFile();
-        
-        if (thumbnailFile != null && permissionsWrapper.hasDownloadFilePermission(thumbnailFile)) {
+        DataFile assignedThumbnailFile = dataset.getThumbnailFile();
 
-            if (dataFileService.isThumbnailAvailable(thumbnailFile)) {
-                assignedThumbnailFileId = thumbnailFile.getId();
-                this.datasetThumbnailsMap.put(datasetId, assignedThumbnailFileId);
-                return FILE_CARD_IMAGE_URL + assignedThumbnailFileId;
+        if (assignedThumbnailFile != null) {
+            Long assignedThumbnailFileId = null;
+
+            if (this.dvobjectThumbnailsMap.containsKey(assignedThumbnailFileId)) {
+                // Yes, return previous answer
+                //logger.info("using cached result for ... "+datasetId);
+                if (!"".equals(this.dvobjectThumbnailsMap.get(assignedThumbnailFileId))) {
+                    return this.dvobjectThumbnailsMap.get(assignedThumbnailFileId);
+                }
+                return null;
             }
+            
+            if (permissionsWrapper.hasDownloadFilePermission(assignedThumbnailFile)) {
+
+                String imageSourceBase64 = ImageThumbConverter.getImageThumbAsBase64(
+                        assignedThumbnailFile,
+                        ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
+
+                if (imageSourceBase64 != null) {
+                    this.dvobjectThumbnailsMap.put(assignedThumbnailFileId, imageSourceBase64);
+                    return imageSourceBase64;
+                }
+            }
+
+            // OK - we can't use this "assigned" image, because of permissions, or because 
+            // the thumbnail failed to generate, etc... in this case we'll 
+            // mark this dataset in the lookup map - so that we don't have to
+            // do all these lookups again...
+            this.dvobjectThumbnailsMap.put(assignedThumbnailFileId, "");
         }
         
-        // OK - there's no dedicated image file assigned to this dataset;
-        // or we can't use this image, because of permissions, or because 
-        // the thumbnail failed to generate, etc... in this case we'll 
-        // mark this dataset in the lookup map - so that we don't have to
-        // do all these lookups again...
-        
-        this.datasetThumbnailsMap.put(datasetId, 0l);
         return null;
+        
     }
 
     // it's the responsibility of the user - to make sure the search result
     // passed to this method is of a Datafile type!
     private String getFileCardImageUrl(SolrSearchResult result) {
         if (permissionsWrapper.hasDownloadFilePermission(result.getEntity()) && dataFileService.isThumbnailAvailable((DataFile) result.getEntity())) {
-            return FILE_CARD_IMAGE_URL + result.getEntityId();
+            //return FILE_CARD_IMAGE_URL + result.getEntityId();
+            Long imageFileId = result.getEntity().getId();
+
+            if (imageFileId != null) {
+                //cardImageUrl = FILE_CARD_IMAGE_URL + thumbnailImageFileId;
+                if (this.dvobjectThumbnailsMap.containsKey(imageFileId)) {
+                    // Yes, return previous answer
+                    //logger.info("using cached result for ... "+datasetId);
+                    if (!"".equals(this.dvobjectThumbnailsMap.get(imageFileId))) {
+                        return this.dvobjectThumbnailsMap.get(imageFileId);
+                    }
+                    return null;
+                }
+
+                if (!(dvobjectViewMap.containsKey(imageFileId)
+                        && dvobjectViewMap.get(imageFileId).isInstanceofDataFile())) {
+
+                    dvobjectViewMap.put(imageFileId, result.getEntity());
+
+                }
+
+                String cardImageUrl = ImageThumbConverter.getImageThumbAsBase64(
+                        (DataFile) result.getEntity(),
+                        ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
+
+                if (cardImageUrl != null) {
+                    this.dvobjectThumbnailsMap.put(imageFileId, cardImageUrl);
+                    logger.info("datafile id "+imageFileId+", returning "+cardImageUrl);
+                    return cardImageUrl;
+                } else {
+                    this.dvobjectThumbnailsMap.put(imageFileId, "");
+                }
+            }
         }
         return null;
     }
@@ -1227,9 +1272,44 @@ public class SearchIncludeFragment implements java.io.Serializable {
         Long thumbnailImageFileId = datasetVersionService.getThumbnailByVersionId(result.getDatasetVersionId());
         
         if (thumbnailImageFileId != null) {
-            cardImageUrl = FILE_CARD_IMAGE_URL + thumbnailImageFileId;
+            //cardImageUrl = FILE_CARD_IMAGE_URL + thumbnailImageFileId;
+            if (this.dvobjectThumbnailsMap.containsKey(thumbnailImageFileId)) {
+                // Yes, return previous answer
+                //logger.info("using cached result for ... "+datasetId);
+                if (!"".equals(this.dvobjectThumbnailsMap.get(thumbnailImageFileId))) {
+                    return this.dvobjectThumbnailsMap.get(thumbnailImageFileId);
+                }
+                return null;
+            }
+            
+            DataFile thumbnailImageFile = null;
+
+            if (dvobjectViewMap.containsKey(thumbnailImageFileId)
+                    && dvobjectViewMap.get(thumbnailImageFileId).isInstanceofDataFile()) {
+                thumbnailImageFile = (DataFile) dvobjectViewMap.get(thumbnailImageFileId);
+            } else {
+                thumbnailImageFile = dataFileService.find(thumbnailImageFileId);
+                if (thumbnailImageFile != null) {
+                    dvobjectViewMap.put(thumbnailImageFileId, thumbnailImageFile);
+                } else {
+                    this.dvobjectThumbnailsMap.put(thumbnailImageFileId, "");
+                    return null;
+                }
+            }
+
+            if (dataFileService.isThumbnailAvailable(thumbnailImageFile)) {
+                cardImageUrl = ImageThumbConverter.getImageThumbAsBase64(
+                        thumbnailImageFile,
+                        ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
+            }
+
+            if (cardImageUrl != null) {
+                this.dvobjectThumbnailsMap.put(thumbnailImageFileId, cardImageUrl);
+            } else {
+                this.dvobjectThumbnailsMap.put(thumbnailImageFileId, "");
+            }
         }
-        
+
         logger.info("dataset id "+result.getEntity().getId()+", returning "+cardImageUrl);
         
         return cardImageUrl;
@@ -1238,10 +1318,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
     // it's the responsibility of the user - to make sure the search result
     // passed to this method is of a Dataverse type!
     private String getDataverseCardImageUrl(SolrSearchResult result) {
-        if (dataverseService.isDataverseLogoThumbnailAvailable((Dataverse) result.getEntity(), session.getUser())) {
-            return DATAVERSE_CARD_IMAGE_URL + result.getEntityId();
-        }
-        return null;
+        return dataverseService.getDataverseLogoThumbnailAsBase64((Dataverse) result.getEntity(), session.getUser());
     }
     
     

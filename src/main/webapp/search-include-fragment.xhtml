@@ -587,7 +587,7 @@
                         <div class="card-preview-icon-block text-center" jsf:rendered="#{!settingsWrapper.isTrueForKey(':ShowFileLandingPage', false)}">
                             <h:outputLink value="#{result.fileDatasetUrl}" target="#{showFacets == true ? '_self' : '_blank'}"
                                           rendered="#{result.displayImage}">
-                                <p:graphicImage value="#{result.imageUrl}" />
+                                <h:graphicImage value="#{result.imageUrl}" />
                             </h:outputLink>
                             <span class="icon-#{dataFileServiceBean.getFileClass(result.entity)} text-muted h1"
                                   jsf:rendered="#{!result.displayImage}"/>

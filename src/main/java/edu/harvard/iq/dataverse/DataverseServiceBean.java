@@ -231,17 +231,35 @@ public class DataverseServiceBean implements java.io.Serializable {
     public String getApplicationVersion() { 
         return systemConfig.getVersion(true);
     }
-           
+    
+    public String getDataverseLogoThumbnailAsBase64(Dataverse dataverse, User user) {
+        if (dataverse == null) {
+            return null;
+        }
+
+        File dataverseLogoFile = getLogo(dataverse);
+        if (dataverseLogoFile != null) {
+            String logoThumbNailPath = null;
+
+            if (dataverseLogoFile.exists()) {
+                logoThumbNailPath = ImageThumbConverter.generateImageThumb(dataverseLogoFile.getAbsolutePath(), 48);
+                if (logoThumbNailPath != null) {
+                    return ImageThumbConverter.getImageAsBase64FromFile(new File(logoThumbNailPath));
+
+                }
+            }
+        }
+        return null;
+    }
+    
     public boolean isDataverseLogoThumbnailAvailable(Dataverse dataverse, User user) {    
         if (dataverse == null) {
             return false; 
         }
-        
-        String imageThumbFileName = null; 
-        
+                
         // First, check if the dataverse has a defined logo: 
         
-        if (dataverse.getDataverseTheme() != null && dataverse.getDataverseTheme().getLogo() != null && !dataverse.getDataverseTheme().getLogo().equals("")) {
+        //if (dataverse.getDataverseTheme() != null && dataverse.getDataverseTheme().getLogo() != null && !dataverse.getDataverseTheme().getLogo().equals("")) {
             File dataverseLogoFile = getLogo(dataverse);
             if (dataverseLogoFile != null) {
                 String logoThumbNailPath = null;
@@ -253,7 +271,7 @@ public class DataverseServiceBean implements java.io.Serializable {
                     }
                 }
             }
-        }
+        //}
         
         // If there's no uploaded logo for this dataverse, go through its 
         // [released] datasets and see if any of them have card images:

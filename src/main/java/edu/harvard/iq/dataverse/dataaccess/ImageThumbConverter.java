@@ -42,6 +42,7 @@ import javax.imageio.stream.ImageOutputStream;
 
 import edu.harvard.iq.dataverse.DataFile;
 import java.util.logging.Logger;
+import org.primefaces.util.Base64;
 
 /**
  *
@@ -104,20 +105,127 @@ public class ImageThumbConverter {
     }
     
     public static FileAccessIO getImageThumb(FileAccessIO fileAccess, int size) {
-        logger.fine("entering getImageThumb, size "+size);
-        String imageThumbFileName = null;
-        DataFile file = fileAccess.getDataFile();
+        logger.fine("entering getImageThumb, size " + size);
 
-        try {
-            if (file != null && file.getContentType().substring(0, 6).equalsIgnoreCase("image/")) {
-                imageThumbFileName = generateImageThumb(fileAccess.getFileSystemPath().toString(), size);
-            } else if (file != null && file.getContentType().equalsIgnoreCase("application/pdf")) {
-                imageThumbFileName = generatePDFThumb(fileAccess.getFileSystemPath().toString(), size);
-            } else if (file.getContentType().equalsIgnoreCase("application/zipped-shapefile")) {
-                imageThumbFileName = generateWorldMapThumb(fileAccess.getFileSystemPath().toString(), size);
+        File imageThumbFile = getImageThumbAsFile(fileAccess, size);
+
+        if (imageThumbFile != null) {
+
+            fileAccess.closeInputStream();
+            fileAccess.setSize(imageThumbFile.length());
+
+            InputStream imageThumbInputStream = null;
+
+            try {
+
+                imageThumbInputStream = new FileInputStream(imageThumbFile);
+            } catch (IOException ex) {
+                return null;
+            }
+
+            if (imageThumbInputStream != null) {
+                fileAccess.setInputStream(imageThumbInputStream);
+                fileAccess.setIsLocalFile(true);
+
+                fileAccess.setMimeType("image/png");
+                logger.fine("getImageThumb: created fileAccess object for the image thumbnail file");
             } else {
                 return null;
             }
+
+            logger.fine("getImageThumb: returning file access object");
+            return fileAccess;
+        }
+        logger.fine("returning null");
+        return null;
+    }
+    
+    public static String getImageThumbAsBase64(DataFile file, int size) {
+
+        logger.fine("entering getImageThumb, size " + size);
+
+        InputStream imageThumbInputStream = null;
+        FileAccessIO fileAccess = null;
+
+        try {
+
+            fileAccess = (FileAccessIO) file.getAccessObject();
+        } catch (IOException ex) {
+            // too bad - but not fatal
+            logger.warning("getImageThumbAsBase64: Failed to obtain FileAccess object for DataFile id " + file.getId());
+            return null;
+        }
+
+        if (fileAccess != null && fileAccess.isLocalFile()) {
+            try {
+                fileAccess.open();
+            } catch (IOException ex) {
+                // too bad - but not fatal
+                logger.warning("getImageThumbAsBase64: Failed to open FileAccess object for DataFile id " + file.getId());
+                return null;
+            }
+            File imageThumbFile = getImageThumbAsFile(fileAccess, size);
+
+            if (imageThumbFile != null) {
+
+                return getImageAsBase64FromFile(imageThumbFile);
+            }
+        }
+
+        return null;
+    }
+    
+    public static String getImageAsBase64FromFile(File imageFile) {
+        InputStream imageThumbInputStream = null;
+        try {
+
+            int thumbSize = (int) imageFile.length();
+
+            imageThumbInputStream = new FileInputStream(imageFile);
+
+            if (imageThumbInputStream != null) {
+
+                byte[] rawImageData = new byte[thumbSize];
+                int bytesRead = imageThumbInputStream.read(rawImageData, 0, thumbSize);
+                logger.info("read " + bytesRead + " bytes of raw thumbnail image.");
+
+                if (rawImageData != null) {
+                    String imageDataBase64 = Base64.encodeToString(rawImageData, false);
+                    //return FILE_CARD_IMAGE_URL + assignedThumbnailFileId;
+                    return "data:image/png;base64," + imageDataBase64;
+                }
+            }
+        } catch (IOException ex) {
+            // too bad - but not fatal
+            logger.warning("getImageAsBase64FromFile: Failed to read data from thumbnail file");
+        } finally {
+            if (imageThumbInputStream != null) {
+                try {
+                    imageThumbInputStream.close();
+                } catch (Exception e) {
+                }
+            }
+        }
+
+        return null;
+    }
+    
+    public static File getImageThumbAsFile(FileAccessIO fileAccess, int size ) {
+        String imageThumbFileName = null;
+        try {
+            if (fileAccess.getDataFile() != null && fileAccess.getDataFile().getContentType().substring(0, 6).equalsIgnoreCase("image/")) {
+                imageThumbFileName = generateImageThumb(fileAccess.getFileSystemPath().toString(), size);
+                
+            } else if (fileAccess.getDataFile() != null && fileAccess.getDataFile().getContentType().equalsIgnoreCase("application/pdf")) {
+                imageThumbFileName = generatePDFThumb(fileAccess.getFileSystemPath().toString(), size);
+                
+            } else if (fileAccess.getDataFile() != null && fileAccess.getDataFile().getContentType().equalsIgnoreCase("application/zipped-shapefile")) {
+                imageThumbFileName = generateWorldMapThumb(fileAccess.getFileSystemPath().toString(), size);
+                
+            } else {
+                return null;
+            }
+            
         } catch (IOException ioEx) {
             return null; 
         }
@@ -127,36 +235,11 @@ public class ImageThumbConverter {
             File imageThumbFile = new File(imageThumbFileName);
 
             if (imageThumbFile != null && imageThumbFile.exists()) {
-
-                fileAccess.closeInputStream();
-                fileAccess.setSize(imageThumbFile.length());
-
-                InputStream imageThumbInputStream = null;
-
-                try {
-
-                    imageThumbInputStream = new FileInputStream(imageThumbFile);
-                } catch (IOException ex) {
-                    return null;
-                }
-
-                if (imageThumbInputStream != null) {
-                    fileAccess.setInputStream(imageThumbInputStream);
-                    fileAccess.setIsLocalFile(true);
-
-                    fileAccess.setMimeType("image/png");
-                    logger.fine("getImageThumb: created fileAccess object for the image thumbnail file");
-                } else {
-                    return null;
-                }
+                return imageThumbFile;
+                
             }
-        //}
-
-        logger.fine("getImageThumb: returning file access object");
-        return fileAccess;
         }
-        logger.fine("returning null");
-        return null; 
+        return null;
     }
     
     public static String generateImageThumb(String fileLocation) {
@@ -206,32 +289,32 @@ public class ImageThumbConverter {
         }
 
         try {
-            logger.fine("attempting to read the image file "+fileLocation+" with ImageIO.read()");
+            logger.fine("attempting to read the image file " + fileLocation + " with ImageIO.read()");
             BufferedImage fullSizeImage = ImageIO.read(new File(fileLocation));
-
-	    if ( fullSizeImage == null ) {
+            
+            if (fullSizeImage == null) {
                 logger.fine("could not read image with ImageIO.read()");
-		return null; 
-	    }
-
+                return null;                
+            }
+            
             int width = fullSizeImage.getWidth(null);
             int height = fullSizeImage.getHeight(null);
             
-            logger.fine("image dimensions: "+width+"x"+height);
+            logger.fine("image dimensions: " + width + "x" + height);
             
             thumbFileLocation = rescaleImage(fullSizeImage, width, height, size, fileLocation);
             if (thumbFileLocation != null) {
                 // while we are at it, let's make sure other size thumbnails are 
                 // calculated too:
-                for (int s : (new int[] {DEFAULT_PREVIEW_SIZE, DEFAULT_THUMBNAIL_SIZE, DEFAULT_CARDIMAGE_SIZE})) {
-                        if (size != s && !thumbnailFileExists(fileLocation, s)) {
-                            thumbFileLocation = rescaleImage(fullSizeImage, width, height, s, fileLocation);
-                        }
+                for (int s : (new int[]{DEFAULT_PREVIEW_SIZE, DEFAULT_THUMBNAIL_SIZE, DEFAULT_CARDIMAGE_SIZE})) {
+                    if (size != s && !thumbnailFileExists(fileLocation, s)) {
+                        rescaleImage(fullSizeImage, width, height, s, fileLocation);
                     }
+                }
                 return thumbFileLocation;
             }
         } catch (Exception e) {
-            logger.info("Failed to read in an image from "+fileLocation+": "+e.getMessage());
+            logger.info("Failed to read in an image from " + fileLocation + ": " + e.getMessage());
             // something went wrong...
 
         }
