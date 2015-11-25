@@ -664,6 +664,9 @@ div.dvnDifferanceTable .diffDetailBlock {display:block;}
 
 .dropin-btn-status.ui-icon {background: url("https://www.dropbox.com/static/images/widgets/dbx-saver-status.png") no-repeat;}
 
+/* MANAGE TABLE + DROPDOWN BUTTON */
+div.manageTable.ui-datatable div.ui-datatable-tablewrapper, div.manageTable.ui-datatable td.col-manage-action {overflow:visible;}
+
 /* FILE */
 #file-preview-icon-block span[class^='icon-'] {font-size:4em;}
 

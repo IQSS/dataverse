@@ -5,10 +5,8 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:jsf="http://xmlns.jcp.org/jsf">
-
     <h:head>
     </h:head>
-
     <h:body>
         <f:metadata>
             <f:viewParam name="dataverseId" value="#{manageGuestbooksPage.dataverseId}"/>
@@ -32,7 +30,6 @@
                                 </h:outputFormat>
                             </label>
                         </ui:fragment>
-
                         <div class="pull-right">
                             <h:outputLink type="button" styleClass="btn btn-default"
                                           value="/guestbook.xhtml?ownerId=#{manageGuestbooksPage.dataverse.id}&#38;editMode=CREATE">
@@ -65,8 +62,7 @@
                                 </p>
                             </div>
                         </div>
-                        
-                        <p:dataTable id="allGuestbooks" var="guestbook" value="#{manageGuestbooksPage.guestbooks}"
+                        <p:dataTable id="allGuestbooks" styleClass="manageTable" var="guestbook" value="#{manageGuestbooksPage.guestbooks}"
                                      rendered="#{!empty manageGuestbooksPage.guestbooks}">
                             <p:column width="25%" sortBy="#{guestbook.name}" headerText="#{bundle['dataset.manageGuestbooks.tab.header.name']}">
                                 <h:outputText value="#{guestbook.name}" />
@@ -102,7 +98,7 @@
                                                        title="#{bundle['dataset.manageGuestbooks.tab.action.btn.view']}">
                                             <span class="glyphicon glyphicon-eye-open"></span>
                                         </p:commandLink>
-                                        <h:outputLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"                                                     
+                                        <h:outputLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
                                                       value="/guestbook.xhtml?ownerId=#{manageGuestbooksPage.dataverse.id}&#38;editMode=CLONE&#38;sourceId=#{guestbook.id}"
                                                       title="#{bundle['dataset.manageGuestbooks.tab.action.btn.copy']}">
                                             <span class="glyphicon glyphicon-duplicate"></span>
@@ -122,7 +118,7 @@
                                         </p:commandLink>
                                     </div>
                                     <h:outputLink type="button" styleClass="btn btn-default"
-                                                  rendered="#{guestbook.responseCount > 0}"                                                
+                                                  rendered="#{guestbook.responseCount > 0}"
                                                   value="/guestbook-responses.xhtml?dataverseId=#{manageGuestbooksPage.dataverse.id}&#38;guestbookId=#{guestbook.id}">
                                         <span>#{bundle['dataset.manageGuestbooks.tab.action.btn.viewCollectedData']}</span>
                                     </h:outputLink>
@@ -130,7 +126,6 @@
                             </p:column>
                         </p:dataTable>
                     </div>
-
                     <p:dialog header="#{bundle['dataset.manageGuestbooks.tab.action.btn.delete.dialog.header']}" widgetVar="deleteConfirmation" modal="true">
                         <p class="help-block">
                             <span class="glyphicon glyphicon-warning-sign text-danger"/> <span class="text-danger">#{bundle['dataset.manageGuestbooks.tab.action.btn.delete.dialog.tip']}</span>
