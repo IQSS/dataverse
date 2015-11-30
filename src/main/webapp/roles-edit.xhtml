@@ -68,7 +68,7 @@
             <div id="editRoleButtonPanel" class="button-block">
                 <p:commandLink type="button" styleClass="btn btn-default" 
                                value="#{bundle.saveChanges}" 
-                               oncomplete="roleForm.hide()"
+                               oncomplete="PF('roleForm').hide()"
                                update="roleDisplay availableRoles @([id$=Messages])"
                                actionListener="#{managePermissionsPage.updateRole}"/>
                 <button type="button" class="btn btn-default" onclick="PF('roleForm').hide()" value="Cancel">#{bundle.cancel}</button>
