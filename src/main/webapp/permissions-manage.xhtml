@@ -189,11 +189,11 @@
                     <p:dialog id="accessDialog" styleClass="largePopUp" header="#{bundle['dataverse.permissions.accessDialog.header']}" widgetVar="accessForm" modal="true">
                         <ui:include src="permissions-configure.xhtml"/>
                         <div class="button-block">
-                            <p:commandLink type="button" styleClass="btn btn-default" value="#{bundle['saveChanges']}"
+                            <p:commandLink value="#{bundle['saveChanges']}" styleClass="btn btn-default"
                                            update=":#{p:component('configureSettings')} assignedRoles @([id$=Messages])"
                                            actionListener="#{managePermissionsPage.saveConfiguration}"
-                                           oncomplete="PF('accessForm').hide();"/>
-                            <button type="button" class="btn btn-default" onclick="PF('accessForm').hide()" value="Cancel">#{bundle.cancel}</button>
+                                           oncomplete="PF('accessForm').hide()"/>
+                            <button type="button" class="btn btn-default" onclick="PF('accessForm').hide()" value="#{bundle.cancel}">#{bundle.cancel}</button>
                         </div>
                     </p:dialog>
 
@@ -207,10 +207,10 @@
                             <span class="glyphicon glyphicon-warning-sign text-danger"/> <span class="text-danger">#{bundle['dataverse.permissions.usersOrGroups.removeBtn.confirmation']}</span>
                         </p>
                         <div class="button-block">
-                            <p:commandButton value="#{bundle.continue}" onclick="PF('confirmation').hide()" 
+                            <p:commandButton value="#{bundle.continue}" styleClass="btn btn-default" onclick="PF('confirmation').hide()" 
                                              action="#{managePermissionsPage.removeRoleAssignment()}" 
                                              update=":#{p:component('configureSettings')} assignedRoles @([id$=Messages])" />
-                            <p:commandButton value="#{bundle.cancel}" onclick="PF('confirmation').hide()" type="button" />
+                            <button type="button" class="btn btn-default" onclick="PF('confirmation').hide()" value="#{bundle.cancel}">#{bundle.cancel}</button>
                         </div>
                     </p:dialog>
                 </h:form>
