@@ -691,4 +691,4 @@ button.btn-default.ui-button-text-only .ui-button-text {padding:0; font-size:14p
     margin-left: 0px;
 }
 .ui-state-disabled, .ui-widget-content .ui-state-disabled, .ui-widget-header .ui-state-disabled {background: #e0e0e0; border-color: #ccc; opacity: 0.65;}
-.ui-autocomplete-input-token input {width:auto;}
+.ui-autocomplete-input-token input, .ui-autocomplete-input-token {width:100%;}
