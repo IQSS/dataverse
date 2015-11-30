@@ -429,7 +429,7 @@
                     <div class="dataverseResult clearfix" jsf:rendered="#{result.type == 'dataverses'}">
                         <div class="card-title-icon-block">
                             <span class="glyphicon glyphicon-link text-brand pull-right" title="#{bundle.linked}" jsf:rendered="#{!result.isInTree}"/>
-                            <span class="glyphicon glyphicon-new-window text-brand pull-right" title="#{bundle.harvested}" jsf:rendered="#{result.entity.harvested}"/>
+                            <span class="glyphicon glyphicon-new-window text-brand pull-right" title="#{bundle.harvested}" jsf:rendered="#{result.harvested}"/>
                             <span class="icon-dataverse text-brand pull-right" title="#{bundle.dataverse}"/>
 
                             <h:outputLink value="#{dataversePage}?alias=#{result.dataverseAlias}" target="#{showFacets == true ? '_self' : '_blank'}">
@@ -489,7 +489,7 @@
                     <div class="datasetResult clearfix" jsf:rendered="#{result.type == 'datasets'}">
                         <div class="card-title-icon-block">
                             <span class="glyphicon glyphicon-link text-info pull-right" title="#{bundle.linked}" jsf:rendered="#{!result.isInTree}"/>
-                            <span class="glyphicon glyphicon-new-window text-info pull-right" title="#{bundle.harvested}" jsf:rendered="#{result.entity.harvested}"/>
+                            <span class="glyphicon glyphicon-new-window text-info pull-right" title="#{bundle.harvested}" jsf:rendered="#{result.harvested}"/>
                             <span class="icon-dataset text-info pull-right" title="#{bundle.dataset}"/>
 
                             <a href="#{result.datasetUrl}" target="#{showFacets == true ? '_self' : '_blank'}">
@@ -516,8 +516,9 @@
                             <h:outputText value="#{result.parent.get('name')} #{bundle.dataverse}"/>
                         </h:outputLink>
 
-                        <h:outputText value="#{result.citation}" escape="false" styleClass="resultDatasetCitationBlock #{result.deaccessionedState ? 'bg-danger' : 'bg-citation'}" rendered="#{!result.entity.harvested}"/>
-                        <h:outputText value="#{result.entity.latestVersion.getCitation(true)}" escape="false" styleClass="resultDatasetCitationBlock #{result.deaccessionedState ? 'bg-danger' : 'bg-citation'}" rendered="#{result.entity.harvested}"/>
+                        <h:outputText value="#{result.citation}" escape="false" styleClass="resultDatasetCitationBlock #{result.deaccessionedState ? 'bg-danger' : 'bg-citation'}" rendered="#{!result.harvested}"/>
+                        <!-- TODO: check if this special case can be removed; we may now have valid citations indexed for harvested objects also! - L.A. 4.2.2 -->
+                        <h:outputText value="#{result.entity.latestVersion.getCitation(true)}" escape="false" styleClass="resultDatasetCitationBlock #{result.deaccessionedState ? 'bg-danger' : 'bg-citation'}" rendered="#{result.harvested}"/>
                         <h:outputText value="#{Strings:abbreviate(result.descriptionNoSnippet, descriptionAbbreviationThreshold)}" rendered="#{result.descriptionSnippets.size() eq 0}"/>
 
                         <ui:repeat value="#{result.descriptionSnippets}" var="snippet" varStatus="varStatus"
@@ -544,7 +545,7 @@
                             </ui:repeat>
                         </ui:repeat>
 
-                        <div jsf:rendered="#{result.entity.harvested}" class="text-muted small margin-top-half">
+                        <div jsf:rendered="#{result.harvested}" class="text-muted small margin-top-half">
                             <span class="glyphicon glyphicon-info-sign"/> <h:outputText value=" #{result.entity.harvestingDescription}"/>
                         </div>
                     </div>
@@ -552,7 +553,7 @@
                     <div class="fileResult clearfix" jsf:rendered="#{result.type == 'files'}">
                         <div class="card-title-icon-block">
                             <span class="glyphicon glyphicon-link text-muted pull-right" title="#{bundle.linked}" jsf:rendered="#{!result.isInTree}"/>
-                            <span class="glyphicon glyphicon-new-window text-muted pull-right" title="#{bundle.harvested}" jsf:rendered="#{result.entity.harvested}"/>
+                            <span class="glyphicon glyphicon-new-window text-muted pull-right" title="#{bundle.harvested}" jsf:rendered="#{result.harvested}"/>
                             <span class="icon-file text-muted pull-right" title="#{bundle.file}"/>
 
                             <span class="text-danger glyphicon glyphicon-lock" title="#{bundle.restricted}" jsf:rendered="#{result.entity.restricted and !permissionsWrapper.hasDownloadFilePermission(result.entity)}"/>
@@ -641,7 +642,7 @@
                             </ui:repeat>
                         </div>
 
-                        <div jsf:rendered="#{result.entity.harvested}">
+                        <div jsf:rendered="#{result.harvested}">
                             <h:outputText value="#{result.entity.harvestingDescription}" styleClass="text-muted" style="margin-right:.5em;"/>
                         </div>
                     </div>

@@ -233,6 +233,7 @@ public class DataverseServiceBean implements java.io.Serializable {
     }
     
     public String getDataverseLogoThumbnailAsBase64(Dataverse dataverse, User user) {
+        /*
         if (dataverse == null) {
             return null;
         }
@@ -248,10 +249,11 @@ public class DataverseServiceBean implements java.io.Serializable {
 
                 }
             }
-        }
+        } */
         return null;
     }
     
+    /*
     public boolean isDataverseLogoThumbnailAvailable(Dataverse dataverse, User user) {    
         if (dataverse == null) {
             return false; 
@@ -272,7 +274,7 @@ public class DataverseServiceBean implements java.io.Serializable {
                 }
             }
         //}
-        
+        */
         // If there's no uploaded logo for this dataverse, go through its 
         // [released] datasets and see if any of them have card images:
         // 
@@ -292,9 +294,9 @@ public class DataverseServiceBean implements java.io.Serializable {
                 }
             }
         }   */     
-        
+        /*
         return false; 
-    }
+    } */
         
     private File getLogo(Dataverse dataverse) {
         if (dataverse.getId() == null) {

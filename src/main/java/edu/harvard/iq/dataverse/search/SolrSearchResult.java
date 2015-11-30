@@ -86,6 +86,7 @@ public class SolrSearchResult {
     private boolean isInTree;
     private float score;
     private List<String> userRole;
+    private boolean harvested = false;
 
     public boolean isIsInTree() {
         return isInTree;
@@ -94,6 +95,15 @@ public class SolrSearchResult {
     public void setIsInTree(boolean isInTree) {
         this.isInTree = isInTree;
     }
+    
+    public boolean isHarvested() {
+        return harvested;
+    }
+
+    public void setHarvested(boolean harvested) {
+        this.harvested = harvested;
+    }
+    
 //    public boolean isStatePublished() {
 //        return statePublished;
 //    }
@@ -816,7 +826,7 @@ public class SolrSearchResult {
             String badString = "null";
             if (!identifier.contains(badString)) {
                 if (entity != null && entity instanceof Dataset) {
-                    if (((Dataset) entity).isHarvested()) {
+                    if (this.isHarvested()) {
                         String remoteArchiveUrl = ((Dataset) entity).getRemoteArchiveURL();
                         if (remoteArchiveUrl != null) {
                             return remoteArchiveUrl;
@@ -851,7 +861,7 @@ public class SolrSearchResult {
     }
 
     public String getFileUrl() {
-        if (entity != null && entity instanceof DataFile && ((DataFile) entity).isHarvested()) {
+        if (entity != null && entity instanceof DataFile && this.isHarvested()) {
             String remoteArchiveUrl = ((DataFile) entity).getRemoteArchiveURL();
             if (remoteArchiveUrl != null) {
                 return remoteArchiveUrl;
@@ -870,7 +880,7 @@ public class SolrSearchResult {
     }
     
     public String getFileDatasetUrl() {
-        if (entity != null && entity instanceof DataFile && ((DataFile) entity).isHarvested()) {
+        if (entity != null && entity instanceof DataFile && this.isHarvested()) {
             String remoteArchiveUrl = ((DataFile) entity).getRemoteArchiveURL();
             if (remoteArchiveUrl != null) {
                 return remoteArchiveUrl;

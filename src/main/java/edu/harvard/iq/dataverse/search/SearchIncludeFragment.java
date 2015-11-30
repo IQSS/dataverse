@@ -346,6 +346,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 if (solrSearchResult.getType().equals("dataverses")) {
                     Dataverse dataverseInCard = dataverseService.find(solrSearchResult.getEntityId());
                     String parentId = solrSearchResult.getParent().get("id");
+                    /* commenting out the isInTree code -- L.A., temporarily
                     solrSearchResult.setIsInTree(false);
                     if (parentId != null) {
                         Dataverse parentDataverseInCard = dataverseService.find(Long.parseLong(parentId));
@@ -361,6 +362,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                             solrSearchResult.setIsInTree(true);
                         }
                     }
+                    */
 
                     if (dataverseInCard != null) {
                         solrSearchResult.setDataverseAffiliation(dataverseInCard.getAffiliation());
@@ -369,11 +371,13 @@ public class SearchIncludeFragment implements java.io.Serializable {
                     }
                 } else if (solrSearchResult.getType().equals("datasets")) {
                     Long dataverseId = Long.parseLong(solrSearchResult.getParent().get("id"));
+                    /* commenting out the isInTree code -- L.A., temporarily
                     Dataverse parentDataverse = dataverseService.find(dataverseId);
                     solrSearchResult.setIsInTree(false);
                     List<Dataverse> dvTree = new ArrayList();
                     Dataverse testDV = parentDataverse;
                     dvTree.add(testDV);
+                    */
                     /**
                      * @todo Why is a NPE being thrown at this `while
                      * (testDV.getOwner() != null){` line? An NPE was being
@@ -387,6 +391,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                      * encountered, no more information is available." and
                      * server.log has a stacktrace with the NPE.
                      */
+                    /* commenting out the isInTree code -- L.A., temporarily
                     while (testDV.getOwner() != null) {
                         dvTree.add(testDV.getOwner());
                         testDV = testDV.getOwner();
@@ -397,7 +402,9 @@ public class SearchIncludeFragment implements java.io.Serializable {
                     /**
                      * @todo can a dataverse alias ever be null?
                      */
+                    /* commenting out the isInTree code -- L.A., temporarily
                     solrSearchResult.setDataverseAlias(parentDataverse.getAlias());
+                    */
                     Long datasetVersionId = solrSearchResult.getDatasetVersionId();
                     if (datasetVersionId != null) {
                         DatasetVersion datasetVersion = datasetVersionService.find(datasetVersionId);
@@ -418,12 +425,14 @@ public class SearchIncludeFragment implements java.io.Serializable {
                         solrSearchResult.setStatus(getCreatedOrReleasedDate(dataFile, solrSearchResult.getReleaseOrCreateDate()));
                     }
                     Long datasetId = Long.parseLong(solrSearchResult.getParent().get("id"));
+                    /* commenting out the isInTree code -- L.A., temporarily
                     Dataset parentDS = datasetService.find(datasetId);
                     /**
                      * I didn't write this code below about setIsInTree
                      * (whatever that is) but I did just add a null check.
                      * --pdurbin
                      */
+                    /* commenting out the isInTree code -- L.A., temporarily
                     if (parentDS != null) {
                         Dataverse parentDataverse = parentDS.getOwner();
                         solrSearchResult.setIsInTree(false);
@@ -443,6 +452,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                          * was encountered, no more information is available."
                          * and server.log has a stacktrace with the NPE.
                          */
+                    /* commenting out the isInTree code -- L.A., temporarily
                         if (testDV != null) {
                             while (testDV.getOwner() != null) {
                                 dvTree.add(testDV.getOwner());
@@ -454,6 +464,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                             solrSearchResult.setIsInTree(true);
                         }
                     }
+                    */
                     /**
                      * @todo: show DataTable variables
                      */
@@ -1139,23 +1150,23 @@ public class SearchIncludeFragment implements java.io.Serializable {
             logger.info("checking DisplayImage for the search result "+i++);
             boolean valueSet = false;
             if (result.getType().equals("dataverses") && result.getEntity() instanceof Dataverse) {
-                result.setImageUrl(getDataverseCardImageUrl(result));
+                ///result.setImageUrl(getDataverseCardImageUrl(result));
                 valueSet = true;
             } else if (result.getType().equals("datasets") && result.getEntity() instanceof Dataset) {
-                result.setImageUrl(getDatasetCardImageUrl(result));
+                ///result.setImageUrl(getDatasetCardImageUrl(result));
                 valueSet = true;
             } else if (result.getType().equals("files") && result.getEntity() instanceof DataFile) {
                 // TODO: 
                 // use permissionsWrapper?  -- L.A. 4.2.1
                 // OK, done! (4.2.2; in the getFileCardImageUrl() method, below)
-                result.setImageUrl(getFileCardImageUrl(result));
+                ///result.setImageUrl(getFileCardImageUrl(result));
                 valueSet = true;
             }
 
             
             if (valueSet) {
                 if (result.getImageUrl() != null) {
-                    result.setDisplayImage(true);
+                    ///result.setDisplayImage(true);
                 }
             } else {
                 logger.warning("Index result / entity mismatch (id:resultType) - " + result.getId() + ":" + result.getType());
