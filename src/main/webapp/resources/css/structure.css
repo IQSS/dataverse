@@ -681,10 +681,11 @@ div.manageTable.ui-datatable div.ui-datatable-tablewrapper, div.manageTable.ui-d
 
 /* BLOCK UI */
 .ui-blockui.ui-widget-overlay {background:#fff; opacity:.6;}
+div.ui-dialog.ui-widget-content {z-index:100001 !important;}
 
 /* Overwrite Primefaces */
 button.btn-default.ui-button-text-only .ui-button-text {padding:0; font-size:14px;}
-.ui-widget-overlay {background:#CCC;}
+div.ui-widget-overlay {background:#ccc; opacity:.6;}
 .ui-confirm-dialog-severity {margin-top:3px;}
 .ui-widget-content a.btn-default {color:#333;}
 .ui-messages-info-detail, .ui-messages-warn-detail, .ui-messages-error-detail, .ui-messages-fatal-detail, .ui-message-info-detail, .ui-message-warn-detail, .ui-message-error-detail, .ui-message-fatal-detail {
