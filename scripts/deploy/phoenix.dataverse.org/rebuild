@@ -1,8 +1,9 @@
 #!/bin/sh
-WAR=$(ls -1 /tmp/dataverse-*.war | head -1 | cut -d/ -f3)
-VERSION=$(echo $WAR | sed 's/.war//g')
-/usr/local/glassfish4/glassfish/bin/asadmin list-applications
-/usr/local/glassfish4/glassfish/bin/asadmin undeploy $VERSION
+LIST_APP=$(/usr/local/glassfish4/glassfish/bin/asadmin list-applications -t)
+echo "deployed: $LIST_APP"
+OLD_WAR=$(echo $LIST_APP | awk '{print $1}')
+NEW_WAR=/tmp/dataverse.war
+/usr/local/glassfish4/glassfish/bin/asadmin undeploy $OLD_WAR
 /usr/local/glassfish4/glassfish/bin/asadmin stop-domain
 rm -rf /usr/local/glassfish4/glassfish/domains/domain1/files
 #psql -U postgres -c "CREATE ROLE dvnapp UNENCRYPTED PASSWORD 'secret' SUPERUSER CREATEDB CREATEROLE INHERIT LOGIN" template1
@@ -12,4 +13,4 @@ curl http://localhost:8983/solr/update/json?commit=true -H "Content-type: applic
 psql -U dvnapp -c 'CREATE DATABASE "dvndb" WITH OWNER = "dvnapp"' template1
 echo $?
 /usr/local/glassfish4/glassfish/bin/asadmin start-domain
-/usr/local/glassfish4/glassfish/bin/asadmin deploy /tmp/$WAR
+/usr/local/glassfish4/glassfish/bin/asadmin deploy $NEW_WAR
