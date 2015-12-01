@@ -44,6 +44,7 @@
 
                 <h:form id="dataverseForm">
                     <!-- Edit Mode -->
+                    Edit Mode: #{DataversePage.editMode}
                     <ui:fragment rendered="#{DataversePage.editMode == 'INFO'}">
                         <p:focus context="dataverseForm"/>
                         <!-- Sample Block -->
@@ -590,7 +591,7 @@
                     <!-- Save / Cancel Button Panel -->
                     <div class="button-block" jsf:rendered="#{!empty DataversePage.editMode}">
                         <p:commandButton id="save" tabindex="9" value="#{DataversePage.dataverse.id == null ? bundle.createDataverse : bundle.saveChanges}" action="#{DataversePage.save}" update="@all">
-                            <f:ajax onerror="window.scrollTo(0, 0);" />
+                            <f:ajax onerror="window.scrollTo(0, 0)" />
                         </p:commandButton>
                         <p:commandButton id="cancel" tabindex="10" value="#{bundle.cancel}" actionListener="#{DataversePage.cancel}" process="@this" update="@form" rendered="#{DataversePage.dataverse.id != null}" oncomplete="javascript:post_cancel_edit_dv()" />
                         <p:button tabindex="10" value="#{bundle.cancel}" outcome="/dataverse.xhtml?alias=#{DataversePage.dataverse.owner.alias}" rendered="#{DataversePage.dataverse.id == null and DataversePage.ownerId != null}"/>
@@ -660,8 +661,7 @@
                         <ui:param name="showFacets" value="true"/>
                         <ui:param name="showSearch" value="true"/>
                     </ui:include>
-                </ui:fragment>
-               
+                </ui:fragment>               
                 <!-- Link Dataverse Popup -->
                 <p:dialog id="linkDataverseForm" header="#{DataversePage.linkMode == 'SAVEDSEARCH' ? bundle['dataverse.savedsearch.link'] : bundle['dataverse.link']}" widgetVar="linkDataverseForm" modal="true">
                     <h:form styleClass="form-horizontal" rendered="#{DataversePage.dataversesForLinking.size() > 1}">
@@ -801,6 +801,11 @@
                         }
                         
                         $('#featuredDataversesList .item').matchHeight();
+                    }
+                    
+                    function callOnError(){
+                        alert("in js");
+                        window.scrollTo(0, 0);
                     }
 
                     function initPopover() {
