@@ -357,6 +357,7 @@ public class SearchServiceBean {
             String fileContentType = (String) solrDocument.getFieldValue(SearchFields.FILE_CONTENT_TYPE);
             Date release_or_create_date = (Date) solrDocument.getFieldValue(SearchFields.RELEASE_OR_CREATE_DATE);
             String dateToDisplayOnCard = (String) solrDocument.getFirstValue(SearchFields.RELEASE_OR_CREATE_DATE_SEARCHABLE_TEXT);
+            String dvTree = (String) solrDocument.getFirstValue(SearchFields.SUBTREE);
             List<String> matchedFields = new ArrayList<>();
             List<Highlight> highlights = new ArrayList<>();
             Map<SolrField, Highlight> highlightsMap = new HashMap<>();
@@ -398,7 +399,7 @@ public class SearchServiceBean {
 //            logger.info(id + ": " + description);
             solrSearchResult.setId(id);
             solrSearchResult.setEntityId(entityid);
-            solrSearchResult.setEntity(dvObjectService.findDvObject(entityid));
+            ///solrSearchResult.setEntity(dvObjectService.findDvObject(entityid));
             solrSearchResult.setIdentifier(identifier);
             solrSearchResult.setPersistentUrl(persistentUrl);
             solrSearchResult.setType(type);
@@ -414,10 +415,12 @@ public class SearchServiceBean {
             String description = (String) solrDocument.getFieldValue(SearchFields.DESCRIPTION);
             solrSearchResult.setDescriptionNoSnippet(description);
             solrSearchResult.setDeaccessionReason(deaccessionReason);
+            solrSearchResult.setDvTree(dvTree);
             /**
              * @todo start using SearchConstants class here
              */
             if (type.equals("dataverses")) {
+                logger.info("search result: dataverse, id "+entityid);
                 solrSearchResult.setName(name);
                 solrSearchResult.setHtmlUrl(baseUrl + "/dataverse/" + identifier);
                 solrSearchResult.setImageUrl(baseUrl + "/api/access/dvCardImage/" + entityid);
@@ -428,6 +431,7 @@ public class SearchServiceBean {
                  */
 //                solrSearchResult.setApiUrl(baseUrl + "/api/dataverses/" + entityid);
             } else if (type.equals("datasets")) {
+                logger.info("search result: dataset, id "+entityid);
                 solrSearchResult.setHtmlUrl(baseUrl + "/dataset.xhtml?globalId=" + identifier);
                 solrSearchResult.setApiUrl(baseUrl + "/api/datasets/" + entityid);
                 solrSearchResult.setImageUrl(baseUrl + "/api/access/dsCardImage/" + datasetVersionId);
@@ -456,6 +460,7 @@ public class SearchServiceBean {
                     solrSearchResult.setDatasetAuthors(authors);
                 }
             } else if (type.equals("files")) {
+                logger.info("search result: file, id "+entityid);
                 String parentGlobalId = null;
                 Object parentGlobalIdObject = solrDocument.getFieldValue(SearchFields.PARENT_IDENTIFIER);
                 if (parentGlobalIdObject != null) {

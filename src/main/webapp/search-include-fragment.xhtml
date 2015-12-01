@@ -428,7 +428,7 @@
                     <!--DATAVERSE CARDS-->
                     <div class="dataverseResult clearfix" jsf:rendered="#{result.type == 'dataverses'}">
                         <div class="card-title-icon-block">
-                            <span class="glyphicon glyphicon-link text-brand pull-right" title="#{bundle.linked}" jsf:rendered="#{!result.isInTree}"/>
+                            <span class="glyphicon glyphicon-link text-brand pull-right" title="#{bundle.linked}" jsf:rendered="#{!SearchIncludeFragment.rootDv and !result.isInTree}"/>
                             <span class="glyphicon glyphicon-new-window text-brand pull-right" title="#{bundle.harvested}" jsf:rendered="#{result.harvested}"/>
                             <span class="icon-dataverse text-brand pull-right" title="#{bundle.dataverse}"/>
 
@@ -488,7 +488,7 @@
                     <!--DATASET CARDS-->
                     <div class="datasetResult clearfix" jsf:rendered="#{result.type == 'datasets'}">
                         <div class="card-title-icon-block">
-                            <span class="glyphicon glyphicon-link text-info pull-right" title="#{bundle.linked}" jsf:rendered="#{!result.isInTree}"/>
+                            <span class="glyphicon glyphicon-link text-info pull-right" title="#{bundle.linked}" jsf:rendered="#{!SearchIncludeFragment.rootDv and !result.isInTree}"/>
                             <span class="glyphicon glyphicon-new-window text-info pull-right" title="#{bundle.harvested}" jsf:rendered="#{result.harvested}"/>
                             <span class="icon-dataset text-info pull-right" title="#{bundle.dataset}"/>
 
@@ -510,7 +510,7 @@
                         </div>
 
                         <h:outputText styleClass="text-muted" value="#{result.dateToDisplayOnCard}"/>
-
+                        
                         <h:outputText styleClass="text-muted" value=" - " rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}"/>
                         <h:outputLink value="#{dataversePage}?alias=#{result.dataverseAlias}" target="#{showFacets == true ? '_self' : '_blank'}" rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}">
                             <h:outputText value="#{result.parent.get('name')} #{bundle.dataverse}"/>
@@ -552,7 +552,7 @@
                     <!--FILE CARDS-->
                     <div class="fileResult clearfix" jsf:rendered="#{result.type == 'files'}">
                         <div class="card-title-icon-block">
-                            <span class="glyphicon glyphicon-link text-muted pull-right" title="#{bundle.linked}" jsf:rendered="#{!result.isInTree}"/>
+                            <span class="glyphicon glyphicon-link text-muted pull-right" title="#{bundle.linked}" jsf:rendered="#{!SearchIncludeFragment.rootDv and !result.isInTree}"/>
                             <span class="glyphicon glyphicon-new-window text-muted pull-right" title="#{bundle.harvested}" jsf:rendered="#{result.harvested}"/>
                             <span class="icon-file text-muted pull-right" title="#{bundle.file}"/>
 

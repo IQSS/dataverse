@@ -115,6 +115,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
 //    private Map<String, String> friendlyName = new HashMap<>();
     private String errorFromSolr;
     private SearchException searchException;
+    private boolean rootDv = false;
 
     /**
      * @todo:
@@ -245,6 +246,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
         if (this.dataverse != null) {
             String dataversePath = dataverseService.determineDataversePath(this.dataverse);
             String filterDownToSubtree = SearchFields.SUBTREE + ":\"" + dataversePath + "\"";
+            logger.info("SUBTREE parameter: "+dataversePath);
             if (!this.dataverse.equals(dataverseService.findRootDataverse())) {
                 /**
                  * @todo centralize this into SearchServiceBean
@@ -253,10 +255,12 @@ public class SearchIncludeFragment implements java.io.Serializable {
 //                this.dataverseSubtreeContext = dataversePath;
             } else {
 //                this.dataverseSubtreeContext = "all";
+                this.setRootDv(true);
             }
         } else {
             this.dataverse = dataverseService.findRootDataverse();
 //            this.dataverseSubtreeContext = "all";
+            this.setRootDv(true);
         }
 
         selectedTypesList = new ArrayList<>();
@@ -298,6 +302,8 @@ public class SearchIncludeFragment implements java.io.Serializable {
              */
             int numRows = 10;
             solrQueryResponse = searchService.search(session.getUser(), dataverse, queryToPassToSolr, filterQueriesFinal, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows);
+            // This 2nd search() is for populating the facets: -- L.A. 
+            // TODO: ...
             solrQueryResponseAllTypes = searchService.search(session.getUser(), dataverse, queryToPassToSolr, filterQueriesFinalAllTypes, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows);
         } catch (SearchException ex) {
             Throwable cause = ex;
@@ -942,6 +948,14 @@ public class SearchIncludeFragment implements java.io.Serializable {
     public void setSolrIsDown(boolean solrIsDown) {
         this.solrIsDown = solrIsDown;
     }
+    
+    public boolean isRootDv() {
+        return rootDv;
+    }
+
+    public void setRootDv(boolean rootDv) {
+        this.rootDv = rootDv;
+    }
 
     public boolean isDebug() {
         return (debug && session.getUser().isSuperuser())
@@ -1149,13 +1163,13 @@ public class SearchIncludeFragment implements java.io.Serializable {
         for (SolrSearchResult result : searchResultsList) {
             logger.info("checking DisplayImage for the search result "+i++);
             boolean valueSet = false;
-            if (result.getType().equals("dataverses") && result.getEntity() instanceof Dataverse) {
+            if (result.getType().equals("dataverses") /*&& result.getEntity() instanceof Dataverse*/) {
                 ///result.setImageUrl(getDataverseCardImageUrl(result));
                 valueSet = true;
-            } else if (result.getType().equals("datasets") && result.getEntity() instanceof Dataset) {
+            } else if (result.getType().equals("datasets") /*&& result.getEntity() instanceof Dataset*/) {
                 ///result.setImageUrl(getDatasetCardImageUrl(result));
                 valueSet = true;
-            } else if (result.getType().equals("files") && result.getEntity() instanceof DataFile) {
+            } else if (result.getType().equals("files") /*&& result.getEntity() instanceof DataFile*/) {
                 // TODO: 
                 // use permissionsWrapper?  -- L.A. 4.2.1
                 // OK, done! (4.2.2; in the getFileCardImageUrl() method, below)

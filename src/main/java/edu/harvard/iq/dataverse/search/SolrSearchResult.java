@@ -87,7 +87,16 @@ public class SolrSearchResult {
     private float score;
     private List<String> userRole;
     private boolean harvested = false;
-
+    private String dvTree;
+    
+    public String getDvTree() {
+        return dvTree;
+    }
+    
+    public void setDvTree(String dvTree) {
+        this.dvTree = dvTree;
+    } 
+    
     public boolean isIsInTree() {
         return isInTree;
     }
