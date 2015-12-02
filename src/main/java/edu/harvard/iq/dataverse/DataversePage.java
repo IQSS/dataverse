@@ -396,8 +396,13 @@ public class DataversePage implements java.io.Serializable {
         }
     }
 
+    private List<Dataverse> carouselFeaturedDataverses = null;
+    
     public List<Dataverse> getCarouselFeaturedDataverses() {
-        List<Dataverse> retList = featuredDataverseService.findByDataverseIdQuick(dataverse.getId());/*new ArrayList();
+        if (carouselFeaturedDataverses != null) {
+            return carouselFeaturedDataverses;
+        }
+        carouselFeaturedDataverses = featuredDataverseService.findByDataverseIdQuick(dataverse.getId());/*new ArrayList();
         
         List<DataverseFeaturedDataverse> featuredList = featuredDataverseService.findByDataverseId(dataverse.getId());
         for (DataverseFeaturedDataverse dfd : featuredList) {
@@ -405,7 +410,7 @@ public class DataversePage implements java.io.Serializable {
             retList.add(fd);
         }*/
         
-        return retList;
+        return carouselFeaturedDataverses;
     }
 
     public List getContents() {

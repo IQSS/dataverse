@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
@@ -27,6 +28,8 @@ public class FeaturedDataverseServiceBean {
     
     @EJB
     DataverseServiceBean dataverseService;
+    
+    private static final Logger logger = Logger.getLogger(FeaturedDataverseServiceBean.class.getCanonicalName());
     
     public List<DataverseFeaturedDataverse> findByDataverseId(Long dataverseId) {
         Query query = em.createQuery("select object(o) from DataverseFeaturedDataverse as o where o.dataverse.id = :dataverseId order by o.displayOrder");
@@ -54,9 +57,7 @@ public class FeaturedDataverseServiceBean {
             
             Dataverse dataverse = new Dataverse(); 
             dataverse.setId(id);
-            
-            dataverse.setLogoOwnerId(id);
-            
+                        
             if (result[1] != null) {
                 dataverse.setAlias((String)result[1]);
             }
@@ -65,7 +66,10 @@ public class FeaturedDataverseServiceBean {
                 dataverse.setName((String)result[2]);
             }
             
-            dataverse.setDataverseTheme(dataverseService.findDataverseThemeByIdQuick(id.longValue()));
+            dataverse.setDataverseTheme(dataverseService.findDataverseThemeByIdQuick(id));
+            if (dataverse.getDataverseTheme()!=null){
+                logger.info("THEME: "+dataverse.getDataverseTheme().getLogo()+", "+dataverse.getDataverseTheme().getLogoFormat());
+            }
             ret.add(dataverse);
          }
          

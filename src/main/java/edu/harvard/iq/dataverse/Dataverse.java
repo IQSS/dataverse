@@ -505,19 +505,9 @@ public class Dataverse extends DvObjectContainer {
         }
         return retName;
     }
-    
-    private static String logoOwnerId = null;
-    
-    public void setLogoOwnerId(Long ownerId) {
-        if (ownerId != null) {
-            logoOwnerId = ownerId.toString();
-        }
-    }
+        
     
     public String getLogoOwnerId() {
-        if (logoOwnerId != null) {
-            return logoOwnerId;
-        }
         
         if (themeRoot || getOwner()==null) {
             return this.getId().toString();
