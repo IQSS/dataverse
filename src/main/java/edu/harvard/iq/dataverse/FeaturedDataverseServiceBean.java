@@ -6,7 +6,9 @@
 
 package edu.harvard.iq.dataverse;
 
+import java.util.ArrayList;
 import java.util.List;
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
@@ -23,11 +25,53 @@ public class FeaturedDataverseServiceBean {
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
     
+    @EJB
+    DataverseServiceBean dataverseService;
+    
     public List<DataverseFeaturedDataverse> findByDataverseId(Long dataverseId) {
         Query query = em.createQuery("select object(o) from DataverseFeaturedDataverse as o where o.dataverse.id = :dataverseId order by o.displayOrder");
         query.setParameter("dataverseId", dataverseId);
         return query.getResultList();
     }
+    
+    public List<Dataverse> findByDataverseIdQuick(Long dataverseId) {
+         List<Object[]> searchResults = null;
+         
+         try {
+             searchResults = em.createNativeQuery("SELECT id, alias, name FROM dataverse WHERE id IN (select featureddataverse_id from DataverseFeaturedDataverse where dataverse_id = "+dataverseId+" order by displayOrder)").getResultList();
+         } catch (Exception ex) {
+             return null;
+         }
+
+         List<Dataverse> ret = new ArrayList<>();
+         
+         for (Object[] result : searchResults) {
+            Long id = (Long)result[0];
+            
+            if (id == null) {
+                continue;
+            }
+            
+            Dataverse dataverse = new Dataverse(); 
+            dataverse.setId(id);
+            
+            dataverse.setLogoOwnerId(id);
+            
+            if (result[1] != null) {
+                dataverse.setAlias((String)result[1]);
+            }
+            
+            if (result[2] != null) {
+                dataverse.setName((String)result[2]);
+            }
+            
+            dataverse.setDataverseTheme(dataverseService.findDataverseThemeByIdQuick(id.longValue()));
+            ret.add(dataverse);
+         }
+         
+         return ret;
+    }
+    
     public List<DataverseFeaturedDataverse> findByRootDataverse() {
         return em.createQuery("select object(o) from DataverseFeaturedDataverse as o where o.dataverse.id = 1 order by o.displayOrder").getResultList();
     }

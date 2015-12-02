@@ -397,14 +397,14 @@ public class DataversePage implements java.io.Serializable {
     }
 
     public List<Dataverse> getCarouselFeaturedDataverses() {
-        List<Dataverse> retList = new ArrayList();
-        /*
+        List<Dataverse> retList = featuredDataverseService.findByDataverseIdQuick(dataverse.getId());/*new ArrayList();
+        
         List<DataverseFeaturedDataverse> featuredList = featuredDataverseService.findByDataverseId(dataverse.getId());
         for (DataverseFeaturedDataverse dfd : featuredList) {
             Dataverse fd = dfd.getFeaturedDataverse();
             retList.add(fd);
-        }
-        */
+        }*/
+        
         return retList;
     }
 

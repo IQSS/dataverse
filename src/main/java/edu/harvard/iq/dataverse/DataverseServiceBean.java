@@ -368,6 +368,42 @@ public class DataverseServiceBean implements java.io.Serializable {
             
         return null;         
     }
+    
+    public DataverseTheme findDataverseThemeByIdQuick(Long id) {
+        if (id == null) {
+            return null; 
+        }
+        
+        Object[] result = null;
+        
+        try {
+                result = (Object[]) em.createNativeQuery("SELECT logo, logoFormat FROM dataversetheme WHERE dataverse_id = " + id).getSingleResult();
+            
+        } catch (Exception ex) {
+            return null;
+        }
+        
+        if (result == null) {
+            return null;
+        }
+        
+        DataverseTheme theme = new DataverseTheme();
+        
+        if (result[0] != null) {
+            theme.setLogo((String) result[0]);
+        }
+
+        if (result[1] != null) {
+            String format = (String) result[1];
+            if ("RECTANGLE".equals(format)) {
+                theme.setLogoFormat(DataverseTheme.ImageFormat.RECTANGLE);
+            } else if ("SQUARE".equals(format)) {
+                theme.setLogoFormat(DataverseTheme.ImageFormat.SQUARE);
+            }
+        }
+        
+        return theme;
+    }
 
     public List<Dataverse> findDataversesThisIdHasLinkedTo(long dataverseId) {
         return dataverseLinkingService.findLinkedDataverses(dataverseId);
