@@ -1237,7 +1237,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
             }
         }
 
-        logger.info("dataset id " + result.getEntity().getId() + ", returning " + cardImageUrl);
+        logger.info("dataset id " + result.getEntityId() + ", returning " + cardImageUrl);
 
         return cardImageUrl;
     }
