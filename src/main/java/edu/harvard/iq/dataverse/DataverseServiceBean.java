@@ -234,7 +234,7 @@ public class DataverseServiceBean implements java.io.Serializable {
     }
     
     public String getDataverseLogoThumbnailAsBase64(Dataverse dataverse, User user) {
-        /*
+        
         if (dataverse == null) {
             return null;
         }
@@ -250,7 +250,25 @@ public class DataverseServiceBean implements java.io.Serializable {
 
                 }
             }
-        } */
+        } 
+        return null;
+    }
+    
+    public String getDataverseLogoThumbnailAsBase64ById(Long dvId) {
+     
+        File dataverseLogoFile = getLogoById(dvId);
+        
+        if (dataverseLogoFile != null) {
+            String logoThumbNailPath = null;
+
+            if (dataverseLogoFile.exists()) {
+                logoThumbNailPath = ImageThumbConverter.generateImageThumb(dataverseLogoFile.getAbsolutePath(), 48);
+                if (logoThumbNailPath != null) {
+                    return ImageThumbConverter.getImageAsBase64FromFile(new File(logoThumbNailPath));
+
+                }
+            }
+        } 
         return null;
     }
     
@@ -315,6 +333,36 @@ public class DataverseServiceBean implements java.io.Serializable {
                     "logos" + File.separator + 
                     dataverse.getLogoOwnerId() + File.separator + 
                     theme.getLogo());
+            }
+        }
+            
+        return null;         
+    }
+    
+    private File getLogoById(Long id) {
+        if (id == null) {
+            return null; 
+        }
+        
+        String logoFileName = null;
+        
+        try {
+                logoFileName = (String) em.createNativeQuery("SELECT logo FROM dataversetheme WHERE dataverse_id = " + id).getSingleResult();
+            
+        } catch (Exception ex) {
+            return null;
+        }
+        
+        if (logoFileName != null && !logoFileName.equals("")) {
+            Properties p = System.getProperties();
+            String domainRoot = p.getProperty("com.sun.aas.instanceRoot");
+  
+            if (domainRoot != null && !"".equals(domainRoot)) {
+                return new File (domainRoot + File.separator + 
+                    "docroot" + File.separator + 
+                    "logos" + File.separator + 
+                    id + File.separator + 
+                    logoFileName);
             }
         }
             

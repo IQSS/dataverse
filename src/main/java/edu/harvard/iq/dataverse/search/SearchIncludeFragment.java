@@ -1057,8 +1057,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
             logger.info("checking DisplayImage for the search result " + i++);
             boolean valueSet = false;
             if (result.getType().equals("dataverses") /*&& result.getEntity() instanceof Dataverse*/) {
-                ///result.setImageUrl(getDataverseCardImageUrl(result));
-                result.setImageUrl(null);
+                result.setImageUrl(getDataverseCardImageUrl(result));
                 valueSet = true;
             } else if (result.getType().equals("datasets") /*&& result.getEntity() instanceof Dataset*/) {
                 result.setImageUrl(getDatasetCardImageUrl(result));
@@ -1160,7 +1159,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
 
             if (cardImageUrl != null) {
                 this.dvobjectThumbnailsMap.put(imageFileId, cardImageUrl);
-                logger.info("datafile id " + imageFileId + ", returning " + cardImageUrl);
+                //logger.info("datafile id " + imageFileId + ", returning " + cardImageUrl);
 
                 if (!(dvobjectViewMap.containsKey(imageFileId)
                         && dvobjectViewMap.get(imageFileId).isInstanceofDataFile())) {
@@ -1245,7 +1244,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
     // it's the responsibility of the user - to make sure the search result
     // passed to this method is of a Dataverse type!
     private String getDataverseCardImageUrl(SolrSearchResult result) {
-        return dataverseService.getDataverseLogoThumbnailAsBase64((Dataverse) result.getEntity(), session.getUser());
+        return dataverseService.getDataverseLogoThumbnailAsBase64ById(result.getEntityId());
     }
 
     public enum SortOrder {
