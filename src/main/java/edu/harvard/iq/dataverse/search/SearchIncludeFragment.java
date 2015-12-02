@@ -1058,24 +1058,22 @@ public class SearchIncludeFragment implements java.io.Serializable {
             boolean valueSet = false;
             if (result.getType().equals("dataverses") /*&& result.getEntity() instanceof Dataverse*/) {
                 ///result.setImageUrl(getDataverseCardImageUrl(result));
+                result.setImageUrl(null);
                 valueSet = true;
             } else if (result.getType().equals("datasets") /*&& result.getEntity() instanceof Dataset*/) {
-                ///result.setImageUrl(getDatasetCardImageUrl(result));
+                result.setImageUrl(getDatasetCardImageUrl(result));
                 valueSet = true;
             } else if (result.getType().equals("files") /*&& result.getEntity() instanceof DataFile*/) {
                 // TODO: 
                 // use permissionsWrapper?  -- L.A. 4.2.1
                 // OK, done! (4.2.2; in the getFileCardImageUrl() method, below)
                 result.setImageUrl(getFileCardImageUrl(result));
-                if (result.getImageUrl() != null) {
-                    result.setDisplayImage(true);
-                }
                 valueSet = true;
             }
 
             if (valueSet) {
                 if (result.getImageUrl() != null) {
-                    ///result.setDisplayImage(true);
+                    result.setDisplayImage(true);
                 }
             } else {
                 logger.warning("Index result / entity mismatch (id:resultType) - " + result.getId() + ":" + result.getType());
@@ -1124,6 +1122,10 @@ public class SearchIncludeFragment implements java.io.Serializable {
             // mark this dataset in the lookup map - so that we don't have to
             // do all these lookups again...
             this.dvobjectThumbnailsMap.put(assignedThumbnailFileId, "");
+            
+            // TODO: (?)
+            // do we need to cache this datafile object in the view map?
+            // -- L.A., 4.2.2
         }
 
         return null;
@@ -1182,11 +1184,13 @@ public class SearchIncludeFragment implements java.io.Serializable {
 
         String cardImageUrl = null;
 
-        cardImageUrl = this.getAssignedDatasetImage((Dataset) result.getEntity());
+        if (result.getEntity() != null) {
+            cardImageUrl = this.getAssignedDatasetImage((Dataset) result.getEntity());
 
-        if (cardImageUrl != null) {
-            logger.info("dataset id " + result.getEntity().getId() + " has a dedicated image assigned; returning " + cardImageUrl);
-            return cardImageUrl;
+            if (cardImageUrl != null) {
+                logger.info("dataset id " + result.getEntity().getId() + " has a dedicated image assigned; returning " + cardImageUrl);
+                return cardImageUrl;
+            }
         }
 
         Long thumbnailImageFileId = datasetVersionService.getThumbnailByVersionId(result.getDatasetVersionId());
@@ -1208,8 +1212,11 @@ public class SearchIncludeFragment implements java.io.Serializable {
                     && dvobjectViewMap.get(thumbnailImageFileId).isInstanceofDataFile()) {
                 thumbnailImageFile = (DataFile) dvobjectViewMap.get(thumbnailImageFileId);
             } else {
-                thumbnailImageFile = dataFileService.find(thumbnailImageFileId);
+                thumbnailImageFile = dataFileService.findCheapAndEasy(thumbnailImageFileId);
                 if (thumbnailImageFile != null) {
+                    // TODO:
+                    // do we need this file on the map? - it may not even produce
+                    // a thumbnail!
                     dvobjectViewMap.put(thumbnailImageFileId, thumbnailImageFile);
                 } else {
                     this.dvobjectThumbnailsMap.put(thumbnailImageFileId, "");
