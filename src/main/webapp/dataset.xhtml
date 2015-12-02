@@ -979,25 +979,25 @@
                             <p:commandLink type="button" styleClass="btn btn-default" value="#{bundle.acceptTerms}"
                                            rendered="#{DatasetPage.downloadType=='download' or DatasetPage.downloadType==''}"
                                            actionListener="#{DatasetPage.saveGuestbookResponse('download')}"
-                                           update="@([id$=Messages])" oncomplete="if (args === undefined) PF('downloadPopup').hide();">
+                                           update="@([id$=Messages])" oncomplete="if (args &amp;&amp; !args.validationFailed) PF('downloadPopup').hide();">
                                 <f:param name="DO_GB_VALIDATION" value="true"/>
                             </p:commandLink>
                             <p:commandLink type="button" styleClass="btn btn-default" value="#{bundle.acceptTerms}"
                                            rendered="#{DatasetPage.downloadType=='multiple'}"
                                            actionListener="#{DatasetPage.saveGuestbookResponse('multiple')}"
-                                           update="@([id$=Messages])" oncomplete="if (args === undefined) PF('downloadPopup').hide();">
+                                           update="@([id$=Messages])" oncomplete="if (args &amp;&amp; !args.validationFailed) PF('downloadPopup').hide();">
                                 <f:param name="DO_GB_VALIDATION" value="true"/>
                             </p:commandLink>
                             <p:commandLink type="button" styleClass="btn btn-default" value="#{bundle.acceptTerms}"
                                            rendered="#{DatasetPage.downloadType=='subset'}"
                                            actionListener="#{DatasetPage.saveGuestbookResponse('subset')}"
-                                           update="@([id$=Messages])" oncomplete="if (args === undefined) PF('downloadPopup').hide();PF('downloadDataSubsetPopup').show();">
+                                           update="@([id$=Messages])" oncomplete="if (args &amp;&amp; !args.validationFailed) PF('downloadPopup').hide();PF('downloadDataSubsetPopup').show();">
                                 <f:param name="DO_GB_VALIDATION" value="true"/>
                             </p:commandLink>
                             <p:commandLink type="button" styleClass="btn btn-default" value="#{bundle.acceptTerms}"
                                            rendered="#{DatasetPage.downloadType=='explore'}"
                                            actionListener="#{DatasetPage.saveGuestbookResponse('explore')}"
-                                           update="@([id$=Messages])" oncomplete="if (args === undefined) PF('downloadPopup').hide();">
+                                           update="@([id$=Messages])" oncomplete="if (args &amp;&amp; !args.validationFailed) PF('downloadPopup').hide();">
                                 <f:param name="DO_GB_VALIDATION" value="true"/>
                             </p:commandLink>
                             <ui:remove>
