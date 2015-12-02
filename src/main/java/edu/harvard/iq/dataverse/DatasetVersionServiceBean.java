@@ -6,6 +6,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
+import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.Arrays;
@@ -749,6 +750,42 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         }
 
         return null;
+    }
+    
+    public void populateDatasetSearchCard(SolrSearchResult solrSearchResult) {
+        Long dataverseId = Long.parseLong(solrSearchResult.getParent().get("id"));
+        Long datasetVersionId = solrSearchResult.getDatasetVersionId();
+        
+        if (dataverseId == 0 || datasetVersionId == null) {
+            return;
+        }
+        
+        Object[] searchResult = null;
+        
+        try {
+            searchResult = (Object[]) em.createNativeQuery("SELECT t0.VERSIONSTATE, t1.ALIAS FROM DATASETVERSION t0, DATAVERSE t1 WHERE t0.ID = " + datasetVersionId + " AND t1.ID = " + dataverseId).getSingleResult();
+        } catch (Exception ex) {
+            return;
+        }
+
+        if (searchResult == null) {
+            return;
+        }
+        
+        if (searchResult[0] != null) {
+            String versionState = (String)searchResult[0];
+            if ("DEACCESSIONED".equals(versionState)) {
+                solrSearchResult.setDeaccessionedState(true);
+            }
+        }
+        
+        /**
+          * @todo (from pdurbin) can a dataverse alias ever be null?
+          */
+        
+        if (searchResult[1] != null) {
+            solrSearchResult.setDataverseAlias((String) searchResult[1]);
+        }
     }
     
 } // end class

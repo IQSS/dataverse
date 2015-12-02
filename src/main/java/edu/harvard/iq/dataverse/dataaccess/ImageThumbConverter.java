@@ -144,7 +144,6 @@ public class ImageThumbConverter {
 
         logger.fine("entering getImageThumb, size " + size);
 
-        InputStream imageThumbInputStream = null;
         FileAccessIO fileAccess = null;
 
         try {
