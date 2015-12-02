@@ -44,7 +44,7 @@
                             <!-- Edit Button -->
                             <div class="btn-group pull-right" jsf:rendered="#{DatasetPage.sessionUserAuthenticated
                                                                               and DatasetPage.canUpdateDataset()
-                                                                              and !DatasetPage.dataset.latestVersion.deaccessioned}">
+                                                                              and !DatasetPage.dataset.deaccessioned}">
                                 <button type="button" id="editDataSet" class="btn btn-default dropdown-toggle #{DatasetPage.locked ? 'disabled' : ''}" data-toggle="dropdown">
                                     <span class="glyphicon glyphicon-pencil"/> #{bundle['dataset.editBtn']} <span class="caret"></span>
                                 </button>
