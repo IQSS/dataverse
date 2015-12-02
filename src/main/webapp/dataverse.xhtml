@@ -193,7 +193,7 @@
                         <hr class="margin-top-half margin-bottom-half"/>
                         
                         <!-- Metadata Panel -->
-                        <p:panel styleClass="panelLayoutBlock"  widgetVar="optionBlock">                            
+                        <p:panel styleClass="panelLayoutBlock"  widgetVar="optionBlock" id="optionBlock">                            
                             <p:commandButton id="hiddenRefresh" value="back" style="display:none" 
                                              actionListener="#{DataversePage.refresh}"
                                              update="@widgetVar(optionBlock)" />
@@ -281,8 +281,7 @@
                                                                         <td>
                                                                             <p:selectOneRadio id="OptionsRadio#{dsft.id}" value="#{dsft.requiredDV}" widgetVar="OptButton#{dsft.id}" disabled ="#{DataversePage.editInputLevel == false}"
                                                                                               rendered="#{!dsft.hasChildren and !((!dsft.hasChildren  and dsft.required) or (dsft.hasChildren and dsft.hasRequiredChildren))}">
-                                                                                <f:selectItems value="#{dsft.optionSelectItems}"/>
-                                                                                <p:ajax update="@widgetVar(OptButton#{dsft.id})"/>
+                                                                                <f:selectItems value="#{dsft.optionSelectItems}"/>                                                                               
                                                                             </p:selectOneRadio>
 
                                                                             <span class="text-muted" jsf:rendered="#{(!dsft.hasChildren and dsft.required) or (dsft.hasChildren and dsft.hasRequiredChildren)}">
@@ -295,9 +294,8 @@
                                                         </table>
                                                     </div>
                                                 </div>
-                                                <p:commandLink id="hideDSFT" styleClass="btn btn-default" actionListener="#{DataversePage.hideDatasetFieldTypes(mdb.id)}" rendered="#{mdb.showDatasetFieldTypes}">
+                                                <p:commandLink id="hideDSFT" styleClass="btn btn-default"  update="@widgetVar(optionBlock)" actionListener="#{DataversePage.hideDatasetFieldTypes(mdb.id)}" rendered="#{mdb.showDatasetFieldTypes}">
                                                     <h:outputText value="#{bundle.done}" />
-                                                    <p:ajax update="@widgetVar(optionBlock)" listener="#{DataversePage.hideDatasetFieldTypes(mdb.id)}" />
                                                 </p:commandLink>
                                             </div>
                                         </ui:repeat>
