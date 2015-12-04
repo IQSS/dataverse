@@ -369,8 +369,8 @@
                                     #{bundle['file.downloadBtn.format.all']}
                                 </p:commandLink>
                             </li>
+                            <li role="presentation" class="divider"></li>
                         </ui:remove>
-                        <li role="presentation" class="divider"></li>
                         <li>
                             <p:commandLink rendered="#{!(DatasetPage.downloadPopupRequired)}"
                                            actionListener="#{DatasetPage.startFileDownload(fileMetadata, 'original')}">
@@ -439,7 +439,7 @@
                                            value="Data Subset"
                                            disabled="#{empty fileMetadata.dataFile.id}"/>
                         </li>
-                        <li class="dropdown-submenu">
+                        <li class="dropdown-submenu pull-left">
                             <a tabindex="-1" href="javascript:void(0);">#{bundle['file.downloadBtn.format.citation']}</a>
                             <ul class="dropdown-menu">
                                 <li>

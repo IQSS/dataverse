@@ -247,6 +247,125 @@ public class DataFileServiceBean implements java.io.Serializable {
         return (FileMetadata) query.getSingleResult();
     }
 
+    public DataFile findCheapAndEasy(Long id) {
+        DataFile dataFile = null;
+
+        Object[] result = null;
+
+        try {
+            result = (Object[]) em.createNativeQuery("SELECT t0.ID, t0.CREATEDATE, t0.INDEXTIME, t0.MODIFICATIONTIME, t0.PERMISSIONINDEXTIME, t0.PERMISSIONMODIFICATIONTIME, t0.PUBLICATIONDATE, t0.CREATOR_ID, t0.RELEASEUSER_ID, t0.PREVIEWIMAGEAVAILABLE, t1.CONTENTTYPE, t1.FILESYSTEMNAME, t1.FILESIZE, t1.INGESTSTATUS, t1.MD5, t1.RESTRICTED, t3.ID, t3.AUTHORITY, t3.IDENTIFIER FROM DVOBJECT t0, DATAFILE t1, DVOBJECT t2, DATASET t3 WHERE ((t0.ID = " + id + ") AND (t0.OWNER_ID = t2.ID) AND (t2.ID = t3.ID) AND (t1.ID = t0.ID))").getSingleResult();
+        } catch (Exception ex) {
+            return null;
+        }
+
+        if (result == null) {
+            return null;
+        }
+
+        Integer file_id = (Integer) result[0];
+
+        dataFile = new DataFile();
+
+        dataFile.setId(file_id.longValue());
+
+        Timestamp createDate = (Timestamp) result[1];
+        Timestamp indexTime = (Timestamp) result[2];
+        Timestamp modificationTime = (Timestamp) result[3];
+        Timestamp permissionIndexTime = (Timestamp) result[4];
+        Timestamp permissionModificationTime = (Timestamp) result[5];
+        Timestamp publicationDate = (Timestamp) result[6];
+
+        dataFile.setCreateDate(createDate);
+        dataFile.setIndexTime(indexTime);
+        dataFile.setModificationTime(modificationTime);
+        dataFile.setPermissionIndexTime(permissionIndexTime);
+        dataFile.setPermissionModificationTime(permissionModificationTime);
+        dataFile.setPublicationDate(publicationDate);
+
+        // no support for users yet!
+        /*
+         Long creatorId = (Long) result[7];
+         if (creatorId != null) {
+         AuthenticatedUser creator = userMap.get(creatorId);
+         if (creator == null) {
+         creator = userService.find(creatorId);
+         if (creator != null) {
+         userMap.put(creatorId, creator);
+         }
+         }
+         if (creator != null) {
+         dataFile.setCreator(creator);
+         }
+         }
+
+         Long releaseUserId = (Long) result[8];
+         if (releaseUserId != null) {
+         AuthenticatedUser releaseUser = userMap.get(releaseUserId);
+         if (releaseUser == null) {
+         releaseUser = userService.find(releaseUserId);
+         if (releaseUser != null) {
+         userMap.put(releaseUserId, releaseUser);
+         }
+         }
+         if (releaseUser != null) {
+         dataFile.setReleaseUser(releaseUser);
+         }
+         }
+         */
+        Boolean previewAvailable = (Boolean) result[9];
+        if (previewAvailable != null) {
+            dataFile.setPreviewImageAvailable(previewAvailable);
+        }
+        
+        String contentType = (String) result[10];
+        
+        if (contentType != null) {
+            dataFile.setContentType(contentType);
+        }
+
+        String storageIdentifier = (String) result[11];
+
+        if (storageIdentifier != null) {
+            dataFile.setStorageIdentifier(storageIdentifier);
+        }
+
+        Long fileSize = (Long) result[12];
+
+        if (fileSize != null) {
+            dataFile.setFilesize(fileSize);
+        }
+
+        if (result[13] != null) {
+            String ingestStatusString = (String) result[13];
+            dataFile.setIngestStatus(ingestStatusString.charAt(0));
+        }
+
+        String md5 = (String) result[14];
+
+        if (md5 != null) {
+            dataFile.setmd5(md5);
+        }
+
+        Boolean restricted = (Boolean) result[15];
+        if (restricted != null) {
+            dataFile.setRestricted(restricted);
+        }
+        
+
+        Dataset owner = new Dataset();
+
+        
+        // TODO: check for nulls
+        owner.setId((Long)result[16]);
+        owner.setAuthority((String)result[17]);
+        owner.setIdentifier((String)result[18]);
+                
+        dataFile.setOwner(owner);
+
+        // TODO:
+        // look up dataTable; but only if contenttyp is right.
+        return dataFile;
+    }
     /* 
      * This is an experimental method for populating the versions of 
      * the datafile with the filemetadatas, optimized for making as few db 
@@ -273,7 +392,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         
         int i = 0; 
         
-        List<Object[]> dataTableResults = em.createNativeQuery("SELECT t0.ID, t0.DATAFILE_ID, t0.UNF, t0.CASEQUANTITY, t0.VARQUANTITY FROM dataTable t0, dataFile t1, dvObject t2 WHERE ((t0.DATAFILE_ID = t1.ID) AND (t1.ID = t2.ID) AND (t2.OWNER_ID = " + owner.getId() + "))").getResultList();
+        List<Object[]> dataTableResults = em.createNativeQuery("SELECT t0.ID, t0.DATAFILE_ID, t0.UNF, t0.CASEQUANTITY, t0.VARQUANTITY, t0.ORIGINALFILEFORMAT FROM dataTable t0, dataFile t1, dvObject t2 WHERE ((t0.DATAFILE_ID = t1.ID) AND (t1.ID = t2.ID) AND (t2.OWNER_ID = " + owner.getId() + "))").getResultList();
         
         for (Object[] result : dataTableResults) {
             DataTable dataTable = new DataTable(); 
@@ -286,6 +405,8 @@ public class DataFileServiceBean implements java.io.Serializable {
             dataTable.setCaseQuantity((Long)result[3]);
             
             dataTable.setVarQuantity((Long)result[4]);
+            
+            dataTable.setOriginalFileFormat((String)result[5]);
             
             dataTables.add(dataTable);
             datatableMap.put(fileId, i++);
@@ -652,6 +773,10 @@ public class DataFileServiceBean implements java.io.Serializable {
             return false;
         }
         
+        if (file.isHarvested() || "".equals(file.getStorageIdentifier())) {
+            return false;
+        }
+        
         String contentType = file.getContentType();
         
         // Some browsers (Chrome?) seem to identify FITS files as mime
@@ -681,6 +806,13 @@ public class DataFileServiceBean implements java.io.Serializable {
             return false; 
         } 
         
+        // If this file already has the "thumbnail generated" flag set,
+        // we'll just trust that:
+        
+        if (file.isPreviewImageAvailable()) {
+            return true;
+        }
+        
         // If thumbnails are not even supported for this class of files, 
         // there's notthing to talk about: 
         
@@ -697,7 +829,7 @@ public class DataFileServiceBean implements java.io.Serializable {
          it has to be generated on the fly - so you have to figure out which 
          is more important... 
         TODO: adding a boolean flag isImageAlreadyGenerated to the DataFile 
-         db table should help with this. -- L.A. 4.2.1
+         db table should help with this. -- L.A. 4.2.1 DONE: 4.2.2
         
         // Also, thumbnails are only shown to users who have permission to see 
         // the full-size image file. So before we do anything else, let's
@@ -709,7 +841,14 @@ public class DataFileServiceBean implements java.io.Serializable {
         
         
         
-       return ImageThumbConverter.isThumbnailAvailable(file);      
+       if (ImageThumbConverter.isThumbnailAvailable(file)) {
+           file = this.find(file.getId());
+           file.setPreviewImageAvailable(true);
+           file = em.merge(file);
+           // (should this be done here? - TODO:)
+           return true;
+       }
+       return false;
     }
 
     
