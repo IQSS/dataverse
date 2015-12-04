@@ -17,6 +17,7 @@ import java.io.InputStream;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -419,6 +420,47 @@ public class DataverseServiceBean implements java.io.Serializable {
 
     public List<Dataverse> findDataversesThatLinkToThisDatasetId(long datasetId) {
         return datasetLinkingService.findLinkingDataverses(datasetId);
+    }
+    
+    /**
+     * Used to identify and properly display Harvested objects on the dataverse page.
+     * 
+     * @return 
+     */
+    public Map<Long, String> getAllHarvestedDataverseDescriptions(){
+        
+        String qstr = "SELECT dataverse_id, archiveDescription FROM harvestingDataverseConfig;";
+        List<Object[]> searchResults = null;
+        
+        try {
+            searchResults = em.createNativeQuery(qstr).getResultList();
+        } catch (Exception ex) {
+            searchResults = null;
+        }
+        
+        if (searchResults == null) {
+            return null;
+        }
+        
+        Map<Long, String> ret = new HashMap<>();
+        
+        for (Object[] result : searchResults) {
+            Long dvId = null;
+            if (result[0] != null) {
+                try {
+                    dvId = (Long)result[0];
+                } catch (Exception ex) {
+                    dvId = null;
+                }
+                if (dvId == null) {
+                    continue;
+                }
+                
+                ret.put(dvId, (String)result[1]);
+            }
+        }
+        
+        return ret;        
     }
 
     public void populateDvSearchCard(SolrSearchResult solrSearchResult) {

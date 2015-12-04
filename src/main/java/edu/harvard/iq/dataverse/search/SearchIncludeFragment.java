@@ -117,7 +117,8 @@ public class SearchIncludeFragment implements java.io.Serializable {
     private String errorFromSolr;
     private SearchException searchException;
     private boolean rootDv = false;
-
+    private Map<Long, String> harvestedDataverseDescriptions = null;
+    
     /**
      * @todo:
      *
@@ -366,6 +367,10 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 if (solrSearchResult.getType().equals("dataverses")) {
                     //logger.info("XXRESULT: dataverse: "+solrSearchResult.getEntityId());
                     dataverseService.populateDvSearchCard(solrSearchResult);
+                    
+                    if (isHarvestedDataverse(solrSearchResult.getEntityId())) {
+                        solrSearchResult.setHarvested(true);
+                    }
 
                 } else if (solrSearchResult.getType().equals("datasets")) {
                     //logger.info("XXRESULT: dataset: "+solrSearchResult.getEntityId());
@@ -376,6 +381,11 @@ public class SearchIncludeFragment implements java.io.Serializable {
                     String deaccesssionReason = solrSearchResult.getDeaccessionReason();
                     if (deaccesssionReason != null) {
                         solrSearchResult.setDescriptionNoSnippet(deaccesssionReason);
+                    }
+                    
+                    if (isHarvestedDataverse(solrSearchResult.getParentIdAsLong())) {
+                        solrSearchResult.setHarvestingDescription(getHarvestingDataverseDescription(solrSearchResult.getParentIdAsLong()));
+                        solrSearchResult.setHarvested(true);
                     }
                 } else if (solrSearchResult.getType().equals("files")) {
                     //logger.info("XXRESULT: datafile: "+solrSearchResult.getEntityId());
@@ -1248,7 +1258,25 @@ public class SearchIncludeFragment implements java.io.Serializable {
     private String getDataverseCardImageUrl(SolrSearchResult result) {
         return dataverseService.getDataverseLogoThumbnailAsBase64ById(result.getEntityId());
     }
+    
+    private Map<Long, String> getHarvestedDataverseDescriptions() {
+        if (harvestedDataverseDescriptions != null) {
+            return harvestedDataverseDescriptions;
+        }
+        harvestedDataverseDescriptions = dataverseService.getAllHarvestedDataverseDescriptions();
+        return harvestedDataverseDescriptions;
+    }
+    
+    private boolean isHarvestedDataverse(Long id) {
+        return this.getHarvestedDataverseDescriptions().containsKey(id);
+    }
 
+    private String getHarvestingDataverseDescription(Long id) {
+        if (this.isHarvestedDataverse(id)) {
+            return this.getHarvestedDataverseDescriptions().get(id);
+        }
+        return null;
+    }
     public enum SortOrder {
 
         asc, desc

@@ -690,6 +690,8 @@ public class DataFileServiceBean implements java.io.Serializable {
         return retList; 
     }
     
+    
+    
     public List<DataFile> findIngestsInProgress() {
         if ( em.isOpen() ) {
             Query query = em.createQuery("select object(o) from DataFile as o where o.ingestStatus =:scheduledStatusCode or o.ingestStatus =:progressStatusCode order by o.id");
