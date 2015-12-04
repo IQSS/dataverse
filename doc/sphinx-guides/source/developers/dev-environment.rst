@@ -15,7 +15,7 @@ Requirements
 Java
 ~~~~
 
-Dataverse is developed on Java 7. An upgrade to Java 8 is being tracked at https://github.com/IQSS/dataverse/issues/2151
+Dataverse is developed on Java 8.
 
 The use of Oracle's version of Java is recommended, which can be downloaded from http://www.oracle.com/technetwork/java/javase/downloads/index.html
 

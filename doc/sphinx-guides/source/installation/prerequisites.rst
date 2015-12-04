@@ -6,9 +6,9 @@ Prerequisites
 
 Java
 ----------------------------
-Oracle JDK or OpenJDK 1.7.x. Use the latest available. MacOS X comes with the JDK (but make sure you keep it updated). On a RedHat and similar Linux distributions, install it with something like ::
+Oracle JDK or OpenJDK 1.8.x. Use the latest available. MacOS X comes with the JDK (but make sure you keep it updated). On a RedHat and similar Linux distributions, install it with something like ::
 
-	$ yum install java-1.7.0-openjdk-devel
+	$ yum install java-1.8.0-openjdk-devel
 
 
 Glassfish
