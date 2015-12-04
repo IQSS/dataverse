@@ -425,7 +425,6 @@ public class DataverseServiceBean implements java.io.Serializable {
     /**
      * Used to identify and properly display Harvested objects on the dataverse page.
      * 
-     * @return 
      */
     public Map<Long, String> getAllHarvestedDataverseDescriptions(){
         

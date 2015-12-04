@@ -23,8 +23,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
@@ -1065,6 +1067,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
         int i = 0;
         dvobjectThumbnailsMap = new HashMap<>();
         dvobjectViewMap = new HashMap<>();
+        Set<Long> fileParentDatasets = null;
         for (SolrSearchResult result : searchResultsList) {
             logger.info("checking DisplayImage for the search result " + i++);
             boolean valueSet = false;
@@ -1080,6 +1083,10 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 // OK, done! (4.2.2; in the getFileCardImageUrl() method, below)
                 result.setImageUrl(getFileCardImageUrl(result));
                 valueSet = true;
+                if (fileParentDatasets == null) {
+                    fileParentDatasets = new HashSet<>();
+                }
+                fileParentDatasets.add(result.getParentIdAsLong());
             }
 
             if (valueSet) {
@@ -1092,6 +1099,23 @@ public class SearchIncludeFragment implements java.io.Serializable {
         }
         dvobjectThumbnailsMap = null;
         dvobjectViewMap = null;
+        
+        if (fileParentDatasets != null) {
+            Map<Long,String> descriptionsForHarvestedDatasets = datasetService.getHarvestingDescriptionsForHarvestedDatasets(fileParentDatasets);
+            if (descriptionsForHarvestedDatasets != null && descriptionsForHarvestedDatasets.size() > 0) {
+                for (SolrSearchResult result : searchResultsList) {
+                    if (result.getType().equals("files")) {
+                        if (descriptionsForHarvestedDatasets.containsKey(result.getParentIdAsLong())) {
+                            result.setHarvestingDescription(descriptionsForHarvestedDatasets.get(result.getParentIdAsLong()));
+                            result.setHarvested(true);
+                        }
+                    }
+                }
+            }
+            descriptionsForHarvestedDatasets = null;
+            fileParentDatasets = null;
+        } 
+        
     }
 
     private Map<Long, String> dvobjectThumbnailsMap = null;
