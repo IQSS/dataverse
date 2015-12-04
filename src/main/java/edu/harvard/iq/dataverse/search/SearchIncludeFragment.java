@@ -304,10 +304,10 @@ public class SearchIncludeFragment implements java.io.Serializable {
              * https://github.com/IQSS/dataverse/issues/84
              */
             int numRows = 10;
-            solrQueryResponse = searchService.search(session.getUser(), dataverse, queryToPassToSolr, filterQueriesFinal, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows);
+            solrQueryResponse = searchService.search(session.getUser(), dataverse, queryToPassToSolr, filterQueriesFinal, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows, false);
             // This 2nd search() is for populating the facets: -- L.A. 
             // TODO: ...
-            solrQueryResponseAllTypes = searchService.search(session.getUser(), dataverse, queryToPassToSolr, filterQueriesFinalAllTypes, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows);
+            solrQueryResponseAllTypes = searchService.search(session.getUser(), dataverse, queryToPassToSolr, filterQueriesFinalAllTypes, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows, false);
         } catch (SearchException ex) {
             Throwable cause = ex;
             StringBuilder sb = new StringBuilder();
@@ -364,10 +364,11 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 }
 
                 if (solrSearchResult.getType().equals("dataverses")) {
-
+                    logger.info("XXRESULT: dataverse: "+solrSearchResult.getEntityId());
                     dataverseService.populateDvSearchCard(solrSearchResult);
 
                 } else if (solrSearchResult.getType().equals("datasets")) {
+                    logger.info("XXRESULT: dataset: "+solrSearchResult.getEntityId());
                     datasetVersionService.populateDatasetSearchCard(solrSearchResult);
 
                     // @todo - the 3 lines below, should they be moved inside
@@ -377,6 +378,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                         solrSearchResult.setDescriptionNoSnippet(deaccesssionReason);
                     }
                 } else if (solrSearchResult.getType().equals("files")) {
+                    logger.info("XXRESULT: datafile: "+solrSearchResult.getEntityId());
                     solrSearchResult.setEntity(dataFileService.findCheapAndEasy(solrSearchResult.getEntityId()));
 
                     /**

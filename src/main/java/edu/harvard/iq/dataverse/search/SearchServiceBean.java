@@ -119,6 +119,32 @@ public class SearchServiceBean {
      * @throws SearchException
      */
     public SolrQueryResponse search(User user, Dataverse dataverse, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, boolean onlyDatatRelatedToMe, int numResultsPerPage) throws SearchException {
+        return search(user, dataverse, query, filterQueries, sortField, sortOrder, paginationStart, onlyDatatRelatedToMe, numResultsPerPage, true);
+    }
+    
+    /**
+     * Import note: "onlyDatatRelatedToMe" relies on filterQueries for providing
+     * access to Private Data for the correct user
+     *
+     * In other words "onlyDatatRelatedToMe", negates other filter Queries
+     * related to permissions
+     *
+     *
+     * @param user
+     * @param dataverse
+     * @param query
+     * @param filterQueries
+     * @param sortField
+     * @param sortOrder
+     * @param paginationStart
+     * @param onlyDatatRelatedToMe
+     * @param numResultsPerPage
+     * @param retrieveEntities - look up dvobject entities with .find() (potentially expensive!) 
+     * @return
+     * @throws SearchException
+     */
+    public SolrQueryResponse search(User user, Dataverse dataverse, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, boolean onlyDatatRelatedToMe, int numResultsPerPage, boolean retrieveEntities) throws SearchException {
+
         if (paginationStart < 0) {
             throw new IllegalArgumentException("paginationStart must be 0 or greater");
         }
@@ -399,7 +425,9 @@ public class SearchServiceBean {
 //            logger.info(id + ": " + description);
             solrSearchResult.setId(id);
             solrSearchResult.setEntityId(entityid);
-            ///solrSearchResult.setEntity(dvObjectService.findDvObject(entityid));
+            if (retrieveEntities) {
+                solrSearchResult.setEntity(dvObjectService.findDvObject(entityid));
+            }
             solrSearchResult.setIdentifier(identifier);
             solrSearchResult.setPersistentUrl(persistentUrl);
             solrSearchResult.setType(type);
