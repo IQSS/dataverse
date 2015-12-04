@@ -364,11 +364,11 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 }
 
                 if (solrSearchResult.getType().equals("dataverses")) {
-                    logger.info("XXRESULT: dataverse: "+solrSearchResult.getEntityId());
+                    //logger.info("XXRESULT: dataverse: "+solrSearchResult.getEntityId());
                     dataverseService.populateDvSearchCard(solrSearchResult);
 
                 } else if (solrSearchResult.getType().equals("datasets")) {
-                    logger.info("XXRESULT: dataset: "+solrSearchResult.getEntityId());
+                    //logger.info("XXRESULT: dataset: "+solrSearchResult.getEntityId());
                     datasetVersionService.populateDatasetSearchCard(solrSearchResult);
 
                     // @todo - the 3 lines below, should they be moved inside
@@ -378,8 +378,8 @@ public class SearchIncludeFragment implements java.io.Serializable {
                         solrSearchResult.setDescriptionNoSnippet(deaccesssionReason);
                     }
                 } else if (solrSearchResult.getType().equals("files")) {
-                    logger.info("XXRESULT: datafile: "+solrSearchResult.getEntityId());
-                    solrSearchResult.setEntity(dataFileService.findCheapAndEasy(solrSearchResult.getEntityId()));
+                    //logger.info("XXRESULT: datafile: "+solrSearchResult.getEntityId());
+                    dataFileService.populateFileSearchCard(solrSearchResult);
 
                     /**
                      * @todo: show DataTable variables
