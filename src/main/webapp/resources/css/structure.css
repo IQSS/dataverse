@@ -468,19 +468,14 @@ table.ui-panelgrid.facetsMoreLess td:last-child {text-align:right;}
 #dv-main div.results-sort-pagination div.pagination {margin-left:1em;}
 #dv-main div.results-sort-pagination.results-bottom .pagination {margin-top:0; margin-bottom:0;}
 
-/* table[id$='resultsTable'] .ui-datatable-tablewrapper table > thead {display:none;}
-table[id$='resultsTable'] > .ui-datatable-tablewrapper > table {border-collapse:separate; border-spacing:0 1em;} */
-
-/* table[id$='resultsTable'].resultsNone .ui-datatable-tablewrapper table tfoot {display:none;} */
-
-/* table[id$='resultsTable'] > .ui-datatable-tablewrapper > table > tbody > tr > td[role='gridcell'] {font-size:90%;}
-table[id$='resultsTable'] > .ui-datatable-tablewrapper > table > tbody > tr > td[role='gridcell'] > div.card-title-icon-block,
-table[id$='resultsTable'] > .ui-datatable-tablewrapper > table > tbody > tr > td[role='gridcell'] > div.card-preview-icon-block,
-table[id$='resultsTable'] > .ui-datatable-tablewrapper > table > tbody > tr > td[role='gridcell'] > div.file-tags-block {font-size:110%;} */
-
-table[id$='resultsTable'] td > div {border:1px solid grey; margin:6px 0; padding: 4px 10px;}
+table[id$='resultsTable'] td > div {border:1px solid #dddddd; margin:6px 0; padding: 4px 10px; font-size: 90%;}
 table[id$='resultsTable'] td > div.dataverseResult {border-color:#c55b28;}
 table[id$='resultsTable'] td > div.datasetResult {border-color:#428bca;}
+table[id$='resultsTable'] td > div > div.card-title-icon-block, 
+table[id$='resultsTable'] td > div > div.card-preview-icon-block, 
+table[id$='resultsTable'] td > div > div.file-tags-block {
+    font-size: 110%;
+}
 
 /* -------- TABLES -------- */
 div.headerless-table .ui-datatable-tablewrapper table > thead {display:none;}
