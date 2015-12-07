@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
@@ -35,8 +36,16 @@ public class DataversesIT {
     @BeforeClass
     public static void setUpClass() {
 
+        String specifiedUri = System.getProperty("dataverse.test.baseurl");
+        if (specifiedUri != null) {
+            RestAssured.baseURI = specifiedUri;
+        } else {
+            RestAssured.baseURI = "http://localhost:8080";
+        }
+        logger.info("Base URL for tests: " + specifiedUri);
+
         Response createUserResponse = createUser(getRandomUsername(), "firstName", "lastName");
-//        createUserResponse.prettyPrint();
+        createUserResponse.prettyPrint();
         assertEquals(200, createUserResponse.getStatusCode());
 
         JsonPath createdUser1 = JsonPath.from(createUserResponse.body().asString());
@@ -59,7 +68,7 @@ public class DataversesIT {
 //        deleteDataverse2Response.prettyPrint();
 
         Response deleteUser1Response = deleteUser(username1);
-//        deleteUser1Response.prettyPrint();
+        deleteUser1Response.prettyPrint();
         assertEquals(200, deleteUser1Response.getStatusCode());
 
     }
@@ -67,15 +76,18 @@ public class DataversesIT {
     @Test
     public void testAttemptToCreateDuplicateAlias() throws Exception {
         dataverseAlias1 = getRandomIdentifier();
+        logger.info("Creating dataverse with alias '" + dataverseAlias1 + "'...");
         Response createDataverse1Response = createDataverse(dataverseAlias1, apiToken1);
-//        createDataverse1Response.prettyPrint();
+        createDataverse1Response.prettyPrint();
         dataverseAlias2 = dataverseAlias1.toUpperCase();
+        logger.info("Attempting to creating dataverse with alias '" + dataverseAlias2 + "' (uppercase version of existing '" + dataverseAlias1 + "' dataverse, should fail)...");
         Response createDataverse2Response = createDataverse(dataverseAlias2, apiToken1);
         createDataverse2Response.prettyPrint();
         assertEquals(400, createDataverse2Response.getStatusCode());
     }
 
     private static Response createUser(String username, String firstName, String lastName) {
+        logger.info("Creating test user...");
         String userAsJson = getUserAsJsonString(username, firstName, lastName);
         String password = getPassword(userAsJson);
         Response response = given()
