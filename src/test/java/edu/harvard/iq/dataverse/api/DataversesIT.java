@@ -21,7 +21,6 @@ public class DataversesIT {
     private static final Logger logger = Logger.getLogger(DataversesIT.class.getCanonicalName());
 
     private static final String builtinUserKey = "burrito";
-    private static final String keyString = "X-Dataverse-key";
     private static String EMPTY_STRING = "";
     private static final String idKey = "id";
     private static final String apiTokenKey = "apiToken";
@@ -36,13 +35,7 @@ public class DataversesIT {
     @BeforeClass
     public static void setUpClass() {
 
-        String specifiedUri = System.getProperty("dataverse.test.baseurl");
-        if (specifiedUri != null) {
-            RestAssured.baseURI = specifiedUri;
-        } else {
-            RestAssured.baseURI = "http://localhost:8080";
-        }
-        logger.info("Base URL for tests: " + specifiedUri);
+        RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
 
         Response createUserResponse = createUser(getRandomUsername(), "firstName", "lastName");
         createUserResponse.prettyPrint();
