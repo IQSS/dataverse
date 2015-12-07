@@ -9,12 +9,13 @@ import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
-import static com.jayway.restassured.RestAssured.given;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.logging.Level;
+import static com.jayway.restassured.RestAssured.given;
+import static com.jayway.restassured.path.xml.XmlPath.from;
 
 public class UtilIT {
 
@@ -25,6 +26,7 @@ public class UtilIT {
     private static final String EMAIL_KEY = "email";
     private static final String API_TOKEN_KEY = "apiToken";
     private static final String BUILTIN_USER_KEY = "burrito";
+    private static final String EMPTY_STRING = "";
 
     static String getRestAssuredBaseUri() {
         String saneDefaultInDev = "http://localhost:8080";
@@ -105,6 +107,15 @@ public class UtilIT {
         return datasetId;
     }
 
+    static String getDatasetPersistentIdFromResponse(Response createDatasetResponse) {
+        String xml = createDatasetResponse.body().asString();
+        String datasetSwordIdUrl = from(xml).get("entry.id");
+        /**
+         * @todo stop assuming the last 22 characters are the doi/globalId
+         */
+        return datasetSwordIdUrl.substring(datasetSwordIdUrl.length() - 22);
+    }
+
     static Response createDataverse(String alias, String apiToken) {
         JsonArrayBuilder contactArrayBuilder = Json.createArrayBuilder();
         contactArrayBuilder.add(Json.createObjectBuilder().add("contactEmail", getEmailFromUserName(getRandomIdentifier())));
@@ -148,6 +159,27 @@ public class UtilIT {
         }
     }
 
+    static Response createRandomDatasetViaSwordApi(String dataverseToCreateDatasetIn, String apiToken) {
+        String xmlIn = getDatasetXml(getRandomIdentifier(), getRandomIdentifier(), getRandomIdentifier());
+        Response createDatasetResponse = given()
+                .auth().basic(apiToken, EMPTY_STRING)
+                .body(xmlIn)
+                .contentType("application/atom+xml")
+                .post("/dvn/api/data-deposit/v1.1/swordv2/collection/dataverse/" + dataverseToCreateDatasetIn);
+        return createDatasetResponse;
+    }
+
+    static private String getDatasetXml(String title, String author, String description) {
+        String xmlIn = "<?xml version=\"1.0\"?>\n"
+                + "<entry xmlns=\"http://www.w3.org/2005/Atom\" xmlns:dcterms=\"http://purl.org/dc/terms/\">\n"
+                + "   <dcterms:title>" + title + "</dcterms:title>\n"
+                + "   <dcterms:creator>" + author + "</dcterms:creator>\n"
+                + "   <dcterms:description>" + description + "</dcterms:description>\n"
+                + "</entry>\n"
+                + "";
+        return xmlIn;
+    }
+
     public static Response deleteUser(String username) {
         Response deleteUserResponse = given()
                 .delete("/api/admin/authenticatedUsers/" + username + "/");
@@ -158,10 +190,17 @@ public class UtilIT {
         return given().delete("/api/dataverses/" + doomed + "?key=" + apiToken);
     }
 
-    public static Response deleteDataset(Integer datasetId, String apiToken) {
+    public static Response deleteDatasetViaNativeApi(Integer datasetId, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .delete("/api/datasets/" + datasetId);
+    }
+
+    static Response deleteDatasetViaSwordApi(String persistentId, String apiToken) {
+        return given()
+                .auth().basic(apiToken, EMPTY_STRING)
+                .relaxedHTTPSValidation()
+                .delete("/dvn/api/data-deposit/v1.1/swordv2/edit/study/" + persistentId);
     }
 
 }

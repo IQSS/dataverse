@@ -75,7 +75,7 @@ public class DatasetsIT {
             return;
         }
 
-        Response deleteDatasetResponse = UtilIT.deleteDataset(datasetId1, apiToken1);
+        Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId1, apiToken1);
         deleteDatasetResponse.prettyPrint();
         assertEquals(200, deleteDatasetResponse.getStatusCode());
 
