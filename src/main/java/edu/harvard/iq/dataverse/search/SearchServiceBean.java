@@ -521,6 +521,10 @@ public class SearchServiceBean {
                 solrSearchResult.setFileMd5((String) solrDocument.getFieldValue(SearchFields.FILE_MD5));
                 solrSearchResult.setUnf((String) solrDocument.getFieldValue(SearchFields.UNF));
                 solrSearchResult.setDatasetVersionId(datasetVersionId);
+                List<String> fileCategories = (ArrayList) solrDocument.getFieldValues(SearchFields.FILE_TAG);
+                if (fileCategories != null) {
+                    solrSearchResult.setFileCategories(fileCategories);
+                }
             }
             /**
              * @todo store PARENT_ID as a long instead and cast as such

@@ -89,6 +89,7 @@ public class SolrSearchResult {
     private boolean harvested = false;
     private String dvTree;
     private String harvestingDescription = null;
+    private List<String> fileCategories = null;
     
     public String getDvTree() {
         return dvTree;
@@ -701,6 +702,14 @@ public class SolrSearchResult {
         this.highlightsAsList = highlightsAsList;
     }
 
+    public List<String> getFileCategories() {
+        return fileCategories;
+    }
+    
+    public void setFileCategories(List<String> fileCategories) {
+        this.fileCategories = fileCategories;
+    }
+    
     public Map<String, String> getParent() {
         return parent;
     }

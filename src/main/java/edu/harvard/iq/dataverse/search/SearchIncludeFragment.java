@@ -255,7 +255,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
         if (this.dataverse != null) {
             dataversePath = dataverseService.determineDataversePath(this.dataverse);
             String filterDownToSubtree = SearchFields.SUBTREE + ":\"" + dataversePath + "\"";
-            logger.info("SUBTREE parameter: " + dataversePath);
+            //logger.info("SUBTREE parameter: " + dataversePath);
             if (!this.dataverse.equals(dataverseService.findRootDataverse())) {
                 /**
                  * @todo centralize this into SearchServiceBean
@@ -1066,7 +1066,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
         dvobjectViewMap = new HashMap<>();
         Set<Long> fileParentDatasets = null;
         for (SolrSearchResult result : searchResultsList) {
-            logger.info("checking DisplayImage for the search result " + i++);
+            //logger.info("checking DisplayImage for the search result " + i++);
             boolean valueSet = false;
             if (result.getType().equals("dataverses") /*&& result.getEntity() instanceof Dataverse*/) {
                 result.setImageUrl(getDataverseCardImageUrl(result));
@@ -1259,7 +1259,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
             cardImageUrl = this.getAssignedDatasetImage((Dataset) result.getEntity());
 
             if (cardImageUrl != null) {
-                logger.info("dataset id " + result.getEntity().getId() + " has a dedicated image assigned; returning " + cardImageUrl);
+                //logger.info("dataset id " + result.getEntity().getId() + " has a dedicated image assigned; returning " + cardImageUrl);
                 return cardImageUrl;
             }
         }
@@ -1308,7 +1308,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
             }
         }
 
-        logger.info("dataset id " + result.getEntityId() + ", returning " + cardImageUrl);
+        //logger.info("dataset id " + result.getEntityId() + ", returning " + cardImageUrl);
 
         return cardImageUrl;
     }
