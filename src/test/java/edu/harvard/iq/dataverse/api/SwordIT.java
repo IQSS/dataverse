@@ -3,6 +3,8 @@ package edu.harvard.iq.dataverse.api;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.response.Response;
 import java.util.logging.Logger;
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static javax.ws.rs.core.Response.Status.OK;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -23,7 +25,7 @@ public class SwordIT {
     }
 
     @Test
-    public void testCreateDatasetUploadFile() {
+    public void testCreateDatasetUploadFileDownloadFile() {
 
         Response createUser1 = UtilIT.createRandomUser();
 //        createUser1.prettyPrint();
@@ -37,7 +39,7 @@ public class SwordIT {
         Response createDataset1Response = UtilIT.createRandomDatasetViaSwordApi(dataverseAlias1, apiToken1);
         createDataset1Response.prettyPrint();
         datasetPersistentId1 = UtilIT.getDatasetPersistentIdFromResponse(createDataset1Response);
-        logger.info("peristent id: " + datasetPersistentId1);
+        logger.info("persistent id: " + datasetPersistentId1);
 
         Response uploadFile1 = UtilIT.uploadRandomFile(datasetPersistentId1, apiToken1);
         uploadFile1.prettyPrint();
@@ -49,6 +51,31 @@ public class SwordIT {
         assertEquals(Integer.class, fileId.getClass());
 
         logger.info("Id of uploaded file: " + fileId);
+        String filename = UtilIT.getFilenameFromSwordStatementResponse(swordStatement);
+        assertNotNull(filename);
+        assertEquals(String.class, filename.getClass());
+        /**
+         * @todo Above we are using UtilIT.uploadRandomFile to upload a zip file
+         * via SWORD but the zip file (trees.zip) is supposed to be unpacked and
+         * the file within (trees.png) is supposed to be added to the dataset.
+         *
+         * What the line below indicates is that "trees.zip" is being uploaded
+         * as-is and not unpacked:
+         *
+         * "Filename of uploaded file: trees.zip"
+         */
+        logger.info("Filename of uploaded file: " + filename);
+        boolean uploadBugFixed = false;
+        if (uploadBugFixed) {
+            assertEquals("trees.png", filename);
+        }
+
+        Response attemptToDownloadUnpublishedFileWithoutApiToken = UtilIT.downloadFile(fileId);
+        assertEquals(FORBIDDEN.getStatusCode(), attemptToDownloadUnpublishedFileWithoutApiToken.getStatusCode());
+
+        Response downloadUnpublishedFileWithValidApiToken = UtilIT.downloadFile(fileId, apiToken1);
+        assertEquals(OK.getStatusCode(), downloadUnpublishedFileWithValidApiToken.getStatusCode());
+        logger.info("downloaded " + downloadUnpublishedFileWithValidApiToken.getContentType() + " (" + downloadUnpublishedFileWithValidApiToken.asByteArray().length + " bytes)");
     }
 
     @AfterClass

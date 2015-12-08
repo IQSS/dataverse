@@ -201,6 +201,22 @@ public class UtilIT {
 
     }
 
+    static Response downloadFile(Integer fileId) {
+        return given()
+                //                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/access/datafile/" + fileId);
+    }
+
+    static Response downloadFile(Integer fileId, String apiToken) {
+        return given()
+                /**
+                 * Data Access API does not support X-Dataverse-key header -
+                 * https://github.com/IQSS/dataverse/issues/2662
+                 */
+                //.header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/access/datafile/" + fileId + "?key=" + apiToken);
+    }
+
     static Response getSwordStatement(String persistentId, String apiToken) {
         Response swordStatementResponse = given()
                 .auth().basic(apiToken, EMPTY_STRING)
@@ -219,6 +235,21 @@ public class UtilIT {
             String fileIdAsString = xmlPath.get("feed.entry[0].id").toString().split("/")[10];
             Integer fileIdAsInt = Integer.parseInt(fileIdAsString);
             return fileIdAsInt;
+        } catch (IndexOutOfBoundsException ex) {
+            return null;
+        }
+    }
+
+    static String getFilenameFromSwordStatementResponse(Response swordStatement) {
+        String filename = getFilenameFromSwordStatementResponse(swordStatement.body().asString());
+        return filename;
+    }
+
+    private static String getFilenameFromSwordStatementResponse(String swordStatement) {
+        XmlPath xmlPath = new XmlPath(swordStatement);
+        try {
+            String filename = xmlPath.get("feed.entry[0].id").toString().split("/")[11];
+            return filename;
         } catch (IndexOutOfBoundsException ex) {
             return null;
         }
