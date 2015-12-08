@@ -68,7 +68,7 @@ public class FeaturedDataverseServiceBean {
             
             dataverse.setDataverseTheme(dataverseService.findDataverseThemeByIdQuick(id));
             if (dataverse.getDataverseTheme()!=null){
-                logger.info("THEME: "+dataverse.getDataverseTheme().getLogo()+", "+dataverse.getDataverseTheme().getLogoFormat());
+                logger.fine("THEME: "+dataverse.getDataverseTheme().getLogo()+", "+dataverse.getDataverseTheme().getLogoFormat());
             }
             ret.add(dataverse);
          }
