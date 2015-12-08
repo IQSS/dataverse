@@ -1169,23 +1169,20 @@ public class SearchIncludeFragment implements java.io.Serializable {
 
             if (this.dvobjectThumbnailsMap.containsKey(assignedThumbnailFileId)) {
                 // Yes, return previous answer
-                //logger.info("using cached result for ... "+datasetId);
+                //logger.info("using cached result for ... "+assignedThumbnailFileId);
                 if (!"".equals(this.dvobjectThumbnailsMap.get(assignedThumbnailFileId))) {
                     return this.dvobjectThumbnailsMap.get(assignedThumbnailFileId);
                 }
                 return null;
             }
 
-            if (permissionsWrapper.hasDownloadFilePermission(assignedThumbnailFile)) {
+            String imageSourceBase64 = ImageThumbConverter.getImageThumbAsBase64(
+                    assignedThumbnailFile,
+                    ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
 
-                String imageSourceBase64 = ImageThumbConverter.getImageThumbAsBase64(
-                        assignedThumbnailFile,
-                        ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
-
-                if (imageSourceBase64 != null) {
-                    this.dvobjectThumbnailsMap.put(assignedThumbnailFileId, imageSourceBase64);
-                    return imageSourceBase64;
-                }
+            if (imageSourceBase64 != null) {
+                this.dvobjectThumbnailsMap.put(assignedThumbnailFileId, imageSourceBase64);
+                return imageSourceBase64;
             }
 
             // OK - we can't use this "assigned" image, because of permissions, or because 
@@ -1204,7 +1201,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
     }
 
     // it's the responsibility of the user - to make sure the search result
-    // passed to this method is of a Datafile type!
+    // passed to this method is of the Datafile type!
     private String getFileCardImageUrl(SolrSearchResult result) {
         Long imageFileId = result.getEntity().getId();
 
@@ -1249,7 +1246,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
     }
 
     // it's the responsibility of the user - to make sure the search result
-    // passed to this method is of a Dataset type!
+    // passed to this method is of the Dataset type!
     private String getDatasetCardImageUrl(SolrSearchResult result) {
         // harvested check!
 
@@ -1314,7 +1311,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
     }
 
     // it's the responsibility of the user - to make sure the search result
-    // passed to this method is of a Dataverse type!
+    // passed to this method is of the Dataverse type!
     private String getDataverseCardImageUrl(SolrSearchResult result) {
         return dataverseService.getDataverseLogoThumbnailAsBase64ById(result.getEntityId());
     }

@@ -755,6 +755,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
     public void populateDatasetSearchCard(SolrSearchResult solrSearchResult) {
         Long dataverseId = Long.parseLong(solrSearchResult.getParent().get("id"));
         Long datasetVersionId = solrSearchResult.getDatasetVersionId();
+        Long datasetId = solrSearchResult.getEntityId();
         
         if (dataverseId == 0 || datasetVersionId == null) {
             return;
@@ -763,7 +764,18 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         Object[] searchResult = null;
         
         try {
-            searchResult = (Object[]) em.createNativeQuery("SELECT t0.VERSIONSTATE, t1.ALIAS FROM DATASETVERSION t0, DATAVERSE t1 WHERE t0.ID = " + datasetVersionId + " AND t1.ID = " + dataverseId).getSingleResult();
+            if (datasetId != null) {
+                searchResult = (Object[]) em.createNativeQuery("SELECT t0.VERSIONSTATE, t1.ALIAS, t2.THUMBNAILFILE_ID FROM DATASETVERSION t0, DATAVERSE t1, DATASET t2 WHERE t0.ID = " 
+                        + datasetVersionId 
+                        + " AND t1.ID = " 
+                        + dataverseId
+                        + " AND t2.ID = "
+                        + datasetId).getSingleResult()
+                        
+                        ;
+            } else {
+                searchResult = (Object[]) em.createNativeQuery("SELECT t0.VERSIONSTATE, t1.ALIAS FROM DATASETVERSION t0, DATAVERSE t1 WHERE t0.ID = " + datasetVersionId + " AND t1.ID = " + dataverseId).getSingleResult();
+            }
         } catch (Exception ex) {
             return;
         }
@@ -785,6 +797,25 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         
         if (searchResult[1] != null) {
             solrSearchResult.setDataverseAlias((String) searchResult[1]);
+        }
+        
+        if (searchResult.length == 3 && searchResult[2] != null) {
+            // This is the image file specifically assigned as the "icon" for
+            // the dataset:
+            Long thumbnailFile_id = (Long)searchResult[2];
+            if (thumbnailFile_id != null) {
+                DataFile thumbnailFile = null;
+                try {
+                    thumbnailFile = datafileService.findCheapAndEasy(thumbnailFile_id);
+                } catch (Exception ex) {
+                    thumbnailFile = null;
+                }
+                
+                if (thumbnailFile != null) {
+                    solrSearchResult.setEntity(new Dataset());
+                    ((Dataset)solrSearchResult.getEntity()).setThumbnailFile(thumbnailFile);
+                }
+            }
         }
     }
     

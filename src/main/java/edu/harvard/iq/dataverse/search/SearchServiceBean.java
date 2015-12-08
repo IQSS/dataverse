@@ -22,6 +22,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -448,7 +449,6 @@ public class SearchServiceBean {
              * @todo start using SearchConstants class here
              */
             if (type.equals("dataverses")) {
-                logger.info("search result: dataverse, id "+entityid);
                 solrSearchResult.setName(name);
                 solrSearchResult.setHtmlUrl(baseUrl + "/dataverse/" + identifier);
                 solrSearchResult.setImageUrl(baseUrl + "/api/access/dvCardImage/" + entityid);
@@ -459,7 +459,6 @@ public class SearchServiceBean {
                  */
 //                solrSearchResult.setApiUrl(baseUrl + "/api/dataverses/" + entityid);
             } else if (type.equals("datasets")) {
-                logger.info("search result: dataset, id "+entityid);
                 solrSearchResult.setHtmlUrl(baseUrl + "/dataset.xhtml?globalId=" + identifier);
                 solrSearchResult.setApiUrl(baseUrl + "/api/datasets/" + entityid);
                 solrSearchResult.setImageUrl(baseUrl + "/api/access/dsCardImage/" + datasetVersionId);
@@ -480,7 +479,7 @@ public class SearchServiceBean {
 //                    solrSearchResult.setTitle((String) titles.get(0));
                     solrSearchResult.setTitle((String) title);
                 } else {
-                    logger.info("No title indexed. Setting to empty string to prevent NPE. Dataset id " + entityid + " and version id " + datasetVersionId);
+                    logger.fine("No title indexed. Setting to empty string to prevent NPE. Dataset id " + entityid + " and version id " + datasetVersionId);
                     solrSearchResult.setTitle("");
                 }
                 List<String> authors = (ArrayList) solrDocument.getFieldValues(DatasetFieldConstant.authorName);
@@ -488,7 +487,6 @@ public class SearchServiceBean {
                     solrSearchResult.setDatasetAuthors(authors);
                 }
             } else if (type.equals("files")) {
-                logger.info("search result: file, id "+entityid);
                 String parentGlobalId = null;
                 Object parentGlobalIdObject = solrDocument.getFieldValue(SearchFields.PARENT_IDENTIFIER);
                 if (parentGlobalIdObject != null) {
@@ -527,6 +525,7 @@ public class SearchServiceBean {
                 }
                 List<String> tabularDataTags = (ArrayList) solrDocument.getFieldValues(SearchFields.TABDATA_TAG);
                 if (tabularDataTags != null) {
+                    Collections.sort(tabularDataTags);
                     solrSearchResult.setTabularDataTags(tabularDataTags);
                 }
             }
