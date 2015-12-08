@@ -22,6 +22,11 @@ import static com.jayway.restassured.path.xml.XmlPath.from;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static com.jayway.restassured.RestAssured.given;
+import static com.jayway.restassured.path.xml.XmlPath.from;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 public class UtilIT {
 
@@ -169,12 +174,31 @@ public class UtilIT {
 
     static Response createRandomDatasetViaSwordApi(String dataverseToCreateDatasetIn, String apiToken) {
         String xmlIn = getDatasetXml(getRandomIdentifier(), getRandomIdentifier(), getRandomIdentifier());
+        return createDatasetViaSwordApiFromXML(dataverseToCreateDatasetIn, xmlIn, apiToken);
+    }
+
+    static Response createDatasetViaSwordApi(String dataverseToCreateDatasetIn, String title, String apiToken) {
+        String xmlIn = getDatasetXml(title, getRandomIdentifier(), getRandomIdentifier());
+        return createDatasetViaSwordApiFromXML(dataverseToCreateDatasetIn, xmlIn, apiToken);
+    }
+
+    private static Response createDatasetViaSwordApiFromXML(String dataverseToCreateDatasetIn, String xmlIn, String apiToken) {
         Response createDatasetResponse = given()
                 .auth().basic(apiToken, EMPTY_STRING)
                 .body(xmlIn)
                 .contentType("application/atom+xml")
                 .post(swordConfiguration.getBaseUrlPathCurrent() + "/collection/dataverse/" + dataverseToCreateDatasetIn);
         return createDatasetResponse;
+    }
+
+    static Response updateDatasetTitleViaSword(String persistentId, String newTitle, String apiToken) {
+        String xmlIn = getDatasetXml(newTitle, getRandomIdentifier(), getRandomIdentifier());
+        Response updateDatasetResponse = given()
+                .auth().basic(apiToken, EMPTY_STRING)
+                .body(xmlIn)
+                .contentType("application/atom+xml")
+                .put(swordConfiguration.getBaseUrlPathCurrent() + "/edit/study/" + persistentId);
+        return updateDatasetResponse;
     }
 
     static private String getDatasetXml(String title, String author, String description) {
@@ -268,6 +292,14 @@ public class UtilIT {
         }
     }
 
+    static String getTitleFromSwordStatementResponse(Response swordStatement) {
+        return getTitleFromSwordStatement(swordStatement.getBody().asString());
+    }
+
+    private static String getTitleFromSwordStatement(String swordStatement) {
+        return new XmlPath(swordStatement).getString("feed.title");
+    }
+
     public static Response deleteUser(String username) {
         Response deleteUserResponse = given()
                 .delete("/api/admin/authenticatedUsers/" + username + "/");
@@ -310,7 +342,7 @@ public class UtilIT {
     }
 
     @Test
-    public void testGetFileIdFromSwordStatementWithFiles() {
+    public void testSwordStatementWithFiles() {
         String swordStatementWithNoFiles = "<feed xmlns=\"http://www.w3.org/2005/Atom\">\n"
                 + "  <id>https://localhost:8080/dvn/api/data-deposit/v1.1/swordv2/edit/study/doi:10.5072/FK2/EUEW70</id>\n"
                 + "  <link href=\"https://localhost:8080/dvn/api/data-deposit/v1.1/swordv2/edit/study/doi:10.5072/FK2/EUEW70\" rel=\"self\"/>\n"
@@ -333,6 +365,8 @@ public class UtilIT {
         Integer fileId = getFileIdFromSwordStatementBody(swordStatementWithNoFiles);
         assertNotNull(fileId);
         assertEquals(Integer.class, fileId.getClass());
+        String title = getTitleFromSwordStatement(swordStatementWithNoFiles);
+        assertEquals("A Dataset with a File", title);
     }
 
 }

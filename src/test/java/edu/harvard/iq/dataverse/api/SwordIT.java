@@ -11,6 +11,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class SwordIT {
 
@@ -26,7 +28,7 @@ public class SwordIT {
     }
 
     @Test
-    public void testCreateDatasetUploadFileDownloadFile() {
+    public void testCreateDatasetUploadFileDownloadFileEditTitle() {
 
         Response createUser1 = UtilIT.createRandomUser();
 //        createUser1.prettyPrint();
@@ -38,7 +40,8 @@ public class SwordIT {
         dataverseAlias1 = UtilIT.getAliasFromResponse(createDataverse1Response);
         assertEquals(CREATED.getStatusCode(), createDataverse1Response.getStatusCode());
 
-        Response createDataset1Response = UtilIT.createRandomDatasetViaSwordApi(dataverseAlias1, apiToken1);
+        String initialDatasetTitle = "My Working Title";
+        Response createDataset1Response = UtilIT.createDatasetViaSwordApi(dataverseAlias1, initialDatasetTitle, apiToken1);
         createDataset1Response.prettyPrint();
         assertEquals(CREATED.getStatusCode(), createDataset1Response.getStatusCode());
         datasetPersistentId1 = UtilIT.getDatasetPersistentIdFromResponse(createDataset1Response);
@@ -50,6 +53,8 @@ public class SwordIT {
 
         Response swordStatement = UtilIT.getSwordStatement(datasetPersistentId1, apiToken1);
         swordStatement.prettyPrint();
+        String title = UtilIT.getTitleFromSwordStatementResponse(swordStatement);
+        assertEquals(initialDatasetTitle, title);
         Integer fileId = UtilIT.getFileIdFromSwordStatementResponse(swordStatement);
         assertNotNull(fileId);
         assertEquals(Integer.class, fileId.getClass());
@@ -67,6 +72,14 @@ public class SwordIT {
         Response downloadUnpublishedFileWithValidApiToken = UtilIT.downloadFile(fileId, apiToken1);
         assertEquals(OK.getStatusCode(), downloadUnpublishedFileWithValidApiToken.getStatusCode());
         logger.info("downloaded " + downloadUnpublishedFileWithValidApiToken.getContentType() + " (" + downloadUnpublishedFileWithValidApiToken.asByteArray().length + " bytes)");
+
+        String newTitle = "My Awesome Dataset";
+        Response updatedMetadataResponse = UtilIT.updateDatasetTitleViaSword(datasetPersistentId1, newTitle, apiToken1);
+        updatedMetadataResponse.prettyPrint();
+        swordStatement = UtilIT.getSwordStatement(datasetPersistentId1, apiToken1);
+        title = UtilIT.getTitleFromSwordStatementResponse(swordStatement);
+        assertEquals(newTitle, title);
+        logger.info("Title updated from \"" + initialDatasetTitle + "\" to \"" + newTitle + "\".");
     }
 
     @AfterClass
