@@ -16,6 +16,7 @@ import java.nio.file.Paths;
 import java.util.logging.Level;
 import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.path.xml.XmlPath.from;
+import edu.harvard.iq.dataverse.api.datadeposit.SwordConfigurationImpl;
 
 public class UtilIT {
 
@@ -27,6 +28,8 @@ public class UtilIT {
     private static final String API_TOKEN_KEY = "apiToken";
     private static final String BUILTIN_USER_KEY = "burrito";
     private static final String EMPTY_STRING = "";
+
+    private static SwordConfigurationImpl swordConfiguration = new SwordConfigurationImpl();
 
     static String getRestAssuredBaseUri() {
         String saneDefaultInDev = "http://localhost:8080";
@@ -165,7 +168,7 @@ public class UtilIT {
                 .auth().basic(apiToken, EMPTY_STRING)
                 .body(xmlIn)
                 .contentType("application/atom+xml")
-                .post("/dvn/api/data-deposit/v1.1/swordv2/collection/dataverse/" + dataverseToCreateDatasetIn);
+                .post(swordConfiguration.getBaseUrlPathCurrent() + "/collection/dataverse/" + dataverseToCreateDatasetIn);
         return createDatasetResponse;
     }
 
@@ -200,7 +203,7 @@ public class UtilIT {
         return given()
                 .auth().basic(apiToken, EMPTY_STRING)
                 .relaxedHTTPSValidation()
-                .delete("/dvn/api/data-deposit/v1.1/swordv2/edit/study/" + persistentId);
+                .delete(swordConfiguration.getBaseUrlPathCurrent() + "/edit/study/" + persistentId);
     }
 
 }
