@@ -90,6 +90,7 @@ public class SolrSearchResult {
     private String dvTree;
     private String harvestingDescription = null;
     private List<String> fileCategories = null;
+    private List<String> tabularDataTags = null;
     
     public String getDvTree() {
         return dvTree;
@@ -708,6 +709,14 @@ public class SolrSearchResult {
     
     public void setFileCategories(List<String> fileCategories) {
         this.fileCategories = fileCategories;
+    }
+    
+    public List<String> getTabularDataTags() {
+        return tabularDataTags;
+    }
+    
+    public void setTabularDataTags(List<String> tabularDataTags) {
+        this.tabularDataTags = tabularDataTags;
     }
     
     public Map<String, String> getParent() {

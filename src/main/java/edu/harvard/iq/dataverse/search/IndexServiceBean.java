@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.search;
 
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFileTag;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
@@ -952,6 +953,12 @@ public class IndexServiceBean {
                             if (var.getLabel() != null && !var.getLabel().equals("")) {
                                 datafileSolrInputDocument.addField(SearchFields.VARIABLE_LABEL, var.getLabel());
                             }
+                        }
+                        // TABULAR DATA TAGS:
+                        // (not to be confused with the file categories, indexed above!)
+                        for (DataFileTag tag : fileMetadata.getDataFile().getTags()) {
+                            String tagLabel = tag.getTypeLabel();
+                            datafileSolrInputDocument.addField(SearchFields.TABDATA_TAG, tagLabel);
                         }
                     }
 

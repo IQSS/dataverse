@@ -525,6 +525,10 @@ public class SearchServiceBean {
                 if (fileCategories != null) {
                     solrSearchResult.setFileCategories(fileCategories);
                 }
+                List<String> tabularDataTags = (ArrayList) solrDocument.getFieldValues(SearchFields.TABDATA_TAG);
+                if (tabularDataTags != null) {
+                    solrSearchResult.setTabularDataTags(tabularDataTags);
+                }
             }
             /**
              * @todo store PARENT_ID as a long instead and cast as such

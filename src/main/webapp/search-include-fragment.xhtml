@@ -615,12 +615,12 @@
                             <br/>
                         </ui:fragment>
 
-                        <div class="file-tags-block" jsf:rendered="#{(!empty result.fileCategories) or (!empty result.entity.tags)}">
+                        <div class="file-tags-block" jsf:rendered="#{(!empty result.fileCategories) or (!empty result.tabularDataTags)}">
                             <ui:repeat value="#{result.fileCategories}" var="cat">
                                 <h:outputText value="#{cat}" styleClass="label label-default"/>
                             </ui:repeat>
-                            <ui:repeat value="#{result.entity.tags}" var="tag">
-                                <h:outputText value="#{tag.typeLabel}" styleClass="label label-info"/>
+                            <ui:repeat value="#{result.tabularDataTags}" var="tag">
+                                <h:outputText value="#{tag}" styleClass="label label-info"/>
                             </ui:repeat>
                         </div>
 
