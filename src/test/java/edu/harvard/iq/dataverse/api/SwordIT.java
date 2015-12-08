@@ -6,7 +6,8 @@ import java.util.logging.Logger;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
 
 public class SwordIT {
 
@@ -22,7 +23,7 @@ public class SwordIT {
     }
 
     @Test
-    public void testCreateDataset() {
+    public void testCreateDatasetUploadFile() {
 
         Response createUser1 = UtilIT.createRandomUser();
 //        createUser1.prettyPrint();
@@ -38,6 +39,16 @@ public class SwordIT {
         datasetPersistentId1 = UtilIT.getDatasetPersistentIdFromResponse(createDataset1Response);
         logger.info("peristent id: " + datasetPersistentId1);
 
+        Response uploadFile1 = UtilIT.uploadRandomFile(datasetPersistentId1, apiToken1);
+        uploadFile1.prettyPrint();
+
+        Response swordStatement = UtilIT.getSwordStatement(datasetPersistentId1, apiToken1);
+        swordStatement.prettyPrint();
+        Integer fileId = UtilIT.getFileIdFromSwordStatementResponse(swordStatement);
+        assertNotNull(fileId);
+        assertEquals(Integer.class, fileId.getClass());
+
+        logger.info("Id of uploaded file: " + fileId);
     }
 
     @AfterClass

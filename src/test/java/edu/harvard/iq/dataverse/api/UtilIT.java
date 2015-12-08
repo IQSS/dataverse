@@ -14,9 +14,14 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.logging.Level;
+import edu.harvard.iq.dataverse.api.datadeposit.SwordConfigurationImpl;
+import com.jayway.restassured.path.xml.XmlPath;
+import org.junit.Test;
 import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.path.xml.XmlPath.from;
-import edu.harvard.iq.dataverse.api.datadeposit.SwordConfigurationImpl;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 public class UtilIT {
 
@@ -183,6 +188,42 @@ public class UtilIT {
         return xmlIn;
     }
 
+    public static Response uploadRandomFile(String persistentId, String apiToken) {
+        String zipfilename = "trees.zip";
+        String pathToFileName = "scripts/search/data/binary/" + zipfilename;
+        Response swordStatementResponse = given()
+                .multiPart(new File(pathToFileName))
+                .header("Packaging", "http://purl.org/net/sword/package/SimpleZip")
+                .header("Content-Disposition", "filename=" + zipfilename)
+                .auth().basic(apiToken, EMPTY_STRING)
+                .post(swordConfiguration.getBaseUrlPathCurrent() + "/edit-media/study/" + persistentId);
+        return swordStatementResponse;
+
+    }
+
+    static Response getSwordStatement(String persistentId, String apiToken) {
+        Response swordStatementResponse = given()
+                .auth().basic(apiToken, EMPTY_STRING)
+                .get(swordConfiguration.getBaseUrlPathCurrent() + "/statement/study/" + persistentId);
+        return swordStatementResponse;
+    }
+
+    static Integer getFileIdFromSwordStatementResponse(Response swordStatement) {
+        Integer fileId = getFileIdFromSwordStatementBody(swordStatement.body().asString());
+        return fileId;
+    }
+
+    private static Integer getFileIdFromSwordStatementBody(String swordStatement) {
+        XmlPath xmlPath = new XmlPath(swordStatement);
+        try {
+            String fileIdAsString = xmlPath.get("feed.entry[0].id").toString().split("/")[10];
+            Integer fileIdAsInt = Integer.parseInt(fileIdAsString);
+            return fileIdAsInt;
+        } catch (IndexOutOfBoundsException ex) {
+            return null;
+        }
+    }
+
     public static Response deleteUser(String username) {
         Response deleteUserResponse = given()
                 .delete("/api/admin/authenticatedUsers/" + username + "/");
@@ -204,6 +245,50 @@ public class UtilIT {
                 .auth().basic(apiToken, EMPTY_STRING)
                 .relaxedHTTPSValidation()
                 .delete(swordConfiguration.getBaseUrlPathCurrent() + "/edit/study/" + persistentId);
+    }
+
+    @Test
+    public void testGetFileIdFromSwordStatementWithNoFiles() {
+        String swordStatementWithNoFiles = "<feed xmlns=\"http://www.w3.org/2005/Atom\">\n"
+                + "  <id>https://localhost:8080/dvn/api/data-deposit/v1.1/swordv2/edit/study/doi:10.5072/FK2/0TLRLH</id>\n"
+                + "  <link href=\"https://localhost:8080/dvn/api/data-deposit/v1.1/swordv2/edit/study/doi:10.5072/FK2/0TLRLH\" rel=\"self\"/>\n"
+                + "  <title type=\"text\">A Dataset Without Any Files</title>\n"
+                + "  <author>\n"
+                + "    <name>Fileless, Joe</name>\n"
+                + "  </author>\n"
+                + "  <updated>2015-12-08T15:30:50.865Z</updated>\n"
+                + "  <category term=\"latestVersionState\" scheme=\"http://purl.org/net/sword/terms/state\" label=\"State\">DRAFT</category>\n"
+                + "  <category term=\"locked\" scheme=\"http://purl.org/net/sword/terms/state\" label=\"State\">false</category>\n"
+                + "  <category term=\"isMinorUpdate\" scheme=\"http://purl.org/net/sword/terms/state\" label=\"State\">true</category>\n"
+                + "</feed>";
+        Integer fileId = getFileIdFromSwordStatementBody(swordStatementWithNoFiles);
+        assertNull(fileId);
+    }
+
+    @Test
+    public void testGetFileIdFromSwordStatementWithFiles() {
+        String swordStatementWithNoFiles = "<feed xmlns=\"http://www.w3.org/2005/Atom\">\n"
+                + "  <id>https://localhost:8080/dvn/api/data-deposit/v1.1/swordv2/edit/study/doi:10.5072/FK2/EUEW70</id>\n"
+                + "  <link href=\"https://localhost:8080/dvn/api/data-deposit/v1.1/swordv2/edit/study/doi:10.5072/FK2/EUEW70\" rel=\"self\"/>\n"
+                + "  <title type=\"text\">A Dataset with a File</title>\n"
+                + "  <author>\n"
+                + "    <name>Files, John</name>\n"
+                + "  </author>\n"
+                + "  <updated>2015-12-08T15:38:29.900Z</updated>\n"
+                + "  <entry>\n"
+                + "    <content type=\"application/zip\" src=\"https://localhost:8080/dvn/api/data-deposit/v1.1/swordv2/edit-media/file/174/trees.zip\"/>\n"
+                + "    <id>https://localhost:8080/dvn/api/data-deposit/v1.1/swordv2/edit-media/file/174/trees.zip</id>\n"
+                + "    <title type=\"text\">Resource https://localhost:8080/dvn/api/data-deposit/v1.1/swordv2/edit-media/file/174/trees.zip</title>\n"
+                + "    <summary type=\"text\">Resource Part</summary>\n"
+                + "    <updated>2015-12-08T15:38:30.089Z</updated>\n"
+                + "  </entry>\n"
+                + "  <category term=\"latestVersionState\" scheme=\"http://purl.org/net/sword/terms/state\" label=\"State\">DRAFT</category>\n"
+                + "  <category term=\"locked\" scheme=\"http://purl.org/net/sword/terms/state\" label=\"State\">false</category>\n"
+                + "  <category term=\"isMinorUpdate\" scheme=\"http://purl.org/net/sword/terms/state\" label=\"State\">true</category>\n"
+                + "</feed>";
+        Integer fileId = getFileIdFromSwordStatementBody(swordStatementWithNoFiles);
+        assertNotNull(fileId);
+        assertEquals(Integer.class, fileId.getClass());
     }
 
 }
