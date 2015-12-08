@@ -49,11 +49,11 @@
                 <span class="glyphicon glyphicon-info-sign"></span>&#160;<strong>#{msg.summary}</strong>&#160;<h:outputText value="#{msg.detail}" rendered="#{!empty msg.detail and (msg.detail != msg.summary)}"/>
                 <ui:fragment rendered="#{level eq 'FATAL'}">                 
                     Please <p:commandLink  value="contact support" onclick="feedbackForm.show()"/>. 
-                    Date/Time:
+                    <strong>Date/Time: </strong>
                     <h:outputText value="#{now}">
                         <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss" type="date" />
                     </h:outputText>
-                    Server: 
+                    <strong>Server: </strong>
                     #{systemConfig.dataverseServer}
                 </ui:fragment>
             </div>
