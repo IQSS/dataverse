@@ -3,13 +3,14 @@ package edu.harvard.iq.dataverse.api;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.response.Response;
 import java.util.logging.Logger;
+import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.OK;
 import org.junit.AfterClass;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertEquals;
 
 public class SwordIT {
 
@@ -35,14 +36,17 @@ public class SwordIT {
         Response createDataverse1Response = UtilIT.createRandomDataverse(apiToken1);
         createDataverse1Response.prettyPrint();
         dataverseAlias1 = UtilIT.getAliasFromResponse(createDataverse1Response);
+        assertEquals(CREATED.getStatusCode(), createDataverse1Response.getStatusCode());
 
         Response createDataset1Response = UtilIT.createRandomDatasetViaSwordApi(dataverseAlias1, apiToken1);
         createDataset1Response.prettyPrint();
+        assertEquals(CREATED.getStatusCode(), createDataset1Response.getStatusCode());
         datasetPersistentId1 = UtilIT.getDatasetPersistentIdFromResponse(createDataset1Response);
         logger.info("persistent id: " + datasetPersistentId1);
 
         Response uploadFile1 = UtilIT.uploadRandomFile(datasetPersistentId1, apiToken1);
         uploadFile1.prettyPrint();
+        assertEquals(CREATED.getStatusCode(), uploadFile1.getStatusCode());
 
         Response swordStatement = UtilIT.getSwordStatement(datasetPersistentId1, apiToken1);
         swordStatement.prettyPrint();
@@ -54,21 +58,8 @@ public class SwordIT {
         String filename = UtilIT.getFilenameFromSwordStatementResponse(swordStatement);
         assertNotNull(filename);
         assertEquals(String.class, filename.getClass());
-        /**
-         * @todo Above we are using UtilIT.uploadRandomFile to upload a zip file
-         * via SWORD but the zip file (trees.zip) is supposed to be unpacked and
-         * the file within (trees.png) is supposed to be added to the dataset.
-         *
-         * What the line below indicates is that "trees.zip" is being uploaded
-         * as-is and not unpacked:
-         *
-         * "Filename of uploaded file: trees.zip"
-         */
         logger.info("Filename of uploaded file: " + filename);
-        boolean uploadBugFixed = false;
-        if (uploadBugFixed) {
-            assertEquals("trees.png", filename);
-        }
+        assertEquals("trees.png", filename);
 
         Response attemptToDownloadUnpublishedFileWithoutApiToken = UtilIT.downloadFile(fileId);
         assertEquals(FORBIDDEN.getStatusCode(), attemptToDownloadUnpublishedFileWithoutApiToken.getStatusCode());

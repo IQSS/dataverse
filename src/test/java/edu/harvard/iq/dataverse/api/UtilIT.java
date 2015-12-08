@@ -191,11 +191,24 @@ public class UtilIT {
     public static Response uploadRandomFile(String persistentId, String apiToken) {
         String zipfilename = "trees.zip";
         String pathToFileName = "scripts/search/data/binary/" + zipfilename;
+        byte[] bytes = null;
+        try {
+            bytes = Files.readAllBytes(Paths.get(pathToFileName));
+            logger.info("Number of bytes to upload: " + bytes.length);
+        } catch (IOException ex) {
+            throw new RuntimeException("Problem getting bytes from " + pathToFileName + ": " + ex);
+        }
         Response swordStatementResponse = given()
-                .multiPart(new File(pathToFileName))
+                .body(bytes)
                 .header("Packaging", "http://purl.org/net/sword/package/SimpleZip")
                 .header("Content-Disposition", "filename=" + zipfilename)
-                .auth().basic(apiToken, EMPTY_STRING)
+                /**
+                 * It's unclear why we need to add "preemptive" to auth but
+                 * without it we can't use send bytes using the body/content
+                 * method. See
+                 * https://github.com/jayway/rest-assured/issues/507#issuecomment-162963787
+                 */
+                .auth().preemptive().basic(apiToken, EMPTY_STRING)
                 .post(swordConfiguration.getBaseUrlPathCurrent() + "/edit-media/study/" + persistentId);
         return swordStatementResponse;
 
