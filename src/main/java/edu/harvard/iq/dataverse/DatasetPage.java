@@ -2643,8 +2643,10 @@ public class DatasetPage implements java.io.Serializable {
         Command cmd;
         try {
             if (this.guestbookResponse != null) {
-                cmd = new CreateGuestbookResponseCommand(dvRequestService.getDataverseRequest(), guestbookResponse, dataset);
-                commandEngine.submit(cmd);
+                    cmd = new CreateGuestbookResponseCommand(dvRequestService.getDataverseRequest(), guestbookResponse, dataset);
+                    commandEngine.submit(cmd);
+            } else {
+                logger.severe("No Silent/Default Guestbook response made. No response to save - probably because version is DRAFT - not certain ");
             }
         } catch (CommandException ex) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Guestbook Response Save Failed", " - " + ex.toString()));
@@ -2657,16 +2659,15 @@ public class DatasetPage implements java.io.Serializable {
     public void startMultipleFileDownload (){
         if (this.selectedFiles.isEmpty()) {
             RequestContext requestContext = RequestContext.getCurrentInstance();
-            requestContext.execute("selectFilesForDownload.show()");
+            requestContext.execute("PF('selectFilesForDownload').show()");
             return;
         }
         
         for (FileMetadata fmd : this.selectedFiles) {
             if (canDownloadFile(fmd)) {
-                DataFile df = fmd.getDataFile();
             // todo: cleanup this: "create" method doesn't necessarily
                 // mean a response wikk be created (e.g. when dataset in draft)
-                createSilentGuestbookEntry(df.getFileMetadata(), "");
+                createSilentGuestbookEntry(fmd, "");
             }
         }
 
@@ -2716,13 +2717,13 @@ public class DatasetPage implements java.io.Serializable {
     public void initGuestbookMultipleResponse(){
         if (this.selectedFiles.isEmpty()) {
             RequestContext requestContext = RequestContext.getCurrentInstance();
-            requestContext.execute("selectFilesForDownload.show()");
+            requestContext.execute("PF('selectFilesForDownload').show()");
             return;
         }
         
          initGuestbookResponse(null, "download", null);
-                     RequestContext requestContext = RequestContext.getCurrentInstance();
-            requestContext.execute("downloadPopup.show();handleResizeDialog('downloadPopup');");
+        RequestContext requestContext = RequestContext.getCurrentInstance();
+        requestContext.execute("PF('downloadPopup').show();handleResizeDialog('downloadPopup');");
     }
     
     public void initGuestbookMultipleResponse(String selectedFileIds){
@@ -3695,7 +3696,7 @@ public class DatasetPage implements java.io.Serializable {
    public String requestAccessMultipleFiles(String fileIdString) {
             if (fileIdString.isEmpty()) {
             RequestContext requestContext = RequestContext.getCurrentInstance();
-            requestContext.execute("selectFilesForRequestAccess.show()");
+            requestContext.execute("PF('selectFilesForRequestAccess').show()");
             return "";
         }
        
