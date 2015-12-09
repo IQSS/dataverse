@@ -279,6 +279,7 @@
    <field name="fileTypeDisplay" type="string" stored="true" indexed="true" multiValued="false"/>
    <field name="fileTag" type="string" stored="true" indexed="true" multiValued="true"/>
    <field name="fileTags" type="text_en" stored="true" indexed="true" multiValued="true"/>
+   <field name="tabularDataTag" type="string" stored="true" indexed="true" multiValued="true"/>
    <field name="fileAccess" type="string" stored="true" indexed="true" multiValued="true"/>
 
    <!-- Added for Dataverse 4.0 alpha 1: static "parent" fields not copied to "catchall" field https://redmine.hmdc.harvard.edu/issues/3603  -->

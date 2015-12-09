@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.SettingsWrapper;
@@ -23,8 +24,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
@@ -51,6 +54,8 @@ public class SearchIncludeFragment implements java.io.Serializable {
     DataFileServiceBean dataFileService;
     @EJB
     PermissionServiceBean permissionService;
+    @EJB
+    DvObjectServiceBean dvObjectService;
     @Inject
     DataverseSession session;
     @Inject
@@ -78,6 +83,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
     private String fq9;
     private String dataverseAlias;
     private Dataverse dataverse;
+    private String dataversePath = null;
     // commenting out dataverseSubtreeContext. it was not well-loved in the GUI
 //    private String dataverseSubtreeContext;
     private String selectedTypesString;
@@ -117,7 +123,8 @@ public class SearchIncludeFragment implements java.io.Serializable {
     private String errorFromSolr;
     private SearchException searchException;
     private boolean rootDv = false;
-
+    private Map<Long, String> harvestedDataverseDescriptions = null;
+    
     /**
      * @todo:
      *
@@ -241,7 +248,6 @@ public class SearchIncludeFragment implements java.io.Serializable {
         SolrQueryResponse solrQueryResponse = null;
 
         List<String> filterQueriesFinal = new ArrayList<>();
-        String dataversePath = null;
 
         if (dataverseAlias != null) {
             this.dataverse = dataverseService.findByAlias(dataverseAlias);
@@ -249,7 +255,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
         if (this.dataverse != null) {
             dataversePath = dataverseService.determineDataversePath(this.dataverse);
             String filterDownToSubtree = SearchFields.SUBTREE + ":\"" + dataversePath + "\"";
-            logger.info("SUBTREE parameter: " + dataversePath);
+            //logger.info("SUBTREE parameter: " + dataversePath);
             if (!this.dataverse.equals(dataverseService.findRootDataverse())) {
                 /**
                  * @todo centralize this into SearchServiceBean
@@ -304,10 +310,10 @@ public class SearchIncludeFragment implements java.io.Serializable {
              * https://github.com/IQSS/dataverse/issues/84
              */
             int numRows = 10;
-            solrQueryResponse = searchService.search(session.getUser(), dataverse, queryToPassToSolr, filterQueriesFinal, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows);
+            solrQueryResponse = searchService.search(session.getUser(), dataverse, queryToPassToSolr, filterQueriesFinal, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows, false);
             // This 2nd search() is for populating the facets: -- L.A. 
             // TODO: ...
-            solrQueryResponseAllTypes = searchService.search(session.getUser(), dataverse, queryToPassToSolr, filterQueriesFinalAllTypes, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows);
+            solrQueryResponseAllTypes = searchService.search(session.getUser(), dataverse, queryToPassToSolr, filterQueriesFinalAllTypes, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows, false);
         } catch (SearchException ex) {
             Throwable cause = ex;
             StringBuilder sb = new StringBuilder();
@@ -352,22 +358,21 @@ public class SearchIncludeFragment implements java.io.Serializable {
                     logger.warning(SearchFields.ENTITY_ID + " was null for Solr document id:" + solrSearchResult.getId() + ", skipping. Bad Solr data?");
                     break;
                 }
-
-                // isInTree() is for determining if this is a "linked" object, in a
-                // non-root dataverse:
+                
+                // going to assume that this is NOT a linked object, for now:
                 solrSearchResult.setIsInTree(true);
-                if (!this.isRootDv()) {
-                    // should be NPE-safe in the line below: -- L.A.
-                    if (!solrSearchResult.getDvTree().startsWith(dataversePath)) {
-                        solrSearchResult.setIsInTree(false);
-                    }
-                }
-
+                // (we'll review this later!)
+                
                 if (solrSearchResult.getType().equals("dataverses")) {
-
+                    //logger.info("XXRESULT: dataverse: "+solrSearchResult.getEntityId());
                     dataverseService.populateDvSearchCard(solrSearchResult);
+                    
+                    if (isHarvestedDataverse(solrSearchResult.getEntityId())) {
+                        solrSearchResult.setHarvested(true);
+                    }
 
                 } else if (solrSearchResult.getType().equals("datasets")) {
+                    //logger.info("XXRESULT: dataset: "+solrSearchResult.getEntityId());
                     datasetVersionService.populateDatasetSearchCard(solrSearchResult);
 
                     // @todo - the 3 lines below, should they be moved inside
@@ -376,8 +381,14 @@ public class SearchIncludeFragment implements java.io.Serializable {
                     if (deaccesssionReason != null) {
                         solrSearchResult.setDescriptionNoSnippet(deaccesssionReason);
                     }
+                    
+                    if (isHarvestedDataverse(solrSearchResult.getParentIdAsLong())) {
+                        solrSearchResult.setHarvestingDescription(getHarvestingDataverseDescription(solrSearchResult.getParentIdAsLong()));
+                        solrSearchResult.setHarvested(true);
+                    }
                 } else if (solrSearchResult.getType().equals("files")) {
-                    solrSearchResult.setEntity(dataFileService.findCheapAndEasy(solrSearchResult.getEntityId()));
+                    //logger.info("XXRESULT: datafile: "+solrSearchResult.getEntityId());
+                    dataFileService.populateFileSearchCard(solrSearchResult);
 
                     /**
                      * @todo: show DataTable variables
@@ -1053,8 +1064,9 @@ public class SearchIncludeFragment implements java.io.Serializable {
         int i = 0;
         dvobjectThumbnailsMap = new HashMap<>();
         dvobjectViewMap = new HashMap<>();
+        Set<Long> fileParentDatasets = null;
         for (SolrSearchResult result : searchResultsList) {
-            logger.info("checking DisplayImage for the search result " + i++);
+            //logger.info("checking DisplayImage for the search result " + i++);
             boolean valueSet = false;
             if (result.getType().equals("dataverses") /*&& result.getEntity() instanceof Dataverse*/) {
                 result.setImageUrl(getDataverseCardImageUrl(result));
@@ -1068,6 +1080,10 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 // OK, done! (4.2.2; in the getFileCardImageUrl() method, below)
                 result.setImageUrl(getFileCardImageUrl(result));
                 valueSet = true;
+                if (fileParentDatasets == null) {
+                    fileParentDatasets = new HashSet<>();
+                }
+                fileParentDatasets.add(result.getParentIdAsLong());
             }
 
             if (valueSet) {
@@ -1080,6 +1096,62 @@ public class SearchIncludeFragment implements java.io.Serializable {
         }
         dvobjectThumbnailsMap = null;
         dvobjectViewMap = null;
+        
+        // determine which of the datafile objects are harvested:
+        
+        if (fileParentDatasets != null) {
+            Map<Long,String> descriptionsForHarvestedDatasets = datasetService.getHarvestingDescriptionsForHarvestedDatasets(fileParentDatasets);
+            if (descriptionsForHarvestedDatasets != null && descriptionsForHarvestedDatasets.size() > 0) {
+                for (SolrSearchResult result : searchResultsList) {
+                    if (result.getType().equals("files")) {
+                        if (descriptionsForHarvestedDatasets.containsKey(result.getParentIdAsLong())) {
+                            result.setHarvestingDescription(descriptionsForHarvestedDatasets.get(result.getParentIdAsLong()));
+                            result.setHarvested(true);
+                        }
+                    }
+                }
+            }
+            descriptionsForHarvestedDatasets = null;
+            fileParentDatasets = null;
+        }
+        
+        // determine which of the objects are linked:
+        
+        if (!this.isRootDv()) {
+            // (nothing is "linked" if it's the root DV!)
+            Set<Long> dvObjectParentIds = new HashSet<>();
+            for (SolrSearchResult result : searchResultsList) {
+                if (dataverse.getId().equals(result.getParentIdAsLong())) {
+                    // definitely NOT linked:
+                    result.setIsInTree(true);
+                } else if (result.getParentIdAsLong().longValue() == 1L) {
+                    // the object's parent is the root Dv; and the current 
+                    // Dv is NOT root... definitely linked:
+                    result.setIsInTree(false);
+                } else {
+                    dvObjectParentIds.add(result.getParentIdAsLong());
+                }
+            }
+            
+            if (dvObjectParentIds.size() > 0) {
+                Map<Long, String> treePathMap = dvObjectService.getObjectPathsByIds(dvObjectParentIds);
+                if (treePathMap != null) {
+                    for (SolrSearchResult result : searchResultsList) {
+                        Long objectId = result.getParentIdAsLong();
+                        if (treePathMap.containsKey(objectId)) {
+                            String objectPath = treePathMap.get(objectId);
+                            if (!objectPath.startsWith(dataversePath)) {
+                                result.setIsInTree(false);                                
+                            }
+                        }
+                    }
+                }
+                treePathMap = null;
+            }
+            
+            dvObjectParentIds = null;
+        }
+        
     }
 
     private Map<Long, String> dvobjectThumbnailsMap = null;
@@ -1097,23 +1169,20 @@ public class SearchIncludeFragment implements java.io.Serializable {
 
             if (this.dvobjectThumbnailsMap.containsKey(assignedThumbnailFileId)) {
                 // Yes, return previous answer
-                //logger.info("using cached result for ... "+datasetId);
+                //logger.info("using cached result for ... "+assignedThumbnailFileId);
                 if (!"".equals(this.dvobjectThumbnailsMap.get(assignedThumbnailFileId))) {
                     return this.dvobjectThumbnailsMap.get(assignedThumbnailFileId);
                 }
                 return null;
             }
 
-            if (permissionsWrapper.hasDownloadFilePermission(assignedThumbnailFile)) {
+            String imageSourceBase64 = ImageThumbConverter.getImageThumbAsBase64(
+                    assignedThumbnailFile,
+                    ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
 
-                String imageSourceBase64 = ImageThumbConverter.getImageThumbAsBase64(
-                        assignedThumbnailFile,
-                        ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
-
-                if (imageSourceBase64 != null) {
-                    this.dvobjectThumbnailsMap.put(assignedThumbnailFileId, imageSourceBase64);
-                    return imageSourceBase64;
-                }
+            if (imageSourceBase64 != null) {
+                this.dvobjectThumbnailsMap.put(assignedThumbnailFileId, imageSourceBase64);
+                return imageSourceBase64;
             }
 
             // OK - we can't use this "assigned" image, because of permissions, or because 
@@ -1132,7 +1201,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
     }
 
     // it's the responsibility of the user - to make sure the search result
-    // passed to this method is of a Datafile type!
+    // passed to this method is of the Datafile type!
     private String getFileCardImageUrl(SolrSearchResult result) {
         Long imageFileId = result.getEntity().getId();
 
@@ -1177,7 +1246,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
     }
 
     // it's the responsibility of the user - to make sure the search result
-    // passed to this method is of a Dataset type!
+    // passed to this method is of the Dataset type!
     private String getDatasetCardImageUrl(SolrSearchResult result) {
         // harvested check!
 
@@ -1187,7 +1256,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
             cardImageUrl = this.getAssignedDatasetImage((Dataset) result.getEntity());
 
             if (cardImageUrl != null) {
-                logger.info("dataset id " + result.getEntity().getId() + " has a dedicated image assigned; returning " + cardImageUrl);
+                //logger.info("dataset id " + result.getEntity().getId() + " has a dedicated image assigned; returning " + cardImageUrl);
                 return cardImageUrl;
             }
         }
@@ -1236,17 +1305,35 @@ public class SearchIncludeFragment implements java.io.Serializable {
             }
         }
 
-        logger.info("dataset id " + result.getEntityId() + ", returning " + cardImageUrl);
+        //logger.info("dataset id " + result.getEntityId() + ", returning " + cardImageUrl);
 
         return cardImageUrl;
     }
 
     // it's the responsibility of the user - to make sure the search result
-    // passed to this method is of a Dataverse type!
+    // passed to this method is of the Dataverse type!
     private String getDataverseCardImageUrl(SolrSearchResult result) {
         return dataverseService.getDataverseLogoThumbnailAsBase64ById(result.getEntityId());
     }
+    
+    private Map<Long, String> getHarvestedDataverseDescriptions() {
+        if (harvestedDataverseDescriptions != null) {
+            return harvestedDataverseDescriptions;
+        }
+        harvestedDataverseDescriptions = dataverseService.getAllHarvestedDataverseDescriptions();
+        return harvestedDataverseDescriptions;
+    }
+    
+    private boolean isHarvestedDataverse(Long id) {
+        return this.getHarvestedDataverseDescriptions().containsKey(id);
+    }
 
+    private String getHarvestingDataverseDescription(Long id) {
+        if (this.isHarvestedDataverse(id)) {
+            return this.getHarvestedDataverseDescriptions().get(id);
+        }
+        return null;
+    }
     public enum SortOrder {
 
         asc, desc

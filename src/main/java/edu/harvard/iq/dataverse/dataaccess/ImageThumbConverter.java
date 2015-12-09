@@ -186,7 +186,7 @@ public class ImageThumbConverter {
 
                 byte[] rawImageData = new byte[thumbSize];
                 int bytesRead = imageThumbInputStream.read(rawImageData, 0, thumbSize);
-                logger.info("read " + bytesRead + " bytes of raw thumbnail image.");
+                logger.fine("read " + bytesRead + " bytes of raw thumbnail image.");
 
                 if (rawImageData != null) {
                     String imageDataBase64 = Base64.encodeToString(rawImageData, false);
