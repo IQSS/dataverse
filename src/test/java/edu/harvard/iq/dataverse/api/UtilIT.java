@@ -22,11 +22,6 @@ import static com.jayway.restassured.path.xml.XmlPath.from;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static com.jayway.restassured.RestAssured.given;
-import static com.jayway.restassured.path.xml.XmlPath.from;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 
 public class UtilIT {
 
@@ -129,6 +124,13 @@ public class UtilIT {
         return datasetSwordIdUrl.substring(datasetSwordIdUrl.length() - 22);
     }
 
+    public static Response getServiceDocument(String apiToken) {
+        Response response = given()
+                .auth().basic(apiToken, EMPTY_STRING)
+                .get(swordConfiguration.getBaseUrlPathCurrent() + "/service-document");
+        return response;
+    }
+
     static Response createDataverse(String alias, String apiToken) {
         JsonArrayBuilder contactArrayBuilder = Json.createArrayBuilder();
         contactArrayBuilder.add(Json.createObjectBuilder().add("contactEmail", getEmailFromUserName(getRandomIdentifier())));
@@ -189,6 +191,13 @@ public class UtilIT {
                 .contentType("application/atom+xml")
                 .post(swordConfiguration.getBaseUrlPathCurrent() + "/collection/dataverse/" + dataverseToCreateDatasetIn);
         return createDatasetResponse;
+    }
+
+    static Response listDatasetsViaSword(String dataverseAlias, String apiToken) {
+        Response response = given()
+                .auth().basic(apiToken, EMPTY_STRING)
+                .get(swordConfiguration.getBaseUrlPathCurrent() + "/collection/dataverse/" + dataverseAlias);
+        return response;
     }
 
     static Response updateDatasetTitleViaSword(String persistentId, String newTitle, String apiToken) {

@@ -2,13 +2,13 @@ package edu.harvard.iq.dataverse.api;
 
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.response.Response;
+import edu.harvard.iq.dataverse.api.datadeposit.SwordConfigurationImpl;
 import java.util.logging.Logger;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.OK;
+import static org.hamcrest.CoreMatchers.equalTo;
 import org.junit.AfterClass;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
@@ -25,15 +25,38 @@ public class SwordIT {
     @BeforeClass
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
-    }
-
-    @Test
-    public void testCreateDatasetUploadFileDownloadFileEditTitle() {
 
         Response createUser1 = UtilIT.createRandomUser();
 //        createUser1.prettyPrint();
         username1 = UtilIT.getUsernameFromResponse(createUser1);
         apiToken1 = UtilIT.getApiTokenFromResponse(createUser1);
+    }
+
+    @Test
+    public void testServiceDocument() {
+
+        Response serviceDocumentResponse = UtilIT.getServiceDocument(apiToken1);
+        serviceDocumentResponse.prettyPrint();
+
+        SwordConfigurationImpl swordConfiguration = new SwordConfigurationImpl();
+
+        serviceDocumentResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("service.version", equalTo(swordConfiguration.generatorVersion()));
+    }
+
+    @Test
+    public void testServiceDocumentWithInvalidApiToken() {
+
+        Response serviceDocumentResponse = UtilIT.getServiceDocument("invalidApiToken");
+//        serviceDocumentResponse.prettyPrint();
+
+        serviceDocumentResponse.then().assertThat()
+                .statusCode(FORBIDDEN.getStatusCode());
+    }
+
+    @Test
+    public void testCreateDatasetUploadFileDownloadFileEditTitle() {
 
         Response createDataverse1Response = UtilIT.createRandomDataverse(apiToken1);
         createDataverse1Response.prettyPrint();
@@ -41,11 +64,22 @@ public class SwordIT {
         assertEquals(CREATED.getStatusCode(), createDataverse1Response.getStatusCode());
 
         String initialDatasetTitle = "My Working Title";
+        /**
+         * "Clients MUST NOT require a Collection Feed Document for deposit
+         * operation." -- 6.2 Listing Collections
+         * http://swordapp.github.io/SWORDv2-Profile/SWORDProfile.html#protocoloperations_listingcollections
+         */
         Response createDataset1Response = UtilIT.createDatasetViaSwordApi(dataverseAlias1, initialDatasetTitle, apiToken1);
         createDataset1Response.prettyPrint();
         assertEquals(CREATED.getStatusCode(), createDataset1Response.getStatusCode());
         datasetPersistentId1 = UtilIT.getDatasetPersistentIdFromResponse(createDataset1Response);
         logger.info("persistent id: " + datasetPersistentId1);
+
+        Response listDatasetsResponse = UtilIT.listDatasetsViaSword(dataverseAlias1, apiToken1);
+        listDatasetsResponse.prettyPrint();
+        listDatasetsResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("feed.entry[0].title", equalTo(initialDatasetTitle));
 
         Response uploadFile1 = UtilIT.uploadRandomFile(datasetPersistentId1, apiToken1);
         uploadFile1.prettyPrint();
