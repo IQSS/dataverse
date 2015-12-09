@@ -6,13 +6,15 @@ import edu.harvard.iq.dataverse.api.datadeposit.SwordConfigurationImpl;
 import java.util.logging.Logger;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.equalTo;
 import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 public class SwordIT {
 
@@ -75,10 +77,17 @@ public class SwordIT {
         datasetPersistentId1 = UtilIT.getDatasetPersistentIdFromResponse(createDataset1Response);
         logger.info("persistent id: " + datasetPersistentId1);
 
+        Response atomEntry = UtilIT.getSwordAtomEntry(datasetPersistentId1, apiToken1);
+        atomEntry.prettyPrint();
+        atomEntry.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("entry.treatment", equalTo("no treatment information available"));
+
         Response listDatasetsResponse = UtilIT.listDatasetsViaSword(dataverseAlias1, apiToken1);
         listDatasetsResponse.prettyPrint();
         listDatasetsResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
+                .body("feed.dataverseHasBeenReleased", equalTo("false"))
                 .body("feed.entry[0].title", equalTo(initialDatasetTitle));
 
         Response uploadFile1 = UtilIT.uploadRandomFile(datasetPersistentId1, apiToken1);
@@ -106,6 +115,14 @@ public class SwordIT {
         Response downloadUnpublishedFileWithValidApiToken = UtilIT.downloadFile(fileId, apiToken1);
         assertEquals(OK.getStatusCode(), downloadUnpublishedFileWithValidApiToken.getStatusCode());
         logger.info("downloaded " + downloadUnpublishedFileWithValidApiToken.getContentType() + " (" + downloadUnpublishedFileWithValidApiToken.asByteArray().length + " bytes)");
+
+        Response deleteFile = UtilIT.deleteFile(fileId, apiToken1);
+        deleteFile.prettyPrint();
+        deleteFile.then().assertThat()
+                .statusCode(NO_CONTENT.getStatusCode());
+
+        Response downloadDeletedFileWithValidApiToken = UtilIT.downloadFile(fileId, apiToken1);
+        assertEquals(NOT_FOUND.getStatusCode(), downloadDeletedFileWithValidApiToken.getStatusCode());
 
         String newTitle = "My Awesome Dataset";
         Response updatedMetadataResponse = UtilIT.updateDatasetTitleViaSword(datasetPersistentId1, newTitle, apiToken1);

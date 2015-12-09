@@ -263,6 +263,13 @@ public class UtilIT {
                 .get("/api/access/datafile/" + fileId + "?key=" + apiToken);
     }
 
+    static Response getSwordAtomEntry(String persistentId, String apiToken) {
+        Response response = given()
+                .auth().basic(apiToken, EMPTY_STRING)
+                .get(swordConfiguration.getBaseUrlPathCurrent() + "/edit/study/" + persistentId);
+        return response;
+    }
+
     static Response getSwordStatement(String persistentId, String apiToken) {
         Response swordStatementResponse = given()
                 .auth().basic(apiToken, EMPTY_STRING)
@@ -330,6 +337,13 @@ public class UtilIT {
                 .auth().basic(apiToken, EMPTY_STRING)
                 .relaxedHTTPSValidation()
                 .delete(swordConfiguration.getBaseUrlPathCurrent() + "/edit/study/" + persistentId);
+    }
+
+    static Response deleteFile(Integer fileId, String apiToken) {
+        return given()
+                .auth().basic(apiToken, EMPTY_STRING)
+                .relaxedHTTPSValidation()
+                .delete(swordConfiguration.getBaseUrlPathCurrent() + "/edit-media/file/" + fileId);
     }
 
     @Test
