@@ -8,8 +8,10 @@ Bump Version Numbers
 Before tagging, ensure the version number has been incremented in the following places:
 
 - pom.xml (and scripts that reference the name of the war file)
-- src/main/java/VersionNumber.properties
 - doc/sphinx-guides/source/conf.py
+- doc/sphinx-guides/source/index.rst 
+
+Here's an example commit where all three files were updated at once: https://github.com/IQSS/dataverse/commit/813b66a6077e8f94026a8db5320cceffefc10e11
 
 Finalize Documentation
 ----------------------
