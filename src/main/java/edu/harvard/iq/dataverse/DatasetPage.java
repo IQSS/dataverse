@@ -1250,9 +1250,12 @@ public class DatasetPage implements java.io.Serializable {
                 logger.fine("initializing DatasetPage with persistent ID " + persistentId);
                 // Set Working Version and Dataset by PersistentID
                 dataset = datasetService.findByGlobalId(persistentId);
-                if (dataset != null) {
-                    logger.fine("retrived dataset, id="+dataset.getId());
+                if (dataset == null) {
+                    logger.warning("No such dataset: "+persistentId);
+                    return "/404.xhtml";
                 }
+                logger.fine("retrived dataset, id="+dataset.getId());
+                
                 retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(dataset.getVersions(), version);
                 //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByPersistentId(persistentId, version);
                 this.workingVersion = retrieveDatasetVersionResponse.getDatasetVersion();
@@ -1261,6 +1264,10 @@ public class DatasetPage implements java.io.Serializable {
             } else if (dataset.getId() != null) {
                 // Set Working Version and Dataset by Datasaet Id and Version
                 dataset = datasetService.find(dataset.getId());
+                if (dataset == null) {
+                    logger.warning("No such dataset: "+dataset);
+                    return "/404.xhtml";
+                }
                 //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionById(dataset.getId(), version);
                 retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(dataset.getVersions(), version);
                 this.workingVersion = retrieveDatasetVersionResponse.getDatasetVersion();
@@ -1271,9 +1278,7 @@ public class DatasetPage implements java.io.Serializable {
                 // Set Working Version and Dataset by DatasaetVersion Id
                 //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByVersionId(versionId);
 
-            } else if (retrieveDatasetVersionResponse == null) {
-                return "/404.xhtml";
-            }
+            } 
 
             if (retrieveDatasetVersionResponse == null) {
                 return "/404.xhtml";
