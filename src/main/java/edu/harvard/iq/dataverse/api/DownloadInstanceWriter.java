@@ -91,13 +91,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                         } else if (di.getConversionParam().equals("format")  && accessObject.isLocalFile()) {
                             
                             if ("original".equals(di.getConversionParamValue())) {
-                                DataFileIO storedOrigDataAccess = StoredOriginalFile.retreive(accessObject);
-                                if (storedOrigDataAccess != null) {
-                                    accessObject = storedOrigDataAccess;
-                                } else {
-                                    // Leaving this code here for backward compatibility, for now:
-                                    accessObject = StoredOriginalFile.retrieve(sf, (FileAccessIO)accessObject);
-                                }
+                                accessObject = StoredOriginalFile.retreive(accessObject);
                             } else {
                                 // Other format conversions: 
                                 String requestedMimeType = di.getServiceFormatType(di.getConversionParam(), di.getConversionParamValue()); 

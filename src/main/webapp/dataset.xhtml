@@ -44,7 +44,7 @@
                             <!-- Edit Button -->
                             <div class="btn-group pull-right" jsf:rendered="#{DatasetPage.sessionUserAuthenticated
                                                                               and DatasetPage.canUpdateDataset()
-                                                                              and !DatasetPage.dataset.latestVersion.deaccessioned}">
+                                                                              and !DatasetPage.dataset.deaccessioned}">
                                 <button type="button" id="editDataSet" class="btn btn-default dropdown-toggle #{DatasetPage.locked ? 'disabled' : ''}" data-toggle="dropdown">
                                     <span class="glyphicon glyphicon-pencil"/> #{bundle['dataset.editBtn']} <span class="caret"></span>
                                 </button>
@@ -67,7 +67,7 @@
                                         </p:commandLink>
                                     </li>                                   
                                     <ui:fragment rendered="#{permissionsWrapper.canManagePermissions(DatasetPage.dataset)}">
-                                        <li class="dropdown-submenu">
+                                        <li class="dropdown-submenu pull-left">
                                             <a tabindex="-1" href="#">#{bundle['dataset.editBtn.itemLabel.permissions']}</a>
                                             <ul class="dropdown-menu">
                                                 <li>
@@ -101,10 +101,14 @@
                                             </p:commandLink>
                                         </li>
                                     </ui:fragment>
-                                    <ui:fragment rendered="#{DatasetPage.dataset.released and !empty(DatasetPage.releasedVersionTabList) and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
+                                    <ui:fragment rendered="#{DatasetPage.dataset.released and DatasetPage.existReleasedVersion and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
                                         <li class="divider"></li>
                                         <li>
-                                            <p:commandLink id="deaccessionDatasetLink" onclick="PF('deaccessionBlock').show()">
+                                            <p:commandLink id="deaccessionDatasetLink" onclick="PF('deaccessionBlock').show()"
+                                                           action="#{DatasetPage.updateReleasedVersions()}"
+                                                           oncomplete="PF('deaccessionBlock').show();bind_bsui_components();"
+                                                           update="deaccessionBlock"
+                                                           >
                                                 <h:outputText value="#{bundle['dataset.editBtn.itemLabel.deaccession']}" />
                                             </p:commandLink>
                                         </li>
@@ -503,6 +507,12 @@
                                     <ui:param name="publicationDate" value="#{DatasetPage.dataset.publicationDate != null ? DatasetPage.dataset.publicationDateFormattedYYYYMMDD : ''}"/>
                                     <ui:param name="globalId" value="#{DatasetPage.dataset.globalId}"/>
                                 </ui:include>
+                                <div jsf:rendered="#{DatasetPage.metadataExportEnabled}">
+                                    <!--to enable in development: curl -X PUT -d true http://localhost:8080/api/admin/settings/:DdiExportEnabled -->
+                                    <h:outputLink value="#{DatasetPage.metadataAsJsonUrl}" rendered="#{DatasetPage.metadataAsJsonUrl != null}">
+                                        <h:outputText value="Export metadata as JSON"/>
+                                    </h:outputLink>
+                                </div>
                             </p:tab>
 
                             <!-- 4.2.1: see comment above -->
@@ -898,7 +908,8 @@
                                         <div class="col-sm-6">
                                             <p:inputText id="guestbookuser_nameText" required="#{param['DO_GB_VALIDATION'] and DatasetPage.dataset.guestbook.nameRequired}" 
                                                          styleClass="form-control" value="#{DatasetPage.guestbookResponse.name}"
-                                                         requiredMessage="#{bundle['requiredField']}"/>
+                                                         requiredMessage="#{bundle['requiredField']}"
+                                                         validator="#{DatasetPage.guestbookResponseValidator}"/>
                                             <p:message id="nameMessages" for="guestbookuser_nameText" display="text"/>
                                         </div>
                                     </div>
@@ -911,7 +922,8 @@
                                     <div class="col-sm-6">
                                         <h:inputText id="guestbookuser_email" required="#{param['DO_GB_VALIDATION'] and DatasetPage.dataset.guestbook.emailRequired}"
                                                      styleClass="form-control" value="#{DatasetPage.guestbookResponse.email}"
-                                                     requiredMessage="#{bundle['requiredField']}"/>
+                                                     requiredMessage="#{bundle['requiredField']}"
+                                                     validator="#{DatasetPage.guestbookResponseValidator}"/>
                                         <p:message id="emailMessages" for="guestbookuser_email" display="text"/>
                                     </div>
                                 </div>
@@ -923,7 +935,9 @@
                                     <div class="col-sm-6">
                                         <h:inputText id="guestbookuser_institution" required="#{param['DO_GB_VALIDATION'] and DatasetPage.dataset.guestbook.institutionRequired}"
                                                      styleClass="form-control" value="#{DatasetPage.guestbookResponse.institution}"
-                                                     requiredMessage="#{bundle['requiredField']}"/>
+                                                     requiredMessage="#{bundle['requiredField']}"
+                                                     validator="#{DatasetPage.guestbookResponseValidator}"
+                                                     />
                                         <p:message id="institutionMessages" for="guestbookuser_institution" display="text"/>
                                     </div>
                                 </div>
@@ -935,7 +949,9 @@
                                     <div class="col-sm-6">
                                         <h:inputText id="guestbookuser_position"  required="#{param['DO_GB_VALIDATION'] and DatasetPage.dataset.guestbook.positionRequired}"
                                                      styleClass="form-control" value="#{DatasetPage.guestbookResponse.position}"
-                                                     requiredMessage="#{bundle['requiredField']}"/>
+                                                     requiredMessage="#{bundle['requiredField']}"
+                                                     validator="#{DatasetPage.guestbookResponseValidator}"
+                                                    />
                                         <p:message id="positionMessages" for="guestbookuser_position" display="text"/>
                                     </div>
                                 </div>

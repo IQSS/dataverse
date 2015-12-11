@@ -33,7 +33,6 @@ import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.core.Context;
 
 @Stateless
 @Named
@@ -51,9 +50,7 @@ public class SavedSearchServiceBean {
     DataverseLinkingServiceBean dataverseLinkingService;
     @EJB
     EjbDataverseEngine commandEngine;
-    @Context
-    HttpServletRequest httpReq;
-    
+
     private final String resultString = "result";
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
@@ -119,14 +116,30 @@ public class SavedSearchServiceBean {
         List<SavedSearch> allSavedSearches = findAll();
         JsonArrayBuilder savedSearchArrayBuilder = Json.createArrayBuilder();
         for (SavedSearch savedSearch : allSavedSearches) {
-            JsonObjectBuilder perSavedSearchResponse = makeLinksForSingleSavedSearch(savedSearch, debugFlag);
+            DataverseRequest dataverseRequest = new DataverseRequest(savedSearch.getCreator(), getHttpServletRequest());
+            JsonObjectBuilder perSavedSearchResponse = makeLinksForSingleSavedSearch(dataverseRequest, savedSearch, debugFlag);
             savedSearchArrayBuilder.add(perSavedSearchResponse);
         }
         response.add("hits by saved search", savedSearchArrayBuilder);
         return response;
     }
 
-    public JsonObjectBuilder makeLinksForSingleSavedSearch(SavedSearch savedSearch, boolean debugFlag) throws SearchException, CommandException {
+    /**
+     * The "Saved Search" and highly related "Linked Dataverses and Linked
+     * Datasets" features can be thought of as periodic execution of the
+     * LinkDataverseCommand and LinkDatasetCommand. As of this writing that
+     * periodic execution can be triggered via a cron job but we'd like to put
+     * it on an EJB timer as part of
+     * https://github.com/IQSS/dataverse/issues/2543 .
+     *
+     * The commands are executed by the creator of the SavedSearch. What happens
+     * if the users loses the permission that the command requires? Should the
+     * commands continue to be executed periodically as some "system" user?
+     *
+     * @return Debug information in the form of a JSON object, which is much
+     * more structured that a simple String.
+     */
+    public JsonObjectBuilder makeLinksForSingleSavedSearch(DataverseRequest dvReq, SavedSearch savedSearch, boolean debugFlag) throws SearchException, CommandException {
         JsonObjectBuilder response = Json.createObjectBuilder();
         JsonArrayBuilder savedSearchArrayBuilder = Json.createArrayBuilder();
         JsonArrayBuilder infoPerHit = Json.createArrayBuilder();
@@ -143,7 +156,6 @@ public class SavedSearchServiceBean {
                 infoPerHit.add(hitInfo);
                 break;
             }
-            DataverseRequest dvReq = new DataverseRequest(savedSearch.getCreator(), httpReq);
             if (dvObjectThatDefinitionPointWillLinkTo.isInstanceofDataverse()) {
                 Dataverse dataverseToLinkTo = (Dataverse) dvObjectThatDefinitionPointWillLinkTo;
                 if (wouldResultInLinkingToItself(savedSearch.getDefinitionPoint(), dataverseToLinkTo)) {
@@ -275,6 +287,18 @@ public class SavedSearchServiceBean {
      */
     private boolean datasetAncestorAlreadyLinked(Dataverse definitionPoint, Dataset datasetToLinkTo) {
         return false;
+    }
+
+    public static HttpServletRequest getHttpServletRequest() {
+        /**
+         * This HttpServletRequest object is purposefully set to null. "There's
+         * another issue here, though - the IP address. The request is sent from
+         * a cron job - I assume localhost? - and it's source IP address is
+         * different from the one the user may have, and quite possibly more
+         * privileged. It maybe safest to pass in a null http request at this
+         * stage." -- michbarsinai
+         */
+        return null;
     }
 
 }

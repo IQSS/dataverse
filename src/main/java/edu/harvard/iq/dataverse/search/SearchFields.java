@@ -148,6 +148,11 @@ public class SearchFields {
      * Indexed as text_en so it's searchable by lower case etc.
      */
     public static final String FILE_TAG_SEARCHABLE = "fileTags";
+    /*
+     * (tabular) Data Tags are indexed as a string, since we are only planning to
+     * use these in facet-like, exact searches:
+    */
+    public static final String TABDATA_TAG = "tabularDataTag";
     public static final String ACCESS = "fileAccess";
 
     public static final String SUBTREE = "subtreePaths";

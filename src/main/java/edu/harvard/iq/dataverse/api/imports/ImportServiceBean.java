@@ -89,17 +89,14 @@ public class ImportServiceBean {
     
     @EJB ImportDDIServiceBean importDDIService;
     
-    @Context
-    HttpServletRequest httpRequest;
-   
-/**
- * This is just a convenience method, for testing migration.  It creates 
- * a dummy dataverse with the directory name as dataverse name & alias.
- * @param dvName
- * @param u
- * @return
- * @throws ImportException 
- */
+    /**
+     * This is just a convenience method, for testing migration.  It creates 
+     * a dummy dataverse with the directory name as dataverse name & alias.
+     * @param dvName
+     * @param dataverseRequest
+     * @return
+     * @throws ImportException 
+     */
     @TransactionAttribute(REQUIRES_NEW)
     public Dataverse createDataverse(String dvName, DataverseRequest dataverseRequest) throws ImportException {
         Dataverse d = new Dataverse();
@@ -150,7 +147,7 @@ public class ImportServiceBean {
             ddiXMLToParse = new String(Files.readAllBytes(file.toPath()));
             JsonObjectBuilder status = doImport(dataverseRequest, owner, ddiXMLToParse,file.getParentFile().getName() + "/" + file.getName(), importType, cleanupLog);
             status.add("file", file.getName());
-            logger.info("completed doImport " + file.getParentFile().getName() + "/" + file.getName());
+            logger.log(Level.INFO, "completed doImport {0}/{1}", new Object[]{file.getParentFile().getName(), file.getName()});
             return status;
         } catch (ImportException ex) {
             String msg = "Import Exception processing file " + file.getParentFile().getName() + "/" + file.getName() + ", msg:" + ex.getMessage();

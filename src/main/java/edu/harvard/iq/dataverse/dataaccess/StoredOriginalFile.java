@@ -116,6 +116,7 @@ public class StoredOriginalFile {
     // The method below is however left in place temporarily, for backward 
     // compatibility access to the existing stored originals. 
     
+    /*
     @Deprecated
     public static FileAccessIO retrieve (DataFile dataFile, FileAccessIO fileDownload) {
         String originalMimeType = null; 
@@ -132,6 +133,7 @@ public class StoredOriginalFile {
          * on the filesystem!!
          * L.A. 4.0.2
         */
+       /*
         String tabularFileName = dataFile.getStorageIdentifier(); 
         Path savedOriginalPath = null; 
         
@@ -190,7 +192,7 @@ public class StoredOriginalFile {
         }
         
         return null;
-    }
+    }*/
 
     // TODO: 
     // do what the comment below says - move this code into the file util, 

@@ -11,21 +11,30 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
+import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.SettingsWrapper;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
+import edu.harvard.iq.dataverse.dataaccess.FileAccessIO;
+import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import org.apache.commons.lang.StringUtils;
+import org.primefaces.util.Base64;
 
 @ViewScoped
 @Named("SearchIncludeFragment")
@@ -45,10 +54,14 @@ public class SearchIncludeFragment implements java.io.Serializable {
     DataFileServiceBean dataFileService;
     @EJB
     PermissionServiceBean permissionService;
+    @EJB
+    DvObjectServiceBean dvObjectService;
     @Inject
     DataverseSession session;
     @Inject
     SettingsWrapper settingsWrapper;
+    @Inject
+    PermissionsWrapper permissionsWrapper;
 
     private String browseModeString = "browse";
     private String searchModeString = "search";
@@ -70,6 +83,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
     private String fq9;
     private String dataverseAlias;
     private Dataverse dataverse;
+    private String dataversePath = null;
     // commenting out dataverseSubtreeContext. it was not well-loved in the GUI
 //    private String dataverseSubtreeContext;
     private String selectedTypesString;
@@ -108,7 +122,9 @@ public class SearchIncludeFragment implements java.io.Serializable {
 //    private Map<String, String> friendlyName = new HashMap<>();
     private String errorFromSolr;
     private SearchException searchException;
-
+    private boolean rootDv = false;
+    private Map<Long, String> harvestedDataverseDescriptions = null;
+    
     /**
      * @todo:
      *
@@ -232,12 +248,14 @@ public class SearchIncludeFragment implements java.io.Serializable {
         SolrQueryResponse solrQueryResponse = null;
 
         List<String> filterQueriesFinal = new ArrayList<>();
+
         if (dataverseAlias != null) {
             this.dataverse = dataverseService.findByAlias(dataverseAlias);
         }
         if (this.dataverse != null) {
-            String dataversePath = dataverseService.determineDataversePath(this.dataverse);
+            dataversePath = dataverseService.determineDataversePath(this.dataverse);
             String filterDownToSubtree = SearchFields.SUBTREE + ":\"" + dataversePath + "\"";
+            //logger.info("SUBTREE parameter: " + dataversePath);
             if (!this.dataverse.equals(dataverseService.findRootDataverse())) {
                 /**
                  * @todo centralize this into SearchServiceBean
@@ -246,10 +264,12 @@ public class SearchIncludeFragment implements java.io.Serializable {
 //                this.dataverseSubtreeContext = dataversePath;
             } else {
 //                this.dataverseSubtreeContext = "all";
+                this.setRootDv(true);
             }
         } else {
             this.dataverse = dataverseService.findRootDataverse();
 //            this.dataverseSubtreeContext = "all";
+            this.setRootDv(true);
         }
 
         selectedTypesList = new ArrayList<>();
@@ -290,8 +310,10 @@ public class SearchIncludeFragment implements java.io.Serializable {
              * https://github.com/IQSS/dataverse/issues/84
              */
             int numRows = 10;
-            solrQueryResponse = searchService.search(session.getUser(), dataverse, queryToPassToSolr, filterQueriesFinal, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows);
-            solrQueryResponseAllTypes = searchService.search(session.getUser(), dataverse, queryToPassToSolr, filterQueriesFinalAllTypes, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows);
+            solrQueryResponse = searchService.search(session.getUser(), dataverse, queryToPassToSolr, filterQueriesFinal, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows, false);
+            // This 2nd search() is for populating the facets: -- L.A. 
+            // TODO: ...
+            solrQueryResponseAllTypes = searchService.search(session.getUser(), dataverse, queryToPassToSolr, filterQueriesFinalAllTypes, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows, false);
         } catch (SearchException ex) {
             Throwable cause = ex;
             StringBuilder sb = new StringBuilder();
@@ -336,117 +358,38 @@ public class SearchIncludeFragment implements java.io.Serializable {
                     logger.warning(SearchFields.ENTITY_ID + " was null for Solr document id:" + solrSearchResult.getId() + ", skipping. Bad Solr data?");
                     break;
                 }
+                
+                // going to assume that this is NOT a linked object, for now:
+                solrSearchResult.setIsInTree(true);
+                // (we'll review this later!)
+                
                 if (solrSearchResult.getType().equals("dataverses")) {
-                    Dataverse dataverseInCard = dataverseService.find(solrSearchResult.getEntityId());
-                    String parentId = solrSearchResult.getParent().get("id");
-                    solrSearchResult.setIsInTree(false);
-                    if (parentId != null) {
-                        Dataverse parentDataverseInCard = dataverseService.find(Long.parseLong(parentId));
-                        solrSearchResult.setDataverseParentAlias(parentDataverseInCard.getAlias());
-                        List<Dataverse> dvTree = new ArrayList();
-                        Dataverse testDV = parentDataverseInCard;
-                        dvTree.add(testDV);
-                        while (testDV.getOwner() != null) {
-                            dvTree.add(testDV.getOwner());
-                            testDV = testDV.getOwner();
-                        }
-                        if (dvTree.contains(dataverse)) {
-                            solrSearchResult.setIsInTree(true);
-                        }
+                    //logger.info("XXRESULT: dataverse: "+solrSearchResult.getEntityId());
+                    dataverseService.populateDvSearchCard(solrSearchResult);
+                    
+                    if (isHarvestedDataverse(solrSearchResult.getEntityId())) {
+                        solrSearchResult.setHarvested(true);
                     }
 
-                    if (dataverseInCard != null) {
-                        solrSearchResult.setDataverseAffiliation(dataverseInCard.getAffiliation());
-                        solrSearchResult.setStatus(getCreatedOrReleasedDate(dataverseInCard, solrSearchResult.getReleaseOrCreateDate()));
-                        solrSearchResult.setDataverseAlias(dataverseInCard.getAlias());
-                    }
                 } else if (solrSearchResult.getType().equals("datasets")) {
-                    Long dataverseId = Long.parseLong(solrSearchResult.getParent().get("id"));
-                    Dataverse parentDataverse = dataverseService.find(dataverseId);
-                    solrSearchResult.setIsInTree(false);
-                    List<Dataverse> dvTree = new ArrayList();
-                    Dataverse testDV = parentDataverse;
-                    dvTree.add(testDV);
-                    /**
-                     * @todo Why is a NPE being thrown at this `while
-                     * (testDV.getOwner() != null){` line? An NPE was being
-                     * thrown while browsing the site *after* issuing the
-                     * DestroyDatasetCommand but before a fix was put in to
-                     * remove the dataset "card" from Solr. The ticket tracking
-                     * this that fix is
-                     * https://github.com/IQSS/dataverse/issues/1316 but it's
-                     * unclear why the NPE was thrown. The users see a nasty
-                     * "Internal Server Error - An unexpected error was
-                     * encountered, no more information is available." and
-                     * server.log has a stacktrace with the NPE.
-                     */
-                    while (testDV.getOwner() != null) {
-                        dvTree.add(testDV.getOwner());
-                        testDV = testDV.getOwner();
-                    }
-                    if (dvTree.contains(dataverse)) {
-                        solrSearchResult.setIsInTree(true);
-                    }
-                    /**
-                     * @todo can a dataverse alias ever be null?
-                     */
-                    solrSearchResult.setDataverseAlias(parentDataverse.getAlias());
-                    Long datasetVersionId = solrSearchResult.getDatasetVersionId();
-                    if (datasetVersionId != null) {
-                        DatasetVersion datasetVersion = datasetVersionService.find(datasetVersionId);
-                        if (datasetVersion != null) {
-                            if (datasetVersion.isDeaccessioned()) {
-                                solrSearchResult.setDeaccessionedState(true);
-                            }
+                    //logger.info("XXRESULT: dataset: "+solrSearchResult.getEntityId());
+                    datasetVersionService.populateDatasetSearchCard(solrSearchResult);
 
-                        }
-                    }
+                    // @todo - the 3 lines below, should they be moved inside
+                    // searchServiceBean.search()?
                     String deaccesssionReason = solrSearchResult.getDeaccessionReason();
                     if (deaccesssionReason != null) {
                         solrSearchResult.setDescriptionNoSnippet(deaccesssionReason);
                     }
+                    
+                    if (isHarvestedDataverse(solrSearchResult.getParentIdAsLong())) {
+                        solrSearchResult.setHarvestingDescription(getHarvestingDataverseDescription(solrSearchResult.getParentIdAsLong()));
+                        solrSearchResult.setHarvested(true);
+                    }
                 } else if (solrSearchResult.getType().equals("files")) {
-                    DataFile dataFile = dataFileService.find(solrSearchResult.getEntityId());
-                    if (dataFile != null) {
-                        solrSearchResult.setStatus(getCreatedOrReleasedDate(dataFile, solrSearchResult.getReleaseOrCreateDate()));
-                    }
-                    Long datasetId = Long.parseLong(solrSearchResult.getParent().get("id"));
-                    Dataset parentDS = datasetService.find(datasetId);
-                    /**
-                     * I didn't write this code below about setIsInTree
-                     * (whatever that is) but I did just add a null check.
-                     * --pdurbin
-                     */
-                    if (parentDS != null) {
-                        Dataverse parentDataverse = parentDS.getOwner();
-                        solrSearchResult.setIsInTree(false);
-                        List<Dataverse> dvTree = new ArrayList();
-                        Dataverse testDV = parentDataverse;
-                        dvTree.add(testDV);
-                        /**
-                         * @todo Why is a NPE being thrown at this `while
-                         * (testDV.getOwner() != null){` line? An NPE was being
-                         * thrown while browsing the site *after* issuing the
-                         * DestroyDatasetCommand but before a fix was put in to
-                         * remove the dataset "card" from Solr. The ticket
-                         * tracking this that fix is
-                         * https://github.com/IQSS/dataverse/issues/1316 but
-                         * it's unclear why the NPE was thrown. The users see a
-                         * nasty "Internal Server Error - An unexpected error
-                         * was encountered, no more information is available."
-                         * and server.log has a stacktrace with the NPE.
-                         */
-                        if (testDV != null) {
-                            while (testDV.getOwner() != null) {
-                                dvTree.add(testDV.getOwner());
-                                testDV = testDV.getOwner();
-                            }
-                        }
+                    //logger.info("XXRESULT: datafile: "+solrSearchResult.getEntityId());
+                    dataFileService.populateFileSearchCard(solrSearchResult);
 
-                        if (dvTree.contains(dataverse)) {
-                            solrSearchResult.setIsInTree(true);
-                        }
-                    }
                     /**
                      * @todo: show DataTable variables
                      */
@@ -466,6 +409,8 @@ public class SearchIncludeFragment implements java.io.Serializable {
             }
 
         } else {
+            // if SOLR is down:
+
             List contentsList = dataverseService.findByOwnerId(dataverse.getId());
             contentsList.addAll(datasetService.findByOwnerId(dataverse.getId()));
 //            directChildDvObjectContainerList.addAll(contentsList);
@@ -925,6 +870,14 @@ public class SearchIncludeFragment implements java.io.Serializable {
         this.solrIsDown = solrIsDown;
     }
 
+    public boolean isRootDv() {
+        return rootDv;
+    }
+
+    public void setRootDv(boolean rootDv) {
+        this.rootDv = rootDv;
+    }
+
     public boolean isDebug() {
         return (debug && session.getUser().isSuperuser())
                 || settingsWrapper.isTrueForKey(":Debug", false);
@@ -944,13 +897,13 @@ public class SearchIncludeFragment implements java.io.Serializable {
 
     public boolean publishedSelected() {
         String expected = SearchFields.PUBLICATION_STATUS + ":\"" + getPUBLISHED() + "\"";
-        logger.info("published expected: " + expected + " actual: " + selectedTypesList);
+        logger.fine("published expected: " + expected + " actual: " + selectedTypesList);
         return filterQueries.contains(SearchFields.PUBLICATION_STATUS + ":\"" + getPUBLISHED() + "\"");
     }
 
     public boolean unpublishedSelected() {
         String expected = SearchFields.PUBLICATION_STATUS + ":\"" + getUNPUBLISHED() + "\"";
-        logger.info("unpublished expected: " + expected + " actual: " + selectedTypesList);
+        logger.fine("unpublished expected: " + expected + " actual: " + selectedTypesList);
         return filterQueries.contains(SearchFields.PUBLICATION_STATUS + ":\"" + getUNPUBLISHED() + "\"");
     }
 
@@ -1046,15 +999,9 @@ public class SearchIncludeFragment implements java.io.Serializable {
         this.dataverseAlias = dataverseAlias;
     }
 
-    public boolean isTabular(Long fileId) {
-        if (fileId == null) {
-            return false;
-        }
-
-        DataFile datafile = dataFileService.find(fileId);
+    public boolean isTabular(DataFile datafile) {
 
         if (datafile == null) {
-            logger.warning("isTabular: datafile service could not locate a DataFile object for id " + fileId + "!");
             return false;
         }
 
@@ -1065,18 +1012,11 @@ public class SearchIncludeFragment implements java.io.Serializable {
         return searchException;
     }
 
-    public String tabularDataDisplayInfo(Long fileId) {
+    public String tabularDataDisplayInfo(DataFile datafile) {
         String ret = "";
 
-        if (fileId == null) {
-            return "";
-        }
-
-        DataFile datafile = dataFileService.find(fileId);
-
         if (datafile == null) {
-            logger.warning("isTabular: datafile service could not locate a DataFile object for id " + fileId + "!");
-            return "";
+            return null;
         }
 
         if (datafile.isTabularData() && datafile.getDataTable() != null) {
@@ -1099,10 +1039,8 @@ public class SearchIncludeFragment implements java.io.Serializable {
         return ret;
     }
 
-    public String dataFileSizeDisplay(Long fileId) {
-        DataFile datafile = dataFileService.find(fileId);
+    public String dataFileSizeDisplay(DataFile datafile) {
         if (datafile == null) {
-            logger.warning("isTabular: datafile service could not locate a DataFile object for id " + fileId + "!");
             return "";
         }
 
@@ -1110,10 +1048,8 @@ public class SearchIncludeFragment implements java.io.Serializable {
 
     }
 
-    public String dataFileMD5Display(Long fileId) {
-        DataFile datafile = dataFileService.find(fileId);
+    public String dataFileMD5Display(DataFile datafile) {
         if (datafile == null) {
-            logger.warning("isTabular: datafile service could not locate a DataFile object for id " + fileId + "!");
             return "";
         }
 
@@ -1125,28 +1061,281 @@ public class SearchIncludeFragment implements java.io.Serializable {
     }
 
     public void setDisplayCardValues() {
+        int i = 0;
+        dvobjectThumbnailsMap = new HashMap<>();
+        dvobjectViewMap = new HashMap<>();
+        Set<Long> fileParentDatasets = null;
         for (SolrSearchResult result : searchResultsList) {
+            //logger.info("checking DisplayImage for the search result " + i++);
             boolean valueSet = false;
-            if (result.getType().equals("dataverses") && result.getEntity() instanceof Dataverse) {
-                result.setDisplayImage(dataverseService.isDataverseCardImageAvailable((Dataverse) result.getEntity(), session.getUser()));
+            if (result.getType().equals("dataverses") /*&& result.getEntity() instanceof Dataverse*/) {
+                result.setImageUrl(getDataverseCardImageUrl(result));
                 valueSet = true;
-            } else if (result.getType().equals("datasets") && result.getEntity() instanceof Dataset) {
-                result.setDisplayImage(datasetService.isDatasetCardImageAvailable(datasetVersionService.find(result.getDatasetVersionId()), session.getUser()));
+            } else if (result.getType().equals("datasets") /*&& result.getEntity() instanceof Dataset*/) {
+                result.setImageUrl(getDatasetCardImageUrl(result));
                 valueSet = true;
-            } else if (result.getType().equals("files") && result.getEntity() instanceof DataFile) {
+            } else if (result.getType().equals("files") /*&& result.getEntity() instanceof DataFile*/) {
                 // TODO: 
                 // use permissionsWrapper?  -- L.A. 4.2.1
-                result.setDisplayImage(dataFileService.isThumbnailAvailable((DataFile) result.getEntity()) && permissionService.userOn(this.session.getUser(), (DataFile) result.getEntity()).has(Permission.DownloadFile));
+                // OK, done! (4.2.2; in the getFileCardImageUrl() method, below)
+                result.setImageUrl(getFileCardImageUrl(result));
                 valueSet = true;
+                if (fileParentDatasets == null) {
+                    fileParentDatasets = new HashSet<>();
+                }
+                fileParentDatasets.add(result.getParentIdAsLong());
             }
 
-            if (!valueSet) {
+            if (valueSet) {
+                if (result.getImageUrl() != null) {
+                    result.setDisplayImage(true);
+                }
+            } else {
                 logger.warning("Index result / entity mismatch (id:resultType) - " + result.getId() + ":" + result.getType());
             }
         }
+        dvobjectThumbnailsMap = null;
+        dvobjectViewMap = null;
+        
+        // determine which of the datafile objects are harvested:
+        
+        if (fileParentDatasets != null) {
+            Map<Long,String> descriptionsForHarvestedDatasets = datasetService.getHarvestingDescriptionsForHarvestedDatasets(fileParentDatasets);
+            if (descriptionsForHarvestedDatasets != null && descriptionsForHarvestedDatasets.size() > 0) {
+                for (SolrSearchResult result : searchResultsList) {
+                    if (result.getType().equals("files")) {
+                        if (descriptionsForHarvestedDatasets.containsKey(result.getParentIdAsLong())) {
+                            result.setHarvestingDescription(descriptionsForHarvestedDatasets.get(result.getParentIdAsLong()));
+                            result.setHarvested(true);
+                        }
+                    }
+                }
+            }
+            descriptionsForHarvestedDatasets = null;
+            fileParentDatasets = null;
+        }
+        
+        // determine which of the objects are linked:
+        
+        if (!this.isRootDv()) {
+            // (nothing is "linked" if it's the root DV!)
+            Set<Long> dvObjectParentIds = new HashSet<>();
+            for (SolrSearchResult result : searchResultsList) {
+                if (dataverse.getId().equals(result.getParentIdAsLong())) {
+                    // definitely NOT linked:
+                    result.setIsInTree(true);
+                } else if (result.getParentIdAsLong().longValue() == 1L) {
+                    // the object's parent is the root Dv; and the current 
+                    // Dv is NOT root... definitely linked:
+                    result.setIsInTree(false);
+                } else {
+                    dvObjectParentIds.add(result.getParentIdAsLong());
+                }
+            }
+            
+            if (dvObjectParentIds.size() > 0) {
+                Map<Long, String> treePathMap = dvObjectService.getObjectPathsByIds(dvObjectParentIds);
+                if (treePathMap != null) {
+                    for (SolrSearchResult result : searchResultsList) {
+                        Long objectId = result.getParentIdAsLong();
+                        if (treePathMap.containsKey(objectId)) {
+                            String objectPath = treePathMap.get(objectId);
+                            if (!objectPath.startsWith(dataversePath)) {
+                                result.setIsInTree(false);                                
+                            }
+                        }
+                    }
+                }
+                treePathMap = null;
+            }
+            
+            dvObjectParentIds = null;
+        }
+        
     }
 
+    private Map<Long, String> dvobjectThumbnailsMap = null;
+    private Map<Long, DvObject> dvobjectViewMap = null;
+
+    private String getAssignedDatasetImage(Dataset dataset) {
+        if (dataset == null) {
+            return null;
+        }
+
+        DataFile assignedThumbnailFile = dataset.getThumbnailFile();
+
+        if (assignedThumbnailFile != null) {
+            Long assignedThumbnailFileId = null;
+
+            if (this.dvobjectThumbnailsMap.containsKey(assignedThumbnailFileId)) {
+                // Yes, return previous answer
+                //logger.info("using cached result for ... "+assignedThumbnailFileId);
+                if (!"".equals(this.dvobjectThumbnailsMap.get(assignedThumbnailFileId))) {
+                    return this.dvobjectThumbnailsMap.get(assignedThumbnailFileId);
+                }
+                return null;
+            }
+
+            String imageSourceBase64 = ImageThumbConverter.getImageThumbAsBase64(
+                    assignedThumbnailFile,
+                    ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
+
+            if (imageSourceBase64 != null) {
+                this.dvobjectThumbnailsMap.put(assignedThumbnailFileId, imageSourceBase64);
+                return imageSourceBase64;
+            }
+
+            // OK - we can't use this "assigned" image, because of permissions, or because 
+            // the thumbnail failed to generate, etc... in this case we'll 
+            // mark this dataset in the lookup map - so that we don't have to
+            // do all these lookups again...
+            this.dvobjectThumbnailsMap.put(assignedThumbnailFileId, "");
+            
+            // TODO: (?)
+            // do we need to cache this datafile object in the view map?
+            // -- L.A., 4.2.2
+        }
+
+        return null;
+
+    }
+
+    // it's the responsibility of the user - to make sure the search result
+    // passed to this method is of the Datafile type!
+    private String getFileCardImageUrl(SolrSearchResult result) {
+        Long imageFileId = result.getEntity().getId();
+
+        if (imageFileId != null) {
+            if (this.dvobjectThumbnailsMap.containsKey(imageFileId)) {
+                // Yes, return previous answer
+                //logger.info("using cached result for ... "+datasetId);
+                if (!"".equals(this.dvobjectThumbnailsMap.get(imageFileId))) {
+                    return this.dvobjectThumbnailsMap.get(imageFileId);
+                }
+                return null;
+            }
+
+            String cardImageUrl = null;
+
+            if ((!((DataFile)result.getEntity()).isRestricted()
+                        || permissionsWrapper.hasDownloadFilePermission(result.getEntity()))
+                    && dataFileService.isThumbnailAvailable((DataFile) result.getEntity())) {
+                
+                cardImageUrl = ImageThumbConverter.getImageThumbAsBase64(
+                        (DataFile) result.getEntity(),
+                        ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
+            }
+
+            if (cardImageUrl != null) {
+                this.dvobjectThumbnailsMap.put(imageFileId, cardImageUrl);
+                //logger.info("datafile id " + imageFileId + ", returning " + cardImageUrl);
+
+                if (!(dvobjectViewMap.containsKey(imageFileId)
+                        && dvobjectViewMap.get(imageFileId).isInstanceofDataFile())) {
+
+                    dvobjectViewMap.put(imageFileId, result.getEntity());
+
+                }
+
+                return cardImageUrl;
+            } else {
+                this.dvobjectThumbnailsMap.put(imageFileId, "");
+            }
+        }
+        return null;
+    }
+
+    // it's the responsibility of the user - to make sure the search result
+    // passed to this method is of the Dataset type!
+    private String getDatasetCardImageUrl(SolrSearchResult result) {
+        // harvested check!
+
+        String cardImageUrl = null;
+
+        if (result.getEntity() != null) {
+            cardImageUrl = this.getAssignedDatasetImage((Dataset) result.getEntity());
+
+            if (cardImageUrl != null) {
+                //logger.info("dataset id " + result.getEntity().getId() + " has a dedicated image assigned; returning " + cardImageUrl);
+                return cardImageUrl;
+            }
+        }
+
+        Long thumbnailImageFileId = datasetVersionService.getThumbnailByVersionId(result.getDatasetVersionId());
+
+        if (thumbnailImageFileId != null) {
+            //cardImageUrl = FILE_CARD_IMAGE_URL + thumbnailImageFileId;
+            if (this.dvobjectThumbnailsMap.containsKey(thumbnailImageFileId)) {
+                // Yes, return previous answer
+                //logger.info("using cached result for ... "+datasetId);
+                if (!"".equals(this.dvobjectThumbnailsMap.get(thumbnailImageFileId))) {
+                    return this.dvobjectThumbnailsMap.get(thumbnailImageFileId);
+                }
+                return null;
+            }
+
+            DataFile thumbnailImageFile = null;
+
+            if (dvobjectViewMap.containsKey(thumbnailImageFileId)
+                    && dvobjectViewMap.get(thumbnailImageFileId).isInstanceofDataFile()) {
+                thumbnailImageFile = (DataFile) dvobjectViewMap.get(thumbnailImageFileId);
+            } else {
+                thumbnailImageFile = dataFileService.findCheapAndEasy(thumbnailImageFileId);
+                if (thumbnailImageFile != null) {
+                    // TODO:
+                    // do we need this file on the map? - it may not even produce
+                    // a thumbnail!
+                    dvobjectViewMap.put(thumbnailImageFileId, thumbnailImageFile);
+                } else {
+                    this.dvobjectThumbnailsMap.put(thumbnailImageFileId, "");
+                    return null;
+                }
+            }
+
+            if (dataFileService.isThumbnailAvailable(thumbnailImageFile)) {
+                cardImageUrl = ImageThumbConverter.getImageThumbAsBase64(
+                        thumbnailImageFile,
+                        ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
+            }
+
+            if (cardImageUrl != null) {
+                this.dvobjectThumbnailsMap.put(thumbnailImageFileId, cardImageUrl);
+            } else {
+                this.dvobjectThumbnailsMap.put(thumbnailImageFileId, "");
+            }
+        }
+
+        //logger.info("dataset id " + result.getEntityId() + ", returning " + cardImageUrl);
+
+        return cardImageUrl;
+    }
+
+    // it's the responsibility of the user - to make sure the search result
+    // passed to this method is of the Dataverse type!
+    private String getDataverseCardImageUrl(SolrSearchResult result) {
+        return dataverseService.getDataverseLogoThumbnailAsBase64ById(result.getEntityId());
+    }
+    
+    private Map<Long, String> getHarvestedDataverseDescriptions() {
+        if (harvestedDataverseDescriptions != null) {
+            return harvestedDataverseDescriptions;
+        }
+        harvestedDataverseDescriptions = dataverseService.getAllHarvestedDataverseDescriptions();
+        return harvestedDataverseDescriptions;
+    }
+    
+    private boolean isHarvestedDataverse(Long id) {
+        return this.getHarvestedDataverseDescriptions().containsKey(id);
+    }
+
+    private String getHarvestingDataverseDescription(Long id) {
+        if (this.isHarvestedDataverse(id)) {
+            return this.getHarvestedDataverseDescriptions().get(id);
+        }
+        return null;
+    }
     public enum SortOrder {
+
         asc, desc
     };
 

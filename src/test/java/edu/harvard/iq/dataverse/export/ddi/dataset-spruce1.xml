@@ -13,7 +13,7 @@
     </citation>
   </stdyDscr>
   <dataDscr/>
-  <otherMat ID="f12">
+  <otherMat ID="f12" level="datafile">
     <labl>trees.png</labl>
     <txt/>
   </otherMat>

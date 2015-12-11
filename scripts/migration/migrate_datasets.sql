@@ -70,5 +70,5 @@ where dataset.id = dvo.id;
 
 -- set the license for all versions to be NONE by default
 -- TODO: once create commands are done, this can be done in the code.
-update datasetversion set license = 'NONE';
+update termsofuseandaccess set license = 'NONE';
 

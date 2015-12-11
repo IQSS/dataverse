@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
+import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.File;
 import java.io.FileInputStream;
@@ -16,6 +17,7 @@ import java.io.InputStream;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -150,14 +152,20 @@ public class DataverseServiceBean implements java.io.Serializable {
         return retVal;
     }
 
+    /**
+     * A lookup of a dataverse alias should be case insensitive. If "cfa"
+     * belongs to the Center for Astrophysics, we don't want to allow Code for
+     * America to start using "CFA". Force all queries to be lower case.
+     */
     public Dataverse findByAlias(String anAlias) {
         try {
             return (anAlias.toLowerCase().equals(":root"))
 				? findRootDataverse()
 				: em.createNamedQuery("Dataverse.findByAlias", Dataverse.class)
-					.setParameter("alias", anAlias)
+					.setParameter("alias", anAlias.toLowerCase())
 					.getSingleResult();
         } catch ( NoResultException|NonUniqueResultException ex ) {
+            logger.fine("Unable to find a single dataverse using alias \"" + anAlias + "\": " + ex);
             return null;
         }
     }
@@ -225,17 +233,55 @@ public class DataverseServiceBean implements java.io.Serializable {
     public String getApplicationVersion() { 
         return systemConfig.getVersion(true);
     }
-           
-    public boolean isDataverseCardImageAvailable(Dataverse dataverse, User user) {    
+    
+    public String getDataverseLogoThumbnailAsBase64(Dataverse dataverse, User user) {
+        
+        if (dataverse == null) {
+            return null;
+        }
+
+        File dataverseLogoFile = getLogo(dataverse);
+        if (dataverseLogoFile != null) {
+            String logoThumbNailPath = null;
+
+            if (dataverseLogoFile.exists()) {
+                logoThumbNailPath = ImageThumbConverter.generateImageThumb(dataverseLogoFile.getAbsolutePath(), 48);
+                if (logoThumbNailPath != null) {
+                    return ImageThumbConverter.getImageAsBase64FromFile(new File(logoThumbNailPath));
+
+                }
+            }
+        } 
+        return null;
+    }
+    
+    public String getDataverseLogoThumbnailAsBase64ById(Long dvId) {
+     
+        File dataverseLogoFile = getLogoById(dvId);
+        
+        if (dataverseLogoFile != null) {
+            String logoThumbNailPath = null;
+
+            if (dataverseLogoFile.exists()) {
+                logoThumbNailPath = ImageThumbConverter.generateImageThumb(dataverseLogoFile.getAbsolutePath(), 48);
+                if (logoThumbNailPath != null) {
+                    return ImageThumbConverter.getImageAsBase64FromFile(new File(logoThumbNailPath));
+
+                }
+            }
+        } 
+        return null;
+    }
+    
+    /*
+    public boolean isDataverseLogoThumbnailAvailable(Dataverse dataverse, User user) {    
         if (dataverse == null) {
             return false; 
         }
-        
-        String imageThumbFileName = null; 
-        
+                
         // First, check if the dataverse has a defined logo: 
         
-        if (dataverse.getDataverseTheme() != null && dataverse.getDataverseTheme().getLogo() != null && !dataverse.getDataverseTheme().getLogo().equals("")) {
+        //if (dataverse.getDataverseTheme() != null && dataverse.getDataverseTheme().getLogo() != null && !dataverse.getDataverseTheme().getLogo().equals("")) {
             File dataverseLogoFile = getLogo(dataverse);
             if (dataverseLogoFile != null) {
                 String logoThumbNailPath = null;
@@ -247,8 +293,8 @@ public class DataverseServiceBean implements java.io.Serializable {
                     }
                 }
             }
-        }
-        
+        //}
+        */
         // If there's no uploaded logo for this dataverse, go through its 
         // [released] datasets and see if any of them have card images:
         // 
@@ -256,7 +302,7 @@ public class DataverseServiceBean implements java.io.Serializable {
         // Discuss/Decide if we really want to do this - i.e., go through every
         // file in every dataset below... 
         // -- L.A. 4.0 beta14
-        
+        /*
         for (Dataset dataset : datasetService.findPublishedByOwnerId(dataverse.getId())) {
             if (dataset != null) {
                 DatasetVersion releasedVersion = dataset.getReleasedVersion();
@@ -267,10 +313,10 @@ public class DataverseServiceBean implements java.io.Serializable {
                     }
                 }
             }
-        }        
-        
+        }   */     
+        /*
         return false; 
-    }
+    } */
         
     private File getLogo(Dataverse dataverse) {
         if (dataverse.getId() == null) {
@@ -293,6 +339,72 @@ public class DataverseServiceBean implements java.io.Serializable {
             
         return null;         
     }
+    
+    private File getLogoById(Long id) {
+        if (id == null) {
+            return null; 
+        }
+        
+        String logoFileName = null;
+        
+        try {
+                logoFileName = (String) em.createNativeQuery("SELECT logo FROM dataversetheme WHERE dataverse_id = " + id).getSingleResult();
+            
+        } catch (Exception ex) {
+            return null;
+        }
+        
+        if (logoFileName != null && !logoFileName.equals("")) {
+            Properties p = System.getProperties();
+            String domainRoot = p.getProperty("com.sun.aas.instanceRoot");
+  
+            if (domainRoot != null && !"".equals(domainRoot)) {
+                return new File (domainRoot + File.separator + 
+                    "docroot" + File.separator + 
+                    "logos" + File.separator + 
+                    id + File.separator + 
+                    logoFileName);
+            }
+        }
+            
+        return null;         
+    }
+    
+    public DataverseTheme findDataverseThemeByIdQuick(Long id) {
+        if (id == null) {
+            return null; 
+        }
+        
+        Object[] result = null;
+        
+        try {
+                result = (Object[]) em.createNativeQuery("SELECT logo, logoFormat FROM dataversetheme WHERE dataverse_id = " + id).getSingleResult();
+            
+        } catch (Exception ex) {
+            return null;
+        }
+        
+        if (result == null) {
+            return null;
+        }
+        
+        DataverseTheme theme = new DataverseTheme();
+        
+        if (result[0] != null) {
+            theme.setLogo((String) result[0]);
+        }
+
+        if (result[1] != null) {
+            String format = (String) result[1];
+            if ("RECTANGLE".equals(format)) {
+                theme.setLogoFormat(DataverseTheme.ImageFormat.RECTANGLE);
+            } else if ("SQUARE".equals(format)) {
+                theme.setLogoFormat(DataverseTheme.ImageFormat.SQUARE);
+            }
+        }
+        
+        return theme;
+    }
 
     public List<Dataverse> findDataversesThisIdHasLinkedTo(long dataverseId) {
         return dataverseLinkingService.findLinkedDataverses(dataverseId);
@@ -309,5 +421,93 @@ public class DataverseServiceBean implements java.io.Serializable {
     public List<Dataverse> findDataversesThatLinkToThisDatasetId(long datasetId) {
         return datasetLinkingService.findLinkingDataverses(datasetId);
     }
+    
+    /**
+     * Used to identify and properly display Harvested objects on the dataverse page.
+     * 
+     */
+    public Map<Long, String> getAllHarvestedDataverseDescriptions(){
+        
+        String qstr = "SELECT dataverse_id, archiveDescription FROM harvestingDataverseConfig;";
+        List<Object[]> searchResults = null;
+        
+        try {
+            searchResults = em.createNativeQuery(qstr).getResultList();
+        } catch (Exception ex) {
+            searchResults = null;
+        }
+        
+        if (searchResults == null) {
+            return null;
+        }
+        
+        Map<Long, String> ret = new HashMap<>();
+        
+        for (Object[] result : searchResults) {
+            Long dvId = null;
+            if (result[0] != null) {
+                try {
+                    dvId = (Long)result[0];
+                } catch (Exception ex) {
+                    dvId = null;
+                }
+                if (dvId == null) {
+                    continue;
+                }
+                
+                ret.put(dvId, (String)result[1]);
+            }
+        }
+        
+        return ret;        
+    }
 
+    public void populateDvSearchCard(SolrSearchResult solrSearchResult) {
+  
+        Long dvId = solrSearchResult.getEntityId();
+        
+        if (dvId == null) {
+            return;
+        }
+        
+        Long parentDvId = null;
+        String parentId = solrSearchResult.getParent().get("id");
+        if (parentId != null) {
+            try {
+                parentDvId = Long.parseLong(parentId);
+            } catch (Exception ex) {
+                parentDvId = null;
+            }
+        }
+        
+        Object[] searchResult = null;
+        
+        try {
+            if (parentDvId == null) {
+                searchResult = (Object[]) em.createNativeQuery("SELECT t0.AFFILIATION, t0.ALIAS FROM DATAVERSE t0 WHERE t0.ID = " + dvId).getSingleResult();
+            } else {
+                searchResult = (Object[]) em.createNativeQuery("SELECT t0.AFFILIATION, t0.ALIAS, t2.ALIAS FROM DATAVERSE t0, DVOBJECT t1, DATAVERSE t2, DVOBJECT t3 WHERE (t0.ID = t1.ID) AND (t1.OWNER_ID = t3.ID) AND (t2.ID = t3.ID) AND (t0.ID = " + dvId + ")").getSingleResult();
+            }
+        } catch (Exception ex) {
+            return;
+        }
+
+        if (searchResult == null) {
+            return;
+        }
+        
+        if (searchResult[0] != null) {
+            solrSearchResult.setDataverseAffiliation((String) searchResult[0]);
+        }
+
+        if (searchResult[1] != null) {
+            solrSearchResult.setDataverseAlias((String) searchResult[1]);
+        }
+        
+        if (parentDvId != null) {
+            if (searchResult[2] != null) {
+                solrSearchResult.setDataverseParentAlias((String) searchResult[2]);
+            }
+        }
+    }
 }  

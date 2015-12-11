@@ -22,6 +22,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -31,6 +32,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.ejb.EJB;
 import javax.ejb.EJBTransactionRolledbackException;
 import javax.ejb.Stateless;
@@ -81,6 +84,20 @@ public class SearchServiceBean {
     SystemConfig systemConfig;
 
     public static final JsfHelper JH = new JsfHelper();
+    private SolrServer solrServer;
+    
+    @PostConstruct
+    public void init(){
+        solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
+    }
+    
+    @PreDestroy
+    public void close(){
+        if(solrServer != null){
+            solrServer.shutdown();
+            solrServer = null;
+        }
+    }
 
     /**
      * Import note: "onlyDatatRelatedToMe" relies on filterQueries for providing
@@ -103,6 +120,32 @@ public class SearchServiceBean {
      * @throws SearchException
      */
     public SolrQueryResponse search(User user, Dataverse dataverse, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, boolean onlyDatatRelatedToMe, int numResultsPerPage) throws SearchException {
+        return search(user, dataverse, query, filterQueries, sortField, sortOrder, paginationStart, onlyDatatRelatedToMe, numResultsPerPage, true);
+    }
+    
+    /**
+     * Import note: "onlyDatatRelatedToMe" relies on filterQueries for providing
+     * access to Private Data for the correct user
+     *
+     * In other words "onlyDatatRelatedToMe", negates other filter Queries
+     * related to permissions
+     *
+     *
+     * @param user
+     * @param dataverse
+     * @param query
+     * @param filterQueries
+     * @param sortField
+     * @param sortOrder
+     * @param paginationStart
+     * @param onlyDatatRelatedToMe
+     * @param numResultsPerPage
+     * @param retrieveEntities - look up dvobject entities with .find() (potentially expensive!) 
+     * @return
+     * @throws SearchException
+     */
+    public SolrQueryResponse search(User user, Dataverse dataverse, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, boolean onlyDatatRelatedToMe, int numResultsPerPage, boolean retrieveEntities) throws SearchException {
+
         if (paginationStart < 0) {
             throw new IllegalArgumentException("paginationStart must be 0 or greater");
         }
@@ -110,7 +153,6 @@ public class SearchServiceBean {
             throw new IllegalArgumentException("numResultsPerPage must be 1 or greater");
         }
 
-        SolrServer solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
         SolrQuery solrQuery = new SolrQuery();
         query = SearchUtil.sanitizeQuery(query);
         solrQuery.setQuery(query);
@@ -342,6 +384,7 @@ public class SearchServiceBean {
             String fileContentType = (String) solrDocument.getFieldValue(SearchFields.FILE_CONTENT_TYPE);
             Date release_or_create_date = (Date) solrDocument.getFieldValue(SearchFields.RELEASE_OR_CREATE_DATE);
             String dateToDisplayOnCard = (String) solrDocument.getFirstValue(SearchFields.RELEASE_OR_CREATE_DATE_SEARCHABLE_TEXT);
+            String dvTree = (String) solrDocument.getFirstValue(SearchFields.SUBTREE);
             List<String> matchedFields = new ArrayList<>();
             List<Highlight> highlights = new ArrayList<>();
             Map<SolrField, Highlight> highlightsMap = new HashMap<>();
@@ -383,7 +426,9 @@ public class SearchServiceBean {
 //            logger.info(id + ": " + description);
             solrSearchResult.setId(id);
             solrSearchResult.setEntityId(entityid);
-            solrSearchResult.setEntity(dvObjectService.findDvObject(entityid));
+            if (retrieveEntities) {
+                solrSearchResult.setEntity(dvObjectService.findDvObject(entityid));
+            }
             solrSearchResult.setIdentifier(identifier);
             solrSearchResult.setPersistentUrl(persistentUrl);
             solrSearchResult.setType(type);
@@ -399,6 +444,7 @@ public class SearchServiceBean {
             String description = (String) solrDocument.getFieldValue(SearchFields.DESCRIPTION);
             solrSearchResult.setDescriptionNoSnippet(description);
             solrSearchResult.setDeaccessionReason(deaccessionReason);
+            solrSearchResult.setDvTree(dvTree);
             /**
              * @todo start using SearchConstants class here
              */
@@ -433,7 +479,7 @@ public class SearchServiceBean {
 //                    solrSearchResult.setTitle((String) titles.get(0));
                     solrSearchResult.setTitle((String) title);
                 } else {
-                    logger.info("No title indexed. Setting to empty string to prevent NPE. Dataset id " + entityid + " and version id " + datasetVersionId);
+                    logger.fine("No title indexed. Setting to empty string to prevent NPE. Dataset id " + entityid + " and version id " + datasetVersionId);
                     solrSearchResult.setTitle("");
                 }
                 List<String> authors = (ArrayList) solrDocument.getFieldValues(DatasetFieldConstant.authorName);
@@ -473,6 +519,15 @@ public class SearchServiceBean {
                 solrSearchResult.setFileMd5((String) solrDocument.getFieldValue(SearchFields.FILE_MD5));
                 solrSearchResult.setUnf((String) solrDocument.getFieldValue(SearchFields.UNF));
                 solrSearchResult.setDatasetVersionId(datasetVersionId);
+                List<String> fileCategories = (ArrayList) solrDocument.getFieldValues(SearchFields.FILE_TAG);
+                if (fileCategories != null) {
+                    solrSearchResult.setFileCategories(fileCategories);
+                }
+                List<String> tabularDataTags = (ArrayList) solrDocument.getFieldValues(SearchFields.TABDATA_TAG);
+                if (tabularDataTags != null) {
+                    Collections.sort(tabularDataTags);
+                    solrSearchResult.setTabularDataTags(tabularDataTags);
+                }
             }
             /**
              * @todo store PARENT_ID as a long instead and cast as such

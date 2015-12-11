@@ -2,8 +2,10 @@ package edu.harvard.iq.dataverse.search;
 
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFileTag;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
+import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetLinkingServiceBean;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
@@ -37,6 +39,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.ejb.AsyncResult;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -98,7 +102,21 @@ public class IndexServiceBean {
     private static final String DRAFT_STRING = "Draft";
     private static final String IN_REVIEW_STRING = "In Review";
     private static final String DEACCESSIONED_STRING = "Deaccessioned";
-    private Dataverse rootDataverseCached;
+    private Dataverse rootDataverseCached; 
+    private SolrServer solrServer;
+    
+    @PostConstruct
+    public void init(){
+        solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
+    }
+    
+    @PreDestroy
+    public void close(){
+        if(solrServer != null){
+            solrServer.shutdown();
+            solrServer = null;
+        }
+    }
 
     @TransactionAttribute(REQUIRES_NEW)
     public Future<String> indexDataverseInNewTransaction(Dataverse dataverse) {
@@ -192,12 +210,10 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.SUBTREE, dataversePaths);
         docs.add(solrInputDocument);
 
-        SolrServer server = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
-
         String status;
         try {
             if (dataverse.getId() != null) {
-                server.add(docs);
+                solrServer.add(docs);
             } else {
                 logger.info("WARNING: indexing of a dataverse with no id attempted");
             }
@@ -207,7 +223,7 @@ public class IndexServiceBean {
             return new AsyncResult<>(status);
         }
         try {
-            server.commit();
+            solrServer.commit();
         } catch (SolrServerException | IOException ex) {
             status = ex.toString();
             logger.info(status);
@@ -735,7 +751,15 @@ public class IndexServiceBean {
                             // do not strip HTML
                             solrInputDocument.addField(solrFieldSearchable, dsf.getValuesWithoutNaValues());
                             if (dsfType.getSolrField().isFacetable()) {
-                                solrInputDocument.addField(solrFieldFacetable, dsf.getValuesWithoutNaValues());
+                                if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.topicClassValue)) {
+                                    String topicClassificationTerm = getTopicClassificationTermOrTermAndVocabulary(dsf);
+                                    if (topicClassificationTerm != null) {
+                                        logger.fine(solrFieldFacetable + " gets " + topicClassificationTerm);
+                                        solrInputDocument.addField(solrFieldFacetable, topicClassificationTerm);
+                                    }
+                                } else {
+                                    solrInputDocument.addField(solrFieldFacetable, dsf.getValuesWithoutNaValues());
+                                }
                             }
                         }
                     }
@@ -930,6 +954,12 @@ public class IndexServiceBean {
                                 datafileSolrInputDocument.addField(SearchFields.VARIABLE_LABEL, var.getLabel());
                             }
                         }
+                        // TABULAR DATA TAGS:
+                        // (not to be confused with the file categories, indexed above!)
+                        for (DataFileTag tag : fileMetadata.getDataFile().getTags()) {
+                            String tagLabel = tag.getTypeLabel();
+                            datafileSolrInputDocument.addField(SearchFields.TABDATA_TAG, tagLabel);
+                        }
                     }
 
                     if (indexableDataset.isFilesShouldBeIndexed()) {
@@ -940,15 +970,13 @@ public class IndexServiceBean {
             }
         }
 
-        SolrServer server = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
-
         try {
-            server.add(docs);
+            solrServer.add(docs);
         } catch (SolrServerException | IOException ex) {
             return ex.toString();
         }
         try {
-            server.commit();
+            solrServer.commit();
         } catch (SolrServerException | IOException ex) {
             return ex.toString();
         }
@@ -957,6 +985,35 @@ public class IndexServiceBean {
 
 //        return "indexed dataset " + dataset.getId() + " as " + solrDocId + "\nindexFilesResults for " + solrDocId + ":" + fileInfo.toString();
         return "indexed dataset " + dataset.getId() + " as " + datasetSolrDocId + ". filesIndexed: " + filesIndexed;
+    }
+
+    /**
+     * If the "Topic Classification" has a "Vocabulary", return both the "Term"
+     * and the "Vocabulary" with the latter in parentheses. For example, the
+     * Murray Research Archive uses "1 (Generations)" and "yes (Follow-up
+     * permitted)".
+     */
+    private String getTopicClassificationTermOrTermAndVocabulary(DatasetField topicClassDatasetField) {
+        String finalValue = null;
+        String topicClassVocab = null;
+        String topicClassValue = null;
+        for (DatasetField sibling : topicClassDatasetField.getParentDatasetFieldCompoundValue().getChildDatasetFields()) {
+            DatasetFieldType datasetFieldType = sibling.getDatasetFieldType();
+            String name = datasetFieldType.getName();
+            if (name.equals(DatasetFieldConstant.topicClassVocab)) {
+                topicClassVocab = sibling.getDisplayValue();
+            } else if (name.equals(DatasetFieldConstant.topicClassValue)) {
+                topicClassValue = sibling.getDisplayValue();
+            }
+            if (topicClassValue != null) {
+                if (topicClassVocab != null) {
+                    finalValue = topicClassValue + " (" + topicClassVocab + ")";
+                } else {
+                    finalValue = topicClassValue;
+                }
+            }
+        }
+        return finalValue;
     }
 
     public List<String> findPathSegments(Dataverse dataverse, List<String> segments) {
@@ -1041,17 +1098,15 @@ public class IndexServiceBean {
     }
 
     public String delete(Dataverse doomed) {
-        SolrServer server = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
-
         logger.fine("deleting Solr document for dataverse " + doomed.getId());
         UpdateResponse updateResponse;
         try {
-            updateResponse = server.deleteById(solrDocIdentifierDataverse + doomed.getId());
+            updateResponse = solrServer.deleteById(solrDocIdentifierDataverse + doomed.getId());
         } catch (SolrServerException | IOException ex) {
             return ex.toString();
         }
         try {
-            server.commit();
+            solrServer.commit();
         } catch (SolrServerException | IOException ex) {
             return ex.toString();
         }
@@ -1067,17 +1122,16 @@ public class IndexServiceBean {
      * https://github.com/IQSS/dataverse/issues/142
      */
     public String removeSolrDocFromIndex(String doomed) {
-        SolrServer server = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
-
+        
         logger.fine("deleting Solr document: " + doomed);
         UpdateResponse updateResponse;
         try {
-            updateResponse = server.deleteById(doomed);
+            updateResponse = solrServer.deleteById(doomed);
         } catch (SolrServerException | IOException ex) {
             return ex.toString();
         }
         try {
-            server.commit();
+            solrServer.commit();
         } catch (SolrServerException | IOException ex) {
             return ex.toString();
         }
@@ -1283,7 +1337,6 @@ public class IndexServiceBean {
     }
 
     private List<Long> findDvObjectInSolrOnly(String type) throws SearchException {
-        SolrServer solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery("*");
         solrQuery.setRows(Integer.MAX_VALUE);
@@ -1314,7 +1367,6 @@ public class IndexServiceBean {
     }
 
     private List<String> findFilesOfParentDataset(long parentDatasetId) throws SearchException {
-        SolrServer solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery("*");
         solrQuery.setRows(Integer.MAX_VALUE);

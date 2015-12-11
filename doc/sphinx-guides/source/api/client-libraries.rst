@@ -15,6 +15,6 @@ https://github.com/IQSS/dataverse-client-python is the offical Python package fo
 R
 -
 
-https://github.com/ropensci/dvn is the official R package for Dataverse APIs and is available on CRAN at http://cran.r-project.org/web/packages/dvn
+https://github.com/IQSS/dataverse-client-r is the official R package for Dataverse APIs.
 
 It was created by `Thomas Leeper <http://thomasleeper.com>`_ whose dataverse can be found at https://dataverse.harvard.edu/dataverse/leeper

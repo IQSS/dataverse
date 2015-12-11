@@ -172,7 +172,7 @@ Deletes the role with ``id``::
 
 Explicit Groups
 ~~~~~~~~~~~~~~~
-Explicit groups list their members explicitly. These groups are defined in dataverses, which is why their API endpoint is under ``api/dvn/$id/``, where ``$id`` is the id of the dataverse.
+Explicit groups list their members explicitly. These groups are defined in dataverses, which is why their API endpoint is under ``api/dataverses/$id/``, where ``$id`` is the id of the dataverse.
 
 
 Create a new explicit group under dataverse ``$id``::

@@ -77,6 +77,8 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import javax.faces.model.SelectItem;
 import java.util.logging.Level;
+import javax.faces.component.UIComponent;
+import javax.faces.component.UIInput;
 import org.primefaces.component.tabview.TabView;
 import org.primefaces.event.TabChangeEvent;
 import org.primefaces.model.LazyDataModel;
@@ -301,7 +303,11 @@ public class DatasetPage implements java.io.Serializable {
         }
         return false;
     }
-    
+
+    public boolean isMetadataExportEnabled() {
+        return metadataExportEnabled;
+    }
+
     public String getDataverseSiteUrl() {
         return this.dataverseSiteUrl;
     }
@@ -356,6 +362,12 @@ public class DatasetPage implements java.io.Serializable {
 
     public void setDataversesForLinking(List<Dataverse> dataversesForLinking) {
         this.dataversesForLinking = dataversesForLinking;
+    }
+    
+    public void updateReleasedVersions(){
+        
+        setReleasedVersionTabList(resetReleasedVersionTabList());
+        
     }
 
     public void updateLinkableDataverses() {
@@ -643,6 +655,16 @@ public class DatasetPage implements java.io.Serializable {
     public void reset() {
         dataset.setGuestbook(null);
     }
+    
+    public void guestbookResponseValidator(FacesContext context, UIComponent toValidate, Object value) {
+        String response = (String) value;
+
+        if (response != null && response.length() > 255) {
+            ((UIInput) toValidate).setValid(false);
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, JH.localize("dataset.guestbookResponse.guestbook.responseTooLong"), null);
+            context.addMessage(toValidate.getClientId(context), message);
+        }
+    }
 
     public String getGlobalId() {
         return persistentId;
@@ -838,35 +860,12 @@ public class DatasetPage implements java.io.Serializable {
         
         selectedTemplate = (Template) event.getNewValue();
         if (selectedTemplate != null) {
-            /*
-            If the user added files to the dataset prior to 
-            changing versions we want to capture them and 
-            reattach to the new version
-            */
-            //First get files from current version
-            List<FileMetadata> addedFiles = new ArrayList();
-            if (!workingVersion.getFileMetadatas().isEmpty()){
-                for (FileMetadata fmd: workingVersion.getFileMetadatas() ){
-                    addedFiles.add(fmd);
-                }
-            }
             //then create new working version from the selected template
-            workingVersion = dataset.getEditVersion(selectedTemplate);
-            //Finally reattach the files to the new working version
-            if(!addedFiles.isEmpty()){
-                for(FileMetadata fmd : addedFiles){
-                    workingVersion.getFileMetadatas().add(fmd);
-                    fmd.setDatasetVersion(workingVersion);
-                }
-            }
+            workingVersion.updateDefaultValuesFromTemplate(selectedTemplate); 
             updateDatasetFieldInputLevels();
-        } else {
-            dataset = new Dataset();
-            dataset.setOwner(dataverseService.find(ownerId));
-            workingVersion = dataset.getCreateVersion();
+        } else { 
+            workingVersion.initDefaultValues();
             updateDatasetFieldInputLevels();
-
-            dataset.setIdentifier(datasetService.generateIdentifierSequence(protocol, authority, separator));
         }
         resetVersionUI();
     }
@@ -1200,12 +1199,18 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     private boolean readOnly = true; 
-    
+    private boolean metadataExportEnabled;
+
     public String init() {
         // logger.fine("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
         String nonNullDefaultIfKeyNotFound = "";
         this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSize();
         setDataverseSiteUrl(systemConfig.getDataverseSiteUrl());
+        /**
+         * For now having DDI export enabled is a proxy for having any metadata
+         * export enabled (JSON, Dublin Core, etc.).
+         */
+        metadataExportEnabled = systemConfig.isDdiExportEnabled();
 
         guestbookResponse = new GuestbookResponse();
         protocol = settingsService.getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
@@ -1222,9 +1227,12 @@ public class DatasetPage implements java.io.Serializable {
                 logger.fine("initializing DatasetPage with persistent ID " + persistentId);
                 // Set Working Version and Dataset by PersistentID
                 dataset = datasetService.findByGlobalId(persistentId);
-                if (dataset != null) {
-                    logger.info("retrived dataset, id="+dataset.getId());
+                if (dataset == null) {
+                    logger.warning("No such dataset: "+persistentId);
+                    return "/404.xhtml";
                 }
+                logger.fine("retrived dataset, id="+dataset.getId());
+                
                 retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(dataset.getVersions(), version);
                 //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByPersistentId(persistentId, version);
                 this.workingVersion = retrieveDatasetVersionResponse.getDatasetVersion();
@@ -1233,6 +1241,10 @@ public class DatasetPage implements java.io.Serializable {
             } else if (dataset.getId() != null) {
                 // Set Working Version and Dataset by Datasaet Id and Version
                 dataset = datasetService.find(dataset.getId());
+                if (dataset == null) {
+                    logger.warning("No such dataset: "+dataset);
+                    return "/404.xhtml";
+                }
                 //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionById(dataset.getId(), version);
                 retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(dataset.getVersions(), version);
                 this.workingVersion = retrieveDatasetVersionResponse.getDatasetVersion();
@@ -1243,9 +1255,7 @@ public class DatasetPage implements java.io.Serializable {
                 // Set Working Version and Dataset by DatasaetVersion Id
                 //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByVersionId(versionId);
 
-            } else if (retrieveDatasetVersionResponse == null) {
-                return "/404.xhtml";
-            }
+            } 
 
             if (retrieveDatasetVersionResponse == null) {
                 return "/404.xhtml";
@@ -1304,7 +1314,8 @@ public class DatasetPage implements java.io.Serializable {
             datasetVersionUI = datasetVersionUI.initDatasetVersionUI(workingVersion, false);
             updateDatasetFieldInputLevels();
             displayCitation = dataset.getCitation(true, workingVersion);
-            //moving setVersionTabList to tab change event
+            setExistReleasedVersion(resetExistRealeaseVersion());
+                        //moving setVersionTabList to tab change event
             //setVersionTabList(resetVersionTabList());
             //setReleasedVersionTabList(resetReleasedVersionTabList());
             //SEK - lazymodel may be needed for datascroller in future release
@@ -1758,13 +1769,15 @@ public class DatasetPage implements java.io.Serializable {
             if (selectedDeaccessionVersions == null) {
                 for (DatasetVersion dv : this.dataset.getVersions()) {
                     if (dv.isReleased()) {
-                        cmd = new DeaccessionDatasetVersionCommand(dvRequestService.getDataverseRequest(), setDatasetVersionDeaccessionReasonAndURL(dv), true);
+                        DatasetVersion deaccession = datasetVersionService.find(dv.getId());
+                        cmd = new DeaccessionDatasetVersionCommand(dvRequestService.getDataverseRequest(), setDatasetVersionDeaccessionReasonAndURL(deaccession), true);
                         DatasetVersion datasetv = commandEngine.submit(cmd);
                     }
                 }
             } else {
                 for (DatasetVersion dv : selectedDeaccessionVersions) {
-                    cmd = new DeaccessionDatasetVersionCommand(dvRequestService.getDataverseRequest(), setDatasetVersionDeaccessionReasonAndURL(dv), false);
+                    DatasetVersion deaccession = datasetVersionService.find(dv.getId());
+                    cmd = new DeaccessionDatasetVersionCommand(dvRequestService.getDataverseRequest(), setDatasetVersionDeaccessionReasonAndURL(deaccession), false);
                     DatasetVersion datasetv = commandEngine.submit(cmd);
                 }
             }
@@ -2052,6 +2065,10 @@ public class DatasetPage implements java.io.Serializable {
             return "";
         }
         linkingDataverse = dataverseService.find(linkingDataverseId);
+        if (readOnly) {
+            // Pass a "real", non-readonly dataset the the LinkDatasetCommand: 
+            dataset = datasetService.find(dataset.getId());
+        }
         LinkDatasetCommand cmd = new LinkDatasetCommand(dvRequestService.getDataverseRequest(), linkingDataverse, dataset);
         try {
             commandEngine.submit(cmd);
@@ -2594,8 +2611,10 @@ public class DatasetPage implements java.io.Serializable {
         Command cmd;
         try {
             if (this.guestbookResponse != null) {
-                cmd = new CreateGuestbookResponseCommand(dvRequestService.getDataverseRequest(), guestbookResponse, dataset);
-                commandEngine.submit(cmd);
+                    cmd = new CreateGuestbookResponseCommand(dvRequestService.getDataverseRequest(), guestbookResponse, dataset);
+                    commandEngine.submit(cmd);
+            } else {
+                logger.severe("No Silent/Default Guestbook response made. No response to save - probably because version is DRAFT - not certain ");
             }
         } catch (CommandException ex) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Guestbook Response Save Failed", " - " + ex.toString()));
@@ -2608,16 +2627,15 @@ public class DatasetPage implements java.io.Serializable {
     public void startMultipleFileDownload (){
         if (this.selectedFiles.isEmpty()) {
             RequestContext requestContext = RequestContext.getCurrentInstance();
-            requestContext.execute("selectFilesForDownload.show()");
+            requestContext.execute("PF('selectFilesForDownload').show()");
             return;
         }
         
         for (FileMetadata fmd : this.selectedFiles) {
             if (canDownloadFile(fmd)) {
-                DataFile df = fmd.getDataFile();
             // todo: cleanup this: "create" method doesn't necessarily
                 // mean a response wikk be created (e.g. when dataset in draft)
-                createSilentGuestbookEntry(df.getFileMetadata(), "");
+                createSilentGuestbookEntry(fmd, "");
             }
         }
 
@@ -2821,6 +2839,27 @@ public class DatasetPage implements java.io.Serializable {
         }
         return contNames;
     }
+    
+    private boolean existReleasedVersion;
+
+    public boolean isExistReleasedVersion() {
+        return existReleasedVersion;
+    }
+
+    public void setExistReleasedVersion(boolean existReleasedVersion) {
+        this.existReleasedVersion = existReleasedVersion;
+    }
+    
+    private boolean resetExistRealeaseVersion(){
+
+        for (DatasetVersion version : dataset.getVersions()) {
+            if (version.isReleased() || version.isArchived()) {
+                return true;
+            }
+        }
+        return false;
+        
+    }
 
     private List<DatasetVersion> resetReleasedVersionTabList() {
         List<DatasetVersion> retList = new ArrayList();
@@ -2954,6 +2993,18 @@ public class DatasetPage implements java.io.Serializable {
         String dataURL = myHostURL + "/api/access/datafile/" + fileid;
 
         return dataURL;
+    }
+
+    public String getMetadataAsJsonUrl() {
+        if (dataset != null) {
+            Long datasetId = dataset.getId();
+            if (datasetId != null) {
+                String myHostURL = getDataverseSiteUrl();
+                String metadataAsJsonUrl = myHostURL + "/api/datasets/" + datasetId;
+                return metadataAsJsonUrl;
+            }
+        }
+        return null;
     }
 
     private FileMetadata fileMetadataSelected = null;
@@ -3484,7 +3535,7 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public boolean isFileAccessRequestMultiButtonRequired(){
-        if (!isSessionUserAuthenticated()){
+        if (!isSessionUserAuthenticated() || !dataset.isFileAccessRequest()){
             return false;
         }
         if (workingVersion == null) {
@@ -3502,7 +3553,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public boolean isFileAccessRequestMultiButtonEnabled(){
-        if (!isSessionUserAuthenticated()){
+        if (!isSessionUserAuthenticated() || !dataset.isFileAccessRequest()){
             return false;
         }
         if( this.selectedRestrictedFiles == null || this.selectedRestrictedFiles.isEmpty() ){

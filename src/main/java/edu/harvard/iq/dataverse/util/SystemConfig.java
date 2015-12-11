@@ -334,20 +334,26 @@ public class SystemConfig {
         return defaultZipUploadFilesLimit; 
     }
 
+    // TODO: (?)
+    // create sensible defaults for these things? -- 4.2.2
     public long getThumbnailSizeLimitImage() {
-        return getThumbnailSizeLimit("Image");
+        long limit = getThumbnailSizeLimit("Image");
+        return limit == 0 ? 5000000 : limit;
     } 
     
     public long getThumbnailSizeLimitPDF() {
-        return getThumbnailSizeLimit("PDF");
+        long limit = getThumbnailSizeLimit("PDF");
+        return limit == 0 ? 500000 : limit;
     }
     
     public long getThumbnailSizeLimit(String type) {
         String option = null; 
         if ("Image".equals(type)) {
             option = settingsService.getValueForKey(SettingsServiceBean.Key.ThumbnailSizeLimitImage);
+            option = System.getProperty("dataverse.dataAccess.thumbnail.image.limit");
         } else if ("PDF".equals(type)) {
             option = settingsService.getValueForKey(SettingsServiceBean.Key.ThumbnailSizeLimitPDF);
+            option = System.getProperty("dataverse.dataAccess.thumbnail.pdf.limit");
         }
         Long limit = null; 
         
@@ -363,7 +369,19 @@ public class SystemConfig {
             return limit.longValue();
         }
         
-        return 0; 
+        return 0l;
+    }
+    
+    public boolean isThumbnailGenerationDisabledForType(String type) {
+        return getThumbnailSizeLimit(type) == -1l;
+    }
+    
+    public boolean isThumbnailGenerationDisabledForImages() {
+        return isThumbnailGenerationDisabledForType("Image");
+    }
+    
+    public boolean isThumbnailGenerationDisabledForPDF() {
+        return isThumbnailGenerationDisabledForType("PDF");
     }
     
     public String getApplicationTermsOfUse() {

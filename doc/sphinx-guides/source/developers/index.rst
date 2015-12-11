@@ -16,6 +16,7 @@ Contents:
   branching-strategy
   testing
   documentation
+  debugging
   coding-style
   making-releases
   tools

@@ -116,6 +116,7 @@ public class DdiExportUtil {
         for (FileDTO fileDTo : fileDtos) {
             xmlw.writeStartElement("otherMat");
             writeAttribute(xmlw, "ID", "f" + fileDTo.getDatafile().getId());
+            writeAttribute(xmlw, "level", "datafile");
             xmlw.writeStartElement("labl");
             xmlw.writeCharacters(fileDTo.getDatafile().getName());
             xmlw.writeEndElement(); // labl
