@@ -5,6 +5,9 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.usage.Event;
+import edu.harvard.iq.dataverse.usage.EventBuilder;
+import edu.harvard.iq.dataverse.usage.UsageIndexServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
@@ -61,6 +64,12 @@ public class DataverseHeaderFragment implements java.io.Serializable {
 
     @EJB
     UserNotificationServiceBean userNotificationService;
+    
+    @EJB
+    EventBuilder eventBuilder;
+    
+    @EJB
+    UsageIndexServiceBean usageIndexService;
     
     List<Breadcrumb> breadcrumbs = new ArrayList();
 
@@ -164,6 +173,11 @@ public class DataverseHeaderFragment implements java.io.Serializable {
      }
      */
     public String logout() {
+        Event event = eventBuilder.logout(
+                (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest(),
+                dataverseSession.getUser());
+        usageIndexService.index(event);
+            
         dataverseSession.setUser(null);
 
         String redirectPage = getPageFromContext();
@@ -217,7 +231,7 @@ public class DataverseHeaderFragment implements java.io.Serializable {
             // that we don't want, so we filter through a list of paramters we do allow
             // @todo verify what needs to be in this list of available parameters (for example do we want to repeat searches when you login?
             List acceptableParameters = new ArrayList();
-            acceptableParameters.addAll(Arrays.asList("id", "alias", "version", "q", "ownerId", "persistentId", "versionId", "datasetId", "selectedFileIds", "mode"));
+            acceptableParameters.addAll(Arrays.asList("id", "alias", "version", "q", "ownerId", "persistentId", "versionId", "datasetId", "selectedFileIds", "mode","type"));
 
             if (req.getParameterMap() != null) {
                 StringBuilder queryString = new StringBuilder();

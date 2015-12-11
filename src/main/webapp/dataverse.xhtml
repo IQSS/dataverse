@@ -428,6 +428,20 @@
                                         </ul>
                                     </div>
                                     <!-- END: Edit Button -->
+                                    <div class="btn-group pull-right" jsf:rendered="#{permissionsWrapper.canIssueUpdateDataverseCommand(DataversePage.dataverse)}">
+                                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                            <span class="glyphicon glyphicon-align-left"/> #{bundle['usage']} <span class="caret"></span>
+                                        </button>
+                                        <ul class="dropdown-menu pull-right text-left" role="menu">
+                                            <li>
+                                                <h:link styleClass="ui-commandlink ui-widget" outcome="usage-statistic">
+                                                    <h:outputText value="#{bundle['usage.dataverse.view']}" />
+                                                    <f:param name="id" value="#{DataversePage.dataverse.id}" />
+                                                    <f:param name="type" value="VIEW" />
+                                                </h:link>
+                                            </li>
+                                        </ul>
+                                    </div>
                                     <!-- Publish Button -->
                                     <ui:fragment rendered="#{permissionsWrapper.canIssuePublishDataverseCommand(DataversePage.dataverse)}">
                                         <button type="button" class="btn btn-default pull-right" onclick="confirmation.show()"

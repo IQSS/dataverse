@@ -61,6 +61,12 @@ public class SystemConfig {
     private String saneDefaultForSolrHostColonPort = "localhost:8983";
 
     /**
+     * A common place to find the String for a sane ElasticSearch hostname:port
+     * combination.
+     */
+    private String saneDefaultForElasticSearchHostColonPort = "localhost:9200";
+
+    /**
      * The default number of datafiles that we allow to be created through 
      * zip file upload.
      */
@@ -204,6 +210,10 @@ public class SystemConfig {
         return solrHostColonPort;
     }
     
+    public String getElasticSearchHostColonPort() {
+        String esHostColonPort = settingsService.getValueForKey(SettingsServiceBean.Key.ElasticSearchHostColonPort, saneDefaultForElasticSearchHostColonPort);
+        return esHostColonPort;
+    }
     
     
     /**

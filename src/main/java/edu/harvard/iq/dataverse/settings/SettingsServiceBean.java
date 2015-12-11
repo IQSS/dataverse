@@ -121,6 +121,8 @@ public class SettingsServiceBean {
         SearchRespectPermissionRoot,
         /** Solr hostname and port, such as "localhost:8983". */
         SolrHostColonPort,
+        /** Elastic Search hostname and port, such as "localhost:9200". */
+        ElasticSearchHostColonPort,
         /** Key for limiting the number of bytes uploaded via the Data Deposit API, UI (web site and . */
         MaxFileUploadSizeInBytes,
         /**

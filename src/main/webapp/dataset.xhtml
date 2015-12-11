@@ -112,6 +112,28 @@
                                 </ul>
                             </div>
                             <!-- END: Edit Button -->
+                            
+                            <div class="btn-group pull-right" jsf:rendered="#{dataverseSession.user.authenticated
+                                                                              and permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset)
+                                                                              and !DatasetPage.dataset.latestVersion.deaccessioned}">
+                                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                    <span class="glyphicon glyphicon-align-left"/> #{bundle['usage']} <span class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu pull-right text-left" role="menu">
+                                    <li>
+                                        <h:link styleClass="ui-commandlink ui-widget" outcome="usage-statistic">
+                                            <h:outputText value="#{bundle['usage.dataset.view']}" />
+                                            <f:param name="id" value="#{DatasetPage.dataset.id}" />
+                                            <f:param name="type" value="VIEW" />
+                                        </h:link>
+                                        <h:link styleClass="ui-commandlink ui-widget" outcome="usage-statistic">
+                                            <h:outputText value="#{bundle['usage.datafile.download']}" />
+                                            <f:param name="id" value="#{DatasetPage.dataset.id}" />
+                                            <f:param name="type" value="DOWNLOAD_FILE" />
+                                        </h:link>
+                                    </li>
+                                </ul>
+                            </div>
 
                             <!-- Publish/Submit for Review/Return to Author Button Group -->
                             <div class="btn-group pull-right" role="group" jsf:rendered="#{DatasetPage.workingVersion == DatasetPage.dataset.latestVersion

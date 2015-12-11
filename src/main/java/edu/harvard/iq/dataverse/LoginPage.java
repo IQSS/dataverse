@@ -1,5 +1,8 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.usage.Event;
+import edu.harvard.iq.dataverse.usage.EventBuilder;
+import edu.harvard.iq.dataverse.usage.UsageIndexServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProviderDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationRequest;
@@ -21,10 +24,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
+import javax.faces.context.FacesContext;
 import javax.faces.event.AjaxBehaviorEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  *
@@ -86,6 +91,12 @@ public class LoginPage implements java.io.Serializable {
     
     @Inject
     DataverseRequestServiceBean dvRequestService;
+    
+    @EJB
+    EventBuilder eventBuilder;
+    
+    @EJB
+    UsageIndexServiceBean usageIndexService;
     
     private String credentialsAuthProviderId;
     
@@ -163,7 +174,12 @@ public class LoginPage implements java.io.Serializable {
             }
 
             logger.log(Level.FINE, "Sending user to = {0}", redirectPage);
-
+            
+            Event event = eventBuilder.login(
+                    (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest(),
+                   session.getUser());
+            usageIndexService.index(event);
+            
             return redirectPage + (!redirectPage.contains("?") ? "?" : "&") + "faces-redirect=true";
 
             

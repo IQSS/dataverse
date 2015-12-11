@@ -1,5 +1,8 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.usage.Event;
+import edu.harvard.iq.dataverse.usage.EventBuilder;
+import edu.harvard.iq.dataverse.usage.UsageIndexServiceBean;
 import edu.harvard.iq.dataverse.UserNotification.Type;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -42,6 +45,7 @@ import org.primefaces.model.DualListModel;
 import javax.ejb.EJBException;
 import javax.faces.event.ValueChangeEvent;
 import javax.faces.model.SelectItem;
+import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang.StringUtils;
 import org.primefaces.event.TransferEvent;
 
@@ -102,6 +106,10 @@ public class DataversePage implements java.io.Serializable {
     SettingsWrapper settingsWrapper; 
     @EJB
     DataverseLinkingServiceBean linkingService;
+    @EJB
+    EventBuilder eventBuilder;
+    @EJB
+    UsageIndexServiceBean usageIndexService;
 
     private Dataverse dataverse = new Dataverse();
     private EditMode editMode;
@@ -302,6 +310,12 @@ public class DataversePage implements java.io.Serializable {
             }
 
             ownerId = dataverse.getOwner() != null ? dataverse.getOwner().getId() : null;
+            
+            //index view dataverse event
+            Event event = eventBuilder.viewDataverse(
+                    (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest(),
+                   session.getUser(), dataverse.getId());
+            usageIndexService.index(event);            
         } else { // ownerId != null; create mode for a new child dataverse
             editMode = EditMode.INFO;
             dataverse.setOwner(dataverseService.find(ownerId));

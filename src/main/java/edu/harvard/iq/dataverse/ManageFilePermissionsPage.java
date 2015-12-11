@@ -5,6 +5,8 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.usage.EventBuilder;
+import edu.harvard.iq.dataverse.usage.UsageIndexServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -30,12 +32,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
+import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -70,6 +74,10 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     EjbDataverseEngine commandEngine;
     @Inject
     DataverseRequestServiceBean dvRequestService;
+    @EJB
+    EventBuilder eventBuilder;
+    @EJB
+    UsageIndexServiceBean usageIndexService;
     
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     EntityManager em;
@@ -379,7 +387,10 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         // Find the built in file downloader role (currently by alias) 
         DataverseRole fileDownloaderRole = roleService.findBuiltinRoleByAlias(DataverseRole.FILE_DOWNLOADER);
         for (DataFile file : files) {
-            if (assignRole(au, file, fileDownloaderRole)) {                
+            if (assignRole(au, file, fileDownloaderRole)) {
+                usageIndexService.index(eventBuilder.grantRequestAccessFile(
+                    (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest(),
+                   au, file.getId()));
                 file.getFileAccessRequesters().remove(au);
                 datafileService.save(file);
                 actionPerformed = true;
@@ -403,7 +414,10 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
 
     private void rejectAccessToRequests(AuthenticatedUser au, List<DataFile> files) {
         boolean actionPerformed = false;        
-        for (DataFile file : files) {               
+        for (DataFile file : files) {
+            usageIndexService.index(eventBuilder.rejectRequestAccessFile(
+                    (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest(),
+                   au, file.getId()));
             file.getFileAccessRequesters().remove(au);
             datafileService.save(file);
             actionPerformed = true;

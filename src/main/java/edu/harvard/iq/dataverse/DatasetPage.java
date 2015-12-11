@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.usage.EventBuilder;
+import edu.harvard.iq.dataverse.usage.UsageIndexServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
@@ -77,6 +79,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import javax.faces.model.SelectItem;
 import java.util.logging.Level;
+import javax.servlet.http.HttpServletRequest;
 import org.primefaces.component.tabview.TabView;
 import org.primefaces.event.TabChangeEvent;
 import org.primefaces.model.LazyDataModel;
@@ -151,6 +154,10 @@ public class DatasetPage implements java.io.Serializable {
     @Inject
     DatasetVersionUI datasetVersionUI;
     @Inject PermissionsWrapper permissionsWrapper;
+    @EJB
+    EventBuilder eventBuilder;
+    @EJB
+    UsageIndexServiceBean usageIndexService;
 
     private final DateFormat displayDateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
 
@@ -1321,7 +1328,10 @@ public class DatasetPage implements java.io.Serializable {
             // lazyModel = new LazyFileMetadataDataModel(workingVersion.getId(), datafileService );
             // populate MapLayerMetadata
             this.loadMapLayerMetadataLookup();  // A DataFile may have a related MapLayerMetadata object
-
+            
+            usageIndexService.index(eventBuilder.viewDataset(
+                    (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest(),
+                   session.getUser(), dataset.getId()));
         } else if (ownerId != null) {
             // create mode for a new child dataset
             readOnly = false; 
@@ -1481,7 +1491,12 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     //private String callDownloadServlet(String multiFileString){
-    private void callDownloadServlet(String multiFileString){
+    private void callDownloadServlet(String multiFileString){    
+        for(String fileId : multiFileString.split(",")){
+            usageIndexService.index(eventBuilder.downloadFile(
+                    (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest(),
+                    session.getUser(), Long.parseLong(fileId)));
+        }
 
         String fileDownloadUrl = "/api/access/datafiles/" + multiFileString;
         try {
@@ -1495,6 +1510,10 @@ public class DatasetPage implements java.io.Serializable {
     
     //private String callDownloadServlet( String downloadType, Long fileId){
     private void callDownloadServlet( String downloadType, Long fileId){
+        
+        usageIndexService.index(eventBuilder.downloadFile(
+                (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest(),
+                session.getUser(), fileId));
         
         String fileDownloadUrl = "/api/access/datafile/" + fileId;
                     
@@ -3672,6 +3691,9 @@ public class DatasetPage implements java.io.Serializable {
             file.getFileAccessRequesters().add((AuthenticatedUser) session.getUser());
             datafileService.save(file);
 
+            usageIndexService.index(eventBuilder.requestAccessFile(
+                    (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest(),
+                   session.getUser(), file.getId()));
             // create notifications
             if (sendNotification) {
                 sendRequestFileAccessNotification(file.getId());

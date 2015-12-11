@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:jsf="http://xmlns.jcp.org/jsf"
+      xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+
+    <h:head>
+    </h:head>
+
+    <h:body>
+        <ui:composition template="/dataverse_template.xhtml">
+            <ui:param name="pageTitle" value="#{bundle.usage} - #{usagePage.dvObject.getDisplayName()}"/>
+            <ui:param name="dataverse" value="#{usagePage.dvObject.dataverseContext}"/>
+            <ui:param name="dataset" value="#{usagePage.dvObject.instanceofDataset ? usagePage.dvObject : null}"/>
+            <ui:param name="version" value="#{usagePage.dvObject.instanceofDataset ? usagePage.dvObject.latestVersion : null}"/>
+            <ui:param name="showMessagePanel" value="false"/>
+            <ui:define name="body">
+                <f:metadata>
+                    <f:viewParam name="id" value="#{usagePage.id}"/>
+                    <f:viewParam name="type" value="#{usagePage.type}"/>
+                    <f:viewAction action="#{usagePage.init}"/>
+                    <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(usagePage.dvObject,usagePage.breadcrumbTitle)}"/>
+                </f:metadata>
+                <div class="col-md-12 margin-top">
+                    <!--View Dataverse or Dataset Usage-->
+                    <div class="panel-group" jsf:rendered="#{usagePage.type == 'VIEW'}">
+                        <div class="panel panel-default">
+                            <div data-toggle="collapse" data-target="#panelCollapseViewDvo" class="panel-heading text-info">
+                                #{bundle['usage.search.filter']}<span class="glyphicon glyphicon-chevron-up"/>
+                            </div>
+                            <div id="panelCollapseViewDvo" class="collapse in">
+                                <div class="panel-body">
+                                    <h:form id="dataverseForm" styleClass="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="col-sm-4 control-label" for="ipForDvo">#{bundle['usage.search.filter.ip']}</label>
+                                            <div class="col-sm-6">
+                                                <p:inputText id="ipForDvo" value="#{usagePage.vdQuery.ip}"/>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-4 control-label" for="userIdForDvo">#{bundle['usage.search.filter.userId']}</label>
+                                            <div class="col-sm-6">
+                                                <p:inputText id="userIdForDvo" value="#{usagePage.vdQuery.userId}"/>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-4 control-label" for="startTimeForDvo">#{bundle['usage.search.filter.startTime']}</label>
+                                            <div class="col-sm-6">
+                                                <p:calendar id="startTimeForDvo" value="#{usagePage.vdQuery.startTime}" 
+                                                            navigator="true" pattern="yyyy-MM-dd HH:mm:ss"/>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-4 control-label" for="endTimeForDvo">#{bundle['usage.search.filter.endTime']}</label>
+                                            <div class="col-sm-6">
+                                                <p:calendar id="endTimeForDvo" value="#{usagePage.vdQuery.endTime}" 
+                                                            navigator="true" pattern="yyyy-MM-dd HH:mm:ss"/>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-4 control-label" for="sizeForDvo">#{bundle['usage.search.numberOfRecordPerPage']}</label>
+                                            <div class="col-sm-6">
+                                                <p:selectOneMenu id="sizeForDvo" value="#{usagePage.vdQuery.size}">
+                                                    <f:selectItem itemValue="5" itemLabel="5"/>
+                                                    <f:selectItem itemValue="10" itemLabel="10"/>
+                                                    <f:selectItem itemValue="20" itemLabel="20"/>
+                                                    <f:selectItem itemValue="30" itemLabel="30"/>
+                                                    <f:selectItem itemValue="40" itemLabel="40"/>
+                                                    <f:selectItem itemValue="50" itemLabel="50"/>
+                                                </p:selectOneMenu>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="col-sm-6 col-sm-offset-4">
+                                                <p:commandButton value="#{bundle.search}" actionListener="#{usagePage.searchViewDvo(1)}"
+                                                                 update=":#{p:component('searchHits')} :#{p:component('viewChart')} :#{p:component('pageForm')} :#{p:component('vdEventsTotal')}" 
+                                                                 oncomplete="draw('viewChartDiv','viewDataDiv')"/>
+                                            </div>
+                                        </div>
+                                    </h:form>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel panel-default">
+                            <div data-toggle="collapse" data-target="#panelCollapseViewChart" class="panel-heading text-info">
+                                #{bundle['usage.distribution']}<span class="glyphicon glyphicon-chevron-up"/>
+                            </div>
+                            <div id="panelCollapseViewChart" class="collapse in">
+                                <div class="panel-body">
+                                    <div id="viewChartDiv"  style="height:400px"></div>
+                                    <div id="viewDataDiv">
+                                        <h:outputText id="viewChart" class="hide" value="#{usagePage.vdEvents.histogramData}"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel panel-default">
+                            <div data-toggle="collapse" data-target="#panelCollapseViewEvents" class="panel-heading text-info">
+                                #{bundle['usage.search.result']}<span class="glyphicon glyphicon-chevron-up"/>
+                            </div>
+                            <div id="panelCollapseViewEvents" class="collapse in">
+                                <div class="panel-body">
+                                    <div class="col-md-12">
+                                        <h:outputFormat id="vdEventsTotal" value="#{bundle['usage.search.result.total']}">
+                                            <f:param value='#{usagePage.vdEvents.total}'/>
+                                        </h:outputFormat>
+                                    </div>
+                                    <h:outputText value="#{java.util.TimeZone.getDefault()}"></h:outputText>
+                                    <div class="col-md-12">
+                                        <p:dataTable id="searchHits" var="event"  value="#{usagePage.vdEvents.events}">
+                                            <p:column width="20%" class="text-center">
+                                                <f:facet name="header"><h:outputText value="#{bundle['usage.event.date']}"/></f:facet>
+                                                <h:outputText value="#{event.date}">
+                                                    <f:convertDateTime timeZone="#{usagePage.vdQuery.timeZone}" pattern="YYYY-MM-dd HH:mm:ss"/>
+                                                </h:outputText>
+                                            </p:column>
+                                            <p:column width="20%" class="text-center">
+                                                <f:facet name="header"><h:outputText value="#{bundle['usage.event.ip']}"/></f:facet>
+                                                <h:outputText value="#{event.ip}"/>
+                                            </p:column>
+                                            <p:column width="20%" class="text-center">
+                                                <f:facet name="header"><h:outputText value="#{bundle['usage.event.country']}"/></f:facet>
+                                                <h:outputText value="#{event.country}"/>
+                                            </p:column>
+                                            <p:column width="20%" class="text-center">
+                                                <f:facet name="header"><h:outputText value="#{bundle['usage.event.city']}"/></f:facet>
+                                                <h:outputText value="#{event.city}"/>
+                                            </p:column>
+                                            <p:column width="20%" class="text-center">
+                                                <f:facet name="header"><h:outputText value="#{bundle['usage.event.userId']}"/></f:facet>
+                                                <h:outputText value="#{event.userId}"/>
+                                            </p:column>
+                                        </p:dataTable>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <h:form id="pageForm">
+                                            <div class="results-sort-pagination results-bottom text-center">
+                                                <ul class="pagination">
+                                                    <li class="#{usagePage.vdEvents.currentPage == '1' ? 'disabled' : ''}">
+                                                        <p:commandLink value="&#171;" actionListener="#{usagePage.searchViewDvo(1)}" update=":#{p:component('searchHits')} :#{p:component('pageForm')}"/>
+                                                    </li>
+                                                    <li class="#{usagePage.vdEvents.currentPage == '1' ? 'disabled' : ''}">
+                                                        <p:commandLink value="&lt; #{bundle.previous}" actionListener="#{usagePage.searchViewDvo(usagePage.vdEvents.currentPage-1)}" update=":#{p:component('searchHits')} :#{p:component('pageForm')}"/>
+                                                    </li>
+                                                    <ui:repeat value="#{usagePage.vdEvents.getBrowsePages(5)}" var="page">
+                                                        <li class="#{page == usagePage.vdEvents.currentPage ? 'disabled' : ''}">
+                                                            <p:commandLink value="#{page}" actionListener="#{usagePage.searchViewDvo(page)}" update=":#{p:component('searchHits')} :#{p:component('pageForm')}"/>
+                                                        </li>
+                                                    </ui:repeat>   
+                                                    <li class="#{usagePage.vdEvents.currentPage == usagePage.vdEvents.totalPages ? 'disabled' : ''}">
+                                                        <p:commandLink value="#{bundle.next} &gt;" actionListener="#{usagePage.searchViewDvo(usagePage.vdEvents.currentPage+1)}" update=":#{p:component('searchHits')} :#{p:component('pageForm')}"/>
+                                                    </li>
+                                                    <li class="#{usagePage.vdEvents.currentPage == usagePage.vdEvents.totalPages ? 'disabled' : ''}">
+                                                        <p:commandLink value="&#187;" actionListener="#{usagePage.searchViewDvo(usagePage.vdEvents.totalPages)}" update=":#{p:component('searchHits')} :#{p:component('pageForm')}"/>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </h:form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!--End: View Dataverse or Dataset Usage-->
+
+                    <!--Download File Usage-->
+                    <div class="panel-group" jsf:rendered="#{usagePage.type == 'DOWNLOAD_FILE' and usagePage.fileMetadatas.isEmpty()}">
+                        <p:outputLabel value="#{bundle['usage.datafile.no']}"/>
+                    </div>
+                    <div class="panel-group" jsf:rendered="#{usagePage.type == 'DOWNLOAD_FILE' and (not usagePage.fileMetadatas.isEmpty())}">
+                        <div class="panel panel-default">
+                            <div data-toggle="collapse" data-target="#panelCollapseFileDownloadQuery" class="panel-heading text-info">
+                                #{bundle['usage.search.filter']}<span class="glyphicon glyphicon-chevron-up"/>
+                            </div>
+                            <div id="panelCollapseFileDownloadQuery" class="collapse in">
+                                <div class="row">
+                                    <h:form id="fileDownloadForm" styleClass="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="col-sm-4 control-label"  for="selectedFile">#{bundle['usage.search.filter.datafile']}</label>
+                                            <div class="col-sm-6">
+                                                <p:selectOneMenu id="selectedFile" value="#{usagePage.selectedDataFileId}">
+                                                    <f:selectItem itemLabel="#{bundle['usage.datafile.all']}" itemValue="0"/>
+                                                    <f:selectItems value="#{usagePage.fileMetadatas}" var="fileMetadata"
+                                                                   itemLabel="#{fileMetadata.label}" itemValue="#{fileMetadata.dataFile.id}"/>
+                                                </p:selectOneMenu>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-4 control-label" for="ipForFile">#{bundle['usage.search.filter.ip']}</label>
+                                            <div class="col-sm-6">
+                                                <p:inputText id="ipForFile" value="#{usagePage.fdQuery.ip}"/>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-4 control-label" for="userIdForFile">#{bundle['usage.search.filter.userId']}</label>
+                                            <div class="col-sm-6">
+                                                <p:inputText id="userIdForFile" value="#{usagePage.fdQuery.userId}"/>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-4 control-label" for="userNameForFile">#{bundle['usage.search.filter.userName']}</label>
+                                            <div class="col-sm-6">
+                                                <p:inputText id="userNameForFile" value="#{usagePage.fdQuery.userName}"/>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-4 control-label" for="affiliationForFile">#{bundle['usage.search.filter.affiliation']}</label>
+                                            <div class="col-sm-6">
+                                                <p:inputText id="affiliationForFile" value="#{usagePage.fdQuery.affiliation}"/>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-4 control-label" for="positionForFile">#{bundle['usage.search.filter.position']}</label>
+                                            <div class="col-sm-6">
+                                                <p:inputText id="positionForFile" value="#{usagePage.fdQuery.position}"/>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-4 control-label" for="startTimeForFile">#{bundle['usage.search.filter.startTime']}</label>
+                                            <div class="col-sm-6">
+                                                <p:calendar id="startTimeForFile" value="#{usagePage.fdQuery.startTime}" 
+                                                            navigator="true" pattern="yyyy-MM-dd HH:mm:ss"/>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-4 control-label" for="endTimeForFile">#{bundle['usage.search.filter.endTime']}</label>
+                                            <div class="col-sm-6">
+                                                <p:calendar id="endTimeForFile" value="#{usagePage.fdQuery.endTime}" 
+                                                            navigator="true" pattern="yyyy-MM-dd HH:mm:ss"/>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-4 control-label" for="sizeForFile">#{bundle['usage.search.numberOfRecordPerPage']}</label>
+                                            <div class="col-sm-6">
+                                                <p:selectOneMenu id="sizeForFile" value="#{usagePage.fdQuery.size}">
+                                                    <f:selectItem itemValue="5" itemLabel="5"/>
+                                                    <f:selectItem itemValue="10" itemLabel="10"/>
+                                                    <f:selectItem itemValue="20" itemLabel="20"/>
+                                                    <f:selectItem itemValue="30" itemLabel="30"/>
+                                                    <f:selectItem itemValue="40" itemLabel="40"/>
+                                                    <f:selectItem itemValue="50" itemLabel="50"/>
+                                                </p:selectOneMenu>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="col-sm-6 col-sm-offset-4">
+                                                <p:commandButton value="#{bundle.search}" actionListener="#{usagePage.searchFileDownload(1)}"
+                                                                 update=":#{p:component('searchHitsForFile')} :#{p:component('fdChart')}
+                                                                 :#{p:component('pageFormForFile')} :#{p:component('fdEventsTotal')}"
+                                                                 oncomplete="draw('fdChartDiv','fdDataDiv')"/>
+                                            </div>
+                                        </div>
+                                    </h:form>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel panel-default">
+                            <div data-toggle="collapse" data-target="#panelCollapseFileDownloadChart" class="panel-heading text-info">
+                                #{bundle['usage.distribution']}<span class="glyphicon glyphicon-chevron-up"/>
+                            </div>
+                            <div id="panelCollapseFileDownloadChart" class="collapse in">
+                                <div class="panel-body">
+                                    <div id="fdChartDiv"  style="height:400px"></div>
+                                    <div id="fdDataDiv">
+                                        <h:outputText id="fdChart" class="hide" value="#{usagePage.fdEvents.histogramData}"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel panel-default">
+                            <div data-toggle="collapse" data-target="#panelCollapseSearchHitsForFile" class="panel-heading text-info">
+                                #{bundle['usage.search.result']}<span class="glyphicon glyphicon-chevron-up"/>
+                            </div>
+                            <div id="panelCollapseSearchHitsForFile" class="collapse in">
+                                <div class="panel-body">
+                                    <div class="col-md-12">
+                                        <h:outputFormat id="fdEventsTotal" value="#{bundle['usage.search.result.total']}">
+                                            <f:param value='#{usagePage.fdEvents.total}'/>
+                                        </h:outputFormat>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <p:dataTable id="searchHitsForFile" var="event"  value="#{usagePage.fdEvents.events}">
+                                            <p:column width="10%" class="text-center">
+                                                <f:facet name="header"><h:outputText value="#{bundle['usage.event.date']}"/></f:facet>
+                                                <h:outputText value="#{event.date}">
+                                                    <f:convertDateTime timeZone="#{usagePage.fdQuery.timeZone}" pattern="YYYY-MM-dd HH:mm:ss"/>
+                                                </h:outputText>
+                                            </p:column>
+                                            <p:column width="10%" class="text-center">
+                                                <f:facet name="header"><h:outputText value="#{bundle['usage.event.ip']}"/></f:facet>
+                                                <h:outputText value="#{event.ip}"/>
+                                            </p:column>
+                                            <p:column width="10%" class="text-center">
+                                                <f:facet name="header"><h:outputText value="#{bundle['usage.event.country']}"/></f:facet>
+                                                <h:outputText value="#{event.country}"/>
+                                            </p:column>
+                                            <p:column width="10%" class="text-center">
+                                                <f:facet name="header"><h:outputText value="#{bundle['usage.event.city']}"/></f:facet>
+                                                <h:outputText value="#{event.city}"/>
+                                            </p:column>
+                                            <p:column width="10%" class="text-center">
+                                                <f:facet name="header"><h:outputText value="#{bundle['usage.event.userId']}"/></f:facet>
+                                                <h:outputText value="#{event.userId}"/>
+                                            </p:column>
+                                            <p:column width="10%" class="text-center">
+                                                <f:facet name="header"><h:outputText value="#{bundle['usage.event.userName']}"/></f:facet>
+                                                <h:outputText value="#{event.userName}"/>
+                                            </p:column>
+                                            <p:column width="10%" class="text-center">
+                                                <f:facet name="header"><h:outputText value="#{bundle['usage.event.affiliation']}"/></f:facet>
+                                                <h:outputText value="#{event.affiliation}"/>
+                                            </p:column>
+                                            <p:column width="10%" class="text-center">
+                                                <f:facet name="header"><h:outputText value="#{bundle['usage.event.position']}"/></f:facet>
+                                                <h:outputText value="#{event.position}"/>
+                                            </p:column>
+                                            <p:column width="20%" class="text-center">
+                                                <f:facet name="header"><h:outputText value="#{bundle['usage.event.datafile']}"/></f:facet>
+                                                <h:outputText value="#{usagePage.fileId2FileMetadata.get(event.datafileId).label}"/>
+                                            </p:column>
+                                        </p:dataTable>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <h:form id="pageFormForFile">
+                                            <div class="results-sort-pagination results-bottom text-center">
+                                                <ul class="pagination">
+                                                    <li class="#{usagePage.fdEvents.currentPage == '1' ? 'disabled' : ''}">
+                                                        <p:commandLink value="&#171;" actionListener="#{usagePage.searchFileDownload(1)}" update=":#{p:component('searchHitsForFile')} :#{p:component('pageFormForFile')}"/>
+                                                    </li>
+                                                    <li class="#{usagePage.fdEvents.currentPage == '1' ? 'disabled' : ''}">
+                                                        <p:commandLink value="&lt; #{bundle.previous}" actionListener="#{usagePage.searchFileDownload(usagePage.fdEvents.currentPage-1)}" update=":#{p:component('searchHitsForFile')} :#{p:component('pageFormForFile')}"/>
+                                                    </li>
+                                                    <ui:repeat value="#{usagePage.fdEvents.getBrowsePages(5)}" var="page">
+                                                        <li class="#{page == usagePage.fdEvents.currentPage ? 'disabled' : ''}">
+                                                            <p:commandLink value="#{page}" actionListener="#{usagePage.searchFileDownload(page)}" update=":#{p:component('searchHitsForFile')} :#{p:component('pageFormForFile')}"/>
+                                                        </li>
+                                                    </ui:repeat>  
+                                                    <li class="#{usagePage.fdEvents.currentPage == usagePage.fdEvents.totalPages ? 'disabled' : ''}">
+                                                        <p:commandLink value="#{bundle.next} &gt;" actionListener="#{usagePage.searchFileDownload(usagePage.fdEvents.currentPage+1)}" update=":#{p:component('searchHitsForFile')} :#{p:component('pageFormForFile')}"/>
+                                                    </li>
+                                                    <li class="#{usagePage.fdEvents.currentPage == usagePage.fdEvents.totalPages ? 'disabled' : ''}">
+                                                        <p:commandLink value="&#187;" actionListener="#{usagePage.searchFileDownload(usagePage.fdEvents.totalPages)}" update=":#{p:component('searchHitsForFile')} :#{p:component('pageFormForFile')}"/>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </h:form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!--End: Download File Usage-->
+                </div>
+                <script src="http://echarts.baidu.com/build/dist/echarts.js"></script>
+                <script type="text/javascript">
+                    //<![CDATA[
+                    function draw(chartId, dataId) {
+                        require.config({
+                            paths: {
+                                echarts: 'http://echarts.baidu.com/build/dist'
+                            }
+                        });
+                        require(
+                                [
+                                    'echarts',
+                                    'echarts/chart/line',
+                                ],
+                                function (ec) {
+                                    var myChart = ec.init(document.getElementById(chartId));
+                                    option = {
+                                        tooltip: {
+                                            trigger: 'item',
+                                            formatter: function (params) {
+                                                var date = new Date(params.value[0]);
+                                                data = date.getFullYear() + '-'
+                                                        + (date.getMonth() + 1) + '-'
+                                                        + date.getDate();
+                                                return "(" + data + "," + params.value[1] + ")";
+                                            }
+                                        },
+                                        toolbox: {
+                                            show: true,
+                                            feature: {
+                                                saveAsImage: {show: true}
+                                            }
+                                        },
+                                        dataZoom: {
+                                            show: true,
+                                            start: 0
+                                        },
+                                        grid: {
+                                            y2: 80
+                                        },
+                                        xAxis: [
+                                            {
+                                                type: 'time',
+                                                splitNumber: 10
+                                            }
+                                        ],
+                                        yAxis: [
+                                            {
+                                                type: 'value'
+                                            }
+                                        ],
+                                        series: [
+                                            {
+                                                name: 'series1',
+                                                type: 'line',
+                                                showAllSymbol: true,
+                                                data: (function () {
+                                                    var data = JSON.parse($('#' + dataId + ' > span').text());
+                                                    d = [];
+                                                    for (var i = 0; i < data.length; i++) {
+                                                        if(navigator.userAgent.indexOf('Firefox') >= 0){
+                                                            d.push([new Date(data[i][0].replace(/-/g," ")), data[i][1]]);
+                                                        }else{
+                                                            d.push([new Date(data[i][0]), data[i][1]]);
+                                                        }
+                                                    }
+                                                    return d;
+                                                })()
+                                            }
+                                        ]
+                                    };
+                                    myChart.setOption(option);
+                                }
+                        );
+                    }
+                    #{usagePage.type == 'VIEW' ? "draw(\"viewChartDiv\", \"viewDataDiv\")" : ""};
+                    #{usagePage.type == 'DOWNLOAD_FILE' ? "draw(\"fdChartDiv\",\"fdDataDiv\")" : ""};
+                    //]]>
+                </script> 
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
