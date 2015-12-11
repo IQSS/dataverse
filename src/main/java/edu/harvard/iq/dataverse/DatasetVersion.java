@@ -487,6 +487,35 @@ public class DatasetVersion implements Serializable {
         }
         return true;
     }
+    
+    public void updateDefaultValuesFromTemplate(Template template) {
+        if (!template.getDatasetFields().isEmpty()) {
+            this.setDatasetFields(this.copyDatasetFields(template.getDatasetFields()));
+        }
+        if (template.getTermsOfUseAndAccess() != null) {
+            TermsOfUseAndAccess terms = template.getTermsOfUseAndAccess().copyTermsOfUseAndAccess();
+            terms.setDatasetVersion(this);
+            this.setTermsOfUseAndAccess(terms);
+        } else {
+            TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
+            terms.setDatasetVersion(this);
+            terms.setLicense(TermsOfUseAndAccess.License.CC0);
+            terms.setDatasetVersion(this);
+            this.setTermsOfUseAndAccess(terms);
+        }
+    }
+
+    public void initDefaultValues() {
+        //first clear then initialize - in case values were present 
+        // from template or user entry
+        this.setDatasetFields(new ArrayList());
+        this.setDatasetFields(this.initDatasetFields());
+        TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
+        terms.setDatasetVersion(this);
+        terms.setLicense(TermsOfUseAndAccess.License.CC0);
+        this.setTermsOfUseAndAccess(terms);
+
+    }
 
     public DatasetVersion getMostRecentlyReleasedVersion() {
         if (this.isReleased()) {
