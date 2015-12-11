@@ -41,7 +41,8 @@ public class FeaturedDataverseServiceBean {
          List<Object[]> searchResults = null;
          
          try {
-             searchResults = em.createNativeQuery("SELECT id, alias, name FROM dataverse WHERE id IN (select featureddataverse_id from DataverseFeaturedDataverse where dataverse_id = "+dataverseId+" order by displayOrder)").getResultList();
+             //searchResults = em.createNativeQuery("SELECT id, alias, name FROM dataverse WHERE id IN (select featureddataverse_id from DataverseFeaturedDataverse where dataverse_id = "+dataverseId+" order by displayOrder)").getResultList();
+             searchResults = em.createNativeQuery("SELECT d.id, d.alias, d.name FROM dataverse d, DataverseFeaturedDataverse f WHERE f.featureddataverse_id = d.id AND f.dataverse_id = "+dataverseId+" order by f.displayOrder").getResultList();
          } catch (Exception ex) {
              return null;
          }
@@ -68,7 +69,7 @@ public class FeaturedDataverseServiceBean {
             
             dataverse.setDataverseTheme(dataverseService.findDataverseThemeByIdQuick(id));
             if (dataverse.getDataverseTheme()!=null){
-                logger.info("THEME: "+dataverse.getDataverseTheme().getLogo()+", "+dataverse.getDataverseTheme().getLogoFormat());
+                logger.fine("THEME: "+dataverse.getDataverseTheme().getLogo()+", "+dataverse.getDataverseTheme().getLogoFormat());
             }
             ret.add(dataverse);
          }

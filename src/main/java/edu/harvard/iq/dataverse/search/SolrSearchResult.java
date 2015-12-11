@@ -88,6 +88,9 @@ public class SolrSearchResult {
     private List<String> userRole;
     private boolean harvested = false;
     private String dvTree;
+    private String harvestingDescription = null;
+    private List<String> fileCategories = null;
+    private List<String> tabularDataTags = null;
     
     public String getDvTree() {
         return dvTree;
@@ -113,6 +116,16 @@ public class SolrSearchResult {
         this.harvested = harvested;
     }
     
+    public String getHarvestingDescription() {
+        //if (this.isHarvested()) {
+            return harvestingDescription;
+        //}
+        //return null;
+    }
+    
+    public void setHarvestingDescription(String harvestingDescription) {
+        this.harvestingDescription = harvestingDescription;
+    }
 //    public boolean isStatePublished() {
 //        return statePublished;
 //    }
@@ -690,6 +703,22 @@ public class SolrSearchResult {
         this.highlightsAsList = highlightsAsList;
     }
 
+    public List<String> getFileCategories() {
+        return fileCategories;
+    }
+    
+    public void setFileCategories(List<String> fileCategories) {
+        this.fileCategories = fileCategories;
+    }
+    
+    public List<String> getTabularDataTags() {
+        return tabularDataTags;
+    }
+    
+    public void setTabularDataTags(List<String> tabularDataTags) {
+        this.tabularDataTags = tabularDataTags;
+    }
+    
     public Map<String, String> getParent() {
         return parent;
     }

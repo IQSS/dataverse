@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.search.SortBy;
 import edu.harvard.iq.dataverse.util.FileSortFieldAndOrder;
 import java.sql.Timestamp;
@@ -283,6 +284,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         dataFile.setPublicationDate(publicationDate);
 
         // no support for users yet!
+        // (no need to - so far? -- L.A. 4.2.2) 
         /*
          Long creatorId = (Long) result[7];
          if (creatorId != null) {
@@ -362,8 +364,34 @@ public class DataFileServiceBean implements java.io.Serializable {
                 
         dataFile.setOwner(owner);
 
-        // TODO:
-        // look up dataTable; but only if contenttyp is right.
+        // look up data table; but only if content type indicates it's tabular data:
+        
+        if (MIME_TYPE_TAB.equalsIgnoreCase(contentType)) {
+            Object[] dtResult = null;
+            try {
+                dtResult = (Object[]) em.createNativeQuery("SELECT ID, UNF, CASEQUANTITY, VARQUANTITY, ORIGINALFILEFORMAT FROM dataTable WHERE DATAFILE_ID = " + id).getSingleResult();
+            } catch (Exception ex) {
+                dtResult = null;
+            }
+        
+            if (dtResult != null) {
+                DataTable dataTable = new DataTable(); 
+
+                dataTable.setId(((Integer)dtResult[0]).longValue());
+            
+                dataTable.setUnf((String)dtResult[1]);
+            
+                dataTable.setCaseQuantity((Long)dtResult[2]);
+            
+                dataTable.setVarQuantity((Long)dtResult[3]);
+            
+                dataTable.setOriginalFileFormat((String)dtResult[4]);
+                
+                dataTable.setDataFile(dataFile);
+                dataFile.setDataTable(dataTable);
+            }
+        }
+        
         return dataFile;
     }
     /* 
@@ -1151,6 +1179,10 @@ public class DataFileServiceBean implements java.io.Serializable {
         
         return (contentType != null && (contentType.toLowerCase().startsWith("video/")));    
         
+    }
+    
+    public void populateFileSearchCard(SolrSearchResult solrSearchResult) {
+        solrSearchResult.setEntity(this.findCheapAndEasy(solrSearchResult.getEntityId()));
     }
         
 }

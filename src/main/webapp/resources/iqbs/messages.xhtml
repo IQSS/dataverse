@@ -4,7 +4,9 @@
 	  xmlns:cc="http://java.sun.com/jsf/composite"
 	  xmlns:ui="http://java.sun.com/jsf/facelets"
           xmlns:p="http://primefaces.org/ui"
-	  xmlns:fn="http://java.sun.com/jsp/jstl/functions">
+          xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+          xmlns:o="http://omnifaces.org/ui"          
+          xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <cc:interface>
         <cc:attribute name="collapsible" default="false" />
@@ -46,7 +48,13 @@
                 </ui:fragment>
                 <span class="glyphicon glyphicon-info-sign"></span>&#160;<strong>#{msg.summary}</strong>&#160;<h:outputText value="#{msg.detail}" rendered="#{!empty msg.detail and (msg.detail != msg.summary)}"/>
                 <ui:fragment rendered="#{level eq 'FATAL'}">                 
-                    Please <p:commandLink  value="contact support" onclick="feedbackForm.show()"/>.
+                    Please <p:commandLink  value="contact support" onclick="feedbackForm.show()"/>. 
+                    <strong>Date/Time: </strong>
+                    <h:outputText value="#{now}">
+                        <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss" type="date" />
+                    </h:outputText>
+                    <strong>Server: </strong>
+                    #{systemConfig.dataverseServer}
                 </ui:fragment>
             </div>
             #{msg.rendered()}
