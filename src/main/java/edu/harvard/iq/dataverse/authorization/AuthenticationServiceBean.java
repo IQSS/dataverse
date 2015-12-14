@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse.authorization;
 
+import edu.harvard.iq.dataverse.UserNotification;
+import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
@@ -61,6 +63,9 @@ public class AuthenticationServiceBean {
     @EJB
     protected ActionLogServiceBean actionLogSvc;
     
+    @EJB
+    UserNotificationServiceBean userNotificationService;
+
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
     
@@ -208,6 +213,9 @@ public class AuthenticationServiceBean {
             ApiToken apiToken = findApiTokenByUser(user);
             if (apiToken != null) {
                 em.remove(apiToken);
+            }
+            for (UserNotification notification : userNotificationService.findByUser(user.getId())) {
+                userNotificationService.delete(notification);
             }
             if (user.isBuiltInUser()) {
                 BuiltinUser builtin = builtinUserServiceBean.findByUserName(user.getUserIdentifier());
