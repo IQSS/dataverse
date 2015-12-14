@@ -339,11 +339,42 @@ public class UtilIT {
                 .delete(swordConfiguration.getBaseUrlPathCurrent() + "/edit/study/" + persistentId);
     }
 
+    static Response destroyDataset(Integer datasetId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/datasets/" + datasetId);
+    }
+
     static Response deleteFile(Integer fileId, String apiToken) {
         return given()
                 .auth().basic(apiToken, EMPTY_STRING)
                 .relaxedHTTPSValidation()
                 .delete(swordConfiguration.getBaseUrlPathCurrent() + "/edit-media/file/" + fileId);
+    }
+
+    static Response publishDatasetViaSword(String persistentId, String apiToken) {
+        return given()
+                .auth().basic(apiToken, EMPTY_STRING)
+                .header("In-Progress", "false")
+                .post(swordConfiguration.getBaseUrlPathCurrent() + "/edit/study/" + persistentId);
+    }
+
+    static Response publishDataverseViaSword(String alias, String apiToken) {
+        return given()
+                .auth().basic(apiToken, EMPTY_STRING)
+                .header("In-Progress", "false")
+                .post(swordConfiguration.getBaseUrlPathCurrent() + "/edit/dataverse/" + alias);
+    }
+
+    static Response makeSuperUser(String username) {
+        Response response = given().post("/api/admin/superuser/" + username);
+        return response;
+    }
+
+    static Response reindexDataset(String persistentId) {
+        Response response = given()
+                .get("/api/admin/index/dataset?persistentId=" + persistentId);
+        return response;
     }
 
     @Test

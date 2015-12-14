@@ -1,11 +1,14 @@
 package edu.harvard.iq.dataverse.api;
 
 import com.jayway.restassured.RestAssured;
+import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
 import edu.harvard.iq.dataverse.api.datadeposit.SwordConfigurationImpl;
 import java.util.logging.Logger;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static javax.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.OK;
@@ -22,7 +25,9 @@ public class SwordIT {
     private static String username1;
     private static String apiToken1;
     private static String dataverseAlias1;
+    private static String dataverseAlias2;
     private static String datasetPersistentId1;
+    private static String datasetPersistentId2;
 
     @BeforeClass
     public static void setUpClass() {
@@ -133,6 +138,66 @@ public class SwordIT {
         logger.info("Title updated from \"" + initialDatasetTitle + "\" to \"" + newTitle + "\".");
     }
 
+    @Test
+    public void testCreateDatasetPublishDestroy() {
+
+        Response createDataverse = UtilIT.createRandomDataverse(apiToken1);
+        createDataverse.prettyPrint();
+        dataverseAlias2 = UtilIT.getAliasFromResponse(createDataverse);
+
+        Response createDataset = UtilIT.createRandomDatasetViaSwordApi(dataverseAlias2, apiToken1);
+        createDataset.prettyPrint();
+        datasetPersistentId2 = UtilIT.getDatasetPersistentIdFromResponse(createDataset);
+
+        Response attemptToPublishDatasetInUnpublishedDataverse = UtilIT.publishDatasetViaSword(datasetPersistentId2, apiToken1);
+        attemptToPublishDatasetInUnpublishedDataverse.prettyPrint();
+        attemptToPublishDatasetInUnpublishedDataverse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode());
+        Response makeSuperuser = UtilIT.makeSuperUser(username1);
+        makeSuperuser.prettyPrint();
+
+        String rootDataverseAlias = "root";
+        Response publishRootDataverse = UtilIT.publishDataverseViaSword(rootDataverseAlias, apiToken1);
+        publishRootDataverse.prettyPrint();
+
+        Response listDatasetsResponse = UtilIT.listDatasetsViaSword(rootDataverseAlias, apiToken1);
+        listDatasetsResponse.prettyPrint();
+        listDatasetsResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("feed.dataverseHasBeenReleased", equalTo("true"));
+
+        Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias2, apiToken1);
+        publishDataverse.prettyPrint();
+        publishDataverse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response publishDataset = UtilIT.publishDatasetViaSword(datasetPersistentId2, apiToken1);
+        publishDataset.prettyPrint();
+        publishDataset.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response attemptToDeletePublishedDataset = UtilIT.deleteDatasetViaSwordApi(datasetPersistentId2, apiToken1);
+        attemptToDeletePublishedDataset.prettyPrint();
+        attemptToDeletePublishedDataset.then().assertThat()
+                .statusCode(METHOD_NOT_ALLOWED.getStatusCode());
+
+        Response reindexDatasetToFindDatabaseId = UtilIT.reindexDataset(datasetPersistentId2);
+        reindexDatasetToFindDatabaseId.prettyPrint();
+        reindexDatasetToFindDatabaseId.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Integer datasetId2 = JsonPath.from(reindexDatasetToFindDatabaseId.asString()).getInt("data.id");
+
+        /**
+         * @todo The "destroy" endpoint should accept a persistentId:
+         * https://github.com/IQSS/dataverse/issues/1837
+         */
+        Response destroyDataset = UtilIT.destroyDataset(datasetId2, apiToken1);
+        destroyDataset.prettyPrint();
+        destroyDataset.then().assertThat()
+                .statusCode(OK.getStatusCode());
+    }
+
     @AfterClass
     public static void tearDownClass() {
         boolean disabled = false;
@@ -149,9 +214,21 @@ public class SwordIT {
         deleteDataverse1Response.prettyPrint();
         assertEquals(200, deleteDataverse1Response.getStatusCode());
 
+        Response deleteDataverse2Response = UtilIT.deleteDataverse(dataverseAlias2, apiToken1);
+        deleteDataverse2Response.prettyPrint();
+        assertEquals(200, deleteDataverse2Response.getStatusCode());
+
         Response deleteUser1Response = UtilIT.deleteUser(username1);
         deleteUser1Response.prettyPrint();
-        assertEquals(200, deleteUser1Response.getStatusCode());
+        boolean issue2825Resolved = false;
+        if (issue2825Resolved) {
+            /**
+             * We can't delete this user because in some cases the user has
+             * released the root dataverse:
+             * https://github.com/IQSS/dataverse/issues/2825
+             */
+            assertEquals(200, deleteUser1Response.getStatusCode());
+        }
 
     }
 
