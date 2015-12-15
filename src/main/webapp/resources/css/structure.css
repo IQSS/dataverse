@@ -607,8 +607,8 @@ table.ui-picklist div.ui-picklist-filter-container {padding-bottom:5px;}
 
 #contentTabs .ui-tabs .ui-tabs-panel {padding-left:0; padding-right:0;}
 
-#contentTabs div.panel-heading[data-toggle="collapse"] {cursor: pointer; cursor: hand;}
-#contentTabs div.panel-heading.text-info[data-toggle="collapse"] {color: #31708F;}
+div.panel-heading[data-toggle="collapse"] {cursor: pointer; cursor: hand;}
+div.panel-heading.text-info[data-toggle="collapse"] {color: #31708F;}
 
 .btn-sm.ui-button {padding: 5px 10px;}
 
