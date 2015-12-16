@@ -74,16 +74,16 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
                         theDataset.setIdentifier(ctxt.datasets().generateIdentifierSequence(protocol, authority, theDataset.getDoiSeparator()));
                         doiRetString = ctxt.doiEZId().createIdentifier(theDataset);
                         if(!doiRetString.contains(theDataset.getIdentifier())){
-                            throw new IllegalCommandException("This dataset may not be published because it has not been registered. Please contact thedata.org for assistance.", this);
+                            throw new IllegalCommandException("This dataset may not be published because its identifier is already in use by another dataset. Please contact Dataverse Support for assistance.", this);
                         } else{
                             theDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
                         }
                     } else {
-                          throw new IllegalCommandException("This dataset may not be published because it has not been registered. Please contact thedata.org for assistance.", this);
+                          throw new IllegalCommandException("This dataset may not be published because it has not been registered. Please contact Dataverse Support for assistance.", this);
                     }
                 }
             } else {
-                 throw new IllegalCommandException("This dataset may not be published because it has not been registered. Please contact thedata.org for assistance.", this);
+                 throw new IllegalCommandException("This dataset may not be published because its DOI provider is not supported. Please contact Dataverse Support for assistance.", this);
             }
         }
 

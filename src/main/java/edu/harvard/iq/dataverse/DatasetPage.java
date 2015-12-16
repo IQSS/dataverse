@@ -2142,7 +2142,40 @@ public class DatasetPage implements java.io.Serializable {
     
     public void setShowAccessPopup(boolean showAccessPopup) {} // dummy set method
     
+    
+    
+        
     public String restrictSelectedFiles(boolean restricted){
+        RequestContext requestContext = RequestContext.getCurrentInstance();      
+        if (selectedFiles.isEmpty()) {
+            if (restricted) {
+                requestContext.execute("PF('selectFilesForRestrict').show()");
+            } else {
+                requestContext.execute("PF('selectFilesForUnRestrict').show()");
+            }
+            return "";
+        } else {
+            boolean validSelection = false;
+            for (FileMetadata fmd : selectedFiles){
+                if((fmd.isRestricted() && !restricted) || (!fmd.isRestricted() && restricted) ){
+                    validSelection = true;
+                }
+            } 
+            if(!validSelection){
+                            if (restricted  ) {
+                requestContext.execute("PF('selectFilesForRestrict').show()");
+            } 
+            if (!restricted ) {
+                requestContext.execute("PF('selectFilesForUnRestrict').show()");
+            }
+               return ""; 
+            }
+
+            
+        }
+        
+        
+
 
         if (editMode != EditMode.CREATE) {
             if (bulkUpdateCheckVersion()){

@@ -70,7 +70,7 @@
                                 </li>
                                 <li class="#{DatasetPage.locked  ? 'disabled' : ''}">
                                     <p:commandLink oncomplete="toggle_dropdown();" 
-                                                   onclick="PF('accessPopup').show()">
+                                                   onclick="testFilesSelectedForRestriction()">
                                         <h:outputText value="#{bundle['file.restrict']}"/>
                                     </p:commandLink>
                                 </li>
@@ -474,17 +474,5 @@
             <!-- END: button-block -->
         </p:column>
     </p:dataTable>
-    <script type="text/javascript">
-        function testFilesSelectedForEditMetadata2(){
-                                    var count = filesTable.getSelectedRowsCount();
-                                    if (count === 0) {
-                                        PF('selectFilesForEditMetadata').show();                                       
-                                    } else {
-                                        //window.location.href = '/editdatafiles.xhtml?datasetId=2481&amp;selectedFileIds='+fileIds;
-                                        //openEditFilesPageCommand2();
-                                        //$('button[id$="openEditFilesPageCommand"]').trigger('click');
-                                    }                                   
-                                }
-    </script>
     
 </ui:composition>
