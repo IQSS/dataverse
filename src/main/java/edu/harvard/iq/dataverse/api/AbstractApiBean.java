@@ -170,6 +170,16 @@ public abstract class AbstractApiBean {
         return authSvc.lookupUser(apiKey);
     }
     
+    /**
+     * Returns the {@code key} query parameter from the current request, or {@code null} if
+     * the request has no such parameter.
+     * @param key Name of the requested parameter.
+     * @return Value of the requested parameter in the current request.
+     */
+    protected String getRequestParameter( String key ) {
+        return httpRequest.getParameter(key);
+    }
+    
     protected String getRequestApiKey() {
         String headerParamApiKey = httpRequest.getHeader(DATAVERSE_KEY_HEADER_NAME);
         String queryParamApiKey = httpRequest.getParameter("key");
