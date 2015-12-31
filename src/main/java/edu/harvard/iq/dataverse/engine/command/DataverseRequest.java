@@ -15,7 +15,7 @@ public class DataverseRequest {
     
     private final User user;
     private final IpAddress sourceAddress;
-
+    
     public DataverseRequest(User aUser, HttpServletRequest aHttpServletRequest) {
         this.user = aUser;
         String remoteAddressStr = null;
@@ -37,6 +37,11 @@ public class DataverseRequest {
         sourceAddress = IpAddress.valueOf( remoteAddressStr );
     }
 
+    public DataverseRequest( User aUser, IpAddress aSourceAddress ) {
+        user = aUser;
+        sourceAddress = aSourceAddress;
+    }
+    
     public User getUser() {
         return user;
     }

@@ -205,6 +205,12 @@ public class DatasetServiceBean implements java.io.Serializable {
         return u;
     }
 
+    public DatasetVersion storeVersion( DatasetVersion dsv ) {
+        em.persist(dsv);
+        return dsv;
+    }
+    
+    
     public String createCitationRIS(DatasetVersion version) {
         return createCitationRIS(version, null);
     } 

@@ -37,6 +37,13 @@ import javax.persistence.EntityManager;
  */
 public interface CommandContext {
     
+    /**
+     * Note: While this method is not deprecated *yet*, please consider not using it,
+     * and using a method on the service bean instead. Using the em directly makes
+     * the command less testable.
+     * 
+     * @return the entity manager
+     */
 	public EntityManager em();
 	
 	public DataverseEngine engine();
