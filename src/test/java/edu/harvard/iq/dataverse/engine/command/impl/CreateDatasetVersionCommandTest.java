@@ -6,13 +6,19 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.engine.MocksFactory;
 import static edu.harvard.iq.dataverse.engine.MocksFactory.*;
 import edu.harvard.iq.dataverse.engine.TestCommandContext;
 import edu.harvard.iq.dataverse.engine.TestDataverseEngine;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
@@ -83,6 +89,9 @@ public class CreateDatasetVersionCommandTest {
         assertEquals( dsvCreationDate.getTime(), ds.getModificationTime().getTime() );
         assertEquals( ds, dsvNew.getDataset() );
         assertEquals( dsvNew, ds.getEditVersion() );
+        Map<DvObject, Set<Permission>> expected = new HashMap<>();
+        expected.put(ds, Collections.singleton(Permission.AddDataset));
+        assertEquals(expected, testEngine.getReqiredPermissionsForObjects() );
     }
     
     @Test(expected=IllegalCommandException.class)

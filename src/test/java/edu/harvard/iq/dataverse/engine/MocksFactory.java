@@ -1,9 +1,14 @@
 package edu.harvard.iq.dataverse.engine;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFileCategory;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldType;
+import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
+import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -14,7 +19,9 @@ import java.time.Month;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -46,6 +53,7 @@ public class MocksFactory {
         retVal.setId( nextId() );
         retVal.setContentType("application/unitTests");
         retVal.setCreateDate( new Timestamp(System.currentTimeMillis()) );
+        addFileMetadata( retVal );
         retVal.setModificationTime( retVal.getCreateDate() );
         return retVal;
     }
@@ -56,6 +64,22 @@ public class MocksFactory {
             retVal.add( makeDataFile() );
         }
         return retVal;
+    }
+    
+     public static FileMetadata addFileMetadata( DataFile df ) {
+        FileMetadata fmd = new FileMetadata();
+        
+        fmd.setId( nextId() );
+        fmd.setLabel( "Metadata for DataFile " + df.getId() );
+        
+        fmd.setDataFile(df);
+        if ( df.getFileMetadatas() != null ) {
+            df.getFileMetadatas().add( fmd );
+        } else {
+            df.setFileMetadatas( new LinkedList(Arrays.asList(fmd)) );
+        }
+        
+        return fmd;
     }
     
     public static AuthenticatedUser makeAuthentiucatedUser( String firstName, String lastName ) {
@@ -100,9 +124,37 @@ public class MocksFactory {
     
     public static Dataset makeDataset() {
         Dataset ds = new Dataset();
-        ds.setIdentifier("sample-ds");
-        ds.setFiles( makeFiles(10) );
+        ds.setId( nextId() );
+        ds.setIdentifier("sample-ds-" + ds.getId() );
+        ds.setCategoriesByName( Arrays.asList("CatOne", "CatTwo", "CatThree") );
+        final List<DataFile> files = makeFiles(10);
+        final List<FileMetadata> metadatas = new ArrayList<>(10);
+        final List<DataFileCategory> categories = ds.getCategories();
+        Random rand = new Random();
+        for ( DataFile df : files ) {
+            df.getFileMetadata().addCategory(categories.get(rand.nextInt(categories.size())));
+            metadatas.add( df.getFileMetadata() );
+        }
+        ds.setFiles(files);
+        final DatasetVersion initialVersion = ds.getVersions().get(0);
+        initialVersion.setFileMetadatas(metadatas);
+        
+        List<DatasetField> fields = new ArrayList<>();
+        DatasetField field = new DatasetField();
+        field.setId(nextId());
+        field.setSingleValue("Sample Field Value");
+        field.setDatasetFieldType( makeDatasetFieldType() );
+        fields.add( field );
+        initialVersion.setDatasetFields(fields);
         ds.setOwner( makeDataverse() );
+        
         return ds;
     }
+    
+    public static DatasetFieldType makeDatasetFieldType() {
+        DatasetFieldType retVal = new DatasetFieldType("SampleType", FieldType.TEXT, false);
+        retVal.setId( nextId() );
+        return retVal;
+    }
+    
 }
