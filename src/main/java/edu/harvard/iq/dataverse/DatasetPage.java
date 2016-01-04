@@ -1028,7 +1028,7 @@ public class DatasetPage implements java.io.Serializable {
      *  See table in: https://github.com/IQSS/dataverse/issues/1618
      * 
      *  Can the user see a reminder to publish button?
-     * 
+     *   (0) The application has to be set to Create Edit Maps - true
      *   (1) Logged in user
      *   (2) Is geospatial file?
      *   (3) File has NOT been released
@@ -1042,7 +1042,13 @@ public class DatasetPage implements java.io.Serializable {
         if (fm==null){
 
             return false;
-        }       
+        } 
+        
+        //  (0) Is the view GeoconnectViewMaps 
+        if (!settingsService.isTrueForKey(SettingsServiceBean.Key.GeoconnectCreateEditMaps, false)){
+            return false;
+        }
+        
         
         // (1) Is there an authenticated user?
         //
@@ -1085,7 +1091,8 @@ public class DatasetPage implements java.io.Serializable {
      *  (1) Is the user logged in?
      *  (2) Is this file a Shapefile or a Tabular file tagged as Geospatial?
      *  (3) Does the logged in user have permission to edit the Dataset to which this FileMetadata belongs?
-     *  (4) Any of these conditions:
+     *  (4) Is the create Edit Maps flag set to true?
+     *  (5) Any of these conditions:
      *        9a) File Published 
      *        (b) Draft: File Previously published  
      * @param fm FileMetadata
@@ -1115,8 +1122,14 @@ public class DatasetPage implements java.io.Serializable {
         if (!this.doesSessionUserHaveDataSetPermission(Permission.EditDataset)){
             return false;
         }
+        
+        //  (4) Is the view GeoconnectViewMaps 
+        if (!settingsService.isTrueForKey(SettingsServiceBean.Key.GeoconnectCreateEditMaps, false)){
+            return false;
+        }
+        
              
-        //  (4) Is File released?
+        //  (5) Is File released?
         //
         if (fm.getDataFile().isReleased()){
             return true;
@@ -1148,7 +1161,14 @@ public class DatasetPage implements java.io.Serializable {
             // Nope: no button
             return false;
         }
-                
+              
+        /*
+            Is setting for GeoconnectViewMaps true?
+            Nope? no button
+        */
+        if (!settingsService.isTrueForKey(SettingsServiceBean.Key.GeoconnectViewMaps, false)){
+            return false;
+        }        
         
         /* -----------------------------------------------------
             Does user have DownloadFile permission for this file?
