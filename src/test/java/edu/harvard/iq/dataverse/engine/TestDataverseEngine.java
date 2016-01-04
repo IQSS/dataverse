@@ -16,7 +16,7 @@ public class TestDataverseEngine implements DataverseEngine {
 	
 	private final TestCommandContext ctxt;
     
-    private Map<DvObject, Set<Permission>> reqiredPermissionsForObjects = new HashMap<>();
+    private final Map<DvObject, Set<Permission>> reqiredPermissionsForObjects = new HashMap<>();
     
 	public TestDataverseEngine(TestCommandContext ctxt) {
 		this.ctxt = ctxt;

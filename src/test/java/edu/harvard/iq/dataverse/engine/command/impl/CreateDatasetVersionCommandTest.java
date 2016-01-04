@@ -1,6 +1,3 @@
-/*
- *  (C) Michael Bar-Sinai
- */
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
