@@ -77,6 +77,13 @@
                                 <h:outputText value="#{guestbook.responseCount}" />
                             </p:column>
                             <p:column width="36%" class="col-manage-action text-center" headerText="#{bundle['dataset.manageGuestbooks.tab.header.action']}">
+                                <div jsf:rendered="#{manageGuestbooksPage.dataverse.id != guestbook.dataverse.id}">
+                                    <em class="text-muted">
+                                        <h:outputFormat value="#{bundle['dataset.manageGuestbooks.tab.action.noedit.createdin']}" escape="false">
+                                            <f:param value="#{guestbook.dataverse.name}"/>
+                                        </h:outputFormat>
+                                    </em>
+                                </div>
                                 <div class="button-block">
                                     <p:commandLink type="button" styleClass="btn btn-default"
                                                    value="#{bundle['dataset.manageGuestbooks.tab.action.btn.enable']}"
