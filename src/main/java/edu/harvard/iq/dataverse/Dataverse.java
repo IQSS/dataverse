@@ -37,7 +37,7 @@ import org.hibernate.validator.constraints.NotEmpty;
  */
 @NamedQueries({
     @NamedQuery(name = "Dataverse.ownedObjectsById", query = "SELECT COUNT(obj) FROM DvObject obj WHERE obj.owner.id=:id"),
-    @NamedQuery(name = "Dataverse.findByAlias", query="SELECT dv FROM Dataverse dv WHERE dv.alias=:alias")
+    @NamedQuery(name = "Dataverse.findByAlias", query="SELECT dv FROM Dataverse dv WHERE LOWER(dv.alias)=:alias")
 })
 @Entity
 @Table(indexes = {@Index(columnList="fk_dataverse_id")
@@ -505,8 +505,10 @@ public class Dataverse extends DvObjectContainer {
         }
         return retName;
     }
+        
     
     public String getLogoOwnerId() {
+        
         if (themeRoot || getOwner()==null) {
             return this.getId().toString();
         } else {

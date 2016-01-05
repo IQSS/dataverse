@@ -219,25 +219,11 @@ public class Dataset extends DvObjectContainer {
         DatasetVersion dsv = new DatasetVersion();
         dsv.setVersionState(DatasetVersion.VersionState.DRAFT);
         dsv.setFileMetadatas(new ArrayList());
-        DatasetVersion latestVersion = null;
+        DatasetVersion latestVersion;
 
         //if the latest version has values get them copied over
-        if (!(template == null)) {
-            if (!template.getDatasetFields().isEmpty()) {
-                dsv.setDatasetFields(dsv.copyDatasetFields(template.getDatasetFields()));
-            }           
-            if (template.getTermsOfUseAndAccess() != null){
-                TermsOfUseAndAccess terms= template.getTermsOfUseAndAccess().copyTermsOfUseAndAccess();
-                terms.setDatasetVersion(dsv);
-                dsv.setTermsOfUseAndAccess(terms);
-            } else {
-                TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
-                terms.setDatasetVersion(dsv);
-                terms.setLicense(TermsOfUseAndAccess.License.CC0);
-                terms.setDatasetVersion(dsv);
-                dsv.setTermsOfUseAndAccess(terms);
-            }
-
+        if (template != null) {
+            dsv.updateDefaultValuesFromTemplate(template);
         } else {
             latestVersion = getLatestVersionForCopy();
             if (latestVersion.getDatasetFields() != null && !latestVersion.getDatasetFields().isEmpty()) {
@@ -284,6 +270,7 @@ public class Dataset extends DvObjectContainer {
         return dsv;
     }
 
+
     public DatasetVersion getEditVersion() {
         return getEditVersion(null);
     }
@@ -299,20 +286,13 @@ public class Dataset extends DvObjectContainer {
         }
     }
 
-    public DatasetVersion getCreateVersion() {
+ public DatasetVersion getCreateVersion() {
         DatasetVersion dsv = new DatasetVersion();
         dsv.setVersionState(DatasetVersion.VersionState.DRAFT);
-        dsv.setDataset(this);
-        dsv.setDatasetFields(dsv.initDatasetFields());
-        dsv.setFileMetadatas(new ArrayList());
-        TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
-        terms.setDatasetVersion(dsv);
-        terms.setLicense(TermsOfUseAndAccess.License.CC0);
-        terms.setTermsOfAccess("");
-        dsv.setTermsOfUseAndAccess(terms);
+        dsv.setDataset(this);        
+        dsv.initDefaultValues();
         this.setVersions(new ArrayList());
         getVersions().add(0, dsv);
-
         return dsv;
     }
 

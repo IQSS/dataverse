@@ -62,14 +62,12 @@
                                             </span>
                                         </label>
                                         <div>
-                                            <p:panelGrid columns="2" styleClass="noBorders">
-                                                <p:selectOneRadio id="logoFormat" value="#{themeWidgetFragment.editDv.dataverseTheme.logoFormat}">
-                                                    <f:selectItem itemLabel="#{bundle['dataverse.theme.logo.format.selectTab.square2']}" itemValue="SQUARE"/>
-                                                    <f:selectItem itemLabel="#{bundle['dataverse.theme.logo.format.selectTab.rectangle2']}" itemValue="RECTANGLE"/>
-                                                    <p:ajax update="@widgetVar(content)" oncomplete="dataverseuser_page_rebind();" />
-                                                </p:selectOneRadio>
-                                                <p:message for="logoFormat" display="text"/>
-                                            </p:panelGrid>
+                                            <p:selectOneRadio id="logoFormat" value="#{themeWidgetFragment.editDv.dataverseTheme.logoFormat}">
+                                                <f:selectItem itemLabel="#{bundle['dataverse.theme.logo.format.selectTab.square2']}" itemValue="SQUARE"/>
+                                                <f:selectItem itemLabel="#{bundle['dataverse.theme.logo.format.selectTab.rectangle2']}" itemValue="RECTANGLE"/>
+                                                <p:ajax update="@widgetVar(content)" oncomplete="dataverseuser_page_rebind();" />
+                                            </p:selectOneRadio>
+                                            <p:message for="logoFormat" display="text"/>
                                         </div>
                                     </div>
                                     <ui:fragment rendered="#{themeWidgetFragment.editDv.dataverseTheme.logoFormat=='RECTANGLE'}">
@@ -80,14 +78,12 @@
                                                 </span>
                                             </label>
                                             <div>
-                                                <p:panelGrid columns="2" styleClass="noBorders">
-                                                    <p:selectOneMenu id="logoAlignment" styleClass="form-control" value="#{themeWidgetFragment.editDv.dataverseTheme.logoAlignment}">
-                                                        <f:selectItem id="left" itemLabel="#{bundle['dataverse.theme.logo.alignment.selectTab.left2']}" itemValue="LEFT" />
-                                                        <f:selectItem id="center" itemLabel="#{bundle['dataverse.theme.logo.alignment.selectTab.center2']}" itemValue="CENTER" />
-                                                        <f:selectItem id="right" itemLabel="#{bundle['dataverse.theme.logo.alignment.selectTab.right2']}" itemValue="RIGHT" />
-                                                    </p:selectOneMenu>
-                                                    <p:message for="logoAlignment" display="text"/>
-                                                </p:panelGrid>
+                                                <p:selectOneMenu id="logoAlignment" styleClass="form-control" value="#{themeWidgetFragment.editDv.dataverseTheme.logoAlignment}">
+                                                    <f:selectItem id="left" itemLabel="#{bundle['dataverse.theme.logo.alignment.selectTab.left2']}" itemValue="LEFT" />
+                                                    <f:selectItem id="center" itemLabel="#{bundle['dataverse.theme.logo.alignment.selectTab.center2']}" itemValue="CENTER" />
+                                                    <f:selectItem id="right" itemLabel="#{bundle['dataverse.theme.logo.alignment.selectTab.right2']}" itemValue="RIGHT" />
+                                                </p:selectOneMenu>
+                                                <p:message for="logoAlignment" display="text"/>
                                             </div>
                                         </div>
                                         <div class="form-col-container col-sm-4">
@@ -97,10 +93,8 @@
                                                 </span>
                                             </label>
                                             <div>
-                                                <p:panelGrid columns="2" styleClass="noBorders">
-                                                    <p:colorPicker id="logoBackgroundColor" value="#{themeWidgetFragment.editDv.dataverseTheme.logoBackgroundColor}"/>
-                                                    <p:message for="logoBackgroundColor" display="text"/>
-                                                </p:panelGrid>
+                                                <p:colorPicker id="logoBackgroundColor" value="#{themeWidgetFragment.editDv.dataverseTheme.logoBackgroundColor}"/>
+                                                <p:message for="logoBackgroundColor" display="text"/>
                                             </div>
                                         </div>
                                     </ui:fragment>
@@ -124,10 +118,8 @@
                                             </span>
                                         </label>
                                         <div>
-                                            <p:panelGrid columns="2" styleClass="noBorders">
-                                                <p:colorPicker id="backgroundColor" value="#{themeWidgetFragment.editDv.dataverseTheme.backgroundColor}"/>
-                                                <p:message for="backgroundColor" display="text"/>
-                                            </p:panelGrid>
+                                            <p:colorPicker id="backgroundColor" value="#{themeWidgetFragment.editDv.dataverseTheme.backgroundColor}"/>
+                                            <p:message for="backgroundColor" display="text"/>
                                         </div>
                                     </div>
                                     <div class="form-col-container col-sm-4">
@@ -137,10 +129,8 @@
                                             </span>
                                         </label>
                                         <div>
-                                            <p:panelGrid columns="2" styleClass="noBorders">
-                                                <p:colorPicker id="linkColor" value="#{themeWidgetFragment.editDv.dataverseTheme.linkColor}"/>
-                                                <p:message for="linkColor" display="text"/>
-                                            </p:panelGrid>
+                                            <p:colorPicker id="linkColor" value="#{themeWidgetFragment.editDv.dataverseTheme.linkColor}"/>
+                                            <p:message for="linkColor" display="text"/>
                                         </div>
                                     </div>
                                     <div class="form-col-container col-sm-4">
@@ -150,10 +140,8 @@
                                             </span>
                                         </label>
                                         <div>
-                                            <p:panelGrid columns="2" styleClass="noBorders">
-                                                <p:colorPicker id="textColor" value="#{themeWidgetFragment.editDv.dataverseTheme.textColor}"/>
-                                                <p:message for="textColor" display="text"/>
-                                            </p:panelGrid>
+                                            <p:colorPicker id="textColor" value="#{themeWidgetFragment.editDv.dataverseTheme.textColor}"/>
+                                            <p:message for="textColor" display="text"/>
                                         </div>
                                     </div>
                                 </div>

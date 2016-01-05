@@ -32,22 +32,22 @@
                         </div>
                     </div>
                     <p:dataTable id="responsesGuestbook" value="#{guestbookResponsesPage.responses}" var="response">
-                        <p:column sortBy="name" headerText="#{bundle['dataset.guestbooksResponses.dataset']}">
+                        <p:column sortBy="#{response.dataset.releasedVersion.title}" headerText="#{bundle['dataset.guestbooksResponses.dataset']}">
                             <h:outputText value="#{response.dataset.releasedVersion.title}"/>
                         </p:column>
-                        <p:column sortBy="name" headerText="#{bundle['dataset.guestbooksResponses.date']}">
-                            #{response.responseTime.month+1}/#{response.responseTime.date}/#{response.responseTime.year+1900}
+                        <p:column sortBy="#{response.responseDate}" headerText="#{bundle['dataset.guestbooksResponses.date']}">
+                            #{response.responseDate}
                         </p:column>
-                        <p:column sortBy="name" headerText="#{bundle['dataset.guestbooksResponses.type']}">
+                        <p:column sortBy="#{response.downloadtype}" headerText="#{bundle['dataset.guestbooksResponses.type']}">
                             #{response.downloadtype}
                         </p:column>
-                        <p:column sortBy="name" headerText="#{bundle['dataset.guestbooksResponses.file']}">
+                        <p:column sortBy="#{response.dataFile.displayName}" headerText="#{bundle['dataset.guestbooksResponses.file']}">
                             #{response.dataFile.displayName}
                         </p:column>
-                        <p:column sortBy="name" headerText="User">
+                        <p:column sortBy="#{response.name}" headerText="User">
                             <h:outputText value="#{response.name} (#{response.institution}), #{response.position}"/>
                         </p:column>
-                        <p:column headerText="Custom Questions"  >
+                        <p:column headerText="Custom Questions">
                             <ui:repeat value="#{response.customQuestionResponses}" var="customQResponse"><b>#{customQResponse.customQuestion.questionString}: </b>#{customQResponse.response} <br></br></ui:repeat>
                         </p:column>                        
                     </p:dataTable>

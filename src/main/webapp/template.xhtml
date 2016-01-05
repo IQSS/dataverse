@@ -116,7 +116,7 @@
                     <div class="button-block" jsf:rendered="#{!empty TemplatePage.editMode}">
                         <h:commandButton styleClass="btn btn-default" type="submit" action="#{TemplatePage.save('Terms')}" 
                                          value="#{bundle['dataset.create.add.terms'] }">
-                            <f:ajax onerror="window.scrollTo(0, 0);" />
+                            <f:ajax onerror="window.scrollTo(0, 0)" />
                         </h:commandButton>
                         <h:button styleClass="btn btn-default" value="#{bundle.cancel}" 
                                   outcome="/manage-templates.xhtml?dataverseId=#{TemplatePage.dataverse.id}"></h:button>
@@ -126,7 +126,7 @@
                     <div class="button-block" jsf:rendered="#{!empty TemplatePage.editMode}">
                         <h:commandButton styleClass="btn btn-default" type="submit" action="#{TemplatePage.save('')}" 
                                          value="#{TemplatePage.editMode == 'LICENSEADD' ? bundle['dataset.manageTemplates.saveNewTerms'] : bundle.saveChanges}">
-                            <f:ajax onerror="window.scrollTo(0, 0);" />
+                            <f:ajax onerror="window.scrollTo(0, 0)" />
                         </h:commandButton>
                         <h:button styleClass="btn btn-default" value="#{bundle.cancel}" 
                                   outcome="/manage-templates.xhtml?dataverseId=#{TemplatePage.dataverse.id}"></h:button>

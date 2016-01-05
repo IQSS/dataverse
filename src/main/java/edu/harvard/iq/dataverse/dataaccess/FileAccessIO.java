@@ -129,7 +129,11 @@ public class FileAccessIO extends DataFileIO {
         }
 
         this.setMimeType(dataFile.getContentType());
-        this.setFileName(dataFile.getFileMetadata().getLabel());        
+        try {
+            this.setFileName(dataFile.getFileMetadata().getLabel());
+        } catch (Exception ex) {
+            this.setFileName("unknown");
+        }
 
         // This "status" is a leftover from 3.6; we don't have a use for it 
         // in 4.0 yet; and we may not need it at all. 

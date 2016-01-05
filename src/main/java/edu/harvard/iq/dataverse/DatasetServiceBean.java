@@ -17,7 +17,10 @@ import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -34,6 +37,7 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import org.apache.commons.lang.RandomStringUtils;
+import org.ocpsoft.common.util.Strings;
 
 /**
  *
@@ -489,6 +493,63 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
 
     }
+    
+    public Long getDatasetVersionCardImage(Long versionId, User user) {
+        if (versionId == null) {
+            return null;
+        }
+        
+        
+        
+        return null;
+    }
+    
+    /**
+     * Used to identify and properly display Harvested objects on the dataverse page.
+     * 
+     * @return 
+     */
+    public Map<Long, String> getHarvestingDescriptionsForHarvestedDatasets(Set<Long> datasetIds){
+        if (datasetIds == null || datasetIds.size() < 1) {
+            return null;
+        }
+        
+        String datasetIdStr = Strings.join(datasetIds, ", ");
+        
+        String qstr = "SELECT d.id, h.archiveDescription FROM harvestingDataverseConfig h, dataset d, dvobject o WHERE d.id = o.id AND h.dataverse_id = o.owner_id AND d.id IN (" + datasetIdStr + ")";
+        List<Object[]> searchResults = null;
+        
+        try {
+            searchResults = em.createNativeQuery(qstr).getResultList();
+        } catch (Exception ex) {
+            searchResults = null;
+        }
+        
+        if (searchResults == null) {
+            return null;
+        }
+        
+        Map<Long, String> ret = new HashMap<>();
+        
+        for (Object[] result : searchResults) {
+            Long dsId = null;
+            if (result[0] != null) {
+                try {
+                    dsId = (Long)result[0];
+                } catch (Exception ex) {
+                    dsId = null;
+                }
+                if (dsId == null) {
+                    continue;
+                }
+                
+                ret.put(dsId, (String)result[1]);
+            }
+        }
+        
+        return ret;        
+    }
+    
     
     
     public boolean isDatasetCardImageAvailable(DatasetVersion datasetVersion, User user) {        

@@ -15,7 +15,7 @@ Requirements
 Java
 ~~~~
 
-Dataverse is developed on Java 7. An upgrade to Java 8 is being tracked at https://github.com/IQSS/dataverse/issues/2151
+Dataverse is developed on Java 8.
 
 The use of Oracle's version of Java is recommended, which can be downloaded from http://www.oracle.com/technetwork/java/javase/downloads/index.html
 
@@ -26,7 +26,7 @@ Glassfish
 
 As a `Java Enterprise Edition <http://en.wikipedia.org/wiki/Java_Platform,_Enterprise_Edition>`_ 7 (Java EE 7) application, Dataverse requires an applications server to run.
 
-Glassfish 4.1+ is required, which can be downloaded from http://glassfish.java.net
+Glassfish 4.1 is required (not 4.1.1 until https://github.com/IQSS/dataverse/issues/2628 is resolved), which can be downloaded from http://glassfish.java.net . If you have downloaded Glassfish as part of a Netbeans bundle, you can manually add the proper version by clicking "Tools", "Servers", "Add Server".
 
 PostgreSQL
 ~~~~~~~~~~

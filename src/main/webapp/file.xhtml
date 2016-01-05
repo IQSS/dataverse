@@ -61,7 +61,7 @@
                                     </ui:fragment>     
                                 </li>
                                 <li>
-                                    <p:commandLink   title="#{bundle['file.delete']}" onclick="deleteFileConfirmation.show();">
+                                    <p:commandLink   title="#{bundle['file.delete']}" onclick="PF('deleteFileConfirmation').show();">
                                         <h:outputText value= "#{bundle['file.delete']}"/>
                                     </p:commandLink>
                                 </li>
@@ -74,7 +74,7 @@
                         <!-- Email/Share Button Group -->
                         <div class="btn-group pull-right" id="datasetButtonBar" role="group">
                             <p:commandLink class="btn btn-default bootstrap-button-tooltip" title="#{bundle['dataset.email.datasetContactBtn']}"
-                                           update=":contactDialog" oncomplete="contactForm.show()" actionListener="#{sendFeedbackDialog.initUserInput}">
+                                           update=":contactDialog" oncomplete="PF('contactForm').show()" actionListener="#{sendFeedbackDialog.initUserInput}">
                                 <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
                                 <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
                                 <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
@@ -83,7 +83,7 @@
                             </p:commandLink>
                             <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip"
                                            title="#{bundle['dataset.share.datasetShare']}"
-                                           oncomplete="shareDialog.show();sharrre();">
+                                           oncomplete="PF('shareDialog').show();sharrre();">
                                 <span class="glyphicon glyphicon-share no-text"/>
                             </p:commandLink>
                         </div>
@@ -93,7 +93,7 @@
                                 <div id="sharrre-widget" data-url="#{systemConfig.dataverseSiteUrl}/dataset.xhtml?persistentId=#{FilePage.fileMetadata.datasetVersion.dataset.globalId}" data-text="#{bundle['dataset.share.datasetShare.shareText']}"></div>
 
                             <div class="button-block">
-                                <button type="button" onclick="shareDialog.hide()" class="btn btn-default" value="#{bundle.close}">
+                                <button type="button" onclick="PF('shareDialog').hide()" class="btn btn-default" value="#{bundle.close}">
                                     #{bundle.close}
                                 </button>
                             </div>
@@ -334,9 +334,9 @@
                         <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.failed.tip']}</p>
                     </ui:fragment>
                     <div class="button-block">
-                        <p:commandButton value="#{bundle['file.delete']}" onclick="deleteFileConfirmation.hide()" 
+                        <p:commandButton value="#{bundle['file.delete']}" onclick="PF('deleteFileConfirmation').hide()" 
                                          action="#{FilePage.deleteFile()}" />
-                        <p:commandButton value="#{bundle.cancel}" onclick="deleteFileConfirmation.hide()" type="button" />
+                        <p:commandButton value="#{bundle.cancel}" onclick="PF('deleteFileConfirmation').hide()" type="button" />
                     </div>
                 </p:dialog>
         </h:form>

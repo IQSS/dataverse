@@ -19,6 +19,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import static java.lang.Thread.sleep;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -73,7 +74,7 @@ public class SearchIT {
     private static final boolean homerPublishesVersion2AfterDeletingFile = false;
     private static final boolean disableTestCategory = false;
     private Stopwatch timer;
-    private boolean haveToUseCurlForUpload = true;
+    private boolean haveToUseCurlForUpload = false;
 
     public SearchIT() {
     }
@@ -847,19 +848,27 @@ public class SearchIT {
                 );
     }
 
-    /**
-     * @todo Get this version that doesn't require curl working. Use body
-     * instead of multiPart?
-     */
     private Response uploadZipFile(String persistentId, String zipFileName, String apiToken) throws FileNotFoundException {
         String pathToFileName = "scripts/search/data/binary/" + zipFileName;
         Path path = Paths.get(pathToFileName);
         byte[] data = null;
+        try {
+             data = Files.readAllBytes(path);
+        } catch (IOException ex) {
+            logger.info("Could not read bytes from " + path + ": " + ex);
+        }
         Response swordStatementResponse = given()
-                .multiPart(new File(pathToFileName))
+                .body(data)
                 .header("Packaging", "http://purl.org/net/sword/package/SimpleZip")
                 .header("Content-Disposition", "filename=" + zipFileName)
-                .auth().basic(apiToken, EMPTY_STRING)
+                /**
+                 * It's unclear why we need to add "preemptive" to auth but
+                 * without it we can't seem to switch from .multiPart(file) to
+                 * .body(bytes).
+                 *
+                 * See https://github.com/jayway/rest-assured/issues/507
+                 */
+                .auth().preemptive().basic(apiToken, EMPTY_STRING)
                 .post("/dvn/api/data-deposit/v1.1/swordv2/edit-media/study/" + persistentId);
         return swordStatementResponse;
     }

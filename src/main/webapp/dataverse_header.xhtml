@@ -21,7 +21,7 @@
                     <a href="/">
                         <span class="navbar-brand"><i id="icon-dataverse" class="icon-dataverse"></i> #{bundle.dataverse}</span>
                     </a>
-                    <h:outputLink value="#" onclick="statusInfo.show()" rendered="#{!empty settingsWrapper.get(':StatusMessageText')}">
+                    <h:outputLink value="#" onclick="PF('statusInfo').show()" rendered="#{!empty settingsWrapper.get(':StatusMessageText')}">
                         <span class="label label-default status">#{!empty settingsWrapper.get(':StatusMessageHeader') ? settingsWrapper.get(':StatusMessageHeader') : bundle['header.status.header']}</span>
                     </h:outputLink>
                     <ui:fragment rendered="#{empty settingsWrapper.get(':StatusMessageText') and !empty settingsWrapper.get(':StatusMessageHeader')}">
@@ -77,7 +77,7 @@
                             </ul>
                         </li>
                         <h:form class="navbar-form navbar-left navbar-form-link">
-                           <p:commandLink value="#{bundle['header.support']}" oncomplete="contactForm.show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
+                           <p:commandLink value="#{bundle['header.support']}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
                                 <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
                                 <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
                                 <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>

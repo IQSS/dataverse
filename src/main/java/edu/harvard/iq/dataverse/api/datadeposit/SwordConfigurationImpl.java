@@ -15,7 +15,7 @@ public class SwordConfigurationImpl implements SwordConfiguration {
 
     private static final Logger logger = Logger.getLogger(SwordConfigurationImpl.class.getCanonicalName());
 
-    String getBaseUrlPathCurrent() {
+    public String getBaseUrlPathCurrent() {
         // see also url-pattern in web.xml
         return getBaseUrlPathV1dot1();
     }

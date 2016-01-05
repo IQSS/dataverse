@@ -2,10 +2,12 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearch;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchFilterQuery;
+import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -210,7 +212,8 @@ public class SavedSearches extends AbstractApiBean {
             return errorResponse(BAD_REQUEST, "Count not find saved search id " + savedSearchIdToLookUp);
         }
         try {
-            JsonObjectBuilder response = savedSearchSvc.makeLinksForSingleSavedSearch(savedSearchToMakeLinksFor, debug);
+            DataverseRequest dataverseRequest = new DataverseRequest(savedSearchToMakeLinksFor.getCreator(), SavedSearchServiceBean.getHttpServletRequest());
+            JsonObjectBuilder response = savedSearchSvc.makeLinksForSingleSavedSearch(dataverseRequest, savedSearchToMakeLinksFor, debug);
             return okResponse(response);
         } catch (CommandException ex) {
             return errorResponse(BAD_REQUEST, ex.getLocalizedMessage());

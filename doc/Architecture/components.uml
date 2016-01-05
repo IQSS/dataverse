@@ -1,22 +1,63 @@
 //http://plantuml.com/component.html#Component
 @startuml
 
-node "Glassfish1" {
-} 
-
-node "Glassfish2" {
-} 
-
-database "PostgreSQL" {
+node "WebServer1" {
+  component "Apache1" {
+  }
+  component "Glassfish1" {
+  }
+  Apache1 --> Glassfish1
 }
 
-node "Solr" {
+node "WebServer2" {
+  component "Apache2" {
+  }
+  component "Glassfish2" {
+  }
+  Apache2 --> Glassfish2
 }
 
-Glassfish1 --> PostgreSQL
-Glassfish2 --> PostgreSQL
+node "WebServer3" {
+  component "Apache3" {
+  }
+  component "Glassfish3" {
+  }
+  Apache3 --> Glassfish3
+}
 
-Glassfish1 --> Solr
-Glassfish2 --> Solr
+node "DatabaseServer1" {
+  database "PostgreSQLActive" {
+  }
+  database "SolrActive" {
+  }
+}
+
+node "DatabaseServer2" {
+  database "PostgreSQLStandBy" {
+  }
+  database "SolrStandBy" {
+  }
+}
+
+node "RserveServer1" {
+  database "Rserve" {
+  }
+} 
+
+Clients --> LoadBalancer
+
+LoadBalancer --> Apache1
+LoadBalancer --> Apache2
+LoadBalancer --> Apache3
+
+Glassfish1 --> DatabaseServer1
+Glassfish2 --> DatabaseServer1
+Glassfish3 --> DatabaseServer1
+
+Glassfish1 --> RserveServer1
+Glassfish2 --> RserveServer1
+Glassfish3 --> RserveServer1
+
+DatabaseServer1 --> DatabaseServer2
 
 @enduml

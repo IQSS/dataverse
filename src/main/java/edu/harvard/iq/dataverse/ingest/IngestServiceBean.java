@@ -38,6 +38,7 @@ import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
+import edu.harvard.iq.dataverse.dataaccess.FileAccessIO;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.TabularSubsetGenerator;
 import edu.harvard.iq.dataverse.datavariable.SummaryStatistic;
@@ -2023,25 +2024,20 @@ public class IngestServiceBean {
          * is pre-generation of image thumbnails in a couple of popular sizes. 
          * -- L.A. 
          */
-        if (dataFile != null) {
-            // These separate methods for generating thumbnails, for PDF files and 
-            // and for regular images, will eventually go away. We'll have a unified 
-            // system of generating "previews" for datafiles of all kinds; the 
-            // differentiation between different types of content and different 
-            // methods for generating these previews will be hidden inside that 
-            // subsystem (could be as simple as a type-specific icon, or even a 
-            // special "content unknown" icon, for some types of files). 
-            // -- L.A. 4.0 beta
-            if ("application/pdf".equalsIgnoreCase(dataFile.getContentType())) {
-                /* TODO! TODO! TODO!
-                ImageThumbConverter.generatePDFThumb(dataFile.getFileSystemLocation().toString(), ImageThumbConverter.DEFAULT_THUMBNAIL_SIZE);
-                ImageThumbConverter.generatePDFThumb(dataFile.getFileSystemLocation().toString(), ImageThumbConverter.DEFAULT_PREVIEW_SIZE);
-                */
-            } else if (dataFile.isImage()) {
-                /* TODO! TODO! TODO!
-                ImageThumbConverter.generateImageThumb(dataFile.getFileSystemLocation().toString(), ImageThumbConverter.DEFAULT_THUMBNAIL_SIZE);
-                ImageThumbConverter.generateImageThumb(dataFile.getFileSystemLocation().toString(), ImageThumbConverter.DEFAULT_PREVIEW_SIZE);
-                */
+        if (dataFile != null && dataFile.isImage()) {
+            DataFileIO thumbnailDataAccess = null;
+            try {
+                DataFileIO dataAccess = dataFile.getAccessObject();
+                if (dataAccess != null && dataAccess.isLocalFile()) {
+                    dataAccess.open();
+
+                    thumbnailDataAccess = ImageThumbConverter.getImageThumb((FileAccessIO) dataAccess, ImageThumbConverter.DEFAULT_PREVIEW_SIZE);
+                }
+            } catch (IOException ioEx) {
+                thumbnailDataAccess = null;
+            }
+            if (thumbnailDataAccess != null) {
+                dataFile.setPreviewImageAvailable(true);
             }
         }
     }
