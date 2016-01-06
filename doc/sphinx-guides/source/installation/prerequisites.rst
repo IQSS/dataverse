@@ -10,6 +10,15 @@ Oracle JDK or OpenJDK 1.8.x. Use the latest available. MacOS X comes with the JD
 
 	$ yum install java-1.8.0-openjdk-devel
 
+Java 8 (also known as 1.8) should be the default when ``java`` is invoked from the command line. You can test this by running ``java -version``.
+
+If you have multiple versions of Java installed, you can make Java 8 the default on RedHat/CentOS with the ``alternatives`` command, having it prompt you to select the version of Java from a list::
+
+        $ alternatives --config java
+
+If you don't want to be prompted, here is an example of the non-interactive invocation::
+
+        $ alternatives --set java /usr/lib/jvm/jre-1.8.0-openjdk.x86_64/bin/java
 
 Glassfish
 ----------------------------
