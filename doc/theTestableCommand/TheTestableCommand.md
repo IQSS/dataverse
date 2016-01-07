@@ -3,6 +3,7 @@
 > This document was started as a result of [Issue #2746 - Improve automated testing](https://github.com/IQSS/dataverse/issues/2746),
 > started by @pdurbin.
 
+* _2016-01-07_ `v3` More tips.
 * _2016-01-07_ `v2` Added references to CI and code coverage. Limited scope to `DvObject`s.
 * _2016-01-03_ `v1` Initial Version
 
@@ -105,6 +106,13 @@ Numerous blogs, books and tweets have been written about creating good unit test
   ````XML
   <element attA="a" attB="b"/>
   <element attB="b" attA="a"/>
+  ````
+
+* The notion of *now* is an issue. Assume that a test needs to validate that the `creationTime` field on some `DvObject` is set to the time it is created. The naïve approach would be storing the time just before the execution of the `Create` command, and then testing that the stored time is equal to the value in the `creationTime`. This approach will fail, seemingly at random, when the command is executed at a different millisecond. The solution is to test for a reasonable delta:
+
+  ````Java
+  assertTrue( Math.abs(System.currentTimeMillis()
+              - result.getCreateDate().toInstant().toEpochMilli()) < 1000 );
   ````
 
 * Unit tests for Dataverse Commands live [here](/src/test/java/edu/harvard/iq/dataverse/engine/command/impl).

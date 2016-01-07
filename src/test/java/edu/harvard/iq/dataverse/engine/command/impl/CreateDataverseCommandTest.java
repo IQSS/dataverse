@@ -246,12 +246,12 @@ public class CreateDataverseCommandTest {
         dv.setDefaultContributorRole( roles.findBuiltinRoleByAlias(DataverseRole.MANAGER) );
         
         final DataverseRequest request = makeRequest();
-        List<DatasetFieldType> facets = Arrays.asList( makeDatasetFieldType(), makeDatasetFieldType(), makeDatasetFieldType());
+        List<DatasetFieldType> expectedFacets = Arrays.asList( makeDatasetFieldType(), makeDatasetFieldType(), makeDatasetFieldType());
         List<DataverseFieldTypeInputLevel> dftils = Arrays.asList( makeDataverseFieldTypeInputLevel(makeDatasetFieldType()),
                                                                     makeDataverseFieldTypeInputLevel(makeDatasetFieldType()),
                                                                     makeDataverseFieldTypeInputLevel(makeDatasetFieldType()));
         
-        CreateDataverseCommand sut = new CreateDataverseCommand(dv, request, new LinkedList(facets), new LinkedList(dftils) );
+        CreateDataverseCommand sut = new CreateDataverseCommand(dv, request, new LinkedList(expectedFacets), new LinkedList(dftils) );
         Dataverse result = engine.submit(sut);
         
         assertEquals( creation, result.getCreateDate() );
@@ -276,7 +276,7 @@ public class CreateDataverseCommandTest {
         for ( DataverseFacet df : createdFacets ) {
             assertEquals( i, df.getDisplayOrder() );
             assertEquals( result, df.getDataverse() );
-            assertEquals( facets.get(i), df.getDatasetFieldType() );
+            assertEquals( expectedFacets.get(i), df.getDatasetFieldType() );
             
             i++;
         }
