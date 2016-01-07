@@ -23,6 +23,20 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  *
@@ -70,7 +84,7 @@ public class CreateDatasetVersionCommandTest {
         dsvNew.setVersionState(DatasetVersion.VersionState.DRAFT);
         
         // Execute
-        CreateDatasetVersionCommand sut = new CreateDatasetVersionCommand( makeDatasetRequest(), ds, dsvNew );
+        CreateDatasetVersionCommand sut = new CreateDatasetVersionCommand( makeRequest(), ds, dsvNew );
         
         final MockDatasetServiceBean serviceBean = new MockDatasetServiceBean();
         TestDataverseEngine testEngine = new TestDataverseEngine( new TestCommandContext(){
@@ -97,7 +111,7 @@ public class CreateDatasetVersionCommandTest {
         dsvNew.setVersionState(DatasetVersion.VersionState.DRAFT);
         
         // Execute
-        CreateDatasetVersionCommand sut = new CreateDatasetVersionCommand( makeDatasetRequest(), makeDataset(), dsvNew );
+        CreateDatasetVersionCommand sut = new CreateDatasetVersionCommand( makeRequest(), makeDataset(), dsvNew );
         
         TestDataverseEngine testEngine = new TestDataverseEngine( new TestCommandContext() );
         

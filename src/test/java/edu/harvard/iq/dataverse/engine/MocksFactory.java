@@ -8,8 +8,11 @@ import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseFieldTypeInputLevel;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.MetadataBlock;
+import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -82,7 +85,7 @@ public class MocksFactory {
         return fmd;
     }
     
-    public static AuthenticatedUser makeAuthentiucatedUser( String firstName, String lastName ) {
+    public static AuthenticatedUser makeAuthenticatedUser( String firstName, String lastName ) {
         AuthenticatedUser user = new AuthenticatedUser();
         user.setId( nextId() );
         user.setAffiliation("UnitTester");
@@ -94,8 +97,8 @@ public class MocksFactory {
         return user;
     }
     
-    public static DataverseRequest makeDatasetRequest() {
-        return new DataverseRequest( makeAuthentiucatedUser("Jane", "Doe"), IpAddress.valueOf("215.0.2.17") );
+    public static DataverseRequest makeRequest() {
+        return new DataverseRequest( makeAuthenticatedUser("Jane", "Doe"), IpAddress.valueOf("215.0.2.17") );
     }
     
     public static Dataverse makeDataverse() {
@@ -151,10 +154,58 @@ public class MocksFactory {
         return ds;
     }
     
-    public static DatasetFieldType makeDatasetFieldType() {
-        DatasetFieldType retVal = new DatasetFieldType("SampleType", FieldType.TEXT, false);
-        retVal.setId( nextId() );
+    public static DatasetVersion makeDatasetVersion(List<DataFileCategory> categories) {
+        final DatasetVersion retVal = new DatasetVersion();
+        final List<DataFile> files = makeFiles(10);
+        final List<FileMetadata> metadatas = new ArrayList<>(10);
+        Random rand = new Random();
+        for ( DataFile df : files ) {
+            df.getFileMetadata().addCategory(categories.get(rand.nextInt(categories.size())));
+            metadatas.add( df.getFileMetadata() );
+        }
+        retVal.setFileMetadatas(metadatas);
+        
+        List<DatasetField> fields = new ArrayList<>();
+        DatasetField field = new DatasetField();
+        field.setId(nextId());
+        field.setSingleValue("Sample Field Value");
+        field.setDatasetFieldType( makeDatasetFieldType() );
+        fields.add( field );
+        retVal.setDatasetFields(fields);
+        
         return retVal;
     }
     
+    public static DatasetFieldType makeDatasetFieldType() {
+        final Long id = nextId();
+        DatasetFieldType retVal = new DatasetFieldType("SampleType-"+id, FieldType.TEXT, false);
+        retVal.setId(id);
+        return retVal;
+    }
+    
+    public static DataverseRole makeRole( String name ) {
+        DataverseRole dvr = new DataverseRole();
+        
+        dvr.setId( nextId() );
+        dvr.setAlias( name );
+        dvr.setName( name );
+        dvr.setDescription( name + "  " + name + " " + name );
+        
+        dvr.addPermission(Permission.ManageDatasetPermissions);
+        dvr.addPermission(Permission.EditDataset);
+        dvr.addPermission(Permission.PublishDataset);
+        dvr.addPermission(Permission.ViewUnpublishedDataset);
+        
+        return dvr;
+    }
+    
+    public static DataverseFieldTypeInputLevel makeDataverseFieldTypeInputLevel( DatasetFieldType fieldType ) {
+        DataverseFieldTypeInputLevel retVal = new DataverseFieldTypeInputLevel();
+        
+        retVal.setId(nextId());
+        retVal.setInclude(true);
+        retVal.setDatasetFieldType( fieldType );
+        
+        return retVal;
+    }
 }

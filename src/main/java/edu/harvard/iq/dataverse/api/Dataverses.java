@@ -311,7 +311,7 @@ public class Dataverses extends AbstractApiBean {
         try {
     		Dataverse dataverse = findDataverseOrDie(dvIdtf);
             execute(new UpdateDataverseMetadataBlocksCommand.SetRoot(createDataverseRequest(findUserOrDie()), dataverse, root));
-            return okResponseWithValue("Dataverse " + dataverse.getName() + " is now a metadata root");
+            return okResponseWithValue("Dataverse " + dataverse.getName() + " is now a metadata  " + (root? "" : "non-") + "root");
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
