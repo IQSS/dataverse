@@ -1,6 +1,10 @@
 # The Testable Command
 
-_2016-01-03_
+> This document was started as a result of [Issue #2746 - Improve automated testing](https://github.com/IQSS/dataverse/issues/2746),
+> started by @pdurbin.
+
+* _2016-01-07_ `v2` Added references to CI and code coverage. Limited scope to `DvObject`s.
+* _2016-01-03_ `v1` Initial Version
 
 _Michael Bar-Sinai_
 
@@ -16,9 +20,11 @@ While they can't replace end-to-end tests, unit tests are a great way to validat
 
 Because unit tests are easy to create (Java only, no configuration needed) and quick to run, it is possible to write many of them, such that many aspects of the code are tested. Normally, a single unit test would test a single use case of the unit. This way, when a unit test fails, the failure describes exactly what part stopped functioning. Other unit tests are not blocked by the failure, and so by running the entire test suite, the developer can get a good overview of which parts are broken and which parts are functioning well.
 
+Because unit tests are easy to execute, it is recommended to get in the habit of running them prior to committing code changes to the repository. These tests are also integrated into Dataverse's automatic build processes (on [Travis-ci](https://travis-ci.org/IQSS/dataverse)). A failed test halts the build. Dataverse's build process also collects data about code coverage during the unit tests, using [Coveralls](https://coveralls.io/github/IQSS/dataverse). While code coverage is a problematic measure for Java EE applications (and has some inherent problems as well), generally speaking larger coverage means better testing.
+
 Unit Testing of application logic in Java EE applications is normally hard to do, as the application logic lives in the service beans, which rely on dependency injections. Writing unit tests for service beans is possible, but as it involves a test container, and a persistent context (read: in-memory database) these unit tests are not very unit-y.
 
-Luckily for Dataverse, most of the application logic lives in sub-classes of `Command<R>`. As these classes are plain old Java classes that get their service beans through another plain old Java class, `CommandContext`, unit testing them is pretty straightforward. That is, if we write them to be testable.
+Luckily for Dataverse, most of the application logic regarding `DvObject`s lives in sub-classes of `Command<R>`. As these classes are plain old Java classes that get their service beans through another plain old Java class, `CommandContext`, unit testing them is pretty straightforward. That is, if we write them to be testable.
 
 ## Writing Testable Commands
 
@@ -100,6 +106,8 @@ Numerous blogs, books and tweets have been written about creating good unit test
   <element attA="a" attB="b"/>
   <element attB="b" attA="a"/>
   ````
+
+* Unit tests for Dataverse Commands live [here](/src/test/java/edu/harvard/iq/dataverse/engine/command/impl).
 
 Happy Testing!
 
