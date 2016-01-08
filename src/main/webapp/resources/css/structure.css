@@ -631,6 +631,7 @@ div[id$="filesTable"] #filesHeaderCount span.highlightBold {display:block; paddi
 div[id$="filesTable"] td.col-file-thumb {border-right:0;}
 div[id$="filesTable"] td.col-file-thumb div.thumbnail-block {position:relative;width:64px;height:64px;margin:0 auto;}
 div[id$="filesTable"] td.col-file-thumb div.thumbnail-block span.file-thumbnail-icon {font-size:62px;line-height:1.05;}
+div[id$="filesTable"] td.col-file-thumb div.thumbnail-block span.file-thumbnail-preview-img {display:block;}
 div[id$="filesTable"] td.col-file-thumb div.thumbnail-block div.file-icon-restricted-block {display:block;position:absolute;bottom:-4px;right:-1px;}
 div[id$="filesTable"] td.col-file-metadata {/*width: 33.3333% !important;*/ padding-left:0; border-left:0; border-right:0; text-align:left; font-weight:normal;}
 div[id$="filesTable"] td.col-file-action {/*width:320px !important;*/ border-left:0; overflow:visible;}
