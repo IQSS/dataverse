@@ -463,10 +463,9 @@
                                     $('button[id$="refreshButton"]').trigger('click');
                                 }
                             </script>
-                            <!-- commented out the p:socket push channel: -->
-                            <!--p:socket channel="/ingest_{dataset.id}" onMessage="updateFilesTable" autoConnect="true"-->
-                                <!--p:ajax event="message" update="@all" /-->
-                            <!--/p:socket -->
+                            <p:socket channel="/ingest/dataset/#{dataset.id}" onMessage="updateFilesTable" autoConnect="true">
+                                <p:ajax event="message" update="@all" />
+                            </p:socket>
                         </ui:fragment>
 
                         <ui:fragment id="uploadFilesOnCreateTab" rendered="#{!DatasetPage.workingVersion.deaccessioned and
