@@ -96,6 +96,21 @@ Set ``GuidesBaseUrl`` to override the default value "http://guides.dataverse.org
 
 ``curl -X PUT -d http://dataverse.example.edu http://localhost:8080/api/admin/settings/:GuidesBaseUrl``
 
+GeoconnectCreateEditMaps
+------------------------
+
+Set ``GeoconnectCreateEditMaps`` to true to allow the user to create GeoConnect Maps. This boolean effects whether the user sees the map button on the dataset page and if the ingest will create a shape file.
+
+``curl -X PUT -d true http://localhost:8080/api/admin/settings/:GeoconnectCreateEditMaps``
+
+GeoconnectViewMaps
+------------------
+
+Set ``GeoconnectViewMaps`` to true to allow a user to view existing maps. This boolean effects whether a user will see the "Explore" button.
+
+``curl -X PUT -d true http://localhost:8080/api/admin/settings/:GeoconnectViewMaps``
+
+
 JVM Options
 +++++++++++
 

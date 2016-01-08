@@ -231,7 +231,8 @@ public class IndexServiceBean {
         }
 
         dvObjectService.updateContentIndexTime(dataverse);
-        IndexResponse indexResponse = solrIndexService.indexPermissionsForOneDvObject(dataverse);
+        //IndexResponse indexResponse = solrIndexService.indexPermissionsForOneDvObject(dataverse);
+        IndexResponse indexResponse = new IndexResponse("dataverse permissions indexing disabled for debugging");
         String msg = "indexed dataverse " + dataverse.getId() + ":" + dataverse.getAlias() + ". Response from permission indexing: " + indexResponse.getMessage();
         return new AsyncResult<>(msg);
 
@@ -574,7 +575,7 @@ public class IndexServiceBean {
     }
 
     private IndexResponse indexDatasetPermissions(Dataset dataset) {
-        boolean disabledForDebugging = false;
+        boolean disabledForDebugging = true;
         if (disabledForDebugging) {
             /**
              * Performance problems indexing permissions in

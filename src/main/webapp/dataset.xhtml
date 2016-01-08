@@ -463,7 +463,7 @@
                                     $('button[id$="refreshButton"]').trigger('click');
                                 }
                             </script>
-                            <p:socket channel="/ingest#{dataset.id}" onMessage="updateFilesTable" autoConnect="true">
+                            <p:socket channel="/ingest/dataset/#{dataset.id}" onMessage="updateFilesTable" autoConnect="true">
                                 <p:ajax event="message" update="@all" />
                             </p:socket>
                         </ui:fragment>
@@ -481,7 +481,7 @@
 
                         <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}"
                                    rendered="#{empty DatasetPage.editMode or (DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'LICENSE')}">
-                            <p:ajax event="tabChange" listener="#{DatasetPage.tabChanged}"  update="@this" />
+                            <p:ajax event="tabChange" listener="#{DatasetPage.tabChanged}" oncomplete="bind_bsui_components();" update="@this" />
                             <p:tab id="dataFilesTab" title="#{bundle.files}" rendered="#{!DatasetPage.workingVersion.deaccessioned and
                                                               (empty DatasetPage.editMode)}">
                                 <ui:include src="filesFragment.xhtml"/>

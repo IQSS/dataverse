@@ -179,8 +179,21 @@ public class SettingsServiceBean {
         getFormatName() method in the format-specific plugin; "sav" for the 
         SPSS/sav format, "RData" for R, etc.
         for example: :TabularIngestSizeLimit:RData */
-        TabularIngestSizeLimit;
-        
+        TabularIngestSizeLimit,
+        /**
+        Whether to allow user to create GeoConnect Maps
+        This boolean effects whether the user sees the map button on 
+        the dataset page and if the ingest will create a shape file
+        Default is false
+        */
+        GeoconnectCreateEditMaps,
+        /**
+        Whether to allow a user to view existing maps
+        This boolean effects whether a user may see the 
+        Explore World Map Button
+        Default is false;
+        */
+        GeoconnectViewMaps;
         @Override
         public String toString() {
             return ":" + name();
