@@ -571,7 +571,7 @@ public class DataFileServiceBean implements java.io.Serializable {
                     dataFile.addTag(tag);
                 }
             }            
-            //TODO:!dataFile.setFileAccessRequesters(retrieveFileAccessRequesters(dataFile));              
+            dataFile.setFileAccessRequesters(retrieveFileAccessRequesters(dataFile));              
             dataFiles.add(dataFile);
             filesMap.put(dataFile.getId(), i++);
         } 

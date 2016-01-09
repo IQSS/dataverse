@@ -1505,11 +1505,11 @@ public class IngestServiceBean {
                         dataFile.setIngestRequest(null);
                     }
                     dataFile = fileService.save(dataFile);
-                    logger.info("Saved datafile "+dataFile.getId()+", attempting to send push notification;");
+                    logger.fine("Saved datafile "+dataFile.getId()+", attempting to send push notification;");
                     FacesMessage facesMessage = new FacesMessage("Success " + dataFile.getFileMetadata().getLabel());
                     try {
                         sendStatusNotification(dataFile.getOwner().getId(), facesMessage);
-                        logger.info("Ingest (" + dataFile.getFileMetadata().getLabel() + "); Sent push notification to the page.");
+                        logger.fine("Ingest (" + dataFile.getFileMetadata().getLabel() + "); Sent push notification to the page.");
                     } catch (Exception ex) {
                         logger.warning("Failed to send push notification to the page!");
                     }
@@ -1571,12 +1571,14 @@ public class IngestServiceBean {
     }
     
     private void sendStatusNotification(Long datasetId, FacesMessage message) {
-        logger.info("attempting to send push notification to channel /ingest/dataset/"+datasetId+"; "+message.getDetail());
+        logger.fine("attempting to send push notification to channel /ingest/dataset/"+datasetId+"; "+message.getDetail());
         EventBus eventBus = EventBusFactory.getDefault().eventBus();
         if (eventBus == null) {
             logger.warning("Failed to obtain eventBus!");
             return;
         }
+        // TODO: 
+        // add more diagnostics here! 4.2.3 -- L.A. 
         eventBus.publish("/ingest/dataset/" + datasetId, message);
     }
     

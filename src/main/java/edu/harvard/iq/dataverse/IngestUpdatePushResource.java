@@ -31,7 +31,7 @@ public class IngestUpdatePushResource {
     
     @PathParam("datasetId")
     private String datasetId;
-    
+    /*
     @OnOpen
     public void onOpen(RemoteEndpoint r, EventBus eventBus) {
         logger.info("OnOpen {"+datasetId+"} "+r.toString()); 
@@ -41,11 +41,12 @@ public class IngestUpdatePushResource {
     public void onClose(RemoteEndpoint r, EventBus eventBus) {
         logger.info("OnClose {"+datasetId+"} "+r.toString());
     }
+    */
 
     
     @OnMessage(encoders = {JSONEncoder.class})
     public FacesMessage onMessage(FacesMessage message) {
-        logger.info("OnMessage {"+datasetId+"}: "+message.getDetail());
+        logger.fine("OnMessage {"+datasetId+"}: "+message.getDetail());
         return message;
     }
         

@@ -455,7 +455,7 @@
                     <!-- View/Tabs infoMode -->
                     <!-- Tabs -->
                     <div id="contentTabs" jsf:rendered="#{DatasetPage.editMode != 'INFO'}">
-                        <ui:fragment> <!-- rendered="#{empty DatasetPage.editMode}" -->
+                        <ui:fragment rendered="#{!empty DatasetPage.dataset.id}"> <!-- rendered="#{empty DatasetPage.editMode}" -->
                             <p:commandButton id="refreshButton" widgetVar="refreshButton" actionListener="#{DatasetPage.refresh}" update="@all" style="display:none"/><!-- :datasetForm:tabView:filesTable,:messagePanel -->
                             <script type="text/javascript">
                                 function updateFilesTable(facesmessage) {
@@ -463,7 +463,7 @@
                                     $('button[id$="refreshButton"]').trigger('click');
                                 }
                             </script>
-                            <p:socket channel="/ingest/dataset/#{dataset.id}" onMessage="updateFilesTable" autoConnect="true">
+                            <p:socket channel="/ingest/dataset/#{DatasetPage.dataset.id}" onMessage="updateFilesTable" autoConnect="true">
                                 <p:ajax event="message" update="@all" />
                             </p:socket>
                         </ui:fragment>
