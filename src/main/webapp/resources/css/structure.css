@@ -79,7 +79,7 @@ tr.ui-state-highlight .ui-icon {
 }
 td.col-select-width {width:36px;}
 
-#ajaxStatusPanel_start {width:31px;height:31px;position:fixed;right:50%;bottom:50%;z-index:1111;}
+#ajaxStatusPanel_start {width:31px;height:31px;position:fixed;right:50%;bottom:50%;z-index:111111;}
 #ajaxStatusPanel_complete {position:absolute;top:-9999px;left:-9999px;}
 
 .italic {font-style: italic;}
@@ -690,6 +690,7 @@ div.manageTable.ui-datatable div.ui-datatable-tablewrapper, div.manageTable.ui-d
 /* BLOCK UI */
 .ui-blockui.ui-widget-overlay {background:#fff; opacity:.6;}
 div.ui-dialog.ui-widget-content {z-index:100001 !important;}
+div.ui-selectcheckboxmenu-panel {z-index:100002 !important;}
 
 /* Overwrite Primefaces */
 button.btn-default.ui-button-text-only .ui-button-text {padding:0; font-size:14px;}
