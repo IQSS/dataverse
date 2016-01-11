@@ -81,13 +81,11 @@
                                     </p:commandLink>
                                 </li>
                                 <li class="#{DatasetPage.locked  ? 'disabled' : ''}">
-                                    <p:commandLink id="fileCategoriesLink"                                               
-                                                   actionListener="#{DatasetPage.refreshTagsPopUp()}"
-                                                   update=":datasetForm:fileTagsPopup"
-                                                   oncomplete="PF('fileTagsPopup').show();bind_bsui_components();">
-                                        #{bundle['file.tags']}
+                                    <p:commandLink id="fileCategoriesLinkTwo"    
+                                                   onclick="testFilesSelectedForTags()">
+                                        #{bundle['file.tags']} 
                                     </p:commandLink>    
-                                </li>
+                                </li>                                                               
                             </ul>
                             <p:remoteCommand  name="openEditFilesPageCommand2" partialSubmit="true" async="true" update="" action="#{DatasetPage.editFileMetadata()}"  />
                         </div>

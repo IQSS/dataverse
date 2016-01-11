@@ -455,7 +455,7 @@
                     <!-- View/Tabs infoMode -->
                     <!-- Tabs -->
                     <div id="contentTabs" jsf:rendered="#{DatasetPage.editMode != 'INFO'}">
-                        <ui:fragment> <!-- rendered="#{empty DatasetPage.editMode}" -->
+                        <ui:fragment rendered="#{!empty DatasetPage.dataset.id}"> <!-- rendered="#{empty DatasetPage.editMode}" -->
                             <p:commandButton id="refreshButton" widgetVar="refreshButton" actionListener="#{DatasetPage.refresh}" update="@all" style="display:none"/><!-- :datasetForm:tabView:filesTable,:messagePanel -->
                             <script type="text/javascript">
                                 function updateFilesTable(facesmessage) {
@@ -463,7 +463,7 @@
                                     $('button[id$="refreshButton"]').trigger('click');
                                 }
                             </script>
-                            <p:socket channel="/ingest/dataset/#{dataset.id}" onMessage="updateFilesTable" autoConnect="true">
+                            <p:socket channel="/ingest/dataset/#{DatasetPage.dataset.id}" onMessage="updateFilesTable" autoConnect="true">
                                 <p:ajax event="message" update="@all" />
                             </p:socket>
                         </ui:fragment>
@@ -806,6 +806,17 @@
                             <p:commandButton value="#{bundle.close}" onclick="PF('selectFilesForEditMetadata').hide();PF('blockDatasetForm').hide();"/>
                         </div>
                     </p:dialog>
+                    
+                    <p:dialog id="selectFilesForEditTags" styleClass="smallPopUp"
+                              header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForEditTags" modal ="true">
+                        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.noSelectedFilesForMetadataEdit']}</p>
+                        <div class="button-block">
+                            <p:commandButton value="#{bundle.close}" onclick="PF('selectFilesForEditTags').hide();PF('blockDatasetForm').hide();"/>
+                        </div>
+                    </p:dialog>
+
+                    <p:remoteCommand  name="refreshTagsCommand" action="#{DatasetPage.refreshTagsPopUp()}" update=":datasetForm:fileTagsPopup"
+                                      oncomplete="PF('fileTagsPopup').show();"/>
 
                     <!-- We no longer need this remoteCommand; see my comments in the javascript method testFilesSelectedForEditMetadata() -->
                     <!-- for more info. - L.A. 4.2.1 -->
@@ -1275,6 +1286,15 @@
                            PF('accessPopup').show();
                         }
                         
+                    }
+                    
+                    function testFilesSelectedForTags(){
+                        var count = PF('filesTable').getSelectedRowsCount();
+                        if (count === 0) {
+                            PF('selectFilesForEditTags').show();
+                        } else {
+                           refreshTagsCommand();
+                        }                       
                     }
                     
                     function testFilesSelectedForDelete(){

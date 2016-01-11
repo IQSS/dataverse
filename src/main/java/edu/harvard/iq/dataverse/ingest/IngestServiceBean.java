@@ -123,6 +123,8 @@ import javax.ejb.EJBException;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
 import org.apache.commons.io.FileUtils;
+import org.primefaces.push.EventBus;
+import org.primefaces.push.EventBusFactory;
 
 /**
  *
@@ -133,6 +135,7 @@ import org.apache.commons.io.FileUtils;
  */
 @Stateless
 @Named
+@ManagedBean
 public class IngestServiceBean {
     private static final Logger logger = Logger.getLogger(IngestServiceBean.class.getCanonicalName());
     @EJB
@@ -1502,9 +1505,14 @@ public class IngestServiceBean {
                         dataFile.setIngestRequest(null);
                     }
                     dataFile = fileService.save(dataFile);
+                    logger.fine("Saved datafile "+dataFile.getId()+", attempting to send push notification;");
                     FacesMessage facesMessage = new FacesMessage("Success " + dataFile.getFileMetadata().getLabel());
-                    sendStatusNotification(dataFile.getOwner().getId(), facesMessage);
-                    logger.info("Ingest (" + dataFile.getFileMetadata().getLabel() + "); Sent push notification to the page.");
+                    try {
+                        sendStatusNotification(dataFile.getOwner().getId(), facesMessage);
+                        logger.fine("Ingest (" + dataFile.getFileMetadata().getLabel() + "); Sent push notification to the page.");
+                    } catch (Exception ex) {
+                        logger.warning("Failed to send push notification to the page!");
+                    }
 
                     if (additionalData != null) {
                         // remove the extra tempfile, if there was one:
@@ -1562,8 +1570,16 @@ public class IngestServiceBean {
         createIngestReport(dataFile, IngestReport.INGEST_STATUS_FAILURE, message);
     }
     
-    private void sendStatusNotification(Long dataFileId, FacesMessage facesMessage) {
-        
+    private void sendStatusNotification(Long datasetId, FacesMessage message) {
+        logger.fine("attempting to send push notification to channel /ingest/dataset/"+datasetId+"; "+message.getDetail());
+        EventBus eventBus = EventBusFactory.getDefault().eventBus();
+        if (eventBus == null) {
+            logger.warning("Failed to obtain eventBus!");
+            return;
+        }
+        // TODO: 
+        // add more diagnostics here! 4.2.3 -- L.A. 
+        eventBus.publish("/ingest/dataset/" + datasetId, message);
     }
     
     private void createIngestReport (DataFile dataFile, int status, String message) {
