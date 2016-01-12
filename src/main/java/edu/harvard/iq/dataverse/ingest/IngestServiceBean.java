@@ -113,8 +113,6 @@ import javax.jms.QueueSender;
 import javax.jms.QueueSession;
 import javax.jms.Message;
 import javax.faces.bean.ManagedBean;
-import org.primefaces.push.PushContext;
-import org.primefaces.push.PushContextFactory;
 import javax.faces.application.FacesMessage;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
@@ -1348,9 +1346,10 @@ public class IngestServiceBean {
     
     public void sendFailNotification(Long dataset_id) {
         FacesMessage facesMessage = new FacesMessage("ingest failed");
-        PushContext pushContext = PushContextFactory.getDefault().getPushContext();
-        pushContext.push("/ingest" + dataset_id, facesMessage);
-        //logger.info("[PUSH MESSAGING TEMPORARILY DISABLED] sent push (fail) notification to the page.");
+        /* commented out push channel message:
+            PushContext pushContext = PushContextFactory.getDefault().getPushContext();
+            pushContext.push("/ingest" + dataset_id, facesMessage);
+        */
     }
     
     
@@ -1368,13 +1367,6 @@ public class IngestServiceBean {
         
         boolean ingestSuccessful = false;
         
-        PushContext pushContext = PushContextFactory.getDefault().getPushContext();
-        if (pushContext != null) {
-            Logger.getLogger(IngestServiceBean.class.getName()).log(Level.FINE, "Ingest: Obtained push context "
-                    + pushContext.toString());
-        } else {
-            Logger.getLogger(IngestServiceBean.class.getName()).log(Level.SEVERE, "Warning! Could not obtain push context.");
-        } 
         
         // Locate ingest plugin for the file format by looking
         // it up with the Ingest Service Provider Registry:
@@ -1386,7 +1378,7 @@ public class IngestServiceBean {
             createIngestFailureReport(dataFile, "No ingest plugin found for file type "+dataFile.getContentType());
             dataFile = fileService.save(dataFile);
             FacesMessage facesMessage = new FacesMessage("ingest failed");
-            pushContext.push("/ingest"+dataFile.getOwner().getId(), facesMessage);
+            sendStatusNotification(dataFile.getOwner().getId(), facesMessage);
             logger.info("Ingest failure: Sent push notification to the page.");
             //throw new IOException("Could not find ingest plugin for the file " + fileName);
             return false; 
@@ -1406,7 +1398,7 @@ public class IngestServiceBean {
             dataFile = fileService.save(dataFile);
             
             FacesMessage facesMessage = new FacesMessage("ingest failed");
-            pushContext.push("/ingest"+dataFile.getOwner().getId(), facesMessage);
+            sendStatusNotification(dataFile.getOwner().getId(), facesMessage);
             logger.info("Ingest failure (No file produced); Sent push notification to the page.");
             return false; 
         }
@@ -1437,7 +1429,7 @@ public class IngestServiceBean {
             
             dataFile = fileService.save(dataFile);
             FacesMessage facesMessage = new FacesMessage("ingest failed");
-            pushContext.push("/ingest"+dataFile.getOwner().getId(), facesMessage);
+            sendStatusNotification(dataFile.getOwner().getId(), facesMessage);
             logger.info("Ingest failure (IO Exception): "+ingestEx.getMessage()+ "; Sent push notification to the page.");
             return false;
         } catch (Exception unknownEx) {
@@ -1449,7 +1441,7 @@ public class IngestServiceBean {
             
             dataFile = fileService.save(dataFile);
             FacesMessage facesMessage = new FacesMessage("ingest failed");
-            pushContext.push("/ingest"+dataFile.getOwner().getId(), facesMessage);
+            sendStatusNotification(dataFile.getOwner().getId(), facesMessage);
             logger.info("Ingest failure (Unknown Exception): "+unknownEx.getMessage()+"; Sent push notification to the page.");
             return false;
             
@@ -1511,7 +1503,7 @@ public class IngestServiceBean {
                     }
                     dataFile = fileService.save(dataFile);
                     FacesMessage facesMessage = new FacesMessage("Success " + dataFile.getFileMetadata().getLabel());
-                    pushContext.push("/ingest" + dataFile.getOwner().getId(), "Success " + dataFile.getFileMetadata().getLabel()); //facesMessage);
+                    sendStatusNotification(dataFile.getOwner().getId(), facesMessage);
                     logger.info("Ingest (" + dataFile.getFileMetadata().getLabel() + "); Sent push notification to the page.");
 
                     if (additionalData != null) {
@@ -1555,7 +1547,7 @@ public class IngestServiceBean {
 
                 dataFile = fileService.save(dataFile);
                 FacesMessage facesMessage = new FacesMessage("ingest failed");
-                pushContext.push("/ingest" + dataFile.getOwner().getId(), "failure");
+                sendStatusNotification(dataFile.getOwner().getId(), facesMessage);
                 logger.info("Unknown excepton saving ingested file; Sent push notification to the page.");
             } else {
                 // ??
@@ -1568,6 +1560,10 @@ public class IngestServiceBean {
 
     private void createIngestFailureReport(DataFile dataFile, String message) {
         createIngestReport(dataFile, IngestReport.INGEST_STATUS_FAILURE, message);
+    }
+    
+    private void sendStatusNotification(Long dataFileId, FacesMessage facesMessage) {
+        
     }
     
     private void createIngestReport (DataFile dataFile, int status, String message) {
