@@ -194,8 +194,8 @@ public class DataversePage implements java.io.Serializable {
     }
 
     public void updateLinkableDataverses() {
-        dataversesForLinking = new ArrayList();
-        linkingDVSelectItems = new ArrayList();
+        dataversesForLinking = new ArrayList<>();
+        linkingDVSelectItems = new ArrayList<>();
         
         //Since only a super user function add all dvs
         dataversesForLinking = dataverseService.findAll();// permissionService.getDataversesUserHasPermissionOn(session.getUser(), Permission.PublishDataverse);
@@ -491,7 +491,7 @@ public class DataversePage implements java.io.Serializable {
     }
 
     public void updateInclude(Long mdbId, long dsftId) {
-        List<DatasetFieldType> childDSFT = new ArrayList();
+        List<DatasetFieldType> childDSFT = new ArrayList<>();
 
         for (MetadataBlock mdb : allMetadataBlocks) {
             if (mdb.getId().equals(mdbId)) {
@@ -524,7 +524,7 @@ public class DataversePage implements java.io.Serializable {
     }
 
     public List<SelectItem> resetSelectItems(DatasetFieldType typeIn) {
-        List retList = new ArrayList();
+        List<SelectItem> retList = new ArrayList<>();
         if ((typeIn.isHasParent() && typeIn.getParentDatasetFieldType().isInclude()) || (!typeIn.isHasParent() && typeIn.isInclude())) {
             SelectItem requiredItem = new SelectItem();
             requiredItem.setLabel("Required");
@@ -571,10 +571,10 @@ public class DataversePage implements java.io.Serializable {
 
 
     public String save() {
-        List<DataverseFieldTypeInputLevel> listDFTIL = new ArrayList();
+        List<DataverseFieldTypeInputLevel> listDFTIL = new ArrayList<>();
         if (editMode != null && editMode.equals(EditMode.INFO)) {
 
-            List<MetadataBlock> selectedBlocks = new ArrayList();
+            List<MetadataBlock> selectedBlocks = new ArrayList<>();
             if (dataverse.isMetadataBlockRoot()) {
                 dataverse.getMetadataBlocks().clear();
             }
@@ -773,7 +773,7 @@ public class DataversePage implements java.io.Serializable {
                 DataverseRequest dataverseRequest = new DataverseRequest(savedSearchCreator, SavedSearchServiceBean.getHttpServletRequest());
                 savedSearchService.makeLinksForSingleSavedSearch(dataverseRequest, savedSearchOfChildren, debug);
                 //JsfHelper.addSuccessMessage(dataverse.getDisplayName() + " has been successfully linked to " + linkingDataverse.getDisplayName());               
-                List<String> arguments = new ArrayList();
+                List<String> arguments = new ArrayList<>();
                 arguments.add(dataverse.getDisplayName());
                 arguments.add(systemConfig.getDataverseSiteUrl());                
                 arguments.add(linkingDataverse.getAlias());
@@ -782,7 +782,7 @@ public class DataversePage implements java.io.Serializable {
                 return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
             } catch (SearchException | CommandException ex) {
                 // error: solr is down, etc. can't link children right now
-                List<String> arguments = new ArrayList();
+                List<String> arguments = new ArrayList<>();
                 arguments.add(dataverse.getDisplayName());
                 arguments.add(linkingDataverse.getAlias());
                 arguments.add(systemConfig.getDataverseSiteUrl());
@@ -796,7 +796,7 @@ public class DataversePage implements java.io.Serializable {
         } else {
             // defer: please wait for the next timer/cron job
             //JsfHelper.addSuccessMessage(dataverse.getDisplayName() + " has been successfully linked to " + linkingDataverse.getDisplayName() + ". Please wait for its contents to appear.");
-            List<String> arguments = new ArrayList();
+            List<String> arguments = new ArrayList<>();
             arguments.add(dataverse.getDisplayName());
             arguments.add(systemConfig.getDataverseSiteUrl());
             arguments.add(linkingDataverse.getAlias());
@@ -846,16 +846,14 @@ public class DataversePage implements java.io.Serializable {
         }
 
         SavedSearch savedSearch = new SavedSearch(searchIncludeFragment.getQuery(), linkingDataverse, savedSearchCreator);
-        savedSearch.setSavedSearchFilterQueries(new ArrayList());
+        savedSearch.setSavedSearchFilterQueries(new ArrayList<>());
         for (String filterQuery : searchIncludeFragment.getFilterQueriesDebug()) {
             /**
              * @todo Why are there null's here anyway? Turn on debug and figure
              * this out.
              */
             if (filterQuery != null && !filterQuery.isEmpty()) {
-                SavedSearchFilterQuery ssfq = new SavedSearchFilterQuery();
-                ssfq.setSavedSearch(savedSearch);
-                ssfq.setFilterQuery(filterQuery);
+                SavedSearchFilterQuery ssfq = new SavedSearchFilterQuery(filterQuery,savedSearch);
                 savedSearch.getSavedSearchFilterQueries().add(ssfq);
             }
         }
@@ -863,7 +861,7 @@ public class DataversePage implements java.io.Serializable {
         try {
             commandEngine.submit(cmd);
 
-            List<String> arguments = new ArrayList();
+            List<String> arguments = new ArrayList<>();
             arguments.add(linkingDataverse.getAlias());
             arguments.add(linkingDataverse.getDisplayName());
             String successMessageString = BundleUtil.getStringFromBundle("dataverse.saved.search.success", arguments);
@@ -954,9 +952,9 @@ public class DataversePage implements java.io.Serializable {
 
     private void refreshAllMetadataBlocks() {
         Long dataverseIdForInputLevel = dataverse.getId();
-        List<MetadataBlock> retList = new ArrayList();
+        List<MetadataBlock> retList = new ArrayList<>();
 
-        List<MetadataBlock> availableBlocks = new ArrayList();
+        List<MetadataBlock> availableBlocks = new ArrayList<>();
         //Add System level blocks
         availableBlocks.addAll(dataverseService.findSystemMetadataBlocks());
 
