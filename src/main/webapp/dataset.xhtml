@@ -1144,7 +1144,12 @@
                                 </div>
                             </div>
                             <div class="button-block">
-                                <p:commandButton value="#{bundle.continue}" onclick="PF('accessPopup').hide()" update=":datasetForm,:messagePanel" action="#{DatasetPage.restrictSelectedFiles(true)}" />
+                                <ui:fragment rendered="#{DatasetPage.editMode != 'CREATE'}">
+                                    <p:commandButton value="#{bundle.continue}" onclick="PF('accessPopup').hide()" update=":datasetForm,:messagePanel" action="#{DatasetPage.restrictSelectedFiles(true)}" />
+                                </ui:fragment>
+                                <ui:fragment rendered="#{DatasetPage.editMode == 'CREATE'}">
+                                    <p:commandButton value="#{bundle.continue}" onclick="PF('accessPopup').hide()" update=":datasetForm,:messagePanel" action="#{DatasetPage.save()}" />
+                                </ui:fragment>
                                 <p:commandButton value="#{bundle.cancel}" onclick="PF('accessPopup').hide();PF('blockDatasetForm').hide();" type="button" />
                             </div>
                         </ui:fragment>

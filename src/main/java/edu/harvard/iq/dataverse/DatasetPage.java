@@ -2166,7 +2166,8 @@ public class DatasetPage implements java.io.Serializable {
     
         
     public String restrictSelectedFiles(boolean restricted){
-        RequestContext requestContext = RequestContext.getCurrentInstance();      
+        
+        RequestContext requestContext = RequestContext.getCurrentInstance();
         if (selectedFiles.isEmpty()) {
             if (restricted) {
                 requestContext.execute("PF('selectFilesForRestrict').show()");
@@ -2176,34 +2177,31 @@ public class DatasetPage implements java.io.Serializable {
             return "";
         } else {
             boolean validSelection = false;
-            for (FileMetadata fmd : selectedFiles){
-                if((fmd.isRestricted() && !restricted) || (!fmd.isRestricted() && restricted) ){
+            for (FileMetadata fmd : selectedFiles) {
+                if ((fmd.isRestricted() && !restricted) || (!fmd.isRestricted() && restricted)) {
                     validSelection = true;
                 }
-            } 
-            if(!validSelection){
-                            if (restricted  ) {
-                requestContext.execute("PF('selectFilesForRestrict').show()");
-            } 
-            if (!restricted ) {
-                requestContext.execute("PF('selectFilesForUnRestrict').show()");
             }
-               return ""; 
+            if (!validSelection) {
+                if (restricted) {
+                    requestContext.execute("PF('selectFilesForRestrict').show()");
+                }
+                if (!restricted) {
+                    requestContext.execute("PF('selectFilesForUnRestrict').show()");
+                }
+                return "";
             }
-
-            
         }
         
-        
-
-
         if (editMode != EditMode.CREATE) {
-            if (bulkUpdateCheckVersion()){
-                refreshSelectedFiles(); 
+            if (bulkUpdateCheckVersion()) {
+                refreshSelectedFiles();
             }
             restrictFiles(restricted);
         }
+        
         save();
+        
         return  returnToDraftVersion();
     }
 
@@ -2283,7 +2281,7 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public void deleteFiles() {
-
+        
         String fileNames = null;
         for (FileMetadata fmd : this.getSelectedFiles()) {
             // collect the names of the newly-restrticted files, 
