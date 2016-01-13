@@ -20,7 +20,8 @@ public class DataverseRequest {
         this.user = aUser;
         String remoteAddressStr = null;
         try {
-            remoteAddressStr = aHttpServletRequest.getHeader("X-Forwarded-For");
+            // Retrieve the first, left side IP address from the header X-Forwarded-For: client, proxy1, proxy2, ...
+            remoteAddressStr = aHttpServletRequest.getHeader("X-Forwarded-For").split(",")[0];
         } catch ( NullPointerException _npe ) {
             // ignore
         }
