@@ -29,8 +29,8 @@ public class DataFileServiceBeanTest {
     
     @Before
     public void setUp() {
-        fileWoContentType = new DataFile();
-        fileWithBogusContentType = new DataFile("foo/bar");
+        fileWoContentType = createDataFile(null);
+        fileWithBogusContentType = createDataFile("foo/bar");
         dataFileServiceBean = new DataFileServiceBean();
     }
 
@@ -201,4 +201,29 @@ public class DataFileServiceBeanTest {
         assertEquals("other", dataFileServiceBean.getFileClass(fileWithBogusContentType));
     }
     
+    /**
+     * Create a DataFile with properties.
+     * @param contentType the content media type as a string
+     * @param storageIdentifier an identifier that signifies the location of the
+     * file in storage. Must not be null, but may be empty.
+     * @return a DataFile with the given content type and storage identifier
+     *
+     * @see #createDataFile(java.lang.String)
+     */
+    private DataFile createDataFile(String contentType, String storageIdentifier) {
+        DataFile file = new DataFile(contentType);
+        file.setStorageIdentifier(storageIdentifier);
+        return file;
+    }
+
+    /**
+     * Create a DataFile with the given content type and empty storage identifier.
+     * @param contentType the content type of the DataFile (may be {@code null})
+     * @return a DataFile with content type and empty storage identifier
+     *
+     * @see #createDataFile(java.lang.String, java.lang.String)
+     */
+    private DataFile createDataFile(String contentType) {
+        return createDataFile(contentType, "");
+    }
 }
