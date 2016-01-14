@@ -70,7 +70,7 @@ The source for the documentation at http://guides.dataverse.org is in the GitHub
 
 ## Code/Pull Requests
 
-To get started developing code for Dataverse, please read our Developer's Guide at http://guides.dataverse.org/en/latest/developers
+To get started developing code for Dataverse, please read our Developer Guide at http://guides.dataverse.org/en/latest/developers
 
 [doc]: https://github.com/IQSS/dataverse/tree/master/doc/sphinx-guides/source
 
