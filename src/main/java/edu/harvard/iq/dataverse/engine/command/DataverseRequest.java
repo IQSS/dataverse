@@ -49,6 +49,12 @@ public class DataverseRequest {
             But, once again, as of now this sourceAddress is only being used for 
             determining if an API request is coming from localhost. 
         
+            (It appears that for all the regular page requests, the DataverseRequest
+            object gets created in DataverseRequestServiceBean.java, like this: 
+                dataverseRequest = new DataverseRequest(dataverseSessionSvc.getUser(), httpRequest);
+            with the httpRequest supplied by the @Context... why this isn't working
+            properly - I don't know)
+    
             -- L.A. 4.2.3
         */
         
