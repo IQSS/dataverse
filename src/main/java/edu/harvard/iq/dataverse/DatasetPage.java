@@ -1392,6 +1392,9 @@ public class DatasetPage implements java.io.Serializable {
         return null;
     }
     
+    public boolean isReadOnly() {
+        return readOnly; 
+    }
 
     public String saveGuestbookResponse(String type) {
         boolean valid = true;
@@ -1911,13 +1914,12 @@ public class DatasetPage implements java.io.Serializable {
     public void refresh(ActionEvent e) {
         refresh();
     }
-
-    // some experimental code below - commented out, for now;
     
     public void refresh() { // String flashmessage) { 
         logger.info("refreshing");
 
-        dataset = datasetService.find(dataset.getId());
+        //dataset = datasetService.find(dataset.getId());
+        dataset = null; 
 
         logger.fine("refreshing working version");
 
@@ -1936,11 +1938,25 @@ public class DatasetPage implements java.io.Serializable {
         }
 
         if (retrieveDatasetVersionResponse == null) {
+            // TODO: 
+            // should probably redirect to the 404 page, if we can't find 
+            // this version anymore. 
+            // -- L.A. 4.2.3 
             return;
         }
         this.workingVersion = retrieveDatasetVersionResponse.getDatasetVersion();
 
+        if (this.workingVersion == null) {
+            // TODO: 
+            // same as the above
+            return; 
+        }
         
+        if (dataset == null) {
+            // this would be the case if we were retrieving the version by 
+            // the versionId, above.
+            this.dataset = this.workingVersion.getDataset();
+        }
         
         if (readOnly) {
             datafileService.findFileMetadataOptimizedExperimental(dataset);
@@ -2166,7 +2182,8 @@ public class DatasetPage implements java.io.Serializable {
     
         
     public String restrictSelectedFiles(boolean restricted){
-        RequestContext requestContext = RequestContext.getCurrentInstance();      
+        
+        RequestContext requestContext = RequestContext.getCurrentInstance();
         if (selectedFiles.isEmpty()) {
             if (restricted) {
                 requestContext.execute("PF('selectFilesForRestrict').show()");
@@ -2176,34 +2193,31 @@ public class DatasetPage implements java.io.Serializable {
             return "";
         } else {
             boolean validSelection = false;
-            for (FileMetadata fmd : selectedFiles){
-                if((fmd.isRestricted() && !restricted) || (!fmd.isRestricted() && restricted) ){
+            for (FileMetadata fmd : selectedFiles) {
+                if ((fmd.isRestricted() && !restricted) || (!fmd.isRestricted() && restricted)) {
                     validSelection = true;
                 }
-            } 
-            if(!validSelection){
-                            if (restricted  ) {
-                requestContext.execute("PF('selectFilesForRestrict').show()");
-            } 
-            if (!restricted ) {
-                requestContext.execute("PF('selectFilesForUnRestrict').show()");
             }
-               return ""; 
+            if (!validSelection) {
+                if (restricted) {
+                    requestContext.execute("PF('selectFilesForRestrict').show()");
+                }
+                if (!restricted) {
+                    requestContext.execute("PF('selectFilesForUnRestrict').show()");
+                }
+                return "";
             }
-
-            
         }
         
-        
-
-
         if (editMode != EditMode.CREATE) {
-            if (bulkUpdateCheckVersion()){
-                refreshSelectedFiles(); 
+            if (bulkUpdateCheckVersion()) {
+                refreshSelectedFiles();
             }
             restrictFiles(restricted);
         }
+        
         save();
+        
         return  returnToDraftVersion();
     }
 
@@ -2283,7 +2297,7 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public void deleteFiles() {
-
+        
         String fileNames = null;
         for (FileMetadata fmd : this.getSelectedFiles()) {
             // collect the names of the newly-restrticted files, 
@@ -2548,14 +2562,24 @@ public class DatasetPage implements java.io.Serializable {
 
     /* 
     */
-    public boolean isLocked() {
+    public boolean isLockedInProgress() {
         if (dataset != null) {
             logger.fine("checking lock status of dataset " + dataset.getId());
+            if (dataset.isLocked()) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public boolean isLocked() {
+        if (dataset != null) {
+            /*logger.fine("checking lock status of dataset " + dataset.getId());
             if (dataset.isLocked()) {
                 // refresh the dataset and version, if the current working
                 // version of the dataset is locked:
                 refresh();
-            }
+            }*/
             /* TODO: 
                optimized/improve the logic of this!
                Looking up the entire dataset every time isLocked() is called

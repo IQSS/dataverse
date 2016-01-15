@@ -1571,6 +1571,7 @@ public class IngestServiceBean {
     }
     
     private void sendStatusNotification(Long datasetId, FacesMessage message) {
+        /*
         logger.fine("attempting to send push notification to channel /ingest/dataset/"+datasetId+"; "+message.getDetail());
         EventBus eventBus = EventBusFactory.getDefault().eventBus();
         if (eventBus == null) {
@@ -1580,6 +1581,7 @@ public class IngestServiceBean {
         // TODO: 
         // add more diagnostics here! 4.2.3 -- L.A. 
         eventBus.publish("/ingest/dataset/" + datasetId, message);
+        */
     }
     
     private void createIngestReport (DataFile dataFile, int status, String message) {

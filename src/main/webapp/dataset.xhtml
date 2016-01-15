@@ -20,6 +20,7 @@
             <ui:param name="dataverse" value="#{DatasetPage.dataset.owner}"/>
             <ui:param name="dataset" value="#{DatasetPage.dataset}"/>
             <ui:param name="version" value="#{DatasetPage.workingVersion}"/>
+            <ui:param name="locked" value="#{DatasetPage.locked}"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:define name="body">
                 <f:metadata>
@@ -455,17 +456,13 @@
                     <!-- View/Tabs infoMode -->
                     <!-- Tabs -->
                     <div id="contentTabs" jsf:rendered="#{DatasetPage.editMode != 'INFO'}">
-                        <ui:fragment rendered="#{!empty DatasetPage.dataset.id}"> <!-- rendered="#{empty DatasetPage.editMode}" -->
+                        <ui:fragment rendered="#{DatasetPage.lockedInProgress}">
+                        </ui:fragment>
+                        
+                        <ui:fragment rendered="#{!empty DatasetPage.dataset.id and !DatasetPage.readOnly}"> <!-- rendered="#{empty DatasetPage.editMode}" -->
+                            <p:commandButton id="setLockedButton" widgetVar="setLockedButton" onclick="setLockedVar(#{locked});" style="display:none"/>
                             <p:commandButton id="refreshButton" widgetVar="refreshButton" actionListener="#{DatasetPage.refresh}" update="@all" style="display:none"/><!-- :datasetForm:tabView:filesTable,:messagePanel -->
-                            <script type="text/javascript">
-                                function updateFilesTable(facesmessage) {
-                                    //flash['successMsg'] = facesmessage.text; -- not working as expected - ? L.A.
-                                    $('button[id$="refreshButton"]').trigger('click');
-                                }
-                            </script>
-                            <p:socket channel="/ingest/dataset/#{DatasetPage.dataset.id}" onMessage="updateFilesTable" autoConnect="true">
-                                <p:ajax event="message" update="@all" />
-                            </p:socket>
+
                         </ui:fragment>
 
                         <ui:fragment id="uploadFilesOnCreateTab" rendered="#{!DatasetPage.workingVersion.deaccessioned and
@@ -1144,7 +1141,12 @@
                                 </div>
                             </div>
                             <div class="button-block">
-                                <p:commandButton value="#{bundle.continue}" onclick="PF('accessPopup').hide()" update=":datasetForm,:messagePanel" action="#{DatasetPage.restrictSelectedFiles(true)}" />
+                                <ui:fragment rendered="#{DatasetPage.editMode != 'CREATE'}">
+                                    <p:commandButton value="#{bundle.continue}" onclick="PF('accessPopup').hide()" update=":datasetForm,:messagePanel" action="#{DatasetPage.restrictSelectedFiles(true)}" />
+                                </ui:fragment>
+                                <ui:fragment rendered="#{DatasetPage.editMode == 'CREATE'}">
+                                    <p:commandButton value="#{bundle.continue}" onclick="PF('accessPopup').hide()" update=":datasetForm,:messagePanel" action="#{DatasetPage.save()}" />
+                                </ui:fragment>
                                 <p:commandButton value="#{bundle.cancel}" onclick="PF('accessPopup').hide();PF('blockDatasetForm').hide();" type="button" />
                             </div>
                         </ui:fragment>
@@ -1415,6 +1417,26 @@
                         };
                         Dropbox.choose(options);
                     }
+                    
+                    $(document).ready(function() {
+                        refreshIfLocked();
+                    });
+                    
+                    function setLockedVar(status) {
+                        window.locked = status;
+                    }
+                    function refreshIfLocked() {
+                        setTimeout(function () {
+                            // update the global variable "locked":
+                            $('button[id$="setLockedButton"]').trigger('click');
+                            // if dataset is still locked, click the refresh button:
+                            if (window.locked === true) {
+                                $('button[id$="refreshButton"]').trigger('click');
+                            }
+                        }, 10000); 
+                    }
+                    
+                    
                 </script>
             </ui:define>
         </ui:composition>
