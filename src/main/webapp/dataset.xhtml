@@ -456,14 +456,65 @@
                     <!-- View/Tabs infoMode -->
                     <!-- Tabs -->
                     <div id="contentTabs" jsf:rendered="#{DatasetPage.editMode != 'INFO'}">
-                        <ui:fragment rendered="#{DatasetPage.lockedInProgress}">
-                        </ui:fragment>
                         
-                        <ui:fragment rendered="#{!empty DatasetPage.dataset.id and !DatasetPage.readOnly}"> <!-- rendered="#{empty DatasetPage.editMode}" -->
-                            <p:commandButton id="setLockedButton" widgetVar="setLockedButton" onclick="setLockedVar(#{locked});" style="display:none"/>
-                            <p:commandButton id="refreshButton" widgetVar="refreshButton" actionListener="#{DatasetPage.refresh}" update="@all" style="display:none"/><!-- :datasetForm:tabView:filesTable,:messagePanel -->
-
-                        </ui:fragment>
+                        <p:fragment id="pageRefreshFragment"> <!-- rendered="_{empty DatasetPage.editMode}" -->
+                            <h:inputHidden value="#{DatasetPage.locked}" id="datasetLockedVariable" />
+                            <h:inputHidden value="#{DatasetPage.stateChanged}" id="datasetStateChangedVariable" />
+                            
+                            <p:remoteCommand name="refreshLockCommand" process="@this" update=":#{p:component('pageRefreshFragment')}" actionListener="#{DatasetPage.refreshLock}"/>
+                            <p:remoteCommand name="refreshAllCommand" process="@this" update="@all" actionListener="#{DatasetPage.refresh}"/>
+                            
+                            <!-- see the comment in the javascript below that explains what this button is for -->
+                            <p:commandButton id="refreshButton" process="@this" widgetVar="refreshButton" update="@all" style="display:none"/>
+                            
+                            <script type="text/javascript">
+                                
+                                $(this).ready(function() {
+                                    refreshIfStillLocked();
+                                });
+                                
+                                function refreshIfStillLocked() {
+                                    if($('input[id$="datasetLockedVariable"]').val() === 'true') {
+                                        // if dataset is locked, instruct the page to
+                                        // wait and check again:
+                                        waitAndCheckLockAgain();
+                                    } else {
+                                        // if not locked, has it just been unlocked?
+                                        if ($('input[id$="datasetStateChangedVariable"]').val() === 'true') {
+                                            // For whatever unknown PrimeFaces reason 
+                                            // the page needs to be refreshed twice, for all 
+                                            // the pull down menus to update properly:
+                                            refreshAllCommand();
+                                            // You can't just run 2 refreshAllCommand()s in a row
+                                            // either; because the command has an "update=@all" on it, 
+                                            // so I guess if you try to execute the 2nd one right after
+                                            // the first one, this fragment is still going to be loading -
+                                            // so there would not yet be a command to run! (it needs to 
+                                            // be rendered, before you can execute it, that is)
+                                            setTimeout(function() {
+                                                // this button doesn't do anything, but it has an update="@all" 
+                                                // attribute:
+                                                $('button[id$="refreshButton"]').trigger('click');
+                                                //refreshAllCommand();
+                                            }, 1500);
+                                        }
+                                    }
+                                }
+                                
+                                function waitAndCheckLockAgain() {
+                                    setTimeout(function () {
+                                        // refresh the lock in the 
+                                        // backing bean; i.e., check, if the ingest has 
+                                        // already completed in the background:
+                                        //$('button[id$="refreshButton"]').trigger('click');
+                                        refreshLockCommand();
+                                    }, 10000); 
+                                }
+                    
+                            </script>
+                            
+                    
+                        </p:fragment>
 
                         <ui:fragment id="uploadFilesOnCreateTab" rendered="#{!DatasetPage.workingVersion.deaccessioned and
                                                               (DatasetPage.editMode == 'CREATE')}">
@@ -1416,24 +1467,6 @@
                             multiselect: true,
                         };
                         Dropbox.choose(options);
-                    }
-                    
-                    $(document).ready(function() {
-                        refreshIfLocked();
-                    });
-                    
-                    function setLockedVar(status) {
-                        window.locked = status;
-                    }
-                    function refreshIfLocked() {
-                        setTimeout(function () {
-                            // update the global variable "locked":
-                            $('button[id$="setLockedButton"]').trigger('click');
-                            // if dataset is still locked, click the refresh button:
-                            if (window.locked === true) {
-                                $('button[id$="refreshButton"]').trigger('click');
-                            }
-                        }, 10000); 
                     }
                     
                     

@@ -186,6 +186,8 @@ public class DatasetPage implements java.io.Serializable {
     private boolean noDVsAtAll = false;
 
     private boolean noDVsRemaining = false;
+    
+    private boolean stateChanged = false;
 
     private List<Dataverse> dataversesForLinking = new ArrayList();
     private Long linkingDataverseId;
@@ -1915,16 +1917,16 @@ public class DatasetPage implements java.io.Serializable {
         refresh();
     }
     
-    public void refresh() { // String flashmessage) { 
-        logger.info("refreshing");
+    public void refresh() {
+        logger.fine("refreshing");
 
         //dataset = datasetService.find(dataset.getId());
-        dataset = null; 
+        dataset = null;
 
         logger.fine("refreshing working version");
 
         DatasetVersionServiceBean.RetrieveDatasetVersionResponse retrieveDatasetVersionResponse = null;
-        
+
         if (persistentId != null) {
             //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByPersistentId(persistentId, version);
             dataset = datasetService.findByGlobalId(persistentId);
@@ -1949,15 +1951,15 @@ public class DatasetPage implements java.io.Serializable {
         if (this.workingVersion == null) {
             // TODO: 
             // same as the above
-            return; 
+            return;
         }
-        
+
         if (dataset == null) {
             // this would be the case if we were retrieving the version by 
             // the versionId, above.
             this.dataset = this.workingVersion.getDataset();
         }
-        
+
         if (readOnly) {
             datafileService.findFileMetadataOptimizedExperimental(dataset);
             fileMetadatasSearch = workingVersion.getFileMetadatas();
@@ -1966,8 +1968,9 @@ public class DatasetPage implements java.io.Serializable {
         }
 
         displayCitation = dataset.getCitation(false, workingVersion);
+        stateChanged = false;
     }
-
+    
     public String deleteDataset() {
 
         Command cmd;
@@ -2560,12 +2563,27 @@ public class DatasetPage implements java.io.Serializable {
         return new HttpClient();
     }
 
+    public void refreshLock() {
+        //RequestContext requestContext = RequestContext.getCurrentInstance();
+        logger.fine("checking lock");
+        if (isStillLocked()) {
+            logger.fine("(still locked)");
+        
+        } else {
+            // OK, the dataset is no longer locked. 
+            // let's tell the page to refresh:
+            logger.fine("no longer locked!");
+            stateChanged = true;
+            //requestContext.execute("refreshPage();");
+        }
+    }
+
     /* 
     */
-    public boolean isLockedInProgress() {
-        if (dataset != null) {
+    public boolean isStillLocked() {
+        if (dataset != null && dataset.getId() != null) {
             logger.fine("checking lock status of dataset " + dataset.getId());
-            if (dataset.isLocked()) {
+            if (datasetService.checkDatasetLock(dataset.getId())) {
                 return true;
             }
         }
@@ -2573,40 +2591,30 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public boolean isLocked() {
+        if (stateChanged) {
+            return false; 
+        }
+        
         if (dataset != null) {
-            /*logger.fine("checking lock status of dataset " + dataset.getId());
-            if (dataset.isLocked()) {
-                // refresh the dataset and version, if the current working
-                // version of the dataset is locked:
-                refresh();
-            }*/
-            /* TODO: 
-               optimized/improve the logic of this!
-               Looking up the entire dataset every time isLocked() is called
-               was costing us a lot of queries; it's called something like 
-               15 times during the initial page load (and there are cascaded 
-               queries for every DvObject/DataFile SELECT query). So that was 
-               not cool... but perhaps there still should be some mechanism
-               for checking if this unlocked condition is already stale, i.e.
-               if the dataset has been locked since this copy of the dataset
-               object was instantiated? 
-                                -- L.A. 4.2.1
-            
-            
-            Dataset lookedupDataset = datasetService.find(dataset.getId());
-            DatasetLock datasetLock = null;
-            if (lookedupDataset != null) {
-                datasetLock = lookedupDataset.getDatasetLock();
-                if (datasetLock != null) {
-                    logger.fine("locked!");
-                    return true;
-                }
-            }*/
             if (dataset.isLocked()) {
                 return true;
             }
         }
         return false;
+    }
+    
+    public void setLocked(boolean locked) {
+        // empty method, so that we can use DatasetPage.locked in a hidden 
+        // input on the page. 
+    }
+    
+    public boolean isStateChanged() {
+        return stateChanged;
+    }
+    
+    public void setStateChanged(boolean stateChanged) {
+        // empty method, so that we can use DatasetPage.stateChanged in a hidden 
+        // input on the page. 
     }
 
     public DatasetVersionUI getDatasetVersionUI() {

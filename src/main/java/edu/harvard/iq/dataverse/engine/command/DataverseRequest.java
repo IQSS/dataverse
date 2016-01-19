@@ -58,7 +58,7 @@ public class DataverseRequest {
             -- L.A. 4.2.3
         */
         
-        logger.info("DataverseRequest: Obtained remote address: "+remoteAddressStr);
+        logger.fine("DataverseRequest: Obtained remote address: "+remoteAddressStr);
         
         if ( remoteAddressStr == null ) {
             remoteAddressStr = "0.0.0.0";
