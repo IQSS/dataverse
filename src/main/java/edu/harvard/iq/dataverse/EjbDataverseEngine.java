@@ -96,6 +96,9 @@ public class EjbDataverseEngine {
     DOIEZIdServiceBean doiEZId;
     
     @EJB
+    DOIDataCiteServiceBean doiDataCite;
+    
+    @EJB
     HandlenetServiceBean handleNet;
     
     @EJB
@@ -303,6 +306,11 @@ public class EjbDataverseEngine {
                 @Override
                 public DOIEZIdServiceBean doiEZId() {
                     return doiEZId;
+                }
+                
+                @Override
+                public DOIDataCiteServiceBean doiDataCite() {
+                    return doiDataCite;
                 }
                 
                 @Override

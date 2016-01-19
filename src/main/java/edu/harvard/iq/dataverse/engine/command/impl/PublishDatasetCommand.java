@@ -202,8 +202,16 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
             datasetDataverseUser.setAuthenticatedUser(au);
             ctxt.em().merge(datasetDataverseUser);
         }
-
-        ctxt.doiEZId().publicizeIdentifier(savedDataset);
+        
+        if (protocol.equals("doi")
+                && doiProvider.equals("EZID")) {
+            ctxt.doiEZId().publicizeIdentifier(savedDataset);
+        }
+        if (protocol.equals("doi")
+                && doiProvider.equals("DataCite")) {
+            ctxt.doiDataCite().publicizeIdentifier(savedDataset);
+        }
+            
         return savedDataset;
     }
 

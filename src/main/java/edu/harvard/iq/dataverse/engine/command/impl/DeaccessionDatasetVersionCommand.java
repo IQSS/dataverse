@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 /**
  *
@@ -41,7 +42,12 @@ public class DeaccessionDatasetVersionCommand extends AbstractCommand<DatasetVer
         theVersion.setVersionState(DatasetVersion.VersionState.DEACCESSIONED);
         
         if (deleteDOIIdentifier){
-           ctxt.doiEZId().deleteIdentifier(ds);
+                    String nonNullDefaultIfKeyNotFound = "";
+
+        String    doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
+        
+           if (doiProvider.equals("EZID")) ctxt.doiEZId().deleteIdentifier(ds);
+           if (doiProvider.equals("DataCite")) ctxt.doiDataCite().deleteIdentifier(ds);
         }       
         DatasetVersion managed = ctxt.em().merge(theVersion);
         
