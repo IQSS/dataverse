@@ -79,7 +79,7 @@ tr.ui-state-highlight .ui-icon {
 }
 td.col-select-width {width:36px;}
 
-#ajaxStatusPanel_start {width:31px;height:31px;position:fixed;right:50%;bottom:50%;z-index:1111;}
+#ajaxStatusPanel_start {width:31px;height:31px;position:fixed;right:50%;bottom:50%;z-index:111111;}
 #ajaxStatusPanel_complete {position:absolute;top:-9999px;left:-9999px;}
 
 .italic {font-style: italic;}
@@ -327,7 +327,8 @@ form.btn-form {display:inline-block;}
 .button-block button.pull-right:first-child, .button-block a.btn.pull-right:first-child, .button-block div.btn-group.pull-right:first-child, 
 .button-block div.btn-group button, .button-block div.btn-group a.btn {margin-right:0;}
 .button-block .btn:last-child, .button-block .btn-group:last-child, 
-.button-block form.btn-form:last-child .btn-group {margin-right:0;}
+.button-block form.btn-form:last-child .btn-group,
+.button-block span.ui-state-disabled:last-child {margin-right:0;}
 .button-block.pull-right .btn:last-child {margin-right:0;}
 .button-block ul.dropdown-menu li.disabled span.ui-commandlink.ui-state-disabled {display: block; padding: 3px 20px; color: #777; background: none; opacity:1.0;}
 div.field-add-delete a.btn {margin:0 1em 0 0;}
@@ -474,6 +475,11 @@ table.ui-panelgrid.facetsMoreLess td:last-child {text-align:right;}
 table[id$='resultsTable'] td > div {border:1px solid grey; margin:6px 0; padding: 4px 10px;}
 table[id$='resultsTable'] td > div.dataverseResult {border-color:#c55b28;}
 table[id$='resultsTable'] td > div.datasetResult {border-color:#428bca;}
+table[id$='resultsTable'] td > div > div.card-title-icon-block, 
+table[id$='resultsTable'] td > div > div.card-preview-icon-block, 
+table[id$='resultsTable'] td > div > div.file-tags-block {
+    font-size: 110%;
+}
 
 /* -------- TABLES -------- */
 div.headerless-table .ui-datatable-tablewrapper table > thead {display:none;}
@@ -601,8 +607,8 @@ table.ui-picklist div.ui-picklist-filter-container {padding-bottom:5px;}
 
 #contentTabs .ui-tabs .ui-tabs-panel {padding-left:0; padding-right:0;}
 
-#contentTabs div.panel-heading[data-toggle="collapse"] {cursor: pointer; cursor: hand;}
-#contentTabs div.panel-heading.text-info[data-toggle="collapse"] {color: #31708F;}
+div.panel-heading[data-toggle="collapse"] {cursor: pointer; cursor: hand;}
+div.panel-heading.text-info[data-toggle="collapse"] {color: #31708F;}
 
 .btn-sm.ui-button {padding: 5px 10px;}
 
@@ -626,7 +632,7 @@ div[id$="filesTable"] td.col-file-thumb {border-right:0;}
 div[id$="filesTable"] td.col-file-thumb div.thumbnail-block {position:relative;width:64px;height:64px;margin:0 auto;}
 div[id$="filesTable"] td.col-file-thumb div.thumbnail-block span.file-thumbnail-icon {font-size:62px;line-height:1.05;}
 div[id$="filesTable"] td.col-file-thumb div.thumbnail-block div.file-icon-restricted-block {display:block;position:absolute;bottom:-4px;right:-1px;}
-div[id$="filesTable"] td.col-file-metadata {width: 33.3333% !important; padding-left:0; border-left:0; border-right:0; text-align:left; font-weight:normal;}
+div[id$="filesTable"] td.col-file-metadata {/*width: 33.3333% !important;*/ padding-left:0; border-left:0; border-right:0; text-align:left; font-weight:normal;}
 div[id$="filesTable"] td.col-file-action {/*width:320px !important;*/ border-left:0; overflow:visible;}
 div[id$="filesTable"] div.file-tags-block {padding-bottom:2px;}
 div[id$="filesTable"] div.file-tags-block a.ui-commandlink {font-size:12px;}
@@ -641,17 +647,10 @@ div[id$="filesTable"] thead[id$="filesTable_head"] th.ui-state-default:first-of-
 div[id$="filesTable"] thead[id$="filesTable_head"] th.ui-state-default:last-of-type {border-right: 1px solid #e6e6e6; border-top-right-radius: 4px;}
 div[id$="filesTable"] thead[id$="filesTable_head"] tr {background-color: #f5f5f5; background-image: -moz-linear-gradient(center top , #ffffff, #e6e6e6); background-repeat: repeat-x;}
 
-div[id$="filesTable"] thead[id$="filesTable_head"] th.ui-selection-column {width:40px !important; padding:4px 10px;}
+div[id$="filesTable"] thead[id$="filesTable_head"] th.ui-selection-column {/*width:40px !important;*/ padding:4px 10px;}
 div[id$="filesTable"] thead[id$="filesTable_head"] th.ui-selection-column .ui-chkbox-box.ui-widget {margin-top:0 !important;}
-div[id$="filesTable"] div.ui-datatable-scrollable-body table colgroup col:nth-child(1), 
-div[id$="filesTable"] tbody[id$="filesTable_data"] td.ui-selection-column {width:40px !important;}
 
-div[id$="filesTable"] div.ui-datatable-scrollable-body table colgroup col:nth-child(2), 
-div[id$="filesTable"] tbody[id$="filesTable_data"] td.col-file-thumb {width:64px !important;}
-
-div[id$="filesTable"] div.ui-datatable-scrollable-body table colgroup col:nth-child(4) {/*width:320px !important;*/}
-
-div[id$="filesTable"] div.ui-datatable-scrollable-body table colgroup {display:none;}
+div[id$="filesTable"].ui-datatable.ui-datatable-scrollable {padding-right:12px;}
 
 span.ingest-warning {display:inline-block; font-size:30px; line-height:1.42857; vertical-align: middle;}
 span.ingest-warning span.glyphicon {top:5px;} 
@@ -673,6 +672,9 @@ div.dvnDifferanceTable .diffDetailBlock {display:block;}
 
 .dropin-btn-status.ui-icon {background: url("https://www.dropbox.com/static/images/widgets/dbx-saver-status.png") no-repeat;}
 
+/* MANAGE TABLE + DROPDOWN BUTTON */
+div.manageTable.ui-datatable div.ui-datatable-tablewrapper, div.manageTable.ui-datatable td.col-manage-action {overflow:visible;}
+
 /* FILE */
 #file-preview-icon-block span[class^='icon-'] {font-size:4em;}
 
@@ -686,13 +688,17 @@ div.dvnDifferanceTable .diffDetailBlock {display:block;}
 
 /* BLOCK UI */
 .ui-blockui.ui-widget-overlay {background:#fff; opacity:.6;}
+div.ui-dialog.ui-widget-content {z-index:100001 !important;}
+div.ui-selectcheckboxmenu-panel {z-index:100002 !important;}
 
 /* Overwrite Primefaces */
 button.btn-default.ui-button-text-only .ui-button-text {padding:0; font-size:14px;}
-.ui-widget-overlay {background:#CCC;}
+div.ui-widget-overlay {background:#ccc; opacity:.6;}
 .ui-confirm-dialog-severity {margin-top:3px;}
 .ui-widget-content a.btn-default {color:#333;}
 .ui-messages-info-detail, .ui-messages-warn-detail, .ui-messages-error-detail, .ui-messages-fatal-detail, .ui-message-info-detail, .ui-message-warn-detail, .ui-message-error-detail, .ui-message-fatal-detail {
     margin-left: 0px;
 }
 .ui-state-disabled, .ui-widget-content .ui-state-disabled, .ui-widget-header .ui-state-disabled {background: #e0e0e0; border-color: #ccc; opacity: 0.65;}
+.ui-autocomplete-input-token input, .ui-autocomplete-input-token {width:100%;}
+.ui-autocomplete-panel {z-index:100002 !important;}

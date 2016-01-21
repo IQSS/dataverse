@@ -7,10 +7,10 @@ Requirements
 
 Tested on Ubuntu 14.04.
 
-Java 7
+Java 8
 ~~~~~~
 
-- ``sudo apt-get install openjdk-7-jdk openjdk-7-jre``
+- ``sudo apt-get install openjdk-8-jdk openjdk-8-jre``
 
 
 Maven

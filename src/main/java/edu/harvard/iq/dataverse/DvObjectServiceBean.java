@@ -81,9 +81,15 @@ public class DvObjectServiceBean implements java.io.Serializable {
          * dvObject before we try to set this timestamp? See
          * https://github.com/IQSS/dataverse/commit/6ad0ebb272c8cb46368cb76784b55dbf33eea947
          */
-        DvObject dvObjectToModify = findDvObject(dvObject.getId());
+        Long dvObjectId = dvObject.getId();
+        DvObject dvObjectToModify = findDvObject(dvObjectId);
+        if (dvObjectToModify == null) {
+            logger.fine("Unable to update permission index time on DvObject with id of " + dvObjectId);
+            return dvObject;
+        }
         dvObjectToModify.setPermissionIndexTime(new Timestamp(new Date().getTime()));
         DvObject savedDvObject = em.merge(dvObjectToModify);
+        logger.fine("Updated permission index time for DvObject id " + dvObjectId);
         return savedDvObject;
     }
 

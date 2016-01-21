@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.authorization.RoleAssignmentSet;
+import edu.harvard.iq.dataverse.search.IndexAsync;
 import edu.harvard.iq.dataverse.search.IndexResponse;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
@@ -36,6 +37,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
     @EJB RoleAssigneeServiceBean roleAssigneeService;
     @EJB IndexServiceBean indexService;   
     @EJB SolrIndexServiceBean solrIndexService;
+    @EJB IndexAsync indexAsync;
 
 	public DataverseRole save( DataverseRole aRole ) {
 		if ( aRole.getId() == null ) {
@@ -67,8 +69,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
             /**
              * @todo update permissionModificationTime here.
              */
-            IndexResponse indexDefinitionPountResult = indexDefinitionPoint(assignment.getDefinitionPoint());
-            logger.fine("output from indexing operations: " + indexDefinitionPountResult);
+            indexAsync.indexRole(assignment);
                 return assignment;
 	}
 
@@ -134,8 +135,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
             /**
              * @todo update permissionModificationTime here.
              */
-            IndexResponse indexDefinitionPointResult = indexDefinitionPoint(ra.getDefinitionPoint());
-            logger.fine("indexing operation results: " + indexDefinitionPointResult);
+            indexAsync.indexRole(ra);
 	}
 	
 	public RoleAssignmentSet roleAssignments( User user, Dataverse dv ) {

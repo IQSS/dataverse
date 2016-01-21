@@ -1,31 +1,16 @@
 package edu.harvard.iq.dataverse.api;
 
-import com.jayway.restassured.http.ContentType;
-import com.jayway.restassured.path.json.JsonPath;
+import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.response.Response;
-import java.util.UUID;
 import java.util.logging.Logger;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static com.jayway.restassured.RestAssured.given;
 import static junit.framework.Assert.assertEquals;
 
 public class DataversesIT {
 
     private static final Logger logger = Logger.getLogger(DataversesIT.class.getCanonicalName());
-
-    private static final String builtinUserKey = "burrito";
-    private static final String keyString = "X-Dataverse-key";
-    private static String EMPTY_STRING = "";
-    private static final String idKey = "id";
-    private static final String apiTokenKey = "apiToken";
-    private static final String usernameKey = "userName";
-    private static final String emailKey = "email";
 
     private static String username1;
     private static String apiToken1;
@@ -35,13 +20,46 @@ public class DataversesIT {
     @BeforeClass
     public static void setUpClass() {
 
-        Response createUserResponse = createUser(getRandomUsername(), "firstName", "lastName");
+        RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
+
+        Response createUserResponse = UtilIT.createRandomUser();
 //        createUserResponse.prettyPrint();
         assertEquals(200, createUserResponse.getStatusCode());
 
-        JsonPath createdUser1 = JsonPath.from(createUserResponse.body().asString());
-        apiToken1 = createdUser1.getString("data." + apiTokenKey);
-        username1 = createdUser1.getString("data.user." + usernameKey);
+        apiToken1 = UtilIT.getApiTokenFromResponse(createUserResponse);
+        username1 = UtilIT.getUsernameFromResponse(createUserResponse);
+
+    }
+
+    @Test
+    public void testAttemptToCreateDuplicateAlias() throws Exception {
+
+        Response createDataverse1Response = UtilIT.createRandomDataverse(apiToken1);
+        if (createDataverse1Response.getStatusCode() != 201) {
+            // purposefully using println here to the error shows under "Test Results" in Netbeans
+            System.out.println("A workspace for testing (a dataverse) couldn't be created in the root dataverse. The output was:\n\n" + createDataverse1Response.body().asString());
+            System.out.println("\nPlease ensure that users can created dataverses in the root in order for this test to run.");
+        } else {
+            createDataverse1Response.prettyPrint();
+        }
+        assertEquals(201, createDataverse1Response.getStatusCode());
+
+        dataverseAlias1 = UtilIT.getAliasFromResponse(createDataverse1Response);
+        dataverseAlias2 = dataverseAlias1.toUpperCase();
+        logger.info("Attempting to creating dataverse with alias '" + dataverseAlias2 + "' (uppercase version of existing '" + dataverseAlias1 + "' dataverse, should fail)...");
+        Response attemptToCreateDataverseWithDuplicateAlias = UtilIT.createDataverse(dataverseAlias2, apiToken1);
+        attemptToCreateDataverseWithDuplicateAlias.prettyPrint();
+        assertEquals(400, attemptToCreateDataverseWithDuplicateAlias.getStatusCode());
+
+        logger.info("Deleting dataverse " + dataverseAlias1);
+        Response deleteDataverse1Response = UtilIT.deleteDataverse(dataverseAlias1, apiToken1);
+        deleteDataverse1Response.prettyPrint();
+        assertEquals(200, deleteDataverse1Response.getStatusCode());
+
+        logger.info("Checking response code for attempting to delete a non-existent dataverse.");
+        Response attemptToDeleteDataverseThatShouldNotHaveBeenCreated = UtilIT.deleteDataverse(dataverseAlias2, apiToken1);
+        attemptToDeleteDataverseThatShouldNotHaveBeenCreated.prettyPrint();
+        assertEquals(404, attemptToDeleteDataverseThatShouldNotHaveBeenCreated.getStatusCode());
 
     }
 
@@ -53,91 +71,10 @@ public class DataversesIT {
             return;
         }
 
-        Response deleteDataverse1Response = deleteDataverse(dataverseAlias1, apiToken1);
-//        deleteDataverse1Response.prettyPrint();
-        Response deleteDataverse2Response = deleteDataverse(dataverseAlias2, apiToken1);
-//        deleteDataverse2Response.prettyPrint();
-
-        Response deleteUser1Response = deleteUser(username1);
-//        deleteUser1Response.prettyPrint();
+        Response deleteUser1Response = UtilIT.deleteUser(username1);
+        deleteUser1Response.prettyPrint();
         assertEquals(200, deleteUser1Response.getStatusCode());
 
-    }
-
-    @Test
-    public void testAttemptToCreateDuplicateAlias() throws Exception {
-        dataverseAlias1 = getRandomIdentifier();
-        Response createDataverse1Response = createDataverse(dataverseAlias1, apiToken1);
-//        createDataverse1Response.prettyPrint();
-        dataverseAlias2 = dataverseAlias1.toUpperCase();
-        Response createDataverse2Response = createDataverse(dataverseAlias2, apiToken1);
-        createDataverse2Response.prettyPrint();
-        assertEquals(400, createDataverse2Response.getStatusCode());
-    }
-
-    private static Response createUser(String username, String firstName, String lastName) {
-        String userAsJson = getUserAsJsonString(username, firstName, lastName);
-        String password = getPassword(userAsJson);
-        Response response = given()
-                .body(userAsJson)
-                .contentType(ContentType.JSON)
-                .post("/api/builtin-users?key=" + builtinUserKey + "&password=" + password);
-        return response;
-    }
-
-    private static String getUserAsJsonString(String username, String firstName, String lastName) {
-        JsonObjectBuilder builder = Json.createObjectBuilder();
-        builder.add(usernameKey, username);
-        builder.add("firstName", firstName);
-        builder.add("lastName", lastName);
-        builder.add(emailKey, getEmailFromUserName(username));
-        String userAsJson = builder.build().toString();
-        logger.fine("User to create: " + userAsJson);
-        return userAsJson;
-    }
-
-    private static String getPassword(String jsonStr) {
-        String password = JsonPath.from(jsonStr).get(usernameKey);
-        return password;
-    }
-
-    private static String getEmailFromUserName(String username) {
-        return username + "@mailinator.com";
-    }
-
-    private static Response deleteUser(String username) {
-        Response deleteUserResponse = given()
-                .delete("/api/admin/authenticatedUsers/" + username + "/");
-        return deleteUserResponse;
-    }
-
-    private static Response createDataverse(String alias, String apiToken) {
-        JsonArrayBuilder contactArrayBuilder = Json.createArrayBuilder();
-        contactArrayBuilder.add(Json.createObjectBuilder().add("contactEmail", getEmailFromUserName(getRandomIdentifier())));
-        JsonArrayBuilder subjectArrayBuilder = Json.createArrayBuilder();
-        subjectArrayBuilder.add("Other");
-        JsonObject dvData = Json.createObjectBuilder()
-                .add("alias", alias)
-                .add("name", alias)
-                .add("dataverseContacts", contactArrayBuilder)
-                .add("dataverseSubjects", subjectArrayBuilder)
-                .build();
-        Response createDataverseResponse = given()
-                .body(dvData.toString()).contentType(ContentType.JSON)
-                .when().post("/api/dataverses/:root?key=" + apiToken);
-        return createDataverseResponse;
-    }
-
-    private static String getRandomUsername() {
-        return "user" + getRandomIdentifier().substring(0, 8);
-    }
-
-    private static String getRandomIdentifier() {
-        return UUID.randomUUID().toString().substring(0, 8);
-    }
-
-    private static Response deleteDataverse(String doomed, String apiToken) {
-        return given().delete("/api/dataverses/" + doomed + "?key=" + apiToken);
     }
 
 }

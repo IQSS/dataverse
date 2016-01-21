@@ -30,7 +30,7 @@
                 <o:importFunctions type="edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers" />
                 <ui:fragment rendered="#{!dataverseSession.user.authenticated and (permissionServiceBean.userOn(AuthenticatedUsers:get(),SearchIncludeFragment.dataverse).canIssueCommand('CreateDataverseCommand')
                                          or permissionServiceBean.userOn(AuthenticatedUsers:get(),SearchIncludeFragment.dataverse).canIssueCommand('CreateDatasetCommand'))}">
-                    <button type="button" class="btn btn-default" onclick="addData_popup.show()">
+                    <button type="button" class="btn btn-default" onclick="PF('addData_popup').show()">
                         <span class="glyphicon glyphicon-plus"/> #{bundle['dataverse.results.btn.addData']}
                     </button>
                 </ui:fragment>
@@ -668,7 +668,7 @@
             </h:outputFormat>
         </p>
         <div class="button-block">
-            <button type="button" onclick="addData_popup.hide()" class="btn btn-default" value="#{bundle.close}">
+            <button type="button" onclick="PF('addData_popup').hide()" class="btn btn-default" value="#{bundle.close}">
                 #{bundle.close}
             </button>
         </div>

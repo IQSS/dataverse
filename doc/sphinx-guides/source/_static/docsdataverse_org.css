@@ -54,6 +54,6 @@ a.headerlink {
     text-decoration: none;
 }
 
-#sidebar.bs-sidenav.affix {
+/* #sidebar.bs-sidenav.affix {
 	position: static;
-}
+} REMOVED STATIC ToC */

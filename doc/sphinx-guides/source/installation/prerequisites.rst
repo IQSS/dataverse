@@ -6,10 +6,25 @@ Prerequisites
 
 Java
 ----------------------------
-Oracle JDK or OpenJDK 1.7.x. Use the latest available. MacOS X comes with the JDK (but make sure you keep it updated). On a RedHat and similar Linux distributions, install it with something like ::
+Dataverse requires Java 8 (also known as 1.8).
 
-	$ yum install java-1.7.0-openjdk-devel
+Dataverse should run fine with only the Java Runtime Environment (JRE) installed, but installing the Java Development Kit (JDK) is recommended so that useful tools for troubleshooting production environments are available. We recommend using Oracle JDK or OpenJDK.
 
+The Oracle JDK can be downloaded from http://www.oracle.com/technetwork/java/javase/downloads/index.html
+
+On a Red Hat and similar Linux distributions, install OpenJDK with something like::
+
+	$ yum install java-1.8.0-openjdk-devel
+
+If you have multiple versions of Java installed, Java 8 should be the default when ``java`` is invoked from the command line. You can test this by running ``java -version``.
+
+On Red Hat/CentOS you can make Java 8 the default with the ``alternatives`` command, having it prompt you to select the version of Java from a list::
+
+        $ alternatives --config java
+
+If you don't want to be prompted, here is an example of the non-interactive invocation::
+
+        $ alternatives --set java /usr/lib/jvm/jre-1.8.0-openjdk.x86_64/bin/java
 
 Glassfish
 ----------------------------

@@ -1,17 +1,15 @@
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
-     xmlns:h="http://java.sun.com/jsf/html"
-     xmlns:f="http://java.sun.com/jsf/core"
-     xmlns:ui="http://java.sun.com/jsf/facelets"
-     xmlns:c="http://java.sun.com/jsp/jstl/core"
-     xmlns:p="http://primefaces.org/ui"
-     xmlns:o="http://omnifaces.org/ui"
-     xmlns:jsf="http://xmlns.jcp.org/jsf">
-
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:c="http://java.sun.com/jsp/jstl/core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:o="http://omnifaces.org/ui"
+                xmlns:jsf="http://xmlns.jcp.org/jsf">
     <!-- View Mode -->
-
-  <div class="panel-group" jsf:rendered="${empty editMode  or managePage}">
-      <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
-        <ui:repeat value="#{metadataBlocks}"  
+    <div class="panel-group" jsf:rendered="${empty editMode  or managePage}">
+        <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
+        <ui:repeat value="#{metadataBlocks}"
                    var="metadataBlockVal" varStatus="block">
             <div class="panel panel-default">
                 <div data-toggle="collapse" data-target="#panelCollapse#{block.index}" class="panel-heading text-info">
@@ -53,7 +51,7 @@
                                     <h:outputText value="#{dsf.datasetFieldType.fieldType ne 'TEXTBOX' ? dsf.value : MarkupChecker:sanitizeBasicHTML(dsf.value) }" rendered="#{!dsf.datasetFieldType.allowMultiples}"
                                                   escape="#{dsf.datasetFieldType.fieldType ne 'TEXTBOX'}"/>
                                     <ui:repeat value="#{dsf.values}" var="value" varStatus="loop" rendered="#{dsf.datasetFieldType.allowMultiples}">
-                                        <h:outputText value="#{loop.first?'':'; '}#{dsf.datasetFieldType.fieldType ne 'TEXTBOX' ? value : MarkupChecker:sanitizeBasicHTML(value)}" 
+                                        <h:outputText value="#{loop.first?'':'; '}#{dsf.datasetFieldType.fieldType ne 'TEXTBOX' ? value : MarkupChecker:sanitizeBasicHTML(value)}"
                                                       escape="#{dsf.datasetFieldType.fieldType ne 'TEXTBOX'}"/>
                                     </ui:repeat>
                                 </div>
@@ -61,7 +59,7 @@
                                 <div class="col-sm-9" jsf:rendered="#{dsf.datasetFieldType.compound}">
                                     <ui:fragment rendered="#{dsf.datasetFieldType.name == 'datasetContact'}">
                                         <p class="help-block">
-                                            <span class="glyphicon glyphicon-info-sign"/> 
+                                            <span class="glyphicon glyphicon-info-sign"/>
                                             <h:outputText value=" #{bundle['dataset.contact.tip']}"/>
                                         </p>
                                     </ui:fragment>
@@ -69,11 +67,11 @@
                                         <ui:repeat value="#{compoundValue.displayValueMap.entrySet().toArray()}" var="cvPart" varStatus="partStatus">
                                             <h:outputText value="#{dsf.datasetFieldType.displayFormat} " rendered="${!partStatus.first}"/>
                                             <h:outputText value="#{cvPart.key.datasetFieldType.fieldType ne 'URL' and
-                                                                                            cvPart.key.datasetFieldType.fieldType ne 'TEXTBOX' ? cvPart.value : MarkupChecker:sanitizeBasicHTML(cvPart.value)}" 
-                                                                                            escape="#{cvPart.key.datasetFieldType.fieldType ne 'URL' and
-                                                                                            cvPart.key.datasetFieldType.fieldType ne 'TEXTBOX'}"/>
+                                                                   cvPart.key.datasetFieldType.fieldType ne 'TEXTBOX' ? cvPart.value : MarkupChecker:sanitizeBasicHTML(cvPart.value)}"
+                                                          escape="#{cvPart.key.datasetFieldType.fieldType ne 'URL' and
+                                                                    cvPart.key.datasetFieldType.fieldType ne 'TEXTBOX'}"/>
                                         </ui:repeat>
-                                        <br/>                                                    
+                                        <br/>
                                     </ui:repeat>
                                 </div>
                             </div>
@@ -83,26 +81,23 @@
             </div>
         </ui:repeat>
     </div>
-
     <!-- Edit Mode -->
     <ui:fragment rendered="${(!empty editMode)}">
         <o:importFunctions type="java.util.Collections" />
         <div class="panel-group">
             <ui:repeat value="#{metadataBlocks}" var="metadataBlockVal" varStatus="block">
-                <div class="panel panel-default" jsf:rendered="#{(editMode == 'METADATA' or metadataBlockVal.key.displayOnCreate or !metadataBlockVal.key.isEmpty() 
-                                                                 or metadataBlockVal.key.isHasRequired()) 
-                                                                 or (!datasetPage) }">                
-
+                <div class="panel panel-default" jsf:rendered="#{(editMode == 'METADATA' or metadataBlockVal.key.displayOnCreate or !metadataBlockVal.key.isEmpty()
+                                                                 or metadataBlockVal.key.isHasRequired())
+                                                                 or (!datasetPage)}">
                     <div data-toggle="collapse" data-target="#panelCollapse#{block.index}" class="panel-heading text-info">
-                        #{metadataBlockVal.key.displayName} <span class="glyphicon #{block.first?'glyphicon-chevron-up':'glyphicon-chevron-down'}"/>
+                        #{metadataBlockVal.key.displayName} <span class="glyphicon #{block.first || editMode == 'CREATE'  ? 'glyphicon-chevron-up' : 'glyphicon-chevron-down'}"/>
                     </div>
-                    <div id="panelCollapse#{block.index}" class="collapse #{block.first || editMode == 'CREATE'?'in':''}">
+                    <div id="panelCollapse#{block.index}" class="collapse #{block.first || editMode == 'CREATE' ? 'in' : ''}">
                         <div class="panel-body">
                             <ui:repeat value="#{metadataBlockVal.value}" var="dsf">
-                                <ui:fragment rendered="#{((editMode == 'METADATA' 
+                                <ui:fragment rendered="#{((editMode == 'METADATA'
                                                          or dsf.datasetFieldType.displayOnCreate or !dsf.isEmpty() or dsf.required or dsf.datasetFieldType.hasRequiredChildren) and dsf.include)
                                                          or (!datasetPage and dsf.include)}">
-
                                     <div class="form-group">
                                         <label for="metadata_#{dsf.datasetFieldType.name}" class="col-sm-3 control-label">
                                             <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{dsf.datasetFieldType.description}">
@@ -110,7 +105,6 @@
                                             </span>
                                             <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{dsf.required  or dsf.datasetFieldType.hasRequiredChildren }" />
                                         </label>
-
                                         <!-- Primitive fields -->
                                         <p:fragment autoUpdate="true" rendered="#{dsf.datasetFieldType.primitive}">
                                             <div class="form-group">
@@ -130,16 +124,16 @@
                                                                 <!-- Add / Remove buttons -->
                                                                 <div class="col-xs-3 field-add-delete" jsf:rendered="#{dsf.datasetFieldType.allowMultiples and !dsf.datasetFieldType.controlledVocabulary}">
                                                                     <p:commandLink tabindex="#{block.index+1}" title="#{bundle.add}"
-                                                                                     styleClass="btn btn-default btn-sm bootstrap-button-tooltip #{dsf.datasetFieldType.compound ? 'compound-field-btn' : ''}"
-                                                                                     actionListener="#{dsf.addDatasetFieldValue(valCount.index + 1)}"
-                                                                                     oncomplete="javascript:bind_bsui_components();">
+                                                                                   styleClass="btn btn-default btn-sm bootstrap-button-tooltip #{dsf.datasetFieldType.compound ? 'compound-field-btn' : ''}"
+                                                                                   actionListener="#{dsf.addDatasetFieldValue(valCount.index + 1)}"
+                                                                                   oncomplete="javascript:bind_bsui_components();">
                                                                         <span class="glyphicon glyphicon-plus no-text"/>
                                                                     </p:commandLink>
                                                                     <p:commandLink tabindex="#{block.index+1}" title="#{bundle.delete}"
-                                                                                     styleClass="btn btn-default btn-sm bootstrap-button-tooltip #{dsf.datasetFieldType.compound ? 'compound-field-btn' : ''}"
-                                                                                     rendered="#{dsf.datasetFieldValues.size() > 1}"
-                                                                                     actionListener="#{dsf.removeDatasetFieldValue(valCount.index)}"
-                                                                                     oncomplete="javascript:bind_bsui_components();">
+                                                                                   styleClass="btn btn-default btn-sm bootstrap-button-tooltip #{dsf.datasetFieldType.compound ? 'compound-field-btn' : ''}"
+                                                                                   rendered="#{dsf.datasetFieldValues.size() > 1}"
+                                                                                   actionListener="#{dsf.removeDatasetFieldValue(valCount.index)}"
+                                                                                   oncomplete="javascript:bind_bsui_components();">
                                                                         <span class="glyphicon glyphicon-minus no-text"/>
                                                                     </p:commandLink>
                                                                 </div>
@@ -167,7 +161,6 @@
                                                 </ui:repeat>
                                             </div>
                                         </p:fragment>
-
                                         <!-- Compound fields -->
                                         <p:fragment autoUpdate="true" rendered="#{dsf.datasetFieldType.compound}">
                                             <div class="form-group form-col-container col-sm-9 dataset-field-values">
@@ -178,7 +171,7 @@
                                                             <div class="form-col-container #{(subdsf.datasetFieldType.fieldType == 'TEXTBOX') ? 'col-sm-12' : 'col-sm-6'}">
                                                                 <ui:fragment rendered="#{subdsf.datasetFieldType.name == 'dsDescriptionValue'}">
                                                                     <p class="help-block">
-                                                                        <span class="glyphicon glyphicon-info-sign"/> 
+                                                                        <span class="glyphicon glyphicon-info-sign"/>
                                                                         <h:outputFormat value=" #{bundle.htmlAllowedMsg}" escape="false">
                                                                             <f:param value="#{bundle.htmlAllowedTags}"/>
                                                                         </h:outputFormat>
@@ -196,7 +189,7 @@
                                                                 </ui:fragment>
                                                                 <!-- MOVED SELECT ONE TO dataFieldForEdit -->
                                                                 <div jsf:rendered="#{subdsf.datasetFieldType.controlledVocabulary}">
-                                                                    <p:selectOneMenu tabindex="#{block.index+1}" value="#{subdsf.singleControlledVocabularyValue}" converter="controlledVocabularyValueConverter" style="width: auto !important; max-width:100%; min-width:200px;" 
+                                                                    <p:selectOneMenu tabindex="#{block.index+1}" value="#{subdsf.singleControlledVocabularyValue}" converter="controlledVocabularyValueConverter" style="width: auto !important; max-width:100%; min-width:200px;"
                                                                                      rendered="#{!subdsf.datasetFieldType.allowMultiples}">
                                                                         <f:selectItem itemLabel="#{bundle.select}" itemValue="" noSelectionOption="true"/>
                                                                         <f:selectItems value="#{subdsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.strValue}" itemValue="#{cvv}" />
@@ -215,17 +208,17 @@
                                                         </ui:repeat>
                                                     </div>
                                                     <div class="col-sm-3 field-add-delete" jsf:rendered="#{dsf.datasetFieldType.allowMultiples and !dsf.datasetFieldType.controlledVocabulary}">
-                                                        <p:commandLink tabindex="#{block.index+1}" title="#{bundle.add}" 
-                                                                         styleClass="btn btn-default btn-sm bootstrap-button-tooltip #{dsf.datasetFieldType.compound ? 'compound-field-btn' : ''}"
-                                                                         actionListener="#{dsf.addDatasetFieldCompoundValue(valCount.index + 1)}"
-                                                                         oncomplete="javascript:bind_bsui_components();">
+                                                        <p:commandLink tabindex="#{block.index+1}" title="#{bundle.add}"
+                                                                       styleClass="btn btn-default btn-sm bootstrap-button-tooltip #{dsf.datasetFieldType.compound ? 'compound-field-btn' : ''}"
+                                                                       actionListener="#{dsf.addDatasetFieldCompoundValue(valCount.index + 1)}"
+                                                                       oncomplete="javascript:bind_bsui_components();">
                                                             <span class="glyphicon glyphicon-plus no-text"/>
                                                         </p:commandLink>
-                                                        <p:commandLink tabindex="#{block.index+1}" title="#{bundle.delete}" 
-                                                                         styleClass="btn btn-default btn-sm bootstrap-button-tooltip #{dsf.datasetFieldType.compound ? 'compound-field-btn' : ''}"
-                                                                         rendered="#{dsf.datasetFieldCompoundValues.size() > 1}"
-                                                                         actionListener="#{dsf.removeDatasetFieldCompoundValue(valCount.index)}"
-                                                                         oncomplete="javascript:bind_bsui_components();">
+                                                        <p:commandLink tabindex="#{block.index+1}" title="#{bundle.delete}"
+                                                                       styleClass="btn btn-default btn-sm bootstrap-button-tooltip #{dsf.datasetFieldType.compound ? 'compound-field-btn' : ''}"
+                                                                       rendered="#{dsf.datasetFieldCompoundValues.size() > 1}"
+                                                                       actionListener="#{dsf.removeDatasetFieldCompoundValue(valCount.index)}"
+                                                                       oncomplete="javascript:bind_bsui_components();">
                                                             <span class="glyphicon glyphicon-minus no-text"/>
                                                         </p:commandLink>
                                                     </div>
