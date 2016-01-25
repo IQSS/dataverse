@@ -64,14 +64,14 @@ if ($pg_only) {
 
 my %CONFIG_DEFAULTS = (
     'HOST_DNS_ADDRESS',    'localhost',
-    'GLASSFISH_DIRECTORY', '/usr/local/glassfish4',
-    'MAIL_SERVER',         'mail.hmdc.harvard.edu',
+    'GLASSFISH_DIRECTORY', '/home/mwm1/Applications/glassfish/glassfish-4.1',
+    'MAIL_SERVER',         'localhost',
 
     'POSTGRES_SERVER',   'localhost',
     'POSTGRES_PORT',     5432,
     'POSTGRES_DATABASE', 'dvndb',
     'POSTGRES_USER',     'dvnapp',
-    'POSTGRES_PASSWORD', 'secret',
+    'POSTGRES_PASSWORD', 'ieM9is4zoo',
 
     'RSERVE_HOST',     'localhost',
     'RSERVE_PORT',     6311,
@@ -108,7 +108,8 @@ my %POSTGRES_DRIVERS = (
     "9_0", "postgresql-9.0-802.jdbc4.jar",
     "9_1", "postgresql-9.1-902.jdbc4.jar",
     "9_2", "postgresql-9.1-902.jdbc4.jar",
-    "9_3", "postgresql-9.1-902.jdbc4.jar"
+    "9_3", "postgresql-9.1-902.jdbc4.jar",
+    "9_4", "postgresql-9.4.1207.jdbc4.jar"
 );
 
 # A few preliminary checks:
@@ -310,34 +311,34 @@ unless ($postgresonly) {
 print "\nChecking if the application .war file is available... ";
 
 # if this installation is running out of the installer zib bundle directory,
-# the war file will be sitting right here, named "dataverse.war": 
+# the war file will be sitting right here, named "dataverse.war":
 
-my $WARFILE_LOCATION = "dataverse.war"; 
+my $WARFILE_LOCATION = "dataverse.war";
 
-# but if it's not here, this is probably a personal development 
+# but if it's not here, this is probably a personal development
 # setup, so their build should be up in their source tree:
 
 unless ( -f $WARFILE_LOCATION ) {
     my $DATAVERSE_VERSION = "";
     my $DATAVERSE_POM_FILE = "../../pom.xml";
-    if ( -f $DATAVERSE_POM_FILE ) 
+    if ( -f $DATAVERSE_POM_FILE )
     {
-	open DPF, $DATAVERSE_POM_FILE; 
-	my $pom_line;
-	while ($pom_line=<DPF>)
-	{
-	    chop $pom_line;
-	    if ($pom_line =~/^[ \t]*<version>([0-9\.]+)<\/version>/)
-	    {
-		$DATAVERSE_VERSION=$1;
-		last;
-	    }	    
-	}
-	close DPF;
+        open DPF, $DATAVERSE_POM_FILE;
+        my $pom_line;
+        while ($pom_line=<DPF>)
+        {
+            chop $pom_line;
+            if ($pom_line =~/^[ \t]*<version>([0-9\.]+)<\/version>/)
+            {
+                $DATAVERSE_VERSION=$1;
+                last;
+            }
+        }
+        close DPF;
 
-	if ($DATAVERSE_VERSION ne "") {
-	    $WARFILE_LOCATION = "../../target/dataverse-" . $DATAVERSE_VERSION . ".war";
-	}
+        if ($DATAVERSE_VERSION ne "") {
+            $WARFILE_LOCATION = "../../target/dataverse-" . $DATAVERSE_VERSION . ".war";
+        }
     }
 }
 
