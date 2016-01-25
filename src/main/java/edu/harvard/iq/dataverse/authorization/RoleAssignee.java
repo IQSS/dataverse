@@ -1,5 +1,10 @@
 package edu.harvard.iq.dataverse.authorization;
 
+import java.util.function.Function;
+import java.util.function.Predicate;
+
+import org.apache.commons.lang.StringUtils;
+
 import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AllUsers;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
@@ -25,4 +30,17 @@ public interface RoleAssignee {
 
     public RoleAssigneeDisplayInfo getDisplayInfo();
 
+    static Function<RoleAssignee, Predicate<String>> autocompleteMatch = new Function<RoleAssignee, Predicate<String>>() {
+		@Override
+		public Predicate<String> apply(RoleAssignee ra) {
+			return new Predicate<String>() {
+				@Override
+				public boolean test(String query) {
+					return 	ra != null &&
+							((ra.getDisplayInfo() != null && StringUtils.containsIgnoreCase(ra.getDisplayInfo().getTitle(), query) )
+		                    || StringUtils.containsIgnoreCase(ra.getIdentifier(), query));
+				}
+			};
+		}
+	};
 }
