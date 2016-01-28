@@ -6,7 +6,7 @@ Preparation
 
 > "What are you preparing? You're always preparing! Just go!" -- Spaceballs
 
-We'll try to get you up and running as quicky as possible but we thought you might like to hear about your opinons. :)
+We'll try to get you up and running as quicky as possible, but we thought you might like to hear about your options. :)
 
 .. contents:: :local:
 
@@ -35,7 +35,7 @@ There are some community-lead projects to use configuration management tools suc
 - https://github.com/IQSS/dataverse-puppet
 - https://github.com/IQSS/dataverse-ansible
 
-The Dataverse development team is happy to "bless" additional community efforts along these lines (i.e. Docker, Chef, Salt, etc.) by creating a repo under the IQSS organization.
+The Dataverse development team is happy to "bless" additional community efforts along these lines (i.e. Docker, Chef, Salt, etc.) by creating a repo under https://github.com/IQSS and managing team access.
 
 Dataverse permits a fair amount of flexibility in where you choose to install the various components. The diagram below shows a load balancer, multiple proxies and web servers, redundant database servers, and offloading of potentially resource intensive work to a separate server. A setup such as this is advanced enough to be considered out of scope for this guide but you are welcome to ask questions about similar configurations via the support channels listed in the :doc:`intro`.
 

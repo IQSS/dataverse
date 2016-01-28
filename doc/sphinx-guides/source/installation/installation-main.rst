@@ -40,33 +40,52 @@ The script is to a large degree a derivative of the old installer from DVN 3.x. 
 
 All the Glassfish configuration tasks performed by the installer are isolated in the shell script ``dvinstall/glassfish-setup.sh`` (as ``asadmin`` commands). 
 
-As the installer finishes, it mentions a script called ``post-install-api-block.sh`` which is **very important** to execute for any production installation of Dataverse.
+As the installer finishes, it mentions a script called ``post-install-api-block.sh`` which is **very important** to execute for any production installation of Dataverse. Security will be covered in :doc:`config` section but for now, let's make sure your installation is working.
 
 Logging In
 ----------
 
 Out of the box, Glassfish runs on port 8080 and 8181 rather than 80 and 443, respectively, so visiting http://localhost:8080 (substituting your hostname) should bring up a login page. See the :doc:`shibboleth` page for more on ports, but for now, let's confirm we can log in by using port 8080. Poke a temporary hole in your firewall.
 
-Dataverse Admin Account
-+++++++++++++++++++++++
+Superuser Account
++++++++++++++++++
 
-Now that you've run the application installer and have your own Dataverse instance, you need to configure the Dataverse Administrator user. 
-By default installer pre-sets the Admin credentials as follows:
+We'll use the superuser account created by the installer to make sure you can log into Dataverse. For more on the difference between being a superuser and having the "Admin" role, read about configuring the root dataverse in the :doc:`config` section.
 
-.. code-block:: none
+(The ``dvinstall/setup-all.sh`` script, which is called by the installer sets the password for the superuser account account and the username and email address come from a file it references at ``dvinstall/data/user-admin.json``.)
 
-    First Name: Dataverse
-    Last Name:  Admin
-    Affiliation: Dataverse.org
-    Position: Admin
-    Email: dataverse@mailinator.com
+Use the following credentials to log in:
 
-Log in as the user dataverseAdmin with the password "admin" and change these values to suit your installation.
-
-(Alteratively, you can modify the file ``dvinstall/data/user-admin.json`` in the installer bundle **before** you run the installer. The password is in ``dvinstall/setup-all.sh``, which references this JSON file.)
+- URL: http://localhost:8080
+- username: dataverseAdmin
+- password: admin
 
 Congratulations! You have a working Dataverse installation. Soon you'll be tweeting at `@dataverseorg <https://twitter.com/dataverseorg>`_ asking to be added to the map at http://dataverse.org :)
 
-Trouble? Please get in touch as explained in the :doc:`intro`.
+(While you're logged in, you should go ahead and change the email address of the dataverseAdmin account to a real one rather than "dataverse@mailinator.com" so that you receive notifications.)
+
+Trouble? See if you find an answer in the troubleshooting section below.
 
 Next you'll want to check out the :doc:`config` section.
+
+Troubleshooting
+---------------
+
+If the following doesn't apply, please get in touch as explained in the :doc:`intro`. You may be asked to provide ``glassfish4/glassfish/domains/domain1/logs/server.log`` for debugging.
+
+Dataset Cannot Be Published
++++++++++++++++++++++++++++
+
+Check to make sure you used a fully qualified domain name when installing Dataverse. You can change the ``dataverse.fqdn`` JVM option after the fact per the :doc:`config` section.
+
+Problems Sending Email
+++++++++++++++++++++++
+
+You can confirm the SMTP server being used with this command:
+
+``asadmin get server.resources.mail-resource.mail/notifyMailSession.host``
+
+UnknownHostException While Deploying
+++++++++++++++++++++++++++++++++++++
+
+If you are seeing "Caused by: java.net.UnknownHostException: myhost: Name or service not known" in server.log and your hostname is "myhost" the problem is likely that "myhost" doesn't appear in ``/etc/hosts``. See also http://stackoverflow.com/questions/21817809/glassfish-exception-during-deployment-project-with-stateful-ejb/21850873#21850873

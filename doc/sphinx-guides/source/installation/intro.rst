@@ -11,8 +11,6 @@ If you are installing Dataverse for the first time, please proceed to the :doc:`
 
 Jump ahead to :doc:`config` or :doc:`upgrading` for an existing Dataverse installation.
 
-Features designated as "superuser only" are covered under :doc:`administration`.
-
 Intended Audience
 -----------------
 
