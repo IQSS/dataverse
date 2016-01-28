@@ -49,13 +49,33 @@ If indexing stops, this command should pick up where it left off based on which 
 
 ``curl http://localhost:8080/api/admin/index/continue``
 
+Glassfish
+---------
+
+``server.log`` is the main place to look when you encounter problems. Hopefully an error message has been logged. If there's a stack trace, it may be of interest to developers, especially they can trace line numbers back to a tagged version.
+
+For debugging purposes, you may find it helpful to increase logging levels as mentioned in the :doc:`/developers/debugging` section of the Developer Guide.
+
+This guide has focused on using the command line to manage Glassfish but you might be interested in an admin GUI at http://localhost:4848
+
+Monitoring
+----------
+
+In production you'll want to monitor the usual suspects such as CPU, memory, free disk space, etc.
+
+https://github.com/IQSS/dataverse/issues/2595 contains some information on enabling monitoring of Glassfish, which is disabled by default.
+
+There is a database table called ``actionlogrecord`` that captures events that may be of interest. See https://github.com/IQSS/dataverse/issues/2729 for more discussion around this table.
+
 User Administration
 -------------------
+
+There isn't much in the way of user administration tools built in to Dataverse.
 
 Deleting an API Token
 +++++++++++++++++++++
 
-If an API token is compromised it should be deleted. Users can generate a new one for themselves, but someone with access to the database can delete tokens as well.
+If an API token is compromised it should be deleted. Users can generate a new one for themselves as explained in the :doc:`/user/account` section of the User Guide, but you may want to preemptively delete tokens from the database.
 
 Using the API token 7ae33670-be21-491d-a244-008149856437 as an example:
 
@@ -63,4 +83,3 @@ Using the API token 7ae33670-be21-491d-a244-008149856437 as an example:
 
 You should expect the output ``DELETE 1`` after issuing the command above.
 
-After the API token has been deleted, users can generate a new one per :doc:`/user/account`.

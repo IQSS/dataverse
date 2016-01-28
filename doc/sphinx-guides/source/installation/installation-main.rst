@@ -89,3 +89,49 @@ UnknownHostException While Deploying
 ++++++++++++++++++++++++++++++++++++
 
 If you are seeing "Caused by: java.net.UnknownHostException: myhost: Name or service not known" in server.log and your hostname is "myhost" the problem is likely that "myhost" doesn't appear in ``/etc/hosts``. See also http://stackoverflow.com/questions/21817809/glassfish-exception-during-deployment-project-with-stateful-ejb/21850873#21850873
+
+Fresh Reinstall
+---------------
+
+Early on when you're installing Dataverse, you may think, "I just want to blow away what I've installed and start over." That's fine. You don't have to uninstall the various components like Glassfish, PostgreSQL and Solr, but you should be conscious of how to clear out their data.
+
+Drop database
++++++++++++++
+
+In order to drop the database, you have to stop Glassfish, which will have open connections. Before you stop Glassfish, you may as well undeploy the war file. First, find the name like this:
+
+``asadmin list-applications``
+
+Then undeploy it like this:
+
+``asadmin undeploy dataverse-VERSION``
+
+Stop Glassfish with the init script provided in the :doc:`prerequisites` section or just use:
+
+``asadmin stop-domain``
+
+With Glassfish down, you should now be able to drop your database and recreate it:
+
+``psql -U dvnapp -c 'DROP DATABASE "dvndb"' template1``
+
+Clear Solr
+++++++++++
+
+The database is fresh and new but Solr has stale data it in. Clear it out with this command:
+
+``curl http://localhost:8983/solr/update/json?commit=true -H "Content-type: application/json" -X POST -d "{\"delete\": { \"query\":\"*:*\"}}"``
+
+
+Deleting uploaded files
++++++++++++++++++++++++
+
+The path below will depend on the value for ``dataverse.files.directory`` as described in the :doc:`config` section:
+
+``rm -rf /usr/local/glassfish4/glassfish/domains/domain1/files``
+
+Rerun Installer
++++++++++++++++
+
+With all the data cleared out, you should be ready to rerun the installer per above.
+
+Related to all this is a series of scripts at https://github.com/IQSS/dataverse/blob/develop/scripts/deploy/phoenix.dataverse.org/deploy that Dataverse developers use have the test server http://phoenix.dataverse.org rise from the ashes before integration tests are run against it. Your mileage may vary. :)

@@ -10,7 +10,11 @@ You **may** find it helpful to look at how the configuration is done automatical
 
 Java
 ----
+
 Dataverse requires Java 8 (also known as 1.8).
+
+Installing Java
+===============
 
 Dataverse should run fine with only the Java Runtime Environment (JRE) installed, but installing the Java Development Kit (JDK) is recommended so that useful tools for troubleshooting production environments are available. We recommend using Oracle JDK or OpenJDK.
 
@@ -35,8 +39,10 @@ Glassfish
 
 Glassfish Version 4.1 is required. There are known issues with Glassfish 4.1.1 as chronicled in https://github.com/IQSS/dataverse/issues/2628 so it should be avoided until that issue is resolved.
 
-**Important**: once Glassfish is installed, a new version of the Weld library (v2.2.10.SP1) must be downloaded and installed. This fixes a serious issue in the library supplied with Glassfish 4.1 ( see https://github.com/IQSS/dataverse/issues/647 for details).
+Installing Glassfish
+====================
 
+**Important**: once Glassfish is installed, a new version of the Weld library (v2.2.10.SP1) must be downloaded and installed. This fixes a serious issue in the library supplied with Glassfish 4.1 ( see https://github.com/IQSS/dataverse/issues/647 for details). Please note that if you plan to front Glassfish with Apache you must also patch Grizzly as explained in the :doc:`shibboleth` section.
 
 - Download and install Glassfish (installed in ``/usr/local/glassfish4`` in the example commands below)::
 
@@ -55,59 +61,31 @@ Glassfish Version 4.1 is required. There are known issues with Glassfish 4.1.1 a
 
 	# /usr/local/glassfish4/bin/asadmin osgi lb | grep 'Weld OSGi Bundle'
 
-The Dataverse installation script will start Glassfish if necessary, but while you're configuring Glassfish, you might find the following init script helpful to have Glassfish start on boot::
+Glassfish Init Script
+=====================
 
-	set -e
-	ASADMIN=/usr/local/glassfish4/bin/asadmin
-	case "$1" in
-  	start)
-        	echo -n "Starting GlassFish server: glassfish"
-        	# Increase file descriptor limit:
-        	ulimit -n 32768
-        	# Allow "memory overcommit":
-        	# (basically, this allows to run exec() calls from inside the
-        	# app, without the Unix fork() call physically hogging 2X
-        	# the amount of memory glassfish is already using)
-        	echo 1 > /proc/sys/vm/overcommit_memory
+The Dataverse installation script will start Glassfish if necessary, but while you're configuring Glassfish, you might find the following init script helpful to have Glassfish start on boot.
 
-		# Set UTF8 as the default encoding:
-		LANG=en_US.UTF-8; export LANG
-        	$ASADMIN start-domain domain1
-        	echo "."
-        	;;
-  		  stop)
-        	echo -n "Stopping GlassFish server: glassfish"
+Adjust `this Glassfish init script <../_static/installation/files/etc/init.d/glassfish>`_ for your needs or write your own.
 
-        	$ASADMIN stop-domain domain1
-        	echo "."
-        	;;
+It is not necessary to have Glassfish running before you execute the Dataverse installation script because it will start Glassfish for you.
 
-  		  *)
-        	echo "Usage: /etc/init.d/glassfish {start|stop}"
-        	exit 1
-		esac
-	exit 0
-			
 PostgreSQL
 ----------
 
-1. Installation
-================
+Installing PostgreSQL
+=======================
 
 Version 9.x is required. Previous versions have not been tested.
-
-1A. RHEL and similar systems:
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The version that ships with RHEL 6 and above is fine::
 
 	# yum install postgresql-server
-        # chkconfig postgresql on
         # service postgresql initdb
 	# service postgresql start
 
-2. Configure access to PostgreSQL for the installer script
-==========================================================
+Configure Access to PostgreSQL for the Installer Script
+=======================================================
 
 - When using localhost for the database server, the installer script needs to have direct access to the local PostgreSQL server via Unix domain sockets. This is configured by the line that starts with ``local all all`` in the pg_hba.conf file. The location of this file may vary depending on the distribution. But if you followed the suggested installation instructions above, it will be ``/var/lib/pgsql/data/pg_hba.conf`` on RHEL and similar. Make sure the line looks like this (it will likely be pre-configured like this already)::
 
@@ -119,8 +97,8 @@ The version that ships with RHEL 6 and above is fine::
 
 This is a security risk, as it opens your database to anyone with a shell on your server. It does not however compromise remote access to your system. Plus you only need this configuration in place to run the installer. After it's done, you can safely reset it to how it was configured before.
 
-3. Configure database access for the Dataverse application
-==========================================================
+Configure Database Access for the Dataverse Application
+=======================================================
 
 - The application will be talking to PostgreSQL over TCP/IP, using password authentication. If you are running PostgreSQL on the same server as Glassfish, we strongly recommend that you use the localhost interface to connect to the database. Make you sure you accept the default value ``localhost`` when the installer asks you for the PostgreSQL server address. Then find the localhost (127.0.0.1) entry that's already in the ``pg_hba.conf`` and modify it to look like this:: 
 
@@ -140,13 +118,24 @@ This is a security risk, as it opens your database to anyone with a shell on you
 
 - **Important: you must restart Postgres** for the configuration changes to take effect! On RHEL and similar (provided you installed Postgres as instructed above)::
         
-        # service postgresql-9.3 restart
+        # service postgresql restart
 
+PostgreSQL Init Script
+======================
+
+The standard init script that ships RHEL 6 and similar should work fine. Enable it with this command::
+
+        # chkconfig postgresql on
 
 Solr 
 ----
 
-- Download and Install Solr::
+The Dataverse search index is powered by Solr.
+
+Installing Solr
+===============
+
+Download and install Solr with these commands::
 
 	# wget https://archive.apache.org/dist/lucene/solr/4.6.0/solr-4.6.0.tgz
 	# tar xvzf solr-4.6.0.tgz 
@@ -162,17 +151,25 @@ With the Dataverse-specific schema in place, you can now start Solr::
 
 	# java -jar start.jar
 
-The command above will start Solr in the foreground which is good for a quick sanity check that Solr accepted the schema file, but you'll want to put the process in the background by appending `` &`` or by using an init script. The Vagrant environment uses this init script for Solr but your mileage may vary: https://github.com/IQSS/dataverse/blob/develop/conf/vagrant/etc/init.d/solr
+Solr Init Script
+================
+
+The command above will start Solr in the foreground which is good for a quick sanity check that Solr accepted the schema file, but starting Solr with an init script is recommended. You can attempt to adjust `this Solr init script <../_static/installation/files/etc/init.d/solr>`_ for your needs or write your own.
 
 Solr should be running before the installation script is executed.
 
 Securing Solr
 =============
 
-Solr must be firewalled off from all hosts except the server(s) running Dataverse. Otherwise, any host  that can reach the Solr port (8983 by default) can add or delete data, search unpublished data, and     even reconfigure Solr. For more information, please see https://wiki.apache.org/solr/SolrSecurity
+Solr must be firewalled off from all hosts except the server(s) running Dataverse. Otherwise, any host  that can reach the Solr port (8983 by default) can add or delete data, search unpublished data, and even reconfigure Solr. For more information, please see https://wiki.apache.org/solr/SolrSecurity
+
+You may want to poke a temporary hole in your firewall to play with the Solr GUI. More information on this can be found in the :doc:`/developers/dev-environment` section of the Developer Guide.
 
 jq
 --
+
+Installing jq
+=============
 
 ``jq`` is a command line tool for parsing JSON output that is used by the Dataverse installation script. https://stedolan.github.io/jq explains various ways of installing it, but a relatively straightforward method is described below. Please note that you must download the 64- or 32-bit version based on your architecture. In the example below, the 64-bit version is installed. We confirm it's executable and in our ``$PATH`` by checking the version (1.4 or higher should be fine):: 
 

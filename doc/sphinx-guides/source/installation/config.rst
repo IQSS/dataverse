@@ -16,7 +16,9 @@ Securing Your Installation
 Blocking API Endpoints
 ++++++++++++++++++++++
 
-The :doc:`/api/native-api` contains a useful but potentially dangerous API endpoint called "admin" that allows you to change system settings, make ordinary users into superusers, and more. In addition, there is a "test" API used for development and troubleshooting. By default, both of these APIs can be operated on remotely and without the need for any authentication. https://github.com/IQSS/dataverse/issues/1886 was opened to explore changing these defaults, but until then it is very important to block both the "admin" and "test" endpoint with a script called ``post-install-api-block.sh`` available from https://github.com/IQSS/dataverse/blob/develop/scripts/api/post-install-api-block.sh . See also the section on ``:BlockedApiPolicy`` below.
+The :doc:`/api/native-api` contains a useful but potentially dangerous API endpoint called "admin" that allows you to change system settings, make ordinary users into superusers, and more. There is a "test" API endpoint used for development and troubleshooting that has some potentially dangerous methods. The ``builtin-users`` endpoint lets people create a local/builtin user account if they know the ``BuiltinUsers.KEY`` value described below.
+
+By default, all APIs can be operated on remotely and without the need for any authentication. https://github.com/IQSS/dataverse/issues/1886 was opened to explore changing these defaults, but until then it is very important to block both the "admin" and "test" endpoint (and at least consider blocking ``builtin-users``). For details please see also the section on ``:BlockedApiPolicy`` below.
 
 Forcing HTTPS
 +++++++++++++
@@ -208,9 +210,11 @@ Out of the box, all API endpoints are completely open as mentioned in the sectio
 :BlockedApiEndpoints
 ++++++++++++++++++++
 
-A comma separated list of API endpoints to be blocked. For a production installation, "admin" and "test" should be blocked, as mentioned in the section on security above.
+A comma separated list of API endpoints to be blocked. For a production installation, "admin" and "test" should be blocked (and perhaps "builtin-users" as well), as mentioned in the section on security above:
 
-``curl -X PUT -d "admin,test" http://localhost:8080/api/admin/settings/:BlockedApiEndpoints``
+``curl -X PUT -d "admin,test,builtin-users" http://localhost:8080/api/admin/settings/:BlockedApiEndpoints``
+
+See the :doc:`/api/index` for a list of API endpoints.
 
 :BlockedApiKey
 ++++++++++++++
@@ -218,6 +222,20 @@ A comma separated list of API endpoints to be blocked. For a production installa
 Used in conjunction with the ``:BlockedApiPolicy`` being set to ``unblock-key``. When calling blocked APIs, add a query parameter of ``unblock-key=theKeyYouChose`` to use the key.
 
 ``curl -X PUT -d s3kretKey http://localhost:8080/api/admin/settings/:BlockedApiKey``
+
+BuiltinUsers.KEY
+++++++++++++++++
+
+The key required to create users via API as documented at :doc:`/api/native-api`. Unlike other database settings, this one doesn't start with a colon.
+
+``curl -X PUT -d builtInS3kretKey http://localhost:8080/api/admin/settings/:BuiltinUsers.KEY``
+
+:SystemEmail
+++++++++++++
+
+This is the email address that "system" emails are sent from such as password reset links.
+
+``curl -X PUT -d "Support <support@example.edu>" http://localhost:8080/api/admin/settings/:SystemEmail``
 
 :DoiProvider
 ++++++++++++
