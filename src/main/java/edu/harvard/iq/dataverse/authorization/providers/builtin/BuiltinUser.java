@@ -23,14 +23,14 @@ import org.hibernate.validator.constraints.NotBlank;
  * @author mbarsinai
  */
 @NamedQueries({
-		@NamedQuery( name="BuiltinUser.findAll",
-				query = "SELECT u FROM BuiltinUser u ORDER BY u.lastName"),
-		@NamedQuery( name="BuiltinUser.findByUserName",
-				query = "SELECT u FROM BuiltinUser u WHERE u.userName=:userName"),
-		@NamedQuery( name="BuiltinUser.findByEmail",
-				query = "SELECT o FROM BuiltinUser o WHERE o.email = :email"),
-		@NamedQuery( name="BuiltinUser.listByUserNameLike",
-				query = "SELECT u FROM BuiltinUser u WHERE u.userName LIKE :userNameLike")
+                @NamedQuery( name="BuiltinUser.findAll",
+                                query = "SELECT u FROM BuiltinUser u ORDER BY u.lastName"),
+                @NamedQuery( name="BuiltinUser.findByUserName",
+                                query = "SELECT u FROM BuiltinUser u WHERE u.userName=:userName"),
+                @NamedQuery( name="BuiltinUser.findByEmail",
+                                query = "SELECT o FROM BuiltinUser o WHERE LOWER(o.email) = LOWER(:email)"),
+                @NamedQuery( name="BuiltinUser.listByUserNameLike",
+                                query = "SELECT u FROM BuiltinUser u WHERE u.userName LIKE :userNameLike")
 })
 @Entity
 @Table(indexes = {@Index(columnList="lastName")})  // for sorting the NamedQuery BuiltinUser.findAll
@@ -44,12 +44,12 @@ public class BuiltinUser implements Serializable {
     @NotBlank(message = "Please enter a username.")
     @Size(min=2, max=60, message ="Username must be between 2 and 60 characters.")
     @Pattern(regexp = "[a-zA-Z0-9\\_\\-\\.]*", message = "Found an illegal character(s). Valid characters are a-Z, 0-9, '_', '-', and '.'.")
-    @Column(nullable = false, unique=true)  
+    @Column(nullable = false, unique=true)
     private String userName;
 
     @NotBlank(message = "Please enter a valid email address.")
     @ValidateEmail(message = "Please enter a valid email address.")
-    @Column(nullable = false, unique=true)    
+    @Column(nullable = false, unique=true)
     private String email;
 
     @NotBlank(message = "Please enter your first name.")
@@ -57,17 +57,17 @@ public class BuiltinUser implements Serializable {
 
     @NotBlank(message = "Please enter your last name.")
     private String lastName;
-    
-    private int passwordEncryptionVersion; 
+
+    private int passwordEncryptionVersion;
     private String encryptedPassword;
     private String affiliation;
     private String position;
-    
+
     public void updateEncryptedPassword( String encryptedPassword, int algorithmVersion ) {
         setEncryptedPassword(encryptedPassword);
         setPasswordEncryptionVersion(algorithmVersion);
     }
-    
+
     public Long getId() {
         return id;
     }
@@ -107,15 +107,15 @@ public class BuiltinUser implements Serializable {
     public void setLastName(String lastName) {
         this.lastName = lastName;
     }
-    
+
     public String getEncryptedPassword() {
         return encryptedPassword;
     }
-    
+
     /**
      * JPA-use only. Humans should call {@link #updateEncryptedPassword(java.lang.String, int)}
      * and update the password and the algorithm at the same time.
-     * 
+     *
      * @param encryptedPassword
      * @deprecated
      */
@@ -123,7 +123,7 @@ public class BuiltinUser implements Serializable {
     public void setEncryptedPassword(String encryptedPassword) {
         this.encryptedPassword = encryptedPassword;
     }
-    
+
     public String getAffiliation() {
         return affiliation;
     }
@@ -139,11 +139,11 @@ public class BuiltinUser implements Serializable {
     public void setPosition(String position) {
         this.position = position;
     }
-    
+
     public String getDisplayName(){
-        return this.getFirstName() + " " + this.getLastName(); 
+        return this.getFirstName() + " " + this.getLastName();
     }
-    
+
     public AuthenticatedUserDisplayInfo getDisplayInfo() {
         return new AuthenticatedUserDisplayInfo(getFirstName(), getLastName(), getEmail(), getAffiliation(), getPosition() );
     }
@@ -164,10 +164,10 @@ public class BuiltinUser implements Serializable {
         return !((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id)));
     }
 
-	@Override
-	public String toString() {
-		return "BuiltinUser{" + "id=" + id + ", userName=" + userName + ", email=" + email + '}';
-	}
+        @Override
+        public String toString() {
+                return "BuiltinUser{" + "id=" + id + ", userName=" + userName + ", email=" + email + '}';
+        }
 
     public int getPasswordEncryptionVersion() {
         return passwordEncryptionVersion;
@@ -176,5 +176,5 @@ public class BuiltinUser implements Serializable {
     public void setPasswordEncryptionVersion(int passwordEncryptionVersion) {
         this.passwordEncryptionVersion = passwordEncryptionVersion;
     }
-    
+
 }

@@ -31,15 +31,15 @@ import javax.validation.constraints.NotNull;
     @NamedQuery( name="AuthenticatedUser.findByIdentifier",
                 query="select au from AuthenticatedUser au WHERE au.userIdentifier=:identifier"),
     @NamedQuery( name="AuthenticatedUser.findByEmail",
-                query="select au from AuthenticatedUser au WHERE au.email=:email"),
+                query="select au from AuthenticatedUser au WHERE LOWER(au.email)=LOWER(:email)"),
     @NamedQuery( name="AuthenticatedUser.countOfIdentifier",
                 query="SELECT COUNT(a) FROM AuthenticatedUser a WHERE a.userIdentifier=:identifier")
 })
 @Entity
 public class AuthenticatedUser implements User, Serializable {
-    
+
     public static final String IDENTIFIER_PREFIX = "@";
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
@@ -79,12 +79,12 @@ public class AuthenticatedUser implements User, Serializable {
     public String getIdentifier() {
         return IDENTIFIER_PREFIX + userIdentifier;
     }
-    
-    
-    
+
+
+
     @OneToMany(mappedBy = "user", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<DatasetLock> datasetLocks;
-	
+
     public List<DatasetLock> getDatasetLocks() {
         return datasetLocks;
     }
@@ -92,12 +92,12 @@ public class AuthenticatedUser implements User, Serializable {
     public void setDatasetLocks(List<DatasetLock> datasetLocks) {
         this.datasetLocks = datasetLocks;
     }
-    
+
     @Override
     public RoleAssigneeDisplayInfo getDisplayInfo() {
         return new AuthenticatedUserDisplayInfo(firstName, lastName, email, affiliation, position);
     }
-    
+
     /**
      * Takes the passed info object and updated the internal fields according to it.
      * @param inf the info from which we update the fields.
@@ -110,7 +110,7 @@ public class AuthenticatedUser implements User, Serializable {
         setPosition( inf.getPosition());
 
     }
-    
+
     @Override
     public boolean isAuthenticated() { return true; }
 
@@ -192,7 +192,7 @@ public class AuthenticatedUser implements User, Serializable {
         if (authProviderString != null && authProviderString.equals(BuiltinAuthenticationProvider.PROVIDER_ID)) {
             return true;
         }
-        
+
         return false;
     }
 
@@ -206,14 +206,14 @@ public class AuthenticatedUser implements User, Serializable {
     public void setAuthenticatedUserLookup(AuthenticatedUserLookup authenticatedUserLookup) {
         this.authenticatedUserLookup = authenticatedUserLookup;
     }
-    
+
     @Override
     public int hashCode() {
         int hash = 0;
         hash += (id != null ? id.hashCode() : 0);
         return hash;
-    }    
-    
+    }
+
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
@@ -222,7 +222,7 @@ public class AuthenticatedUser implements User, Serializable {
         }
         AuthenticatedUser other = (AuthenticatedUser) object;
         return Objects.equals(getId(), other.getId());
-    }    
+    }
 
     public String getShibIdentityProvider() {
         return shibIdentityProvider;
@@ -231,5 +231,5 @@ public class AuthenticatedUser implements User, Serializable {
     public void setShibIdentityProvider(String shibIdentityProvider) {
         this.shibIdentityProvider = shibIdentityProvider;
     }
-    
+
 }
