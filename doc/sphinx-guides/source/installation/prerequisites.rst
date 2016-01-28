@@ -55,11 +55,18 @@ Installing Glassfish
 	# cd /usr/local/glassfish4/glassfish/modules
 	# rm weld-osgi-bundle.jar
 	# wget http://central.maven.org/maven2/org/jboss/weld/weld-osgi-bundle/2.2.10.SP1/weld-osgi-bundle-2.2.10.SP1-glassfish4.jar
-	# /usr/local/glassfish4/bin/asadmin start-domain domain1
+	# /usr/local/glassfish4/bin/asadmin start-domain
 
 - Verify the Weld version::
 
 	# /usr/local/glassfish4/bin/asadmin osgi lb | grep 'Weld OSGi Bundle'
+
+- Stop Glassfish and change from ``-client`` to ``-server`` under ``<jvm-options>-client</jvm-options>``::
+
+	# /usr/local/glassfish4/bin/asadmin stop-domain
+	# vim /usr/local/glassfish4/glassfish/domains/domain1/config/domain.xml
+
+This recommendation comes from http://blog.c2b2.co.uk/2013/07/glassfish-4-performance-tuning.html among other places.
 
 Glassfish Init Script
 =====================
