@@ -223,6 +223,10 @@ public class UtilIT {
 
     public static Response uploadRandomFile(String persistentId, String apiToken) {
         String zipfilename = "trees.zip";
+        return uploadFile(persistentId, zipfilename, apiToken);
+    }
+
+    public static Response uploadFile(String persistentId, String zipfilename, String apiToken) {
         String pathToFileName = "scripts/search/data/binary/" + zipfilename;
         byte[] bytes = null;
         try {
@@ -294,11 +298,11 @@ public class UtilIT {
     }
 
     static String getFilenameFromSwordStatementResponse(Response swordStatement) {
-        String filename = getFilenameFromSwordStatementResponse(swordStatement.body().asString());
+        String filename = getFirstFilenameFromSwordStatementResponse(swordStatement.body().asString());
         return filename;
     }
 
-    private static String getFilenameFromSwordStatementResponse(String swordStatement) {
+    private static String getFirstFilenameFromSwordStatementResponse(String swordStatement) {
         XmlPath xmlPath = new XmlPath(swordStatement);
         try {
             String filename = xmlPath.get("feed.entry[0].id").toString().split("/")[11];
@@ -332,7 +336,7 @@ public class UtilIT {
                 .delete("/api/datasets/" + datasetId);
     }
 
-    static Response deleteDatasetViaSwordApi(String persistentId, String apiToken) {
+    static Response deleteLatestDatasetVersionViaSwordApi(String persistentId, String apiToken) {
         return given()
                 .auth().basic(apiToken, EMPTY_STRING)
                 .relaxedHTTPSValidation()
@@ -342,7 +346,7 @@ public class UtilIT {
     static Response destroyDataset(Integer datasetId, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .delete("/api/datasets/" + datasetId);
+                .delete("/api/datasets/" + datasetId + "/destroy");
     }
 
     static Response deleteFile(Integer fileId, String apiToken) {
