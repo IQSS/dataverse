@@ -31,6 +31,7 @@ public class SwordIT {
     private static String datasetPersistentId1;
     private static String datasetPersistentId2;
     private static String datasetPersistentId3;
+    private static String datasetPersistentId4;
 
     @BeforeClass
     public static void setUpClass() {
@@ -225,6 +226,8 @@ public class SwordIT {
      * - https://github.com/IQSS/dataverse/issues/1784
      *
      * - https://github.com/IQSS/dataverse/issues/2222
+     *
+     * - https://github.com/IQSS/dataverse/issues/2464
      */
     @Test
     public void testDeleteFiles() {
@@ -346,6 +349,67 @@ public class SwordIT {
         Response atomEntryDestroyed = UtilIT.getSwordAtomEntry(datasetPersistentId3, apiToken1);
         atomEntryDestroyed.prettyPrint();
         atomEntryDestroyed.then().statusCode(400);
+
+        Response createDataset4 = UtilIT.createRandomDatasetViaSwordApi(dataverseAlias3, apiToken1);
+        createDataset4.prettyPrint();
+        datasetPersistentId4 = UtilIT.getDatasetPersistentIdFromResponse(createDataset4);
+
+        Response uploadZipToDataset4 = UtilIT.uploadFile(datasetPersistentId4, "3files.zip", apiToken1);
+        uploadZipToDataset4.prettyPrint();
+        assertEquals(CREATED.getStatusCode(), uploadZipToDataset4.getStatusCode());
+        Response publishDataset4 = UtilIT.publishDatasetViaSword(datasetPersistentId4, apiToken1);
+//        publishDataset4.prettyPrint();
+        publishDataset4.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response statement4a = UtilIT.getSwordStatement(datasetPersistentId4, apiToken1);
+        statement4a.prettyPrint();
+        List<String> threePublishedFiles = statement4a.getBody().xmlPath().getList("feed.entry.id");
+        logger.info("Number of files in lastest version (v1 published) of " + datasetPersistentId4 + threePublishedFiles.size());
+        assertEquals(3, threePublishedFiles.size());
+        String dataset4FileIndex0 = statement4a.getBody().xmlPath().get("feed.entry[0].id").toString().split("/")[10];
+        String dataset4FileIndex1 = statement4a.getBody().xmlPath().get("feed.entry[1].id").toString().split("/")[10];
+        String dataset4FileIndex2 = statement4a.getBody().xmlPath().get("feed.entry[2].id").toString().split("/")[10];
+        /**
+         * @todo Fix https://github.com/IQSS/dataverse/issues/2464 so that *any*
+         * file can be deleted via SWORD and not just the first file (zero
+         * index). Attempting to delete dataset4FileIndex1 or dataset4FileIndex2
+         * will exercise the bug. Attempting to delete dataset4FileIndex0 will
+         * not.
+         */
+        String fileToDeleteFromDataset4 = dataset4FileIndex1;
+
+        Response deleteFileFromDataset4 = UtilIT.deleteFile(Integer.parseInt(fileToDeleteFromDataset4), apiToken1);
+        deleteFileFromDataset4.then().assertThat()
+                .statusCode(NO_CONTENT.getStatusCode());
+        logger.info("Deleted file id " + fileToDeleteFromDataset4 + " from " + datasetPersistentId4 + " which should move it from published to draft.");
+        Response statement4b = UtilIT.getSwordStatement(datasetPersistentId4, apiToken1);
+        statement4b.prettyPrint();
+
+        boolean issue2464fixed = false;
+        if (issue2464fixed) {
+            List<String> datasetMovedToDraftWithTwoFilesLeft = statement4b.getBody().xmlPath().getList("feed.entry.id");
+            logger.info("Number of files left in " + datasetPersistentId4 + ": " + datasetMovedToDraftWithTwoFilesLeft.size());
+            assertEquals(2, datasetMovedToDraftWithTwoFilesLeft.size());
+        } else {
+            List<String> issue2464NotFixedYetSoAllThreeFilesRemain = statement4b.getBody().xmlPath().getList("feed.entry.id");
+            logger.info("Number of files left in " + datasetPersistentId4 + ": " + issue2464NotFixedYetSoAllThreeFilesRemain.size());
+        }
+
+        /**
+         * @todo The "destroy" endpoint should accept a persistentId:
+         * https://github.com/IQSS/dataverse/issues/1837
+         */
+        Response reindexDataset4ToFindDatabaseId = UtilIT.reindexDataset(datasetPersistentId4);
+        reindexDataset4ToFindDatabaseId.prettyPrint();
+        reindexDataset4ToFindDatabaseId.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        Integer datasetId4 = JsonPath.from(reindexDataset4ToFindDatabaseId.asString()).getInt("data.id");
+
+        Response destroyDataset4 = UtilIT.destroyDataset(datasetId4, apiToken1);
+        destroyDataset4.prettyPrint();
+        destroyDataset4.then().assertThat()
+                .statusCode(OK.getStatusCode());
 
         Response deleteDataverse3Response = UtilIT.deleteDataverse(dataverseAlias3, apiToken1);
         deleteDataverse3Response.prettyPrint();
