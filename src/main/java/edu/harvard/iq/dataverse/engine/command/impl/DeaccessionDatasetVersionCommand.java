@@ -41,14 +41,18 @@ public class DeaccessionDatasetVersionCommand extends AbstractCommand<DatasetVer
 
         theVersion.setVersionState(DatasetVersion.VersionState.DEACCESSIONED);
         
-        if (deleteDOIIdentifier){
-                    String nonNullDefaultIfKeyNotFound = "";
+        if (deleteDOIIdentifier) {
+            String nonNullDefaultIfKeyNotFound = "";
 
-        String    doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
-        
-           if (doiProvider.equals("EZID")) ctxt.doiEZId().deleteIdentifier(ds);
-           if (doiProvider.equals("DataCite")) ctxt.doiDataCite().deleteIdentifier(ds);
-        }       
+            String doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
+
+            if (doiProvider.equals("EZID")) {
+                ctxt.doiEZId().deleteIdentifier(ds);
+            }
+            if (doiProvider.equals("DataCite")) {
+                ctxt.doiDataCite().deleteIdentifier(ds);
+            }
+        }      
         DatasetVersion managed = ctxt.em().merge(theVersion);
         
         boolean doNormalSolrDocCleanUp = true;

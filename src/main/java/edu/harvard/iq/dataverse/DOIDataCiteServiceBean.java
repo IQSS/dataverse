@@ -48,6 +48,7 @@ public class DOIDataCiteServiceBean {
         HashMap metadata = getMetadataFromStudyForCreateIndicator(dataset);
         metadata.put("_status", "reserved");
         try {
+            logger.log(Level.INFO, "doiDataCiteRegisterService.toString : " + doiDataCiteRegisterService.toString());
             retString = doiDataCiteRegisterService.createIdentifier(identifier, metadata);
             logger.log(Level.INFO, "create DOI identifier retString : " + retString);
         } catch (Exception e) {
@@ -140,7 +141,7 @@ public class DOIDataCiteServiceBean {
             return;
         }
         if (idStatus.equals("public")) {
-            //if public then it has been released set to unavaialble and reset target to n2t url
+            //if public then it has been released set to unavailable and reset target to n2t url
             updateIdentifierStatus(datasetIn, "unavailable");
         }
     }

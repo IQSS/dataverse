@@ -66,6 +66,7 @@ public class DOIDataCiteRegisterService {
                     metadata.get("datacite.title"), metadata.get("datacite.publisher"),
                     metadata.get("datacite.publicationyear")});
         String xmlMetadata = metadataTemplate.generateXML();
+         logger.log(Level.INFO, "xmlMetadata 70 " + xmlMetadata.toString() );
         String status = metadata.get("_status").trim();
         String target = metadata.get("_target");
         String retString = "";
@@ -206,6 +207,7 @@ class DataCiteMetadataTemplate {
     }
 
     public String generateXML() {
+        System.out.print("in generate xml...");
         xmlMetadata = template.replace("${identifier}", this.identifier.trim())
                 .replace("${title}", this.title)
                 .replace("${publisher}", this.publisher)

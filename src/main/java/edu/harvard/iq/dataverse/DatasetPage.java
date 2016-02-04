@@ -1455,7 +1455,7 @@ public class DatasetPage implements java.io.Serializable {
                 } else {
                     for (FileMetadata fmd : this.selectedFiles) {
                         DataFile df = fmd.getDataFile();
-                        if (df != null) {
+                        if (df != null  && canDownloadFile(fmd)) {
                             this.guestbookResponse.setDataFile(df);
                             cmd = new CreateGuestbookResponseCommand(dvRequestService.getDataverseRequest(), this.guestbookResponse, dataset);
                             commandEngine.submit(cmd);
@@ -2089,8 +2089,19 @@ public class DatasetPage implements java.io.Serializable {
             }
             downloadIdString += fmd.getDataFile().getId();
         }
-        return downloadIdString;
-      
+        return downloadIdString;     
+    }
+    
+        // helper Method
+    public String getSelectedFilesIdsStringForDownload() {        
+        String downloadIdString = "";
+        for (FileMetadata fmd : this.selectedFiles){
+            if (!StringUtil.isEmpty(downloadIdString)) {
+                downloadIdString += ",";
+            }
+            downloadIdString += fmd.getDataFile().getId();
+        }
+        return downloadIdString;     
     }
     
     public void updateFileCounts(){

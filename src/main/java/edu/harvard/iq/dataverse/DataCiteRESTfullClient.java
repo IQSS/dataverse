@@ -5,7 +5,9 @@
  */
 package edu.harvard.iq.dataverse;
 
+
 import java.io.IOException;
+
 import java.io.UnsupportedEncodingException;
 
 import java.util.logging.Level;
@@ -43,7 +45,7 @@ public class DataCiteRESTfullClient {
     private CloseableHttpClient httpClient;
     private HttpClientContext context;
     private String encoding = "utf-8";
-
+    
     public DataCiteRESTfullClient(String url, String username, String password) {
         this.url = url;
         try {
@@ -149,10 +151,14 @@ public class DataCiteRESTfullClient {
         HttpPost httpPost = new HttpPost(this.url + "/metadata");
         httpPost.setHeader("Content-Type", "application/xml;charset=UTF-8");
         httpPost.setEntity(new StringEntity(metadata, "utf-8"));
-
+        System.out.print("in post metadata entity: " + httpPost.getEntity().toString());
+            System.out.print("In PostMetadata httpClient " + httpClient.toString());
+            System.out.print("In PostMetadata credentials " + context.getCredentialsProvider().getCredentials(AuthScope.ANY));
         try {
             HttpResponse response = httpClient.execute(httpPost,context);
+            
             String data = EntityUtils.toString(response.getEntity(), encoding);
+            System.out.print("response " + data);
             if (response.getStatusLine().getStatusCode() != 201) {
                 String errMsg = "Response code: " + response.getStatusLine().getStatusCode() + ", " + data;
                 logger.log(Level.SEVERE, errMsg);
@@ -190,7 +196,7 @@ public class DataCiteRESTfullClient {
 
     public static void main(String[] args) throws Exception {
         String doi = "10.5072/DVN/274533";
-        DataCiteRESTfullClient client = new DataCiteRESTfullClient("https://mds.test.datacite.org", "TIB.PUB", "62751062");
+        DataCiteRESTfullClient client = new DataCiteRESTfullClient("https://mds.test.datacite.org", "DATACITE.HARVARD", "DVNapitest");
 //		System.out.println(client.getUrl(doi));
 //		System.out.println(client.getMetadata(doi));
 //        System.out.println(client.postMetadata(readAndClose("C:/Users/luopc/Desktop/datacite.xml", "utf-8")));
