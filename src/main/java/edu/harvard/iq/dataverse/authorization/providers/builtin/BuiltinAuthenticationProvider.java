@@ -26,9 +26,9 @@ import java.util.Set;
 public class BuiltinAuthenticationProvider implements CredentialsAuthenticationProvider, UserLister, GroupProvider {
     
     public static final String PROVIDER_ID = "builtin";
-    private static final String KEY_USERNAME = "Username";
+    private static final String KEY_USERNAME_OR_PASSWORD = "Username or Email Address";
     private static final String KEY_PASSWORD = "Password";
-    private static final List<Credential> CREDENTIALS_LIST = Arrays.asList( new Credential(KEY_USERNAME), new Credential(KEY_PASSWORD, true) );
+    private static final List<Credential> CREDENTIALS_LIST = Arrays.asList( new Credential(KEY_USERNAME_OR_PASSWORD), new Credential(KEY_PASSWORD, true) );
       
     final BuiltinUserServiceBean bean;
 
@@ -53,8 +53,8 @@ public class BuiltinAuthenticationProvider implements CredentialsAuthenticationP
 
     @Override
     public AuthenticationResponse authenticate( AuthenticationRequest authReq ) {
-        BuiltinUser u = bean.findByUserName( authReq.getCredential(KEY_USERNAME) );
-        if ( u == null ) return AuthenticationResponse.makeFail("Bad username or password");
+        BuiltinUser u = bean.findByUsernameOrEmail(authReq.getCredential(KEY_USERNAME_OR_PASSWORD) );
+        if ( u == null ) return AuthenticationResponse.makeFail("Bad username, email address, or password");
         
         boolean userAuthenticated = PasswordEncryption.getVersion(u.getPasswordEncryptionVersion())
                                             .check(authReq.getCredential(KEY_PASSWORD), u.getEncryptedPassword() );
