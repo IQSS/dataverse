@@ -26,7 +26,7 @@ import java.util.Set;
 public class BuiltinAuthenticationProvider implements CredentialsAuthenticationProvider, UserLister, GroupProvider {
     
     public static final String PROVIDER_ID = "builtin";
-    private static final String KEY_USERNAME_OR_PASSWORD = "Username or Email Address";
+    private static final String KEY_USERNAME_OR_PASSWORD = "Username/Email";
     private static final String KEY_PASSWORD = "Password";
     private static final List<Credential> CREDENTIALS_LIST = Arrays.asList( new Credential(KEY_USERNAME_OR_PASSWORD), new Credential(KEY_PASSWORD, true) );
       
