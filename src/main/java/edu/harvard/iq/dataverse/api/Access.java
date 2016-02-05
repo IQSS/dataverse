@@ -29,6 +29,7 @@ import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.worldmapauth.WorldMapTokenServiceBean;
 
 import java.util.List;
@@ -93,7 +94,9 @@ public class Access extends AbstractApiBean {
     @EJB
     VariableServiceBean variableService;
     @EJB
-    SettingsServiceBean settingsService; 
+    SettingsServiceBean settingsService;
+    @EJB
+    SystemConfig systemConfig;
     @EJB
     DDIExportServiceBean ddiExportService;
     @EJB
@@ -401,6 +404,13 @@ public class Access extends AbstractApiBean {
         // create a Download Instance without, without a primary Download Info object:
         ZippedDownloadInstance downloadInstance = new ZippedDownloadInstance();
 
+        
+        long zipDownloadSizeLimit = systemConfig.getZipDownloadLimit();
+        if (zipDownloadSizeLimit > 0L) {
+            logger.fine("setting zip download size limit to " + zipDownloadSizeLimit + " bytes.");
+            downloadInstance.setSizeLimit(zipDownloadSizeLimit);
+        }
+        
         if (fileIds == null || fileIds.equals("")) {
             throw new WebApplicationException(Response.Status.BAD_REQUEST);
         }

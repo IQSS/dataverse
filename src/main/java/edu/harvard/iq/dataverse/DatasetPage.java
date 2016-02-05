@@ -1300,13 +1300,14 @@ public class DatasetPage implements java.io.Serializable {
                 // source of this harvested dataset:
                 String originalSourceURL = dataset.getRemoteArchiveURL();
                 if (originalSourceURL != null && !originalSourceURL.equals("")) {
-                    logger.info("redirecting to "+originalSourceURL);
+                    logger.fine("redirecting to "+originalSourceURL);
                     try {
                         FacesContext.getCurrentInstance().getExternalContext().redirect(originalSourceURL);
                     } catch (IOException ioex) {
                         // must be a bad URL...
                         // we don't need to do anything special here - we'll redirect
                         // to the local 404 page, below.
+                        logger.warning("failed to issue a redirect to "+originalSourceURL);
                     }
                     return originalSourceURL;
                 }
