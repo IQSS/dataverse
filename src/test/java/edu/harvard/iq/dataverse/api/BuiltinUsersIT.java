@@ -23,7 +23,7 @@ public class BuiltinUsersIT {
     @Test
     public void testUserId() {
 
-        Response createUserResponse = createUser(getRandomUsername(), "firstName", "lastName");
+        Response createUserResponse = createUser(getRandomUsername(), "firstName", "lastName", null);
         createUserResponse.prettyPrint();
         assertEquals(200, createUserResponse.getStatusCode());
 
@@ -42,8 +42,8 @@ public class BuiltinUsersIT {
         assertEquals(200, deleteUserResponse.getStatusCode());
         deleteUserResponse.prettyPrint();
 
-        System.out.println(userIdFromDatabase + " was the id from the database");
-        System.out.println(userIdFromJsonCreateResponse + " was the id from JSON response on create");
+        logger.info(userIdFromDatabase + " was the id from the database");
+        logger.info(userIdFromJsonCreateResponse + " was the id from JSON response on create");
         /**
          * This test is expected to pass on a clean, fresh database but for an
          * unknown reason it fails when you load it up with a production
@@ -53,8 +53,36 @@ public class BuiltinUsersIT {
         assertEquals(userIdFromDatabase, userIdFromJsonCreateResponse);
     }
 
-    private Response createUser(String username, String firstName, String lastName) {
-        String userAsJson = getUserAsJsonString(username, firstName, lastName);
+    @Test
+    public void testUsernameAsEmailAddress() {
+        String emailAddress = getRandomUsername() + "@mailinator.com";
+        Response createUserResponse = createUser(emailAddress, "firstName", "lastName", emailAddress);
+        createUserResponse.prettyPrint();
+        assertEquals(200, createUserResponse.getStatusCode());
+    }
+
+    @Test
+    public void testUsernameTooLong() {
+        String longEmailAddress = "abcdefghijklmnopqrstuvwxyz"
+                + "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                + "@mailinator.com";
+        Response createUserResponse = createUser(longEmailAddress, "firstName", "lastName", longEmailAddress);
+        createUserResponse.prettyPrint();
+        assertEquals(400, createUserResponse.getStatusCode());
+    }
+
+    @Test
+    public void testMultipleInvalidFields() {
+        String longEmailAddress = "abcdefghijklmnopqrstuvwxyz"
+                + "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                + "@mailinator.com";
+        Response createUserResponse = createUser(longEmailAddress, "", "lastName", longEmailAddress + "junk");
+        createUserResponse.prettyPrint();
+        assertEquals(400, createUserResponse.getStatusCode());
+    }
+
+    private Response createUser(String username, String firstName, String lastName, String emailAddress) {
+        String userAsJson = getUserAsJsonString(username, firstName, lastName, emailAddress);
         String password = getPassword(userAsJson);
         Response response = given()
                 .body(userAsJson)
@@ -79,12 +107,16 @@ public class BuiltinUsersIT {
         return UUID.randomUUID().toString().substring(0, 8);
     }
 
-    private static String getUserAsJsonString(String username, String firstName, String lastName) {
+    private static String getUserAsJsonString(String username, String firstName, String lastName, String emailAddress) {
         JsonObjectBuilder builder = Json.createObjectBuilder();
         builder.add(usernameKey, username);
         builder.add("firstName", firstName);
         builder.add("lastName", lastName);
-        builder.add(emailKey, getEmailFromUserName(username));
+        if (emailAddress != null) {
+            builder.add(emailKey, emailAddress);
+        } else {
+            builder.add(emailKey, getEmailFromUserName(username));
+        }
         String userAsJson = builder.build().toString();
         logger.fine("User to create: " + userAsJson);
         return userAsJson;

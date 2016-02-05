@@ -24,6 +24,9 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import java.util.Set;
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
 
 /**
  * REST API bean for managing {@link BuiltinUser}s.
@@ -132,6 +135,26 @@ public class BuiltinUsers extends AbstractApiBean {
             alr.setInfo( alr.getInfo() + "// " + ejbx.getMessage());
             if ( ejbx.getCausedByException() instanceof IllegalArgumentException ) {
                 return errorResponse(Status.BAD_REQUEST, "Bad request: can't save user. " + ejbx.getCausedByException().getMessage());
+            } else if (ejbx.getCausedByException() instanceof ConstraintViolationException) {
+                /**
+                 * This 'else if' block was added to avoid returning 500 error
+                 * response to API and '"Can't save user: null"' message.
+                 */
+                StringBuilder sb = new StringBuilder();
+                ConstraintViolationException constraintViolationException = (ConstraintViolationException) ejbx.getCausedByException();
+                constraintViolationException.getConstraintViolations().stream().forEach((violation) -> {
+                    String field = violation.getPropertyPath().toString();
+                    String databaseRow = violation.getLeafBean().toString();
+                    sb.append("(invalid value: <<<").append(violation.getInvalidValue()).append(">>> for field '")
+                            .append(field).append("' - ").append(violation.getMessage()).append(")...");
+                });
+                String msg = sb.toString();
+                logger.warning("Error saving user: " + msg);
+                /**
+                 * @todo Rather than just a String it would be much nicer to
+                 * return a JSON object or array of violations.
+                 */
+                return errorResponse(Status.BAD_REQUEST, "Bad request: can't save user. " + msg);
             } else {
                 logger.log(Level.WARNING, "Error saving user: ", ejbx);
                 return errorResponse(Status.INTERNAL_SERVER_ERROR, "Can't save user: " + ejbx.getMessage());
