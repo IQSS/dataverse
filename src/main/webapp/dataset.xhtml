@@ -875,9 +875,9 @@
                         <div class="form-horizontal" jsf:rendered="#{!(empty DatasetPage.selectedFiles)}">
                             <div class="form-group text-left">
                                 <label for="selectedTagsList" class="col-sm-4 control-label">
-                                    Selected Tags
+                                    #{bundle['file.editTagsDialog.selectedTags']}
                                 </label>
-                                <div class="col-sm-7">
+                                <div class="col-sm-8">
                                     <p:outputPanel id="selectedTagsList" style="padding-top:.5em;">
                                         <h:outputText value="No tags selected" rendered="#{empty DatasetPage.selectedTags}" />
                                        
@@ -894,7 +894,7 @@
                                 <label for="fileTagsMenuDS" class="col-sm-4 control-label">
                                     #{bundle['file.editTagsDialog.select']}
                                 </label>
-                                <div class="col-sm-7">
+                                <div class="col-sm-8">
                                     <p:selectCheckboxMenu id="fileTagsMenuDS" styleClass="form-control"
                                                           value="#{DatasetPage.selectedTags}" label="#{bundle.select}">
                                        
@@ -910,13 +910,18 @@
                                 <label for="fileTagAddNewDS" class="col-sm-4 control-label">
                                     #{bundle['file.editTagsDialog.add']}
                                 </label>
-                                <div class="col-sm-7">
-                                    <p:inputText id="fileTagAddNewDS" styleClass="form-control"
-                                                 type="text" value="#{DatasetPage.newCategoryName}"
-                                                 placeholder="#{bundle['file.editTagsDialog.newName']}"
-                                                 onkeypress="if (event.keyCode == 13) {
-                                                             return false;
-                                                         }" />
+                                <div class="col-sm-8">
+                                    <div class="row form-inline">
+                                        <div class="col-sm-12">
+                                            <p:inputText id="fileTagAddNewDS" styleClass="form-control"
+                                                         type="text" value="#{DatasetPage.newCategoryName}"
+                                                         placeholder="#{bundle['file.editTagsDialog.newName']}"
+                                                         onkeypress="if (event.keyCode == 13) {
+                                                                     return false;
+                                                                 }" />
+                                            <p:commandLink styleClass="btn btn-default" style="margin-left:.5em;" value="#{bundle.apply}" update="selectedTagsList"/>
+                                        </div>
+                                    </div>
                                     <p:message for="fileTagAddNewDS" display="text" />
                                 </div>
                             </div>
@@ -926,7 +931,7 @@
                                         #{bundle['file.tabularDataTags']}
                                     </span>
                                 </label>
-                                <div class="col-sm-7">
+                                <div class="col-sm-8">
                                     <p class="help-block">#{bundle['file.tabularDataTags.tip']}</p>
                                     <p:selectCheckboxMenu id="tabularDataTagsDSPage" styleClass="form-control"
                                                           value="#{DatasetPage.selectedTabFileTags}" label="#{bundle.select}"
