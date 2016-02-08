@@ -603,6 +603,36 @@
                     <p:blockUI block="datasetForm" widgetVar="blockDatasetForm"/>
 
                     <!-- Popups -->
+                    <p:dialog styleClass="smallPopUp" header="#{bundle['dataset.inValidSelectedFilesForDownload']}" widgetVar="downloadInvalid" modal="true">
+                        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.noValidSelectedFilesForDownload']}</p>
+                        <ui:fragment   rendered="#{DatasetPage.dataset.fileAccessRequest}"  >
+                            <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataset.requestAccessToRestrictedFiles']}</p>
+                        </ui:fragment>
+                        <div class="button-block">
+                            <p:commandButton value="#{bundle.cancel}" onclick="PF('downloadInvalid').hide();" type="button" />
+                        </div>
+                    </p:dialog>                    
+                    
+                    <p:dialog styleClass="smallPopUp" header="#{bundle['dataset.inValidSelectedFilesForDownload']}" widgetVar="downloadMixed" modal="true">
+                        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.mixedSelectedFilesForDownload']}</p>
+                        <ui:repeat id="restrictedFileTable" value="#{DatasetPage.selectedNonDownloadableFiles}" var="resFile" >
+                            <h:outputText value=" #{resFile.label}" />                      
+                        </ui:repeat>
+                        <div class="button-block">
+                            <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataset.downloadUnrestricted']}</p>
+                            <ui:fragment rendered="#{!DatasetPage.downloadPopupRequired}">
+                            <p:commandButton value="#{bundle.continue}" onclick="PF('downloadMixed').hide()" action="#{DatasetPage.startMultipleFileDownload()}" />
+                            </ui:fragment>
+                            <ui:fragment rendered="#{DatasetPage.downloadPopupRequired}">
+                                <p:commandButton value="#{bundle.continue}" onclick="PF('downloadMixed').hide()" action="#{DatasetPage.initGuestbookMultipleResponse()}" />
+                            </ui:fragment>
+                            <p:commandButton value="#{bundle.cancel}" onclick="PF('downloadMixed').hide();" type="button" />
+                        </div>
+                    </p:dialog>
+                    
+                    
+                    
+                    
                     <p:dialog styleClass="smallPopUp" header="#{bundle['file.deleteDialog.header']}" widgetVar="deleteConfirmation" modal="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteDialog.tip']}</p>
                         <div class="button-block">

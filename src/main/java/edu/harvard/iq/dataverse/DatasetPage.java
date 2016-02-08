@@ -103,6 +103,7 @@ public class DatasetPage implements java.io.Serializable {
 
         INIT, SAVE
     };
+    
 
     @EJB
     DatasetServiceBean datasetService;
@@ -158,6 +159,7 @@ public class DatasetPage implements java.io.Serializable {
 
     private Dataset dataset = new Dataset();
     private EditMode editMode;
+
     private Long ownerId;
     private Long versionId;
     private int selectedTabIndex;
@@ -1455,7 +1457,7 @@ public class DatasetPage implements java.io.Serializable {
                     cmd = new CreateGuestbookResponseCommand(dvRequestService.getDataverseRequest(), this.guestbookResponse, dataset);
                     commandEngine.submit(cmd);
                 } else {
-                    for (FileMetadata fmd : this.selectedFiles) {
+                    for (FileMetadata fmd : this.selectedDownloadableFiles) {
                         DataFile df = fmd.getDataFile();
                         if (df != null) {
                             this.guestbookResponse.setDataFile(df);
@@ -1472,7 +1474,7 @@ public class DatasetPage implements java.io.Serializable {
         
         if (type.equals("multiple")){
             //return callDownloadServlet(getSelectedFilesIdsString());
-            callDownloadServlet(getSelectedFilesIdsString());
+            callDownloadServlet(getDownloadableFilesIdsString());
         }
        
         if ((type.equals("download") || type.isEmpty())) {
@@ -2047,6 +2049,68 @@ public class DatasetPage implements java.io.Serializable {
         this.selectedUnrestrictedFiles = selectedUnrestrictedFiles;
     }
     
+    private List<FileMetadata> selectedDownloadableFiles;
+
+    public List<FileMetadata> getSelectedDownloadableFiles() {
+        return selectedDownloadableFiles;
+    }
+
+    public void setSelectedDownloadableFiles(List<FileMetadata> selectedDownloadableFiles) {
+        this.selectedDownloadableFiles = selectedDownloadableFiles;
+    }
+    
+    private List<FileMetadata> selectedNonDownloadableFiles;
+
+    public List<FileMetadata> getSelectedNonDownloadableFiles() {
+        return selectedNonDownloadableFiles;
+    }
+
+    public void setSelectedNonDownloadableFiles(List<FileMetadata> selectedNonDownloadableFiles) {
+        this.selectedNonDownloadableFiles = selectedNonDownloadableFiles;
+    }
+    
+
+            
+    public void validateFilesForDownload(boolean guestbookRequired){
+        setSelectedDownloadableFiles(new ArrayList<>());
+        setSelectedNonDownloadableFiles(new ArrayList<>());
+        
+        if (this.selectedFiles.isEmpty()) {
+            RequestContext requestContext = RequestContext.getCurrentInstance();
+            requestContext.execute("PF('selectFilesForDownload').show()");
+            return;
+        }
+        
+        
+        for (FileMetadata fmd : this.selectedFiles){
+            if(canDownloadFile(fmd)){
+                getSelectedDownloadableFiles().add(fmd);
+            } else {
+                getSelectedNonDownloadableFiles().add(fmd);
+            }
+        }
+        
+        if(!getSelectedDownloadableFiles().isEmpty() && getSelectedNonDownloadableFiles().isEmpty()){
+            if (guestbookRequired){
+                initGuestbookMultipleResponse();
+            } else{
+                startMultipleFileDownload();
+            }        
+        }
+
+        if(getSelectedDownloadableFiles().isEmpty() && !getSelectedNonDownloadableFiles().isEmpty()){
+            RequestContext requestContext = RequestContext.getCurrentInstance();
+            requestContext.execute("PF('downloadInvalid').show()");
+            return;
+        } 
+        
+        if(!getSelectedDownloadableFiles().isEmpty() && !getSelectedNonDownloadableFiles().isEmpty()){
+            RequestContext requestContext = RequestContext.getCurrentInstance();
+            requestContext.execute("PF('downloadMixed').show()");
+        }       
+
+    }
+    
     private boolean selectAllFiles;
 
     public boolean isSelectAllFiles() {
@@ -2087,6 +2151,18 @@ public class DatasetPage implements java.io.Serializable {
     public String getSelectedFilesIdsString() {        
         String downloadIdString = "";
         for (FileMetadata fmd : this.selectedFiles){
+            if (!StringUtil.isEmpty(downloadIdString)) {
+                downloadIdString += ",";
+            }
+            downloadIdString += fmd.getDataFile().getId();
+        }
+        return downloadIdString;
+      
+    }
+    
+    public String getDownloadableFilesIdsString() {        
+        String downloadIdString = "";
+        for (FileMetadata fmd : this.selectedDownloadableFiles){
             if (!StringUtil.isEmpty(downloadIdString)) {
                 downloadIdString += ",";
             }
@@ -2724,13 +2800,9 @@ public class DatasetPage implements java.io.Serializable {
     
     //public String startMultipleFileDownload (){
     public void startMultipleFileDownload (){
-        if (this.selectedFiles.isEmpty()) {
-            RequestContext requestContext = RequestContext.getCurrentInstance();
-            requestContext.execute("PF('selectFilesForDownload').show()");
-            return;
-        }
+
         
-        for (FileMetadata fmd : this.selectedFiles) {
+        for (FileMetadata fmd : this.selectedDownloadableFiles) {
             if (canDownloadFile(fmd)) {
             // todo: cleanup this: "create" method doesn't necessarily
                 // mean a response wikk be created (e.g. when dataset in draft)
@@ -2739,7 +2811,7 @@ public class DatasetPage implements java.io.Serializable {
         }
 
         //return 
-        callDownloadServlet(getSelectedFilesIdsString());
+        callDownloadServlet(getDownloadableFilesIdsString());
 
     }
     
