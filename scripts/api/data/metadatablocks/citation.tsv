@@ -1,317 +1,317 @@
 #metadataBlock	name	dataverseAlias	displayName	frenchdisplayName													
 	citation		Citation Metadata	Métadonnées de la référence bibliographique													
-#datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	showabovefold	required	parent	frenchtitle	metadatablock_id
-	title	Title	Full title by which the Dataset is known.	Enter title...	text	0		TRUE	FALSE	FALSE	FALSE	TRUE	TRUE		Titre	citation
-	subtitle	Subtitle	A secondary title used to amplify or state certain limitations on the main title.		text	1		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		Sous-titre	citation
-	alternativeTitle	Alternative Title	A title by which the work is commonly referred, or an abbreviation of the title.		text	2		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		Autre titre	citation
-	otherId	Other ID	Another unique identifier that identifies this Dataset (e.g., producer's or another repository's number).		none	3	:	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		Autre identiant	citation
-	otherIdAgency	Agency	Name of agency which generated this identifier.		text	4	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	otherId	Organisme	citation
-	otherIdValue	Identifier	Other identifier that corresponds to this Dataset.		text	5	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	otherId	Identifiant	citation
-	author	Author	The person(s), corporate body(ies), or agency(ies) responsible for creating the work.		none	6		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		Auteur	citation
-	authorName	Name	The author's Family Name, Given Name or the name of the organization responsible for this Dataset.	FamilyName, GivenName or Organization	text	7	#VALUE	TRUE	FALSE	FALSE	TRUE	TRUE	TRUE	author	Nom	citation
-	authorAffiliation	Affiliation	The organization with which the author is affiliated.		text	8	(#VALUE)	TRUE	FALSE	FALSE	TRUE	TRUE	FALSE	author	Affiliation	citation
-	authorIdentifierScheme	Identifier Scheme	Name of the identifier scheme (ORCID, ISNI).		text	9	- #VALUE:	FALSE	TRUE	FALSE	FALSE	TRUE	FALSE	author	Schéma de l'identifiant	citation
-	authorIdentifier	Identifier	Uniquely identifies an individual author or organization, according to various schemes.		text	10	#VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	author	Identifiant	citation
-	datasetContact	Contact	The contact(s) for this Dataset.		none	11		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		Personne-ressource	citation
-	datasetContactName	Name	The contact's Family Name, Given Name or the name of the organization.	FamilyName, GivenName or Organization	text	12	#VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	datasetContact	Nom	citation
-	datasetContactAffiliation	Affiliation	The organization with which the contact is affiliated.		text	13	(#VALUE)	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	datasetContact	Affiliation	citation
-	datasetContactEmail	E-mail	The e-mail address(es) of the contact(s) for the Dataset. This will not be displayed.		email	14	#EMAIL	FALSE	FALSE	FALSE	FALSE	TRUE	TRUE	datasetContact	Courriel	citation
-	dsDescription	Description	A summary describing the purpose, nature, and scope of the Dataset.		none	15		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		Description	citation
-	dsDescriptionValue	Text	A summary describing the purpose, nature, and scope of the Dataset.		textbox	16	#VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	TRUE	dsDescription	Texte	citation
-	dsDescriptionDate	Date	In cases where a Dataset contains more than one description (for example, one might be supplied by the data producer and another prepared by the data repository where the data are deposited), the date attribute is used to distinguish between the two descriptions. The date attribute follows the ISO convention of YYYY-MM-DD.	YYYY-MM-DD	date	17	(#VALUE)	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	dsDescription	Date	citation
-	subject	Subject	Domain-specific Subject Categories that are topically relevant to the Dataset.		text	18		TRUE	TRUE	TRUE	TRUE	TRUE	TRUE		Sujet	citation
-	keyword	Keyword	Key terms that describe important aspects of the Dataset.		none	19		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		Mot-clé	citation
-	keywordValue	Term	Key terms that describe important aspects of the Dataset. Can be used for building keyword indexes and for classification and retrieval purposes. A controlled vocabulary can be employed. The vocab attribute is provided for specification of the controlled vocabulary in use, such as LCSH, MeSH, or others. The vocabURI attribute specifies the location for the full controlled vocabulary.		text	20	#VALUE	TRUE	FALSE	FALSE	TRUE	TRUE	FALSE	keyword	Terme	citation
-	keywordVocabulary	Vocabulary	For the specification of the keyword controlled vocabulary in use, such as LCSH, MeSH, or others.		text	21	(#VALUE)	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	keyword	Vocabulaire	citation
-	keywordVocabularyURI	Vocabulary URL	Keyword vocabulary URL points to the web presence that describes the keyword vocabulary, if appropriate. Enter an absolute URL where the keyword vocabulary web site is found, such as http://www.my.org.	Enter full URL, starting with http://	url	22	"<a href=""#VALUE"">#VALUE</a>"	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	keyword	Adresse URL du vocabulaire	citation
-	topicClassification	Topic Classification	The classification field indicates the broad important topic(s) and subjects that the data cover. Library of Congress subject terms may be used here.  		none	23		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		Classification des sujets	citation
-	topicClassValue	Term	Topic or Subject term that is relevant to this Dataset.		text	24	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	topicClassification	Terme	citation
-	topicClassVocab	Vocabulary	Provided for specification of the controlled vocabulary in use, e.g., LCSH, MeSH, etc.		text	25	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	topicClassification	Vocabulaire	citation
-	topicClassVocabURI	Vocabulary URL	Specifies the URL location for the full controlled vocabulary.	Enter full URL, starting with http://	url	26	"<a href=""#VALUE"">#VALUE</a>"	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	topicClassification	Adresse URL du vocabulaire	citation
-	publication	Related Publication	Publications that use the data from this Dataset.		none	27		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		Publication connexe	citation
-	publicationCitation	Citation	The full bibliographic citation for this related publication.		textbox	28	#VALUE	TRUE	FALSE	FALSE	FALSE	FALSE	FALSE	publication	Référence	citation
-	publicationIDType	ID Type	The type of digital identifier used for this publication (e.g., Digital Object Identifier (DOI)).		text	29	#VALUE: 	TRUE	TRUE	FALSE	FALSE	FALSE	FALSE	publication	Type d'identifiant	citation
-	publicationIDNumber	ID Number	The identifier for the selected ID type.		text	30	#VALUE	TRUE	FALSE	FALSE	FALSE	FALSE	FALSE	publication	Numéro d'identification	citation
-	publicationURL	URL	Link to the publication web page (e.g., journal article page, archive record page, or other).	Enter full URL, starting with http://	url	31	"<a href=""#VALUE"">#VALUE</a>"	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	publication	Adresse URL	citation
-	notesText	Notes	Additional important information about the Dataset.		textbox	32		FALSE	FALSE	FALSE	FALSE	TRUE	FALSE		Remarques	citation
-	language	Language	Language of the Dataset		text	33		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		Langue	citation
-	producer	Producer	Person or organization with the financial or administrative responsibility over this Dataset		none	34		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		Producteur	citation
-	producerName	Name	Producer name	FamilyName, GivenName or Organization	text	35	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	producer	Nom	citation
-	producerAffiliation	Affiliation	The organization with which the producer is affiliated.		text	36	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	Affiliation	citation
-	producerAbbreviation	Abbreviation	The abbreviation by which the producer is commonly known. (ex. IQSS, ICPSR)		text	37	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	Abréviation	citation
-	producerURL	URL	Producer URL points to the producer's web presence, if appropriate. Enter an absolute URL where the producer's web site is found, such as http://www.my.org.  	Enter full URL, starting with http://	url	38	"<a href=""#VALUE"">#VALUE</a>"	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	Adresse URL	citation
-	producerLogoURL	Logo URL	URL for the producer's logo, which points to this  producer's web-accessible logo image. Enter an absolute URL where the producer's logo image is found, such as http://www.my.org/images/logo.gif.	Enter full URL for image, starting with http://	url	39	"<img src=""#VALUE"" alt=""#NAME"" class=""metadata-logo""/><br/>"	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	Adresse URL du logo	citation
-	productionDate	Production Date	Date when the data collection or other materials were produced (not distributed, published or archived).	YYYY-MM-DD	date	40		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		Date de production	citation
-	productionPlace	Production Place	The location where the data collection and any other related materials were produced.		text	41		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		Endroit de production	citation
-	contributor	Contributor	The organization or person responsible for either collecting, managing, or otherwise contributing in some form to the development of the resource.		none	42	:	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		Contributeur	citation
-	contributorType	Type	The type of contributor of the  resource.  		text	43	#VALUE 	TRUE	TRUE	FALSE	TRUE	FALSE	FALSE	contributor	Type	citation
-	contributorName	Name	The Family Name, Given Name or organization name of the contributor.	FamilyName, GivenName or Organization	text	44	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	contributor	Nom	citation
-	grantNumber	Grant Information	Grant Information		none	45	:	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		Renseignements sur la subvention	citation
-	grantNumberAgency	Grant Agency	Grant Number Agency		text	46	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	grantNumber	Organisme subventionnaire	citation
-	grantNumberValue	Grant Number	The grant or contract number of the project that  sponsored the effort.		text	47	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	grantNumber	Numéro de la subvention	citation
-	distributor	Distributor	The organization designated by the author or producer to generate copies of the particular work including any necessary editions or revisions.		none	48		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		Diffuseur	citation
-	distributorName	Name	Distributor name	FamilyName, GivenName or Organization	text	49	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	distributor	Nom	citation
-	distributorAffiliation	Affiliation	The organization with which the distributor contact is affiliated.		text	50	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	Affiliation	citation
-	distributorAbbreviation	Abbreviation	The abbreviation by which this distributor is commonly known (e.g., IQSS, ICPSR).		text	51	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	Abréviation	citation
-	distributorURL	URL	Distributor URL points to the distributor's web presence, if appropriate. Enter an absolute URL where the distributor's web site is found, such as http://www.my.org.	Enter full URL, starting with http://	url	52	"<a href=""#VALUE"">#VALUE</a>"	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	Adresse URL  	citation
-	distributorLogoURL	Logo URL	URL of the distributor's logo, which points to this  distributor's web-accessible logo image. Enter an absolute URL where the distributor's logo image is found, such as http://www.my.org/images/logo.gif.	Enter full URL for image, starting with http://	url	53	"<img src=""#VALUE"" alt=""#NAME"" class=""metadata-logo""/><br/>"	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	Adresse URL du logo	citation
-	distributionDate	Distribution Date	Date that the work was made available for distribution/presentation.	YYYY-MM-DD	date	54		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		Date de disponibilité	citation
-	depositor	Depositor	The person (Family Name, Given Name) or the name of the organization that deposited this Dataset to the repository.		text	55		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		Déposant	citation
-	dateOfDeposit	Deposit Date	Date that the Dataset was deposited into the repository.	YYYY-MM-DD	date	56		FALSE	FALSE	FALSE	TRUE	FALSE	FALSE		Date de dépôt	citation
-	timePeriodCovered	Time Period Covered	Time period to which the data refer. This item reflects the time period covered by the data, not the dates of coding or making documents machine-readable or the dates the data were collected. Also known as span.		none	57	;	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		Période couverte	citation
-	timePeriodCoveredStart	Start	Start date which reflects the time period covered by the data, not the dates of coding or making documents machine-readable or the dates the data were collected.	YYYY-MM-DD	date	58	#NAME: #VALUE 	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	timePeriodCovered	Début	citation
-	timePeriodCoveredEnd	End	End date which reflects the time period covered by the data, not the dates of coding or making documents machine-readable or the dates the data were collected.	YYYY-MM-DD	date	59	#NAME: #VALUE 	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	timePeriodCovered	Fin	citation
-	dateOfCollection	Date of Collection	Contains the date(s) when the data were collected.		none	60	;	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		Date de la collecte	citation
-	dateOfCollectionStart	Start	Date when the data collection started.	YYYY-MM-DD	date	61	#NAME: #VALUE 	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	dateOfCollection	Début	citation
-	dateOfCollectionEnd	End	Date when the data collection ended.	YYYY-MM-DD	date	62	#NAME: #VALUE 	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	dateOfCollection	Fin	citation
-	kindOfData	Kind of Data	Type of data included in the file: survey data, census/enumeration data, aggregate data, clinical data, event/transaction data, program source code, machine-readable text, administrative records data, experimental data, psychological test, textual data, coded textual, coded documents, time budget diaries, observation data/ratings, process-produced data, or other.		text	63		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		Type de données	citation
-	series	Series	Information about the Dataset series.		none	64	:	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		Série	citation
-	seriesName	Name	Name of the dataset series to which the Dataset belongs.		text	65	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	series	Nom	citation
-	seriesInformation	Information	History of the series and summary of those features that apply to the series as a whole.		textbox	66	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	series	Renseignements	citation
-	software	Software	Information about the software used to generate the Dataset.		none	67	,	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		Logiciel	citation
-	softwareName	Name	Name of software used to generate the Dataset.		text	68	#VALUE	FALSE	TRUE	FALSE	FALSE	FALSE	FALSE	software	Nom	citation
-	softwareVersion	Version	Version of the software used to generate the Dataset.		text	69	#NAME: #VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	software	Version	citation
-	relatedMaterial	Related Material	Any material related to this Dataset.		textbox	70		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		Document connexe	citation
-	relatedDatasets	Related Datasets	Any Datasets that are related to this Dataset, such as previous research on this subject.		textbox	71		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		Ensembles de données connexes	citation
-	otherReferences	Other References	Any references that would serve as background or supporting material to this Dataset.		text	72		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		Autres références	citation
-	dataSources	Data Sources	List of books, articles, serials, or machine-readable data files that served as the sources of the data collection.		textbox	73		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		Sources de données	citation
-	originOfSources	Origin of Sources	For historical materials, information about the origin of the sources and the rules followed in establishing the sources should be specified.		textbox	74		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		Origine des sources	citation
-	characteristicOfSources	Characteristic of Sources Noted	Assessment of characteristics and source material.		textbox	75		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		Caractéristiques des sources notées	citation
-	accessToSources	Documentation and Access to Sources	Level of documentation of the original sources.		textbox	76		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		Documentation et accès aux sources	citation
-#controlledVocabulary	DatasetField	Value	identifier	displayOrder												
-	subject	Agricultural Sciences	D01	0												
-	subject	Arts and Humanities	D0	1												
-	subject	Astronomy and Astrophysics	D1	2												
-	subject	Business and Management	D2	3												
-	subject	Chemistry	D3	4												
-	subject	Earth and Environmental Sciences	D4	5												
-	subject	Engineering	D5	6												
-	subject	Medicine, Health and Life Sciences	D6	7												
-	subject	Computer and Information Science	D7	8												
-	subject	Law	D8	9												
-	subject	Mathematical Sciences	D9	10												
-	subject	Physics	D10	11												
-	subject	Social Sciences	D11	12												
-	subject	Other	D12	13												
-	publicationIDType	ark		0												
-	publicationIDType	arXiv		1	arxiv											
-	publicationIDType	bibcode		2												
-	publicationIDType	doi		3												
-	publicationIDType	ean13		4												
-	publicationIDType	eissn		5												
-	publicationIDType	handle		6												
-	publicationIDType	isbn		7												
-	publicationIDType	issn		8												
-	publicationIDType	istc		9												
-	publicationIDType	lissn		10												
-	publicationIDType	lsid		11												
-	publicationIDType	pmid		12												
-	publicationIDType	purl		13												
-	publicationIDType	upc		14												
-	publicationIDType	url		15												
-	publicationIDType	urn		16												
-	contributorType	Data Collector		0												
-	contributorType	Data Curator		1												
-	contributorType	Data Manager		2												
-	contributorType	Editor		3												
-	contributorType	Funder		4												
-	contributorType	Hosting Institution		5												
-	contributorType	Project Leader		6												
-	contributorType	Project Manager		7												
-	contributorType	Project Member		8												
-	contributorType	Related Person		9												
-	contributorType	Researcher		10												
-	contributorType	Research Group		11												
-	contributorType	Rights Holder		12												
-	contributorType	Sponsor		13												
-	contributorType	Supervisor		14												
-	contributorType	Work Package Leader		15												
-	contributorType	Other		16												
-	authorIdentifierScheme	ORCID		0												
-	authorIdentifierScheme	ISNI		1												
-	authorIdentifierScheme	LCNA		2												
-	language	Abkhaz		0												
-	language	Afar		1												
-	language	Afrikaans		2												
-	language	Akan		3												
-	language	Albanian		4												
-	language	Amharic		5												
-	language	Arabic		6												
-	language	Aragonese		7												
-	language	Armenian		8												
-	language	Assamese		9												
-	language	Avaric		10												
-	language	Avestan		11												
-	language	Aymara		12												
-	language	Azerbaijani		13												
-	language	Bambara		14												
-	language	Bashkir		15												
-	language	Basque		16												
-	language	Belarusian		17												
-	language	Bengali, Bangla		18												
-	language	Bihari		19												
-	language	Bislama		20												
-	language	Bosnian		21												
-	language	Breton		22												
-	language	Bulgarian		23												
-	language	Burmese		24												
-	language	Catalan,Valencian		25												
-	language	Chamorro		26												
-	language	Chechen		27												
-	language	Chichewa, Chewa, Nyanja		28												
-	language	Chinese		29												
-	language	Chuvash		30												
-	language	Cornish		31												
-	language	Corsican		32												
-	language	Cree		33												
-	language	Croatian		34												
-	language	Czech		35												
-	language	Danish		36												
-	language	Divehi, Dhivehi, Maldivian		37												
-	language	Dutch		38												
-	language	Dzongkha		39												
-	language	English		40												
-	language	Esperanto		41												
-	language	Estonian		42												
-	language	Ewe		43												
-	language	Faroese		44												
-	language	Fijian		45												
-	language	Finnish		46												
-	language	French		47												
-	language	Fula, Fulah, Pulaar, Pular		48												
-	language	Galician		49												
-	language	Georgian		50												
-	language	German		51												
-	language	Greek (modern)		52												
-	language	Guaraní		53												
-	language	Gujarati		54												
-	language	Haitian, Haitian Creole		55												
-	language	Hausa		56												
-	language	Hebrew (modern)		57												
-	language	Herero		58												
-	language	Hindi		59												
-	language	Hiri Motu		60												
-	language	Hungarian		61												
-	language	Interlingua		62												
-	language	Indonesian		63												
-	language	Interlingue		64												
-	language	Irish		65												
-	language	Igbo		66												
-	language	Inupiaq		67												
-	language	Ido		68												
-	language	Icelandic		69												
-	language	Italian		70												
-	language	Inuktitut		71												
-	language	Japanese		72												
-	language	Javanese		73												
-	language	Kalaallisut, Greenlandic		74												
-	language	Kannada		75												
-	language	Kanuri		76												
-	language	Kashmiri		77												
-	language	Kazakh		78												
-	language	Khmer		79												
-	language	Kikuyu, Gikuyu		80												
-	language	Kinyarwanda		81												
-	language	Kyrgyz		82												
-	language	Komi		83												
-	language	Kongo		84												
-	language	Korean		85												
-	language	Kurdish		86												
-	language	Kwanyama, Kuanyama		87												
-	language	Latin		88												
-	language	Luxembourgish, Letzeburgesch		89												
-	language	Ganda		90												
-	language	Limburgish, Limburgan, Limburger		91												
-	language	Lingala		92												
-	language	Lao		93												
-	language	Lithuanian		94												
-	language	Luba-Katanga		95												
-	language	Latvian		96												
-	language	Manx		97												
-	language	Macedonian		98												
-	language	Malagasy		99												
-	language	Malay		100												
-	language	Malayalam		101												
-	language	Maltese		102												
-	language	Māori		103												
-	language	Marathi (Marāṭhī)		104												
-	language	Marshallese		105												
-	language	Mongolian		106												
-	language	Nauru		107												
-	language	Navajo, Navaho		108												
-	language	Northern Ndebele		109												
-	language	Nepali		110												
-	language	Ndonga		111												
-	language	Norwegian Bokmål		112												
-	language	Norwegian Nynorsk		113												
-	language	Norwegian		114												
-	language	Nuosu		115												
-	language	Southern Ndebele		116												
-	language	Occitan		117												
-	language	Ojibwe, Ojibwa		118												
-	language	Old Church Slavonic,Church Slavonic,Old Bulgarian		119												
-	language	Oromo		120												
-	language	Oriya		121												
-	language	Ossetian, Ossetic		122												
-	language	Panjabi, Punjabi		123												
-	language	Pāli		124												
-	language	Persian (Farsi)		125												
-	language	Polish		126												
-	language	Pashto, Pushto		127												
-	language	Portuguese		128												
-	language	Quechua		129												
-	language	Romansh		130												
-	language	Kirundi		131												
-	language	Romanian		132												
-	language	Russian		133												
-	language	Sanskrit (Saṁskṛta)		134												
-	language	Sardinian		135												
-	language	Sindhi		136												
-	language	Northern Sami		137												
-	language	Samoan		138												
-	language	Sango		139												
-	language	Serbian		140												
-	language	Scottish Gaelic, Gaelic		141												
-	language	Shona		142												
-	language	Sinhala, Sinhalese		143												
-	language	Slovak		144												
-	language	Slovene		145												
-	language	Somali		146												
-	language	Southern Sotho		147												
-	language	Spanish, Castilian		148												
-	language	Sundanese		149												
-	language	Swahili		150												
-	language	Swati		151												
-	language	Swedish		152												
-	language	Tamil		153												
-	language	Telugu		154												
-	language	Tajik		155												
-	language	Thai		156												
-	language	Tigrinya		157												
-	language	Tibetan Standard, Tibetan, Central		158												
-	language	Turkmen		159												
-	language	Tagalog		160												
-	language	Tswana		161												
-	language	Tonga (Tonga Islands)		162												
-	language	Turkish		163												
-	language	Tsonga		164												
-	language	Tatar		165												
-	language	Twi		166												
-	language	Tahitian		167												
-	language	Uyghur, Uighur		168												
-	language	Ukrainian		169												
-	language	Urdu		170												
-	language	Uzbek		171												
-	language	Venda		172												
-	language	Vietnamese		173												
-	language	Volapük		174												
-	language	Walloon		175												
-	language	Welsh		176												
-	language	Wolof		177												
-	language	Western Frisian		178												
-	language	Xhosa		179												
-	language	Yiddish		180												
-	language	Yoruba		181												
-	language	Zhuang, Chuang		182												
-	language	Zulu		183												
-	language	Not applicable		184												
+#datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	showabovefold	required	parent	frenchtitle	frenchdescription	metadatablock_id
+	title	Title	Full title by which the Dataset is known.	Enter title...	text	0		TRUE	FALSE	FALSE	FALSE	TRUE	TRUE		Titre	Titre complet sous lequel l'ensemble de données est connu.	citation
+	subtitle	Subtitle	A secondary title used to amplify or state certain limitations on the main title.		text	1		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		Sous-titre	Un titre secondaire utilisé pour amplifier ou énoncer certaines limites du titre principal.	citation
+	alternativeTitle	Alternative Title	A title by which the work is commonly referred, or an abbreviation of the title.		text	2		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		Autre titre	Un titre sous lequel le travail est communément appelé ou une abréviation du titre.	citation
+	otherId	Other ID	Another unique identifier that identifies this Dataset (e.g., producer's or another repository's number).		none	3	:	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		Autre identiant	Un autre identifiant unique qui identifie cet ensemble de données (p. ex. le numéro du producteur ou d'un autre dépôt).	citation
+	otherIdAgency	Agency	Name of agency which generated this identifier.		text	4	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	otherId	Organisme	Nom de l'organisme qui a généré cet identifiant	citation
+	otherIdValue	Identifier	Other identifier that corresponds to this Dataset.		text	5	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	otherId	Identifiant	Autre identifiant qui correspond à cet ensemble de données.	citation
+	author	Author	The person(s), corporate body(ies), or agency(ies) responsible for creating the work.		none	6		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		Auteur	Les personnes, personnes morales ou organismes qui ont créé le travail. 	citation
+	authorName	Name	The author's Family Name, Given Name or the name of the organization responsible for this Dataset.	FamilyName, GivenName or Organization	text	7	#VALUE	TRUE	FALSE	FALSE	TRUE	TRUE	TRUE	author	Nom	Le nom ou le prénom de l'auteur ou le nom de l'organisation responsable de cet ensemble de données.	citation
+	authorAffiliation	Affiliation	The organization with which the author is affiliated.		text	8	(#VALUE)	TRUE	FALSE	FALSE	TRUE	TRUE	FALSE	author	Affiliation	L'organisme avec lequel l'auteur est affilié.	citation
+	authorIdentifierScheme	Identifier Scheme	Name of the identifier scheme (ORCID, ISNI).		text	9	- #VALUE:	FALSE	TRUE	FALSE	FALSE	TRUE	FALSE	author	Schéma de l'identifiant	Nom du schéma de l'identifiant (ORCID, ISNI).	citation
+	authorIdentifier	Identifier	Uniquely identifies an individual author or organization, according to various schemes.		text	10	#VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	author	Identifiant	Identifie de façon unique un auteur individuel ou une organisation selon divers schémas.	citation
+	datasetContact	Contact	The contact(s) for this Dataset.		none	11		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		Personne-ressource	La ou les personnes-ressources pour cet ensemble de données.	citation
+	datasetContactName	Name	The contact's Family Name, Given Name or the name of the organization.	FamilyName, GivenName or Organization	text	12	#VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	datasetContact	Nom	Le nom ou le prénom de la personne-ressource ou le nom de l'organisation.	citation
+	datasetContactAffiliation	Affiliation	The organization with which the contact is affiliated.		text	13	(#VALUE)	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	datasetContact	Affiliation	L'organisation avec laquelle la personne-ressource est affiliée.	citation
+	datasetContactEmail	E-mail	The e-mail address(es) of the contact(s) for the Dataset. This will not be displayed.		email	14	#EMAIL	FALSE	FALSE	FALSE	FALSE	TRUE	TRUE	datasetContact	Courriel	L'adresse courriel du ou des personnes-ressources pour l'ensemble de données. Ces renseignements ne seront pas affichés.	citation
+	dsDescription	Description	A summary describing the purpose, nature, and scope of the Dataset.		none	15		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		Description	Un résumé décrivant l'objet, la nature et la portée de l'ensemble de données.	citation
+	dsDescriptionValue	Text	A summary describing the purpose, nature, and scope of the Dataset.		textbox	16	#VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	TRUE	dsDescription	Texte	Un résumé décrivant l'objet, la nature et la portée de l'ensemble de données	citation
+	dsDescriptionDate	Date	In cases where a Dataset contains more than one description (for example, one might be supplied by the data producer and another prepared by the data repository where the data are deposited), the date attribute is used to distinguish between the two descriptions. The date attribute follows the ISO convention of YYYY-MM-DD.	YYYY-MM-DD	date	17	(#VALUE)	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	dsDescription	Date	Dans les cas où un ensemble de données contient plus d'une description (par exemple, une peut être fournie par le producteur de données et une autre peut être préparée par le dépôt de données où les données sont déposées), la date à laquelle l'attribut est utilisé pour faire la distinction entre deux descriptions. La date de l'attribut respecte la convention de l'ISO AAAA-MM-JJ.	citation
+	subject	Subject	Domain-specific Subject Categories that are topically relevant to the Dataset.		text	18		TRUE	TRUE	TRUE	TRUE	TRUE	TRUE		Sujet	Catégories de sujets propres aux domaines qui sont pertinents du point de vue du sujet à l'ensemble de données.	citation
+	keyword	Keyword	Key terms that describe important aspects of the Dataset.		none	19		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		Mot-clé	Les mots-clés qui décrivent les aspects importants de l'ensemble de données.	citation
+	keywordValue	Term	Key terms that describe important aspects of the Dataset. Can be used for building keyword indexes and for classification and retrieval purposes. A controlled vocabulary can be employed. The vocab attribute is provided for specification of the controlled vocabulary in use, such as LCSH, MeSH, or others. The vocabURI attribute specifies the location for the full controlled vocabulary.		text	20	#VALUE	TRUE	FALSE	FALSE	TRUE	TRUE	FALSE	keyword	Terme	Les termes-clés qui décrivent les aspects importants de l'ensemble de données. Ils peuvent servir à créer des index de mots-clés et être utilisés aux fins de classification et de récupération. Un vocabulaire contrôlé peut être utilisé. L'attribut « vocab » permet de préciser le type de vocabulaire contrôlé utilisé, p. ex., LCSH, MeSH ou autres. L'attribut « vocabURI » précise l'emplacement du vocabulaire contrôlé complet.	citation
+	keywordVocabulary	Vocabulary	For the specification of the keyword controlled vocabulary in use, such as LCSH, MeSH, or others.		text	21	(#VALUE)	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	keyword	Vocabulaire	Pour préciser le type de vocabulaire contrôlé par mot-clé utilisé, p. ex., LCSH, MeSH ou autres. 	citation
+	keywordVocabularyURI	Vocabulary URL	Keyword vocabulary URL points to the web presence that describes the keyword vocabulary, if appropriate. Enter an absolute URL where the keyword vocabulary web site is found, such as http://www.my.org.	Enter full URL, starting with http://	url	22	"<a href=""#VALUE"">#VALUE</a>"	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	keyword	Adresse URL du vocabulaire	Le cas échéant, adresse URL où est décrit le vocabulaire de mots-clés utilisé. Indiquer une adresse URL absolue, par exemple http://www.my.org.	citation
+	topicClassification	Topic Classification	The classification field indicates the broad important topic(s) and subjects that the data cover. Library of Congress subject terms may be used here.  		none	23		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		Classification des sujets	Le champ classification indique les sujets et thèmes généraux importants couverts par les données. La classification de la Library of Congress peut être utilisée.	citation
+	topicClassValue	Term	Topic or Subject term that is relevant to this Dataset.		text	24	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	topicClassification	Terme	Terme décrivant un thème ou un sujet couvert par cet ensemble de données.	citation
+	topicClassVocab	Vocabulary	Provided for specification of the controlled vocabulary in use, e.g., LCSH, MeSH, etc.		text	25	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	topicClassification	Vocabulaire	Pour préciser le type de vocabulaire contrôlé utilisé, p. ex., LCSH, MeSH ou autres. 	citation
+	topicClassVocabURI	Vocabulary URL	Specifies the URL location for the full controlled vocabulary.	Enter full URL, starting with http://	url	26	"<a href=""#VALUE"">#VALUE</a>"	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	topicClassification	Adresse URL du vocabulaire	Précise l'adresse URL de la liste complète du vocabulaire contrôlé.	citation
+	publication	Related Publication	Publications that use the data from this Dataset.		none	27		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		Publication connexe	Les publications qui utilisent les données provenant de cet ensemble de données.	citation
+	publicationCitation	Citation	The full bibliographic citation for this related publication.		textbox	28	#VALUE	TRUE	FALSE	FALSE	FALSE	FALSE	FALSE	publication	Référence	La référence bibliographique complète de cette publication connexe.	citation
+	publicationIDType	ID Type	The type of digital identifier used for this publication (e.g., Digital Object Identifier (DOI)).		text	29	#VALUE: 	TRUE	TRUE	FALSE	FALSE	FALSE	FALSE	publication	Type d'identifiant	Le type d'identifiant numérique utilisé pour cette publication (p. ex. identificateur d'objet numérique (DOI)).	citation
+	publicationIDNumber	ID Number	The identifier for the selected ID type.		text	30	#VALUE	TRUE	FALSE	FALSE	FALSE	FALSE	FALSE	publication	Numéro d'identification	L'identifiant du type d'identification sélectionné.	citation
+	publicationURL	URL	Link to the publication web page (e.g., journal article page, archive record page, or other).	Enter full URL, starting with http://	url	31	"<a href=""#VALUE"">#VALUE</a>"	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	publication	Adresse URL	Lien vers la page Web de la publication (p. ex. page de l'article paru dans une revue, notice du dépôt ou autre).	citation
+	notesText	Notes	Additional important information about the Dataset.		textbox	32		FALSE	FALSE	FALSE	FALSE	TRUE	FALSE		Remarques	Autres renseignements importants sur l'ensemble de données.	citation
+	language	Language	Language of the Dataset		text	33		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		Langue	Langue de l'ensemble de données	citation
+	producer	Producer	Person or organization with the financial or administrative responsibility over this Dataset		none	34		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		Producteur	Personne ou organisation qui détient la responsabilité financière ou administrative de cet ensemble de données.	citation
+	producerName	Name	Producer name	FamilyName, GivenName or Organization	text	35	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	producer	Nom	Nom du producteur	citation
+	producerAffiliation	Affiliation	The organization with which the producer is affiliated.		text	36	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	Affiliation	L'organisation avec laquelle le producteur est affilié.	citation
+	producerAbbreviation	Abbreviation	The abbreviation by which the producer is commonly known. (ex. IQSS, ICPSR)		text	37	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	Abréviation	L'abréviation sous laquelle le producteur est communément connu (p. ex. IQSS, ICPSR).	citation
+	producerURL	URL	Producer URL points to the producer's web presence, if appropriate. Enter an absolute URL where the producer's web site is found, such as http://www.my.org.  	Enter full URL, starting with http://	url	38	"<a href=""#VALUE"">#VALUE</a>"	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	Adresse URL	L'adresse URL du producteur indique la présence sur le Web du producteur, le cas échéant. Indiquer une adresse URL absolue où le site Web du producteur se trouve, par exemple http://www.my.org.	citation
+	producerLogoURL	Logo URL	URL for the producer's logo, which points to this  producer's web-accessible logo image. Enter an absolute URL where the producer's logo image is found, such as http://www.my.org/images/logo.gif.	Enter full URL for image, starting with http://	url	39	"<img src=""#VALUE"" alt=""#NAME"" class=""metadata-logo""/><br/>"	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	Adresse URL du logo	Adresse URL du logo du producteur qui pointe vers le logo accessible sur le Web. Indiquer une adresse URL absolue où l'image se trouve, par exemple http://www.my.org/images/logo.gif.	citation
+	productionDate	Production Date	Date when the data collection or other materials were produced (not distributed, published or archived).	YYYY-MM-DD	date	40		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		Date de production	Date à laquelle la collecte de données ou d'autres documents ont été produits (non distribués, publiés ou archivés).	citation
+	productionPlace	Production Place	The location where the data collection and any other related materials were produced.		text	41		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		Endroit de production	L'emplacement où la collecte de données et autres documents connexes ont été produits.	citation
+	contributor	Contributor	The organization or person responsible for either collecting, managing, or otherwise contributing in some form to the development of the resource.		none	42	:	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		Contributeur	L'organisation ou la personne responsable de la collecte ou de la gestion d'une ressource, ou contribuant autrement à son développement.	citation
+	contributorType	Type	The type of contributor of the  resource.  		text	43	#VALUE 	TRUE	TRUE	FALSE	TRUE	FALSE	FALSE	contributor	Type	Le type de collaborateur à la ressource.	citation
+	contributorName	Name	The Family Name, Given Name or organization name of the contributor.	FamilyName, GivenName or Organization	text	44	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	contributor	Nom	Le nom du collaborateur (le Nom, Prénom ou le nom de l'organisation)	citation
+	grantNumber	Grant Information	Grant Information		none	45	:	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		Renseignements sur la subvention	Renseignements sur la subvention	citation
+	grantNumberAgency	Grant Agency	Grant Number Agency		text	46	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	grantNumber	Organisme subventionnaire	Organisme - numéro de la subvention	citation
+	grantNumberValue	Grant Number	The grant or contract number of the project that  sponsored the effort.		text	47	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	grantNumber	Numéro de la subvention	Le numéro de subvention ou de contrat lié au financement.	citation
+	distributor	Distributor	The organization designated by the author or producer to generate copies of the particular work including any necessary editions or revisions.		none	48		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		Diffuseur	L'organisation désignée par l'auteur ou le producteur pour la mise en disponibilité de copies d'un travail particulier, y compris toute édition ou révision.	citation
+	distributorName	Name	Distributor name	FamilyName, GivenName or Organization	text	49	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	distributor	Nom	Nom du diffuseur	citation
+	distributorAffiliation	Affiliation	The organization with which the distributor contact is affiliated.		text	50	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	Affiliation	L'organisation avec laquelle la personne-ressource du diffuseur est affiliée.	citation
+	distributorAbbreviation	Abbreviation	The abbreviation by which this distributor is commonly known (e.g., IQSS, ICPSR).		text	51	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	Abréviation	L'abréviation sous laquelle le diffuseur est communément connu (p. ex. IQSS, ICPSR).	citation
+	distributorURL	URL	Distributor URL points to the distributor's web presence, if appropriate. Enter an absolute URL where the distributor's web site is found, such as http://www.my.org.	Enter full URL, starting with http://	url	52	"<a href=""#VALUE"">#VALUE</a>"	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	Adresse URL  	L'adresse URL du diffuseur indique la présence sur le Web du diffuseur, le cas échéant. Indiquer une adresse URL absolue où le site Web du diffuseur se trouve, par exemple http://www.my.org.	citation
+	distributorLogoURL	Logo URL	URL of the distributor's logo, which points to this  distributor's web-accessible logo image. Enter an absolute URL where the distributor's logo image is found, such as http://www.my.org/images/logo.gif.	Enter full URL for image, starting with http://	url	53	"<img src=""#VALUE"" alt=""#NAME"" class=""metadata-logo""/><br/>"	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	Adresse URL du logo	Adresse URL du logo du diffuseur qui pointe vers l'image Web accessible de ce logo. Indiquer une adresse URL absolue où l'image se trouve, par exemple http://www.my.org/images/logo.gif. 	citation
+	distributionDate	Distribution Date	Date that the work was made available for distribution/presentation.	YYYY-MM-DD	date	54		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		Date de disponibilité	Date à laquelle les travaux ont été rendus disponibles aux fins de diffusion/présentation.	citation
+	depositor	Depositor	The person (Family Name, Given Name) or the name of the organization that deposited this Dataset to the repository.		text	55		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		Déposant	La personne (nom, prénom) ou le nom de l'organisation qui a déposé cet ensemble de données dans le dépôt.	citation
+	dateOfDeposit	Deposit Date	Date that the Dataset was deposited into the repository.	YYYY-MM-DD	date	56		FALSE	FALSE	FALSE	TRUE	FALSE	FALSE		Date de dépôt	Date à laquelle l'ensemble de données a été déposé dans le dépôt.	citation
+	timePeriodCovered	Time Period Covered	Time period to which the data refer. This item reflects the time period covered by the data, not the dates of coding or making documents machine-readable or the dates the data were collected. Also known as span.		none	57	;	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		Période couverte	Période à laquelle les données se rapportent. Ceci fait référence à la période couverte par les données et non aux dates de codage ou de création des fichiers ou aux dates de collecte des données. Aussi appelé l'étendue.	citation
+	timePeriodCoveredStart	Start	Start date which reflects the time period covered by the data, not the dates of coding or making documents machine-readable or the dates the data were collected.	YYYY-MM-DD	date	58	#NAME: #VALUE 	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	timePeriodCovered	Début	Date de début qui correspond à la période couverte par les données et non aux dates de codage ou de création des fichiers ou aux dates de collecte des données. 	citation
+	timePeriodCoveredEnd	End	End date which reflects the time period covered by the data, not the dates of coding or making documents machine-readable or the dates the data were collected.	YYYY-MM-DD	date	59	#NAME: #VALUE 	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	timePeriodCovered	Fin	Date de fin qui correspond à la période couverte par les données et non aux dates de codage ou de création des fichiers ou aux dates de collecte des données.	citation
+	dateOfCollection	Date of Collection	Contains the date(s) when the data were collected.		none	60	;	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		Date de la collecte	Comprend la date à laquelle les données ont été recueillies.	citation
+	dateOfCollectionStart	Start	Date when the data collection started.	YYYY-MM-DD	date	61	#NAME: #VALUE 	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	dateOfCollection	Début	Date à laquelle la collecte de données a débuté.	citation
+	dateOfCollectionEnd	End	Date when the data collection ended.	YYYY-MM-DD	date	62	#NAME: #VALUE 	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	dateOfCollection	Fin	Date à laquelle la collecte de données a pris fin.	citation
+	kindOfData	Kind of Data	Type of data included in the file: survey data, census/enumeration data, aggregate data, clinical data, event/transaction data, program source code, machine-readable text, administrative records data, experimental data, psychological test, textual data, coded textual, coded documents, time budget diaries, observation data/ratings, process-produced data, or other.		text	63		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		Type de données	Le type de données incluses dans le fichier : données d'enquête, données de recensement, données agrégées, données cliniques, données issues de transactions, code source de programme, texte lisible par machine, données de dossiers administratifs, données expérimentales, test psychologique, données textuelles, texte codé, document codé, calendriers de vérification, données d’observation, données produites par traitement ou autres.	citation
+	series	Series	Information about the Dataset series.		none	64	:	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		Série	Renseignements sur la série d'ensembles de données	citation
+	seriesName	Name	Name of the dataset series to which the Dataset belongs.		text	65	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	series	Nom	Nom de la série de l'ensemble de données à laquelle l'ensemble de données appartient.	citation
+	seriesInformation	Information	History of the series and summary of those features that apply to the series as a whole.		textbox	66	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	series	Renseignements	Historique de la série et résumé des caractéristiques qui s'appliquent à la série dans son ensemble.	citation
+	software	Software	Information about the software used to generate the Dataset.		none	67	,	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		Logiciel	Renseignements sur le logiciel utilisé pour générer l'ensemble de données.	citation
+	softwareName	Name	Name of software used to generate the Dataset.		text	68	#VALUE	FALSE	TRUE	FALSE	FALSE	FALSE	FALSE	software	Nom	Nom du logiciel utilisé pour générer l'ensemble de données.	citation
+	softwareVersion	Version	Version of the software used to generate the Dataset.		text	69	#NAME: #VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	software	Version	Version du logiciel utilisé pour générer l'ensemble de données.	citation
+	relatedMaterial	Related Material	Any material related to this Dataset.		textbox	70		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		Document connexe	Tout document lié à cet ensemble de données.	citation
+	relatedDatasets	Related Datasets	Any Datasets that are related to this Dataset, such as previous research on this subject.		textbox	71		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		Ensembles de données connexes	Tout ensemble de données lié à cet ensemble de données, comme la recherche précédente sur ce sujet.	citation
+	otherReferences	Other References	Any references that would serve as background or supporting material to this Dataset.		text	72		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		Autres références	Toute référence qui servira de contexte ou de document de soutien pour cet ensemble de données.	citation
+	dataSources	Data Sources	List of books, articles, serials, or machine-readable data files that served as the sources of the data collection.		textbox	73		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		Sources de données	Liste des livres, articles, séries ou fichiers de données lisibles par machine qui ont servi de sources pour la collecte de données.	citation
+	originOfSources	Origin of Sources	For historical materials, information about the origin of the sources and the rules followed in establishing the sources should be specified.		textbox	74		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		Origine des sources	En ce qui concerne les documents historiques, les renseignements sur l'origine des sources et les règles suivies dans l'établissement des sources doivent être indiqués.	citation
+	characteristicOfSources	Characteristic of Sources Noted	Assessment of characteristics and source material.		textbox	75		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		Caractéristiques des sources notées	Évaluation et caractéristiques des sources de données. 	citation
+	accessToSources	Documentation and Access to Sources	Level of documentation of the original sources.		textbox	76		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		Documentation et accès aux sources	Niveau de documentation des sources originales	citation
+#controlledVocabulary	DatasetField	Value	identifier	displayOrder												Identifiant	
+	subject	Agricultural Sciences	D01	0												D01	
+	subject	Arts and Humanities	D0	1												Arts et sciences humaines	
+	subject	Astronomy and Astrophysics	D1	2												Astronomie et astrophysique	
+	subject	Business and Management	D2	3												Affaires et gestion	
+	subject	Chemistry	D3	4												Chimie	
+	subject	Earth and Environmental Sciences	D4	5												Sciences de la terre et de l'environnement	
+	subject	Engineering	D5	6												Génie	
+	subject	Medicine, Health and Life Sciences	D6	7												Médecine, santé et sciences de la vie	
+	subject	Computer and Information Science	D7	8												Informatique et science de l'information	
+	subject	Law	D8	9												Droit	
+	subject	Mathematical Sciences	D9	10												Sciences mathématiques	
+	subject	Physics	D10	11												Physique	
+	subject	Social Sciences	D11	12												Sciences sociales	
+	subject	Other	D12	13												Autre	
+	publicationIDType	ark		0												ark	
+	publicationIDType	arXiv		1	arxiv											arXiv	
+	publicationIDType	bibcode		2												bibcode	
+	publicationIDType	doi		3												doi	
+	publicationIDType	ean13		4												ean13	
+	publicationIDType	eissn		5												eissn	
+	publicationIDType	handle		6												handle	
+	publicationIDType	isbn		7												isbn	
+	publicationIDType	issn		8												issn	
+	publicationIDType	istc		9												istc	
+	publicationIDType	lissn		10												lissn	
+	publicationIDType	lsid		11												lsid	
+	publicationIDType	pmid		12												pmid	
+	publicationIDType	purl		13												purl	
+	publicationIDType	upc		14												upc	
+	publicationIDType	url		15												url	
+	publicationIDType	urn		16												urn	
+	contributorType	Data Collector		0												Responsable de la collecte de données	
+	contributorType	Data Curator		1												Gestionnaire de données	
+	contributorType	Data Manager		2												Gestionnaire	
+	contributorType	Editor		3												Éditeur	
+	contributorType	Funder		4												Bailleur de fonds	
+	contributorType	Hosting Institution		5												Établissement hôte	
+	contributorType	Project Leader		6												Chef de projet	
+	contributorType	Project Manager		7												Gestionnaire de projet	
+	contributorType	Project Member		8												Membre du projet	
+	contributorType	Related Person		9												Personne liée	
+	contributorType	Researcher		10												Chercheur	
+	contributorType	Research Group		11												Groupe de recherche	
+	contributorType	Rights Holder		12												Détenteur de droits	
+	contributorType	Sponsor		13												Commanditaire	
+	contributorType	Supervisor		14												Superviseur	
+	contributorType	Work Package Leader		15												Chef d'un bloc de tâches	
+	contributorType	Other		16												Autre	
+	authorIdentifierScheme	ORCID		0												ORCID	
+	authorIdentifierScheme	ISNI		1												ISNI	
+	authorIdentifierScheme	LCNA		2												LCNA	
+	language	Abkhaz		0												Abkhaz	
+	language	Afar		1												Afar	
+	language	Afrikaans		2												Afrikaans	
+	language	Akan		3												Akan	
+	language	Albanian		4												Albanais	
+	language	Amharic		5												Amharique	
+	language	Arabic		6												Arabe	
+	language	Aragonese		7												Aragonais	
+	language	Armenian		8												Arménien	
+	language	Assamese		9												Assamais	
+	language	Avaric		10												Avar	
+	language	Avestan		11												Avesta	
+	language	Aymara		12												Aïmara	
+	language	Azerbaijani		13												Azerbaïdjanais	
+	language	Bambara		14												Bambara	
+	language	Bashkir		15												Bachkir	
+	language	Basque		16												Basque	
+	language	Belarusian		17												Biélorusse	
+	language	Bengali, Bangla		18												Bengali, bangla	
+	language	Bihari		19												Magahi	
+	language	Bislama		20												Bislama	
+	language	Bosnian		21												Bosnien	
+	language	Breton		22												Breton	
+	language	Bulgarian		23												Bulgare	
+	language	Burmese		24												Birman	
+	language	Catalan,Valencian		25												Catalan, valencien	
+	language	Chamorro		26												Chamorro	
+	language	Chechen		27												Tchétchène	
+	language	Chichewa, Chewa, Nyanja		28												Chewa, cewa, nyanja	
+	language	Chinese		29												Mandarin, chinois	
+	language	Chuvash		30												Tchouvache	
+	language	Cornish		31												Cornique	
+	language	Corsican		32												Corse	
+	language	Cree		33												Cri	
+	language	Croatian		34												Croate	
+	language	Czech		35												Tchèque	
+	language	Danish		36												Danois	
+	language	Divehi, Dhivehi, Maldivian		37												Divehi, maldivian	
+	language	Dutch		38												Hollandais, néerlandais	
+	language	Dzongkha		39												Dzonga	
+	language	English		40												Anglais	
+	language	Esperanto		41												Espéranto	
+	language	Estonian		42												Estonien	
+	language	Ewe		43												Éwé	
+	language	Faroese		44												Féroïen	
+	language	Fijian		45												Fidjien	
+	language	Finnish		46												Finnois, finlandais	
+	language	French		47												Français	
+	language	Fula, Fulah, Pulaar, Pular		48												Fulfulde, foulani, pulaar	
+	language	Galician		49												Galicien	
+	language	Georgian		50												Géorgien	
+	language	German		51												Allemand	
+	language	Greek (modern)		52												Grec (moderne)	
+	language	Guaraní		53												Guarani	
+	language	Gujarati		54												Gujarati	
+	language	Haitian, Haitian Creole		55												Haïtien, créole haïtien	
+	language	Hausa		56												Haoussa	
+	language	Hebrew (modern)		57												Hébreu (moderne)	
+	language	Herero		58												Herero	
+	language	Hindi		59												Hindi	
+	language	Hiri Motu		60												Hiri-motu 	
+	language	Hungarian		61												Hongrois	
+	language	Interlingua		62												Interlingua	
+	language	Indonesian		63												Indonésien	
+	language	Interlingue		64												Interlingue	
+	language	Irish		65												Irlandais	
+	language	Igbo		66												Igbo	
+	language	Inupiaq		67												Inupiaq	
+	language	Ido		68												Ido	
+	language	Icelandic		69												Islandais	
+	language	Italian		70												Italien	
+	language	Inuktitut		71												Inuktitut	
+	language	Japanese		72												Japonais	
+	language	Javanese		73												Javanais	
+	language	Kalaallisut, Greenlandic		74												Groenlandais	
+	language	Kannada		75												Kannada	
+	language	Kanuri		76												Kanuri	
+	language	Kashmiri		77												Kashmiri	
+	language	Kazakh		78												Kazakh	
+	language	Khmer		79												Khmer, cambodgien	
+	language	Kikuyu, Gikuyu		80												Kikuyu, gikuyu	
+	language	Kinyarwanda		81												Kinyarwanda	
+	language	Kyrgyz		82												Kirghiz	
+	language	Komi		83												Komi	
+	language	Kongo		84												Kikongo	
+	language	Korean		85												Coréen	
+	language	Kurdish		86												Kurde	
+	language	Kwanyama, Kuanyama		87												Ovambo, cuanhama	
+	language	Latin		88												Latin	
+	language	Luxembourgish, Letzeburgesch		89												Luxembourgeois	
+	language	Ganda		90												Ganda	
+	language	Limburgish, Limburgan, Limburger		91												Limbourgeois, 	
+	language	Lingala		92												Lingala	
+	language	Lao		93												Lao	
+	language	Lithuanian		94												Lituanien	
+	language	Luba-Katanga		95												Luba-Katanga	
+	language	Latvian		96												Letton	
+	language	Manx		97												Manx	
+	language	Macedonian		98												Macédonien	
+	language	Malagasy		99												Malgache	
+	language	Malay		100												Malais	
+	language	Malayalam		101												Malayalam	
+	language	Maltese		102												Maltais	
+	language	Māori		103												Maori	
+	language	Marathi (Marāṭhī)		104												Marathi (Marāṭhī)	
+	language	Marshallese		105												Marshallais	
+	language	Mongolian		106												Mongol	
+	language	Nauru		107												Nauru	
+	language	Navajo, Navaho		108												Navaho	
+	language	Northern Ndebele		109												Ndébélé du Nord	
+	language	Nepali		110												Népalais	
+	language	Ndonga		111												Ndonga	
+	language	Norwegian Bokmål		112												Bokmal	
+	language	Norwegian Nynorsk		113												Néonorvégien	
+	language	Norwegian		114												Norvégien	
+	language	Nuosu		115												Nuosu	
+	language	Southern Ndebele		116												Ndébélé du Sud	
+	language	Occitan		117												Occitan	
+	language	Ojibwe, Ojibwa		118												Ojibwé, ojibwa	
+	language	Old Church Slavonic,Church Slavonic,Old Bulgarian		119												Slavon liturgique, slavon d'église, vieux bulgare	
+	language	Oromo		120												Oromo	
+	language	Oriya		121												Oriya	
+	language	Ossetian, Ossetic		122												Ossète	
+	language	Panjabi, Punjabi		123												Pendjabi	
+	language	Pāli		124												Pali	
+	language	Persian (Farsi)		125												Persan (dari)	
+	language	Polish		126												Polonais	
+	language	Pashto, Pushto		127												Pachto	
+	language	Portuguese		128												Portugais	
+	language	Quechua		129												Quechua	
+	language	Romansh		130												Romanche	
+	language	Kirundi		131												Kiroundi	
+	language	Romanian		132												Roumain	
+	language	Russian		133												Russe	
+	language	Sanskrit (Saṁskṛta)		134												Sanskrit (Saṁskṛta)	
+	language	Sardinian		135												Sarde	
+	language	Sindhi		136												Sindhi	
+	language	Northern Sami		137												Lapon du Nord	
+	language	Samoan		138												Samoan	
+	language	Sango		139												Sango	
+	language	Serbian		140												Serbe	
+	language	Scottish Gaelic, Gaelic		141												Gaélique d'Écosse, gaélique	
+	language	Shona		142												Shona	
+	language	Sinhala, Sinhalese		143												Singhalais, cinghalais	
+	language	Slovak		144												Slovaque	
+	language	Slovene		145												Slovène	
+	language	Somali		146												Somali	
+	language	Southern Sotho		147												Sotho du Sud	
+	language	Spanish, Castilian		148												Espagnol, castillan	
+	language	Sundanese		149												Soundanais	
+	language	Swahili		150												Swahili	
+	language	Swati		151												Swati	
+	language	Swedish		152												Suédois	
+	language	Tamil		153												Tamoul 	
+	language	Telugu		154												Télougou	
+	language	Tajik		155												Tadjik	
+	language	Thai		156												Thaï	
+	language	Tigrinya		157												Tigrigna	
+	language	Tibetan Standard, Tibetan, Central		158												Tibétain standard, tibétain central	
+	language	Turkmen		159												Türkmène	
+	language	Tagalog		160												Tagalog	
+	language	Tswana		161												Bechouana	
+	language	Tonga (Tonga Islands)		162												Tonga (Tonga)	
+	language	Turkish		163												Turc	
+	language	Tsonga		164												Tsonga	
+	language	Tatar		165												Tatar	
+	language	Twi		166												Akuapem-twi	
+	language	Tahitian		167												Tahitien	
+	language	Uyghur, Uighur		168												Ouïghour, uygur	
+	language	Ukrainian		169												Ukrainien	
+	language	Urdu		170												Urdu	
+	language	Uzbek		171												Ouzbek	
+	language	Venda		172												Venda	
+	language	Vietnamese		173												Vietnamien	
+	language	Volapük		174												Volapük	
+	language	Walloon		175												Walloon	
+	language	Welsh		176												Gallois	
+	language	Wolof		177												Yolof 	
+	language	Western Frisian		178												Frison de l'Ouest	
+	language	Xhosa		179												Xhosa	
+	language	Yiddish		180												Yiddish	
+	language	Yoruba		181												Yoruba	
+	language	Zhuang, Chuang		182												Zhuang, chuang	
+	language	Zulu		183												Zoulou	
+	language	Not applicable		184												Sans objet	

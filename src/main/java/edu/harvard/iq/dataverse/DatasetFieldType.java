@@ -70,6 +70,14 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     @Column(name = "frenchtitle" )
     private String frenchtitle;
     
+
+    /**
+     * A longer, human-friendlier name. Punctuation allowed.
+     */
+    @Column(name = "frenchdescription", columnDefinition = "TEXT" )
+    private String frenchdescription;
+
+    
     /**
      * A user-friendly Description; will be used for
      * mouse-overs, etc.
@@ -181,7 +189,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     }
 
     public String getTitle() {
-    	 SolrField solrField = new SolrField();
+    	SolrField solrField = new SolrField();
      	String language = solrField.getLanguage();
     	String output = "";
 
@@ -207,9 +215,30 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     public void setFrenchTitle(String frenchtitle) {
         this.frenchtitle = frenchtitle;
     }
+    
+    public String getFrenchDescription() {
+        return frenchdescription;
+    }
+
+    public void setFrenchDescription(String frenchdescription) {
+        this.frenchdescription = frenchdescription;
+    }
 
     public String getDescription() {
-        return description;
+    	
+    	SolrField solrField = new SolrField();
+     	String language = solrField.getLanguage();
+    	String output = "";
+
+    	if(language.equals("fr"))
+    	{
+    		output =    frenchdescription;
+    	}
+    	else
+    	{
+    		output =   description;
+    	}
+    	return output ; 
     }
 
     public void setDescription(String description) {
