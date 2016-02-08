@@ -151,9 +151,6 @@ public class DataCiteRESTfullClient {
         HttpPost httpPost = new HttpPost(this.url + "/metadata");
         httpPost.setHeader("Content-Type", "application/xml;charset=UTF-8");
         httpPost.setEntity(new StringEntity(metadata, "utf-8"));
-        System.out.print("in post metadata entity: " + httpPost.getEntity().toString());
-            System.out.print("In PostMetadata httpClient " + httpClient.toString());
-            System.out.print("In PostMetadata credentials " + context.getCredentialsProvider().getCredentials(AuthScope.ANY));
         try {
             HttpResponse response = httpClient.execute(httpPost,context);
             
