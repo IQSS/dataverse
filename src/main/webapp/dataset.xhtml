@@ -615,11 +615,19 @@
                     
                     <p:dialog styleClass="smallPopUp" header="#{bundle['dataset.inValidSelectedFilesForDownload']}" widgetVar="downloadMixed" modal="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.mixedSelectedFilesForDownload']}</p>
-                        <ui:repeat id="restrictedFileTable" value="#{DatasetPage.selectedNonDownloadableFiles}" var="resFile" >
-                            <h:outputText value=" #{resFile.label}" />                      
-                        </ui:repeat>
+
+                        <table>
+                            <ui:repeat var="resFile" value="#{DatasetPage.selectedNonDownloadableFiles}" >
+
+                                <tr>
+                                    <td>#{resFile.label}</td>
+                                </tr>
+
+                            </ui:repeat>
+                        </table>
+                        
                         <div class="button-block">
-                            <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataset.downloadUnrestricted']}</p>
+                            <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataset.downloadUnrestricted']}</p>                            
                             <ui:fragment rendered="#{!DatasetPage.downloadPopupRequired}">
                             <p:commandButton value="#{bundle.continue}" onclick="PF('downloadMixed').hide()" action="#{DatasetPage.startMultipleFileDownload()}" />
                             </ui:fragment>
