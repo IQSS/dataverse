@@ -107,6 +107,10 @@
                                         </p:commandLink>
                                     </div>
                                     <div>
+                                        <p>
+                                            <span class="highlightBold">#{managePermissionsPage.roleAssignments.size()} Users/Groups</span>
+                                        </p>
+                                        
                                         <p:dataTable id="assignedRoles" var="roleAssignment" value="#{managePermissionsPage.roleAssignments}">
                                             <p:column width="35%" headerText="#{bundle['dataverse.permissions.usersOrGroups.tabHeader.userOrGroup']}">
                                                 <h:outputText value="#{roleAssignment.assigneeDisplayInfo.title}"/>
