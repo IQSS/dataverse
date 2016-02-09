@@ -1,171 +1,137 @@
-====================================
-Application Configuration
-====================================
+============
+Installation
+============
 
-**Much of the Dataverse Application configuration is done by the automated installer (described above). This section documents the additional configuration tasks that need to be done after you run the installer.** 
+Now that the :doc:`prerequisites` are in place, we are ready to execute the Dataverse installation script (the "installer") and verify that the installation was successful by logging in with a "superuser" account.
 
-.. _introduction:
+.. contents:: :local:
 
-Dataverse Admin Account
-+++++++++++++++++++++++
+Running the Dataverse Installer
+-------------------------------
 
-Now that you've run the application installer and have your own Dataverse instance, you need to configure the Dataverse Administrator user. 
-By default installer pre-sets the Admin credentials as follows:
+A scripted, interactive installer is provided. This script will configure your Glassfish environment, create the database, set some required options and start the application. Some configuration tasks will still be required after you run the installer! So make sure to consult the next section. 
+At this point the installer only runs on RHEL 6 and similar.
 
-.. code-block:: none
+You should have already downloaded the installer from https://github.com/IQSS/dataverse/releases when setting up and starting Solr under the :doc:`prerequisites` section. Again, it's a zip file with "dvinstall" in the name.
 
-    First Name: Dataverse
-    Last Name:  Admin
-    Affiliation: Dataverse.org
-    Position: Admin
-    Email: dataverse@mailinator.com
+Unpack the zip file - this will create the directory ``dvinstall``.
 
-Log in as the user dataverseAdmin with the password "admin" and change these values to suit your installation.
+Execute the installer script like this::
 
-(Alteratively, you can modify the file ``dvinstall/data/user-admin.json`` in the installer bundle **before** you run the installer. The password is in ``dvinstall/setup-all.sh``, which references this JSON file.)
+        # cd dvinstall
+        # ./install
 
-Solr Configuration
-++++++++++++++++++
+The script will prompt you for some configuration values. If this is a test/evaluation installation, it should be safe to accept the defaults for most of the settings:
 
-Dataverse requires a specific Solr schema file called `schema.xml` that can be found in the Dataverse distribution. It should replace the default `example/solr/collection1/conf/schema.xml` file that ships with Solr.
+- Internet Address of your host: localhost
+- Glassfish Directory: /usr/local/glassfish4
+- SMTP (mail) server to relay notification messages: localhost
+- Postgres Server: localhost
+- Postgres Server Port: 5432
+- Name of the Postgres Database: dvndb
+- Name of the Postgres User: dvnapp
+- Postgres user password: secret
+- Rserve Server: localhost
+- Rserve Server Port: 6311
+- Rserve User Name: rserve
+- Rserve User Password: rserve
 
-If ``WARN  org.eclipse.jetty.http.HttpParser  – HttpParser Full for /127.0.0.1:8983`` appears in the Solr log, adding ``<Set name="requestHeaderSize">8192</Set>`` (or a higher number of bytes) to Solr's jetty.xml in the section matching the XPath expression ``//Call[@name='addConnector']/Arg/New[@class='org.eclipse.jetty.server.bio.SocketConnector']`` may resolve the issue.  See also https://support.lucidworks.com/hc/en-us/articles/201424796-Error-when-submitting-large-query-strings-
+The script is to a large degree a derivative of the old installer from DVN 3.x. It is written in Perl. If someone in the community is eager to rewrite it, perhaps in a different language, please get in touch. :)
 
-Solr Security
--------------
+All the Glassfish configuration tasks performed by the installer are isolated in the shell script ``dvinstall/glassfish-setup.sh`` (as ``asadmin`` commands). 
 
-Solr must be firewalled off from all hosts except the server(s) running Dataverse. Otherwise, any host that can reach the Solr port (8983 by default) can add or delete data, search unpublished data, and even reconfigure Solr. For more information, please see https://wiki.apache.org/solr/SolrSecurity
+As the installer finishes, it mentions a script called ``post-install-api-block.sh`` which is **very important** to execute for any production installation of Dataverse. Security will be covered in :doc:`config` section but for now, let's make sure your installation is working.
 
-Settings
-++++++++
+Logging In
+----------
 
-ApplicationPrivacyPolicyUrl
----------------------------
+Out of the box, Glassfish runs on port 8080 and 8181 rather than 80 and 443, respectively, so visiting http://localhost:8080 (substituting your hostname) should bring up a login page. See the :doc:`shibboleth` page for more on ports, but for now, let's confirm we can log in by using port 8080. Poke a temporary hole in your firewall.
 
-Specify a URL where users can read your Privacy Policy, linked from the bottom of the page.
+Superuser Account
++++++++++++++++++
 
-``curl -X PUT -d http://best-practices.dataverse.org/harvard-policies/harvard-privacy-policy.html http://localhost:8080/api/admin/settings/:ApplicationPrivacyPolicyUrl``
+We'll use the superuser account created by the installer to make sure you can log into Dataverse. For more on the difference between being a superuser and having the "Admin" role, read about configuring the root dataverse in the :doc:`config` section.
 
-ApplicationTermsOfUse
----------------------
+(The ``dvinstall/setup-all.sh`` script, which is called by the installer sets the password for the superuser account account and the username and email address come from a file it references at ``dvinstall/data/user-admin.json``.)
 
-Upload a text file containing the Terms of Use to be displayed at sign up.
+Use the following credentials to log in:
 
-``curl -X PUT -d@/tmp/apptou.html http://localhost:8080/api/admin/settings/:ApplicationTermsOfUse``
+- URL: http://localhost:8080
+- username: dataverseAdmin
+- password: admin
 
-ApiTermsOfUse
--------------
+Congratulations! You have a working Dataverse installation. Soon you'll be tweeting at `@dataverseorg <https://twitter.com/dataverseorg>`_ asking to be added to the map at http://dataverse.org :)
 
-Upload a text file containing the API Terms of Use.
+(While you're logged in, you should go ahead and change the email address of the dataverseAdmin account to a real one rather than "dataverse@mailinator.com" so that you receive notifications.)
 
-``curl -X PUT -d@/tmp/api-tos.txt http://localhost:8080/api/admin/settings/:ApiTermsOfUse``
+Trouble? See if you find an answer in the troubleshooting section below.
 
-SolrHostColonPort
------------------
+Next you'll want to check out the :doc:`config` section.
 
-Set ``SolrHostColonPort`` to override ``localhost:8983``.
+Troubleshooting
+---------------
 
-``curl -X PUT -d localhost:8983 http://localhost:8080/api/admin/settings/:SolrHostColonPort``
+If the following doesn't apply, please get in touch as explained in the :doc:`intro`. You may be asked to provide ``glassfish4/glassfish/domains/domain1/logs/server.log`` for debugging.
 
-SearchHighlightFragmentSize
----------------------------
+Dataset Cannot Be Published
++++++++++++++++++++++++++++
 
-Set ``SearchHighlightFragmentSize`` to override the default value of 100 from https://wiki.apache.org/solr/HighlightingParameters#hl.fragsize
+Check to make sure you used a fully qualified domain name when installing Dataverse. You can change the ``dataverse.fqdn`` JVM option after the fact per the :doc:`config` section.
 
-``curl -X PUT -d 320 http://localhost:8080/api/admin/settings/:SearchHighlightFragmentSize``
-
-ShibEnabled
------------
-
-This setting is experimental per :doc:`/installation/shibboleth`.
-
-MaxFileUploadSizeInBytes
-------------------------------
-
-Set `MaxFileUploadSizeInBytes` to "2147483648", for example, to limit the size of files uploaded to 2 GB. 
-Notes:
-- For SWORD, this size is limited by the Java Integer.MAX_VALUE of 2,147,483,647. (see: https://github.com/IQSS/dataverse/issues/2169)
-- If the MaxFileUploadSizeInBytes is NOT set, uploads, including SWORD may be of unlimited size.
-
-``curl -X PUT -d 2147483648 http://localhost:8080/api/admin/settings/:MaxFileUploadSizeInBytes``
-
-GuidesBaseUrl
--------------
-
-Set ``GuidesBaseUrl`` to override the default value "http://guides.dataverse.org".
-
-``curl -X PUT -d http://dataverse.example.edu http://localhost:8080/api/admin/settings/:GuidesBaseUrl``
-
-GeoconnectCreateEditMaps
-------------------------
-
-Set ``GeoconnectCreateEditMaps`` to true to allow the user to create GeoConnect Maps. This boolean effects whether the user sees the map button on the dataset page and if the ingest will create a shape file.
-
-``curl -X PUT -d true http://localhost:8080/api/admin/settings/:GeoconnectCreateEditMaps``
-
-GeoconnectViewMaps
-------------------
-
-Set ``GeoconnectViewMaps`` to true to allow a user to view existing maps. This boolean effects whether a user will see the "Explore" button.
-
-``curl -X PUT -d true http://localhost:8080/api/admin/settings/:GeoconnectViewMaps``
-
-
-JVM Options
-+++++++++++
-
-dataverse.fqdn
---------------
-
-If the Dataverse server has multiple DNS names, this option specifies the one to be used as the "official" host name. For example, you may want to have dataverse.foobar.edu, and not the less appealling server-123.socsci.foobar.edu to appear exclusively in all the registered global identifiers, Data Deposit API records, etc. 
-
-To change the option on the command line: 
-
-``asadmin delete-jvm-options "-Ddataverse.fqdn=old.example.com"``
-
-``asadmin create-jvm-options "-Ddataverse.fqdn=dataverse.example.com"``
-
-The ``dataverse.fqdn`` JVM option also affects the password reset feature.
-
-| Do note that whenever the system needs to form a service URL, by default, it will be formed with ``https://`` and port 443. I.e., 
-| ``https://{dataverse.fqdn}/``
-| If that does not suit your setup, you can define an additional option - 
-
-dataverse.siteUrl
------------------
-
-| and specify the alternative protocol and port number. 
-| For example, configured in domain.xml:
-| ``<jvm-options>-Ddataverse.fqdn=dataverse.foobar.edu</jvm-options>``
-| ``<jvm-options>-Ddataverse.siteUrl=http://${dataverse.fqdn}:8080</jvm-options>``
-
-
-dataverse.auth.password-reset-timeout-in-minutes
-------------------------------------------------
-
-Set the ``dataverse.auth.password-reset-timeout-in-minutes`` option if you'd like to override the default value put into place by the installer.
-
-Dropbox Configuration
+Problems Sending Email
 ++++++++++++++++++++++
 
-- Add JVM option in the domain.xml: 
-``asadmin create-jvm-options "-Ddataverse.dropbox.key=<Enter your dropbox key here>"``
+You can confirm the SMTP server being used with this command:
+
+``asadmin get server.resources.mail-resource.mail/notifyMailSession.host``
+
+UnknownHostException While Deploying
+++++++++++++++++++++++++++++++++++++
+
+If you are seeing "Caused by: java.net.UnknownHostException: myhost: Name or service not known" in server.log and your hostname is "myhost" the problem is likely that "myhost" doesn't appear in ``/etc/hosts``. See also http://stackoverflow.com/questions/21817809/glassfish-exception-during-deployment-project-with-stateful-ejb/21850873#21850873
+
+Fresh Reinstall
+---------------
+
+Early on when you're installing Dataverse, you may think, "I just want to blow away what I've installed and start over." That's fine. You don't have to uninstall the various components like Glassfish, PostgreSQL and Solr, but you should be conscious of how to clear out their data.
+
+Drop database
++++++++++++++
+
+In order to drop the database, you have to stop Glassfish, which will have open connections. Before you stop Glassfish, you may as well undeploy the war file. First, find the name like this:
+
+``asadmin list-applications``
+
+Then undeploy it like this:
+
+``asadmin undeploy dataverse-VERSION``
+
+Stop Glassfish with the init script provided in the :doc:`prerequisites` section or just use:
+
+``asadmin stop-domain``
+
+With Glassfish down, you should now be able to drop your database and recreate it:
+
+``psql -U dvnapp -c 'DROP DATABASE "dvndb"' template1``
+
+Clear Solr
+++++++++++
+
+The database is fresh and new but Solr has stale data it in. Clear it out with this command:
+
+``curl http://localhost:8983/solr/update/json?commit=true -H "Content-type: application/json" -X POST -d "{\"delete\": { \"query\":\"*:*\"}}"``
 
 
+Deleting uploaded files
++++++++++++++++++++++++
 
+The path below will depend on the value for ``dataverse.files.directory`` as described in the :doc:`config` section:
 
+``rm -rf /usr/local/glassfish4/glassfish/domains/domain1/files``
 
+Rerun Installer
++++++++++++++++
 
+With all the data cleared out, you should be ready to rerun the installer per above.
 
-
-
-
-
-The guide is intended for anyone who needs to install the Dataverse app.
-
-If you encounter any problems during installation, please contact the
-development team
-at `support@thedata.org <mailto:support@thedata.org>`__
-or our `Dataverse Users
-Community <https://groups.google.com/forum/?fromgroups#!forum/dataverse-community>`__.
-
+Related to all this is a series of scripts at https://github.com/IQSS/dataverse/blob/develop/scripts/deploy/phoenix.dataverse.org/deploy that Dataverse developers use have the test server http://phoenix.dataverse.org rise from the ashes before integration tests are run against it. Your mileage may vary. :)
