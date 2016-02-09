@@ -624,7 +624,8 @@
                             <p:commandButton value="#{bundle.continue}" onclick="PF('downloadMixed').hide()" action="#{DatasetPage.startMultipleFileDownload()}" />
                             </ui:fragment>
                             <ui:fragment rendered="#{DatasetPage.downloadPopupRequired}">
-                                <p:commandButton value="#{bundle.continue}" onclick="PF('downloadMixed').hide()" action="#{DatasetPage.initGuestbookMultipleResponse()}" />
+                                <p:commandButton value="#{bundle.continue}" onclick="PF('downloadMixed').hide()" 
+                                                 action="#{DatasetPage.initGuestbookMultipleResponse()}" update="@form" />
                             </ui:fragment>
                             <p:commandButton value="#{bundle.cancel}" onclick="PF('downloadMixed').hide();" type="button" />
                         </div>
