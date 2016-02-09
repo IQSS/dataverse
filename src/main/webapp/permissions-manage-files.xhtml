@@ -187,7 +187,7 @@
                         </div>
                     </div>
                     <!-- View / Remove Users/Groups Popup -->
-                    <p:dialog id="viewRemoveDialog" styleClass="largePopUp" header="#{bundle['dataverse.permissionsFiles.viewRemoveDialog.header']}" widgetVar="viewRemoveWidget" modal="true">
+                    <p:dialog id="viewRemoveDialog" width="65%" header="#{bundle['dataverse.permissionsFiles.viewRemoveDialog.header']}" widgetVar="viewRemoveWidget" modal="true">
                         <div>
                             <p:outputPanel id="selectionRemoveCounter">
                                 <p>
@@ -228,7 +228,7 @@
                         </div>
                     </p:dialog>
                     <!-- Assign Users/Groups Popup -->
-                    <p:dialog id="assignDialog" header="#{bundle['dataverse.permissionsFiles.assignDialog.header']}" widgetVar="assignWidget" modal="true">
+                    <p:dialog id="assignDialog" width="65%" header="#{bundle['dataverse.permissionsFiles.assignDialog.header']}" widgetVar="assignWidget" modal="true">
                         <p:fragment id="assignMessages">
                             <div class="messagePanel">
                                 <iqbs:messages collapsible="true" />
@@ -243,7 +243,7 @@
                                             #{bundle['dataverse.permissionsFiles.assignDialog.userOrGroup']}
                                         </span>
                                     </label>
-                                    <div class="col-sm-9">
+                                    <div class="col-sm-5">
                                         <p:autoComplete id="userGroupNameAssign" placeholder="#{bundle['dataverse.permissionsFiles.assignDialog.userOrGroup.enterName']}"
                                                         multiple="true" scrollHeight="180" forceSelection="true" emptyMessage="#{bundle['dataverse.permissionsFiles.assignDialog.userOrGroup.invalidMsg']}"
                                                         value="#{manageFilePermissionsPage.selectedRoleAssignees}"  completeMethod="#{manageFilePermissionsPage.completeRoleAssignee}"
@@ -262,41 +262,41 @@
                                         <p:message for="userGroupNameAssign" display="text"/>
                                     </div>
                                 </div>
-                                <div>
-                                    <p:outputPanel id="selectionCounter">
-                                        <p>
-                                            <span class="highlightBold">Selecting #{manageFilePermissionsPage.selectedFiles.size()} of 
-                                                
-                                                #{!empty manageFilePermissionsPage.fileRequester ? 
-                                                            manageFilePermissionsPage.fileAccessRequestMap.get(manageFilePermissionsPage.fileRequester).size()
-                                                            :
-                                                            manageFilePermissionsPage.fileMap.size()}
-                                                
-                                                #{!empty manageFilePermissionsPage.fileRequester ? 
-                                                            'Requested Files'
-                                                            :
-                                                            'Restricted Files'}
-                                            </span>
-                                        </p>
-                                    </p:outputPanel>
-                                    
-                                    <o:importFunctions type="java.util.Arrays" />
-                                    <p:dataTable id="restrictedFilesForAccess" styleClass="col-sm-12" var="file"
-                                                 value="#{empty manageFilePermissionsPage.fileRequester ? Arrays:asList(manageFilePermissionsPage.fileMap.keySet().toArray()) :
-                                                          manageFilePermissionsPage.fileAccessRequestMap.get(manageFilePermissionsPage.fileRequester)}"
-                                                 selection="#{manageFilePermissionsPage.selectedFiles}" rowKey="#{file.id}" sortBy="#{file.displayName}"
-                                                 scrollable="true" scrollHeight="300">
-                                        
-                                        <p:ajax event="rowSelectCheckbox" listener="#{manageFilePermissionsPage.rowSelected}" update=":rolesPermissionsForm:selectionCounter" />
-                                        <p:ajax event="rowUnselectCheckbox" listener="#{manageFilePermissionsPage.rowSelected}" update=":rolesPermissionsForm:selectionCounter" />
-                                        <p:ajax event="toggleSelect" listener="#{manageFilePermissionsPage.rowSelected}" update=":rolesPermissionsForm:selectionCounter" />
-                                        
-                                        <p:column selectionMode="multiple" style="width:2%;text-align:center"/>
-                                        <p:column headerText="#{bundle['dataverse.permissionsFiles.assignDialog.fileName']}">
-                                            <h:outputText value="#{file.displayName}"/>
-                                        </p:column>
-                                    </p:dataTable>
-                                </div>
+                            </div>
+                            <div>
+                                <p:outputPanel id="selectionCounter">
+                                    <p>
+                                        <span class="highlightBold">Selecting #{manageFilePermissionsPage.selectedFiles.size()} of 
+
+                                            #{!empty manageFilePermissionsPage.fileRequester ? 
+                                                        manageFilePermissionsPage.fileAccessRequestMap.get(manageFilePermissionsPage.fileRequester).size()
+                                                        :
+                                                        manageFilePermissionsPage.fileMap.size()}
+
+                                            #{!empty manageFilePermissionsPage.fileRequester ? 
+                                                        'Requested Files'
+                                                        :
+                                                        'Restricted Files'}
+                                        </span>
+                                    </p>
+                                </p:outputPanel>
+
+                                <o:importFunctions type="java.util.Arrays" />
+                                <p:dataTable id="restrictedFilesForAccess" var="file"
+                                             value="#{empty manageFilePermissionsPage.fileRequester ? Arrays:asList(manageFilePermissionsPage.fileMap.keySet().toArray()) :
+                                                      manageFilePermissionsPage.fileAccessRequestMap.get(manageFilePermissionsPage.fileRequester)}"
+                                             selection="#{manageFilePermissionsPage.selectedFiles}" rowKey="#{file.id}" sortBy="#{file.displayName}"
+                                             scrollable="true" scrollHeight="300">
+
+                                    <p:ajax event="rowSelectCheckbox" listener="#{manageFilePermissionsPage.rowSelected}" update=":rolesPermissionsForm:selectionCounter" />
+                                    <p:ajax event="rowUnselectCheckbox" listener="#{manageFilePermissionsPage.rowSelected}" update=":rolesPermissionsForm:selectionCounter" />
+                                    <p:ajax event="toggleSelect" listener="#{manageFilePermissionsPage.rowSelected}" update=":rolesPermissionsForm:selectionCounter" />
+
+                                    <p:column selectionMode="multiple" style="width:2%;text-align:center"/>
+                                    <p:column headerText="#{bundle['dataverse.permissionsFiles.assignDialog.fileName']}">
+                                        <h:outputText value="#{file.displayName}"/>
+                                    </p:column>
+                                </p:dataTable>
                             </div>
                             <div class="button-block">
                                 <p:commandLink type="button" styleClass="btn btn-default" rendered="#{empty manageFilePermissionsPage.fileRequester}"
