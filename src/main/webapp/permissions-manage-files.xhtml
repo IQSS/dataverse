@@ -49,6 +49,10 @@
                                     </div>
                                     <div>
                                         <p:fragment id="userGroups">
+                                            <p>
+                                                <span class="highlightBold">#{manageFilePermissionsPage.fileAccessRequestMap.size()} Requests</span>
+                                            </p>
+                                            
                                             <p:dataTable id="fileAccessRequests" styleClass="margin-bottom" var="access" value="#{manageFilePermissionsPage.fileAccessRequestMap.entrySet().toArray()}"
                                                          rendered="#{!empty manageFilePermissionsPage.fileAccessRequestMap.entrySet().toArray()}">
                                                 <p:column width="30%" headerText="#{bundle['dataverse.permissionsFiles.usersOrGroups.tabHeader.userOrGroup']}">
@@ -84,6 +88,11 @@
                                                     </div>
                                                 </p:column>
                                             </p:dataTable>
+                                            
+                                            <p>
+                                                <span class="highlightBold">#{manageFilePermissionsPage.roleAssigneeMap.size()} Users/Groups</span>
+                                            </p>
+                                            
                                             <p:dataTable id="userGroupsAccess" var="ra" value="#{manageFilePermissionsPage.roleAssigneeMap.entrySet().toArray()}"
                                                          emptyMessage="#{bundle['dataverse.permissionsFiles.usersOrGroups.invalidMsg']}">
                                                 <p:column width="35%" headerText="#{bundle['dataverse.permissionsFiles.usersOrGroups.tabHeader.userOrGroup']}">
@@ -130,6 +139,11 @@
                                             <iqbs:messages  collapsible="true" rendered="#{manageFilePermissionsPage.renderFileMessages}"/>
                                         </div>
                                     </p:fragment>
+                                    
+                                    <p>
+                                        <span class="highlightBold">#{manageFilePermissionsPage.fileMap.size()} Restricted Files</span>
+                                    </p>
+                                    
                                     <p:dataTable id="restrictedFiles" var="fileEntry" value="#{manageFilePermissionsPage.fileMap.entrySet().toArray()}"
                                                  emptyMessage="#{bundle['dataverse.permissionsFiles.files.invalidMsg']}">
                                         <p:column width="40%" headerText="#{bundle['dataverse.permissionsFiles.files.tabHeader.fileName']}">
@@ -175,9 +189,26 @@
                     <!-- View / Remove Users/Groups Popup -->
                     <p:dialog id="viewRemoveDialog" styleClass="largePopUp" header="#{bundle['dataverse.permissionsFiles.viewRemoveDialog.header']}" widgetVar="viewRemoveWidget" modal="true">
                         <div>
+                            <p:outputPanel id="selectionRemoveCounter">
+                                <p>
+                                    <span class="highlightBold">Selecting #{manageFilePermissionsPage.selectedFiles.size()} of
+
+                                        #{manageFilePermissionsPage.roleAssignments.size()} 
+                                        
+                                        #{!empty manageFilePermissionsPage.selectedFile ? 'Users/Groups' : 'Restricted Files'}
+                                        
+                                    </span>
+                                </p>
+                            </p:outputPanel>
+                            
                             <p:dataTable id="assignedRoles" var="roleAssignment" value="#{manageFilePermissionsPage.roleAssignments}"
                                          selection="#{manageFilePermissionsPage.selectedRoleAssignmentRows}" rowKey="#{roleAssignment.id}" sortBy="#{!empty manageFilePermissionsPage.selectedFile ? roleAssignment.assigneeDisplayInfo.title : roleAssignment.definitionPoint.displayName}"
                                          scrollable="true" scrollHeight="300" disabledSelection="#{!roleAssignment.definitionPoint.instanceofDataFile}">
+                                
+                                <p:ajax event="rowSelectCheckbox" listener="#{manageFilePermissionsPage.rowSelected}" update=":rolesPermissionsForm:selectionRemoveCounter" />
+                                <p:ajax event="rowUnselectCheckbox" listener="#{manageFilePermissionsPage.rowSelected}" update=":rolesPermissionsForm:selectionRemoveCounter" />
+                                <p:ajax event="toggleSelect" listener="#{manageFilePermissionsPage.rowSelected}" update=":rolesPermissionsForm:selectionRemoveCounter" />
+                                
                                 <p:column selectionMode="multiple" style="width:2%;text-align:center"  />
                                 <p:column width="98%" headerText="#{bundle['dataverse.permissionsFiles.usersOrGroups.tabHeader.userOrGroup']}" rendered="#{!empty manageFilePermissionsPage.selectedFile}">
                                     <h:outputText value="#{roleAssignment.assigneeDisplayInfo.title}"/>
@@ -231,13 +262,35 @@
                                         <p:message for="userGroupNameAssign" display="text"/>
                                     </div>
                                 </div>
-                                <div class="form-group">
+                                <div>
+                                    <p:outputPanel id="selectionCounter">
+                                        <p>
+                                            <span class="highlightBold">Selecting #{manageFilePermissionsPage.selectedFiles.size()} of 
+                                                
+                                                #{!empty manageFilePermissionsPage.fileRequester ? 
+                                                            manageFilePermissionsPage.fileAccessRequestMap.get(manageFilePermissionsPage.fileRequester).size()
+                                                            :
+                                                            manageFilePermissionsPage.fileMap.size()}
+                                                
+                                                #{!empty manageFilePermissionsPage.fileRequester ? 
+                                                            'Requested Files'
+                                                            :
+                                                            'Restricted Files'}
+                                            </span>
+                                        </p>
+                                    </p:outputPanel>
+                                    
                                     <o:importFunctions type="java.util.Arrays" />
                                     <p:dataTable id="restrictedFilesForAccess" styleClass="col-sm-12" var="file"
                                                  value="#{empty manageFilePermissionsPage.fileRequester ? Arrays:asList(manageFilePermissionsPage.fileMap.keySet().toArray()) :
                                                           manageFilePermissionsPage.fileAccessRequestMap.get(manageFilePermissionsPage.fileRequester)}"
                                                  selection="#{manageFilePermissionsPage.selectedFiles}" rowKey="#{file.id}" sortBy="#{file.displayName}"
                                                  scrollable="true" scrollHeight="300">
+                                        
+                                        <p:ajax event="rowSelectCheckbox" listener="#{manageFilePermissionsPage.rowSelected}" update=":rolesPermissionsForm:selectionCounter" />
+                                        <p:ajax event="rowUnselectCheckbox" listener="#{manageFilePermissionsPage.rowSelected}" update=":rolesPermissionsForm:selectionCounter" />
+                                        <p:ajax event="toggleSelect" listener="#{manageFilePermissionsPage.rowSelected}" update=":rolesPermissionsForm:selectionCounter" />
+                                        
                                         <p:column selectionMode="multiple" style="width:2%;text-align:center"/>
                                         <p:column headerText="#{bundle['dataverse.permissionsFiles.assignDialog.fileName']}">
                                             <h:outputText value="#{file.displayName}"/>

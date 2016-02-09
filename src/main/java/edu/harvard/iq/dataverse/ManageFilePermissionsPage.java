@@ -37,6 +37,7 @@ import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import org.apache.commons.lang.StringUtils;
+import org.primefaces.event.SelectEvent;
 
 /**
  *
@@ -224,6 +225,10 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
 
     public void setSelectedRoleAssignmentRows(List<RoleAssignmentRow> selectedRoleAssignmentRows) {
         this.selectedRoleAssignmentRows = selectedRoleAssignmentRows;
+    }
+    
+    public void rowSelected(SelectEvent event) {
+        // System.out.println("rowSelected");
     }
     
     public void initViewRemoveDialogByFile(DataFile file, List<RoleAssignmentRow> raRows) {
@@ -462,7 +467,6 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     public void setRenderFileMessages(boolean renderFileMessages) {
         this.renderFileMessages = renderFileMessages;
     }
-
 
 
 
