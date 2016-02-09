@@ -591,28 +591,27 @@
                             <span class="icon-#{dataFileServiceBean.getFileClass(result.entity)} text-muted h1"
                                   jsf:rendered="#{!result.displayImage}"/>
                         </div>
-
-                        <h:outputText styleClass="text-muted" value="#{result.dateToDisplayOnCard} - "/>
-                        <a href="#{result.fileDatasetUrl}" target="#{showFacets == true ? '_self' : '_blank'}">
-                            <h:outputText value="#{result.parent.get('name')}"/></a>
-
-                        <ui:fragment>
-                            <br/>
+                        
+                        <div>
+                            <h:outputText styleClass="text-muted" value="#{result.dateToDisplayOnCard} - "/>
+                            <a href="#{result.fileDatasetUrl}" target="#{showFacets == true ? '_self' : '_blank'}">
+                                <h:outputText value="#{result.parent.get('name')}"/></a>
+                        </div>
+                        
+                        <div>
                             <h:outputText value="#{bundle['dataverse.results.cards.files.tabularData']}" styleClass="text-muted" rendered="#{!empty SearchIncludeFragment.tabularDataDisplayInfo(result.entity)}"/>
                             <h:outputText value="#{result.filetype}" styleClass="text-muted" rendered="#{empty SearchIncludeFragment.tabularDataDisplayInfo(result.entity) and result.fileTypeHighlightSnippet == null}"/>
                             <h:outputText value="#{result.fileTypeHighlightSnippet}" styleClass="text-muted" rendered="#{empty SearchIncludeFragment.tabularDataDisplayInfo(result.entity) and result.fileTypeHighlightSnippet != null}" escape="false"/>
 
-                            <h:outputText styleClass="text-muted" value=" - #{SearchIncludeFragment.dataFileSizeDisplay(result.entity)} - "/>
+                            <h:outputText styleClass="text-muted" value=" - #{SearchIncludeFragment.dataFileSizeDisplay(result.entity)}" rendered="#{!result.harvested}" />
 
-                            <h:outputText styleClass="text-muted" value="#{SearchIncludeFragment.dataFileMD5Display(result.entity)}" rendered="#{!SearchIncludeFragment.isTabular(result.entity)}"/>
+                            <h:outputText styleClass="text-muted" value=" - #{SearchIncludeFragment.dataFileMD5Display(result.entity)}" rendered="#{!result.harvested and !SearchIncludeFragment.isTabular(result.entity)}"/>
 
                             <!-- if this is a tabular data file, extra information, such as the numbers of variables and observations and the unf, is displayed: -->
-                            <h:outputText styleClass="text-muted" value="#{SearchIncludeFragment.tabularDataDisplayInfo(result.entity)}"
+                            <h:outputText styleClass="text-muted" value=" - #{SearchIncludeFragment.tabularDataDisplayInfo(result.entity)}"
                                             rendered="#{!empty SearchIncludeFragment.tabularDataDisplayInfo(result.entity)}"/>
-
-                            <br/>
-                        </ui:fragment>
-
+                        </div>
+                        
                         <div class="file-tags-block" jsf:rendered="#{(!empty result.fileCategories) or (!empty result.tabularDataTags)}">
                             <ui:repeat value="#{result.fileCategories}" var="cat">
                                 <h:outputText value="#{cat}" styleClass="label label-default"/>

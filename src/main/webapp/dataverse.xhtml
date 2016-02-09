@@ -504,7 +504,7 @@
                                         <div id="metrics-views" class="metrics-views tab-pane fade small text-center">
                                             #{bundle['metrics.views']} <em>#{bundle['metrics.comingsoon']}</em>
                                         </div>
-                                        <div id="metrics-downloads" class="metrics-downloads tab-pane fade small text-center">
+                                        <div id="metrics-downloads" class="metrics-downloads tab-pane small text-center active in">
                                             <h:outputFormat value="{0} #{bundle['metrics.downloads']}">
                                                 <f:param value="#{guestbookResponseServiceBean.getCountOfAllGuestbookResponses()}"/>
                                             </h:outputFormat>
@@ -517,17 +517,20 @@
                                         </div>
                                     </div>
                                     <div id="metrics-tabs">
+                                        <!-- DISABLED TOGGLE UNTIL FURTHER DEVELOPMENT ON METRICS IS COMPLETED 
+                                        ADDED style="pointer-events:none;" ATTRIBUTE TO A-HREF ELEMENTS BELOW 
+                                        REMOVED fade CLASS FROM metrics-downloads DIV ABOVE AND ADDED active in -->
                                         <div class="metrics-hover pull-left">
-                                            <a href="#metrics-views" class="metrics-views" data-toggle="tab">&#160;</a>
+                                            <a href="#metrics-views" style="pointer-events:none;" class="metrics-views" data-toggle="tab">&#160;</a>
                                         </div>
                                         <div class="metrics-hover pull-left">
-                                            <a href="#metrics-downloads" class="metrics-downloads first" data-toggle="tab">&#160;</a>
+                                            <a href="#metrics-downloads" style="pointer-events:none;" class="metrics-downloads first" data-toggle="tab">&#160;</a>
                                         </div>
                                         <div class="metrics-hover pull-left">
-                                            <a href="#metrics-citations" class="metrics-citations" data-toggle="tab">&#160;</a>
+                                            <a href="#metrics-citations" style="pointer-events:none;" class="metrics-citations" data-toggle="tab">&#160;</a>
                                         </div>
                                         <div class="metrics-hover pull-left">
-                                            <a href="#metrics-shares" class="metrics-shares" data-toggle="tab">&#160;</a>
+                                            <a href="#metrics-shares" style="pointer-events:none;" class="metrics-shares" data-toggle="tab">&#160;</a>
                                         </div>
                                     </div>
                                 </div>

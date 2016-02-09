@@ -255,7 +255,7 @@
                                         <div id="metrics-views" class="metrics-views tab-pane fade small text-center">
                                             #{bundle['metrics.views']} <em>#{bundle['metrics.comingsoon']}</em>
                                         </div>
-                                        <div id="metrics-downloads" class="metrics-downloads tab-pane fade small text-center">
+                                        <div id="metrics-downloads" class="metrics-downloads tab-pane small text-center active in">
                                             <h:outputFormat value="{0} #{bundle['metrics.downloads']}">
                                                 <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDatasetId(DatasetPage.dataset.id)}"/>
                                             </h:outputFormat>
@@ -268,17 +268,20 @@
                                         </div>
                                     </div>
                                     <div id="metrics-tabs">
+                                        <!-- DISABLED TOGGLE UNTIL FURTHER DEVELOPMENT ON METRICS IS COMPLETED 
+                                        ADDED style="pointer-events:none;" ATTRIBUTE TO A-HREF ELEMENTS BELOW 
+                                        REMOVED fade CLASS FROM metrics-downloads DIV ABOVE AND ADDED active in -->
                                         <div class="metrics-hover pull-left">
-                                            <a href="#metrics-views" class="metrics-views" data-toggle="tab">&#160;</a>
+                                            <a href="#metrics-views" style="pointer-events:none;" class="metrics-views" data-toggle="tab">&#160;</a>
                                         </div>
                                         <div class="metrics-hover pull-left">
-                                            <a href="#metrics-downloads" class="metrics-downloads first" data-toggle="tab">&#160;</a>
+                                            <a href="#metrics-downloads" style="pointer-events:none;" class="metrics-downloads first" data-toggle="tab">&#160;</a>
                                         </div>
                                         <div class="metrics-hover pull-left">
-                                            <a href="#metrics-citations" class="metrics-citations" data-toggle="tab">&#160;</a>
+                                            <a href="#metrics-citations" style="pointer-events:none;" class="metrics-citations" data-toggle="tab">&#160;</a>
                                         </div>
                                         <div class="metrics-hover pull-left">
-                                            <a href="#metrics-shares" class="metrics-shares" data-toggle="tab">&#160;</a>
+                                            <a href="#metrics-shares" style="pointer-events:none;" class="metrics-shares" data-toggle="tab">&#160;</a>
                                         </div>
                                     </div>
                                 </div>
@@ -603,6 +606,45 @@
                     <p:blockUI block="datasetForm" widgetVar="blockDatasetForm"/>
 
                     <!-- Popups -->
+                    <p:dialog styleClass="smallPopUp" header="#{bundle['dataset.inValidSelectedFilesForDownload']}" widgetVar="downloadInvalid" modal="true">
+                        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.noValidSelectedFilesForDownload']}</p>
+                        <ui:fragment   rendered="#{DatasetPage.dataset.fileAccessRequest}"  >
+                            <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataset.requestAccessToRestrictedFiles']}</p>
+                        </ui:fragment>
+                        <div class="button-block">
+                            <p:commandButton value="#{bundle.cancel}" onclick="PF('downloadInvalid').hide();" type="button" />
+                        </div>
+                    </p:dialog>                    
+                    
+                    <p:dialog styleClass="smallPopUp" header="#{bundle['dataset.inValidSelectedFilesForDownload']}" widgetVar="downloadMixed" modal="true">
+                        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.mixedSelectedFilesForDownload']}</p>
+
+                        <table>
+                            <ui:repeat var="resFile" value="#{DatasetPage.selectedNonDownloadableFiles}" >
+
+                                <tr>
+                                    <td>#{resFile.label}</td>
+                                </tr>
+
+                            </ui:repeat>
+                        </table>
+                        
+                        <div class="button-block">
+                            <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataset.downloadUnrestricted']}</p>                            
+                            <ui:fragment rendered="#{!DatasetPage.downloadPopupRequired}">
+                            <p:commandButton value="#{bundle.continue}" onclick="PF('downloadMixed').hide()" action="#{DatasetPage.startMultipleFileDownload()}" />
+                            </ui:fragment>
+                            <ui:fragment rendered="#{DatasetPage.downloadPopupRequired}">
+                                <p:commandButton value="#{bundle.continue}" onclick="PF('downloadMixed').hide()" 
+                                                 action="#{DatasetPage.initGuestbookMultipleResponse()}" update="@form" />
+                            </ui:fragment>
+                            <p:commandButton value="#{bundle.cancel}" onclick="PF('downloadMixed').hide();" type="button" />
+                        </div>
+                    </p:dialog>
+                    
+                    
+                    
+                    
                     <p:dialog styleClass="smallPopUp" header="#{bundle['file.deleteDialog.header']}" widgetVar="deleteConfirmation" modal="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteDialog.tip']}</p>
                         <div class="button-block">
