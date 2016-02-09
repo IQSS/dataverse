@@ -150,6 +150,10 @@ public class GuestbookResponse implements Serializable {
     public void setResponseTime(Date responseTime) {
         this.responseTime = responseTime;
     }
+
+    public String getResponseDate() {
+        return new SimpleDateFormat("MMMM d, yyyy").format(responseTime);
+    }
     
     public String getResponseDateForDisplay(){
         return null; //    SimpleDateFormat("yyyy").format(new Timestamp(new Date().getTime()));

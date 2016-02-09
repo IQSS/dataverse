@@ -114,20 +114,20 @@
                     <!-- Create/Save Dataset Button Panel -->
                     <ui:fragment rendered="#{TemplatePage.editMode == 'CREATE'}" >
                     <div class="button-block" jsf:rendered="#{!empty TemplatePage.editMode}">
-                        <h:commandButton styleClass="btn btn-default" type="submit" action="#{TemplatePage.save('Terms')}" 
-                                         value="#{bundle['dataset.create.add.terms'] }">
-                            <f:ajax onerror="window.scrollTo(0, 0);" />
-                        </h:commandButton>
+                        <p:commandButton styleClass="btn btn-default"  action="#{TemplatePage.save('Terms')}" update="@all"
+                                         value="#{bundle['dataset.create.add.terms'] }">  
+                             <f:ajax onerror="window.scrollTo(0, 0)" />
+                        </p:commandButton>
                         <h:button styleClass="btn btn-default" value="#{bundle.cancel}" 
                                   outcome="/manage-templates.xhtml?dataverseId=#{TemplatePage.dataverse.id}"></h:button>
                     </div>
                     </ui:fragment>
                     <ui:fragment rendered="#{TemplatePage.editMode == 'METADATA' or TemplatePage.editMode == 'LICENSE' or TemplatePage.editMode == 'LICENSEADD'}" >
                     <div class="button-block" jsf:rendered="#{!empty TemplatePage.editMode}">
-                        <h:commandButton styleClass="btn btn-default" type="submit" action="#{TemplatePage.save('')}" 
+                        <p:commandButton styleClass="btn btn-default"  action="#{TemplatePage.save('')}" update="@all"
                                          value="#{TemplatePage.editMode == 'LICENSEADD' ? bundle['dataset.manageTemplates.saveNewTerms'] : bundle.saveChanges}">
-                            <f:ajax onerror="window.scrollTo(0, 0);" />
-                        </h:commandButton>
+                            <f:ajax onerror="window.scrollTo(0, 0)" />
+                        </p:commandButton>
                         <h:button styleClass="btn btn-default" value="#{bundle.cancel}" 
                                   outcome="/manage-templates.xhtml?dataverseId=#{TemplatePage.dataverse.id}"></h:button>
                     </div>

@@ -86,13 +86,45 @@ public class SolrSearchResult {
     private boolean isInTree;
     private float score;
     private List<String> userRole;
-
+    private boolean harvested = false;
+    private String dvTree;
+    private String harvestingDescription = null;
+    private List<String> fileCategories = null;
+    private List<String> tabularDataTags = null;
+    
+    public String getDvTree() {
+        return dvTree;
+    }
+    
+    public void setDvTree(String dvTree) {
+        this.dvTree = dvTree;
+    } 
+    
     public boolean isIsInTree() {
         return isInTree;
     }
 
     public void setIsInTree(boolean isInTree) {
         this.isInTree = isInTree;
+    }
+    
+    public boolean isHarvested() {
+        return harvested;
+    }
+
+    public void setHarvested(boolean harvested) {
+        this.harvested = harvested;
+    }
+    
+    public String getHarvestingDescription() {
+        //if (this.isHarvested()) {
+            return harvestingDescription;
+        //}
+        //return null;
+    }
+    
+    public void setHarvestingDescription(String harvestingDescription) {
+        this.harvestingDescription = harvestingDescription;
     }
 //    public boolean isStatePublished() {
 //        return statePublished;
@@ -671,6 +703,22 @@ public class SolrSearchResult {
         this.highlightsAsList = highlightsAsList;
     }
 
+    public List<String> getFileCategories() {
+        return fileCategories;
+    }
+    
+    public void setFileCategories(List<String> fileCategories) {
+        this.fileCategories = fileCategories;
+    }
+    
+    public List<String> getTabularDataTags() {
+        return tabularDataTags;
+    }
+    
+    public void setTabularDataTags(List<String> tabularDataTags) {
+        this.tabularDataTags = tabularDataTags;
+    }
+    
     public Map<String, String> getParent() {
         return parent;
     }
@@ -816,7 +864,7 @@ public class SolrSearchResult {
             String badString = "null";
             if (!identifier.contains(badString)) {
                 if (entity != null && entity instanceof Dataset) {
-                    if (((Dataset) entity).isHarvested()) {
+                    if (this.isHarvested()) {
                         String remoteArchiveUrl = ((Dataset) entity).getRemoteArchiveURL();
                         if (remoteArchiveUrl != null) {
                             return remoteArchiveUrl;
@@ -851,7 +899,7 @@ public class SolrSearchResult {
     }
 
     public String getFileUrl() {
-        if (entity != null && entity instanceof DataFile && ((DataFile) entity).isHarvested()) {
+        if (entity != null && entity instanceof DataFile && this.isHarvested()) {
             String remoteArchiveUrl = ((DataFile) entity).getRemoteArchiveURL();
             if (remoteArchiveUrl != null) {
                 return remoteArchiveUrl;
@@ -870,7 +918,7 @@ public class SolrSearchResult {
     }
     
     public String getFileDatasetUrl() {
-        if (entity != null && entity instanceof DataFile && ((DataFile) entity).isHarvested()) {
+        if (entity != null && entity instanceof DataFile && this.isHarvested()) {
             String remoteArchiveUrl = ((DataFile) entity).getRemoteArchiveURL();
             if (remoteArchiveUrl != null) {
                 return remoteArchiveUrl;

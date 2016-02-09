@@ -42,7 +42,7 @@
                                             <p:commandLink type="button" id="configureButton" styleClass="btn btn-default pull-right"
                                                            actionListener="#{managePermissionsPage.initAccessSettings}"
                                                            update="accessDialog"
-                                                           oncomplete="accessForm.show();">
+                                                           oncomplete="PF('accessForm').show();">
                                                 <span class="glyphicon glyphicon-cog"/> #{bundle['dataverse.permissions.access.accessBtn']}
                                             </p:commandLink>
                                             <p class="help-block clearfix">#{bundle['dataverse.permissions.description']}</p>
@@ -98,7 +98,7 @@
                                         <p:commandLink type="button" id="userGroupsAdd" styleClass="btn btn-default"
                                                        actionListener="#{managePermissionsPage.initAssigneeDialog}"
                                                        update="userGroupDialog"
-                                                       oncomplete="userGroupsForm.show();handleResizeDialog('userGroupDialog');bind_bsui_components();">
+                                                       oncomplete="PF('userGroupsForm').show();handleResizeDialog('userGroupDialog');bind_bsui_components();">
                                             <span class="glyphicon glyphicon-user"/> #{bundle['dataverse.permissions.usersOrGroups.assignBtn']}
                                         </p:commandLink>
                                     </div>
@@ -121,7 +121,7 @@
                                                 </h:outputFormat>
                                                 <p:commandLink type="button" styleClass="btn btn-default"                                           
                                                                rendered="#{managePermissionsPage.dvObject eq roleAssignment.definitionPoint}"
-                                                               onclick="confirmation.show()">
+                                                               onclick="PF('confirmation').show()">
                                                     <f:setPropertyActionListener value="#{roleAssignment.roleAssignment}" target="#{managePermissionsPage.selectedRoleAssignment}" />
                                                     <span class="glyphicon glyphicon-remove"/> #{bundle['dataverse.permissions.usersOrGroups.removeBtn']}
                                                 </p:commandLink>
@@ -148,7 +148,7 @@
                                                    rendered="#{managePermissionsPage.dvObject.instanceofDataverse and permissionsWrapper.canManagePermissions(managePermissionsPage.dvObject)
                                                                 and dataverseSession.user.superuser}"
                                                    actionListener="#{managePermissionsPage.createNewRole}"
-                                                   oncomplete="roleForm.show();handleResizeDialog('rolesPermissionsDialog');bind_bsui_components();"
+                                                   oncomplete="PF('roleForm').show();handleResizeDialog('rolesPermissionsDialog');bind_bsui_components();"
                                                    update=":#{p:component('editRolePanel')}">
                                         <span class="glyphicon glyphicon-plus"/> #{bundle['dataverse.permissions.roles.add']}
                                     </p:commandLink>
@@ -163,13 +163,13 @@
                                                                rendered="#{!empty role.owner and managePermissionsPage.dvObject.instanceofDataverse and permissionsWrapper.canManagePermissions(role.owner)
                                                                             and dataverseSession.user.superuser}"
                                                                actionListener="#{managePermissionsPage.editRole(role.id)}"
-                                                               oncomplete="roleForm.show();handleResizeDialog('rolesPermissionsDialog');"
+                                                               oncomplete="PF('roleForm').show();handleResizeDialog('rolesPermissionsDialog');"
                                                                update=":#{p:component('editRolePanel')}"><span class="glyphicon glyphicon-pencil"></span></p:commandLink>
                                                 <p:commandLink title="#{bundle['dataverse.permissions.roles.copy']}" styleClass="icon-inline-action bootstrap-button-tooltip"
                                                                rendered="#{managePermissionsPage.dvObject.instanceofDataverse and permissionsWrapper.canManagePermissions(managePermissionsPage.dvObject)
                                                                             and dataverseSession.user.superuser}"
                                                                actionListener="#{managePermissionsPage.cloneRole(role.id)}"
-                                                               oncomplete="roleForm.show();handleResizeDialog('rolesPermissionsDialog');"
+                                                               oncomplete="PF('roleForm').show();handleResizeDialog('rolesPermissionsDialog');"
                                                                update=":#{p:component('editRolePanel')}"><span class="glyphicon glyphicon-duplicate"></span></p:commandLink>
                                                 <div>
                                                     <ui:repeat value="#{role.permissions().toArray()}" var="prm">
@@ -189,11 +189,11 @@
                     <p:dialog id="accessDialog" styleClass="largePopUp" header="#{bundle['dataverse.permissions.accessDialog.header']}" widgetVar="accessForm" modal="true">
                         <ui:include src="permissions-configure.xhtml"/>
                         <div class="button-block">
-                            <p:commandLink type="button" styleClass="btn btn-default" value="#{bundle['saveChanges']}"
+                            <p:commandLink value="#{bundle['saveChanges']}" styleClass="btn btn-default"
                                            update=":#{p:component('configureSettings')} assignedRoles @([id$=Messages])"
                                            actionListener="#{managePermissionsPage.saveConfiguration}"
-                                           oncomplete="accessForm.hide();"/>
-                            <button type="button" class="btn btn-default" onclick="accessForm.hide()" value="Cancel">#{bundle.cancel}</button>
+                                           oncomplete="PF('accessForm').hide()"/>
+                            <button type="button" class="btn btn-default" onclick="PF('accessForm').hide()" value="#{bundle.cancel}">#{bundle.cancel}</button>
                         </div>
                     </p:dialog>
 
@@ -207,10 +207,10 @@
                             <span class="glyphicon glyphicon-warning-sign text-danger"/> <span class="text-danger">#{bundle['dataverse.permissions.usersOrGroups.removeBtn.confirmation']}</span>
                         </p>
                         <div class="button-block">
-                            <p:commandButton value="#{bundle.continue}" onclick="confirmation.hide()" 
+                            <p:commandButton value="#{bundle.continue}" styleClass="btn btn-default" onclick="PF('confirmation').hide()" 
                                              action="#{managePermissionsPage.removeRoleAssignment()}" 
                                              update=":#{p:component('configureSettings')} assignedRoles @([id$=Messages])" />
-                            <p:commandButton value="#{bundle.cancel}" onclick="confirmation.hide()" type="button" />
+                            <button type="button" class="btn btn-default" onclick="PF('confirmation').hide()" value="#{bundle.cancel}">#{bundle.cancel}</button>
                         </div>
                     </p:dialog>
                 </h:form>

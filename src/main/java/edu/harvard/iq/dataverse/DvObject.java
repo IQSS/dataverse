@@ -106,6 +106,16 @@ public abstract class DvObject implements java.io.Serializable {
     private Timestamp permissionModificationTime;
 
     private Timestamp permissionIndexTime;
+    
+    private boolean previewImageAvailable;
+    
+    public boolean isPreviewImageAvailable() {
+        return previewImageAvailable;
+    }
+    
+    public void setPreviewImageAvailable(boolean status) {
+        this.previewImageAvailable = status;
+    }
 
     public Timestamp getModificationTime() {
         return modificationTime;

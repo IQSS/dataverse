@@ -48,7 +48,12 @@ public class BundleUtilTest {
                 + "the <a href=\"http://guides.dataverse.org/en/4.2/user/find-use-data.html\" title=\"Finding &amp; Using "
                 + "Data - Dataverse User Guide\" target=\"_blank\">search guide</a> for tips.",
                 BundleUtil.getStringFromBundle("dataverse.results.empty.hidden",
-                        Arrays.asList("http://guides.dataverse.org/en", "4.2"),true));
+                        Arrays.asList("http://guides.dataverse.org/en", "4.2")));
+        assertEquals("The saved search has been successfully linked to "
+                + "<a href=\"/dataverse/dvAlias\" title=\"DV Name\">DV Name</a>.",
+                BundleUtil.getStringFromBundle("dataverse.saved.search.success",
+                        Arrays.asList("dvAlias", "DV Name")));
+
     }
 
     @Test

@@ -76,19 +76,18 @@
         <p:dialog id="statusInfo" header="#{settingsWrapper.get(':StatusMessageHeader')}" widgetVar="statusInfo" modal="true">
             <p><h:outputText value="#{settingsWrapper.get(':StatusMessageText')}" escape="false"/></p>
             <div class="button-block">
-                <button type="button" onclick="statusInfo.hide()" class="btn btn-default" value="#{bundle.close}">
+                <button type="button" onclick="PF('statusInfo').hide()" class="btn btn-default" value="#{bundle.close}">
                     #{bundle.close}
                 </button>
             </div>
         </p:dialog>
-        
-        <script type="text/javascript" src="#{resource['bs/js/bootstrap.min.js']}?version=#{systemConfig.getVersion()}"></script>
-        <script type="text/javascript" src="#{resource['bs/js/bootstrap-hover-dropdown.min.js']}?version=#{systemConfig.getVersion()}"></script>
-        <script type="text/javascript" src="#{resource['js/ie-compat.js']}?version=#{systemConfig.getVersion()}"></script>
-        <script type="text/javascript" src="#{resource['js/dv_rebind_bootstrap_ui.js']}?version=#{systemConfig.getVersion()}"></script>
-        <script type="text/javascript" src="#{resource['js/owl.carousel.js']}?version=#{systemConfig.getVersion()}"></script>
-        <script type="text/javascript" src="#{resource['js/jquery.matchHeight.js']}?version=#{systemConfig.getVersion()}"></script>
-        <script type="text/javascript" src="#{resource['js/jquery.sharrre.js']}?version=#{systemConfig.getVersion()}"></script>
+        <script type="text/javascript" defer="defer" src="#{resource['bs/js/bootstrap.min.js']}?version=#{systemConfig.getVersion()}"></script>
+        <script type="text/javascript" defer="defer" src="#{resource['bs/js/bootstrap-hover-dropdown.min.js']}?version=#{systemConfig.getVersion()}"></script>
+        <script type="text/javascript" defer="defer" src="#{resource['js/ie-compat.js']}?version=#{systemConfig.getVersion()}"></script>
+        <script type="text/javascript" defer="defer" src="#{resource['js/dv_rebind_bootstrap_ui.js']}?version=#{systemConfig.getVersion()}"></script>
+        <script type="text/javascript" defer="defer" src="#{resource['js/owl.carousel.js']}?version=#{systemConfig.getVersion()}"></script>
+        <script type="text/javascript" defer="defer" src="#{resource['js/jquery.matchHeight.js']}?version=#{systemConfig.getVersion()}"></script>
+        <script type="text/javascript" defer="defer" src="#{resource['js/jquery.sharrre.js']}?version=#{systemConfig.getVersion()}"></script>
         <script>
             
             $(document).ready(function() {
@@ -101,7 +100,8 @@
                     if (!$(e.target).closest("form.navbar-form[role='search']").length) {
                         $("form.navbar-form[role='search']").hide();
                         $("#navbar-search-toggle").parent("li").show();
-                    };
+                            }
+                            ;
                 });
                 
                 // Rebind bootstrap UI components

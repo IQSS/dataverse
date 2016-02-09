@@ -3,7 +3,11 @@ package edu.harvard.iq.dataverse;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Logger;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
@@ -14,6 +18,7 @@ import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import org.apache.commons.lang.StringUtils;
+import org.ocpsoft.common.util.Strings;
 
 /**
  * Your goto bean for everything {@link DvObject}, that's not tied to any
@@ -27,7 +32,8 @@ public class DvObjectServiceBean implements java.io.Serializable {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
-
+    
+    private static final Logger logger = Logger.getLogger(DvObjectServiceBean.class.getCanonicalName());
     /**
      * @param dvoc The object we check
      * @return {@code true} iff the passed object is the owner of any
@@ -75,9 +81,15 @@ public class DvObjectServiceBean implements java.io.Serializable {
          * dvObject before we try to set this timestamp? See
          * https://github.com/IQSS/dataverse/commit/6ad0ebb272c8cb46368cb76784b55dbf33eea947
          */
-        DvObject dvObjectToModify = findDvObject(dvObject.getId());
+        Long dvObjectId = dvObject.getId();
+        DvObject dvObjectToModify = findDvObject(dvObjectId);
+        if (dvObjectToModify == null) {
+            logger.fine("Unable to update permission index time on DvObject with id of " + dvObjectId);
+            return dvObject;
+        }
         dvObjectToModify.setPermissionIndexTime(new Timestamp(new Date().getTime()));
         DvObject savedDvObject = em.merge(dvObjectToModify);
+        logger.fine("Updated permission index time for DvObject id " + dvObjectId);
         return savedDvObject;
     }
 
@@ -167,5 +179,80 @@ public class DvObjectServiceBean implements java.io.Serializable {
         return em.createNativeQuery(qstr)
                         .getResultList();
         
+    }
+    
+    /**
+     * Used to calculate the dvObject tree paths for the search results on the
+     * dataverse page. (In order to determine if "linked" or not).
+     * *done in recursive 1 query!*
+     * 
+     * @return 
+     */
+    public Map<Long, String> getObjectPathsByIds(Set<Long> objectIds){
+        if (objectIds == null || objectIds.size() < 1) {
+            return null;
+        }
+        
+        String datasetIdStr = Strings.join(objectIds, ", ");
+        
+        String qstr = "WITH RECURSIVE path_elements AS ((" +
+            " SELECT id, owner_id FROM dvobject WHERE id in (" + datasetIdStr + "))" +
+            " UNION\n" +
+            " SELECT o.id, o.owner_id FROM path_elements p, dvobject o WHERE o.id = p.owner_id) " +
+            "SELECT id, owner_id FROM path_elements WHERE owner_id IS NOT NULL;"; // ORDER by id ASC;";
+        
+        List<Object[]> searchResults = null;
+        
+        try {
+            searchResults = em.createNativeQuery(qstr).getResultList();
+        } catch (Exception ex) {
+            searchResults = null;
+        }
+        
+        if (searchResults == null || searchResults.size() < 1) {
+            return null;
+        }
+        
+        Map<Long, Long> treeMap = new HashMap<>();
+        
+        for (Object[] result : searchResults) {
+            Long objectId = null;
+            Long ownerId = null;
+            if (result[0] != null) {
+                try {
+                    objectId = ((Integer)result[0]).longValue();
+                } catch (Exception ex) {
+                    logger.warning("OBJECT PATH: could not cast result[0] (dvobject id) to Integer!");
+                    objectId = null;
+                }
+                if (objectId == null) {
+                    continue;
+                }
+                
+                ownerId = (Long)result[1];
+                logger.fine("OBJECT PATH: id: "+objectId+", owner: "+ownerId);
+                if (ownerId != null && (ownerId.longValue() != 1L)) {
+                    treeMap.put(objectId, ownerId);
+                }
+            }
+        }
+        
+        Map<Long, String> ret = new HashMap<>();
+        
+        for (Long objectId : objectIds) {
+            String treePath = "/" + objectId;
+            Long treePosition = treeMap.get(objectId);
+            
+            while (treePosition != null) {
+                treePath = "/" + treePosition + treePath;
+                treePosition = treeMap.get(treePosition);
+            }
+            
+            logger.fine("OBJECT PATH: returning "+treePath+" for "+objectId);
+            ret.put(objectId, treePath);
+        }
+        
+        treeMap = null;
+        return ret;        
     }
 }

@@ -77,10 +77,10 @@
                 <p:commandLink type="button" styleClass="btn btn-default" value="#{bundle.saveChanges}"
                                update="assignRoleContent assignedRoles @([id$=Messages])"
                                actionListener="#{managePermissionsPage.assignRole}" 
-                               oncomplete="if (args &amp;&amp; !args.validationFailed) userGroupsForm.hide();">
+                               oncomplete="if (args &amp;&amp; !args.validationFailed) PF('userGroupsForm').hide();">
                     <f:param name="DO_ASSIGN_VALIDATION" value="true"/>
                 </p:commandLink>
-                <button type="button" class="btn btn-default" onclick="userGroupsForm.hide()" value="Cancel">#{bundle.cancel}</button>
+                <button type="button" class="btn btn-default" onclick="PF('userGroupsForm').hide()" value="#{bundle.cancel}">#{bundle.cancel}</button>
             </div>
         </p:fragment>
     </p:dialog>

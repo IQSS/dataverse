@@ -19,15 +19,50 @@
         </div>
         <!-- Collect the nav links, forms, and other content for toggling -->
 
-       <div class="collapse navbar-collapse" id="dv-bs-navbar-details"></div><!-- /.navbar-collapse -->
+       <div class="collapse navbar-collapse" id="dv-bs-navbar-details">
+           <ul class="nav navbar-nav">
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">About <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a target="_blank" href="http://dataverse.org/about">About the Project</a></li>
+                        <li><a target="_blank" href="http://dataverse.org/add-data">Add Data</a></li>
+                        <li><a target="_blank" href="http://dataverse.org/blog">Blog</a></li>
+                        <li><a target="_blank" href="http://dataverse.org/presentations">Presentations</a></li>
+                        <li><a target="_blank" href="http://dataverse.org/publications">Publications</a></li>
+                    </ul>
+                </li>
+                <li>
+                    <a target="_blank" href="http://dataverse.org/">
+                        Community
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Best Practices <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a target="_blank" href="http://dataverse.org/data-citation">Academic Credit</a></li>
+                        <li><a target="_blank" href="http://dataverse.org/harvard-dataverse-policies">Harvard Dataverse Policies</a></li>
+                        <li><a target="_blank" href="http://dataverse.org/data-management">Data Management</a></li>
+                        <li><a target="_blank" href="http://dataverse.org/replication-dataset">Replication Dataset Guidelines</a></li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Software <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a target="_blank" href="http://dataverse.org/software-features">Features</a></li>
+                        <li><a target="_blank" href="http://github.com/IQSS/dataverse">Source Code</a></li>
+                        <li><a target="_blank" href="http://guides.dataverse.org/en/latest/user/index.html">User Guide</a></li>
+                        <li><a target="_blank" href="http://guides.dataverse.org/en/latest/installation/index.html">Installation Guide</a></li>
+                        <li><a target="_blank" href="http://guides.dataverse.org/en/latest/api/index.html">API Guide</a></li>
+                        <li><a target="_blank" href="http://guides.dataverse.org/en/latest/developers/index.html">Developer Guide</a></li>
+                    </ul>
+                </li>
+                <li>
+                    <a target="_blank" href="http://dataverse.org/">
+                        Contact
+                    </a>
+                </li>
+            </ul>
+       </div><!-- /.navbar-collapse -->
     </div>
     <!-- /.container -->
 </nav>
-
-<script type="text/javascript" src="/en/latest/_static/navbar_from_dataverse_org.js"></script>
-<!--<script type="text/javascript" src="/_static/js/navbar_from_dataverse_org.js"></script>-->
-<script>
-    $(document).ready(function () {
-        load_navbar();
-    });
-</script>

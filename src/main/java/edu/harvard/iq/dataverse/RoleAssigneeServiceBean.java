@@ -255,7 +255,7 @@ public class RoleAssigneeServiceBean {
     private List<String> getUserGroups(String roleAssigneeIdentifier){
         
         String qstr = "select  groupalias from explicitgroup";
-        qstr += " where id = ";
+        qstr += " where id in ";
         qstr += " (select explicitgroup_id from explicitgroup_authenticateduser where containedauthenticatedusers_id = ";
         qstr += " (select id from authenticateduser where useridentifier ='" + roleAssigneeIdentifier + "'";
         qstr += "));";

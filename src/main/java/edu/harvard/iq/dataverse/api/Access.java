@@ -542,6 +542,8 @@ public class Access extends AbstractApiBean {
         return null; 
     }
     
+    // Note:
+    // the Dataverse page is no longer using this method.
     @Path("dsCardImage/{versionId}")
     @GET
     @Produces({ "image/png" })
@@ -580,6 +582,7 @@ public class Access extends AbstractApiBean {
                
         
             // If not, we'll try to use one of the files in this dataset version:
+            /*
             if (thumbnailDataAccess == null) {
 
                 if (!datasetVersion.getDataset().isHarvested()) {
@@ -589,7 +592,8 @@ public class Access extends AbstractApiBean {
             
             if (thumbnailDataAccess != null && thumbnailDataAccess.getInputStream() != null) {
                 return thumbnailDataAccess.getInputStream();
-            }        
+            } 
+            */
         }
 
         return null; 
@@ -599,7 +603,7 @@ public class Access extends AbstractApiBean {
     @GET
     @Produces({ "image/png" })
     public InputStream dvCardImage(@PathParam("dataverseId") Long dataverseId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {        
-        
+        logger.info("entering dvCardImage");
         
         Dataverse dataverse = dataverseService.find(dataverseId);
         
@@ -615,6 +619,7 @@ public class Access extends AbstractApiBean {
         if (dataverse.getDataverseTheme()!=null && dataverse.getDataverseTheme().getLogo() != null && !dataverse.getDataverseTheme().getLogo().equals("")) {
             File dataverseLogoFile = getLogo(dataverse);
             if (dataverseLogoFile != null) {
+                logger.info("dvCardImage: logo file found");
                 String logoThumbNailPath = null;
                 InputStream in = null;
 
@@ -629,6 +634,7 @@ public class Access extends AbstractApiBean {
                     in = null; 
                 }
                 if (in != null) {
+                    logger.info("dvCardImage: successfully obtained thumbnail for dataverse logo.");
                     return in;
                 }    
             }
@@ -641,15 +647,18 @@ public class Access extends AbstractApiBean {
         // (efficiency considerations...) -- L.A. 4.0 
         // And we definitely don't want to be doing this for harvested 
         // dataverses:
-        
+        /*
         DataFileIO thumbnailDataAccess = null; 
         
         if (!dataverse.isHarvested()) {
             for (Dataset dataset : datasetService.findPublishedByOwnerId(dataverseId)) {
+                logger.info("dvCardImage: checking dataset "+dataset.getGlobalId());
                 if (dataset != null) {
                     DatasetVersion releasedVersion = dataset.getReleasedVersion();
+                    logger.info("dvCardImage: obtained released version "+releasedVersion.getTitle());
                     thumbnailDataAccess = getThumbnailForDatasetVersion(releasedVersion); 
                     if (thumbnailDataAccess != null) {
+                        logger.info("dvCardImage: obtained thumbnail for the version.");
                         break;
                     }
                 }
@@ -659,21 +668,27 @@ public class Access extends AbstractApiBean {
         if (thumbnailDataAccess != null && thumbnailDataAccess.getInputStream() != null) {
             return thumbnailDataAccess.getInputStream();
         }
-
+        */
         return null;
     }
     
     // helper methods:
     
+    // What the method below does - going through all the files in the version -
+    // is too expensive! Instead we are now selecting an available thumbnail and
+    // giving the dataset card a direct link to that file thumbnail. -- L.A., 4.2.2
+    /*
     private DataFileIO getThumbnailForDatasetVersion(DatasetVersion datasetVersion) {
+        logger.info("entering getThumbnailForDatasetVersion()");
         DataFileIO thumbnailDataAccess = null;
         if (datasetVersion != null) {
             List<FileMetadata> fileMetadatas = datasetVersion.getFileMetadatas();
 
             for (FileMetadata fileMetadata : fileMetadatas) {
                 DataFile dataFile = fileMetadata.getDataFile();
+                logger.info("looking at file "+fileMetadata.getLabel()+" , file type "+dataFile.getContentType());
 
-                if (dataFile != null) {
+                if (dataFile != null && dataFile.isImage()) {
 
                     try {
                         DataFileIO dataAccess = dataFile.getAccessObject();
@@ -687,13 +702,14 @@ public class Access extends AbstractApiBean {
                     }
                 }
                 if (thumbnailDataAccess != null) {
+                    logger.info("successfully generated thumbnail, returning.");
                     break;
                 }
             }
         }
         return thumbnailDataAccess;
     }
-    
+    */
     // TODO: 
     // put this method into the dataverseservice; use it there
     // -- L.A. 4.0 beta14

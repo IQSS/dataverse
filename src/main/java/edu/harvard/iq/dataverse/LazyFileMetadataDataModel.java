@@ -18,8 +18,8 @@ import org.primefaces.model.SortOrder;
  */
 public class LazyFileMetadataDataModel extends LazyDataModel<FileMetadata> {
     
-    private DataFileServiceBean fileServiceBean;
-    private Long datasetVersionId;
+    private final DataFileServiceBean fileServiceBean;
+    private final Long datasetVersionId;
 
     public LazyFileMetadataDataModel(Long datasetVersionId, DataFileServiceBean fileServiceBean) {
         this.fileServiceBean = fileServiceBean;
@@ -29,7 +29,7 @@ public class LazyFileMetadataDataModel extends LazyDataModel<FileMetadata> {
     
     @Override
     public List<FileMetadata> load(int first, int pageSize, String sortField,
-            SortOrder sortOrder, Map<String, String> filters) {
+            SortOrder sortOrder, Map<String, Object> filters) {
 
         List<FileMetadata>  listFileMetadata = null; //fileServiceBean.findFileMetadataByDatasetVersionIdLazy(datasetVersionId, pageSize, sortField, sortField, first);
         //this.setRowCount(fileServiceBean.findCountByDatasetVersionId(datasetVersionId).intValue());

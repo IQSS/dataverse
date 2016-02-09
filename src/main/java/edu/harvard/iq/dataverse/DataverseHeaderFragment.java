@@ -182,9 +182,15 @@ public class DataverseHeaderFragment implements java.io.Serializable {
         return redirectPage + (redirectPage.indexOf("?") == -1 ? "?" : "&") + "faces-redirect=true";
     }
 
+    private Boolean signupAllowed = null;
+    
     public boolean isSignupAllowed() {
+        if (signupAllowed != null) {
+            return signupAllowed;
+        }
         boolean safeDefaultIfKeyNotFound = false;
-        return settingsService.isTrueForKey(SettingsServiceBean.Key.AllowSignUp, safeDefaultIfKeyNotFound);
+        signupAllowed = settingsService.isTrueForKey(SettingsServiceBean.Key.AllowSignUp, safeDefaultIfKeyNotFound);
+        return signupAllowed;
     }
 
     public String getSignupUrl(String loginRedirect) {
@@ -259,9 +265,15 @@ public class DataverseHeaderFragment implements java.io.Serializable {
         }
 
     }
-
+    
+    private Boolean debugShibboleth = null;
+    
     public boolean isDebugShibboleth() {
-        return systemConfig.isDebugEnabled();
+        if (debugShibboleth != null) {
+            return debugShibboleth;
+        }
+        debugShibboleth = systemConfig.isDebugEnabled();
+        return debugShibboleth;
     }
 
     public List<String> getGroups(User user) {
