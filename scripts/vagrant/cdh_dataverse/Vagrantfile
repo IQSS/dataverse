@@ -4,6 +4,9 @@
 # Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
 VAGRANTFILE_API_VERSION = "2"
 
+STATIC_IP_CDH = "192.168.39.10"
+STATIC_IP_DATAVERSE = "192.168.39.20"
+
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   config.vm.provider "virtualbox" do |v|
@@ -11,35 +14,29 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     v.cpus = 1
   end
 
-  config.vm.define "cdh", autostart: false do |cdh|
-    config.vm.hostname = "solr"
-    solr.vm.box = "puppet-vagrant-boxes.puppetlabs.com-centos-65-x64-virtualbox-puppet.box"
-    config.vm.synced_folder ".", "/dataverse"
-    config.vm.network "private_network", type: "dhcp"
-    config.vm.network "forwarded_port", guest: 8983, host: 9001
+  config.vm.define "cloudera-quickstart", primary: true do |cdh|
+    cdh.vm.hostname = "quickstart.cloudera"
+    cdh.vm.box = "UNCC-DSI/cloudera-quickstart"
+    cdh.vm.box_version = "~> 5.4.0"
+    cdh.vm.network "private_network", ip: STATIC_IP_CDH
+    cdh.vm.graceful_halt_timeout = 120
   end
 
-  config.vm.define "dataverse", primary: true do |dataverse|
+  config.vm.define "dataverse" do |dataverse|
     dataverse.vm.hostname = "dataverse"
-    dataverse.vm.box_url = "http://puppet-vagrant-boxes.puppetlabs.com/centos-65-x64-virtualbox-puppet.box"
-    dataverse.vm.box = "puppet-vagrant-boxes.puppetlabs.com-centos-65-x64-virtualbox-puppet.box"
+    dataverse.vm.box = "puppetlabs/centos-6.6-64-puppet"
+    dataverse.vm.network "private_network", ip: STATIC_IP_DATAVERSE
 
     mailserver = "localhost"
-    if ENV['MAIL_SERVER'].nil?
-      puts "MAIL_SERVER environment variable not specified. Using #{mailserver} by default.\nTo specify it in bash: export MAIL_SERVER=localhost"
-    else
-      mailserver = ENV['MAIL_SERVER']
-      puts "MAIL_SERVER environment variable found, using #{mailserver}"
-    end
+#    if ENV['MAIL_SERVER'].nil?
+#      puts "MAIL_SERVER environment variable not specified. Using #{mailserver} by default.\nTo specify it in bash: export MAIL_SERVER=localhost"
+#    else
+#      mailserver = ENV['MAIL_SERVER']
+#      puts "MAIL_SERVER environment variable found, using #{mailserver}"
+#    end
 
     dataverse.vm.provision "shell", path: "../setup.sh"
     dataverse.vm.provision "shell", path: "scripts/vagrant/install-dataverse.sh", args: mailserver
-
-    config.vm.network "private_network", type: "192.168.39.100"
-    config.vm.network "forwarded_port", guest: 80, host: 10080
-    config.vm.network "forwarded_port", guest: 443, host: 10443
-    config.vm.network "forwarded_port", guest: 8080, host: 18080
-    config.vm.network "forwarded_port", guest: 8181, host: 18181
 
     # FIXME: use /dataverse/downloads instead
     config.vm.synced_folder "../../../downloads", "/downloads"
