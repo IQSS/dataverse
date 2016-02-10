@@ -86,4 +86,18 @@
             </div>
         </p:fragment>
     </p:dialog>
+    <p:dialog id="confirmFileDownloader" header="#{bundle['dataverse.permissions.usersOrGroups.assignDialog.header']}" widgetVar="confirmFileDownloader" modal="true">
+        <p class="help-block">
+            <span class="glyphicon glyphicon-warning-sign text-danger"/> <span class="text-danger">#{bundle['dataverse.permissions.usersOrGroups.assignDialog.fileDownloadConfirm']}</span>
+        </p>
+        <div class="button-block">
+            
+            <!-- THIS confirmFileDownloader POPUP HAS YET TO BE WIRED UP -->
+            
+            <p:commandButton value="#{bundle.continue}" styleClass="btn btn-default" onclick="PF('confirmFileDownloader').hide()"
+                             action="#{managePermissionsPage.assignRole}"
+                             update="assignRoleContent assignedRoles @([id$=Messages])" />
+            <button type="button" class="btn btn-default" onclick="PF('confirmFileDownloader').hide()" value="#{bundle.cancel}">#{bundle.cancel}</button>
+        </div>
+    </p:dialog>
 </ui:composition>
