@@ -411,6 +411,7 @@ span.search-term-match {font-weight: bold;}
 [id$='resultsTable'] div[class*='Result'] > div.file-tags-block {font-size: 110%;}
 [id$='resultsTable'] span.label {vertical-align:text-bottom; line-height: normal; margin-left:.5em;}
 [id$='resultsTable'] div.file-tags-block span.label:first-of-type {margin-left:0;}
+[id$="resultsTable"] div.file-tags-block span.label {display:inline-block;}
 [id$='resultsTable'] .resultDatasetCitationBlock {display:block;margin:4px 0 .5em 60px;padding:4px;}
 [id$='resultsTable'] .resultDatasetCitationBlock span.search-term-match {font-weight: normal;}
 [id$='resultsTable'] div.card-title-icon-block span[class^='icon'],
@@ -637,6 +638,7 @@ div[id$="filesTable"] td.col-file-metadata {/*width: 33.3333% !important;*/ padd
 div[id$="filesTable"] td.col-file-action {/*width:320px !important;*/ border-left:0; overflow:visible;}
 div[id$="filesTable"] div.file-tags-block {padding-bottom:2px;}
 div[id$="filesTable"] div.file-tags-block a.ui-commandlink {font-size:12px;}
+div[id$="filesTable"] div.file-tags-block span.label {display:inline-block;}
 div[id$="filesTable"] div.file-tags-block span.label, div[id$="filesTable"] div.file-tags-block a.ui-commandlink {margin-right:.5em;}
 div[id$="filesTable"] div.file-tags-block span.label:last-of-type {margin-right:0;}
 
