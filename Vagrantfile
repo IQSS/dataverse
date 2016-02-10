@@ -39,7 +39,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     end
     config.vm.provision "shell", path: "scripts/vagrant/setup.sh"
     config.vm.provision "shell", path: "scripts/vagrant/setup-solr.sh"
-    config.vm.provision "shell", path: "scripts/vagrant/install-dataverse.sh", args: mailserver
+    config.vm.provision "shell", path: "scripts/vagrant/install-dataverse.sh", args: "-m #{mailserver}"
     # FIXME: get tests working and re-enable them!
     #config.vm.provision "shell", path: "scripts/vagrant/test.sh"
 

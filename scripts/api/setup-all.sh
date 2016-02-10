@@ -1,12 +1,13 @@
 #!/bin/bash
 command -v jq >/dev/null 2>&1 || { echo >&2 '`jq` ("sed for JSON") is required, but not installed. Download the binary for your platform from http://stedolan.github.io/jq/ and make sure it is in your $PATH (/usr/bin/jq is fine) and executable with `sudo chmod +x /usr/bin/jq`. On Mac, you can install it with `brew install jq` if you use homebrew: http://brew.sh . Aborting.'; exit 1; }
 
-echo "deleting all data from Solr"
-curl http://localhost:8983/solr/update/json?commit=true -H "Content-type: application/json" -X POST -d "{\"delete\": { \"query\":\"*:*\"}}"
+## setup-getopts.sh provides a common set of shell parameter parsing OPT_* variables for dataverse/environment configuration
+SOURCE "./setup-getopts.sh"
 
-SERVER=http://localhost:8080/api
+SERVER="http://${OPT_h}:8080/api"
 
 # Everything + the kitchen sink, in a single script
+# - Setup the connection with solr / solrCloud
 # - Setup the metadata blocks and controlled vocabulary
 # - Setup the builtin roles
 # - Setup the authentication providers
@@ -14,6 +15,8 @@ SERVER=http://localhost:8080/api
 # - Create admin user and root dataverse
 # - (optional) Setup optional users and dataverses
 
+echo "Setup the solr / solrCloud connection
+./setup-solr.sh $@
 
 echo "Setup the metadata blocks"
 ./setup-datasetfields.sh
@@ -24,7 +27,7 @@ echo "Setup the builtin roles"
 echo "Setup the authentication providers"
 ./setup-identity-providers.sh
 
-echo "Setting up the settings"
+echo "Configuring dataverse server settings"
 echo  "- Allow internal signup"
 curl -X PUT -d yes "$SERVER/admin/settings/:AllowSignUp"
 curl -X PUT -d /dataverseuser.xhtml?editMode=CREATE "$SERVER/admin/settings/:SignUpUrl"

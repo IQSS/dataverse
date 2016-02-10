@@ -1,7 +1,10 @@
 #!/bin/bash
-if [ -n "$1" ]; then
-  MAILSERVER_ARG="--mailserver $1"
-fi
+
+## setup-getopts.sh provides a common set of shell parameter parsing OPT_* variables for dataverse/environment configuration
+SOURCE "../api/setup-getopts.sh"
+
+INSTALL_ARGS="--force -y --hostname $OPT_h --gfdir $OPT_g --mailserver $OPT_m"
+
 WAR=/dataverse/target/dataverse*.war
 if [ ! -f $WAR ]; then
   echo "no war file found... building"
@@ -9,5 +12,6 @@ if [ ! -f $WAR ]; then
   yum install -y nss
   su $SUDO_USER -s /bin/sh -c "cd /dataverse && mvn package"
 fi
+
 cd /dataverse/scripts/installer
-./install --hostname localhost $MAILSERVER_ARG --gfdir /home/glassfish/glassfish4 -y --force
+./install $INSTALL_ARGS
