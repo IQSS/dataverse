@@ -41,7 +41,12 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     end
 
     dataverse.vm.provision "shell", path: "../setup.sh"
-    dataverse.vm.provision "shell", path: "../install-dataverse.sh", args: "-m #{mailserver}"
+    dataverse.vm.provision "shell", 
+      path: "../install-dataverse.sh",
+      args: ["-c dvcollection",
+            "-h #{STATIC_IP_DATAVERSE}",
+            "-m #{mailserver}",
+            "-s #{STATIC_IP_CDH}"]
 
     # FIXME: use /dataverse/downloads instead
     config.vm.synced_folder "../../../downloads", "/downloads"
