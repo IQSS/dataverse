@@ -30,17 +30,8 @@ public interface RoleAssignee {
 
     public RoleAssigneeDisplayInfo getDisplayInfo();
 
-    static Function<RoleAssignee, Predicate<String>> autocompleteMatch = new Function<RoleAssignee, Predicate<String>>() {
-		@Override
-		public Predicate<String> apply(RoleAssignee ra) {
-			return new Predicate<String>() {
-				@Override
-				public boolean test(String query) {
-					return 	ra != null &&
-							((ra.getDisplayInfo() != null && StringUtils.containsIgnoreCase(ra.getDisplayInfo().getTitle(), query) )
-		                    || StringUtils.containsIgnoreCase(ra.getIdentifier(), query));
-				}
-			};
-		}
-	};
+    default boolean autocompleteMatch(String query) {
+	return  ((getDisplayInfo() != null && StringUtils.containsIgnoreCase(getDisplayInfo().getTitle(), query) )
+		|| StringUtils.containsIgnoreCase(getIdentifier(), query));
+    } 
 }

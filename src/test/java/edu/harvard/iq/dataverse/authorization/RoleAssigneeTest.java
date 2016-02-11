@@ -20,9 +20,7 @@ public class RoleAssigneeTest {
 			}
 		};
 		String query = "test";
-		Assert.assertFalse("false match on null assignee",RoleAssignee.autocompleteMatch.apply(nullAssignee).test(query));
-		Assert.assertFalse("false match on null query",RoleAssignee.autocompleteMatch.apply(nullAssignee).test(query));
-		Assert.assertFalse("false match on null identifier",RoleAssignee.autocompleteMatch.apply(nullDisplayInfo).test(query));
+		Assert.assertFalse("false match on null identifier",nullDisplayInfo.autocompleteMatch(query));
 	}
 	@Test
 	public void autocompleteMatchesIdentifier(){
@@ -38,7 +36,7 @@ public class RoleAssigneeTest {
 			}
 		};
 		String query = "test";
-		Assert.assertTrue("failed to match identifier",RoleAssignee.autocompleteMatch.apply(ra).test(query));
+		Assert.assertTrue("failed to match identifier",ra.autocompleteMatch(query));
 	}
 	@Test
 	public void autocompleteDisplayInfo(){
@@ -54,7 +52,7 @@ public class RoleAssigneeTest {
 			}
 		};
 		String query = "test";
-		Assert.assertTrue("failed to match identifier",RoleAssignee.autocompleteMatch.apply(ra).test(query));
+		Assert.assertTrue("failed to match identifier",ra.autocompleteMatch(query));
 	}
 	
 }

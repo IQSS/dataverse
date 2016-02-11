@@ -135,7 +135,7 @@ public class RolePermissionFragment implements java.io.Serializable {
         for (RoleAssignee ra : roleAssigneeList) {
         	
             // @todo unsure if containsIgnore case will work for all locales
-            if (RoleAssignee.autocompleteMatch.apply(ra).test(query)) {
+            if (ra != null && ra.autocompleteMatch(query)) {
                 returnList.add(ra);
             }
         }
