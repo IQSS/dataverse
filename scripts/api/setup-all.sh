@@ -15,7 +15,7 @@ SERVER="http://${OPT_h}:8080/api"
 # - Create admin user and root dataverse
 # - (optional) Setup optional users and dataverses
 
-echo "Setup the solr / solrCloud connection
+echo "Setup the solr / solrCloud connection"
 ./setup-solr.sh $@
 
 echo "Setup the metadata blocks"
