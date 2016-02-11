@@ -14,6 +14,7 @@ my $mailserver;
 my $yes;
 my $force;
 my $nogfpasswd;
+my ($solrcollection, $solrport, $solrhost, $solrurlschema, $solrzookeeper);
 my ($rez) = GetOptions(
     #"length=i" => \$length,    # numeric
     #"file=s"   => \$data,      # string
@@ -25,15 +26,28 @@ my ($rez) = GetOptions(
     "y|yes"        => \$yes,
     "f|force"      => \$force,
     "nogfpasswd"   => \$nogfpasswd,
+    "solrport=s"   => \$solrport,
+    "solrhost=s"   => \$solrhost,
+    "solrcollection=s" => \$solrcollection,
+    "solrurlschema=s"  => \$solrurlschema,
+    "solrzookeeper=s"  => \$solrzookeeper,
 );
 
 my $postgresonly = 0;
+my $useSolrCloudWithZookeeper = ($solrzookeeper)?1:0;
+
+my @SOLR_CONFIG_VARIABLES = (
+    'SOLR_HOST',
+    'SOLR_PORT',
+    'SOLR_URL_SCHEMA'
+);
 
 my @CONFIG_VARIABLES = (
     'HOST_DNS_ADDRESS',
     'GLASSFISH_DIRECTORY',
     'MAIL_SERVER',
-
+    'SOLR_COLLECTION',
+    
     'POSTGRES_SERVER',
     'POSTGRES_PORT',
     'POSTGRES_DATABASE',
@@ -73,6 +87,12 @@ my %CONFIG_DEFAULTS = (
     'POSTGRES_USER',     'dvnapp',
     'POSTGRES_PASSWORD', 'secret',
 
+    'SOLR_COLLECTION',  'collection1',
+    'SOLR_PORT',        8983,
+    'SOLR_HOST',        'localhost',
+    'SOLR_URL_SCHEMA',  'http',
+    'SOLR_ZOOKEEPER',   'localhost:2121',
+
     'RSERVE_HOST',     'localhost',
     'RSERVE_PORT',     6311,
     'RSERVE_USER',     'rserve',
@@ -90,6 +110,12 @@ my %CONFIG_PROMPTS = (
     'POSTGRES_DATABASE', 'Name of the Postgres Database',
     'POSTGRES_USER',     'Name of the Postgres User',
     'POSTGRES_PASSWORD', 'Postgres user password',
+
+    'SOLR_COLLECTION', 'Name of the Solr collection for dataverse',
+    'SOLR_PORT',       'Solr Server Port',
+    'SOLR_HOST',       'Solr Server Hostname or IP address',
+    'SOLR_URL_SCHEMA', 'Solr transport protocol (http or https)',
+    'SOLR_ZOOKEEPER',  'Zookeeper ensemble managing solrCloud',
 
     'RSERVE_HOST',     'Rserve Server',
     'RSERVE_PORT',     'Rserve Server Port',
@@ -146,6 +172,18 @@ if ($mailserver) {
 
 if ($gfdir) {
     $CONFIG_DEFAULTS{'GLASSFISH_DIRECTORY'} = $gfdir;
+}
+
+if ($solrcollection) {
+    $CONFIG_DEFAULTS{'SOLR_COLLECTION'} = $solrcollection;
+}
+
+if ($solrzookeeper) {
+    $CONFIG_DEFAULTS{'SOLR_ZOOKEEPER'} = $solrzookeeper;
+}else{
+  if ($solrport) { $CONFIG_DEFAULTS{'SOLR_PORT'} = $solrport; }
+  if ($solrhost) { $CONFIG_DEFAULTS{'SOLR_HOST'} = $solrhost; }
+  if ($solrurlschema) { $CONFIG_DEFAULTS{'SOLR_URL_SCHEMA'} = $solrurlschema; }
 }
 
 print "\nWelcome to the Dataverse installer.\n";
@@ -238,12 +276,49 @@ for my $ENTRY (@CONFIG_VARIABLES) {
     print "\n";
 }
 
+unless ($yes) {
+  print "Will this dataverse server use solrCloud via zookeeper? [y|n]:";
+  my $yesno;
+  $yesno = <>;
+  chop $yesno;
+
+  while ( $yesno ne "y" && $yesno ne "n" ) {
+    print "\nPlease enter 'y' or 'n'! (or ctrl-C to exit the installer)\n";
+    print "Will this dataverse server use solrCloud via zookeeper? [y|n]:";
+    $yesno = <>;
+    chop $yesno;
+  }
+
+  if ( $yesno eq "y" ) {
+    $useSolrCloudWithZookeeper = 1;
+    print $CONFIG_PROMPTS{'SOLR_ZOOKEEPER'} . ": [" . $CONFIG_DEFAULTS{'SOLR_ZOOKEEPER'} . "] ";
+    my $user_entry = <>;
+    chop $user_entry;
+    if ( $user_entry ne "" ) { $CONFIG_DEFAULTS{'SOLR_ZOOKEEPER'} = $user_entry; }
+  }else {
+    for my $ENTRY (@SOLR_CONFIG_VARIABLES) {
+      print $CONFIG_PROMPTS{$ENTRY} . ": [" . $CONFIG_DEFAULTS{$ENTRY} . "] ";
+      my $user_entry = <>;
+      chop $user_entry;
+      if ( $user_entry ne "" ) { $CONFIG_DEFAULTS{$ENTRY} = $user_entry; }
+      print "\n";
+    }
+  }
+}
 # CONFIRM VALUES ENTERED:
 
 print "\nOK, please confirm what you've entered:\n\n";
 
 for my $ENTRY (@CONFIG_VARIABLES) {
     print $CONFIG_PROMPTS{$ENTRY} . ": " . $CONFIG_DEFAULTS{$ENTRY} . "\n";
+}
+
+if ($useSolrCloudWithZookeeper) {
+  print $CONFIG_PROMPTS{'SOLR_ZOOKEEPER'} . ": " . $CONFIG_DEFAULTS{'SOLR_ZOOKEEPER'} . "\n";
+}else{
+  for my $ENTRY (@SOLR_CONFIG_VARIABLES) {
+    print $CONFIG_PROMPTS{$ENTRY} . ": " . $CONFIG_DEFAULTS{$ENTRY} . "\n";
+  }
 }
 
 my $yesno;
@@ -1051,7 +1126,12 @@ unless ( -d "data" && -f "setup-datasetfields.sh" && -f "setup-users.sh" && -f "
 }
 
 print "Executing script setup-all.sh...\n";
-my $SETUP_OPTS = "-h " . $CONFIG_DEFAULTS{'HOST_DNS_ADDRESS'};
+my $SETUP_OPTS = "-h '" . $CONFIG_DEFAULTS{'HOST_DNS_ADDRESS'} . "' -c '" . $CONFIG_DEFAULTS{'SOLR_COLLECTION'} . "'";
+if ($useSolrCloudWithZookeeper) {
+  $SETUP_OPTS .= " -z '" . $CONFIG_DEFAULTS{'SOLR_ZOOKEEPER'} . "'";
+}else{
+  $SETUP_OPTS .= " -h '" . $CONFIG_DEFAULTS{'SOLR_HOST'} . "' -p '" . $CONFIG_DEFAULTS{'SOLR_PORT'} . "' -u '" . $CONFIG_DEFAULTS{'SOLR_URL_SCHEMA'} . "'";
+}
 unless (system("./setup-all.sh $SETUP_OPTS") == 0){
   print "\nERROR executing script <setup-all.sh>!\n";
   exit 1;
