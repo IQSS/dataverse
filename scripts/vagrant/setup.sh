@@ -1,9 +1,19 @@
 #!/bin/bash
-echo "Installing dependencies for Dataverse"
+if [ -z ${QUIETMODE+x} ] || [ $QUIETMODE -ne "" ]; then 
+  WGET_CMD='wget -q'
+  YUM_CMD='yum -q'
+  CURL_CMD='curl -s'
+  echo "Installing dependencies for Dataverse using Quietmode"
+else
+  WGET_CMD='wget'
+  YUM_CMD='yum'
+  CURL_CMD='curl'
+  echo "Installing dependencies for Dataverse"
+fi
 
 # Add JQ
 echo "Installing jq for the setup scripts"
-wget http://stedolan.github.io/jq/download/linux64/jq
+$WGET_CMD http://stedolan.github.io/jq/download/linux64/jq
 chmod +x jq
 # this is where EPEL puts it
 sudo mv jq /usr/bin/jq
@@ -11,15 +21,23 @@ sudo mv jq /usr/bin/jq
 echo "Adding Shibboleth yum repo"
 cp /dataverse/conf/vagrant/etc/yum.repos.d/shibboleth.repo /etc/yum.repos.d
 cp /dataverse/conf/vagrant/etc/yum.repos.d/epel-apache-maven.repo /etc/yum.repos.d
-yum install -y java-1.8.0-openjdk-devel postgresql-server apache-maven httpd mod_ssl shibboleth shibboleth-embedded-ds
+
+yum_packages=("java-1.8.0-openjdk-devel" "postgresql-server" "apache-maven" "httpd" "mod_ssl" "shibboleth" "shibboleth-embedded-ds")
+for yummyPkg in "${yum_packages[@]}"; do
+  echo "Installing $yummyPkg"
+  $YUM_CMD install -y $yummyPkg
+done
+
 alternatives --set java /usr/lib/jvm/jre-1.8.0-openjdk.x86_64/bin/java
 alternatives --set javac /usr/lib/jvm/java-1.8.0-openjdk.x86_64/bin/javac
+echo "Checking java version"
 java -version
+echo "Checking javac version"
 javac -version
+echo "Configuring PostgreSQL"
 service postgresql initdb
-service postgresql stop
 cp /dataverse/conf/vagrant/var/lib/pgsql/data/pg_hba.conf /var/lib/pgsql/data/pg_hba.conf
-service postgresql start
+service postgresql restart
 chkconfig postgresql on
 GLASSFISH_USER=glassfish
 echo "Ensuring Unix user '$GLASSFISH_USER' exists"
@@ -45,12 +63,12 @@ else
   echo "$GLASSFISH_ROOT already exists"
 fi
 service shibd start
-service httpd stop
 cp /dataverse/conf/httpd/conf.d/dataverse.conf /etc/httpd/conf.d/dataverse.conf
 mkdir -p /var/www/dataverse/error-documents
 cp /dataverse/conf/vagrant/var/www/dataverse/error-documents/503.html /var/www/dataverse/error-documents
-service httpd start
-curl -k --sslv3 https://pdurbin.pagekite.me/Shibboleth.sso/Metadata > /tmp/pdurbin.pagekite.me
+service httpd restart
+echo "Configuring Shibboleth"
+$CURL_CMD -k --sslv3 https://pdurbin.pagekite.me/Shibboleth.sso/Metadata > /tmp/pdurbin.pagekite.me
 cp -a /etc/shibboleth/shibboleth2.xml /etc/shibboleth/shibboleth2.xml.orig
 cp -a /etc/shibboleth/attribute-map.xml /etc/shibboleth/attribute-map.xml.orig
 # need more attributes, such as sn, givenName, mail

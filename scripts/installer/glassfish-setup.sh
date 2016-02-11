@@ -121,7 +121,7 @@ if [ -z "$GLASSFISH_DOMAIN" ]
   exit 1
 fi
 
-echo "checking glassfish root:"${GLASSFISH_ROOT}
+#echo "checking glassfish root:"${GLASSFISH_ROOT}
 
 if [ ! -d "$GLASSFISH_ROOT" ]
   then
@@ -130,21 +130,21 @@ if [ ! -d "$GLASSFISH_ROOT" ]
 fi
 GLASSFISH_BIN_DIR=$GLASSFISH_ROOT/bin
 
-echo "checking glassfish domain:"${GLASSFISH_ROOT}/glassfish/domains/$GLASSFISH_DOMAIN
+#echo "checking glassfish domain:"${GLASSFISH_ROOT}/glassfish/domains/$GLASSFISH_DOMAIN
 
 DOMAIN_DIR=$GLASSFISH_ROOT/glassfish/domains/$GLASSFISH_DOMAIN
 if [ ! -d "$DOMAIN_DIR" ]
   then
-    echo Domain directory '$DOMAIN_DIR' does not exist
+    echo "Domain directory '$DOMAIN_DIR' does not exist"
     exit 2
 fi
 
 echo "Setting up your glassfish4 to support Dataverse"
-echo "Glassfish directory: "$GLASSFISH_ROOT
-echo "Domain directory:    "$DOMAIN_DIR
+#echo "Glassfish directory: "$GLASSFISH_ROOT
+#echo "Domain directory:    "$DOMAIN_DIR
 
 # Move to the glassfish dir
-pushd $GLASSFISH_BIN_DIR
+pushd $GLASSFISH_BIN_DIR >> /dev/null
 
 ###
 # take the domain up, if needed.
@@ -159,7 +159,13 @@ fi
 
 # undeploy the app, if running: 
 
-./asadmin $ASADMIN_OPTS undeploy dataverse-4.0
+if [ -f /dataverse/pom.xml ]; then
+  DATAVERSE_VERSION=`awk -F '[<>]' '$2 == "version" {print $3;exit;}' /dataverse/pom.xml`
+else
+  DATAVERSE_VERSION="4.3"
+fi
+
+./asadmin $ASADMIN_OPTS undeploy dataverse-${DATAVERSE_VERSION}
 
 # avoid OutOfMemoryError: PermGen per http://eugenedvorkin.com/java-lang-outofmemoryerror-permgen-space-error-during-deployment-to-glassfish/
 #./asadmin $ASADMIN_OPTS list-jvm-options
@@ -250,8 +256,7 @@ echo Updates done. Restarting...
 
 ###
 # Clean up
-popd
+popd >> /dev/null
 
 echo "Glassfish setup complete"
-date
 

@@ -254,29 +254,28 @@ else {
 
 ENTERCONFIG:
 
-print "\n";
-print "Please enter the following configuration values:\n";
-print "(hit [RETURN] to accept the default value)\n";
-print "\n";
+if ($yes) {
+  print "\nNon-interactive configuration complete. The following values will be used:\n\n";
+}else{
+  print "\n";
+  print "Please enter the following configuration values:\n";
+  print "(hit [RETURN] to accept the default value)\n";
+  print "\n";
 
-for my $ENTRY (@CONFIG_VARIABLES) {
+  for my $ENTRY (@CONFIG_VARIABLES) {
     print $CONFIG_PROMPTS{$ENTRY} . ": ";
     print "[" . $CONFIG_DEFAULTS{$ENTRY} . "] ";
 
-    my $user_entry;
-    unless ($yes) {
-        $user_entry = <>;
-        chop $user_entry;
-    }
+    my $user_entry = <>;
+    chop $user_entry;
 
     if ( $user_entry ne "" ) {
-        $CONFIG_DEFAULTS{$ENTRY} = $user_entry;
+      $CONFIG_DEFAULTS{$ENTRY} = $user_entry;
     }
 
     print "\n";
-}
+  }
 
-unless ($yes) {
   print "Will this dataverse server use solrCloud via zookeeper? [y|n]:";
   my $yesno;
   $yesno = <>;
@@ -304,10 +303,10 @@ unless ($yes) {
       print "\n";
     }
   }
+  print "\nInteractive configuration complete. Please confirm what you've entered:\n\n";
 }
-# CONFIRM VALUES ENTERED:
 
-print "\nOK, please confirm what you've entered:\n\n";
+# CONFIRM VALUES ENTERED:
 
 for my $ENTRY (@CONFIG_VARIABLES) {
     print $CONFIG_PROMPTS{$ENTRY} . ": " . $CONFIG_DEFAULTS{$ENTRY} . "\n";
@@ -323,9 +322,9 @@ if ($useSolrCloudWithZookeeper) {
 
 my $yesno;
 if ($yes) {
+    print "\n";
     $yesno = "y";
-}
-else {
+} else {
     print "\nIs this correct? [y/n] ";
     $yesno = <>;
     chop $yesno;
@@ -382,7 +381,7 @@ unless ($postgresonly) {
 
 # 2. CHECK IF THE WAR FILE IS AVAILABLE:
 
-print "\nChecking if the application .war file is available... ";
+print "Checking if the application .war file is available... ";
 
 # if this installation is running out of the installer zib bundle directory,
 # the war file will be sitting right here, named "dataverse.war": 
@@ -476,7 +475,7 @@ if ( $CONFIG_DEFAULTS{'POSTGRES_SERVER'} eq 'localhost' ) {
 
     # 3a. CHECK FOR USER postgres:
 
-    print "\nChecking system user \"postgres\"... ";
+    print "Checking system user \"postgres\"... ";
 
     my $POSTGRES_SYS_NAME = "postgres";
     $POSTGRES_SYS_UID = ( getpwnam("postgres") )[2];
@@ -537,7 +536,7 @@ if ( $CONFIG_DEFAULTS{'POSTGRES_SERVER'} eq 'localhost' ) {
         else {
             my (@psql_version_tokens) = split( '\.', $postgresVersion );
 
-            print "\n\nFound Postgres psql command, version $postgresVersion.\n\n";
+            print "Found Postgres psql command: version $postgresVersion\n";
 
             $psql_major_version = $psql_version_tokens[0];
             $psql_minor_version = $psql_version_tokens[1];
@@ -609,14 +608,14 @@ if ( $CONFIG_DEFAULTS{'POSTGRES_SERVER'} eq 'localhost' ) {
 
     # 4. CONFIGURE POSTGRES:
 
-    print "\nConfiguring Postgres Database:\n";
+    print "Configuring Postgres Database: ";
     print "(Using psql version " . $pg_major_version . "." . $pg_minor_version . ")\n";
 
     $< = $POSTGRES_SYS_UID;
     $> = $POSTGRES_SYS_UID;
 
     # 4a. CHECK IF POSTGRES IS RUNNING:
-    print "Checking if a local instance of Postgres is running and accessible...\n";
+    print "Checking if a local instance of Postgres is running and accessible...  ";
 
     # (change to /tmp before executing the command below -
     # we are trying to do it as user postgres, and it may not have
@@ -630,7 +629,7 @@ if ( $CONFIG_DEFAULTS{'POSTGRES_SERVER'} eq 'localhost' ) {
         print "Yes, it is.\n";
     }
     else {
-        print "Nope, I haven't been able to connect to the local instance of PostgresQL.\n";
+        print "\n\nNope, I haven't been able to connect to the local instance of PostgresQL.\n";
         print "daemon. Is postgresql running? \n";
         print "On a RedHat-like system, you can check the status of the daemon with\n\n";
         print "   service postgresql status\n\n";
@@ -685,13 +684,13 @@ if ( $CONFIG_DEFAULTS{'POSTGRES_SERVER'} eq 'localhost' ) {
     my $psql_command_rolecheck =
       $psql_exec . "/psql -c \"\" -d postgres " . $CONFIG_DEFAULTS{'POSTGRES_USER'} . " >/dev/null 2>&1";
     if ( ( my $exitcode = system($psql_command_rolecheck) ) == 0 ) {
-        print "User (role) " . $CONFIG_DEFAULTS{'POSTGRES_USER'} . " already exists;\n";
-        print "Proceeding.";
+        print "User (role) " . $CONFIG_DEFAULTS{'POSTGRES_USER'} . " already exists... ";
+        print "Proceeding\n";
     }
     else {
         # 4e. CREATE DVN DB USER:
 
-        print "\nCreating Postgres user (role) for the DVN:\n";
+        print "Creating Postgres user (role) for the DVN:... ";
 
         open TMPCMD, ">/tmp/pgcmd.$$.tmp";
 
@@ -713,7 +712,7 @@ if ( $CONFIG_DEFAULTS{'POSTGRES_SERVER'} eq 'localhost' ) {
         my $out      = qx($psql_commandline 2>&1);
         my $exitcode = $?;
         unless ( $exitcode == 0 ) {
-            print STDERR "Could not create the DVN Postgres user role!\n";
+            print STDERR "\n\nCould not create the DVN Postgres user role!\n";
             print STDERR "(SQL: " . $sql_command . ")\n";
             print STDERR "(psql exit code: " . $exitcode . ")\n";
             print STDERR "(STDERR and STDOUT was: " . $out . ")\n";
@@ -726,7 +725,7 @@ if ( $CONFIG_DEFAULTS{'POSTGRES_SERVER'} eq 'localhost' ) {
 
     # 4f. CREATE DVN DB:
 
-    print "\nCreating Postgres database:\n";
+    print "Creating Postgres database for dataverse:\n";
 
     my $psql_command =
         $psql_exec
@@ -738,7 +737,7 @@ if ( $CONFIG_DEFAULTS{'POSTGRES_SERVER'} eq 'localhost' ) {
     my $out      = qx($psql_command 2>&1);
     my $exitcode = $?;
     unless ( $exitcode == 0 ) {
-        print STDERR "Could not create Postgres database for the DVN app!\n";
+        print STDERR "\nCould not create Postgres database for the DVN app!\n";
         print STDERR "(command: " . $psql_command . ")\n";
         print STDERR "(psql exit code: " . $exitcode . ")\n";
         print STDERR "(STDOUT and STDERR: " . $out . ")\n";
@@ -854,8 +853,8 @@ if ($postgresonly) {
 
 # 5. CONFIGURE GLASSFISH
 
-print "\nProceeding with the Glassfish setup.\n";
-print "\nChecking your Glassfish installation...";
+print "Proceeding with the Glassfish setup.\n";
+print "Checking your Glassfish installation...  ";
 
 my $glassfish_dir = $CONFIG_DEFAULTS{'GLASSFISH_DIRECTORY'};
 
@@ -911,13 +910,13 @@ if ( $sys_mem_total > 0 ) {
 
     print "\nSetting the heap limit for Glassfish to " . $gf_heap_default . "MB. \n";
     print "You may need to adjust this setting to better suit \n";
-    print "your system.\n\n";
+    print "your system.\n";
 
     #$gf_heap_default .= "m";
 
 }
 else {
-    print "\nCould not determine the amount of memory on your system.\n";
+    print "\n\nCould not determine the amount of memory on your system.\n";
     print "Setting the heap limit for Glassfish to 2GB. You may need \n";
     print "to  adjust the value to better suit your system.\n\n";
 }
@@ -931,7 +930,7 @@ $CONFIG_DEFAULTS{"DEF_MEM_SIZE"} = $gf_heap_default;
 # with the MacOS glassfish build...). Verify, and if still the case,
 # add a check.
 
-print "\nInstalling the Glassfish PostgresQL driver... ";
+print "Installing the Glassfish PostgresQL driver... ";
 
 my $install_driver_jar = "";
 
@@ -949,28 +948,27 @@ system( "/bin/cp", "pgdriver/" . $install_driver_jar, $glassfish_dir . "/glassfi
 
 print "done!\n";
 
-print "\n*********************\n";
-print "PLEASE NOTE, SOME OF THE ASADMIN COMMANDS ARE GOING TO FAIL,\n";
-print "FOR EXAMPLE, IF A CONFIGURATION SETTING THAT WE ARE TRYING\n";
-print "TO CREATE ALREADY EXISTS; OR IF A JVM OPTION THAT WE ARE\n";
-print "DELETING DOESN'T. THESE \"FAILURES\" ARE NORMAL!\n";
-print "*********************\n\n";
-print "When/if asadmin asks you to \"Enter admin user name\",\n";
+print STDERR "*********************\n";
+print STDERR "PLEASE NOTE, SOME OF THE ASADMIN COMMANDS ARE GOING TO FAIL,\n";
+print STDERR "FOR EXAMPLE, IF A CONFIGURATION SETTING THAT WE ARE TRYING\n";
+print STDERR "TO CREATE ALREADY EXISTS; OR IF A JVM OPTION THAT WE ARE\n";
+print STDERR "DELETING DOESN'T. THESE \"FAILURES\" ARE NORMAL!\n";
+print STDERR "*********************\n";
+print "\nWhen/if asadmin asks you to \"Enter admin user name\",\n";
 print "it should be safe to hit return and accept the default\n";
-print "(which is \"admin\").\n";
+print "(which is \"admin\").\n\n";
 
-print "\nPress any key to continue...\n\n";
-
-system "stty cbreak </dev/tty >/dev/tty 2>&1";
 unless ($yes) {
-    my $key = getc(STDIN);
+  print "\nPress any key to continue... ";
+  system "stty cbreak </dev/tty >/dev/tty 2>&1";
+  my $key = getc(STDIN);
+  system "stty -cbreak </dev/tty >/dev/tty 2>&1";
+  print "\n";
 }
-system "stty -cbreak </dev/tty >/dev/tty 2>&1";
-print "\n";
 
 # start domain, if not running:
 
-my $javacheck = `java -version`;
+my $javacheck = `java -version 2>&1`;
 my $exitcode  = $?;
 unless ( $exitcode == 0 ) {
     print STDERR "$javacheck\n" if $javacheck;
@@ -980,20 +978,20 @@ unless ( $exitcode == 0 ) {
 my $DOMAIN = "domain1";
 my $DOMAIN_DOWN =
   `$CONFIG_DEFAULTS{'GLASSFISH_DIRECTORY'}/bin/asadmin list-domains | grep "$DOMAIN " | grep "not running"`;
-print STDERR $DOMAIN_DOWN . "\n";
 if ($DOMAIN_DOWN) {
-    print "Trying to start domain up...\n";
-    system( $CONFIG_DEFAULTS{'GLASSFISH_DIRECTORY'} . "/bin/asadmin start-domain domain1" );
+    my $cmd = $CONFIG_DEFAULTS{'GLASSFISH_DIRECTORY'} . "/bin/asadmin start-domain domain1";
+    my @cmdout = `$cmd`;
+    print @cmdout[($#cmdout - 5)..$#cmdout];
 }
 else {
-    print "domain appears to be up...\n";
+    print "domain <${DOMAIN}> appears to be up...\n";
 }
 
 # create asadmin login, so that the user doesn't have to enter
 # the username and password for every asadmin command, if
 # access to :4848 is password-protected:
 
-system( $glassfish_dir. "/bin/asadmin login" );
+system( $glassfish_dir . "/bin/asadmin login" );
 
 # NEW: configure glassfish using ASADMIN commands:
 
@@ -1062,7 +1060,7 @@ sleep 60;
 
 if ($pg_local_connection) {
     # 7a. POPULATE LOCALLY:
-    print "\nPopulating the database (local PostgresQL instance):\n\n";
+    print "Populating the database (local PostgresQL instance):\n";
 
     # Copy the SQL file to /tmp, where user postgres will definitely
     # have read access to it:
@@ -1136,11 +1134,10 @@ unless (system("./setup-all.sh $SETUP_OPTS") == 0){
   print "\nERROR executing script <setup-all.sh>!\n";
   exit 1;
 }
-print "ok!\n";
 
 chdir($cwd);
 
-print "\n\nYou should now have a running DVN instance at\n";
+print "\nYou should now have a running DVN instance at\n";
 print "  http://" . $CONFIG_DEFAULTS{'HOST_DNS_ADDRESS'} . "[:8080]\n";
 
 # (going to skip the Rserve check, for now)
@@ -1203,7 +1200,7 @@ sub setup_glassfish {
 
     $ENV{'GLASSFISH_ROOT'}   = $CONFIG_DEFAULTS{'GLASSFISH_DIRECTORY'};
     $ENV{'GLASSFISH_DOMAIN'} = "domain1";
-    $ENV{'ASADMIN_OPTS'}     = "";
+    $ENV{'ASADMIN_OPTS'}     = "--terse=true";
     $ENV{'MEM_HEAP_SIZE'}    = $CONFIG_DEFAULTS{'DEF_MEM_SIZE'};
 
     $ENV{'DB_PORT'} = $CONFIG_DEFAULTS{'POSTGRES_PORT'};

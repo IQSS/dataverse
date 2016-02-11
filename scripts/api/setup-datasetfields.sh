@@ -1,8 +1,22 @@
-#!/bin/sh
-curl http://localhost:8080/api/admin/datasetfield/loadNAControlledVocabularyValue
-curl http://localhost:8080/api/admin/datasetfield/load -X POST --data-binary @data/metadatablocks/citation.tsv -H "Content-type: text/tab-separated-values"
-curl http://localhost:8080/api/admin/datasetfield/load -X POST --data-binary @data/metadatablocks/geospatial.tsv -H "Content-type: text/tab-separated-values"
-curl http://localhost:8080/api/admin/datasetfield/load -X POST --data-binary @data/metadatablocks/social_science.tsv -H "Content-type: text/tab-separated-values"
-curl http://localhost:8080/api/admin/datasetfield/load -X POST --data-binary @data/metadatablocks/astrophysics.tsv -H "Content-type: text/tab-separated-values"
-curl http://localhost:8080/api/admin/datasetfield/load -X POST --data-binary @data/metadatablocks/biomedical.tsv -H "Content-type: text/tab-separated-values"
-curl http://localhost:8080/api/admin/datasetfield/load -X POST --data-binary @data/metadatablocks/journals.tsv -H "Content-type: text/tab-separated-values"
+#!/bin/bash
+
+## source-ing setup-getopts.sh provides a common set of shell parameter parsing OPT_* variables for dataverse/environment configuration
+. "./setup-getopts.sh"
+
+SERVER="http://${OPT_h}:8080/api"
+
+if [ -z ${QUIETMODE+x} ] || [ $QUIETMODE -ne "" ]; then 
+  CURL_CMD='curl -s'
+  CURL_STDOUT='-o /dev/null'
+else
+  CURL_CMD='curl'
+  CURL_STDOUT=''
+fi
+
+$CURL_CMD ${SERVER}/admin/datasetfield/loadNAControlledVocabularyValue $CURL_STDOUT
+$CURL_CMD ${SERVER}/admin/datasetfield/load -X POST --data-binary @data/metadatablocks/citation.tsv -H "Content-type: text/tab-separated-values" $CURL_STDOUT
+$CURL_CMD ${SERVER}/admin/datasetfield/load -X POST --data-binary @data/metadatablocks/geospatial.tsv -H "Content-type: text/tab-separated-values" $CURL_STDOUT
+$CURL_CMD ${SERVER}/admin/datasetfield/load -X POST --data-binary @data/metadatablocks/social_science.tsv -H "Content-type: text/tab-separated-values" $CURL_STDOUT
+$CURL_CMD ${SERVER}/admin/datasetfield/load -X POST --data-binary @data/metadatablocks/astrophysics.tsv -H "Content-type: text/tab-separated-values" $CURL_STDOUT
+$CURL_CMD ${SERVER}/admin/datasetfield/load -X POST --data-binary @data/metadatablocks/biomedical.tsv -H "Content-type: text/tab-separated-values" $CURL_STDOUT
+$CURL_CMD ${SERVER}/admin/datasetfield/load -X POST --data-binary @data/metadatablocks/journals.tsv -H "Content-type: text/tab-separated-values" $CURL_STDOUT

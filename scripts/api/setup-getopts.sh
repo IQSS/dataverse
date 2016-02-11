@@ -12,7 +12,7 @@ OPT_p="8983"
 OPT_s="localhost"
 OPT_u="http"
 
-while getopts :h:g:m FLAG; do
+while getopts :c:g:h:m:p:s:u:z FLAG; do
   case $FLAG in
     c)  #set option solr-collection "c"
       OPT_c=$OPTARG
@@ -43,7 +43,7 @@ while getopts :h:g:m FLAG; do
       ;;
     :)  #valid option requires adjacent argument
       echo "Option -$OPTARG requires an argument." >&2
-      if[[ $invoked != $0 ]] then
+      if [ $invoked -ne $0 ]; then
         return 1
       else
         exit 1

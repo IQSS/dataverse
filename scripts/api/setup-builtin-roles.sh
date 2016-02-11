@@ -1,34 +1,39 @@
-SERVER=http://localhost:8080/api
+#!/bin/bash
+
+## source-ing setup-getopts.sh provides a common set of shell parameter parsing OPT_* variables for dataverse/environment configuration
+. "./setup-getopts.sh"
+
+SERVER="http://${OPT_h}:8080/api"
+
+if [ -z ${QUIETMODE+x} ] || [ $QUIETMODE -ne "" ]; then 
+  CURL_CMD='curl -s'
+  CURL_STDOUT='-o /dev/null'
+else
+  CURL_CMD='curl'
+  CURL_STDOUT=''
+fi
 
 # Setup the builtin roles
 echo "Setting up admin role"
-curl -H "Content-type:application/json" -d @data/role-admin.json http://localhost:8080/api/admin/roles/
-echo
+$CURL_CMD ${SERVER}/admin/roles/ -H "Content-type:application/json" -d @data/role-admin.json $CURL_STDOUT
 
 echo "Setting up file downloader role"
-curl -H "Content-type:application/json" -d @data/role-filedownloader.json http://localhost:8080/api/admin/roles/
-echo
+$CURL_CMD ${SERVER}/admin/roles/ -H "Content-type:application/json" -d @data/role-filedownloader.json $CURL_STDOUT
 
 echo "Setting up full contributor role"
-curl -H "Content-type:application/json" -d @data/role-fullContributor.json http://localhost:8080/api/admin/roles/
-echo
+$CURL_CMD ${SERVER}/admin/roles/ -H "Content-type:application/json" -d @data/role-fullContributor.json $CURL_STDOUT
 
 echo "Setting up dv contributor role"
-curl -H "Content-type:application/json" -d @data/role-dvContributor.json http://localhost:8080/api/admin/roles/
-echo
+$CURL_CMD ${SERVER}/admin/roles/ -H "Content-type:application/json" -d @data/role-dvContributor.json $CURL_STDOUT
 
 echo "Setting up ds contributor role"
-curl -H "Content-type:application/json" -d @data/role-dsContributor.json http://localhost:8080/api/admin/roles/
-echo
+$CURL_CMD ${SERVER}/admin/roles/ -H "Content-type:application/json" -d @data/role-dsContributor.json $CURL_STDOUT
 
 echo "Setting up editor role"
-curl -H "Content-type:application/json" -d @data/role-editor.json http://localhost:8080/api/admin/roles/
-echo
+$CURL_CMD ${SERVER}/admin/roles/ -H "Content-type:application/json" -d @data/role-editor.json $CURL_STDOUT
 
 echo "Setting up curator role"
-curl -H "Content-type:application/json" -d @data/role-curator.json http://localhost:8080/api/admin/roles/
-echo
+$CURL_CMD ${SERVER}/admin/roles/ -H "Content-type:application/json" -d @data/role-curator.json $CURL_STDOUT
 
 echo "Setting up member role"
-curl -H "Content-type:application/json" -d @data/role-member.json http://localhost:8080/api/admin/roles/
-echo
+$CURL_CMD ${SERVER}/admin/roles/ -H "Content-type:application/json" -d @data/role-member.json $CURL_STDOUT
