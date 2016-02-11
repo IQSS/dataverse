@@ -7,7 +7,7 @@ INSTALL_ARGS="--force -y --hostname $OPT_h --gfdir $OPT_g --mailserver $OPT_m"
 if [ -z "$OPT_z" ]; then
   INSTALL_ARGS="$INSTALL_ARGS --solrcollection $OPT_c --solrport $OPT_p --solrhost $OPT_s --solrurlschema $OPT_u"
 else
-  INSTALL_ARGS="$INSTALL_ARGS --solrzookeeper $OPT_z"
+  INSTALL_ARGS="$INSTALL_ARGS --solrcollection $OPT_c --solrzookeeper $OPT_z"
 fi
 
 WAR=/dataverse/target/dataverse*.war
