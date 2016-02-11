@@ -1,4 +1,5 @@
 #!/bin/bash
+## script source to coordinate command line options/parameters
 
 invoked=$_
 OPTIND=1
