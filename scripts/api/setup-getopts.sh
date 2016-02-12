@@ -12,7 +12,7 @@ OPT_p="8983"
 OPT_s="localhost"
 OPT_u="http"
 
-while getopts :c:g:h:m:p:s:u:z FLAG; do
+while getopts :c:g:h:m:p:s:u:z: FLAG; do
   case $FLAG in
     c)  #set option solr-collection "c"
       OPT_c=$OPTARG
