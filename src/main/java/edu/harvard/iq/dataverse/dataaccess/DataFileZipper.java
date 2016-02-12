@@ -38,7 +38,7 @@ import java.util.zip.ZipOutputStream;
  * @author Leonid Andreev
  */
 public class DataFileZipper {
-    public static long DEFAULT_ZIPFILE_LIMIT = 10 * 1024 * 1024; // 10MB (?)
+    public static long DEFAULT_ZIPFILE_LIMIT = 100 * 1024 * 1024; // 100MB
     
     private static final Logger logger = Logger.getLogger(DataFileZipper.class.getCanonicalName());
     
@@ -74,7 +74,6 @@ public class DataFileZipper {
         Iterator iter = files.iterator();
 
         while (iter.hasNext()) {
-            int fileSize = 0;
             DataFile file = (DataFile) iter.next();
 
             DataAccessRequest daReq = new DataAccessRequest();
@@ -82,6 +81,7 @@ public class DataFileZipper {
 
             if (accessObject != null) {
                 accessObject.open();
+                long fileSize = accessObject.getSize();
 
                 String fileName = accessObject.getFileName();
                 String mimeType = accessObject.getMimeType();
@@ -89,7 +89,7 @@ public class DataFileZipper {
                     mimeType = "application/octet-stream";
                 }
 
-                if (sizeTotal < sizeLimit) {
+                if (sizeTotal + fileSize < sizeLimit) {
 
                     Boolean Success = true;
 
@@ -124,11 +124,12 @@ public class DataFileZipper {
                         byte[] data = new byte[8192];
 
                         int i = 0;
+                        long byteSize = 0; 
                         while ((i = instream.read(data)) > 0) {
                             zout.write(data, 0, i);
                             logger.fine("wrote " + i + " bytes;");
 
-                            fileSize += i;
+                            byteSize += i;
                             //zout.flush();
                         }
                         instream.close();
@@ -139,9 +140,12 @@ public class DataFileZipper {
                             fileManifest = fileManifest + zipEntryName + " (" + mimeType + ") " + fileSize + " bytes.\r\n";
                         }
 
-                        if (fileSize > 0) {
+                        if (byteSize > 0) {
                             successList.add(file.getId());
-                            sizeTotal += Long.valueOf(fileSize);
+                            if (fileSize != byteSize) {
+                                logger.warning("File size mismatch: "+fileSize+" in the database, "+byteSize+" on disk.");
+                            }
+                            sizeTotal += Long.valueOf(byteSize);
                         }
                     }
                 } else {

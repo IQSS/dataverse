@@ -32,7 +32,8 @@ function bind_bsui_components(){
     popoverHTML();
     
     //Metrics
-    metricsTabs();
+    //DISABLED TOGGLE UNTIL FURTHER DEVELOPMENT ON METRICS IS COMPLETED
+    //metricsTabs();
     
     // Dialog Listener For Calling handleResizeDialog
     PrimeFaces.widget.Dialog.prototype.postShow = function() {
@@ -221,17 +222,18 @@ function sharrre(){
 
 /*
  * Metrics Tabs
+ * DISABLED TOGGLE UNTIL FURTHER DEVELOPMENT ON METRICS IS COMPLETED
  */
-function metricsTabs() {
-    $('#metrics-tabs a[data-toggle="tab"]').on('shown', function (e) {
-        e.target // activated tab
-        e.relatedTarget // previous tab
-    });
-    $('#metrics-tabs a[data-toggle="tab"]').mouseover(function(){
-        $(this).click();
-    });
-    $('#metrics-tabs a.first[data-toggle="tab"]').tab('show');
-}
+// function metricsTabs() {
+    // $('#metrics-tabs a[data-toggle="tab"]').on('shown', function (e) {
+        // e.target // activated tab
+        // e.relatedTarget // previous tab
+    // });
+    // $('#metrics-tabs a[data-toggle="tab"]').mouseover(function(){
+        // $(this).click();
+    // });
+    // $('#metrics-tabs a.first[data-toggle="tab"]').tab('show');
+// }
 
 function selectText(ele) {
     try {

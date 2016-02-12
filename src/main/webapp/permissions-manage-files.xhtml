@@ -29,6 +29,8 @@
                         <div class="panel panel-default">
                             <div data-toggle="collapse" data-target="#panelCollapseUsersGroups" class="panel-heading text-info">
                                 #{bundle['dataverse.permissionsFiles.usersOrGroups']} <span class="glyphicon glyphicon-chevron-up"/>
+                                
+                                <span class="text-muted small pull-right"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.permissionsFiles.usersOrGroups.description']}</span>
                             </div>
                             <div id="panelCollapseUsersGroups" class="collapse in">
                                 <div class="panel-body">
@@ -37,13 +39,14 @@
                                             <iqbs:messages collapsible="true" rendered="#{manageFilePermissionsPage.renderUserGroupMessages}"/>
                                         </div>
                                     </p:fragment>
-                                    <p:commandLink type="button" id="userGroupsAdd" styleClass="btn btn-default pull-right"
-                                                   actionListener="#{manageFilePermissionsPage.initAssignDialog}"
-                                                   update="assignDialog"
-                                                   oncomplete="PF('assignWidget').show();handleResizeDialog('assignDialog');bind_bsui_components();">
-                                        <span class="glyphicon glyphicon-user"/> #{bundle['dataverse.permissionsFiles.usersOrGroups.assignBtn']}
-                                    </p:commandLink>
-                                    <p class="help-block clearfix">#{bundle['dataverse.permissionsFiles.usersOrGroups.description']}</p>
+                                    <div class="margin-bottom text-right">
+                                        <p:commandLink type="button" id="userGroupsAdd" styleClass="btn btn-default"
+                                                       actionListener="#{manageFilePermissionsPage.initAssignDialog}"
+                                                       update="assignDialog"
+                                                       oncomplete="PF('assignWidget').show();handleResizeDialog('assignDialog');bind_bsui_components();">
+                                            <span class="glyphicon glyphicon-user"/> #{bundle['dataverse.permissionsFiles.usersOrGroups.assignBtn']}
+                                        </p:commandLink>
+                                    </div>
                                     <div>
                                         <p:fragment id="userGroups">
                                             <p:dataTable id="fileAccessRequests" styleClass="margin-bottom" var="access" value="#{manageFilePermissionsPage.fileAccessRequestMap.entrySet().toArray()}"
@@ -117,6 +120,8 @@
                         <div class="panel panel-default">
                             <div data-toggle="collapse" data-target="#panelCollapseFiles" class="panel-heading text-info">
                                 #{bundle['dataverse.permissionsFiles.files']} <span class="glyphicon glyphicon-chevron-down"/>
+                                
+                                <span class="text-muted small pull-right"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.permissionsFiles.files.description']}</span>
                             </div>
                             <div id="panelCollapseFiles" class="collapse">
                                 <div class="panel-body">
@@ -125,7 +130,6 @@
                                             <iqbs:messages  collapsible="true" rendered="#{manageFilePermissionsPage.renderFileMessages}"/>
                                         </div>
                                     </p:fragment>
-                                    <p class="help-block clearfix">#{bundle['dataverse.permissionsFiles.files.description']}</p>
                                     <p:dataTable id="restrictedFiles" var="fileEntry" value="#{manageFilePermissionsPage.fileMap.entrySet().toArray()}"
                                                  emptyMessage="#{bundle['dataverse.permissionsFiles.files.invalidMsg']}">
                                         <p:column width="40%" headerText="#{bundle['dataverse.permissionsFiles.files.tabHeader.fileName']}">
