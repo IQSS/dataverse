@@ -100,6 +100,14 @@ public class TestApi extends AbstractApiBean {
     @Path("user/convert/builtin2shib")
     @PUT
     public Response builtin2shib(String content) {
+        try {
+            AuthenticatedUser userToRunThisMethod = findAuthenticatedUserOrDie();
+            if (!userToRunThisMethod.isSuperuser()) {
+                return errorResponse(Response.Status.FORBIDDEN, "Superusers only.");
+            }
+        } catch (WrappedResponse ex) {
+            return errorResponse(Response.Status.FORBIDDEN, "Superusers only.");
+        }
         boolean disabled = false;
         if (disabled) {
             return errorResponse(Response.Status.BAD_REQUEST, "API endpoint disabled.");
@@ -130,8 +138,7 @@ public class TestApi extends AbstractApiBean {
                 return errorResponse(Response.Status.BAD_REQUEST, "No user to convert. We couldn't find a *single* existing user account based on " + emailToFind + " and no user was found using specified id " + longToLookup);
             }
         }
-        ShibAuthenticationProvider shibProvider = new ShibAuthenticationProvider();
-        String shibProviderId = shibProvider.getId();
+        String shibProviderId = ShibAuthenticationProvider.PROVIDER_ID;
         Map<String, String> randomUser = shibService.getRandomUser();
 //        String eppn = UUID.randomUUID().toString().substring(0, 8);
         String eppn = randomUser.get("eppn");
