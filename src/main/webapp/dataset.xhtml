@@ -882,7 +882,7 @@
                                         <h:outputText value="No tags selected" rendered="#{empty DatasetPage.selectedTags}" />
                                        
                                         <ui:repeat value="#{DatasetPage.selectedTags}" var="tags" rendered="#{!empty DatasetPage.selectedTags}">
-                                            <h:outputText value="#{tags}" styleClass="label label-info" style="margin-right:.5em;display:inline-block;"/>
+                                            <h:outputText value="#{tags}" styleClass="label label-default" style="margin-right:.5em;display:inline-block;"/>
                                         </ui:repeat>
                                         <ui:repeat value="#{DatasetPage.selectedTabFileTags}" var="tags" rendered="#{!empty DatasetPage.selectedTabFileTags}">
                                             <h:outputText value="#{tags}" styleClass="label label-info" style="margin-right:.5em;display:inline-block;"/>
