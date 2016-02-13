@@ -1,7 +1,7 @@
 #!/bin/bash
 
-## source-ing setup-getopts.sh provides a common set of shell parameter parsing OPT_* variables for dataverse/environment configuration
-. "/dataverse/scripts/api/setup-getopts.sh"
+## OPT_* variables come from /dataverse/scripts/api/bin/dataverse-getopts.sh
+. "/dataverse/scripts/api/bin/dataverse-getopts.sh"
 
 if [ -z ${QUIETMODE+x} ] || [ $QUIETMODE -ne "" ]; then 
   YUM_CMD='yum -q'

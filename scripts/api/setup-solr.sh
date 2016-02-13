@@ -1,7 +1,7 @@
 #!/bin/bash
 
-## source-ing setup-getopts.sh provides a common set of shell parameter parsing OPT_* variables for dataverse/environment configuration
-. "./setup-getopts.sh"
+## OPT_* variables come from /dataverse/scripts/api/bin/dataverse-getopts.sh
+. "./bin/dataverse-getopts.sh"
 
 
 
