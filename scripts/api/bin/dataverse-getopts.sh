@@ -35,6 +35,9 @@ while getopts :c:g:h:m:p:s:u:z: FLAG; do
     u)  #set option solr-url-schema "u"
       OPT_u=$OPTARG
       ;;
+    v)  #set output verbosity level "v"
+      OUTPUT_VERBOSITY=$OPTARG
+      ;;
     z)  #set option solrCloud-zookeeper "z"
       OPT_z=$OPTARG
       ;;
