@@ -25,6 +25,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     cdh.vm.box_version = "~> 5.4.0"
     cdh.vm.network "private_network", ip: STATIC_IP_CDH
     cdh.vm.graceful_halt_timeout = 180
+
+    cdh.vm.provision "killFirewall", type: "shell", inline: "service iptables stop"
   end
 
   config.vm.define "dataverse", primary: true do |dataverse|
