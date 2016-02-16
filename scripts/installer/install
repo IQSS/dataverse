@@ -7,6 +7,7 @@ use Socket;
 use File::Copy;
 
 my $verbose;
+my $verbosity;
 my $pg_only;
 my $hostname;
 my $gfdir;
@@ -18,7 +19,8 @@ my ($solrcollection, $solrport, $solrhost, $solrurlschema, $solrzookeeper);
 my ($rez) = GetOptions(
     #"length=i" => \$length,    # numeric
     #"file=s"   => \$data,      # string
-    "verbose"      => \$verbose,
+    "v|verbose"    => \$verbose,
+    "verbosity"    => \$verbosity,
     "pg_only"      => \$pg_only,
     "hostname=s"   => \$hostname,
     "gfdir=s"      => \$gfdir,
@@ -32,6 +34,9 @@ my ($rez) = GetOptions(
     "solrurlschema=s"  => \$solrurlschema,
     "solrzookeeper=s"  => \$solrzookeeper,
 );
+
+## default to terse level (1) verbosity if not opted
+$verbosity = (defined $verbosity)? $verbosity : (defined $verbose)? '3' : '1';
 
 my $postgresonly = 0;
 my $useSolrCloudWithZookeeper = ($solrzookeeper)?1:0;
@@ -1124,7 +1129,7 @@ unless ( -d "data" && -f "setup-datasetfields.sh" && -f "setup-users.sh" && -f "
 }
 
 print "Executing script setup-all.sh...\n";
-my $SETUP_OPTS = "-h '" . $CONFIG_DEFAULTS{'HOST_DNS_ADDRESS'} . "' -c '" . $CONFIG_DEFAULTS{'SOLR_COLLECTION'} . "'";
+my $SETUP_OPTS = "-v ${verbosity} -h '" . $CONFIG_DEFAULTS{'HOST_DNS_ADDRESS'} . "' -c '" . $CONFIG_DEFAULTS{'SOLR_COLLECTION'} . "'";
 if ($useSolrCloudWithZookeeper) {
   $SETUP_OPTS .= " -z '" . $CONFIG_DEFAULTS{'SOLR_ZOOKEEPER'} . "'";
 }else{

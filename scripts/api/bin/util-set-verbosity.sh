@@ -9,17 +9,20 @@ case $OUTPUT_VERBOSITY in
     YUM_CMD='yum -q'
     CURL_CMD='curl -s'
     WGET_CMD='wget -q'
+    MVN_CMD='mvn -q'
     ;;
   [tT1] | [tT][eE][rR][sS][eE] )
     YUM_CMD='yum -q'
     CURL_CMD='curl -s'
     WGET_CMD='wget -q'
+    MVN_CMD='mvn -q'
     _IF_TERSE=''
     ;;
   [iI2] | [iI][nN][fF][oO] )
     YUM_CMD='yum'
     CURL_CMD='curl'
     WGET_CMD='wget'
+    MVN_CMD='mvn'
     _IF_TERSE=''
     _IF_INFO=''
     ;;
@@ -27,6 +30,7 @@ case $OUTPUT_VERBOSITY in
     YUM_CMD='yum'
     CURL_CMD='curl'
     WGET_CMD='wget'
+    MVN_CMD='mvn'
     _IF_TERSE=''
     _IF_INFO=''
     _IF_VERBOSE=''
@@ -35,6 +39,7 @@ case $OUTPUT_VERBOSITY in
     YUM_CMD='yum'
     CURL_CMD='curl'
     WGET_CMD='wget'
+    MVN_CMD='mvn'
     _IF_TERSE=''
     _IF_INFO=''
     _IF_VERBOSE=''
