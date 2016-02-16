@@ -1128,7 +1128,7 @@ my $SETUP_OPTS = "-h '" . $CONFIG_DEFAULTS{'HOST_DNS_ADDRESS'} . "' -c '" . $CON
 if ($useSolrCloudWithZookeeper) {
   $SETUP_OPTS .= " -z '" . $CONFIG_DEFAULTS{'SOLR_ZOOKEEPER'} . "'";
 }else{
-  $SETUP_OPTS .= " -h '" . $CONFIG_DEFAULTS{'SOLR_HOST'} . "' -p '" . $CONFIG_DEFAULTS{'SOLR_PORT'} . "' -u '" . $CONFIG_DEFAULTS{'SOLR_URL_SCHEMA'} . "'";
+  $SETUP_OPTS .= " -s '" . $CONFIG_DEFAULTS{'SOLR_HOST'} . "' -p '" . $CONFIG_DEFAULTS{'SOLR_PORT'} . "' -u '" . $CONFIG_DEFAULTS{'SOLR_URL_SCHEMA'} . "'";
 }
 unless (system("./setup-all.sh $SETUP_OPTS") == 0){
   print "\nERROR executing script <setup-all.sh>!\n";
