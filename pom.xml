@@ -317,6 +317,26 @@
             <artifactId>jacoco-maven-plugin</artifactId>
             <version>0.7.5.201505241946</version>
         </dependency>
+        <!-- Added specific versionf of SLF4J jars; otherwise we end up with 
+        conflicting versions of slf4j-api and slf4j-log4j12, loaded as
+        dependencies for different packages; which was causing some incompatibility
+        issues -L.A. 4.3 -->  
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.7</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>1.7.7</version>
+        </dependency>
+	<!-- JavaSwift/JOSS: for accessing OpenStack cloud storage -->
+	<dependency>
+            <groupId>org.javaswift</groupId>
+            <artifactId>joss</artifactId>
+            <version>0.9.10</version>
+        </dependency>
         
     </dependencies>
 

@@ -49,6 +49,9 @@ public class DataAccess {
         if (df.getStorageIdentifier().startsWith("file://")
                 || (!df.getStorageIdentifier().matches("^[a-z][a-z]*://.*"))) {
             return new FileAccessIO (df, req);
+        } else if (df.getStorageIdentifier().startsWith("swift://")) {
+            return new SwiftAccessIO (df, req);
+            
         }
         
         // No other storage methods are supported as of now! -- 4.0.1
