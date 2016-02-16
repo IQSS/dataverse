@@ -14,7 +14,7 @@ SOLR_OWNER='solr'
 OUTPUT_VERBOSITY=1
 
 _usage() {
-  echo "\nUsage: $0 \[dhimsuv\]"
+  echo "\nUsage: $0 \[dhimlsuv\]"
   echo "\nSupported options:"
   echo "  -d     Directory for solr core/collection files, such as index data. \[${SOLR_DOMAIN_DIR}\]"
   echo "  -h     Print this help message.
@@ -28,7 +28,7 @@ _usage() {
   echo "\n"
 }
 
-while getopts :d:h:i:m:s:u:v: FLAG; do
+while getopts :d:h:i:m:l:s:u:v: FLAG; do
   case $FLAG in
     d)  #set option solr domain directory "d"
       SOLR_DOMAIN_DIR=$OPTARG
