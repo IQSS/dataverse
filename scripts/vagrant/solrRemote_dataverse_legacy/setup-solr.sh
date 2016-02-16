@@ -1,12 +1,12 @@
 #!/bin/bash
 
-SOLR_VERSION='4.6.0'
-OUTPUT_VERBOSITY=1
+if [[ -z ${SOLR_VERSION} ]]; then SOLR_VERSION='4.6.0'; fi
+if [[ -z ${OUTPUT_VERBOSITY} ]]; then OUTPUT_VERBOSITY='1'; fi
 
 _usage() {
   echo "\nUsage: $0 \[dhilmsuv\]"
   echo "\nSupported options:"
-  echo "  -h     Print this help message.
+  echo "  -h     Print this help message."
   echo "  -s     Select the solr version to install.\[${SOLR_VERSION}\]"
   echo "  -v     Verbosity of this installation script \(0-3\). \[${OUTPUT_VERBOSITY}\]"
   echo "\n"
@@ -114,7 +114,7 @@ if [[ ! -e /dataverse/downloads/solr-${SOLR_VERSION}.tgz ]]; then
 fi
 
 #### Extract and stage solr package ####
-$_IF_VERBOSE 2>&1 tar -zxf /dataverse/downloads/solr-${SOLR_VERSION}
+$_IF_VERBOSE 2>&1 tar -zxf /dataverse/downloads/solr-${SOLR_VERSION}.tgz
 if [[ $? == 0 ]]; then
   $_IF_VERBOSE echo "Extraction successful"
 else

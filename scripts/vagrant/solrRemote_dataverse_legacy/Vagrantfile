@@ -12,6 +12,11 @@ unless defined? STATIC_IP_DATAVERSE
   STATIC_IP_DATAVERSE = "192.168.39.20"
 end
 
+unless defined? OUTPUT_VERBOSITY
+  # Output Verbosity 0..3 least..most
+  OUTPUT_VERBOSITY = '3'
+end
+
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   config.vm.provider "virtualbox" do |v|
@@ -28,9 +33,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     unless defined? SOLR_VERSION
       SOLR_VERSION = '4.6.0'
     end
-
-    solr.vm.provision "installSolrService", type: "shell",
-      path: "./setup-solr.sh", args: "-s #{SOLR_VERSION} -v 1"
+    
+    solr.vm.provision "installSolr", type: "shell",
+      path: "./setup-solr.sh", args: "-s #{SOLR_VERSION} -v #{OUTPUT_VERBOSITY}"
+    solr.vm.provision "killFirewall", type: "shell", inline: "service iptables stop"
 
   end
 
@@ -53,7 +59,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     dataverse.vm.provision "dataversePrereqs", type: "shell", path: "../setup.sh"
     dataverse.vm.provision "killFirewall", type: "shell", inline: "service iptables stop"
     dataverse.vm.provision "dataverseSetup", type: "shell", path: "../install-dataverse.sh",
-      args: "-c dvcollection -h #{STATIC_IP_DATAVERSE} -m #{mailserver} -s #{STATIC_IP_SOLR}"
+      args: "-c collection1 -h #{STATIC_IP_DATAVERSE} -m #{mailserver} -s #{STATIC_IP_SOLR}"
 
   end
 
