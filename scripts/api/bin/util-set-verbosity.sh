@@ -31,10 +31,12 @@ case $OUTPUT_VERBOSITY in
     _IF_INFO=''
     _IF_VERBOSE=''
     ;;
-  * ) ## Default to Terse verbosity if not set
-    YUM_CMD='yum -q'
-    CURL_CMD='curl -s'
-    WGET_CMD='wget -q'
+  * ) ## Default to verbosity level 3 if not set
+    YUM_CMD='yum'
+    CURL_CMD='curl'
+    WGET_CMD='wget'
     _IF_TERSE=''
+    _IF_INFO=''
+    _IF_VERBOSE=''
     ;;
 esac
