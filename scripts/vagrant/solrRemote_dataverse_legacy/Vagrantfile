@@ -5,7 +5,7 @@
 VAGRANTFILE_API_VERSION = "2"
 
 unless defined? STATIC_IP_SOLR 
-  STATIC_IP_SOLR = "192.168.39.11"
+  STATIC_IP_SOLR = "192.168.39.10"
 end
 
 unless defined? STATIC_IP_DATAVERSE 
@@ -26,18 +26,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     solr.vm.synced_folder "../../../", "/dataverse"
     
     unless defined? SOLR_VERSION
-      ## Currently Supported Solr Versions
-      #SOLR_VERSION = '4.6.1'
-
-      ## Working but not fully tested Solr Versions
-      SOLR_VERSION = '5.4.1'
-      
-      ## Solr versions with known incompatibilities
-      #DONT_USE_SOLR_VERSION = '3.6'
+      SOLR_VERSION = '4.6.0'
     end
 
     solr.vm.provision "installSolrService", type: "shell",
-      path: "./install-solr-service.sh", args: "-s #{SOLR_VERSION} -v 1"
+      path: "./setup-solr.sh", args: "-s #{SOLR_VERSION} -v 1"
 
   end
 

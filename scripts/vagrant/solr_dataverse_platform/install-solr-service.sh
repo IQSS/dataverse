@@ -28,7 +28,7 @@ _usage() {
   echo "\n"
 }
 
-while getopts :d:h:i:m:l:s:u:v: FLAG; do
+while getopts :d:h:i:l:m:s:u:v: FLAG; do
   case $FLAG in
     d)  #set option solr domain directory "d"
       SOLR_DOMAIN_DIR=$OPTARG
