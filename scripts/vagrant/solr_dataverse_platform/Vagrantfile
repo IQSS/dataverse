@@ -23,22 +23,21 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     solr.vm.hostname = "solr"
     solr.vm.box = "puppetlabs/centos-6.6-64-puppet"
     solr.vm.network "private_network", ip: STATIC_IP_SOLR
+    solr.vm.synced_folder "../../../", "/dataverse"
     
     unless defined? SOLR_VERSION
       ## Currently Supported Solr Versions
-      SOLR_VERSION = '4.6'
+      #SOLR_VERSION = '4.6.1'
 
       ## Working but not fully tested Solr Versions
-      #SOLR_VERSION = '4.7'
+      SOLR_VERSION = '5.4.1'
       
       ## Solr versions with known incompatibilities
       #DONT_USE_SOLR_VERSION = '3.6'
     end
 
-    solr.vm.provision "installSolr", type: "shell",
-      path: "./install_solr.sh",
-      args: "-s #{SOLR_VERSION}"
-
+    solr.vm.provision "installSolrService", type: "shell",
+      path: "./install-solr-service.sh", args: "-s #{SOLR_VERSION} -v 1"
 
   end
 
@@ -46,6 +45,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     dataverse.vm.hostname = "dataverse"
     dataverse.vm.box = "puppetlabs/centos-6.6-64-puppet"
     dataverse.vm.network "private_network", ip: STATIC_IP_DATAVERSE
+    dataverse.vm.synced_folder "../../../", "/dataverse"
 
     unless defined? mailserver
       mailserver = "localhost"
@@ -59,11 +59,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
     dataverse.vm.provision "dataversePrereqs", type: "shell", path: "../setup.sh"
     dataverse.vm.provision "killFirewall", type: "shell", inline: "service iptables stop"
-    dataverse.vm.provision "dataverseSetup", type: "shell", 
-      path: "../install-dataverse.sh",
-      args: "-c dvcollection -h #{STATIC_IP_DATAVERSE} -m #{mailserver} -s #{STATIC_IP_CDH}"
+    dataverse.vm.provision "dataverseSetup", type: "shell", path: "../install-dataverse.sh",
+      args: "-c dvcollection -h #{STATIC_IP_DATAVERSE} -m #{mailserver} -s #{STATIC_IP_SOLR}"
 
-    dataverse.vm.synced_folder "../../../", "/dataverse"
   end
 
 end
