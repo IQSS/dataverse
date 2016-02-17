@@ -23,7 +23,7 @@ fi
 
 SERVER="http://${OPT_h}:8080/api"
 
-$_IF_TERSE echo "Setting up dataverse server http://{$OPT_h}:8080"
+$_IF_TERSE echo "Setting up dataverse server http://${OPT_h}:8080"
 
 # Everything + the kitchen sink, in a single script
 # - Setup the connection with solr / solrCloud
