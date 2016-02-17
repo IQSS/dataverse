@@ -20,7 +20,7 @@ my ($rez) = GetOptions(
     #"length=i" => \$length,    # numeric
     #"file=s"   => \$data,      # string
     "v|verbose"    => \$verbose,
-    "verbosity"    => \$verbosity,
+    "verbosity=s"  => \$verbosity,
     "pg_only"      => \$pg_only,
     "hostname=s"   => \$hostname,
     "gfdir=s"      => \$gfdir,
