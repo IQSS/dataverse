@@ -190,7 +190,7 @@ public class SwiftAccessIO extends DataFileIO {
     // Auxilary helper methods, Swift-specific:
     
 
-    public InputStream openSwiftFileAsInputStream () {
+    public InputStream openSwiftFileAsInputStream () throws IOException {
         InputStream in = null;
 
         String storageIdentifier = this.getDataFile().getStorageIdentifier();
@@ -198,7 +198,7 @@ public class SwiftAccessIO extends DataFileIO {
         if (!storageIdentifier.startsWith("swift://")) {
             // An attempt to call Swift driver on a non-swift stored datafile
             // object!
-            return null; 
+            throw new IOException("IO driver mismatch: SwiftAccessIO called on a non-swift stored object."); 
         }
         
         
@@ -207,7 +207,7 @@ public class SwiftAccessIO extends DataFileIO {
         
         if (swiftStorageTokens.length != 3) {
             // bad storage identifier
-            return null; 
+            throw new IOException("SwiftAccessIO: invalid swift storage token: "+storageIdentifier);
         }
         
         String swiftEndPoint = swiftStorageTokens[0]; 
@@ -218,21 +218,40 @@ public class SwiftAccessIO extends DataFileIO {
                 "".equals(swiftEndPoint) || "".equals(swiftContainer) || "".equals(swiftFileName)) {
             // all of these things need to be specified, for this to be a valid Swift location
             // identifier.
-            return null;
+            throw new IOException("SwiftAccessIO: invalid swift storage token: "+storageIdentifier);
         }
         
+        // Authenticate with Swift: 
         
+        Account account = authenticateWithSwift(swiftEndPoint);
+        
+        
+        Container dataContainer = account.getContainer(swiftContainer);
+        if (!dataContainer.exists()) {
+            throw new IOException("SwiftAccessIO: container "+swiftContainer+" does not exist."); 
+        }
+        
+        StoredObject fileObject = dataContainer.getObject(swiftFileName);
+        
+        if (!fileObject.exists()) {
+            throw new IOException("SwiftAccessIO: File object "+swiftFileName+" does not exist (Dataverse datafile id: "+this.getDataFile().getId());
+        }
+        
+        in = fileObject.downloadObjectAsInputStream();
+        this.setSize(fileObject.getContentLength());
+        
+        
+        return in;
+    }
+    
+    Account authenticateWithSwift(String swiftEndPoint) throws IOException {
         String domainRoot = System.getProperties().getProperty("com.sun.aas.instanceRoot");
         String swiftPropertiesFile = domainRoot+File.separator+"config"+File.separator+"swift.properties";
         
         Properties p=new Properties();
-        try { 
-            p.load(new FileInputStream(new File(swiftPropertiesFile)));
-        } catch (IOException ioex) {
-            // Missing/corrupted swift properties file, probably. 
-            // We'll have more diagnostics for this in the future. 
-            return null; 
-        }
+        p.load(new FileInputStream(new File(swiftPropertiesFile)));
+        // (this will throw an IOException, if the swift properties file
+        // is missing or corrupted)
         
         String swiftEndPointAuthUrl = p.getProperty("swift.auth_url."+swiftEndPoint);
         String swiftEndPointUsername = p.getProperty("swift.username."+swiftEndPoint);
@@ -242,7 +261,7 @@ public class SwiftAccessIO extends DataFileIO {
                 "".equals(swiftEndPointAuthUrl) || "".equals(swiftEndPointUsername) || "".equals(swiftEndPointSecretKey)) {
             // again, all of these things need to be defined, for this Swift endpoint to be 
             // accessible.
-            return null;
+            throw new IOException("SwiftAccessIO: no configuration available for endpoint "+swiftEndPoint); 
         }
         
         
@@ -258,28 +277,11 @@ public class SwiftAccessIO extends DataFileIO {
                     .setAuthenticationMethod(BASIC)
                     .createAccount();
         } catch (Exception ex) {
-            return null; 
+            throw new IOException("SwiftAccessIO: failed to authenticate for the end point "+swiftEndPoint);
         }
         
-        Container dataContainer = account.getContainer(swiftContainer);
-        if (!dataContainer.exists()) {
-            return null; 
-        }
-        
-        StoredObject fileObject = dataContainer.getObject(swiftFileName);
-        
-        if (!fileObject.exists()) {
-            return null; 
-        }
-        
-        in = fileObject.downloadObjectAsInputStream();
-        this.setSize(fileObject.getContentLength());
-        
-        
-        return in;
+        return account;
     }
-    
-    
     
     private boolean isWriteAccessRequested (DataAccessOption... options) throws IOException {
 
