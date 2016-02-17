@@ -31,18 +31,18 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     solr.vm.synced_folder "../../../", "/dataverse"
     
     unless defined? SOLR_VERSION
-      ## Currently Supported Solr Versions
-      #SOLR_VERSION = '4.6.1'
-
+      ## Currently Supported 'fully tested' Solr Versions
+      
       ## Working but not fully tested Solr Versions
       SOLR_VERSION = '5.4.1'
       
       ## Solr versions with known incompatibilities
-      #DONT_USE_SOLR_VERSION = '3.6'
+      #DONT_USE_SOLR_VERSION =
     end
 
     solr.vm.provision "installSolrService", type: "shell",
-      path: "./install-solr-service.sh", args: "-s #{SOLR_VERSION} -v #{OUTPUT_VERBOSITY}"
+      path: "./install-solr-service.sh", args: "-s #{SOLR_VERSION} -v #{OUTPUT_VERBOSITY} -x #{STATIC_IP_SOLR}"
+    solr.vm.provision "killFirewall", type: "shell", inline: "service iptables stop"
 
   end
 
