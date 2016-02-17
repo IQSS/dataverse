@@ -22,7 +22,7 @@ fi
 
 $_IF_TERSE echo "Preparing to install dataverse using verbosity level ${OUTPUT_VERBOSITY}"
 
-INSTALL_ARGS="--force -y --hostname $OPT_h --gfdir $OPT_g --mailserver $OPT_m"
+INSTALL_ARGS="--force -y --hostname $OPT_h --gfdir $OPT_g --mailserver $OPT_m --verbosity $OUTPUT_VERBOSITY"
 if [ -z "$OPT_z" ]; then
   INSTALL_ARGS="$INSTALL_ARGS --solrcollection $OPT_c --solrport $OPT_p --solrhost $OPT_s --solrurlschema $OPT_u"
 else
