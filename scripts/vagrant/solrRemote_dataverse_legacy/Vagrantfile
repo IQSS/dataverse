@@ -35,7 +35,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     end
     
     solr.vm.provision "installSolr", type: "shell",
-      path: "./setup-solr.sh", args: "-s #{SOLR_VERSION} -v #{OUTPUT_VERBOSITY}"
+      path: "./install-solr.sh", args: "-s #{SOLR_VERSION} -v #{OUTPUT_VERBOSITY}"
     solr.vm.provision "killFirewall", type: "shell", inline: "service iptables stop"
 
   end
