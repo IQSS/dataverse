@@ -1129,7 +1129,7 @@ unless ( -d "data" && -f "setup-datasetfields.sh" && -f "setup-users.sh" && -f "
 }
 
 print "Executing script setup-all.sh...\n";
-my $SETUP_OPTS = "-v ${verbosity} -h '" . $CONFIG_DEFAULTS{'HOST_DNS_ADDRESS'} . "' -c '" . $CONFIG_DEFAULTS{'SOLR_COLLECTION'} . "'";
+my $SETUP_OPTS = "-v '${verbosity}' -h '" . $CONFIG_DEFAULTS{'HOST_DNS_ADDRESS'} . "' -c '" . $CONFIG_DEFAULTS{'SOLR_COLLECTION'} . "'";
 if ($useSolrCloudWithZookeeper) {
   $SETUP_OPTS .= " -z '" . $CONFIG_DEFAULTS{'SOLR_ZOOKEEPER'} . "'";
 }else{
