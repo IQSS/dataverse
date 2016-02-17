@@ -426,6 +426,20 @@ public class WorldMapRelatedData extends AbstractApiBean {
         // (4) Roll it all up in a JSON response
         final JsonObjectBuilder jsonData = Json.createObjectBuilder();
         
+        //------------------------------------
+        // Type of file, currently:
+        //  - shapefile or 
+        //  - tabular file (.tab) with geospatial tag
+        //------------------------------------
+        if (dfile.isShapefileType()){
+            jsonData.add("mapping_type", "shapefile");
+        }else if (dfile.isTabularData()){
+            jsonData.add("mapping_type", "tabular");        
+        }else{
+            logger.log(Level.SEVERE, "This was neither a Shapefile nor a Tabular data file.  DataFile id: " + dfile.getId());
+            return errorResponse( Response.Status.BAD_REQUEST, "Sorry! This file does not have mapping data. Please contact the Dataverse administrator. DataFile id: " + dfile.getId()); 
+        }
+    
         
         //------------------------------------
         // DataverseUser Info
