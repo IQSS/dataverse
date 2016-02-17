@@ -64,14 +64,14 @@ $_IF_VERBOSE chkconfig postgresql on
 
 #### Install glassfish ####
 GLASSFISH_USER=glassfish
+$_IF_TERSE echo "Installing glassfish-4.1"
+$_IF_VERBOSE echo "Ensuring Unix user '$GLASSFISH_USER' exists"
 DOWNLOAD_DIR='/dataverse/downloads'
 GLASSFISH_ZIP="$DOWNLOAD_DIR/glassfish-4.1.zip"
 SOLR_TGZ="$DOWNLOAD_DIR/solr-4.6.0.tgz"
 WELD_PATCH="$DOWNLOAD_DIR/weld-osgi-bundle-2.2.10.Final-glassfish4.jar"
-GLASSFISH_USER_HOME=~glassfish
+eval GLASSFISH_USER_HOME=~${GLASSFISH_USER}
 GLASSFISH_ROOT=$GLASSFISH_USER_HOME/glassfish4
-$_IF_TERSE echo "Installing glassfish-4.1"
-$_IF_VERBOSE echo "Ensuring Unix user '$GLASSFISH_USER' exists"
 $_IF_VERBOSE useradd $GLASSFISH_USER || :
 if [ ! -f $GLASSFISH_ZIP ] || [ ! -f $SOLR_TGZ ]; then
     $_IF_VERBOSE echo "Couldn't find $GLASSFISH_ZIP or $SOLR_TGZ! Running download script...."
