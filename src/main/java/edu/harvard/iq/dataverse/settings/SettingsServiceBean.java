@@ -154,7 +154,7 @@ public class SettingsServiceBean {
         /** Optionally override http://guides.dataverse.org . */
         GuidesBaseUrl,
         /* zip download size limit */
-        ZipDonwloadLimit,
+        ZipDownloadLimit,
         /* zip upload number of files limit */
         ZipUploadFilesLimit,
         /* Size limits for generating thumbnails on the fly */
