@@ -61,6 +61,12 @@ public class SystemConfig {
     private String saneDefaultForSolrHostColonPort = "localhost:8983";
 
     /**
+     * A common place to find the String for a sane Solr service/collection
+     * combination.
+     */
+    private String saneDefaultForSolrServiceSlashCollection = "/solr/collection1";
+
+    /**
      * The default number of datafiles that we allow to be created through 
      * zip file upload.
      */
@@ -204,7 +210,11 @@ public class SystemConfig {
         return solrHostColonPort;
     }
     
-    
+    public String getSolrServiceSlashCollection() {
+        String solrServiceSlashCollection = settingsService.getValueForKey(SettingsServiceBean.Key.SolrServiceSlashCollection, saneDefaultForSolrServiceSlashCollection);
+        return solrServiceSlashCollection;
+    }
+        
     
     /**
      * The number of minutes for which a password reset token is valid. Can be
