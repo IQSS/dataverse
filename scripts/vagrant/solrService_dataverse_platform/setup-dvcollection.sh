@@ -82,7 +82,11 @@ else
   return 1;
 fi
 
-$_IF_VERBOSE "found at ${DVCOLLECTION_CONF_DIR}
+$_IF_VERBOSE echo "found at ${DVCOLLECTION_CONF_DIR}"
+$_IF_INFO echo "Creating Solr collection ${DVCOLLECTION_NAME}"
 "$_solr" create -c ${DVCOLLECTION_NAME} -d ${DVCOLLECTION_CONF_DIR}
+
+$_IF_INFO echo "Restarting Solr Service"
+service solr restart
 
 $_IF_TERSE echo "Solr collection ${DVCOLLECTION_NAME} established"
