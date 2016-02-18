@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.util.LanguageUtil;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
@@ -19,7 +20,7 @@ import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
-import edu.harvard.iq.dataverse.search.SolrField;
+
 /**
  *
  * @author skraffmiller
@@ -81,22 +82,21 @@ public class MetadataBlock implements Serializable {
     }
 
     public String getDisplayName() {
-        SolrField solrField = new SolrField();
-    	String language = solrField.getLanguage();
+    	LanguageUtil lUtil = new LanguageUtil();
+    	String language = lUtil.getLanguage();
     	String output = "";
-    	 
-    		if(language.equals("fr"))
-    		{
-    			output =    frenchdisplayName;
-    		}
-    		else
-    		{
-    			output =   displayName;
-    		}
-    		return output ;
-    	 
-        
+
+    	if(language.equals("fr"))
+    	{
+    		output =    frenchdisplayName;
+    	}
+    	else
+    	{
+    		output =   displayName;
+    	}
+    	return output ;
     }
+
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
     }

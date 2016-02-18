@@ -1,8 +1,5 @@
 package edu.harvard.iq.dataverse.search;
 
-import java.util.Locale;
-import edu.harvard.iq.dataverse.LanguageBean;
-
 public class SolrField {
 
     private String nameSearchable;
@@ -10,23 +7,12 @@ public class SolrField {
     private SolrType solrType;
     private boolean allowedToBeMultivalued;
     private boolean facetable;
-    LanguageBean languageBean;
-    Locale locale;
-    public SolrField()
-    {
-    	languageBean = new LanguageBean();
-		locale = languageBean.getLocale();	
-    }
-    
+
     public SolrField(String name, SolrType solrType, boolean allowedToBeMultivalued, boolean facetable) {
         this.nameSearchable = name;
         this.solrType = solrType;
         this.allowedToBeMultivalued = allowedToBeMultivalued;
         this.facetable = facetable;
-        
-
-    	
-		
         if (allowedToBeMultivalued) {
             /**
              * @todo Should we expose this Solr-specific "_ss" fieldname here?
@@ -41,10 +27,6 @@ public class SolrField {
             this.nameFacetable = name + "_s";
         }
     }
-    
-    public String  getLanguage() {			
-		return locale.getLanguage() ;
-	}
 
     public String getNameSearchable() {
         return nameSearchable;
@@ -82,7 +64,7 @@ public class SolrField {
          * https://github.com/IQSS/dataverse/issues/370
          */
         STRING("string"), TEXT_EN("text_en"), INTEGER("int"), LONG("long"), DATE("text_en"), EMAIL("text_en");
-        
+
         private String type;
 
         private SolrType(String string) {

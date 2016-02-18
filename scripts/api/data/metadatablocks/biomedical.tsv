@@ -1,72 +1,72 @@
 #metadataBlock	name	dataverseAlias	displayName	frenchdisplayName													
 	biomedical		Life Sciences Metadata	Métadonnées liées aux sciences de la vie													
-#datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	showabovefold	required	parent	frenchtitle	frenchdesciption	metadatablock_id
-	studyDesignType	Design Type	Design types that are based on the overall experimental design.		text	0		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		Type de modèle	Types de modèle fondés sur le modèle expérimental général.	biomedical
-	studyFactorType	Factor Type	Factors used in the Dataset. 		text	1		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		Type de facteur	Facteurs utilisés dans l'ensemble de données.	biomedical
-	studyAssayOrganism	Organism	The taxonomic name of the organism used in the Dataset or from which the  starting biological material derives.		text	2		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		Organisme	Le nom taxonomique de l'organisme utilisé dans l'ensemble de données ou duquel le matériel biologique de départ provient.	biomedical
-	studyAssayOtherOrganism	Other Organism	If Other was selected in Organism, list any other organisms that were used in this Dataset. Terms from the NCBI Taxonomy are recommended.		text	3		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		Autre organisme	 	biomedical
-	studyAssayMeasurementType	Measurement Type	A term to qualify the endpoint, or what is being measured (e.g. gene expression profiling; protein identification). 		text	4		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		Type de mesure	Un terme pour définir le résultat final ou ce qui est mesuré (p. ex. le profilage de l'expression génétique, l'identification des protéines).	biomedical
-	studyAssayOtherMeasurmentType	Other Measurement Type	If Other was selected in Measurement Type, list any other measurement types that were used. Terms from NCBO Bioportal are recommended.		text	5		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		Autre type de mesure	Si « Autre » est sélectionné dans « Type de mesure », il faut indiquer tous les autres types de mesure utilisés. On recommande d'utiliser les termes du BioPortal NCBO.	biomedical
-	studyAssayTechnologyType	Technology Type	A term to identify the technology used to perform the measurement (e.g. DNA microarray; mass spectrometry).		text	6		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		Type de technologie	Un terme pour indiquer la technologie utilisée pour procéder à la mesure (p. ex. microréseau à ADN, spectrométrie de masse).	biomedical
-	studyAssayPlatform	Technology Platform	The manufacturer and name of the technology platform used in the assay (e.g. Bruker AVANCE).		text	7		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		Plateforme technologique	Le fabricant et le nom de la plateforme technologique utilisée dans l'essai (p. ex. AVANCE de Bruker).	biomedical
-	studyAssayCellType	Cell Type	The name of the cell line from which the source or sample derives.		text	8		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		Type de cellule	Nom de la lignée cellulaire de laquelle provient la source ou l'échantillon.	biomedical
-#controlledVocabulary	DatasetField	Value	identifier	displayOrder												Valeur	
-	studyDesignType	Case Control	EFO_0001427	0												Cas-témoin	
-	studyDesignType	Cross Sectional	EFO_0001428	1												En coupe	
-	studyDesignType	Not Specified	OTHER_DESIGN	4												Non précisé	
-	studyDesignType	Parallel Group Design	OBI_0500006	5												Modèle à groupes parallèles	
-	studyDesignType	Perturbation Design	OBI_0001033	6												Modèle des perturbations	
-	studyDesignType	Technological Design	TECH_DESIGN	8												Modèle technologique	
-	studyFactorType	Age	EFO_0000246	0												Âge	
-	studyFactorType	Biomarkers	BIOMARKERS	1												Marqueurs biologiques	
-	studyFactorType	Cell Surface Markers	CELL_SURFACE_M	2												Marqueurs de surface	
-	studyFactorType	Cell Type/Cell Line	EFO_0000324;EFO_0000322	3												Type de cellule/lignée cellulaire	
-	studyFactorType	Developmental Stage	EFO_0000399	4												Stade de développement	
-	studyFactorType	Disease State	OBI_0001293	5												État de la maladie	
-	studyFactorType	Extract Molecule	FBcv_0010001	7												Extraire la molécule	
-	studyFactorType	Genetic Characteristics	OBI_0001404	8												Caractéristiques génétiques	
-	studyFactorType	Immunoprecipitation Antibody	OBI_0000690	9												Anticorps d'immunoprécipitation	
-	studyFactorType	Organism	OBI_0100026	10												Organisme	
-	studyFactorType	Other	OTHER_FACTOR	11												Autre	
-	studyFactorType	Passages	PASSAGES_FACTOR	12												Passages	
-	studyFactorType	Platform	OBI_0000050	13												Plateforme  	
-	studyFactorType	Sex	EFO_0000695	14												Sexe	
-	studyFactorType	Strain	EFO_0005135	15												Souche	
-	studyFactorType	Time Point	EFO_0000724	16												Point dans le temps	
-	studyFactorType	Tissue Type	BTO_0001384	17												Type de tissu	
-	studyFactorType	Treatment Compound	EFO_0000369	18												Composé pour le traitement	
-	studyFactorType	Treatment Type	EFO_0000727	19												Type de traitement	
-	studyAssayMeasurementType	cell counting	ERO_0001899	0												Dénombrement cellulaire	
-	studyAssayMeasurementType	cell sorting	CHMO_0001085	1												Tri cellulaire	
-	studyAssayMeasurementType	clinical chemistry analysis	OBI_0000520	2												Analyse de la chimie clinique	
-	studyAssayMeasurementType	copy number variation profiling	OBI_0000537	3												Profilage de la variation du nombre de copies	
-	studyAssayMeasurementType	DNA methylation profiling	OBI_0000634	4												Profilage de la méthylation de l'ADN	
-	studyAssayMeasurementType	DNA methylation profiling (Bisulfite-Seq)	OBI_0000748	5												Profilage de la méthylation de l'ADN (séquençage du bisulfite)	
-	studyAssayMeasurementType	DNA methylation profiling (MeDIP-Seq)	_OBI_0000634	6												Profilage de la méthylation de l'ADN (séquençage MeDIP)	
+#datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	showabovefold	required	parent	metadatablock_id	frenchtitle	frenchdesciption
+	studyDesignType	Design Type	Design types that are based on the overall experimental design.		text	0		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		biomedical	Type de modèle	Types de modèle fondés sur le modèle expérimental général.
+	studyFactorType	Factor Type	Factors used in the Dataset. 		text	1		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		biomedical	Type de facteur	Facteurs utilisés dans l'ensemble de données.
+	studyAssayOrganism	Organism	The taxonomic name of the organism used in the Dataset or from which the  starting biological material derives.		text	2		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		biomedical	Organisme	Le nom taxonomique de l'organisme utilisé dans l'ensemble de données ou duquel le matériel biologique de départ provient.
+	studyAssayOtherOrganism	Other Organism	If Other was selected in Organism, list any other organisms that were used in this Dataset. Terms from the NCBI Taxonomy are recommended.		text	3		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		biomedical	Autre organisme	 
+	studyAssayMeasurementType	Measurement Type	A term to qualify the endpoint, or what is being measured (e.g. gene expression profiling; protein identification). 		text	4		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		biomedical	Type de mesure	Un terme pour définir le résultat final ou ce qui est mesuré (p. ex. le profilage de l'expression génétique, l'identification des protéines).
+	studyAssayOtherMeasurmentType	Other Measurement Type	If Other was selected in Measurement Type, list any other measurement types that were used. Terms from NCBO Bioportal are recommended.		text	5		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		biomedical	Autre type de mesure	Si « Autre » est sélectionné dans « Type de mesure », il faut indiquer tous les autres types de mesure utilisés. On recommande d'utiliser les termes du BioPortal NCBO.
+	studyAssayTechnologyType	Technology Type	A term to identify the technology used to perform the measurement (e.g. DNA microarray; mass spectrometry).		text	6		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		biomedical	Type de technologie	Un terme pour indiquer la technologie utilisée pour procéder à la mesure (p. ex. microréseau à ADN, spectrométrie de masse).
+	studyAssayPlatform	Technology Platform	The manufacturer and name of the technology platform used in the assay (e.g. Bruker AVANCE).		text	7		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		biomedical	Plateforme technologique	Le fabricant et le nom de la plateforme technologique utilisée dans l'essai (p. ex. AVANCE de Bruker).
+	studyAssayCellType	Cell Type	The name of the cell line from which the source or sample derives.		text	8		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		biomedical	Type de cellule	Nom de la lignée cellulaire de laquelle provient la source ou l'échantillon.
+#controlledVocabulary	DatasetField	Value	identifier	displayOrder													Valeur
+	studyDesignType	Case Control	EFO_0001427	0													Cas-témoin
+	studyDesignType	Cross Sectional	EFO_0001428	1													En coupe
+	studyDesignType	Not Specified	OTHER_DESIGN	4													Non précisé
+	studyDesignType	Parallel Group Design	OBI_0500006	5													Modèle à groupes parallèles
+	studyDesignType	Perturbation Design	OBI_0001033	6													Modèle des perturbations
+	studyDesignType	Technological Design	TECH_DESIGN	8													Modèle technologique
+	studyFactorType	Age	EFO_0000246	0													Âge
+	studyFactorType	Biomarkers	BIOMARKERS	1													Marqueurs biologiques
+	studyFactorType	Cell Surface Markers	CELL_SURFACE_M	2													Marqueurs de surface
+	studyFactorType	Cell Type/Cell Line	EFO_0000324;EFO_0000322	3													Type de cellule/lignée cellulaire
+	studyFactorType	Developmental Stage	EFO_0000399	4													Stade de développement
+	studyFactorType	Disease State	OBI_0001293	5													État de la maladie
+	studyFactorType	Extract Molecule	FBcv_0010001	7													Extraire la molécule
+	studyFactorType	Genetic Characteristics	OBI_0001404	8													Caractéristiques génétiques
+	studyFactorType	Immunoprecipitation Antibody	OBI_0000690	9													Anticorps d'immunoprécipitation
+	studyFactorType	Organism	OBI_0100026	10													Organisme
+	studyFactorType	Other	OTHER_FACTOR	11													Autre
+	studyFactorType	Passages	PASSAGES_FACTOR	12													Passages
+	studyFactorType	Platform	OBI_0000050	13													Plateforme  
+	studyFactorType	Sex	EFO_0000695	14													Sexe
+	studyFactorType	Strain	EFO_0005135	15													Souche
+	studyFactorType	Time Point	EFO_0000724	16													Point dans le temps
+	studyFactorType	Tissue Type	BTO_0001384	17													Type de tissu
+	studyFactorType	Treatment Compound	EFO_0000369	18													Composé pour le traitement
+	studyFactorType	Treatment Type	EFO_0000727	19													Type de traitement
+	studyAssayMeasurementType	cell counting	ERO_0001899	0													Dénombrement cellulaire
+	studyAssayMeasurementType	cell sorting	CHMO_0001085	1													Tri cellulaire
+	studyAssayMeasurementType	clinical chemistry analysis	OBI_0000520	2													Analyse de la chimie clinique
+	studyAssayMeasurementType	copy number variation profiling	OBI_0000537	3													Profilage de la variation du nombre de copies
+	studyAssayMeasurementType	DNA methylation profiling	OBI_0000634	4													Profilage de la méthylation de l'ADN
+	studyAssayMeasurementType	DNA methylation profiling (Bisulfite-Seq)	OBI_0000748	5													Profilage de la méthylation de l'ADN (séquençage du bisulfite)
+	studyAssayMeasurementType	DNA methylation profiling (MeDIP-Seq)	_OBI_0000634	6													Profilage de la méthylation de l'ADN (séquençage MeDIP)
 	studyAssayMeasurementType	drug susceptibility	_IDO_0000469	7													
-	studyAssayMeasurementType	environmental gene survey	ENV_GENE_SURVEY	8												Enquête génomique environnementale	
-	studyAssayMeasurementType	genome sequencing	ERO_0001183	9												Séquençage génomique	
-	studyAssayMeasurementType	hematology	OBI_0000630	10												Hématologie	
-	studyAssayMeasurementType	histology	OBI_0600020	11												Histologie	
-	studyAssayMeasurementType	Histone Modification (ChIP-Seq)	OBI_0002017	12												Modification des histones (séquençage ChIP)	
-	studyAssayMeasurementType	loss of heterozygosity profiling	SO_0001786	13												Profilage de la perte d'hétérozygotie	
-	studyAssayMeasurementType	metabolite profiling	OBI_0000366	14												Profilage des métabolites 	
-	studyAssayMeasurementType	metagenome sequencing	METAGENOME_SEQ	15												Séquençage des métagénomes	
-	studyAssayMeasurementType	protein expression profiling	OBI_0000615	16												Profilage de l'expression des protéines	
-	studyAssayMeasurementType	protein identification	ERO_0000346	17												Identification des protéines	
-	studyAssayMeasurementType	protein-DNA binding site identification	PROTEIN_DNA_BINDING	18												Identification du site de fixation de la protéine-ADN	
-	studyAssayMeasurementType	protein-protein interaction detection	OBI_0000288	19												Détection de l'interaction protéine-protéine	
-	studyAssayMeasurementType	protein-RNA binding (RIP-Seq)	PROTEIN_RNA_BINDING	20												Fixation de la protéine-ARN (séquençage RIP)	
-	studyAssayMeasurementType	SNP analysis	OBI_0000435	21												Analyse SNP	
+	studyAssayMeasurementType	environmental gene survey	ENV_GENE_SURVEY	8													Enquête génomique environnementale
+	studyAssayMeasurementType	genome sequencing	ERO_0001183	9													Séquençage génomique
+	studyAssayMeasurementType	hematology	OBI_0000630	10													Hématologie
+	studyAssayMeasurementType	histology	OBI_0600020	11													Histologie
+	studyAssayMeasurementType	Histone Modification (ChIP-Seq)	OBI_0002017	12													Modification des histones (séquençage ChIP)
+	studyAssayMeasurementType	loss of heterozygosity profiling	SO_0001786	13													Profilage de la perte d'hétérozygotie
+	studyAssayMeasurementType	metabolite profiling	OBI_0000366	14													Profilage des métabolites 
+	studyAssayMeasurementType	metagenome sequencing	METAGENOME_SEQ	15													Séquençage des métagénomes
+	studyAssayMeasurementType	protein expression profiling	OBI_0000615	16													Profilage de l'expression des protéines
+	studyAssayMeasurementType	protein identification	ERO_0000346	17													Identification des protéines
+	studyAssayMeasurementType	protein-DNA binding site identification	PROTEIN_DNA_BINDING	18													Identification du site de fixation de la protéine-ADN
+	studyAssayMeasurementType	protein-protein interaction detection	OBI_0000288	19													Détection de l'interaction protéine-protéine
+	studyAssayMeasurementType	protein-RNA binding (RIP-Seq)	PROTEIN_RNA_BINDING	20													Fixation de la protéine-ARN (séquençage RIP)
+	studyAssayMeasurementType	SNP analysis	OBI_0000435	21													Analyse SNP
 	studyAssayMeasurementType	targeted sequencing	TARGETED_SEQ	22													
-	studyAssayMeasurementType	transcription factor binding (ChIP-Seq)	OBI_0002018	23												Fixation du facteur de transcription (séquençage ChIP)	
-	studyAssayMeasurementType	transcription factor binding site identification	OBI_0000291	24												Identification du site de fixation du facteur de transcription	
-	studyAssayMeasurementType	transcription profiling	OBI_0000424	25												Profilage transcriptionnel	
-	studyAssayMeasurementType	transcription profiling	EFO_0001032	26												Profilage transcriptionnel	
-	studyAssayMeasurementType	transcription profiling (Microarray)	TRANSCRIPTION_PROF	27												Profilage transcriptionnel (microréseau)	
-	studyAssayMeasurementType	transcription profiling (RNA-Seq)	OBI_0001271	28												Profilage transcriptionnel (séquençage de l'ARN)	
-	studyAssayMeasurementType	TRAP translational profiling	TRAP_TRANS_PROF	29												Profilage transcriptionnel	
-	studyAssayMeasurementType	Other	OTHER_MEASUREMENT	30												Autre	
+	studyAssayMeasurementType	transcription factor binding (ChIP-Seq)	OBI_0002018	23													Fixation du facteur de transcription (séquençage ChIP)
+	studyAssayMeasurementType	transcription factor binding site identification	OBI_0000291	24													Identification du site de fixation du facteur de transcription
+	studyAssayMeasurementType	transcription profiling	OBI_0000424	25													Profilage transcriptionnel
+	studyAssayMeasurementType	transcription profiling	EFO_0001032	26													Profilage transcriptionnel
+	studyAssayMeasurementType	transcription profiling (Microarray)	TRANSCRIPTION_PROF	27													Profilage transcriptionnel (microréseau)
+	studyAssayMeasurementType	transcription profiling (RNA-Seq)	OBI_0001271	28													Profilage transcriptionnel (séquençage de l'ARN)
+	studyAssayMeasurementType	TRAP translational profiling	TRAP_TRANS_PROF	29													Profilage transcriptionnel
+	studyAssayMeasurementType	Other	OTHER_MEASUREMENT	30													Autre
 	studyAssayOrganism	Arabidopsis thaliana	NCBITaxon_3702	0													
 	studyAssayOrganism	Bos taurus	NCBITaxon_9913	1													
 	studyAssayOrganism	Caenorhabditis elegans	NCBITaxon_6239	2													
@@ -81,22 +81,22 @@
 	studyAssayOrganism	Mycobacterium africanum	NCBITaxon_33894	11													
 	studyAssayOrganism	Mycobacterium canetti	NCBITaxon_78331	12													
 	studyAssayOrganism	Mycobacterium tuberculosis	NCBITaxon_1773	13													
-	studyAssayOrganism	Mycoplasma pneumoniae	NCBITaxon_2104	14												Saccharomyces cerevisiae (levure de bière)	
+	studyAssayOrganism	Mycoplasma pneumoniae	NCBITaxon_2104	14													Saccharomyces cerevisiae (levure de bière)
 	studyAssayOrganism	Oryza sativa	NCBITaxon_4530	15													
 	studyAssayOrganism	Plasmodium falciparum	NCBITaxon_5833	16													
 	studyAssayOrganism	Pneumocystis carinii	NCBITaxon_4754	17													
 	studyAssayOrganism	Rattus norvegicus	NCBITaxon_10116	18													
-	studyAssayOrganism	Saccharomyces cerevisiae (brewer's yeast)	NCBITaxon_4932	19												Autre	
-	studyAssayOrganism	Schizosaccharomyces pombe	NCBITaxon_4896	20												Détermination des séquences nucléotidiques	
-	studyAssayOrganism	Takifugu rubripes	NCBITaxon_31033	21												Cytométrie de flux	
-	studyAssayOrganism	Xenopus laevis	NCBITaxon_8355	22												Microréseau à ADN	
-	studyAssayOrganism	Zea mays	NCBITaxon_4577	23												Spectrométrie de masse	
-	studyAssayOrganism	Other	OTHER_TAXONOMY	24												Électrophorèse en gel	
-	studyAssayTechnologyType	culture based drug susceptibility testing, single concentration	CULTURE_DRUG_TEST_SINGLE	0												Microréseau de protéines	
-	studyAssayTechnologyType	culture based drug susceptibility testing, two concentrations	CULTURE_DRUG_TEST_TWO	1												PCR en temps réel	
-	studyAssayTechnologyType	culture based drug susceptibility testing, three or more concentrations (minimium inhibitory concentration measurement)	CULTURE_DRUG_TEST_THREE	2												Spectroscopie RMN	
-	studyAssayTechnologyType	DNA microarray	OBI_0400148	3												Aucune technologie requise	
-	studyAssayTechnologyType	flow cytometry	OBI_0000916	4												Autre	
+	studyAssayOrganism	Saccharomyces cerevisiae (brewer's yeast)	NCBITaxon_4932	19													Autre
+	studyAssayOrganism	Schizosaccharomyces pombe	NCBITaxon_4896	20													Détermination des séquences nucléotidiques
+	studyAssayOrganism	Takifugu rubripes	NCBITaxon_31033	21													Cytométrie de flux
+	studyAssayOrganism	Xenopus laevis	NCBITaxon_8355	22													Microréseau à ADN
+	studyAssayOrganism	Zea mays	NCBITaxon_4577	23													Spectrométrie de masse
+	studyAssayOrganism	Other	OTHER_TAXONOMY	24													Électrophorèse en gel
+	studyAssayTechnologyType	culture based drug susceptibility testing, single concentration	CULTURE_DRUG_TEST_SINGLE	0													Microréseau de protéines
+	studyAssayTechnologyType	culture based drug susceptibility testing, two concentrations	CULTURE_DRUG_TEST_TWO	1													PCR en temps réel
+	studyAssayTechnologyType	culture based drug susceptibility testing, three or more concentrations (minimium inhibitory concentration measurement)	CULTURE_DRUG_TEST_THREE	2													Spectroscopie RMN
+	studyAssayTechnologyType	DNA microarray	OBI_0400148	3													Aucune technologie requise
+	studyAssayTechnologyType	flow cytometry	OBI_0000916	4													Autre
 	studyAssayTechnologyType	gel electrophoresis	OBI_0600053	5													
 	studyAssayTechnologyType	mass spectrometry	OBI_0000470	6													
 	studyAssayTechnologyType	NMR spectroscopy	OBI_0000623	7													
@@ -292,4 +292,4 @@
 																	
 																	
 																	
-																Autre	
+																	Autre

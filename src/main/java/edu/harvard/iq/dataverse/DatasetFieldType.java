@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.search.SolrField;
+import edu.harvard.iq.dataverse.util.LanguageUtil;
 import java.util.Collection;
 
 import java.io.Serializable;
@@ -189,8 +190,8 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     }
 
     public String getTitle() {
-    	SolrField solrField = new SolrField();
-     	String language = solrField.getLanguage();
+    	LanguageUtil lUtil = new LanguageUtil();
+    	String language = lUtil.getLanguage();
     	String output = "";
 
     	if(language.equals("fr"))
@@ -226,8 +227,8 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
 
     public String getDescription() {
     	
-    	SolrField solrField = new SolrField();
-     	String language = solrField.getLanguage();
+    	LanguageUtil lUtil = new LanguageUtil();
+    	String language = lUtil.getLanguage();
     	String output = "";
 
     	if(language.equals("fr"))
@@ -525,8 +526,8 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     }
     
     public String getDisplayName() {
-    	 SolrField solrField = new SolrField();
-     	String language = solrField.getLanguage();
+    	LanguageUtil lUtil = new LanguageUtil();
+    	String language = lUtil.getLanguage();
     	String output = "";
     	if (isHasParent() && !parentDatasetFieldType.getTitle().equals(title)) {
     		if(language.equals("fr"))

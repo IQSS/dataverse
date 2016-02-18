@@ -51,7 +51,14 @@
                                                   value="#{managePermissionsPage.selectedRoleId}"
                                                   required="#{param['DO_ASSIGN_VALIDATION']}"
                                                   requiredMessage="#{bundle['dataverse.permissions.usersOrGroups.assignDialog.role.requiredMsg']}">
-                                    <f:selectItems value="#{managePermissionsPage.availableRoles}" var="role" itemValue="#{role.id}" itemLabel="#{(bundle [role.name].startsWith("???")) ? role.name : bundle [role.name]}"/> <!-- Hack to translate values from the database -->
+                                   <f:selectItems 
+									value="#{managePermissionsPage.availableRoles}" 
+									var="role" 
+									itemValue="#{role.id}" 
+									itemLabel="#{bundle[role.name]}"/> 
+									
+									
+                                   
                                     <p:ajax update="roleDetails" process="@this"/>
                                 </p:selectOneRadio>
                                 <p:message for="assignRoleRadios" display="text"/>

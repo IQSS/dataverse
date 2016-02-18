@@ -338,14 +338,14 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
         if (!StringUtils.isEmpty(values[14])) {
             dsf.setParentDatasetFieldType(datasetFieldService.findByName(values[14]));
         }
-        dsf.setMetadataBlock(dataverseService.findMDBByName(values[17]));
-        if(values[15] != null)
-        {
-        	dsf.setFrenchTitle(values[15]);
-        }
+        dsf.setMetadataBlock(dataverseService.findMDBByName(values[15]));
         if(values[16] != null)
         {
-        	dsf.setFrenchDescription(values[16]);
+        	dsf.setFrenchTitle(values[16]);
+        }
+        if(values[17] != null)
+        {
+        	dsf.setFrenchDescription(values[17]);
         }
         datasetFieldService.save(dsf);
         return dsf.getName();
@@ -377,7 +377,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
         cvv.setStrValue(values[2]);
         cvv.setIdentifier(values[3]);
         cvv.setDisplayOrder(Integer.parseInt(values[4]));
-        cvv.setFrenchStrValue(values[16]);
+        cvv.setFrenchStrValue(values[17]);
         datasetFieldService.save(cvv);
         return cvv.getStrValue();
     }

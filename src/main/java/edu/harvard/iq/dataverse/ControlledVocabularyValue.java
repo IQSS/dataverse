@@ -6,7 +6,7 @@
 
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.search.SolrField;
+import edu.harvard.iq.dataverse.util.LanguageUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -67,8 +67,8 @@ public class ControlledVocabularyValue implements Serializable  {
     
     public String getStrValue() {
         
-        SolrField solrField = new SolrField();
-     	String language = solrField.getLanguage();
+    	LanguageUtil lUtil = new LanguageUtil();
+    	String language = lUtil.getLanguage();
     	String output = "";
 
     	if(language.equals("fr"))

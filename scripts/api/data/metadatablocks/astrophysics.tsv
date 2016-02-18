@@ -1,54 +1,54 @@
 #metadataBlock	name    dataverseAlias    displayName			frenchdisplayName													
-	astrophysics		Astronomy and Astrophysics Metadata	Métadonnées d'astronomie et d'astrophysique													
-#datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	showabovefold	required	parent	frenchtitle	frenchdescription	metadatablock_id
-	astroType	Type	The nature or genre of the content of the files in the dataset.		text	0		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		Type	La nature ou le genre du contenu des fichiers dans l'ensemble de données.	astrophysics
-	astroFacility	Facility	The observatory or facility where the data was obtained. 		text	1		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		Installation	L'observatoire ou l'installation où les données ont été obtenues.	astrophysics
-	astroInstrument	Instrument	The instrument used to collect the data.		text	2		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		Instrument	L'instrument utilisé pour recueillir les données.	astrophysics
-	astroObject	Object	Astronomical Objects represented in the data (Given as SIMBAD recognizable names preferred).		text	3		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		Objet	"Les objets astronomiques représentés dans les données (Il faut donner, de préférence, des noms reconnaissables par SIMBAD.)"	astrophysics
-	resolution.Spatial	Spatial Resolution	"The spatial (angular) resolution that is typical of the observations, in decimal degrees."		text	4		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		Résolution spatiale	"La résolution spatiale (angulaire) typique des observations, en degrés décimaux."	astrophysics
-	resolution.Spectral	Spectral Resolution	"The spectral resolution that is typical of the observations, given as the ratio Î»/Î”Î»."		text	5		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		Résolution spectrale	"La résolution spectrale typique des observations, indiquée sous forme de ratio  ?/??."	astrophysics
-	resolution.Temporal	Time Resolution	"The temporal resolution that is typical of the observations, given in seconds."		text	6		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		Résolution temporelle	"La résolution temporelle typique des observations, indiquée en secondes."	astrophysics
-	coverage.Spectral.Bandpass	Bandpass	Conventional bandpass name		text	7		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		Largeur de bande	Nom courant de la largeur de bande	astrophysics
-	coverage.Spectral.CentralWavelength	Central Wavelength (m)	"The central wavelength of the spectral bandpass, in meters."	Enter a floating-point number.	float	8		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		Longueur d'onde centrale (m)	"La longueur d'onde centrale de la largeur de bande spectrale, en mètres."	astrophysics
-	coverage.Spectral.Wavelength	Wavelength Range	The minimum and maximum wavelength of the spectral bandpass.	Enter a floating-point number.	none	9		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		Gamme de longueurs d'onde	La longueur d'onde minimale et maximale de la largeur de bande spectrale.	astrophysics
-	coverage.Spectral.MinimumWavelength	Minimum (m)	"The minimum wavelength of the spectral bandpass, in meters."	Enter a floating-point number.	float	10		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	coverage.Spectral.Wavelength	Minimum (m)	"La longueur d'onde minimale de la largeur de bande spectrale, en mètres."	astrophysics
-	coverage.Spectral.MaximumWavelength	Maximum (m)	"The maximum wavelength of the spectral bandpass, in meters."	Enter a floating-point number.	float	11		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	coverage.Spectral.Wavelength	Maximum (m)	"La longueur d'onde maximale de la largeur de bande spectrale, en mètres."	astrophysics
-	coverage.Temporal	Dataset Date Range	 Time period covered by the data.		none	12		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		Période de l'ensemble de données	Période visée par les données.	astrophysics
-	coverage.Temporal.StartTime	Start	Dataset Start Date	YYYY-MM-DD	date	13		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	coverage.Temporal	Début	Date de début de l'ensemble de données	astrophysics
-	coverage.Temporal.StopTime	End	Dataset End Date	YYYY-MM-DD	date	14		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	coverage.Temporal	Fin	Date de fin de l'ensemble de données	astrophysics
-	coverage.Spatial	Sky Coverage	The sky coverage of the data object.		text	15		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		Partie du ciel couverte	Partie du ciel couverte par l'objet.	astrophysics
-	coverage.Depth	Depth Coverage	"The (typical) depth coverage, or sensitivity, of the data object in Jy."	Enter a floating-point number.	float	16		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		Étendue	L'étendue (typique) ou sensibilité de l'objet de données en Jy.	astrophysics
-	coverage.ObjectDensity	Object Density	"The (typical) density of objects, catalog entries, telescope pointings, etc., on the sky, in number per square degree."	Enter a floating-point number.	float	17		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		Densité de l'objet	"La densité (typique) des objets, des entrées du catalogue, des visées du télescope, etc. dans le ciel, en chiffres par degré carré."	astrophysics
-	coverage.ObjectCount	Object Count	"The total number of objects, catalog entries, etc., in the data object."	Enter an integer.	int	18		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		Nombre d'objets	"Le nombre total d'objets, d'entrées au catalogue, etc. dans l'objet de données."	astrophysics
-	coverage.SkyFraction	Fraction of Sky	"The fraction of the sky represented in the observations, ranging from 0 to 1."	Enter a floating-point number.	float	19		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		Fraction de ciel	"La fraction de ciel représentée dans les observations, variant de 0 à 1."	astrophysics
-	coverage.Polarization	Polarization	The polarization coverage		text	20		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		Polarisation	La couverture de la polarisation	astrophysics
-	redshiftType	RedshiftType	"RedshiftType string C ""Redshift""; or ""Optical"" or ""Radio"" definitions of Doppler velocity used in the data object."		text	21		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TypeDeDécalageVersLeRouge	La chaîne TypeDeDécalageVersLeRouge C « décalage vers le rouge » ou les définitions  « optiques » ou « radio » de la vitesse Doppler utilisées dans l'objet de données.	astrophysics
-	resolution.Redshift	Redshift Resolution	The resolution in redshift (unitless) or Doppler velocity (km/s) in the data object.	Enter a floating-point number.	float	22		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		Résolution du décalage vers le rouge	La résolution en décalage vers le rouge (sans unité) ou la vitesse Doppler (km/s) dans l'objet de données.	astrophysics
-	coverage.RedshiftValue	Redshift Value	The value of the redshift (unitless) or Doppler velocity (km/s in the data object.	Enter a floating-point number.	float	23		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		Valeur du décalage vers le rouge	La valeur du décalage vers le rouge (sans unité) ou la vitesse Doppler (km/s dans l'objet de données).	astrophysics
-	coverage.Redshift.MinimumValue	Minimum	The minimum value of the redshift (unitless) or Doppler velocity (km/s in the data object.	Enter a floating-point number.	float	24		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	coverage.RedshiftValue	Minimum  	La valeur minimale du décalage vers le rouge (sans unité) ou la vitesse Doppler (km/s dans l'objet de données).	astrophysics
-	coverage.Redshift.MaximumValue	Maximum	The maximum value of the redshift (unitless) or Doppler velocity (km/s in the data object.	Enter a floating-point number.	float	25		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	coverage.RedshiftValue	Maximum  	La valeur maximale du décalage vers le rouge (sans unité) ou la vitesse Doppler (km/s dans l'objet de données).	astrophysics
+	astrophysics		Astronomy and Astrophysics Metadata	Mï¿½tadonnï¿½es d'astronomie et d'astrophysique													
+#datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	showabovefold	required	parent	metadatablock_id	frenchtitle	frenchdescription
+	astroType	Type	The nature or genre of the content of the files in the dataset.		text	0		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		astrophysics	Type	La nature ou le genre du contenu des fichiers dans l'ensemble de donnï¿½es.
+	astroFacility	Facility	The observatory or facility where the data was obtained. 		text	1		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		astrophysics	Installation	L'observatoire ou l'installation oï¿½ les donnï¿½es ont ï¿½tï¿½ obtenues.
+	astroInstrument	Instrument	The instrument used to collect the data.		text	2		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		astrophysics	Instrument	L'instrument utilisï¿½ pour recueillir les donnï¿½es.
+	astroObject	Object	Astronomical Objects represented in the data (Given as SIMBAD recognizable names preferred).		text	3		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		astrophysics	Objet	Les objets astronomiques reprï¿½sentï¿½s dans les donnï¿½es (Il faut donner, de prï¿½fï¿½rence, des noms reconnaissables par SIMBAD.)
+	resolution.Spatial	Spatial Resolution	The spatial (angular) resolution that is typical of the observations, in decimal degrees.		text	4		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		astrophysics	Rï¿½solution spatiale	La rï¿½solution spatiale (angulaire) typique des observations, en degrï¿½s dï¿½cimaux.
+	resolution.Spectral	Spectral Resolution	The spectral resolution that is typical of the observations, given as the ratio Î»/Î”Î».		text	5		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		astrophysics	Rï¿½solution spectrale	La rï¿½solution spectrale typique des observations, indiquï¿½e sous forme de ratio  ?/??.
+	resolution.Temporal	Time Resolution	The temporal resolution that is typical of the observations, given in seconds.		text	6		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		astrophysics	Rï¿½solution temporelle	La rï¿½solution temporelle typique des observations, indiquï¿½e en secondes.
+	coverage.Spectral.Bandpass	Bandpass	Conventional bandpass name		text	7		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		astrophysics	Largeur de bande	Nom courant de la largeur de bande
+	coverage.Spectral.CentralWavelength	Central Wavelength (m)	The central wavelength of the spectral bandpass, in meters.	Enter a floating-point number.	float	8		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		astrophysics	Longueur d'onde centrale (m)	La longueur d'onde centrale de la largeur de bande spectrale, en mï¿½tres.
+	coverage.Spectral.Wavelength	Wavelength Range	The minimum and maximum wavelength of the spectral bandpass.	Enter a floating-point number.	none	9		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		astrophysics	Gamme de longueurs d'onde	La longueur d'onde minimale et maximale de la largeur de bande spectrale.
+	coverage.Spectral.MinimumWavelength	Minimum (m)	The minimum wavelength of the spectral bandpass, in meters.	Enter a floating-point number.	float	10		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	coverage.Spectral.Wavelength	astrophysics	Minimum (m)	La longueur d'onde minimale de la largeur de bande spectrale, en mï¿½tres.
+	coverage.Spectral.MaximumWavelength	Maximum (m)	The maximum wavelength of the spectral bandpass, in meters.	Enter a floating-point number.	float	11		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	coverage.Spectral.Wavelength	astrophysics	Maximum (m)	La longueur d'onde maximale de la largeur de bande spectrale, en mï¿½tres.
+	coverage.Temporal	Dataset Date Range	 Time period covered by the data.		none	12		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		astrophysics	Pï¿½riode de l'ensemble de donnï¿½es	Pï¿½riode visï¿½e par les donnï¿½es.
+	coverage.Temporal.StartTime	Start	Dataset Start Date	YYYY-MM-DD	date	13		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	coverage.Temporal	astrophysics	Dï¿½but	Date de dï¿½but de l'ensemble de donnï¿½es
+	coverage.Temporal.StopTime	End	Dataset End Date	YYYY-MM-DD	date	14		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	coverage.Temporal	astrophysics	Fin	Date de fin de l'ensemble de donnï¿½es
+	coverage.Spatial	Sky Coverage	The sky coverage of the data object.		text	15		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		astrophysics	Partie du ciel couverte	Partie du ciel couverte par l'objet.
+	coverage.Depth	Depth Coverage	The (typical) depth coverage, or sensitivity, of the data object in Jy.	Enter a floating-point number.	float	16		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		astrophysics	ï¿½tendue	L'ï¿½tendue (typique) ou sensibilitï¿½ de l'objet de donnï¿½es en Jy.
+	coverage.ObjectDensity	Object Density	The (typical) density of objects, catalog entries, telescope pointings, etc., on the sky, in number per square degree.	Enter a floating-point number.	float	17		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		astrophysics	Densitï¿½ de l'objet	La densitï¿½ (typique) des objets, des entrï¿½es du catalogue, des visï¿½es du tï¿½lescope, etc. dans le ciel, en chiffres par degrï¿½ carrï¿½.
+	coverage.ObjectCount	Object Count	The total number of objects, catalog entries, etc., in the data object.	Enter an integer.	int	18		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		astrophysics	Nombre d'objets	Le nombre total d'objets, d'entrï¿½es au catalogue, etc. dans l'objet de donnï¿½es.
+	coverage.SkyFraction	Fraction of Sky	The fraction of the sky represented in the observations, ranging from 0 to 1.	Enter a floating-point number.	float	19		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		astrophysics	Fraction de ciel	La fraction de ciel reprï¿½sentï¿½e dans les observations, variant de 0 ï¿½ 1.
+	coverage.Polarization	Polarization	The polarization coverage		text	20		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		astrophysics	Polarisation	La couverture de la polarisation
+	redshiftType	RedshiftType	"RedshiftType string C ""Redshift""; or ""Optical"" or ""Radio"" definitions of Doppler velocity used in the data object."		text	21		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		astrophysics	TypeDeDï¿½calageVersLeRouge	La chaï¿½ne TypeDeDï¿½calageVersLeRouge C ï¿½ï¿½dï¿½calage vers le rougeï¿½ï¿½ ou les dï¿½finitions  ï¿½ï¿½optiquesï¿½ï¿½ ou ï¿½ï¿½radioï¿½ï¿½ de la vitesse Doppler utilisï¿½es dans l'objet de donnï¿½es.
+	resolution.Redshift	Redshift Resolution	The resolution in redshift (unitless) or Doppler velocity (km/s) in the data object.	Enter a floating-point number.	float	22		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		astrophysics	Rï¿½solution du dï¿½calage vers le rouge	La rï¿½solution en dï¿½calage vers le rouge (sans unitï¿½) ou la vitesse Doppler (km/s) dans l'objet de donnï¿½es.
+	coverage.RedshiftValue	Redshift Value	The value of the redshift (unitless) or Doppler velocity (km/s in the data object.	Enter a floating-point number.	float	23		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		astrophysics	Valeur du dï¿½calage vers le rouge	La valeur du dï¿½calage vers le rouge (sans unitï¿½) ou la vitesse Doppler (km/s dans l'objet de donnï¿½es).
+	coverage.Redshift.MinimumValue	Minimum	The minimum value of the redshift (unitless) or Doppler velocity (km/s in the data object.	Enter a floating-point number.	float	24		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	coverage.RedshiftValue	astrophysics	Minimum  	La valeur minimale du dï¿½calage vers le rouge (sans unitï¿½) ou la vitesse Doppler (km/s dans l'objet de donnï¿½es).
+	coverage.Redshift.MaximumValue	Maximum	The maximum value of the redshift (unitless) or Doppler velocity (km/s in the data object.	Enter a floating-point number.	float	25		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	coverage.RedshiftValue	astrophysics	Maximum  	La valeur maximale du dï¿½calage vers le rouge (sans unitï¿½) ou la vitesse Doppler (km/s dans l'objet de donnï¿½es).
 #controlledVocabulary	DatasetField	Value	identifier	displayOrder													
-	astroType	Image		0												Image	
-	astroType	Mosaic		1												Mosaïque	
-	astroType	EventList		2												Liste d'événements	
-	astroType	Spectrum		3												Spectre	
-	astroType	Cube		4												Cube	
-	astroType	Table		5												Tableau	
-	astroType	Catalog		6												Catalogue	
-	astroType	LightCurve		7												Courbe de lumière	
-	astroType	Simulation		8												Simulation	
-	astroType	Figure		9												Figure	
-	astroType	Artwork		10												Illustration	
-	astroType	Animation		11												Animation	
-	astroType	PrettyPicture		12												Image décorative	
-	astroType	Documentation		13												Documentation	
-	astroType	Other		14												Autre	
-	astroType	Library		15												Bibliothèque	
-	astroType	Press Release		16												Communiqué	
-	astroType	Facsimile		17												Télécopie	
-	astroType	Historical		18												Historique	
-	astroType	Observation		19												Observation	
-	astroType	Object		20												Objet	
-	astroType	Value		21												Valeur	
-	astroType	ValuePair		22												Couple de valeur	
-	astroType	Survey		23												Enquête	
+	astroType	Image		0													Image
+	astroType	Mosaic		1													Mosaï¿½que
+	astroType	EventList		2													Liste d'ï¿½vï¿½nements
+	astroType	Spectrum		3													Spectre
+	astroType	Cube		4													Cube
+	astroType	Table		5													Tableau
+	astroType	Catalog		6													Catalogue
+	astroType	LightCurve		7													Courbe de lumiï¿½re
+	astroType	Simulation		8													Simulation
+	astroType	Figure		9													Figure
+	astroType	Artwork		10													Illustration
+	astroType	Animation		11													Animation
+	astroType	PrettyPicture		12													Image dï¿½corative
+	astroType	Documentation		13													Documentation
+	astroType	Other		14													Autre
+	astroType	Library		15													Bibliothï¿½que
+	astroType	Press Release		16													Communiquï¿½
+	astroType	Facsimile		17													Tï¿½lï¿½copie
+	astroType	Historical		18													Historique
+	astroType	Observation		19													Observation
+	astroType	Object		20													Objet
+	astroType	Value		21													Valeur
+	astroType	ValuePair		22													Couple de valeur
+	astroType	Survey		23													Enquï¿½te

@@ -97,12 +97,10 @@
                                 </h:outputLink>
                             </li>
                         </ui:fragment>
-                        <h:form>
- 
-                            <h:commandButton action="#{language.changeLanguage('')}" value="English"   />
-                            <h:outputText value="&#160;" />
-                            <h:commandButton action="#{language.changeLanguage('fr')}" value="French"   />
-                           
+                        <h:form>                            
+                            <h:commandButton action="#{language.changeLanguage('')}" value="en"   />                            
+                             <h:outputText value="&#160;" />                           
+                            <h:commandButton action="#{language.changeLanguage('fr')}" value="fr"   />                            
                         </h:form>
                         <ui:fragment rendered="#{dataverseSession.user.authenticated}">
                             <li class="dropdown accountName">
