@@ -1,6 +1,11 @@
 Dataverse + Solr multi-server platform
 ===============================================
 
+This test environment establishes the following VMs on the **192.168.20.x** local subnet.
+
++ *solr ([192.168.20.10:8983](http://192.168.20.10:8983/solr))*
++ *dataverse ([192.168.20.20:8080](http://192.168.20.20:8080))*
+
 The contents of this directory contain documentation and platform configuration management files 
 (e.g. Vagrantfile) that describe/implement a test environment for integrating Dataverse with a 
 remote server running a Solr core as a service. This environments configuration management uses an
