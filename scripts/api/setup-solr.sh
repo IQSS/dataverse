@@ -19,4 +19,5 @@ $_IF_VERBOSE curl ${SOLR_URI}/update?commit=true -H "Content-type: application/j
 
 $_IF_VERBOSE echo "Setting dataverse servers SolrHostColonPort property to ${OPT_s}:${OPT_p}"
 $_IF_VERBOSE curl -X PUT -d ${OPT_s}:${OPT_p} ${DATAVERSE_URI}/admin/settings/:SolrHostColonPort
+$_IF_VERBOSE curl -X PUT -d "/solr/${OPT_c}" ${DATAVERSE_URI}/admin/settings/:SolrServiceSlashCollection
 $_IF_VERBOSE echo ""
