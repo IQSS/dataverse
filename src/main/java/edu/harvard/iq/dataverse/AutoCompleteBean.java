@@ -29,7 +29,7 @@ public class AutoCompleteBean implements java.io.Serializable {
     
     public SolrServer getSolrServer(){
         if(solrServer == null){
-            solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
+            solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + systemConfig.getSolrServiceSlashCollection());
         }
         return solrServer;
     }

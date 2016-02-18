@@ -88,7 +88,7 @@ public class SearchServiceBean {
     
     @PostConstruct
     public void init(){
-        solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
+        solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + systemConfig.getSolrServiceSlashCollection());
     }
     
     @PreDestroy
