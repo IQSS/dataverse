@@ -209,7 +209,13 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
         }
         if (protocol.equals("doi")
                 && doiProvider.equals("DataCite")) {
-            ctxt.doiDataCite().publicizeIdentifier(savedDataset);
+           try{
+              ctxt.doiDataCite().publicizeIdentifier(savedDataset);
+           } catch (Exception e){
+               
+               throw new IllegalCommandException("This dataset may not be published because the DOI update failed. Please contact Dataverse Support for assistance.", this);
+           }
+            
         }
             
         return savedDataset;

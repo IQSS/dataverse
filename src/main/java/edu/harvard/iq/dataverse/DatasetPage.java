@@ -79,6 +79,7 @@ import javax.faces.model.SelectItem;
 import java.util.logging.Level;
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
+import javax.faces.context.ExternalContext;
 import org.primefaces.component.tabview.TabView;
 import org.primefaces.event.TabChangeEvent;
 import org.primefaces.model.LazyDataModel;
@@ -1480,7 +1481,7 @@ public class DatasetPage implements java.io.Serializable {
             }
             callDownloadServlet(downloadFormat, this.selectedDownloadFile.getId());
         }
-
+        
         if (type.equals("explore")) {
             String retVal = getDataExploreURLComplete(this.selectedDownloadFile.getId());
             try {
@@ -1887,11 +1888,12 @@ public class DatasetPage implements java.io.Serializable {
                     }
                 }
             } catch (CommandException ex) {
-                JH.addMessage(FacesMessage.SEVERITY_FATAL, JH.localize("dataset.message.publishFailure"));
+                
+                JsfHelper.addErrorMessage(ex.getLocalizedMessage());
                 logger.severe(ex.getMessage());
             }
         } else {
-            JH.addMessage(FacesMessage.SEVERITY_ERROR, "Only authenticated users can release Datasets.");
+            JsfHelper.addErrorMessage("Only authenticated users can release Datasets.");
         }
         return returnToDatasetOnly();
     }

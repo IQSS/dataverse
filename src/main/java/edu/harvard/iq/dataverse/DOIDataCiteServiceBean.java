@@ -5,6 +5,8 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -49,7 +51,7 @@ public class DOIDataCiteServiceBean {
         metadata.put("_status", "reserved");
         try {
             logger.log(Level.INFO, "doiDataCiteRegisterService.toString : " + doiDataCiteRegisterService.toString());
-            retString = doiDataCiteRegisterService.createIdentifier(identifier, metadata);
+            retString = doiDataCiteRegisterService.createIdentifier(identifier, metadata, dataset);
             logger.log(Level.INFO, "create DOI identifier retString : " + retString);
         } catch (Exception e) {
             logger.log(Level.INFO, "Identifier not created: create failed");
@@ -99,7 +101,7 @@ public class DOIDataCiteServiceBean {
     public String modifyIdentifier(Dataset dataset, HashMap metadata) {
         String identifier = getIdentifierFromDataset(dataset);
         try {
-            doiDataCiteRegisterService.createIdentifier(identifier, metadata);
+            doiDataCiteRegisterService.createIdentifier(identifier, metadata, dataset);
         } catch (Exception e) {
             logger.log(Level.INFO, "modifyMetadata failed");
             logger.log(Level.INFO, "String " + e.toString());
@@ -111,7 +113,7 @@ public class DOIDataCiteServiceBean {
         return identifier;
     }
 
-    public void deleteIdentifier(Dataset datasetIn) {
+    public void deleteIdentifier(Dataset datasetIn) throws RuntimeException {
         String identifier = getIdentifierFromDataset(datasetIn);
         HashMap doiMetadata = new HashMap();
         try {
@@ -240,16 +242,16 @@ public class DOIDataCiteServiceBean {
         return dataset.getGlobalId();
     }
 
-    public void publicizeIdentifier(Dataset studyIn) {
+    public void publicizeIdentifier(Dataset studyIn) throws IllegalCommandException {
         updateIdentifierStatus(studyIn, "public");
     }
 
-    private void updateIdentifierStatus(Dataset dataset, String statusIn) {
+    private void updateIdentifierStatus(Dataset dataset, String statusIn) throws RuntimeException {
         String identifier = getIdentifierFromDataset(dataset);
         HashMap metadata = getUpdateMetadataFromDataset(dataset);
         metadata.put("_status", statusIn);
         try {
-            doiDataCiteRegisterService.createIdentifier(identifier, metadata);
+            doiDataCiteRegisterService.createIdentifier(identifier, metadata, dataset);
         } catch (Exception e) {
             logger.log(Level.INFO, "modifyMetadata failed");
             logger.log(Level.INFO, "String " + e.toString());

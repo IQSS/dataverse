@@ -9,4 +9,9 @@
     </titles>
     <publisher>${publisher}</publisher>
     <publicationYear>${publisherYear}</publicationYear>
+    <resourceType resourceTypeGeneral="Dataset"/>
+    <descriptions>
+        <description descriptionType="Abstract">${description}</description>
+    </descriptions>
+    <contributors>{$contributors}</contributors>
 </resource>

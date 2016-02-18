@@ -54,10 +54,14 @@ public class DOIDataCiteRegisterService {
         client.close();
     }
 
-    public String createIdentifier(String identifier, HashMap<String, String> metadata) {
+    public String createIdentifier(String identifier, HashMap<String, String> metadata, Dataset dataset) {
         DataCiteMetadataTemplate metadataTemplate = new DataCiteMetadataTemplate();
         metadataTemplate.setIdentifier(identifier.substring(identifier.indexOf(':')+1));
         metadataTemplate.setCreators(Util.getListFromStr(metadata.get("datacite.creator")));
+        metadataTemplate.setAuthors(dataset.getLatestVersion().getDatasetAuthors());
+        metadataTemplate.setDescription(dataset.getLatestVersion().getDescription());
+        metadataTemplate.setContacts(dataset.getLatestVersion().getDatasetContacts());
+        metadataTemplate.setProducers(dataset.getLatestVersion().getDatasetProducers());
         metadataTemplate.setTitle(metadata.get("datacite.title"));
         metadataTemplate.setPublisher(metadata.get("datacite.publisher"));
         metadataTemplate.setPublisherYear(metadata.get("datacite.publicationyear"));
@@ -180,6 +184,42 @@ class DataCiteMetadataTemplate {
     private String title;
     private String publisher;
     private String publisherYear;
+    private List<DatasetAuthor> authors;
+    private String description;
+    private List<String[]> contacts;
+    private List<String[]> producers;
+
+    public List<String[]> getProducers() {
+        return producers;
+    }
+
+    public void setProducers(List<String[]> producers) {
+        this.producers = producers;
+    }
+
+    public List<String[]> getContacts() {
+        return contacts;
+    }
+
+    public void setContacts(List<String[]> contacts) {
+        this.contacts = contacts;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public List<DatasetAuthor> getAuthors() {
+        return authors;
+    }
+
+    public void setAuthors(List<DatasetAuthor> authors) {
+        this.authors = authors;
+    }
     
     public DataCiteMetadataTemplate(){
     }
@@ -207,21 +247,56 @@ class DataCiteMetadataTemplate {
     }
 
     public String generateXML() {
-        System.out.print("in generate xml...");
         xmlMetadata = template.replace("${identifier}", this.identifier.trim())
                 .replace("${title}", this.title)
                 .replace("${publisher}", this.publisher)
-                .replace("${publisherYear}", this.publisherYear);
+                .replace("${publisherYear}", this.publisherYear)
+                .replace("${description}", this.description);
         StringBuilder creatorsElement = new StringBuilder();
-        for (String creator : creators) {
-            creator = creator.trim();
-            if (creator.length() > 0) {
-                creatorsElement.append("<creator><creatorName>");
-                creatorsElement.append(creator);
-                creatorsElement.append("</creatorName></creator>");
+        for (DatasetAuthor author : authors) {
+            creatorsElement.append("<creator><creatorName>");
+            creatorsElement.append(author.getName().getDisplayValue());
+            creatorsElement.append("</creatorName>");
+
+            if (author.getIdType() != null && author.getIdValue() != null && !author.getIdType().isEmpty() && !author.getIdValue().isEmpty() && author.getAffiliation() != null && !author.getAffiliation().getDisplayValue().isEmpty()) {
+                
+                if (author.getIdType().equals("ORCID")) {   
+                    System.out.print("orcid " + author.getIdType());
+                    creatorsElement.append("<nameIdentifier schemeURI=\"http://orcid.org/\" nameIdentifierScheme=\"ORCID\">" + author.getIdValue() + "</nameIdentifier>");
+                }
+                if (author.getIdType().equals("ISNI")) {   
+                    System.out.print("isni " + author.getIdType());
+                    creatorsElement.append("<nameIdentifier schemeURI=\"http://isni.org/isni/\" nameIdentifierScheme=\"ISNI\">" + author.getIdValue() + "</nameIdentifier>");
+                }
+                if (author.getIdType().equals("LCNA")) {   
+                    System.out.print("lcna " + author.getIdType());
+                    creatorsElement.append("<nameIdentifier schemeURI=\"http://id.loc.gov/authorities/names/\" nameIdentifierScheme=\"LCNA\">" + author.getIdValue() + "</nameIdentifier>");
+                }
             }
+            if (author.getAffiliation() != null && !author.getAffiliation().getDisplayValue().isEmpty()) {
+                creatorsElement.append("<affiliation>" + author.getAffiliation().getDisplayValue() + "</affiliation>");
+            }
+            creatorsElement.append("</creator>");
         }
         xmlMetadata = xmlMetadata.replace("${creators}", creatorsElement.toString());
+        
+        StringBuilder contributorsElement = new StringBuilder();
+        for (String[] contact: this.getContacts()){
+            contributorsElement.append("<contributor contributorType=\"ContactPerson\"><contributorName>" + contact[0] + "</contributorName>");
+            if (!contact[1].isEmpty()){
+                contributorsElement.append("<affiliation>" + contact[1] + "</affiliation>");
+            }
+            contributorsElement.append("</contributor>");
+        }
+        for (String[] producer: this.getProducers()){
+            contributorsElement.append("<contributor contributorType=\"Producer\"><contributorName>" + producer[0] + "</contributorName>");
+            if (!producer[1].isEmpty()){
+                contributorsElement.append("<affiliation>" + producer[1] + "</affiliation>");
+            }
+            contributorsElement.append("</contributor>");
+        }
+        System.out.print("Contributors element: " + contributorsElement.toString());
+        xmlMetadata = xmlMetadata.replace("{$contributors}", contributorsElement.toString());
         return xmlMetadata;
     }
 
