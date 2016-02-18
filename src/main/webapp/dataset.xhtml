@@ -879,7 +879,7 @@
                                 </label>
                                 <div class="col-sm-8">
                                     <p:outputPanel id="selectedTagsList" style="padding-top:.5em;">
-                                        <h:outputText value="No tags selected" rendered="#{empty DatasetPage.selectedTags}" />
+                                        <h:outputText value="No tags selected" rendered="#{(empty DatasetPage.selectedTags) and (empty DatasetPage.selectedTabFileTags)}" />
                                        
                                         <ui:repeat value="#{DatasetPage.selectedTags}" var="tags" rendered="#{!empty DatasetPage.selectedTags}">
                                             <h:outputText value="#{tags}" styleClass="label label-default" style="margin-right:.5em;display:inline-block;"/>
@@ -928,9 +928,7 @@
                             </div>
                             <div class="form-group text-left" jsf:rendered="#{DatasetPage.tabularDataSelected}">
                                 <label for="tabularDataTagsDsPAge" class="col-sm-4 control-label">
-                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.tabularDataTags.title']}">
-                                        #{bundle['file.tabularDataTags']}
-                                    </span>
+                                    #{bundle['file.tabularDataTags']}
                                 </label>
                                 <div class="col-sm-8">
                                     <p class="help-block">#{bundle['file.tabularDataTags.tip']}</p>
