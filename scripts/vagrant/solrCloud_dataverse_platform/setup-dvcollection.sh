@@ -28,14 +28,14 @@ while getopts :c:h:i:r:s:v: FLAG; do
     i)  #set option solr install directory "i"
       SOLR_INSTALL_DIR=$OPTARG
       ;;
-    v)  #set output verbosity level "v"
-      OUTPUT_VERBOSITY=$OPTARG
-      ;;
     r)  #set output verbosity level "v"
       DVCOLLECTION_REPLICAS=$OPTARG
       ;;
     s)  #set output verbosity level "v"
       DVCOLLECTION_SHARDS=$OPTARG
+      ;;
+    v)  #set output verbosity level "v"
+      OUTPUT_VERBOSITY=$OPTARG
       ;;
     :)  #valid option requires adjacent argument
       echo "Option $OPTARG requires an adjacent argument" >&2
@@ -91,16 +91,16 @@ $_IF_VERBOSE echo "found at ${DVCOLLECTION_CONF_DIR}"
 $_IF_INFO echo "Creating Solr collection ${DVCOLLECTION_NAME}"
 _create_collection_cmd="create -c '${DVCOLLECTION_NAME}' -d '${DVCOLLECTION_CONF_DIR}'"
 
-if [[ -z ${DVCOLLECTION_SHARDS} ]]; then
+if [[ -n ${DVCOLLECTION_SHARDS} ]]; then
   $_IF_INFO echo "Fragmenting ${DVCOLLECTION_NAME} across ${DVCOLLECTION_SHARDS} solrCloud nodes"
   _create_collection_cmd="${_create_collection_cmd} -shards ${DVCOLLECTION_SHARDS}"
-end
+fi
 
-if [[ -z ${DVCOLLECTION_REPLICAS} ]]; then
+if [[ -n ${DVCOLLECTION_REPLICAS} ]]; then
   $_IF_INFO echo "Replicating each ${DVCOLLECTION_NAME} shard 'fragment' across ${DVCOLLECTION_REPLICAS} solrCloud cores"
   _create_collection_cmd="${_create_collection_cmd} -replicationFactor ${DVCOLLECTION_REPLICAS}"
-end
+fi
 
-sudo -u solr "$_solr" $_create_collection_cmd
+eval "$_solr $_create_collection_cmd"
 
 $_IF_TERSE echo "Solr collection ${DVCOLLECTION_NAME} established"
