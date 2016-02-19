@@ -4,7 +4,7 @@ command -v jq >/dev/null 2>&1 || { echo >&2 '`jq` ("sed for JSON") is required, 
 if [[ -n ${1} ]]; then 
   SERVER=http://${1}:8080/api
 else
-  SERVER=http://192.168.20.20:8080/api
+  SERVER=http://localhost:8080/api
 fi
 
 
