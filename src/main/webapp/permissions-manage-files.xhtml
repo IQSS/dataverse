@@ -48,13 +48,12 @@
                                         </p:commandLink>
                                     </div>
                                     <div>
-                                        <p:fragment id="userGroups">
+                                        <p:fragment id="userGroupsRequests" rendered="#{!empty manageFilePermissionsPage.fileAccessRequestMap.entrySet().toArray()}">
                                             <p>
                                                 <span class="highlightBold">#{manageFilePermissionsPage.fileAccessRequestMap.size()} Requests</span>
                                             </p>
                                             
-                                            <p:dataTable id="fileAccessRequests" styleClass="margin-bottom" var="access" value="#{manageFilePermissionsPage.fileAccessRequestMap.entrySet().toArray()}"
-                                                         rendered="#{!empty manageFilePermissionsPage.fileAccessRequestMap.entrySet().toArray()}">
+                                            <p:dataTable id="fileAccessRequests" styleClass="margin-bottom" var="access" value="#{manageFilePermissionsPage.fileAccessRequestMap.entrySet().toArray()}">
                                                 <p:column width="30%" headerText="#{bundle['dataverse.permissionsFiles.usersOrGroups.tabHeader.userOrGroup']}">
                                                     <h:outputText value="#{access.key.displayInfo.title}"/>
                                                     <h:outputText value=" (#{access.key.displayInfo.affiliation})" rendered="#{!empty access.key.displayInfo.affiliation}"/>
@@ -88,7 +87,8 @@
                                                     </div>
                                                 </p:column>
                                             </p:dataTable>
-                                            
+                                        </p:fragment>
+                                        <p:fragment id="userGroups">
                                             <p>
                                                 <span class="highlightBold">#{manageFilePermissionsPage.roleAssigneeMap.size()} Users/Groups</span>
                                             </p>
@@ -168,12 +168,13 @@
                                             <h:outputText value="#{bundle['dataverse.permissionsFiles.files.public']}" rendered="#{fileVersion eq dsLatestVersion and !latestVersionRestricted}"/>
                                         </p:column>
                                         <p:column width="18%" class="text-center" headerText="#{bundle['dataverse.permissionsFiles.files.tabHeader.roleAssignees']}">
-                                            <p:commandLink type="button" id="viewUserGroups"
+                                            <p:commandLink type="button" id="viewUserGroups" rendered="#{fileEntry.value.size() > 0}"
                                                            actionListener="#{manageFilePermissionsPage.initViewRemoveDialogByFile(fileEntry.key, fileEntry.value)}"
                                                            update=":#{p:component('viewRemoveDialog')}"
                                                            oncomplete="PF('viewRemoveWidget').show();">
                                                 <h:outputText value="#{fileEntry.value.size()} #{fileEntry.value.size() eq 1 ?  bundle['dataverse.permissionsFiles.files.roleAssignee'] : bundle['dataverse.permissionsFiles.files.roleAssignees']}"/>
                                             </p:commandLink>
+                                            <h:outputText rendered="#{fileEntry.value.size() == 0}" value="#{fileEntry.value.size()} #{bundle['dataverse.permissionsFiles.files.roleAssignees']}"/>
                                         </p:column>
                                         <p:column width="22%" class="text-center" headerText="#{bundle['dataverse.permissionsFiles.files.tabHeader.access']}">
                                             <p:commandLink type="button" styleClass="btn btn-default"
@@ -209,9 +210,9 @@
                                 <p:ajax event="rowUnselectCheckbox" listener="#{manageFilePermissionsPage.rowSelected}" update=":rolesPermissionsForm:selectionRemoveCounter" />
                                 <p:ajax event="toggleSelect" listener="#{manageFilePermissionsPage.rowSelected}" update=":rolesPermissionsForm:selectionRemoveCounter" />
                                 
-                                <p:column selectionMode="multiple" style="width:2%;text-align:center"  />
+                                <p:column selectionMode="multiple" style="width:2%;text-align:center"/>
                                 <p:column width="98%" headerText="#{bundle['dataverse.permissionsFiles.usersOrGroups.tabHeader.userOrGroup']}" rendered="#{!empty manageFilePermissionsPage.selectedFile}">
-                                    <h:outputText value="#{roleAssignment.assigneeDisplayInfo.title}"/>
+                                    <h:outputText value="#{roleAssignment.assigneeDisplayInfo.title}"/> <h:outputText value=" (#{roleAssignment.assigneeDisplayInfo.affiliation})" rendered="#{!empty roleAssignment.assigneeDisplayInfo.affiliation}"/>
                                 </p:column>
                                 <p:column width="98%" headerText="#{bundle['dataverse.permissionsFiles.files.tabHeader.fileName']}" rendered="#{!empty manageFilePermissionsPage.selectedRoleAssignee}">
                                     <h:outputText value="#{roleAssignment.definitionPoint.displayName}"/>
@@ -239,9 +240,7 @@
                                 <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.permissionsFiles.assignDialog.description']}</p>
                                 <div class="form-group" jsf:rendered="#{empty manageFilePermissionsPage.fileRequester}">
                                     <label for="userGroupAccessInput" class="col-sm-3 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataverse.permissionsFiles.assignDialog.userOrGroup.title']}">
-                                            #{bundle['dataverse.permissionsFiles.assignDialog.userOrGroup']}
-                                        </span>
+                                        #{bundle['dataverse.permissionsFiles.assignDialog.userOrGroup']}
                                     </label>
                                     <div class="col-sm-5">
                                         <p:autoComplete id="userGroupNameAssign" placeholder="#{bundle['dataverse.permissionsFiles.assignDialog.userOrGroup.enterName']}"

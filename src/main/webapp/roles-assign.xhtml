@@ -62,12 +62,22 @@
                             <p:fragment id="roleDetails">
                                 <div id="assignRolePermissionLabels">
                                     <p class="help-block">#{bundle['dataverse.permissions.usersOrGroups.assignDialog.role.description']}</p>
-                                    <span class="highlightBold">#{managePermissionsPage.assignedRole.name}</span>
-                                    <div class="small" jsf:rendered="#{!empty managePermissionsPage.assignedRole.description}">#{managePermissionsPage.assignedRole.description}</div>
-                                    <div class="margin-bottom">
-                                        <ui:repeat value="#{managePermissionsPage.assignedRole.permissions().toArray()}" var="prm">
-                                            <span class="label label-default">#{prm}</span>
-                                        </ui:repeat>
+                                    <div jsf:rendered="#{!empty managePermissionsPage.assignedRole.name}">
+                                        <span class="highlightBold">#{managePermissionsPage.assignedRole.name}</span>
+                                        <div class="small" jsf:rendered="#{!empty managePermissionsPage.assignedRole.description}">#{managePermissionsPage.assignedRole.description}</div>
+                                        <div class="margin-bottom">
+                                            <ui:repeat value="#{managePermissionsPage.assignedRole.permissions().toArray()}" var="prm">
+                                                <span class="label label-default">#{prm}</span>
+                                            </ui:repeat>
+                                        </div>
+                                        <p class="help-block">
+                                            <span class="glyphicon glyphicon-warning-sign text-danger"/>
+                                            <h:outputFormat styleClass="text-danger" value=" #{bundle['dataverse.permissions.usersOrGroups.assignDialog.role.warning']}">
+                                                <f:param value="#{managePermissionsPage.assignedRole.name}"/>
+                                                <f:param value="{object types}"/>
+                                                <f:param value="{object type}"/>
+                                            </h:outputFormat>
+                                        </p>
                                     </div>
                                 </div>
                             </p:fragment>
