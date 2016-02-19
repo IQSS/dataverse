@@ -125,8 +125,10 @@ public class SettingsServiceBean {
         SolrZookeeperEnsemble,
         /** Solr hostname and port, such as "localhost:8983". */
         SolrHostColonPort,
-        /** Solr service and collection name, such as "/solr/collection1". */
-        SolrServiceSlashCollection,
+        /** Solr service and collection name, such as "solr". */
+        SolrServiceName,
+        /** Solr service and collection name, such as "collection1". */
+        SolrCollectionName,
         /** Key for limiting the number of bytes uploaded via the Data Deposit API, UI (web site and . */
         MaxFileUploadSizeInBytes,
         /**
