@@ -28,6 +28,6 @@ else
   $_IF_VERBOSE curl -X PUT -d 'yes' ${DATAVERSE_URI}/admin/settings/:useSolrCloudViaZookeeper
 end
 
-$_IF_VERBOSE echo "Setting dataverse servers SolrServiceSlashCollection property to '/solr/${OPT_c}'"
-$_IF_VERBOSE curl -X PUT -d "/solr/${OPT_c}" ${DATAVERSE_URI}/admin/settings/:SolrServiceSlashCollection
+$_IF_VERBOSE echo "Setting dataverse servers SolrCollectionName property to '${OPT_c}'"
+$_IF_VERBOSE curl -X PUT -d "${OPT_c}" ${DATAVERSE_URI}/admin/settings/:SolrCollectionName
 $_IF_VERBOSE echo ""
