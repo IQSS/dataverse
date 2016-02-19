@@ -11,6 +11,8 @@ OPT_m="localhost"
 OPT_p="8983"
 OPT_s="localhost"
 OPT_u="http"
+## Do not set a default for OPT_z!
+## Presence of OPT_z is tested to see if this is a zookeeper/solrCloud backed installation.
 
 while getopts :c:g:h:m:p:s:u:v:z: FLAG; do
   case $FLAG in
