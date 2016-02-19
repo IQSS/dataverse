@@ -22,6 +22,7 @@ _usage() {
   echo "  -u     User the solr process will run as, this user also will own the solr files. \[${SOLR_OWNER}\]"
   echo "          This user account will be created as a system account if it doesn't already exist!"
   echo "  -v     Verbosity of this installation script \(0-3\). \[${OUTPUT_VERBOSITY}\]"
+  echo "  -x     Network accessible Hostname/IP address for solr server. \[\]"
   echo "\n"
 }
 
@@ -47,7 +48,7 @@ while getopts :h:i:m:s:u:v:x: FLAG; do
     v)  #set output verbosity level "v"
       OUTPUT_VERBOSITY=$OPTARG
       ;;
-    x)  #pass-through of solr host hostname/IP "x"
+    x)  #solr server hostname/IP "x"
       SOLR_HOSTNAME=$OPTARG
       ;;
     :)  #valid option requires adjacent argument
@@ -212,5 +213,11 @@ $_IF_VERBOSE echo "running solr-${SOLR_VERSION}/bin/install_solr_service.sh pack
 SOLR_INSTALL_OPTS="-d ${SOLR_HOME_DIR} -i ${SOLR_INSTALL_DIR} -u ${SOLR_OWNER}"
 solr-${SOLR_VERSION}/bin/install_solr_service.sh ./solr-${SOLR_VERSION}.tgz $SOLR_INSTALL_OPTS
 
-if [[ -z ${SOLR_HOSTNAME} ]]; then SOLR_HOSTNAME=`hostname -f`; fi
+if [[ -z ${SOLR_HOSTNAME} ]]; then 
+  SOLR_HOSTNAME=`hostname -f`
+else
+  $_IF_INFO echo "Adding specified host ${SOLR_HOSTNAME} to /etc/default/solr.in.sh"
+  $_IF_VERBOSE echo "SOLR_HOST=${SOLR_HOSTNAME}" >> /etc/default/solr.in.sh
+fi
+
 $_IF_TERSE echo "You should now have a running Solr ${SOLR_VERSION} instance at http://${SOLR_HOSTNAME}:8983."
