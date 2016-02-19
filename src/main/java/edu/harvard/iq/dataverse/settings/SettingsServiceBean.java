@@ -119,6 +119,10 @@ public class SettingsServiceBean {
          *
          */
         SearchRespectPermissionRoot,
+        /** Key for selecting to use CloudSolrServer or SolrServer class */
+        useSolrCloudViaZookeeper,
+        /** Solr hostname and port, such as "localhost:2181/solr". */
+        SolrZookeeperEnsemble,
         /** Solr hostname and port, such as "localhost:8983". */
         SolrHostColonPort,
         /** Solr service and collection name, such as "/solr/collection1". */

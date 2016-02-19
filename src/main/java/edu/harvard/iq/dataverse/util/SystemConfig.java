@@ -55,6 +55,12 @@ public class SystemConfig {
     private static final String PASSWORD_RESET_TIMEOUT_IN_MINUTES = "dataverse.auth.password-reset-timeout-in-minutes";
 
     /**
+     * A common place to find the String for a sane solrCloud zookeeper
+     * ensemble locator.
+     */
+    private String saneDefaultForSolrZookeeperEnsemble = "localhost:2181/solr";
+    
+    /**
      * A common place to find the String for a sane Solr hostname:port
      * combination.
      */
@@ -214,7 +220,22 @@ public class SystemConfig {
         String solrServiceSlashCollection = settingsService.getValueForKey(SettingsServiceBean.Key.SolrServiceSlashCollection, saneDefaultForSolrServiceSlashCollection);
         return solrServiceSlashCollection;
     }
-        
+       
+    private Boolean solrCloudZkEnabled = null;
+    
+    public boolean isSolrCloudZookeeperEnabled() {
+      if (solrCloudZkEnabled != null) {
+        return solrCloudZkEnabled;
+      }
+      boolean safeDefaultIfKeyNotFound = false;
+      solrCloudZkEnabled = settingsService.isTrueForKey(SettingsServiceBean.Key.useSolrCloudViaZookeeper, safeDefaultIfKeyNotFound);
+      return solrCloudZkEnabled;
+    }
+    
+    public String getSolrZookeeperEnsemble() {
+        String solrZookeeperEnsemble = settingsService.getValueForKey(SettingsServiceBean.Key.SolrZookeeperEnsemble, saneDefaultForSolrZookeeperEnsemble);
+        return solrZookeeperEnsemble;
+    }
     
     /**
      * The number of minutes for which a password reset token is valid. Can be
