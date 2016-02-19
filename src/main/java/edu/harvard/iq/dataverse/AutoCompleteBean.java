@@ -38,13 +38,14 @@ public class AutoCompleteBean implements java.io.Serializable {
                 String status;
                 try {
                     solrServer = new CloudSolrServer(systemConfig.getSolrZookeeperEnsemble());
+                    ((CloudSolrServer)solrServer).setDefaultCollection(systemConfig.getSolrCollectionName());
                 } catch (MalformedURLException ex) {
                     /* Newer versions of solrj do not throw MalformedURLException from CloudSolrServer constructor */
                     status = ex.toString();
                     logger.info(status);
                 }
             }else{
-                solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + systemConfig.getSolrServiceSlashCollection());
+               solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/" + systemConfig.getSolrServiceName() + "/" + systemConfig.getSolrCollectionName());
             }
         }
         return solrServer;
