@@ -243,6 +243,7 @@
                           rendered="#{!settingsWrapper.isTrueForKey(':ShowFileLandingPage',  false)}"/>
             <!-- TYPE + SIZE + DATE + MD5 -->
             <div class="text-muted small">
+                <!-- id:#{fileMetadata.dataFile.id} -->
                 <h:outputText id="fileTypeOutputRegular" value="#{fileMetadata.dataFile.friendlyType}" rendered="#{!(fileMetadata.dataFile.tabularData)}"/>
                 <h:outputText id="fileTypeOutputTabular" value="#{bundle['file.type.tabularData']}" rendered="#{fileMetadata.dataFile.tabularData}"/>
                 <h:outputText id="fileSize" value=" - #{fileMetadata.dataFile.friendlySize}" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"/>
@@ -272,7 +273,7 @@
                 <ui:fragment rendered="#{!(empty fileMetadata.categories)}">
                     <ui:repeat value="#{fileMetadata.categories}" var="cat">
                         <h:outputText value="#{cat.name}" styleClass="label label-default"/>
-                    </ui:repeat>
+                    </ui:repeat> 
                 </ui:fragment>
                 <ui:fragment >
                     <ui:repeat value="#{fileMetadata.dataFile.tags}" var="tag">
@@ -297,6 +298,7 @@
                 </ui:fragment>
 
                 <!-- TwoRavens explore option -->
+                <ui:remove>
                 <h:commandLink rendered="#{!(empty fileMetadata.dataFile.id) and (fileMetadata.dataFile.tabularData or fileMetadata.dataFile.ingestInProgress)
                                            and DatasetPage.canDownloadFile(fileMetadata) and !DatasetPage.downloadPopupRequired}"
                                type="button" styleClass="btn btn-default #{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}"
@@ -304,6 +306,8 @@
                                actionListener="#{DatasetPage.exploreOutputLink(fileMetadata, 'explore')}" target="_blank">
                     <span class="glyphicon glyphicon-equalizer"/> <span class="ladda-label">#{bundle.explore}</span>
                 </h:commandLink>
+                </ui:remove>
+
                 <p:commandLink rendered="#{!(empty fileMetadata.dataFile.id) and (fileMetadata.dataFile.tabularData or fileMetadata.dataFile.ingestInProgress)
                                            and DatasetPage.canDownloadFile(fileMetadata)  and DatasetPage.downloadPopupRequired}"
                                type="button" styleClass="btn btn-default"
@@ -311,6 +315,12 @@
                                update="@form"
                                oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
                     <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore}
+                </p:commandLink>
+                <p:commandLink rendered="#{ DatasetPage.canSeeTwoRavensExploreButton(fileMetadata) and !DatasetPage.downloadPopupRequired}"
+                               type="button"  styleClass="btn btn-default #{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}"
+                               disabled="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}"
+                               actionListener="#{DatasetPage.exploreOutputLink(fileMetadata, 'explore')}" target="_blank">
+                    <span class="glyphicon glyphicon-equalizer"/> <span class="ladda-label">#{bundle.explore}</span>
                 </p:commandLink>
 
                 <!-- WorldMap Explore | Map Data button group -->

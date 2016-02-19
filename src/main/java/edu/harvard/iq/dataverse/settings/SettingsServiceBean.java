@@ -193,7 +193,16 @@ public class SettingsServiceBean {
         Explore World Map Button
         Default is false;
         */
-        GeoconnectViewMaps;
+        GeoconnectViewMaps,
+        /**
+        Whether to allow a user to view tabular files
+        using the TwoRavens application
+        This boolean effects whether a user may see the 
+        Explore Button that links to TwoRavens
+        Default is false;
+        */
+        TwoRavensTabularView;
+                
         @Override
         public String toString() {
             return ":" + name();

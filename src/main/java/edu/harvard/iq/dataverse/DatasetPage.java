@@ -1144,6 +1144,54 @@ public class DatasetPage implements java.io.Serializable {
     
     
     /**
+     * Used in the .xhtml file to check whether a tabular file 
+     * may be viewed via TwoRavens
+     * 
+     * @param fm
+     * @return 
+     */
+    public boolean canSeeTwoRavensExploreButton(FileMetadata fm){
+       
+        if (fm == null){
+            return false;
+        }
+        
+        
+        // (1) Is TwoRavens active via the "setting" table?
+        //      Nope: get out
+        //
+        if (!settingsService.isTrueForKey(SettingsServiceBean.Key.TwoRavensTabularView, false)){
+           return false;
+       }
+        
+        // (2) Does the user have download permission?
+        //      Nope: get out
+        //
+        if (!(this.canDownloadFile(fm))){
+            return false;
+        } 
+        // (3) Is the DataFile object there and persisted?
+        //      Nope: scat
+        //
+        if ((fm.getDataFile() == null)||(fm.getDataFile().getId()==null)){
+            return false;
+        }
+        
+        // (4) Is there tabular data or is the ingest in progress?
+        //      Yes: great
+        //
+        if ((fm.getDataFile().isTabularData())||(fm.getDataFile().isIngestInProgress())){
+            return true;
+        }
+        
+        // Nope
+        return false;
+        
+        //       (empty fileMetadata.dataFile.id) and (fileMetadata.dataFile.tabularData or fileMetadata.dataFile.ingestInProgress)
+        //                                        and DatasetPage.canDownloadFile(fileMetadata) 
+    }
+    
+    /**
      * Check if this is a mappable file type.
      * 
      * Currently (2/2016)
