@@ -77,7 +77,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           end
         }
         solr.vm.provision "createDataverseCollection", type: "shell", 
-          path: "./setup-dvcollection.sh", args: "#{DVCOLLECTION_NAME}"
+          path: "./setup-dvcollection.sh", 
+          args: "-c '#{DVCOLLECTION_NAME}' -r " + STATIC_IP_SOLRCLOUD.length.to_s + " -s " + STATIC_IP_SOLRCLOUD.length.to_s
       end
     end
   end

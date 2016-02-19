@@ -5,16 +5,18 @@ if [[ -z ${DVCOLLECTION_NAME} ]];then DVCOLLECTION_NAME='dvcollection'; fi
 if [[ -z ${SOLR_INSTALL_DIR} ]]; then SOLR_INSTALL_DIR='/opt'; fi
 
 _usage() {
-  echo "\nUsage: $0 \[dhilmsuv\]"
+  echo "\nUsage: $0 \[chirsv\]"
   echo "\nSupported options:"
   echo "  -c     Solr collection name for main dataverse index. \[${DVCOLLECTION_NAME}\]"
   echo "  -h     Print this help message."
   echo "  -i     Directory in which to extract th solr installation. \[${SOLR_INSTALL_DIR}\]"
+  echo "  -r     Number of replicas of each collection fragement created in the solrCloud. \[1\]"
+  echo "  -s     Number of shards to fragment the collection into on the solrCloud. \[1\]"
   echo "  -v     Verbosity of this installation script \(0-3\). \[${OUTPUT_VERBOSITY}\]"
   echo "\n"
 }
 
-while getopts :c:h:v: FLAG; do
+while getopts :c:h:i:r:s:v: FLAG; do
   case $FLAG in
     c)
       DVCOLLECTION_NAME=$OPTARG
@@ -29,8 +31,11 @@ while getopts :c:h:v: FLAG; do
     v)  #set output verbosity level "v"
       OUTPUT_VERBOSITY=$OPTARG
       ;;
-    x)  #pass-through of solr host hostname/IP "x"
-      SOLR_HOSTNAME=$OPTARG
+    r)  #set output verbosity level "v"
+      DVCOLLECTION_REPLICAS=$OPTARG
+      ;;
+    s)  #set output verbosity level "v"
+      DVCOLLECTION_SHARDS=$OPTARG
       ;;
     :)  #valid option requires adjacent argument
       echo "Option $OPTARG requires an adjacent argument" >&2
@@ -84,6 +89,18 @@ fi
 
 $_IF_VERBOSE echo "found at ${DVCOLLECTION_CONF_DIR}"
 $_IF_INFO echo "Creating Solr collection ${DVCOLLECTION_NAME}"
-sudo -u solr "$_solr" create -c ${DVCOLLECTION_NAME} -d ${DVCOLLECTION_CONF_DIR}
+_create_collection_cmd="create -c '${DVCOLLECTION_NAME}' -d '${DVCOLLECTION_CONF_DIR}'"
+
+if [[ -z ${DVCOLLECTION_SHARDS} ]]; then
+  $_IF_INFO echo "Fragmenting ${DVCOLLECTION_NAME} across ${DVCOLLECTION_SHARDS} solrCloud nodes"
+  _create_collection_cmd="${_create_collection_cmd} -shards ${DVCOLLECTION_SHARDS}"
+end
+
+if [[ -z ${DVCOLLECTION_REPLICAS} ]]; then
+  $_IF_INFO echo "Replicating each ${DVCOLLECTION_NAME} shard 'fragment' across ${DVCOLLECTION_REPLICAS} solrCloud cores"
+  _create_collection_cmd="${_create_collection_cmd} -replicationFactor ${DVCOLLECTION_REPLICAS}"
+end
+
+sudo -u solr "$_solr" $_create_collection_cmd
 
 $_IF_TERSE echo "Solr collection ${DVCOLLECTION_NAME} established"
