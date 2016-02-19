@@ -24,6 +24,10 @@ import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
+/* MalformedURLException used by CloudSolrServer constructor
+ * Newer versions of solrj do not throw MalformedURLException 
+ * from CloudSolrServer constructor */
+import java.net.MalformedURLException;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -51,6 +55,7 @@ import javax.inject.Named;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.impl.CloudSolrServer;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.UpdateResponse;
@@ -107,7 +112,18 @@ public class IndexServiceBean {
     
     @PostConstruct
     public void init(){
-        solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + systemConfig.getSolrServiceSlashCollection());
+        if (systemConfig.isSolrCloudZookeeperEnabled()) {
+            String status;
+            try {
+                solrServer = new CloudSolrServer(systemConfig.getSolrZookeeperEnsemble());
+            } catch (MalformedURLException ex) {
+                /* Newer versions of solrj do not throw MalformedURLException from CloudSolrServer constructor */
+                status = ex.toString();
+                logger.info(status);
+            }
+        }else{
+            solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + systemConfig.getSolrServiceSlashCollection());
+        }
     }
     
     @PreDestroy
