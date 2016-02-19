@@ -24,8 +24,8 @@ if [[ -z ${OPT_z} ]]; then
 else
   $_IF_VERBOSE echo "Setting dataverse servers SolrZookeeperEnsemble property to '${OPT_z}'"
   $_IF_VERBOSE curl -X PUT -d '${OPT_z}' ${DATAVERSE_URI}/admin/settings/:SolrZookeeperEnsemble
-  $_IF_VERBOSE echo "Setting dataverse servers useSolrCloudViaZookeeper property to 'true'"
-  $_IF_VERBOSE curl -X PUT -d 'true' ${DATAVERSE_URI}/admin/settings/:useSolrCloudViaZookeeper
+  $_IF_VERBOSE echo "Setting dataverse servers useSolrCloudViaZookeeper property to 'yes'"
+  $_IF_VERBOSE curl -X PUT -d 'yes' ${DATAVERSE_URI}/admin/settings/:useSolrCloudViaZookeeper
 end
 
 $_IF_VERBOSE echo "Setting dataverse servers SolrServiceSlashCollection property to '/solr/${OPT_c}'"
