@@ -67,10 +67,14 @@ public class SystemConfig {
     private String saneDefaultForSolrHostColonPort = "localhost:8983";
 
     /**
-     * A common place to find the String for a sane Solr service/collection
-     * combination.
+     * A common place to find the String for a sane Solr service name
      */
-    private String saneDefaultForSolrServiceSlashCollection = "/solr/collection1";
+    private String saneDefaultForSolrServiceName = "solr";
+
+    /**
+     * A common place to find the String for a sane Solr collection name
+     */
+    private String saneDefaultForSolrCollectionName = "collection1";
 
     /**
      * The default number of datafiles that we allow to be created through 
@@ -216,9 +220,14 @@ public class SystemConfig {
         return solrHostColonPort;
     }
     
-    public String getSolrServiceSlashCollection() {
-        String solrServiceSlashCollection = settingsService.getValueForKey(SettingsServiceBean.Key.SolrServiceSlashCollection, saneDefaultForSolrServiceSlashCollection);
-        return solrServiceSlashCollection;
+    public String getSolrServiceName() {
+        String solrServiceName = settingsService.getValueForKey(SettingsServiceBean.Key.SolrServiceName, saneDefaultForSolrServiceName);
+        return solrServiceName;
+    }
+       
+    public String getSolrCollectionName() {
+        String solrCollectionName = settingsService.getValueForKey(SettingsServiceBean.Key.SolrCollectionName, saneDefaultForSolrCollectionName);
+        return solrCollectionName;
     }
        
     private Boolean solrCloudZkEnabled = null;
