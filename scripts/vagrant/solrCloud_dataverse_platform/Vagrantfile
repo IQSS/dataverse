@@ -1,0 +1,110 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
+VAGRANTFILE_API_VERSION = "2"
+
+unless defined? STATIC_IP_DATAVERSE 
+  STATIC_IP_DATAVERSE = "192.168.30.20"
+end
+
+unless defined? STATIC_IP_SOLRCLOUD 
+  STATIC_IP_SOLRCLOUD = ["192.168.30.11","192.168.30.12","192.168.30.13"]
+end
+
+unless defined? ZOOKEEPER_CFG
+  ZOOKEEPER_CFG = ''
+  STATIC_IP_SOLRCLOUD.each_with_index { |node,index|
+    ZOOKEEPER_CFG << "server." + (index + 1).to_s + "=#{node}:2888:3888\n"
+  }
+end
+
+unless defined? ZOOKEEPER_ENSEMBLE
+  ZOOKEEPER_ENSEMBLE = STATIC_IP_SOLRCLOUD.join(":2181,") + ":2181"
+end
+
+unless defined? SOLR_INSTALL_DIR
+  SOLR_INSTALL_DIR = '/opt'
+end
+
+unless defined? OUTPUT_VERBOSITY
+  # Output Verbosity 0..3 least..most
+  OUTPUT_VERBOSITY = '3'
+end
+
+unless defined? DVCOLLECTION_NAME
+  DVCOLLECTION_NAME = 'dvcollection'
+end
+
+unless defined? SOLR_VERSION
+  SOLR_VERSION = '5.4.1'
+end
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+
+  config.vm.provider "virtualbox" do |v|
+    v.memory = 2048
+    v.cpus = 1
+  end
+
+  (1..STATIC_IP_SOLRCLOUD.length).each do |i|
+    config.vm.define "solrcloud#{i}" do |solr|
+      solr.vm.hostname = "solrcloud#{i}"
+      solr.vm.box = "puppetlabs/centos-6.6-64-puppet"
+      solr.vm.network "private_network", ip: STATIC_IP_SOLRCLOUD[(i-1)]
+      solr.vm.synced_folder "../../../", "/dataverse"
+
+      solr.vm.provision "killFirewall", type: "shell", inline: "service iptables stop"
+      solr.vm.provision "installZookeeperService", type: "shell",
+        path: "./install-zookeeper-service.sh",
+        args: [ "-e",ZOOKEEPER_CFG,"-i","#{i}","-v",OUTPUT_VERBOSITY ]
+      solr.vm.provision "installSolrService", type: "shell",
+        path: "./install-solr-service.sh", 
+        args: "-s #{SOLR_VERSION} -v #{OUTPUT_VERBOSITY} -x " + STATIC_IP_SOLRCLOUD[(i-1)] + " -i #{SOLR_INSTALL_DIR}"
+      solr.vm.provision "enableSolrCloud", type: "shell", path: "./setup-solrCloud.sh",
+        args: [ "-e",ZOOKEEPER_ENSEMBLE,"-v",OUTPUT_VERBOSITY ]
+      if ( i == STATIC_IP_SOLRCLOUD.length )
+        solr.vm.provision "createSolrZnode", type: "shell",
+          path: "./setup-solr-znode.sh", 
+          args: [ "-e",ZOOKEEPER_ENSEMBLE,"-i",SOLR_INSTALL_DIR,"-v",OUTPUT_VERBOSITY ]
+        STATIC_IP_SOLRCLOUD.each_with_index { |node,index|
+          if (node != STATIC_IP_SOLRCLOUD.last)
+            remote_cmd = "ssh  -o StrictHostKeyChecking=no -i /vagrant/.vagrant/machines/solrcloud" + (index + 1).to_s + "/virtualbox/private_key vagrant@#{node}"
+            remote_cmd << " 'sudo service solr restart'"
+            solr.vm.provision "shell", inline: remote_cmd
+          else
+            solr.vm.provision "shell", inline: "service solr restart"
+          end
+        }
+        solr.vm.provision "createDataverseCollection", type: "shell", 
+          path: "./setup-dvcollection.sh", args: "#{DVCOLLECTION_NAME}"
+      end
+    end
+  end
+
+  config.vm.define "dataverse", primary: true do |dataverse|
+    dataverse.vm.hostname = "dataverse"
+    dataverse.vm.box = "puppetlabs/centos-6.6-64-puppet"
+    dataverse.vm.network "private_network", ip: STATIC_IP_DATAVERSE
+    dataverse.vm.synced_folder "../../../", "/dataverse"
+
+    unless defined? mailserver
+      mailserver = "localhost"
+      if ENV['MAIL_SERVER'].nil?
+        puts "MAIL_SERVER environment variable not specified. Using #{mailserver} by default.\nTo specify it in bash: export MAIL_SERVER=localhost"
+      else
+        mailserver = ENV['MAIL_SERVER']
+        puts "MAIL_SERVER environment variable found, using #{mailserver}"
+      end
+    end
+
+    dataverse.vm.provision "dataversePrereqs", type: "shell", 
+      path: "../setup.sh", args: "-v #{OUTPUT_VERBOSITY}"
+    dataverse.vm.provision "killFirewall", type: "shell", inline: "service iptables stop"
+    dataverse.vm.provision "dataverseSetup", type: "shell", path: "../install-dataverse.sh",
+      args: "-c #{DVCOLLECTION_NAME} -h #{STATIC_IP_DATAVERSE} -m #{mailserver} -z '#{ZOOKEEPER_ENSEMBLE}' -v #{OUTPUT_VERBOSITY}"
+    dataverse.vm.provision "loadDataverseTest", type: "shell", 
+      path: "../setup-dv-test.sh", args: "#{STATIC_IP_DATAVERSE}"
+  end
+
+end
