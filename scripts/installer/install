@@ -96,7 +96,7 @@ my %CONFIG_DEFAULTS = (
     'SOLR_PORT',        8983,
     'SOLR_HOST',        'localhost',
     'SOLR_URL_SCHEMA',  'http',
-    'SOLR_ZOOKEEPER',   'localhost:2121',
+    'SOLR_ZOOKEEPER',   'localhost:2121/solr',
 
     'RSERVE_HOST',     'localhost',
     'RSERVE_PORT',     6311,
