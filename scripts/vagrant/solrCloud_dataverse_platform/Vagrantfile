@@ -71,9 +71,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           if (node != STATIC_IP_SOLRCLOUD.last)
             remote_cmd = "ssh  -o StrictHostKeyChecking=no -i /vagrant/.vagrant/machines/solrcloud" + (index + 1).to_s + "/virtualbox/private_key vagrant@#{node}"
             remote_cmd << " 'sudo service solr restart'"
-            solr.vm.provision "shell", inline: remote_cmd
+            solr.vm.provision "remoteRestartSolrCloud", type: "shell", inline: remote_cmd
           else
-            solr.vm.provision "shell", inline: "service solr restart"
+            solr.vm.provision "restartSolrCloud", type: "shell", inline: "service solr restart"
           end
         }
         solr.vm.provision "createDataverseCollection", type: "shell", 
