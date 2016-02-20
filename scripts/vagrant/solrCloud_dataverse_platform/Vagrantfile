@@ -4,12 +4,21 @@
 # Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
 VAGRANTFILE_API_VERSION = "2"
 
+unless defined? OUTPUT_VERBOSITY
+  # Output Verbosity 0..3 least..most
+  OUTPUT_VERBOSITY = '3'
+end
+
 unless defined? STATIC_IP_DATAVERSE 
   STATIC_IP_DATAVERSE = "192.168.30.20"
 end
 
 unless defined? STATIC_IP_SOLRCLOUD 
   STATIC_IP_SOLRCLOUD = ["192.168.30.11","192.168.30.12","192.168.30.13"]
+end
+
+unless defined? ZOOKEEPER_ENSEMBLE
+  ZOOKEEPER_ENSEMBLE = STATIC_IP_SOLRCLOUD.join(":2181,") + ":2181"
 end
 
 unless defined? ZOOKEEPER_CFG
@@ -19,25 +28,17 @@ unless defined? ZOOKEEPER_CFG
   }
 end
 
-unless defined? ZOOKEEPER_ENSEMBLE
-  ZOOKEEPER_ENSEMBLE = STATIC_IP_SOLRCLOUD.join(":2181,") + ":2181"
+unless defined? SOLR_VERSION
+  SOLR_VERSION = '5.4.1'
 end
 
 unless defined? SOLR_INSTALL_DIR
   SOLR_INSTALL_DIR = '/opt'
 end
 
-unless defined? OUTPUT_VERBOSITY
-  # Output Verbosity 0..3 least..most
-  OUTPUT_VERBOSITY = '3'
-end
 
 unless defined? DVCOLLECTION_NAME
   DVCOLLECTION_NAME = 'dvcollection'
-end
-
-unless defined? SOLR_VERSION
-  SOLR_VERSION = '5.4.1'
 end
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
@@ -77,7 +78,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           end
         }
         solr.vm.provision "createDataverseCollection", type: "shell", 
-          path: "./setup-dvcollection.sh", 
+          path: "../setup-dvcollection.sh", 
           args: "-v #{OUTPUT_VERBOSITY} -c '#{DVCOLLECTION_NAME}' -r " + STATIC_IP_SOLRCLOUD.length.to_s + " -s " + STATIC_IP_SOLRCLOUD.length.to_s
       end
     end
