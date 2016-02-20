@@ -59,7 +59,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         path: "./install-zookeeper-service.sh",
         args: [ "-e",ZOOKEEPER_CFG,"-i","#{i}","-v",OUTPUT_VERBOSITY ]
       solr.vm.provision "installSolrService", type: "shell",
-        path: "./install-solr-service.sh", 
+        path: "../install-solr-service.sh", 
         args: "-s #{SOLR_VERSION} -v #{OUTPUT_VERBOSITY} -x " + STATIC_IP_SOLRCLOUD[(i-1)] + " -i #{SOLR_INSTALL_DIR}"
       solr.vm.provision "enableSolrCloud", type: "shell", path: "./setup-solrCloud.sh",
         args: [ "-e",ZOOKEEPER_ENSEMBLE,"-v",OUTPUT_VERBOSITY ]
