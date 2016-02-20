@@ -7,6 +7,15 @@ else
   SERVER=http://localhost:8080/api
 fi
 
+if [[ -e /dataverse/scripts/api/data/userPete.json ]]; then
+  _dataDir=/dataverse/scripts/api/data
+elif [[ -e ../api/data/userPete.json ]]; then
+  _dataDir=../api/data
+else
+  echo "Unable to find data directory with users Pete/Uma/...!" >&2
+  echo "Dataverse Test Setup Failed!" >&2
+  exit 1;
+fi
 
 echo Publishing 'curator-able' root dataverse on $SERVER
 echo ====================================================================
@@ -25,19 +34,19 @@ echo ==============================================
 
 curl -L -X PUT -d burrito $SERVER/admin/settings/BuiltinUsers.KEY
 
-peteResp=$(curl -s -L -H "Content-type:application/json" -X POST -d @/dataverse/scripts/api/data/userPete.json "$SERVER/builtin-users?password=pete&key=burrito")
+peteResp=$(curl -s -L -H "Content-type:application/json" -X POST -d @${_dataDir}/userPete.json "$SERVER/builtin-users?password=pete&key=burrito")
 echo $peteResp
 
-umaResp=$(curl -s -L -H "Content-type:application/json" -X POST -d @/dataverse/scripts/api/data/userUma.json "$SERVER/builtin-users?password=uma&key=burrito")
+umaResp=$(curl -s -L -H "Content-type:application/json" -X POST -d @${_dataDir}/userUma.json "$SERVER/builtin-users?password=uma&key=burrito")
 echo $umaResp
 
-curl -s -L -H "Content-type:application/json" -X POST -d @/dataverse/scripts/api/data/userGabbi.json "$SERVER/builtin-users?password=gabbi&key=burrito"
+curl -s -L -H "Content-type:application/json" -X POST -d @${_dataDir}/userGabbi.json "$SERVER/builtin-users?password=gabbi&key=burrito"
 echo
 
-curl -s -L -H "Content-type:application/json" -X POST -d @/dataverse/scripts/api/data/userCathy.json "$SERVER/builtin-users?password=cathy&key=burrito"
+curl -s -L -H "Content-type:application/json" -X POST -d @${_dataDir}/userCathy.json "$SERVER/builtin-users?password=cathy&key=burrito"
 echo
 
-curl -s -L -H "Content-type:application/json" -X POST -d @/dataverse/scripts/api/data/userNick.json "$SERVER/builtin-users?password=nick&key=burrito"
+curl -s -L -H "Content-type:application/json" -X POST -d @${_dataDir}/userNick.json "$SERVER/builtin-users?password=nick&key=burrito"
 echo
 
 peteKey=$(echo $peteResp | jq .data.apiToken | tr -d \")
@@ -51,23 +60,23 @@ echo Setting up dataverses on $SERVER
 echo ==============================================
 
 echo Pete
-curl -s -L -H "Content-type:application/json" -X POST -d @/dataverse/scripts/api/data/dv-pete-top.json "$SERVER/dataverses/root?key=$peteKey"
+curl -s -L -H "Content-type:application/json" -X POST -d @${_dataDir}/dv-pete-top.json "$SERVER/dataverses/root?key=$peteKey"
 echo
-curl -s -L -H "Content-type:application/json" -X POST -d @/dataverse/scripts/api/data/dv-pete-sub-normal.json "$SERVER/dataverses/peteTop?key=$peteKey"
+curl -s -L -H "Content-type:application/json" -X POST -d @${_dataDir}/dv-pete-sub-normal.json "$SERVER/dataverses/peteTop?key=$peteKey"
 echo
-curl -s -L -H "Content-type:application/json" -X POST -d @/dataverse/scripts/api/data/dv-pete-sub-restricted.json "$SERVER/dataverses/peteTop?key=$peteKey"
+curl -s -L -H "Content-type:application/json" -X POST -d @${_dataDir}/dv-pete-sub-restricted.json "$SERVER/dataverses/peteTop?key=$peteKey"
 echo
-curl -s -L -H "Content-type:application/json" -X POST -d @/dataverse/scripts/api/data/dv-pete-sub-secret.json "$SERVER/dataverses/peteTop?key=$peteKey"
+curl -s -L -H "Content-type:application/json" -X POST -d @${_dataDir}/dv-pete-sub-secret.json "$SERVER/dataverses/peteTop?key=$peteKey"
 echo
 
 echo Uma
 echo Pete creates top-level for Uma
-curl -s -L -H "Content-type:application/json" -H "X-Dataverse-key:$peteKey" -X POST -d @/dataverse/scripts/api/data/dv-uma-top.json "$SERVER/dataverses/root"
+curl -s -L -H "Content-type:application/json" -H "X-Dataverse-key:$peteKey" -X POST -d @${_dataDir}/dv-uma-top.json "$SERVER/dataverses/root"
 echo
 echo Pete makes Uma an admin on her own DV
 curl -s -L -H "Content-type:application/json" -H "X-Dataverse-key:$peteKey" -X POST -d"{\"assignee\":\"@uma\",\"role\":\"admin\"}" $SERVER/dataverses/umaTop/assignments/
 echo
-curl -s -L -H "Content-type:application/json" -H "X-Dataverse-key:$umaKey" -X POST -d @/dataverse/scripts/api/data/dv-uma-sub1.json "$SERVER/dataverses/umaTop"
+curl -s -L -H "Content-type:application/json" -H "X-Dataverse-key:$umaKey" -X POST -d @${_dataDir}/dv-uma-sub1.json "$SERVER/dataverses/umaTop"
 echo
-curl -s -L -H "Content-type:application/json" -H "X-Dataverse-key:$umaKey" -X POST -d @/dataverse/scripts/api/data/dv-uma-sub2.json "$SERVER/dataverses/umaTop"
+curl -s -L -H "Content-type:application/json" -H "X-Dataverse-key:$umaKey" -X POST -d @${_dataDir}/dv-uma-sub2.json "$SERVER/dataverses/umaTop"
 echo
