@@ -144,12 +144,12 @@ $_IF_VERBOSE echo "$SOLR_INSTALL_DIR is writable"
 
 #### Check for adequate java ####
 $_IF_INFO echo "Checking java ..."
-if ( type -p java >/dev/null 2>&1 ); then
-  $_IF_VERBOSE echo "found java executable in PATH" 
-  _java=java
-elif [[ -n "$JAVA_HOME" ]] && [[ -x "$JAVA_HOME/bin/java" ]];  then
+if [[ -n "$JAVA_HOME" ]] && [[ -x "$JAVA_HOME/bin/java" ]];  then
   $_IF_VERBOSE echo "found java executable in JAVA_HOME"     
   _java="$JAVA_HOME/bin/java"
+elif ( type -p java >/dev/null 2>&1 ); then
+  $_IF_VERBOSE echo "found java executable in PATH" 
+  _java=java
 fi
 
 JAVA_VERSION=0
