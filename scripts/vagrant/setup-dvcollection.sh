@@ -101,6 +101,6 @@ if [[ -n ${DVCOLLECTION_REPLICAS} ]]; then
   _create_collection_cmd="${_create_collection_cmd} -replicationFactor ${DVCOLLECTION_REPLICAS}"
 fi
 
-eval "$_solr $_create_collection_cmd"
+eval "sudo -u solr $_solr $_create_collection_cmd"
 
 $_IF_TERSE echo "Solr collection ${DVCOLLECTION_NAME} established"
