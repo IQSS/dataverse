@@ -3,6 +3,7 @@
 if [[ -z ${OUTPUT_VERBOSITY} ]];then OUTPUT_VERBOSITY='1'; fi
 if [[ -z ${DVCOLLECTION_NAME} ]];then DVCOLLECTION_NAME='dvcollection'; fi
 if [[ -z ${SOLR_INSTALL_DIR} ]]; then SOLR_INSTALL_DIR='/opt'; fi
+if [[ -z ${SOLR_OWNER} ]]; then SOLR_OWNER='solr'; fi
 
 _usage() {
   echo "\nUsage: $0 \[chirsv\]"
@@ -12,11 +13,12 @@ _usage() {
   echo "  -i     Directory in which to extract th solr installation. \[${SOLR_INSTALL_DIR}\]"
   echo "  -r     Number of replicas of each collection fragement created in the solrCloud. \[1\]"
   echo "  -s     Number of shards to fragment the collection into on the solrCloud. \[1\]"
+  echo "  -u     User the solr service runs as. \[${SOLR_OWNER\]"
   echo "  -v     Verbosity of this installation script \(0-3\). \[${OUTPUT_VERBOSITY}\]"
   echo "\n"
 }
 
-while getopts :c:h:i:r:s:v: FLAG; do
+while getopts :c:h:i:r:s:u:v: FLAG; do
   case $FLAG in
     c)
       DVCOLLECTION_NAME=$OPTARG
@@ -33,6 +35,10 @@ while getopts :c:h:i:r:s:v: FLAG; do
       ;;
     s)  #set output verbosity level "v"
       DVCOLLECTION_SHARDS=$OPTARG
+      ;;
+    u)  #solr runs as SOLR_OWNER "u"
+      ## user will be created if not exists
+      SOLR_OWNER=$OPTARG
       ;;
     v)  #set output verbosity level "v"
       OUTPUT_VERBOSITY=$OPTARG
@@ -101,6 +107,6 @@ if [[ -n ${DVCOLLECTION_REPLICAS} ]]; then
   _create_collection_cmd="${_create_collection_cmd} -replicationFactor ${DVCOLLECTION_REPLICAS}"
 fi
 
-eval "sudo -u solr $_solr $_create_collection_cmd"
+eval "sudo -u $SOLR_OWNER $_solr $_create_collection_cmd"
 
 $_IF_TERSE echo "Solr collection ${DVCOLLECTION_NAME} established"
