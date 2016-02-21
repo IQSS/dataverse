@@ -12,10 +12,6 @@ import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
-/* MalformedURLException used by CloudSolrServer constructor
- * Newer versions of solrj do not throw MalformedURLException 
- * from CloudSolrServer constructor */
-import java.net.MalformedURLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -32,10 +28,10 @@ import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
-import org.apache.solr.client.solrj.SolrServer;
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.CloudSolrServer;
-import org.apache.solr.client.solrj.impl.HttpSolrServer;
+import org.apache.solr.client.solrj.impl.CloudSolrClient;
+import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrInputDocument;
 
@@ -62,22 +58,16 @@ public class SolrIndexServiceBean {
 
     public static String numRowsClearedByClearAllIndexTimes = "numRowsClearedByClearAllIndexTimes";
     public static String messageString = "message";
-    private SolrServer solrServer;
+    private SolrClient solrServer;
     
     @PostConstruct
     public void init(){
         if (systemConfig.isSolrCloudZookeeperEnabled()) {
-            String status;
-            try {
-                solrServer = new CloudSolrServer(systemConfig.getSolrZookeeperEnsemble());
-                ((CloudSolrServer)solrServer).setDefaultCollection(systemConfig.getSolrCollectionName());
-            } catch (MalformedURLException ex) {
-                /* Newer versions of solrj do not throw MalformedURLException from CloudSolrServer constructor */
-                status = ex.toString();
-                logger.info(status);
-            }
+            solrServer = new CloudSolrClient(systemConfig.getSolrZookeeperEnsemble());
+            ((CloudSolrClient)solrServer).setDefaultCollection(systemConfig.getSolrCollectionName());
+            ((CloudSolrClient)solrServer).connect();
         }else{
-            solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/" + systemConfig.getSolrServiceName() + "/" + systemConfig.getSolrCollectionName());
+            solrServer = new HttpSolrClient("http://" + systemConfig.getSolrHostColonPort() + "/" + systemConfig.getSolrServiceName() + "/" + systemConfig.getSolrCollectionName());
         }
     }
     
