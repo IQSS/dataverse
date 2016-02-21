@@ -1,20 +1,17 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.util.SystemConfig;
-/* MalformedURLException used by CloudSolrServer constructor
- * Newer versions of solrj do not throw MalformedURLException 
- * from CloudSolrServer constructor */
-import java.net.MalformedURLException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.inject.Named;
 import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.SolrServer;
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.CloudSolrServer;
-import org.apache.solr.client.solrj.impl.HttpSolrServer;
+import org.apache.solr.client.solrj.impl.CloudSolrClient;
+import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.TermsResponse;
 import org.apache.solr.client.solrj.response.TermsResponse.Term;
@@ -30,22 +27,16 @@ public class AutoCompleteBean implements java.io.Serializable {
     @EJB
     SystemConfig systemConfig;
     
-    private static SolrServer solrServer;
+    private static SolrClient solrServer;
     
-    public SolrServer getSolrServer(){
+    public SolrClient getSolrServer(){
         if(solrServer == null){
             if (systemConfig.isSolrCloudZookeeperEnabled()) {
-                String status;
-                try {
-                    solrServer = new CloudSolrServer(systemConfig.getSolrZookeeperEnsemble());
-                    ((CloudSolrServer)solrServer).setDefaultCollection(systemConfig.getSolrCollectionName());
-                } catch (MalformedURLException ex) {
-                    /* Newer versions of solrj do not throw MalformedURLException from CloudSolrServer constructor */
-                    status = ex.toString();
-                    logger.info(status);
-                }
+                solrServer = new CloudSolrClient(systemConfig.getSolrZookeeperEnsemble());
+                ((CloudSolrClient)solrServer).setDefaultCollection(systemConfig.getSolrCollectionName());
+                ((CloudSolrClient)solrServer).connect();
             }else{
-               solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/" + systemConfig.getSolrServiceName() + "/" + systemConfig.getSolrCollectionName());
+               solrServer = new HttpSolrClient("http://" + systemConfig.getSolrHostColonPort() + "/" + systemConfig.getSolrServiceName() + "/" + systemConfig.getSolrCollectionName());
             }
         }
         return solrServer;
@@ -74,7 +65,7 @@ public class AutoCompleteBean implements java.io.Serializable {
 //            items = resp.getTerms(SearchFields.NAME);
             items = resp.getTerms("text");
 //            items = resp.getTerms(solrFieldDatasetFieldDescription);
-        } catch (SolrServerException e) {
+        } catch (SolrServerException | IOException e) {
             items = null;
         }
 
