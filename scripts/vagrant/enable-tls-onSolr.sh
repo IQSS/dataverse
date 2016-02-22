@@ -15,15 +15,15 @@ _usage() {
   echo "  -i     Path to the solr.in.sh init.d service configuration script. \[${SOLR_IN_SH_PATH}\]"
   echo "  -k     Path to the host (java)keystore [.jks] file."
   echo "  -p     Password for the host (java)keystore file."
-  echo "  -r     Require client TLS/SSL authentication. \[false\]"
-  echo "  -s     Suggest client TLS/SSL authentication. \[false\]"
+  echo "  -r     Require client TLS/SSL authentication."
+  echo "  -s     Suggest client TLS/SSL authentication."
   echo "  -t     Path to the host (java)truststore [.jks] file."
   echo "  -v     Verbosity of this installation script \(0-3\). \[${OUTPUT_VERBOSITY}\]"
   echo "  -w     Watchword (password) for the host (java)truststore file."
   echo "\n"
 }
 
-while getopts :h:i:k:p:r:s:t:v:w: FLAG; do
+while getopts :h:i:k:p:t:v:w:rs FLAG; do
   case $FLAG in
     h)  #print help
       _usage

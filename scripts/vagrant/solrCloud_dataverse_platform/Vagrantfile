@@ -36,6 +36,26 @@ unless defined? SOLR_INSTALL_DIR
   SOLR_INSTALL_DIR = '/opt'
 end
 
+unless defined? ENABLE_TLS_ON_SOLR
+  # Set this to non-zero to configure the solr service to use TLS/SSL
+  ENABLE_TLS_ON_SOLR=0
+end
+
+unless defined? KEYSTORE_PATH
+  KEYSTORE_PATH = '/etc/pki/java/dataverse_keystore.jks
+end
+
+unless defined? KEYSTORE_PASSWORD
+  KEYSTORE_PASSWORD = 'dataverse'
+end
+
+unless defined? TRUSTSTORE_PATH
+  TRUSTSTORE_PATH = '/etc/pki/java/dataverse_truststore.jks
+end
+
+unless defined? TRUSTSTORE_PASSWORD
+  TRUSTSTORE_PASSWORD = 'dataverse'
+end
 
 unless defined? DVCOLLECTION_NAME
   DVCOLLECTION_NAME = 'dvcollection'
@@ -62,6 +82,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       solr.vm.provision "installSolrService", type: "shell",
         path: "../install-solr-service.sh", 
         args: "-s #{SOLR_VERSION} -v #{OUTPUT_VERBOSITY} -x " + STATIC_IP_SOLRCLOUD[(i-1)] + " -i #{SOLR_INSTALL_DIR}"
+      if (ENABLE_TLS_ON_SOLR != 0)
+        solr.vm.provision "setupTLS", type: "shell", 
+          path: "../setup-tls.sh",
+          args: "-k #{KEYSTORE_PATH} -p #{KEYSTORE_PASSWORD} -v #{OUTPUT_VERBOSITY} -w #{TRUSTSTORE_PASSWORD} -x " + STATIC_IP_SOLRCLOUD[(i-1)]
+        solr.vm.provision "enableTLSonSolr", type: "shell", 
+          path: "../enable-tls-onSolr.sh",
+          args: "-k #{KEYSTORE_PATH} -p #{KEYSTORE_PASSWORD} -s -t #{TRUSTSTORE_PATH} -v #{OUTPUT_VERBOSITY} -w #{TRUSTSTORE_PASSWORD}"
+      end
       solr.vm.provision "enableSolrCloud", type: "shell", path: "./setup-solrCloud.sh",
         args: [ "-e",ZOOKEEPER_ENSEMBLE,"-v",OUTPUT_VERBOSITY ]
       if ( i == STATIC_IP_SOLRCLOUD.length )
@@ -79,7 +107,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         }
         solr.vm.provision "createDataverseCollection", type: "shell", 
           path: "../setup-dvcollection.sh", 
-          args: "-v #{OUTPUT_VERBOSITY} -c '#{DVCOLLECTION_NAME}' -r " + STATIC_IP_SOLRCLOUD.length.to_s + " -s " + STATIC_IP_SOLRCLOUD.length.to_s
+          args: "-c '#{DVCOLLECTION_NAME}' -i #{SOLR_INSTALL_DIR} -v #{OUTPUT_VERBOSITY} -r " + STATIC_IP_SOLRCLOUD.length.to_s + " -s 1"
+          #### args: "-c '#{DVCOLLECTION_NAME}' -i #{SOLR_INSTALL_DIR} -v #{OUTPUT_VERBOSITY} -r " + STATIC_IP_SOLRCLOUD.length.to_s + " -s " + STATIC_IP_SOLRCLOUD.length.to_s
+        #### There is currently a wierd bug when querying dataverse on a collection that is sharded! use -s 1 ####
       end
     end
   end
@@ -103,6 +133,19 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     dataverse.vm.provision "dataversePrereqs", type: "shell", 
       path: "../setup.sh", args: "-v #{OUTPUT_VERBOSITY}"
     dataverse.vm.provision "killFirewall", type: "shell", inline: "service iptables stop"
+    if (ENABLE_TLS_ON_SOLR != 0)
+      dataverse.vm.provision "setupTLS", type: "shell", 
+        path: "../setup-tls.sh",
+        args: "-k #{KEYSTORE_PATH} -p #{KEYSTORE_PASSWORD} -v #{OUTPUT_VERBOSITY} -w #{TRUSTSTORE_PASSWORD} -x #{STATIC_IP_DATAVERSE}"
+      dataverse.vm.provision "addTrust", type: "shell", 
+        inline: "sudo cp ./dataverse_truststore.jks #{TRUSTSTORE_PATH}"
+
+      STATIC_IP_SOLRCLOUD.each_with_index { |node,index|
+        remote_cmd = "ssh  -o StrictHostKeyChecking=no -i /vagrant/.vagrant/machines/solrcloud" + (index + 1).to_s + "/virtualbox/private_key vagrant@#{node}"
+        remote_cmd << " 'sudo cp ./dataverse_truststore.jks #{TRUSTSTORE_PATH}; sudo service solr restart'"
+        dataverse.vm.provision "remoteAddTrustRestartSolr", type: "shell", inline: remote_cmd      
+      }
+    end
     dataverse.vm.provision "dataverseSetup", type: "shell", path: "../install-dataverse.sh",
       args: "-c #{DVCOLLECTION_NAME} -h #{STATIC_IP_DATAVERSE} -m #{mailserver} -z '#{ZOOKEEPER_ENSEMBLE}' -v #{OUTPUT_VERBOSITY}"
     dataverse.vm.provision "loadDataverseTest", type: "shell", 

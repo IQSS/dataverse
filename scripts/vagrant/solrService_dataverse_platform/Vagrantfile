@@ -30,6 +30,22 @@ unless defined? ENABLE_TLS_ON_SOLR
   ENABLE_TLS_ON_SOLR=0
 end
 
+unless defined? KEYSTORE_PATH
+  KEYSTORE_PATH = '/etc/pki/java/dataverse_keystore.jks
+end
+
+unless defined? KEYSTORE_PASSWORD
+  KEYSTORE_PASSWORD = 'dataverse'
+end
+
+unless defined? TRUSTSTORE_PATH
+  TRUSTSTORE_PATH = '/etc/pki/java/dataverse_truststore.jks
+end
+
+unless defined? TRUSTSTORE_PASSWORD
+  TRUSTSTORE_PASSWORD = 'dataverse'
+end
+
 unless defined? DVCOLLECTION_NAME
   DVCOLLECTION_NAME = 'dvcollection'
 end
@@ -53,9 +69,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     if (ENABLE_TLS_ON_SOLR != 0)
       solr.vm.provision "setupTLS", type: "shell", 
         path: "../setup-tls.sh",
-        args: "-v #{OUTPUT_VERBOSITY} -x #{STATIC_IP_SOLR}"
+        args: "-k #{KEYSTORE_PATH} -p #{KEYSTORE_PASSWORD} -v #{OUTPUT_VERBOSITY} -w #{TRUSTSTORE_PASSWORD} -x #{STATIC_IP_SOLR}"
       solr.vm.provision "enableTLSonSolr", type: "shell", 
-        path: "../enable-tls-onSolr.sh"
+        path: "../enable-tls-onSolr.sh",
+        args: "-k #{KEYSTORE_PATH} -p #{KEYSTORE_PASSWORD} -s -t #{TRUSTSTORE_PATH} -v #{OUTPUT_VERBOSITY} -w #{TRUSTSTORE_PASSWORD}"
     end
     solr.vm.provision "createDataverseCollection", type: "shell", 
       path: "../setup-dvcollection.sh", args: "-c '#{DVCOLLECTION_NAME}' -i '#{SOLR_INSTALL_DIR}' -v #{OUTPUT_VERBOSITY}"
@@ -85,9 +102,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     if (ENABLE_TLS_ON_SOLR != 0)
       dataverse.vm.provision "setupTLS", type: "shell", 
         path: "../setup-tls.sh",
-        args: "-v #{OUTPUT_VERBOSITY} -x #{STATIC_IP_DATAVERSE}"
-      dataverse.vm.provision "addTLScertToTrust", type: "shell", 
-        path: "../install-tls_cert-Trust.sh"
+        args: "-k #{KEYSTORE_PATH} -p #{KEYSTORE_PASSWORD} -v #{OUTPUT_VERBOSITY} -w #{TRUSTSTORE_PASSWORD} -x #{STATIC_IP_DATAVERSE}"
+      dataverse.vm.provision "addTrust", type: "shell", 
+        inline: "sudo cp ./dataverse_truststore.jks #{TRUSTSTORE_PATH}"
+
+      remote_cmd = "ssh  -o StrictHostKeyChecking=no -i /vagrant/.vagrant/machines/solr/virtualbox/private_key vagrant@#{STATIC_IP_SOLR}"
+      remote_cmd << " 'sudo cp ./dataverse_truststore.jks #{TRUSTSTORE_PATH}; sudo service solr restart'"
+      dataverse.vm.provision "remoteAddTrustRestartSolr", type: "shell", inline: remote_cmd      
+
     end
     dataverse.vm.provision "dataverseSetup", type: "shell", path: "../install-dataverse.sh",
       args: "-c #{DVCOLLECTION_NAME} -h #{STATIC_IP_DATAVERSE} -m #{mailserver} -s #{STATIC_IP_SOLR} -v #{OUTPUT_VERBOSITY}"
