@@ -205,6 +205,9 @@ public class DatasetPage implements java.io.Serializable {
     private final Map<String, Boolean> datasetPermissionMap = new HashMap<>(); // { Permission human_name : Boolean }
     private final Map<Long, Boolean> fileDownloadPermissionMap = new HashMap<>(); // { FileMetadata.id : Boolean }
 
+    private final Map<Long, Boolean> fileMetadataTwoRavensExploreMap = new HashMap<>(); // { FileMetadata.id : Boolean } 
+    private final Map<Long, Boolean> fileMetadataWorldMapExplore = new HashMap<>(); // { FileMetadata.id : Boolean } 
+    
     private DataFile selectedDownloadFile;
 
     private Long maxFileUploadSizeInBytes = null;
@@ -1156,24 +1159,34 @@ public class DatasetPage implements java.io.Serializable {
             return false;
         }
         
+        // Has this already been checked?
+        if (this.fileMetadataTwoRavensExploreMap.containsKey(fm.getId())){
+            // Yes, return previous answer
+            //logger.info("using cached result for candownloadfile on filemetadata "+fid);
+            return this.fileMetadataTwoRavensExploreMap.get(fm.getId());
+        }
+        
         
         // (1) Is TwoRavens active via the "setting" table?
         //      Nope: get out
         //
         if (!settingsService.isTrueForKey(SettingsServiceBean.Key.TwoRavensTabularView, false)){
-           return false;
-       }
+            this.fileMetadataTwoRavensExploreMap.put(fm.getId(), false);
+            return false;
+        }
         
         // (2) Does the user have download permission?
         //      Nope: get out
         //
         if (!(this.canDownloadFile(fm))){
+            this.fileMetadataTwoRavensExploreMap.put(fm.getId(), false);
             return false;
         } 
         // (3) Is the DataFile object there and persisted?
         //      Nope: scat
         //
         if ((fm.getDataFile() == null)||(fm.getDataFile().getId()==null)){
+            this.fileMetadataTwoRavensExploreMap.put(fm.getId(), false);
             return false;
         }
         
@@ -1181,10 +1194,12 @@ public class DatasetPage implements java.io.Serializable {
         //      Yes: great
         //
         if ((fm.getDataFile().isTabularData())||(fm.getDataFile().isIngestInProgress())){
+            this.fileMetadataTwoRavensExploreMap.put(fm.getId(), true);
             return true;
         }
         
         // Nope
+        this.fileMetadataTwoRavensExploreMap.put(fm.getId(), false);            
         return false;
         
         //       (empty fileMetadata.dataFile.id) and (fileMetadata.dataFile.tabularData or fileMetadata.dataFile.ingestInProgress)
@@ -1237,11 +1252,18 @@ public class DatasetPage implements java.io.Serializable {
             return false;
         }
         
+        if (this.fileMetadataWorldMapExplore.containsKey(fm.getId())){
+            // Yes, return previous answer
+            //logger.info("using cached result for candownloadfile on filemetadata "+fid);
+            return this.fileMetadataWorldMapExplore.get(fm.getId());
+        }
+        
         /* -----------------------------------------------------
            Does a Map Exist?
          ----------------------------------------------------- */
         if (!(this.hasMapLayerMetadata(fm))){
             // Nope: no button
+            this.fileMetadataWorldMapExplore.put(fm.getId(), false);
             return false;
         }
               
@@ -1250,6 +1272,7 @@ public class DatasetPage implements java.io.Serializable {
             Nope? no button
         */
         if (!settingsService.isTrueForKey(SettingsServiceBean.Key.GeoconnectViewMaps, false)){
+            this.fileMetadataWorldMapExplore.put(fm.getId(), false);
             return false;
         }        
         
@@ -1258,11 +1281,13 @@ public class DatasetPage implements java.io.Serializable {
              Yes: User can view button!
          ----------------------------------------------------- */                    
         if (this.canDownloadFile(fm)){
+            this.fileMetadataWorldMapExplore.put(fm.getId(), true);
             return true;
         }
                       
         // Nope: Can't see button
         //
+        this.fileMetadataWorldMapExplore.put(fm.getId(), false);
         return false;
     }
 
@@ -1305,7 +1330,8 @@ public class DatasetPage implements java.io.Serializable {
     private boolean metadataExportEnabled;
 
     public String init() {
-        // logger.fine("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
+        //System.out.println("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
+        
         String nonNullDefaultIfKeyNotFound = "";
         this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSize();
         setDataverseSiteUrl(systemConfig.getDataverseSiteUrl());
