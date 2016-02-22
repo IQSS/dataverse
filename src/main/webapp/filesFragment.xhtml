@@ -303,7 +303,7 @@
                 <!-- Explore Dropdown: When TwoRavens **AND** WorldMap Explore options are available -->
                 <div class="btn-group" jsf:rendered="#{DatasetPage.canSeeTwoRavensExploreButton(fileMetadata) and DatasetPage.canUserSeeExploreWorldMapButton(fileMetadata)}">
                     <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                        <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore} <span class="caret"/>
+                        <span class="glyphicon glyphicon-equalizer"/> <span class="glyphicon glyphicon-map-marker"/> #{bundle.explore} <span class="caret"/>
                     </button>
                     <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
                       
@@ -312,20 +312,20 @@
                                             styleClass="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}"
                                             disabled="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}"
                                             actionListener="#{DatasetPage.exploreOutputLink(fileMetadata, 'explore')}" target="_blank">
-                                    #{bundle.explore} with TwoRavens
+                                    <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore} with TwoRavens
                             </h:commandLink>
                             <p:commandLink rendered="#{ DatasetPage.downloadPopupRequired}"                                            
                                             action="#{DatasetPage.initGuestbookResponse(fileMetadata, 'explore')}"
                                             update="@form"
                                             oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
-                                    #{bundle.explore}
+                                    <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore} with TwoRavens
                             </p:commandLink>                          
                         </li>
                         <li><!-- WorldMap Explore -->
                             <h:outputLink rendered="#{DatasetPage.canUserSeeExploreWorldMapButton(fileMetadata)}"
                                   styleClass="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}"  
                                   value="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }" target="_blank">
-                                        #{bundle['file.mapData.viewMap']} Map
+                                  <span class="glyphicon glyphicon-map-marker"/> #{bundle['file.mapData.viewMap']}
                             </h:outputLink>
                         </li>                       
                     </ul>
