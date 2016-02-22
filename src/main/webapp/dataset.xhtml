@@ -1256,18 +1256,18 @@
                     </p:dialog>
 
                     <!-- Publish/Submit for Review Dialogs -->
-                    <p:dialog header="#{bundle['dataset.publish.header']}" widgetVar="publishConfirm" modal="true">
+                    <p:dialog styleClass="largePopUp" header="#{bundle['dataset.publish.header']}" widgetVar="publishConfirm" modal="true">
                         <ui:fragment rendered="#{DatasetPage.dataset.globalIdCreateTime == null}">
                             <p class="text-danger">
                                 <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.unregistered.tip']}
                             </p>
                         </ui:fragment>
-                        <ui:fragment rendered="#{DatasetPage.datasetPublishCustomText.length() > 0}">                            
-                                <span class="glyphicon glyphicon-warning-sign"/> #{DatasetPage.datasetPublishCustomText}                           
-                        </ui:fragment>
                         <p class="text-danger">
                             <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.publish.tip']}
                         </p>
+                        <div id="terms-agreement-block" class="well" jsf:rendered="#{DatasetPage.datasetPublishCustomText.length() > 0}">
+                            <h:outputText value="#{DatasetPage.datasetPublishCustomText}" escape="false"/>
+                        </div>
                         <div class="button-block">
                             <p:commandButton value="#{bundle.continue}" onclick="PF('publishConfirm').hide();PF('blockDatasetForm').hide();" action="#{DatasetPage.releaseDataset}" />
                             <p:commandButton value="#{bundle.cancel}" onclick="PF('publishConfirm').hide();PF('blockDatasetForm').hide();" type="button" />
