@@ -6,16 +6,16 @@ if [[ -z ${SOLR_INSTALL_DIR} ]]; then SOLR_INSTALL_DIR='/opt'; fi
 if [[ -z ${SOLR_OWNER} ]]; then SOLR_OWNER='solr'; fi
 
 _usage() {
-  echo "\nUsage: $0 \[chirsv\]"
-  echo "\nSupported options:"
-  echo "  -c     Solr collection name for main dataverse index. \[${DVCOLLECTION_NAME}\]"
+  echo "Usage: $0 [chirsv]"
+  echo "Supported options:"
+  echo "  -c     Solr collection name for main dataverse index. [${DVCOLLECTION_NAME}]"
   echo "  -h     Print this help message."
-  echo "  -i     Directory in which to extract th solr installation. \[${SOLR_INSTALL_DIR}\]"
-  echo "  -r     Number of replicas of each collection fragement created in the solrCloud. \[1\]"
-  echo "  -s     Number of shards to fragment the collection into on the solrCloud. \[1\]"
-  echo "  -u     User the solr service runs as. \[${SOLR_OWNER\]"
-  echo "  -v     Verbosity of this installation script \(0-3\). \[${OUTPUT_VERBOSITY}\]"
-  echo "\n"
+  echo "  -i     Directory in which to extract th solr installation. [${SOLR_INSTALL_DIR}]"
+  echo "  -r     Number of replicas of each collection fragement created in the solrCloud. [1]"
+  echo "  -s     Number of shards to fragment the collection into on the solrCloud. [1]"
+  echo "  -u     User the solr service runs as. [${SOLR_OWNER}]"
+  echo "  -v     Verbosity of this installation script (0-3). [${OUTPUT_VERBOSITY}]"
+  echo ""
 }
 
 while getopts :c:h:i:r:s:u:v: FLAG; do
@@ -27,20 +27,20 @@ while getopts :c:h:i:r:s:u:v: FLAG; do
       _usage
       exit 0
       ;;
-    i)  #set option solr install directory "i"
+    i)  #set option solr install directory
       SOLR_INSTALL_DIR=$OPTARG
       ;;
-    r)  #set output verbosity level "v"
+    r)  #set output verbosity level
       DVCOLLECTION_REPLICAS=$OPTARG
       ;;
-    s)  #set output verbosity level "v"
+    s)  #set output verbosity level
       DVCOLLECTION_SHARDS=$OPTARG
       ;;
-    u)  #solr runs as SOLR_OWNER "u"
+    u)  #solr runs as SOLR_OWNER
       ## user will be created if not exists
       SOLR_OWNER=$OPTARG
       ;;
-    v)  #set output verbosity level "v"
+    v)  #set output verbosity level
       OUTPUT_VERBOSITY=$OPTARG
       ;;
     :)  #valid option requires adjacent argument
@@ -56,12 +56,10 @@ done
 ## *_CMD and _IF_* command variables are set in /dataverse/scripts/api/bin/util-set-verbosity.sh
 if [[ -e "/dataverse/scripts/api/bin/util-set-verbosity.sh" ]]; then
   . "/dataverse/scripts/api/bin/util-set-verbosity.sh"
-elif [[ -e "../../api/bin/util-set-verbosity.sh" ]]; then
-  . "../../api/bin/util-set-verbosity.sh"
+elif [[ -e "../api/bin/util-set-verbosity.sh" ]]; then
+  . "../api/bin/util-set-verbosity.sh"
 elif [[ -e "./util-set-verbosity.sh" ]]; then
   . "./util-set-verbosity.sh"
-else
-  CURL_CMD='curl'
 fi
 
 $_IF_TERSE echo "Creating Solr collection ${DVCOLLECTION_NAME} to use with dataverse"
@@ -74,7 +72,8 @@ elif ( type -p solr >/dev/null 2>&1 ); then
   $_IF_VERBOSE echo "found solr executable in PATH" 
   _solr=solr
 else
-  echo "Unable to find solr executable!"
+  echo "Unable to find solr executable!" >&2
+  echo "Solr Collection setup has failed!" >&2
   return 1
 fi
 
@@ -107,6 +106,6 @@ if [[ -n ${DVCOLLECTION_REPLICAS} ]]; then
   _create_collection_cmd="${_create_collection_cmd} -replicationFactor ${DVCOLLECTION_REPLICAS}"
 fi
 
-eval "sudo -u $SOLR_OWNER $_solr $_create_collection_cmd"
+eval "sudo -u $SOLR_OWNER $_solr ${_create_collection_cmd}"
 
 $_IF_TERSE echo "Solr collection ${DVCOLLECTION_NAME} established"

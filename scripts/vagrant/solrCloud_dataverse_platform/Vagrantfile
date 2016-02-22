@@ -38,7 +38,11 @@ end
 
 unless defined? ENABLE_TLS_ON_SOLR
   # Set this to non-zero to configure the solr service to use TLS/SSL
-  ENABLE_TLS_ON_SOLR=0
+  if ENV['ENABLE_TLS_ON_SOLR'].nil?
+    ENABLE_TLS_ON_SOLR = 0
+  else
+    ENABLE_TLS_ON_SOLR = ENV['ENABLE_TLS_ON_SOLR']
+  end
 end
 
 unless defined? KEYSTORE_PATH
