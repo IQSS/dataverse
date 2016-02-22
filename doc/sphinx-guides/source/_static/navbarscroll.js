@@ -6,11 +6,7 @@ $(function() {
   $('a[href*=#]:not([href=#])').on('click', function() {
     if (location.pathname.replace(/^\//,'') == this.pathname.replace(/^\//,'') 
 && location.hostname == this.hostname) {
-
-      //var target = $('a.headerlink[href="#'+this.hash+'"]');
-
       var target = $(this.hash);
-
       target = target.length ? target : $('a.headerlink[href="#' + this.hash.slice(1) +'""]');
       if (target.length) {
         $('html,body').animate({
@@ -22,10 +18,7 @@ $(function() {
   });
   //Executed on page load with URL containing an anchor tag.
   if($(location.href.split("#")[1])) {
-      var target = $('a.headerlink[href="#'+location.href.split("#")[1]+'"]');
-
-      //var target = $('#'+location.href.split("#")[1]);
-
+      var target = $('#'+location.href.split("#")[1]);
       if (target.length) {
         $('html,body').animate({
           scrollTop: target.offset().top - 60 //offset height of header here too.
