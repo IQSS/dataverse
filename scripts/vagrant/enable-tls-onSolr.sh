@@ -77,8 +77,8 @@ fi
 $_IF_TERSE echo "Enabling TLS/SSL for the solr service using verbosity level: ${OUTPUT_VERBOSITY}"
 
 if [[ ( -z ${KEYSTORE_PATH} ) || ( ! -e $KEYSTORE_PATH ) ]]; then 
-  echo "Unable to access keystore: $KEYSTORE_PATH" > &2
-  echo "Configuration failed!" > &2
+  echo "Unable to access keystore: $KEYSTORE_PATH" >&2
+  echo "Configuration failed!" >&2
   return 1
 else
   SOLR_SSL_SETTINGS="SOLR_SSL_KEY_STORE=${KEYSTORE_PATH}\n"
