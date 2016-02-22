@@ -52,7 +52,7 @@ echo
 peteKey=$(echo $peteResp | jq .data.apiToken | tr -d \")
 echo :result: Pete\'s key is: $peteKey
 umaKey=$(echo $umaResp | jq .data.apiToken | tr -d \")
-echo :result: Uma\'s key is: $umaKey#!/bin/bash -f
+echo :result: Uma\'s key is: $umaKey
 
 
 echo
