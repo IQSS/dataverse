@@ -42,7 +42,7 @@ unless defined? ENABLE_TLS_ON_SOLR
 end
 
 unless defined? KEYSTORE_PATH
-  KEYSTORE_PATH = '/etc/pki/java/dataverse_keystore.jks
+  KEYSTORE_PATH = '/etc/pki/java/dataverse_keystore.jks'
 end
 
 unless defined? KEYSTORE_PASSWORD
@@ -50,7 +50,7 @@ unless defined? KEYSTORE_PASSWORD
 end
 
 unless defined? TRUSTSTORE_PATH
-  TRUSTSTORE_PATH = '/etc/pki/java/dataverse_truststore.jks
+  TRUSTSTORE_PATH = '/etc/pki/java/dataverse_truststore.jks'
 end
 
 unless defined? TRUSTSTORE_PASSWORD
