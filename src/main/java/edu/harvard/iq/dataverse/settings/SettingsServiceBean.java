@@ -193,7 +193,17 @@ public class SettingsServiceBean {
         Explore World Map Button
         Default is false;
         */
-        GeoconnectViewMaps;
+        GeoconnectViewMaps,
+        /**
+         The message added to a popup upon dataset publish
+         * 
+         */
+        DatasetPublishPopupCustomText,
+        /*
+        Whether to display the publish text for every published version
+        */
+        DatasetPublishPopupCustomTextOnAllVersions;
+        
         @Override
         public String toString() {
             return ":" + name();

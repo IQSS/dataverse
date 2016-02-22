@@ -61,6 +61,11 @@ public class DOIEZIdServiceBean  {
         String identifier = getIdentifierFromDataset(dataset);
         HashMap<String, String> metadata = getMetadataFromStudyForCreateIndicator(dataset);
         metadata.put("_status", "reserved");
+                    System.out.print("baseURLString " + baseURLString);
+            System.out.print("USERNAME " + USERNAME);
+            System.out.print("PASSWORD " + PASSWORD);
+            System.out.print("identifier " + identifier);
+            System.out.print("metadata " + metadata);
         try {
             retString = ezidService.createIdentifier(identifier, metadata);
             logger.log(Level.FINE, "create DOI identifier retString : " + retString);
@@ -70,6 +75,7 @@ public class DOIEZIdServiceBean  {
             logger.log(Level.WARNING, "localized message {0}", e.getLocalizedMessage());
             logger.log(Level.WARNING, "cause", e.getCause());
             logger.log(Level.WARNING, "message {0}", e.getMessage());
+
             return "Identifier not created "  +  e.getLocalizedMessage();
         }
         return retString;
