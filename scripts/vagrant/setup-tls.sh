@@ -107,6 +107,10 @@ _export_opt="-rfc -file $TLS_CERTIFICATE_PATH"
 $_IF_TERSE echo "Exporting the self-signed certificate $TLS_CERTIFICATE_PATH"
 $_IF_VERBOSE eval "$_keytool -export $_export_opt $_keystore_opt $_keystore_pass_opt" 
 
+## add self-signed certificate to dataverse truststore ##
+$_IF_INFO echo "Adding $TLS_CERTIFICATE_PATH to custom dataverse truststore"
+$_IF_VERBOSE eval "$_keytool -keystore dataverse_truststore.jks -importcert -alias $HOSTNAME -file $TLS_CERTIFICATE_PATH -storepass $KEYSTORE_PASSWORD"
+
 ## use keytool to create a dummy pkcs12 keystore to export openssl style keys ##
 _importkeystore_opt="-srckeystore $KEYSTORE_PATH -srcstorepass $KEYSTORE_PASSWORD -srckeypass $KEYSTORE_PASSWORD -srcalias $HOSTNAME"
 $_IF_INFO echo "Creating temporary pkcs12 keystore to export openssl style keys"
