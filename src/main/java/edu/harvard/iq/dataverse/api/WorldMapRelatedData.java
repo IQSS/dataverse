@@ -612,6 +612,28 @@ public class WorldMapRelatedData extends AbstractApiBean {
             mapLayerMetadata.setMapImageLink(jsonInfo.getString("mapImageLink"));
         }
       
+        // If this was a tabular join set the attributes:
+        //  - isJoinLayer
+        //  - joinDescription
+        //
+        String joinDescription = jsonInfo.getString("joinDescription");
+        if ((joinDescription == null) || (joinDescription.equals(""))){
+            mapLayerMetadata.setIsJoinLayer(true);
+            mapLayerMetadata.setJoinDescription(joinDescription);
+        }else{
+            mapLayerMetadata.setIsJoinLayer(false);
+            mapLayerMetadata.setJoinDescription(null);            
+        }
+            
+        // Set the mapLayerLinks 
+        //
+        String mapLayerLinks = jsonInfo.getString("mapLayerLinks");
+        if (mapLayerLinks == null){
+            mapLayerMetadata.setMapLayerLinks(null);                        
+        }else{
+            mapLayerMetadata.setMapLayerLinks(mapLayerLinks);            
+        }
+        
         
         //mapLayer.save();
         MapLayerMetadata savedMapLayerMetadata = mapLayerMetadataService.save(mapLayerMetadata);
