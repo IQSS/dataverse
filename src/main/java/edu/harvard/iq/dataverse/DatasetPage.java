@@ -1066,8 +1066,12 @@ public class DatasetPage implements java.io.Serializable {
         // (2) Is this file a Shapefile 
         //  TODO: or a Tabular file tagged as Geospatial?
         //
-        if (!(this.isShapefileType(fm))){
-              return false;
+        // REMOVED
+        
+        // Is this file a Shapefile or a Tabular file tagged as Geospatial?
+        //
+        if (!(this.isPotentiallyMappableFileType(fm))){
+            return false;
         }
 
         // (3) Is this DataFile released?  Yes, don't need reminder
