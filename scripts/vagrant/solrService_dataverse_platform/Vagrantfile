@@ -72,11 +72,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       args: "-s #{SOLR_VERSION} -v #{OUTPUT_VERBOSITY} -x #{STATIC_IP_SOLR} -i #{SOLR_INSTALL_DIR}"
     if (ENABLE_TLS_ON_SOLR != 0)
       solr.vm.provision "setupTLS", type: "shell", 
-        path: "../setup-tls.sh",
+        path: "../setup-tls-solr.sh",
         args: "-k #{KEYSTORE_PATH} -p #{KEYSTORE_PASSWORD} -v #{OUTPUT_VERBOSITY} -w #{TRUSTSTORE_PASSWORD} -x #{STATIC_IP_SOLR}"
       solr.vm.provision "enableTLSonSolr", type: "shell", 
         path: "../enable-tls-onSolr.sh",
-        args: "-k #{KEYSTORE_PATH} -p #{KEYSTORE_PASSWORD} -s -t #{TRUSTSTORE_PATH} -v #{OUTPUT_VERBOSITY} -w #{TRUSTSTORE_PASSWORD}"
+        args: "-k #{KEYSTORE_PATH} -p #{KEYSTORE_PASSWORD} -t #{TRUSTSTORE_PATH} -v #{OUTPUT_VERBOSITY} -w #{TRUSTSTORE_PASSWORD}"
+#        args: "-k #{KEYSTORE_PATH} -p #{KEYSTORE_PASSWORD} -s -t #{TRUSTSTORE_PATH} -v #{OUTPUT_VERBOSITY} -w #{TRUSTSTORE_PASSWORD}"
+#### Glassfish TLS client certificate configuration isn't working currently -s/-r options break the connection ####
     end
     solr.vm.provision "createDataverseCollection", type: "shell", 
       path: "../setup-dvcollection.sh", args: "-c '#{DVCOLLECTION_NAME}' -i '#{SOLR_INSTALL_DIR}' -v #{OUTPUT_VERBOSITY}"
@@ -104,14 +106,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       path: "../setup.sh", args: "-v #{OUTPUT_VERBOSITY}"
     dataverse.vm.provision "killFirewall", type: "shell", inline: "service iptables stop"
     if (ENABLE_TLS_ON_SOLR != 0)
-      dataverse.vm.provision "setupTLS", type: "shell", 
-        path: "../setup-tls.sh",
-        args: "-k #{KEYSTORE_PATH} -p #{KEYSTORE_PASSWORD} -v #{OUTPUT_VERBOSITY} -w #{TRUSTSTORE_PASSWORD} -x #{STATIC_IP_DATAVERSE}"
-      dataverse.vm.provision "addTrust", type: "shell", 
-        inline: "sudo cp ./dataverse_truststore.jks #{TRUSTSTORE_PATH}"
+      dataverse.vm.provision "addGlassfishDomainTLS", type: "shell", 
+        path: "../setup-tls-dataverse.sh",
+        args: "-v #{OUTPUT_VERBOSITY} -w #{TRUSTSTORE_PASSWORD} -x #{STATIC_IP_DATAVERSE}" 
+      dataverse.vm.provision "addTrustToGlassfishDomain", type: "shell", 
+        inline: "keytool -importkeystore -noprompt -srckeystore /vagrant/dataverse_truststore.jks -srcstorepass #{KEYSTORE_PASSWORD} -destkeystore ~glassfish/glassfish4/glassfish/domains/domain1/config/cacerts.jks -deststorepass changeit"
 
       remote_cmd = "ssh  -o StrictHostKeyChecking=no -i /vagrant/.vagrant/machines/solr/virtualbox/private_key vagrant@#{STATIC_IP_SOLR}"
-      remote_cmd << " 'sudo cp ./dataverse_truststore.jks #{TRUSTSTORE_PATH}; sudo service solr restart'"
+      remote_cmd << " 'sudo cp /vagrant/dataverse_truststore.jks #{TRUSTSTORE_PATH}; sudo service solr restart; sudo rm /vagrant/dataverse_truststore.jks'"
       dataverse.vm.provision "remoteAddTrustRestartSolr", type: "shell", inline: remote_cmd      
 
     end

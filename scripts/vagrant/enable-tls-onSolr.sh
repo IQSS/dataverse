@@ -76,27 +76,32 @@ fi
 
 $_IF_TERSE echo "Enabling TLS/SSL for the solr service using verbosity level: ${OUTPUT_VERBOSITY}"
 
+newline='
+'
 if [[ ( -z ${KEYSTORE_PATH} ) || ( ! -e $KEYSTORE_PATH ) ]]; then 
   echo "Unable to access keystore: $KEYSTORE_PATH" >&2
   echo "Configuration failed!" >&2
   return 1
 else
-  SOLR_SSL_SETTINGS="SOLR_SSL_KEY_STORE=${KEYSTORE_PATH}"$'\n'
+  SOLR_SSL_SETTINGS="SOLR_SSL_KEY_STORE=${KEYSTORE_PATH}${newline}"
   if [[ -n ${KEYSTORE_PASSWORD} ]]; then
-    SOLR_SSL_SETTINGS+="SOLR_SSL_KEY_STORE_PASSWORD=${KEYSTORE_PASSWORD}"$'\n'
+    SOLR_SSL_SETTINGS+="SOLR_SSL_KEY_STORE_PASSWORD=${KEYSTORE_PASSWORD}${newline}"
   fi
   if [[ -n ${TRUSTSTORE_PATH} ]]; then
-    SOLR_SSL_SETTINGS+="SOLR_SSL_TRUST_STORE=${TRUSTSTORE_PATH}"$'\n'
+    SOLR_SSL_SETTINGS+="SOLR_SSL_TRUST_STORE=${TRUSTSTORE_PATH}${newline}"
   fi
   if [[ -n ${TRUSTSTORE_PASSWORD} ]]; then
-    SOLR_SSL_SETTINGS+="SOLR_SSL_TRUST_STORE_PASSWORD=${TRUSTSTORE_PASSWORD}"$'\n'
+    SOLR_SSL_SETTINGS+="SOLR_SSL_TRUST_STORE_PASSWORD=${TRUSTSTORE_PASSWORD}${newline}"
   fi
   if [[ -n ${SSL_NEED_CLIENT_AUTH} ]]; then
-    SOLR_SSL_SETTINGS+="SOLR_SSL_NEED_CLIENT_AUTH=true"$'\n'
-    SOLR_SSL_SETTINGS+="SOLR_SSL_WANT_CLIENT_AUTH=false"$'\n'
+    SOLR_SSL_SETTINGS+="SOLR_SSL_NEED_CLIENT_AUTH=true${newline}"
+    SOLR_SSL_SETTINGS+="SOLR_SSL_WANT_CLIENT_AUTH=false${newline}"
   elif [[ -n ${SSL_WANT_CLIENT_AUTH} ]]; then
-    SOLR_SSL_SETTINGS+="SOLR_SSL_NEED_CLIENT_AUTH=false"$'\n'
-    SOLR_SSL_SETTINGS+="SOLR_SSL_WANT_CLIENT_AUTH=true"$'\n'
+    SOLR_SSL_SETTINGS+="SOLR_SSL_NEED_CLIENT_AUTH=false${newline}"
+    SOLR_SSL_SETTINGS+="SOLR_SSL_WANT_CLIENT_AUTH=true${newline}"
+  else
+    SOLR_SSL_SETTINGS+="SOLR_SSL_NEED_CLIENT_AUTH=false${newline}"
+    SOLR_SSL_SETTINGS+="SOLR_SSL_WANT_CLIENT_AUTH=false${newline}"
   fi
 fi
 
