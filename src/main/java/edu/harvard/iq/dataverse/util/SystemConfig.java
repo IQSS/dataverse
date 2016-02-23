@@ -215,6 +215,20 @@ public class SystemConfig {
         return appVersionString; 
     }
 
+    private Boolean solrTLS_Enabled = null;
+    public boolean solrUsesHttps() {
+      if (solrTLS_Enabled != null) {
+        return solrTLS_Enabled;
+      }
+      boolean safeDefaultIfKeyNotFound = false;
+      solrTLS_Enabled = settingsService.isTrueForKey(SettingsServiceBean.Key.useSolrViaHTTPS, safeDefaultIfKeyNotFound);
+      return solrTLS_Enabled;
+    }
+    
+    public String getSolrUrlSchema() {
+        return (solrUsesHttps()) ? "https://" : "http://";
+    }
+    
     public String getSolrHostColonPort() {
         String solrHostColonPort = settingsService.getValueForKey(SettingsServiceBean.Key.SolrHostColonPort, saneDefaultForSolrHostColonPort);
         return solrHostColonPort;

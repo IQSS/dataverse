@@ -113,7 +113,7 @@ public class IndexServiceBean {
             ((CloudSolrClient)solrServer).setDefaultCollection(systemConfig.getSolrCollectionName());
             ((CloudSolrClient)solrServer).connect();
         }else{
-            solrServer = new HttpSolrClient("http://" + systemConfig.getSolrHostColonPort() + "/" + systemConfig.getSolrServiceName() + "/" + systemConfig.getSolrCollectionName());
+            solrServer = new HttpSolrClient(systemConfig.getSolrUrlSchema() + systemConfig.getSolrHostColonPort() + "/" + systemConfig.getSolrServiceName() + "/" + systemConfig.getSolrCollectionName());
         }
     }
     

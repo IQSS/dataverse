@@ -15,7 +15,7 @@ my $mailserver;
 my $yes;
 my $force;
 my $nogfpasswd;
-my ($solrcollection, $solrport, $solrhost, $solrurlschema, $solrzookeeper);
+my ($solrcollection, $solrport, $solrhost, $solrhttps, $solrzookeeper);
 my ($rez) = GetOptions(
     #"length=i" => \$length,    # numeric
     #"file=s"   => \$data,      # string
@@ -30,8 +30,8 @@ my ($rez) = GetOptions(
     "nogfpasswd"   => \$nogfpasswd,
     "solrport=s"   => \$solrport,
     "solrhost=s"   => \$solrhost,
+    "solrhttps=i"  => \$solrhttps,
     "solrcollection=s" => \$solrcollection,
-    "solrurlschema=s"  => \$solrurlschema,
     "solrzookeeper=s"  => \$solrzookeeper,
 );
 
@@ -43,8 +43,7 @@ my $useSolrCloudWithZookeeper = ($solrzookeeper)?1:0;
 
 my @SOLR_CONFIG_VARIABLES = (
     'SOLR_HOST',
-    'SOLR_PORT',
-    'SOLR_URL_SCHEMA'
+    'SOLR_PORT'
 );
 
 my @CONFIG_VARIABLES = (
@@ -95,7 +94,7 @@ my %CONFIG_DEFAULTS = (
     'SOLR_COLLECTION',  'collection1',
     'SOLR_PORT',        8983,
     'SOLR_HOST',        'localhost',
-    'SOLR_URL_SCHEMA',  'http',
+    'SOLR_USES_HTTPS',  'no',
     'SOLR_ZOOKEEPER',   'localhost:2181/solr',
 
     'RSERVE_HOST',     'localhost',
@@ -119,7 +118,7 @@ my %CONFIG_PROMPTS = (
     'SOLR_COLLECTION', 'Name of the Solr collection for dataverse',
     'SOLR_PORT',       'Solr Server Port',
     'SOLR_HOST',       'Solr Server Hostname or IP address',
-    'SOLR_URL_SCHEMA', 'Solr transport protocol (http or https)',
+    'SOLR_USES_HTTPS', 'Is the solr server using TLS/SSL',
     'SOLR_ZOOKEEPER',  'Zookeeper ensemble managing solrCloud',
 
     'RSERVE_HOST',     'Rserve Server',
@@ -179,6 +178,10 @@ if ($gfdir) {
     $CONFIG_DEFAULTS{'GLASSFISH_DIRECTORY'} = $gfdir;
 }
 
+if ($solrhttps) {
+    $CONFIG_DEFAULTS{'SOLR_USES_HTTPS'} = 'yes';
+}
+
 if ($solrcollection) {
     $CONFIG_DEFAULTS{'SOLR_COLLECTION'} = $solrcollection;
 }
@@ -188,7 +191,6 @@ if ($solrzookeeper) {
 }else{
   if ($solrport) { $CONFIG_DEFAULTS{'SOLR_PORT'} = $solrport; }
   if ($solrhost) { $CONFIG_DEFAULTS{'SOLR_HOST'} = $solrhost; }
-  if ($solrurlschema) { $CONFIG_DEFAULTS{'SOLR_URL_SCHEMA'} = $solrurlschema; }
 }
 
 print "\nWelcome to the Dataverse installer.\n";
@@ -300,6 +302,26 @@ if ($yes) {
     chop $user_entry;
     if ( $user_entry ne "" ) { $CONFIG_DEFAULTS{'SOLR_ZOOKEEPER'} = $user_entry; }
   }else {
+    print "Does the solr server being used expect an https (TLS/SSL) connection? [y|n]:";
+    my $yesno;
+    $yesno = <>;
+    chop $yesno;
+
+    while ( $yesno ne "y" && $yesno ne "n" ) {
+      print "\nPlease enter 'y' or 'n'! (or ctrl-C to exit the installer)\n";
+      print "Does the solr server being used expect an https (TLS/SSL) connection? [y|n]:";
+      $yesno = <>;
+      chop $yesno;
+    }
+
+    if ( $yesno eq "y" ) {
+      $solrhttps=1;
+      $CONFIG_DEFAULTS{'SOLR_USES_HTTPS'} = 'yes';
+    }else{
+      $solrhttps=0;
+      $CONFIG_DEFAULTS{'SOLR_USES_HTTPS'} = 'no';
+    }
+
     for my $ENTRY (@SOLR_CONFIG_VARIABLES) {
       print $CONFIG_PROMPTS{$ENTRY} . ": [" . $CONFIG_DEFAULTS{$ENTRY} . "] ";
       my $user_entry = <>;
@@ -320,6 +342,7 @@ for my $ENTRY (@CONFIG_VARIABLES) {
 if ($useSolrCloudWithZookeeper) {
   print $CONFIG_PROMPTS{'SOLR_ZOOKEEPER'} . ": " . $CONFIG_DEFAULTS{'SOLR_ZOOKEEPER'} . "\n";
 }else{
+  print $CONFIG_PROMPTS{'SOLR_USES_HTTPS'} . ": " . $CONFIG_DEFAULTS{'SOLR_USES_HTTPS'} . "\n";
   for my $ENTRY (@SOLR_CONFIG_VARIABLES) {
     print $CONFIG_PROMPTS{$ENTRY} . ": " . $CONFIG_DEFAULTS{$ENTRY} . "\n";
   }
@@ -1133,7 +1156,7 @@ my $SETUP_OPTS = "-v '${verbosity}' -h '" . $CONFIG_DEFAULTS{'HOST_DNS_ADDRESS'}
 if ($useSolrCloudWithZookeeper) {
   $SETUP_OPTS .= " -z '" . $CONFIG_DEFAULTS{'SOLR_ZOOKEEPER'} . "'";
 }else{
-  $SETUP_OPTS .= " -s '" . $CONFIG_DEFAULTS{'SOLR_HOST'} . "' -p '" . $CONFIG_DEFAULTS{'SOLR_PORT'} . "' -u '" . $CONFIG_DEFAULTS{'SOLR_URL_SCHEMA'} . "'";
+  $SETUP_OPTS .= " -s '" . $CONFIG_DEFAULTS{'SOLR_HOST'} . "' -p '" . $CONFIG_DEFAULTS{'SOLR_PORT'} . "' -u ${solrhttps}";
 }
 unless (system("./setup-all.sh $SETUP_OPTS") == 0){
   print "\nERROR executing script <setup-all.sh>!\n";
