@@ -1063,11 +1063,7 @@ public class DatasetPage implements java.io.Serializable {
             return false;
         }
 
-        // (2) Is this file a Shapefile 
-        //  TODO: or a Tabular file tagged as Geospatial?
-        //
-        // REMOVED
-        
+
         // Is this file a Shapefile or a Tabular file tagged as Geospatial?
         //
         if (!(this.isPotentiallyMappableFileType(fm))){
