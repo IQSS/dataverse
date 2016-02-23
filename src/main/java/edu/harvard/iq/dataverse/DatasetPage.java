@@ -198,6 +198,15 @@ public class DatasetPage implements java.io.Serializable {
     
     private String dataverseSiteUrl = ""; 
     
+    private boolean removeUnusedTags;
+
+    public boolean isRemoveUnusedTags() {
+        return removeUnusedTags;
+    }
+
+    public void setRemoveUnusedTags(boolean removeUnusedTags) {
+        this.removeUnusedTags = removeUnusedTags;
+    }
 
     private List<FileMetadata> fileMetadatas;
     private String fileSortField;
@@ -3476,9 +3485,52 @@ public class DatasetPage implements java.io.Serializable {
 
         newCategoryName = null;
         
-
+        if (removeUnusedTags){
+            removeUnusedFileTagsFromDataset();
+        }
         save();
                 return  returnToDraftVersion();
+    }
+    
+    /*
+    Remove unused file tags
+    When updating datafile tags see if any custom tags are not in use.
+    Remove them
+    
+    */
+    private void removeUnusedFileTagsFromDataset() {
+        categoriesByName = new ArrayList<>();
+        for (FileMetadata fm : workingVersion.getFileMetadatas()) {
+            if (fm.getCategories() != null) {
+                for (int i = 0; i < fm.getCategories().size(); i++) {
+                    if (!categoriesByName.contains(fm.getCategories().get(i).getName())) {
+                        categoriesByName.add(fm.getCategories().get(i).getName());
+                    }
+                }
+            }
+        }
+        List<DataFileCategory> datasetFileCategoriesToRemove = new ArrayList();
+
+        for (DataFileCategory test : dataset.getCategories()) {
+            boolean remove = true;
+            for (String catByName : categoriesByName) {
+                if (catByName.equals(test.getName())) {
+                    remove = false;
+                    break;
+                }
+            }
+            if (remove) {
+                datasetFileCategoriesToRemove.add(test);
+            }
+        }
+
+        if (!datasetFileCategoriesToRemove.isEmpty()) {
+            for (DataFileCategory remove : datasetFileCategoriesToRemove) {
+                dataset.getCategories().remove(remove);
+            }
+
+        }
+
     }
 
     
