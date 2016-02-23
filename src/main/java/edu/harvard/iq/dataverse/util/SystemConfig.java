@@ -297,7 +297,7 @@ public class SystemConfig {
      */
     
     public long getZipDownloadLimit() {
-        String zipLimitOption = settingsService.getValueForKey(SettingsServiceBean.Key.ZipDonwloadLimit);   
+        String zipLimitOption = settingsService.getValueForKey(SettingsServiceBean.Key.ZipDownloadLimit);   
         
         Long zipLimit = null; 
         if (zipLimitOption != null && !zipLimitOption.equals("")) {
