@@ -288,10 +288,11 @@
                             </div>
                         </p:tab>
                         <p:tab id="accountInfo" title="Account Information">
-                            <div jsf:rendered="#{empty DataverseUserPage.builtinUser}">
-                                #{bundle['user.toEditDetail']}
-                            </div>
-                            <div class="form-horizontal" jsf:rendered="#{!empty DataverseUserPage.builtinUser}">
+                            <div class="form-horizontal" jsf:rendered="#{!empty DataverseUserPage.currentUser}">
+                                <div class="form-horizontal" jsf:rendered="#{empty DataverseUserPage.builtinUser}">
+                                    <!--TODO: rename this bundle key to something like "user.isShibUser"-->
+                                    #{bundle['user.toEditDetail']}
+                                </div>
                                 <!-- Username -->
                                 <div class="form-group">
                                     <label for="userNameEmail" class="col-sm-3 control-label">
@@ -300,7 +301,8 @@
                                         </span>
                                     </label>
                                     <div class="col-sm-9">
-                                        <p class="form-control-static">#{DataverseUserPage.builtinUser.userName}</p>
+                                        <p class="form-control-static" jsf:rendered="#{empty DataverseUserPage.builtinUser}">#{DataverseUserPage.currentUser.identifier.replaceFirst("@", "")}</p>
+                                        <p class="form-control-static" jsf:rendered="#{!empty DataverseUserPage.builtinUser}">#{DataverseUserPage.builtinUser.userName}</p>
                                     </div>
                                 </div>
 
@@ -312,7 +314,7 @@
                                         </span>
                                     </label>
                                     <div class="col-sm-9">
-                                        <p class="form-control-static">#{DataverseUserPage.builtinUser.firstName}</p>
+                                        <p class="form-control-static">#{DataverseUserPage.currentUser.firstName}</p>
                                     </div>
                                 </div>
 
@@ -324,7 +326,7 @@
                                         </span>
                                     </label>
                                     <div class="col-sm-9">
-                                        <p class="form-control-static">#{DataverseUserPage.builtinUser.lastName}</p>
+                                        <p class="form-control-static">#{DataverseUserPage.currentUser.lastName}</p>
                                     </div>
                                 </div>
 
@@ -336,7 +338,7 @@
                                         </span>
                                     </label>
                                     <div class="col-sm-9">
-                                        <p class="form-control-static">#{DataverseUserPage.builtinUser.email}</p>
+                                        <p class="form-control-static">#{DataverseUserPage.currentUser.email}</p>
                                     </div>
                                 </div>
 
@@ -352,8 +354,8 @@
                                     </div>
                                 </div>
 
-                                <!-- Position -->
-                                <div class="form-group">
+                                <!-- Position (not populated for Shibboleth users) -->
+                                <div class="form-group" jsf:rendered="#{!empty DataverseUserPage.builtinUser}">
                                     <label for="position" class="col-sm-3 control-label">
                                         <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['user.position.tip']}">
                                             #{bundle['user.position']}
