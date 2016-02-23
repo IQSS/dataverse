@@ -7,6 +7,7 @@ fi
 
 if [[ -z ${OUTPUT_VERBOSITY} ]];then OUTPUT_VERBOSITY='1'; fi
 if [[ -z ${ZOOKEEPER_ENSEMBLE} ]]; then ZOOKEEPER_ENSEMBLE='localhost:2181'; fi
+ENABLE_TLS_ON_SOLR=0
 SOLR_INSTALL_DIR='/opt'
 
 _usage() {
@@ -15,11 +16,12 @@ _usage() {
   echo "  -e     Zookeeper ensemble string to add to solr.in.sh service configuration script."
   echo "  -h     Print this help message."
   echo "  -i     Solr installation directory. \[${SOLR_INSTALL_DIR}\]"
+  echo "  -t     Set solr urlScheme to 'https' in zookeeper."
   echo "  -v     Verbosity of this installation script \(0-3\). \[${OUTPUT_VERBOSITY}\]"
   echo "\n"
 }
 
-while getopts :e:h:i:v: FLAG; do
+while getopts :e:h:i:t:v: FLAG; do
   case $FLAG in
     e)
       ZOOKEEPER_ENSEMBLE=$OPTARG
@@ -30,6 +32,9 @@ while getopts :e:h:i:v: FLAG; do
       ;;
     i)  #set option solr install directory "i"
       SOLR_INSTALL_DIR=$OPTARG
+      ;;
+    t)
+      ENABLE_TLS_ON_SOLR=$OPTARG
       ;;
     v)  #set output verbosity level "v"
       OUTPUT_VERBOSITY=$OPTARG
@@ -57,7 +62,6 @@ fi
 
 $_IF_TERSE echo "Creating solr Znode using verbosity level: ${OUTPUT_VERBOSITY}"
 
-
 #### make zkcli.sh executable ####
 if [[ -e ${SOLR_INSTALL_DIR}/solr/server/scripts/cloud-scripts/zkcli.sh ]]; then
   chmod +x ${SOLR_INSTALL_DIR}/solr/server/scripts/cloud-scripts/zkcli.sh
@@ -66,8 +70,12 @@ else
   exit 1
 fi
 
-
 #### create solr znode ####
 $_IF_VERBOSE ${SOLR_INSTALL_DIR}/solr/server/scripts/cloud-scripts/zkcli.sh -zkhost ${ZOOKEEPER_ENSEMBLE} -cmd makepath /solr
-
 $_IF_TERSE echo "solr znode created"
+
+if [[ ${ENABLE_TLS_ON_SOLR} ]]; then
+  $_IF_TERSE echo "Setting the solr urlScheme to 'https' in zookeeper"
+  $_IF_VERBOSE ${SOLR_INSTALL_DIR}/solr/server/scripts/cloud-scripts/zkcli.sh -zkhost ${ZOOKEEPER_ENSEMBLE}/solr -cmd clusterprop -name urlScheme -val https
+  $_IF_TERSE echo "solr urlScheme set to https"
+fi

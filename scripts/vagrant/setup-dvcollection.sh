@@ -106,6 +106,6 @@ if [[ -n ${DVCOLLECTION_REPLICAS} ]]; then
   _create_collection_cmd="${_create_collection_cmd} -replicationFactor ${DVCOLLECTION_REPLICAS}"
 fi
 
-eval "sudo -u $SOLR_OWNER $_solr ${_create_collection_cmd}"
+eval "sudo -u $SOLR_OWNER SOLR_INCLUDE=/etc/default/solr.in.sh $_solr ${_create_collection_cmd}"
 
 $_IF_TERSE echo "Solr collection ${DVCOLLECTION_NAME} established"
