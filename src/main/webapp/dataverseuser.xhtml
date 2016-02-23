@@ -256,8 +256,8 @@
                             <div class="form-horizontal" jsf:rendered="#{!empty DataverseUserPage.currentUser}">
                                 <div class="form-group" jsf:rendered="#{empty DataverseUserPage.builtinUser}">
                                     <div class="col-sm-12">
-                                        <p class="text-danger">
-                                            <span class="glyphicon glyphicon-warning-sign"/> #{bundle['user.isShibUser']}
+                                        <p class="help-block">
+                                            <span class="glyphicon glyphicon-info-sign"/> <h:outputText value=" #{bundle['user.isShibUser']}" escape="false"/>
                                         </p>
                                     </div>
                                 </div>
