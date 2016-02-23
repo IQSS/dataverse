@@ -459,16 +459,6 @@
                     <!-- View/Tabs infoMode -->
                     <!-- Tabs -->
                     <div id="contentTabs" jsf:rendered="#{DatasetPage.editMode != 'INFO'}">
-<<<<<<< HEAD
-                        <ui:fragment rendered="#{DatasetPage.lockedInProgress}">
-                        </ui:fragment>
-                        
-                        <ui:fragment rendered="#{!empty DatasetPage.dataset.id and !DatasetPage.readOnly}"> <!-- rendered="#{empty DatasetPage.editMode}" -->
-                            <p:commandButton id="setLockedButton" widgetVar="setLockedButton" onclick="setLockedVar(#{locked});" style="display:none"/>
-                            <p:commandButton id="refreshButton" widgetVar="refreshButton" actionListener="#{DatasetPage.refresh}" update="@all" style="display:none"/><!-- :datasetForm:tabView:filesTable,:messagePanel -->
-
-                        </ui:fragment>
-=======
                         
                         <p:fragment id="pageRefreshFragment"> <!-- rendered="_{empty DatasetPage.editMode}" -->
                             <h:inputHidden value="#{DatasetPage.locked}" id="datasetLockedVariable" />
@@ -528,7 +518,6 @@
                             
                     
                         </p:fragment>
->>>>>>> develop
 
                         <ui:fragment id="uploadFilesOnCreateTab" rendered="#{!DatasetPage.workingVersion.deaccessioned and
                                                               (DatasetPage.editMode == 'CREATE')}">
@@ -1522,27 +1511,6 @@
                         Dropbox.choose(options);
                     }
                     
-<<<<<<< HEAD
-                    $(document).ready(function() {
-                        refreshIfLocked();
-                    });
-                    
-                    function setLockedVar(status) {
-                        window.locked = status;
-                    }
-                    function refreshIfLocked() {
-                        setTimeout(function () {
-                            // update the global variable "locked":
-                            $('button[id$="setLockedButton"]').trigger('click');
-                            // if dataset is still locked, click the refresh button:
-                            if (window.locked === true) {
-                                $('button[id$="refreshButton"]').trigger('click');
-                            }
-                        }, 10000); 
-                    }
-                    
-=======
->>>>>>> develop
                     
                 </script>
             </ui:define>
