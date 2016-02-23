@@ -163,7 +163,7 @@ For limiting the size of thumbnail images generated from files.
 doi.baseurlstring
 +++++++++++++++++
 
-As of this writing "https://ezid.cdlib.org" is the only valid value. See also these related database settings below:
+As of this writing "https://ezid.cdlib.org" and "https://mds.datacite.org" are the only valid values. See also these related database settings below:
 
 - :DoiProvider
 - :Protocol
@@ -240,7 +240,7 @@ This is the email address that "system" emails are sent from such as password re
 :DoiProvider
 ++++++++++++
 
-As of this writing "EZID" is the only valid options. DataCite support is planned: https://github.com/IQSS/dataverse/issues/24
+As of this writing "EZID" and "DataCite" are the only valid options.
 
 ``curl -X PUT -d EZID http://localhost:8080/api/admin/settings/:DoiProvider``
 
@@ -254,7 +254,7 @@ As of this writing "doi" is the only valid option for the protocol for a persist
 :Authority
 ++++++++++
 
-Use the DOI authority assigned to you by EZID.
+Use the DOI authority assigned to you by your DoiProvider.
 
 ``curl -X PUT -d 10.xxxx http://localhost:8080/api/admin/settings/:Authority``
 
