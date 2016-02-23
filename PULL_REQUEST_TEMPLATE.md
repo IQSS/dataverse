@@ -9,7 +9,9 @@ RFI Checklist
 - [ ]  Deployment requirements identified (e.g., SQL scripts, indexing)
 - [ ]  Documentation completed
 - [ ]  All code checkins completed
-<hr>
+
+---
+
 - [ ]  Code review completed or waived
 - [ ]  Testing requirements completed
 - [ ]  Usability testing completed or waived
