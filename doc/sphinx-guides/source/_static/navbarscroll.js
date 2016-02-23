@@ -2,8 +2,7 @@
     Use to fix hidden section headers behind the navbar when using links with targets
     See: http://stackoverflow.com/questions/10732690/offsetting-an-html-anchor-to-adjust-for-fixed-header    
 */
-(function($) {
-$(function() {
+$(document).ready(function() {
   $('a[href*=#]:not([href=#])').on('click', function() {
     if (location.pathname.replace(/^\//,'') == this.pathname.replace(/^\//,'') 
 && location.hostname == this.hostname) {
@@ -28,4 +27,3 @@ $(function() {
       }
     }
 });
-})(jQuery);
