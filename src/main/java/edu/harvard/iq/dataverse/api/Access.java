@@ -109,6 +109,8 @@ public class Access extends AbstractApiBean {
     @EJB
     WorldMapTokenServiceBean worldMapTokenServiceBean;
 
+    private static final String API_KEY_HEADER = "X-Dataverse-key";    
+
     //@EJB
     
     // TODO: 
@@ -123,6 +125,10 @@ public class Access extends AbstractApiBean {
         if (df == null) {
             logger.warning("Access: datafile service could not locate a DataFile object for id "+fileId+"!");
             throw new WebApplicationException(Response.Status.NOT_FOUND);
+        }
+        
+        if (apiToken == null || apiToken.equals("")) {
+            apiToken = headers.getHeaderString(API_KEY_HEADER);
         }
         
         // This will throw a WebApplicationException, with the correct 
@@ -168,6 +174,10 @@ public class Access extends AbstractApiBean {
         if (df == null) {
             logger.warning("Access: datafile service could not locate a DataFile object for id "+fileId+"!");
             throw new WebApplicationException(Response.Status.NOT_FOUND);
+        }
+        
+        if (apiToken == null || apiToken.equals("")) {
+            apiToken = headers.getHeaderString(API_KEY_HEADER);
         }
         
         // This will throw a WebApplicationException, with the correct 
@@ -374,6 +384,10 @@ public class Access extends AbstractApiBean {
             throw new WebApplicationException(Response.Status.NOT_FOUND);
         }
         
+        if (apiToken == null || apiToken.equals("")) {
+            apiToken = headers.getHeaderString(API_KEY_HEADER);
+        }
+        
         // This will throw a WebApplicationException, with the correct 
         // exit code, if access isn't authorized: 
         checkAuthorization(df, apiToken);
@@ -402,7 +416,7 @@ public class Access extends AbstractApiBean {
     @Path("datafiles/{fileIds}")
     @GET
     @Produces({"application/zip"})
-    public /*ZippedDownloadInstance*/ Response datafiles(@PathParam("fileIds") String fileIds, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+    public /*ZippedDownloadInstance*/ Response datafiles(@PathParam("fileIds") String fileIds, @QueryParam("key") String apiTokenParam, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
         // create a Download Instance without, without a primary Download Info object:
         //ZippedDownloadInstance downloadInstance = new ZippedDownloadInstance();
 
@@ -422,6 +436,10 @@ public class Access extends AbstractApiBean {
             throw new WebApplicationException(Response.Status.BAD_REQUEST);
         }
 
+        String apiToken = (apiTokenParam == null || apiTokenParam.equals("")) 
+                ? headers.getHeaderString(API_KEY_HEADER) 
+                : apiTokenParam;
+        
         StreamingOutput stream = new StreamingOutput() {
 
             @Override
