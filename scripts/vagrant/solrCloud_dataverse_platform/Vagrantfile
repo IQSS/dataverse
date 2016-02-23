@@ -157,10 +157,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
       STATIC_IP_SOLRCLOUD.each_with_index { |node,index|
         dataverse.vm.provision "remoteAddTrustRestartSolr", type: "shell", 
-          inline: "ssh  -o StrictHostKeyChecking=no -i /vagrant/.vagrant/machines/solrcloud" + (index + 1).to_s + "/virtualbox/private_key vagrant@#{node} 'sudo cp /vagrant/dataverse_truststore.jks #{TRUSTSTORE_PATH}; sudo service solr restart'"      
+          inline: "ssh -o StrictHostKeyChecking=no -i /vagrant/.vagrant/machines/solrcloud" + (index + 1).to_s + "/virtualbox/private_key vagrant@#{node} 'sudo cp /vagrant/dataverse_truststore.jks #{TRUSTSTORE_PATH}; sudo service solr restart'"      
       }
 
-      dataverse.vm.provision "cleanupTmpTrustore", type "shell", inline: "rm /vagrant/dataverse_truststore.jks"
+      dataverse.vm.provision "cleanupTmpTrustore", type: "shell", inline: "rm /vagrant/dataverse_truststore.jks"
     end
  
     dataverse.vm.provision "dataverseSetup", type: "shell", path: "../install-dataverse.sh",
