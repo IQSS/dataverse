@@ -23,7 +23,7 @@ if [[ -z ${OPT_z} ]]; then
   fi
   SOLR_URI="${SOLR_URL_SCHEMA}${OPT_s}:${OPT_p}/solr/${OPT_c}"
   $_IF_VERBOSE echo "Deleting all index data for Solr Collection $OPT_c at $SOLR_URI"
-  $_IF_VERBOSE curl ${SOLR_URI}/update?commit=true -H "Content-type: application/json" -X POST -d "{\"delete\": { \"query\":\"*:*\"}}"
+  $_IF_VERBOSE curl -k ${SOLR_URI}/update?commit=true -H "Content-type: application/json" -X POST -d "{\"delete\": { \"query\":\"*:*\"}}"
   $_IF_VERBOSE echo "Setting dataverse servers SolrHostColonPort property to ${OPT_s}:${OPT_p}"
   $_IF_VERBOSE curl -X PUT -d ${OPT_s}:${OPT_p} ${DATAVERSE_URI}/admin/settings/:SolrHostColonPort
 else
