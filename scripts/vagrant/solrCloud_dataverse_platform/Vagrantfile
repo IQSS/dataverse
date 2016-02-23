@@ -105,10 +105,18 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         STATIC_IP_SOLRCLOUD.each_with_index { |node,index|
           if (node != STATIC_IP_SOLRCLOUD.last)
             remote_cmd = "ssh  -o StrictHostKeyChecking=no -i /vagrant/.vagrant/machines/solrcloud" + (index + 1).to_s + "/virtualbox/private_key vagrant@#{node}"
-            remote_cmd << " 'sudo service solr restart'"
+            if (ENABLE_TLS_ON_SOLR != 0)
+              remote_cmd << " 'sudo cp /vagrant/dataverse_truststore.jks #{TRUSTSTORE_PATH}; sudo service solr restart'"
+            else
+              remote_cmd << " 'sudo service solr restart'"
+            end
             solr.vm.provision "remoteRestartSolrCloud", type: "shell", inline: remote_cmd
           else
-            solr.vm.provision "restartSolrCloud", type: "shell", inline: "service solr restart"
+            if (ENABLE_TLS_ON_SOLR != 0)
+              solr.vm.provision "restartSolrCloud", type: "shell", inline: "'sudo cp /vagrant/dataverse_truststore.jks #{TRUSTSTORE_PATH}; service solr restart'"
+            else
+              solr.vm.provision "restartSolrCloud", type: "shell", inline: "service solr restart"
+            end
           end
         }
         solr.vm.provision "createDataverseCollection", type: "shell", 
@@ -148,7 +156,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
       STATIC_IP_SOLRCLOUD.each_with_index { |node,index|
         remote_cmd = "ssh  -o StrictHostKeyChecking=no -i /vagrant/.vagrant/machines/solrcloud" + (index + 1).to_s + "/virtualbox/private_key vagrant@#{node}"
-        remote_cmd << " 'sudo cp ./dataverse_truststore.jks #{TRUSTSTORE_PATH}; sudo service solr restart; sudo rm /vagrant/dataverse_truststore.jks'"
+        remote_cmd << " 'sudo cp /vagrant/dataverse_truststore.jks #{TRUSTSTORE_PATH}; sudo service solr restart; sudo rm /vagrant/dataverse_truststore.jks'"
         dataverse.vm.provision "remoteAddTrustRestartSolr", type: "shell", inline: remote_cmd      
       }
     end
