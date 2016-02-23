@@ -63,6 +63,7 @@ import javax.validation.ConstraintViolation;
 import org.apache.commons.httpclient.HttpClient;
 import org.primefaces.context.RequestContext;
 import java.text.DateFormat;
+import java.util.Arrays;
 import java.util.HashSet;
 import javax.faces.model.SelectItem;
 import java.util.logging.Level;
@@ -3326,7 +3327,7 @@ public class DatasetPage implements java.io.Serializable {
             selectedTags = selectedTags.clone();
         }
     }
-    
+        
     private void refreshSelectedTags() {
         selectedTags = null;
         selectedTags = new String[0];
@@ -3336,6 +3337,7 @@ public class DatasetPage implements java.io.Serializable {
                 selectedTags[i] = categoriesByName.get(i);
             }
         }
+        Arrays.sort(selectedTags);
     }
     
     private void refreshTabFileTagsByName(){
@@ -3362,6 +3364,7 @@ public class DatasetPage implements java.io.Serializable {
                 selectedTabFileTags[i] = tabFileTagsByName.get(i);
             }
         }
+        Arrays.sort(selectedTabFileTags);
     }
     
     private boolean tabularDataSelected = false;
@@ -3374,7 +3377,8 @@ public class DatasetPage implements java.io.Serializable {
         this.tabularDataSelected = tabularDataSelected;
     }
 
-    public String[] getSelectedTags() {           
+    public String[] getSelectedTags() {    
+
         return selectedTags;
     }
 
@@ -3396,6 +3400,25 @@ public class DatasetPage implements java.io.Serializable {
         this.newCategoryName = newCategoryName;
     }
 
+    public String saveNewCategory() {
+        
+
+        if (newCategoryName != null && !newCategoryName.isEmpty()) {
+            categoriesByName.add(newCategoryName);
+            for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
+                for (FileMetadata fm : selectedFiles) {
+                    if (fm.getDataFile().equals(fmd.getDataFile())) {
+                        fmd.addCategoryByName(newCategoryName);
+                    }
+                }
+            }
+        }
+        refreshSelectedTags();
+        newCategoryName = "";
+        return "";
+    }
+    
+    
     /* This method handles saving both "tabular file tags" and 
      * "file categories" (which are also considered "tags" in 4.0)
     */

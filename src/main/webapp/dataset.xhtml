@@ -920,7 +920,7 @@
                                                          onkeypress="if (event.keyCode == 13) {
                                                                      return false;
                                                                  }" />
-                                            <p:commandLink styleClass="btn btn-default" style="margin-left:.5em;" value="#{bundle.apply}" update="selectedTagsList"/>
+                                            <p:commandLink styleClass="btn btn-default" style="margin-left:.5em;" value="#{bundle.apply}" action="#{DatasetPage.saveNewCategory}" update="selectedTagsList, fileTagAddNewDS, fileTagsMenuDS"/>
                                         </div>
                                     </div>
                                     <p:message for="fileTagAddNewDS" display="text" />
