@@ -22,26 +22,6 @@
                     <f:viewParam name="redirectPage" value="#{DataverseUserPage.redirectPage}"/>                    
                     <f:viewParam name="selectTab" value="#{DataverseUserPage.selectTab}"/>
                     <f:viewAction action="#{DataverseUserPage.init}" />
-
-                    <ui:remove>
-                    <f:viewParam name="q" value="#{SearchIncludeFragment.query}"/>
-                    <f:viewParam name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
-                    <f:viewParam name="fq1" value="#{SearchIncludeFragment.fq1}"/>
-                    <f:viewParam name="fq0" value="#{SearchIncludeFragment.fq0}"/>
-                    <f:viewParam name="fq2" value="#{SearchIncludeFragment.fq2}"/>
-                    <f:viewParam name="fq3" value="#{SearchIncludeFragment.fq3}"/>
-                    <f:viewParam name="fq4" value="#{SearchIncludeFragment.fq4}"/>
-                    <f:viewParam name="fq5" value="#{SearchIncludeFragment.fq5}"/>
-                    <f:viewParam name="fq6" value="#{SearchIncludeFragment.fq6}"/>
-                    <f:viewParam name="fq7" value="#{SearchIncludeFragment.fq7}"/>
-                    <f:viewParam name="fq8" value="#{SearchIncludeFragment.fq8}"/>
-                    <f:viewParam name="fq9" value="#{SearchIncludeFragment.fq9}"/>
-                    <f:viewParam name="sort" value="#{SearchIncludeFragment.sortField}"/>
-                    <f:viewParam name="order" value="#{SearchIncludeFragment.sortOrder}"/>
-                    <f:viewParam name="page" value="#{SearchIncludeFragment.page}"/>
-                    <f:viewParam name="debug" value="#{SearchIncludeFragment.debug}"/>
-                    <f:viewAction action="#{SearchIncludeFragment.search(true)}" />
-                    </ui:remove>
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseServiceBean.findRootDataverse(), (DataverseUserPage.editMode == 'CREATE' ? bundle['user.createBtn'] : bundle.account))}"/>
                 </f:metadata>
                 <h:form id="dataverseUserForm">
@@ -60,7 +40,7 @@
                             <ul class="dropdown-menu pull-right text-left" role="menu">
                                 <ui:fragment rendered="#{!empty DataverseUserPage.builtinUser}">
                                     <li>
-                                        <p:commandLink id="editAccount" actionListener="#{DataverseUserPage.edit}" update="@form">
+                                        <p:commandLink id="editAccount" actionListener="#{DataverseUserPage.edit}" update="@form" oncomplete="bind_bsui_components();">
                                             <h:outputText value="#{bundle['account.info']}" />
                                         </p:commandLink>
                                     </li>
@@ -82,27 +62,12 @@
                     <p:panel rendered="#{DataverseUserPage.editMode == 'FORGOT'}">
                         <h:outputText value="#{bundle['user.lostPasswdTip']}" />
                     </p:panel>
-                    
                         
                     <p:tabView id="dataRelatedToMeView" activeIndex="#{DataverseUserPage.activeIndex}" dynamic="true" rendered="#{empty DataverseUserPage.editMode}">
                         <p:ajax event="tabChange" listener="#{DataverseUserPage.onTabChange}" update="@all" oncomplete="javascript:dataverseuser_page_rebind();" />
                         <p:tab id="myData" title="My Data">
                             <ui:include src="mydata_fragment.xhtml"></ui:include>
-                            <!--ui:include src="mydata_page.xhtml"></ui:include-->
                         </p:tab>
-
-                        <ui:remove>
-                        <p:tab id="dataRelatedToMe" title="#{bundle['user.dataRelatedToMe']}">
-                            <ui:fragment>
-
-                                <ui:include src="search-include-fragment.xhtml">
-                                    <ui:param name="showFacets" value="true"/>
-                                    <ui:param name="showSearch" value="true"/>
-                                    <ui:param name="dataverseRedirectPage" value="dataverseuser.xhtml"/>
-                                </ui:include>
-                            </ui:fragment>
-                        </p:tab>
-                        </ui:remove>
                         <p:tab id="notifications" title="#{bundle['header.user.selectTab.notifications']}">
                             <div class="table-container">
                                 <ui:repeat value="#{DataverseUserPage.notificationsList}" var="item">
@@ -289,77 +254,63 @@
                         </p:tab>
                         <p:tab id="accountInfo" title="Account Information">
                             <div class="form-horizontal" jsf:rendered="#{!empty DataverseUserPage.currentUser}">
-                                <div class="form-horizontal" jsf:rendered="#{empty DataverseUserPage.builtinUser}">
-                                    <!--TODO: rename this bundle key to something like "user.isShibUser"-->
-                                    #{bundle['user.toEditDetail']}
+                                <div class="form-group" jsf:rendered="#{empty DataverseUserPage.builtinUser}">
+                                    <div class="col-sm-12">
+                                        <p class="text-danger">
+                                            <span class="glyphicon glyphicon-warning-sign"/> #{bundle['user.isShibUser']}
+                                        </p>
+                                    </div>
                                 </div>
                                 <!-- Username -->
                                 <div class="form-group">
                                     <label for="userNameEmail" class="col-sm-3 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['user.username.illegal.tip']}">
-                                            #{bundle['user.username']}
-                                        </span>
+                                        #{bundle['user.username']}
                                     </label>
                                     <div class="col-sm-9">
                                         <p class="form-control-static" jsf:rendered="#{empty DataverseUserPage.builtinUser}">#{DataverseUserPage.currentUser.identifier.replaceFirst("@", "")}</p>
                                         <p class="form-control-static" jsf:rendered="#{!empty DataverseUserPage.builtinUser}">#{DataverseUserPage.builtinUser.userName}</p>
                                     </div>
                                 </div>
-
                                 <!-- First Name -->
                                 <div class="form-group">
                                     <label for="firstName" class="col-sm-3 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['user.firstName.tip']}">
-                                            #{bundle['user.firstName']}
-                                        </span>
+                                        #{bundle['user.firstName']}
                                     </label>
                                     <div class="col-sm-9">
                                         <p class="form-control-static">#{DataverseUserPage.currentUser.firstName}</p>
                                     </div>
                                 </div>
-
                                 <!-- Last Name -->
                                 <div class="form-group">
                                     <label for="lastName" class="col-sm-3 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['user.lastName.tip']}">
-                                            #{bundle['user.lastName']}
-                                        </span>
+                                        #{bundle['user.lastName']}
                                     </label>
                                     <div class="col-sm-9">
                                         <p class="form-control-static">#{DataverseUserPage.currentUser.lastName}</p>
                                     </div>
                                 </div>
-
                                 <!-- Email -->
                                 <div class="form-group">
                                     <label for="email" class="col-sm-3 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['user.email.tip']}">
-                                            #{bundle.email}
-                                        </span>
+                                        #{bundle.email}
                                     </label>
                                     <div class="col-sm-9">
                                         <p class="form-control-static">#{DataverseUserPage.currentUser.email}</p>
                                     </div>
                                 </div>
-
                                 <!-- Affiliation -->
-                                <div class="form-group">
+                                <div class="form-group" jsf:rendered="#{!empty DataverseUserPage.builtinUser.affiliation}">
                                     <label for="affiliation" class="col-sm-3 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['user.affiliation.tip']}">
-                                            #{bundle.affiliation}
-                                        </span>
+                                        #{bundle.affiliation}
                                     </label>
                                     <div class="col-sm-9">
                                         <p class="form-control-static">#{DataverseUserPage.builtinUser.affiliation}</p>
                                     </div>
                                 </div>
-
                                 <!-- Position (not populated for Shibboleth users) -->
-                                <div class="form-group" jsf:rendered="#{!empty DataverseUserPage.builtinUser}">
+                                <div class="form-group" jsf:rendered="#{!empty DataverseUserPage.builtinUser or !empty DataverseUserPage.builtinUser.position}">
                                     <label for="position" class="col-sm-3 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['user.position.tip']}">
-                                            #{bundle['user.position']}
-                                        </span>
+                                        #{bundle['user.position']}
                                     </label>
                                     <div class="col-sm-9">
                                         <p class="form-control-static">#{DataverseUserPage.builtinUser.position}</p>
