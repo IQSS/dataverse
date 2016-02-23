@@ -93,8 +93,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         solr.vm.provision "enableTLSonSolr", type: "shell", 
           path: "../enable-tls-onSolr.sh",
           args: "-k #{KEYSTORE_PATH} -p #{KEYSTORE_PASSWORD} -t #{TRUSTSTORE_PATH} -v #{OUTPUT_VERBOSITY} -w #{TRUSTSTORE_PASSWORD}"
-#          args: "-k #{KEYSTORE_PATH} -p #{KEYSTORE_PASSWORD} -s -t #{TRUSTSTORE_PATH} -v #{OUTPUT_VERBOSITY} -w #{TRUSTSTORE_PASSWORD}"
-#### Glassfish TLS client certificate configuration isn't working currently -s/-r options break the connection ####
+          #args: "-k #{KEYSTORE_PATH} -p #{KEYSTORE_PASSWORD} -s -t #{TRUSTSTORE_PATH} -v #{OUTPUT_VERBOSITY} -w #{TRUSTSTORE_PASSWORD}"
+          #### Glassfish TLS client certificate configuration isn't working currently -s/-r options break the connection ####
       end
       solr.vm.provision "enableSolrCloud", type: "shell", path: "./setup-solrCloud.sh",
         args: [ "-e",ZOOKEEPER_ENSEMBLE,"-v",OUTPUT_VERBOSITY ]
@@ -104,13 +104,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           args: [ "-e",ZOOKEEPER_ENSEMBLE,"-i",SOLR_INSTALL_DIR,"-v",OUTPUT_VERBOSITY ]
         STATIC_IP_SOLRCLOUD.each_with_index { |node,index|
           if (node != STATIC_IP_SOLRCLOUD.last)
-            remote_cmd = "ssh  -o StrictHostKeyChecking=no -i /vagrant/.vagrant/machines/solrcloud" + (index + 1).to_s + "/virtualbox/private_key vagrant@#{node}"
             if (ENABLE_TLS_ON_SOLR != 0)
-              remote_cmd << " 'sudo cp /vagrant/dataverse_truststore.jks #{TRUSTSTORE_PATH}; sudo service solr restart'"
+              solr.vm.provision "remoteRestartSolrCloud", type: "shell", 
+              inline: "ssh  -o StrictHostKeyChecking=no -i /vagrant/.vagrant/machines/solrcloud" + (index + 1).to_s + "/virtualbox/private_key vagrant@#{node} 'sudo cp /vagrant/dataverse_truststore.jks #{TRUSTSTORE_PATH}; sudo service solr restart'"
             else
-              remote_cmd << " 'sudo service solr restart'"
+              solr.vm.provision "remoteRestartSolrCloud", type: "shell", 
+              inline: "ssh  -o StrictHostKeyChecking=no -i /vagrant/.vagrant/machines/solrcloud" + (index + 1).to_s + "/virtualbox/private_key vagrant@#{node} 'sudo service solr restart'"
             end
-            solr.vm.provision "remoteRestartSolrCloud", type: "shell", inline: remote_cmd
           else
             if (ENABLE_TLS_ON_SOLR != 0)
               solr.vm.provision "restartSolrCloud", type: "shell", inline: "'sudo cp /vagrant/dataverse_truststore.jks #{TRUSTSTORE_PATH}; service solr restart'"
@@ -147,6 +147,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     dataverse.vm.provision "dataversePrereqs", type: "shell", 
       path: "../setup.sh", args: "-v #{OUTPUT_VERBOSITY}"
     dataverse.vm.provision "killFirewall", type: "shell", inline: "service iptables stop"
+
     if (ENABLE_TLS_ON_SOLR != 0)
       dataverse.vm.provision "addGlassfishDomainTLS", type: "shell", 
         path: "../setup-tls-dataverse.sh",
@@ -155,11 +156,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         inline: "keytool -importkeystore -noprompt -srckeystore /vagrant/dataverse_truststore.jks -srcstorepass #{KEYSTORE_PASSWORD} -destkeystore ~glassfish/glassfish4/glassfish/domains/domain1/config/cacerts.jks -deststorepass changeit"
 
       STATIC_IP_SOLRCLOUD.each_with_index { |node,index|
-        remote_cmd = "ssh  -o StrictHostKeyChecking=no -i /vagrant/.vagrant/machines/solrcloud" + (index + 1).to_s + "/virtualbox/private_key vagrant@#{node}"
-        remote_cmd << " 'sudo cp /vagrant/dataverse_truststore.jks #{TRUSTSTORE_PATH}; sudo service solr restart; sudo rm /vagrant/dataverse_truststore.jks'"
-        dataverse.vm.provision "remoteAddTrustRestartSolr", type: "shell", inline: remote_cmd      
+        dataverse.vm.provision "remoteAddTrustRestartSolr", type: "shell", 
+          inline: "ssh  -o StrictHostKeyChecking=no -i /vagrant/.vagrant/machines/solrcloud" + (index + 1).to_s + "/virtualbox/private_key vagrant@#{node} 'sudo cp /vagrant/dataverse_truststore.jks #{TRUSTSTORE_PATH}; sudo service solr restart'"      
       }
+
+      dataverse.vm.provision "cleanupTmpTrustore", type "shell", inline: "rm /vagrant/dataverse_truststore.jks"
     end
+ 
     dataverse.vm.provision "dataverseSetup", type: "shell", path: "../install-dataverse.sh",
       args: "-c #{DVCOLLECTION_NAME} -h #{STATIC_IP_DATAVERSE} -m #{mailserver} -z '#{ZOOKEEPER_ENSEMBLE}' -u #{ENABLE_TLS_ON_SOLR} -v #{OUTPUT_VERBOSITY}"
     dataverse.vm.provision "loadDataverseTest", type: "shell", 
