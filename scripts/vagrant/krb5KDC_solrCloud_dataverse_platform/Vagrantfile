@@ -106,10 +106,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     krb.vm.provision "addDataversePrincipal", type: "shell",
       path: "./setup-krb-principal.sh", args: "-i #{STATIC_IP_DATAVERSE} -p 'dataverse' -v #{OUTPUT_VERBOSITY} -w 'password' "
     STATIC_IP_SOLRCLOUD.each_with_index { |node,index|
-      krb.vm.provision "addPrincipals" + (index + 1).to_s + "Principal", type: "shell", 
-      path: "./setup-krb-principal.sh", args: "-i #{node} -p 'solr' -p2 'HTTP' -p3 'zookeeper' -v #{OUTPUT_VERBOSITY} -w 'password' "
-      krb.vm.provision "makeZookeeperKeytab" + (index + 1).to_s + "Principal", type: "shell", 
-      path: "./setup-krb-principal.sh", args: "-i #{node} -p 'zookeeper' -p2 'HTTP' -v #{OUTPUT_VERBOSITY} -w 'password' -k"
+      krb.vm.provision "addSolrCloud" + (index + 1).to_s + "Principals", type: "shell", 
+      path: "./setup-krb-principal.sh", args: "-i #{node} -p 'solr' -q 'HTTP' -r 'zookeeper' -v #{OUTPUT_VERBOSITY} -w 'password' "
+      krb.vm.provision "makeZookeeperKeytabForSolrCloud" + (index + 1).to_s, type: "shell", 
+      path: "./setup-krb-principal.sh", args: "-i #{node} -p 'zookeeper' -q 'HTTP' -v #{OUTPUT_VERBOSITY} -w 'password' -k"
     }
   end
 
@@ -122,19 +122,19 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       #solr.vm.provision "killFirewall", type: "shell", inline: "service iptables stop"
       solr.vm.provision "installKerberos", type: "shell", 
         path: "./install-krbGateway.sh", args:  [ "-v",OUTPUT_VERBOSITY ]
-      solr.vm.provision "solrKeytab", type: "shell", 
-        inline: "cp /vagrant/solr-" + STATIC_IP_SOLRCLOUD[(i-1)] + ".keytab /var/solr/solr.keytab; rm /vagrant/solr-" + STATIC_IP_SOLRCLOUD[(i-1)] + ".keytab; chown solr:solr /var/solr/solr.keytab; chmod 0600 /var/solr/solr.keytab"
-      solr.vm.provision "zookeeperKeytab", type: "shell", 
-        inline: "cp /vagrant/zookeeper-" + STATIC_IP_SOLRCLOUD[(i-1)] + ".keytab /etc/zookeeper/conf/zookeeper.keytab; rm /vagrant/zookeeper-" + STATIC_IP_SOLRCLOUD[(i-1)] + ".keytab; chown zookeeper:zookeeper /etc/zookeeper/conf/zookeeper.keytab; chmod 0600 /etc/zookeeper/conf/zookeeper.keytab"
       solr.vm.provision "installZookeeperService", type: "shell",
         path: "./install-zookeeper-service.sh",
         args: [ "-e",ZOOKEEPER_CFG,"-i","#{i}","-v",OUTPUT_VERBOSITY ]
+      solr.vm.provision "zookeeperKeytab", type: "shell", 
+        inline: "cp /vagrant/zookeeper-" + STATIC_IP_SOLRCLOUD[(i-1)] + ".keytab /etc/zookeeper/conf/zookeeper.keytab; rm /vagrant/zookeeper-" + STATIC_IP_SOLRCLOUD[(i-1)] + ".keytab; chown zookeeper:zookeeper /etc/zookeeper/conf/zookeeper.keytab; chmod 0600 /etc/zookeeper/conf/zookeeper.keytab"
       solr.vm.provision "enableZookeeperKerberos", type: "shell",
         path: "./enable-kerberos-onZookeeper.sh",
         args: [ "-i",STATIC_IP_SOLRCLOUD[(i-1)],"-k",ZOOKEEPER_KEYTAB_PATH,"-v",OUTPUT_VERBOSITY ]
       solr.vm.provision "installSolrService", type: "shell",
         path: "../install-solr-service.sh", 
         args: "-s #{SOLR_VERSION} -v #{OUTPUT_VERBOSITY} -x " + STATIC_IP_SOLRCLOUD[(i-1)] + " -i #{SOLR_INSTALL_DIR}"
+      solr.vm.provision "solrKeytab", type: "shell", 
+        inline: "cp /vagrant/solr-" + STATIC_IP_SOLRCLOUD[(i-1)] + ".keytab /var/solr/solr.keytab; rm /vagrant/solr-" + STATIC_IP_SOLRCLOUD[(i-1)] + ".keytab; chown solr:solr /var/solr/solr.keytab; chmod 0600 /var/solr/solr.keytab"
       solr.vm.provision "enableSolrKerberos", type: "shell",
         path: "./enable-kerberos-onSolr.sh",
         args: [ "-i",STATIC_IP_SOLRCLOUD[(i-1)],"-k",SOLR_KEYTAB_PATH,"-v",OUTPUT_VERBOSITY ]
@@ -157,6 +157,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         solr.vm.provision "createSolrZnode", type: "shell",
           path: "./setup-solr-znode.sh", 
           args: [ "-e",ZOOKEEPER_ENSEMBLE,"-i",SOLR_INSTALL_DIR,"-t",ENABLE_TLS_ON_SOLR,"-v",OUTPUT_VERBOSITY ]
+
+        solr.vm.provision "enableSolrCloudKerberos", type: "shell",
+          inline: "#{SOLR_INSTALL_DIR}/solr/server/scripts/cloud-scripts/zkcli.sh -zkhost #{ZOOKEEPER_ENSEMBLE}/solr -cmd put /security.json '{\"authentication\":{\"class\": \"org.apache.solr.security.KerberosPlugin\"}}'"
 
         addTrustCmd = ''
         STATIC_IP_SOLRCLOUD.each_with_index { |node,index|

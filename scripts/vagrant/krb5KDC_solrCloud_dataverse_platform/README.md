@@ -46,3 +46,16 @@ This configuration is appropriate for use with all Solr version 5.x and newer pa
 
 NOTE: Solr 5+ no longer supports a default core/collection. This means that all api URI's must 
 reference the collection/core name (e.g. http://myhost:8983/solr/collection1/...)!
+
+<BR>
+Browser Configuration <sub>[solr wiki](https://cwiki.apache.org/confluence/display/solr/Kerberos+Authentication+Plugin)</sub>
+---------------------
+
+"In order for your browser to access the Solr Admin UI after enabling Kerberos authentication, it 
+must be able to negotiate with the Kerberos authenticator service to allow you access. Each browser 
+supports this differently, and some (like Chrome) do not support it at all. If you see 401 errors 
+when trying to access the Solr Admin UI after enabling Kerberos authentication, it's likely your 
+browser has not been configured properly to know how or where to negotiate the authentication 
+request."
+
+

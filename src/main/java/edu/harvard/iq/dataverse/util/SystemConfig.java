@@ -65,6 +65,12 @@ public class SystemConfig {
      * combination.
      */
     private String saneDefaultForSolrHostColonPort = "localhost:8983";
+ 
+    /**
+     * A common place to find the String for a sane Solr jaas-client.conf file
+     * location.
+     */
+    private String saneDefaultForSolrJAASClientConfFile = "./jaas-client.conf";
 
     /**
      * A common place to find the String for a sane Solr service name
@@ -225,8 +231,23 @@ public class SystemConfig {
       return solrTLS_Enabled;
     }
     
+    private Boolean solrKRB_Enabled = null;
+    public boolean solrUsesJAAS() {
+      if (solrKRB_Enabled != null) {
+        return solrKRB_Enabled;
+      }
+      boolean safeDefaultIfKeyNotFound = false;
+      solrKRB_Enabled = settingsService.isTrueForKey(SettingsServiceBean.Key.SolrUsesJAAS, safeDefaultIfKeyNotFound);
+      return solrKRB_Enabled;
+    }
+    
     public String getSolrUrlSchema() {
         return (solrUsesHttps()) ? "https://" : "http://";
+    }
+            
+    public String getSolrJAASClientConfFile() {
+        String solrJAASClientConfFile = settingsService.getValueForKey(SettingsServiceBean.Key.SolrJAASClientConfFile, saneDefaultForSolrJAASClientConfFile);
+        return solrJAASClientConfFile;
     }
     
     public String getSolrHostColonPort() {

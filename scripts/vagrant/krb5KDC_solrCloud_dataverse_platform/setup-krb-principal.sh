@@ -7,7 +7,6 @@ fi
 
 if [[ -z ${OUTPUT_VERBOSITY} ]]; then OUTPUT_VERBOSITY='1'; fi
 if [[ -z ${PRINCIPAL_PASSWORD} ]]; then PRINCIPAL_PASSWORD='password'; fi
-_keytab_only=0;
 
 _usage() {
   echo "\nUsage: $0 \[h,i,p,p2,p3,v\]"
@@ -16,14 +15,14 @@ _usage() {
   echo "  -i     Host (second) component of kerberos principal."
   echo "  -k     Don't add principals. Just generate keytab."
   echo "  -p     Primary (first) component of kerberos principal."
-  echo "  -p2     Primary (first) component of additional kerberos principal."
-  echo "  -p3     Primary (first) component of additional kerberos principal."
+  echo "  -q     Primary (first) component of additional kerberos principal."
+  echo "  -r     Primary (first) component of additional kerberos principal."
   echo "  -v     Verbosity of this installation script \(0-3\). \[${OUTPUT_VERBOSITY}\]"
   echo "  -w     Password for this principal."
   echo "\n"
 }
 
-while getopts :i:p:p2:p3:v:w:hk FLAG; do
+while getopts :i:p:q:r:v:w:hk FLAG; do
   case $FLAG in
     h)  #print help
       _usage
@@ -38,10 +37,10 @@ while getopts :i:p:p2:p3:v:w:hk FLAG; do
     p)
       PRINCIPAL_FIRST=$OPTARG
       ;;
-    p2)
+    q)
       PRINCIPAL2_FIRST=$OPTARG
       ;;
-    p3)
+    r)
       PRINCIPAL3_FIRST=$OPTARG
       ;;
     v)  #set output verbosity level "v"
@@ -71,12 +70,14 @@ else
   CURL_CMD='curl'
 fi
 
-$_IF_TERSE echo "Creating principal ${PRINCIPAL_FIRST}/${PRINCIPAL_HOST}"
-$_IF_VERBOSE kadmin.local -q "addprinc -pw ${PRINCIPAL_PASSWORD} ${PRINCIPAL_FIRST}/${PRINCIPAL_HOST}"
+if [[ -z ${_keytab_only} ]]; then
+  $_IF_TERSE echo "Creating principal ${PRINCIPAL_FIRST}/${PRINCIPAL_HOST}"
+  $_IF_VERBOSE kadmin.local -q "addprinc -pw ${PRINCIPAL_PASSWORD} ${PRINCIPAL_FIRST}/${PRINCIPAL_HOST}"
+fi
 _princ_list="${PRINCIPAL_FIRST}/${PRINCIPAL_HOST}"
 
 if [[ -n ${PRINCIPAL2_FIRST} ]]; then
-  if [[ ! $_keytab_only ]]; then
+  if [[ -z ${_keytab_only} ]]; then
     $_IF_TERSE echo "Creating principal ${PRINCIPAL2_FIRST}/${PRINCIPAL_HOST}"
     $_IF_VERBOSE kadmin.local -q "addprinc -pw ${PRINCIPAL_PASSWORD} ${PRINCIPAL2_FIRST}/${PRINCIPAL_HOST}"
   fi
@@ -84,7 +85,7 @@ if [[ -n ${PRINCIPAL2_FIRST} ]]; then
 fi
 
 if [[ -n ${PRINCIPAL3_FIRST} ]]; then
-  if [[ ! $_keytab_only ]]; then
+  if [[ -z ${_keytab_only} ]]; then
     $_IF_TERSE echo "Creating principal ${PRINCIPAL3_FIRST}/${PRINCIPAL_HOST}"
     $_IF_VERBOSE kadmin.local -q "addprinc -pw ${PRINCIPAL_PASSWORD} ${PRINCIPAL3_FIRST}/${PRINCIPAL_HOST}"
   fi

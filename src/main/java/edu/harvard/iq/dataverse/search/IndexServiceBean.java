@@ -52,7 +52,9 @@ import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.CloudSolrClient;
+import org.apache.solr.client.solrj.impl.HttpClientUtil;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.impl.Krb5HttpClientConfigurer;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrDocument;
@@ -108,6 +110,10 @@ public class IndexServiceBean {
     
     @PostConstruct
     public void init(){
+        if(systemConfig.solrUsesJAAS()){
+          System.setProperty("java.security.auth.login.config",systemConfig.getSolrJAASClientConfFile());
+          HttpClientUtil.setConfigurer(new Krb5HttpClientConfigurer());
+        }
         if (systemConfig.isSolrCloudZookeeperEnabled()) {
             solrServer = new CloudSolrClient(systemConfig.getSolrZookeeperEnsemble());
             ((CloudSolrClient)solrServer).setDefaultCollection(systemConfig.getSolrCollectionName());

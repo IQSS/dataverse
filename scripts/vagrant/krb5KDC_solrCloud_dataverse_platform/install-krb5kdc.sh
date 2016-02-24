@@ -60,7 +60,7 @@ done
 
 
 #### Create krb5.conf configuration file #### 
-if [[ ! -e /dataverse/conf/krb/krb5.conf ]]; then
+if [[ ! -e /vagrant/krb5.conf ]]; then
   $_IF_INFO echo "Creating the krb5.conf configuration file"
   echo "[logging]
 default = FILE:/var/log/krb5libs.log
@@ -83,10 +83,10 @@ default_domain = DATAVERSE.TEST
 }
 
 [domain_realm]
-" > /dataverse/conf/krb/krb5.conf
+" > /vagrant/krb5.conf
 fi
 $_IF_INFO echo "Installing /etc/krb5.conf"
-cp /dataverse/conf/krb/krb5.conf /etc/krb5.conf
+cp /vagrant/krb5.conf /etc/krb5.conf
 
 #### Create kdc.conf configuration file ####
 $_IF_INFO echo "Installing the kdc.conf configuration file"

@@ -20,11 +20,10 @@ _usage() {
   echo "  -k     Path to the solr principles keytab file."
   echo "  -p     Primary (first) component of the solr kerberos principal."
   echo "  -v     Verbosity of this installation script (0-3). [${OUTPUT_VERBOSITY}]"
-  echo "  -x     Network accessible Hostname/IP address for solr server."
   echo ""
 }
 
-while getopts :c:h:i:k:p:v:x: FLAG; do
+while getopts :c:h:i:k:p:v: FLAG; do
   case $FLAG in
     c)
       JAAS_CLIENT_CONF_PATH=$OPTARG
@@ -44,9 +43,6 @@ while getopts :c:h:i:k:p:v:x: FLAG; do
       ;;
     v)  #set output verbosity level "v"
       OUTPUT_VERBOSITY=$OPTARG
-      ;;
-    x)  #solr server hostname/IP "x"
-      SOLR_HOST=$OPTARG
       ;;
     :)  #valid option requires adjacent argument
       echo "Option $OPTARG requires an adjacent argument" >&2
@@ -108,7 +104,7 @@ solrClient {
 #### Set solr.in.sh to use JAAS client configurations ####
 $_IF_INFO echo "Configuring /etc/default/solr.in.sh to use ${JAAS_CLIENT_CONF_PATH}"
 echo "SOLR_AUTHENTICATION_CLIENT_CONFIGURER=org.apache.solr.client.solrj.impl.Krb5HttpClientConfigurer
-SOLR_AUTHENTICATION_OPTS=\"-Djava.security.auth.login.config=${JAAS_CLIENT_CONF_PATH} -Dsolr.kerberos.cookie.domain=${SOLR_HOST} -Dsolr.kerberos.cookie.portaware=true -Dsolr.kerberos.principal=${SOLR_PRINCIPAL_FIRST}/${PRINCIPAL_HOST} -Dsolr.kerberos.keytab=${KEYTAB_PATH}
+SOLR_AUTHENTICATION_OPTS=\"-Djava.security.auth.login.config=${JAAS_CLIENT_CONF_PATH} -Dsolr.kerberos.jaas.appname=solrClient -Dsolr.kerberos.cookie.domain=${PRINCIPAL_HOST} -Dsolr.kerberos.cookie.portaware=true -Dsolr.kerberos.principal=${SOLR_PRINCIPAL_FIRST}/${PRINCIPAL_HOST} -Dsolr.kerberos.keytab=${KEYTAB_PATH}
 " > /etc/default/solr.in.sh
 
 
