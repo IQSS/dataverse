@@ -36,12 +36,20 @@ unless defined? ZOOKEEPER_CFG
   }
 end
 
+unless defined? ZOOKEEPER_KEYTAB_PATH
+  ZOOKEEPER_KEYTAB_PATH = '/etc/zookeeper/conf/zookeeper.keytab'
+end
+
 unless defined? SOLR_VERSION
   SOLR_VERSION = '5.4.1'
 end
 
 unless defined? SOLR_INSTALL_DIR
   SOLR_INSTALL_DIR = '/opt'
+end
+
+unless defined? SOLR_KEYTAB_PATH
+  SOLR_KEYTAB_PATH = '/var/solr/solr.keytab'
 end
 
 unless defined? ENABLE_TLS_ON_SOLR
@@ -94,10 +102,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     krb.vm.provision "addDataversePrincipal", type: "shell",
       path: "./setup-krb-principal.sh", args: "-i #{STATIC_IP_DATAVERSE} -p 'dataverse' -v #{OUTPUT_VERBOSITY} -w 'password' "
     STATIC_IP_SOLRCLOUD.each_with_index { |node,index|
-      krb.vm.provision "addSolrCloud" + (index + 1).to_s + "Principal", type: "shell", 
-      path: "./setup-krb-principal.sh", args: "-i #{node} -p 'solr' -v #{OUTPUT_VERBOSITY} -w 'password' "
-      krb.vm.provision "addZookeeper" + (index + 1).to_s + "Principal", type: "shell", 
-      path: "./setup-krb-principal.sh", args: "-i #{node} -p 'zookeeper' -v #{OUTPUT_VERBOSITY} -w 'password' "
+      krb.vm.provision "addPrincipals" + (index + 1).to_s + "Principal", type: "shell", 
+      path: "./setup-krb-principal.sh", args: "-i #{node} -p 'solr' -p2 'HTTP' -p3 'zookeeper' -v #{OUTPUT_VERBOSITY} -w 'password' "
+      krb.vm.provision "makeZookeeperKeytab" + (index + 1).to_s + "Principal", type: "shell", 
+      path: "./setup-krb-principal.sh", args: "-i #{node} -p 'zookeeper' -p2 'HTTP' -v #{OUTPUT_VERBOSITY} -w 'password' -k"
     }
   end
 
@@ -108,15 +116,21 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       solr.vm.network "private_network", ip: STATIC_IP_SOLRCLOUD[(i-1)]
       
       #solr.vm.provision "killFirewall", type: "shell", inline: "service iptables stop"
+      solr.vm.provision "installKerberos", type: "shell", 
+      path: "./install-krbGateway.sh", args:  [ "-i",STATIC_IP_SOLRCLOUD[(i-1)],"-v",OUTPUT_VERBOSITY ]
       solr.vm.provision "installZookeeperService", type: "shell",
         path: "./install-zookeeper-service.sh",
         args: [ "-e",ZOOKEEPER_CFG,"-i","#{i}","-v",OUTPUT_VERBOSITY ]
       solr.vm.provision "enableZookeeperKerberos", type: "shell",
         path: "./enable-kerberos-onZookeeper.sh",
-        args: [ "-i",STATIC_IP_SOLRCLOUD[(i-1)],"-v",OUTPUT_VERBOSITY ]
+        args: [ "-i",STATIC_IP_SOLRCLOUD[(i-1)],"-k",ZOOKEEPER_KEYTAB_PATH,"-v",OUTPUT_VERBOSITY ]
       solr.vm.provision "installSolrService", type: "shell",
         path: "../install-solr-service.sh", 
         args: "-s #{SOLR_VERSION} -v #{OUTPUT_VERBOSITY} -x " + STATIC_IP_SOLRCLOUD[(i-1)] + " -i #{SOLR_INSTALL_DIR}"
+      solr.vm.provision "enableSolrKerberos", type: "shell",
+        path: "./enable-kerberos-onSolr.sh",
+        args: [ "-i",STATIC_IP_SOLRCLOUD[(i-1)],"-k",SOLR_KEYTAB_PATH,"-v",OUTPUT_VERBOSITY ]
+
       if (ENABLE_TLS_ON_SOLR != 0)
         solr.vm.provision "setupTLS", type: "shell", 
           path: "../setup-tls-solr.sh",
@@ -129,7 +143,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       end
       solr.vm.provision "enableSolrCloud", type: "shell", path: "./setup-solrCloud.sh",
         args: [ "-e",ZOOKEEPER_ENSEMBLE,"-v",OUTPUT_VERBOSITY ]
-      if ( i == STATIC_IP_SOLRCLOUD.length )
+      
+      #### Only the last solrCloud node to provision will do the following ####  
+      if ( i == STATIC_IP_SOLRCLOUD.length ) 
         solr.vm.provision "createSolrZnode", type: "shell",
           path: "./setup-solr-znode.sh", 
           args: [ "-e",ZOOKEEPER_ENSEMBLE,"-i",SOLR_INSTALL_DIR,"-t",ENABLE_TLS_ON_SOLR,"-v",OUTPUT_VERBOSITY ]
