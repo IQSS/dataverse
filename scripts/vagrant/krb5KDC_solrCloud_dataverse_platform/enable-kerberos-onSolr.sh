@@ -24,7 +24,7 @@ _usage() {
   echo ""
 }
 
-while getopts :c:h:i:k:p:v: FLAG; do
+while getopts :c:h:i:k:p:v:x: FLAG; do
   case $FLAG in
     c)
       JAAS_CLIENT_CONF_PATH=$OPTARG
