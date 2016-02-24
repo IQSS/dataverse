@@ -111,6 +111,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       solr.vm.provision "installZookeeperService", type: "shell",
         path: "./install-zookeeper-service.sh",
         args: [ "-e",ZOOKEEPER_CFG,"-i","#{i}","-v",OUTPUT_VERBOSITY ]
+      solr.vm.provision "enableZookeeperKerberos", type: "shell",
+        path: "./enable-kerberos-onZookeeper.sh",
+        args: [ "-i",STATIC_IP_SOLRCLOUD[(i-1)],"-v",OUTPUT_VERBOSITY ]
       solr.vm.provision "installSolrService", type: "shell",
         path: "../install-solr-service.sh", 
         args: "-s #{SOLR_VERSION} -v #{OUTPUT_VERBOSITY} -x " + STATIC_IP_SOLRCLOUD[(i-1)] + " -i #{SOLR_INSTALL_DIR}"
