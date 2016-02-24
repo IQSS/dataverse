@@ -107,7 +107,7 @@ fi
 
 #### Modify /etc/defaults/solr.in.sh service configuration file #### 
 $_IF_INFO echo "Adding TLS/SSL configurations to the solr.in.sh configuration file"
-$_IF_VERBOSE echo $SOLR_SSL_SETTINGS >> $SOLR_IN_SH_PATH
+$_IF_VERBOSE echo "$SOLR_SSL_SETTINGS" >> $SOLR_IN_SH_PATH
 
 $_IF_TERSE echo "solr TLS/SSL configured"
 $_IF_INFO echo "Please restart the solr service to fully enable TLS/SSL"
