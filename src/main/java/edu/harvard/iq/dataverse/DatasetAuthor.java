@@ -60,7 +60,7 @@ public class DatasetAuthor {
     private String idType;
 
     public String getIdType() {
-        if (this.idType.isEmpty() && !this.idValue.isEmpty()){
+        if ((this.idType == null || this.idType.isEmpty()) && (this.idValue != null && !this.idValue.isEmpty())){
             return ("ORCID");
         } else {
             return idType;
