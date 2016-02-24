@@ -6,7 +6,11 @@ VAGRANTFILE_API_VERSION = "2"
 
 unless defined? OUTPUT_VERBOSITY
   # Output Verbosity 0..3 least..most
-  OUTPUT_VERBOSITY = '3'
+  if ENV['OUTPUT_VERBOSITY'].nil?
+    OUTPUT_VERBOSITY = '3'
+  else
+    OUTPUT_VERBOSITY = ENV['OUTPUT_VERBOSITY']
+  end
 end
 
 unless defined? STATIC_IP_KRBKDC 
