@@ -68,7 +68,7 @@ fi
 newline='
 '
 
-$_IF_TERSE echo "Enabling Kerberos client authentication for dataverse using verbosity level: ${OUTPUT_VERBOSITY}"
+$_IF_TERSE echo "Configuring Kerberos client authentication for dataverse using verbosity level: ${OUTPUT_VERBOSITY}"
 
 if [[ ( ! -e $KEYTAB_PATH ) ]]; then 
   echo "Unable to access kerberos keytab: $KEYTAB_PATH" >&2

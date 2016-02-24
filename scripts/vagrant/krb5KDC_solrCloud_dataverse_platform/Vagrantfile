@@ -81,6 +81,10 @@ unless defined? DVCOLLECTION_NAME
   DVCOLLECTION_NAME = 'dvcollection'
 end
 
+unless defined? DATAVERSE_HOME
+  DATAVERSE_HOME = "/home/glassfish/glassfish4/glassfish/domains/domain1"
+end
+
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   config.vm.provider "virtualbox" do |v|
@@ -117,7 +121,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       
       #solr.vm.provision "killFirewall", type: "shell", inline: "service iptables stop"
       solr.vm.provision "installKerberos", type: "shell", 
-      path: "./install-krbGateway.sh", args:  [ "-i",STATIC_IP_SOLRCLOUD[(i-1)],"-v",OUTPUT_VERBOSITY ]
+        path: "./install-krbGateway.sh", args:  [ "-v",OUTPUT_VERBOSITY ]
+      solr.vm.provision "solrKeytab", type: "shell", 
+        inline: "cp /vagrant/solr-" + STATIC_IP_SOLRCLOUD[(i-1)] + ".keytab /var/solr/solr.keytab; rm /vagrant/solr-" + STATIC_IP_SOLRCLOUD[(i-1)] + ".keytab; chown solr:solr /var/solr/solr.keytab; chmod 0600 /var/solr/solr.keytab"
+      solr.vm.provision "zookeeperKeytab", type: "shell", 
+        inline: "cp /vagrant/zookeeper-" + STATIC_IP_SOLRCLOUD[(i-1)] + ".keytab /etc/zookeeper/conf/zookeeper.keytab; rm /vagrant/zookeeper-" + STATIC_IP_SOLRCLOUD[(i-1)] + ".keytab; chown zookeeper:zookeeper /etc/zookeeper/conf/zookeeper.keytab; chmod 0600 /etc/zookeeper/conf/zookeeper.keytab"
       solr.vm.provision "installZookeeperService", type: "shell",
         path: "./install-zookeeper-service.sh",
         args: [ "-e",ZOOKEEPER_CFG,"-i","#{i}","-v",OUTPUT_VERBOSITY ]
@@ -193,10 +201,16 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       end
     end
 
+    #dataverse.vm.provision "killFirewall", type: "shell", inline: "service iptables stop"
     dataverse.vm.provision "dataversePrereqs", type: "shell", 
       path: "../setup.sh", args: "-v #{OUTPUT_VERBOSITY}"
-    #dataverse.vm.provision "killFirewall", type: "shell", inline: "service iptables stop"
-
+    dataverse.vm.provision "installKerberos", type: "shell", 
+        path: "./install-krbGateway.sh", args:  [ "-v",OUTPUT_VERBOSITY ]
+    dataverse.vm.provision "dataverseKeytab", type: "shell", 
+      inline: "cp /vagrant/dataverse-#{STATIC_IP_DATAVERSE}.keytab #{DATAVERSE_HOME}/dataverse.keytab; rm /vagrant/dataverse-#{STATIC_IP_DATAVERSE}.keytab; chown glassfish:glassfish #{DATAVERSE_HOME}/dataverse.keytab; chmod 0600 #{DATAVERSE_HOME}/dataverse.keytab"
+    dataverse.vm.provision "configureKerberos", type: "shell", 
+        path: "./setup-dv-jaas.sh", args:  [ "-c","#{DATAVERSE_HOME}/jaas-client.conf","-v",OUTPUT_VERBOSITY ]
+    
     if (ENABLE_TLS_ON_SOLR != 0)
       dataverse.vm.provision "addGlassfishDomainTLS", type: "shell", 
         path: "../setup-tls-dataverse.sh",
@@ -214,6 +228,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
  
     dataverse.vm.provision "dataverseSetup", type: "shell", path: "../install-dataverse.sh",
       args: "-c #{DVCOLLECTION_NAME} -h #{STATIC_IP_DATAVERSE} -m #{mailserver} -z '#{ZOOKEEPER_ENSEMBLE}' -u #{ENABLE_TLS_ON_SOLR} -v #{OUTPUT_VERBOSITY}"
+    dataverse.vm.provision "enableDataverseSolrJKerberos", type: "shell", 
+      path: "./enable-kerberos-onDataverse.sh", args:  [ "-c","#{DATAVERSE_HOME}/jaas-client.conf","-v",OUTPUT_VERBOSITY,"-x",STATIC_IP_DATAVERSE ]
     dataverse.vm.provision "loadDataverseTest", type: "shell", 
       path: "../setup-dv-test.sh", args: "#{STATIC_IP_DATAVERSE}"
   end
