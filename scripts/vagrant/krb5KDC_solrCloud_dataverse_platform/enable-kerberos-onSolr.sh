@@ -7,7 +7,7 @@ fi
 
 if [[ -z ${OUTPUT_VERBOSITY} ]]; then OUTPUT_VERBOSITY='1'; fi
 if [[ -z ${KEYTAB_PATH} ]]; then KEYTAB_PATH="/var/solr/solr.keytab"; fi
-if [[ -z ${SOLR_PRINCIPAL_FIRST} ]]; then PRINCIPAL_FIRST="HTTP"; fi
+if [[ -z ${SOLR_PRINCIPAL_FIRST} ]]; then SOLR_PRINCIPAL_FIRST="HTTP"; fi
 if [[ -z ${ZOOKEEPER_PRINCIPAL_FIRST} ]]; then ZOOKEEPER_PRINCIPAL_FIRST="zookeeper"; fi
 if [[ -z ${JAAS_CLIENT_CONF_PATH} ]]; then JAAS_CLIENT_CONF_PATH="/var/solr/jaas-client.conf"; fi
 
