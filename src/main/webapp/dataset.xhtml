@@ -1287,9 +1287,9 @@
                                 <f:param value="#{DatasetPage.dataset.owner.displayName}"/>
                             </h:outputFormat>
                         </p>
-                        <ui:fragment rendered="#{DatasetPage.datasetPublishCustomText.length() > 0}">                            
-                                <span class="glyphicon glyphicon-warning-sign"/> #{DatasetPage.datasetPublishCustomText}                           
-                        </ui:fragment>
+                        <div id="terms-agreement-block" class="well" jsf:rendered="#{DatasetPage.datasetPublishCustomText.length() > 0}">
+                            <h:outputText value="#{DatasetPage.datasetPublishCustomText}" escape="false"/>
+                        </div>
                         <p class="help-block">
                             <span class="glyphicon glyphicon-info-sign"/> #{bundle['dataset.publishBoth.tip']}
                         </p>
@@ -1303,9 +1303,9 @@
                         <p class="text-danger">
                             <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.republish.tip']}
                         </p>
-                        <ui:fragment rendered="#{DatasetPage.datasetPublishCustomText.length() > 0 and DatasetPage.isDatasetPublishPopupCustomTextOnAllVersions()}">                            
-                                <span class="glyphicon glyphicon-warning-sign"/> #{DatasetPage.datasetPublishCustomText}                           
-                        </ui:fragment>
+                        <div id="terms-agreement-block" class="well" jsf:rendered="#{DatasetPage.datasetPublishCustomText.length() > 0 and DatasetPage.isDatasetPublishPopupCustomTextOnAllVersions()}">
+                            <h:outputText value="#{DatasetPage.datasetPublishCustomText}" escape="false"/>
+                        </div>
                         <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.minorUpdate}">
                             <p class="help-block">
                                 <span class="glyphicon glyphicon-info-sign"/> #{bundle['dataset.selectVersionNumber']}
