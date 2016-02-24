@@ -7,19 +7,23 @@ fi
 
 if [[ -z ${OUTPUT_VERBOSITY} ]]; then OUTPUT_VERBOSITY='1'; fi
 if [[ -z ${PRINCIPAL_PASSWORD} ]]; then PRINCIPAL_PASSWORD='password'; fi
+_keytab_only=0;
 
 _usage() {
-  echo "\nUsage: $0 \[hiv\]"
+  echo "\nUsage: $0 \[h,i,p,p2,p3,v\]"
   echo "\nSupported options:"
   echo "  -h     Print this help message."
   echo "  -i     Host (second) component of kerberos principal."
+  echo "  -k     Don't add principals. Just generate keytab."
   echo "  -p     Primary (first) component of kerberos principal."
+  echo "  -p2     Primary (first) component of additional kerberos principal."
+  echo "  -p3     Primary (first) component of additional kerberos principal."
   echo "  -v     Verbosity of this installation script \(0-3\). \[${OUTPUT_VERBOSITY}\]"
   echo "  -w     Password for this principal."
   echo "\n"
 }
 
-while getopts :i:p:v:w:h FLAG; do
+while getopts :i:p:p2:p3:v:w:hk FLAG; do
   case $FLAG in
     h)  #print help
       _usage
@@ -28,8 +32,17 @@ while getopts :i:p:v:w:h FLAG; do
     i)
       PRINCIPAL_HOST=$OPTARG
       ;;
+    k)
+      _keytab_only=1
+      ;;
     p)
       PRINCIPAL_FIRST=$OPTARG
+      ;;
+    p2)
+      PRINCIPAL2_FIRST=$OPTARG
+      ;;
+    p3)
+      PRINCIPAL3_FIRST=$OPTARG
       ;;
     v)  #set output verbosity level "v"
       OUTPUT_VERBOSITY=$OPTARG
@@ -60,9 +73,24 @@ fi
 
 $_IF_TERSE echo "Creating principal ${PRINCIPAL_FIRST}/${PRINCIPAL_HOST}"
 $_IF_VERBOSE kadmin.local -q "addprinc -pw ${PRINCIPAL_PASSWORD} ${PRINCIPAL_FIRST}/${PRINCIPAL_HOST}"
-$_IF_TERSE echo "Creating principal HTTP/${PRINCIPAL_HOST}"
-$_IF_VERBOSE kadmin.local -q "addprinc -pw ${PRINCIPAL_PASSWORD} HTTP/${PRINCIPAL_HOST}"
+_princ_list="${PRINCIPAL_FIRST}/${PRINCIPAL_HOST}"
+
+if [[ -n ${PRINCIPAL2_FIRST} ]]; then
+  if [[ ! $_keytab_only ]]; then
+    $_IF_TERSE echo "Creating principal ${PRINCIPAL2_FIRST}/${PRINCIPAL_HOST}"
+    $_IF_VERBOSE kadmin.local -q "addprinc -pw ${PRINCIPAL_PASSWORD} ${PRINCIPAL2_FIRST}/${PRINCIPAL_HOST}"
+  fi
+  _princ_list+=" ${PRINCIPAL2_FIRST}/${PRINCIPAL_HOST}"
+fi
+
+if [[ -n ${PRINCIPAL3_FIRST} ]]; then
+  if [[ ! $_keytab_only ]]; then
+    $_IF_TERSE echo "Creating principal ${PRINCIPAL3_FIRST}/${PRINCIPAL_HOST}"
+    $_IF_VERBOSE kadmin.local -q "addprinc -pw ${PRINCIPAL_PASSWORD} ${PRINCIPAL3_FIRST}/${PRINCIPAL_HOST}"
+  fi
+  _princ_list+=" ${PRINCIPAL3_FIRST}/${PRINCIPAL_HOST}"
+fi
 
 $_IF_TERSE echo "Generating keytab /vagrant/${PRINCIPAL_FIRST}-${PRINCIPAL_HOST}.keytab"
-$_IF_VERBOSE kadmin.local -q "xst -norandkey -k /vagrant/${PRINCIPAL_FIRST}-${PRINCIPAL_HOST}.keytab ${PRINCIPAL_FIRST}/${PRINCIPAL_HOST} HTTP/${PRINCIPAL_HOST}"
+$_IF_VERBOSE kadmin.local -q "xst -norandkey -k /vagrant/${PRINCIPAL_FIRST}-${PRINCIPAL_HOST}.keytab ${_princ_list}"
 
