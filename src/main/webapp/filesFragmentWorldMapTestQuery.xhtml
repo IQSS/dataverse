@@ -13,10 +13,9 @@
     
 <ui:fragment rendered="#{ !DatasetPage.canUserSeeExploreWorldMapButton(fileMetadata)}">
 <!-- There is NO map data for this file -->  
-
-    <ui:fragment rendered="#{ DatasetPage.canSeeTwoRavensExploreButton(fileMetadata)}">
-    <!-- This tabular file -->
-        to add sample map data:
+    <ui:fragment rendered="#{fileMetadata.getDataFile().isTabularData()}">
+    <!-- Not a shapefile, assume this is a tabular file -->
+        <br />To add sample map data:
         <textarea><h:outputText escape="false" value="INSERT INTO maplayermetadata (id, isjoinlayer, joindescription, embedmaplink, layerlink, layername, mapimagelink, worldmapusername, dataset_id, datafile_id) 
     VALUES (DEFAULT, true, 'This file was joined with WorldMap layer x, y, z',
     'https://worldmap.harvard.edu/maps/embed/?layer=geonode:zip_codes_2015_zip_s9i','https://worldmap.harvard.edu/data/geonode:zip_codes_2015_zip_s9i',

@@ -590,6 +590,21 @@ public class DatasetPage implements java.io.Serializable {
         return false;
     }
     
+    /**
+     * For use in the Dataset page
+     * @return 
+     */
+    public boolean isSuperUser(){
+        
+        if (!this.isSessionUserAuthenticated()){
+            return false;
+        }
+        
+        if (this.session.getUser().isSuperuser()){
+            return true;
+        }
+        return false;
+    }
     /* 
        TODO/OPTIMIZATION: This is still costing us N SELECT FROM GuestbookResponse queries, 
        where N is the number of files. This could of course be replaced by a query that'll 
@@ -1236,6 +1251,29 @@ public class DatasetPage implements java.io.Serializable {
         }
         return false;
     }
+    
+   
+    /**
+     * For development
+     * 
+     * Flag for whether to show sample insert statements for Geoconnect Debug
+     * 
+     * Conditions to meet: Person is superuser and GeoconnectDebug active 
+     * 
+     * @return 
+     */
+    public boolean isGeoconnectDebugAvailable(){
+
+        if (!this.isSuperUser()){
+            return false;
+        }
+        if (settingsService.isTrueForKey(SettingsServiceBean.Key.GeoconnectDebug, true)){
+            return true;
+        }    
+        return false;
+      
+    }
+    
     
     /**
      * Should there be a Explore WorldMap Button for this file?

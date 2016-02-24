@@ -282,7 +282,10 @@
                     </ui:repeat>
                 </ui:fragment>
             </div>
-            <!-- query to add sample map data to a tabular file --><br /><ui:include src="filesFragmentWorldMapTestQuery.xhtml"/>
+            <ui:fragment rendered="#{DatasetPage.isGeoconnectDebugAvailable()}">
+            <!-- query to add sample map data to a tabular file -->
+                <ui:include src="filesFragmentWorldMapTestQuery.xhtml"/>
+            </ui:fragment>
 
         </p:column>
         <p:column class="col-file-action text-right" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">

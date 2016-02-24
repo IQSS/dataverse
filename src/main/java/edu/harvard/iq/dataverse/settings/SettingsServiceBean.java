@@ -195,6 +195,15 @@ public class SettingsServiceBean {
         */
         GeoconnectViewMaps,
         /**
+        For DEVELOPMENT ONLY. Generate SQL statements for populating
+        MapLayerMetadata objects when Geoconnect is not available.
+        
+        When files have related MapLayerMetadata objects, the "Explore button
+        will be available to users.
+        */
+        GeoconnectDebug,
+
+        /**
         Whether to allow a user to view tabular files
         using the TwoRavens application
         This boolean effects whether a user may see the 
