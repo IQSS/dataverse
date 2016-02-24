@@ -91,7 +91,7 @@ else
 " > ${ZOOKEEPER_JAAS_CLIENT_CONF_PATH}
 
   $_IF_INFO echo "Adding SASLAuthenticationProvider to zookeeper server configuration /etc/zookeeper/conf/zoo.cfg"
-  echo "export JVMFLAGS=\"-Djava.security.auth.login.config=${ZOOKEEPER_JAAS_CLIENT_CONF_PATH}\"${newline}" > /etc/zookeeper/conf/zoo.cfg
+  echo "authProvider.1=org.apache.zookeeper.server.auth.SASLAuthenticationProvider${newline}jaasLoginRenew=3600000${newline}" > /etc/zookeeper/conf/zoo.cfg
 fi
 
 
