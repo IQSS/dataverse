@@ -927,7 +927,7 @@
                                 </div>
                             </div>
                             <div class="form-group text-left" jsf:rendered="#{DatasetPage.tabularDataSelected}">
-                                <label for="tabularDataTagsDsPAge" class="col-sm-4 control-label">
+                                <label for="tabularDataTagsDSPage" class="col-sm-4 control-label">
                                     #{bundle['file.tabularDataTags']}
                                 </label>
                                 <div class="col-sm-8">
@@ -945,8 +945,7 @@
                                 </div>
                             </div>
                         </div>
-                        <p:selectBooleanCheckbox id="removeUnused" itemLabel="#{bundle['dataset.removeUnusedFileTags']}"
-                                                                 value="#{DatasetPage.removeUnusedTags}" widgetVar="removeUnused"/>
+                        <p:selectBooleanCheckbox id="removeUnused" itemLabel="#{bundle['dataset.removeUnusedFileTags']}" value="#{DatasetPage.removeUnusedTags}" widgetVar="removeUnused"/>
                         <div class="button-block">
                             <p:commandButton id="fileTagsPopupSaveButton" value="#{bundle.saveChanges}" oncomplete="PF('fileTagsPopup').hide()" update=":datasetForm:tabView:filesTable, :datasetForm" action="#{DatasetPage.saveFileTagsAndCategories()}"/>
                             <p:commandButton id="fileTagsPopupCancelButton" value="#{bundle.cancel}" onclick="PF('fileTagsPopup').hide();PF('blockDatasetForm').hide();" actionListener="#{DatasetPage.clearFileMetadataSelectedForTagsPopup()}"/>

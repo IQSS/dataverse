@@ -463,7 +463,25 @@
     </p:dialog>
     <p:dialog id="editFileTagsPopup" styleClass="smallPopUp" header="#{bundle['file.editTags']}" widgetVar="editFileTagsPopup" modal="true">
         <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['file.editTagsDialog.tip']}</p>
+
         <div class="form-horizontal" jsf:rendered="#{!(empty EditDatafilesPage.fileMetadataSelectedForTagsPopup)}">
+            <div class="form-group text-left">
+                <label for="selectedTagsListEFF" class="col-sm-4 control-label">
+                    #{bundle['file.editTagsDialog.selectedTags']}
+                </label>
+                <div class="col-sm-8">
+                    <p:outputPanel id="selectedTagsListEFF" style="padding-top:.5em;">
+                        <h:outputText value="No tags selected" rendered="#{(empty EditDatafilesPage.selectedTags) and (empty EditDatafilesPage.fileMetadataSelectedForTagsPopup.categoriesByName)}" />
+
+                        <ui:repeat value="#{EditDatafilesPage.fileMetadataSelectedForTagsPopup.categoriesByName}" var="tags" rendered="#{!empty EditDatafilesPage.fileMetadataSelectedForTagsPopup.categoriesByName}">
+                            <h:outputText value="#{tags}" styleClass="label label-default" style="margin-right:.5em;display:inline-block;"/>
+                        </ui:repeat>
+                        <ui:repeat value="#{EditDatafilesPage.selectedTags}" var="tags" rendered="#{!empty EditDatafilesPage.selectedTags}">
+                            <h:outputText value="#{tags}" styleClass="label label-info" style="margin-right:.5em;display:inline-block;"/>
+                        </ui:repeat>
+                    </p:outputPanel>
+                </div>
+            </div>
             <div class="form-group">
                 <label for="fileTagsMenu" class="col-sm-3 control-label">
                     #{bundle['file.editTagsDialog.select']}
@@ -472,6 +490,8 @@
                     <p:selectCheckboxMenu id="fileTagsMenu" styleClass="form-control"
                                           value="#{EditDatafilesPage.fileMetadataSelectedForTagsPopup.categoriesByName}" label="#{bundle.select}">
                         <f:selectItems value="#{EditDatafilesPage.fileMetadataSelectedForTagsPopup.datasetVersion.dataset.categoriesByName}"/>
+                        <p:ajax event="toggleSelect" listener="#{DatasetPage.handleSelection}" update="selectedTagsListEFF" />
+                        <p:ajax event="change" listener="#{DatasetPage.handleSelection}" update="selectedTagsListEFF" />
                     </p:selectCheckboxMenu>
                     <p:message for="fileTagsMenu" display="text" />
                 </div>
@@ -487,6 +507,7 @@
                                  onkeypress="if (event.keyCode == 13) {
                                              return false;
                                          }" />
+                    <p:commandLink styleClass="btn btn-default" style="margin-left:.5em;" value="#{bundle.apply}" action="#{EditDatafilesPage.saveNewCategory}" update="selectedTagsListEFF, fileTagAddNew, fileTagsMenu"/>
                     <p:message for="fileTagAddNew" display="text" />
                 </div>
             </div>
@@ -502,6 +523,8 @@
                                           value="#{EditDatafilesPage.selectedTags}" label="#{bundle.select}"
                                           filter="false">
                         <f:selectItems value="#{EditDatafilesPage.tabFileTags}" />
+                        <p:ajax event="toggleSelect" listener="#{EditDatafilesPage.handleSelection}" update="selectedTagsListEFF" />
+                        <p:ajax event="change" listener="#{EditDatafilesPage.handleSelection}" update="selectedTagsListEFF" />
                     </p:selectCheckboxMenu>
                     <p:message for="tabularDataTags" display="text" />
                 </div>

@@ -81,6 +81,7 @@ import java.text.DateFormat;
 import java.util.HashSet;
 import javax.faces.model.SelectItem;
 import java.util.logging.Level;
+import javax.faces.event.AjaxBehaviorEvent;
 
 /**
  *
@@ -1518,6 +1519,23 @@ public class EditDatafilesPage implements java.io.Serializable {
     public void setNewCategoryName(String newCategoryName) {
         this.newCategoryName = newCategoryName;
     }
+    
+    public String saveNewCategory() {
+        
+
+        if (newCategoryName != null && !newCategoryName.isEmpty()) {
+            fileMetadataSelectedForTagsPopup.getCategoriesByName().add(newCategoryName);
+            for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
+                for (FileMetadata fm : selectedFiles) {
+                    if (fm.getDataFile().equals(fmd.getDataFile())) {
+                        fmd.addCategoryByName(newCategoryName);
+                    }
+                }
+            }
+        }
+        newCategoryName = "";
+        return "";
+    }
 
     /* This method handles saving both "tabular file tags" and 
      * "file categories" (which are also considered "tags" in 4.0)
@@ -1573,6 +1591,12 @@ public class EditDatafilesPage implements java.io.Serializable {
         
         fileMetadataSelectedForTagsPopup = null;
 
+    }
+    
+    public void handleSelection(final AjaxBehaviorEvent event) {
+        if (selectedTags != null) {
+            selectedTags = selectedTags.clone();
+        }
     }
     
     
