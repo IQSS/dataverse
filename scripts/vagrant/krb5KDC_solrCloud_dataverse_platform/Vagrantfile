@@ -14,15 +14,15 @@ unless defined? OUTPUT_VERBOSITY
 end
 
 unless defined? STATIC_IP_KRBKDC 
-  STATIC_IP_KRBKDC = "192.168.30.30"
+  STATIC_IP_KRBKDC = "192.168.40.30"
 end
 
 unless defined? STATIC_IP_DATAVERSE 
-  STATIC_IP_DATAVERSE = "192.168.30.20"
+  STATIC_IP_DATAVERSE = "192.168.40.20"
 end
 
 unless defined? STATIC_IP_SOLRCLOUD 
-  STATIC_IP_SOLRCLOUD = ["192.168.30.11","192.168.30.12","192.168.30.13"]
+  STATIC_IP_SOLRCLOUD = ["192.168.40.11","192.168.40.12","192.168.40.13"]
 end
 
 unless defined? ZOOKEEPER_ENSEMBLE
@@ -222,13 +222,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         inline: "keytool -importkeystore -noprompt -srckeystore /vagrant/dataverse_truststore.jks -srcstorepass #{KEYSTORE_PASSWORD} -destkeystore ~glassfish/glassfish4/glassfish/domains/domain1/config/cacerts.jks -deststorepass changeit"
 
       STATIC_IP_SOLRCLOUD.each_with_index { |node,index|
-        dataverse.vm.provision "remoteAddTrustRestartSolr", type: "shell", 
+        dataverse.vm.provision "remoteAddTrustRestartSolrCloud" + (index + 1).to_s, type: "shell", 
           inline: "ssh -o StrictHostKeyChecking=no -i /vagrant/.vagrant/machines/solrcloud" + (index + 1).to_s + "/virtualbox/private_key vagrant@#{node} 'sudo cp /vagrant/dataverse_truststore.jks #{TRUSTSTORE_PATH}; sudo service solr restart'"      
       }
 
       dataverse.vm.provision "cleanupTmpTrustore", type: "shell", inline: "rm /vagrant/dataverse_truststore.jks"
     end
  
+    dataverse.vm.provision "cleanupTmpKrb5Conf", type: "shell", inline: "rm /vagrant/krb5.conf"
     dataverse.vm.provision "dataverseSetup", type: "shell", path: "../install-dataverse.sh",
       args: "-c #{DVCOLLECTION_NAME} -h #{STATIC_IP_DATAVERSE} -m #{mailserver} -z '#{ZOOKEEPER_ENSEMBLE}' -u #{ENABLE_TLS_ON_SOLR} -v #{OUTPUT_VERBOSITY}"
     dataverse.vm.provision "enableDataverseSolrJKerberos", type: "shell", 

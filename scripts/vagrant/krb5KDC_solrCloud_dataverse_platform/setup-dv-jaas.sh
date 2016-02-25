@@ -6,7 +6,7 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 if [[ -z ${OUTPUT_VERBOSITY} ]]; then OUTPUT_VERBOSITY='1'; fi
-if [[ -z ${KEYTAB_PATH} ]]; then KEYTAB_PATH="/var/solr/solr.keytab"; fi
+if [[ -z ${KEYTAB_PATH} ]]; then KEYTAB_PATH="/home/glassfish/glassfish4/glassfish/domains/domain1/dataverse.keytab"; fi
 if [[ -z ${PRINCIPAL_FIRST} ]]; then PRINCIPAL_FIRST="HTTP"; fi
 if [[ -z ${JAAS_CLIENT_CONF_PATH} ]]; then JAAS_CLIENT_CONF_PATH="/home/glassfish/glassfish4/glassfish/domains/domain1/jaas-client.conf"; fi
 
@@ -16,7 +16,7 @@ _usage() {
   echo "  -c     jaas_client.conf path [${JAAS_CLIENT_CONF_PATH}]."
   echo "  -h     Print this help message."
   echo "  -i     Host (second) component of kerberos principal."
-  echo "  -k     Path to the solr principles keytab file."
+  echo "  -k     Path to the dataverse principles keytab file."
   echo "  -p     Primary (first) component of the solr kerberos principal."
   echo "  -v     Verbosity of this installation script (0-3). [${OUTPUT_VERBOSITY}]"
   echo "  -x     Network accessible Hostname/IP address for solr server."
@@ -73,7 +73,7 @@ $_IF_TERSE echo "Configuring Kerberos client authentication for dataverse using 
 if [[ ( ! -e $KEYTAB_PATH ) ]]; then 
   echo "Unable to access kerberos keytab: $KEYTAB_PATH" >&2
   echo "Configuration failed!" >&2
-  return 1
+  exit 1
 fi
 
 #### Set dataverse JAAS client kerberos configurations ####

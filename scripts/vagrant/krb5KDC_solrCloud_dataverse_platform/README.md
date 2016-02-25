@@ -7,14 +7,14 @@ trio of remote servers providing a solrCloud service while requiring Kerberos au
 
 This test environment establishes the following VMs on the **192.168.40.x** local subnet.<br>
 
-+ *solrCloud1 (192.168.30.11\[:2181\]\[[:8983](http://192.168.40.11:8983/solr)\])*<BR>
-  <sup>with ENABLE_TLS_ON_SOLR=1 (https://192.168.30.11\[[:8983](https://192.168.40.11:8983/solr)\])</sup>
-+ *solrCloud2 (192.168.30.12\[:2181\]\[[:8983](http://192.168.40.12:8983/solr)\])*<BR>
-  <sup>with ENABLE_TLS_ON_SOLR=1 (https://192.168.30.12\[[:8983](https://192.168.40.12:8983/solr)\])</sup>
-+ *solrCloud3 (192.168.30.13\[:2181\]\[[:8983](http://192.168.40.13:8983/solr)\])*<BR>
-  <sup>with ENABLE_TLS_ON_SOLR=1 (https://192.168.30.13\[[:8983](https://192.168.40.13:8983/solr)\])</sup>
-+ *dataverse ([192.168.30.20:8080](http://192.168.40.20:8080))*<BR><BR>
-+ *krbkdc (192.168.30.30)*
++ *solrCloud1 (192.168.40.11\[:2181\]\[[:8983](http://192.168.40.11:8983/solr)\])*<BR>
+  <sup>with ENABLE_TLS_ON_SOLR=1 (https://192.168.40.11\[[:8983](https://192.168.40.11:8983/solr)\])</sup>
++ *solrCloud2 (192.168.40.12\[:2181\]\[[:8983](http://192.168.40.12:8983/solr)\])*<BR>
+  <sup>with ENABLE_TLS_ON_SOLR=1 (https://192.168.40.12\[[:8983](https://192.168.40.12:8983/solr)\])</sup>
++ *solrCloud3 (192.168.40.13\[:2181\]\[[:8983](http://192.168.40.13:8983/solr)\])*<BR>
+  <sup>with ENABLE_TLS_ON_SOLR=1 (https://192.168.40.13\[[:8983](https://192.168.40.13:8983/solr)\])</sup>
++ *dataverse ([192.168.40.20:8080](http://192.168.40.20:8080))*<BR><BR>
++ *krbkdc (192.168.40.30)*
 
 <BR>
 Kerberos
@@ -58,4 +58,17 @@ when trying to access the Solr Admin UI after enabling Kerberos authentication, 
 browser has not been configured properly to know how or where to negotiate the authentication 
 request."
 
+For information on setting up your browser, including Google Chrome, to support Kerberos 
+authentication please see [here](http://www.cloudera.com/documentation/enterprise/latest/topics/cdh_sg_browser_access_kerberos_protected_url.html).
 
+For this to work, you will need to authenticate with the DATAVERSE.TEST realms KDC server. This can 
+be accomplished by adding the following realm information to your krb5.conf file followed by a 
+standard kinit request.
+
+> *ADD TO /etc/krb5.conf \[realms\]*
+
+> DATAVERSE.TEST = {<br>kdc = 192.168.40.30<br>admin_server = 192.168.40.30<br>default_domain = DATAVERSE.TEST<br>}
+
+> *THEN {with password = password}*
+
+> kinit solr/192.168.40.11@DATAVERSE.TEST 

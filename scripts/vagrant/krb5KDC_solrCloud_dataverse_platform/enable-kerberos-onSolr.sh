@@ -104,8 +104,8 @@ solrClient {
 #### Set solr.in.sh to use JAAS client configurations ####
 $_IF_INFO echo "Configuring /etc/default/solr.in.sh to use ${JAAS_CLIENT_CONF_PATH}"
 echo "SOLR_AUTHENTICATION_CLIENT_CONFIGURER=org.apache.solr.client.solrj.impl.Krb5HttpClientConfigurer
-SOLR_AUTHENTICATION_OPTS=\"-Djava.security.auth.login.config=${JAAS_CLIENT_CONF_PATH} -Dsolr.kerberos.jaas.appname=solrClient -Dsolr.kerberos.cookie.domain=${PRINCIPAL_HOST} -Dsolr.kerberos.cookie.portaware=true -Dsolr.kerberos.principal=${SOLR_PRINCIPAL_FIRST}/${PRINCIPAL_HOST} -Dsolr.kerberos.keytab=${KEYTAB_PATH}
-" > /etc/default/solr.in.sh
+SOLR_AUTHENTICATION_OPTS=\"-Djava.security.auth.login.config=${JAAS_CLIENT_CONF_PATH} -Dsolr.kerberos.jaas.appname=solrClient -Dsolr.kerberos.cookie.domain=${PRINCIPAL_HOST} -Dsolr.kerberos.cookie.portaware=true -Dsolr.kerberos.principal=${SOLR_PRINCIPAL_FIRST}/${PRINCIPAL_HOST} -Dsolr.kerberos.keytab=${KEYTAB_PATH}\"
+" >> /etc/default/solr.in.sh
 
 
 $_IF_TERSE echo "solr kerberos configured"

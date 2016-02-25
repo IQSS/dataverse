@@ -220,4 +220,5 @@ else
   $_IF_VERBOSE echo "SOLR_HOST=${SOLR_HOSTNAME}" >> /etc/default/solr.in.sh
 fi
 
-$_IF_TERSE echo "You should now have a running Solr ${SOLR_VERSION} instance at http://${SOLR_HOSTNAME}:8983."
+$_IF_TERSE echo "solr ${SOLR_VERSION} has been installed."
+$_IF_TERSE echo "Please restart the solr service to fully enable custom configurations"

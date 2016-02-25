@@ -57,3 +57,4 @@ $_IF_INFO echo "Adding ensemble servers to the solr.in.sh configuration file"
 $_IF_VERBOSE echo "ZK_HOST=${ZOOKEEPER_ENSEMBLE}/solr" >> /etc/default/solr.in.sh
 
 $_IF_TERSE echo "solrCloud configured"
+$_IF_TERSE echo "Please restart the solr service to fully enable solrCloud"
