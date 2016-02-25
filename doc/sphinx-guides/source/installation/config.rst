@@ -366,7 +366,7 @@ The location of your TwoRavens installation.  Activation of TwoRavens also requi
 :TwoRavensTabularView
 +++++++++++++++++++
 
-Set ``TwoRavensTabularView`` to true to allow a user to view tabular files via the TwoRavens application maps. This boolean effects whether a user will see the "Explore" button.
+Set ``TwoRavensTabularView`` to true to allow a user to view tabular files via the TwoRavens application. This boolean affects whether a user will see the "Explore" button.
 
 ``curl -X PUT -d true http://localhost:8080/api/admin/settings/:TwoRavensTabularView``
 
