@@ -6,7 +6,7 @@
 User Guide
 =================================================
 
-Contents 10:07:
+Contents:
 
 .. toctree::
    :maxdepth: 2
