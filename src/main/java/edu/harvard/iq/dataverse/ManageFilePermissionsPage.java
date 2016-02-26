@@ -268,7 +268,6 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
      */
     private List<RoleAssignee> selectedRoleAssignees;
     private List<DataFile> selectedFiles = new ArrayList();
-    private final List<RoleAssignee> roleAssigneeList = new ArrayList();
     private AuthenticatedUser fileRequester;
     
     public List<RoleAssignee> getSelectedRoleAssignees() {
@@ -316,26 +315,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     
 
     public List<RoleAssignee> completeRoleAssignee(String query) {
-        if (roleAssigneeList.isEmpty()) {
-            for (AuthenticatedUser au : authenticationService.findAllAuthenticatedUsers()) {
-                roleAssigneeList.add(au);
-            }
-            for ( Group g : groupService.findGlobalGroups() ) {
-                roleAssigneeList.add( g );
-            }
-            roleAssigneeList.addAll( explicitGroupService.findAvailableFor(dataset) );            
-            
-        }
-        List<RoleAssignee> returnList = new ArrayList();
-        for (RoleAssignee ra : roleAssigneeList) {
-            // @todo unsure if containsIgnore case will work for all locales
-            if ((StringUtils.containsIgnoreCase(ra.getDisplayInfo().getTitle(), query) 
-                    || StringUtils.containsIgnoreCase(ra.getIdentifier(), query))
-                    && (selectedRoleAssignees == null || !selectedRoleAssignees.contains(ra))) {
-                returnList.add(ra);
-            }
-        }
-        return returnList;
+        return roleAssigneeService.filterRoleAssignees(query, dataset, selectedRoleAssignees); 
     }
     
     public void grantAccess(ActionEvent evt) {
