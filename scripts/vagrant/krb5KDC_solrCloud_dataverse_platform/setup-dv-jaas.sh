@@ -7,7 +7,7 @@ fi
 
 if [[ -z ${OUTPUT_VERBOSITY} ]]; then OUTPUT_VERBOSITY='1'; fi
 if [[ -z ${KEYTAB_PATH} ]]; then KEYTAB_PATH="/home/glassfish/glassfish4/glassfish/domains/domain1/dataverse.keytab"; fi
-if [[ -z ${PRINCIPAL_FIRST} ]]; then PRINCIPAL_FIRST="HTTP"; fi
+if [[ -z ${PRINCIPAL_FIRST} ]]; then PRINCIPAL_FIRST="dataverse"; fi
 if [[ -z ${JAAS_CLIENT_CONF_PATH} ]]; then JAAS_CLIENT_CONF_PATH="/home/glassfish/glassfish4/glassfish/domains/domain1/jaas-client.conf"; fi
 
 _usage() {
@@ -19,7 +19,6 @@ _usage() {
   echo "  -k     Path to the dataverse principles keytab file."
   echo "  -p     Primary (first) component of the solr kerberos principal."
   echo "  -v     Verbosity of this installation script (0-3). [${OUTPUT_VERBOSITY}]"
-  echo "  -x     Network accessible Hostname/IP address for solr server."
   echo ""
 }
 
@@ -80,13 +79,13 @@ fi
 ## working under the assumption that the solr.keytab includes both the solr(HTTP) and zookeeper principals ##
 $_IF_INFO echo "Adding Client (zookeeper) and solrClient (solr) settings to ${JAAS_CLIENT_CONF_PATH}"
 echo "SolrJClient {
-  com.sun.security.auth.module.Krb5LoginModule required;
-  useKeyTab=true;
-  keyTab=\"${KEYTAB_PATH}\";
-  storeKey=true;
-  useTicketCache=true;
-  debug=true;
-  principal=\”${PRINCIPAL_FIRST}/${PRINCIPAL_HOST}\”;
+  com.sun.security.auth.module.Krb5LoginModule required
+  useKeyTab=true
+  keyTab=\"${KEYTAB_PATH}\"
+  storeKey=true
+  useTicketCache=true
+  debug=true
+  principal=\"${PRINCIPAL_FIRST}/${PRINCIPAL_HOST}\";
 };
 " > ${JAAS_CLIENT_CONF_PATH}
 
