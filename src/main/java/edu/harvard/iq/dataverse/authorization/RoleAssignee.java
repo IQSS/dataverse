@@ -1,5 +1,10 @@
 package edu.harvard.iq.dataverse.authorization;
 
+import java.util.function.Function;
+import java.util.function.Predicate;
+
+import org.apache.commons.lang.StringUtils;
+
 import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AllUsers;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
@@ -25,4 +30,8 @@ public interface RoleAssignee {
 
     public RoleAssigneeDisplayInfo getDisplayInfo();
 
+    default boolean autocompleteMatch(String query) {
+	return  ((getDisplayInfo() != null && StringUtils.containsIgnoreCase(getDisplayInfo().getTitle(), query) )
+		|| StringUtils.containsIgnoreCase(getIdentifier(), query));
+    } 
 }

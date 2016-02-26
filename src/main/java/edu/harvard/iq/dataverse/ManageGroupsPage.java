@@ -273,7 +273,7 @@ public class ManageGroupsPage implements java.io.Serializable {
         for (RoleAssignee ra : roleAssigneeList) {
             // @todo unsure if containsIgnore case will work for all locales
             // @todo maybe add some solr/lucene style searching, did-you-mean style?
-            if (StringUtils.containsIgnoreCase(ra.getDisplayInfo().getTitle(), query)) {
+            if (ra != null && ra.autocompleteMatch(query)) {
                 filteredList.add(ra);
             }
         }
