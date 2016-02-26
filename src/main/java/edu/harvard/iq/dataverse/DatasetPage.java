@@ -3489,7 +3489,7 @@ public class DatasetPage implements java.io.Serializable {
             removeUnusedFileTagsFromDataset();
         }
         save();
-                return  returnToDraftVersion();
+        return  returnToDraftVersion();
     }
     
     /*

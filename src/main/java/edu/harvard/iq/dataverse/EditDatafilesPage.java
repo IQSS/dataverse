@@ -1524,14 +1524,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         
 
         if (newCategoryName != null && !newCategoryName.isEmpty()) {
-            fileMetadataSelectedForTagsPopup.getCategoriesByName().add(newCategoryName);
-            for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
-                for (FileMetadata fm : selectedFiles) {
-                    if (fm.getDataFile().equals(fmd.getDataFile())) {
-                        fmd.addCategoryByName(newCategoryName);
-                    }
-                }
-            }
+            fileMetadataSelectedForTagsPopup.addCategoryByName(newCategoryName);
         }
         newCategoryName = "";
         return "";
