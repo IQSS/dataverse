@@ -80,23 +80,23 @@ fi
 ## working under the assumption that the solr.keytab includes both the solr(HTTP) and zookeeper principals ##
 $_IF_INFO echo "Adding Client (zookeeper) and solrClient (solr) settings to ${JAAS_CLIENT_CONF_PATH}"
 echo "Client {
-  com.sun.security.auth.module.Krb5LoginModule required;
-  useKeyTab=true;
-  keyTab=\"${KEYTAB_PATH}\";
-  storeKey=true;
-  useTicketCache=true;
-  debug=true;
-  principal=\”${ZOOKEEPER_PRINCIPAL_FIRST}/${PRINCIPAL_HOST}\”;
+  com.sun.security.auth.module.Krb5LoginModule required
+  useKeyTab=true
+  keyTab=\"${KEYTAB_PATH}\"
+  storeKey=true
+  useTicketCache=true
+  debug=true
+  principal=\"${ZOOKEEPER_PRINCIPAL_FIRST}/${PRINCIPAL_HOST}@DATAVERSE.TEST\";
 };
 
 solrClient {
-  com.sun.security.auth.module.Krb5LoginModule required;
-  useKeyTab=true;
-  keyTab=\"${KEYTAB_PATH}\";
-  storeKey=true;
-  useTicketCache=true;
-  debug=true;
-  principal=\”${SOLR_PRINCIPAL_FIRST}/${PRINCIPAL_HOST}\”;
+  com.sun.security.auth.module.Krb5LoginModule required
+  useKeyTab=true
+  keyTab=\"${KEYTAB_PATH}\"
+  storeKey=true
+  useTicketCache=true
+  debug=true
+  principal=\"${SOLR_PRINCIPAL_FIRST}/${PRINCIPAL_HOST}@DATAVERSE.TEST\";
 };
 " > ${JAAS_CLIENT_CONF_PATH}
 

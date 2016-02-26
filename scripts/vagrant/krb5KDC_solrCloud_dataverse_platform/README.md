@@ -59,16 +59,19 @@ browser has not been configured properly to know how or where to negotiate the a
 request."
 
 For information on setting up your browser, including Google Chrome, to support Kerberos 
-authentication please see [here](http://www.cloudera.com/documentation/enterprise/latest/topics/cdh_sg_browser_access_kerberos_protected_url.html).
+authentication please see [this website](http://www.cloudera.com/documentation/enterprise/latest/topics/cdh_sg_browser_access_kerberos_protected_url.html).
 
-For this to work, you will need to authenticate with the DATAVERSE.TEST realms KDC server. This can 
-be accomplished by adding the following realm information to your krb5.conf file followed by a 
-standard kinit request.
+For Chrome on Mac you can use the following terminal commands
+> defaults write com.google.Chrome AuthServerWhitelist "192.168.40.*"
+<br>defaults write com.google.Chrome AuthNegotiateDelegateWhitelist "192.168.40.*"
 
-> *ADD TO /etc/krb5.conf \[realms\]*
+To authenticate with the DATAVERSE.TEST realms KDC server start by adding the following realm 
+information to your krb5.conf file. Then issue a standard kinit request.
+
+> *<sub>ADD THE FOLLOWING TO /etc/krb5.conf \[realms\]</sub>*
 
 > DATAVERSE.TEST = {<br>kdc = 192.168.40.30<br>admin_server = 192.168.40.30<br>default_domain = DATAVERSE.TEST<br>}
 
-> *THEN {with password = password}*
+> *<sub>THEN {with password = password}</sub>*
 
-> kinit solr/192.168.40.11@DATAVERSE.TEST 
+> kinit dataverse_user@DATAVERSE.TEST 

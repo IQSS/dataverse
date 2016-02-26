@@ -74,24 +74,24 @@ if [[ ( ! -e $KEYTAB_PATH ) ]]; then
   echo "Configuration failed!" >&2
   return 1
 else
-  $_IF_INFO echo "Adding zookeeper Server JAAS client path to java JVMFLAGS"
-  echo "export JVMFLAGS=\"-Djava.security.auth.login.config=${ZOOKEEPER_JAAS_CLIENT_CONF_PATH}\"${newline}" > /etc/zookeeper/conf/java.conf
+  $_IF_INFO echo "Adding zookeeper Server JAAS client path to java.env JVMFLAGS"
+  echo "export JVMFLAGS=\"-Djava.security.auth.login.config=${ZOOKEEPER_JAAS_CLIENT_CONF_PATH}\"${newline}" >> /etc/zookeeper/conf/java.env
 
   $_IF_INFO echo "Adding kerberos Server client configurations to ${ZOOKEEPER_JAAS_CLIENT_CONF_PATH}"
   echo "Server {
-  com.sun.security.auth.module.Krb5LoginModule required;
-  useKeyTab=true;
-  keyTab=\"${KEYTAB_PATH}\";
-  storeKey=true;
-  doNotPrompt=true;
-  useTicketCache=false;
-  debug=true;
-  principal=\”${PRINCIPAL_FIRST}/${PRINCIPAL_HOST}\”;
+  com.sun.security.auth.module.Krb5LoginModule required
+  useKeyTab=true
+  keyTab=\"${KEYTAB_PATH}\"
+  storeKey=true
+  doNotPrompt=true
+  useTicketCache=false
+  debug=true
+  principal=\"${PRINCIPAL_FIRST}/${PRINCIPAL_HOST}@DATAVERSE.TEST\";
 };
 " > ${ZOOKEEPER_JAAS_CLIENT_CONF_PATH}
 
   $_IF_INFO echo "Adding SASLAuthenticationProvider to zookeeper server configuration /etc/zookeeper/conf/zoo.cfg"
-  echo "authProvider.1=org.apache.zookeeper.server.auth.SASLAuthenticationProvider${newline}jaasLoginRenew=3600000${newline}" > /etc/zookeeper/conf/zoo.cfg
+  echo "authProvider.1=org.apache.zookeeper.server.auth.SASLAuthenticationProvider${newline}jaasLoginRenew=3600000${newline}" >> /etc/zookeeper/conf/zoo.cfg
 fi
 
 

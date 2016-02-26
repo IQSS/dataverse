@@ -111,6 +111,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       krb.vm.provision "makeZookeeperKeytabForSolrCloud" + (index + 1).to_s, type: "shell", 
       path: "./setup-krb-principal.sh", args: "-i #{node} -p 'zookeeper' -q 'HTTP' -v #{OUTPUT_VERBOSITY} -w 'password' -k"
     }
+    
+    krb.vm.provision "addDataverseUserPrincipal", type: "shell",
+      inline: "kadmin.local -q \"addprinc -pw password dataverse_user\""
   end
 
   (1..STATIC_IP_SOLRCLOUD.length).each do |i|
