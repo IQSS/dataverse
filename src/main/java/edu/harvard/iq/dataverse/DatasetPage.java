@@ -1896,7 +1896,7 @@ public class DatasetPage implements java.io.Serializable {
                     cmd = new PublishDatasetCommand(dataset, dvRequestService.getDataverseRequest(), minor);
                 }
                 dataset = commandEngine.submit(cmd);
-                JsfHelper.addSuccessMessage(JH.localize("dataset.message.publishSuccess"));                        
+                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.publishSuccess"));
                 if (notifyPublish) {
                     List<AuthenticatedUser> authUsers = permissionService.getUsersWithPermissionOn(Permission.PublishDataset, dataset);
                     List<AuthenticatedUser> editUsers = permissionService.getUsersWithPermissionOn(Permission.EditDataset, dataset);
@@ -1913,7 +1913,8 @@ public class DatasetPage implements java.io.Serializable {
                 logger.severe(ex.getMessage());
             }
         } else {
-            JsfHelper.addErrorMessage("Only authenticated users can release Datasets.");
+            
+            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.message.only.authenticatedUsers"));
         }
         return returnToDatasetOnly();
     }
