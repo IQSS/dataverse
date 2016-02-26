@@ -1,7 +1,11 @@
-Related Issues:
+## Related Issues:
 #
 
-RFI Checklist
+## RFI Checklist
+
+### Work/Tasks
+
+Please fill out **before** submitting the Pull request
 
 - [ ]  Functionality completed as described in FRD
 - [ ]  Dependencies, risks, assumptions in FRD addressed
@@ -11,6 +15,9 @@ RFI Checklist
 - [ ]  All code checkins completed
 
 ---
+### Review 
+
+To be filled out **after** the Pull request is submitted.
 
 - [ ]  Code review completed or waived
 - [ ]  Testing requirements completed
