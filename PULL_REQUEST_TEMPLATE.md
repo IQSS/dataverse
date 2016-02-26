@@ -1,11 +1,15 @@
-## Related Issues:
+# RFI Checklist
+
+Please fill out (1) and (2) **before** submitting the Pull Request
+
+### (1) - Related Issues:
+
+List/[link](https://guides.github.com/features/issues/#notifications) to the issues in this Pull Request 
+
 #
 
-## RFI Checklist
 
-### Work/Tasks
-
-Please fill out **before** submitting the Pull request
+### (2) - Pull Request Checklist
 
 - [ ]  Functionality completed as described in FRD
 - [ ]  Dependencies, risks, assumptions in FRD addressed
@@ -15,9 +19,9 @@ Please fill out **before** submitting the Pull request
 - [ ]  All code checkins completed
 
 ---
-### Review 
+### (3) - Review Checklist
 
-To be filled out **after** the Pull request is submitted.
+_To be filled out **after** the Pull Request is submitted._
 
 - [ ]  Code review completed or waived
 - [ ]  Testing requirements completed
