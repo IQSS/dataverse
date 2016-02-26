@@ -1476,7 +1476,7 @@ public class DatasetPage implements java.io.Serializable {
                 } else {
                     for (FileMetadata fmd : this.selectedDownloadableFiles) {
                         DataFile df = fmd.getDataFile();
-                        if (df != null  && canDownloadFile(fmd)) {
+                        if (df != null) {
                             this.guestbookResponse.setDataFile(df);
                             cmd = new CreateGuestbookResponseCommand(dvRequestService.getDataverseRequest(), this.guestbookResponse, dataset);
                             commandEngine.submit(cmd);
