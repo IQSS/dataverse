@@ -12,9 +12,9 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
@@ -275,6 +275,8 @@ public class RoleAssigneeServiceBean {
     public List<RoleAssignee> filterRoleAssignees(String query, DvObject dvObject, List<RoleAssignee> roleAssignSelectedRoleAssignees) {
         List<RoleAssignee> roleAssigneeList = new ArrayList<>();
 
+        // we get the users through a query that does the filtering through the db,
+        // so that we don't have to instantiate all of the RoleAssignee objects
         em.createNamedQuery("AuthenticatedUser.filter", AuthenticatedUser.class)
                 .setParameter("query", "%" + query + "%")
                 .getResultList().stream()
@@ -283,18 +285,13 @@ public class RoleAssigneeServiceBean {
                     roleAssigneeList.add(ra);
                 });   
 
-        groupSvc.findGlobalGroups().stream()
-                .filter(ra -> StringUtils.containsIgnoreCase(ra.getDisplayInfo().getTitle(), query))
-                .filter(ra -> StringUtils.containsIgnoreCase(ra.getIdentifier(), query))              
+        // now we add groups to the list, both global and explicit
+        Set<Group> groups = groupSvc.findGlobalGroups();
+        groups.addAll(explicitGroupSvc.findAvailableFor(dvObject));
+        groups.stream()
+                .filter(ra -> StringUtils.containsIgnoreCase(ra.getDisplayInfo().getTitle(), query)
+                        || StringUtils.containsIgnoreCase(ra.getIdentifier(), query))
                 .filter(ra -> roleAssignSelectedRoleAssignees == null || !roleAssignSelectedRoleAssignees.contains(ra))
-                .forEach((ra) -> {
-                    roleAssigneeList.add(ra);
-                });
-
-        explicitGroupSvc.findAvailableFor(dvObject).stream()
-                .filter(ra -> StringUtils.containsIgnoreCase(ra.getDisplayInfo().getTitle(), query))                
-                .filter(ra -> StringUtils.containsIgnoreCase(ra.getIdentifier(), query))                  
-                .filter(ra -> roleAssignSelectedRoleAssignees == null || !roleAssignSelectedRoleAssignees.contains(ra))                
                 .forEach((ra) -> {
                     roleAssigneeList.add(ra);
                 });
