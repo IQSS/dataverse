@@ -105,7 +105,7 @@ public class ShibGroup implements Group, Serializable {
     }
 
     @Override
-    public GroupProvider getGroupProvider() {
+    public GroupProvider<ShibGroup> getGroupProvider() {
         return shibGroupProvider;
     }
 
