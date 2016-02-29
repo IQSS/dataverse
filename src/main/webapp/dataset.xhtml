@@ -1256,7 +1256,7 @@
                     </p:dialog>
 
                     <!-- Publish/Submit for Review Dialogs -->
-                    <p:dialog styleClass="largePopUp" header="#{bundle['dataset.publish.header']}" widgetVar="publishConfirm" modal="true">
+                    <p:dialog width="70%" header="#{bundle['dataset.publish.header']}" widgetVar="publishConfirm" modal="true">
                         <ui:fragment rendered="#{DatasetPage.dataset.globalIdCreateTime == null}">
                             <p class="text-danger">
                                 <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.unregistered.tip']}
@@ -1274,7 +1274,7 @@
                         </div>
                     </p:dialog>
 
-                    <p:dialog header="#{bundle['dataset.publish.header']}" widgetVar="publishParent" modal="true">
+                    <p:dialog width="70%" header="#{bundle['dataset.publish.header']}" widgetVar="publishParent" modal="true">
                         <ui:fragment rendered="#{DatasetPage.dataset.globalIdCreateTime == null}">
                             <p class="text-danger">
                                 <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.unregistered.tip']}
@@ -1299,7 +1299,7 @@
                         </div>
                     </p:dialog>
 
-                    <p:dialog header="#{bundle['dataset.publish.header']}" widgetVar="releaseDraft" modal="true">
+                    <p:dialog width="70%" header="#{bundle['dataset.publish.header']}" widgetVar="releaseDraft" modal="true">
                         <p class="text-danger">
                             <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.republish.tip']}
                         </p>
