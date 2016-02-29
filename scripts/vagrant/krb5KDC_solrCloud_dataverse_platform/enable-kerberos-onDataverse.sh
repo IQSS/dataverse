@@ -58,9 +58,4 @@ newline='
 '
 
 $_IF_TERSE echo "Enabling Kerberos authentication of dataverse to solr communication using verbosity level: ${OUTPUT_VERBOSITY}"
-$_IF_VERBOSE curl -L -X PUT -d "${JAAS_CLIENT_CONF_PATH}" "http://${DATAVERSE_HOST}:8080/api/admin/settings/:SolrJAASClientConfFile"
 $_IF_VERBOSE curl -L -X PUT -d 'yes' "http://${DATAVERSE_HOST}:8080/api/admin/settings/:SolrUsesJAAS"
-
-#### restart the dataverse glassfish domain ####
-$_IF_TERSE echo "Restarting the Dataverse domain"
-$_IF_VERBOSE /home/glassfish/glassfish4/glassfish//bin/asadmin restart-domain domain1

@@ -5,12 +5,14 @@ if [[ $EUID -ne 0 ]]; then
   exit 1
 fi
 
-if [[ -z ${OUTPUT_VERBOSITY} ]];then OUTPUT_VERBOSITY='1'; fi
+if [[ -z ${OUTPUT_VERBOSITY} ]]; then OUTPUT_VERBOSITY='1'; fi
+if [[ -z ${KRBKDC_SERVER_IP} ]]; then KRBKDC_SERVER_IP='192.168.40.30'; fi
 
 _usage() {
   echo "\nUsage: $0 \[ehiv\]"
   echo "\nSupported options:"
   echo "  -h     Print this help message."
+  echo "  -k     Kerberos KDC server address."
   echo "  -v     Verbosity of this installation script \(0-3\). \[${OUTPUT_VERBOSITY}\]"
   echo "\n"
 }
@@ -20,6 +22,9 @@ while getopts :v:h FLAG; do
     h)  #print help
       _usage
       exit 0
+      ;;
+    k)  #set output verbosity level "v"
+      KRBKDC_SERVER_IP=$OPTARG
       ;;
     v)  #set output verbosity level "v"
       OUTPUT_VERBOSITY=$OPTARG

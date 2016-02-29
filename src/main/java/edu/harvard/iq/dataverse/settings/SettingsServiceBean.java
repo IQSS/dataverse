@@ -125,7 +125,6 @@ public class SettingsServiceBean {
         useSolrViaHTTPS,
         /** Key for selecting to use JAAS (kerberos) to authenticate with the solr server */
         SolrUsesJAAS,
-        SolrJAASClientConfFile,
         /** Solr hostname and port, such as "localhost:2181/solr". */
         SolrZookeeperEnsemble,
         /** Solr hostname and port, such as "localhost:8983". */

@@ -6,9 +6,9 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 if [[ -z ${OUTPUT_VERBOSITY} ]]; then OUTPUT_VERBOSITY='1'; fi
-if [[ -z ${KEYTAB_PATH} ]]; then KEYTAB_PATH="/home/glassfish/glassfish4/glassfish/domains/domain1/dataverse.keytab"; fi
+if [[ -z ${KEYTAB_PATH} ]]; then KEYTAB_PATH="/home/glassfish/glassfish4/glassfish/domains/domain1/config/dataverse.keytab"; fi
 if [[ -z ${PRINCIPAL_FIRST} ]]; then PRINCIPAL_FIRST="dataverse"; fi
-if [[ -z ${JAAS_CLIENT_CONF_PATH} ]]; then JAAS_CLIENT_CONF_PATH="/home/glassfish/glassfish4/glassfish/domains/domain1/jaas-client.conf"; fi
+if [[ -z ${JAAS_CLIENT_CONF_PATH} ]]; then JAAS_CLIENT_CONF_PATH="/home/glassfish/glassfish4/glassfish/domains/domain1/config/login.conf"; fi
 
 _usage() {
   echo "Usage: $0 [chikpv]"
@@ -84,9 +84,9 @@ echo "SolrJClient {
   keyTab=\"${KEYTAB_PATH}\"
   storeKey=true
   useTicketCache=true
-  debug=true
+  debug=false
   principal=\"${PRINCIPAL_FIRST}/${PRINCIPAL_HOST}\";
 };
-" > ${JAAS_CLIENT_CONF_PATH}
+" >> ${JAAS_CLIENT_CONF_PATH}
 
 $_IF_TERSE echo "Dataverse solrj-client kerberos successfully configured"

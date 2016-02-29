@@ -74,7 +74,7 @@ fi
 $_IF_VERBOSE ${SOLR_INSTALL_DIR}/solr/server/scripts/cloud-scripts/zkcli.sh -zkhost ${ZOOKEEPER_ENSEMBLE} -cmd makepath /solr
 $_IF_TERSE echo "solr znode created"
 
-if [[ ${ENABLE_TLS_ON_SOLR} ]]; then
+if [[ ${ENABLE_TLS_ON_SOLR} != 0 ]]; then
   $_IF_TERSE echo "Setting the solr urlScheme to 'https' in zookeeper"
   $_IF_VERBOSE ${SOLR_INSTALL_DIR}/solr/server/scripts/cloud-scripts/zkcli.sh -zkhost ${ZOOKEEPER_ENSEMBLE}/solr -cmd clusterprop -name urlScheme -val https
   $_IF_TERSE echo "solr urlScheme set to https"

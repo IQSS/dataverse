@@ -85,8 +85,8 @@ echo "Client {
   keyTab=\"${KEYTAB_PATH}\"
   storeKey=true
   useTicketCache=true
-  debug=true
-  principal=\"${ZOOKEEPER_PRINCIPAL_FIRST}/${PRINCIPAL_HOST}@DATAVERSE.TEST\";
+  debug=false
+  principal=\"${ZOOKEEPER_PRINCIPAL_FIRST}/${PRINCIPAL_HOST}\";
 };
 
 solrClient {
@@ -95,10 +95,10 @@ solrClient {
   keyTab=\"${KEYTAB_PATH}\"
   storeKey=true
   useTicketCache=true
-  debug=true
-  principal=\"${SOLR_PRINCIPAL_FIRST}/${PRINCIPAL_HOST}@DATAVERSE.TEST\";
+  debug=false
+  principal=\"${SOLR_PRINCIPAL_FIRST}/${PRINCIPAL_HOST}\";
 };
-" > ${JAAS_CLIENT_CONF_PATH}
+" >> ${JAAS_CLIENT_CONF_PATH}
 
 
 #### Set solr.in.sh to use JAAS client configurations ####

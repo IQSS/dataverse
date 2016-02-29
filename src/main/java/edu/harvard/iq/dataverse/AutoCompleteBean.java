@@ -33,7 +33,6 @@ public class AutoCompleteBean implements java.io.Serializable {
     
     public SolrClient getSolrServer(){
         if(systemConfig.solrUsesJAAS()){
-          System.setProperty("java.security.auth.login.config",systemConfig.getSolrJAASClientConfFile());
           HttpClientUtil.setConfigurer(new Krb5HttpClientConfigurer());
         }
         if(solrServer == null){

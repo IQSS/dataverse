@@ -111,7 +111,6 @@ public class IndexServiceBean {
     @PostConstruct
     public void init(){
         if(systemConfig.solrUsesJAAS()){
-          System.setProperty("java.security.auth.login.config",systemConfig.getSolrJAASClientConfFile());
           HttpClientUtil.setConfigurer(new Krb5HttpClientConfigurer());
         }
         if (systemConfig.isSolrCloudZookeeperEnabled()) {

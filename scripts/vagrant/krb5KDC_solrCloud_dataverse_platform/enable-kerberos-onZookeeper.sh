@@ -85,10 +85,10 @@ else
   storeKey=true
   doNotPrompt=true
   useTicketCache=false
-  debug=true
-  principal=\"${PRINCIPAL_FIRST}/${PRINCIPAL_HOST}@DATAVERSE.TEST\";
+  debug=false
+  principal=\"${PRINCIPAL_FIRST}/${PRINCIPAL_HOST}\";
 };
-" > ${ZOOKEEPER_JAAS_CLIENT_CONF_PATH}
+" >> ${ZOOKEEPER_JAAS_CLIENT_CONF_PATH}
 
   $_IF_INFO echo "Adding SASLAuthenticationProvider to zookeeper server configuration /etc/zookeeper/conf/zoo.cfg"
   echo "authProvider.1=org.apache.zookeeper.server.auth.SASLAuthenticationProvider${newline}jaasLoginRenew=3600000${newline}" >> /etc/zookeeper/conf/zoo.cfg

@@ -27,6 +27,7 @@ kerberos principals.
 + solr
     + solr/_host@DATAVERSE.TEST
     + HTTP/_host@DATAVERSE.TEST
+    + zookeeper/_host@DATAVERSE.TEST
 + Zookeeper
     + zookeeper/_host@DATAVERSE.TEST
     + HTTP/_host@DATAVERSE.TEST
@@ -48,7 +49,7 @@ NOTE: Solr 5+ no longer supports a default core/collection. This means that all 
 reference the collection/core name (e.g. http://myhost:8983/solr/collection1/...)!
 
 <BR>
-Browser Configuration <sub>[solr wiki](https://cwiki.apache.org/confluence/display/solr/Kerberos+Authentication+Plugin)</sub>
+Browser Configuration
 ---------------------
 
 "In order for your browser to access the Solr Admin UI after enabling Kerberos authentication, it 
@@ -56,12 +57,12 @@ must be able to negotiate with the Kerberos authenticator service to allow you a
 supports this differently, and some (like Chrome) do not support it at all. If you see 401 errors 
 when trying to access the Solr Admin UI after enabling Kerberos authentication, it's likely your 
 browser has not been configured properly to know how or where to negotiate the authentication 
-request."
+request."<sub>[solr wiki](https://cwiki.apache.org/confluence/display/solr/Kerberos+Authentication+Plugin)</sub>
 
 For information on setting up your browser, including Google Chrome, to support Kerberos 
 authentication please see [this website](http://www.cloudera.com/documentation/enterprise/latest/topics/cdh_sg_browser_access_kerberos_protected_url.html).
 
-For Chrome on Mac you can use the following terminal commands
+For Chrome on OsX you can use the following terminal commands
 > defaults write com.google.Chrome AuthServerWhitelist "192.168.40.*"
 <br>defaults write com.google.Chrome AuthNegotiateDelegateWhitelist "192.168.40.*"
 

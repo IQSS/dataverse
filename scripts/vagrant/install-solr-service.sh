@@ -177,34 +177,58 @@ else
   $_IF_INFO echo "java version: ${JAVA_VERSION} is acceptable"
 fi
 
-
-#### Download solr package from apache archive ####
 $_IF_TERSE echo "Installing solr version: ${SOLR_VERSION}"
-$_IF_INFO echo "Downloading solr-${SOLR_VERSION}.tgz and solr-${SOLR_VERSION}.tgz.md5"
-for i in {1..5}; do
-  $_IF_VERBOSE echo "Download attempt: $i"
-  if [[ ! -e solr-${SOLR_VERSION}.tgz ]]; then
-    $CURL_CMD -L -O "https://archive.apache.org/dist/lucene/solr/${SOLR_VERSION}/solr-${SOLR_VERSION}.tgz"
+
+#### Test for /dataverse/downloads directory and existing .tgz/.tgz.md5 pair ####
+$_IF_VERBOSE echo "Checking /dataverse/downloads for solr-${SOLR_VERSION}.tgz and solr-${SOLR_VERSION}.tgz.md5"
+if [[ ( -e "/dataverse/downloads/solr-${SOLR_VERSION}.tgz" ) && ( -e  "/dataverse/downloads/solr-${SOLR_VERSION}.tgz.md5" ) ]]; then
+  $_IF_VERBOSE pushd /dataverse/downloads
+  $_IF_VERBOSE echo "Found! Checking md5sum ..."
+  $_IF_VERBOSE 2>&1 md5sum -c solr-${SOLR_VERSION}.tgz.md5 
+  if [[ $? == 0 ]]; then
+    $_IF_VERBOSE echo "md5 verified."
+    _download_solr=0
+  else
+    $_IF_VERBOSE echo "md5 check failed!"
+    $_IF_VERBOSE rm -f "/dataverse/downloads/solr-${SOLR_VERSION}.tgz"
+    $_IF_VERBOSE rm -f "/dataverse/downloads/solr-${SOLR_VERSION}.tgz.md5"
   fi
-  if [[ ! -e solr-${SOLR_VERSION}.tgz.md5 ]]; then
-    $CURL_CMD -L -O "https://archive.apache.org/dist/lucene/solr/${SOLR_VERSION}/solr-${SOLR_VERSION}.tgz.md5"
+  $_IF_VERBOSE popd
+fi
+
+if [[ ( $_download_solr != 0 ) ]]; then
+  #### Configure download location ####
+  if [[ -e /dataverse/downloads ]]; then 
+    $_IF_VERBOSE pushd /dataverse/downloads
   fi
-  if [[ -e solr-${SOLR_VERSION}.tgz.md5 ]]; then
-    $_IF_VERBOSE echo "Checking md5sum attempt: ${i}"
-    $_IF_VERBOSE 2>&1 md5sum -c solr-${SOLR_VERSION}.tgz.md5 
-    if [[ $? == 0 ]]; then
-      $_IF_VERBOSE echo "md5 verified. Download successful."
-      break
+
+  #### Download solr package from apache archive ####
+  $_IF_INFO echo "Downloading solr-${SOLR_VERSION}.tgz and solr-${SOLR_VERSION}.tgz.md5"
+  for i in {1..5}; do
+    $_IF_VERBOSE echo "Download attempt: $i"
+    if [[ ! -e solr-${SOLR_VERSION}.tgz ]]; then
+      $CURL_CMD -L -O "https://archive.apache.org/dist/lucene/solr/${SOLR_VERSION}/solr-${SOLR_VERSION}.tgz"
     fi
-    rm solr-${SOLR_VERSION}.tgz
-    rm solr-${SOLR_VERSION}.tgz.md5
-  fi
-  if [[ $i == 5 ]]; then
-    echo "Unable to download solr-${SOLR_VERSION}.tgz after 5 attempts!" >&2
-    echo "Installation has failed!" >&2
-    exit 1
-  fi
-done
+    if [[ ! -e solr-${SOLR_VERSION}.tgz.md5 ]]; then
+      $CURL_CMD -L -O "https://archive.apache.org/dist/lucene/solr/${SOLR_VERSION}/solr-${SOLR_VERSION}.tgz.md5"
+    fi
+    if [[ -e solr-${SOLR_VERSION}.tgz.md5 ]]; then
+      $_IF_VERBOSE echo "Checking md5sum attempt: ${i}"
+      $_IF_VERBOSE 2>&1 md5sum -c solr-${SOLR_VERSION}.tgz.md5 
+      if [[ $? == 0 ]]; then
+        $_IF_VERBOSE echo "md5 verified. Download successful."
+        break
+      fi
+      rm solr-${SOLR_VERSION}.tgz
+      rm solr-${SOLR_VERSION}.tgz.md5
+    fi
+    if [[ $i == 5 ]]; then
+      echo "Unable to download solr-${SOLR_VERSION}.tgz after 5 attempts!" >&2
+      echo "Installation has failed!" >&2
+      exit 1
+    fi
+  done
+fi
 
 #### Extract/Run the package's install_solr_service.sh script ####
 tar -zxf solr-${SOLR_VERSION}.tgz solr-${SOLR_VERSION}/bin/install_solr_service.sh
@@ -218,6 +242,10 @@ if [[ -z ${SOLR_HOSTNAME} ]]; then
 else
   $_IF_INFO echo "Adding specified host ${SOLR_HOSTNAME} to /etc/default/solr.in.sh"
   $_IF_VERBOSE echo "SOLR_HOST=${SOLR_HOSTNAME}" >> /etc/default/solr.in.sh
+fi
+
+if [[ -e /dataverse/downloads ]]; then 
+  $_IF_VERBOSE popd
 fi
 
 $_IF_TERSE echo "solr ${SOLR_VERSION} has been installed."

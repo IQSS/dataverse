@@ -124,7 +124,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       
       #solr.vm.provision "killFirewall", type: "shell", inline: "service iptables stop"
       solr.vm.provision "installKerberos", type: "shell", 
-        path: "./install-krbGateway.sh", args:  [ "-v",OUTPUT_VERBOSITY ]
+        path: "./install-krbGateway.sh", args:  [ "-k",STATIC_IP_KRBKDC,"-v",OUTPUT_VERBOSITY ]
       solr.vm.provision "installZookeeperService", type: "shell",
         path: "./install-zookeeper-service.sh",
         args: [ "-e",ZOOKEEPER_CFG,"-i","#{i}","-v",OUTPUT_VERBOSITY ]
@@ -211,18 +211,18 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     dataverse.vm.provision "dataversePrereqs", type: "shell", 
       path: "../setup.sh", args: "-v #{OUTPUT_VERBOSITY}"
     dataverse.vm.provision "installKerberos", type: "shell", 
-        path: "./install-krbGateway.sh", args:  [ "-v",OUTPUT_VERBOSITY ]
+        path: "./install-krbGateway.sh", args:  [ "-k",STATIC_IP_KRBKDC,"-v",OUTPUT_VERBOSITY ]
     dataverse.vm.provision "dataverseKeytab", type: "shell", 
-      inline: "cp /vagrant/dataverse-#{STATIC_IP_DATAVERSE}.keytab #{DATAVERSE_HOME}/dataverse.keytab; rm /vagrant/dataverse-#{STATIC_IP_DATAVERSE}.keytab; chown glassfish:glassfish #{DATAVERSE_HOME}/dataverse.keytab; chmod 0600 #{DATAVERSE_HOME}/dataverse.keytab"
+      inline: "cp /vagrant/dataverse-#{STATIC_IP_DATAVERSE}.keytab #{DATAVERSE_HOME}/config/dataverse.keytab; rm /vagrant/dataverse-#{STATIC_IP_DATAVERSE}.keytab; chown glassfish:glassfish #{DATAVERSE_HOME}/config/dataverse.keytab; chmod 0600 #{DATAVERSE_HOME}/config/dataverse.keytab"
     dataverse.vm.provision "configureKerberos", type: "shell", 
-        path: "./setup-dv-jaas.sh", args:  [ "-c","#{DATAVERSE_HOME}/jaas-client.conf","-i",STATIC_IP_DATAVERSE,"-k","#{DATAVERSE_HOME}/dataverse.keytab","-p","HTTP","-v",OUTPUT_VERBOSITY ]
+        path: "./setup-dv-jaas.sh", args:  [ "-c","#{DATAVERSE_HOME}/config/login.conf","-i",STATIC_IP_DATAVERSE,"-k","#{DATAVERSE_HOME}/config/dataverse.keytab","-p","dataverse","-v",OUTPUT_VERBOSITY ]
     
     if (ENABLE_TLS_ON_SOLR != 0)
       dataverse.vm.provision "addGlassfishDomainTLS", type: "shell", 
         path: "../setup-tls-dataverse.sh",
         args: "-v #{OUTPUT_VERBOSITY} -w #{TRUSTSTORE_PASSWORD} -x #{STATIC_IP_DATAVERSE}" 
       dataverse.vm.provision "addTrustToGlassfishDomain", type: "shell", 
-        inline: "keytool -importkeystore -noprompt -srckeystore /vagrant/dataverse_truststore.jks -srcstorepass #{KEYSTORE_PASSWORD} -destkeystore ~glassfish/glassfish4/glassfish/domains/domain1/config/cacerts.jks -deststorepass changeit"
+        inline: "keytool -importkeystore -noprompt -srckeystore /vagrant/dataverse_truststore.jks -srcstorepass #{KEYSTORE_PASSWORD} -destkeystore #{DATAVERSE_HOME}/config/cacerts.jks -deststorepass changeit"
 
       STATIC_IP_SOLRCLOUD.each_with_index { |node,index|
         dataverse.vm.provision "remoteAddTrustRestartSolrCloud" + (index + 1).to_s, type: "shell", 

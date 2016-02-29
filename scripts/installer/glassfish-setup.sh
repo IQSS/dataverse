@@ -220,6 +220,9 @@ fi
 ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.username=apitest"
 ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.baseurlstring=https\://ezid.cdlib.org"
 
+# enable JAAS/Kerberos support for SolrJ
+./asadmin $ASADMIN_OPTS create-jvm-options "\-Dsolr.kerberos.jaas.appname=SolrJClient"
+
 # enable comet support
 ./asadmin $ASADMIN_OPTS set server-config.network-config.protocols.protocol.http-listener-1.http.comet-support-enabled="true"
 
