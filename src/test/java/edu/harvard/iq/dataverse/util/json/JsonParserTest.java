@@ -5,16 +5,25 @@
 package edu.harvard.iq.dataverse.util.json;
 
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
+import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.StringReader;
+import java.text.ParseException;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -22,10 +31,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TimeZone;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import org.junit.AfterClass;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -88,6 +101,7 @@ public class JsonParserTest {
             t.setParentDatasetFieldType(compoundSingleType);
         }
         compoundSingleType.setChildDatasetFieldTypes(childTypes);
+        settingsSvc = new MockSettingsSvc();
         sut = new JsonParser(datasetFieldTypeSvc, null, settingsSvc);
     }
     
@@ -205,6 +219,184 @@ public class JsonParserTest {
         assertFieldsEqual(actual, expected);
     }
     
+    /**
+     * Test that a complete dataverse JSON object is correctly parsed. This
+     * checks that required and optional properties are parsed into the correct
+     * dataverse properties.
+     * @throws JsonParseException when this test is broken.
+     */
+    @Test
+    public void testParseCompleteDataverse() throws JsonParseException {
+        
+        JsonObject dvJson;
+        try (InputStream jsonFile = ClassLoader.getSystemResourceAsStream("json/complete-dataverse.json")) {
+            InputStreamReader reader = new InputStreamReader(jsonFile, "UTF-8");
+            dvJson = Json.createReader(reader).readObject();
+            Dataverse actual = sut.parseDataverse(dvJson);
+            assertEquals("testDv", actual.getName());
+            assertEquals("testAlias", actual.getAlias());
+            assertEquals("Test-Driven University", actual.getAffiliation());
+            assertEquals("test Description.", actual.getDescription());
+            assertEquals(2, actual.getDataverseContacts().size());
+            assertEquals("test@example.com,test@example.org", actual.getContactEmails());
+            assertEquals(0, actual.getDataverseContacts().get(0).getDisplayOrder());
+            assertEquals(1, actual.getDataverseContacts().get(1).getDisplayOrder());
+            assertTrue(actual.isPermissionRoot());
+        } catch (IOException ioe) {
+            throw new JsonParseException("Couldn't read test file", ioe);
+        }
+    }
+    
+    /**
+     * Test that a minimally complete dataverse JSON object is correctly parsed.
+     * This checks for required properties and default values for optional
+     * values.
+     * @throws JsonParseException when this test is broken.
+     */
+    @Test
+    public void testParseMinimalDataverse() throws JsonParseException {
+        
+        JsonObject dvJson;
+        try (InputStream jsonFile = ClassLoader.getSystemResourceAsStream("json/minimal-dataverse.json")) {
+            InputStreamReader reader = new InputStreamReader(jsonFile, "UTF-8");
+            dvJson = Json.createReader(reader).readObject();
+            Dataverse actual = sut.parseDataverse(dvJson);
+            assertEquals("testDv", actual.getName());
+            assertEquals("testAlias", actual.getAlias());
+            assertTrue(actual.getDataverseContacts().isEmpty());
+            assertEquals("", actual.getContactEmails());
+            assertFalse(actual.isPermissionRoot());
+            assertFalse(actual.isFacetRoot());
+        } catch (IOException ioe) {
+            throw new JsonParseException("Couldn't read test file", ioe);
+        }
+    }
+    
+    /**
+     * Test that a dataverse JSON object without alias fails to parse.
+     * @throws JsonParseException if all goes well - this is expected.
+     * @throws IOException when test file IO goes wrong - this is bad.
+     */
+    @Test(expected = JsonParseException.class)
+    public void testParseNoAliasDataverse() throws JsonParseException, IOException {
+        JsonObject dvJson;
+        try (InputStream jsonFile = ClassLoader.getSystemResourceAsStream("json/no-alias-dataverse.json")) {
+            dvJson = Json.createReader(jsonFile).readObject();
+            Dataverse actual = sut.parseDataverse(dvJson);
+        }
+    }
+    
+    /**
+     * Test that a dataverse JSON object without name fails to parse.
+     * @throws JsonParseException if all goes well - this is expected.
+     * @throws IOException when test file IO goes wrong - this is bad.
+     */
+    @Test(expected = JsonParseException.class)
+    public void testParseNoNameDataverse() throws JsonParseException, IOException {
+        JsonObject dvJson;
+        try (InputStream jsonFile = ClassLoader.getSystemResourceAsStream("json/no-name-dataverse.json")) {
+            dvJson = Json.createReader(jsonFile).readObject();
+            Dataverse actual = sut.parseDataverse(dvJson);
+        }
+    }
+    
+    /**
+     * Test that a dataverse JSON object with contacts, but without contact
+     * email fails to parse.
+     * @throws JsonParseException if all goes well - this is expected.
+     * @throws IOException when test file IO goes wrong - this is bad.
+     */
+    @Test(expected = JsonParseException.class)
+    public void testParseNoContactEmailsDataverse() throws JsonParseException, IOException {
+        JsonObject dvJson;
+        try (InputStream jsonFile = ClassLoader.getSystemResourceAsStream("json/no-contacts-dataverse.json")) {
+            dvJson = Json.createReader(jsonFile).readObject();
+            Dataverse actual = sut.parseDataverse(dvJson);
+        }
+    }
+
+    /**
+     * Create a date, output it as a JSON string and parse it into the same date.
+     * This is a bit tricky, as parsing dates only looks at the first part of
+     * the date string, which means time zone indicators are ignored. Only when
+     * UTC dates and cleared calendars are used, it is "safe" to perform this
+     * round-trip.
+     * @throws ParseException if Dataverse outputs date strings that it cannot
+     * parse.
+     */
+    @Test
+    public void testDateRoundtrip() throws ParseException {
+        Calendar c = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+        c.clear();
+        c.set(2015, 8, 15);
+        Date d = c.getTime();
+        String generated = JsonPrinter.format(d);
+        System.err.println(generated);
+        Date parsedDate = sut.parseDate(generated);
+        Calendar p = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+        p.clear();
+        p.setTime(parsedDate);
+        assertEquals(c.get(Calendar.YEAR), p.get(Calendar.YEAR));
+        assertEquals(c.get(Calendar.MONTH), p.get(Calendar.MONTH));
+        assertEquals(c.get(Calendar.DAY_OF_MONTH), p.get(Calendar.DAY_OF_MONTH));
+    }
+
+    /**
+     * Test that a date-time string that the {@link JsonPrinter} outputs a string
+     * that JsonParser can read correctly. This defines a non-UTC date-time that
+     * when output as a string and parsed must give the same date-time.
+     * @throws ParseException when JsonPrinter outputs a string that JsonParse
+     * cannot read.
+     */
+    @Test
+    public void testDateTimeRoundtrip() throws ParseException {
+        Calendar c = Calendar.getInstance(TimeZone.getTimeZone("Europe/Amsterdam"));
+        c.clear();
+        c.set(2015, 8, 15, 13, 37, 56);
+        Date d = c.getTime();
+        String generated = JsonPrinter.format(d);
+        System.err.println(generated);
+        Date parsedDate = sut.parseTime(generated);
+        assertEquals(d, parsedDate);
+    }
+
+    /**
+     * Expect an exception when the dataset JSON is empty.
+     * @throws JsonParseException when the test is broken
+     */
+    @Test(expected = NullPointerException.class)
+    public void testParseEmptyDataset() throws JsonParseException {
+        JsonObject dsJson;
+        try (InputStream jsonFile = ClassLoader.getSystemResourceAsStream("json/empty-dataset.json")) {
+            InputStreamReader reader = new InputStreamReader(jsonFile, "UTF-8");
+            dsJson = Json.createReader(reader).readObject();
+            System.out.println(dsJson != null);
+            Dataset actual = sut.parseDataset(dsJson);
+            assertEquals("10.5072/FK2", actual.getAuthority());
+            assertEquals("/", actual.getDoiSeparator());
+            assertEquals("doi", actual.getProtocol());
+        } catch (IOException ioe) {
+            throw new JsonParseException("Couldn't read test file", ioe);
+        }
+    }
+
+    /**
+     * Expect an exception when the dataset version JSON contains fields
+     * that the {@link DatasetFieldService} doesn't know about.
+     * @throws JsonParseException as expected
+     * @throws IOException when test file IO goes wrong - this is bad.
+     */
+    @Test(expected = JsonParseException.class)
+    public void testParseOvercompleteDatasetVersion() throws JsonParseException, IOException {
+        JsonObject dsJson;
+        try (InputStream jsonFile = ClassLoader.getSystemResourceAsStream("json/complete-dataset-version.json")) {
+            InputStreamReader reader = new InputStreamReader(jsonFile, "UTF-8");
+            dsJson = Json.createReader(reader).readObject();
+            System.out.println(dsJson != null);
+            DatasetVersion actual = sut.parseDatasetVersion(dsJson);
+        }
+    }
+
     JsonObject json( String s ) {
         return Json.createReader( new StringReader(s) ).readObject();
     }
@@ -264,7 +456,7 @@ public class JsonParserTest {
     
     static class MockSettingsSvc extends SettingsServiceBean {
         @Override
-        public String getValueForKey( Key key, String defaultValue ) {
+        public String getValueForKey( Key key /*, String defaultValue */) {
             if (key.equals(SettingsServiceBean.Key.Authority)) {
                 return "10.5072/FK2";
             } else if (key.equals(SettingsServiceBean.Key.Protocol)) {

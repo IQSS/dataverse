@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationFailedExc
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.io.UnsupportedEncodingException;
@@ -171,10 +172,15 @@ public class LoginPage implements java.io.Serializable {
             AuthenticationResponse response = ex.getResponse();
             switch ( response.getStatus() ) {
                 case FAIL:
-                    JsfHelper.addErrorMessage(JH.localize("login.invaliduserpassword"));
+                    JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("login.builtin.invalidUsernameEmailOrPassword"));
                     return null;
                 case ERROR:
-                    JsfHelper.addErrorMessage(JH.localize("login.error"));
+                    /**
+                     * @todo How do we exercise this part of the code? Something
+                     * with password upgrade? See
+                     * https://github.com/IQSS/dataverse/pull/2922
+                     */
+                    JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("login.error"));
                     logger.log( Level.WARNING, "Error logging in: " + response.getMessage(), response.getError() );
                     return null;
                 case BREAKOUT:
