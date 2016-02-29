@@ -196,12 +196,12 @@ if [[ ( -e "/dataverse/downloads/solr-${SOLR_VERSION}.tgz" ) && ( -e  "/datavers
   $_IF_VERBOSE popd
 fi
 
-if [[ ( $_download_solr != 0 ) ]]; then
-  #### Configure download location ####
-  if [[ -e /dataverse/downloads ]]; then 
-    $_IF_VERBOSE pushd /dataverse/downloads
-  fi
+#### Configure download location ####
+if [[ -e /dataverse/downloads ]]; then 
+  $_IF_VERBOSE pushd /dataverse/downloads
+fi
 
+if [[ ( $_download_solr != 0 ) ]]; then
   #### Download solr package from apache archive ####
   $_IF_INFO echo "Downloading solr-${SOLR_VERSION}.tgz and solr-${SOLR_VERSION}.tgz.md5"
   for i in {1..5}; do
