@@ -36,6 +36,13 @@ public class BuiltinUsers extends AbstractApiBean {
     private static final Logger logger = Logger.getLogger(BuiltinUsers.class.getName());
 
     private static final String API_KEY_IN_SETTINGS = "BuiltinUsers.KEY";
+    /**
+     * Users have not requested the ability to retrieve their API token using
+     * their email address but we could. Here's the issue for which we are
+     * enabling login via email address:
+     * https://github.com/IQSS/dataverse/issues/2115
+     */
+    public static boolean retrievingApiTokenViaEmailEnabled = false;
 
     @EJB
     protected BuiltinUserServiceBean builtinUserSvc;
@@ -43,7 +50,12 @@ public class BuiltinUsers extends AbstractApiBean {
     @GET
     @Path("{username}/api-token")
     public Response getApiToken( @PathParam("username") String username, @QueryParam("password") String password ) {
-        BuiltinUser u = builtinUserSvc.findByUserName( username );
+        BuiltinUser u = null;
+        if (retrievingApiTokenViaEmailEnabled) {
+            u = builtinUserSvc.findByUsernameOrEmail(username);
+        } else {
+            u = builtinUserSvc.findByUserName(username);
+        }
         if ( u == null ) return badRequest("Bad username or password");
         
         boolean passwordOk = PasswordEncryption.getVersion(u.getPasswordEncryptionVersion())
