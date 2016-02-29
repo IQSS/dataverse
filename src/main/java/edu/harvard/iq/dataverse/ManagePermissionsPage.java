@@ -183,7 +183,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
         if (dvObject != null && dvObject.getId() != null) {
             return roleService.findByOwnerId(dvObject.getId());
         }
-        return new ArrayList();
+        return new ArrayList<>();
     }
 
     public void createNewRole(ActionEvent e) {
