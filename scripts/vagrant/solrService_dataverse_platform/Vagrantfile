@@ -123,9 +123,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     end
     dataverse.vm.provision "dataverseSetup", type: "shell", path: "../install-dataverse.sh",
       args: "-c #{DVCOLLECTION_NAME} -h #{STATIC_IP_DATAVERSE} -m #{mailserver} -s #{STATIC_IP_SOLR} -u #{ENABLE_TLS_ON_SOLR} -v #{OUTPUT_VERBOSITY}"
-    dataverse.vm.provision "loadDataverseTest", type: "shell", 
-      path: "../setup-dv-test.sh", args: "#{STATIC_IP_DATAVERSE}"
-    
+
+
+    dataverse.vm.provision "dvTestUsers", type: "shell", 
+      path: "../setup-dv-test_addUsers.sh", args: "#{STATIC_IP_DATAVERSE}"
+    dataverse.vm.provision "dvTestPublishRoot", type: "shell", 
+      path: "../setup-dv-test_publishRoot.sh", args: "#{STATIC_IP_DATAVERSE}"
+    dataverse.vm.provision "dvTestSetupUserDVs", type: "shell", 
+      path: "../setup-dv-test_setupUserDVs.sh", args: "#{STATIC_IP_DATAVERSE}"
   end
 
 end
