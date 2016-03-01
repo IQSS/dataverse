@@ -50,9 +50,7 @@ public class DOIDataCiteServiceBean {
         HashMap metadata = getMetadataFromStudyForCreateIndicator(dataset);
         metadata.put("_status", "reserved");
         try {
-            logger.log(Level.INFO, "doiDataCiteRegisterService.toString : " + doiDataCiteRegisterService.toString());
             retString = doiDataCiteRegisterService.createIdentifier(identifier, metadata, dataset);
-            logger.log(Level.INFO, "create DOI identifier retString : " + retString);
         } catch (Exception e) {
             logger.log(Level.INFO, "Identifier not created: create failed");
             logger.log(Level.INFO, "String " + e.toString());

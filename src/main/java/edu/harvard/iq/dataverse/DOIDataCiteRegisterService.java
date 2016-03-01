@@ -261,15 +261,12 @@ class DataCiteMetadataTemplate {
             if (author.getIdType() != null && author.getIdValue() != null && !author.getIdType().isEmpty() && !author.getIdValue().isEmpty() && author.getAffiliation() != null && !author.getAffiliation().getDisplayValue().isEmpty()) {
                 
                 if (author.getIdType().equals("ORCID")) {   
-                    System.out.print("orcid " + author.getIdType());
                     creatorsElement.append("<nameIdentifier schemeURI=\"http://orcid.org/\" nameIdentifierScheme=\"ORCID\">" + author.getIdValue() + "</nameIdentifier>");
                 }
                 if (author.getIdType().equals("ISNI")) {   
-                    System.out.print("isni " + author.getIdType());
                     creatorsElement.append("<nameIdentifier schemeURI=\"http://isni.org/isni/\" nameIdentifierScheme=\"ISNI\">" + author.getIdValue() + "</nameIdentifier>");
                 }
                 if (author.getIdType().equals("LCNA")) {   
-                    System.out.print("lcna " + author.getIdType());
                     creatorsElement.append("<nameIdentifier schemeURI=\"http://id.loc.gov/authorities/names/\" nameIdentifierScheme=\"LCNA\">" + author.getIdValue() + "</nameIdentifier>");
                 }
             }
@@ -295,7 +292,6 @@ class DataCiteMetadataTemplate {
             }
             contributorsElement.append("</contributor>");
         }
-        System.out.print("Contributors element: " + contributorsElement.toString());
         xmlMetadata = xmlMetadata.replace("{$contributors}", contributorsElement.toString());
         return xmlMetadata;
     }
