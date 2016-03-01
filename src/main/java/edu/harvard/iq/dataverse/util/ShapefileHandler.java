@@ -226,7 +226,7 @@ public class ShapefileHandler{
     } // end showFileNamesSizes
     
     
-    public Map getFileGroups(){
+    public Map<String, List<String>> getFileGroups(){
         return this.fileGroups;
     }
 

@@ -166,7 +166,7 @@ public class TemplatePage implements java.io.Serializable {
         //SEK - removed dead code 1/6/2015
         
         boolean create = false;
-        Command cmd;
+        Command<Void> cmd;
         Long createdId = new Long(0);
         Template created;
         try {
