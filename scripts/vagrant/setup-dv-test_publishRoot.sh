@@ -13,4 +13,11 @@ echo Publishing 'curator-able' root dataverse on $SERVER
 echo ====================================================================
 
 curl -s -L -X POST -H "X-Dataverse-key:$adminKey" -H "Content-type:application/json"  -d "{\"assignee\":\":authenticated-users\",\"role\":\"dvContributor\"}" ${SERVER}/dataverses/root/assignments
-curl -s -L -X POST -H "X-Dataverse-key:$adminKey" ${SERVER}/dataverses/root/actions/:publish
+for i in {1..3}; do
+  result=$(curl -s -L -X POST -H "X-Dataverse-key:$adminKey" ${SERVER}/dataverses/root/actions/:publish | jq .status | tr -d \")
+  if ( "$result" -eq "OK" ); then
+    break;
+  else
+    echo "Failed to publish root dataverse. (Attempt ${i})"
+  fi
+done
