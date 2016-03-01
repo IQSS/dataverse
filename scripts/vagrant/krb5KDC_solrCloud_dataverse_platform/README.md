@@ -17,6 +17,12 @@ This test environment establishes the following VMs on the **192.168.40.x** loca
 + *krbkdc (192.168.40.30)*
 
 <BR>
+TLS/SSL
+-------
+To enable Transport Layer Security from the solrCloud nodes use: 
+> ENABLE_TLS_ON_SOLR=1 vagrant up
+
+<BR>
 Kerberos
 --------
 This test environment establishes the **DATAVERSE.TEST** kerberos realm.
