@@ -25,7 +25,14 @@ echo Setting up dataverses on $SERVER
 echo ==============================================
 
 echo Pete
-curl -s -L -H "Content-type:application/json" -X POST -d @${_dataDir}/dv-pete-top.json "$SERVER/dataverses/root?key=$peteKey"
+for i in {1..3}; do
+  result=$(curl -s -L -H "Content-type:application/json" -X POST -d @${_dataDir}/dv-pete-top.json "$SERVER/dataverses/root?key=$peteKey" | jq .status | tr -d \")
+  if ( "$result" -eq "OK" ); then
+    break;
+  else
+    echo "Failed to create dataverse. (Attempt ${i})"
+  fi
+done
 echo
 curl -s -L -H "Content-type:application/json" -X POST -d @${_dataDir}/dv-pete-sub-normal.json "$SERVER/dataverses/peteTop?key=$peteKey"
 echo
