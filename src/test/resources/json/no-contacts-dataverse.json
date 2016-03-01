@@ -1,0 +1,12 @@
+{
+    "name": "testDv",
+    "alias": "testAlias",
+    "affiliation": "Test-Driven University",
+    "dataverseContacts": [
+        {
+            "name": "This is ignored."
+        }
+    ],
+    "permissionRoot": true,
+    "description": "test Description."
+}

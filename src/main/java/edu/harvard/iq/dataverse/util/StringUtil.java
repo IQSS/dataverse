@@ -67,7 +67,7 @@ public class StringUtil {
      * @return A list of clean strings or an empty list.
      */
     public static List<String> htmlArray2textArray(List<String> htmlArray) {
-        List cleanTextArray = new ArrayList<>();
+        List<String> cleanTextArray = new ArrayList<>();
         if (htmlArray == null) {
             return cleanTextArray;
         }
