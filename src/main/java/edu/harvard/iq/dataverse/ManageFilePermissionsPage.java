@@ -20,6 +20,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
@@ -29,6 +30,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.ejb.EJBException;
 import javax.faces.application.FacesMessage;
 import javax.faces.event.ActionEvent;
 import javax.faces.view.ViewScoped;
@@ -242,9 +244,9 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     
     public void removeRoleAssignments() {
         for (RoleAssignmentRow raRow : selectedRoleAssignmentRows) {
-            revokeRole(raRow.getId());
-        }
-        
+                revokeRole(raRow.getId());
+            }
+            
         initMaps();        
     }
     
@@ -259,8 +261,14 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         } catch (CommandException ex) {
             JH.addMessage(FacesMessage.SEVERITY_FATAL, "The role assignment could not be removed.");
             logger.log(Level.SEVERE, "Error removing role assignment: " + ex.getMessage(), ex);
+        } catch (EJBException e) {
+            logger.log(Level.FINE, "EJB Exception  removing role assignment : " + e.getMessage(), e);
+            //JH.addMessage(FacesMessage.SEVERITY_FATAL, "The role assignment could not be removed. EJB Exception..." + e.getMessage());
+        } catch (Exception e) {
+            JH.addMessage(FacesMessage.SEVERITY_FATAL, "The role assignment could not be removed. General Exception..." + e.getMessage());
+            logger.log(Level.SEVERE, "Error removing role assignment General: " + e.getMessage(), e);
         }
-    }    
+    }  
   
  
     /*
