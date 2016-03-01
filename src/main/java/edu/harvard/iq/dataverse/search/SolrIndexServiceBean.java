@@ -31,6 +31,7 @@ import javax.json.JsonObjectBuilder;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.CloudSolrClient;
+import org.apache.solr.client.solrj.impl.HttpClientConfigurer;
 import org.apache.solr.client.solrj.impl.HttpClientUtil;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.impl.Krb5HttpClientConfigurer;
@@ -64,9 +65,6 @@ public class SolrIndexServiceBean {
     
     @PostConstruct
     public void init(){
-        if(systemConfig.solrUsesJAAS()){
-          HttpClientUtil.setConfigurer(new Krb5HttpClientConfigurer());
-        }
         if (systemConfig.isSolrCloudZookeeperEnabled()) {
             solrServer = new CloudSolrClient(systemConfig.getSolrZookeeperEnsemble());
             ((CloudSolrClient)solrServer).setDefaultCollection(systemConfig.getSolrCollectionName());
@@ -132,6 +130,19 @@ public class SolrIndexServiceBean {
         return solrDocs;
     }
 
+    private boolean solrUsesKerberos = false;
+    
+    public boolean toggleSolrKerberos() {
+      if (solrUsesKerberos != true) {
+        solrUsesKerberos = true;
+        HttpClientUtil.setConfigurer(new Krb5HttpClientConfigurer());
+      }else{
+        solrUsesKerberos = false;
+        HttpClientUtil.setConfigurer(new HttpClientConfigurer());
+      }
+      return solrUsesKerberos;
+    }
+            
     private List<DvObjectSolrDoc> determineSolrDocsForFilesFromDataset(Map.Entry<Long, List<Long>> datasetHash) {
         List<DvObjectSolrDoc> emptyList = new ArrayList<>();
         List<DvObjectSolrDoc> solrDocs = emptyList;

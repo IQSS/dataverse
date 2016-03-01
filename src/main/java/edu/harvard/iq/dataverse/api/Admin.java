@@ -264,7 +264,16 @@ public class Admin extends AbstractApiBean {
             return errorResponse(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
-    
+
+    @Path("toggleSolrKerberos")
+    @GET
+    public Response toggleSolrKerberos() {
+        if(engineSvc.getContext().solrIndex().toggleSolrKerberos()){
+          return okResponse("Kerberos/SPNego authentication enabled for Solr(Core/Cloud) connection");
+        }else{
+          return okResponse("Kerberos/SPNego authentication DISABLED for Solr(Core/Cloud) connection");          
+        }
+    }    
     
     @Path("superuser/{identifier}")
     @POST

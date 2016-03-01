@@ -53,4 +53,4 @@ newline='
 '
 
 $_IF_TERSE echo "Enabling Kerberos authentication of dataverse to solr communication using verbosity level: ${OUTPUT_VERBOSITY}"
-$_IF_VERBOSE curl -L -X PUT -d 'yes' "http://${DATAVERSE_HOST}:8080/api/admin/settings/:SolrUsesJAAS"
+$_IF_VERBOSE curl -L -X GET "http://${DATAVERSE_HOST}:8080/api/admin/toggleSolrKerberos"

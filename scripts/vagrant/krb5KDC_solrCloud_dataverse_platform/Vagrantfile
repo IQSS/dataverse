@@ -239,12 +239,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       path: "./enable-kerberos-onDataverse.sh", args:  [ "-v",OUTPUT_VERBOSITY,"-x",STATIC_IP_DATAVERSE ]
 
 
-    dataverse.vm.provision "dvTestUsers", type: "shell", 
-      path: "../setup-dv-test_addUsers.sh", args: "#{STATIC_IP_DATAVERSE}"
-    dataverse.vm.provision "dvTestPublishRoot", type: "shell", 
-      path: "../setup-dv-test_publishRoot.sh", args: "#{STATIC_IP_DATAVERSE}"
-    dataverse.vm.provision "dvTestSetupUserDVs", type: "shell", 
-      path: "../setup-dv-test_setupUserDVs.sh", args: "#{STATIC_IP_DATAVERSE}"
+    dataverse.vm.provision "dvTestUsers", type: "shell", path: "../setup-dv-test_addUsers.sh"
+    dataverse.vm.provision "dvTestPublishRoot", type: "shell", path: "../setup-dv-test_publishRoot.sh"
+    dataverse.vm.provision "dvTestSetupUserDVs", type: "shell", path: "../setup-dv-test_setupUserDVs.sh"
   end
 
 end
