@@ -83,6 +83,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         args: "-k #{KEYSTORE_PATH} -p #{KEYSTORE_PASSWORD} -t #{TRUSTSTORE_PATH} -v #{OUTPUT_VERBOSITY} -w #{TRUSTSTORE_PASSWORD}"
 #        args: "-k #{KEYSTORE_PATH} -p #{KEYSTORE_PASSWORD} -s -t #{TRUSTSTORE_PATH} -v #{OUTPUT_VERBOSITY} -w #{TRUSTSTORE_PASSWORD}"
 #### Glassfish TLS client certificate configuration isn't working currently -s/-r options break the connection ####
+      solr.vm.provision "addTrustRestartSolr", type: "shell", inline: "cp /vagrant/dataverse_truststore.jks #{TRUSTSTORE_PATH} ; service solr restart"
     end
     solr.vm.provision "createDataverseCollection", type: "shell", 
       path: "../setup-dvcollection.sh", args: "-c '#{DVCOLLECTION_NAME}' -i '#{SOLR_INSTALL_DIR}' -v #{OUTPUT_VERBOSITY}"
