@@ -6,23 +6,18 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 if [[ -z ${OUTPUT_VERBOSITY} ]]; then OUTPUT_VERBOSITY='1'; fi
-if [[ -z ${JAAS_CLIENT_CONF_PATH} ]]; then JAAS_CLIENT_CONF_PATH="/home/glassfish/glassfish4/glassfish/domains/domain1/jaas-client.conf"; fi
 
 _usage() {
-  echo "Usage: $0 [chvx]"
+  echo "Usage: $0 [hvx]"
   echo "Supported options:"
-  echo "  -c     jaas_client.conf path [${JAAS_CLIENT_CONF_PATH}]."
   echo "  -h     Print this help message."
   echo "  -v     Verbosity of this installation script (0-3). [${OUTPUT_VERBOSITY}]"
   echo "  -x     Network accessible Hostname/IP address for the dataverse server."
   echo ""
 }
 
-while getopts :c:v:x:h FLAG; do
+while getopts :v:x:h FLAG; do
   case $FLAG in
-    c)
-      JAAS_CLIENT_CONF_PATH=$OPTARG
-      ;;
     h)  #print help
       _usage
       exit 0
