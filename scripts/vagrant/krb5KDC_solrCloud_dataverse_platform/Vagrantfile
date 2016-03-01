@@ -158,7 +158,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       #### Only the last solrCloud node to provision will do the following ####  
       if ( i == STATIC_IP_SOLRCLOUD.length ) 
         solr.vm.provision "createSolrZnode", type: "shell",
-          path: "./setup-solr-znode.sh", 
+          path: "../setup-solr-znode.sh", 
           args: [ "-e",ZOOKEEPER_ENSEMBLE,"-i",SOLR_INSTALL_DIR,"-t",ENABLE_TLS_ON_SOLR,"-v",OUTPUT_VERBOSITY ]
 
         solr.vm.provision "enableSolrCloudKerberos", type: "shell",
