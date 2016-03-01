@@ -143,6 +143,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     private String dropBoxSelection = "";
     private String displayCitation;
     private boolean datasetUpdateRequired = false; 
+    private boolean tabularDataTagsUpdated = false; 
     
     private String persistentId;
     
@@ -816,6 +817,8 @@ public class EditDatafilesPage implements java.io.Serializable {
         if (workingVersion.getId() == null  || datasetUpdateRequired) {
             logger.info("issuing the dataset update command");
             // We are creating a new draft version; 
+            // (OR, a full update of the dataset has been explicitly requested, 
+            // because of the nature of the updates the user has made).
             // We'll use an Update command for this: 
             
             //newDraftVersion = true;
@@ -829,6 +832,27 @@ public class EditDatafilesPage implements java.io.Serializable {
                             }
                         }
                     }
+                }
+                
+                // Tabular data tags are assigned to datafiles, not to  
+                // version-specfic filemetadatas!
+                // So if tabular tags have been modified, we also need to 
+                // refresh the list of datafiles, as found in dataset.getFiles(),
+                // similarly to what we've just done, above, for the filemetadatas.
+                // Otherwise, when we call UpdateDatasetCommand, it's not going 
+                // to update the tags in the database (issue #2798). 
+                
+                if (tabularDataTagsUpdated) {
+                    for (int i = 0; i < dataset.getFiles().size(); i++) {
+                        for (FileMetadata fileMetadata : fileMetadatas) {
+                            if (fileMetadata.getDataFile().getStorageIdentifier() != null) {
+                                if (fileMetadata.getDataFile().getStorageIdentifier().equals(dataset.getFiles().get(i).getStorageIdentifier())) {
+                                    dataset.getFiles().set(i, fileMetadata.getDataFile());
+                                }
+                            }
+                        }
+                    }
+                    tabularDataTagsUpdated = false;
                 }
             }
             
@@ -861,7 +885,8 @@ public class EditDatafilesPage implements java.io.Serializable {
             datasetUpdateRequired = false;
             saveEnabled = false; 
         } else {
-            // This is an existing Draft version. We'll try to update 
+            // This is an existing Draft version (and nobody has explicitly 
+            // requested that the entire dataset is updated). So we'll try to update 
             // only the filemetadatas and/or files affected, and not the 
             // entire version. 
             // TODO: in 4.3, create SaveDataFileCommand!
@@ -1553,8 +1578,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         
         // 2. Tabular DataFile Tags: 
 
-        if (selectedTags != null) {
-        
+        if (tabularDataTagsUpdated && selectedTags != null) {
             if (fileMetadataSelectedForTagsPopup != null && fileMetadataSelectedForTagsPopup.getDataFile() != null) {
                 fileMetadataSelectedForTagsPopup.getDataFile().setTags(null);
                 for (int i = 0; i < selectedTags.length; i++) {
@@ -1587,6 +1611,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
     
     public void handleSelection(final AjaxBehaviorEvent event) {
+        tabularDataTagsUpdated = true;
         if (selectedTags != null) {
             selectedTags = selectedTags.clone();
         }
