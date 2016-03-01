@@ -879,7 +879,7 @@
                                 </label>
                                 <div class="col-sm-8">
                                     <p:outputPanel id="selectedTagsList" style="padding-top:.5em;">
-                                        <h:outputText value="No tags selected" rendered="#{(empty DatasetPage.selectedTags) and (empty DatasetPage.selectedTabFileTags)}" />
+                                        <h:outputText value="#{bundle['file.editTagsDialog.selectedTags.none']}" rendered="#{(empty DatasetPage.selectedTags) and (empty DatasetPage.selectedTabFileTags)}" />
                                        
                                         <ui:repeat value="#{DatasetPage.selectedTags}" var="tags" rendered="#{!empty DatasetPage.selectedTags}">
                                             <h:outputText value="#{tags}" styleClass="label label-default" style="margin-right:.5em;display:inline-block;"/>
@@ -944,11 +944,19 @@
                                     <p:message for="tabularDataTagsDSPage" display="text" />
                                 </div>
                             </div>
+                            <div class="form-group text-left">
+                                <label class="col-sm-4 control-label">
+                                    #{bundle['dataset.removeUnusedFileTags.label']}
+                                </label>
+                                <div class="col-sm-8">
+                                    <p class="help-block">#{bundle['dataset.removeUnusedFileTags.tip']}</p>
+                                    <p:selectBooleanCheckbox id="removeUnused" itemLabel="#{bundle['dataset.removeUnusedFileTags.check']}" value="#{DatasetPage.removeUnusedTags}" widgetVar="removeUnused"/>
+                                </div>
+                            </div>
                         </div>
-                        <p:selectBooleanCheckbox id="removeUnused" itemLabel="#{bundle['dataset.removeUnusedFileTags']}" value="#{DatasetPage.removeUnusedTags}" widgetVar="removeUnused"/>
                         <div class="button-block">
-                            <p:commandButton id="fileTagsPopupSaveButton" value="#{bundle.saveChanges}" oncomplete="PF('fileTagsPopup').hide()" update=":datasetForm:tabView:filesTable, :datasetForm" action="#{DatasetPage.saveFileTagsAndCategories()}"/>
-                            <p:commandButton id="fileTagsPopupCancelButton" value="#{bundle.cancel}" onclick="PF('fileTagsPopup').hide();PF('blockDatasetForm').hide();" actionListener="#{DatasetPage.clearFileMetadataSelectedForTagsPopup()}"/>
+                            <p:commandButton styleClass="btn btn-default" id="fileTagsPopupSaveButton" value="#{bundle.saveChanges}" oncomplete="PF('fileTagsPopup').hide()" update=":datasetForm:tabView:filesTable, :datasetForm" action="#{DatasetPage.saveFileTagsAndCategories()}"/>
+                            <p:commandButton styleClass="btn btn-default" id="fileTagsPopupCancelButton" value="#{bundle.cancel}" onclick="PF('fileTagsPopup').hide();PF('blockDatasetForm').hide();" actionListener="#{DatasetPage.clearFileMetadataSelectedForTagsPopup()}"/>
                         </div>
                     </p:dialog>
 
