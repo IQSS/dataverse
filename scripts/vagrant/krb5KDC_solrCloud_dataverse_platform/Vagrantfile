@@ -126,7 +126,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       solr.vm.provision "installKerberos", type: "shell", 
         path: "./install-krbGateway.sh", args:  [ "-k",STATIC_IP_KRBKDC,"-v",OUTPUT_VERBOSITY ]
       solr.vm.provision "installZookeeperService", type: "shell",
-        path: "./install-zookeeper-service.sh",
+        path: "../install-zookeeper-service.sh",
         args: [ "-e",ZOOKEEPER_CFG,"-i","#{i}","-v",OUTPUT_VERBOSITY ]
       solr.vm.provision "zookeeperKeytab", type: "shell", 
         inline: "cp /vagrant/zookeeper-" + STATIC_IP_SOLRCLOUD[(i-1)] + ".keytab /etc/zookeeper/conf/zookeeper.keytab; rm /vagrant/zookeeper-" + STATIC_IP_SOLRCLOUD[(i-1)] + ".keytab; chown zookeeper:zookeeper /etc/zookeeper/conf/zookeeper.keytab; chmod 0600 /etc/zookeeper/conf/zookeeper.keytab"

@@ -85,7 +85,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
       solr.vm.provision "killFirewall", type: "shell", inline: "service iptables stop"
       solr.vm.provision "installZookeeperService", type: "shell",
-        path: "./install-zookeeper-service.sh",
+        path: "../install-zookeeper-service.sh",
         args: [ "-e",ZOOKEEPER_CFG,"-i","#{i}","-v",OUTPUT_VERBOSITY ]
       solr.vm.provision "installSolrService", type: "shell",
         path: "../install-solr-service.sh", 
