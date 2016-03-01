@@ -17,43 +17,8 @@ else
   exit 1;
 fi
 
-echo Publishing 'curator-able' root dataverse on $SERVER
-echo ====================================================================
-adminResp=$(curl -L -X GET "$SERVER/builtin-users/dataverseAdmin/api-token?password=admin")
-echo $adminResp
-adminKey=$(echo $adminResp | jq .data.message | tr -d \")
-echo :result: dataverseAdmin\'s key is: $adminKey
-
-curl -X POST -H "X-Dataverse-key:$adminKey" -H "Content-type:application/json"  -d "{\"assignee\":\":authenticated-users\",\"role\":\"dvContributor\"}" ${SERVER}/dataverses/root/assignments
-curl -X POST -H "X-Dataverse-key:$adminKey" ${SERVER}/dataverses/root/actions/:publish
-
-
-echo
-echo Setting up users on $SERVER
-echo ==============================================
-
-curl -L -X PUT -d burrito $SERVER/admin/settings/BuiltinUsers.KEY
-
-peteResp=$(curl -s -L -H "Content-type:application/json" -X POST -d @${_dataDir}/userPete.json "$SERVER/builtin-users?password=pete&key=burrito")
-echo $peteResp
-
-umaResp=$(curl -s -L -H "Content-type:application/json" -X POST -d @${_dataDir}/userUma.json "$SERVER/builtin-users?password=uma&key=burrito")
-echo $umaResp
-
-curl -s -L -H "Content-type:application/json" -X POST -d @${_dataDir}/userGabbi.json "$SERVER/builtin-users?password=gabbi&key=burrito"
-echo
-
-curl -s -L -H "Content-type:application/json" -X POST -d @${_dataDir}/userCathy.json "$SERVER/builtin-users?password=cathy&key=burrito"
-echo
-
-curl -s -L -H "Content-type:application/json" -X POST -d @${_dataDir}/userNick.json "$SERVER/builtin-users?password=nick&key=burrito"
-echo
-
-peteKey=$(echo $peteResp | jq .data.apiToken | tr -d \")
-echo :result: Pete\'s key is: $peteKey
-umaKey=$(echo $umaResp | jq .data.apiToken | tr -d \")
-echo :result: Uma\'s key is: $umaKey
-
+peteKey=$(curl -s -L -X GET "$SERVER/builtin-users/pete/api-token?password=pete" | jq .data.message | tr -d \")
+umaKey=$(curl -s -L -X GET "$SERVER/builtin-users/uma/api-token?password=uma" | jq .data.message | tr -d \")
 
 echo
 echo Setting up dataverses on $SERVER
