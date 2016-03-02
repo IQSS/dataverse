@@ -125,12 +125,16 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         }
         solr.vm.provision "addTrustRestartSolr", type: "shell", inline: addTrustCmd
 
-        solr.vm.provision "createDataverseCollection", type: "shell", 
-          path: "../setup-dvcollection.sh", 
-          args: "-c '#{DVCOLLECTION_NAME}' -i #{SOLR_INSTALL_DIR} -v #{OUTPUT_VERBOSITY} -r " + STATIC_IP_SOLRCLOUD.length.to_s + " -s 1"
-
-          #### args: "-c '#{DVCOLLECTION_NAME}' -i #{SOLR_INSTALL_DIR} -v #{OUTPUT_VERBOSITY} -r " + STATIC_IP_SOLRCLOUD.length.to_s + " -s " + STATIC_IP_SOLRCLOUD.length.to_s
-        #### There is currently a wierd bug when querying dataverse on a collection that is sharded! use -s 1 ####
+        if ((! ENV['TestSharding'].nil?) && (ENV['TestSharding'] != 0))
+          #### There is currently a weird bug when querying dataverse on a collection that is sharded! use -s 1 ####
+          solr.vm.provision "createDataverseCollection", type: "shell", 
+            path: "../setup-dvcollection.sh", 
+            args: "-c '#{DVCOLLECTION_NAME}' -i #{SOLR_INSTALL_DIR} -v #{OUTPUT_VERBOSITY} -r " + STATIC_IP_SOLRCLOUD.length.to_s + " -s " + STATIC_IP_SOLRCLOUD.length.to_s
+        else
+          solr.vm.provision "createDataverseCollection", type: "shell", 
+            path: "../setup-dvcollection.sh", 
+            args: "-c '#{DVCOLLECTION_NAME}' -i #{SOLR_INSTALL_DIR} -v #{OUTPUT_VERBOSITY} -r " + STATIC_IP_SOLRCLOUD.length.to_s + " -s 1"
+        end
       end
     end
   end
