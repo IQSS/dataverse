@@ -33,9 +33,16 @@ public class EMailValidator implements ConstraintValidator<ValidateEmail, String
             //we'll let someone else decide if it's required
             return true;
         }
+        /**
+         * @todo Why are we validating the trimmed value rather than the value
+         * itself? Which are we persisting to the database, the trimmed value or
+         * the non-trimmed value?
+         */
         boolean isValid = EmailValidator.getInstance().isValid(value.trim());
         if (!isValid) {
-            context.buildConstraintViolationWithTemplate(value + " is not a valid email address.").addConstraintViolation();
+            if (context != null) {
+                context.buildConstraintViolationWithTemplate(value + " is not a valid email address.").addConstraintViolation();
+            }
             return false;
         }
         return true;

@@ -34,6 +34,7 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.ejb.EJBException;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
@@ -217,6 +218,7 @@ public class Shib implements java.io.Serializable {
 //    private boolean debug = false;
     private String emailAddress;
     private boolean useHeaders;
+    private final String testShibIdpEntityId = "https://idp.testshib.org/idp/shibboleth";
 
     public enum State {
 
@@ -278,18 +280,36 @@ public class Shib implements java.io.Serializable {
                 lastName = betterLastName;
             }
         }
+        String emailAddressInAssertion = null;
         try {
-            emailAddress = getRequiredValueFromAssertion(emailAttribute);
+            emailAddressInAssertion = getRequiredValueFromAssertion(emailAttribute);
         } catch (Exception ex) {
-            String testShibIdpEntityId = "https://idp.testshib.org/idp/shibboleth";
             if (shibIdp.equals(testShibIdpEntityId)) {
                 logger.info("For " + testShibIdpEntityId + " (which as of this writing doesn't provide the " + emailAttribute + " attribute) setting email address to value of eppn: " + shibUserIdentifier);
-                emailAddress = shibUserIdentifier;
+                emailAddressInAssertion = shibUserIdentifier;
             } else {
                 // forcing all other IdPs to send us an an email
                 return;
             }
         }
+
+        if (!EMailValidator.isEmailValid(emailAddressInAssertion, null)) {
+            String msg = "The SAML assertion contained an invalid email address: \"" + emailAddressInAssertion + "\".";
+            logger.info(msg);
+            String singleEmailAddress = ShibUtil.findSingleValue(emailAddressInAssertion);
+            if (EMailValidator.isEmailValid(singleEmailAddress, null)) {
+                msg = "Multiple email addresses were asserted by the Identity Provider (" + emailAddressInAssertion + " ). These were sorted and the first was chosen: " + singleEmailAddress;
+                logger.info(msg);
+                emailAddress = singleEmailAddress;
+            } else {
+                msg += " A single valid address could not be found.";
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, identityProviderProblem, msg));
+                return;
+            }
+        } else {
+            emailAddress = emailAddressInAssertion;
+        }
+
         String usernameAssertion = getValueFromAssertion(usernameAttribute);
         internalUserIdentifer = ShibUtil.generateFriendlyLookingUserIdentifer(usernameAssertion, emailAddress);
         logger.info("friendly looking identifer (backend will enforce uniqueness):" + internalUserIdentifer);
@@ -312,6 +332,7 @@ public class Shib implements java.io.Serializable {
          */
 //        String displayName = getDisplayName(displayNameAttribute, firstNameAttribute, lastNameAttribute);
         String affiliation = getAffiliation();
+//        emailAddress = "willFailBeanValidation"; // for testing createAuthenticatedUser exceptions
         displayInfo = new AuthenticatedUserDisplayInfo(firstName, lastName, emailAddress, affiliation, null);
 
         userPersistentId = shibIdp + persistentUserIdSeparator + shibUserIdentifier;
@@ -475,6 +496,8 @@ public class Shib implements java.io.Serializable {
         HARVARD1,
         HARVARD2,
         TWO_EMAILS,
+        INVALID_EMAIL,
+        MISSING_REQUIRED_ATTR,
     };
 
     private DevShibAccountType getDevShibAccountType() {
@@ -538,6 +561,14 @@ public class Shib implements java.io.Serializable {
                 mutateRequestForDevConstantTwoEmails();
                 break;
 
+            case INVALID_EMAIL:
+                mutateRequestForDevConstantInvalidEmail();
+                break;
+
+            case MISSING_REQUIRED_ATTR:
+                mutateRequestForDevConstantMissingRequiredAttributes();
+                break;
+
             default:
                 logger.info("Should never reach here");
                 break;
@@ -555,14 +586,22 @@ public class Shib implements java.io.Serializable {
     public String confirmAndCreateAccount() {
         ShibAuthenticationProvider shibAuthProvider = new ShibAuthenticationProvider();
         String lookupStringPerAuthProvider = userPersistentId;
-        AuthenticatedUser au = authSvc.createAuthenticatedUser(
-                new UserRecordIdentifier(shibAuthProvider.getId(), lookupStringPerAuthProvider), internalUserIdentifer, displayInfo, true);
+        AuthenticatedUser au = null;
+        try {
+            au = authSvc.createAuthenticatedUser(
+                    new UserRecordIdentifier(shibAuthProvider.getId(), lookupStringPerAuthProvider), internalUserIdentifer, displayInfo, true);
+        } catch (EJBException ex) {
+            /**
+             * @todo Show the ConstraintViolationException, if any.
+             */
+            logger.info("Couldn't create user " + userPersistentId + " due to exception: " + ex.getCause());
+        }
         if (au != null) {
             logger.info("created user " + au.getIdentifier());
+            logInUserAndSetShibAttributes(au);
         } else {
-            logger.info("couldn't create user " + userPersistentId);
+            JsfHelper.addErrorMessage("Couldn't create user.");
         }
-        logInUserAndSetShibAttributes(au);
         return getPrettyFacesHomePageString(true);
     }
 
@@ -650,7 +689,13 @@ public class Shib implements java.io.Serializable {
         if (attributeOrHeader == null) {
             String msg = "The SAML assertion for \"" + key + "\" was null. Please contact support.";
             logger.info(msg);
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, identityProviderProblem, msg));
+            boolean showMessage = true;
+            if (shibIdp.equals(testShibIdpEntityId) && key.equals(emailAttribute)) {
+                showMessage = false;
+            }
+            if (showMessage) {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, identityProviderProblem, msg));
+            }
             throw new Exception(msg);
         }
         String attributeValue = attributeOrHeader.toString();
@@ -704,16 +749,14 @@ public class Shib implements java.io.Serializable {
             } else {
                 return plainHomepageString + "?faces-redirect=true";
             }
+        } else if (rootDvAlias != null) {
+            /**
+             * @todo Is there a constant for "/dataverse/" anywhere? I guess
+             * we'll just hard-code it here.
+             */
+            return "/dataverse/" + rootDvAlias;
         } else {
-            if (rootDvAlias != null) {
-                /**
-                 * @todo Is there a constant for "/dataverse/" anywhere? I guess
-                 * we'll just hard-code it here.
-                 */
-                return "/dataverse/" + rootDvAlias;
-            } else {
-                return plainHomepageString;
-            }
+            return plainHomepageString;
         }
     }
 
@@ -876,7 +919,7 @@ public class Shib implements java.io.Serializable {
     }
 
     private void mutateRequestForDevConstantTestShib1() {
-        request.setAttribute(shibIdpAttribute, "https://idp.testshib.org/idp/shibboleth");
+        request.setAttribute(shibIdpAttribute, testShibIdpEntityId);
         // the TestShib "eppn" looks like an email address
         request.setAttribute(uniquePersistentIdentifier, "saml@testshib.org");
 //        request.setAttribute(displayNameAttribute, "Sam El");
@@ -914,6 +957,31 @@ public class Shib implements java.io.Serializable {
         request.setAttribute(lastNameAttribute, "Allman");
         request.setAttribute(emailAttribute, "eric1@mailinator.com;eric2@mailinator.com");
         request.setAttribute(usernameAttribute, "eallman");
+    }
+
+    private void mutateRequestForDevConstantInvalidEmail() {
+        request.setAttribute(shibIdpAttribute, "https://fake.example.com/idp/shibboleth");
+        request.setAttribute(uniquePersistentIdentifier, "invalidEmail");
+        request.setAttribute(firstNameAttribute, "Invalid");
+        request.setAttribute(lastNameAttribute, "Email");
+        request.setAttribute(emailAttribute, "invalidEmail");
+        request.setAttribute(usernameAttribute, "invalidEmail");
+
+    }
+
+    private void mutateRequestForDevConstantMissingRequiredAttributes() {
+        request.setAttribute(shibIdpAttribute, "https://fake.example.com/idp/shibboleth");
+        /**
+         * @todo When shibIdpAttribute is set to null why don't we see the error
+         * in the GUI?
+         */
+//        request.setAttribute(shibIdpAttribute, null);
+        request.setAttribute(uniquePersistentIdentifier, "missing");
+        request.setAttribute(uniquePersistentIdentifier, null);
+        request.setAttribute(firstNameAttribute, "Missing");
+        request.setAttribute(lastNameAttribute, "Required");
+        request.setAttribute(emailAttribute, "missing@mailinator.com");
+        request.setAttribute(usernameAttribute, "missing");
     }
 
 }

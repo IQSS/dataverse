@@ -48,11 +48,7 @@ public class AuthenticatedUser implements User, Serializable {
     @Column(nullable = false, unique=true)
     private String userIdentifier;
 
-    /**
-     * @todo Uncomment the ValidateEmail annotation below for consistency with
-     * the annotation on BuiltinUser.
-     */
-//    @ValidateEmail(message = "Please enter a valid email address.")
+    @ValidateEmail(message = "Please enter a valid email address.")
     @NotNull
     @Column(nullable = false, unique=true)
     private String email;

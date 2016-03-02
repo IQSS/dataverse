@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import edu.harvard.iq.dataverse.EMailValidator;
 import java.util.Arrays;
 import java.util.UUID;
 import java.util.logging.Logger;
@@ -61,13 +62,17 @@ public class ShibUtil {
      * "displayName" so we'll hold off on implementing anything for now.
      */
     public static ShibUserNameFields findBestFirstAndLastName(String firstName, String lastName, String displayName) {
-        firstName = getSingleName(firstName);
-        lastName = getSingleName(lastName);
+        firstName = findSingleValue(firstName);
+        lastName = findSingleValue(lastName);
         return new ShibUserNameFields(firstName, lastName);
     }
 
-    private static String getSingleName(String name) {
-        String[] parts = name.split(";");
+    public static String findSingleValue(String mayHaveMultipleValues) {
+        if (mayHaveMultipleValues == null) {
+            return null;
+        }
+        String singleValue = mayHaveMultipleValues;
+        String[] parts = mayHaveMultipleValues.split(";");
         if (parts.length != 1) {
             logger.fine("parts (before sorting): " + Arrays.asList(parts));
             // predictable order (sorted alphabetically)
@@ -75,12 +80,12 @@ public class ShibUtil {
             logger.fine("parts (after sorting): " + Arrays.asList(parts));
             try {
                 String first = parts[0];
-                name = first;
+                singleValue = first;
             } catch (ArrayIndexOutOfBoundsException ex) {
-                logger.info("Couldn't find first part of " + name);
+                logger.info("Couldn't find first part of " + singleValue);
             }
         }
-        return name;
+        return singleValue;
     }
 
     public static String generateFriendlyLookingUserIdentifer(String usernameAssertion, String email) {
@@ -97,7 +102,8 @@ public class ShibUtil {
                     logger.info(ex + " parsing " + email);
                 }
             } else {
-                logger.info("Odd email address. No @ sign: " + email);
+                boolean passedValidation = EMailValidator.isEmailValid(email, null);
+                logger.info("Odd email address. No @ sign ('" + email + "'). Passed email validation: " + passedValidation);
             }
         } else {
             logger.info("email attribute not sent by IdP");

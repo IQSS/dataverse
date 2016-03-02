@@ -121,6 +121,13 @@ public class ShibUtilTest {
     }
 
     @Test
+    public void testFindSingleValue() {
+        assertEquals(null, ShibUtil.findSingleValue(null));
+        assertEquals("foo", ShibUtil.findSingleValue("foo"));
+        assertEquals("bar", ShibUtil.findSingleValue("foo;bar"));
+    }
+
+    @Test
     public void testGenerateFriendlyLookingUserIdentifer() {
         int lengthOfUuid = UUID.randomUUID().toString().length();
         assertEquals("uid1", ShibUtil.generateFriendlyLookingUserIdentifer("uid1", null));
