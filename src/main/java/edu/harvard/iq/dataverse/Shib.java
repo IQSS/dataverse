@@ -131,13 +131,7 @@ public class Shib implements java.io.Serializable {
 //    private String firstNameToPersist = "(Blank: first name not received from Institution Log In)";
 //    private String lastNameToPersist = "(Blank: last name not received from Institution Log In)";
     private String emailToPersist = "(Blank: email received from Institution Log In)";
-    /**
-     * @todo We're not really doing anything with affiliation yet, even though
-     * the mockups show it. The plan is to parse the JSON from
-     * https://dataverse.harvard.edu/Shibboleth.sso/DiscoFeed for example. Check
-     * the "ShibUtil" class
-     */
-    private String affiliationToDisplayAtConfirmation = "Affiliation not provided by institution log in";
+    private String affiliationToDisplayAtConfirmation = null;
     /**
      * @todo Once we can persist "position" to the authenticateduser table, we
      * can revisit this. Maybe we'll use ORCID instead. Dunno.
