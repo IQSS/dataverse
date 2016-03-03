@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.UserIdentifier;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
+import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
@@ -65,82 +66,15 @@ public class Shib implements java.io.Serializable {
     SystemConfig systemConfig;
     @EJB
     DataverseServiceBean dataverseService;
+    @EJB
+    GroupServiceBean groupService;
 
     HttpServletRequest request;
 
-    /**
-     * @todo these are the attributes we are getting from the IdP at
-     * testshib.org. What other attributes should we expect?
-     *
-     * Here is a dump from https://pdurbin.pagekite.me/Shibboleth.sso/Session
-     *
-     * Miscellaneous
-     *
-     * Session Expiration (barring inactivity): 479 minute(s)
-     *
-     * Client Address: 10.0.2.2
-     *
-     * SSO Protocol: urn:oasis:names:tc:SAML:2.0:protocol
-     *
-     * Identity Provider: https://idp.testshib.org/idp/shibboleth
-     *
-     * Authentication Time: 2014-09-12T17:07:36.137Z
-     *
-     * Authentication Context Class:
-     * urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport
-     *
-     * Authentication Context Decl: (none)
-     *
-     *
-     *
-     * Attributes
-     *
-     * affiliation: Member@testshib.org;Staff@testshib.org
-     *
-     * cn: Me Myself And I
-     *
-     * entitlement: urn:mace:dir:entitlement:common-lib-terms
-     *
-     * eppn: myself@testshib.org
-     *
-     * givenName: Me Myself
-     *
-     * persistent-id:
-     * https://idp.testshib.org/idp/shibboleth!https://pdurbin.pagekite.me/shibboleth!zylzL+NruovU5OOGXDOL576jxfo=
-     *
-     * sn: And I
-     *
-     * telephoneNumber: 555-5555
-     *
-     * uid: myself
-     *
-     * unscoped-affiliation: Member;Staff
-     */
-    /**
-     * @todo Resolve potential confusing of having attibutes like "eppn" defined
-     * twice in this class.
-     *
-     * This was used early on in development and should be removed at some
-     * point.
-     */
-    @Deprecated
-    List<String> shibAttrs = Arrays.asList(
-            "Shib-Identity-Provider",
-            "uid",
-            "cn",
-            "sn",
-            "givenName",
-            "telephoneNumber",
-            "eppn",
-            "affiliation",
-            "unscoped-affiliation",
-            "entitlement",
-            "persistent-id"
-    );
-
     List<String> shibValues = new ArrayList<>();
     /**
-     * @todo make this configurable?
+     * @todo make this configurable? See
+     * https://github.com/IQSS/dataverse/issues/2129
      */
     private final String shibIdpAttribute = "Shib-Identity-Provider";
     /**
@@ -228,14 +162,52 @@ public class Shib implements java.io.Serializable {
         PROMPT_TO_CONVERT_EXISTING_ACCOUNT,
     };
 
+    /**
+     * These are attributes that were found to be interesting while developing
+     * the Shibboleth feature. Only the ones that are defined elsewhere are
+     * actually used.
+     */
+    List<String> shibAttrs = Arrays.asList(
+            shibIdpAttribute,
+            uniquePersistentIdentifier,
+            usernameAttribute,
+            displayNameAttribute,
+            firstNameAttribute,
+            lastNameAttribute,
+            emailAttribute,
+            "telephoneNumber",
+            "affiliation",
+            "unscoped-affiliation",
+            "entitlement",
+            "persistent-id"
+    );
+
     public void init() {
         state = State.INIT;
+        /**
+         * @todo For security reasons, Dataverse shouldn't even support the
+         * possibility of using headers. All the related code including
+         * SettingsServiceBean.Key.ShibUseHeaders should be removed. See all the
+         * scary warnings quoted from official Shib docs in
+         * https://github.com/IQSS/dataverse/issues/2294
+         */
         useHeaders = systemConfig.isShibUseHeaders();
-        if (isDebug()) {
+        if (useHeaders) {
             printHeaders();
         }
         ExternalContext context = FacesContext.getCurrentInstance().getExternalContext();
         request = (HttpServletRequest) context.getRequest();
+        printAttributes(request);
+
+        /**
+         * @todo Investigate why JkEnvVar is null since it may be useful for
+         * debugging per https://github.com/IQSS/dataverse/issues/2916 . See
+         * also
+         * http://stackoverflow.com/questions/30193117/iterate-through-all-servletrequest-attributes#comment49933342_30193117
+         * and
+         * http://shibboleth.1660669.n2.nabble.com/Why-doesn-t-Java-s-request-getAttributeNames-show-Shibboleth-attributes-tp7616427p7616591.html
+         */
+        logger.fine("JkEnvVar: " + System.getenv("JkEnvVar"));
 
         possiblyMutateRequestInDev();
 
@@ -408,9 +380,7 @@ public class Shib implements java.io.Serializable {
             }
 
         }
-//        if (debug) {
-//            printAttributes(request);
-//        }
+        logger.info("Debug summary: " + debugSummary + " (state: " + state + ").");
     }
 
     /**
@@ -633,6 +603,21 @@ public class Shib implements java.io.Serializable {
     private void logInUserAndSetShibAttributes(AuthenticatedUser au) {
         au.setShibIdentityProvider(shibIdp);
         session.setUser(au);
+        logger.info("Groups for user " + au.getId() + " (" + au.getIdentifier() + "): " + getGroups(au));
+    }
+
+    /**
+     * @todo After merging the latest from develop (before making a pull
+     * request) consider removing the equivalent method from
+     * DataverseHeaderFragment since we're debugging groups here. Related:
+     * https://github.com/IQSS/dataverse/issues/105
+     */
+    public List<String> getGroups(AuthenticatedUser au) {
+        List<String> groups = new ArrayList<>();
+        groupService.groupsFor(au, null).stream().forEach((group) -> {
+            groups.add(group.getDisplayName() + " (" + group.getIdentifier() + ")");
+        });
+        return groups;
     }
 
     /**
@@ -651,25 +636,77 @@ public class Shib implements java.io.Serializable {
         return shibValues;
     }
 
-//    private void printAttributes(HttpServletRequest request) {
-//        for (String attr : shibAttrs) {
-//
-//            /**
-//             * @todo explain in Installers Guide that in order for these
-//             * attributes to be found attributePrefix="AJP_" must be added to
-//             * /etc/shibboleth/shibboleth2.xml like this:
-//             *
-//             * <ApplicationDefaults entityID="https://dataverse.org/shibboleth"
-//             * REMOTE_USER="eppn" attributePrefix="AJP_">
-//             *
-//             */
-//            Object attrObject = request.getAttribute(attr);
-//            if (attrObject != null) {
-//                shibValues.add(attr + ": " + attrObject.toString());
-//            }
-//        }
-//        logger.info("shib values: " + shibValues);
-//    }
+    /**
+     * These are the attributes we are getting from the IdP at testshib.org, a
+     * dump from https://pdurbin.pagekite.me/Shibboleth.sso/Session
+     *
+     * Miscellaneous
+     *
+     * Session Expiration (barring inactivity): 479 minute(s)
+     *
+     * Client Address: 10.0.2.2
+     *
+     * SSO Protocol: urn:oasis:names:tc:SAML:2.0:protocol
+     *
+     * Identity Provider: https://idp.testshib.org/idp/shibboleth
+     *
+     * Authentication Time: 2014-09-12T17:07:36.137Z
+     *
+     * Authentication Context Class:
+     * urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport
+     *
+     * Authentication Context Decl: (none)
+     *
+     *
+     *
+     * Attributes
+     *
+     * affiliation: Member@testshib.org;Staff@testshib.org
+     *
+     * cn: Me Myself And I
+     *
+     * entitlement: urn:mace:dir:entitlement:common-lib-terms
+     *
+     * eppn: myself@testshib.org
+     *
+     * givenName: Me Myself
+     *
+     * persistent-id:
+     * https://idp.testshib.org/idp/shibboleth!https://pdurbin.pagekite.me/shibboleth!zylzL+NruovU5OOGXDOL576jxfo=
+     *
+     * sn: And I
+     *
+     * telephoneNumber: 555-5555
+     *
+     * uid: myself
+     *
+     * unscoped-affiliation: Member;Staff
+     *
+     */
+    private void printAttributes(HttpServletRequest request) {
+        if (request == null) {
+            logger.info("HttpServletRequest was null. No shib values to print.");
+            return;
+        }
+        for (String attr : shibAttrs) {
+
+            /**
+             * @todo explain in Installers Guide that in order for these
+             * attributes to be found attributePrefix="AJP_" must be added to
+             * /etc/shibboleth/shibboleth2.xml like this:
+             *
+             * <ApplicationDefaults entityID="https://dataverse.org/shibboleth"
+             * REMOTE_USER="eppn" attributePrefix="AJP_">
+             *
+             */
+            Object attrObject = request.getAttribute(attr);
+            if (attrObject != null) {
+                shibValues.add(attr + ": " + attrObject.toString());
+            }
+        }
+        logger.info("shib values: " + shibValues);
+    }
+
     /**
      * @return The value of a Shib attribute (if non-empty) or null.
      */
@@ -677,10 +714,12 @@ public class Shib implements java.io.Serializable {
         Object attributeOrHeader = getAttributeOrHeader(key);
         if (attributeOrHeader != null) {
             String attributeValue = attributeOrHeader.toString();
+            logger.info("The SAML assertion for \"" + key + "\" (optional) was \"" + attributeValue + "\".");
             if (!attributeValue.isEmpty()) {
                 return attributeValue;
             }
         }
+        logger.info("The SAML assertion for \"" + key + "\" (optional) was null.");
         return null;
     }
 
@@ -702,6 +741,7 @@ public class Shib implements java.io.Serializable {
         if (attributeValue.isEmpty()) {
             throw new Exception(key + " was empty");
         }
+        logger.info("The SAML assertion for \"" + key + "\" (required) was \"" + attributeValue + "\".");
         return attributeValue;
     }
 
@@ -758,10 +798,6 @@ public class Shib implements java.io.Serializable {
         } else {
             return plainHomepageString;
         }
-    }
-
-    public boolean isDebug() {
-        return systemConfig.isDebugEnabled();
     }
 
     public boolean isInit() {

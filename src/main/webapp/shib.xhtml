@@ -20,15 +20,6 @@
             <ui:param name="showDataverseHeader" value="false"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:define name="body">
-                <!--TODO: take out this debug stuff?-->
-                <ui:fragment rendered="#{Shib.debug}">
-                    <tt style="background-color: lightgray">
-                        <h:outputText value="State: #{Shib.state}"/>
-                        <br/>
-                        <h:outputText value="Existing email: #{Shib.existingEmail}"/>
-                        <h:outputText value="Result: #{Shib.debugSummary}"/>
-                    </tt>
-                </ui:fragment>
 
                 <ui:fragment rendered="#{Shib.offerToConvertExistingAccount}">
                     <ui:fragment rendered="#{Shib.existingDisplayName != null}">
