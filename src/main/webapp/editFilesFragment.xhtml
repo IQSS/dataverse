@@ -532,15 +532,15 @@
                     <p:message for="tabularDataTags" display="text" />
                 </div>
             </div>
-            <div class="form-group text-left">
+            <!-- <div class="form-group text-left"> REMOVED DELETE CHECKBOX FOR NOW
                 <label class="col-sm-4 control-label">
-                    #{bundle['dataset.removeUnusedFileTags.label']}
+                    # {bundle['dataset.removeUnusedFileTags.label']}
                 </label>
                 <div class="col-sm-8">
-                    <p class="help-block">#{bundle['dataset.removeUnusedFileTags.tip']}</p>
-                    <!-- p:selectBooleanCheckbox id="removeUnused" itemLabel="# {bundle['dataset.removeUnusedFileTags.check']}" value="# {EditDatafilesPage.removeUnusedTags}" widgetVar="removeUnused"/ -->
+                    <p class="help-block"># {bundle['dataset.removeUnusedFileTags.tip']}</p>
+                    <p:selectBooleanCheckbox id="removeUnused" itemLabel="# {bundle['dataset.removeUnusedFileTags.check']}" value="# {EditDatafilesPage.removeUnusedTags}" widgetVar="removeUnused"/>
                 </div>
-            </div>
+            </div> -->
         </div>
         <div class="button-block">
             <p:commandButton styleClass="btn btn-default" id="editFileTagsPopupSaveButton" value="#{bundle.saveChanges}" oncomplete="PF('editFileTagsPopup').hide()" update=":datasetForm:filesTable" actionListener="#{EditDatafilesPage.saveFileTagsAndCategories()}"/>
