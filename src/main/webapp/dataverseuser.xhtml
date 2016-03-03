@@ -299,12 +299,12 @@
                                     </div>
                                 </div>
                                 <!-- Affiliation -->
-                                <div class="form-group" jsf:rendered="#{!empty DataverseUserPage.builtinUser.affiliation}">
+                                <div class="form-group" jsf:rendered="#{!empty DataverseUserPage.currentUser.affiliation}">
                                     <label for="affiliation" class="col-sm-3 control-label">
                                         #{bundle.affiliation}
                                     </label>
                                     <div class="col-sm-9">
-                                        <p class="form-control-static">#{DataverseUserPage.builtinUser.affiliation}</p>
+                                        <p class="form-control-static">#{DataverseUserPage.currentUser.affiliation}</p>
                                     </div>
                                 </div>
                                 <!-- Position (not populated for Shibboleth users) -->
