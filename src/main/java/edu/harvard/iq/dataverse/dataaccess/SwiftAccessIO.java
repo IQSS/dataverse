@@ -86,6 +86,8 @@ public class SwiftAccessIO extends DataFileIO {
     
     private boolean isReadAccess = false;
     private boolean isWriteAccess = false; 
+    private Account account = null;
+    StoredObject swiftFileObject = null; 
     
     @Override
     public boolean canRead () {
@@ -94,7 +96,7 @@ public class SwiftAccessIO extends DataFileIO {
     
     @Override
     public boolean canWrite () {
-        return false; 
+        return isWriteAccess; 
     }
 
 
@@ -110,10 +112,12 @@ public class SwiftAccessIO extends DataFileIO {
         }
         
         if (isWriteAccessRequested(options)) {
-            throw new IOException("Write access not yet implemented.");
-        } 
-        
-        isReadAccess = true; 
+            isWriteAccess = true;
+            isReadAccess = false;
+        } else {
+            isWriteAccess = false;
+            isReadAccess = true;
+        }
         
         if (this.getDataFile().getStorageIdentifier() == null || "".equals(this.getDataFile().getStorageIdentifier())) {
             throw new IOException("Data Access: No local storage identifier defined for this datafile.");
@@ -131,7 +135,7 @@ public class SwiftAccessIO extends DataFileIO {
             
 
         } else if (isWriteAccess) {
-            // Not yet implemented.
+            swiftFileObject = initializeSwiftFileObject(true);
         }
 
         this.setMimeType(dataFile.getContentType());
@@ -145,6 +149,42 @@ public class SwiftAccessIO extends DataFileIO {
         // in 4.0 yet; and we may not need it at all. 
         // -- L.A. 4.0.2
         this.setStatus(200);
+    }
+    
+    // this is a Swift-specific override of the convenience method provided in the 
+    // DataFileIO for copying a local Path (for ex., a temp file, into this DataAccess location):
+    @Override
+    public void copyPath(Path fileSystemPath) throws IOException {
+        long newFileSize = -1;
+
+        if (swiftFileObject == null) {
+            throw new IOException("Swift AccessIO: Upload attempted into a null StoredObject.");
+        }
+
+        File inputFile = null;
+
+        try {
+
+            open(DataAccessOption.WRITE_ACCESS);
+            inputFile = fileSystemPath.toFile();
+
+            swiftFileObject.uploadObject(inputFile);
+
+            newFileSize = inputFile.length();
+
+        } catch (IOException ioex) {
+            String failureMsg = ioex.getMessage();
+            if (failureMsg == null) {
+                failureMsg = "Swift AccessIO: Exception occured while uploading a local file into a Swift StoredObject";
+            }
+
+            throw new IOException(failureMsg);
+        }
+
+        // if it has uploaded successfully, we can reset the size
+        // of the object:
+        setSize(newFileSize);
+
     }
     
     @Override
@@ -189,10 +229,7 @@ public class SwiftAccessIO extends DataFileIO {
     
     // Auxilary helper methods, Swift-specific:
     
-
-    public InputStream openSwiftFileAsInputStream () throws IOException {
-        InputStream in = null;
-
+    private StoredObject initializeSwiftFileObject(boolean writeAccess) throws IOException {
         String storageIdentifier = this.getDataFile().getStorageIdentifier();
         
         if (!storageIdentifier.startsWith("swift://")) {
@@ -223,7 +260,7 @@ public class SwiftAccessIO extends DataFileIO {
         
         // Authenticate with Swift: 
         
-        Account account = authenticateWithSwift(swiftEndPoint);
+        account = authenticateWithSwift(swiftEndPoint);
         
         
         Container dataContainer = account.getContainer(swiftContainer);
@@ -233,12 +270,21 @@ public class SwiftAccessIO extends DataFileIO {
         
         StoredObject fileObject = dataContainer.getObject(swiftFileName);
         
-        if (!fileObject.exists()) {
+        if (!writeAccess && !fileObject.exists()) {
             throw new IOException("SwiftAccessIO: File object "+swiftFileName+" does not exist (Dataverse datafile id: "+this.getDataFile().getId());
         }
         
-        in = fileObject.downloadObjectAsInputStream();
-        this.setSize(fileObject.getContentLength());
+        return fileObject; 
+    }
+    
+    private InputStream openSwiftFileAsInputStream () throws IOException {
+        InputStream in = null;
+        
+        swiftFileObject = initializeSwiftFileObject(false);
+        
+        
+        in = swiftFileObject.downloadObjectAsInputStream();
+        this.setSize(swiftFileObject.getContentLength());
         
         
         return in;
