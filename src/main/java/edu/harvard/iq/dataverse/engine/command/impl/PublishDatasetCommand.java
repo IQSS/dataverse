@@ -65,22 +65,31 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
         String    authority = theDataset.getAuthority();        
         if (theDataset.getGlobalIdCreateTime() == null) {
             if (protocol.equals("doi")
-                    && doiProvider.equals("EZID")) {
-                String doiRetString = ctxt.doiEZId().createIdentifier(theDataset);               
+                    && (doiProvider.equals("EZID") || doiProvider.equals("DataCite"))) {
+                String doiRetString = "";
+                if (doiProvider.equals("EZID")) {
+                    doiRetString = ctxt.doiEZId().createIdentifier(theDataset);
+                } else {
+                    doiRetString = ctxt.doiDataCite().createIdentifier(theDataset);
+                }
+
                 if (doiRetString.contains(theDataset.getIdentifier())) {
                     theDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
-                } else {
-                    if (doiRetString.contains("identifier already exists")){
-                        theDataset.setIdentifier(ctxt.datasets().generateIdentifierSequence(protocol, authority, theDataset.getDoiSeparator()));
+                } else if (doiRetString.contains("identifier already exists")) {
+                    theDataset.setIdentifier(ctxt.datasets().generateIdentifierSequence(protocol, authority, theDataset.getDoiSeparator()));
+                    if (doiProvider.equals("EZID")) {
                         doiRetString = ctxt.doiEZId().createIdentifier(theDataset);
-                        if(!doiRetString.contains(theDataset.getIdentifier())){
-                            throw new IllegalCommandException("This dataset may not be published because its identifier is already in use by another dataset. Please contact Dataverse Support for assistance.", this);
-                        } else{
-                            theDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
-                        }
                     } else {
-                          throw new IllegalCommandException("This dataset may not be published because it has not been registered. Please contact Dataverse Support for assistance.", this);
+                        doiRetString = ctxt.doiDataCite().createIdentifier(theDataset);
                     }
+
+                    if (!doiRetString.contains(theDataset.getIdentifier())) {
+                        throw new IllegalCommandException("This dataset may not be published because its identifier is already in use by another dataset. Please contact Dataverse Support for assistance.", this);
+                    } else {
+                        theDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
+                    }
+                } else {
+                    throw new IllegalCommandException("This dataset may not be published because it has not been registered. Please contact Dataverse Support for assistance.", this);
                 }
             } else {
                  throw new IllegalCommandException("This dataset may not be published because its DOI provider is not supported. Please contact Dataverse Support for assistance.", this);
@@ -158,15 +167,6 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
         theDataset.setFileAccessRequest(theDataset.getLatestVersion().getTermsOfUseAndAccess().isFileAccessRequest());
         Dataset savedDataset = ctxt.em().merge(theDataset);
 
-        boolean doNormalSolrDocCleanUp = true;
-        ctxt.index().indexDataset(savedDataset, doNormalSolrDocCleanUp);
-        /**
-         * @todo consider also ctxt.solrIndex().indexPermissionsOnSelfAndChildren(theDataset);
-         */
-        /**
-         * @todo what should we do with the indexRespose?
-         */
-        IndexResponse indexResponse = ctxt.solrIndex().indexPermissionsForOneDvObject(savedDataset);
 
         // set the subject of the parent (all the way up) Dataverses
         DatasetField subject = null;
@@ -212,11 +212,29 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
            try{
               ctxt.doiDataCite().publicizeIdentifier(savedDataset);
            } catch (Exception e){
-               
+
+               if(e.toString().contains("EJB")){
+                    throw new IllegalCommandException("This dataset may not be published because the DataCite Service is inaccessible. Please try again. If the issue persists, please contact Dataverse Support for assistance.", this);
+               }
                throw new IllegalCommandException("This dataset may not be published because the DOI update failed. Please contact Dataverse Support for assistance.", this);
            }
             
         }
+        
+        /*
+        MoveIndexing to after DOI update so that if command exception is thrown the re-index will not
+        
+        */
+        
+        boolean doNormalSolrDocCleanUp = true;
+        ctxt.index().indexDataset(savedDataset, doNormalSolrDocCleanUp);
+        /**
+         * @todo consider also ctxt.solrIndex().indexPermissionsOnSelfAndChildren(theDataset);
+         */
+        /**
+         * @todo what should we do with the indexRespose?
+         */
+        IndexResponse indexResponse = ctxt.solrIndex().indexPermissionsForOneDvObject(savedDataset);
             
         return savedDataset;
     }

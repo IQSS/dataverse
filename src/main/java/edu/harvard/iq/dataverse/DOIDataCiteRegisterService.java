@@ -65,12 +65,9 @@ public class DOIDataCiteRegisterService {
         metadataTemplate.setTitle(metadata.get("datacite.title"));
         metadataTemplate.setPublisher(metadata.get("datacite.publisher"));
         metadataTemplate.setPublisherYear(metadata.get("datacite.publicationyear"));
-        logger.log(Level.INFO, "identifier={0}, creators={1}, title={2}, publisher={3}, publicationyear={4}",
-                new Object[]{identifier, metadata.get("datacite.creator"), 
-                    metadata.get("datacite.title"), metadata.get("datacite.publisher"),
-                    metadata.get("datacite.publicationyear")});
+
         String xmlMetadata = metadataTemplate.generateXML();
-         logger.log(Level.INFO, "xmlMetadata 70 " + xmlMetadata.toString() );
+
         String status = metadata.get("_status").trim();
         String target = metadata.get("_target");
         String retString = "";
