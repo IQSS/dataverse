@@ -88,6 +88,9 @@
                                 <p class="help-block"><h:outputText value="#{bundle['login.institution.blurb']}" escape="false"/></p>
 
                                 <div id="idpSelect"></div>
+                                <script type="text/javascript">
+                                    shibRedirectPage = '?redirectPage=' + '#{LoginPage.redirectPage}';
+                                </script>
 
                                 <script src="/resources/js/shib/idpselect_config.js" type="text/javascript" language="javascript"></script>
 

@@ -14,6 +14,7 @@
             <f:viewAction action="#{Shib.init}"/>
             <!--Only allow existing email to be specified while in development, to test account conversion.-->
             <!--<f:viewParam name="exisitingEmail" value="#{Shib.existingEmail}"/>-->
+            <f:viewParam name="redirectPage" value="#{Shib.redirectPage}"/>
         </f:metadata>
         <ui:composition template="/dataverse_template.xhtml">
             <ui:param name="pageTitle" value="Shib"/>

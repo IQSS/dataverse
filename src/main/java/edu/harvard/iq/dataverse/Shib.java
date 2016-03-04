@@ -143,6 +143,11 @@ public class Shib implements java.io.Serializable {
     private String friendlyNameForInstitution = "your institution";
     private State state;
     private String debugSummary;
+    /**
+     * After a successful login, we will redirect users to this page (unless
+     * it's a new account).
+     */
+    private String redirectPage;
 //    private boolean debug = false;
     private String emailAddress;
     private boolean useHeaders;
@@ -375,6 +380,7 @@ public class Shib implements java.io.Serializable {
 
         }
         logger.info("Debug summary: " + debugSummary + " (state: " + state + ").");
+        logger.fine("redirectPage: " + redirectPage);
     }
 
     /**
@@ -775,6 +781,9 @@ public class Shib implements java.io.Serializable {
      * logic per https://github.com/IQSS/dataverse/issues/1551
      */
     public String getPrettyFacesHomePageString(boolean includeFacetDashRedirect) {
+        if (redirectPage != null) {
+            return redirectPage;
+        }
         String plainHomepageString = "/dataverse.xhtml";
         String rootDvAlias = getRootDataverseAlias();
         if (includeFacetDashRedirect) {
@@ -881,6 +890,14 @@ public class Shib implements java.io.Serializable {
 
     public void setDebugSummary(String debugSummary) {
         this.debugSummary = debugSummary;
+    }
+
+    public String getRedirectPage() {
+        return redirectPage;
+    }
+
+    public void setRedirectPage(String redirectPage) {
+        this.redirectPage = redirectPage;
     }
 
     private void mutateRequestForDevRandom() throws JsonSyntaxException, JsonIOException {
