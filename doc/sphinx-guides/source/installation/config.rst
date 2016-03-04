@@ -75,6 +75,8 @@ JVM Options: doi.baseurlstring, doi.username, doi.password
 
 Database Settings: :DoiProvider, :Protocol, :Authority, :DoiSeparator
 
+Please note that any datasets creating using the test configuration cannot be directly migrated and would need to be created again once a valid DOI namespace is configured.
+
 Customizing the Root Dataverse
 ++++++++++++++++++++++++++++++
 
