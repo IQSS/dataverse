@@ -151,9 +151,16 @@ Go to the dataset you would like to edit where you will see the listing of files
 All of these actions, besides editing file metadata, will happen within this page and not bring you to another page. If you restrict files, you will also be asked to fill out the Terms of Access for the files. If Terms of Access already exist, you will be asked to confirm them.
 
 Upload New Files
-===================
+---------------------------------------------------------------
 
-To upload new files to a dataset, go the dataset you want to update and click on the Upload Files Button in the files tab. From there you will be brought to the Upload page for the dataset. Once you have uploaded files, you will be able to edit the file metadata, restrict, add tags, or delete them before saving.
+To upload new files to a dataset, go to the dataset you want to update and click on the Upload Files button in the files tab. From there you will be brought to the Upload Files page for the dataset. Once you have uploaded files, you will be able to edit the file metadata, restrict, add tags, or delete them before saving.
+
+Edit Files
+---------------------------------------------------------------
+
+To edit files to a dataset, go to the dataset you want to edit the files for, select the checkboxes next to the file, and click the Edit Files button in the files tab. From there you will be brought to the Edit Files page. There you will be able to edit the file metadata, restrict, add tags or delete files.
+
+The File Tags are comprised of custom, category (i.e. Documentation, Data, Code) and tabular data tags (i.e. Event, Genomics, Geospatial, Network, Panel, Survey, Time Series). Use the dropdown select menus, and the custom file tag input to apply these tags to the selected files. There is also a Delete Tags feature that, if checked, will allow you to delete unused file tags within that dataset.
 
 .. _license-terms:
 
