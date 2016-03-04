@@ -27,6 +27,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
+import java.util.ResourceBundle;
 
 /**
  *
@@ -209,16 +210,14 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
         }
         if (protocol.equals("doi")
                 && doiProvider.equals("DataCite")) {
-           try{
-              ctxt.doiDataCite().publicizeIdentifier(savedDataset);
-           } catch (Exception e){
-
-               if(e.toString().contains("EJB")){
-                    throw new IllegalCommandException("This dataset may not be published because the DataCite Service is inaccessible. Please try again. If the issue persists, please contact Dataverse Support for assistance.", this);
-               }
-               throw new IllegalCommandException("This dataset may not be published because the DOI update failed. Please contact Dataverse Support for assistance.", this);
-           }
-            
+            try {
+                ctxt.doiDataCite().publicizeIdentifier(savedDataset);
+            } catch (Exception e) {
+                if (e.toString().contains("EJB")) {
+                    throw new IllegalCommandException(ResourceBundle.getBundle("Bundle").getString("dataset.publish.error.datacite"), this);
+                }
+                throw new IllegalCommandException(ResourceBundle.getBundle("Bundle").getString("dataset.publish.error.doi"), this);
+            }
         }
         
         /*
