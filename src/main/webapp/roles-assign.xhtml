@@ -74,8 +74,8 @@
                                             <span class="glyphicon glyphicon-warning-sign text-danger"/>
                                             <h:outputFormat styleClass="text-danger" value=" #{bundle['dataverse.permissions.usersOrGroups.assignDialog.role.warning']}">
                                                 <f:param value="#{managePermissionsPage.assignedRole.name}"/>
-                                                <f:param value="{object types}"/>
-                                                <f:param value="{object type}"/>
+                                                <f:param value="#{managePermissionsPage.assignedRoleObjectTypes}"/>
+                                                <f:param value="#{managePermissionsPage.definitionLevelString}"/>
                                             </h:outputFormat>
                                         </p>
                                     </div>

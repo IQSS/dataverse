@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
@@ -77,6 +78,9 @@ public class ManagePermissionsPage implements java.io.Serializable {
 
     @Inject
     DataverseSession session;
+    
+    private DataverseRolePermissionHelper dataverseRolePermissionHelper;
+        private List<DataverseRole> roleList;
 
     DvObject dvObject = new Dataverse(); // by default we use a Dataverse, but this will be overridden in init by the findById
 
@@ -112,6 +116,8 @@ public class ManagePermissionsPage implements java.io.Serializable {
         if (dvObject instanceof Dataverse) {
             initAccessSettings();
         }
+        roleList = roleService.findAll();
+        dataverseRolePermissionHelper = new DataverseRolePermissionHelper(roleList);  
         return "";
     }
 
@@ -379,6 +385,40 @@ public class ManagePermissionsPage implements java.io.Serializable {
         }
         return null;
     }
+    
+    public String getAssignedRoleObjectTypes(){
+        String retString = "";
+        if (selectedRoleId != null) {
+            if (dataverseRolePermissionHelper.hasDataversePermissions(selectedRoleId)){
+                retString = "Dataverses";
+            }
+            if (dataverseRolePermissionHelper.hasDatasetPermissions(selectedRoleId)){
+                if(!retString.isEmpty()) {
+                    retString +=", Datasets";
+                } else {
+                   retString = "Datasets"; 
+                }
+                
+            }
+            if (dataverseRolePermissionHelper.hasFilePermissions(selectedRoleId)){
+                if(!retString.isEmpty()) {
+                    retString +=", Data Files";
+                } else {
+                   retString = "Data Files"; 
+                }                
+            }
+            return retString;
+        }
+        return null;        
+    }
+    
+    public String getDefinitionLevelString(){
+        if (dvObject != null){
+            if (dvObject instanceof Dataverse) return "Dataverse";
+            if (dvObject instanceof Dataset) return "Dataset";
+        }
+        return null;
+    }
 
     public void assignRole(ActionEvent evt) {        
         logger.info("Got to assignRole");
@@ -486,6 +526,15 @@ public class ManagePermissionsPage implements java.io.Serializable {
             }
         }
         showRoleMessages();
+    }
+    
+    
+    public DataverseRolePermissionHelper getDataverseRolePermissionHelper() {
+        return dataverseRolePermissionHelper;
+    }
+
+    public void setDataverseRolePermissionHelper(DataverseRolePermissionHelper dataverseRolePermissionHelper) {
+        this.dataverseRolePermissionHelper = dataverseRolePermissionHelper;
     }
 
     /* 
