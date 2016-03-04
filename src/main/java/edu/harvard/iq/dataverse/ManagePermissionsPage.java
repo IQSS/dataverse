@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -390,21 +391,24 @@ public class ManagePermissionsPage implements java.io.Serializable {
         String retString = "";
         if (selectedRoleId != null) {
             if (dataverseRolePermissionHelper.hasDataversePermissions(selectedRoleId)){
-                retString = "Dataverses";
+                String dvLabel = ResourceBundle.getBundle("Bundle").getString("dataverses");
+                retString = dvLabel;
             }
             if (dataverseRolePermissionHelper.hasDatasetPermissions(selectedRoleId)){
+                String dsLabel = ResourceBundle.getBundle("Bundle").getString("datasets");
                 if(!retString.isEmpty()) {
-                    retString +=", Datasets";
+                    retString +=", " +  dsLabel;
                 } else {
-                   retString = "Datasets"; 
+                   retString = dsLabel; 
                 }
                 
             }
             if (dataverseRolePermissionHelper.hasFilePermissions(selectedRoleId)){
+                String filesLabel = ResourceBundle.getBundle("Bundle").getString("files");
                 if(!retString.isEmpty()) {
-                    retString +=", Data Files";
+                    retString +=", " + filesLabel;
                 } else {
-                   retString = "Data Files"; 
+                   retString = filesLabel; 
                 }                
             }
             return retString;
@@ -414,8 +418,8 @@ public class ManagePermissionsPage implements java.io.Serializable {
     
     public String getDefinitionLevelString(){
         if (dvObject != null){
-            if (dvObject instanceof Dataverse) return "Dataverse";
-            if (dvObject instanceof Dataset) return "Dataset";
+            if (dvObject instanceof Dataverse) return ResourceBundle.getBundle("Bundle").getString("dataverse");
+            if (dvObject instanceof Dataset) return ResourceBundle.getBundle("Bundle").getString("dataset");
         }
         return null;
     }
