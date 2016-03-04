@@ -110,6 +110,39 @@ public class DOIDataCiteServiceBean {
         }
         return identifier;
     }
+    
+    public void deleteRecordFromCache(Dataset datasetIn){
+        String identifier = getIdentifierFromDataset(datasetIn);
+        HashMap doiMetadata = new HashMap();
+        try {
+            doiMetadata = doiDataCiteRegisterService.getMetadata(identifier);
+        } catch (Exception e) {
+            logger.log(Level.INFO, "get matadata failed cannot delete");
+            logger.log(Level.INFO, "String " + e.toString());
+            logger.log(Level.INFO, "localized message " + e.getLocalizedMessage());
+            logger.log(Level.INFO, "cause " + e.getCause());
+            logger.log(Level.INFO, "message " + e.getMessage());
+        }
+
+        String idStatus = (String) doiMetadata.get("_status");
+
+        if (idStatus == null || idStatus.equals("reserved")) {
+            logger.log(Level.INFO, "Delete status is reserved..");
+            try {
+                doiDataCiteRegisterService.deleteIdentifier(identifier);
+            } catch (Exception e) {
+                logger.log(Level.INFO, "delete failed");
+                logger.log(Level.INFO, "String " + e.toString());
+                logger.log(Level.INFO, "localized message " + e.getLocalizedMessage());
+                logger.log(Level.INFO, "cause " + e.getCause());
+                logger.log(Level.INFO, "message " + e.getMessage());
+                throw new RuntimeException(e);
+            }
+            return;
+        }
+        
+    }
+    
 
     public void deleteIdentifier(Dataset datasetIn) throws RuntimeException {
         String identifier = getIdentifierFromDataset(datasetIn);
@@ -126,7 +159,7 @@ public class DOIDataCiteServiceBean {
 
         String idStatus = (String) doiMetadata.get("_status");
 
-        if (idStatus.equals("reserved")) {
+        if (idStatus != null && idStatus.equals("reserved")) {
             logger.log(Level.INFO, "Delete status is reserved..");
             try {
                 doiDataCiteRegisterService.deleteIdentifier(identifier);
@@ -140,7 +173,7 @@ public class DOIDataCiteServiceBean {
             }
             return;
         }
-        if (idStatus.equals("public")) {
+        if (idStatus != null && idStatus.equals("public")) {
             //if public then it has been released set to unavailable and reset target to n2t url
             updateIdentifierStatus(datasetIn, "unavailable");
         }
