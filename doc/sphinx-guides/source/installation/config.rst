@@ -66,6 +66,15 @@ Publishing the Root Dataverse
 
 Non-superusers who are not "Admin" on the root dataverse will not be able to to do anything useful until the root dataverse has been published.
 
+Persistent Identifiers and Publishing Datasets
+++++++++++++++++++++++++++++++++++++++++++++++
+
+Persistent identifiers are a required and integral part of the Dataverse platform. They provide a URL that is guaranteed to resolve to the datasets they represent. Dataverse currently supports creating identifiers using DOI and additionally displaying identifiers created using HDL. By default and for testing convenience, the installer configures a temporary DOI test namespace through EZID. This is sufficient to create and publish datasets but they are not citable nor guaranteed to be preserved. To properly configure persistent identifiers for a production installation, an account and associated namespace must be acquired for a fee from one of two DOI providers: EZID (http://ezid.cdlib.org)  or DataCite (https://www.datacite.org). Once account credentials and DOI namespace have been acquired, please complete the following identifier configuration parameters:
+
+JVM Options: doi.baseurlstring, doi.username, doi.password
+
+Database Settings: :DoiProvider, :Protocol, :Authority, :DoiSeparator
+
 Customizing the Root Dataverse
 ++++++++++++++++++++++++++++++
 
