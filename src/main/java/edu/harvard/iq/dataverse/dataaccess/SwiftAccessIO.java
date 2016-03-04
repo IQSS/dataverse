@@ -86,8 +86,9 @@ public class SwiftAccessIO extends DataFileIO {
     
     private boolean isReadAccess = false;
     private boolean isWriteAccess = false; 
+    private Properties swiftProperties = null; 
     private Account account = null;
-    StoredObject swiftFileObject = null; 
+    private StoredObject swiftFileObject = null;
     
     @Override
     public boolean canRead () {
@@ -157,25 +158,23 @@ public class SwiftAccessIO extends DataFileIO {
     public void copyPath(Path fileSystemPath) throws IOException {
         long newFileSize = -1;
 
-        if (swiftFileObject == null) {
-            throw new IOException("Swift AccessIO: Upload attempted into a null StoredObject.");
+        if (swiftFileObject == null || !this.canWrite()) {
+            open(DataAccessOption.WRITE_ACCESS);
         }
 
         File inputFile = null;
 
         try {
-
-            open(DataAccessOption.WRITE_ACCESS);
             inputFile = fileSystemPath.toFile();
 
             swiftFileObject.uploadObject(inputFile);
 
             newFileSize = inputFile.length();
 
-        } catch (IOException ioex) {
+        } catch (Exception ioex) {
             String failureMsg = ioex.getMessage();
             if (failureMsg == null) {
-                failureMsg = "Swift AccessIO: Exception occured while uploading a local file into a Swift StoredObject";
+                failureMsg = "Swift AccessIO: Unknown exception occured while uploading a local file into a Swift StoredObject";
             }
 
             throw new IOException(failureMsg);
@@ -232,32 +231,45 @@ public class SwiftAccessIO extends DataFileIO {
     private StoredObject initializeSwiftFileObject(boolean writeAccess) throws IOException {
         String storageIdentifier = this.getDataFile().getStorageIdentifier();
         
-        if (!storageIdentifier.startsWith("swift://")) {
-            // An attempt to call Swift driver on a non-swift stored datafile
+        String swiftEndPoint = null; 
+        String swiftContainer = null; 
+        String swiftFileName = null;
+        
+       
+        if (storageIdentifier.startsWith("swift://")) {
+            // This is a call on an already existing swift object. 
+
+            String[] swiftStorageTokens = storageIdentifier.substring(8).split(":", 3);
+
+            if (swiftStorageTokens.length != 3) {
+                // bad storage identifier
+                throw new IOException("SwiftAccessIO: invalid swift storage token: " + storageIdentifier);
+            }
+
+            swiftEndPoint = swiftStorageTokens[0];
+            swiftContainer = swiftStorageTokens[1];
+            swiftFileName = swiftStorageTokens[2];
+
+            if (swiftEndPoint == null || swiftContainer == null || swiftFileName == null
+                    || "".equals(swiftEndPoint) || "".equals(swiftContainer) || "".equals(swiftFileName)) {
+                // all of these things need to be specified, for this to be a valid Swift location
+                // identifier.
+                throw new IOException("SwiftAccessIO: invalid swift storage token: " + storageIdentifier);
+            }
+        } else if (this.isReadAccess) {
+            // An attempt to call Swift driver,  in a Read mode on a non-swift stored datafile
             // object!
-            throw new IOException("IO driver mismatch: SwiftAccessIO called on a non-swift stored object."); 
+            throw new IOException("IO driver mismatch: SwiftAccessIO called on a non-swift stored object.");
+        } else if (this.isWriteAccess) {
+            Properties p = getSwiftProperties();
+            swiftEndPoint = p.getProperty("swift.default.endpoint");
+            swiftContainer = this.getDataFile().getOwner().getIdentifier(); /* TODO: ? */
+            swiftFileName = storageIdentifier;
+        
+            this.getDataFile().setStorageIdentifier("swift://"+swiftEndPoint+":"+swiftContainer+":"+swiftFileName);
+        } else {
+            throw new IOException("SwiftAccessIO: unknown access mode.");
         }
-        
-        
-        
-        String[] swiftStorageTokens = storageIdentifier.substring(8).split(":", 3);
-        
-        if (swiftStorageTokens.length != 3) {
-            // bad storage identifier
-            throw new IOException("SwiftAccessIO: invalid swift storage token: "+storageIdentifier);
-        }
-        
-        String swiftEndPoint = swiftStorageTokens[0]; 
-        String swiftContainer = swiftStorageTokens[1]; 
-        String swiftFileName = swiftStorageTokens[2]; 
-        
-        if (swiftEndPoint == null || swiftContainer == null || swiftFileName == null ||
-                "".equals(swiftEndPoint) || "".equals(swiftContainer) || "".equals(swiftFileName)) {
-            // all of these things need to be specified, for this to be a valid Swift location
-            // identifier.
-            throw new IOException("SwiftAccessIO: invalid swift storage token: "+storageIdentifier);
-        }
-        
         // Authenticate with Swift: 
         
         account = authenticateWithSwift(swiftEndPoint);
@@ -290,12 +302,21 @@ public class SwiftAccessIO extends DataFileIO {
         return in;
     }
     
-    Account authenticateWithSwift(String swiftEndPoint) throws IOException {
-        String domainRoot = System.getProperties().getProperty("com.sun.aas.instanceRoot");
-        String swiftPropertiesFile = domainRoot+File.separator+"config"+File.separator+"swift.properties";
+    private Properties getSwiftProperties () throws IOException {
+        if (swiftProperties == null) {
+            String domainRoot = System.getProperties().getProperty("com.sun.aas.instanceRoot");
+            String swiftPropertiesFile = domainRoot+File.separator+"config"+File.separator+"swift.properties";
+            swiftProperties = new Properties();
+            swiftProperties.load(new FileInputStream(new File(swiftPropertiesFile)));
+        }
         
-        Properties p=new Properties();
-        p.load(new FileInputStream(new File(swiftPropertiesFile)));
+        return swiftProperties;
+    }
+    
+    Account authenticateWithSwift(String swiftEndPoint) throws IOException {
+        
+        Properties p = getSwiftProperties();
+        
         // (this will throw an IOException, if the swift properties file
         // is missing or corrupted)
         

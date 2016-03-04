@@ -36,6 +36,7 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
 import edu.harvard.iq.dataverse.dataaccess.FileAccessIO;
@@ -951,7 +952,8 @@ public class IngestServiceBean {
                     
                     try {
 
-                        DataFileIO dataAccess = dataFile.getAccessObject();
+                        DataFileIO dataAccess = //dataFile.getAccessObject();
+                                DataAccess.createNewDataFileIO(dataFile, storageId);
      
                         /* 
                          This commented-out code demonstrates how to copy bytes

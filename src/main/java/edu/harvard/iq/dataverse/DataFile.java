@@ -374,7 +374,7 @@ public class DataFile extends DvObject {
     }
     
     public DataFileIO getAccessObject() throws IOException {
-        DataFileIO dataAccess =  DataAccess.createDataAccessObject(this);
+        DataFileIO dataAccess =  DataAccess.getDataFileIO(this);
         
         if (dataAccess == null) {
             throw new IOException("Failed to create access object for datafile.");
