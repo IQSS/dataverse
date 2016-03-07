@@ -129,22 +129,26 @@ public class Datasets extends AbstractApiBean {
 	}
         
 	@PUT
-	@Path("{id}/citationdate/{datasetFieldTypeName}")
-	public Response setCitationDate( @PathParam("id") Long id, @PathParam("datasetFieldTypeName") String dsfTypeName) {
+	@Path("{id}/citationdate")
+	public Response setCitationDate( @PathParam("id") Long id, String dsfTypeName) {
             try {
+                if ( dsfTypeName.trim().isEmpty() ){
+                    throw new WrappedResponse( badRequest("Please provide a dataset field type in the requst body.") );
+                }
                 DatasetFieldType dsfType = null;
                 if (!":publicationDate".equals(dsfTypeName)) {
                     dsfType = datasetFieldSvc.findByName(dsfTypeName);
                     if (dsfType == null) {
-                        return notFound("Dataset Field Type Name " + dsfTypeName + " not found.");
+                        throw new WrappedResponse( badRequest("Dataset Field Type Name " + dsfTypeName + " not found.") );
                     }
                 }
 
                 execCommand(new SetDatasetCitationDateCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(id), dsfType));
+                
                 return okResponse("Citation Date for dataset " + id + " set to: " + (dsfType != null ? dsfType.getDisplayName() : "default"));
 
             } catch (WrappedResponse ex) {
-                return ex.refineResponse("Unable to set citation date for dataset " + id);
+                return ex.refineResponse("Unable to set citation date for dataset " + id + ".");
             }
 	}         
 	

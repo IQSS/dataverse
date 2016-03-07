@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
@@ -15,7 +10,6 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
-import java.util.concurrent.Future;
 
 /**
  *
@@ -41,7 +35,7 @@ public class SetDatasetCitationDateCommand extends AbstractCommand<Dataset>{
             } else {
                 throw new IllegalCommandException("Provided DatasetFieldtype is not a Date", this);
             }
-		
+            
             Dataset savedDataset = ctxt.em().merge(dataset);
             ctxt.index().indexDataset(savedDataset, false); 
             return savedDataset;
