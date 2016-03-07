@@ -34,7 +34,7 @@ public class DataAccess {
 
     }
 
-    public static String DEFAULT_STORAGE_DRIVER_IDENTIFIER = "file";
+    public static String DEFAULT_STORAGE_DRIVER_IDENTIFIER = "swift";
     
     // The getDataFileIO() methods initialize DataFileIO objects for
     // datafiles that are already saved using one of the supported Dataverse
@@ -89,9 +89,9 @@ public class DataAccess {
         
         df.setStorageIdentifier(storageTag);
         
-        if (df.getStorageIdentifier().equals("file")) {
+        if (driverIdentifier.equals("file")) {
             dataFileIO = new FileAccessIO (df, null);
-        } else if (df.getStorageIdentifier().startsWith("swift")) {
+        } else if (driverIdentifier.equals("swift")) {
             dataFileIO =  new SwiftAccessIO (df, null);
         } else { 
             throw new IOException ("createDataAccessObject: Unsupported storage method.");
