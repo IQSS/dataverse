@@ -3275,6 +3275,19 @@ public class DatasetPage implements java.io.Serializable {
 
         }
     }
+    
+    public String getDatasetPublishCustomText(){
+        String datasetPublishCustomText = settingsService.getValueForKey(SettingsServiceBean.Key.DatasetPublishPopupCustomText);
+        if( datasetPublishCustomText!= null && !datasetPublishCustomText.isEmpty()){
+            return datasetPublishCustomText;
+            
+        }
+        return "";
+    }
+    
+    public Boolean isDatasetPublishPopupCustomTextOnAllVersions(){
+        return  settingsService.isTrueForKey(SettingsServiceBean.Key.DatasetPublishPopupCustomTextOnAllVersions, false);
+    }
 
     public String getDataExploreURL() {
         String TwoRavensUrl = settingsService.getValueForKey(SettingsServiceBean.Key.TwoRavensUrl);
