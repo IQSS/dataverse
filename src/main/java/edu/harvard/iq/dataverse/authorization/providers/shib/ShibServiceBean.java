@@ -26,6 +26,7 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.inject.Named;
 import org.apache.commons.lang.StringUtils;
@@ -33,29 +34,29 @@ import org.apache.commons.lang.StringUtils;
 @Named
 @Stateless
 public class ShibServiceBean {
-    
+
     private static final Logger logger = Logger.getLogger(ShibServiceBean.class.getCanonicalName());
-    
+
     @EJB
     AuthenticationServiceBean authSvc;
     @EJB
     BuiltinUserServiceBean builtinUserService;
-    
+
     public AuthenticatedUser findAuthUserByEmail(String emailToFind) {
         return authSvc.getAuthenticatedUserByEmail(emailToFind);
     }
-    
+
     public BuiltinUser findBuiltInUserByAuthUserIdentifier(String authUserIdentifier) {
         return builtinUserService.findByUserName(authUserIdentifier);
     }
-    
+
     public AuthenticatedUser canLogInAsBuiltinUser(String username, String password) {
         logger.info("checking to see if " + username + " knows the password...");
         if (password == null) {
             logger.info("password was null");
             return null;
         }
-        
+
         AuthenticationRequest authReq = new AuthenticationRequest();
         authReq.putCredential("Username", username);
         authReq.putCredential("Password", password);
@@ -71,6 +72,34 @@ public class ShibServiceBean {
             return au;
         } catch (AuthenticationFailedException ex) {
             logger.info("The username and/or password you entered is invalid. Need assistance accessing your account?" + ex.getResponse().getMessage());
+            return null;
+        } catch (EJBException ex) {
+            Throwable cause = ex;
+            StringBuilder sb = new StringBuilder();
+            sb.append(ex + " ");
+            while (cause.getCause() != null) {
+                cause = cause.getCause();
+                sb.append(cause.getClass().getCanonicalName() + " ");
+                sb.append(cause.getMessage()).append(" ");
+                /**
+                 * @todo Investigate why authSvc.authenticate is throwing
+                 * NullPointerException. If you convert a Shib user to a Builtin
+                 * user, the password may be null.
+                 */
+                if (cause instanceof NullPointerException) {
+                    for (int i = 0; i < 2; i++) {
+                        StackTraceElement stacktrace = cause.getStackTrace()[i];
+                        if (stacktrace != null) {
+                            String classCanonicalName = stacktrace.getClass().getCanonicalName();
+                            String methodName = stacktrace.getMethodName();
+                            int lineNumber = stacktrace.getLineNumber();
+                            String error = "at " + stacktrace.getClassName() + "." + stacktrace.getMethodName() + "(" + stacktrace.getFileName() + ":" + lineNumber + ") ";
+                            sb.append(error);
+                        }
+                    }
+                }
+            }
+            logger.info("When trying to validate password, exception calling authSvc.authenticate: " + sb.toString());
             return null;
         }
     }
@@ -120,7 +149,7 @@ public class ShibServiceBean {
         } catch (IOException ex) {
             Logger.getLogger(Shib.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
         JsonParser jp = new JsonParser();
         JsonElement root = null;
         try {

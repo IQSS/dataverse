@@ -589,7 +589,7 @@ public class Shib implements java.io.Serializable {
                 logInUserAndSetShibAttributes(au);
                 debugSummary = "Local account validated and successfully converted to a Shibboleth account. The old account username was " + builtinUsername;
                 JsfHelper.addSuccessMessage("Your Dataverse account is now associated with your institutional account.");
-                return getPrettyFacesHomePageString(true);
+                return "/dataverseuser.xhtml?selectTab=accountInfo&faces-redirect=true";
             } else {
                 debugSummary = "Local account validated but unable to convert to Shibboleth account.";
             }
