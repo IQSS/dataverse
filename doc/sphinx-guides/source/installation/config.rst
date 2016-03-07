@@ -71,9 +71,9 @@ Persistent Identifiers and Publishing Datasets
 
 Persistent identifiers are a required and integral part of the Dataverse platform. They provide a URL that is guaranteed to resolve to the datasets they represent. Dataverse currently supports creating identifiers using DOI and additionally displaying identifiers created using HDL. By default and for testing convenience, the installer configures a temporary DOI test namespace through EZID. This is sufficient to create and publish datasets but they are not citable nor guaranteed to be preserved. To properly configure persistent identifiers for a production installation, an account and associated namespace must be acquired for a fee from one of two DOI providers: EZID (http://ezid.cdlib.org)  or DataCite (https://www.datacite.org). Once account credentials and DOI namespace have been acquired, please complete the following identifier configuration parameters:
 
-JVM Options: doi.baseurlstring, doi.username, doi.password
+JVM Options: :ref:`doi.baseurlstring`, :ref:`doi.username`, :ref:`doi.password`
 
-Database Settings: :DoiProvider, :Protocol, :Authority, :DoiSeparator
+Database Settings: :ref:`:DoiProvider`, :ref:`:Protocol`, :ref:`:Authority`, :ref:`:DoiSeparator`
 
 Please note that any datasets creating using the test configuration cannot be directly migrated and would need to be created again once a valid DOI namespace is configured.
 
@@ -173,7 +173,7 @@ For limiting the size of thumbnail images generated from files.
 
 doi.baseurlstring
 +++++++++++++++++
-
+.. _doi.baseurlstring:
 As of this writing "https://ezid.cdlib.org" and "https://mds.datacite.org" are the only valid values. See also these related database settings below:
 
 - :DoiProvider
@@ -183,12 +183,12 @@ As of this writing "https://ezid.cdlib.org" and "https://mds.datacite.org" are t
 
 doi.username
 ++++++++++++
-
+.. _doi.username:
 Used in conjuction with ``doi.baseurlstring``.
 
 doi.password
 ++++++++++++
-
+.. _doi.password:
 Used in conjuction with ``doi.baseurlstring``.
 
 dataverse.handlenet.admcredfile
@@ -250,28 +250,28 @@ This is the email address that "system" emails are sent from such as password re
 
 :DoiProvider
 ++++++++++++
-
+.. _:DoiProvider:
 As of this writing "EZID" and "DataCite" are the only valid options.
 
 ``curl -X PUT -d EZID http://localhost:8080/api/admin/settings/:DoiProvider``
 
 :Protocol
 +++++++++
-
+.. _:Protocol:
 As of this writing "doi" is the only valid option for the protocol for a persistent ID.
 
 ``curl -X PUT -d doi http://localhost:8080/api/admin/settings/:Protocol``
 
 :Authority
 ++++++++++
-
+.. _:Authority:
 Use the DOI authority assigned to you by your DoiProvider.
 
 ``curl -X PUT -d 10.xxxx http://localhost:8080/api/admin/settings/:Authority``
 
 :DoiSeparator
 +++++++++++++
-
+.. _:DoiSeparator:
 It is recommended that you keep this as a slash ("/").
 
 ``curl -X PUT -d "/" http://localhost:8080/api/admin/settings/:DoiSeparator``
