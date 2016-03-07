@@ -144,6 +144,10 @@ To revert to the default logic, use ``:publicationDate`` as the ``$datasetFieldT
 Note that the dataset field used has to be a date field::
 
     PUT http://$SERVER/api/datasets/$id/citationdate?key=$apiKey
+    
+Restores the default logic of the field type to be used as the citation date. Same as ``PUT`` with ``:publicationDate`` body::
+    
+    DELETE http://$SERVER/api/datasets/$id/citationdate?key=$apiKey
 
 
 Builtin Users

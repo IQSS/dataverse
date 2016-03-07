@@ -150,6 +150,17 @@ public class Datasets extends AbstractApiBean {
             } catch (WrappedResponse ex) {
                 return ex.refineResponse("Unable to set citation date for dataset " + id + ".");
             }
+	}    
+    
+	@DELETE
+	@Path("{id}/citationdate")
+	public Response useDefaultCitationDate( @PathParam("id") Long id) {
+            try {
+                execCommand(new SetDatasetCitationDateCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(id), null));
+                return okResponse("Citation Date for dataset " + id + " set to default");
+            } catch (WrappedResponse ex) {
+                return ex.refineResponse("Unable to restore default citation date for dataset " + id + ".");
+            }
 	}         
 	
 	@GET
