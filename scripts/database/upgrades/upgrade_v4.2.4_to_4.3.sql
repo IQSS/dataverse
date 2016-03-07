@@ -26,3 +26,5 @@ drop column specialpermissions,
 drop column studycompletion, 
 drop column termsofaccess, 
 drop column termsofuse;
+CREATE UNIQUE INDEX index_authenticateduser_lower_email ON authenticateduser (lower(email));
+CREATE UNIQUE INDEX index_builtinuser_lower_email ON builtinuser (lower(email));
