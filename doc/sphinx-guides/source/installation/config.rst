@@ -377,6 +377,20 @@ Set ``GeoconnectViewMaps`` to true to allow a user to view existing maps. This b
 
 ``curl -X PUT -d true http://localhost:8080/api/admin/settings/:GeoconnectViewMaps``
 
+:DatasetPublishPopupCustomText
+++++++++++++++++++++++++++++++
+
+Set custom text a user will view when publishing a dataset.
+
+``curl -X PUT -d "Deposit License Requirements" http://localhost:8080/api/admin/settings/:DatasetPublishPopupCustomText``
+
+:DatasetPublishPopupCustomTextOnAllVersions
++++++++++++++++++++++++++++++++++++++++++++
+
+Set whether a user will see the custom text when publishing all versions of a dataset
+
+``curl -X PUT -d true http://localhost:8080/api/admin/settings/:DatasetPublishPopupCustomTextOnAllVersions``
+
 :SearchHighlightFragmentSize
 ++++++++++++++++++++++++++++
 
