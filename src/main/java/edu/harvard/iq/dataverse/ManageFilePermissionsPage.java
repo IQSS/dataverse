@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -80,7 +81,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
 
     Dataset dataset = new Dataset(); 
     private final Map<RoleAssignee,List<RoleAssignmentRow>> roleAssigneeMap = new HashMap();
-    private final Map<DataFile,List<RoleAssignmentRow>> fileMap = new HashMap();
+    private final TreeMap<DataFile,List<RoleAssignmentRow>> fileMap = new TreeMap();
     private final Map<AuthenticatedUser,List<DataFile>> fileAccessRequestMap = new HashMap();    
 
     public Dataset getDataset() {
@@ -95,7 +96,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         return roleAssigneeMap;
     }
 
-    public Map<DataFile, List<RoleAssignmentRow>> getFileMap() {
+    public TreeMap<DataFile, List<RoleAssignmentRow>> getFileMap() {
         return fileMap;
     }
 
