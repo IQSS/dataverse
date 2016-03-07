@@ -482,8 +482,8 @@ public class WorldMapRelatedData extends AbstractApiBean {
         jsonData.add("dataset_semantic_version", dset_version.getSemanticVersion());  // major/minor version number, e.g. 3.1
         
         jsonData.add("dataset_name", dset_version.getTitle());
-        jsonData.add("dataset_citation", dset_version.getCitation());
-
+        jsonData.add("dataset_citation", dset_version.getCitation(true));
+        
         jsonData.add("dataset_description", "");  // Need to fix to/do
 
         jsonData.add("dataset_is_public", dset_version.isReleased());
