@@ -80,9 +80,9 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     DataverseSession session;
 
     Dataset dataset = new Dataset(); 
-    private final Map<RoleAssignee,List<RoleAssignmentRow>> roleAssigneeMap = new HashMap();
+    private final HashMap<RoleAssignee,List<RoleAssignmentRow>> roleAssigneeMap = new HashMap();
     private final TreeMap<DataFile,List<RoleAssignmentRow>> fileMap = new TreeMap();
-    private final Map<AuthenticatedUser,List<DataFile>> fileAccessRequestMap = new HashMap();    
+    private final TreeMap<AuthenticatedUser,List<DataFile>> fileAccessRequestMap = new TreeMap();    
 
     public Dataset getDataset() {
         return dataset;
@@ -118,9 +118,9 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         if (!permissionService.on(dataset).has(Permission.ManageDatasetPermissions)) {
             return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
         }
-        
+        System.out.print("Before init maps");
         initMaps();
-        
+        System.out.print("after init maps");
         return "";
     }
     
@@ -138,6 +138,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
                 List<RoleAssignment> ras = roleService.directRoleAssignments(file);
                 List raList = new ArrayList<>(ras.size());
                 for (RoleAssignment ra : ras) {
+                    System.out.print("Role assignment loop");
                     // for files, only show role assignments which can download
                     if (ra.getRole().permissions().contains(Permission.DownloadFile)) {
                         raList.add(new RoleAssignmentRow(ra, roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier()).getDisplayInfo()));                   
@@ -164,7 +165,9 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     }
     
     private void addFileToRoleAssignee(RoleAssignment assignment) {
+        System.out.print("add file to role assignee bgin ");
         RoleAssignee ra = roleAssigneeService.getRoleAssignee(assignment.getAssigneeIdentifier());
+        System.out.print("role assignee identifier" + ra.getIdentifier());
         List<RoleAssignmentRow> assignments = roleAssigneeMap.get(ra);
         if (assignments == null) {
             assignments = new ArrayList();
@@ -172,6 +175,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         }
         
         assignments.add(new RoleAssignmentRow(assignment, ra.getDisplayInfo()));
+        System.out.print("add file to role assignee END ");
     }
 
     /* 

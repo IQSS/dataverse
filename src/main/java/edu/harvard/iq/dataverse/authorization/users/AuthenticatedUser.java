@@ -5,6 +5,8 @@ import edu.harvard.iq.dataverse.ValidateEmail;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserLookup;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
+import edu.harvard.iq.dataverse.authorization.groups.Group;
+import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroup;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import java.io.Serializable;
 import java.sql.Timestamp;
@@ -36,7 +38,7 @@ import javax.validation.constraints.NotNull;
                 query="SELECT COUNT(a) FROM AuthenticatedUser a WHERE a.userIdentifier=:identifier")
 })
 @Entity
-public class AuthenticatedUser implements User, Serializable {
+public class AuthenticatedUser implements User, Serializable, Comparable {
     
     public static final String IDENTIFIER_PREFIX = "@";
     
@@ -231,5 +233,25 @@ public class AuthenticatedUser implements User, Serializable {
     public void setShibIdentityProvider(String shibIdentityProvider) {
         this.shibIdentityProvider = shibIdentityProvider;
     }
+    
+
+
+    @Override
+    public int compareTo(Object o) {
+        if ( o instanceof AuthenticatedUser){
+                    AuthenticatedUser other = (AuthenticatedUser) o;
+        return this.getLastName().toUpperCase().compareTo(other.getLastName().toUpperCase());
+        }
+        
+        if ( o instanceof Group){
+                    Group other = (Group) o;
+        return this.getLastName().toUpperCase().compareTo(other.getDisplayName().toUpperCase());
+        }
+        
+        return 0;
+
+    }
+
+
     
 }
