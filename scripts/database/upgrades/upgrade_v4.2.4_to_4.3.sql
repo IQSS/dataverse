@@ -12,22 +12,23 @@
 -- remove non used columns from datasetversion
 alter table
 datasetversion
-drop column availabilitystatus, 
-drop column citationrequirements, 
-drop column conditions, 
-drop column confidentialitydeclaration, 
-drop column contactforaccess, 
-drop column depositorrequirements, 
-drop column disclaimer, 
-drop column fileaccessrequest, 
-drop column license, 
-drop column originalarchive, 
-drop column restrictions, 
-drop column sizeofcollection, 
-drop column specialpermissions, 
-drop column studycompletion, 
-drop column termsofaccess, 
-drop column termsofuse;
+drop column if exists availabilitystatus, 
+drop column if exists citationrequirements, 
+drop column if exists conditions, 
+drop column if exists confidentialitydeclaration, 
+drop column if exists contactforaccess,
+drop column if exists dataaccessplace, 
+drop column if exists depositorrequirements, 
+drop column if exists disclaimer, 
+drop column if exists fileaccessrequest, 
+drop column if exists license, 
+drop column if exists originalarchive, 
+drop column if exists restrictions, 
+drop column if exists sizeofcollection, 
+drop column if exists specialpermissions, 
+drop column if exists studycompletion, 
+drop column if exists termsofaccess, 
+drop column if exists termsofuse;
 
 
 -- Add new foreign key to dataset for citation date (from datasetfieldtype)
