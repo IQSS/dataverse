@@ -361,7 +361,14 @@ The relative path URL to which users will be sent after signup. The default sett
 :TwoRavensUrl
 +++++++++++++
 
-The location of your TwoRavens installation.
+The location of your TwoRavens installation.  Activation of TwoRavens also requires the setting below, ``TwoRavensTabularView``
+
+:TwoRavensTabularView
++++++++++++++++++++
+
+Set ``TwoRavensTabularView`` to true to allow a user to view tabular files via the TwoRavens application. This boolean affects whether a user will see the "Explore" button.
+
+``curl -X PUT -d true http://localhost:8080/api/admin/settings/:TwoRavensTabularView``
 
 :GeoconnectCreateEditMaps
 +++++++++++++++++++++++++
@@ -376,6 +383,13 @@ Set ``GeoconnectCreateEditMaps`` to true to allow the user to create GeoConnect 
 Set ``GeoconnectViewMaps`` to true to allow a user to view existing maps. This boolean effects whether a user will see the "Explore" button.
 
 ``curl -X PUT -d true http://localhost:8080/api/admin/settings/:GeoconnectViewMaps``
+
+:GeoconnectDebug
++++++++++++++++++++
+
+For Development only.  Set ``GeoconnectDebug`` to true to allow a user to see SQL that can be used to insert mock map data into the database.
+
+``curl -X PUT -d true http://localhost:8080/api/admin/settings/:GeoconnectDebug``
 
 :DatasetPublishPopupCustomText
 ++++++++++++++++++++++++++++++
