@@ -1088,7 +1088,8 @@ for my $script ( "setup-all.sh" ) {
     print "ok!\n";
 }
 
-# If this installation is going to be using TwoRavens, configure its location in the settings:
+# If this installation is going to be using TwoRavens, configure its location in the Dataverse settings;
+# If not, disable TwoRavens in the settings:
 
 if ($CONFIG_DEFAULTS{'TWORAVENS_LOCATION'} ne 'NOT INSTALLED')
 {
@@ -1098,7 +1099,11 @@ if ($CONFIG_DEFAULTS{'TWORAVENS_LOCATION'} ne 'NOT INSTALLED')
 	print "WARNING: failed to configure the location of the TwoRavens app in the Dataverse settings!\n\n";
     }
 } else {
-    #TODO: set the option disabling tworavens in this Dataverse installation. 
+    my $exit_code = system("curl -X put -d false " . $API_URL . "/admin/settings/:TwoRavensTabularView"); 
+    if ( $exit_code )       
+    {
+	print "WARNING: failed to disable the TwoRavens app in the Dataverse settings!\n\n";
+    }
 }
 
 # If this installation is going to be using a remote SOLR search engine service, configure its location in the settings:
