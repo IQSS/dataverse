@@ -788,7 +788,7 @@ else {
 
 if ($postgresonly) {
     print "\nOK, done.\n";
-    print "You can now resume the installation on the main DVN host.\n\n";
+    print "You can now resume the installation on the main Dataverse host.\n\n";
 
     exit 0;
 }
@@ -925,6 +925,8 @@ print STDERR $DOMAIN_DOWN . "\n";
 if ($DOMAIN_DOWN) {
     print "Trying to start domain up...\n";
     system( $CONFIG_DEFAULTS{'GLASSFISH_DIRECTORY'} . "/bin/asadmin start-domain domain1" );
+
+    # TODO: (?) - retest that the domain is running now? 
 }
 else {
     print "domain appears to be up...\n";
@@ -953,13 +955,18 @@ unless ($success) {
 # Additional config files:
 
 my $JHOVE_CONFIG = "../../conf/jhove/jhove.conf";
+my $JHOVE_CONF_SCHEMA = "../../conf/jhove/jhoveConfig.xsd";
+
+# (if the installer is being run as part of a distribution zipped bundle, and not
+# from inside the source tree - adjust the locations of the jhove config files:
 
 unless ( -f $JHOVE_CONFIG ) {
     $JHOVE_CONFIG = "jhove.conf";
+    $JHOVE_CONF_SCHEMA ="jhoveConfig.xsd";
 }
 
-unless ( -f $JHOVE_CONFIG ) {
-    print "\nERROR! Configuration files not found in config dir!\n";
+unless ( -f $JHOVE_CONFIG && -f $JHOVE_CONF_SCHEMA ) {
+    print "\nERROR! JHOVE configuration files not found in the config dir!\n";
     print "(are you running the installer in the right directory?\n";
     print "Aborting...\n";
     exit 1;
@@ -967,37 +974,37 @@ unless ( -f $JHOVE_CONFIG ) {
 
 print "\nCopying additional configuration files... ";
 
-system( "/bin/cp -Rf " . $JHOVE_CONFIG . " " . $glassfish_dir . "/glassfish/domains/domain1/config" );
-#diagnostics needed!
+system( "/bin/cp -f " . $JHOVE_CONF_SCHEMA . " " . $glassfish_dir . "/glassfish/domains/domain1/config" );
 
-# install the DVN guides (HTML) into the application docroot:
-# (if the built docs exist?)
-# TODO: add documentation build/installation to the installer.
-#system ( "/bin/cp -Rf doc/guides/* ".$glassfish_dir."/glassfish/domains/domain1/docroot/guides");
+# The JHOVE conf file has an absolute PATH of the JHOVE config schema file (uh, yeah...)
+# - so it may need to be readjusted here: 
+
+if ( $glassfish_dir ne "/usr/local/glassfish4" )
+{
+    system( "sed 's:/usr/local/glassfish4:$glassfish_dir:g' < " . $JHOVE_CONFIG . " > " . $glassfish_dir . "/glassfish/domains/domain1/config/" . $JHOVE_CONFIG);
+}
+else 
+{
+    system( "/bin/cp -f " . $JHOVE_CONFIG . " " . $glassfish_dir . "/glassfish/domains/domain1/config" );
+}
 
 print "done!\n";
 
 # check if glassfish is running:
 # TODO.
 
-# 6. DEPLOY APPLICATION:
+# 6. DEPLOY THE APPLICATION:
 
-# 6b. TRY TO (AUTO-)DEPLOY:
-
-unless (
-    (
-        my $exit_code =
-        system( "cp -f " . $WARFILE_LOCATION . " " . $glassfish_dir . "/glassfish/domains/domain1/autodeploy" )
-    ) == 0
-  )
+unless ((
+     my $exit_code =
+     system( $glassfish_dir . "/bin/asadmin deploy " . $WARFILE_LOCATION )
+    ) == 0 )
 {
-    print STDERR "Could copy the application into the auto-deploy directory!\n";
+    print STDERR "Failed to deploy the application! WAR file: " . $WARFILE_LOCATION . ".\n";
     print STDERR "(exit code: " . $exit_code . ")\n";
+    print STDERR "Aborting.\n";
     exit 1;
 }
-
-print "Waiting for the dataverse application to start...\n";
-sleep 60;
 
 # 7. POPULATE DATABASE:
 
@@ -1017,12 +1024,12 @@ if ($pg_local_connection) {
     my $psql_command = $psql_exec . "/psql -d $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} -f $SQL_REFERENCE_DATA";
 
     unless ( ( my $exitcode = system("$psql_command") ) == 0 ) {
-        print STDERR "Could not populate Postgres database for the DVN app!\n";
+        print STDERR "Could not populate Postgres database for the Dataverse application!\n";
         print STDERR "(command: " . $psql_command . ")\n";
         print STDERR "(psql exit code: " . $exitcode . ")\n";
         print STDERR "\nYou must populate the database before you can use your new\n";
-        print STDERR "DVN instance. Please consult the installation manual and/or\n";
-        print STDERR "seek support from the DVN team.\n\n";
+        print STDERR "Dataverse instance. Please consult the installation manual and/or\n";
+        print STDERR "seek support from the Dataverse team.\n\n";
         exit 1;
 
     }
@@ -1049,12 +1056,35 @@ $< = 0;
 chdir($cwd);
 print "\nOK, done!\n";
 
-# FIXME: don't just sleep... figure out if the app is up yet.
-print "\n--Sleeping for 3 minutes--\n";
-sleep 180;
+# Check if the App is running: 
 
-# Populate the metadata block field values, create users
-# and dataverses:
+unless ((
+     my $exit_code =
+     system( $glassfish_dir . "/bin/asadmin list-applications | grep -q '^dataverse'" )
+	) == 0 )
+{
+    # If the "asadmin list-applications" has failed, it may only mean that an earlier
+    # "asadmin login" had failed, and asadmin is now failing to run without the user
+    # supplying the username and password. (And the fact that we are trying to pile the  
+    # output to grep prevents it from providing the prompts). 
+    # So before we give up, we'll try an alternative: 
+
+    unless ((
+	my $exit_code_2 =
+	system( "curl http://localhost:8080/robots.txt | grep -q '^User-agent'" )
+	    ) == 0 )
+    {
+	print STDERR "It appears that the Dataverse application is not running...\n";
+	print STDERR "Even though the \"asadmin deploy\" command had succeeded earlier.\n\n";
+	print STDERR "Aborting - sorry...\n\n";
+    }
+}
+
+
+print "\nOK, the Dataverse application appears to be running...\n\n";
+
+# Run the additional setup scripts, that populate the metadata block field values, create users
+# and dataverses, etc.
 
 unless ( -d "data" && -f "setup-datasetfields.sh" && -f "setup-users.sh" && -f "setup-dvs.sh" && -f "setup-all.sh" ) {
     chdir("../api");
