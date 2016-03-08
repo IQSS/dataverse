@@ -27,32 +27,38 @@ my ($rez) = GetOptions(
     "nogfpasswd"   => \$nogfpasswd,
 );
 
+my @CONFIG_VARIABLES;
+
 my $postgresonly = 0;
 
-my @CONFIG_VARIABLES = (
-    'HOST_DNS_ADDRESS',
-    'GLASSFISH_DIRECTORY',
-    'MAIL_SERVER',
-
-    'POSTGRES_SERVER',
-    'POSTGRES_PORT',
-    'POSTGRES_DATABASE',
-    'POSTGRES_USER',
-    'POSTGRES_PASSWORD',
-
-    'RSERVE_HOST',
-    'RSERVE_PORT',
-    'RSERVE_USER',
-    'RSERVE_PASSWORD'
-
-);
-
 if ($pg_only) {
-#    exit;
     @CONFIG_VARIABLES =
       ( 'POSTGRES_SERVER', 'POSTGRES_PORT', 'POSTGRES_DATABASE', 'POSTGRES_USER', 'POSTGRES_PASSWORD' );
 
     $postgresonly = 1;
+} else {
+
+    @CONFIG_VARIABLES = (
+	'HOST_DNS_ADDRESS',
+	'GLASSFISH_DIRECTORY',
+	'MAIL_SERVER',
+
+	'POSTGRES_SERVER',
+	'POSTGRES_PORT',
+	'POSTGRES_DATABASE',
+	'POSTGRES_USER',
+	'POSTGRES_PASSWORD',
+
+	'SOLR_LOCATION', 
+	
+	'TWORAVENS_LOCATION',
+
+	'RSERVE_HOST',
+	'RSERVE_PORT',
+	'RSERVE_USER',
+	'RSERVE_PASSWORD'
+
+	);
 }
 
 # TODO:
@@ -73,6 +79,10 @@ my %CONFIG_DEFAULTS = (
     'POSTGRES_USER',     'dvnapp',
     'POSTGRES_PASSWORD', 'secret',
 
+    'SOLR_LOCATION',     'LOCAL',
+
+    'TWORAVENS_LOCATION', 'NOT INSTALLED',
+
     'RSERVE_HOST',     'localhost',
     'RSERVE_PORT',     6311,
     'RSERVE_USER',     'rserve',
@@ -91,12 +101,18 @@ my %CONFIG_PROMPTS = (
     'POSTGRES_USER',     'Name of the Postgres User',
     'POSTGRES_PASSWORD', 'Postgres user password',
 
+    'SOLR_LOCATION',     'Remote SOLR indexing service? Leave this set to "LOCAL" if the SOLR daemon will be running on the same (this) server. Otherwise, please enter the host AND THE PORT NUMBER of the remote SOLR service, separated by the colon, for example: foo.edu:8983.',
+
+    'TWORAVENS_LOCATION', 'Will this Dataverse be using TwoRavens application? If so, please provide the complete URL of the TwoRavens GUI under rApache, for example, "https://foo.edu/dataexplore/gui.html. (PLEASE NOTE, TwoRavens will need to be installed separately! - see the installation docs for more info)',
+
     'RSERVE_HOST',     'Rserve Server',
     'RSERVE_PORT',     'Rserve Server Port',
     'RSERVE_USER',     'Rserve User Name',
     'RSERVE_PASSWORD', 'Rserve User Password'
 
 );
+
+my $API_URL = "http://localhost:8080/api";
 
 # Supported Posstgres JDBC drivers:
 # (have to be configured explicitely, so that Perl "taint" (security) mode
@@ -1064,17 +1080,45 @@ for my $script ( "setup-all.sh" ) {
         $run_script = $script;
     #}
 
-    unless ( my $exit_code = system( "./" . $run_script ) == 0 ) {
+    unless ( my $exit_code = system( "./" . $run_script ) == 0 ) 
+    {
         print "\nERROR executing script " . $script . "!\n";
         exit 1;
     }
     print "ok!\n";
 }
 
+# If this installation is going to be using TwoRavens, configure its location in the settings:
+
+if ($CONFIG_DEFAULTS{'TWORAVENS_LOCATION'} ne 'NOT INSTALLED')
+{
+    my $exit_code = system("curl -X put -d " . $CONFIG_DEFAULTS{'TWORAVENS_LOCATION'} . " " . $API_URL . "/admin/settings/:TwoRavensUrl"); 
+    if ( $exit_code )       
+    {
+	print "WARNING: failed to configure the location of the TwoRavens app in the Dataverse settings!\n\n";
+    }
+} else {
+    #TODO: set the option disabling tworavens in this Dataverse installation. 
+}
+
+# If this installation is going to be using a remote SOLR search engine service, configure its location in the settings:
+
+if ($CONFIG_DEFAULTS{'SOLR_LOCATION'} ne 'LOCAL')
+{
+    my $exit_code = system("curl -X put -d " . $CONFIG_DEFAULTS{'SOLR_LOCATION'} . " " . $API_URL . "/admin/settings/:SolrHostColonPort"); 
+    if ( $exit_code )       
+    {
+	print "WARNING: failed to configure the location of the remote SOLR service!\n\n";
+    }
+}
+
+
+    
+
 chdir($cwd);
 
 print "\n\nYou should now have a running DVN instance at\n";
-print "  http://" . $CONFIG_DEFAULTS{'HOST_DNS_ADDRESS'} . "[:8080]\n";
+print "  http://" . $CONFIG_DEFAULTS{'HOST_DNS_ADDRESS'} . ":8080\n";
 
 # (going to skip the Rserve check, for now)
 
