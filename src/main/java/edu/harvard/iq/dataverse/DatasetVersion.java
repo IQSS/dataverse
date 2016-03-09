@@ -1,9 +1,11 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.util.MarkupChecker;
+import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,6 +15,8 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -749,30 +753,40 @@ public class DatasetVersion implements Serializable {
         } else {
             str += getDatasetProducersString();
         }
+        
+        Date citationDate = getCitationDate();    
+        if (citationDate != null) {
+          if (!StringUtil.isEmpty(str)) {
+                str += ", ";
+            }      
+          str += new SimpleDateFormat("yyyy").format(citationDate);
+          
+        } else {
+            if (this.getDataset().getPublicationDate() == null || StringUtil.isEmpty(this.getDataset().getPublicationDate().toString())) {
 
-        if (this.getDataset().getPublicationDate() == null || StringUtil.isEmpty(this.getDataset().getPublicationDate().toString())) {
-            
-            if (!this.getDataset().isHarvested()) {
-                //if not released use current year
-                if (!StringUtil.isEmpty(str)) {
-                    str += ", ";
-                }
-                str += new SimpleDateFormat("yyyy").format(new Timestamp(new Date().getTime()));
-            } else {
-                String distDate = getDistributionDate();
-                if (distDate != null) {
+                if (!this.getDataset().isHarvested()) {
+                    //if not released use current year
                     if (!StringUtil.isEmpty(str)) {
                         str += ", ";
                     }
-                    str += distDate;
+                    str += new SimpleDateFormat("yyyy").format(new Timestamp(new Date().getTime()));
+                } else {
+                    String distDate = getDistributionDate();
+                    if (distDate != null) {
+                        if (!StringUtil.isEmpty(str)) {
+                            str += ", ";
+                        }
+                        str += distDate;
+                    }
                 }
+            } else {
+                if (!StringUtil.isEmpty(str)) {
+                    str += ", ";
+                }
+                str += new SimpleDateFormat("yyyy").format(new Timestamp(this.getDataset().getPublicationDate().getTime()));
             }
-        } else {
-            if (!StringUtil.isEmpty(str)) {
-                str += ", ";
-            }
-            str += new SimpleDateFormat("yyyy").format(new Timestamp(this.getDataset().getPublicationDate().getTime()));
         }
+        
         if (this.getTitle() != null) {
             if (!StringUtil.isEmpty(this.getTitle())) {
                 if (!StringUtil.isEmpty(str)) {
@@ -805,7 +819,7 @@ public class DatasetVersion implements Serializable {
                     str += ", ";
                 }
                 if (isOnlineVersion) {
-                    str += "<a href=\"" + this.getDataset().getPersistentURL() + "\">" + this.getDataset().getPersistentURL() + "</a>";
+                    str += "<a target=\"_top\" href=\"" + this.getDataset().getPersistentURL() + "\">" + this.getDataset().getPersistentURL() + "</a>";
                 } else {
                     str += this.getDataset().getPersistentURL();
                 }
@@ -864,6 +878,31 @@ public class DatasetVersion implements Serializable {
          str += " [Distributor]";
          }*/
         return str;
+    }
+    
+    private Date getCitationDate() {
+        DatasetField citationDate = getDatasetField(this.getDataset().getCitationDateDatasetFieldType());        
+        if (citationDate != null && citationDate.getDatasetFieldType().getFieldType().equals(FieldType.DATE)){          
+            try {  
+                return new SimpleDateFormat("yyyy").parse( citationDate.getValue() );
+            } catch (ParseException ex) {
+                Logger.getLogger(DatasetVersion.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+        return null;
+    }
+    
+    public DatasetField getDatasetField(DatasetFieldType dsfType) {
+        if (dsfType != null) {
+            for (DatasetField dsf : this.getFlatDatasetFields()) {
+                if (dsf.getDatasetFieldType().equals(dsfType)) {
+                    return dsf;
+                }
+            }
+        }
+        return null;
+
     }
 
     public String getDistributionDate() {

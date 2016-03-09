@@ -43,7 +43,8 @@
     '_static/js/jquery-1.11.0.min.js',
     '_static/js/jquery-fix.js',
     '_static/bootstrap-' + bootstrap_version + '/js/bootstrap.min.js',
-    '_static/bootstrap-sphinx.js'
+    '_static/bootstrap-sphinx.js',
+    '_static/navbarscroll.js'
   ]
 %}
 
@@ -54,6 +55,18 @@
 {%- block doctype -%}
 <!DOCTYPE html>
 {%- endblock %}
+
+{%- block linktags %}
+<link type="text/css" rel="stylesheet" href="{{pathto("_static/docsdataverse_org.css", 1)}}" />
+{%- endblock %}
+
+{%- block extrahead %}
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link type="image/png" rel="icon" href="../_static/images/favicondataverse.png" />
+{% endblock %}
 
 {# Sidebar: Rework into our Bootstrap nav section. #}
 {% macro navBar() %}
@@ -85,14 +98,6 @@
       {%- endif %}
   {%- endmacro %}
 {% endif %}
-
-{%- block extrahead %}
-<meta charset='utf-8'>
-<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
-<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
-<meta name="apple-mobile-web-app-capable" content="yes">
-<link type="image/png" rel="icon" href="../_static/images/favicondataverse.png" />
-{% endblock %}
 
 {# Silence the sidebar's, relbar's #}
 {% block header %}{% endblock %}

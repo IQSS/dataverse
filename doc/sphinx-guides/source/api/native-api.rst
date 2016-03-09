@@ -139,6 +139,17 @@ Deletes the draft version of dataset ``$id``. Only the draft version can be dele
 
     DELETE http://$SERVER/api/datasets/$id/versions/:draft?key=$apiKey
 
+Sets the dataset field type to be used as the citation date for the given dataset (if the dataset does not include the dataset field type, the default logic is used). The name of the dataset field type should be sent in the body of the reqeust.
+To revert to the default logic, use ``:publicationDate`` as the ``$datasetFieldTypeName``.
+Note that the dataset field used has to be a date field::
+
+    PUT http://$SERVER/api/datasets/$id/citationdate?key=$apiKey
+    
+Restores the default logic of the field type to be used as the citation date. Same as ``PUT`` with ``:publicationDate`` body::
+    
+    DELETE http://$SERVER/api/datasets/$id/citationdate?key=$apiKey
+
+
 Builtin Users
 ~~~~~
 

@@ -94,6 +94,24 @@ public class BuiltinUserServiceBean {
             return null;
         }
     }
+
+    /**
+     * @param usernameOrEmail Username or email address of the user.
+     * @return A {@link BuiltinUser} or null if not found
+     */
+    public BuiltinUser findByUsernameOrEmail(String usernameOrEmail) {
+        BuiltinUser userFoundByUsername = findByUserName(usernameOrEmail);
+        if (userFoundByUsername != null) {
+            return userFoundByUsername;
+        } else {
+            BuiltinUser userFoundByEmail = findByEmail(usernameOrEmail);
+            if (userFoundByEmail != null) {
+                return userFoundByEmail;
+            } else {
+                return null;
+            }
+        }
+    }
     
     public List<BuiltinUser> findAll() {
 		return em.createNamedQuery("BuiltinUser.findAll", BuiltinUser.class).getResultList();

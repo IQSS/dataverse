@@ -26,14 +26,14 @@ import java.util.List;
  * Incorporated into DVN 4.0 by Leonid Andreev in Dec. 2013.
  * 
  */
-public class AlphaNumericComparator implements Comparator, Serializable {
+public class AlphaNumericComparator implements Comparator<String>, Serializable {
     public AlphaNumericComparator() {
     }
 
     @Override
-    public int compare(Object o1, Object o2) {
-        List tokenizedList1 = getTokenizedList((String) o1);
-        List tokenizedList2 = getTokenizedList((String) o2);
+    public int compare(String o1, String o2) {
+        List tokenizedList1 = getTokenizedList(o1);
+        List tokenizedList2 = getTokenizedList(o2);
 
         for (int i = 0; i < Math.min(tokenizedList1.size(), tokenizedList2.size()); i++) {
             Object token1 = tokenizedList1.get(i);

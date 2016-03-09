@@ -422,8 +422,11 @@ public class MailServiceBean implements java.io.Serializable {
                 messageText += MessageFormat.format(pattern, paramArrayReturnedDataset);
                 return messageText;
             case CREATEACC:
-                messageText += ResourceBundle.getBundle("Bundle").getString("notification.email.welcome");
-                return messageText;
+                String accountCreatedMessage = BundleUtil.getStringFromBundle("notification.email.welcome", Arrays.asList(
+                        systemConfig.getGuidesBaseUrl(),
+                        systemConfig.getVersion()
+                ));
+                return messageText += accountCreatedMessage;
         }
         
         return "";
