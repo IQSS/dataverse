@@ -1257,11 +1257,6 @@
 
                     <!-- Publish/Submit for Review Dialogs -->
                     <p:dialog header="#{bundle['dataset.publish.header']}" widgetVar="publishConfirm" modal="true">
-                        <ui:fragment rendered="#{DatasetPage.dataset.globalIdCreateTime == null}">
-                            <p class="text-danger">
-                                <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.unregistered.tip']}
-                            </p>
-                        </ui:fragment>
                         <p class="text-danger">
                             <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.publish.tip']}
                         </p>
@@ -1272,11 +1267,6 @@
                     </p:dialog>
 
                     <p:dialog header="#{bundle['dataset.publish.header']}" widgetVar="publishParent" modal="true">
-                        <ui:fragment rendered="#{DatasetPage.dataset.globalIdCreateTime == null}">
-                            <p class="text-danger">
-                                <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.unregistered.tip']}
-                            </p>
-                        </ui:fragment>
                         <p class="text-danger">
                             <span class="glyphicon glyphicon-warning-sign"/>
                             <h:outputFormat value="#{bundle['dataset.mayNotPublish.both']}" escape="false">

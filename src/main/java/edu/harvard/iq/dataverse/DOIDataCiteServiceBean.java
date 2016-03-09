@@ -43,12 +43,17 @@ public class DOIDataCiteServiceBean {
     public DOIDataCiteServiceBean() {
         
     }
+    
+    public boolean alreadyExists (Dataset dataset){       
+        String identifier = getIdentifierFromDataset(dataset);
+        return  doiDataCiteRegisterService.testDOIExists(identifier); 
+    }
 
     public String createIdentifier(Dataset dataset) {
         String retString = "";
         String identifier = getIdentifierFromDataset(dataset);
         HashMap metadata = getMetadataFromStudyForCreateIndicator(dataset);
-        metadata.put("_status", "reserved");
+        metadata.put("_status", "reserved");       
         try {
             retString = doiDataCiteRegisterService.createIdentifier(identifier, metadata, dataset);
         } catch (Exception e) {

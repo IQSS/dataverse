@@ -118,6 +118,10 @@ public class DOIDataCiteRegisterService {
         }
         return retString;
     }
+    
+    public boolean testDOIExists (String identifier){
+        return client.testDOIExists(identifier.substring(identifier.indexOf(":")+1));
+    }
 
     public HashMap<String, String> getMetadata(String identifier) {
         HashMap<String,String> metadata = new HashMap();

@@ -63,34 +63,45 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
         String nonNullDefaultIfKeyNotFound = "";
         String    protocol = theDataset.getProtocol();
         String    doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
-        String    authority = theDataset.getAuthority();        
+        String    authority = theDataset.getAuthority();           
         if (theDataset.getGlobalIdCreateTime() == null) {
             if (protocol.equals("doi")
                     && (doiProvider.equals("EZID") || doiProvider.equals("DataCite"))) {
                 String doiRetString = "";
                 if (doiProvider.equals("EZID")) {
                     doiRetString = ctxt.doiEZId().createIdentifier(theDataset);
-                } else {
-                    doiRetString = ctxt.doiDataCite().createIdentifier(theDataset);
-                }
-
-                if (doiRetString.contains(theDataset.getIdentifier())) {
-                    theDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
-                } else if (doiRetString.contains("identifier already exists")) {
-                    theDataset.setIdentifier(ctxt.datasets().generateIdentifierSequence(protocol, authority, theDataset.getDoiSeparator()));
-                    if (doiProvider.equals("EZID")) {
-                        doiRetString = ctxt.doiEZId().createIdentifier(theDataset);
-                    } else {
-                        doiRetString = ctxt.doiDataCite().createIdentifier(theDataset);
-                    }
-
-                    if (!doiRetString.contains(theDataset.getIdentifier())) {
-                        throw new IllegalCommandException("This dataset may not be published because its identifier is already in use by another dataset. Please contact Dataverse Support for assistance.", this);
-                    } else {
+                    if (doiRetString.contains(theDataset.getIdentifier())) {
                         theDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
+                    } else if (doiRetString.contains("identifier already exists")) {
+                        theDataset.setIdentifier(ctxt.datasets().generateIdentifierSequence(protocol, authority, theDataset.getDoiSeparator()));
+                        if (doiProvider.equals("EZID")) {
+                            doiRetString = ctxt.doiEZId().createIdentifier(theDataset);
+                        } else {
+                            doiRetString = ctxt.doiDataCite().createIdentifier(theDataset);
+                        }
+
+                        if (!doiRetString.contains(theDataset.getIdentifier())) {
+                            throw new IllegalCommandException("This dataset may not be published because its identifier is already in use by another dataset. Please contact Dataverse Support for assistance.", this);
+                        } else {
+                            theDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
+                        }
+                    } else {
+                        throw new IllegalCommandException("This dataset may not be published because it has not been registered. Please contact Dataverse Support for assistance.", this);
                     }
-                } else {
-                    throw new IllegalCommandException("This dataset may not be published because it has not been registered. Please contact Dataverse Support for assistance.", this);
+                }
+                if (doiProvider.equals("DataCite")) {
+                    if (!ctxt.doiDataCite().alreadyExists(theDataset)) {
+                        doiRetString = ctxt.doiDataCite().createIdentifier(theDataset);
+                        theDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
+                    } else {
+                        theDataset.setIdentifier(ctxt.datasets().generateIdentifierSequence(protocol, authority, theDataset.getDoiSeparator()));
+                        if (!ctxt.doiDataCite().alreadyExists(theDataset)) {
+                            doiRetString = ctxt.doiDataCite().createIdentifier(theDataset);
+                            theDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
+                        } else {
+                            throw new IllegalCommandException("This dataset may not be published because its identifier is already in use by another dataset. Please contact Dataverse Support for assistance.", this);
+                        }
+                    }
                 }
             } else {
                  throw new IllegalCommandException("This dataset may not be published because its DOI provider is not supported. Please contact Dataverse Support for assistance.", this);

@@ -140,6 +140,27 @@ public class DataCiteRESTfullClient {
             throw new RuntimeException("IOException when get metadata", ioe);
         }
     }
+    
+    /**
+     * getMetadata
+     *
+     * @param doi
+     * @return
+     */
+    public boolean testDOIExists(String doi) {
+        HttpGet httpGet = new HttpGet(this.url + "/metadata/" + doi);      
+        httpGet.setHeader("Accept", "application/xml");        
+        try {
+            HttpResponse response = httpClient.execute(httpGet,context);
+            if (response.getStatusLine().getStatusCode() != 200) {
+                return false;
+            }
+            return true;
+        } catch (IOException ioe) {
+            logger.log(Level.SEVERE, "IOException when get metadata");
+            throw new RuntimeException("IOException when get metadata", ioe);
+        } 
+    }
 
     /**
      * postMetadata

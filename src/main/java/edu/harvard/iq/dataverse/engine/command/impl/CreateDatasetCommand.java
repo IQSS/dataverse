@@ -151,7 +151,7 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
                 }
 
                 // Check return value to make sure registration succeeded
-                if (doiRetString.contains(theDataset.getIdentifier())) {
+                if (doiProvider.equals("EZID") && doiRetString.contains(theDataset.getIdentifier())) {
                     theDataset.setGlobalIdCreateTime(createDate);
                 }
 
