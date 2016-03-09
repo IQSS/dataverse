@@ -150,7 +150,7 @@ public class DOIDataCiteServiceBean {
     }
     
 
-    public void deleteIdentifier(Dataset datasetIn) throws CommandException {
+    public void deleteIdentifier(Dataset datasetIn) throws Exception {
         String identifier = getIdentifierFromDataset(datasetIn);
         HashMap doiMetadata = new HashMap();
         try {
@@ -180,7 +180,7 @@ public class DOIDataCiteServiceBean {
         }
         if (idStatus != null && idStatus.equals("public")) {
             //if public then it has been released set to unavailable and reset target to n2t url
-            updateIdentifierStatus(datasetIn, "unavailable", null);
+            updateIdentifierStatus(datasetIn, "unavailable");
         }
     }
 
@@ -278,11 +278,11 @@ public class DOIDataCiteServiceBean {
         return dataset.getGlobalId();
     }
 
-    public void publicizeIdentifier(Dataset studyIn, Command command) throws CommandException {
-        updateIdentifierStatus(studyIn, "public", command);
+    public void publicizeIdentifier(Dataset studyIn, Command command)  {
+        updateIdentifierStatus(studyIn, "public");
     }
 
-    private void updateIdentifierStatus(Dataset dataset, String statusIn, Command command) throws CommandException {
+    private void updateIdentifierStatus(Dataset dataset, String statusIn)  {
         String identifier = getIdentifierFromDataset(dataset);
         HashMap metadata = getUpdateMetadataFromDataset(dataset);
         metadata.put("_status", statusIn);
@@ -294,7 +294,7 @@ public class DOIDataCiteServiceBean {
             logger.log(Level.INFO, "localized message " + e.getLocalizedMessage());
             logger.log(Level.INFO, "cause " + e.getCause());
             logger.log(Level.INFO, "message " + e.getMessage());
-            throw new CommandException("Could not update identifier.", command);
+            throw  e;
         }
     }
 

@@ -224,10 +224,10 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
             try {
                 ctxt.doiDataCite().publicizeIdentifier(savedDataset, this);
             } catch (Exception e) {
-                if (e.toString().contains("EJB")) {
-                    throw new IllegalCommandException(ResourceBundle.getBundle("Bundle").getString("dataset.publish.error.datacite"), this);
+                if (e.toString().contains("Internal Server Error")) {
+                    throw new CommandException(ResourceBundle.getBundle("Bundle").getString("dataset.publish.error.datacite"), this);
                 }
-                throw new IllegalCommandException(ResourceBundle.getBundle("Bundle").getString("dataset.publish.error.doi"), this);
+                throw new CommandException(ResourceBundle.getBundle("Bundle").getString("dataset.publish.error.doi"), this);
             }
         }
         

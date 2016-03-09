@@ -15,7 +15,9 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import java.util.ResourceBundle;
 
 /**
  *
@@ -50,9 +52,16 @@ public class DeaccessionDatasetVersionCommand extends AbstractCommand<DatasetVer
                 ctxt.doiEZId().deleteIdentifier(ds);
             }
             if (doiProvider.equals("DataCite")) {
-                ctxt.doiDataCite().deleteIdentifier(ds);
+                try {
+                    ctxt.doiDataCite().deleteIdentifier(ds);
+                } catch (Exception e) {
+                    if (e.toString().contains("Internal Server Error")) {
+                        throw new CommandException(ResourceBundle.getBundle("Bundle").getString("dataset.publish.error.datacite"), this);
+                    }
+                    throw new CommandException(ResourceBundle.getBundle("Bundle").getString("dataset.delete.error.datacite"), this);
+                }
             }
-        }      
+        }     
         DatasetVersion managed = ctxt.em().merge(theVersion);
         
         boolean doNormalSolrDocCleanUp = true;
