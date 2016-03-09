@@ -621,7 +621,7 @@ public class DatasetVersion implements Serializable {
     }
     
     public List<String[]> getDatasetContacts(){
-        List retList = new ArrayList();
+        List <String[]> retList = new ArrayList<>();
         for (DatasetField dsf : this.getDatasetFields()) {
             Boolean addContributor = true;
             String contributorName = "";
@@ -651,7 +651,7 @@ public class DatasetVersion implements Serializable {
     }
     
     public List<String[]> getDatasetProducers(){
-        List retList = new ArrayList();
+        List <String[]> retList = new ArrayList<>();
         for (DatasetField dsf : this.getDatasetFields()) {
             Boolean addContributor = true;
             String contributorName = "";
@@ -682,7 +682,7 @@ public class DatasetVersion implements Serializable {
 
     public List<DatasetAuthor> getDatasetAuthors() {
         //todo get "List of Authors" from datasetfieldvalue table
-        List retList = new ArrayList();
+        List <DatasetAuthor> retList = new ArrayList<>();
         for (DatasetField dsf : this.getDatasetFields()) {
             Boolean addAuthor = true;
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.author)) {

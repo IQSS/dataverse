@@ -5,8 +5,9 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.engine.command.Command;
+import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -149,7 +150,7 @@ public class DOIDataCiteServiceBean {
     }
     
 
-    public void deleteIdentifier(Dataset datasetIn) throws RuntimeException {
+    public void deleteIdentifier(Dataset datasetIn) throws CommandException {
         String identifier = getIdentifierFromDataset(datasetIn);
         HashMap doiMetadata = new HashMap();
         try {
@@ -174,13 +175,12 @@ public class DOIDataCiteServiceBean {
                 logger.log(Level.INFO, "localized message " + e.getLocalizedMessage());
                 logger.log(Level.INFO, "cause " + e.getCause());
                 logger.log(Level.INFO, "message " + e.getMessage());
-                throw new RuntimeException(e);
             }
             return;
         }
         if (idStatus != null && idStatus.equals("public")) {
             //if public then it has been released set to unavailable and reset target to n2t url
-            updateIdentifierStatus(datasetIn, "unavailable");
+            updateIdentifierStatus(datasetIn, "unavailable", null);
         }
     }
 
@@ -278,11 +278,11 @@ public class DOIDataCiteServiceBean {
         return dataset.getGlobalId();
     }
 
-    public void publicizeIdentifier(Dataset studyIn) throws IllegalCommandException {
-        updateIdentifierStatus(studyIn, "public");
+    public void publicizeIdentifier(Dataset studyIn, Command command) throws CommandException {
+        updateIdentifierStatus(studyIn, "public", command);
     }
 
-    private void updateIdentifierStatus(Dataset dataset, String statusIn) throws RuntimeException {
+    private void updateIdentifierStatus(Dataset dataset, String statusIn, Command command) throws CommandException {
         String identifier = getIdentifierFromDataset(dataset);
         HashMap metadata = getUpdateMetadataFromDataset(dataset);
         metadata.put("_status", statusIn);
@@ -294,7 +294,7 @@ public class DOIDataCiteServiceBean {
             logger.log(Level.INFO, "localized message " + e.getLocalizedMessage());
             logger.log(Level.INFO, "cause " + e.getCause());
             logger.log(Level.INFO, "message " + e.getMessage());
-            throw new RuntimeException(e);
+            throw new CommandException("Could not update identifier.", command);
         }
     }
 

@@ -222,7 +222,7 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
         if (protocol.equals("doi")
                 && doiProvider.equals("DataCite")) {
             try {
-                ctxt.doiDataCite().publicizeIdentifier(savedDataset);
+                ctxt.doiDataCite().publicizeIdentifier(savedDataset, this);
             } catch (Exception e) {
                 if (e.toString().contains("EJB")) {
                     throw new IllegalCommandException(ResourceBundle.getBundle("Bundle").getString("dataset.publish.error.datacite"), this);
