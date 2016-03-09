@@ -233,13 +233,9 @@ public class Admin extends AbstractApiBean {
         }
     }
 
-    /**
-     * Experimental: Used for testing Shibboleth account conversions and the
-     * start of having any sort of user management.
-     */
     @GET
     @Path("authenticatedUsers")
-    public Response listAuthenticatedUsersExperimental() {
+    public Response listAuthenticatedUsers() {
         try {
             AuthenticatedUser user = findAuthenticatedUserOrDie();
             if (!user.isSuperuser()) {
@@ -250,7 +246,7 @@ public class Admin extends AbstractApiBean {
         }
         JsonArrayBuilder userArray = Json.createArrayBuilder();
         authSvc.findAllAuthenticatedUsers().stream().forEach((user) -> {
-            userArray.add(user.getId() + ":" + user.getIdentifier() + ":" + user.getAuthenticatedUserLookup().getAuthenticationProviderId());
+            userArray.add(jsonForAuthUser(user));
         });
         return okResponse(userArray);
     }

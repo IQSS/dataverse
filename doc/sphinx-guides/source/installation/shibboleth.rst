@@ -331,6 +331,10 @@ In the example below, the user has indicated that the new email address they'd l
 
 ``curl -H "X-Dataverse-key: $API_TOKEN" -X PUT -d "former.shib.user@mailinator.com" http://localhost:8080/api/admin/authenticatedUsers/id/2/convertShibToBuiltIn``
 
+Rather than looking up the user's id in the ``authenticateduser`` database table, you can issue this command to get a listing of all users:
+
+``curl -H "X-Dataverse-key: $API_TOKEN" http://localhost:8080/api/admin/authenticatedUsers``
+
 Per above, you now need to tell the user to use the password reset feature to set a password for their local account.
 
 Debugging
