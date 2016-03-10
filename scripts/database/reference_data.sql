@@ -26,7 +26,7 @@ INSERT INTO guestbook(
 
 -- TODO: Remove if http://stackoverflow.com/questions/25743191/how-to-add-a-case-insensitive-jpa-unique-constraint
 -- gets an answer. See also https://github.com/IQSS/dataverse/issues/2598#issuecomment-158219334
-CREATE UNIQUE INDEX dataverse_alias_unique_idx on dataverse (LOWER(alias))
+CREATE UNIQUE INDEX dataverse_alias_unique_idx on dataverse (LOWER(alias));
 CREATE UNIQUE INDEX index_authenticateduser_lower_email ON authenticateduser (lower(email));
 CREATE UNIQUE INDEX index_builtinuser_lower_email ON builtinuser (lower(email));
 
