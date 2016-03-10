@@ -24,20 +24,20 @@ Institutional Log In
 ========================
 
 
-Institutional log in allows you to use your log-in information for your university (e.g. HarvardKey at Harvard) to log into your Dataverse account. By using your institutional log in, you won't have to remember your password for Dataverse or manage another account.
+Institutional log in allows you to use your log in information for your university (e.g. HarvardKey at Harvard) to log into your Dataverse account. By using your institutional log in, you won't have to remember your password for Dataverse or manage another account.
 
 How to create a new Dataverse account using Institutional Log In
 -------------------------------------------------------------------------------------------------
 
 #. Go to “Log In” in the upper right corner of Dataverse
 #. Find this Institutional Log In box: |image1institutional|
-#.  Using the dropdown menu, select your institution then click the Continue button
-#.  You will be brought to your institution's log in page. After you put in your institutional information successfully, you will be brought back to Dataverse to confirm your account. |image2institutional|
+#. Using the dropdown menu, select your institution then click the Continue button
+#. You will be brought to your institution's log in page. After you put in your institutional information successfully, you will be brought back to Dataverse to confirm your account. |image2institutional|
 
-How to Use your Institutional Log In for Your Dataverse Account
+How to use your Institutional Log In for your Dataverse account
 -------------------------------------------------------------------------------------------------
 
-If you already have a Dataverse account, but you want to change it to use your institutional login, you easily do as long as your account uses that institution’s email address.
+If you already have a Dataverse account, but you want to change it to use your institutional log in, you easily can do so as long as your account uses that institution’s email address.
 
 #. Go to the Account Information page to confirm your account email address is the same as your institution email address. If not, you will need to update your account email address to be the same as your institution email address.
 #. Log out of Dataverse.
