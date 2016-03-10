@@ -164,17 +164,6 @@ my %POSTGRES_DRIVERS = (
 
 # A few preliminary checks:
 
-# user -- must be root:
-
-###my $user_real = `who am i`;
-###chop $user_real;
-###$user_real =~ s/ .*$//;
-
-###if ( $< != 0 ) {
-###    print STDERR "\nERROR: You must be logged in as root to run the installer.\n\n";
-###    exit 1;
-###}
-
 # OS:
 
 my $uname_out = `uname -a`;
@@ -283,10 +272,16 @@ for my $ENTRY (@CONFIG_VARIABLES) {
         $user_entry = <>;
         chop $user_entry;
 
+	if ( $user_entry ne "" ) {
+	    $CONFIG_DEFAULTS{$ENTRY} = $user_entry;
+	}
+
+
 	# for some values, we'll try to do some validation right here, in real time:
     
 	if ($ENTRY eq 'ADMIN_EMAIL') 
 	{
+	    $user_entry = $CONFIG_DEFAULTS{$ENTRY};
 	    my $attempts = 0; 
 	    while ($user_entry !~/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}/) 
 	    {
@@ -299,7 +294,9 @@ for my $ENTRY (@CONFIG_VARIABLES) {
 	    if ($attempts) 
 	    {
 		print "OK, looks legit.\n";
+		$CONFIG_DEFAULTS{$ENTRY} = $user_entry;
 	    }
+
 	}
 
 	# TODO: 
@@ -307,10 +304,6 @@ for my $ENTRY (@CONFIG_VARIABLES) {
 	# instead of doing it further down. 
     }
 	    
-
-    if ( $user_entry ne "" ) {
-        $CONFIG_DEFAULTS{$ENTRY} = $user_entry;
-    }
 
 
 
@@ -487,24 +480,14 @@ elsif ($pg_only)
     exit 1;
 }
 
-    ### 3a. CHECK FOR USER postgres:
+### 3a. CHECK FOR USER postgres: (NO LONGER USED!)
 
-    ###print "\nChecking system user \"postgres\"... ";
+###print "\nChecking system user \"postgres\"... ";
 
-    ###my $POSTGRES_SYS_NAME = "postgres";
-    ###$POSTGRES_SYS_UID = ( getpwnam("postgres") )[2];
+###my $POSTGRES_SYS_NAME = "postgres";
+###$POSTGRES_SYS_UID = ( getpwnam("postgres") )[2];
 
-    ###unless ($POSTGRES_SYS_UID) {
-    ###    print STDERR "\nERROR: I haven't been able to find user \"postgres\" on the system! Is PostgreSQL installed?\n";
-    ###    print STDERR "(TODO: prompt the user instead to supply an alternative username, if\n";
-    ###    print STDERR "available)\n";
-
-    ###    exit 1;
-    ###}
-
-    ###print "OK.\n";
-
-    # 3b. LOCATE THE EXECUTABLES, FOR jq AND psql:
+# 3b. LOCATE THE EXECUTABLES, FOR jq AND psql:
 
 my $sys_path = $ENV{'PATH'};
 my @sys_path_dirs = split( ":", $sys_path );
@@ -649,13 +632,7 @@ if ( $psql_exec eq "" )
 
 # 4. CONFIGURE POSTGRES:
 
-# But first, let's see if we can talk to the database as the admin user:
-
-###$< = $POSTGRES_SYS_UID;
-###$> = $POSTGRES_SYS_UID;
-
-
-# 4a. CHECK IF WE CAN TALK TO POSTGRES AS THE ADMIN:
+# 4a. BUT FIRST, CHECK IF WE CAN TALK TO POSTGRES AS THE ADMIN:
 
 if ( $psql_admin_exec eq "" || system( $psql_admin_exec . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U postgres -d postgres -c 'SELECT * FROM pg_roles' > /dev/null 2>&1" ) ) 
 {
@@ -767,11 +744,6 @@ else
 	} 
 	else 
 	{
-	    ###$> = 0;
-	    ###$< = 0;
-
-	    ###chdir($cwd);
-
 	    print "WARNING! Database " . $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} . " already exists!\n";
 	    print "\nPlease note that you can only use this installer to create a blank, \n";
 	    print "new and shiny Dataverse database. I.e., you cannot install on top of an \n";
@@ -864,12 +836,6 @@ else
 	}
     }
 
-    ### Changing back to root UID:
-
-    ###$> = 0;
-    ###$< = 0;
-    
-    ###chdir($cwd);
 }
 
 if ($postgresonly) {
@@ -913,6 +879,10 @@ unless ( -d $glassfish_dir . "/glassfish/domains/domain1" ) {
         $glassfish_dir = <>;
         chop $glassfish_dir;
     }
+
+    # TODO: 
+    # verify that we can write in the Glassfish directory 
+    # (now that we are no longer requiring to run the installer as root)
 }
 
 print "OK!\n";
@@ -1095,6 +1065,8 @@ print "done!\n";
 
 # 6. DEPLOY THE APPLICATION:
 
+print "\nAttempting to deploy the application.\n";
+print "Command line: " . $glassfish_dir . "/bin/asadmin deploy " . $WARFILE_LOCATION . "\n";
 unless ((
      my $exit_code =
      system( $glassfish_dir . "/bin/asadmin deploy " . $WARFILE_LOCATION )
@@ -1106,24 +1078,14 @@ unless ((
     exit 1;
 }
 
+
 # 7. PRE-POPULATE THE DATABASE:
 # (in this step some pre-supplied content is inserted into the database that we have just created;
 # it is not *necessary* for the application to run in the very basic mode; but some features - certain 
 # types of metadata imports, for example - will be unavailable if it's not done. 
 
-###if ($pg_local_connection) {
-###    # 7a. POPULATE LOCALLY:
 print "\nPre-populating the database:\n\n";
 
-    ### Copy the SQL file to /tmp, where user postgres will definitely
-    ### have read access to it:
-
-    ###copy( $SQL_REFERENCE_DATA, "/tmp" ) or die "Could not copy $SQL_REFERENCE_DATA to /tmp: $!";
-    ###unlink( $SQL_REFERENCE_DATA );
-
-    ###chdir("/tmp");
-    ###$< = $POSTGRES_SYS_UID;
-    ###$> = $POSTGRES_SYS_UID;
 my $psql_command = $psql_exec . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U " . $CONFIG_DEFAULTS{'POSTGRES_USER'} . " -d $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} -f $SQL_REFERENCE_DATA";
 
 unless ( ( my $exitcode = system("$psql_command") ) == 0 ) 
@@ -1154,12 +1116,6 @@ else
 {
     print "\nOK, done!\n";
 }
-
-### back to root:
-
-###$> = 0;
-###$< = 0;
-###chdir($cwd);
 
 # Check if the App is running: 
 
@@ -1202,55 +1158,81 @@ unless ( -d "data" && -f "setup-datasetfields.sh" && -f "setup-users.sh" && -f "
 }
 
 for my $script ( "setup-all.sh" ) {
-    print "Executing script " . $script . "...\n";
+    # (there's only 1 setup script to run now - it runs all the other required scripts)
+    print "Executing post-deployment setup script " . $script . "... ";
 
     my $my_hostname = $CONFIG_DEFAULTS{'HOST_DNS_ADDRESS'};
 
+    # We used to filter the supplied scripts, replacing "localhost" and the port, in 
+    # case they are running Dataverse on a different port... Now we are simply requiring
+    # that the port 8080 is still configured in domain.xml when they are running the 
+    # installer:
     my $run_script;
     #if ( $my_hostname ne "localhost" ) {
     #    system( "sed 's/localhost:8080/$my_hostname/g' < " . $script . " > tmpscript.sh; chmod +x tmpscript.sh" );
     #    $run_script = "tmpscript.sh";
     #}
     #else {
-        $run_script = $script;
+    $run_script = $script;
     #}
 
-    unless ( my $exit_code = system( "./" . $run_script ) == 0 ) 
+    unless ( my $exit_code = system( "./" . $run_script . " > $run_script.$$.log 2>&1") == 0 ) 
     {
         print "\nERROR executing script " . $script . "!\n";
         exit 1;
     }
-    print "ok!\n";
+    print "done!\n";
 }
 
-# SOME SETTINGS THAT ARE NOT TAKEN CARE OF BY THE setup-all SCRIPT NEED 
-# TO BE CONFIGURED HERE:
+# SOME ADDITIONAL SETTINGS THAT ARE NOT TAKEN CARE OF BY THE setup-all SCRIPT 
+# NEED TO BE CONFIGURED HERE:
+
+print "Making additional configuration changes...\n\n";
+
 
 # a. Configure the Admin email in the Dataverse settings:
 
 my $exit_code; 
 
-my $exit_code = system("curl -X put -d " . $CONFIG_DEFAULTS{'ADMIN_EMAIL'} . " " . $API_URL . "/admin/settings/:SystemEmail"); 
+print "Executing " . "curl -X PUT -d " . $CONFIG_DEFAULTS{'ADMIN_EMAIL'} . " " . $API_URL . "/admin/settings/:SystemEmail" . "\n";
+
+my $exit_code = system("curl -X PUT -d " . $CONFIG_DEFAULTS{'ADMIN_EMAIL'} . " " . $API_URL . "/admin/settings/:SystemEmail"); 
 if ( $exit_code )       
 {
     print "WARNING: failed to configure the admin email in the Dataverse settings!\n\n";
+} 
+else 
+{
+    print "OK.\n\n";
 }
     
 # b. If this installation is going to be using TwoRavens, configure its location in the Dataverse settings;
 # Otherwise, set the "NO TwoRavens FOR YOU!" option in the settings:
 
+
 if ($CONFIG_DEFAULTS{'TWORAVENS_LOCATION'} ne 'NOT INSTALLED')
 {
-    my $exit_code = system("curl -X put -d " . $CONFIG_DEFAULTS{'TWORAVENS_LOCATION'} . " " . $API_URL . "/admin/settings/:TwoRavensUrl"); 
+    print "Executing " . "curl -X PUT -d " . $CONFIG_DEFAULTS{'TWORAVENS_LOCATION'} . " " . $API_URL . "/admin/settings/:TwoRavensUrl" . "\n";
+    my $exit_code = system("curl -X PUT -d " . $CONFIG_DEFAULTS{'TWORAVENS_LOCATION'} . " " . $API_URL . "/admin/settings/:TwoRavensUrl"); 
     if ( $exit_code )       
     {
 	print "WARNING: failed to configure the location of the TwoRavens app in the Dataverse settings!\n\n";
     }
+    else 
+    {
+	print "OK.\n\n";
+    }
+
 } else {
-    my $exit_code = system("curl -X put -d false " . $API_URL . "/admin/settings/:TwoRavensTabularView"); 
+    print "Executing " . "curl -X PUT -d false " . $API_URL . "/admin/settings/:TwoRavensTabularView" . "\n";
+    my $exit_code = system("curl -X PUT -d false " . $API_URL . "/admin/settings/:TwoRavensTabularView"); 
     if ( $exit_code )       
     {
 	print "WARNING: failed to disable the TwoRavens app in the Dataverse settings!\n\n";
+    }
+    else 
+    {
+	print "OK.\n\n";
     }
 }
 
@@ -1258,10 +1240,15 @@ if ($CONFIG_DEFAULTS{'TWORAVENS_LOCATION'} ne 'NOT INSTALLED')
 
 if ($CONFIG_DEFAULTS{'SOLR_LOCATION'} ne 'LOCAL')
 {
+    print "Executing " . "curl -X put -d " . $CONFIG_DEFAULTS{'SOLR_LOCATION'} . " " . $API_URL . "/admin/settings/:SolrHostColonPort" . "\n";
     my $exit_code = system("curl -X put -d " . $CONFIG_DEFAULTS{'SOLR_LOCATION'} . " " . $API_URL . "/admin/settings/:SolrHostColonPort"); 
     if ( $exit_code )       
     {
 	print "WARNING: failed to configure the location of the remote SOLR service!\n\n";
+    }
+    else 
+    {
+	print "OK.\n\n";
     }
 }
 
@@ -1270,7 +1257,7 @@ if ($CONFIG_DEFAULTS{'SOLR_LOCATION'} ne 'LOCAL')
 chdir($cwd);
 
 print "\n\nYou should now have a running DVN instance at\n";
-print "  http://" . $CONFIG_DEFAULTS{'HOST_DNS_ADDRESS'} . ":8080\n";
+print "  http://" . $CONFIG_DEFAULTS{'HOST_DNS_ADDRESS'} . ":8080\n\n\n";
 
 # (going to skip the Rserve check, for now)
 
