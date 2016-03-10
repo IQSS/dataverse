@@ -1268,7 +1268,8 @@ public class DatasetPage implements java.io.Serializable {
         if (!this.isSuperUser()){
             return false;
         }
-        if (settingsService.isTrueForKey(SettingsServiceBean.Key.GeoconnectDebug, true)){
+
+        if (settingsService.isTrueForKey(SettingsServiceBean.Key.GeoconnectDebug, false)){
             return true;
         }    
         return false;
