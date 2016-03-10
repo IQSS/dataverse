@@ -31,20 +31,25 @@ my @CONFIG_VARIABLES;
 
 my $postgresonly = 0;
 
-if ($pg_only) {
+if ($pg_only) 
+{
     @CONFIG_VARIABLES =
-      ( 'POSTGRES_SERVER', 'POSTGRES_PORT', 'POSTGRES_DATABASE', 'POSTGRES_USER', 'POSTGRES_PASSWORD' );
+      ( 'POSTGRES_SERVER', 'POSTGRES_PORT', 'POSTGRES_DATABASE', 'POSTGRES_USER', 'POSTGRES_PASSWORD', 'POSTGRES_ADMIN_PASSWORD' );
 
     $postgresonly = 1;
-} else {
+} 
+else 
+{
 
     @CONFIG_VARIABLES = (
 	'HOST_DNS_ADDRESS',
 	'GLASSFISH_DIRECTORY',
+	'ADMIN_EMAIL',
 	'MAIL_SERVER',
 
 	'POSTGRES_SERVER',
 	'POSTGRES_PORT',
+	'POSTGRES_ADMIN_PASSWORD',
 	'POSTGRES_DATABASE',
 	'POSTGRES_USER',
 	'POSTGRES_PASSWORD',
@@ -71,8 +76,10 @@ if ($pg_only) {
 my %CONFIG_DEFAULTS = (
     'HOST_DNS_ADDRESS',    'localhost',
     'GLASSFISH_DIRECTORY', '/usr/local/glassfish4',
+    'ADMIN_EMAIL',         '',
     'MAIL_SERVER',         'mail.hmdc.harvard.edu',
 
+    'POSTGRES_ADMIN_PASSWORD', 'secret',
     'POSTGRES_SERVER',   'localhost',
     'POSTGRES_PORT',     5432,
     'POSTGRES_DATABASE', 'dvndb',
@@ -93,17 +100,19 @@ my %CONFIG_DEFAULTS = (
 my %CONFIG_PROMPTS = (
     'HOST_DNS_ADDRESS',    'Internet Address of your host',
     'GLASSFISH_DIRECTORY', 'Glassfish Directory',
+    'ADMIN_EMAIL',         'Administrator email address for this Dataverse',
     'MAIL_SERVER',         'SMTP (mail) server to relay notification messages',
 
     'POSTGRES_SERVER',   'Postgres Server',
     'POSTGRES_PORT',     'Postgres Server Port',
+    'POSTGRES_ADMIN_PASSWORD', 'Postgres ADMIN password',
     'POSTGRES_DATABASE', 'Name of the Postgres Database',
     'POSTGRES_USER',     'Name of the Postgres User',
     'POSTGRES_PASSWORD', 'Postgres user password',
 
-    'SOLR_LOCATION',     'Remote SOLR indexing service? Leave this set to "LOCAL" if the SOLR daemon will be running on the same (this) server. Otherwise, please enter the host AND THE PORT NUMBER of the remote SOLR service, separated by the colon, for example: foo.edu:8983.',
+    'SOLR_LOCATION',     'Remote SOLR indexing service',
 
-    'TWORAVENS_LOCATION', 'Will this Dataverse be using TwoRavens application? If so, please provide the complete URL of the TwoRavens GUI under rApache, for example, "https://foo.edu/dataexplore/gui.html. (PLEASE NOTE, TwoRavens will need to be installed separately! - see the installation docs for more info)',
+    'TWORAVENS_LOCATION', 'Will this Dataverse be using TwoRavens application',
 
     'RSERVE_HOST',     'Rserve Server',
     'RSERVE_PORT',     'Rserve Server Port',
@@ -111,6 +120,32 @@ my %CONFIG_PROMPTS = (
     'RSERVE_PASSWORD', 'Rserve User Password'
 
 );
+
+
+my %CONFIG_COMMENTS = (
+    'HOST_DNS_ADDRESS',    '',
+    'GLASSFISH_DIRECTORY', '',
+    'ADMIN_EMAIL',         "\n(please enter a valid email address!)",
+    'MAIL_SERVER',         '',
+
+    'POSTGRES_SERVER',   '',
+    'POSTGRES_PORT',     '',
+    'POSTGRES_ADMIN_PASSWORD', "\n- We will need this to create the user and database that the Dataverse application will be using. (Leave blank if access control is set to \"trust\" for this connection in pg_hba.conf)",
+    'POSTGRES_USER',     "\n- This will be the Postgres user that the Dataverse app will be using to talk to the database",
+    'POSTGRES_DATABASE', '',
+    'POSTGRES_PASSWORD', '',
+
+    'SOLR_LOCATION',     "? \n- Leave this set to \"LOCAL\" if the SOLR daemon will be running on the same (this) server. Otherwise, please enter the host AND THE PORT NUMBER of the remote SOLR service, separated by the colon (for example: foo.edu:8983)",
+
+    'TWORAVENS_LOCATION', "? \n-If so, please provide the complete URL of the TwoRavens GUI under rApache, for example, \"https://foo.edu/dataexplore/gui.html\". (PLEASE NOTE, TwoRavens will need to be installed separately! - see the installation docs for more info)",
+
+    'RSERVE_HOST',     '',
+    'RSERVE_PORT',     '',
+    'RSERVE_USER',     '',
+    'RSERVE_PASSWORD', ''
+
+);
+
 
 my $API_URL = "http://localhost:8080/api";
 
@@ -131,14 +166,14 @@ my %POSTGRES_DRIVERS = (
 
 # user -- must be root:
 
-my $user_real = `who am i`;
-chop $user_real;
-$user_real =~ s/ .*$//;
+###my $user_real = `who am i`;
+###chop $user_real;
+###$user_real =~ s/ .*$//;
 
-if ( $< != 0 ) {
-    print STDERR "\nERROR: You must be logged in as root to run the installer.\n\n";
-    exit 1;
-}
+###if ( $< != 0 ) {
+###    print STDERR "\nERROR: You must be logged in as root to run the installer.\n\n";
+###    exit 1;
+###}
 
 # OS:
 
@@ -238,18 +273,46 @@ print "(hit [RETURN] to accept the default value)\n";
 print "\n";
 
 for my $ENTRY (@CONFIG_VARIABLES) {
-    print $CONFIG_PROMPTS{$ENTRY} . ": ";
+    print $CONFIG_PROMPTS{$ENTRY} . $CONFIG_COMMENTS{$ENTRY} . ": ";
     print "[" . $CONFIG_DEFAULTS{$ENTRY} . "] ";
 
-    my $user_entry;
-    unless ($yes) {
+    my $user_entry = "";
+
+    unless ($yes) 
+    {
         $user_entry = <>;
         chop $user_entry;
+
+	# for some values, we'll try to do some validation right here, in real time:
+    
+	if ($ENTRY eq 'ADMIN_EMAIL') 
+	{
+	    my $attempts = 0; 
+	    while ($user_entry !~/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}/) 
+	    {
+		$attempts++;
+		print "Please enter a valid email address: ";
+		$user_entry = <>;
+		chop $user_entry;
+	    }
+
+	    if ($attempts) 
+	    {
+		print "OK, looks legit.\n";
+	    }
+	}
+
+	# TODO: 
+	# validate the mail/smtp server here as well, 
+	# instead of doing it further down. 
     }
+	    
 
     if ( $user_entry ne "" ) {
         $CONFIG_DEFAULTS{$ENTRY} = $user_entry;
     }
+
+
 
     print "\n";
 }
@@ -284,7 +347,7 @@ if ( $yesno eq "n" ) {
 }
 
 # VALIDATION/VERIFICATION OF THE CONFIGURATION VALUES:
-# 1. VERIFY MAIL SERVER THEY CONFIGURED:
+# 1. VERIFY/VALIDATE THE MAIL SERVER THEY CONFIGURED:
 
 unless ($postgresonly) {
 
@@ -412,378 +475,401 @@ my $pg_major_version = 0;
 my $pg_minor_version = 0;
 
 my $POSTGRES_SYS_UID;
-if ( $CONFIG_DEFAULTS{'POSTGRES_SERVER'} eq 'localhost' ) {
+if ( $CONFIG_DEFAULTS{'POSTGRES_SERVER'} eq 'localhost' ) 
+{
     $pg_local_connection = 1;
+} 
+elsif ($pg_only) 
+{
+    print "In the --pg_only mode the script can only be run LOCALLY,\n";
+    print "i.e., on the server where PostgresQL is running, with the\n";
+    print "Postgres server address as \"localhost\".\n";
+    exit 1;
+}
 
-    # 3a. CHECK FOR USER postgres:
+    ### 3a. CHECK FOR USER postgres:
 
-    print "\nChecking system user \"postgres\"... ";
+    ###print "\nChecking system user \"postgres\"... ";
 
-    my $POSTGRES_SYS_NAME = "postgres";
-    $POSTGRES_SYS_UID = ( getpwnam("postgres") )[2];
+    ###my $POSTGRES_SYS_NAME = "postgres";
+    ###$POSTGRES_SYS_UID = ( getpwnam("postgres") )[2];
 
-    unless ($POSTGRES_SYS_UID) {
-        print STDERR "\nERROR: I haven't been able to find user \"postgres\" on the system! Is PostgreSQL installed?\n";
-        print STDERR "(TODO: prompt the user instead to supply an alternative username, if\n";
-        print STDERR "available)\n";
+    ###unless ($POSTGRES_SYS_UID) {
+    ###    print STDERR "\nERROR: I haven't been able to find user \"postgres\" on the system! Is PostgreSQL installed?\n";
+    ###    print STDERR "(TODO: prompt the user instead to supply an alternative username, if\n";
+    ###    print STDERR "available)\n";
 
-        exit 1;
+    ###    exit 1;
+    ###}
+
+    ###print "OK.\n";
+
+    # 3b. LOCATE THE EXECUTABLES, FOR jq AND psql:
+
+my $sys_path = $ENV{'PATH'};
+my @sys_path_dirs = split( ":", $sys_path );
+
+for my $sys_path_dir (@sys_path_dirs) {
+    if ( -x $sys_path_dir . "/jq" ) {
+	$jq_exec = $sys_path_dir;
+	last;
     }
+}
+if ( $jq_exec eq "" ) {
+    print STDERR "\nERROR: I haven't been able to find the jq command in your PATH! Please install it from http://stedolan.github.io/jq/\n";
+    exit 1;
 
-    print "OK.\n";
+}
 
-    # 3b. LOCATE THE EXECUTABLE:
 
-    my $sys_path = $ENV{'PATH'};
-    my @sys_path_dirs = split( ":", $sys_path );
+$psql_exec = "";
 
-    $psql_exec = "";
-
-    for my $sys_path_dir (@sys_path_dirs) {
-        if ( -x $sys_path_dir . "/psql" ) {
-            $psql_exec = $sys_path_dir;
-            last;
-        }
+for my $sys_path_dir (@sys_path_dirs) {
+    if ( -x $sys_path_dir . "/psql" ) {
+	$psql_exec = $sys_path_dir;
+	last;
     }
+}
 
-    for my $sys_path_dir (@sys_path_dirs) {
-        if ( -x $sys_path_dir . "/jq" ) {
-            $jq_exec = $sys_path_dir;
-            last;
-        }
-    }
-    if ( $jq_exec eq "" ) {
-        print STDERR "\nERROR: I haven't been able to find the jq command in your PATH! Please install it from http://stedolan.github.io/jq/\n";
-        exit 1;
 
-    }
+my $psql_major_version = 0;
+my $psql_minor_version = 0;
 
-    my $psql_major_version = 0;
-    my $psql_minor_version = 0;
+# 3c. IF PSQL WAS FOUND IN THE PATH, CHECK ITS VERSION:
 
-    # 3c. IF PSQL WAS FOUND IN THE PATH, CHECK ITS VERSION:
+unless ( $psql_exec eq "" ) {
+    open( PSQLOUT, $psql_exec . "/psql --version|" );
 
-    unless ( $psql_exec eq "" ) {
-        open( PSQLOUT, $psql_exec . "/psql --version|" );
+    my $psql_version_line = <PSQLOUT>;
+    chop $psql_version_line;
+    close PSQLOUT;
+    
+    my ( $postgresName, $postgresNameLong, $postgresVersion ) = split( " ", $psql_version_line );
 
-        my $psql_version_line = <PSQLOUT>;
-        chop $psql_version_line;
-        close PSQLOUT;
-
-        my ( $postgresName, $postgresNameLong, $postgresVersion ) = split( " ", $psql_version_line );
-
-        unless ( $postgresName eq "psql" && $postgresVersion =~ /^[0-9][0-9\.]*$/ ) {
-            print STDERR "\nWARNING: Unexpected output from psql command!\n";
-        }
-        else {
-            my (@psql_version_tokens) = split( '\.', $postgresVersion );
-
-            print "\n\nFound Postgres psql command, version $postgresVersion.\n\n";
-
-            $psql_major_version = $psql_version_tokens[0];
-            $psql_minor_version = $psql_version_tokens[1];
-
-            $pg_major_version = $psql_major_version;
-            $pg_minor_version = $psql_minor_version;
-
-        }
-    }
-
-    # a frequent problem with MacOSX is that the copy of psql found in the PATH
-    # belongs to the older version of PostgresQL supplied with the OS, which happens
-    # to be incompatible with the newer builds from the Postgres project; which are
-    # recommended to be used with dataverse. So if this is a MacOSX box, we'll
-    # check what other versions of PG are available, and select the highest version
-    # we can find:
-
-    if ( $WORKING_OS eq "MacOSX" ) {
-        my $macos_pg_major_version = 0;
-        my $macos_pg_minor_version = 0;
-
-        for $macos_pg_minor_version ( "3", "2", "1", "0" ) {
-            if ( -x "/Library/PostgreSQL/9." . $macos_pg_minor_version . "/bin/psql" ) {
-                $macos_pg_major_version = 9;
-                if (   ( $macos_pg_major_version > $psql_major_version )
-                    || ( $macos_pg_minor_version >= $psql_minor_version ) )
-                {
-                    $psql_exec        = "/Library/PostgreSQL/9." . $macos_pg_minor_version . "/bin";
-                    $pg_major_version = $macos_pg_major_version;
-                    $pg_minor_version = $macos_pg_minor_version;
-                }
-                last;
-            }
-        }
-
-        # And if we haven't found an 9.* version of postgresql installed, we'll also check
-        # for version 8.* available:
-
-        if ( $macos_pg_major_version < 9 ) {
-            for $macos_pg_minor_version ( "4", "3" )
-              # TODO:
-              # Do we even want to support postgres 8.3?
-            {
-                if ( -x "/Library/PostgreSQL/8." . $macos_pg_minor_version . "/bin/psql" ) {
-                    $macos_pg_major_version = 8;
-                    if (   $macos_pg_major_version > $psql_major_version
-                        || $macos_pg_minor_version > $psql_minor_version )
-                    {
-                        $psql_exec        = "/Library/PostgreSQL/8." . $macos_pg_minor_version . "/bin";
-                        $pg_major_version = $macos_pg_major_version;
-                        $pg_minor_version = $macos_pg_minor_version;
-                    }
-                    last;
-                }
-            }
-        }
-    }
-
-    if ( $psql_exec eq "" ) {
-        print STDERR "\nERROR: I haven't been able to find the psql command in your PATH!\n";
-        print STDERR "Please make sure PostgresQL is properly installed; if necessary, add\n";
-        print STDERR "the location of psql to the PATH, then try again.\n\n";
-
-        exit 1;
-    }
-
-    if ( $pg_major_version == 0 ) {
-    }
-
-    # 4. CONFIGURE POSTGRES:
-
-    print "\nConfiguring Postgres Database:\n";
-    print "(Using psql version " . $pg_major_version . "." . $pg_minor_version . ")\n";
-
-    $< = $POSTGRES_SYS_UID;
-    $> = $POSTGRES_SYS_UID;
-
-    # 4a. CHECK IF POSTGRES IS RUNNING:
-    print "Checking if a local instance of Postgres is running and accessible...\n";
-
-    # (change to /tmp before executing the command below -
-    # we are trying to do it as user postgres, and it may not have
-    # access to the current, installer directory; the command would still
-    # work, but there would be an error message from the shell init on screen
-    # - potentially confusing)
-
-    chdir("/tmp");
-
-    if ( !system( $psql_exec . "/psql -c 'SELECT * FROM pg_roles' > /dev/null 2>&1" ) ) {
-        print "Yes, it is.\n";
+    unless ( $postgresName eq "psql" && $postgresVersion =~ /^[0-9][0-9\.]*$/ ) {
+	print STDERR "\nWARNING: Unexpected output from psql command!\n";
     }
     else {
-        print "Nope, I haven't been able to connect to the local instance of PostgresQL.\n";
-        print "daemon. Is postgresql running? \n";
-        print "On a RedHat-like system, you can check the status of the daemon with\n\n";
-        print "   service postgresql status\n\n";
-        print "and, if it's not running, start the daemon with\n\n";
-        print "   service postgresql start\n\n";
-        print "On MacOSX, use Applications -> PostgresQL -> Start Server.\n";
-        print "(or, if there's no \"Start Server\" item in your PostgresQL folder, \n";
-        print "simply restart your MacOSX system!)\n";
-        print "Also, please make sure that the daemon is listening to network connections,\n";
-        print "at least on the localhost interface. (See \"Installing Postgres\" section\n";
-        print "of the installation manual).\n";
-        print "Finally, please make sure that the postgres user can make localhost \n";
-        print "connections without supplying a password. (That's controlled by the \n";
-        print "\"localhost ... ident\" line in pg_hba.conf; again, please consult the \n";
-        print "installation manual).\n";
+	my (@psql_version_tokens) = split( '\.', $postgresVersion );
 
-        exit 1;
+	print "\n\nFound Postgres psql command, version $postgresVersion.\n\n";
+
+	$psql_major_version = $psql_version_tokens[0];
+	$psql_minor_version = $psql_version_tokens[1];
+
+	$pg_major_version = $psql_major_version;
+	$pg_minor_version = $psql_minor_version;
+
     }
+}
+
+# a frequent problem with MacOSX is that the copy of psql found in the PATH
+# belongs to the older version of PostgresQL supplied with the OS, which happens
+# to be incompatible with the newer builds from the Postgres project; which are
+# recommended to be used with Dataverse. So if this is a MacOSX box, we'll
+# check what other versions of PG are available, and select the highest version
+# we can find:
+
+if ( $WORKING_OS eq "MacOSX" ) {
+    my $macos_pg_major_version = 0;
+    my $macos_pg_minor_version = 0;
+
+    for $macos_pg_minor_version ( "3", "2", "1", "0" ) {
+	if ( -x "/Library/PostgreSQL/9." . $macos_pg_minor_version . "/bin/psql" ) {
+	    $macos_pg_major_version = 9;
+	    if (   ( $macos_pg_major_version > $psql_major_version )
+		   || ( $macos_pg_minor_version >= $psql_minor_version ) )
+	    {
+		$psql_exec        = "/Library/PostgreSQL/9." . $macos_pg_minor_version . "/bin";
+		$pg_major_version = $macos_pg_major_version;
+		$pg_minor_version = $macos_pg_minor_version;
+	    }
+	    last;
+	}
+    }
+
+    # And if we haven't found an 9.* version of postgresql installed, we'll also check
+    # for version 8.* available:
+
+    if ( $macos_pg_major_version < 9 ) {
+	for $macos_pg_minor_version ( "4", "3" )
+	    # TODO:
+	    # Do we even want to support postgres 8.3?
+	{
+	    if ( -x "/Library/PostgreSQL/8." . $macos_pg_minor_version . "/bin/psql" ) {
+		$macos_pg_major_version = 8;
+		if (   $macos_pg_major_version > $psql_major_version
+		       || $macos_pg_minor_version > $psql_minor_version )
+		{
+		    $psql_exec        = "/Library/PostgreSQL/8." . $macos_pg_minor_version . "/bin";
+		    $pg_major_version = $macos_pg_major_version;
+		    $pg_minor_version = $macos_pg_minor_version;
+		}
+		last;
+	    }
+	}
+    }
+}
+
+
+
+my $psql_admin_exec = "";
+
+if ( $psql_exec eq "" ) 
+{ 
+    if ( $pg_local_connection ) 
+    {
+	print STDERR "\nERROR: I haven't been able to find the psql command in your PATH!\n";
+	print STDERR "Please make sure PostgresQL is properly installed; if necessary, add\n";
+	print STDERR "the location of psql to the PATH, then try again.\n\n";
+
+	exit 1;
+    }
+    else 
+    {
+	print "WARNING: I haven't been able to find the psql command in your PATH!\n";
+	print "But since we are configuring a Dataverse instance to use a remote Postgres server,\n";
+	print "we can still set up the database by running a setup script on that remote server\n";
+	print "(see below for instructions).\n";
+    }
+} else {
+
+    if ( $pg_major_version == 0 ) {
+	# hmm?
+    }
+
+    print "(We'll be Using psql version " . $pg_major_version . "." . $pg_minor_version . ")\n";
+
+
+    $psql_admin_exec = "PGPASSWORD=" . $CONFIG_DEFAULTS{'POSTGRES_ADMIN_PASSWORD'} . "; export PGPASSWORD; " . $psql_exec; 
+    $psql_exec = "PGPASSWORD=" . $CONFIG_DEFAULTS{'POSTGRES_PASSWORD'} . "; export PGPASSWORD; " . $psql_exec; 
+
+    print "Checking if we can talk to Postgres as the admin user...\n";
+}
+
+# 4. CONFIGURE POSTGRES:
+
+# But first, let's see if we can talk to the database as the admin user:
+
+###$< = $POSTGRES_SYS_UID;
+###$> = $POSTGRES_SYS_UID;
+
+
+# 4a. CHECK IF WE CAN TALK TO POSTGRES AS THE ADMIN:
+
+if ( $psql_admin_exec eq "" || system( $psql_admin_exec . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U postgres -d postgres -c 'SELECT * FROM pg_roles' > /dev/null 2>&1" ) ) 
+{
+    # No, we can't. :(
+    if ($pg_local_connection) 
+    {
+	# If Postgres is running locally, this is a fatal condition. 
+	# We'll give them some (potentially) helpful pointers and exit.
+	print "Nope, I haven't been able to connect to the local instance of PostgresQL as the admin user.\n";
+	print "\nIs postgresql running? \n";
+	print "   On a RedHat-like system, you can check the status of the daemon with\n\n";
+	print "      service postgresql status\n\n";
+	print "   and, if it's not running, start the daemon with\n\n";
+	print "      service postgresql start\n\n";
+	print "   On MacOSX, use Applications -> PostgresQL -> Start Server.\n";
+	print "   (or, if there's no \"Start Server\" item in your PostgresQL folder, \n";
+	print "   simply restart your MacOSX system!)\n";
+	print "\nAlso, please make sure that the daemon is listening to network connections!\n";
+	print "   - at least on the localhost interface. (See \"Installing Postgres\" section\n";
+	print "   of the installation manual).\n";
+	print "\nFinally, did you supply the correct admin password?\n";
+	print "   Don't know the admin password for your Postgres installation?\n";
+	print "   - then simply set the access level to \"trust\" temporarily (for localhost only!)\n";
+	print "   in your pg_hba.conf file. Again, please consult the \n";
+	print "   installation manual).\n";
+	exit 1;
+    }
+    else 
+    {
+	# If we are configuring the Dataverse instance to use a Postgres server 
+	# running on a remote host, it is possible to configure the database
+	# without opening remote access for the admin user. They will simply 
+	# have to run this script in the "postgres-only" mode on that server, locally, 
+	# then resume the installation here: 
+
+	print "Nope, I haven't been able to connect to the remote Postgres server as the admin user.\n";
+	print "(Or you simply don't have psql installed on this server)\n";
+	print "It IS possible to configure a database for your Dataverse on a remote server,\n";
+	print "without having admin access to that remote Postgres installation.\n\n";
+	print "In order to do that, pleaes copy the installer (the entire package) to the server\n";
+	print "where PostgresQL is running and run the installer with the \"--pg_only\" option:\n\n";
+	print "   ./install --pg_only\n\n";
+
+	print "Press any key to continue the installation process once that has been\n";
+	print "done. Or press ctrl-C to exit the installer.\n\n";
+
+	system "stty cbreak </dev/tty >/dev/tty 2>&1";
+	my $key = getc(STDIN);
+	system "stty -cbreak </dev/tty >/dev/tty 2>&1";
+	print "\n";
+
+	# Find out what Postgres version is running remotely:
+
+	$pg_major_version = 9;
+	$pg_minor_version = 1;
+
+	print "What version of PostgresQL is installed on the remote server?\n ["
+	    . $pg_major_version . "."
+	    . $pg_minor_version . "] ";
+	
+	my $postgresVersion = <>;
+	chop $postgresVersion;
+
+	while ( $postgresVersion ne "" && !( $postgresVersion =~ /^[0-9]+\.[0-9]+$/ ) ) {
+	    print "Please enter valid Postgres version!\n";
+	    print "(or ctrl-C to exit the installer)\n";
+	    $postgresVersion = <>;
+	    chop $postgresVersion;
+	}
+
+	unless ( $postgresVersion eq "" ) {
+	    my (@postgres_version_tokens) = split( '\.', $postgresVersion );
+
+	    unless ( ( $postgres_version_tokens[0] == 8 && $postgres_version_tokens[1] >= 4 )
+		     || ( $postgres_version_tokens[0] >= 9 ) )
+	    {
+		print STDERR "\nERROR: PostgresQL version 8.4, or newer, is required!\n";
+		print STDERR "Please make sure the right version of PostgresQL is properly installed\n";
+		print STDERR "on the remote server, then try again.\n";
+		
+		exit 1;
+	    }
+
+	    $pg_major_version = $postgres_version_tokens[0];
+	    $pg_minor_version = $postgres_version_tokens[1];
+	}
+    }
+}
+else 
+{
+    print "Yes, we can!\n";
+
+    # ok, we can proceed with configuring things...
+
+    print "\nConfiguring Postgres Database:\n";
 
     # 4c. CHECK IF THIS DB ALREADY EXISTS:
-
+    
     my $psql_command_dbcheck =
-      $psql_exec . "/psql -c \"\" -d " . $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} . ">/dev/null 2>&1";
-    if ($force) {
-        print "WARNING! Database "
-          . $CONFIG_DEFAULTS{'POSTGRES_DATABASE'}
-          . " already exists but --force given... continuing.\n";
-    }
-    elsif ( ( my $exitcode = system($psql_command_dbcheck) ) == 0 ) {
-        $> = 0;
-        $< = 0;
+	$psql_admin_exec . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U postgres -c \"\" -d " . $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} . ">/dev/null 2>&1";
 
-        chdir($cwd);
+    if ( ( my $exitcode = system($psql_command_dbcheck) ) == 0 ) 
+    {    
+	if ($force) 
+	{
+	    print "WARNING! Database "
+		. $CONFIG_DEFAULTS{'POSTGRES_DATABASE'}
+	    . " already exists but --force given... continuing.\n";
+	} 
+	else 
+	{
+	    ###$> = 0;
+	    ###$< = 0;
 
-        print "WARNING! Database " . $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} . " already exists!\n";
-        print "\nPlease note that you can only use this installer to create a blank, \n";
-        print "new and shiny DVN database. I.e., you cannot install on top of an \n";
-        print "existing database. Please enter a different name for the DVN database.\n";
-        print "\nPress any key to continue, or ctrl-C to exit the installer...\n\n";
+	    ###chdir($cwd);
 
-        system "stty cbreak </dev/tty >/dev/tty 2>&1";
-        my $key = getc(STDIN);
-        system "stty -cbreak </dev/tty >/dev/tty 2>&1";
-        print "\n";
+	    print "WARNING! Database " . $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} . " already exists!\n";
+	    print "\nPlease note that you can only use this installer to create a blank, \n";
+	    print "new and shiny Dataverse database. I.e., you cannot install on top of an \n";
+	    print "existing one. Please enter a different name for the DVN database.\n";
+	    print "\nPress any key to continue, or ctrl-C to exit the installer...\n\n";
+	    
+	    system "stty cbreak </dev/tty >/dev/tty 2>&1";
+	    my $key = getc(STDIN);
+	    system "stty -cbreak </dev/tty >/dev/tty 2>&1";
+	    print "\n";
 
-        goto ENTERCONFIG;
-
+	    goto ENTERCONFIG;
+	}
     }
 
     # 4d. CHECK IF THIS USER ALREADY EXISTS:
-
+    
     my $psql_command_rolecheck =
-      $psql_exec . "/psql -c \"\" -d postgres " . $CONFIG_DEFAULTS{'POSTGRES_USER'} . " >/dev/null 2>&1";
-    if ( ( my $exitcode = system($psql_command_rolecheck) ) == 0 ) {
-        print "User (role) " . $CONFIG_DEFAULTS{'POSTGRES_USER'} . " already exists;\n";
-        print "Proceeding.";
+	$psql_exec . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -c \"\" -d postgres " . $CONFIG_DEFAULTS{'POSTGRES_USER'} . " >/dev/null 2>&1";
+    if ( ( my $exitcode = system($psql_command_rolecheck) ) == 0 ) 
+    {
+	print "User (role) " . $CONFIG_DEFAULTS{'POSTGRES_USER'} . " already exists;\n";
+	print "Proceeding.";
     }
-    else {
-        # 4e. CREATE DVN DB USER:
+    else 
+    {
+	# 4e. CREATE DVN DB USER:
 
-        print "\nCreating Postgres user (role) for the DVN:\n";
+	print "\nCreating Postgres user (role) for the DVN:\n";
+	
+	open TMPCMD, ">/tmp/pgcmd.$$.tmp";
 
-        open TMPCMD, ">/tmp/pgcmd.$$.tmp";
+	# with md5-encrypted password:
+	my $pg_password_md5 =
+	    &create_pg_hash( $CONFIG_DEFAULTS{'POSTGRES_USER'}, $CONFIG_DEFAULTS{'POSTGRES_PASSWORD'} );
+	my $sql_command =
+	    "CREATE ROLE \""
+	    . $CONFIG_DEFAULTS{'POSTGRES_USER'}
+	    . "\" PASSWORD 'md5"
+	    . $pg_password_md5
+	    . "' NOSUPERUSER CREATEDB CREATEROLE INHERIT LOGIN";
 
-        # with md5-encrypted password:
-        my $pg_password_md5 =
-          &create_pg_hash( $CONFIG_DEFAULTS{'POSTGRES_USER'}, $CONFIG_DEFAULTS{'POSTGRES_PASSWORD'} );
-        my $sql_command =
-            "CREATE ROLE \""
-          . $CONFIG_DEFAULTS{'POSTGRES_USER'}
-          . "\" PASSWORD 'md5"
-          . $pg_password_md5
-          . "' NOSUPERUSER CREATEDB CREATEROLE INHERIT LOGIN";
+	print TMPCMD $sql_command;
+	close TMPCMD;
+	    
+	my $psql_commandline = $psql_exec . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U postgres -d postgres -f /tmp/pgcmd.$$.tmp >/dev/null 2>&1";
 
-        print TMPCMD $sql_command;
-        close TMPCMD;
+	my $out      = qx($psql_commandline 2>&1);
+	my $exitcode = $?;
+	unless ( $exitcode == 0 ) 
+	{
+	    print STDERR "Could not create the DVN Postgres user role!\n";
+	    print STDERR "(SQL: " . $sql_command . ")\n";
+	    print STDERR "(psql exit code: " . $exitcode . ")\n";
+	    print STDERR "(STDERR and STDOUT was: " . $out . ")\n";
+	    exit 1;
+	}
 
-        my $psql_commandline = $psql_exec . "/psql -f /tmp/pgcmd.$$.tmp >/dev/null 2>&1";
-
-        my $out      = qx($psql_commandline 2>&1);
-        my $exitcode = $?;
-        unless ( $exitcode == 0 ) {
-            print STDERR "Could not create the DVN Postgres user role!\n";
-            print STDERR "(SQL: " . $sql_command . ")\n";
-            print STDERR "(psql exit code: " . $exitcode . ")\n";
-            print STDERR "(STDERR and STDOUT was: " . $out . ")\n";
-            exit 1;
-        }
-
-        unlink "/tmp/pgcmd.$$.tmp";
-        print "done.\n";
+	unlink "/tmp/pgcmd.$$.tmp";
+	print "done.\n";
     }
-
+    
     # 4f. CREATE DVN DB:
-
+    
     print "\nCreating Postgres database:\n";
-
+    
     my $psql_command =
-        $psql_exec
-      . "/createdb "
-      . $CONFIG_DEFAULTS{'POSTGRES_DATABASE'}
-      . " --owner="
-      . $CONFIG_DEFAULTS{'POSTGRES_USER'};
+	$psql_admin_exec
+	. "/createdb -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U postgres "
+	. $CONFIG_DEFAULTS{'POSTGRES_DATABASE'}
+        . " --owner="
+	. $CONFIG_DEFAULTS{'POSTGRES_USER'};
 
     my $out      = qx($psql_command 2>&1);
     my $exitcode = $?;
-    unless ( $exitcode == 0 ) {
-        print STDERR "Could not create Postgres database for the DVN app!\n";
-        print STDERR "(command: " . $psql_command . ")\n";
-        print STDERR "(psql exit code: " . $exitcode . ")\n";
-        print STDERR "(STDOUT and STDERR: " . $out . ")\n";
-        if ($force) {
-            print STDERR "\n--force called, continuing\n";
-        }
-        else {
-            print STDERR "\naborting the installation (sorry!)\n\n";
-            exit 1;
-        }
+    unless ( $exitcode == 0 ) 
+    {
+	print STDERR "Could not create Postgres database for the Dataverse app!\n";
+	print STDERR "(command: " . $psql_command . ")\n";
+	print STDERR "(psql exit code: " . $exitcode . ")\n";
+	print STDERR "(STDOUT and STDERR: " . $out . ")\n";
+	if ($force) 
+	{
+	    print STDERR "\n--force called, continuing\n";
+	}
+	else 
+	{
+	    print STDERR "\naborting the installation (sorry!)\n\n";
+	    exit 1;
+	}
     }
 
-    # Changing back to root UID:
+    ### Changing back to root UID:
 
-    $> = 0;
-    $< = 0;
-
-    chdir($cwd);
-
-}
-else {
-    if (0) {    # THE LINES BELOW WERE PART OF THE 3.* "DEV." INSTALLER:
-                # DO WE STILL WANT TO MAINTAIN THIS FUNCTIONALITY IN DATAVERSE 4.*?
-
-        print "\nIt is strongly recommended that you use a local PostgresQL server,\n";
-        print "running on localhost, in your development environment!\n\n";
-
-        print "Do you wish to continue?\n [y/n] ";
-
-        my $yesnocont = <>;
-        chop $yesnocont;
-
-        while ( $yesnocont ne "y" && $yesnocont ne "n" ) {
-            print "Please enter 'y' or 'n'!\n";
-            print "(or ctrl-C to exit the installer)\n";
-            $yesnocont = <>;
-            chop $yesnocont;
-        }
-
-        if ( $yesnocont eq "n" ) {
-            print "(aborting the installation)\n" . exit 0;
-        }
-    }
-
-    if ($pg_only) {
-        print "The script must be run in the --pg_only mode ONLY locally,\n";
-        print "i.e., on the server where PostgresQL is running.\n";
-
-        exit 1;
-    }
-
-    print "In order to use a PostgresQL database running on a remote server,\n";
-    print "Please run this installer on that host with the \"--pg_only\" option:\n\n";
-    print "./install --pg_only\n\n";
-
-    print "Press any key to continue the installation process once that has been\n";
-    print "done. Or press ctrl-C to exit the installer.\n\n";
-
-    chdir("/tmp");
-    system "stty cbreak </dev/tty >/dev/tty 2>&1";
-    my $key = getc(STDIN);
-    system "stty -cbreak </dev/tty >/dev/tty 2>&1";
-    print "\n";
-    chdir($cwd);
-
-    # Check if the role and database have been created on the remote server:
-    # -- TODO;
-
-    # Find out what Postgres version is running remotely:
-
-    $pg_major_version = 9;
-    $pg_minor_version = 1;
-
-    print "What version of PostgresQL is installed on the remote server?\n ["
-      . $pg_major_version . "."
-      . $pg_minor_version . "] ";
-
-    my $postgresVersion = <>;
-    chop $postgresVersion;
-
-    while ( $postgresVersion ne "" && !( $postgresVersion =~ /^[0-9]+\.[0-9]+$/ ) ) {
-        print "Please enter valid Postgres version!\n";
-        print "(or ctrl-C to exit the installer)\n";
-        $postgresVersion = <>;
-        chop $postgresVersion;
-    }
-
-    unless ( $postgresVersion eq "" ) {
-        my (@postgres_version_tokens) = split( '\.', $postgresVersion );
-
-        unless ( ( $postgres_version_tokens[0] == 8 && $postgres_version_tokens[1] >= 4 )
-            || ( $postgres_version_tokens[0] >= 9 ) )
-        {
-            print STDERR "\nERROR: PostgresQL version 8.4, or newer, is required!\n";
-            print STDERR "Please make sure the right version of PostgresQL is properly installed\n";
-            print STDERR "on the remote server, then try again.\n";
-
-            exit 1;
-        }
-
-        $pg_major_version = $postgres_version_tokens[0];
-        $pg_minor_version = $postgres_version_tokens[1];
-    }
-
+    ###$> = 0;
+    ###$< = 0;
+    
+    ###chdir($cwd);
 }
 
 if ($postgresonly) {
@@ -792,6 +878,20 @@ if ($postgresonly) {
 
     exit 0;
 }
+    
+
+# Whether the user and the database were created locally or remotely, we'll now 
+# verify that we can talk to that database, with the credentials of the database
+# user that we want the Dataverse application to be using: 
+
+if ( system( $psql_exec . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U " . $CONFIG_DEFAULTS{'POSTGRES_USER'} . " -d " . $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} . " -c 'SELECT * FROM pg_roles' > /dev/null 2>&1" ) ) 
+{
+    print STDERR "Oops, haven't been able to connect to the database " . $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} . ",\n";
+    print STDERR "running on " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . ", as user " . $CONFIG_DEFAULTS{'POSTGRES_USER'} . ".\n\n";
+    print STDERR "Aborting the installation (sorry!)\n";
+    exit 1; 
+}
+
 
 # 5. CONFIGURE GLASSFISH
 
@@ -1006,55 +1106,60 @@ unless ((
     exit 1;
 }
 
-# 7. POPULATE DATABASE:
+# 7. PRE-POPULATE THE DATABASE:
+# (in this step some pre-supplied content is inserted into the database that we have just created;
+# it is not *necessary* for the application to run in the very basic mode; but some features - certain 
+# types of metadata imports, for example - will be unavailable if it's not done. 
 
-if ($pg_local_connection) {
-    # 7a. POPULATE LOCALLY:
-    print "\nPopulating the database (local PostgresQL instance):\n\n";
+###if ($pg_local_connection) {
+###    # 7a. POPULATE LOCALLY:
+print "\nPre-populating the database:\n\n";
 
-    # Copy the SQL file to /tmp, where user postgres will definitely
-    # have read access to it:
+    ### Copy the SQL file to /tmp, where user postgres will definitely
+    ### have read access to it:
 
-    copy( $SQL_REFERENCE_DATA, "/tmp" ) or die "Could not copy $SQL_REFERENCE_DATA to /tmp: $!";
-    unlink( $SQL_REFERENCE_DATA );
+    ###copy( $SQL_REFERENCE_DATA, "/tmp" ) or die "Could not copy $SQL_REFERENCE_DATA to /tmp: $!";
+    ###unlink( $SQL_REFERENCE_DATA );
 
-    chdir("/tmp");
-    $< = $POSTGRES_SYS_UID;
-    $> = $POSTGRES_SYS_UID;
-    my $psql_command = $psql_exec . "/psql -d $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} -f $SQL_REFERENCE_DATA";
+    ###chdir("/tmp");
+    ###$< = $POSTGRES_SYS_UID;
+    ###$> = $POSTGRES_SYS_UID;
+my $psql_command = $psql_exec . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U " . $CONFIG_DEFAULTS{'POSTGRES_USER'} . " -d $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} -f $SQL_REFERENCE_DATA";
 
-    unless ( ( my $exitcode = system("$psql_command") ) == 0 ) {
-        print STDERR "Could not populate Postgres database for the Dataverse application!\n";
-        print STDERR "(command: " . $psql_command . ")\n";
-        print STDERR "(psql exit code: " . $exitcode . ")\n";
-        print STDERR "\nYou must populate the database before you can use your new\n";
-        print STDERR "Dataverse instance. Please consult the installation manual and/or\n";
-        print STDERR "seek support from the Dataverse team.\n\n";
-        exit 1;
-
-    }
-
-}
-else {
-    # 7b. INSTRUCT THE USER TO POPULATE THE DB ON THE REMOTE SERVER:
-    # NOT SUPPORTED YET -- TODO
-    print "Please copy the file $SQL_REFERENCE_DATA (found in this directory)\n";
-    print "onto the remote server and populate the database manually,\n";
-    print "as user postgres, with the following command:\n\n";
-    print "   psql -d $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} -f $SQL_REFERENCE_DATA\n";
-    print "then start glassfish again on this server with \n\n";
+unless ( ( my $exitcode = system("$psql_command") ) == 0 ) 
+{
+    print "WARNING: Could not pre-populate Postgres database for the Dataverse application!\n";
+    print "(command: " . $psql_command . ")\n";
+    print "(psql exit code: " . $exitcode . ")\n";
+    print "\nYou must populate the database in order for all the features of your \n";
+    print "new Dataverse to be available. \n";
+    print "\n";
+    print "You can try this again, by executing the following on the command line:\n";
+    print "   psql -U $CONFIG_DEFAULTS{'POSTGRES_USER'} -d $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} -f $SQL_REFERENCE_DATA\n";
+    print "then re-start glassfish with \n\n";
+    print "   " . $glassfish_dir . "/bin/asadmin stop-domain domain1\n\n";
     print "   " . $glassfish_dir . "/bin/asadmin start-domain domain1\n\n";
-
-#    exit 0;
-
+    print "\n";
+    print "If it's still failing, please consult the installation manual and/or\n";
+    print "seek support from the Dataverse team.\n\n";
+    
+    print "Press any key to continue... ";
+    
+    system "stty cbreak </dev/tty >/dev/tty 2>&1";
+    my $key = getc(STDIN);
+    system "stty -cbreak </dev/tty >/dev/tty 2>&1";
+    print "\n";
+} 
+else 
+{
+    print "\nOK, done!\n";
 }
 
-# back to root:
+### back to root:
 
-$> = 0;
-$< = 0;
-chdir($cwd);
-print "\nOK, done!\n";
+###$> = 0;
+###$< = 0;
+###chdir($cwd);
 
 # Check if the App is running: 
 
@@ -1118,8 +1223,21 @@ for my $script ( "setup-all.sh" ) {
     print "ok!\n";
 }
 
-# If this installation is going to be using TwoRavens, configure its location in the Dataverse settings;
-# If not, disable TwoRavens in the settings:
+# SOME SETTINGS THAT ARE NOT TAKEN CARE OF BY THE setup-all SCRIPT NEED 
+# TO BE CONFIGURED HERE:
+
+# a. Configure the Admin email in the Dataverse settings:
+
+my $exit_code; 
+
+my $exit_code = system("curl -X put -d " . $CONFIG_DEFAULTS{'ADMIN_EMAIL'} . " " . $API_URL . "/admin/settings/:SystemEmail"); 
+if ( $exit_code )       
+{
+    print "WARNING: failed to configure the admin email in the Dataverse settings!\n\n";
+}
+    
+# b. If this installation is going to be using TwoRavens, configure its location in the Dataverse settings;
+# Otherwise, set the "NO TwoRavens FOR YOU!" option in the settings:
 
 if ($CONFIG_DEFAULTS{'TWORAVENS_LOCATION'} ne 'NOT INSTALLED')
 {
@@ -1136,7 +1254,7 @@ if ($CONFIG_DEFAULTS{'TWORAVENS_LOCATION'} ne 'NOT INSTALLED')
     }
 }
 
-# If this installation is going to be using a remote SOLR search engine service, configure its location in the settings:
+# c. If this installation is going to be using a remote SOLR search engine service, configure its location in the settings:
 
 if ($CONFIG_DEFAULTS{'SOLR_LOCATION'} ne 'LOCAL')
 {
@@ -1148,7 +1266,6 @@ if ($CONFIG_DEFAULTS{'SOLR_LOCATION'} ne 'LOCAL')
 }
 
 
-    
 
 chdir($cwd);
 
