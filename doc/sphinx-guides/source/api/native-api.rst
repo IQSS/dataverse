@@ -99,6 +99,19 @@ Datasets
 * ``x.y`` a specific version, where ``x`` is the major version number and ``y`` is the minor version number.
 * ``x`` same as ``x.0``
 
+
+.. note:: Datasets can be accessed using persistent identifiers. This is done by passing the constant ``:persistentId`` where the numeric id of the dataset is expected, and then passing the actual persistent id as a query parameter with the name ``persistentId``.
+
+  Example: Getting the dataset whose DOI is *10.5072/FK2/J8SJZB* ::
+
+    GET http://$SERVER/api/datasets/:persistentId/?persistentId=doi:10.5072/FK2/J8SJZB
+
+  Getting its draft version::
+
+    GET http://$SERVER/api/datasets/:persistentId/versions/:draft?persistentId=doi:10.5072/FK2/J8SJZB
+
+
+
 Show the dataset whose id is passed::
 
   GET http://$SERVER/api/datasets/$id?key=$apiKey
