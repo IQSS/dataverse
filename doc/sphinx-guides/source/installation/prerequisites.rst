@@ -91,29 +91,23 @@ The version that ships with RHEL 6 and above is fine::
         # service postgresql initdb
 	# service postgresql start
 
-Configure Access to PostgreSQL for the Installer Script
-=======================================================
-
-- When using localhost for the database server, the installer script needs to have direct access to the local PostgreSQL server via Unix domain sockets. This is configured by the line that starts with ``local all all`` in the pg_hba.conf file. The location of this file may vary depending on the distribution. But if you followed the suggested installation instructions above, it will be ``/var/lib/pgsql/data/pg_hba.conf`` on RHEL and similar. Make sure the line looks like this (it will likely be pre-configured like this already)::
-
-	local all all       peer
-
-- If the installer still fails to connect to the databse, we recommend changing this configuration entry to ``trust``::
-
-     	 local all all      trust
-
-This is a security risk, as it opens your database to anyone with a shell on your server. It does not however compromise remote access to your system. Plus you only need this configuration in place to run the installer. After it's done, you can safely reset it to how it was configured before.
-
-Configure Database Access for the Dataverse Application
-=======================================================
+Configure Database Access for the Dataverse Application (and the Dataverse Installer) 
+=====================================================================================
 
 - The application will be talking to PostgreSQL over TCP/IP, using password authentication. If you are running PostgreSQL on the same server as Glassfish, we strongly recommend that you use the localhost interface to connect to the database. Make you sure you accept the default value ``localhost`` when the installer asks you for the PostgreSQL server address. Then find the localhost (127.0.0.1) entry that's already in the ``pg_hba.conf`` and modify it to look like this:: 
 
-  	host all all 127.0.0.1/32 password
+  	host all all 127.0.0.1/32 md5
+  
+- The Dataverse installer script (for more information on the installer, please see :doc:`installation-main`) will need to connect to PostgreSQL as the admin user, in order to create and set up the database that the Dataverse will be using. If for whatever reason it is failing to connect (for example, if you don't remember what your Postgres admin password is), you may choose to temporarily disable all the access restrictions on localhost connections, by changing the above line to::
+
+  	host all all 127.0.0.1/32 trust
+
+  Note that this rule opens access to the database server **via localhost only**. Still, in a production environment, this may constitute a security risk. So you will likely want to change it back to "md5" once the installer has finished.
+
 
 - If the Dataverse application is running on a different server, you will need to add a new entry to the ``pg_hba.conf`` granting it access by its network address::
 
-        host all all [ADDRESS]      255.255.255.255 password
+        host all all [ADDRESS]      255.255.255.255 md5
 
   (``[ADDRESS]`` should be the numeric IP address of the Glassfish server).
 
