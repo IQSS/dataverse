@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Run this script post-installation, to block all the settings that 
-# should not be available to the general public in a production Dataverse installation.
+# This script can be run on a system that was set up with unrestricted access to 
+# the sensitive API endpoints, in order to block it for the general public.
 
 # First, revoke the authentication token from the built-in user: 
 curl -X DELETE $SERVER/admin/settings/BuiltinUsers.KEY
