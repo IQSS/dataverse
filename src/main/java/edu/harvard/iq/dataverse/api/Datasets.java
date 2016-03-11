@@ -132,7 +132,7 @@ public class Datasets extends AbstractApiBean {
         
 	@PUT
 	@Path("{id}/citationdate")
-	public Response setCitationDate( @PathParam("id") Long id, String dsfTypeName) {
+	public Response setCitationDate( @PathParam("id") String id, String dsfTypeName) {
             try {
                 if ( dsfTypeName.trim().isEmpty() ){
                     throw new WrappedResponse( badRequest("Please provide a dataset field type in the requst body.") );
@@ -156,7 +156,7 @@ public class Datasets extends AbstractApiBean {
     
 	@DELETE
 	@Path("{id}/citationdate")
-	public Response useDefaultCitationDate( @PathParam("id") Long id) {
+	public Response useDefaultCitationDate( @PathParam("id") String id) {
             try {
                 execCommand(new SetDatasetCitationDateCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(id), null));
                 return okResponse("Citation Date for dataset " + id + " set to default");
