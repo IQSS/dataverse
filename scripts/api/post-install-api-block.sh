@@ -22,6 +22,6 @@ curl -X PUT -d admin,test http://localhost:8080/api/admin/settings/:BlockedApiEn
 # "unblock key" (password): 
 
 #curl -X PUT -d YOURSUPERSECRETUNBLOCKKEY http://localhost:8080/api/admin/settings/:BlockedApiKey 
-#curl -X PUT -d localhost-only http://localhost:8080/api/admin/settings/:BlockedApiPolicy
+#curl -X PUT -d unblock-key http://localhost:8080/api/admin/settings/:BlockedApiPolicy
 
 
