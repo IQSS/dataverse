@@ -2,7 +2,7 @@ INSTALLER_ZIP_DIR=dvinstall
 DISTRIBUTION_WAR_FILE=${INSTALLER_ZIP_DIR}/dataverse.war
 GLASSFISH_SETUP_SCRIPT=${INSTALLER_ZIP_DIR}/glassfish-setup.sh
 POSTGRES_DRIVERS=${INSTALLER_ZIP_DIR}/pgdriver
-API_SCRIPTS=${INSTALLER_ZIP_DIR}/setup-datasetfields.sh ${INSTALLER_ZIP_DIR}/setup-users.sh ${INSTALLER_ZIP_DIR}/setup-builtin-roles.sh ${INSTALLER_ZIP_DIR}/setup-dvs.sh ${INSTALLER_ZIP_DIR}/data ${INSTALLER_ZIP_DIR}/setup-identity-providers.sh  ${INSTALLER_ZIP_DIR}/setup-all.sh 
+API_SCRIPTS=${INSTALLER_ZIP_DIR}/setup-datasetfields.sh ${INSTALLER_ZIP_DIR}/setup-users.sh ${INSTALLER_ZIP_DIR}/setup-builtin-roles.sh ${INSTALLER_ZIP_DIR}/setup-dvs.sh ${INSTALLER_ZIP_DIR}/data ${INSTALLER_ZIP_DIR}/setup-identity-providers.sh  ${INSTALLER_ZIP_DIR}/setup-all.sh ${INSTALLER_ZIP_DIR}/post-install-api-block.sh
 DB_SCRIPT=${INSTALLER_ZIP_DIR}/reference_data.sql
 JHOVE_CONFIG=${INSTALLER_ZIP_DIR}/jhove.conf
 JHOVE_SCHEMA=${INSTALLER_ZIP_DIR}/jhoveConfig.xsd
@@ -50,10 +50,10 @@ ${POSTGRES_DRIVERS}:	pgdriver/postgresql-8.4-703.jdbc4.jar pgdriver/postgresql-9
 	@mkdir -p ${POSTGRES_DRIVERS}
 	/bin/cp pgdriver/postgresql-8.4-703.jdbc4.jar pgdriver/postgresql-9.0-802.jdbc4.jar pgdriver/postgresql-9.1-902.jdbc4.jar ${INSTALLER_ZIP_DIR}/pgdriver
 
-${API_SCRIPTS}:	../api/setup-datasetfields.sh ../api/setup-users.sh ../api/setup-dvs.sh ../api/setup-identity-providers.sh ../api/setup-all.sh ../api/setup-builtin-roles.sh ../api/data ../api/data
+${API_SCRIPTS}:	../api/setup-datasetfields.sh ../api/setup-users.sh ../api/setup-dvs.sh ../api/setup-identity-providers.sh ../api/setup-all.sh ../api/post-install-api-block.sh ../api/setup-builtin-roles.sh ../api/data
 	@echo copying api scripts
 	@mkdir -p ${INSTALLER_ZIP_DIR}
-	/bin/cp -R ../api/setup-datasetfields.sh ../api/setup-users.sh ../api/setup-dvs.sh ../api/setup-identity-providers.sh ../api/setup-all.sh ../api/setup-builtin-roles.sh ../api/data ${INSTALLER_ZIP_DIR}
+	/bin/cp -R ../api/setup-datasetfields.sh ../api/setup-users.sh ../api/setup-dvs.sh ../api/setup-identity-providers.sh ../api/setup-all.sh ../api/post-install-api-block.sh ../api/setup-builtin-roles.sh ../api/data ${INSTALLER_ZIP_DIR}
 
 ${DB_SCRIPT}:	../database/reference_data.sql
 	@echo copying reference data sql script
