@@ -33,14 +33,34 @@ public class DataversesIT {
 
     @Test
     public void testAttemptToCreateDuplicateAlias() throws Exception {
+
         Response createDataverse1Response = UtilIT.createRandomDataverse(apiToken1);
-        createDataverse1Response.prettyPrint();
+        if (createDataverse1Response.getStatusCode() != 201) {
+            // purposefully using println here to the error shows under "Test Results" in Netbeans
+            System.out.println("A workspace for testing (a dataverse) couldn't be created in the root dataverse. The output was:\n\n" + createDataverse1Response.body().asString());
+            System.out.println("\nPlease ensure that users can created dataverses in the root in order for this test to run.");
+        } else {
+            createDataverse1Response.prettyPrint();
+        }
+        assertEquals(201, createDataverse1Response.getStatusCode());
+
         dataverseAlias1 = UtilIT.getAliasFromResponse(createDataverse1Response);
         dataverseAlias2 = dataverseAlias1.toUpperCase();
         logger.info("Attempting to creating dataverse with alias '" + dataverseAlias2 + "' (uppercase version of existing '" + dataverseAlias1 + "' dataverse, should fail)...");
-        Response createDataverse2Response = UtilIT.createDataverse(dataverseAlias2, apiToken1);
-        createDataverse2Response.prettyPrint();
-        assertEquals(400, createDataverse2Response.getStatusCode());
+        Response attemptToCreateDataverseWithDuplicateAlias = UtilIT.createDataverse(dataverseAlias2, apiToken1);
+        attemptToCreateDataverseWithDuplicateAlias.prettyPrint();
+        assertEquals(400, attemptToCreateDataverseWithDuplicateAlias.getStatusCode());
+
+        logger.info("Deleting dataverse " + dataverseAlias1);
+        Response deleteDataverse1Response = UtilIT.deleteDataverse(dataverseAlias1, apiToken1);
+        deleteDataverse1Response.prettyPrint();
+        assertEquals(200, deleteDataverse1Response.getStatusCode());
+
+        logger.info("Checking response code for attempting to delete a non-existent dataverse.");
+        Response attemptToDeleteDataverseThatShouldNotHaveBeenCreated = UtilIT.deleteDataverse(dataverseAlias2, apiToken1);
+        attemptToDeleteDataverseThatShouldNotHaveBeenCreated.prettyPrint();
+        assertEquals(404, attemptToDeleteDataverseThatShouldNotHaveBeenCreated.getStatusCode());
+
     }
 
     @AfterClass
@@ -50,14 +70,6 @@ public class DataversesIT {
         if (disabled) {
             return;
         }
-
-        Response deleteDataverse1Response = UtilIT.deleteDataverse(dataverseAlias1, apiToken1);
-        deleteDataverse1Response.prettyPrint();
-        assertEquals(200, deleteDataverse1Response.getStatusCode());
-
-        Response deleteDataverse2Response = UtilIT.deleteDataverse(dataverseAlias2, apiToken1);
-//        deleteDataverse2Response.prettyPrint();
-        assertEquals(404, deleteDataverse2Response.getStatusCode());
 
         Response deleteUser1Response = UtilIT.deleteUser(username1);
         deleteUser1Response.prettyPrint();

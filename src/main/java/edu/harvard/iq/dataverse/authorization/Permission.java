@@ -9,10 +9,25 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * All the permissions in the system are implemented as enum constants in this
- * class.
- *
- * KEEP THIS UNDER 64, or update the permission storage that currently uses a bit-field.
+ * All the permissions in the system are implemented as enum values in this
+ * class. For performance, the permissions are stored internally in a bit field
+ * (in effect, a {@code long}). This brings database fetches to a single action
+ * rather than a join, and in-memory permission set unions to a bitwise or 
+ * rather than a tree merge. But some caution must be practiced when making
+ * changes to this class.
+ * 
+ * =========================================================
+ * IMPORTANT NOTES, READ BEFORE MAKING CHANGES TO THIS FILE
+ * =========================================================
+ * 
+ * 1. Number of permissions must be kept under 64. If more 
+ *    than 64 permissions are needed, storage must be updated
+ *    to include two {@code long}s, rather then the current one.
+ * 2. Do not change the order of the enum values, and add new values only
+ *    after the last enum value. If you wish to change the order or add a
+ *    permission in between existing ones (or at the beginning), ALSO PROVIDE
+ *    A MIGRATION SCRIPT FOR THE DATABASE. Otherwise, permissions in the
+ *    database will be mis-assigned. This may be a major security issue.
  *
  * @author michael
  */
@@ -66,7 +81,7 @@ public enum Permission implements java.io.Serializable {
     }
 
     public boolean appliesTo(Class<? extends DvObject> aClass) {
-        for (Class c : appliesTo) {
+        for (Class<? extends DvObject> c : appliesTo) {
             if (c.isAssignableFrom(aClass)) {
                 return true;
             }

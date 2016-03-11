@@ -105,6 +105,7 @@ public class DataFileTag implements Serializable {
         return this.type;
     }
     
+    
     public void setType(TagType type) {
         this.type = type;
     }
@@ -125,6 +126,20 @@ public class DataFileTag implements Serializable {
         }
         
         return null; 
+    }
+    
+    /**
+     * Is this a geospatial tag, e.g. TagType.Geospatial
+     * @return 
+     */
+    public boolean isGeospatialTag(){
+        if (this.type == null){
+            return false;
+        }
+        if (this.type == TagType.Geospatial){
+            return true;
+        }
+        return false;
     }
     
     @Override

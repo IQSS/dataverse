@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.DOIEZIdServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
+import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
@@ -22,6 +23,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.GetLatestAccessibleDatasetVe
 import edu.harvard.iq.dataverse.engine.command.impl.GetLatestPublishedDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListVersionsCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.SetDatasetCitationDateCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetTargetURLCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
@@ -126,7 +128,42 @@ public class Datasets extends AbstractApiBean {
 		} catch (WrappedResponse ex) {
 			return ex.refineResponse( "Failed to detroy dataset " + id );
 		}		
-	}        
+	}
+        
+	@PUT
+	@Path("{id}/citationdate")
+	public Response setCitationDate( @PathParam("id") Long id, String dsfTypeName) {
+            try {
+                if ( dsfTypeName.trim().isEmpty() ){
+                    throw new WrappedResponse( badRequest("Please provide a dataset field type in the requst body.") );
+                }
+                DatasetFieldType dsfType = null;
+                if (!":publicationDate".equals(dsfTypeName)) {
+                    dsfType = datasetFieldSvc.findByName(dsfTypeName);
+                    if (dsfType == null) {
+                        throw new WrappedResponse( badRequest("Dataset Field Type Name " + dsfTypeName + " not found.") );
+                    }
+                }
+
+                execCommand(new SetDatasetCitationDateCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(id), dsfType));
+                
+                return okResponse("Citation Date for dataset " + id + " set to: " + (dsfType != null ? dsfType.getDisplayName() : "default"));
+
+            } catch (WrappedResponse ex) {
+                return ex.refineResponse("Unable to set citation date for dataset " + id + ".");
+            }
+	}    
+    
+	@DELETE
+	@Path("{id}/citationdate")
+	public Response useDefaultCitationDate( @PathParam("id") Long id) {
+            try {
+                execCommand(new SetDatasetCitationDateCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(id), null));
+                return okResponse("Citation Date for dataset " + id + " set to default");
+            } catch (WrappedResponse ex) {
+                return ex.refineResponse("Unable to restore default citation date for dataset " + id + ".");
+            }
+	}         
 	
 	@GET
 	@Path("{id}/versions")

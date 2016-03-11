@@ -10,7 +10,7 @@ Once a user creates a dataverse they, by default, become the
 administrator of that dataverse. The dataverse administrator has access
 to manage the settings described in this guide.
 
-Create a Dataverse (within the "root" Dataverse)
+Create a Dataverse (Within the "Root" Dataverse)
 ===================================================
 
 Creating a dataverse is easy but first you must be a registered user (see Create Account).
@@ -49,7 +49,7 @@ where you will be presented with the following editing options:
 General Information
 =====================================================
 
-The General Information page is how you edit the information you filled in while creating your dataverse. If you need to change or add a contact email address, this is the place to do it. Additionally, you can update the metadata elements used for datasets within the dataverse, change which metadafields are hidden, required, or optional, and update the facets you would like displayed for browsing the dataverse. If you plan on using templates, you need to select the metadata fields on the General Information page.
+The General Information page is how you edit the information you filled in while creating your dataverse. If you need to change or add a contact email address, this is the place to do it. Additionally, you can update the metadata elements used for datasets within the dataverse, change which metadata fields are hidden, required, or optional, and update the facets you would like displayed for browsing the dataverse. If you plan on using templates, you need to select the metadata fields on the General Information page.
 
 Tip: The metadata fields you select as required, will appear on the Create Dataset form when someone goes to add a dataset to the dataverse. 
 
@@ -60,7 +60,7 @@ Theme + Widgets
 
 The Theme + Widgets feature provides you with a way to customize the look of your dataverse as well as provide code for you to put on your personal website to have your dataverse appear there. (For adding your dataverse to an OpenScholar site, follow these instructions.)
 
-For Theme, you can decide either to use the customization from the dataverse above yours or upload your own image file. Supported image types are jpeg, tiff, or png and should be no larger than 500kb. The maximum display for an image file in a dataverse's theme is 940 piels wide by 120 pixels high. Additionally, you can select the colors for the header of your dataverse and the text that appears in your dataverse. You can also add a link to your personal website, the website for your organization or institution, your department, journal, etc.
+For Theme, you can decide either to use the customization from the dataverse above yours or upload your own image file. Supported image types are JPEG, TIFF, or PNG and should be no larger than 500 KB. The maximum display size for an image file in a dataverse's theme is 940 pixels wide by 120 pixels high. Additionally, you can select the colors for the header of your dataverse and the text that appears in your dataverse. You can also add a link to your personal website, the website for your organization or institution, your department, journal, etc.
 
 There are two options for Widgets, a Dataverse Search box widget and a Dataverse Listing widget. The Dataverse Search Box will add a search box to your website that when someone enters a search term in and clicks Find, will bring them to Dataverse to see the results. The Dataverse Listing widget will provide a listing of all your dataverses and datasets. When someone clicks on a dataverse or dataset in the widget, it will bring them to your dataverse to see the actual data. Within the Widgets page, you can copy and paste the code for the widget you would like to have on your website. 
 
@@ -85,7 +85,7 @@ By clicking on the Edit Access button, you are able to change the settings allow
 |image4|
 The Edit Access pop up allows you to also select if someone adding a dataset to this dataverse should be allowed to publish it (Curator role) or if the dataset will be submitted to the administrator of this dataverse to be reviewed then published (Contributor role). These Access settings can be changed at any time.
 
-Assigning a role
+Assign Role
 -----------------------
 You can also give access to a Dataverse user to allow them to access an unpublished dataverse as well as other roles. To do this, click on the Assign Roles to Users/Groups button in the Users/Groups section. You can also give multiple users the same role at one time.
 |image5|
@@ -121,7 +121,7 @@ How do you create a guestbook?
 
 #. After creating a dataverse, click on the Edit Dataverse button and select Dataset Guestbook
 #. By default, guestbooks created in the dataverse your dataverse is in, will appear. If you do not want to use or see those guestbooks, uncheck the checkbox that says Include Guestbooks from Root Dataverse.
-#. To create a new guestbook, click the Create Dataset Guestbook button on the rightside of the page. 
+#. To create a new guestbook, click the Create Dataset Guestbook button on the right side of the page. 
 #. Name the guestbook, determine the account information that you would like to be required (all account information fields show when someone downloads a file), and then add Custom Questions (can be required or not required). 
 #. Hit the Create Dataset Guestbook button once you have finished.
 

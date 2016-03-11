@@ -32,7 +32,7 @@ An issue is a bug (a feature is no longer behaving the way it should) or a featu
 
 Before submitting an issue, please search the existing issues by using the search bar at the top of the page. If there is an existing issue that matches the issue you want to report, please add a comment to it.
 
-If there is no pre-existing issue, please click on the "New Issue" button, log in, and write in what the issue is. Someone on the Dataverse development team will appropriately tag and assign it to a member of the Dataverse development team. 
+If there is no pre-existing issue, please click on the "New Issue" button, log in, and write in what the issue is (unless it is a security issue which should be reported privately to security@dataverse.org). Someone on the Dataverse development team will appropriately tag and assign it to a member of the Dataverse development team.
 
 ## Writing an Issue
 
@@ -70,7 +70,7 @@ The source for the documentation at http://guides.dataverse.org is in the GitHub
 
 ## Code/Pull Requests
 
-To get started developing code for Dataverse, please read our Developer's Guide at http://guides.dataverse.org/en/latest/developers
+To get started developing code for Dataverse, please read our Developer Guide at http://guides.dataverse.org/en/latest/developers
 
 [doc]: https://github.com/IQSS/dataverse/tree/master/doc/sphinx-guides/source
 

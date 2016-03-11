@@ -426,6 +426,20 @@ public class WorldMapRelatedData extends AbstractApiBean {
         // (4) Roll it all up in a JSON response
         final JsonObjectBuilder jsonData = Json.createObjectBuilder();
         
+        //------------------------------------
+        // Type of file, currently:
+        //  - shapefile or 
+        //  - tabular file (.tab) with geospatial tag
+        //------------------------------------
+        if (dfile.isShapefileType()){
+            jsonData.add("mapping_type", "shapefile");
+        }else if (dfile.isTabularData()){
+            jsonData.add("mapping_type", "tabular");        
+        }else{
+            logger.log(Level.SEVERE, "This was neither a Shapefile nor a Tabular data file.  DataFile id: " + dfile.getId());
+            return errorResponse( Response.Status.BAD_REQUEST, "Sorry! This file does not have mapping data. Please contact the Dataverse administrator. DataFile id: " + dfile.getId()); 
+        }
+    
         
         //------------------------------------
         // DataverseUser Info
@@ -468,8 +482,8 @@ public class WorldMapRelatedData extends AbstractApiBean {
         jsonData.add("dataset_semantic_version", dset_version.getSemanticVersion());  // major/minor version number, e.g. 3.1
         
         jsonData.add("dataset_name", dset_version.getTitle());
-        jsonData.add("dataset_citation", dset_version.getCitation());
-
+        jsonData.add("dataset_citation", dset_version.getCitation(true));
+        
         jsonData.add("dataset_description", "");  // Need to fix to/do
 
         jsonData.add("dataset_is_public", dset_version.isReleased());
@@ -598,6 +612,28 @@ public class WorldMapRelatedData extends AbstractApiBean {
             mapLayerMetadata.setMapImageLink(jsonInfo.getString("mapImageLink"));
         }
       
+        // If this was a tabular join set the attributes:
+        //  - isJoinLayer
+        //  - joinDescription
+        //
+        String joinDescription = jsonInfo.getString("joinDescription");
+        if ((joinDescription == null) || (joinDescription.equals(""))){
+            mapLayerMetadata.setIsJoinLayer(true);
+            mapLayerMetadata.setJoinDescription(joinDescription);
+        }else{
+            mapLayerMetadata.setIsJoinLayer(false);
+            mapLayerMetadata.setJoinDescription(null);            
+        }
+            
+        // Set the mapLayerLinks 
+        //
+        String mapLayerLinks = jsonInfo.getString("mapLayerLinks");
+        if (mapLayerLinks == null){
+            mapLayerMetadata.setMapLayerLinks(null);                        
+        }else{
+            mapLayerMetadata.setMapLayerLinks(mapLayerLinks);            
+        }
+        
         
         //mapLayer.save();
         MapLayerMetadata savedMapLayerMetadata = mapLayerMetadataService.save(mapLayerMetadata);

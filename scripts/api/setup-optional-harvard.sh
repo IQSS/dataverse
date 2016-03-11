@@ -15,6 +15,11 @@ echo  "- Google Analytics setting"
 curl -X PUT -d true "$SERVER/admin/settings/:ScrubMigrationData"
 echo  "- Enabling Shibboleth"
 curl -X PUT -d true http://localhost:8080/api/admin/settings/:ShibEnabled
+echo  "- Enabling TwoRavens"
+curl -s -X PUT -d true "$SERVER/admin/settings/:TwoRavensTabularView"
+echo  "- Enabling Geoconnect"
+curl -s -X PUT -d true "$SERVER/admin/settings/:GeoconnectCreateEditMaps"
+curl -s -X PUT -d true "$SERVER/admin/settings/:GeoconnectViewMaps"
 echo  "- Setting system email"
 curl -X PUT -d "Dataverse Support <support@dataverse.org>" http://localhost:8080/api/admin/settings/:SystemEmail
 echo "- Setting up the Harvard Shibboleth institutional group"
