@@ -6,6 +6,7 @@
 package edu.harvard.iq.dataverse;
 
 
+import java.io.Closeable;
 import java.io.IOException;
 
 import java.io.UnsupportedEncodingException;
@@ -37,7 +38,7 @@ import org.apache.http.util.EntityUtils;
  * @author luopc
  *
  */
-public class DataCiteRESTfullClient {
+public class DataCiteRESTfullClient implements Closeable {
     
     private static final Logger logger = Logger.getLogger(DataCiteRESTfullClient.class.getCanonicalName());
 
@@ -46,7 +47,7 @@ public class DataCiteRESTfullClient {
     private HttpClientContext context;
     private String encoding = "utf-8";
     
-    public DataCiteRESTfullClient(String url, String username, String password) {
+    public DataCiteRESTfullClient(String url, String username, String password) throws IOException {
         this.url = url;
         try {
             context = HttpClientContext.create();
@@ -63,9 +64,9 @@ public class DataCiteRESTfullClient {
         }
     }
 
-    public void close() {
+    public void close() throws IOException {
         if (this.httpClient != null) {
-           // httpClient.close();
+           httpClient.close();
         }
     }
 
@@ -142,10 +143,10 @@ public class DataCiteRESTfullClient {
     }
     
     /**
-     * getMetadata
+     * testDOIExists
      *
      * @param doi
-     * @return
+     * @return boolean true if identifier already exists on DataCite site
      */
     public boolean testDOIExists(String doi) {
         HttpGet httpGet = new HttpGet(this.url + "/metadata/" + doi);      
@@ -176,7 +177,6 @@ public class DataCiteRESTfullClient {
             HttpResponse response = httpClient.execute(httpPost,context);
             
             String data = EntityUtils.toString(response.getEntity(), encoding);
-            System.out.print("response " + data);
             if (response.getStatusLine().getStatusCode() != 201) {
                 String errMsg = "Response code: " + response.getStatusLine().getStatusCode() + ", " + data;
                 logger.log(Level.SEVERE, errMsg);
@@ -231,7 +231,7 @@ public class DataCiteRESTfullClient {
 //		System.out.println(client2.getMetadata("10.1/1.0007"));
 //		System.out.println(client2.inactiveDataSet("10.1/1.0007"));
 //		client2.close();
-    }
+}
 
     
 //    private static String readAndClose(String file, String encoding) throws IOException{

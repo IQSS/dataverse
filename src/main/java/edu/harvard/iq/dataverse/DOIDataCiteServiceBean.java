@@ -5,9 +5,6 @@
  */
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.engine.command.Command;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -45,12 +42,19 @@ public class DOIDataCiteServiceBean {
         
     }
     
-    public boolean alreadyExists (Dataset dataset){       
+    public boolean alreadyExists (Dataset dataset){   
+        boolean alreadyExists;
         String identifier = getIdentifierFromDataset(dataset);
-        return  doiDataCiteRegisterService.testDOIExists(identifier); 
+        try{
+            alreadyExists = doiDataCiteRegisterService.testDOIExists(identifier); 
+        } catch (Exception e){
+            logger.log(Level.INFO, "alreadyExists failed");
+            return false;
+        }
+        return  alreadyExists;
     }
 
-    public String createIdentifier(Dataset dataset) {
+    public String createIdentifier(Dataset dataset) throws Exception {
         String retString = "";
         String identifier = getIdentifierFromDataset(dataset);
         HashMap metadata = getMetadataFromStudyForCreateIndicator(dataset);
@@ -63,12 +67,12 @@ public class DOIDataCiteServiceBean {
             logger.log(Level.INFO, "localized message " + e.getLocalizedMessage());
             logger.log(Level.INFO, "cause " + e.getCause());
             logger.log(Level.INFO, "message " + e.getMessage());
-            throw new RuntimeException(e);
+            throw e;
 //            return "Identifier not created " + e.getLocalizedMessage();
         }
         return retString;
     }
-
+    
     public HashMap getIdentifierMetadata(Dataset dataset) {
         String identifier = getIdentifierFromDataset(dataset);
         HashMap metadata = new HashMap();
@@ -102,7 +106,7 @@ public class DOIDataCiteServiceBean {
         return protocol + ":" + authority + separator + identifier;
     }
 
-    public String modifyIdentifier(Dataset dataset, HashMap metadata) {
+    public String modifyIdentifier(Dataset dataset, HashMap metadata) throws Exception {
         String identifier = getIdentifierFromDataset(dataset);
         try {
             doiDataCiteRegisterService.createIdentifier(identifier, metadata, dataset);
@@ -112,7 +116,7 @@ public class DOIDataCiteServiceBean {
             logger.log(Level.INFO, "localized message " + e.getLocalizedMessage());
             logger.log(Level.INFO, "cause " + e.getCause());
             logger.log(Level.INFO, "message " + e.getMessage());
-            throw new RuntimeException(e);
+            throw e;
         }
         return identifier;
     }
@@ -278,11 +282,11 @@ public class DOIDataCiteServiceBean {
         return dataset.getGlobalId();
     }
 
-    public void publicizeIdentifier(Dataset studyIn, Command command)  {
+    public void publicizeIdentifier(Dataset studyIn) throws Exception {
         updateIdentifierStatus(studyIn, "public");
     }
 
-    private void updateIdentifierStatus(Dataset dataset, String statusIn)  {
+    private void updateIdentifierStatus(Dataset dataset, String statusIn) throws Exception  {
         String identifier = getIdentifierFromDataset(dataset);
         HashMap metadata = getUpdateMetadataFromDataset(dataset);
         metadata.put("_status", statusIn);

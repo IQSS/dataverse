@@ -147,7 +147,11 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
                     doiRetString = ctxt.doiEZId().createIdentifier(theDataset);
                 }
                 if (doiProvider.equals("DataCite")) {
-                    doiRetString = ctxt.doiDataCite().createIdentifier(theDataset);
+                    try{
+                        doiRetString = ctxt.doiDataCite().createIdentifier(theDataset);
+                    } catch (Exception e){
+                         logger.log(Level.WARNING, "Exception while creating Identifier:" + e.getMessage(), e);
+                    }
                 }
 
                 // Check return value to make sure registration succeeded
