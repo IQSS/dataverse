@@ -10,7 +10,10 @@
     <!-- 'showSearch' Msg -->
     <div class="row" jsf:rendered="#{showSearch == false}">
         <div class="col-sm-12">
-            <p>This is in an iframe.</p>
+            <p><span class="glyphicon glyphicon-lamp"/> This is in an iframe.</p>
+            <div jsf:rendered="#{dataverseSession.user.authenticated}">
+                <p><span class="glyphicon glyphicon-education"/> You are logged in.</p>
+            </div>
         </div>
     </div>
     

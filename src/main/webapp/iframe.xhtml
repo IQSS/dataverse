@@ -5,6 +5,7 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
+      xmlns:jsf="http://xmlns.jcp.org/jsf"
       lang="en">
 
     <h:head>
@@ -52,7 +53,43 @@
             <f:viewAction action="#{SearchIncludeFragment.search()}" />
         </f:metadata>
         
+        <div id="breadcrumbNavBlock" class="container" jsf:rendered="#{dataverseHeaderFragment.breadcrumbs.size() > 1}">
+            <!-- Dup Msg -->
+            <div class="breadcrumbBlock text-muted">
+                Duplicate Breadcrumbs Code Block
+            </div>
+            <h:outputText value=" > " styleClass="breadcrumbCarrot"/>
+            <!-- Orginal Code -->
+            <ui:repeat value="#{dataverseHeaderFragment.breadcrumbs}" var="breadcrumb" varStatus="status">
+                <h:outputText value=" > " styleClass="breadcrumbCarrot" rendered="#{!status.first}"/>
+                <div class="breadcrumbBlock">
+                    <h:outputText value="#{breadcrumb.breadcrumbText}" styleClass="#{'breadcrumbActive'}" rendered="#{status.last}"/>
+                    <ui:fragment rendered="#{!status.last}">
+                        <h:outputText value="#{breadcrumb.breadcrumbText}" rendered="#{!breadcrumb.dvObject.instanceofDataverse and !breadcrumb.dvObject.instanceofDataset}"/>
+
+                        <ui:fragment rendered="#{breadcrumb.dvObject.instanceofDataverse}">                       
+                            <a id="breadcrumbLnk#{status.index}" href="/dataverse/${breadcrumb.dvObject.alias}">
+                                <h:outputText value="#{breadcrumb.breadcrumbText}"/>
+                            </a>
+                        </ui:fragment>
+                        <ui:fragment rendered="#{breadcrumb.dvObject.instanceofDataset}">                       
+                            <a id="breadcrumbLnk#{status.index}" href="/dataset.xhtml?persistentId=${breadcrumb.dvObject.globalId}">
+                                <h:outputText value="#{breadcrumb.breadcrumbText}"/>
+                            </a>
+                        </ui:fragment>                        
+                    </ui:fragment>
+                </div>
+            </ui:repeat>                    
+        </div>
         
+        <div id="messagePanel" jsf:rendered="#{dataverseSession.user.authenticated}">
+            <div class="container messagePanel">
+                <div class="alert alert-dismissable alert-warning" jsf:rendered="#{dataverseSession.user.authenticated}">
+                    <button aria-hidden="true" data-dismiss="alert" class="close" type="button">×</button>
+                    <span class="glyphicon glyphicon-info-sign"></span> <b>Code Update Notification -</b> Please update the Dataverse widget code being used on this site. This messagePanel is a duplicated of the one on dataverse_header.
+                </div>
+            </div>
+        </div>
         
         <div>
 
@@ -65,6 +102,24 @@
             </ui:include>
         
         </div>
+        
+        <div class="row">
+            <div class="col-sm-6 text-lext">
+                <p class="text-muted small">Data stored in the <a href="#{systemConfig.dataverseSiteUrl}" title="#{dataverseServiceBean.findRootDataverse().name} #{bundle.dataverse}" target="_blank">#{dataverseServiceBean.findRootDataverse().name} #{bundle.dataverse}</a>.</p>
+            </div>
+            <div class="col-sm-6 text-right">
+                <span class="text-muted small" style="margin-right:6px;">Powered by</span><a target="_blank" title="The Dataverse Project" href="http://dataverse.org/"><img style="vertical-align:middle;" src="/resources/images/dataverseproject_logo.jpg" alt="The Dataverse Project"/></a>
+            </div>
+        </div>
+        
+        <p:ajaxStatus id="ajaxStatusPanel">
+            <f:facet name="start">
+                <h:graphicImage value="/resources/images/ajax-loading.gif" alt="Loading" />
+            </f:facet>
+            <f:facet name="complete">
+                <!-- DO NOTHING -->
+            </f:facet>
+        </p:ajaxStatus>
                 
         <h:outputScript library="bs" name="js/bootstrap.min.js" />
         <h:outputScript library="bs" name="js/bootstrap-hover-dropdown.min.js" />
