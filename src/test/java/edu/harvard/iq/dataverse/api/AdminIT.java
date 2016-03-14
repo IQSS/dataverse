@@ -77,6 +77,10 @@ public class AdminIT {
 
         Response makeShibUser = migrateBuiltinToShib(data, superuserApiToken);
         makeShibUser.prettyPrint();
+        /**
+         * @todo Expect a non-OK response if the Shib user has an invalid email
+         * address: https://github.com/IQSS/dataverse/issues/2998
+         */
         makeShibUser.then().assertThat().statusCode(OK.getStatusCode());
 
         Response shibToBuiltinAnon = migrateShibToBuiltin(Long.MAX_VALUE, "", "");

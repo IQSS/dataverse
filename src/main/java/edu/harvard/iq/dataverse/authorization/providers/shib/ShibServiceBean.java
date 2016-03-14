@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.authorization.providers.shib;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
@@ -13,6 +14,7 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthentic
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -40,6 +42,8 @@ public class ShibServiceBean {
     AuthenticationServiceBean authSvc;
     @EJB
     BuiltinUserServiceBean builtinUserService;
+    @EJB
+    SystemConfig systemConfig;
 
     public AuthenticatedUser findAuthUserByEmail(String emailToFind) {
         return authSvc.getAuthenticatedUserByEmail(emailToFind);
@@ -103,26 +107,71 @@ public class ShibServiceBean {
         }
     }
 
-    /**
-     * @todo Move the getAffiliation method from the Shib JSF backing bean to
-     * here.
-     */
-    public String getFriendlyInstitutionName(String entityId) {
-        /**
-         * @todo Look for the entityId (i.e.
-         * "https://idp.testshib.org/idp/shibboleth") for find "TestShib Test
-         * IdP" in (for example)
-         * https://demo.dataverse.org/Shibboleth.sso/DiscoFeed
-         *
-         * It looks something like this: [ { "entityID":
-         * "https://idp.testshib.org/idp/shibboleth", "DisplayNames": [ {
-         * "value": "TestShib Test IdP", "lang": "en" } ], "Descriptions": [ {
-         * "value": "TestShib IdP. Use this as a source of attributes\n for your
-         * test SP.", "lang": "en" } ], "Logos": [ { "value":
-         * "https://www.testshib.org/testshibtwo.jpg", "height": "88", "width":
-         * "253" } ] } ]
-         */
-        return null;
+    public String getAffiliation(String shibIdp, Shib.DevShibAccountType devShibAccountType) {
+        JsonArray emptyJsonArray = new JsonArray();
+        String discoFeedJson = emptyJsonArray.toString();
+        String discoFeedUrl;
+        if (devShibAccountType.equals(Shib.DevShibAccountType.PRODUCTION)) {
+            discoFeedUrl = systemConfig.getDataverseSiteUrl() + "/Shibboleth.sso/DiscoFeed";
+        } else {
+            String devUrl = "http://localhost:8080/resources/dev/sample-shib-identities.json";
+            discoFeedUrl = devUrl;
+        }
+        logger.info("Trying to get affiliation from disco feed URL: " + discoFeedUrl);
+        URL url = null;
+        try {
+            url = new URL(discoFeedUrl);
+        } catch (MalformedURLException ex) {
+            logger.info(ex.toString());
+            return null;
+        }
+        if (url == null) {
+            logger.info("url object was null after parsing " + discoFeedUrl);
+            return null;
+        }
+        HttpURLConnection discoFeedRequest = null;
+        try {
+            discoFeedRequest = (HttpURLConnection) url.openConnection();
+        } catch (IOException ex) {
+            logger.info(ex.toString());
+            return null;
+        }
+        if (discoFeedRequest == null) {
+            logger.info("disco feed request was null");
+            return null;
+        }
+        try {
+            discoFeedRequest.connect();
+        } catch (IOException ex) {
+            logger.info(ex.toString());
+            return null;
+        }
+        JsonParser jp = new JsonParser();
+        JsonElement root = null;
+        try {
+            root = jp.parse(new InputStreamReader((InputStream) discoFeedRequest.getInputStream()));
+        } catch (IOException ex) {
+            logger.info(ex.toString());
+            return null;
+        }
+        if (root == null) {
+            logger.info("root was null");
+            return null;
+        }
+        JsonArray rootArray = root.getAsJsonArray();
+        if (rootArray == null) {
+            logger.info("Couldn't get JSON Array from URL");
+            return null;
+        }
+        discoFeedJson = rootArray.toString();
+        logger.fine("Dump of disco feed:" + discoFeedJson);
+        String affiliation = ShibUtil.getDisplayNameFromDiscoFeed(shibIdp, discoFeedJson);
+        if (affiliation != null) {
+            return affiliation;
+        } else {
+            logger.info("Couldn't find an affiliation from  " + shibIdp);
+            return null;
+        }
     }
 
     /**
@@ -192,4 +241,5 @@ public class ShibServiceBean {
         fakeUser.put("eppn", salt.getAsString());
         return fakeUser;
     }
+
 }

@@ -1,14 +1,10 @@
 package edu.harvard.iq.dataverse;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.UserIdentifier;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
-import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibServiceBean;
@@ -17,13 +13,7 @@ import edu.harvard.iq.dataverse.authorization.providers.shib.ShibUtil;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.JsfHelper;
-import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -55,11 +45,7 @@ public class Shib implements java.io.Serializable {
     @EJB
     ShibServiceBean shibService;
     @EJB
-    ShibGroupServiceBean shibGroupService;
-    @EJB
     SettingsServiceBean settingsService;
-    @EJB
-    SystemConfig systemConfig;
     @EJB
     DataverseServiceBean dataverseService;
     @EJB
@@ -186,7 +172,7 @@ public class Shib implements java.io.Serializable {
          * scary warnings quoted from official Shib docs in
          * https://github.com/IQSS/dataverse/issues/2294
          */
-        useHeaders = systemConfig.isShibUseHeaders();
+        useHeaders = false;
         if (useHeaders) {
             printHeaders();
         }
@@ -298,7 +284,11 @@ public class Shib implements java.io.Serializable {
          * the authenticateduser table.
          */
 //        String displayName = getDisplayName(displayNameAttribute, firstNameAttribute, lastNameAttribute);
-        String affiliation = getAffiliation();
+        String affiliation = shibService.getAffiliation(shibIdp, getDevShibAccountType());
+        if (affiliation != null) {
+            affiliationToDisplayAtConfirmation = affiliation;
+            friendlyNameForInstitution = affiliation;
+        }
 //        emailAddress = "willFailBeanValidation"; // for testing createAuthenticatedUser exceptions
         displayInfo = new AuthenticatedUserDisplayInfo(firstName, lastName, emailAddress, affiliation, null);
 
@@ -377,78 +367,6 @@ public class Shib implements java.io.Serializable {
         }
         logger.info("Debug summary: " + debugSummary + " (state: " + state + ").");
         logger.fine("redirectPage: " + redirectPage);
-    }
-
-    /**
-     * @todo Move this to the shib service bean.
-     */
-    private String getAffiliation() {
-        JsonArray emptyJsonArray = new JsonArray();
-        String discoFeedJson = emptyJsonArray.toString();
-        String discoFeedUrl;
-        if (getDevShibAccountType().equals(DevShibAccountType.PRODUCTION)) {
-            discoFeedUrl = systemConfig.getDataverseSiteUrl() + "/Shibboleth.sso/DiscoFeed";
-        } else {
-            String devUrl = "http://localhost:8080/resources/dev/sample-shib-identities.json";
-            discoFeedUrl = devUrl;
-        }
-        logger.info("Trying to get affiliation from disco feed URL: " + discoFeedUrl);
-        URL url = null;
-        try {
-            url = new URL(discoFeedUrl);
-        } catch (MalformedURLException ex) {
-            logger.info(ex.toString());
-            return null;
-        }
-        if (url == null) {
-            logger.info("url object was null after parsing " + discoFeedUrl);
-            return null;
-        }
-        HttpURLConnection discoFeedRequest = null;
-        try {
-            discoFeedRequest = (HttpURLConnection) url.openConnection();
-        } catch (IOException ex) {
-            logger.info(ex.toString());
-            return null;
-        }
-        if (discoFeedRequest == null) {
-            logger.info("disco feed request was null");
-            return null;
-        }
-        try {
-            discoFeedRequest.connect();
-        } catch (IOException ex) {
-            logger.info(ex.toString());
-            return null;
-        }
-        JsonParser jp = new JsonParser();
-        JsonElement root = null;
-        try {
-            root = jp.parse(new InputStreamReader((InputStream) discoFeedRequest.getInputStream()));
-        } catch (IOException ex) {
-            logger.info(ex.toString());
-            return null;
-        }
-        if (root == null) {
-            logger.info("root was null");
-            return null;
-        }
-        JsonArray rootArray = root.getAsJsonArray();
-        if (rootArray == null) {
-            logger.info("Couldn't get JSON Array from URL");
-            return null;
-        }
-        discoFeedJson = rootArray.toString();
-        logger.fine("Dump of disco feed:" + discoFeedJson);
-        String affiliation = ShibUtil.getDisplayNameFromDiscoFeed(shibIdp, discoFeedJson);
-        if (affiliation != null) {
-            affiliationToDisplayAtConfirmation = affiliation;
-            friendlyNameForInstitution = affiliation;
-            return affiliation;
-        } else {
-            logger.info("Couldn't find an affiliation from  " + shibIdp);
-            return null;
-        }
     }
 
     /**

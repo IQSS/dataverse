@@ -1,6 +1,8 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.EMailValidator;
+import edu.harvard.iq.dataverse.Shib;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.UserIdentifier;
@@ -100,6 +102,7 @@ public class TestApi extends AbstractApiBean {
     @Path("user/convert/builtin2shib")
     @PUT
     public Response builtin2shib(String content) {
+        logger.info("entering builtin2shib...");
         try {
             AuthenticatedUser userToRunThisMethod = findAuthenticatedUserOrDie();
             if (!userToRunThisMethod.isSuperuser()) {
@@ -149,11 +152,18 @@ public class TestApi extends AbstractApiBean {
         String overwriteFirstName = randomUser.get("firstName");
         String overwriteLastName = randomUser.get("lastName");
         String overwriteEmail = randomUser.get("email");
+        logger.info("overwriteEmail: " + overwriteEmail);
+        boolean validEmail = EMailValidator.isEmailValid(overwriteEmail, null);
+        if (!validEmail) {
+            // See https://github.com/IQSS/dataverse/issues/2998
+            return errorResponse(Response.Status.BAD_REQUEST, "invalid email: " + overwriteEmail);
+        }
         /**
          * @todo If affiliation is not null, put it in RoleAssigneeDisplayInfo
          * constructor.
          */
-        String overwriteAffiliation = shibService.getFriendlyInstitutionName(idPEntityId);
+        String overwriteAffiliation = shibService.getAffiliation(idPEntityId, Shib.DevShibAccountType.RANDOM);
+        logger.info("overwriteAffiliation: " + overwriteAffiliation);
         /**
          * @todo Find a place to put "position" in the authenticateduser table:
          * https://github.com/IQSS/dataverse/issues/1444#issuecomment-74134694
