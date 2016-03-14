@@ -2,10 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonIOException;
-import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.google.gson.JsonSyntaxException;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.UserIdentifier;
@@ -31,8 +28,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -43,7 +40,6 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
-import org.apache.commons.lang.StringUtils;
 
 @ViewScoped
 @Named("Shib")
@@ -900,70 +896,12 @@ public class Shib implements java.io.Serializable {
         this.redirectPage = redirectPage;
     }
 
-    private void mutateRequestForDevRandom() throws JsonSyntaxException, JsonIOException {
-        // set *something*, at least, even if it's just shortened UUIDs
-//        for (String attr : shibAttrs) {
-        // in dev we don't care if a new, random user is created each time
-//            request.setAttribute(attr, UUID.randomUUID().toString().substring(0, 8));
-//        }
-
-        /**
-         * @todo Call into ShibServiceBean.getRandomUser().
-         */
-        String sURL = "http://api.randomuser.me";
-        URL url = null;
-        try {
-            url = new URL(sURL);
-        } catch (MalformedURLException ex) {
-            Logger.getLogger(Shib.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        HttpURLConnection randomUserRequest = null;
-        try {
-            randomUserRequest = (HttpURLConnection) url.openConnection();
-        } catch (IOException ex) {
-            Logger.getLogger(Shib.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        try {
-            randomUserRequest.connect();
-        } catch (IOException ex) {
-            Logger.getLogger(Shib.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        JsonParser jp = new JsonParser(); //from gson
-        JsonElement root = null;
-        try {
-            root = jp.parse(new InputStreamReader((InputStream) randomUserRequest.getContent())); //convert the input stream to a json element
-        } catch (IOException ex) {
-            Logger.getLogger(Shib.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        JsonObject rootObject = root.getAsJsonObject();
-        logger.fine(rootObject.toString());
-        JsonElement results = rootObject.get("results");
-        logger.fine(results.toString());
-        JsonElement firstResult = results.getAsJsonArray().get(0);
-        logger.fine(firstResult.toString());
-        JsonElement user = firstResult.getAsJsonObject().get("user");
-        JsonElement username = user.getAsJsonObject().get("username");
-        JsonElement email = user.getAsJsonObject().get("email");
-        JsonElement password = user.getAsJsonObject().get("password");
-        JsonElement name = user.getAsJsonObject().get("name");
-        JsonElement firstName = name.getAsJsonObject().get("first");
-        JsonElement lastName = name.getAsJsonObject().get("last");
-        /**
-         * @todo Does Harvard really send displayName? At one point they didn't.
-         * Let's simulate the non-sending of displayName here.
-         */
-//        request.setAttribute(displayNameAttribute, StringUtils.capitalise(firstName.getAsString()) + " " + StringUtils.capitalise(lastName.getAsString()));
-        request.setAttribute(lastNameAttribute, StringUtils.capitalise(lastName.getAsString()));
-        request.setAttribute(firstNameAttribute, StringUtils.capitalise(firstName.getAsString()));
-        request.setAttribute(emailAttribute, email.getAsString());
-        // random IDP
-        request.setAttribute(shibIdpAttribute, "https://idp." + password.getAsString() + ".com/idp/shibboleth");
-        /**
-         * Harvard's IdP doesn't send a username so let's test without it by
-         * commenting it out here.
-         */
-//        request.setAttribute(usernameAttribute, username.getAsString());
+    private void mutateRequestForDevRandom() {
+        Map<String, String> randomUser = shibService.getRandomUser();
+        request.setAttribute(lastNameAttribute, randomUser.get("lastName"));
+        request.setAttribute(firstNameAttribute, randomUser.get("firstName"));
+        request.setAttribute(emailAttribute, randomUser.get("email"));
+        request.setAttribute(shibIdpAttribute, randomUser.get("idp"));
         // eppn
         request.setAttribute(uniquePersistentIdentifier, UUID.randomUUID().toString().substring(0, 8));
     }
@@ -981,8 +919,15 @@ public class Shib implements java.io.Serializable {
     }
 
     private void mutateRequestForDevConstantHarvard1() {
+        /**
+         * Harvard's IdP doesn't send a username (uid).
+         */
         request.setAttribute(shibIdpAttribute, "https://fed.huit.harvard.edu/idp/shibboleth");
         request.setAttribute(uniquePersistentIdentifier, "constantHarvard");
+        /**
+         * @todo Does Harvard really send displayName? At one point they didn't.
+         * Let's simulate the non-sending of displayName here.
+         */
 //        request.setAttribute(displayNameAttribute, "John Harvard");
         request.setAttribute(firstNameAttribute, "John");
         request.setAttribute(lastNameAttribute, "Harvard");

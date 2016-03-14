@@ -13,7 +13,6 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthentic
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -157,7 +156,6 @@ public class ShibServiceBean {
         } catch (IOException ex) {
             Logger.getLogger(Shib.class.getName()).log(Level.SEVERE, null, ex);
         }
-        root = null;
         if (root == null) {
             String shortRandomString = UUID.randomUUID().toString().substring(0, 8);
             fakeUser.put("firstName", shortRandomString);
@@ -183,9 +181,11 @@ public class ShibServiceBean {
         JsonElement name = user.getAsJsonObject().get("name");
         JsonElement firstName = name.getAsJsonObject().get("first");
         JsonElement lastName = name.getAsJsonObject().get("last");
-        fakeUser.put("firstName", firstName.getAsString());
-        fakeUser.put("lastName", lastName.getAsString());
-        fakeUser.put("displayName", StringUtils.capitalise(firstName.getAsString()) + " " + StringUtils.capitalise(lastName.getAsString()));
+        String firstNameString = StringUtils.capitalize(firstName.getAsString());
+        String lastNameString = StringUtils.capitalize(lastName.getAsString());
+        fakeUser.put("firstName", firstNameString);
+        fakeUser.put("lastName", lastNameString);
+        fakeUser.put("displayName", firstNameString + " " + lastNameString);
         fakeUser.put("email", email.getAsString());
         fakeUser.put("idp", "https://idp." + password.getAsString() + ".com/idp/shibboleth");
         fakeUser.put("username", username.getAsString());
