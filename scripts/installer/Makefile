@@ -65,10 +65,10 @@ ${JHOVE_CONFIG}:	../../conf/jhove/jhove.conf
 	@mkdir -p ${INSTALLER_ZIP_DIR}
 	/bin/cp ../../conf/jhove/jhove.conf ${INSTALLER_ZIP_DIR}
 
-${JHOVE_SCHEMA}:	../../conf/jhove/jhoveSchema.xsd
+${JHOVE_SCHEMA}:	../../conf/jhove/jhoveConfig.xsd
 	@echo copying jhove schema file
 	@mkdir -p ${INSTALLER_ZIP_DIR}
-	/bin/cp ../../conf/jhove/jhoveSchema.xsd ${INSTALLER_ZIP_DIR}
+	/bin/cp ../../conf/jhove/jhoveConfig.xsd ${INSTALLER_ZIP_DIR}
 
 ${SOLR_SCHEMA}:		../../conf/solr/4.6.0/schema.xml
 	@echo copying Solr schema file
