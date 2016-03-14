@@ -13,7 +13,6 @@ import java.util.UUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
-import org.junit.Ignore;
 
 public class AdminIT {
 
@@ -51,7 +50,6 @@ public class AdminIT {
                 .statusCode(OK.getStatusCode());
     }
 
-    @Ignore
     @Test
     public void testListAuthenticatedUsers() throws Exception {
         Response anon = listAuthenticatedUsers("");
@@ -176,7 +174,7 @@ public class AdminIT {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .body(data)
-                .put("/api/test/user/convert/builtin2shib");
+                .put("/api/admin/authenticatedUsers/convert/builtin2shib");
         return response;
     }
 
