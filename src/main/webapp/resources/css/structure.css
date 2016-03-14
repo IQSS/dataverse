@@ -359,8 +359,8 @@ div.field-add-delete a.btn.nolabel-field-btn {margin-top:0;}
 #metadataFieldOptions div.checkbox.child-field {padding-left:18px;}
 
 /* -------- SEARCH -------- */
-div.panelSerchForm {margin-bottom: 15px;}
-div.panelSerchForm input.search-input {margin-right:1em; padding:4px; display: inline-block; vertical-align: middle; width: auto;}
+div.panelSearchForm {margin-bottom: 15px;}
+div.panelSearchForm input.search-input {margin-right:1em; padding:4px; display: inline-block; vertical-align: middle; width: auto;}
 a[id$='advsearchlink'] {margin-left:1em;}
 
 #search-row-panel {border:1px solid #ddd; border-radius: 4px; padding: 15px 0;}

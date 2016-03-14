@@ -14,21 +14,24 @@
         <meta name="viewport" content="width=device-width, initial-scale=1"/>
         <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
         <link type="image/png" rel="icon" href="/resources/images/favicondataverse.png"/>
-        <h:outputStylesheet library="bs" name="css/bootstrap.css" />
+        <h:outputStylesheet library="bs" name="css/bootstrap.min.css" />
         <h:outputStylesheet library="bs" name="css/bootstrap-theme.min.css" />
         <h:outputStylesheet library="css" name="ie-compat.css" />
         <h:outputStylesheet library="css" name="owl.carousel.css" />
         <h:outputStylesheet library="css" name="fontcustom.css"/>
+        <h:outputStylesheet library="css" name="socicon.css"/>
         <h:outputStylesheet library="css" name="structure.css"/>
     </h:head>
 
     <h:body>
+        <f:loadBundle basename="Bundle" var="bundle"/>
         <f:metadata>
             <f:viewParam name="id" value="#{DataversePage.dataverse.id}"/>
             <f:viewParam name="alias" value="#{DataversePage.dataverse.alias}"/>
             <f:viewParam name="ownerId" value="#{DataversePage.ownerId}"/>
             <f:viewParam name="editMode" value="#{DataversePage.editMode}"/>
             <f:viewAction action="#{DataversePage.init}"/>
+            <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(DataversePage.dataverse)}"/>
             <f:viewParam name="alias" value="#{SearchIncludeFragment.dataverseAlias}"/>
             <f:viewParam name="q" value="#{SearchIncludeFragment.query}"/>
             <f:viewParam name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
@@ -48,18 +51,32 @@
             <f:viewParam name="debug" value="#{SearchIncludeFragment.debug}"/>
             <f:viewAction action="#{SearchIncludeFragment.search()}" />
         </f:metadata>
+        
+        
+        
+        <div>
 
-        <!-- Content Panel -->
-        <ui:fragment rendered="#{empty DataversePage.editMode}">
-            <ui:include src="search-include-fragment.xhtml">
+            <!-- Search-Include -->
+            <ui:include src="search-include-fragment.xhtml" rendered="#{empty DataversePage.editMode}">
                 <ui:param name="showFacets" value="false"/>
                 <ui:param name="showSearch" value="false"/>
                 <ui:param name="showAdvancedSearchLink" value="true"/>
                 <ui:param name="dataverseRedirectPage" value="iframe.xhtml"/>
             </ui:include>
-        </ui:fragment>
+        
+        </div>
                 
         <h:outputScript library="bs" name="js/bootstrap.min.js" />
         <h:outputScript library="bs" name="js/bootstrap-hover-dropdown.min.js" />
+        
+        <!--
+        <script type="text/javascript" defer="defer" src="#{resource['bs/js/bootstrap.min.js']}?version=#{systemConfig.getVersion()}"></script>
+        <script type="text/javascript" defer="defer" src="#{resource['bs/js/bootstrap-hover-dropdown.min.js']}?version=#{systemConfig.getVersion()}"></script>
+        <script type="text/javascript" defer="defer" src="#{resource['js/ie-compat.js']}?version=#{systemConfig.getVersion()}"></script>
+        <script type="text/javascript" defer="defer" src="#{resource['js/dv_rebind_bootstrap_ui.js']}?version=#{systemConfig.getVersion()}"></script>
+        <script type="text/javascript" defer="defer" src="#{resource['js/owl.carousel.js']}?version=#{systemConfig.getVersion()}"></script>
+        <script type="text/javascript" defer="defer" src="#{resource['js/jquery.matchHeight.js']}?version=#{systemConfig.getVersion()}"></script>
+        <script type="text/javascript" defer="defer" src="#{resource['js/jquery.sharrre.js']}?version=#{systemConfig.getVersion()}"></script>
+        -->
     </h:body>
 </html>

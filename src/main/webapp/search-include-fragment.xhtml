@@ -7,8 +7,15 @@
      xmlns:o="http://omnifaces.org/ui"
      xmlns:jsf="http://xmlns.jcp.org/jsf">
 
+    <!-- 'showSearch' Msg -->
+    <div class="row" jsf:rendered="#{showSearch == false}">
+        <div class="col-sm-12">
+            <p>This is in an iframe.</p>
+        </div>
+    </div>
+    
     <!-- Search Form + Add Data Button -->
-    <div class="row panelSerchForm" jsf:rendered="#{showSearch == true and !SearchIncludeFragment.solrIsDown}">
+    <div class="row panelSearchForm" jsf:rendered="#{showSearch == true and !SearchIncludeFragment.solrIsDown}">
         <div class="col-sm-8">
             <h:form>
                 <p:inputText id="searchBasic" styleClass="search-input" size="40" value="#{SearchIncludeFragment.query}" onkeypress="if (event.keyCode == 13) { submitsearch(); return false; }"/>
