@@ -57,8 +57,3 @@ ALTER TABLE maplayermetadata ADD COLUMN joindescription TEXT default NULL;
 ALTER TABLE maplayermetadata ADD COLUMN maplayerlinks TEXT default NULL;
 
 
-/*
- For ticket #2135, activate TwoRavens.
- e.g., Show the TwoRavens Explore button next to Tabular files
-*/
-INSERT INTO setting (name, content) VALUES (':TwoRavensTabularView', true);
