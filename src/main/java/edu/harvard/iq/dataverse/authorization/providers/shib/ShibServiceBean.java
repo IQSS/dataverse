@@ -157,6 +157,18 @@ public class ShibServiceBean {
         } catch (IOException ex) {
             Logger.getLogger(Shib.class.getName()).log(Level.SEVERE, null, ex);
         }
+        root = null;
+        if (root == null) {
+            String shortRandomString = UUID.randomUUID().toString().substring(0, 8);
+            fakeUser.put("firstName", shortRandomString);
+            fakeUser.put("lastName", shortRandomString);
+            fakeUser.put("displayName", shortRandomString + " " + shortRandomString);
+            fakeUser.put("email", shortRandomString + "@mailinator.com");
+            fakeUser.put("idp", "https://idp." + shortRandomString + ".com/idp/shibboleth");
+            fakeUser.put("username", shortRandomString);
+            fakeUser.put("eppn", shortRandomString);
+            return fakeUser;
+        }
         JsonObject rootObject = root.getAsJsonObject();
         logger.fine(rootObject.toString());
         JsonElement results = rootObject.get("results");

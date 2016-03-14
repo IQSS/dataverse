@@ -907,6 +907,9 @@ public class Shib implements java.io.Serializable {
 //            request.setAttribute(attr, UUID.randomUUID().toString().substring(0, 8));
 //        }
 
+        /**
+         * @todo Call into ShibServiceBean.getRandomUser().
+         */
         String sURL = "http://api.randomuser.me";
         URL url = null;
         try {
