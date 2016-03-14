@@ -53,6 +53,8 @@ public class DOIEZIdServiceBean  {
             logger.log(Level.WARNING, "localized message {0}", e.getLocalizedMessage());
             logger.log(Level.WARNING, "cause", e.getCause());
             logger.log(Level.WARNING, "message {0}", e.getMessage());
+        } catch(Exception e){
+            System.out.print("Other Error on ezidService.login(USERNAME, PASSWORD) - not EZIDException ");
         }
     }    
     

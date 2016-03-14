@@ -2,7 +2,7 @@ package edu.harvard.iq.dataverse.settings;
 
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
-import edu.harvard.iq.dataverse.api.ApiBlockingFilter;
+//import edu.harvard.iq.dataverse.api.ApiBlockingFilter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;

@@ -79,6 +79,7 @@ import javax.faces.model.SelectItem;
 import java.util.logging.Level;
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
+import javax.faces.context.ExternalContext;
 import org.primefaces.component.tabview.TabView;
 import org.primefaces.event.TabChangeEvent;
 import org.primefaces.model.LazyDataModel;
@@ -1267,7 +1268,8 @@ public class DatasetPage implements java.io.Serializable {
         if (!this.isSuperUser()){
             return false;
         }
-        if (settingsService.isTrueForKey(SettingsServiceBean.Key.GeoconnectDebug, true)){
+
+        if (settingsService.isTrueForKey(SettingsServiceBean.Key.GeoconnectDebug, false)){
             return true;
         }    
         return false;
@@ -1643,7 +1645,7 @@ public class DatasetPage implements java.io.Serializable {
             }
             callDownloadServlet(downloadFormat, this.selectedDownloadFile.getId());
         }
-
+        
         if (type.equals("explore")) {
             String retVal = getDataExploreURLComplete(this.selectedDownloadFile.getId());
             try {
@@ -2038,7 +2040,7 @@ public class DatasetPage implements java.io.Serializable {
                     cmd = new PublishDatasetCommand(dataset, dvRequestService.getDataverseRequest(), minor);
                 }
                 dataset = commandEngine.submit(cmd);
-                JsfHelper.addSuccessMessage(JH.localize("dataset.message.publishSuccess"));                        
+                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.publishSuccess"));
                 if (notifyPublish) {
                     List<AuthenticatedUser> authUsers = permissionService.getUsersWithPermissionOn(Permission.PublishDataset, dataset);
                     List<AuthenticatedUser> editUsers = permissionService.getUsersWithPermissionOn(Permission.EditDataset, dataset);
@@ -2050,11 +2052,13 @@ public class DatasetPage implements java.io.Serializable {
                     }
                 }
             } catch (CommandException ex) {
-                JH.addMessage(FacesMessage.SEVERITY_FATAL, JH.localize("dataset.message.publishFailure"));
+                
+                JsfHelper.addErrorMessage(ex.getLocalizedMessage());
                 logger.severe(ex.getMessage());
             }
         } else {
-            JH.addMessage(FacesMessage.SEVERITY_ERROR, "Only authenticated users can release Datasets.");
+            
+            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.message.only.authenticatedUsers"));
         }
         return returnToDatasetOnly();
     }
@@ -2082,7 +2086,9 @@ public class DatasetPage implements java.io.Serializable {
         logger.fine("refreshing");
 
         //dataset = datasetService.find(dataset.getId());
+
         dataset = null;
+
 
         logger.fine("refreshing working version");
 
@@ -2112,14 +2118,19 @@ public class DatasetPage implements java.io.Serializable {
         if (this.workingVersion == null) {
             // TODO: 
             // same as the above
+
             return;
         }
+
 
         if (dataset == null) {
             // this would be the case if we were retrieving the version by 
             // the versionId, above.
             this.dataset = this.workingVersion.getDataset();
         }
+
+        
+
 
         if (readOnly) {
             datafileService.findFileMetadataOptimizedExperimental(dataset);
@@ -2315,8 +2326,19 @@ public class DatasetPage implements java.io.Serializable {
             }
             downloadIdString += fmd.getDataFile().getId();
         }
-        return downloadIdString;
-      
+        return downloadIdString;     
+    }
+    
+        // helper Method
+    public String getSelectedFilesIdsStringForDownload() {        
+        String downloadIdString = "";
+        for (FileMetadata fmd : this.selectedFiles){
+            if (!StringUtil.isEmpty(downloadIdString)) {
+                downloadIdString += ",";
+            }
+            downloadIdString += fmd.getDataFile().getId();
+        }
+        return downloadIdString;     
     }
     
     public String getDownloadableFilesIdsString() {        
@@ -2815,6 +2837,18 @@ public class DatasetPage implements java.io.Serializable {
 
     /* 
     */
+
+    public boolean isLockedInProgress() {
+        if (dataset != null) {
+            logger.fine("checking lock status of dataset " + dataset.getId());
+            if (dataset.isLocked()) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+
     public boolean isStillLocked() {
         if (dataset != null && dataset.getId() != null) {
             logger.fine("checking lock status of dataset " + dataset.getId());
@@ -2831,6 +2865,7 @@ public class DatasetPage implements java.io.Serializable {
         }
         
         if (dataset != null) {
+
             if (dataset.isLocked()) {
                 return true;
             }
