@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServi
 import edu.harvard.iq.dataverse.authorization.providers.builtin.PasswordEncryption;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibServiceBean;
+import edu.harvard.iq.dataverse.authorization.providers.shib.ShibUtil;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import javax.ejb.Stateless;
@@ -162,6 +163,11 @@ public class TestApi extends AbstractApiBean {
          * @todo If affiliation is not null, put it in RoleAssigneeDisplayInfo
          * constructor.
          */
+        /**
+         * Here we are exercising (via an API test) shibService.getAffiliation
+         * with the TestShib IdP and a non-production DevShibAccountType.
+         */
+        idPEntityId = ShibUtil.testShibIdpEntityId;
         String overwriteAffiliation = shibService.getAffiliation(idPEntityId, Shib.DevShibAccountType.RANDOM);
         logger.info("overwriteAffiliation: " + overwriteAffiliation);
         /**
@@ -213,6 +219,9 @@ public class TestApi extends AbstractApiBean {
         response.add("value to overwrite old first name", overwriteFirstName);
         response.add("value to overwrite old last name", overwriteLastName);
         response.add("value to overwrite old email address", overwriteEmail);
+        if (overwriteAffiliation != null) {
+            response.add("affiliation", overwriteAffiliation);
+        }
         response.add("problems", problems);
         return okResponse(response);
     }

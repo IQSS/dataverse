@@ -13,6 +13,8 @@ public class ShibUtil {
 
     private static final Logger logger = Logger.getLogger(ShibUtil.class.getCanonicalName());
 
+    public static final String testShibIdpEntityId = "https://idp.testshib.org/idp/shibboleth";
+
     /**
      * @todo Use this to display "Harvard University", for example, based on
      * https://dataverse.harvard.edu/Shibboleth.sso/DiscoFeed

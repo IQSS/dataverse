@@ -10,8 +10,10 @@ import org.junit.Test;
 import org.junit.BeforeClass;
 import static com.jayway.restassured.RestAssured.given;
 import java.util.UUID;
+import static org.hamcrest.CoreMatchers.equalTo;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
+import org.junit.Ignore;
 
 public class AdminIT {
 
@@ -49,6 +51,7 @@ public class AdminIT {
                 .statusCode(OK.getStatusCode());
     }
 
+    @Ignore
     @Test
     public void testListAuthenticatedUsers() throws Exception {
         Response anon = listAuthenticatedUsers("");
@@ -77,11 +80,19 @@ public class AdminIT {
 
         Response makeShibUser = migrateBuiltinToShib(data, superuserApiToken);
         makeShibUser.prettyPrint();
-        /**
-         * @todo Expect a non-OK response if the Shib user has an invalid email
-         * address: https://github.com/IQSS/dataverse/issues/2998
-         */
-        makeShibUser.then().assertThat().statusCode(OK.getStatusCode());
+        Integer migrateBuiltinToShib = makeShibUser.statusCode();
+        if (migrateBuiltinToShib.equals(OK.getStatusCode())) {
+            makeShibUser.then().assertThat()
+                    .statusCode(OK.getStatusCode())
+                    .body("data.affiliation", equalTo("TestShib Test IdP")
+                    );
+        } else {
+            /**
+             * Expect a non-OK response if the Shib user has an invalid email
+             * address: https://github.com/IQSS/dataverse/issues/2998
+             */
+            return;
+        }
 
         Response shibToBuiltinAnon = migrateShibToBuiltin(Long.MAX_VALUE, "", "");
         shibToBuiltinAnon.prettyPrint();

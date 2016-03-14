@@ -133,7 +133,6 @@ public class Shib implements java.io.Serializable {
 //    private boolean debug = false;
     private String emailAddress;
     private boolean useHeaders;
-    private final String testShibIdpEntityId = "https://idp.testshib.org/idp/shibboleth";
 
     public enum State {
 
@@ -237,8 +236,8 @@ public class Shib implements java.io.Serializable {
         try {
             emailAddressInAssertion = getRequiredValueFromAssertion(emailAttribute);
         } catch (Exception ex) {
-            if (shibIdp.equals(testShibIdpEntityId)) {
-                logger.info("For " + testShibIdpEntityId + " (which as of this writing doesn't provide the " + emailAttribute + " attribute) setting email address to value of eppn: " + shibUserIdentifier);
+            if (shibIdp.equals(ShibUtil.testShibIdpEntityId)) {
+                logger.info("For " + shibIdp + " (which as of this writing doesn't provide the " + emailAttribute + " attribute) setting email address to value of eppn: " + shibUserIdentifier);
                 emailAddressInAssertion = shibUserIdentifier;
             } else {
                 // forcing all other IdPs to send us an an email
@@ -643,7 +642,7 @@ public class Shib implements java.io.Serializable {
             String msg = "The SAML assertion for \"" + key + "\" was null. Please contact support.";
             logger.info(msg);
             boolean showMessage = true;
-            if (shibIdp.equals(testShibIdpEntityId) && key.equals(emailAttribute)) {
+            if (shibIdp.equals(ShibUtil.testShibIdpEntityId) && key.equals(emailAttribute)) {
                 showMessage = false;
             }
             if (showMessage) {
@@ -825,7 +824,7 @@ public class Shib implements java.io.Serializable {
     }
 
     private void mutateRequestForDevConstantTestShib1() {
-        request.setAttribute(shibIdpAttribute, testShibIdpEntityId);
+        request.setAttribute(shibIdpAttribute, ShibUtil.testShibIdpEntityId);
         // the TestShib "eppn" looks like an email address
         request.setAttribute(uniquePersistentIdentifier, "saml@testshib.org");
 //        request.setAttribute(displayNameAttribute, "Sam El");
