@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.authorization.providers.shib.ShibUserNameFields;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibUtil;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -119,10 +120,7 @@ public class Shib implements java.io.Serializable {
      * can revisit this. Maybe we'll use ORCID instead. Dunno.
      */
 //    private String positionToPersist = "Position not provided by institution log in";
-    /**
-     * @todo localize this
-     */
-    private String friendlyNameForInstitution = "your institution";
+    private String friendlyNameForInstitution = BundleUtil.getStringFromBundle("shib.welcomeExistingUserMessageDefaultInstitution");
     private State state;
     private String debugSummary;
     /**
