@@ -1223,6 +1223,9 @@ if ($CONFIG_DEFAULTS{'TWORAVENS_LOCATION'} ne 'NOT INSTALLED')
 	print "OK.\n\n";
     }
 
+    # (and, we also need to explicitly set the tworavens option to "true":
+    $exit_code = system("curl -X PUT -d true " . $API_URL . "/admin/settings/:TwoRavensTabularView"); 
+
 } else {
     print "Executing " . "curl -X PUT -d false " . $API_URL . "/admin/settings/:TwoRavensTabularView" . "\n";
     my $exit_code = system("curl -X PUT -d false " . $API_URL . "/admin/settings/:TwoRavensTabularView"); 
