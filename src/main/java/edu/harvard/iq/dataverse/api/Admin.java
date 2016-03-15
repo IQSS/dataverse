@@ -2,7 +2,6 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.EMailValidator;
-import edu.harvard.iq.dataverse.Shib;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.errorResponse;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
@@ -267,8 +266,6 @@ public class Admin extends AbstractApiBean {
     }
 
     /**
-     * @todo Document this in the guides once it has stabilized.
-     *
      * @todo Refactor more of this business logic into ShibServiceBean in case
      * we want to build a superuser GUI around this some day.
      *
@@ -432,7 +429,7 @@ public class Admin extends AbstractApiBean {
          * with the TestShib IdP and a non-production DevShibAccountType.
          */
         idPEntityId = ShibUtil.testShibIdpEntityId;
-        String overwriteAffiliation = shibService.getAffiliation(idPEntityId, Shib.DevShibAccountType.RANDOM);
+        String overwriteAffiliation = shibService.getAffiliation(idPEntityId, ShibServiceBean.DevShibAccountType.RANDOM);
         logger.info("overwriteAffiliation: " + overwriteAffiliation);
         /**
          * @todo Find a place to put "position" in the authenticateduser table:

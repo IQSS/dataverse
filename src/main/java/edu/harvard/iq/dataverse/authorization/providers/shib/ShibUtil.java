@@ -6,17 +6,39 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import edu.harvard.iq.dataverse.EMailValidator;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;
+import javax.servlet.http.HttpServletRequest;
 
 public class ShibUtil {
 
     private static final Logger logger = Logger.getLogger(ShibUtil.class.getCanonicalName());
 
+    /**
+     * @todo make this configurable? See
+     * https://github.com/IQSS/dataverse/issues/2129
+     */
+    public static final String shibIdpAttribute = "Shib-Identity-Provider";
+    /**
+     * @todo Make attribute used (i.e. "eppn") configurable:
+     * https://github.com/IQSS/dataverse/issues/1422
+     *
+     * OR *maybe* we can rely on people installing Dataverse to configure shibd
+     * to always send "eppn" as an attribute, via attribute mappings or what
+     * have you.
+     */
+    public static final String uniquePersistentIdentifier = "eppn";
+    public static final String usernameAttribute = "uid";
+    public static final String displayNameAttribute = "cn";
+    public static final String firstNameAttribute = "givenName";
+    public static final String lastNameAttribute = "sn";
+    public static final String emailAttribute = "mail";
     public static final String testShibIdpEntityId = "https://idp.testshib.org/idp/shibboleth";
 
     /**
-     * @todo Use this to display "Harvard University", for example, based on
+     * Used to display "Harvard University", for example, based on
      * https://dataverse.harvard.edu/Shibboleth.sso/DiscoFeed
      */
     public static String getDisplayNameFromDiscoFeed(String entityIdToFind, String discoFeed) {
@@ -84,6 +106,10 @@ public class ShibUtil {
                 String first = parts[0];
                 singleValue = first;
             } catch (ArrayIndexOutOfBoundsException ex) {
+                /**
+                 * @todo Is it possible to reach this line via a test? If not,
+                 * remove this try/catch.
+                 */
                 logger.info("Couldn't find first part of " + singleValue);
             }
         }
@@ -101,6 +127,10 @@ public class ShibUtil {
                     String firstPart = parts[0];
                     return firstPart;
                 } catch (ArrayIndexOutOfBoundsException ex) {
+                    /**
+                     * @todo Is it possible to reach this line via a test? If
+                     * not, remove this try/catch.
+                     */
                     logger.info(ex + " parsing " + email);
                 }
             } else {
@@ -112,6 +142,91 @@ public class ShibUtil {
         }
         logger.info("the best we can do is generate a random UUID");
         return UUID.randomUUID().toString();
+    }
+
+    static void mutateRequestForDevConstantTestShib1(HttpServletRequest request) {
+        request.setAttribute(ShibUtil.shibIdpAttribute, ShibUtil.testShibIdpEntityId);
+        // the TestShib "eppn" looks like an email address
+        request.setAttribute(ShibUtil.uniquePersistentIdentifier, "saml@testshib.org");
+//        request.setAttribute(displayNameAttribute, "Sam El");
+        request.setAttribute(ShibUtil.firstNameAttribute, "Samuel;Sam");
+        request.setAttribute(ShibUtil.lastNameAttribute, "El");
+        // TestShib doesn't send "mail" attribute so let's mimic that.
+//        request.setAttribute(emailAttribute, "saml@mailinator.com");
+        request.setAttribute(ShibUtil.usernameAttribute, "saml");
+    }
+
+    static void mutateRequestForDevConstantHarvard1(HttpServletRequest request) {
+        /**
+         * Harvard's IdP doesn't send a username (uid).
+         */
+        request.setAttribute(ShibUtil.shibIdpAttribute, "https://fed.huit.harvard.edu/idp/shibboleth");
+        request.setAttribute(ShibUtil.uniquePersistentIdentifier, "constantHarvard");
+        /**
+         * @todo Does Harvard really send displayName? At one point they didn't.
+         * Let's simulate the non-sending of displayName here.
+         */
+//        request.setAttribute(displayNameAttribute, "John Harvard");
+        request.setAttribute(ShibUtil.firstNameAttribute, "John");
+        request.setAttribute(ShibUtil.lastNameAttribute, "Harvard");
+        request.setAttribute(ShibUtil.emailAttribute, "jharvard@mailinator.com");
+        request.setAttribute(ShibUtil.usernameAttribute, "jharvard");
+    }
+
+    static void mutateRequestForDevConstantHarvard2(HttpServletRequest request) {
+        request.setAttribute(ShibUtil.shibIdpAttribute, "https://fed.huit.harvard.edu/idp/shibboleth");
+        request.setAttribute(ShibUtil.uniquePersistentIdentifier, "constantHarvard2");
+//        request.setAttribute(displayNameAttribute, "Grace Hopper");
+        request.setAttribute(ShibUtil.firstNameAttribute, "Grace");
+        request.setAttribute(ShibUtil.lastNameAttribute, "Hopper");
+        request.setAttribute(ShibUtil.emailAttribute, "ghopper@mailinator.com");
+        request.setAttribute(ShibUtil.usernameAttribute, "ghopper");
+    }
+
+    static void mutateRequestForDevConstantTwoEmails(HttpServletRequest request) {
+        request.setAttribute(ShibUtil.shibIdpAttribute, "https://fake.example.com/idp/shibboleth");
+        request.setAttribute(ShibUtil.uniquePersistentIdentifier, "twoEmails");
+        request.setAttribute(ShibUtil.firstNameAttribute, "Eric");
+        request.setAttribute(ShibUtil.lastNameAttribute, "Allman");
+        request.setAttribute(ShibUtil.emailAttribute, "eric1@mailinator.com;eric2@mailinator.com");
+        request.setAttribute(ShibUtil.usernameAttribute, "eallman");
+    }
+
+    static void mutateRequestForDevConstantInvalidEmail(HttpServletRequest request) {
+        request.setAttribute(ShibUtil.shibIdpAttribute, "https://fake.example.com/idp/shibboleth");
+        request.setAttribute(ShibUtil.uniquePersistentIdentifier, "invalidEmail");
+        request.setAttribute(ShibUtil.firstNameAttribute, "Invalid");
+        request.setAttribute(ShibUtil.lastNameAttribute, "Email");
+        request.setAttribute(ShibUtil.emailAttribute, "invalidEmail");
+        request.setAttribute(ShibUtil.usernameAttribute, "invalidEmail");
+    }
+
+    static void mutateRequestForDevConstantMissingRequiredAttributes(HttpServletRequest request) {
+        request.setAttribute(ShibUtil.shibIdpAttribute, "https://fake.example.com/idp/shibboleth");
+        /**
+         * @todo When shibIdpAttribute is set to null why don't we see the error
+         * in the GUI?
+         */
+//        request.setAttribute(shibIdpAttribute, null);
+        request.setAttribute(ShibUtil.uniquePersistentIdentifier, "missing");
+        request.setAttribute(ShibUtil.uniquePersistentIdentifier, null);
+        request.setAttribute(ShibUtil.firstNameAttribute, "Missing");
+        request.setAttribute(ShibUtil.lastNameAttribute, "Required");
+        request.setAttribute(ShibUtil.emailAttribute, "missing@mailinator.com");
+        request.setAttribute(ShibUtil.usernameAttribute, "missing");
+    }
+
+    public static Map<String, String> getRandomUserStatic() {
+        Map<String, String> fakeUser = new HashMap<>();
+        String shortRandomString = UUID.randomUUID().toString().substring(0, 8);
+        fakeUser.put("firstName", shortRandomString);
+        fakeUser.put("lastName", shortRandomString);
+        fakeUser.put("displayName", shortRandomString + " " + shortRandomString);
+        fakeUser.put("email", shortRandomString + "@mailinator.com");
+        fakeUser.put("idp", "https://idp." + shortRandomString + ".com/idp/shibboleth");
+        fakeUser.put("username", shortRandomString);
+        fakeUser.put("eppn", shortRandomString);
+        return fakeUser;
     }
 
 }

@@ -11,7 +11,6 @@ import edu.harvard.iq.dataverse.authorization.providers.shib.ShibServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibUserNameFields;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibUtil;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import java.io.IOException;
@@ -19,8 +18,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -46,8 +43,6 @@ public class Shib implements java.io.Serializable {
     @EJB
     ShibServiceBean shibService;
     @EJB
-    SettingsServiceBean settingsService;
-    @EJB
     DataverseServiceBean dataverseService;
     @EJB
     GroupServiceBean groupService;
@@ -55,27 +50,8 @@ public class Shib implements java.io.Serializable {
     HttpServletRequest request;
 
     List<String> shibValues = new ArrayList<>();
-    /**
-     * @todo make this configurable? See
-     * https://github.com/IQSS/dataverse/issues/2129
-     */
-    private final String shibIdpAttribute = "Shib-Identity-Provider";
-    /**
-     * @todo Make attribute used (i.e. "eppn") configurable:
-     * https://github.com/IQSS/dataverse/issues/1422
-     *
-     * OR *maybe* we can rely on people installing Dataverse to configure shibd
-     * to always send "eppn" as an attribute, via attribute mappings or what
-     * have you.
-     */
-    private final String uniquePersistentIdentifier = "eppn";
     private String userPersistentId;
     private String internalUserIdentifer;
-    private final String usernameAttribute = "uid";
-    private final String displayNameAttribute = "cn";
-    private final String firstNameAttribute = "givenName";
-    private final String lastNameAttribute = "sn";
-    private final String emailAttribute = "mail";
     AuthenticatedUserDisplayInfo displayInfo;
     /**
      * @todo Remove this boolean some day? Now the mockups show a popup. Should
@@ -146,13 +122,13 @@ public class Shib implements java.io.Serializable {
      * actually used.
      */
     List<String> shibAttrs = Arrays.asList(
-            shibIdpAttribute,
-            uniquePersistentIdentifier,
-            usernameAttribute,
-            displayNameAttribute,
-            firstNameAttribute,
-            lastNameAttribute,
-            emailAttribute,
+            ShibUtil.shibIdpAttribute,
+            ShibUtil.uniquePersistentIdentifier,
+            ShibUtil.usernameAttribute,
+            ShibUtil.displayNameAttribute,
+            ShibUtil.firstNameAttribute,
+            ShibUtil.lastNameAttribute,
+            ShibUtil.emailAttribute,
             "telephoneNumber",
             "affiliation",
             "unscoped-affiliation",
@@ -187,10 +163,10 @@ public class Shib implements java.io.Serializable {
          */
         logger.fine("JkEnvVar: " + System.getenv("JkEnvVar"));
 
-        possiblyMutateRequestInDev();
+        shibService.possiblyMutateRequestInDev(request);
 
         try {
-            shibIdp = getRequiredValueFromAssertion(shibIdpAttribute);
+            shibIdp = getRequiredValueFromAssertion(ShibUtil.shibIdpAttribute);
         } catch (Exception ex) {
             /**
              * @todo is in an antipattern to throw exceptions to control flow?
@@ -203,19 +179,19 @@ public class Shib implements java.io.Serializable {
         }
         String shibUserIdentifier;
         try {
-            shibUserIdentifier = getRequiredValueFromAssertion(uniquePersistentIdentifier);
+            shibUserIdentifier = getRequiredValueFromAssertion(ShibUtil.uniquePersistentIdentifier);
         } catch (Exception ex) {
             return;
         }
         String firstName;
         try {
-            firstName = getRequiredValueFromAssertion(firstNameAttribute);
+            firstName = getRequiredValueFromAssertion(ShibUtil.firstNameAttribute);
         } catch (Exception ex) {
             return;
         }
         String lastName;
         try {
-            lastName = getRequiredValueFromAssertion(lastNameAttribute);
+            lastName = getRequiredValueFromAssertion(ShibUtil.lastNameAttribute);
         } catch (Exception ex) {
             return;
         }
@@ -232,10 +208,10 @@ public class Shib implements java.io.Serializable {
         }
         String emailAddressInAssertion = null;
         try {
-            emailAddressInAssertion = getRequiredValueFromAssertion(emailAttribute);
+            emailAddressInAssertion = getRequiredValueFromAssertion(ShibUtil.emailAttribute);
         } catch (Exception ex) {
             if (shibIdp.equals(ShibUtil.testShibIdpEntityId)) {
-                logger.info("For " + shibIdp + " (which as of this writing doesn't provide the " + emailAttribute + " attribute) setting email address to value of eppn: " + shibUserIdentifier);
+                logger.info("For " + shibIdp + " (which as of this writing doesn't provide the " + ShibUtil.emailAttribute + " attribute) setting email address to value of eppn: " + shibUserIdentifier);
                 emailAddressInAssertion = shibUserIdentifier;
             } else {
                 // forcing all other IdPs to send us an an email
@@ -260,7 +236,7 @@ public class Shib implements java.io.Serializable {
             emailAddress = emailAddressInAssertion;
         }
 
-        String usernameAssertion = getValueFromAssertion(usernameAttribute);
+        String usernameAssertion = getValueFromAssertion(ShibUtil.usernameAttribute);
         internalUserIdentifer = ShibUtil.generateFriendlyLookingUserIdentifer(usernameAssertion, emailAddress);
         logger.info("friendly looking identifer (backend will enforce uniqueness):" + internalUserIdentifer);
 
@@ -281,7 +257,7 @@ public class Shib implements java.io.Serializable {
          * the authenticateduser table.
          */
 //        String displayName = getDisplayName(displayNameAttribute, firstNameAttribute, lastNameAttribute);
-        String affiliation = shibService.getAffiliation(shibIdp, getDevShibAccountType());
+        String affiliation = shibService.getAffiliation(shibIdp, shibService.getDevShibAccountType());
         if (affiliation != null) {
             affiliationToDisplayAtConfirmation = affiliation;
             friendlyNameForInstitution = affiliation;
@@ -364,96 +340,6 @@ public class Shib implements java.io.Serializable {
         }
         logger.info("Debug summary: " + debugSummary + " (state: " + state + ").");
         logger.fine("redirectPage: " + redirectPage);
-    }
-
-    /**
-     * "Production" means "don't mess with the HTTP request".
-     */
-    public enum DevShibAccountType {
-
-        PRODUCTION,
-        RANDOM,
-        TESTSHIB1,
-        HARVARD1,
-        HARVARD2,
-        TWO_EMAILS,
-        INVALID_EMAIL,
-        MISSING_REQUIRED_ATTR,
-    };
-
-    private DevShibAccountType getDevShibAccountType() {
-        DevShibAccountType saneDefault = DevShibAccountType.PRODUCTION;
-        String settingReturned = settingsService.getValueForKey(SettingsServiceBean.Key.DebugShibAccountType);
-        logger.fine("setting returned: " + settingReturned);
-        if (settingReturned != null) {
-            try {
-                DevShibAccountType parsedValue = DevShibAccountType.valueOf(settingReturned);
-                return parsedValue;
-            } catch (IllegalArgumentException ex) {
-                logger.info("Couldn't parse value: " + ex + " - returning a sane default: " + saneDefault);
-                return saneDefault;
-            }
-        } else {
-            logger.fine("Shibboleth dev mode has not been configured. Returning a sane default: " + saneDefault);
-            return saneDefault;
-        }
-
-    }
-
-    /**
-     * This method exists so developers don't have to run Shibboleth locally.
-     * You can populate the request with Shibboleth attributes by changing a
-     * setting like this:
-     *
-     * curl -X PUT -d RANDOM
-     * http://localhost:8080/api/admin/settings/:DebugShibAccountType
-     *
-     * When you're done, feel free to delete the setting:
-     *
-     * curl -X DELETE
-     * http://localhost:8080/api/admin/settings/:DebugShibAccountType
-     *
-     * Note that setting ShibUseHeaders to true will make this "dev mode" stop
-     * working.
-     */
-    private void possiblyMutateRequestInDev() {
-        switch (getDevShibAccountType()) {
-            case PRODUCTION:
-                logger.fine("Request will not be mutated");
-                break;
-
-            case RANDOM:
-                mutateRequestForDevRandom();
-                break;
-
-            case TESTSHIB1:
-                mutateRequestForDevConstantTestShib1();
-                break;
-
-            case HARVARD1:
-                mutateRequestForDevConstantHarvard1();
-                break;
-
-            case HARVARD2:
-                mutateRequestForDevConstantHarvard2();
-                break;
-
-            case TWO_EMAILS:
-                mutateRequestForDevConstantTwoEmails();
-                break;
-
-            case INVALID_EMAIL:
-                mutateRequestForDevConstantInvalidEmail();
-                break;
-
-            case MISSING_REQUIRED_ATTR:
-                mutateRequestForDevConstantMissingRequiredAttributes();
-                break;
-
-            default:
-                logger.info("Should never reach here");
-                break;
-        }
     }
 
     private void printHeaders() {
@@ -640,7 +526,7 @@ public class Shib implements java.io.Serializable {
             String msg = "The SAML assertion for \"" + key + "\" was null. Please contact support.";
             logger.info(msg);
             boolean showMessage = true;
-            if (shibIdp.equals(ShibUtil.testShibIdpEntityId) && key.equals(emailAttribute)) {
+            if (shibIdp.equals(ShibUtil.testShibIdpEntityId) && key.equals(ShibUtil.emailAttribute)) {
                 showMessage = false;
             }
             if (showMessage) {
@@ -809,89 +695,6 @@ public class Shib implements java.io.Serializable {
 
     public void setRedirectPage(String redirectPage) {
         this.redirectPage = redirectPage;
-    }
-
-    private void mutateRequestForDevRandom() {
-        Map<String, String> randomUser = shibService.getRandomUser();
-        request.setAttribute(lastNameAttribute, randomUser.get("lastName"));
-        request.setAttribute(firstNameAttribute, randomUser.get("firstName"));
-        request.setAttribute(emailAttribute, randomUser.get("email"));
-        request.setAttribute(shibIdpAttribute, randomUser.get("idp"));
-        // eppn
-        request.setAttribute(uniquePersistentIdentifier, UUID.randomUUID().toString().substring(0, 8));
-    }
-
-    private void mutateRequestForDevConstantTestShib1() {
-        request.setAttribute(shibIdpAttribute, ShibUtil.testShibIdpEntityId);
-        // the TestShib "eppn" looks like an email address
-        request.setAttribute(uniquePersistentIdentifier, "saml@testshib.org");
-//        request.setAttribute(displayNameAttribute, "Sam El");
-        request.setAttribute(firstNameAttribute, "Samuel;Sam");
-        request.setAttribute(lastNameAttribute, "El");
-        // TestShib doesn't send "mail" attribute so let's mimic that.
-//        request.setAttribute(emailAttribute, "saml@mailinator.com");
-        request.setAttribute(usernameAttribute, "saml");
-    }
-
-    private void mutateRequestForDevConstantHarvard1() {
-        /**
-         * Harvard's IdP doesn't send a username (uid).
-         */
-        request.setAttribute(shibIdpAttribute, "https://fed.huit.harvard.edu/idp/shibboleth");
-        request.setAttribute(uniquePersistentIdentifier, "constantHarvard");
-        /**
-         * @todo Does Harvard really send displayName? At one point they didn't.
-         * Let's simulate the non-sending of displayName here.
-         */
-//        request.setAttribute(displayNameAttribute, "John Harvard");
-        request.setAttribute(firstNameAttribute, "John");
-        request.setAttribute(lastNameAttribute, "Harvard");
-        request.setAttribute(emailAttribute, "jharvard@mailinator.com");
-        request.setAttribute(usernameAttribute, "jharvard");
-    }
-
-    private void mutateRequestForDevConstantHarvard2() {
-        request.setAttribute(shibIdpAttribute, "https://fed.huit.harvard.edu/idp/shibboleth");
-        request.setAttribute(uniquePersistentIdentifier, "constantHarvard2");
-//        request.setAttribute(displayNameAttribute, "Grace Hopper");
-        request.setAttribute(firstNameAttribute, "Grace");
-        request.setAttribute(lastNameAttribute, "Hopper");
-        request.setAttribute(emailAttribute, "ghopper@mailinator.com");
-        request.setAttribute(usernameAttribute, "ghopper");
-    }
-
-    private void mutateRequestForDevConstantTwoEmails() {
-        request.setAttribute(shibIdpAttribute, "https://fake.example.com/idp/shibboleth");
-        request.setAttribute(uniquePersistentIdentifier, "twoEmails");
-        request.setAttribute(firstNameAttribute, "Eric");
-        request.setAttribute(lastNameAttribute, "Allman");
-        request.setAttribute(emailAttribute, "eric1@mailinator.com;eric2@mailinator.com");
-        request.setAttribute(usernameAttribute, "eallman");
-    }
-
-    private void mutateRequestForDevConstantInvalidEmail() {
-        request.setAttribute(shibIdpAttribute, "https://fake.example.com/idp/shibboleth");
-        request.setAttribute(uniquePersistentIdentifier, "invalidEmail");
-        request.setAttribute(firstNameAttribute, "Invalid");
-        request.setAttribute(lastNameAttribute, "Email");
-        request.setAttribute(emailAttribute, "invalidEmail");
-        request.setAttribute(usernameAttribute, "invalidEmail");
-
-    }
-
-    private void mutateRequestForDevConstantMissingRequiredAttributes() {
-        request.setAttribute(shibIdpAttribute, "https://fake.example.com/idp/shibboleth");
-        /**
-         * @todo When shibIdpAttribute is set to null why don't we see the error
-         * in the GUI?
-         */
-//        request.setAttribute(shibIdpAttribute, null);
-        request.setAttribute(uniquePersistentIdentifier, "missing");
-        request.setAttribute(uniquePersistentIdentifier, null);
-        request.setAttribute(firstNameAttribute, "Missing");
-        request.setAttribute(lastNameAttribute, "Required");
-        request.setAttribute(emailAttribute, "missing@mailinator.com");
-        request.setAttribute(usernameAttribute, "missing");
     }
 
 }

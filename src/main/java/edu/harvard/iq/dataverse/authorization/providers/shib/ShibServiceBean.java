@@ -13,7 +13,9 @@ import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationFailedExc
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
+import static edu.harvard.iq.dataverse.authorization.providers.shib.ShibUtil.getRandomUserStatic;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,6 +32,7 @@ import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.inject.Named;
+import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang.StringUtils;
 
 @Named
@@ -44,6 +47,97 @@ public class ShibServiceBean {
     BuiltinUserServiceBean builtinUserService;
     @EJB
     SystemConfig systemConfig;
+    @EJB
+    SettingsServiceBean settingsService;
+
+    /**
+     * "Production" means "don't mess with the HTTP request".
+     */
+    public enum DevShibAccountType {
+
+        PRODUCTION,
+        RANDOM,
+        TESTSHIB1,
+        HARVARD1,
+        HARVARD2,
+        TWO_EMAILS,
+        INVALID_EMAIL,
+        MISSING_REQUIRED_ATTR,
+    };
+
+    public DevShibAccountType getDevShibAccountType() {
+        DevShibAccountType saneDefault = DevShibAccountType.PRODUCTION;
+        String settingReturned = settingsService.getValueForKey(SettingsServiceBean.Key.DebugShibAccountType);
+        logger.fine("setting returned: " + settingReturned);
+        if (settingReturned != null) {
+            try {
+                DevShibAccountType parsedValue = DevShibAccountType.valueOf(settingReturned);
+                return parsedValue;
+            } catch (IllegalArgumentException ex) {
+                logger.info("Couldn't parse value: " + ex + " - returning a sane default: " + saneDefault);
+                return saneDefault;
+            }
+        } else {
+            logger.fine("Shibboleth dev mode has not been configured. Returning a sane default: " + saneDefault);
+            return saneDefault;
+        }
+    }
+
+    /**
+     * This method exists so developers don't have to run Shibboleth locally.
+     * You can populate the request with Shibboleth attributes by changing a
+     * setting like this:
+     *
+     * curl -X PUT -d RANDOM
+     * http://localhost:8080/api/admin/settings/:DebugShibAccountType
+     *
+     * When you're done, feel free to delete the setting:
+     *
+     * curl -X DELETE
+     * http://localhost:8080/api/admin/settings/:DebugShibAccountType
+     *
+     * Note that setting ShibUseHeaders to true will make this "dev mode" stop
+     * working.
+     */
+    public void possiblyMutateRequestInDev(HttpServletRequest request) {
+        switch (getDevShibAccountType()) {
+            case PRODUCTION:
+                logger.fine("Request will not be mutated");
+                break;
+
+            case RANDOM:
+                mutateRequestForDevRandom(request);
+                break;
+
+            case TESTSHIB1:
+                ShibUtil.mutateRequestForDevConstantTestShib1(request);
+                break;
+
+            case HARVARD1:
+                ShibUtil.mutateRequestForDevConstantHarvard1(request);
+                break;
+
+            case HARVARD2:
+                ShibUtil.mutateRequestForDevConstantHarvard2(request);
+                break;
+
+            case TWO_EMAILS:
+                ShibUtil.mutateRequestForDevConstantTwoEmails(request);
+                break;
+
+            case INVALID_EMAIL:
+                ShibUtil.mutateRequestForDevConstantInvalidEmail(request);
+                break;
+
+            case MISSING_REQUIRED_ATTR:
+                ShibUtil.mutateRequestForDevConstantMissingRequiredAttributes(request);
+                break;
+
+            default:
+                logger.info("Should never reach here");
+                break;
+        }
+    }
 
     public AuthenticatedUser findAuthUserByEmail(String emailToFind) {
         return authSvc.getAuthenticatedUserByEmail(emailToFind);
@@ -107,11 +201,11 @@ public class ShibServiceBean {
         }
     }
 
-    public String getAffiliation(String shibIdp, Shib.DevShibAccountType devShibAccountType) {
+    public String getAffiliation(String shibIdp, DevShibAccountType devShibAccountType) {
         JsonArray emptyJsonArray = new JsonArray();
         String discoFeedJson = emptyJsonArray.toString();
         String discoFeedUrl;
-        if (devShibAccountType.equals(Shib.DevShibAccountType.PRODUCTION)) {
+        if (devShibAccountType.equals(DevShibAccountType.PRODUCTION)) {
             discoFeedUrl = systemConfig.getDataverseSiteUrl() + "/Shibboleth.sso/DiscoFeed";
         } else {
             String devUrl = "http://localhost:8080/resources/dev/sample-shib-identities.json";
@@ -174,6 +268,16 @@ public class ShibServiceBean {
         }
     }
 
+    private void mutateRequestForDevRandom(HttpServletRequest request) {
+        Map<String, String> randomUser = getRandomUser();
+        request.setAttribute(ShibUtil.lastNameAttribute, randomUser.get("lastName"));
+        request.setAttribute(ShibUtil.firstNameAttribute, randomUser.get("firstName"));
+        request.setAttribute(ShibUtil.emailAttribute, randomUser.get("email"));
+        request.setAttribute(ShibUtil.shibIdpAttribute, randomUser.get("idp"));
+        // eppn
+        request.setAttribute(ShibUtil.uniquePersistentIdentifier, UUID.randomUUID().toString().substring(0, 8));
+    }
+
     /**
      * For testing, don't expect this to work well.
      */
@@ -206,15 +310,7 @@ public class ShibServiceBean {
             Logger.getLogger(Shib.class.getName()).log(Level.SEVERE, null, ex);
         }
         if (root == null) {
-            String shortRandomString = UUID.randomUUID().toString().substring(0, 8);
-            fakeUser.put("firstName", shortRandomString);
-            fakeUser.put("lastName", shortRandomString);
-            fakeUser.put("displayName", shortRandomString + " " + shortRandomString);
-            fakeUser.put("email", shortRandomString + "@mailinator.com");
-            fakeUser.put("idp", "https://idp." + shortRandomString + ".com/idp/shibboleth");
-            fakeUser.put("username", shortRandomString);
-            fakeUser.put("eppn", shortRandomString);
-            return fakeUser;
+            return getRandomUserStatic();
         }
         JsonObject rootObject = root.getAsJsonObject();
         logger.fine(rootObject.toString());
