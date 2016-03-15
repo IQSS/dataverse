@@ -129,8 +129,6 @@ public class SettingsServiceBean {
         DdiExportEnabled,
         /** Key for if Shibboleth is enabled or disabled. */
         ShibEnabled,
-        /** Key for if Shibboleth is enabled or disabled. */
-        ShibUseHeaders,
         /** Key for if ScrubMigrationData is enabled or disabled. */
         ScrubMigrationData,
         /** Key for the url to send users who want to sign up to. */

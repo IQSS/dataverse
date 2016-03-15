@@ -16,7 +16,6 @@ import edu.harvard.iq.dataverse.util.JsfHelper;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -106,7 +105,6 @@ public class Shib implements java.io.Serializable {
     private String redirectPage;
 //    private boolean debug = false;
     private String emailAddress;
-    private boolean useHeaders;
 
     public enum State {
 
@@ -138,17 +136,6 @@ public class Shib implements java.io.Serializable {
 
     public void init() {
         state = State.INIT;
-        /**
-         * @todo For security reasons, Dataverse shouldn't even support the
-         * possibility of using headers. All the related code including
-         * SettingsServiceBean.Key.ShibUseHeaders should be removed. See all the
-         * scary warnings quoted from official Shib docs in
-         * https://github.com/IQSS/dataverse/issues/2294
-         */
-        useHeaders = false;
-        if (useHeaders) {
-            printHeaders();
-        }
         ExternalContext context = FacesContext.getCurrentInstance().getExternalContext();
         request = (HttpServletRequest) context.getRequest();
         printAttributes(request);
@@ -342,14 +329,6 @@ public class Shib implements java.io.Serializable {
         logger.fine("redirectPage: " + redirectPage);
     }
 
-    private void printHeaders() {
-        Enumeration headerNames = request.getHeaderNames();
-        while (headerNames.hasMoreElements()) {
-            String headerName = (String) headerNames.nextElement();
-            logger.info(headerName + " = " + request.getHeader(headerName));
-        }
-    }
-
     public String confirmAndCreateAccount() {
         ShibAuthenticationProvider shibAuthProvider = new ShibAuthenticationProvider();
         String lookupStringPerAuthProvider = userPersistentId;
@@ -508,9 +487,9 @@ public class Shib implements java.io.Serializable {
      * @return The value of a Shib attribute (if non-empty) or null.
      */
     private String getValueFromAssertion(String key) {
-        Object attributeOrHeader = getAttributeOrHeader(key);
-        if (attributeOrHeader != null) {
-            String attributeValue = attributeOrHeader.toString();
+        Object attribute = request.getAttribute(key);
+        if (attribute != null) {
+            String attributeValue = attribute.toString();
             logger.info("The SAML assertion for \"" + key + "\" (optional) was \"" + attributeValue + "\".");
             if (!attributeValue.isEmpty()) {
                 return attributeValue;
@@ -521,8 +500,8 @@ public class Shib implements java.io.Serializable {
     }
 
     private String getRequiredValueFromAssertion(String key) throws Exception {
-        Object attributeOrHeader = getAttributeOrHeader(key);
-        if (attributeOrHeader == null) {
+        Object attribute = request.getAttribute(key);
+        if (attribute == null) {
             String msg = "The SAML assertion for \"" + key + "\" was null. Please contact support.";
             logger.info(msg);
             boolean showMessage = true;
@@ -534,26 +513,12 @@ public class Shib implements java.io.Serializable {
             }
             throw new Exception(msg);
         }
-        String attributeValue = attributeOrHeader.toString();
+        String attributeValue = attribute.toString();
         if (attributeValue.isEmpty()) {
             throw new Exception(key + " was empty");
         }
         logger.info("The SAML assertion for \"" + key + "\" (required) was \"" + attributeValue + "\".");
         return attributeValue;
-    }
-
-    private Object getAttributeOrHeader(String attribute) {
-        /**
-         * @todo Should the prefix be configurable?
-         */
-        String prefix = "ajp_";
-        Object attributeOrHeader;
-        if (useHeaders) {
-            attributeOrHeader = request.getHeader(prefix + attribute);
-        } else {
-            attributeOrHeader = request.getAttribute(attribute);
-        }
-        return attributeOrHeader;
     }
 
     public String getRootDataverseAlias() {
