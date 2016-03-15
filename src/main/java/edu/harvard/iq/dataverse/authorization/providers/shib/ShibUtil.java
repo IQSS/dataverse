@@ -5,8 +5,10 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import edu.harvard.iq.dataverse.EMailValidator;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;
@@ -227,6 +229,98 @@ public class ShibUtil {
         fakeUser.put("username", shortRandomString);
         fakeUser.put("eppn", shortRandomString);
         return fakeUser;
+    }
+
+    /**
+     * These are attributes that were found to be interesting while developing
+     * the Shibboleth feature. Only the ones that are defined elsewhere are
+     * actually used.
+     */
+    static List<String> shibAttrs = Arrays.asList(
+            ShibUtil.shibIdpAttribute,
+            ShibUtil.uniquePersistentIdentifier,
+            ShibUtil.usernameAttribute,
+            ShibUtil.displayNameAttribute,
+            ShibUtil.firstNameAttribute,
+            ShibUtil.lastNameAttribute,
+            ShibUtil.emailAttribute,
+            "telephoneNumber",
+            "affiliation",
+            "unscoped-affiliation",
+            "entitlement",
+            "persistent-id"
+    );
+
+    /**
+     * These are the attributes we are getting from the IdP at testshib.org, a
+     * dump from https://pdurbin.pagekite.me/Shibboleth.sso/Session
+     *
+     * Miscellaneous
+     *
+     * Session Expiration (barring inactivity): 479 minute(s)
+     *
+     * Client Address: 10.0.2.2
+     *
+     * SSO Protocol: urn:oasis:names:tc:SAML:2.0:protocol
+     *
+     * Identity Provider: https://idp.testshib.org/idp/shibboleth
+     *
+     * Authentication Time: 2014-09-12T17:07:36.137Z
+     *
+     * Authentication Context Class:
+     * urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport
+     *
+     * Authentication Context Decl: (none)
+     *
+     *
+     *
+     * Attributes
+     *
+     * affiliation: Member@testshib.org;Staff@testshib.org
+     *
+     * cn: Me Myself And I
+     *
+     * entitlement: urn:mace:dir:entitlement:common-lib-terms
+     *
+     * eppn: myself@testshib.org
+     *
+     * givenName: Me Myself
+     *
+     * persistent-id:
+     * https://idp.testshib.org/idp/shibboleth!https://pdurbin.pagekite.me/shibboleth!zylzL+NruovU5OOGXDOL576jxfo=
+     *
+     * sn: And I
+     *
+     * telephoneNumber: 555-5555
+     *
+     * uid: myself
+     *
+     * unscoped-affiliation: Member;Staff
+     *
+     */
+    public static void printAttributes(HttpServletRequest request) {
+        List<String> shibValues = new ArrayList<>();
+        if (request == null) {
+            logger.info("HttpServletRequest was null. No shib values to print.");
+            return;
+        }
+        for (String attr : shibAttrs) {
+
+            /**
+             * @todo explain in Installers Guide that in order for these
+             * attributes to be found attributePrefix="AJP_" must be added to
+             * /etc/shibboleth/shibboleth2.xml like this:
+             *
+             * <ApplicationDefaults entityID="https://dataverse.org/shibboleth"
+             * REMOTE_USER="eppn" attributePrefix="AJP_">
+             *
+             */
+            Object attrObject = request.getAttribute(attr);
+            if (attrObject != null) {
+                shibValues.add(attr + ": " + attrObject.toString());
+            }
+        }
+        logger.info("shib values: " + shibValues);
     }
 
 }

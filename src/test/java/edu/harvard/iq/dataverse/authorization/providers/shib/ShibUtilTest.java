@@ -152,6 +152,8 @@ public class ShibUtilTest {
         ShibUtil.mutateRequestForDevConstantMissingRequiredAttributes(request);
         ShibUtil.mutateRequestForDevConstantTestShib1(request);
         ShibUtil.mutateRequestForDevConstantTwoEmails(request);
+        ShibUtil.printAttributes(request);
+        ShibUtil.printAttributes(null);
     }
 
     @Test
