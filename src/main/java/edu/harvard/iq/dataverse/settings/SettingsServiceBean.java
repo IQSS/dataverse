@@ -96,8 +96,6 @@ public class SettingsServiceBean {
          * to from the footer.
          */
         ApplicationPrivacyPolicyUrl,
-        /** Expose debug information in the UI that users shouldn't normally see. */
-        Debug,
         /**
          * A boolean defining if indexing and search should respect the concept
          * of "permission root".

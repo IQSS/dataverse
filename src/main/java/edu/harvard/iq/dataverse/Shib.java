@@ -227,23 +227,6 @@ public class Shib implements java.io.Serializable {
         internalUserIdentifer = ShibUtil.generateFriendlyLookingUserIdentifer(usernameAssertion, emailAddress);
         logger.info("friendly looking identifer (backend will enforce uniqueness):" + internalUserIdentifer);
 
-        /**
-         * @todo Remove, longer term. For now, commenting out special logic for
-         * always showing Terms of Use for TestShib accounts. The Terms of Use
-         * workflow is captured at
-         * http://datascience.iq.harvard.edu/blog/try-out-single-sign-shibboleth-40-beta
-         */
-//        if (shibIdp.equals("https://idp.testshib.org/idp/shibboleth")) {
-//            StringBuilder sb = new StringBuilder();
-//            String freshNewShibUser = sb.append(userIdentifier).append(UUID.randomUUID()).toString();
-//            logger.info("Will create a new, unique user so the account Terms of Use will be displayed.");
-//            userIdentifier = freshNewShibUser;
-//        }
-        /**
-         * @todo Shouldn't we persist the displayName too? It still exists on
-         * the authenticateduser table.
-         */
-//        String displayName = getDisplayName(displayNameAttribute, firstNameAttribute, lastNameAttribute);
         String affiliation = shibService.getAffiliation(shibIdp, shibService.getDevShibAccountType());
         if (affiliation != null) {
             affiliationToDisplayAtConfirmation = affiliation;
@@ -270,15 +253,7 @@ public class Shib implements java.io.Serializable {
         } else {
             state = State.PROMPT_TO_CREATE_NEW_ACCOUNT;
             displayNameToPersist = displayInfo.getTitle();
-//            firstNameToPersist = "foo";
-//            lastNameToPersist = "bar";
             emailToPersist = emailAddress;
-            /**
-             * @todo For Harvard at least, we plan to use "Harvard University"
-             * for affiliation because it's what we get from
-             * https://dataverse.harvard.edu/Shibboleth.sso/DiscoFeed
-             */
-//            affiliationToPersist = "FIXME";
             /**
              * @todo for Harvard we plan to use the value(s) from
              * eduPersonScopedAffiliation which
