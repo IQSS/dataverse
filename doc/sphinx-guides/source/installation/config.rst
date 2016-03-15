@@ -101,7 +101,7 @@ The password reset feature requires ``dataverse.fqdn`` to be configured.
 dataverse.siteUrl
 +++++++++++++++++
 
-| and specify the alternative protocol and port number. 
+| and specify the protocol and port number you would prefer to be used to advertise the URL for your Dataverse.
 | For example, configured in domain.xml:
 | ``<jvm-options>-Ddataverse.fqdn=dataverse.foobar.edu</jvm-options>``
 | ``<jvm-options>-Ddataverse.siteUrl=http://${dataverse.fqdn}:8080</jvm-options>``

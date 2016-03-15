@@ -91,14 +91,26 @@ The version that ships with RHEL 6 and above is fine::
         # service postgresql initdb
 	# service postgresql start
 
-Configure Database Access for the Dataverse Application (and the Dataverse Installer) 
+The standard init script that ships RHEL 6 and similar should work fine. Enable it with this command::
+
+        # chkconfig postgresql on
+
+
+
+Configuring Database Access for the Dataverse Application (and the Dataverse Installer) 
 =====================================================================================
 
-- The application will be talking to PostgreSQL over TCP/IP, using password authentication. If you are running PostgreSQL on the same server as Glassfish, we strongly recommend that you use the localhost interface to connect to the database. Make sure you accept the default value ``localhost`` when the installer asks you for the PostgreSQL server address. Then find the localhost (127.0.0.1) entry that's already in the ``pg_hba.conf`` and modify it to look like this:: 
+- The application and the installer script will be connecting to PostgreSQL over TCP/IP, using password authentication. In this section we explain how to configure PostgresQL to accept these connections. 
+
+
+- If PostgreSQL is running on the same server as Glassfish, find the localhost (127.0.0.1) entry that's already in the ``pg_hba.conf`` and modify it to look like this:: 
 
   	host all all 127.0.0.1/32 md5
-  
-- The Dataverse installer script (for more information on the installer, please see :doc:`installation-main`) will need to connect to PostgreSQL as the admin user, in order to create and set up the database that the Dataverse will be using. If for whatever reason it is failing to connect (for example, if you don't remember what your Postgres admin password is), you may choose to temporarily disable all the access restrictions on localhost connections, by changing the above line to::
+
+  Once you are done with the prerequisites and run the installer script (documented here: :doc:`installation-main`) it will ask you to enter the address of the Postgres server. Simply accept the default value ``127.0.0.1`` there. 
+
+
+- The Dataverse installer script will need to connect to PostgreSQL **as the admin user**, in order to create and set up the database that the Dataverse will be using. If for whatever reason it is failing to connect (for example, if you don't know/remember what your Postgres admin password is), you may choose to temporarily disable all the access restrictions on localhost connections, by changing the above line to::
 
   	host all all 127.0.0.1/32 trust
 
@@ -109,24 +121,23 @@ Configure Database Access for the Dataverse Application (and the Dataverse Insta
 
         host all all [ADDRESS]      255.255.255.255 md5
 
-  (``[ADDRESS]`` should be the numeric IP address of the Glassfish server).
+  Where ``[ADDRESS]`` is the numeric IP address of the Glassfish server. Enter this address when the installer asks for the PostgreSQL server address.
 
-- In some distributions, PostgreSQL is pre-configured so that it doesn't accept network connections at all. Check that the ``listen_address`` line in the configuration file ``postgresql.conf`` is not commented-out and looks like this:: 
+- In some distributions, PostgreSQL is pre-configured so that it doesn't accept network connections at all. Check that the ``listen_address`` line in the configuration file ``postgresql.conf`` is not commented out and looks like this:: 
 
         listen_addresses='*' 
 
   The file ``postgresql.conf`` will be located in the same directory as the ``pg_hba.conf`` above.
 
-- **Important: you must restart Postgres** for the configuration changes to take effect! On RHEL and similar (provided you installed Postgres as instructed above)::
+- **Important: PostgreSQL must be restarted** for the configuration changes to take effect! On RHEL and similar (provided you installed Postgres as instructed above)::
         
         # service postgresql restart
 
-PostgreSQL Init Script
-======================
+  On MacOS X a "Reload Configuration" icon is usually supplied in the PostgreSQL application folder. Or you could look up the process id of the PostgreSQL postmaster process, and send it the SIGHUP signal:: 
 
-The standard init script that ships RHEL 6 and similar should work fine. Enable it with this command::
+      	kill -1 PROCESS_ID
 
-        # chkconfig postgresql on
+
 
 Solr 
 ----

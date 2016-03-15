@@ -80,7 +80,7 @@ my %CONFIG_DEFAULTS = (
     'MAIL_SERVER',         'mail.hmdc.harvard.edu',
 
     'POSTGRES_ADMIN_PASSWORD', 'secret',
-    'POSTGRES_SERVER',   'localhost',
+    'POSTGRES_SERVER',   '127.0.0.1',
     'POSTGRES_PORT',     5432,
     'POSTGRES_DATABASE', 'dvndb',
     'POSTGRES_USER',     'dvnapp',
@@ -98,12 +98,12 @@ my %CONFIG_DEFAULTS = (
 );
 
 my %CONFIG_PROMPTS = (
-    'HOST_DNS_ADDRESS',    'Internet Address of your host',
+    'HOST_DNS_ADDRESS',    'Fully Qualified Domain Name of your host',
     'GLASSFISH_DIRECTORY', 'Glassfish Directory',
     'ADMIN_EMAIL',         'Administrator email address for this Dataverse',
     'MAIL_SERVER',         'SMTP (mail) server to relay notification messages',
 
-    'POSTGRES_SERVER',   'Postgres Server',
+    'POSTGRES_SERVER',   'Postgres Server Address',
     'POSTGRES_PORT',     'Postgres Server Port',
     'POSTGRES_ADMIN_PASSWORD', 'Postgres ADMIN password',
     'POSTGRES_DATABASE', 'Name of the Postgres Database',
@@ -123,21 +123,21 @@ my %CONFIG_PROMPTS = (
 
 
 my %CONFIG_COMMENTS = (
-    'HOST_DNS_ADDRESS',    '',
+    'HOST_DNS_ADDRESS',    ":\n(enter numeric IP address, if FQDN is unavailable) ",
     'GLASSFISH_DIRECTORY', '',
-    'ADMIN_EMAIL',         "\n(please enter a valid email address!)",
+    'ADMIN_EMAIL',         ":\n(please enter a valid email address!) ",
     'MAIL_SERVER',         '',
 
     'POSTGRES_SERVER',   '',
     'POSTGRES_PORT',     '',
-    'POSTGRES_ADMIN_PASSWORD', "\n- We will need this to create the user and database that the Dataverse application will be using. (Leave blank if access control is set to \"trust\" for this connection in pg_hba.conf)",
-    'POSTGRES_USER',     "\n- This will be the Postgres user that the Dataverse app will be using to talk to the database",
+    'POSTGRES_ADMIN_PASSWORD', ":\n - We will need this to create the user and database that the Dataverse application will be using.\n (Hit RETURN if access control is set to \"trust\" for this connection in pg_hba.conf)\n: ",
+    'POSTGRES_USER',     ":\n - This is the Postgres user that the Dataverse app will be using to talk to the database\n: ",
     'POSTGRES_DATABASE', '',
     'POSTGRES_PASSWORD', '',
 
-    'SOLR_LOCATION',     "? \n- Leave this set to \"LOCAL\" if the SOLR daemon will be running on the same (this) server. Otherwise, please enter the host AND THE PORT NUMBER of the remote SOLR service, separated by the colon (for example: foo.edu:8983)",
+    'SOLR_LOCATION',     "? \n - Leave this set to \"LOCAL\" if the SOLR will be running on the same (this) server.\n Otherwise, please enter the host AND THE PORT NUMBER of the remote SOLR service, colon-separated\n (for example: foo.edu:8983)\n: ",
 
-    'TWORAVENS_LOCATION', "? \n-If so, please provide the complete URL of the TwoRavens GUI under rApache, for example, \"https://foo.edu/dataexplore/gui.html\". (PLEASE NOTE, TwoRavens will need to be installed separately! - see the installation docs for more info)",
+    'TWORAVENS_LOCATION', "? \n - If so, please provide the complete URL of the TwoRavens GUI under rApache,\n for example, \"https://foo.edu/dataexplore/gui.html\".\n (PLEASE NOTE, TwoRavens will need to be installed separately! - see the installation docs for more info)\n: ",
 
     'RSERVE_HOST',     '',
     'RSERVE_PORT',     '',
@@ -159,7 +159,9 @@ my %POSTGRES_DRIVERS = (
     "9_0", "postgresql-9.0-802.jdbc4.jar",
     "9_1", "postgresql-9.1-902.jdbc4.jar",
     "9_2", "postgresql-9.1-902.jdbc4.jar",
-    "9_3", "postgresql-9.1-902.jdbc4.jar"
+    "9_3", "postgresql-9.1-902.jdbc4.jar",
+    "9_4", "postgresql-9.1-902.jdbc4.jar",
+    "9_5", "postgresql-9.1-902.jdbc4.jar"
 );
 
 # A few preliminary checks:
@@ -261,9 +263,21 @@ print "Please enter the following configuration values:\n";
 print "(hit [RETURN] to accept the default value)\n";
 print "\n";
 
-for my $ENTRY (@CONFIG_VARIABLES) {
-    print $CONFIG_PROMPTS{$ENTRY} . $CONFIG_COMMENTS{$ENTRY} . ": ";
-    print "[" . $CONFIG_DEFAULTS{$ENTRY} . "] ";
+for my $ENTRY (@CONFIG_VARIABLES) 
+{
+    my $config_prompt = $CONFIG_PROMPTS{$ENTRY};
+    my $config_comment = $CONFIG_COMMENTS{$ENTRY};
+
+    if ( $config_comment eq '' ) 
+    {
+	print $config_prompt . ": ";
+	print "[" . $CONFIG_DEFAULTS{$ENTRY} . "] ";
+    }
+    else 
+    {
+	print $config_prompt . $config_comment;
+	print "[" . $CONFIG_DEFAULTS{$ENTRY} . "] ";
+    }
 
     my $user_entry = "";
 
@@ -298,14 +312,52 @@ for my $ENTRY (@CONFIG_VARIABLES) {
 	    }
 
 	}
+	elsif ($ENTRY eq 'GLASSFISH_DIRECTORY') 
+	{
+            # 5a. CHECK IF GLASSFISH DIR LOOKS OK:
+	    print "\nChecking your Glassfish installation...";
 
-	# TODO: 
-	# validate the mail/smtp server here as well, 
-	# instead of doing it further down. 
+	    my $g_dir = $CONFIG_DEFAULTS{'GLASSFISH_DIRECTORY'};
+
+
+	    unless ( -d $g_dir . "/glassfish/domains/domain1" ) 
+	    {
+		# TODO: need better check than this
+
+		while ( !( -d $g_dir . "/glassfish/domains/domain1" ) ) 
+		{
+		    print "\nInvalid Glassfish directory " . $g_dir . "!\n";
+		    print "Enter the root directory of your Glassfish installation:\n";
+		    print "(Or ctrl-C to exit the installer): ";
+
+		    $g_dir = <>;
+		    chop $g_dir;
+		}
+
+		# TODO: 
+		# verify that we can write in the Glassfish directory 
+		# (now that we are no longer requiring to run the installer as root)
+	    }
+
+	    print "OK!\n";
+	    $CONFIG_DEFAULTS{'GLASSFISH_DIRECTORY'} = $g_dir; 
+
+	}
+	elsif ($ENTRY eq 'MAIL_SERVER')
+	{
+	    my $smtp_server = "";
+	    while (! &validate_smtp_server() )
+	    {
+		print "Enter a valid SMTP (mail) server:\n";
+		print "(Or ctrl-C to exit the installer): ";
+
+		$smtp_server = <>;
+		chop $smtp_server;
+
+		$CONFIG_DEFAULTS{'MAIL_SERVER'} = $smtp_server unless $smtp_server eq ''; 
+	    }
+	}
     }
-	    
-
-
 
     print "\n";
 }
@@ -341,41 +393,7 @@ if ( $yesno eq "n" ) {
 
 # VALIDATION/VERIFICATION OF THE CONFIGURATION VALUES:
 # 1. VERIFY/VALIDATE THE MAIL SERVER THEY CONFIGURED:
-
-unless ($postgresonly) {
-
-    my ( $mail_server_iaddr, $mail_server__paddr, $mail_server_proto, $mail_server_status );
-
-    $mail_server_status = 1;
-
-    unless ( $mail_server_iaddr = inet_aton( $CONFIG_DEFAULTS{'MAIL_SERVER'} ) ) {
-        print STDERR "Could not look up $CONFIG_DEFAULTS{'MAIL_SERVER'},\n";
-        print STDERR "the host you specified as your mail server\n";
-        $mail_server_status = 0;
-    }
-
-    if ($mail_server_status) {
-        my $mail_server_paddr = sockaddr_in( 25, $mail_server_iaddr );
-        $mail_server_proto = getprotobyname('tcp');
-
-        unless ( socket( SOCK, PF_INET, SOCK_STREAM, $mail_server_proto )
-            && connect( SOCK, $mail_server_paddr ) )
-        {
-            print STDERR "Could not establish connection to $CONFIG_DEFAULTS{'MAIL_SERVER'},\n";
-            print STDERR "the address you provided for your Mail server.\n";
-            print STDERR "Please select a valid mail server, and try again.\n\n";
-
-            $mail_server_status = 0;
-        }
-
-    }
-
-    close(SOCK);
-
-    unless ($mail_server_status) {
-        goto ENTERCONFIG;
-    }
-}
+# (has been moved to the top, so that it's validated in real time, when the user enters the value)
 
 # 2. CHECK IF THE WAR FILE IS AVAILABLE:
 
@@ -468,7 +486,7 @@ my $pg_major_version = 0;
 my $pg_minor_version = 0;
 
 my $POSTGRES_SYS_UID;
-if ( $CONFIG_DEFAULTS{'POSTGRES_SERVER'} eq 'localhost' ) 
+if ( $CONFIG_DEFAULTS{'POSTGRES_SERVER'} eq 'localhost' || $CONFIG_DEFAULTS{'POSTGRES_SERVER'} eq '127.0.0.1' ) 
 {
     $pg_local_connection = 1;
 } 
@@ -476,7 +494,7 @@ elsif ($pg_only)
 {
     print "In the --pg_only mode the script can only be run LOCALLY,\n";
     print "i.e., on the server where PostgresQL is running, with the\n";
-    print "Postgres server address as \"localhost\".\n";
+    print "Postgres server address as localhost - \"127.0.0.1\".\n";
     exit 1;
 }
 
@@ -557,7 +575,7 @@ if ( $WORKING_OS eq "MacOSX" ) {
     my $macos_pg_major_version = 0;
     my $macos_pg_minor_version = 0;
 
-    for $macos_pg_minor_version ( "3", "2", "1", "0" ) {
+    for $macos_pg_minor_version ( "5", "4", "3", "2", "1", "0" ) {
 	if ( -x "/Library/PostgreSQL/9." . $macos_pg_minor_version . "/bin/psql" ) {
 	    $macos_pg_major_version = 9;
 	    if (   ( $macos_pg_major_version > $psql_major_version )
@@ -861,31 +879,9 @@ if ( system( $psql_exec . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " 
 
 # 5. CONFIGURE GLASSFISH
 
-print "\nProceeding with the Glassfish setup.\n";
-print "\nChecking your Glassfish installation...";
-
 my $glassfish_dir = $CONFIG_DEFAULTS{'GLASSFISH_DIRECTORY'};
 
-# 5a. CHECK IF GLASSFISH DIR LOOKS OK:
-
-unless ( -d $glassfish_dir . "/glassfish/domains/domain1" ) {
-    # TODO: need better check than this
-
-    while ( !( -d $glassfish_dir . "/glassfish/domains/domain1" ) ) {
-        print "\nInvalid Glassfish directory " . $glassfish_dir . "!\n";
-        print "Enter the root directory of your Glassfish installation:\n";
-        print "(Or ctrl-C to exit the installer): ";
-
-        $glassfish_dir = <>;
-        chop $glassfish_dir;
-    }
-
-    # TODO: 
-    # verify that we can write in the Glassfish directory 
-    # (now that we are no longer requiring to run the installer as root)
-}
-
-print "OK!\n";
+print "\nProceeding with the Glassfish setup.\n";
 
 # 5b. DETERMINE HOW MUCH MEMORY TO GIVE TO GLASSFISH AS HEAP:
 
@@ -1192,8 +1188,6 @@ print "Making additional configuration changes...\n\n";
 
 # a. Configure the Admin email in the Dataverse settings:
 
-my $exit_code; 
-
 print "Executing " . "curl -X PUT -d " . $CONFIG_DEFAULTS{'ADMIN_EMAIL'} . " " . $API_URL . "/admin/settings/:SystemEmail" . "\n";
 
 my $exit_code = system("curl -X PUT -d " . $CONFIG_DEFAULTS{'ADMIN_EMAIL'} . " " . $API_URL . "/admin/settings/:SystemEmail"); 
@@ -1377,4 +1371,35 @@ sub create_pg_hash {
     }
 
     return $hash;
+}
+
+sub validate_smtp_server {
+    my ( $mail_server_iaddr, $mail_server__paddr, $mail_server_proto, $mail_server_status );
+
+    $mail_server_status = 1;
+
+    unless ( $mail_server_iaddr = inet_aton( $CONFIG_DEFAULTS{'MAIL_SERVER'} ) ) {
+	print STDERR "Could not look up $CONFIG_DEFAULTS{'MAIL_SERVER'},\n";
+	print STDERR "the host you specified as your mail server\n";
+	$mail_server_status = 0;
+    }
+
+    if ($mail_server_status) {
+	my $mail_server_paddr = sockaddr_in( 25, $mail_server_iaddr );
+	$mail_server_proto = getprotobyname('tcp');
+
+	unless ( socket( SOCK, PF_INET, SOCK_STREAM, $mail_server_proto )
+		 && connect( SOCK, $mail_server_paddr ) )
+	{
+	    print STDERR "Could not establish connection to $CONFIG_DEFAULTS{'MAIL_SERVER'},\n";
+	    print STDERR "the address you provided for your Mail server.\n";
+	    print STDERR "Please select a valid mail server, and try again.\n\n";
+
+	    $mail_server_status = 0;
+	}
+
+	close(SOCK);
+    }
+
+    return $mail_server_status; 
 }
