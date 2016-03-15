@@ -109,7 +109,7 @@ dataverse.siteUrl
 dataverse.files.directory
 +++++++++++++++++++++++++
 
-This is how you configure the path to which files uploaded by users are stored. The installer prompted you for this value.
+This is how you configure the path to which files uploaded by users are stored.
 
 dataverse.auth.password-reset-timeout-in-minutes
 ++++++++++++++++++++++++++++++++++++++++++++++++
