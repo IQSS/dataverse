@@ -803,7 +803,7 @@ public class IngestServiceBean {
         datafile.setPermissionModificationTime(new Timestamp(new Date().getTime()));
         FileMetadata fmd = new FileMetadata();
         
-        fmd.setLabel(checkForDuplicateFileNames(version,fileName));
+        //fmd.setLabel(checkForDuplicateFileNames(version,fileName));
 
         if (addToDataset) {
             datafile.setOwner(version.getDataset());

@@ -491,6 +491,12 @@
                                         <h:outputText value="#{bundle['dataset.cite.downloadBtn.xml']}" />
                                     </h:commandLink>
                                 </li>
+                                <li>
+                                    <h:commandLink id="bibLinkFile" action="#{DatasetPage.downloadDatafileCitationBibtex(fileMetadata)}">
+                                        <h:outputText value="#{bundle['dataset.cite.downloadBtn.bib']}" />
+                                    </h:commandLink>
+                                </li>
+
                             </ul>
                         </li>
                     </ul>

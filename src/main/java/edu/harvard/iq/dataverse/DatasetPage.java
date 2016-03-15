@@ -3310,7 +3310,44 @@ public class DatasetPage implements java.io.Serializable {
 
         }
     }
-    
+
+    public void downloadDatasetCitationBibtex() {
+
+        downloadCitationBibtex(null);
+
+    }
+
+    public void downloadDatafileCitationBibtex(FileMetadata fileMetadata) {
+        downloadCitationBibtex(fileMetadata);
+    }
+
+    public void downloadCitationBibtex(FileMetadata fileMetadata) {
+
+        String bibFormatDowload = datasetService.createCitationBibtex(workingVersion, fileMetadata);
+        FacesContext ctx = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
+        response.setContentType("application/download");
+
+        String fileNameString = "";
+        if (fileMetadata == null || fileMetadata.getLabel() == null) {
+            // Dataset-level citation:
+            fileNameString = "attachment;filename=" + getFileNameDOI() + ".bib";
+        } else {
+            // Datafile-level citation:
+            fileNameString = "attachment;filename=" + getFileNameDOI() + "-" + fileMetadata.getLabel().replaceAll("\\.tab$", ".bib");
+        }
+        response.setHeader("Content-Disposition", fileNameString);
+
+        try {
+            ServletOutputStream out = response.getOutputStream();
+            out.write(bibFormatDowload.getBytes());
+            out.flush();
+            ctx.responseComplete();
+        } catch (Exception e) {
+
+        }
+    }
+
     public String getDatasetPublishCustomText(){
         String datasetPublishCustomText = settingsService.getValueForKey(SettingsServiceBean.Key.DatasetPublishPopupCustomText);
         if( datasetPublishCustomText!= null && !datasetPublishCustomText.isEmpty()){
