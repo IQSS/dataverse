@@ -11,7 +11,7 @@ Shibboleth support in Dataverse should be considered **experimental** until http
 Introduction
 ------------
 
-By configuring and enabling Shibboleth support in Dataverse, your users will be able to log in using the identity system managed by their institution ("single sign on", or at least "single password") rather than having to create yet another password local to your Dataverse installation. Typically, users know their login system by some sort of internal branding such as "HarvardKey" or "Touchstone" (MIT) but within the Dataverse application, the Shibboleth feature is known as "Institution Log In" as explained to end users in the :doc:`/user/account` section of the User Guide.
+By configuring and enabling Shibboleth support in Dataverse, your users will be able to log in using the identity system managed by their institution ("single sign on", or at least "single password") rather than having to create yet another password local to your Dataverse installation. Typically, users know their login system by some sort of internal branding such as "HarvardKey" or "Touchstone" (MIT) but within the Dataverse application, the Shibboleth feature is known as "Institutional Log In" as explained to end users in the :doc:`/user/account` section of the User Guide.
 
 Shibboleth is an implementation of the `Security Assertion Markup Language (SAML) <https://en.wikipedia.org/wiki/Security_Assertion_Markup_Language>`_ protocol which is similar in spirit to systems used by many webapps that allow you to log in via Google, Facebook, or Twitter.
 

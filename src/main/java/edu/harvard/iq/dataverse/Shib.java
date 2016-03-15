@@ -83,16 +83,9 @@ public class Shib implements java.io.Serializable {
     private String existingEmail;
     private String existingDisplayName;
     private boolean passwordRejected;
-    private String displayNameToPersist = "(Blank: display name not received from Institution Log In)";
-//    private String firstNameToPersist = "(Blank: first name not received from Institution Log In)";
-//    private String lastNameToPersist = "(Blank: last name not received from Institution Log In)";
-    private String emailToPersist = "(Blank: email received from Institution Log In)";
+    private String displayNameToPersist;
+    private String emailToPersist;
     private String affiliationToDisplayAtConfirmation = null;
-    /**
-     * @todo Once we can persist "position" to the authenticateduser table, we
-     * can revisit this. Maybe we'll use ORCID instead. Dunno.
-     */
-//    private String positionToPersist = "Position not provided by institution log in";
     private String friendlyNameForInstitution = BundleUtil.getStringFromBundle("shib.welcomeExistingUserMessageDefaultInstitution");
     private State state;
     private String debugSummary;

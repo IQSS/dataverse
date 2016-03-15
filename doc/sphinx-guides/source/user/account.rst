@@ -45,7 +45,7 @@ If you already have a Dataverse account, but you want to change it to use your i
 #. Find this Institutional Log In box: |image1institutional|
 #. Using the dropdown menu, select your institution then click the Continue button
 #. You will be brought to your institution's log in page. After you put in your institutional information successfully, you will be brought back to Dataverse to review your account information and enter your previous password for your Dataverse account to ensure that you changed your login. |image3institutional|
-#. Once you click Change/Convert Account, you will have completed changing your Dataverse account to you use your institution log in.
+#. Once you click Change/Convert Account, you will have completed changing your Dataverse account to you use your institutional log in.
 
 How to change your Dataverse account to not be able to use Institutional Log In
 -------------------------------------------------------------------------------------------------
