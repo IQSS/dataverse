@@ -1243,8 +1243,8 @@ if ($CONFIG_DEFAULTS{'TWORAVENS_LOCATION'} ne 'NOT INSTALLED')
 
 if ($CONFIG_DEFAULTS{'SOLR_LOCATION'} ne 'LOCAL')
 {
-    print "Executing " . "curl -X put -d " . $CONFIG_DEFAULTS{'SOLR_LOCATION'} . " " . $API_URL . "/admin/settings/:SolrHostColonPort" . "\n";
-    my $exit_code = system("curl -X put -d " . $CONFIG_DEFAULTS{'SOLR_LOCATION'} . " " . $API_URL . "/admin/settings/:SolrHostColonPort"); 
+    print "Executing " . "curl -X PUT -d " . $CONFIG_DEFAULTS{'SOLR_LOCATION'} . " " . $API_URL . "/admin/settings/:SolrHostColonPort" . "\n";
+    my $exit_code = system("curl -X PUT -d " . $CONFIG_DEFAULTS{'SOLR_LOCATION'} . " " . $API_URL . "/admin/settings/:SolrHostColonPort"); 
     if ( $exit_code )       
     {
 	print "WARNING: failed to configure the location of the remote SOLR service!\n\n";
