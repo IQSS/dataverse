@@ -212,8 +212,12 @@
                                     </label>
                                     <div class="col-sm-9">
                                         <p:autoComplete id="userGroupNameAssign" placeholder="#{bundle['dataverse.permissionsFiles.assignDialog.userOrGroup.enterName']}"
-                                                        multiple="true" scrollHeight="180" forceSelection="true" emptyMessage="#{bundle['dataverse.permissionsFiles.assignDialog.userOrGroup.invalidMsg']}"
-                                                        value="#{manageFilePermissionsPage.selectedRoleAssignees}"  completeMethod="#{manageFilePermissionsPage.completeRoleAssignee}"
+                                                        multiple="true" scrollHeight="180" forceSelection="true" 
+                                                        minQueryLength="2" queryDelay="1000"                                      
+                                                        groupBy="#{roleAssignee.identifier.startsWith('@')?'Users':'Groups'}"                                              
+                                                        emptyMessage="#{bundle['dataverse.permissionsFiles.assignDialog.userOrGroup.invalidMsg']}"
+                                                        value="#{manageFilePermissionsPage.selectedRoleAssignees}"  
+                                                        completeMethod="#{manageFilePermissionsPage.completeRoleAssignee}"
                                                         required="#{param['DO_VALIDATION']}" requiredMessage="#{bundle['dataverse.permissionsFiles.assignDialog.userOrGroup.requiredMsg']}"
                                                         var="roleAssignee" itemLabel="#{roleAssignee.displayInfo.title}" itemValue="#{roleAssignee}" converter="roleAssigneeConverter">
                                             <p:column>

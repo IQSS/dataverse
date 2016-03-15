@@ -31,9 +31,14 @@ import javax.validation.constraints.NotNull;
     @NamedQuery( name="AuthenticatedUser.findByIdentifier",
                 query="select au from AuthenticatedUser au WHERE au.userIdentifier=:identifier"),
     @NamedQuery( name="AuthenticatedUser.findByEmail",
-                query="select au from AuthenticatedUser au WHERE au.email=:email"),
+                query="select au from AuthenticatedUser au WHERE LOWER(au.email)=LOWER(:email)"),
     @NamedQuery( name="AuthenticatedUser.countOfIdentifier",
-                query="SELECT COUNT(a) FROM AuthenticatedUser a WHERE a.userIdentifier=:identifier")
+                query="SELECT COUNT(a) FROM AuthenticatedUser a WHERE a.userIdentifier=:identifier"),
+    @NamedQuery( name="AuthenticatedUser.filter",
+                query="select au from AuthenticatedUser au WHERE ("
+                        + "au.userIdentifier like :query OR "
+                        + "lower(concat(au.firstName,' ',au.lastName)) like lower(:query))")    
+    
 })
 @Entity
 public class AuthenticatedUser implements User, Serializable {

@@ -1,15 +1,15 @@
 # RFI Checklist
 
-Please fill out (1) and (2) **before** submitting the Pull Request
+_**Before** submitting the pull request, fill out sections (1.) Related Issues and (2.) Pull Request Checklist._
 
-### (1) - Related Issues:
+### 1. Related Issues
 
-List/[link](https://guides.github.com/features/issues/#notifications) to the issues in this Pull Request 
+_List and [link](https://guides.github.com/features/issues/#notifications) to the issues in this Pull Request._
 
-\#
+- [#### + Title HERE]
 
-
-### (2) - Pull Request Checklist
+---
+### 2. Pull Request Checklist
 
 - [ ]  Functionality completed as described in FRD
 - [ ]  Dependencies, risks, assumptions in FRD addressed
@@ -19,9 +19,9 @@ List/[link](https://guides.github.com/features/issues/#notifications) to the iss
 - [ ]  All code checkins completed
 
 ---
-### (3) - Review Checklist
+### 3. Review Checklist
 
-_To be filled out **after** the Pull Request is submitted._
+_**After** the pull request has been submitted, fill out this section._
 
 - [ ]  Code review completed or waived
 - [ ]  Testing requirements completed
