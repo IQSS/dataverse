@@ -78,9 +78,9 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     DataverseSession session;
 
     Dataset dataset = new Dataset(); 
-    private final Map<RoleAssignee,List<RoleAssignmentRow>> roleAssigneeMap = new HashMap();
-    private final Map<DataFile,List<RoleAssignmentRow>> fileMap = new HashMap();
-    private final Map<AuthenticatedUser,List<DataFile>> fileAccessRequestMap = new HashMap();    
+    private final Map<RoleAssignee,List<RoleAssignmentRow>> roleAssigneeMap = new HashMap<>();
+    private final Map<DataFile,List<RoleAssignmentRow>> fileMap = new HashMap<>();
+    private final Map<AuthenticatedUser,List<DataFile>> fileAccessRequestMap = new HashMap<>();    
 
     public Dataset getDataset() {
         return dataset;
@@ -134,7 +134,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
                 if (file.getFileMetadata() != null && (file.isRestricted() || file.getFileMetadata().isRestricted())) {
                 // we get the direct role assignments assigned to the file
                 List<RoleAssignment> ras = roleService.directRoleAssignments(file);
-                List raList = new ArrayList<>(ras.size());
+                List<RoleAssignmentRow> raList = new ArrayList<>(ras.size());
                 for (RoleAssignment ra : ras) {
                     // for files, only show role assignments which can download
                     if (ra.getRole().permissions().contains(Permission.DownloadFile)) {
@@ -149,7 +149,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
                 for (AuthenticatedUser au : file.getFileAccessRequesters()) {
                         List<DataFile> requestedFiles = fileAccessRequestMap.get(au);
                         if (requestedFiles == null) {
-                            requestedFiles = new ArrayList();
+                            requestedFiles = new ArrayList<>();
                             fileAccessRequestMap.put(au, requestedFiles);
                         }
 
@@ -165,7 +165,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         RoleAssignee ra = roleAssigneeService.getRoleAssignee(assignment.getAssigneeIdentifier());
         List<RoleAssignmentRow> assignments = roleAssigneeMap.get(ra);
         if (assignments == null) {
-            assignments = new ArrayList();
+            assignments = new ArrayList<>();
             roleAssigneeMap.put(ra, assignments);
         }
         
@@ -267,8 +267,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
      grant access dialog
      */
     private List<RoleAssignee> selectedRoleAssignees;
-    private List<DataFile> selectedFiles = new ArrayList();
-    private final List<RoleAssignee> roleAssigneeList = new ArrayList();
+    private List<DataFile> selectedFiles = new ArrayList<>();
     private AuthenticatedUser fileRequester;
     
     public List<RoleAssignee> getSelectedRoleAssignees() {
@@ -316,26 +315,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     
 
     public List<RoleAssignee> completeRoleAssignee(String query) {
-        if (roleAssigneeList.isEmpty()) {
-            for (AuthenticatedUser au : authenticationService.findAllAuthenticatedUsers()) {
-                roleAssigneeList.add(au);
-            }
-            for ( Group g : groupService.findGlobalGroups() ) {
-                roleAssigneeList.add( g );
-            }
-            roleAssigneeList.addAll( explicitGroupService.findAvailableFor(dataset) );            
-            
-        }
-        List<RoleAssignee> returnList = new ArrayList();
-        for (RoleAssignee ra : roleAssigneeList) {
-            // @todo unsure if containsIgnore case will work for all locales
-            if ((StringUtils.containsIgnoreCase(ra.getDisplayInfo().getTitle(), query) 
-                    || StringUtils.containsIgnoreCase(ra.getIdentifier(), query))
-                    && (selectedRoleAssignees == null || !selectedRoleAssignees.contains(ra))) {
-                returnList.add(ra);
-            }
-        }
-        return returnList;
+        return roleAssigneeService.filterRoleAssignees(query, dataset, selectedRoleAssignees); 
     }
     
     public void grantAccess(ActionEvent evt) {

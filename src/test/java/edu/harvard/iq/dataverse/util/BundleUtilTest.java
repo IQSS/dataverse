@@ -14,6 +14,7 @@ public class BundleUtilTest {
         assertEquals(null, BundleUtil.getStringFromBundle(""));
         assertEquals(null, BundleUtil.getStringFromBundle("junkKeyWeDoNotExpectToFind"));
         assertEquals("Search", BundleUtil.getStringFromBundle("search"));
+        assertEquals("Error validating the username, email address, or password. Please try again. If the problem persists, contact an administrator.", BundleUtil.getStringFromBundle("login.error"));
     }
 
     @Test

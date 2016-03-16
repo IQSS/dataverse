@@ -1,8 +1,11 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.util.MarkupChecker;
+import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,6 +15,8 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -596,14 +601,92 @@ public class DatasetVersion implements Serializable {
         //todo get "Production Date" from datasetfieldvalue table
         return "Production Date";
     }
+    
+    public String getDescription() {
+        for (DatasetField dsf : this.getDatasetFields()) {
+            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.description)) {
+                String descriptionString = "";
+                if (dsf.getDatasetFieldCompoundValues() != null && dsf.getDatasetFieldCompoundValues().get(0) != null) {
+                    DatasetFieldCompoundValue descriptionValue = dsf.getDatasetFieldCompoundValues().get(0);
+                    for (DatasetField subField : descriptionValue.getChildDatasetFields()) {
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.descriptionText) && !subField.isEmptyForDisplay()) {
+                            descriptionString = subField.getValue();
+                        }
+                    }
+                }
+                return MarkupChecker.sanitizeBasicHTML(descriptionString);
+            }
+        }
+        return "";
+    }
+    
+    public List<String[]> getDatasetContacts(){
+        List <String[]> retList = new ArrayList<>();
+        for (DatasetField dsf : this.getDatasetFields()) {
+            Boolean addContributor = true;
+            String contributorName = "";
+            String contributorAffiliation = "";
+            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContact)) {
+                for (DatasetFieldCompoundValue authorValue : dsf.getDatasetFieldCompoundValues()) {
+                    for (DatasetField subField : authorValue.getChildDatasetFields()) {
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContactName)) {
+                            if (subField.isEmptyForDisplay()) {
+                                addContributor = false;
+                            }
+                            contributorName = subField.getDisplayValue();
+                        }
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContactAffiliation)) {
+                            contributorAffiliation = subField.getDisplayValue();
+                        }
+
+                    }
+                    if (addContributor) {
+                        String[] datasetContributor = new String[] {contributorName, contributorAffiliation};
+                        retList.add(datasetContributor);
+                    }
+                }
+            }
+        }       
+        return retList;        
+    }
+    
+    public List<String[]> getDatasetProducers(){
+        List <String[]> retList = new ArrayList<>();
+        for (DatasetField dsf : this.getDatasetFields()) {
+            Boolean addContributor = true;
+            String contributorName = "";
+            String contributorAffiliation = "";
+            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.producer)) {
+                for (DatasetFieldCompoundValue authorValue : dsf.getDatasetFieldCompoundValues()) {
+                    for (DatasetField subField : authorValue.getChildDatasetFields()) {
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.producerName)) {
+                            if (subField.isEmptyForDisplay()) {
+                                addContributor = false;
+                            }
+                            contributorName = subField.getDisplayValue();
+                        }
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.producerAffiliation)) {
+                            contributorAffiliation = subField.getDisplayValue();
+                        }
+
+                    }
+                    if (addContributor) {
+                        String[] datasetContributor = new String[] {contributorName, contributorAffiliation};
+                        retList.add(datasetContributor);
+                    }
+                }
+            }
+        }       
+        return retList;        
+    }
 
     public List<DatasetAuthor> getDatasetAuthors() {
         //todo get "List of Authors" from datasetfieldvalue table
-        List retList = new ArrayList();
+        List <DatasetAuthor> retList = new ArrayList<>();
         for (DatasetField dsf : this.getDatasetFields()) {
             Boolean addAuthor = true;
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.author)) {
-                for (DatasetFieldCompoundValue authorValue : dsf.getDatasetFieldCompoundValues()) {
+                for (DatasetFieldCompoundValue authorValue : dsf.getDatasetFieldCompoundValues()) {                   
                     DatasetAuthor datasetAuthor = new DatasetAuthor();
                     for (DatasetField subField : authorValue.getChildDatasetFields()) {
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorName)) {
@@ -615,8 +698,14 @@ public class DatasetVersion implements Serializable {
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorAffiliation)) {
                             datasetAuthor.setAffiliation(subField);
                         }
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorIdType)){
+                             datasetAuthor.setIdType(subField.getDisplayValue());
+                        }
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorIdValue)){
+                            datasetAuthor.setIdValue(subField.getDisplayValue());
+                        }
                     }
-                    if (addAuthor) {
+                    if (addAuthor) {                       
                         retList.add(datasetAuthor);
                     }
                 }
@@ -664,30 +753,40 @@ public class DatasetVersion implements Serializable {
         } else {
             str += getDatasetProducersString();
         }
+        
+        Date citationDate = getCitationDate();    
+        if (citationDate != null) {
+          if (!StringUtil.isEmpty(str)) {
+                str += ", ";
+            }      
+          str += new SimpleDateFormat("yyyy").format(citationDate);
+          
+        } else {
+            if (this.getDataset().getPublicationDate() == null || StringUtil.isEmpty(this.getDataset().getPublicationDate().toString())) {
 
-        if (this.getDataset().getPublicationDate() == null || StringUtil.isEmpty(this.getDataset().getPublicationDate().toString())) {
-            
-            if (!this.getDataset().isHarvested()) {
-                //if not released use current year
-                if (!StringUtil.isEmpty(str)) {
-                    str += ", ";
-                }
-                str += new SimpleDateFormat("yyyy").format(new Timestamp(new Date().getTime()));
-            } else {
-                String distDate = getDistributionDate();
-                if (distDate != null) {
+                if (!this.getDataset().isHarvested()) {
+                    //if not released use current year
                     if (!StringUtil.isEmpty(str)) {
                         str += ", ";
                     }
-                    str += distDate;
+                    str += new SimpleDateFormat("yyyy").format(new Timestamp(new Date().getTime()));
+                } else {
+                    String distDate = getDistributionDate();
+                    if (distDate != null) {
+                        if (!StringUtil.isEmpty(str)) {
+                            str += ", ";
+                        }
+                        str += distDate;
+                    }
                 }
+            } else {
+                if (!StringUtil.isEmpty(str)) {
+                    str += ", ";
+                }
+                str += new SimpleDateFormat("yyyy").format(new Timestamp(this.getDataset().getPublicationDate().getTime()));
             }
-        } else {
-            if (!StringUtil.isEmpty(str)) {
-                str += ", ";
-            }
-            str += new SimpleDateFormat("yyyy").format(new Timestamp(this.getDataset().getPublicationDate().getTime()));
         }
+        
         if (this.getTitle() != null) {
             if (!StringUtil.isEmpty(this.getTitle())) {
                 if (!StringUtil.isEmpty(str)) {
@@ -720,7 +819,7 @@ public class DatasetVersion implements Serializable {
                     str += ", ";
                 }
                 if (isOnlineVersion) {
-                    str += "<a href=\"" + this.getDataset().getPersistentURL() + "\">" + this.getDataset().getPersistentURL() + "</a>";
+                    str += "<a target=\"_top\" href=\"" + this.getDataset().getPersistentURL() + "\">" + this.getDataset().getPersistentURL() + "</a>";
                 } else {
                     str += this.getDataset().getPersistentURL();
                 }
@@ -779,6 +878,31 @@ public class DatasetVersion implements Serializable {
          str += " [Distributor]";
          }*/
         return str;
+    }
+    
+    private Date getCitationDate() {
+        DatasetField citationDate = getDatasetField(this.getDataset().getCitationDateDatasetFieldType());        
+        if (citationDate != null && citationDate.getDatasetFieldType().getFieldType().equals(FieldType.DATE)){          
+            try {  
+                return new SimpleDateFormat("yyyy").parse( citationDate.getValue() );
+            } catch (ParseException ex) {
+                Logger.getLogger(DatasetVersion.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+        return null;
+    }
+    
+    public DatasetField getDatasetField(DatasetFieldType dsfType) {
+        if (dsfType != null) {
+            for (DatasetField dsf : this.getFlatDatasetFields()) {
+                if (dsf.getDatasetFieldType().equals(dsfType)) {
+                    return dsf;
+                }
+            }
+        }
+        return null;
+
     }
 
     public String getDistributionDate() {

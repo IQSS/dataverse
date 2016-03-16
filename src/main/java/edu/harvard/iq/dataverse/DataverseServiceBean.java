@@ -221,17 +221,6 @@ public class DataverseServiceBean implements java.io.Serializable {
     
     public List<DataverseFacet> findAllDataverseFacets() {
         return em.createQuery("select object(o) from DataverseFacet as o order by o.display").getResultList();
-    }  
-   
-    private String appVersionString;
-
-    /**
-     * @todo Remove this method, and make all the (a couple of) xhtml pages 
-     * call the SystemConfig.getVersion method directly 
-     * (I don't have time to do it now -- L.A. 4.0.2)
-     */
-    public String getApplicationVersion() { 
-        return systemConfig.getVersion(true);
     }
     
     public String getDataverseLogoThumbnailAsBase64(Dataverse dataverse, User user) {

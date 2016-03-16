@@ -79,6 +79,7 @@ import javax.faces.model.SelectItem;
 import java.util.logging.Level;
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
+import javax.faces.context.ExternalContext;
 import org.primefaces.component.tabview.TabView;
 import org.primefaces.event.TabChangeEvent;
 import org.primefaces.model.LazyDataModel;
@@ -205,6 +206,9 @@ public class DatasetPage implements java.io.Serializable {
     private final Map<String, Boolean> datasetPermissionMap = new HashMap<>(); // { Permission human_name : Boolean }
     private final Map<Long, Boolean> fileDownloadPermissionMap = new HashMap<>(); // { FileMetadata.id : Boolean }
 
+    private final Map<Long, Boolean> fileMetadataTwoRavensExploreMap = new HashMap<>(); // { FileMetadata.id : Boolean } 
+    private final Map<Long, Boolean> fileMetadataWorldMapExplore = new HashMap<>(); // { FileMetadata.id : Boolean } 
+    
     private DataFile selectedDownloadFile;
 
     private Long maxFileUploadSizeInBytes = null;
@@ -587,6 +591,21 @@ public class DatasetPage implements java.io.Serializable {
         return false;
     }
     
+    /**
+     * For use in the Dataset page
+     * @return 
+     */
+    public boolean isSuperUser(){
+        
+        if (!this.isSessionUserAuthenticated()){
+            return false;
+        }
+        
+        if (this.session.getUser().isSuperuser()){
+            return true;
+        }
+        return false;
+    }
     /* 
        TODO/OPTIMIZATION: This is still costing us N SELECT FROM GuestbookResponse queries, 
        where N is the number of files. This could of course be replaced by a query that'll 
@@ -1060,11 +1079,11 @@ public class DatasetPage implements java.io.Serializable {
             return false;
         }
 
-        // (2) Is this file a Shapefile 
-        //  TODO: or a Tabular file tagged as Geospatial?
+
+        // Is this file a Shapefile or a Tabular file tagged as Geospatial?
         //
-        if (!(this.isShapefileType(fm))){
-              return false;
+        if (!(this.isPotentiallyMappableFileType(fm))){
+            return false;
         }
 
         // (3) Is this DataFile released?  Yes, don't need reminder
@@ -1117,7 +1136,7 @@ public class DatasetPage implements java.io.Serializable {
         //  (2) Is this file a Shapefile or a Tabular file tagged as Geospatial?
         //  TO DO:  EXPAND FOR TABULAR FILES TAGGED AS GEOSPATIAL!
         //
-        if (!(this.isShapefileType(fm))){
+        if (!(this.isPotentiallyMappableFileType(fm))){
             return false;
         }
 
@@ -1131,8 +1150,7 @@ public class DatasetPage implements java.io.Serializable {
         if (!settingsService.isTrueForKey(SettingsServiceBean.Key.GeoconnectCreateEditMaps, false)){
             return false;
         }
-        
-             
+                     
         //  (5) Is File released?
         //
         if (fm.getDataFile().isReleased()){
@@ -1142,6 +1160,122 @@ public class DatasetPage implements java.io.Serializable {
         // Nope
         return false;
     }
+    
+    
+    /**
+     * Used in the .xhtml file to check whether a tabular file 
+     * may be viewed via TwoRavens
+     * 
+     * @param fm
+     * @return 
+     */
+    public boolean canSeeTwoRavensExploreButton(FileMetadata fm){
+       
+        if (fm == null){
+            return false;
+        }
+        
+        // Has this already been checked?
+        if (this.fileMetadataTwoRavensExploreMap.containsKey(fm.getId())){
+            // Yes, return previous answer
+            //logger.info("using cached result for candownloadfile on filemetadata "+fid);
+            return this.fileMetadataTwoRavensExploreMap.get(fm.getId());
+        }
+        
+        
+        // (1) Is TwoRavens active via the "setting" table?
+        //      Nope: get out
+        //
+        if (!settingsService.isTrueForKey(SettingsServiceBean.Key.TwoRavensTabularView, false)){
+            this.fileMetadataTwoRavensExploreMap.put(fm.getId(), false);
+            return false;
+        }
+        
+        // (2) Does the user have download permission?
+        //      Nope: get out
+        //
+        if (!(this.canDownloadFile(fm))){
+            this.fileMetadataTwoRavensExploreMap.put(fm.getId(), false);
+            return false;
+        } 
+        // (3) Is the DataFile object there and persisted?
+        //      Nope: scat
+        //
+        if ((fm.getDataFile() == null)||(fm.getDataFile().getId()==null)){
+            this.fileMetadataTwoRavensExploreMap.put(fm.getId(), false);
+            return false;
+        }
+        
+        // (4) Is there tabular data or is the ingest in progress?
+        //      Yes: great
+        //
+        if ((fm.getDataFile().isTabularData())||(fm.getDataFile().isIngestInProgress())){
+            this.fileMetadataTwoRavensExploreMap.put(fm.getId(), true);
+            return true;
+        }
+        
+        // Nope
+        this.fileMetadataTwoRavensExploreMap.put(fm.getId(), false);            
+        return false;
+        
+        //       (empty fileMetadata.dataFile.id) and (fileMetadata.dataFile.tabularData or fileMetadata.dataFile.ingestInProgress)
+        //                                        and DatasetPage.canDownloadFile(fileMetadata) 
+    }
+    
+    /**
+     * Check if this is a mappable file type.
+     * 
+     * Currently (2/2016)
+     * - Shapefile (zipped shapefile)
+     * - Tabular file with Geospatial Data tag
+     * 
+     * @param fm
+     * @return 
+     */
+    private boolean isPotentiallyMappableFileType(FileMetadata fm){
+        if (fm==null){
+            return false;
+        }
+        
+        // Yes, it's a shapefile
+        //
+        if (this.isShapefileType(fm)){
+            return true;
+        }
+        
+        // Yes, it's tabular with a geospatial tag
+        //
+        if (fm.getDataFile().isTabularData()){
+            if (fm.getDataFile().hasGeospatialTag()){
+                return true;
+            } 
+        }
+        return false;
+    }
+    
+   
+    /**
+     * For development
+     * 
+     * Flag for whether to show sample insert statements for Geoconnect Debug
+     * 
+     * Conditions to meet: Person is superuser and GeoconnectDebug active 
+     * 
+     * @return 
+     */
+    public boolean isGeoconnectDebugAvailable(){
+
+        if (!this.isSuperUser()){
+            return false;
+        }
+
+        if (settingsService.isTrueForKey(SettingsServiceBean.Key.GeoconnectDebug, false)){
+            return true;
+        }    
+        return false;
+      
+    }
+    
     
     /**
      * Should there be a Explore WorldMap Button for this file?
@@ -1158,11 +1292,18 @@ public class DatasetPage implements java.io.Serializable {
             return false;
         }
         
+        if (this.fileMetadataWorldMapExplore.containsKey(fm.getId())){
+            // Yes, return previous answer
+            //logger.info("using cached result for candownloadfile on filemetadata "+fid);
+            return this.fileMetadataWorldMapExplore.get(fm.getId());
+        }
+        
         /* -----------------------------------------------------
            Does a Map Exist?
          ----------------------------------------------------- */
         if (!(this.hasMapLayerMetadata(fm))){
             // Nope: no button
+            this.fileMetadataWorldMapExplore.put(fm.getId(), false);
             return false;
         }
               
@@ -1171,6 +1312,7 @@ public class DatasetPage implements java.io.Serializable {
             Nope? no button
         */
         if (!settingsService.isTrueForKey(SettingsServiceBean.Key.GeoconnectViewMaps, false)){
+            this.fileMetadataWorldMapExplore.put(fm.getId(), false);
             return false;
         }        
         
@@ -1179,11 +1321,13 @@ public class DatasetPage implements java.io.Serializable {
              Yes: User can view button!
          ----------------------------------------------------- */                    
         if (this.canDownloadFile(fm)){
+            this.fileMetadataWorldMapExplore.put(fm.getId(), true);
             return true;
         }
                       
         // Nope: Can't see button
         //
+        this.fileMetadataWorldMapExplore.put(fm.getId(), false);
         return false;
     }
 
@@ -1226,7 +1370,8 @@ public class DatasetPage implements java.io.Serializable {
     private boolean metadataExportEnabled;
 
     public String init() {
-        // logger.fine("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
+        //System.out.println("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
+        
         String nonNullDefaultIfKeyNotFound = "";
         this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSize();
         setDataverseSiteUrl(systemConfig.getDataverseSiteUrl());
@@ -1500,7 +1645,7 @@ public class DatasetPage implements java.io.Serializable {
             }
             callDownloadServlet(downloadFormat, this.selectedDownloadFile.getId());
         }
-
+        
         if (type.equals("explore")) {
             String retVal = getDataExploreURLComplete(this.selectedDownloadFile.getId());
             try {
@@ -1895,7 +2040,7 @@ public class DatasetPage implements java.io.Serializable {
                     cmd = new PublishDatasetCommand(dataset, dvRequestService.getDataverseRequest(), minor);
                 }
                 dataset = commandEngine.submit(cmd);
-                JsfHelper.addSuccessMessage(JH.localize("dataset.message.publishSuccess"));                        
+                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.publishSuccess"));
                 if (notifyPublish) {
                     List<AuthenticatedUser> authUsers = permissionService.getUsersWithPermissionOn(Permission.PublishDataset, dataset);
                     List<AuthenticatedUser> editUsers = permissionService.getUsersWithPermissionOn(Permission.EditDataset, dataset);
@@ -1907,11 +2052,13 @@ public class DatasetPage implements java.io.Serializable {
                     }
                 }
             } catch (CommandException ex) {
-                JH.addMessage(FacesMessage.SEVERITY_FATAL, JH.localize("dataset.message.publishFailure"));
+                
+                JsfHelper.addErrorMessage(ex.getLocalizedMessage());
                 logger.severe(ex.getMessage());
             }
         } else {
-            JH.addMessage(FacesMessage.SEVERITY_ERROR, "Only authenticated users can release Datasets.");
+            
+            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.message.only.authenticatedUsers"));
         }
         return returnToDatasetOnly();
     }
@@ -1939,7 +2086,9 @@ public class DatasetPage implements java.io.Serializable {
         logger.fine("refreshing");
 
         //dataset = datasetService.find(dataset.getId());
+
         dataset = null;
+
 
         logger.fine("refreshing working version");
 
@@ -1969,14 +2118,19 @@ public class DatasetPage implements java.io.Serializable {
         if (this.workingVersion == null) {
             // TODO: 
             // same as the above
+
             return;
         }
+
 
         if (dataset == null) {
             // this would be the case if we were retrieving the version by 
             // the versionId, above.
             this.dataset = this.workingVersion.getDataset();
         }
+
+        
+
 
         if (readOnly) {
             datafileService.findFileMetadataOptimizedExperimental(dataset);
@@ -2172,8 +2326,19 @@ public class DatasetPage implements java.io.Serializable {
             }
             downloadIdString += fmd.getDataFile().getId();
         }
-        return downloadIdString;
-      
+        return downloadIdString;     
+    }
+    
+        // helper Method
+    public String getSelectedFilesIdsStringForDownload() {        
+        String downloadIdString = "";
+        for (FileMetadata fmd : this.selectedFiles){
+            if (!StringUtil.isEmpty(downloadIdString)) {
+                downloadIdString += ",";
+            }
+            downloadIdString += fmd.getDataFile().getId();
+        }
+        return downloadIdString;     
     }
     
     public String getDownloadableFilesIdsString() {        
@@ -2672,6 +2837,18 @@ public class DatasetPage implements java.io.Serializable {
 
     /* 
     */
+
+    public boolean isLockedInProgress() {
+        if (dataset != null) {
+            logger.fine("checking lock status of dataset " + dataset.getId());
+            if (dataset.isLocked()) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+
     public boolean isStillLocked() {
         if (dataset != null && dataset.getId() != null) {
             logger.fine("checking lock status of dataset " + dataset.getId());
@@ -2688,6 +2865,7 @@ public class DatasetPage implements java.io.Serializable {
         }
         
         if (dataset != null) {
+
             if (dataset.isLocked()) {
                 return true;
             }
@@ -3131,6 +3309,19 @@ public class DatasetPage implements java.io.Serializable {
         } catch (Exception e) {
 
         }
+    }
+    
+    public String getDatasetPublishCustomText(){
+        String datasetPublishCustomText = settingsService.getValueForKey(SettingsServiceBean.Key.DatasetPublishPopupCustomText);
+        if( datasetPublishCustomText!= null && !datasetPublishCustomText.isEmpty()){
+            return datasetPublishCustomText;
+            
+        }
+        return "";
+    }
+    
+    public Boolean isDatasetPublishPopupCustomTextOnAllVersions(){
+        return  settingsService.isTrueForKey(SettingsServiceBean.Key.DatasetPublishPopupCustomTextOnAllVersions, false);
     }
 
     public String getDataExploreURL() {
