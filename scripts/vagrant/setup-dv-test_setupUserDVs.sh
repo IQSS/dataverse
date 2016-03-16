@@ -27,7 +27,7 @@ echo ==============================================
 echo Pete
 for i in {1..3}; do
   result=$(curl -s -L -H "Content-type:application/json" -X POST -d @${_dataDir}/dv-pete-top.json "$SERVER/dataverses/root?key=$peteKey" | jq .status | tr -d \")
-  if ( "$result" -eq "OK" ); then
+  if [[ $result == "OK" ]]; then
     break;
   else
     echo "Failed to create dataverse. (Attempt ${i})"
