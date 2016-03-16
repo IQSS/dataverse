@@ -1020,7 +1020,12 @@ public class EditDatafilesPage implements java.io.Serializable {
         // more than a certain number of files... Still, needs to be revisited
         // before the final 4.0. 
         // -- L.A. 4.0
-        Iterator<FileMetadata> fmIt = workingVersion.getFileMetadatas().iterator();
+
+        // make a "defensive copy" to avoid java.util.ConcurrentModificationException from being thrown
+        // when uploading 100+ files
+        List<FileMetadata> wvCopy = new ArrayList<>(workingVersion.getFileMetadatas());
+        Iterator<FileMetadata> fmIt = wvCopy.iterator();
+
         while (fmIt.hasNext()) {
             FileMetadata fm = fmIt.next();
             String md5 = fm.getDataFile().getmd5();
@@ -1089,7 +1094,7 @@ public class EditDatafilesPage implements java.io.Serializable {
      * Using information from the DropBox choose, ingest the chosen files
      *  https://www.dropbox.com/developers/dropins/chooser/js
      * 
-     * @param e 
+     * @param event
      */
     public void handleDropBoxUpload(ActionEvent event) {
         
