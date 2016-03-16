@@ -281,7 +281,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         String retString = "@data{";
         retString +=  version.getDataset().getIdentifier() + "_" + version.getVersionYear() + "," + "\r\n";
         retString += "author = {";
-        retString += String.join(" and ", authorDisplayList);
+        retString += String.join("; ", authorDisplayList);
         retString += "}," + "\r\n";
         retString += "publisher = {" + publisher + "}," + "\r\n";
         retString += "title = {" + version.getTitle() + "}," + "\r\n";
