@@ -188,7 +188,7 @@
                         <div class="button-block">
                             <p:commandLink id="fileCategoriesButton"
                                            type="button" styleClass="btn btn-default btn-sm"
-                                           actionListener="#{EditDatafilesPage.setFileMetadataSelectedForTagsPopup(fileMetadata)}"
+                                           actionListener="#{EditDatafilesPage.refreshTagsPopUp(fileMetadata)}"
                                            update=":datasetForm:editFileTagsPopup"
                                            oncomplete="PF('editFileTagsPopup').show();bind_bsui_components();">
                                 <span class="glyphicon glyphicon-tag"/> #{bundle['file.editTags']}
@@ -490,8 +490,8 @@
                     <p:selectCheckboxMenu id="fileTagsMenu" styleClass="form-control"
                                           value="#{EditDatafilesPage.fileMetadataSelectedForTagsPopup.categoriesByName}" label="#{bundle.select}">
                         <f:selectItems value="#{EditDatafilesPage.fileMetadataSelectedForTagsPopup.datasetVersion.dataset.categoriesByName}"/>
-                        <p:ajax event="toggleSelect" listener="#{DatasetPage.handleSelection}" update="selectedTagsListEFF" />
-                        <p:ajax event="change" listener="#{DatasetPage.handleSelection}" update="selectedTagsListEFF" />
+                        <p:ajax event="toggleSelect" listener="#{EditDatafilesPage.handleSelection}" update="selectedTagsListEFF" />
+                        <p:ajax event="change" listener="#{EditDatafilesPage.handleSelection}" update="selectedTagsListEFF" />
                     </p:selectCheckboxMenu>
                     <p:message for="fileTagsMenu" display="text" />
                 </div>

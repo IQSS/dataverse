@@ -3337,17 +3337,7 @@ public class DatasetPage implements java.io.Serializable {
         }
     }
         
-    private void refreshSelectedTags() {
-        selectedTags = null;
-        selectedTags = new String[0];
-        if (categoriesByName.size() > 0) {
-            selectedTags = new String[categoriesByName.size()];
-            for (int i = 0; i < categoriesByName.size(); i++) {
-                selectedTags[i] = categoriesByName.get(i);
-            }
-        }
-        Arrays.sort(selectedTags);
-    }
+
     
     private void refreshTabFileTagsByName(){
         
@@ -3410,24 +3400,34 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public String saveNewCategory() {
-        
-
         if (newCategoryName != null && !newCategoryName.isEmpty()) {
             categoriesByName.add(newCategoryName);
-            for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
-                for (FileMetadata fm : selectedFiles) {
-                    if (fm.getDataFile().equals(fmd.getDataFile())) {
-                        fmd.addCategoryByName(newCategoryName);
-                    }
-                }
+            for (FileMetadata fm : selectedFiles) {
+                fm.addCategoryByName(newCategoryName);
             }
         }
-        refreshSelectedTags();
+        //Now increase size of selectedTags and add new category
+        String[] temp = new String[selectedTags.length + 1];
+        System.arraycopy(selectedTags, 0, temp, 0, selectedTags.length);
+        selectedTags = temp;
+        selectedTags[selectedTags.length - 1] = newCategoryName;
+        //Blank out added category
         newCategoryName = "";
         return "";
     }
     
-    
+    private void refreshSelectedTags() {
+        selectedTags = null;
+        selectedTags = new String[0];
+        if (categoriesByName.size() > 0) {
+            selectedTags = new String[categoriesByName.size()];
+            for (int i = 0; i < categoriesByName.size(); i++) {
+                selectedTags[i] = categoriesByName.get(i);
+            }
+        }
+        Arrays.sort(selectedTags);
+    }
+        
     /* This method handles saving both "tabular file tags" and 
      * "file categories" (which are also considered "tags" in 4.0)
     */

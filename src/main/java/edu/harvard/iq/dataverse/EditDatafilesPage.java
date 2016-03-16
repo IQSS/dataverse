@@ -78,6 +78,7 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.primefaces.context.RequestContext;
 import java.text.DateFormat;
+import java.util.Arrays;
 import java.util.HashSet;
 import javax.faces.model.SelectItem;
 import java.util.logging.Level;
@@ -1469,6 +1470,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         // And reset the selected fileMetadata:
         fileMetadataSelectedForThumbnailPopup = null;
     }
+    
 
     /* 
      * Items for the "Tags (Categories)" popup.
@@ -1506,24 +1508,78 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
 
     private String[] selectedTags = {};
+    
+    public void refreshTagsPopUp(FileMetadata fm){
+        setFileMetadataSelectedForTagsPopup(fm);
+        refreshCategoriesByName();
+        refreshTabFileTagsByName();
+    }
+    
+    private List<String> tabFileTagsByName;
 
-    public String[] getSelectedTags() {
+    public List<String> getTabFileTagsByName() {
+        return tabFileTagsByName;
+    }
 
-        selectedTags = null;
-        selectedTags = new String[0];
-
-        if (fileMetadataSelectedForTagsPopup != null) {
-            if (fileMetadataSelectedForTagsPopup.getDataFile() != null
-                    && fileMetadataSelectedForTagsPopup.getDataFile().getTags() != null
-                    && fileMetadataSelectedForTagsPopup.getDataFile().getTags().size() > 0) {
-
-                selectedTags = new String[fileMetadataSelectedForTagsPopup.getDataFile().getTags().size()];
-
-                for (int i = 0; i < fileMetadataSelectedForTagsPopup.getDataFile().getTags().size(); i++) {
-                    selectedTags[i] = fileMetadataSelectedForTagsPopup.getDataFile().getTags().get(i).getTypeLabel();
-                }
+    public void setTabFileTagsByName(List<String> tabFileTagsByName) {
+        this.tabFileTagsByName = tabFileTagsByName;
+    }
+    
+    private void refreshTabFileTagsByName() {
+        tabFileTagsByName = new ArrayList<>();
+        if (fileMetadataSelectedForTagsPopup.getDataFile().getTags() != null) {
+            for (int i = 0; i < fileMetadataSelectedForTagsPopup.getDataFile().getTags().size(); i++) {
+                tabFileTagsByName.add(fileMetadataSelectedForTagsPopup.getDataFile().getTags().get(i).getTypeLabel());
             }
         }
+        refreshSelectedTabFileTags();
+    }
+
+    private void refreshSelectedTabFileTags() {
+        selectedTags = null;
+        selectedTags = new String[0];
+        if (tabFileTagsByName.size() > 0) {
+            selectedTags = new String[tabFileTagsByName.size()];
+            for (int i = 0; i < tabFileTagsByName.size(); i++) {
+                selectedTags[i] = tabFileTagsByName.get(i);
+            }
+        }
+        Arrays.sort(selectedTags);
+    }
+    
+    private void refreshCategoriesByName() {
+        categoriesByName = new ArrayList<>();
+        if (fileMetadataSelectedForTagsPopup.getCategories() != null) {
+            for (int i = 0; i < fileMetadataSelectedForTagsPopup.getCategories().size(); i++) {
+                categoriesByName.add(fileMetadataSelectedForTagsPopup.getCategories().get(i).getName());
+            }
+        }
+        refreshSelectedTags();
+    }
+    
+    private List<String> categoriesByName;
+
+    public List<String> getCategoriesByName() {
+        return categoriesByName;
+    }
+
+    public void setCategoriesByName(List<String> categoriesByName) {
+        this.categoriesByName = categoriesByName;
+    }
+    
+    private void refreshSelectedTags() {
+        selectedTags = null;
+        selectedTags = new String[0];
+        if (categoriesByName.size() > 0) {
+            selectedTags = new String[categoriesByName.size()];
+            for (int i = 0; i < categoriesByName.size(); i++) {
+                selectedTags[i] = categoriesByName.get(i);
+            }
+        }
+        Arrays.sort(selectedTags);
+    }
+
+    public String[] getSelectedTags() {
         return selectedTags;
     }
 
@@ -1546,8 +1602,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
     
     public String saveNewCategory() {
-        
-
+       
         if (newCategoryName != null && !newCategoryName.isEmpty()) {
             fileMetadataSelectedForTagsPopup.addCategoryByName(newCategoryName);
         }
