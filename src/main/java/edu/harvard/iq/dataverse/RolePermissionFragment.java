@@ -106,7 +106,7 @@ public class RolePermissionFragment implements java.io.Serializable {
     private RoleAssignee assignRoleRoleAssignee; // used if input accepts a RoleAssignee through a converter
     private Long assignRoleRoleId;
 
-    private final List<String> identifierList = new ArrayList();
+    private final List<String> identifierList = new ArrayList<>();
 
     public List<String> completeIdentifier(String query) {
         if (identifierList.isEmpty()) {
@@ -114,7 +114,7 @@ public class RolePermissionFragment implements java.io.Serializable {
                 identifierList.add(au.getIdentifier());
             }
         }
-        List<String> returnList = new ArrayList();
+        List<String> returnList = new ArrayList<>();
         for (String identifier : identifierList) {
             if (identifier.contains(query)) {
                 returnList.add(identifier);
@@ -123,7 +123,7 @@ public class RolePermissionFragment implements java.io.Serializable {
         return returnList;
     }
     
-    private final List<RoleAssignee> roleAssigneeList = new ArrayList();
+    private final List<RoleAssignee> roleAssigneeList = new ArrayList<>();
     
     public List<RoleAssignee> completeRoleAssignee(String query) {
         if (roleAssigneeList.isEmpty()) {
@@ -131,7 +131,7 @@ public class RolePermissionFragment implements java.io.Serializable {
                 roleAssigneeList.add(au);
             }
         }
-        List<RoleAssignee> returnList = new ArrayList();
+        List<RoleAssignee> returnList = new ArrayList<>();
         for (RoleAssignee ra : roleAssigneeList) {
             // @todo unsure if containsIgnore case will work for all locales
             if (StringUtils.containsIgnoreCase(ra.getDisplayInfo().getTitle(),query)) {
@@ -279,7 +279,7 @@ public class RolePermissionFragment implements java.io.Serializable {
         if (dvObject != null) {
             return roleService.findByOwnerId(dvObject.getId());
         }
-        return new ArrayList();
+        return new ArrayList<>();
     }
 
     public void createNewRole(ActionEvent e) {

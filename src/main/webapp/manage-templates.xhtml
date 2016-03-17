@@ -75,6 +75,13 @@
                                 <h:outputText value="#{template.usageCount}" />
                             </p:column>
                             <p:column width="40%" class="col-manage-action text-center" headerText="#{bundle['dataset.manageTemplates.tab.header.action']}">
+                                <div jsf:rendered="#{manageTemplatesPage.dataverse.id != template.dataverse.id}">
+                                    <em class="text-muted">
+                                        <h:outputFormat value="#{bundle['dataset.manageTemplates.tab.action.noedit.createdin']}" escape="false">
+                                            <f:param value="#{template.dataverse.name}"/>
+                                        </h:outputFormat>
+                                    </em>
+                                </div>
                                 <p:commandLink type="button" styleClass="btn btn-default"
                                                value="#{bundle['dataset.manageTemplates.tab.action.btn.makeDefault']}"
                                                rendered="#{manageTemplatesPage.dataverse.defaultTemplate != template}"

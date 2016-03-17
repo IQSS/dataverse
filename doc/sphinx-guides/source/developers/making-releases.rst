@@ -2,6 +2,8 @@
 Making Releases
 ===============
 
+Please note! The text below reflects the :doc:`/developers/branching-strategy` for Dataverse 4.2.3 and below but this is under review. For updates, please follow https://github.com/IQSS/dataverse/issues/2863
+
 Bump Version Numbers
 --------------------
 

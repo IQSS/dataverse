@@ -81,7 +81,7 @@ public enum Permission implements java.io.Serializable {
     }
 
     public boolean appliesTo(Class<? extends DvObject> aClass) {
-        for (Class c : appliesTo) {
+        for (Class<? extends DvObject> c : appliesTo) {
             if (c.isAssignableFrom(aClass)) {
                 return true;
             }

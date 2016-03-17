@@ -17,7 +17,7 @@ import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import org.junit.Before;
 import org.junit.Test;
-import static edu.harvard.iq.dataverse.engine.MocksFactory.*;
+import static edu.harvard.iq.dataverse.mocks.MocksFactory.*;
 import edu.harvard.iq.dataverse.engine.TestCommandContext;
 import edu.harvard.iq.dataverse.engine.TestDataverseEngine;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;

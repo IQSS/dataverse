@@ -183,7 +183,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
         if (dvObject != null && dvObject.getId() != null) {
             return roleService.findByOwnerId(dvObject.getId());
         }
-        return new ArrayList();
+        return new ArrayList<>();
     }
 
     public void createNewRole(ActionEvent e) {
@@ -320,31 +320,11 @@ public class ManagePermissionsPage implements java.io.Serializable {
         selectedRoleId = null;
         showNoMessages();
     }
-    
+                
     public List<RoleAssignee> completeRoleAssignee( String query ) {
-        List<RoleAssignee> roleAssigneeList = new ArrayList<>();
-        // TODO push this to the authentication and group services. Below code retrieves all the users.
-        for (AuthenticatedUser au : authenticationService.findAllAuthenticatedUsers()) {
-            roleAssigneeList.add(au);
-        }
-        for ( Group g : groupService.findGlobalGroups() ) {
-            roleAssigneeList.add( g );
-        }
-        roleAssigneeList.addAll( explicitGroupService.findAvailableFor(dvObject) );
-        
-        List<RoleAssignee> filteredList = new LinkedList();
-        for (RoleAssignee ra : roleAssigneeList) {
-            // @todo unsure if containsIgnore case will work for all locales
-            // @todo maybe add some solr/lucene style searching, did-you-mean style?
-            if ((StringUtils.containsIgnoreCase(ra.getDisplayInfo().getTitle(), query) 
-                    || StringUtils.containsIgnoreCase(ra.getIdentifier(), query))
-                    && (roleAssignSelectedRoleAssignees == null || !roleAssignSelectedRoleAssignees.contains(ra))) {
-                filteredList.add(ra);
-            }
-        }
-        return filteredList;
+        return roleAssigneeService.filterRoleAssignees(query, dvObject, roleAssignSelectedRoleAssignees);                  
     }
-
+    
     public List<DataverseRole> getAvailableRoles() {
         List<DataverseRole> roles = new LinkedList<>();
         if (dvObject != null && dvObject.getId() != null) {

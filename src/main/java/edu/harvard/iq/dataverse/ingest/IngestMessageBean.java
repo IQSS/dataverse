@@ -44,8 +44,6 @@ import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
 import javax.naming.Context;
 import javax.naming.InitialContext;
-import org.primefaces.push.PushContext;
-import org.primefaces.push.PushContextFactory;
 
 /**
  *
@@ -120,14 +118,13 @@ public class IngestMessageBean implements MessageListener {
 
                             Dataset dataset = datafile.getOwner();
                             if (dataset != null && dataset.getId() != null) {
-                                logger.info("attempting to remove dataset lock for dataset " + dataset.getId());
-                                datasetService.removeDatasetLock(dataset.getId());
+                                //logger.info("attempting to remove dataset lock for dataset " + dataset.getId());
+                                //datasetService.removeDatasetLock(dataset.getId());
                                 ingestService.sendFailNotification(dataset.getId());
                             }
                         }
                     }
-
-        } 
+                }
             }
             
             // Remove the dataset lock: 

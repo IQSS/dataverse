@@ -899,13 +899,21 @@ public class SolrSearchResult {
     }
 
     public String getFileUrl() {
+        // Nothing special needs to be done for harvested file URLs: 
+        // simply directing these to the local dataset.xhtml for this dataset
+        // will take care of it - because DatasetPage will issue a redirect 
+        // to the remote archive URL. 
+        // This is true AS OF 4.2.4, FEB. 2016! - We'll probably want to make
+        // .getRemoteArchiveURL() methods, both in DataFile and Dataset objects, 
+        // work again at some point in the future. 
+        /*
         if (entity != null && entity instanceof DataFile && this.isHarvested()) {
             String remoteArchiveUrl = ((DataFile) entity).getRemoteArchiveURL();
             if (remoteArchiveUrl != null) {
                 return remoteArchiveUrl;
             }
             return null;
-        }
+        }*/
         
         return "/file.xhtml?fileId=" + entity.getId() + "&datasetVersionId=" + datasetVersionId;
         
@@ -918,13 +926,15 @@ public class SolrSearchResult {
     }
     
     public String getFileDatasetUrl() {
+        // See the comment in the getFileUrl() method above. -- L.A. 4.2.4
+        /*
         if (entity != null && entity instanceof DataFile && this.isHarvested()) {
             String remoteArchiveUrl = ((DataFile) entity).getRemoteArchiveURL();
             if (remoteArchiveUrl != null) {
                 return remoteArchiveUrl;
             }
             return null;
-        }
+        }*/
                
         String parentDatasetGlobalId = parent.get(PARENT_IDENTIFIER);        
 

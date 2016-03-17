@@ -11,7 +11,7 @@ The left panel contains two sets of buttons: (1) Original Data and Subset Data; 
 
 Original Data and Subset Data:
 ------------------------------
-When sola Fide is initiated, you begin with the original dataset, and thus the Original Data button is selected.  You will not be able to select the Subset Data until you have subsetted the data using the subset and select features in the right panel.  After you have selected a subset of your data, you may toggle between that subset and the original data.  If you wish to select a different subset, you may do so, but note that only one subset is supported at a time.
+When TwoRavens is initiated, you begin with the original dataset, and thus the Original Data button is selected.  You will not be able to select the Subset Data until you have subsetted the data using the subset and select features in the right panel.  After you have selected a subset of your data, you may toggle between that subset and the original data.  If you wish to select a different subset, you may do so, but note that only one subset is supported at a time.
 
 Variables, Models, and Summary: 
 -------------------------------

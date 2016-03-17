@@ -2,8 +2,8 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.engine.MocksFactory;
-import static edu.harvard.iq.dataverse.engine.MocksFactory.makeRequest;
+import edu.harvard.iq.dataverse.mocks.MocksFactory;
+import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeRequest;
 import edu.harvard.iq.dataverse.engine.TestCommandContext;
 import edu.harvard.iq.dataverse.engine.TestDataverseEngine;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;

@@ -401,7 +401,10 @@ public class DataFileServiceBean implements java.io.Serializable {
      * It should only be used to retrieve filemetadata for the DatasetPage!
      * It is not guaranteed to adequately perform anywhere else. 
     */
-    public void findFileMetadataOptimizedExperimental(Dataset owner) { //, DatasetVersion version) {
+    public void findFileMetadataOptimizedExperimental(Dataset owner) {
+        findFileMetadataOptimizedExperimental(owner, null);
+    }
+    public void findFileMetadataOptimizedExperimental(Dataset owner, DatasetVersion requestedVersion) {
         List<DataFile> dataFiles = new ArrayList<>();
         List<DataTable> dataTables = new ArrayList<>();
         //List<FileMetadata> retList = new ArrayList<>(); 
@@ -586,9 +589,13 @@ public class DataFileServiceBean implements java.io.Serializable {
         
         logger.fine("Retreived "+i+" file categories attached to the dataset.");
         
-        for (DatasetVersion version : owner.getVersions()) {
-            version.setFileMetadatas(retrieveFileMetadataForVersion(owner, version, filesMap, categoryMap));
-            logger.fine("Retrieved "+version.getFileMetadatas().size()+" filemetadatas for the version "+version.getId());
+        if (requestedVersion != null) {
+            requestedVersion.setFileMetadatas(retrieveFileMetadataForVersion(owner, requestedVersion, filesMap, categoryMap));
+        } else {
+            for (DatasetVersion version : owner.getVersions()) {
+                version.setFileMetadatas(retrieveFileMetadataForVersion(owner, version, filesMap, categoryMap));
+                logger.fine("Retrieved "+version.getFileMetadatas().size()+" filemetadatas for the version "+version.getId());
+            }
         }
     }
     
@@ -774,11 +781,11 @@ public class DataFileServiceBean implements java.io.Serializable {
     }
     
     public boolean isSpssPorFile (DataFile file) {
-        return MIME_TYPE_SPSS_POR.equalsIgnoreCase(file.getContentType());
+        return (file != null) ? MIME_TYPE_SPSS_POR.equalsIgnoreCase(file.getContentType()) : false;
     }
     
     public boolean isSpssSavFile (DataFile file) {
-        return MIME_TYPE_SPSS_SAV.equalsIgnoreCase(file.getContentType());
+        return (file != null) ? MIME_TYPE_SPSS_SAV.equalsIgnoreCase(file.getContentType()) : false;
     }
     
     /*

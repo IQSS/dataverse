@@ -22,6 +22,7 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
+import edu.harvard.iq.dataverse.dataaccess.DataFileZipper;
 import edu.harvard.iq.dataverse.dataaccess.FileAccessIO;
 import edu.harvard.iq.dataverse.dataaccess.OptionalAccessService;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
@@ -29,6 +30,7 @@ import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.worldmapauth.WorldMapTokenServiceBean;
 
 import java.util.List;
@@ -39,6 +41,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Properties;
 import javax.inject.Inject;
@@ -59,6 +62,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.ServiceUnavailableException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
 
 /*
     Custom API exceptions [NOT YET IMPLEMENTED]
@@ -93,7 +97,9 @@ public class Access extends AbstractApiBean {
     @EJB
     VariableServiceBean variableService;
     @EJB
-    SettingsServiceBean settingsService; 
+    SettingsServiceBean settingsService;
+    @EJB
+    SystemConfig systemConfig;
     @EJB
     DDIExportServiceBean ddiExportService;
     @EJB
@@ -102,6 +108,8 @@ public class Access extends AbstractApiBean {
     DataverseSession session;
     @EJB
     WorldMapTokenServiceBean worldMapTokenServiceBean;
+
+    private static final String API_KEY_HEADER = "X-Dataverse-key";    
 
     //@EJB
     
@@ -117,6 +125,10 @@ public class Access extends AbstractApiBean {
         if (df == null) {
             logger.warning("Access: datafile service could not locate a DataFile object for id "+fileId+"!");
             throw new WebApplicationException(Response.Status.NOT_FOUND);
+        }
+        
+        if (apiToken == null || apiToken.equals("")) {
+            apiToken = headers.getHeaderString(API_KEY_HEADER);
         }
         
         // This will throw a WebApplicationException, with the correct 
@@ -162,6 +174,10 @@ public class Access extends AbstractApiBean {
         if (df == null) {
             logger.warning("Access: datafile service could not locate a DataFile object for id "+fileId+"!");
             throw new WebApplicationException(Response.Status.NOT_FOUND);
+        }
+        
+        if (apiToken == null || apiToken.equals("")) {
+            apiToken = headers.getHeaderString(API_KEY_HEADER);
         }
         
         // This will throw a WebApplicationException, with the correct 
@@ -368,6 +384,10 @@ public class Access extends AbstractApiBean {
             throw new WebApplicationException(Response.Status.NOT_FOUND);
         }
         
+        if (apiToken == null || apiToken.equals("")) {
+            apiToken = headers.getHeaderString(API_KEY_HEADER);
+        }
+        
         // This will throw a WebApplicationException, with the correct 
         // exit code, if access isn't authorized: 
         checkAuthorization(df, apiToken);
@@ -396,54 +416,117 @@ public class Access extends AbstractApiBean {
     @Path("datafiles/{fileIds}")
     @GET
     @Produces({"application/zip"})
-    public ZippedDownloadInstance datafiles(@PathParam("fileIds") String fileIds, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
-        ByteArrayOutputStream outStream = null;
+    public /*ZippedDownloadInstance*/ Response datafiles(@PathParam("fileIds") String fileIds, @QueryParam("key") String apiTokenParam, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
         // create a Download Instance without, without a primary Download Info object:
-        ZippedDownloadInstance downloadInstance = new ZippedDownloadInstance();
+        //ZippedDownloadInstance downloadInstance = new ZippedDownloadInstance();
 
+        
+        
+        
+        long setLimit = systemConfig.getZipDownloadLimit();
+        if (!(setLimit > 0L)) {
+            setLimit = DataFileZipper.DEFAULT_ZIPFILE_LIMIT;
+        }
+        
+        long zipDownloadSizeLimit = setLimit; 
+        
+        logger.fine("setting zip download size limit to " + zipDownloadSizeLimit + " bytes.");
+        
         if (fileIds == null || fileIds.equals("")) {
             throw new WebApplicationException(Response.Status.BAD_REQUEST);
         }
 
-        String fileIdParams[] = fileIds.split(",");
-        if (fileIdParams != null && fileIdParams.length > 0) {
-            logger.fine(fileIdParams.length + " tokens;");
-            for (int i = 0; i < fileIdParams.length; i++) {
-                logger.fine("token: " + fileIdParams[i]);
-                Long fileId = null;
-                try {
-                    fileId = new Long(fileIdParams[i]);
-                } catch (NumberFormatException nfe) {
-                    fileId = null;
-                }
-                logger.fine("attempting to look up file id " + fileId);
-                DataFile file = dataFileService.find(fileId);
-                if (file != null) {
-                    if (isAccessAuthorized(file, apiToken)) { 
-                        logger.fine("adding datafile (id=" + file.getId() + ") to the download list of the ZippedDownloadInstance.");
-                        downloadInstance.addDataFile(file);
-                    } else {
-                        downloadInstance.setManifest(downloadInstance.getManifest() + 
-                                file.getFileMetadata().getLabel() + " IS RESTRICTED AND CANNOT BE DOWNLOADED\r\n");
-                    }
-
-                } else {
-                    // Or should we just drop it and make a note in the Manifest?    
-                    throw new WebApplicationException(Response.Status.NOT_FOUND);
-                }
-            }
-        } else {
-            throw new WebApplicationException(Response.Status.BAD_REQUEST);
-        }
-
-        if (downloadInstance.getDataFiles().size() < 1) {
-            // This means the file ids supplied were valid, but none were 
-            // accessible for this user:
-            throw new WebApplicationException(Response.Status.FORBIDDEN);
-        }
+        String apiToken = (apiTokenParam == null || apiTokenParam.equals("")) 
+                ? headers.getHeaderString(API_KEY_HEADER) 
+                : apiTokenParam;
         
+        StreamingOutput stream = new StreamingOutput() {
 
-        return downloadInstance;
+            @Override
+            public void write(OutputStream os) throws IOException,
+                    WebApplicationException {
+                String fileIdParams[] = fileIds.split(",");
+                DataFileZipper zipper = null; 
+                boolean accessToUnrestrictedFileAuthorized = false; 
+                String fileManifest = "";
+                long sizeTotal = 0L;
+                
+                if (fileIdParams != null && fileIdParams.length > 0) {
+                    logger.fine(fileIdParams.length + " tokens;");
+                    for (int i = 0; i < fileIdParams.length; i++) {
+                        logger.fine("token: " + fileIdParams[i]);
+                        Long fileId = null;
+                        try {
+                            fileId = new Long(fileIdParams[i]);
+                        } catch (NumberFormatException nfe) {
+                            fileId = null;
+                        }
+                        if (fileId != null) {
+                            logger.fine("attempting to look up file id " + fileId);
+                            DataFile file = dataFileService.find(fileId);
+                            if (file != null) {
+                                
+                                if ((accessToUnrestrictedFileAuthorized && !file.isRestricted()) 
+                                        || isAccessAuthorized(file, apiToken)) { 
+                                    
+                                    if (!file.isRestricted()) {
+                                        accessToUnrestrictedFileAuthorized = true;
+                                    }
+                                    logger.fine("adding datafile (id=" + file.getId() + ") to the download list of the ZippedDownloadInstance.");
+                                    //downloadInstance.addDataFile(file);
+                                    
+                                    if (zipper == null) {
+                                        // This is the first file we can serve - so we now know that we are going to be able 
+                                        // to produce some output.
+                                        zipper = new DataFileZipper(os);
+                                        zipper.setFileManifest(fileManifest);
+                                        response.setHeader("Content-disposition", "attachment; filename=\"dataverse_files.zip\"");
+                                        response.setHeader("Content-Type", "application/zip; name=\"dataverse_files.zip\"");
+                                    }
+                                    if (sizeTotal + file.getFilesize() < zipDownloadSizeLimit) {
+                                        sizeTotal += zipper.addFileToZipStream(file);
+                                    } else {
+                                        String fileName = file.getFileMetadata().getLabel();
+                                        String mimeType = file.getContentType();
+                                        
+                                        zipper.addToManifest(fileName + " (" + mimeType + ") " + " skipped because the total size of the download bundle exceeded the limit of " + zipDownloadSizeLimit + " bytes.\r\n");
+                                    }
+                                } else {
+                                    if (zipper == null) {
+                                        fileManifest = fileManifest + file.getFileMetadata().getLabel() + " IS RESTRICTED AND CANNOT BE DOWNLOADED\r\n";
+                                    } else {
+                                        zipper.addToManifest(file.getFileMetadata().getLabel() + " IS RESTRICTED AND CANNOT BE DOWNLOADED\r\n");
+                                    }
+                                } 
+
+                            } else {
+                                // Or should we just drop it and make a note in the Manifest?    
+                                throw new WebApplicationException(Response.Status.NOT_FOUND);
+                            }
+                        }
+                    }
+                } else {
+                    throw new WebApplicationException(Response.Status.BAD_REQUEST);
+                }
+
+                if (zipper == null) {
+                    // If the DataFileZipper object is still NULL, it means that 
+                    // there were file ids supplied - but none of the corresponding 
+                    // files were accessible for this user. 
+                    // In which casew we don't bother generating any output, and 
+                    // just give them a 403:
+                    throw new WebApplicationException(Response.Status.FORBIDDEN);
+                }
+
+                // This will add the generated File Manifest to the zipped output, 
+                // then flush and close the stream:
+                zipper.finalizeZipStream();
+                
+                //os.flush();
+                //os.close();
+            }
+        };
+        return Response.ok(stream).build();
     }
     
     @Path("tempPreview/{fileSystemId}")
