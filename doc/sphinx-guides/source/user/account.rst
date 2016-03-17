@@ -82,7 +82,7 @@ If you cannot remember the password for your Dataverse account, click on Log In 
 \*Note: if you have forgotten your username, you can do this same process to receive your username in an email.
 
 
-.. |image1| image:: .img/image1institutional.png
-.. |image2| image:: .img/image2institutional.png  
-.. |image3| image:: .img/image3institutional.png
-.. |image4| image:: .img/image4institutional.png
+.. |image1| image:: ./img/image1institutional.png
+.. |image2| image:: ./img/image2institutional.png  
+.. |image3| image:: ./img/image3institutional.png
+.. |image4| image:: ./img/image4institutional.png
