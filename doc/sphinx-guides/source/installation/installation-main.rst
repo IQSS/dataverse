@@ -81,8 +81,6 @@ Use the following credentials to log in:
 
 Congratulations! You have a working Dataverse installation. Soon you'll be tweeting at `@dataverseorg <https://twitter.com/dataverseorg>`_ asking to be added to the map at http://dataverse.org :)
 
-(While you're logged in, you should go ahead and change the email address of the dataverseAdmin account to a real one rather than "dataverse@mailinator.com" so that you receive notifications.)
-
 Trouble? See if you find an answer in the troubleshooting section below.
 
 Next you'll want to check out the :doc:`config` section.
