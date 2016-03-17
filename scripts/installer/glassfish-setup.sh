@@ -168,6 +168,8 @@ fi
 ./asadmin $ASADMIN_OPTS create-jvm-options "-XX\:PermSize=256m"
 ./asadmin $ASADMIN_OPTS delete-jvm-options -Xmx512m
 ./asadmin $ASADMIN_OPTS create-jvm-options "-Xmx${MEM_HEAP_SIZE}m"
+./asadmin $ASADMIN_OPTS delete-jvm-options -client
+./asadmin $ASADMIN_OPTS create-jvm-options "-server"
 
 ###
 # JDBC connection pool

@@ -1,4 +1,23 @@
 #!/bin/bash
+
+SECURESETUP=1
+
+for opt in $*
+do
+  case $opt in
+      "--insecure")
+	  SECURESETUP=0
+	  ;;
+      "-insecure")
+	  SECURESETUP=0;
+	  ;;
+      *)
+	  echo "invalid option: $opt"
+	  exit 1 >&2
+	  ;;
+  esac
+done
+
 command -v jq >/dev/null 2>&1 || { echo >&2 '`jq` ("sed for JSON") is required, but not installed. Download the binary for your platform from http://stedolan.github.io/jq/ and make sure it is in your $PATH (/usr/bin/jq is fine) and executable with `sudo chmod +x /usr/bin/jq`. On Mac, you can install it with `brew install jq` if you use homebrew: http://brew.sh . Aborting.'; exit 1; }
 
 echo "deleting all data from Solr"
@@ -34,7 +53,6 @@ curl -X PUT -d 10.5072/FK2 "$SERVER/admin/settings/:Authority"
 curl -X PUT -d EZID "$SERVER/admin/settings/:DoiProvider"
 curl -X PUT -d / "$SERVER/admin/settings/:DoiSeparator"
 curl -X PUT -d burrito $SERVER/admin/settings/BuiltinUsers.KEY
-curl -X PUT -d empanada $SERVER/admin/settings/:BlockedApiKey
 curl -X PUT -d localhost-only $SERVER/admin/settings/:BlockedApiPolicy
 echo
 
@@ -58,4 +76,24 @@ echo
 # OPTIONAL USERS AND DATAVERSES
 #./setup-optional.sh
 
-echo "Setup done. Consider running post-install-api-block.sh for blocking the sensitive API."
+if [ $SECURESETUP = 1 ]
+then
+    # Revoke the "burrito" super-key; 
+    # Block the sensitive API endpoints;
+    curl -X DELETE $SERVER/admin/settings/BuiltinUsers.KEY
+    curl -X PUT -d admin,test $SERVER/admin/settings/:BlockedApiEndpoints
+    echo "Access to the /api/admin and /api/test is now disabled, except for connections from localhost."
+else 
+    echo "IMPORTANT!!!"
+    echo "You have run the setup script in the INSECURE mode!"
+    echo "Do keep in mind, that access to your admin API is now WIDE-OPEN!"
+    echo "Also, your built-in user is still set up with the default authentication token"
+    echo "(that is distributed as part of this script, hence EVERYBODY KNOWS WHAT IT IS!)"
+    echo "Please consider the consequences of this choice. You can block access to the"
+    echo "/api/admin and /api/test endpoints, for all connections except from localhost,"
+    echo "and revoke the authentication token from the built-in user by executing the"
+    echo "script post-install-api-block.sh."
+fi
+
+echo
+echo "Setup done."
