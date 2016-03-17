@@ -94,14 +94,15 @@
                             <p:commandLink rendered="#{!(DatasetPage.downloadPopupRequired)}"
                                            type="button" styleClass="btn btn-default"
                                            disabled="#{DatasetPage.locked}"
-                                           actionListener="#{DatasetPage.startMultipleFileDownload()}">
+                                           update="@form"
+                                           actionListener="#{DatasetPage.validateFilesForDownload(false)}">
                                 <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
                             </p:commandLink>
                             <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
                             <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"
                                            type="button" styleClass="btn btn-default"
                                            disabled="#{DatasetPage.locked}"
-                                           action="#{DatasetPage.initGuestbookMultipleResponse()}"
+                                           action="#{DatasetPage.validateFilesForDownload(true)}"
                                            update="@form" oncomplete="">
                                 <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
                             </p:commandLink>
@@ -210,27 +211,28 @@
                 </div>
             </div>
             <!-- WorldMap Preview -->
-            <ui:fragment rendered="#{DatasetPage.hasMapLayerMetadata(fileMetadata)}">
+            <ui:fragment rendered="#{DatasetPage.canUserSeeExploreWorldMapButton(fileMetadata)}">
                 <div class="modal fade" id="map-modal-#{fileMetadata.id}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
                     <div class="modal-dialog">
                         <div class="modal-content">
                             <div class="modal-header">
                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&#215;</span></button>
-                                <h4 class="modal-title" id="myModalLabel"><span style="color:#c75b1d;">Preview Map:</span>  #{fileMetadata.label}</h4>
+                                <h4 class="modal-title" id="myModalLabel"><span style="color:#c75b1d;">Preview Map:</span> #{fileMetadata.label}</h4>
                             </div>
                             <div class="modal-body">
                                 <iframe id="id_iframe_map" height="300" width="100%" src="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getEmbedMapLink() }"></iframe>
                             </div>
-                            <div class="modal-footer">
-                                <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }" target="_blank"><img src="https://worldmap.harvard.edu/static/theme/img/WorldMap-Logo_26px.png" alt="WorldMap logo" style="border:none;float:left;" xclass="text-left" /></a>
-                                <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }" class="btn btn-primary btn-xs" target="_blank"><span style="color:#fff;"> #{bundle['file.metaData.viewOnWorldMap']}</span></a>
-                                <button type="button" class="btn btn-default btn-xs" data-dismiss="modal">Close</button>
-                                <div style="clear:both;"></div>
+                            <div class="modal-footer clearfix">
+                                <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }" target="_blank"><img src="https://worldmap.harvard.edu/static/theme/img/WorldMap-Logo_26px.png" alt="WorldMap" class="pull-left" style="margin-top:5px;" /></a>
+                                <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }" class="btn btn-default" target="_blank"><span class="glyphicon glyphicon-equalizer"/> #{bundle['file.metaData.viewOnWorldMap']}</a>
+                                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                             </div>
                         </div>
                     </div>
                 </div>
-                <a data-target="#map-modal-#{fileMetadata.id}" data-toggle="modal"><small>Preview</small></a>
+                <a data-target="#map-modal-#{fileMetadata.id}" data-toggle="modal" class="small bg-info text-center" style="margin-top:5px;display:block;">
+                    <span class="glyphicon glyphicon-map-marker"/> Preview
+                </a>
             </ui:fragment>
         </p:column>
         <p:column class="col-file-metadata">
@@ -242,6 +244,7 @@
                           rendered="#{!settingsWrapper.isTrueForKey(':ShowFileLandingPage',  false)}"/>
             <!-- TYPE + SIZE + DATE + MD5 -->
             <div class="text-muted small">
+                <!-- id:#{fileMetadata.dataFile.id} -->
                 <h:outputText id="fileTypeOutputRegular" value="#{fileMetadata.dataFile.friendlyType}" rendered="#{!(fileMetadata.dataFile.tabularData)}"/>
                 <h:outputText id="fileTypeOutputTabular" value="#{bundle['file.type.tabularData']}" rendered="#{fileMetadata.dataFile.tabularData}"/>
                 <h:outputText id="fileSize" value=" - #{fileMetadata.dataFile.friendlySize}" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"/>
@@ -271,7 +274,7 @@
                 <ui:fragment rendered="#{!(empty fileMetadata.categories)}">
                     <ui:repeat value="#{fileMetadata.categories}" var="cat">
                         <h:outputText value="#{cat.name}" styleClass="label label-default"/>
-                    </ui:repeat>
+                    </ui:repeat> 
                 </ui:fragment>
                 <ui:fragment >
                     <ui:repeat value="#{fileMetadata.dataFile.tags}" var="tag">
@@ -279,6 +282,11 @@
                     </ui:repeat>
                 </ui:fragment>
             </div>
+            <ui:fragment rendered="#{DatasetPage.isGeoconnectDebugAvailable()}">
+            <!-- query to add sample map data to a tabular file -->
+                <ui:include src="filesFragmentWorldMapTestQuery.xhtml"/>
+            </ui:fragment>
+
         </p:column>
         <p:column class="col-file-action text-right" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
             <!-- Ingest in progress... -->
@@ -294,41 +302,74 @@
                         <span class="glyphicon glyphicon-warning-sign text-danger"/>
                     </span>
                 </ui:fragment>
+                
+                <!-- Explore Dropdown: When TwoRavens **AND** WorldMap Explore options are available -->
+                <div class="btn-group" jsf:rendered="#{DatasetPage.canSeeTwoRavensExploreButton(fileMetadata) and DatasetPage.canUserSeeExploreWorldMapButton(fileMetadata)}">
+                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                        <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore} <span class="caret"/>
+                    </button>
+                    <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
+                        <li><!-- Two Ravens -->
+                            <h:commandLink rendered="#{!DatasetPage.downloadPopupRequired}"
+                                            styleClass="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}"
+                                            disabled="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}"
+                                            actionListener="#{DatasetPage.exploreOutputLink(fileMetadata, 'explore')}" target="_blank">
+                                    TwoRavens
+                            </h:commandLink>
+                            <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"                                            
+                                            action="#{DatasetPage.initGuestbookResponse(fileMetadata, 'explore')}"
+                                            update="@form"
+                                            oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
+                                    TwoRavens
+                            </p:commandLink>                          
+                        </li>
+                        <li><!-- WorldMap Explore -->
+                            <h:outputLink rendered="#{DatasetPage.canUserSeeExploreWorldMapButton(fileMetadata)}"
+                                            styleClass="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}"  
+                                            value="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }" target="_blank">
+                                  #{bundle['file.mapData.viewMap']}
+                            </h:outputLink>
+                        </li>                       
+                    </ul>
+                </div>
 
-                <!-- TwoRavens explore option -->
-                <h:commandLink rendered="#{!(empty fileMetadata.dataFile.id) and (fileMetadata.dataFile.tabularData or fileMetadata.dataFile.ingestInProgress)
-                                           and DatasetPage.canDownloadFile(fileMetadata) and !DatasetPage.downloadPopupRequired}"
-                               type="button" styleClass="btn btn-default #{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}"
-                               disabled="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}"
-                               actionListener="#{DatasetPage.exploreOutputLink(fileMetadata, 'explore')}" target="_blank">
-                    <span class="glyphicon glyphicon-equalizer"/> <span class="ladda-label">#{bundle.explore}</span>
-                </h:commandLink>
-                <p:commandLink rendered="#{!(empty fileMetadata.dataFile.id) and (fileMetadata.dataFile.tabularData or fileMetadata.dataFile.ingestInProgress)
-                                           and DatasetPage.canDownloadFile(fileMetadata)  and DatasetPage.downloadPopupRequired}"
-                               type="button" styleClass="btn btn-default"
-                               action="#{DatasetPage.initGuestbookResponse(fileMetadata, 'explore')}"
-                               update="@form"
-                               oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
-                    <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore}
-                </p:commandLink>
-
-                <!-- WorldMap Explore | Map Data button group -->
-                <!-- 4.2.1: VERIFIED: none of these checks add any queries, if there are no map layers. -->
-                <div class="btn-group" role="group" jsf:rendered="#{(DatasetPage.canUserSeeExploreWorldMapButton(fileMetadata) or DatasetPage.canUserSeeMapDataButton(fileMetadata) or DatasetPage.canSeeMapButtonReminderToPublish(fileMetadata))}">
-                    <!-- WorldMap Explore -->
+                <!-- TwoRavens Explore button ONLY ... not WorldMap -->
+                <ui:fragment rendered="#{ DatasetPage.canSeeTwoRavensExploreButton(fileMetadata) and !DatasetPage.canUserSeeExploreWorldMapButton(fileMetadata)}">
+                    <h:commandLink rendered="#{!DatasetPage.downloadPopupRequired}"
+                                   type="button" styleClass="btn btn-default #{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}"
+                                   disabled="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}"
+                                   actionListener="#{DatasetPage.exploreOutputLink(fileMetadata, 'explore')}" target="_blank">
+                        <span class="glyphicon glyphicon-equalizer"/> <span class="ladda-label">#{bundle.explore}</span>
+                    </h:commandLink>
+                    <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"
+                                   type="button" styleClass="btn btn-default"
+                                   action="#{DatasetPage.initGuestbookResponse(fileMetadata, 'explore')}"
+                                   update="@form"
+                                   oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
+                        <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore}
+                    </p:commandLink>
+                </ui:fragment>
+                
+                <!-- WorldMap Explore button ONLY ... not TwoRavens -->
+                <ui:fragment rendered="#{DatasetPage.canUserSeeExploreWorldMapButton(fileMetadata) and !(DatasetPage.canSeeTwoRavensExploreButton(fileMetadata))}">
                     <h:outputLink pt:role="button" rendered="#{DatasetPage.canUserSeeExploreWorldMapButton(fileMetadata)}"
                                   type="button" styleClass="btn btn-default #{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" disabled="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" title="Explore" value="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }" target="_blank">
-                        <span class="glyphicon glyphicon-map-marker"/> <span class="ladda-label">#{bundle['file.mapData.viewMap']}</span>
+                        <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore}
                     </h:outputLink>
+                </ui:fragment>
+                    
+                <!-- WorldMap Map Data button group -->
+                <!-- 4.2.1: VERIFIED: none of these checks add any queries, if there are no map layers. -->
+                <div class="btn-group" role="group" jsf:rendered="#{DatasetPage.canUserSeeMapDataButton(fileMetadata) or DatasetPage.canSeeMapButtonReminderToPublish(fileMetadata)}">
                     <!-- WorldMap Map Data -->
                     <h:outputLink pt:role="button" rendered="#{DatasetPage.canUserSeeMapDataButton(fileMetadata)}"
                                   type="button" styleClass="btn btn-default" value="#{fileMetadata.dataFile.getMapItURL(dataverseSession.user.id)}" role="button">
-                        <span class="glyphicon glyphicon-map-marker" /> #{bundle['file.mapData']}
+                        <span class="glyphicon glyphicon-map-marker"/> #{bundle['file.mapData']}
                     </h:outputLink>
                     <!-- Unpublished Map Data -->
                     <ui:fragment rendered="#{DatasetPage.canSeeMapButtonReminderToPublish(fileMetadata)}">
                         <button type="button" class="btn btn-default" onclick="PF('mapData_popup').show()">
-                            <span class="glyphicon glyphicon-map-marker" /> #{bundle['file.mapData']}
+                            <span class="glyphicon glyphicon-map-marker"/> #{bundle['file.mapData']}
                         </button>
                     </ui:fragment>
                 </div>
@@ -468,6 +509,8 @@
                                onclick="PF('accessSignUpLogIn_popup').show()">
                     <span class="glyphicon glyphicon-bullhorn"/> #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}
                 </p:commandLink>
+                
+             
             </div>
             <!-- END: button-block -->
         </p:column>

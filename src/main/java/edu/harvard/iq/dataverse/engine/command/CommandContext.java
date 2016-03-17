@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.engine.command;
 
+import edu.harvard.iq.dataverse.DOIDataCiteServiceBean;
 import edu.harvard.iq.dataverse.DOIEZIdServiceBean;
 import edu.harvard.iq.dataverse.HandlenetServiceBean;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
@@ -74,6 +75,8 @@ public interface CommandContext {
     public DataverseFieldTypeInputLevelServiceBean fieldTypeInputLevels();
                
     public DOIEZIdServiceBean doiEZId();
+    
+    public DOIDataCiteServiceBean doiDataCite();
     
     public HandlenetServiceBean handleNet();
     

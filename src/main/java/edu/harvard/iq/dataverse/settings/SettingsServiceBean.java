@@ -2,7 +2,7 @@ package edu.harvard.iq.dataverse.settings;
 
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
-import edu.harvard.iq.dataverse.api.ApiBlockingFilter;
+//import edu.harvard.iq.dataverse.api.ApiBlockingFilter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -154,7 +154,7 @@ public class SettingsServiceBean {
         /** Optionally override http://guides.dataverse.org . */
         GuidesBaseUrl,
         /* zip download size limit */
-        ZipDonwloadLimit,
+        ZipDownloadLimit,
         /* zip upload number of files limit */
         ZipUploadFilesLimit,
         /* Size limits for generating thumbnails on the fly */
@@ -193,7 +193,36 @@ public class SettingsServiceBean {
         Explore World Map Button
         Default is false;
         */
-        GeoconnectViewMaps;
+        GeoconnectViewMaps,
+        /**
+        For DEVELOPMENT ONLY. Generate SQL statements for populating
+        MapLayerMetadata objects when Geoconnect is not available.
+        
+        When files have related MapLayerMetadata objects, the "Explore button
+        will be available to users.
+        */
+        GeoconnectDebug,
+
+        /**
+        Whether to allow a user to view tabular files
+        using the TwoRavens application
+        This boolean effects whether a user may see the 
+        Explore Button that links to TwoRavens
+        Default is false;
+        */
+        TwoRavensTabularView,
+                
+
+        /**
+         The message added to a popup upon dataset publish
+         * 
+         */
+        DatasetPublishPopupCustomText,
+        /*
+        Whether to display the publish text for every published version
+        */
+        DatasetPublishPopupCustomTextOnAllVersions;
+        
         @Override
         public String toString() {
             return ":" + name();

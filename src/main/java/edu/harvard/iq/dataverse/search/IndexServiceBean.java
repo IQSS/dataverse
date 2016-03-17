@@ -1265,7 +1265,7 @@ public class IndexServiceBean {
      * @return Dataverses that should be reindexed either because they have
      * never been indexed or their index time is before their modification time.
      */
-    public List findStaleOrMissingDataverses() {
+    public List<Dataverse> findStaleOrMissingDataverses() {
         List<Dataverse> staleDataverses = new ArrayList<>();
         for (Dataverse dataverse : dataverseService.findAll()) {
             if (dataverse.equals(dataverseService.findRootDataverse())) {
