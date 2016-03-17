@@ -17,7 +17,7 @@ public class DataverseRequest {
     
     private final User user;
     private final IpAddress sourceAddress;
-    private static final Logger LOGGER = Logger.getLogger(DataverseRequest.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(DataverseRequest.class.getCanonicalName());
     
     public DataverseRequest(User aUser, HttpServletRequest aHttpServletRequest) {
         this.user = aUser;
@@ -59,7 +59,7 @@ public class DataverseRequest {
             -- L.A. 4.2.3
         */
         
-        LOGGER.log(Level.FINE, "DataverseRequest: Obtained remote address: {0}", remoteAddressStr);
+        logger.fine("DataverseRequest: Obtained remote address: "+remoteAddressStr);
         
         if ( remoteAddressStr == null ) {
             remoteAddressStr = "0.0.0.0";

@@ -121,7 +121,16 @@ public class DatasetServiceBean implements java.io.Serializable {
         typedQuery.setParameter("partitionId", partitionId);
         return typedQuery.getResultList();
     }
-
+    
+    /**
+     * Merges the passed dataset to the persistence context.
+     * @param ds the dataset whose new state we want to persist.
+     * @return The managed entity representing {@code ds}.
+     */
+    public Dataset merge( Dataset ds ) {
+        return em.merge(ds);
+    }
+    
     public Dataset findByGlobalId(String globalId) {
 
         String protocol = "";

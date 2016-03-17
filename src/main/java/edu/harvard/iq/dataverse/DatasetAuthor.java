@@ -60,7 +60,11 @@ public class DatasetAuthor {
     private String idType;
 
     public String getIdType() {
-        return idType;
+        if ((this.idType == null || this.idType.isEmpty()) && (this.idValue != null && !this.idValue.isEmpty())){
+            return ("ORCID");
+        } else {
+            return idType;
+        }        
     }
 
     public void setIdType(String idType) {
@@ -76,11 +80,6 @@ public class DatasetAuthor {
 
     public void setIdValue(String idValue) {
         this.idValue = idValue;
-        if (!this.idValue.isEmpty()){
-            setIdType("ORCID");
-        } else {
-            setIdType("");
-        }
     }
 
     public boolean isEmpty() {
