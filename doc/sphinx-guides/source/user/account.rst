@@ -30,9 +30,9 @@ How to create a new Dataverse account using Institutional Log In
 -------------------------------------------------------------------------------------------------
 
 #. Go to “Log In” in the upper right corner of Dataverse
-#. Find this Institutional Log In box: |image1institutional|
+#. Find this Institutional Log In box:|image1|
 #. Using the dropdown menu, select your institution then click the Continue button
-#. You will be brought to your institution's log in page. After you put in your institutional information successfully, you will be brought back to Dataverse to confirm your account. |image2institutional|
+#. You will be brought to your institution's log in page. After you put in your institutional information successfully, you will be brought back to Dataverse to confirm your account. |image2|
 
 How to use your Institutional Log In for your Dataverse account
 -------------------------------------------------------------------------------------------------
@@ -42,21 +42,16 @@ If you already have a Dataverse account, but you want to change it to use your i
 #. Go to the Account Information page to confirm your account email address is the same as your institution email address. If not, you will need to update your account email address to be the same as your institution email address.
 #. Log out of Dataverse.
 #. Go to “Log In” in the upper right corner of Dataverse
-#. Find this Institutional Log In box: |image1institutional|
+#. Find this Institutional Log In box: |image1|
 #. Using the dropdown menu, select your institution then click the Continue button
-#. You will be brought to your institution's log in page. After you put in your institutional information successfully, you will be brought back to Dataverse to review your account information and enter your previous password for your Dataverse account to ensure that you changed your login. |image3institutional|
+#. You will be brought to your institution's log in page. After you put in your institutional information successfully, you will be brought back to Dataverse to review your account information and enter your previous password for your Dataverse account to ensure that you changed your login. |image3|
 #. Once you click Change/Convert Account, you will have completed changing your Dataverse account to you use your institutional log in.
 
 How to change your Dataverse account to not be able to use Institutional Log In
 -------------------------------------------------------------------------------------------------
 
-If you are leaving your institution and need to change your account back to a Dataverse account, you will need to contact support for the Dataverse installation you are using. On your account page, there is a link that will open the contact form for Support: |image4institutional|
+If you are leaving your institution and need to change your account back to a Dataverse account, you will need to contact support for the Dataverse installation you are using. On your account page, there is a link that will open the contact form for Support: |image4|
 
-
-…|image1institutional| image::
-…|image2institutional| image::
-…|image3institutional| image::
-…|image4institutional| image::
 
 Generate Your API Token
 ========================
@@ -85,3 +80,9 @@ Reset Your Account Password
 If you cannot remember the password for your Dataverse account, click on Log In in the top right corner of any page. Once on that page, click on the Forgot Password? link below where you would enter your username and password. Enter your email address and click Submit Password Request to receive an email with a link to reset your password. 
 
 \*Note: if you have forgotten your username, you can do this same process to receive your username in an email.
+
+
+.. |image1| image:: .img/image1institutional.png
+.. |image2| image:: .img/image2institutional.png  
+.. |image3| image:: .img/image3institutional.png
+.. |image4| image:: .img/image4institutional.png
