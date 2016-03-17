@@ -277,7 +277,13 @@ public class SwiftAccessIO extends DataFileIO {
         
         Container dataContainer = account.getContainer(swiftContainer);
         if (!dataContainer.exists()) {
-            throw new IOException("SwiftAccessIO: container "+swiftContainer+" does not exist."); 
+            if (writeAccess) {
+                dataContainer.create();
+            } else {
+                // This is a fatal condition - it has to exist, if we were to 
+                // read an existing object!
+                throw new IOException("SwiftAccessIO: container "+swiftContainer+" does not exist.");
+            }
         }
         
         StoredObject fileObject = dataContainer.getObject(swiftFileName);
