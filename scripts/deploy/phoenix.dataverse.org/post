@@ -1,6 +1,6 @@
 #/bin/sh
 cd scripts/api
-./setup-all.sh | tee /tmp/setup-all.sh.out
+./setup-all.sh --insecure | tee /tmp/setup-all.sh.out
 cd ../..
 psql -U dvnapp dvndb -f scripts/database/reference_data.sql
 scripts/search/tests/publish-dataverse-root
