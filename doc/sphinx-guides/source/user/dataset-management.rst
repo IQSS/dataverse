@@ -19,7 +19,7 @@ For more details about what Citation and Domain specific metadata is supported p
 File Handling + Uploading
 ===============================
 
-All file formats are supported, up to 2GB per file for the Harvard Dataverse. Please contact support@dataverse.org if you need to upload a file that is larger than 2GB. You can also add descriptions and categorize each of them by adding tags.
+File upload limit size varies based on Dataverse installation. The file upload size limit can be found in the text above where files are uploaded in the application. If you have further questions, contact support for that installation by clicking on the Support link at the top of the application.
 
 The file types listed below are supported by additional functionality, which can include downloading in different formats, subsets, file-level metadata preservation, file-level data citation; and exploration 
 through data visualization and analysis. 
