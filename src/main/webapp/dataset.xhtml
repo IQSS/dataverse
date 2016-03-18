@@ -943,7 +943,7 @@
                                         <p:ajax event="toggleSelect" listener="#{DatasetPage.handleSelection}" update="selectedTagsList" />
                                         <p:ajax event="change" listener="#{DatasetPage.handleSelection}" update="selectedTagsList" />
                                        
-                                        <f:selectItems value="#{DatasetPage.dataset.categoriesByName}"/>
+                                        <f:selectItems value="#{DatasetPage.categoriesByName}"/>
                                     </p:selectCheckboxMenu>
                                     <p:message for="fileTagsMenuDS" display="text" />
                                 </div>

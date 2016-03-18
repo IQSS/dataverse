@@ -71,6 +71,7 @@
                              selection="#{EditDatafilesPage.selectedFiles}" var="fileMetadata" widgetVar="filesTable"
                              emptyMessage="#{datasetPage || EditDatafilesPage.showFileUploadFileComponent() ? bundle['file.noUploadedFiles.tip'] : bundle['file.noSelectedFiles.tip']}">
                     <f:facet name="header">
+                        #{datasetPage}
                         <div jsf:id="filesHeaderBlock" class="row">
                             <h:inputHidden id="showAccessPopup" value="#{EditDatafilesPage.showAccessPopup}"/>
                             <div id="filesHeaderCount" class="col-xs-6 text-left">
@@ -471,12 +472,12 @@
                 </label>
                 <div class="col-sm-8">
                     <p:outputPanel id="selectedTagsListEFF" style="padding-top:.5em;">
-                        <h:outputText value="#{bundle['file.editTagsDialog.selectedTags.none']}" rendered="#{(empty EditDatafilesPage.selectedTags) and (empty EditDatafilesPage.fileMetadataSelectedForTagsPopup.categoriesByName)}" />
+                        <h:outputText value="#{bundle['file.editTagsDialog.selectedTags.none']}" rendered="#{(empty EditDatafilesPage.selectedTags) and (empty EditDatafilesPage.selectedTabFileTags)}" />
 
-                        <ui:repeat value="#{EditDatafilesPage.fileMetadataSelectedForTagsPopup.categoriesByName}" var="tags" rendered="#{!empty EditDatafilesPage.fileMetadataSelectedForTagsPopup.categoriesByName}">
+                        <ui:repeat value="#{EditDatafilesPage.selectedTags}" var="tags" rendered="#{!empty EditDatafilesPage.selectedTags}">
                             <h:outputText value="#{tags}" styleClass="label label-default" style="margin-right:.5em;display:inline-block;"/>
                         </ui:repeat>
-                        <ui:repeat value="#{EditDatafilesPage.selectedTags}" var="tags" rendered="#{!empty EditDatafilesPage.selectedTags}">
+                        <ui:repeat value="#{EditDatafilesPage.selectedTabFileTags}" var="tags" rendered="#{!empty EditDatafilesPage.selectedTabFileTags}">
                             <h:outputText value="#{tags}" styleClass="label label-info" style="margin-right:.5em;display:inline-block;"/>
                         </ui:repeat>
                     </p:outputPanel>
@@ -488,8 +489,8 @@
                 </label>
                 <div class="col-sm-8">
                     <p:selectCheckboxMenu id="fileTagsMenu" styleClass="form-control"
-                                          value="#{EditDatafilesPage.fileMetadataSelectedForTagsPopup.categoriesByName}" label="#{bundle.select}">
-                        <f:selectItems value="#{EditDatafilesPage.fileMetadataSelectedForTagsPopup.datasetVersion.dataset.categoriesByName}"/>
+                                          value="#{EditDatafilesPage.selectedTags}" label="#{bundle.select}">
+                        <f:selectItems value="#{EditDatafilesPage.categoriesByName}"/>
                         <p:ajax event="toggleSelect" listener="#{EditDatafilesPage.handleSelection}" update="selectedTagsListEFF" />
                         <p:ajax event="change" listener="#{EditDatafilesPage.handleSelection}" update="selectedTagsListEFF" />
                     </p:selectCheckboxMenu>
@@ -523,7 +524,7 @@
                 <div class="col-sm-8">
                     <p class="help-block">#{bundle['file.tabularDataTags.tip']}</p>
                     <p:selectCheckboxMenu id="tabularDataTags" styleClass="form-control"
-                                          value="#{EditDatafilesPage.selectedTags}" label="#{bundle.select}"
+                                          value="#{EditDatafilesPage.selectedTabFileTags}" label="#{bundle.select}"
                                           filter="false">
                         <f:selectItems value="#{EditDatafilesPage.tabFileTags}" />
                         <p:ajax event="toggleSelect" listener="#{EditDatafilesPage.handleSelection}" update="selectedTagsListEFF" />
@@ -544,7 +545,7 @@
         </div>
         <div class="button-block">
             <p:commandButton styleClass="btn btn-default" id="editFileTagsPopupSaveButton" value="#{bundle.saveChanges}" oncomplete="PF('editFileTagsPopup').hide()" update=":datasetForm:filesTable" actionListener="#{EditDatafilesPage.saveFileTagsAndCategories()}"/>
-            <p:commandButton styleClass="btn btn-default" id="editFileTagsPopupCancelButton" value="#{bundle.cancel}" onclick="PF('editFileTagsPopup').hide();PF('blockFileForm').hide();" actionListener="#{EditDatafilesPage.clearFileMetadataSelectedForTagsPopup()}"/>
+            <p:commandButton styleClass="btn btn-default" id="editFileTagsPopupCancelButton" value="#{bundle.cancel}" onclick="PF('editFileTagsPopup').hide();PF('blockFileForm').hide();"  update=":datasetForm:filesTable" actionListener="#{EditDatafilesPage.clearFileMetadataSelectedForTagsPopup()}"/>
         </div>
     </p:dialog>
     <script type="text/javascript" src="/resources/js/dropins.js" id="dropboxjs" data-app-key="#{EditDatafilesPage.dropBoxKey}"/>
