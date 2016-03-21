@@ -85,7 +85,13 @@
                         <div class="panel panel-default highlight">
                             <div class="panel-body">
                                 <h2 style="margin-top:0;">#{bundle['login.institution']}</h2>
-                                <p class="help-block"><h:outputText value="#{bundle['login.institution.blurb']}" escape="false"/></p>
+                                <p class="help-block">
+                                    <h:outputFormat value="#{bundle['login.institution.blurb']} " escape="false">
+                                        <f:param value="#{settingsWrapper.guidesBaseUrl}"/>
+                                        <f:param value="#{systemConfig.version}"/>
+                                    </h:outputFormat>
+                                    <h:outputText value="#{bundle['login.institution.support']}" escape="false"/>
+                                </p>
 
                                 <div id="idpSelect"></div>
                                 <script type="text/javascript">
