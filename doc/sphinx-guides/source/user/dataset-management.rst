@@ -137,7 +137,7 @@ We currently only support the following HTML tags for any of our textbox meatdat
 <br>, <code>, <del>, <dd>, <dl>, <dt>, <em>, <hr>, <h1>-<h3>, <i>, <img>, <kbd>, <li>, <ol>, <p>, <pre>, <s>, <sup>, <sub>, 
 <strong>, <strike>, <ul>.
 
-Edit Dataset
+Edit Files
 ==================
 
 Go to the dataset you would like to edit where you will see the listing of files. Select the files you would like to edit by using either the Select All checkbox or individually selecting files. Next, click on the Edit button above the files and select if you would like to:
@@ -150,10 +150,18 @@ Go to the dataset you would like to edit where you will see the listing of files
 
 All of these actions, besides editing file metadata, will happen within this page and not bring you to another page. If you restrict files, you will also be asked to fill out the Terms of Access for the files. If Terms of Access already exist, you will be asked to confirm them.
 
-Upload New Files
-===================
+File Tags
+--------------------------------------------------------------
 
-To upload new files to a dataset, go the dataset you want to update and click on the Upload Files Button in the files tab. From there you will be brought to the Upload page for the dataset. Once you have uploaded files, you will be able to edit the file metadata, restrict, add tags, or delete them before saving.
+The File Tags are comprised of custom, category (i.e. Documentation, Data, Code) and tabular data tags (i.e. Event, Genomics, Geospatial, Network, Panel, Survey, Time Series). Use the dropdown select menus as well as the custom file tag input to apply these tags to the selected files. There is also a Delete Tags feature that, if checked, will allow you to delete unused file tags within that dataset.
+
+
+
+Upload New Files
+---------------------------------------------------------------
+
+To upload new files to a dataset, go to the dataset you want to update and click on the Upload Files button in the files tab. From there you will be brought to the Upload Files page for the dataset. Once you have uploaded files, you will be able to edit the file metadata, restrict, add tags, or delete them before saving.
+
 
 .. _license-terms:
 
