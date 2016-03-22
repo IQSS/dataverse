@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearch;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -552,8 +553,28 @@ public class Dataverse extends DvObjectContainer {
         return dataverseContacts;
     }
     
+    /**
+     * Get the email addresses of the dataverse contacts as a comma-separated
+     * concatenation.
+     * @return a comma-separated concatenation of email addresses, or the empty
+     *  string if there are no contacts.
+     * @author bencomp
+     */
     public String getContactEmails() {
-        return "";
+        if (dataverseContacts != null && !dataverseContacts.isEmpty()) {
+            StringBuilder buf = new StringBuilder();
+            Iterator<DataverseContact> it = dataverseContacts.iterator();
+            while (it.hasNext()) {
+                DataverseContact con = it.next();
+                buf.append(con.getContactEmail());
+                if (it.hasNext()) {
+                    buf.append(",");
+                }
+            }
+            return buf.toString();
+        } else {
+            return "";
+        }
     }
 
     public void setDataverseContacts(List<DataverseContact> dataverseContacts) {

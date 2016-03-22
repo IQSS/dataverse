@@ -53,6 +53,40 @@ public class BuiltinUsersIT {
         assertEquals(userIdFromDatabase, userIdFromJsonCreateResponse);
     }
 
+    @Test
+    public void testLogin() {
+
+        String usernameToCreate = getRandomUsername();
+        Response createUserResponse = createUser(usernameToCreate, "firstName", "lastName");
+        createUserResponse.prettyPrint();
+        assertEquals(200, createUserResponse.getStatusCode());
+
+        JsonPath createdUser = JsonPath.from(createUserResponse.body().asString());
+        String createdUsername = createdUser.getString("data.user." + usernameKey);
+        assertEquals(usernameToCreate, createdUsername);
+        String createdToken = createdUser.getString("data.apiToken");
+        logger.info(createdToken);
+
+        Response getApiTokenUsingUsername = getApiTokenUsingUsername(usernameToCreate, usernameToCreate);
+        getApiTokenUsingUsername.prettyPrint();
+        assertEquals(200, getApiTokenUsingUsername.getStatusCode());
+        String retrievedTokenUsingUsername = JsonPath.from(getApiTokenUsingUsername.asString()).getString("data.message");
+        assertEquals(createdToken, retrievedTokenUsingUsername);
+
+        Response failExpected = getApiTokenUsingUsername("junk", "junk");
+        failExpected.prettyPrint();
+        assertEquals(400, failExpected.getStatusCode());
+
+        if (BuiltinUsers.retrievingApiTokenViaEmailEnabled) {
+            Response getApiTokenUsingEmail = getApiTokenUsingEmail(usernameToCreate + "@mailinator.com", usernameToCreate);
+            getApiTokenUsingEmail.prettyPrint();
+            assertEquals(200, getApiTokenUsingEmail.getStatusCode());
+            String retrievedTokenUsingEmail = JsonPath.from(getApiTokenUsingEmail.asString()).getString("data.message");
+            assertEquals(createdToken, retrievedTokenUsingEmail);
+        }
+
+    }
+
     private Response createUser(String username, String firstName, String lastName) {
         String userAsJson = getUserAsJsonString(username, firstName, lastName);
         String password = getPassword(userAsJson);
@@ -60,6 +94,20 @@ public class BuiltinUsersIT {
                 .body(userAsJson)
                 .contentType(ContentType.JSON)
                 .post("/api/builtin-users?key=" + builtinUserKey + "&password=" + password);
+        return response;
+    }
+
+    private Response getApiTokenUsingUsername(String username, String password) {
+        Response response = given()
+                .contentType(ContentType.JSON)
+                .get("/api/builtin-users/" + username + "/api-token?username=" + username + "&password=" + password);
+        return response;
+    }
+
+    private Response getApiTokenUsingEmail(String email, String password) {
+        Response response = given()
+                .contentType(ContentType.JSON)
+                .get("/api/builtin-users/" + email + "/api-token?username=" + email + "&password=" + password);
         return response;
     }
 

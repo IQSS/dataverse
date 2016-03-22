@@ -36,7 +36,24 @@ The :doc:`prerequisites` section explained that Dataverse requires a specific So
 jetty.xml
 +++++++++
 
-Stop Solr and edit ``solr-4.6.0/example/etc/jetty.xml`` to have the following value: ``<Set name="requestHeaderSize">102400</Set>``. Without this higher value in place, it will appear that no data has been added to your dataverse installation and ``WARN  org.eclipse.jetty.http.HttpParser  – HttpParser Full for /127.0.0.1:8983`` will appear in the Solr log. See also https://support.lucidworks.com/hc/en-us/articles/201424796-Error-when-submitting-large-query-strings-
+Stop Solr and edit ``solr-4.6.0/example/etc/jetty.xml`` to add a line having to do with ``requestHeaderSize`` as follows:
+
+.. code-block:: xml
+
+    <Call name="addConnector">
+      <Arg>
+          <New class="org.eclipse.jetty.server.bio.SocketConnector">
+            <Set name="host"><SystemProperty name="jetty.host" /></Set>
+            <Set name="port"><SystemProperty name="jetty.port" default="8983"/></Set>
+            <Set name="maxIdleTime">50000</Set>
+            <Set name="lowResourceMaxIdleTime">1500</Set>
+            <Set name="statsOn">false</Set>
+            <Set name="requestHeaderSize">102400</Set>
+          </New>
+      </Arg>
+    </Call>
+
+Without this ``requestHeaderSize`` line in place, which increases the default size, it will appear that no data has been added to your Dataverse installation and ``WARN  org.eclipse.jetty.http.HttpParser  – HttpParser Full for /127.0.0.1:8983`` will appear in the Solr log. See also https://support.lucidworks.com/hc/en-us/articles/201424796-Error-when-submitting-large-query-strings-
 
 Network Ports
 -------------
@@ -65,6 +82,17 @@ Publishing the Root Dataverse
 +++++++++++++++++++++++++++++
 
 Non-superusers who are not "Admin" on the root dataverse will not be able to to do anything useful until the root dataverse has been published.
+
+Persistent Identifiers and Publishing Datasets
+++++++++++++++++++++++++++++++++++++++++++++++
+
+Persistent identifiers are a required and integral part of the Dataverse platform. They provide a URL that is guaranteed to resolve to the datasets they represent. Dataverse currently supports creating identifiers using DOI and additionally displaying identifiers created using HDL. By default and for testing convenience, the installer configures a temporary DOI test namespace through EZID. This is sufficient to create and publish datasets but they are not citable nor guaranteed to be preserved. To properly configure persistent identifiers for a production installation, an account and associated namespace must be acquired for a fee from one of two DOI providers: EZID (http://ezid.cdlib.org)  or DataCite (https://www.datacite.org). Once account credentials and DOI namespace have been acquired, please complete the following identifier configuration parameters:
+
+JVM Options: :ref:`doi.baseurlstring`, :ref:`doi.username`, :ref:`doi.password`
+
+Database Settings: :ref:`:DoiProvider`, :ref:`:Protocol`, :ref:`:Authority`, :ref:`:DoiSeparator`
+
+Please note that any datasets creating using the test configuration cannot be directly migrated and would need to be created again once a valid DOI namespace is configured.
 
 Customizing the Root Dataverse
 ++++++++++++++++++++++++++++++
@@ -101,7 +129,7 @@ The password reset feature requires ``dataverse.fqdn`` to be configured.
 dataverse.siteUrl
 +++++++++++++++++
 
-| and specify the alternative protocol and port number. 
+| and specify the protocol and port number you would prefer to be used to advertise the URL for your Dataverse.
 | For example, configured in domain.xml:
 | ``<jvm-options>-Ddataverse.fqdn=dataverse.foobar.edu</jvm-options>``
 | ``<jvm-options>-Ddataverse.siteUrl=http://${dataverse.fqdn}:8080</jvm-options>``
@@ -109,7 +137,7 @@ dataverse.siteUrl
 dataverse.files.directory
 +++++++++++++++++++++++++
 
-This is how you configure the path to which files uploaded by users are stored. The installer prompted you for this value.
+This is how you configure the path to which files uploaded by users are stored.
 
 dataverse.auth.password-reset-timeout-in-minutes
 ++++++++++++++++++++++++++++++++++++++++++++++++
@@ -162,8 +190,8 @@ For limiting the size of thumbnail images generated from files.
 
 doi.baseurlstring
 +++++++++++++++++
-
-As of this writing "https://ezid.cdlib.org" is the only valid value. See also these related database settings below:
+.. _doi.baseurlstring:
+As of this writing "https://ezid.cdlib.org" and "https://mds.datacite.org" are the only valid values. See also these related database settings below:
 
 - :DoiProvider
 - :Protocol
@@ -172,12 +200,12 @@ As of this writing "https://ezid.cdlib.org" is the only valid value. See also th
 
 doi.username
 ++++++++++++
-
+.. _doi.username:
 Used in conjuction with ``doi.baseurlstring``.
 
 doi.password
 ++++++++++++
-
+.. _doi.password:
 Used in conjuction with ``doi.baseurlstring``.
 
 dataverse.handlenet.admcredfile
@@ -239,28 +267,28 @@ This is the email address that "system" emails are sent from such as password re
 
 :DoiProvider
 ++++++++++++
-
-As of this writing "EZID" is the only valid options. DataCite support is planned: https://github.com/IQSS/dataverse/issues/24
+.. _:DoiProvider:
+As of this writing "EZID" and "DataCite" are the only valid options.
 
 ``curl -X PUT -d EZID http://localhost:8080/api/admin/settings/:DoiProvider``
 
 :Protocol
 +++++++++
-
+.. _:Protocol:
 As of this writing "doi" is the only valid option for the protocol for a persistent ID.
 
 ``curl -X PUT -d doi http://localhost:8080/api/admin/settings/:Protocol``
 
 :Authority
 ++++++++++
-
-Use the DOI authority assigned to you by EZID.
+.. _:Authority:
+Use the DOI authority assigned to you by your DoiProvider.
 
 ``curl -X PUT -d 10.xxxx http://localhost:8080/api/admin/settings/:Authority``
 
 :DoiSeparator
 +++++++++++++
-
+.. _:DoiSeparator:
 It is recommended that you keep this as a slash ("/").
 
 ``curl -X PUT -d "/" http://localhost:8080/api/admin/settings/:DoiSeparator``
@@ -361,7 +389,14 @@ The relative path URL to which users will be sent after signup. The default sett
 :TwoRavensUrl
 +++++++++++++
 
-The location of your TwoRavens installation.
+The location of your TwoRavens installation.  Activation of TwoRavens also requires the setting below, ``TwoRavensTabularView``
+
+:TwoRavensTabularView
++++++++++++++++++++
+
+Set ``TwoRavensTabularView`` to true to allow a user to view tabular files via the TwoRavens application. This boolean affects whether a user will see the "Explore" button.
+
+``curl -X PUT -d true http://localhost:8080/api/admin/settings/:TwoRavensTabularView``
 
 :GeoconnectCreateEditMaps
 +++++++++++++++++++++++++
@@ -376,6 +411,27 @@ Set ``GeoconnectCreateEditMaps`` to true to allow the user to create GeoConnect 
 Set ``GeoconnectViewMaps`` to true to allow a user to view existing maps. This boolean effects whether a user will see the "Explore" button.
 
 ``curl -X PUT -d true http://localhost:8080/api/admin/settings/:GeoconnectViewMaps``
+
+:GeoconnectDebug
++++++++++++++++++++
+
+For Development only.  Set ``GeoconnectDebug`` to true to allow a user to see SQL that can be used to insert mock map data into the database.
+
+``curl -X PUT -d true http://localhost:8080/api/admin/settings/:GeoconnectDebug``
+
+:DatasetPublishPopupCustomText
+++++++++++++++++++++++++++++++
+
+Set custom text a user will view when publishing a dataset.
+
+``curl -X PUT -d "Deposit License Requirements" http://localhost:8080/api/admin/settings/:DatasetPublishPopupCustomText``
+
+:DatasetPublishPopupCustomTextOnAllVersions
++++++++++++++++++++++++++++++++++++++++++++
+
+Set whether a user will see the custom text when publishing all versions of a dataset
+
+``curl -X PUT -d true http://localhost:8080/api/admin/settings/:DatasetPublishPopupCustomTextOnAllVersions``
 
 :SearchHighlightFragmentSize
 ++++++++++++++++++++++++++++
