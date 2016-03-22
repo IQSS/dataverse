@@ -18,7 +18,7 @@
     </div>
     
     <!-- Search Form + Add Data Button -->
-    <div class="row panelSearchForm" jsf:rendered="#{showSearch == true and !SearchIncludeFragment.solrIsDown}">
+    <div class="row panelSearchForm" jsf:rendered="#{(param['widgetView'] != true) and showSearch == true and !SearchIncludeFragment.solrIsDown}">
         <div class="col-sm-8">
             <h:form>
                 <p:inputText id="searchBasic" styleClass="search-input" size="40" value="#{SearchIncludeFragment.query}" onkeypress="if (event.keyCode == 13) { submitsearch(); return false; }"/>
@@ -502,7 +502,7 @@
                             <span class="glyphicon glyphicon-new-window text-info pull-right" title="#{bundle.harvested}" jsf:rendered="#{result.harvested}"/>
                             <span class="icon-dataset text-info pull-right" title="#{bundle.dataset}"/>
 
-                            <a href="#{result.datasetUrl}" target="#{showFacets == true ? '_self' : '_blank'}">
+                            <a href="#{result.datasetUrl}" >
                                 <h:outputText value="#{result.title}" style="padding:4px 0;" rendered="#{result.titleHighlightSnippet == null}"/>
                                 <h:outputText value="#{result.titleHighlightSnippet}" style="padding:4px 0;" rendered="#{result.titleHighlightSnippet != null}" escape="false"/>
                                 <h:outputText value=" (#{result.entityId})" style="padding:4px 0;" rendered="#{SearchIncludeFragment.debug == true}"/></a>

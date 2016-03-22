@@ -24,16 +24,22 @@
         <link type="text/css" rel="stylesheet" href="#{resource['css/fontcustom.css']}?version=#{systemConfig.getVersion()}" />
         <link type="text/css" rel="stylesheet" href="#{resource['css/socicon.css']}?version=#{systemConfig.getVersion()}" />
         <link type="text/css" rel="stylesheet" href="#{resource['css/structure.css']}?version=#{systemConfig.getVersion()}" />
+        <script>
+            // Break out of iframe
+            // if (window !== top) top.location = window.location;
+        </script>
     </h:head>
     <h:body>
         <f:loadBundle basename="Bundle" var="bundle"/>
-        <a href="#content" class="sr-only">#{bundle['body.skip']}</a>
-        <ui:include src="dataverse_header.xhtml">
-            <ui:param name="dataverse" value="#{dataverse != null ? dataverse : dataverseServiceBean.findRootDataverse()}"/>
-            <ui:param name="showDataverseHeader" value="#{showDataverseHeader != null ? showDataverseHeader : true}"/>
-            <ui:param name="showMessagePanel" value="#{showMessagePanel != null ? showMessagePanel : true}"/>
-            <ui:param name="loginRedirectPage" value="#{loginRedirectPage != null ? '?redirectPage='.concat(loginRedirectPage) : dataverseHeaderFragment.loginRedirectPage}"/>
-        </ui:include>
+        <ui:fragment rendered="#{param['widgetView']!=true}">
+            <a href="#content" class="sr-only">#{bundle['body.skip']}</a>
+            <ui:include src="dataverse_header.xhtml">
+                <ui:param name="dataverse" value="#{dataverse != null ? dataverse : dataverseServiceBean.findRootDataverse()}"/>
+                <ui:param name="showDataverseHeader" value="#{showDataverseHeader != null ? showDataverseHeader : true}"/>
+                <ui:param name="showMessagePanel" value="#{showMessagePanel != null ? showMessagePanel : true}"/>
+                <ui:param name="loginRedirectPage" value="#{loginRedirectPage != null ? '?redirectPage='.concat(loginRedirectPage) : dataverseHeaderFragment.loginRedirectPage}"/>
+            </ui:include>
+        </ui:fragment>
         <div class="container" id="content">
             <ui:insert name="body">Default Body</ui:insert>
         </div>

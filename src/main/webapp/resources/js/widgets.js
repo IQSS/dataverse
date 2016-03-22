@@ -4,7 +4,7 @@
 
 var scriptSource = (function() {
     var scripts = document.getElementsByTagName('script');
-    return scripts[scripts.length - 1].src
+    return scripts[scripts.length - 1].src;
 }());
 
 var params = parseQueryString(scriptSource.split('?')[1]);
@@ -40,5 +40,5 @@ if(params.widget === 'iframe') {
     /*
      * Dataverse Listing iFrame
      */
-    document.write('<iframe src="' + params.dvUrl + '/iframe/' + params.alias + '" width="100%" height="' + params.heightPx + '" style="padding:4px; border:0; background:url(' + params.dvUrl + '/resources/images/ajax-loading.gif) no-repeat 50% 50%;"></iframe>');
+    document.write('<iframe src="' + params.dvUrl + '/dataverse/' + params.alias + '?widgetView=true&amp;widget=iframe" width="100%" height="' + params.heightPx + '" style="padding:4px; border:0; background:url(' + params.dvUrl + '/resources/images/ajax-loading.gif) no-repeat 50% 50%;"></iframe>');
 }

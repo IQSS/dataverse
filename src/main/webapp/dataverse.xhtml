@@ -346,7 +346,7 @@
                     <!-- View Mode / Description Panel -->
                     <ui:fragment rendered="#{empty DataversePage.editMode}">
 
-                        <div id="actionButtonBlock" class="button-block clearfix">
+                        <div id="actionButtonBlock" class="button-block clearfix" jsf:rendered="#{param['widgetView'] != true}">
                             <!-- Edit/Publish Button Group -->
                             <ui:fragment rendered="#{dataverseSession.user.authenticated and 
                                                      (permissionsWrapper.canIssueUpdateDataverseCommand(DataversePage.dataverse)
@@ -540,7 +540,7 @@
                         
                         <ui:fragment rendered="#{SearchIncludeFragment.filterQueries.size() == 0 and SearchIncludeFragment.mode != SearchIncludeFragment.searchModeString}">
                             <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
-                            <ui:fragment rendered="#{!empty DataversePage.dataverse.description}">
+                            <ui:fragment rendered="#{!empty DataversePage.dataverse.description and (param['widgetView'] != true)}">
                                 <div id="dataverseDesc" style="margin-bottom:1em;">
                                     <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(DataversePage.dataverse.description)}" escape="false"/>
                                 </div>
@@ -548,7 +548,7 @@
                             </ui:fragment>
                             
                             <!-- Featured Dataverses Carousel -->
-                            <div id="carouselBlocksWrapper" jsf:rendered="#{!empty DataversePage.carouselFeaturedDataverses}">
+                            <div id="carouselBlocksWrapper" jsf:rendered="#{!empty DataversePage.carouselFeaturedDataverses and (param['widgetView'] != true)}">
                                 <div id="featuredDataversesBlock">
                                     <div class="customNavigation">
                                         <a class="btn prev1" title="#{bundle['dataverse.page.pre']}"><span class="glyphicon glyphicon-chevron-left"/></a>
