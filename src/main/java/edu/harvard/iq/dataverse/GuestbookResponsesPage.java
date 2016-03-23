@@ -40,12 +40,22 @@ public class GuestbookResponsesPage implements java.io.Serializable {
 
 
     private List<GuestbookResponse> responses;
+    private List<Object[]> responsesAsArray;
+
+    public List<Object[]> getResponsesAsArray() {
+        return responsesAsArray;
+    }
+
+    public void setResponsesAsArray(List<Object[]> responsesAsArray) {
+        this.responsesAsArray = responsesAsArray;
+    }
     
     public void init() {
         guestbook = guestbookService.find(guestbookId);
         dataverse = dvService.find(dataverseId);
         if(guestbook != null){
             responses = guestbookResponseService.findAllByGuestbookId(guestbookId);
+            responsesAsArray = guestbookResponseService.findArrayByGuestbookId(guestbookId);
         }
     }
     

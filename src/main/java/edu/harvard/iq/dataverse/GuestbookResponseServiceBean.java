@@ -9,8 +9,10 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import javax.ejb.Stateless;
@@ -55,6 +57,43 @@ public class GuestbookResponseServiceBean {
             return em.createQuery("select o from GuestbookResponse as o where o.guestbook.id = " + guestbookId + " order by o.responseTime desc", GuestbookResponse.class).getResultList();
         }
         return null;
+    }
+    
+    public List<Object[]> findArrayByGuestbookId (Long guestbookId){
+
+        Guestbook gbIn = em.find(Guestbook.class, guestbookId);
+        boolean hasCustomQuestions = gbIn.getCustomQuestions() != null;
+        List<Object[]> retVal =  new ArrayList<>();
+
+        String queryString = "select  r.id, v.value, r.responsetime, r.downloadtype,  m.label, r.name from guestbookresponse r,"
+                + " datasetfieldvalue v, filemetadata m  "
+                + " where "  
+                + " v.datasetfield_id = (select id from datasetfield f where datasetfieldtype_id = 1 "
+                + " and datasetversion_id = (select max(id) from datasetversion where dataset_id =r.dataset_id )) "
+                + " and m.datasetversion_id = (select max(id) from datasetversion where dataset_id =r.dataset_id ) "
+                + "  and m.datafile_id = r.datafile_id "
+                + " and  r.guestbook_id = "
+                + guestbookId.toString()
+                + ";";
+        List<Object[]> guestbookResults = em.createNativeQuery(queryString).getResultList();
+
+        for (Object[] result : guestbookResults) {
+            Object[] singleResult = new Object[6];
+            singleResult[0] = result[1];
+            singleResult[1] = new SimpleDateFormat("MMMM d, yyyy").format((Date) result[2]);
+            singleResult[2] = result[3];
+            singleResult[3] = result[4];
+            singleResult[4] = result[5];
+            if(hasCustomQuestions){
+                singleResult[5] =  em.createQuery("select o from CustomQuestionResponse as  o where o.guestbookResponse.id = " + (Integer) result[0] + " order by o.customQuestion.id ", CustomQuestionResponse.class).getResultList();
+            }
+            retVal.add(singleResult);
+        }
+        guestbookResults = null;
+        
+        
+        
+        return retVal;
     }
     
     public Long findCountByGuestbookId(Long guestbookId) {
