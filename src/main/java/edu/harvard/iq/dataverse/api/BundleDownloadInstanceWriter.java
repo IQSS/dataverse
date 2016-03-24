@@ -186,6 +186,14 @@ public class BundleDownloadInstanceWriter implements MessageBodyWriter<BundleDow
                         zout.closeEntry();
                     }
 
+                    if (di.getFileCitationBibtex() != null) {
+                        e = new ZipEntry(fileName.replaceAll("\\.tab$","citation-bib.bib"));
+
+                        zout.putNextEntry(e);
+                        zout.write(di.getFileCitationBibtex().getBytes());
+                        zout.closeEntry();
+                    }
+
                     zout.close();
                     return;
                 }
