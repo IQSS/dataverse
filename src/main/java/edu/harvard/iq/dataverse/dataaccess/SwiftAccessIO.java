@@ -188,7 +188,18 @@ public class SwiftAccessIO extends DataFileIO {
     
     @Override
     public void delete() throws IOException {
-        throw new IOException("SwiftAccessIO: delete() not yet implemented in this storage driver.");
+        //throw new IOException("SwiftAccessIO: delete() not yet implemented in this storage driver.");
+        if (swiftFileObject == null) {
+            try {
+                swiftFileObject = initializeSwiftFileObject(false);
+            } catch (IOException ioex) {
+                swiftFileObject = null; 
+            }
+        }
+        
+        if (swiftFileObject != null) {
+            swiftFileObject.delete();
+        }
     }
     
     @Override
