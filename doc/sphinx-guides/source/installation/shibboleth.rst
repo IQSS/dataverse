@@ -45,7 +45,7 @@ Only Red Hat Enterprise Linux (RHEL) 6 and derivatives such as CentOS have been 
 Install Apache
 ~~~~~~~~~~~~~~
 
-We will be "fronting" Glassfish with Apache so that we can made use of the ``mod_shib`` Apache module. We will also make use of the ``mod_proxy_ajp`` module built in to Apache.
+We will be "fronting" Glassfish with Apache so that we can make use of the ``mod_shib`` Apache module. We will also make use of the ``mod_proxy_ajp`` module built in to Apache.
 
 We include the ``mod_ssl`` package to enforce HTTPS per below.
 
@@ -120,15 +120,17 @@ Configure Apache
 Enforce HTTPS
 ^^^^^^^^^^^^^
 
-To prevent attacks such as `FireSheep <http://en.wikipedia.org/wiki/Firesheep>`_, HTTPS should be enforced. https://wiki.apache.org/httpd/RewriteHTTPToHTTPS provides a good method. Here is how it looks in a `sample file <../_static/installation/files/etc/httpd/conf.d/shibtest.dataverse.org.conf>`_ at ``/etc/httpd/conf.d/shibtest.dataverse.org.conf``:
+To prevent attacks such as `FireSheep <http://en.wikipedia.org/wiki/Firesheep>`_, HTTPS should be enforced. https://wiki.apache.org/httpd/RewriteHTTPToHTTPS provides a good method. You **could** copy and paste that those "rewrite rule" lines into Apache's main config file at ``/etc/httpd/conf/httpd.conf`` but using Apache's "virtual hosts" feature is recommended so that you can leave the main configuration file alone and drop a host-specific file into place.
 
-.. literalinclude:: ../_static/installation/files/etc/httpd/conf.d/shibtest.dataverse.org.conf
+Below is an example of how "rewrite rule" lines look within a ``VirtualHost`` block. Download a `sample file <../_static/installation/files/etc/httpd/conf.d/dataverse.example.edu.conf>`_ , edit it to substitute your own hostname under ``ServerName``, and place it at ``/etc/httpd/conf.d/dataverse.example.edu.conf`` or a filename that matches your hostname. The file must be in ``/etc/httpd/conf.d`` and must end in ".conf" to be included in Apache's configuration.
 
-Edit Apache Config Files
-^^^^^^^^^^^^^^^^^^^^^^^^
-``/etc/httpd/conf.d/ssl.conf`` should contain the FQDN of your hostname like this: ``ServerName dataverse.example.edu:443`` (substituting your hostname).
+.. literalinclude:: ../_static/installation/files/etc/httpd/conf.d/dataverse.example.edu.conf
 
-Near the bottom of ``/etc/httpd/conf.d/ssl.conf`` but before the closing ``</VirtualHost>`` directive add the following:
+Edit Apache ssl.conf File
+^^^^^^^^^^^^^^^^^^^^^^^^^
+``/etc/httpd/conf.d/ssl.conf`` should be edited to contain the FQDN of your hostname like this: ``ServerName dataverse.example.edu:443`` (substituting your hostname).
+
+Near the bottom of ``/etc/httpd/conf.d/ssl.conf`` but before the closing ``</VirtualHost>`` directive, add the following:
 
 .. code-block:: text
 
@@ -148,7 +150,7 @@ Near the bottom of ``/etc/httpd/conf.d/ssl.conf`` but before the closing ``</Vir
       require valid-user
     </Location>
 
-You can download a `sample ssl.conf file <../_static/installation/files/etc/httpd/conf.d/ssl.conf>`_.
+You can download a `sample ssl.conf file <../_static/installation/files/etc/httpd/conf.d/ssl.conf>`_ to compare it against the file you edited.
 
 Note that ``/etc/httpd/conf.d/shib.conf`` and ``/etc/httpd/conf.d/shibboleth-ds.conf`` are expected to be present from installing Shibboleth via yum.
 
@@ -224,8 +226,8 @@ Verify DiscoFeed and Metadata URLs
 
 As a sanity check, visit the following URLs (substituting your hostname) to make sure you see JSON and XML:
 
-- https://demo.dataverse.org/Shibboleth.sso/DiscoFeed
-- https://demo.dataverse.org/Shibboleth.sso/Metadata
+- https://dataverse.example.edu/Shibboleth.sso/DiscoFeed
+- https://dataverse.example.edu/Shibboleth.sso/Metadata
 
 The JSON in ``DiscoFeed`` comes from the list of IdPs you configured in the ``MetadataProvider`` section of ``shibboleth2.xml`` and will form a dropdown list on the Login Page.
 
@@ -292,7 +294,7 @@ Administration
 Institution-Wide Shibboleth Groups
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Dataverse allows you to optionally define "institution-wide Shibboleth groups" based on the the entityID of the Identity Provider (IdP) used to authenticate. For example, an "institution-wide Shibboleth group" with ``https://idp.testshib.org/idp/shibboleth`` as the IdP would put everyone who logs in via the TestShib IdP mentioned above.
+Dataverse allows you to optionally define "institution-wide Shibboleth groups" based on the the entityID of the Identity Provider (IdP) used to authenticate. For example, an "institution-wide Shibboleth group" with ``https://idp.testshib.org/idp/shibboleth`` as the IdP would include everyone who logs in via the TestShib IdP mentioned above.
 
 To create an institution-wide Shibboleth groups, create a JSON file as below and issue this curl command: ``curl http://localhost:8080/api/admin/groups/shib -X POST -H 'Content-type:application/json' --upload-file shibGroupTestShib.json``
 
