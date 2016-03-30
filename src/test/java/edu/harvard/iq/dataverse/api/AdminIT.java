@@ -70,7 +70,8 @@ public class AdminIT {
     public void testConvertShibUserToBuiltin() throws Exception {
 
         String password = usernameOfUserToConvert;
-        String data = emailOfUserToConvert + ":" + password;
+        String newEmailAddressToUse = "builtin2shib." + UUID.randomUUID().toString().substring(0, 8) + "@mailinator.com";
+        String data = emailOfUserToConvert + ":" + password + ":" + newEmailAddressToUse;
 
         Response builtinToShibAnon = migrateBuiltinToShib(data, "");
         builtinToShibAnon.prettyPrint();
@@ -78,20 +79,16 @@ public class AdminIT {
 
         Response makeShibUser = migrateBuiltinToShib(data, superuserApiToken);
         makeShibUser.prettyPrint();
-        Integer migrateBuiltinToShib = makeShibUser.statusCode();
-        if (migrateBuiltinToShib.equals(OK.getStatusCode())) {
-            makeShibUser.then().assertThat()
-                    .statusCode(OK.getStatusCode())
-                    .body("data.affiliation", equalTo("TestShib Test IdP")
-                    );
-        } else {
-            /**
-             * Expect a non-OK response if the Shib user has an invalid email
-             * address: https://github.com/IQSS/dataverse/issues/2998
-             */
-            return;
-        }
+        makeShibUser.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.affiliation", equalTo("TestShib Test IdP")
+                );
 
+        /**
+         * @todo Write more failing tests such as expecting a non-OK response if
+         * the Shib user has an invalid email address:
+         * https://github.com/IQSS/dataverse/issues/2998
+         */
         Response shibToBuiltinAnon = migrateShibToBuiltin(Long.MAX_VALUE, "", "");
         shibToBuiltinAnon.prettyPrint();
         shibToBuiltinAnon.then().assertThat().statusCode(FORBIDDEN.getStatusCode());

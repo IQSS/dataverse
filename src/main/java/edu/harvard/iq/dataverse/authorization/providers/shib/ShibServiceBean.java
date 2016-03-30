@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServi
 import static edu.harvard.iq.dataverse.authorization.providers.shib.ShibUtil.getRandomUserStatic;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.io.InputStream;
@@ -155,8 +156,12 @@ public class ShibServiceBean {
         }
 
         AuthenticationRequest authReq = new AuthenticationRequest();
-        authReq.putCredential("Username", username);
-        authReq.putCredential("Password", password);
+        /**
+         * @todo Should this really be coming from a bundle like this? Added
+         * because that's what BuiltinAuthenticationProvider does.
+         */
+        authReq.putCredential(BundleUtil.getStringFromBundle("login.builtin.credential.usernameOrEmail"), username);
+        authReq.putCredential(BundleUtil.getStringFromBundle("login.builtin.credential.password"), password);
         /**
          * @todo Should probably set IP address here.
          */

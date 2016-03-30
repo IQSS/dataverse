@@ -381,13 +381,15 @@ public class Admin extends AbstractApiBean {
         String emailToFind;
         String password;
         String authuserId = "0"; // could let people specify id on authuser table. probably better to let them tell us their 
+        String newEmailAddressToUse;
         try {
             String[] args = content.split(":");
             emailToFind = args[0];
             password = args[1];
+            newEmailAddressToUse = args[2];
 //            authuserId = args[666];
         } catch (ArrayIndexOutOfBoundsException ex) {
-            return errorResponse(Response.Status.BAD_REQUEST, ex.toString());
+            return errorResponse(Response.Status.BAD_REQUEST, "Problem with content <<<" + content + ">>>: " + ex.toString());
         }
         AuthenticatedUser existingAuthUserFoundByEmail = shibService.findAuthUserByEmail(emailToFind);
         String existing = "NOT FOUND";
@@ -414,6 +416,7 @@ public class Admin extends AbstractApiBean {
         String overwriteFirstName = randomUser.get("firstName");
         String overwriteLastName = randomUser.get("lastName");
         String overwriteEmail = randomUser.get("email");
+        overwriteEmail = newEmailAddressToUse;
         logger.info("overwriteEmail: " + overwriteEmail);
         boolean validEmail = EMailValidator.isEmailValid(overwriteEmail, null);
         if (!validEmail) {
@@ -469,7 +472,9 @@ public class Admin extends AbstractApiBean {
                 problems.add("couldn't find old username");
             }
             if (!knowsExistingPassword) {
-                problems.add("doesn't know password");
+                String message = "User doesn't know password.";
+                problems.add(message);
+                return errorResponse(Status.BAD_REQUEST, message);
             }
 //            response.add("knows existing password", knowsExistingPassword);
         }
