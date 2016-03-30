@@ -18,11 +18,14 @@ import java.util.List;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.faces.context.FacesContext;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  *
@@ -59,19 +62,92 @@ public class GuestbookResponseServiceBean {
         return null;
     }
     
-    public List<Object[]> findArrayByGuestbookId (Long guestbookId){
+    public List<Object[]> findArrayByDataverseId (Long dataverseId){
+
+        String queryString = "select  r.id, v.value, r.responsetime, r.downloadtype,  m.label, r.name, r.email, r.institution, r.position from guestbookresponse r,"
+                + " datasetfieldvalue v, filemetadata m, dvobject o  "
+                + " where "  
+                + " v.datasetfield_id = (select id from datasetfield f where datasetfieldtype_id = 1 "
+                + " and datasetversion_id = (select max(id) from datasetversion where dataset_id =r.dataset_id )) "
+                + " and m.datasetversion_id = (select max(id) from datasetversion where dataset_id =r.dataset_id ) "
+                + "  and m.datafile_id = r.datafile_id "
+                + "  and r.dataset_id = o.id "
+                + " and  o.owner_id = "
+                + dataverseId.toString()
+                + ";";           
+        
+        return findArray(queryString);       
+    }
+    
+    public List<Object[]> findArrayByDataverseIdAndGuestbookId (Long dataverseId, Long guestbookId){
+
+        String queryString = "select  r.id, v.value, r.responsetime, r.downloadtype,  m.label, r.name, r.email, r.institution, r.position from guestbookresponse r,"
+                + " datasetfieldvalue v, filemetadata m, dvobject o  "
+                + " where "  
+                + " v.datasetfield_id = (select id from datasetfield f where datasetfieldtype_id = 1 "
+                + " and datasetversion_id = (select max(id) from datasetversion where dataset_id =r.dataset_id )) "
+                + " and m.datasetversion_id = (select max(id) from datasetversion where dataset_id =r.dataset_id ) "
+                + "  and m.datafile_id = r.datafile_id "
+                + "  and r.dataset_id = o.id "
+                + " and  o.owner_id = "
+                + dataverseId.toString()
+                + " and r.guestbook_id = "
+                + guestbookId.toString()
+                + ";";           
+        
+        return findArray(queryString);       
+    }
+
+    
+    
+    
+    
+    private List<Object[]> findArray (String queryString){
+
+        List<Object[]> retVal =  new ArrayList<>();
+
+        List<Object[]> guestbookResults = em.createNativeQuery(queryString).getResultList();
+        
+        for (Object[] result : guestbookResults) {
+            Object[] singleResult = new Object[9];
+            singleResult[0] = result[1];
+            singleResult[1] = new SimpleDateFormat("MM/d/yyyy").format((Date) result[2]);
+            singleResult[2] = result[3];
+            singleResult[3] = result[4];
+            singleResult[4] = result[5];
+            singleResult[5] = result[6];
+            singleResult[6] = result[7];
+            singleResult[7] = result[8];
+            List<CustomQuestionResponse> customResponses = em.createQuery("select o from CustomQuestionResponse as  o where o.guestbookResponse.id = " + (Integer) result[0] + " order by o.customQuestion.id ", CustomQuestionResponse.class).getResultList();
+            if(!customResponses.isEmpty()){
+                singleResult[8] =  customResponses;
+            }
+            retVal.add(singleResult);
+        }
+        guestbookResults = null;       
+        
+        return retVal;
+        
+    }
+    
+
+    
+    public List<Object[]> findArrayByGuestbookIdAndDataverseId (Long guestbookId, Long dataverseId){
 
         Guestbook gbIn = em.find(Guestbook.class, guestbookId);
         boolean hasCustomQuestions = gbIn.getCustomQuestions() != null;
         List<Object[]> retVal =  new ArrayList<>();
 
         String queryString = "select  r.id, v.value, r.responsetime, r.downloadtype,  m.label, r.name from guestbookresponse r,"
-                + " datasetfieldvalue v, filemetadata m  "
+                + " datasetfieldvalue v, filemetadata m , dvobject o    "
                 + " where "  
                 + " v.datasetfield_id = (select id from datasetfield f where datasetfieldtype_id = 1 "
                 + " and datasetversion_id = (select max(id) from datasetversion where dataset_id =r.dataset_id )) "
                 + " and m.datasetversion_id = (select max(id) from datasetversion where dataset_id =r.dataset_id ) "
                 + "  and m.datafile_id = r.datafile_id "
+                + "  and r.dataset_id = o.id "
+                + " and  o.owner_id = "
+                + dataverseId.toString()
                 + " and  r.guestbook_id = "
                 + guestbookId.toString()
                 + ";";
@@ -89,22 +165,25 @@ public class GuestbookResponseServiceBean {
             }
             retVal.add(singleResult);
         }
-        guestbookResults = null;
-        
-        
+        guestbookResults = null;       
         
         return retVal;
     }
     
-    public Long findCountByGuestbookId(Long guestbookId) {
+    public Long findCountByGuestbookId(Long guestbookId, Long dataverseId) {
 
         if (guestbookId == null) {
-        } else {
+                    return 0L;
+        } else if ( dataverseId == null) {
             String queryString = "select count(o) from GuestbookResponse as o where o.guestbook_id = " + guestbookId;
             Query query = em.createNativeQuery(queryString);
             return (Long) query.getSingleResult();
+        } else  {
+            String queryString = "select count(o) from GuestbookResponse as o, Dataset d, DvObject obj where o.dataset_id = d.id and d.id = obj.id and obj.owner_id = " + dataverseId + "and o.guestbook_id = " + guestbookId;
+            Query query = em.createNativeQuery(queryString);
+            return (Long) query.getSingleResult();            
         }
-        return 0L;
+
     }
 
     public List<Long> findAllIds30Days() {

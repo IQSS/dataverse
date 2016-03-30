@@ -30,6 +30,9 @@
                                 #{guestbookResponsesPage.guestbook.name}
                             </div>
                         </div>
+                        <button class="btn btn-default" jsf:id="downloadResponsesLink" jsf:action="#{guestbookResponsesPage.downloadResponsesByDataverseAndGuestbook()}"  >
+                                     #{bundle['dataset.manageGuestbooks.download.responses']}
+                        </button>  
                     </div>
                     <p:dataTable id="responsesGuestbook" value="#{guestbookResponsesPage.responsesAsArray}" var="response">
                         <p:column sortBy="#{response[0]}" headerText="#{bundle['dataset.guestbooksResponses.dataset']}">

@@ -293,6 +293,17 @@ public class Guestbook implements Serializable {
         this.usageCount = usageCount;
     }
     
+    @Transient
+    private Long usageCountDataverse;
+
+    public Long getUsageCountDataverse() {
+        return usageCountDataverse;
+    }
+    
+    public void setUsageCountDataverse(Long usageCountDataverse) {
+        this.usageCountDataverse = usageCountDataverse;
+    }
+    
     @Transient 
     private Long responseCount;
 
@@ -302,6 +313,17 @@ public class Guestbook implements Serializable {
 
     public void setResponseCount(Long responseCount) {
         this.responseCount = responseCount;
+    }
+    
+    @Transient 
+    private Long responseCountDataverse;
+
+    public Long getResponseCountDataverse() {
+        return responseCountDataverse;
+    }
+
+    public void setResponseCountDataverse(Long responseCountDataverse) {
+        this.responseCountDataverse = responseCountDataverse;
     }
     
     
