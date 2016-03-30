@@ -27,7 +27,6 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -149,7 +148,7 @@ public class ShibServiceBean {
     }
 
     public AuthenticatedUser canLogInAsBuiltinUser(String username, String password) {
-        logger.info("checking to see if " + username + " knows the password...");
+        logger.fine("checking to see if " + username + " knows the password...");
         if (password == null) {
             logger.info("password was null");
             return null;
@@ -170,10 +169,10 @@ public class ShibServiceBean {
         String credentialsAuthProviderId = BuiltinAuthenticationProvider.PROVIDER_ID;
         try {
             AuthenticatedUser au = authSvc.authenticate(credentialsAuthProviderId, authReq);
-            logger.log(Level.INFO, "User authenticated: {0}", au.getEmail());
+            logger.fine("User authenticated:" + au.getEmail());
             return au;
         } catch (AuthenticationFailedException ex) {
-            logger.info("The username and/or password you entered is invalid. Need assistance accessing your account?" + ex.getResponse().getMessage());
+            logger.info("The username and/or password entered is invalid: " + ex.getResponse().getMessage());
             return null;
         } catch (EJBException ex) {
             Throwable cause = ex;
@@ -216,7 +215,7 @@ public class ShibServiceBean {
             String devUrl = "http://localhost:8080/resources/dev/sample-shib-identities.json";
             discoFeedUrl = devUrl;
         }
-        logger.info("Trying to get affiliation from disco feed URL: " + discoFeedUrl);
+        logger.fine("Trying to get affiliation from disco feed URL: " + discoFeedUrl);
         URL url = null;
         try {
             url = new URL(discoFeedUrl);
@@ -293,18 +292,18 @@ public class ShibServiceBean {
         try {
             url = new URL(sURL);
         } catch (MalformedURLException ex) {
-            Logger.getLogger(Shib.class.getName()).log(Level.SEVERE, null, ex);
+            logger.info("Exception: " + ex);
         }
         HttpURLConnection randomUserRequest = null;
         try {
             randomUserRequest = (HttpURLConnection) url.openConnection();
         } catch (IOException ex) {
-            Logger.getLogger(Shib.class.getName()).log(Level.SEVERE, null, ex);
+            logger.info("Exception: " + ex);
         }
         try {
             randomUserRequest.connect();
         } catch (IOException ex) {
-            Logger.getLogger(Shib.class.getName()).log(Level.SEVERE, null, ex);
+            logger.info("Exception: " + ex);
         }
 
         JsonParser jp = new JsonParser();
@@ -312,7 +311,7 @@ public class ShibServiceBean {
         try {
             root = jp.parse(new InputStreamReader((InputStream) randomUserRequest.getContent()));
         } catch (IOException ex) {
-            Logger.getLogger(Shib.class.getName()).log(Level.SEVERE, null, ex);
+            logger.info("Exception: " + ex);
         }
         if (root == null) {
             return getRandomUserStatic();

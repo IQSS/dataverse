@@ -112,7 +112,7 @@ public class ShibUtil {
                  * @todo Is it possible to reach this line via a test? If not,
                  * remove this try/catch.
                  */
-                logger.info("Couldn't find first part of " + singleValue);
+                logger.fine("Couldn't find first part of " + singleValue);
             }
         }
         return singleValue;
@@ -133,16 +133,16 @@ public class ShibUtil {
                      * @todo Is it possible to reach this line via a test? If
                      * not, remove this try/catch.
                      */
-                    logger.info(ex + " parsing " + email);
+                    logger.fine(ex + " parsing " + email);
                 }
             } else {
                 boolean passedValidation = EMailValidator.isEmailValid(email, null);
-                logger.info("Odd email address. No @ sign ('" + email + "'). Passed email validation: " + passedValidation);
+                logger.fine("Odd email address. No @ sign ('" + email + "'). Passed email validation: " + passedValidation);
             }
         } else {
-            logger.info("email attribute not sent by IdP");
+            logger.fine("email attribute not sent by IdP");
         }
-        logger.info("the best we can do is generate a random UUID");
+        logger.fine("the best we can do is generate a random UUID");
         return UUID.randomUUID().toString();
     }
 
@@ -301,7 +301,7 @@ public class ShibUtil {
     public static void printAttributes(HttpServletRequest request) {
         List<String> shibValues = new ArrayList<>();
         if (request == null) {
-            logger.info("HttpServletRequest was null. No shib values to print.");
+            logger.fine("HttpServletRequest was null. No shib values to print.");
             return;
         }
         for (String attr : shibAttrs) {
@@ -320,7 +320,7 @@ public class ShibUtil {
                 shibValues.add(attr + ": " + attrObject.toString());
             }
         }
-        logger.info("shib values: " + shibValues);
+        logger.fine("shib values: " + shibValues);
     }
 
 }
