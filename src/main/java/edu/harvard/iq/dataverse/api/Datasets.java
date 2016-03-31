@@ -9,9 +9,13 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.MetadataBlock;
+import static edu.harvard.iq.dataverse.api.AbstractApiBean.errorResponse;
+import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetVersionCommand;
@@ -45,6 +49,7 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -510,6 +515,33 @@ public class Datasets extends AbstractApiBean {
                     build();
         } catch (WrappedResponse wr) {
             return wr.getResponse();
+        }
+    }
+
+    /**
+     * @todo Make this real. Currently only used for API testing. Copied from
+     * the equivalent API endpoint for dataverses and simplified with values
+     * hard coded.
+     */
+    @POST
+    @Path("{identifier}/assignments")
+    public Response createAssignment(String userOrGroup, @PathParam("identifier") String id, @QueryParam("key") String apiKey) {
+        boolean apiTestingOnly = true;
+        if (apiTestingOnly) {
+            return errorResponse(Response.Status.FORBIDDEN, "This is only for API tests.");
+        }
+        try {
+            Dataset dataset = findDatasetOrDie(id);
+            RoleAssignee assignee = findAssignee(userOrGroup);
+            if (assignee == null) {
+                return errorResponse(Response.Status.BAD_REQUEST, "Assignee not found");
+            }
+            DataverseRole theRole = rolesSvc.findBuiltinRoleByAlias("admin");
+            return okResponse(
+                    json(execCommand(new AssignRoleCommand(assignee, theRole, dataset, createDataverseRequest(findUserOrDie())))));
+        } catch (WrappedResponse ex) {
+            LOGGER.log(Level.WARNING, "Can''t create assignment: {0}", ex.getMessage());
+            return ex.getResponse();
         }
     }
 
