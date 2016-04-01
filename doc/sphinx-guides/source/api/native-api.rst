@@ -239,7 +239,10 @@ Remove a single role assignee from an explicit group::
 
   DELETE http://$server/api/dataverses/$dv/groups/$groupAlias/roleAssignees/$roleAssigneeIdentifier
 
+Shibboleth Groups
+~~~~~~~~~~~~~~~~~
 
+Management of Shibboleth groups via API is documented in the :doc:`/installation/shibboleth` section of the Installation Guide.
 
 Metadata Blocks
 ~~~~~~~~~~~~~~~
@@ -309,7 +312,31 @@ Creates a global role in the Dataverse installation. The data POSTed are assumed
 
     POST http://$SERVER/api/admin/roles
 
-Toggles superuser mode on the ``AuthenticatedUser`` whose ``identifier`` is passed. ::
+List all users::
+
+    GET http://$SERVER/api/admin/authenticatedUsers
+
+List user whose ``identifier`` (without the ``@`` sign) is passed::
+
+    GET http://$SERVER/api/admin/authenticatedUsers/$identifier
+
+Sample output using "dataverseAdmin" as the ``identifier``::
+
+    {
+      "authenticationProviderId": "builtin",
+      "persistentUserId": "dataverseAdmin",
+      "position": "Admin",
+      "id": 1,
+      "identifier": "@dataverseAdmin",
+      "displayName": "Dataverse Admin",
+      "firstName": "Dataverse",
+      "lastName": "Admin",
+      "email": "dataverse@mailinator.com",
+      "superuser": true,
+      "affiliation": "Dataverse.org"
+    }
+
+Toggles superuser mode on the ``AuthenticatedUser`` whose ``identifier`` (without the ``@`` sign) is passed. ::
 
     POST http://$SERVER/api/admin/superuser/$identifier
 
