@@ -11,6 +11,8 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
+import edu.harvard.iq.dataverse.search.IndexServiceBean;
+import edu.harvard.iq.dataverse.search.SearchFields;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -110,17 +112,19 @@ public class RoleAssigneeServiceBean {
         return " AND r.role_id IN (" + StringUtils.join(outputList, ",") + ")";        
     }
     
-    public List<DataverseRole> getAssigneeDataverseRoleFor(String roleAssigneeIdentifier){
-
+    public List<DataverseRole> getAssigneeDataverseRoleFor(AuthenticatedUser au ){
+        String roleAssigneeIdentifier = au.getUserIdentifier();
         if (roleAssigneeIdentifier==null){
             return null;
         }
         List <DataverseRole> retList = new ArrayList();
         roleAssigneeIdentifier = roleAssigneeIdentifier.replaceAll("\\s","");   // remove spaces from string
-        List<String> userGroups = getUserGroups(roleAssigneeIdentifier.replace("@", ""));
+        List<String> userGroups = getUserExplicitGroups(roleAssigneeIdentifier.replace("@", ""));
+        List<String> userRunTimeGroups = getUserRuntimeGroups(au);
         String identifierClause = " WHERE r.assigneeIdentifier= '" + roleAssigneeIdentifier + "'";
-        if (userGroups != null && !userGroups.isEmpty()){
-            identifierClause = getGroupIdentifierClause(roleAssigneeIdentifier, userGroups);
+        if (userGroups != null || userRunTimeGroups != null){
+
+            identifierClause = getGroupIdentifierClause(roleAssigneeIdentifier, userGroups, userRunTimeGroups);
         } 
         
         String qstr = "SELECT distinct r.role_id";
@@ -129,7 +133,6 @@ public class RoleAssigneeServiceBean {
         qstr += ";";
         msg("qstr: " + qstr);
 
-        
         for (Object o :em.createNativeQuery(qstr).getResultList()){
            retList.add(dataverseRoleService.find((Long) o));
         }
@@ -140,16 +143,19 @@ public class RoleAssigneeServiceBean {
     
     
     
-    public List<Object[]> getAssigneeAndRoleIdListFor(String roleAssigneeIdentifier, List<Long> roleIdList){
+    public List<Object[]> getAssigneeAndRoleIdListFor(AuthenticatedUser au, List<Long> roleIdList){
 
+        String roleAssigneeIdentifier = au.getUserIdentifier();
+        
         if (roleAssigneeIdentifier==null){
             return null;
         }
         roleAssigneeIdentifier = roleAssigneeIdentifier.replaceAll("\\s","");   // remove spaces from string
-        List<String> userGroups = getUserGroups(roleAssigneeIdentifier.replace("@", ""));
+        List<String> userExplicitGroups = getUserExplicitGroups(roleAssigneeIdentifier.replace("@", ""));
+        List<String> userRunTimeGroups = getUserRuntimeGroups(au);
         String identifierClause = " WHERE r.assigneeIdentifier= '" + roleAssigneeIdentifier + "'";
-        if (userGroups != null && !userGroups.isEmpty()){
-            identifierClause = getGroupIdentifierClause(roleAssigneeIdentifier, userGroups);
+        if (userExplicitGroups != null || userRunTimeGroups != null){
+            identifierClause = getGroupIdentifierClause(roleAssigneeIdentifier, userExplicitGroups, userRunTimeGroups);
         } 
         
         String qstr = "SELECT r.definitionpoint_id, r.role_id";
@@ -158,22 +164,22 @@ public class RoleAssigneeServiceBean {
         qstr += getRoleIdListClause(roleIdList);
         qstr += ";";
         msg("qstr: " + qstr);
-
         return em.createNativeQuery(qstr)
                         .getResultList();
         
     }
     
-    public List<Long> getRoleIdListForGivenAssigneeDvObject(String roleAssigneeIdentifier, List<Long> roleIdList, Long defPointId){
-
+    public List<Long> getRoleIdListForGivenAssigneeDvObject(AuthenticatedUser au, List<Long> roleIdList, Long defPointId){
+        String roleAssigneeIdentifier = au.getUserIdentifier();
         if (roleAssigneeIdentifier==null){
             return null;
         }
         roleAssigneeIdentifier = roleAssigneeIdentifier.replaceAll("\\s","");   // remove spaces from string
-        List<String> userGroups = getUserGroups(roleAssigneeIdentifier.replace("@", ""));
+        List<String> userGroups = getUserExplicitGroups(roleAssigneeIdentifier.replace("@", ""));
+        List<String> userRunTimeGroups = getUserRuntimeGroups(au);
         String identifierClause = " WHERE r.assigneeIdentifier= '" + roleAssigneeIdentifier + "'";
-        if (userGroups != null && !userGroups.isEmpty()){
-            identifierClause = getGroupIdentifierClause(roleAssigneeIdentifier, userGroups);
+        if (userGroups != null || userRunTimeGroups != null){
+            identifierClause = getGroupIdentifierClause(roleAssigneeIdentifier, userGroups, userRunTimeGroups);
         } 
         
         String qstr = "SELECT r.role_id";
@@ -190,40 +196,59 @@ public class RoleAssigneeServiceBean {
     }
     
     
-    private String getGroupIdentifierClause(String roleAssigneeIdentifier, List<String> userGroups) {
+    private String getGroupIdentifierClause(String roleAssigneeIdentifier, List<String> userExplicitGroups, List<String> userRunTimeGroups) {
 
-        if (userGroups == null) {
+        if (userExplicitGroups == null && userRunTimeGroups == null) {
             return "";
         }
-        List<String> outputList = new ArrayList<>();
+        List<String> outputExplicitList = new ArrayList<>();
+        String explicitString = "";
 
-        for (String r : userGroups) {
-            if (r != null) {
-                outputList.add(r);
+        if (userExplicitGroups != null) {
+            for (String r : userExplicitGroups) {
+                if (r != null) {
+                    outputExplicitList.add(r);
+                }
             }
+
+            if (!outputExplicitList.isEmpty()) {
+                explicitString = ",'&explicit/" + StringUtils.join(outputExplicitList, "','&explicit/") + "'";
+            }
+
         }
-        if (outputList.isEmpty()) {
-            return "";
+
+        List<String> outputRuntimeList = new ArrayList<>();
+        String runTimeString = "";
+
+        if (userRunTimeGroups != null) {
+            for (String r : userRunTimeGroups) {
+                if (r != null) {
+                    outputRuntimeList.add(r);
+                }
+            }
+
+            if (!outputRuntimeList.isEmpty()) {
+                runTimeString = ",'" + StringUtils.join(outputRuntimeList, "','") + "'";
+            }
+
         }
-        return " WHERE r.assigneeIdentifier in ( '" + roleAssigneeIdentifier + "', '&explicit/" + StringUtils.join(outputList, "','&explicit/") + "')";
+        return " WHERE r.assigneeIdentifier in ( '" + roleAssigneeIdentifier + "'" + explicitString + runTimeString + ")";
 
     }
 
 
-    public List<Object[]> getRoleIdsFor(String roleAssigneeIdentifier, List<Long> dvObjectIdList){
-
+    public List<Object[]> getRoleIdsFor(AuthenticatedUser au, List<Long> dvObjectIdList){
+        String roleAssigneeIdentifier = au.getUserIdentifier();
         if (roleAssigneeIdentifier==null){
             return null;
         }
-        if ((dvObjectIdList==null)||(dvObjectIdList.isEmpty())){
-            return null;
-        }
+
         roleAssigneeIdentifier = roleAssigneeIdentifier.replaceAll("\\s","");   // remove spaces from string
-        List<String> userGroups = getUserGroups(roleAssigneeIdentifier.replace("@", ""));      
-        
+        List<String> userGroups = getUserExplicitGroups(roleAssigneeIdentifier.replace("@", ""));      
+        List<String> userRunTimeGroups = getUserRuntimeGroups(au);
         String identifierClause = " WHERE r.assigneeIdentifier= '" + roleAssigneeIdentifier + "'";
-        if (userGroups != null && !userGroups.isEmpty()){
-            identifierClause = getGroupIdentifierClause(roleAssigneeIdentifier, userGroups);
+        if (userGroups != null || userRunTimeGroups != null){
+            identifierClause = getGroupIdentifierClause(roleAssigneeIdentifier, userGroups, userRunTimeGroups);
         } 
         
         
@@ -258,7 +283,7 @@ public class RoleAssigneeServiceBean {
     }
     
     
-    private List<String> getUserGroups(String roleAssigneeIdentifier){
+    private List<String> getUserExplicitGroups(String roleAssigneeIdentifier){
         
         String qstr = "select  groupalias from explicitgroup";
         qstr += " where id in ";
@@ -269,6 +294,23 @@ public class RoleAssigneeServiceBean {
 
         return em.createNativeQuery(qstr)
                         .getResultList();  
+    }
+    
+    private List<String> getUserRuntimeGroups(AuthenticatedUser au) {
+        List <String> retVal = new ArrayList();
+
+        Set<Group> groups = groupSvc.groupsFor(au, null);
+        StringBuilder sb = new StringBuilder();
+        for (Group group : groups) {
+            logger.fine("found group " + group.getIdentifier() + " with alias " + group.getAlias());
+            if (group.getGroupProvider().getGroupProviderAlias().equals("shib") || group.getGroupProvider().getGroupProviderAlias().equals("ip")) {
+                String groupAlias = group.getAlias();
+                if (groupAlias != null && !groupAlias.isEmpty()) {
+                    retVal.add('&' + groupAlias);
+                }
+            }
+        }
+        return retVal;
     }
     
     
