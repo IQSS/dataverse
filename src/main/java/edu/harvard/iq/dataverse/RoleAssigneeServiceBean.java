@@ -45,10 +45,10 @@ public class RoleAssigneeServiceBean {
 
     @EJB
     GroupServiceBean groupSvc;
-    
+
     @EJB
-    ExplicitGroupServiceBean explicitGroupSvc;    
-    
+    ExplicitGroupServiceBean explicitGroupSvc;
+
     @EJB
     DataverseRoleServiceBean dataverseRoleService;
 
@@ -74,7 +74,7 @@ public class RoleAssigneeServiceBean {
                 throw new IllegalArgumentException("Unsupported assignee identifier '" + identifier + "'");
         }
     }
-    
+
     public List<RoleAssignment> getAssignmentsFor(String roleAssigneeIdentifier) {
         return em.createNamedQuery("RoleAssignment.listByAssigneeIdentifier", RoleAssignment.class)
                 .setParameter("assigneeIdentifier", roleAssigneeIdentifier)
@@ -94,70 +94,66 @@ public class RoleAssigneeServiceBean {
 
         return explicitUsers;
     }
-    
-    private String getRoleIdListClause(List<Long> roleIdList){
-        if (roleIdList == null){
+
+    private String getRoleIdListClause(List<Long> roleIdList) {
+        if (roleIdList == null) {
             return "";
         }
         List<String> outputList = new ArrayList<>();
-        
-        for(Long r : roleIdList){
-            if (r != null){
+
+        for (Long r : roleIdList) {
+            if (r != null) {
                 outputList.add(r.toString());
             }
         }
-        if (outputList.isEmpty()){
+        if (outputList.isEmpty()) {
             return "";
-        }        
-        return " AND r.role_id IN (" + StringUtils.join(outputList, ",") + ")";        
+        }
+        return " AND r.role_id IN (" + StringUtils.join(outputList, ",") + ")";
     }
-    
-    public List<DataverseRole> getAssigneeDataverseRoleFor(AuthenticatedUser au ){
-        String roleAssigneeIdentifier = au.getUserIdentifier();
-        if (roleAssigneeIdentifier==null){
+
+    public List<DataverseRole> getAssigneeDataverseRoleFor(AuthenticatedUser au) {
+        String roleAssigneeIdentifier = "@" + au.getUserIdentifier();
+        if (roleAssigneeIdentifier == null) {
             return null;
         }
-        List <DataverseRole> retList = new ArrayList();
-        roleAssigneeIdentifier = roleAssigneeIdentifier.replaceAll("\\s","");   // remove spaces from string
+        List<DataverseRole> retList = new ArrayList();
+        roleAssigneeIdentifier = roleAssigneeIdentifier.replaceAll("\\s", "");   // remove spaces from string
         List<String> userGroups = getUserExplicitGroups(roleAssigneeIdentifier.replace("@", ""));
         List<String> userRunTimeGroups = getUserRuntimeGroups(au);
         String identifierClause = " WHERE r.assigneeIdentifier= '" + roleAssigneeIdentifier + "'";
-        if (userGroups != null || userRunTimeGroups != null){
+        if (userGroups != null || userRunTimeGroups != null) {
 
             identifierClause = getGroupIdentifierClause(roleAssigneeIdentifier, userGroups, userRunTimeGroups);
-        } 
-        
+        }
+
         String qstr = "SELECT distinct r.role_id";
         qstr += " FROM RoleAssignment r";
         qstr += identifierClause;
         qstr += ";";
         msg("qstr: " + qstr);
 
-        for (Object o :em.createNativeQuery(qstr).getResultList()){
-           retList.add(dataverseRoleService.find((Long) o));
+        for (Object o : em.createNativeQuery(qstr).getResultList()) {
+            retList.add(dataverseRoleService.find((Long) o));
         }
         return retList;
     }
-    
-    
-    
-    
-    
-    public List<Object[]> getAssigneeAndRoleIdListFor(AuthenticatedUser au, List<Long> roleIdList){
 
-        String roleAssigneeIdentifier = au.getUserIdentifier();
-        
-        if (roleAssigneeIdentifier==null){
+    public List<Object[]> getAssigneeAndRoleIdListFor(AuthenticatedUser au, List<Long> roleIdList) {
+
+        String roleAssigneeIdentifier = "@" + au.getUserIdentifier();
+
+        if (roleAssigneeIdentifier == null) {
             return null;
         }
-        roleAssigneeIdentifier = roleAssigneeIdentifier.replaceAll("\\s","");   // remove spaces from string
+        roleAssigneeIdentifier = roleAssigneeIdentifier.replaceAll("\\s", "");   // remove spaces from string
         List<String> userExplicitGroups = getUserExplicitGroups(roleAssigneeIdentifier.replace("@", ""));
         List<String> userRunTimeGroups = getUserRuntimeGroups(au);
         String identifierClause = " WHERE r.assigneeIdentifier= '" + roleAssigneeIdentifier + "'";
-        if (userExplicitGroups != null || userRunTimeGroups != null){
+        if (userExplicitGroups != null || userRunTimeGroups != null) {
             identifierClause = getGroupIdentifierClause(roleAssigneeIdentifier, userExplicitGroups, userRunTimeGroups);
-        } 
-        
+        }
+
         String qstr = "SELECT r.definitionpoint_id, r.role_id";
         qstr += " FROM RoleAssignment r";
         qstr += identifierClause;
@@ -165,37 +161,36 @@ public class RoleAssigneeServiceBean {
         qstr += ";";
         msg("qstr: " + qstr);
         return em.createNativeQuery(qstr)
-                        .getResultList();
-        
+                .getResultList();
+
     }
-    
-    public List<Long> getRoleIdListForGivenAssigneeDvObject(AuthenticatedUser au, List<Long> roleIdList, Long defPointId){
-        String roleAssigneeIdentifier = au.getUserIdentifier();
-        if (roleAssigneeIdentifier==null){
+
+    public List<Long> getRoleIdListForGivenAssigneeDvObject(AuthenticatedUser au, List<Long> roleIdList, Long defPointId) {
+        String roleAssigneeIdentifier = "@" + au.getUserIdentifier();
+        if (roleAssigneeIdentifier == null) {
             return null;
         }
-        roleAssigneeIdentifier = roleAssigneeIdentifier.replaceAll("\\s","");   // remove spaces from string
+        roleAssigneeIdentifier = roleAssigneeIdentifier.replaceAll("\\s", "");   // remove spaces from string
         List<String> userGroups = getUserExplicitGroups(roleAssigneeIdentifier.replace("@", ""));
         List<String> userRunTimeGroups = getUserRuntimeGroups(au);
         String identifierClause = " WHERE r.assigneeIdentifier= '" + roleAssigneeIdentifier + "'";
-        if (userGroups != null || userRunTimeGroups != null){
+        if (userGroups != null || userRunTimeGroups != null) {
             identifierClause = getGroupIdentifierClause(roleAssigneeIdentifier, userGroups, userRunTimeGroups);
-        } 
-        
+        }
+
         String qstr = "SELECT r.role_id";
         qstr += " FROM RoleAssignment r";
         qstr += identifierClause;
         qstr += getRoleIdListClause(roleIdList);
-        qstr += " and r.definitionpoint_id = " +  defPointId;
+        qstr += " and r.definitionpoint_id = " + defPointId;
         qstr += ";";
         msg("qstr: " + qstr);
 
         return em.createNativeQuery(qstr)
-                        .getResultList();
-        
+                .getResultList();
+
     }
-    
-    
+
     private String getGroupIdentifierClause(String roleAssigneeIdentifier, List<String> userExplicitGroups, List<String> userRunTimeGroups) {
 
         if (userExplicitGroups == null && userRunTimeGroups == null) {
@@ -236,22 +231,20 @@ public class RoleAssigneeServiceBean {
 
     }
 
-
-    public List<Object[]> getRoleIdsFor(AuthenticatedUser au, List<Long> dvObjectIdList){
-        String roleAssigneeIdentifier = au.getUserIdentifier();
-        if (roleAssigneeIdentifier==null){
+    public List<Object[]> getRoleIdsFor(AuthenticatedUser au, List<Long> dvObjectIdList) {
+        String roleAssigneeIdentifier = "@" + au.getUserIdentifier();
+        if (roleAssigneeIdentifier == null) {
             return null;
         }
 
-        roleAssigneeIdentifier = roleAssigneeIdentifier.replaceAll("\\s","");   // remove spaces from string
-        List<String> userGroups = getUserExplicitGroups(roleAssigneeIdentifier.replace("@", ""));      
+        roleAssigneeIdentifier = roleAssigneeIdentifier.replaceAll("\\s", "");   // remove spaces from string
+        List<String> userGroups = getUserExplicitGroups(roleAssigneeIdentifier.replace("@", ""));
         List<String> userRunTimeGroups = getUserRuntimeGroups(au);
         String identifierClause = " WHERE r.assigneeIdentifier= '" + roleAssigneeIdentifier + "'";
-        if (userGroups != null || userRunTimeGroups != null){
+        if (userGroups != null || userRunTimeGroups != null) {
             identifierClause = getGroupIdentifierClause(roleAssigneeIdentifier, userGroups, userRunTimeGroups);
-        } 
-        
-        
+        }
+
         String qstr = "SELECT r.definitionpoint_id, r.role_id";
         qstr += " FROM RoleAssignment r";
         qstr += identifierClause;
@@ -260,31 +253,29 @@ public class RoleAssigneeServiceBean {
         //msg("qstr: " + qstr);
 
         return em.createNativeQuery(qstr)
-                        .getResultList();
-        
+                .getResultList();
+
     }
-    
-    
-    private String getDvObjectIdListClause(List<Long> dvObjectIdList){
-        if (dvObjectIdList == null){
+
+    private String getDvObjectIdListClause(List<Long> dvObjectIdList) {
+        if (dvObjectIdList == null) {
             return "";
         }
         List<String> outputList = new ArrayList<>();
-        
-        for(Long r : dvObjectIdList){
-            if (r != null){
+
+        for (Long r : dvObjectIdList) {
+            if (r != null) {
                 outputList.add(r.toString());
             }
         }
-        if (outputList.isEmpty()){
+        if (outputList.isEmpty()) {
             return "";
-        }        
-        return " AND r.definitionpoint_id IN (" + StringUtils.join(outputList, ",") + ")";        
+        }
+        return " AND r.definitionpoint_id IN (" + StringUtils.join(outputList, ",") + ")";
     }
-    
-    
-    private List<String> getUserExplicitGroups(String roleAssigneeIdentifier){
-        
+
+    private List<String> getUserExplicitGroups(String roleAssigneeIdentifier) {
+
         String qstr = "select  groupalias from explicitgroup";
         qstr += " where id in ";
         qstr += " (select explicitgroup_id from explicitgroup_authenticateduser where containedauthenticatedusers_id = ";
@@ -293,11 +284,11 @@ public class RoleAssigneeServiceBean {
         //msg("qstr: " + qstr);
 
         return em.createNativeQuery(qstr)
-                        .getResultList();  
+                .getResultList();
     }
-    
+
     private List<String> getUserRuntimeGroups(AuthenticatedUser au) {
-        List <String> retVal = new ArrayList();
+        List<String> retVal = new ArrayList();
 
         Set<Group> groups = groupSvc.groupsFor(au, null);
         StringBuilder sb = new StringBuilder();
@@ -312,8 +303,7 @@ public class RoleAssigneeServiceBean {
         }
         return retVal;
     }
-    
-    
+
     public List<RoleAssignee> filterRoleAssignees(String query, DvObject dvObject, List<RoleAssignee> roleAssignSelectedRoleAssignees) {
         List<RoleAssignee> roleAssigneeList = new ArrayList<>();
 
@@ -325,7 +315,7 @@ public class RoleAssigneeServiceBean {
                 .filter(ra -> roleAssignSelectedRoleAssignees == null || !roleAssignSelectedRoleAssignees.contains(ra))
                 .forEach((ra) -> {
                     roleAssigneeList.add(ra);
-                });   
+                });
 
         // now we add groups to the list, both global and explicit
         Set<Group> groups = groupSvc.findGlobalGroups();
@@ -340,15 +330,15 @@ public class RoleAssigneeServiceBean {
 
         return roleAssigneeList;
     }
-    
-    private void msg(String s){
+
+    private void msg(String s) {
         //System.out.println(s);
     }
-    
-    private void msgt(String s){
+
+    private void msgt(String s) {
         msg("-------------------------------");
         msg(s);
         msg("-------------------------------");
     }
-   
+
 }
