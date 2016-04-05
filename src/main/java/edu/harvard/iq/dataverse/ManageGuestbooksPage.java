@@ -162,19 +162,17 @@ public class ManageGuestbooksPage implements java.io.Serializable {
             sb.append(array[6] == null ? "" : array[6]);
             sb.append(SEPARATOR);
             sb.append(array[7] == null ? "" : array[7]);
-            sb.append(SEPARATOR);
             if(array[8] != null){
+                sb.append(SEPARATOR);
                 List <CustomQuestionResponse> responses = (List<CustomQuestionResponse>) array[8];
                 for (CustomQuestionResponse response: responses){
                     sb.append(response.getCustomQuestion().getQuestionString());
                     sb.append(SEPARATOR);
                     sb.append(response.getResponse() == null ? "" : response.getResponse());
-                    sb.append(SEPARATOR);
                 }
             }
             sb.append(END_OF_LINE);
         }
-
         return sb.toString();
     }
 
