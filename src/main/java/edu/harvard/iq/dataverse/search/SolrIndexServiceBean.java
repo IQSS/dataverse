@@ -433,6 +433,7 @@ public class SolrIndexServiceBean {
         } else if (definitionPoint.isInstanceofDataset()) {
             // index the dataset itself
             indexPermissionsForOneDvObject(definitionPoint);
+            dvObjectsToReindexPermissionsFor.add(definitionPoint);
             // index files
             Dataset dataset = (Dataset) definitionPoint;
             for (DataFile datafile : filesToReIndexPermissionsFor(dataset)) {
