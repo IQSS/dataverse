@@ -14,8 +14,11 @@ OPT_u=0
 ## Do not set a default for OPT_z!
 ## Presence of OPT_z is tested to see if this is a zookeeper/solrCloud backed installation.
 
-while getopts :c:g:h:m:p:s:u:v:z: FLAG; do
+while getopts :a:c:g:h:m:p:s:u:v:z: FLAG; do
   case $FLAG in
+    a)  #set option admin-email "a"
+      OPT_a=$OPTARG
+      ;;
     c)  #set option solr-collection "c"
       OPT_c=$OPTARG
       ;;
@@ -33,6 +36,9 @@ while getopts :c:g:h:m:p:s:u:v:z: FLAG; do
       ;;
     s)  #set option solr-host "s"
       OPT_s=$OPTARG
+      ;;
+    t)  #set option twoRavensLocation "t"
+      OPT_t=$OPTARG
       ;;
     u)  #set option useSolrViaHTTPS "u"
       OPT_u=$OPTARG
