@@ -1,5 +1,5 @@
 /*--------- BODY --------- */
-body {/*margin-top:50px;*/}
+body.widget-view {margin-bottom:54px;}
 body .ui-widget {font-size: inherit;}
 .ui-widget-content a {color: #428BCA;}
 .ui-widget-content a:hover, .ui-widget-content a:focus {color: #2A6496;}
@@ -34,11 +34,13 @@ body .ui-widget {font-size: inherit;}
 #navbarFixed li.dropdown.open > span.dropdown-toggle {background-color: #e7e7e7;}
 
 #footer {margin-top:3em; padding-bottom:4em; color:#808080;}
+#footer.widget-view {position:fixed; left:0px; bottom:0px; margin:0; padding:4px 0 0 0; height:44px; width:100%; background:#fff;}
 #footer span.socicon-twitter {color:#55acee; font-size:1.3em; vertical-align: top;}
 #footer span.socicon-github {color:#000; font-size:1.3em; vertical-align: top;}
 #footer .poweredbylogo {text-align:right;}
 #footer .poweredbylogo span {font-size:.85em;margin-right:.3em;}
 #footer .version {vertical-align:bottom;white-space:nowrap;}
+#footer.widget-view .widgetBrandMsg {line-height:42px;}
 
 .panelLayoutBlock, .panelLayoutTitleBlock, .panelLayoutButtonBlock {border:0;}
 .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content, .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content > td {border:0;}
@@ -396,6 +398,7 @@ a[id$='advsearchlink'] {margin-left:1em;}
   }
   
   #footer .poweredbylogo {text-align:center;}
+  #footer.widget-view .poweredbylogo {text-align:right;}
 }
 
 .searchTypeButton {display:block; border:1px solid #DDD; padding:4px 0; margin-bottom: .5em;}

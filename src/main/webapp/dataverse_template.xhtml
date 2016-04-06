@@ -5,6 +5,7 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
+      xmlns:jsf="http://xmlns.jcp.org/jsf"
       lang="en">
     <h:head>
         <f:facet name="first">
@@ -29,7 +30,7 @@
             // if (window !== top) top.location = window.location;
         </script>
     </h:head>
-    <h:body>
+    <h:body styleClass="#{widgetWrapper.widgetView ? 'widget-view' : ''}">
         <f:loadBundle basename="Bundle" var="bundle"/>
         <ui:fragment rendered="#{param['widgetView']!=true}">
             <a href="#content" class="sr-only">#{bundle['body.skip']}</a>
@@ -43,21 +44,28 @@
         <div class="container" id="content">
             <ui:insert name="body">Default Body</ui:insert>
         </div>
-        <div class="container" id="footer">
-            <div class="row">
-                <div class="col-sm-8 small">
-                    <p>
-                        <h:outputText value="#{bundle['footer.dataScienceIQSS']}" escape="false"/> &#160;|&#160; #{bundle['footer.dataverseProjectOn']} <a href="https://twitter.com/dataverseorg" target="_blank" title="#{bundle['footer.dataverseProjectOn']} #{bundle['footer.Twitter']}"><span class="socicon socicon-twitter" title="#{bundle['footer.dataverseProjectOn']} #{bundle['footer.Twitter']}"/></a> &#160;|&#160; #{bundle['footer.codeAvailable']} <a href="https://github.com/IQSS/dataverse" target="_blank" title="#{bundle['footer.dataverseOnGitHub']}"><span class="socicon socicon-github" title="#{bundle['footer.dataverseOnGitHub']}"/></a>
-                    </p>
-                    <p>
-                        <h:outputText value="#{bundle['footer.copyright']}" escape="false"/> <ui:fragment rendered="#{!empty settingsWrapper.get(':ApplicationPrivacyPolicyUrl')}">&#160;|&#160; <h:outputLink value="#{settingsWrapper.get(':ApplicationPrivacyPolicyUrl')}" target="_blank">#{bundle['footer.privacyPolicy']}</h:outputLink></ui:fragment>
-                    </p>
-                </div>
-                <div class="col-sm-4 text-right">
-                    <div class="poweredbylogo">
-                        <span>#{bundle['footer.poweredby']}</span>
-                        <a href="http://dataverse.org/" title="#{bundle['footer.dataverseProject']}" target="_blank"><img src="/resources/images/dataverseproject_logo.jpg" alt="#{bundle['footer.dataverseProject']}" /></a>
-                        <span class="version">v. #{systemConfig.getVersion(true)}</span>
+        <div id="footer" class="#{widgetWrapper.widgetView ? 'widget-view' : ''}">
+            <div class="container">
+                <div class="row">
+                    <div class="col-sm-8 small" jsf:rendered="#{!widgetWrapper.widgetView}">
+                        <p>
+                            <h:outputText value="#{bundle['footer.dataScienceIQSS']}" escape="false"/> &#160;|&#160; #{bundle['footer.dataverseProjectOn']} <a href="https://twitter.com/dataverseorg" target="_blank" title="#{bundle['footer.dataverseProjectOn']} #{bundle['footer.Twitter']}"><span class="socicon socicon-twitter" title="#{bundle['footer.dataverseProjectOn']} #{bundle['footer.Twitter']}"/></a> &#160;|&#160; #{bundle['footer.codeAvailable']} <a href="https://github.com/IQSS/dataverse" target="_blank" title="#{bundle['footer.dataverseOnGitHub']}"><span class="socicon socicon-github" title="#{bundle['footer.dataverseOnGitHub']}"/></a>
+                        </p>
+                        <p>
+                            <h:outputText value="#{bundle['footer.copyright']}" escape="false"/> <ui:fragment rendered="#{!empty settingsWrapper.get(':ApplicationPrivacyPolicyUrl')}">&#160;|&#160; <h:outputLink value="#{settingsWrapper.get(':ApplicationPrivacyPolicyUrl')}" target="_blank">#{bundle['footer.privacyPolicy']}</h:outputLink></ui:fragment>
+                        </p>
+                    </div>
+                    <div class="col-xs-7 small" jsf:rendered="#{widgetWrapper.widgetView}">
+                        <span class="widgetBrandMsg">
+                            Data is stored at <a href="/" target="_blank" title="#{dataverseServiceBean.findRootDataverse().displayName}">#{dataverseServiceBean.findRootDataverse().displayName}</a>.
+                        </span>
+                    </div>
+                    <div class="#{widgetWrapper.widgetView ? 'col-xs-5' : 'col-sm-4'} text-right">
+                        <div class="poweredbylogo">
+                            <span>#{bundle['footer.poweredby']}</span>
+                            <a href="http://dataverse.org/" title="#{bundle['footer.dataverseProject']}" target="_blank"><img src="/resources/images/dataverseproject_logo.jpg" alt="#{bundle['footer.dataverseProject']}" /></a>
+                            <h:outputText class="version" value="v. #{systemConfig.getVersion(true)}" rendered="#{!widgetWrapper.widgetView}"/>
+                        </div>
                     </div>
                 </div>
             </div>

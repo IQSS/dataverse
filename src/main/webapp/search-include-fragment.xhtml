@@ -8,9 +8,17 @@
      xmlns:jsf="http://xmlns.jcp.org/jsf">
 
     <!-- 'showSearch' Msg -->
-    <div class="row" jsf:rendered="#{showSearch == false}">
+    <div class="row">
         <div class="col-sm-12">
-            <p><span class="glyphicon glyphicon-lamp"/> This is in an iframe.</p>
+            <p><span class="glyphicon glyphicon-lamp"/> 
+                aaa#{param['widgetView']}
+                <h:outputText value=" This is in iframe view." rendered="#{param['widgetView'] == true}"/>
+                <h:outputText value=" This is in full view." rendered="#{param['widgetView'] != true}"/>
+            </p>
+            <p>
+                <h:outputText value=" (full view)" style="padding:4px 0;" rendered="#{param['widgetView'] != true}"/>
+                <h:outputText value=" (iframe view)" style="padding:4px 0;" rendered="#{param['widgetView'] == true}"/>
+            </p>
             <div jsf:rendered="#{dataverseSession.user.authenticated}">
                 <p><span class="glyphicon glyphicon-education"/> You are logged in.</p>
             </div>
@@ -428,13 +436,14 @@
             <o:importFunctions type="org.omnifaces.el.functions.Strings" />
             <ui:param name="descriptionAbbreviationThreshold" value="280"/>
             <!--CARDS-->
+                                aaa#{widgetWrapper.widgetView}
             <h:dataTable id="resultsTable" styleClass="#{SearchIncludeFragment.searchResultsCount > 0 ? '' : 'resultsNone'}" value="#{SearchIncludeFragment.searchResultsList}" var="result"
                          rendered="#{SearchIncludeFragment.searchResultsList.size() > 0}">
                 <h:column>
                     <ui:fragment rendered="#{SearchIncludeFragment.debug == true}">
                         <h:outputText value="score: #{result.score}" rendered="#{SearchIncludeFragment.mode == SearchIncludeFragment.searchModeString}"/>
                     </ui:fragment>
-
+                    aaa#{widgetWrapper.widgetView}
                     <!--DATAVERSE CARDS-->
                     <div class="dataverseResult clearfix" jsf:rendered="#{result.type == 'dataverses'}">
                         <div class="card-title-icon-block">
@@ -502,10 +511,17 @@
                             <span class="glyphicon glyphicon-new-window text-info pull-right" title="#{bundle.harvested}" jsf:rendered="#{result.harvested}"/>
                             <span class="icon-dataset text-info pull-right" title="#{bundle.dataset}"/>
 
-                            <a href="#{result.datasetUrl}#{param['widgetView'] ? '' : '&amp;widgetView=true'}">
+                            <a href="#{result.datasetUrl}#{(param['widgetView'] != true) ? '&amp;widgetView=true' : ''}">
                                 <h:outputText value="#{result.title}" style="padding:4px 0;" rendered="#{result.titleHighlightSnippet == null}"/>
                                 <h:outputText value="#{result.titleHighlightSnippet}" style="padding:4px 0;" rendered="#{result.titleHighlightSnippet != null}" escape="false"/>
                                 <h:outputText value=" (#{result.entityId})" style="padding:4px 0;" rendered="#{SearchIncludeFragment.debug == true}"/></a>
+
+                            <h:outputText value=" (full view)" style="padding:4px 0;" rendered="#{!widgetWrapper.widgetView}"/>
+                            <h:outputText value=" (iframe view)" style="padding:4px 0;" rendered="#{widgetWrapper.widgetView}"/>
+                            
+                            <h:outputText value=" This is in iframe view." rendered="#{param['widgetView'] == true}"/>
+                            <h:outputText value=" This is in full view." rendered="#{param['widgetView'] != true}"/>
+                            
                             <h:outputText value="#{SearchIncludeFragment.DRAFT}" styleClass="label label-primary" rendered="#{result.draftState}"/>
                             <h:outputText value="#{SearchIncludeFragment.IN_REVIEW}" styleClass="label label-success" rendered="#{result.inReviewState}"/>
                             <h:outputText value="#{SearchIncludeFragment.UNPUBLISHED}" styleClass="label label-warning" rendered="#{result.unpublishedState}"/>
