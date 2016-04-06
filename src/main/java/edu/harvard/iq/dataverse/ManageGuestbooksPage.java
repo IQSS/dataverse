@@ -104,7 +104,7 @@ public class ManageGuestbooksPage implements java.io.Serializable {
         response.setContentType("text/comma-separated-values");
         String fileNameString = "attachment;filename=" + getFileName();
         response.setHeader("Content-Disposition", fileNameString);
-        String converted = convertResponsesToTabDelimited(guestbookResponseService.findArrayByDataverseId(dataverseId));
+        String converted = convertResponsesToCommaDelimited(guestbookResponseService.findArrayByDataverseId(dataverseId));
         try {
             ServletOutputStream out = response.getOutputStream();
             out.write(converted.getBytes());                                                                                                                                                                                                                                                                                                                     
@@ -122,7 +122,7 @@ public class ManageGuestbooksPage implements java.io.Serializable {
         String fileNameString = "attachment;filename=" + getFileName();
         response.setHeader("Content-Disposition", fileNameString);
         //selectedGuestbook
-        String converted = convertResponsesToTabDelimited(guestbookResponseService.findArrayByDataverseIdAndGuestbookId(dataverseId, selectedGuestbook.getId()));
+        String converted = convertResponsesToCommaDelimited(guestbookResponseService.findArrayByDataverseIdAndGuestbookId(dataverseId, selectedGuestbook.getId()));
         try {
             ServletOutputStream out = response.getOutputStream();
             out.write(converted.getBytes());                                                                                                                                                                                                                                                                                                                     
@@ -141,10 +141,10 @@ public class ManageGuestbooksPage implements java.io.Serializable {
     private final String END_OF_LINE = "\n";
 
     
-    private String convertResponsesToTabDelimited(List<Object[]> guestbookResponses) {
+    private String convertResponsesToCommaDelimited(List<Object[]> guestbookResponses) {
 
         StringBuilder sb = new StringBuilder();
-        sb.append("Dataset, Time, Type, File Name, User Name, Email, Institution, Position, Custom Questions");
+        sb.append("Dataset, Date, Type, File Name, User Name, Email, Institution, Position, Custom Questions");
         sb.append(END_OF_LINE);
         for (Object[] array : guestbookResponses) {
             sb.append(array[0]);
@@ -163,9 +163,9 @@ public class ManageGuestbooksPage implements java.io.Serializable {
             sb.append(SEPARATOR);
             sb.append(array[7] == null ? "" : array[7]);
             if(array[8] != null){
-                sb.append(SEPARATOR);
-                List <CustomQuestionResponse> responses = (List<CustomQuestionResponse>) array[8];
+                List <CustomQuestionResponse> responses = (List<CustomQuestionResponse>) array[8];               
                 for (CustomQuestionResponse response: responses){
+                    sb.append(SEPARATOR);
                     sb.append(response.getCustomQuestion().getQuestionString());
                     sb.append(SEPARATOR);
                     sb.append(response.getResponse() == null ? "" : response.getResponse());
