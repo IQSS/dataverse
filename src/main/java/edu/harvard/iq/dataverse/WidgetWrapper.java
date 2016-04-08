@@ -22,10 +22,10 @@ public class WidgetWrapper implements java.io.Serializable {
 
     public Boolean getWidgetView() {
         if (widgetView == null) {
-            String param = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("widgetView");
-            setWidgetView(param!=null && param.equals("true"));
+            String param = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("widget");
+            setWidgetView(param!=null && param.equals("iframe"));
         }
-        return widgetView;
+        return (widgetView == true);
     }
 
     public void setWidgetView(Boolean widgetView) {

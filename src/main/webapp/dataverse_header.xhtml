@@ -6,10 +6,10 @@
      xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
      xmlns:jsf="http://xmlns.jcp.org/jsf"
      xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
-    
+
     <div id="dataverse-header-block">
         <!-- Navbar Panel -->
-        <nav id="navbarFixed" class="navbar navbar-default navbar-fixed-top" role="navigation">
+        <nav id="navbarFixed" class="navbar navbar-default navbar-fixed-top" role="navigation" jsf:rendered="#{!widgetWrapper.widgetView}">
             <div class="container">
                 <div class="navbar-header">
                     <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#topNavBar">
@@ -106,7 +106,7 @@
                                     <h:outputText styleClass="#{dataverseSession.user.superuser ? 'text-danger' : ''}" value="#{dataverseSession.user.displayInfo.title}" id="userDisplayInfoTitle"/>
                                   <h:outputText styleClass="label label-danger" rendered="#{ dataverseHeaderFragment.getUnreadNotificationCount(dataverseSession.user.id) > 0 }"
                                                     value="#{ dataverseHeaderFragment.getUnreadNotificationCount(dataverseSession.user.id) }" />
-                                    
+
                                   <b class="caret"></b>
                                 </span>
                                 <ul class="dropdown-menu">
@@ -161,9 +161,9 @@
         <ui:param name="dataversePage" value="#{dataverseLinksStayOnPage == true ? '' : '/dataverse.xhtml' }"/>
 
         <!-- Header Panel -->
-        <div id="dataverseHeader" class="container bg-muted" 
+        <div id="dataverseHeader" class="container bg-muted"
                 style="background:##{!empty dataverse.dataverseTheme.backgroundColor ? dataverse.dataverseTheme.backgroundColor : 'F5F5F5'};"
-                jsf:rendered="#{showDataverseHeader}">
+                jsf:rendered="#{showDataverseHeader and !widgetWrapper.widgetView}">
             <div class="dataverseHeaderLogo" style="text-align:#{!empty dataverse.dataverseTheme.logoAlignment ? dataverse.dataverseTheme.logoAlignment : 'center'};; background:##{!empty dataverse.dataverseTheme.logoBackgroundColor ? dataverse.dataverseTheme.logoBackgroundColor : 'F5F5F5'};"
                     jsf:rendered="#{!empty dataverse.dataverseTheme.logo and dataverse.dataverseTheme.logoFormat == 'RECTANGLE'}">
                 <img src="/logos/#{dataverse.logoOwnerId}/#{dataverse.dataverseTheme.logo}" alt="#{dataverse.name} #{bundle.dataverse}"/>
@@ -199,19 +199,19 @@
                     <ui:fragment rendered="#{!status.last}">
                         <h:outputText value="#{breadcrumb.breadcrumbText}" rendered="#{!breadcrumb.dvObject.instanceofDataverse and !breadcrumb.dvObject.instanceofDataset}"/>
 
-                        <ui:fragment rendered="#{breadcrumb.dvObject.instanceofDataverse}">                       
-                            <a id="breadcrumbLnk#{status.index}" href="/dataverse/${breadcrumb.dvObject.alias}">
+                        <ui:fragment rendered="#{breadcrumb.dvObject.instanceofDataverse}">
+                            <a id="breadcrumbLnk#{status.index}" href="/dataverse/${breadcrumb.dvObject.alias}" target="#{status.first ? '_blank' : ''}">
                                 <h:outputText value="#{breadcrumb.breadcrumbText}"/>
                             </a>
                         </ui:fragment>
-                        <ui:fragment rendered="#{breadcrumb.dvObject.instanceofDataset}">                       
+                        <ui:fragment rendered="#{breadcrumb.dvObject.instanceofDataset}">
                             <a id="breadcrumbLnk#{status.index}" href="/dataset.xhtml?persistentId=${breadcrumb.dvObject.globalId}">
                                 <h:outputText value="#{breadcrumb.breadcrumbText}"/>
                             </a>
-                        </ui:fragment>                        
+                        </ui:fragment>
                     </ui:fragment>
                 </div>
-            </ui:repeat>                    
+            </ui:repeat>
         </div>
 
         <ui:remove>
