@@ -205,8 +205,62 @@
                     <textarea rows="2" cols="54" class="form-control">&lt;script src=&quot;#{systemConfig.dataverseSiteUrl}/resources/js/widgets.js?alias=#{themeWidgetFragment.editDv.alias}&amp;amp;dvUrl=#{systemConfig.dataverseSiteUrl}&amp;amp;widget=iframe&amp;amp;heightPx=500&quot;&gt;&lt;/script&gt;</textarea>
                 </div>
                 <div class="button-block">
+                    <p:commandButton id="editAdvanced" value="#{bundle['dataverse.widgets.editAdvanced']}" onclick="PF('advancedOptions').show();" />
+                </div>
+                <div class="button-block">
                     <p:commandButton action="#{themeWidgetFragment.cancel()}" immediate="true" id="widgetsDone" value="#{bundle.done}"/>
                 </div>
             </p:tab>
         </p:tabView>
+    <p:remoteCommand name="saveRedirectUrl" process="@this" update=":#{p:component('messagePanel')}, :themeWidgetsForm, @([id$=Messages]), advancedOptions" actionListener="#{themeWidgetFragment.save()}"/>
+    <p:dialog modal="true" id="advancedOptions"  widgetVar="advancedOptions" header="#{bundle['dataverse.widgets.advanced.popup.header']}">
+
+        <div class="form-group">
+            <div>
+            #{bundle['dataverse.widgets.advanced.prompt']}
+            </div>
+            <label class="col-sm-3 control-label" for="personalUrl">
+                #{bundle['dataverse.widgets.advanced.url.label']}
+            </label>
+            <div class="col-sm-6">
+                <p:inputText id="personalUrl"  
+                             styleClass="form-control" value="#{themeWidgetFragment.editDv.citationRedirectURL}"
+                             />
+                <p:watermark for="personalUrl" value="#{bundle['dataverse.widgets.advanced.url.watermark']}" id="watermarkURL" />
+                <p:message id="personalUrlMessages" for="personalUrl" display="text"/>
+            </div>
+            <div class="button-block">
+                <p:commandButton  onclick="PF('advancedOptions').hide();" immediate="true" update=":#{p:component('messagePanel')}" id="advancedDone" value="#{bundle.cancel}"/>
+                <p:commandLink type="button" styleClass="btn btn-default" value="#{bundle.saveChanges}"
+                               update=":#{p:component('messagePanel')}, personalUrlMessages" oncomplete="if (args &amp;&amp; !args.validationFailed) PF('advancedOptions').hide();" actionListener="#{themeWidgetFragment.saveAdvanced()}"
+                               >
+                </p:commandLink>
+
+            </div>
+        </div>
+
+    </p:dialog>
+    <script type="text/javascript">
+        
+        function validateBeforeSave(){
+            var urlEntry = $('input[id$="personalUrl"]').val();
+            if (validateURL(urlEntry) === 'true'){
+                alert(" validate === true?");
+                saveRedirectUrl();
+                PF('advancedOptions').hide();
+            } else {
+                
+            }
+            
+        }                         
+
+        function validateURL(textval) {
+            if (textval === '') {
+                return true;
+            }
+            var urlregex = new RegExp("^(http|https|ftp)\://([a-zA-Z0-9\.\-]+(\:[a-zA-Z0-9\.&amp;%\$\-]+)*@)*((25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9])\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9]|0)\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9]|0)\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[0-9])|([a-zA-Z0-9\-]+\.)*[a-zA-Z0-9\-]+\.(com|edu|gov|int|mil|net|org|biz|arpa|info|name|pro|aero|coop|museum|[a-zA-Z]{2}))(\:[0-9]+)*(/($|[a-zA-Z0-9\.\,\?\'\\\+&amp;%\$#\=~_\-]+))*$");
+            alert("test " + urlregex.test(textval));
+            return urlregex.test(textval);
+        }
+    </script>
 </ui:composition>

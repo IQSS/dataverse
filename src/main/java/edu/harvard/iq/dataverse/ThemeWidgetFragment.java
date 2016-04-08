@@ -22,6 +22,7 @@ import javax.annotation.PreDestroy;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
+import javax.faces.component.UIInput;
 import javax.faces.component.html.HtmlInputText;
 import javax.faces.context.FacesContext;
 import javax.faces.validator.ValidatorException;
@@ -158,21 +159,20 @@ public class ThemeWidgetFragment implements java.io.Serializable {
 
     }
     
-public void validateUrl(FacesContext context, UIComponent component, Object value) throws ValidatorException {
-    try {
-        if (!StringUtils.isEmpty((String)value)){
-            URL test = new URL((String)value);
+    public void validateUrl(FacesContext context, UIComponent component, Object value) throws ValidatorException {
+        try {
+            if (!StringUtils.isEmpty((String) value)) {
+                URL test = new URL((String) value);
+            }
+        } catch (MalformedURLException e) {
+            FacesMessage msg
+                    = new FacesMessage(" URL validation failed.",
+                            "Please provide URL.");
+            msg.setSeverity(FacesMessage.SEVERITY_ERROR);
+
+            throw new ValidatorException(msg);
         }
-    } catch(MalformedURLException e) {
-        FacesMessage msg =
-              new FacesMessage(" URL validation failed.",
-              "Please provide URL.");
-      msg.setSeverity(FacesMessage.SEVERITY_ERROR);
-    
-      throw new ValidatorException(msg);
     }
-    
-  }
    
     
     public String getTempDirName() {
@@ -250,9 +250,7 @@ public void validateUrl(FacesContext context, UIComponent component, Object valu
          return "dataverse?faces-redirect=true&alias="+editDv.getAlias();  // go to dataverse page 
     }
     
-   
     
-
     public String save() {
         // If this Dv isn't the root, delete the uploaded file and remove theme
         // before saving.
@@ -276,8 +274,29 @@ public void validateUrl(FacesContext context, UIComponent component, Object valu
         JsfHelper.addSuccessMessage(JH.localize("dataverse.theme.success"));    
         return "dataverse?faces-redirect=true&alias="+editDv.getAlias();  // go to dataverse page 
     }
-   
     
+    public String saveAdvanced() {
+        // If this Dv isn't the root, delete the uploaded file and remove theme
+        // before saving.
+        if (!editDv.isThemeRoot()) {
+            uploadedFile=null;
+            editDv.setDataverseTheme(null);
+        }
+        Command<Dataverse>    cmd = new UpdateDataverseThemeCommand(editDv, this.uploadedFile, dvRequestService.getDataverseRequest());
+        try {
+            dataversePage.setDataverse(commandEngine.submit(cmd));           
+            dataversePage.setEditMode(null);
+            
+        } catch (Exception ex) {
+            logger.log(Level.SEVERE, "error updating dataverse Personal Website URL", ex);
+           FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_FATAL, "Dataverse Save Failed-", JH.localize("dataverse.theme.failure")));       
+          return null;
+        } finally {
+              this.cleanupTempDirectory(); 
+        }
+        JsfHelper.addSuccessMessage(JH.localize("dataverse.widgets.advanced.success.message"));    
+        return "dataverse?faces-redirect=true&alias="+editDv.getAlias();  // go to dataverse page 
+    }   
  }
 
 
