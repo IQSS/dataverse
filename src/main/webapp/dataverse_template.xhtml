@@ -25,10 +25,12 @@
         <link type="text/css" rel="stylesheet" href="#{resource['css/fontcustom.css']}?version=#{systemConfig.getVersion()}" />
         <link type="text/css" rel="stylesheet" href="#{resource['css/socicon.css']}?version=#{systemConfig.getVersion()}" />
         <link type="text/css" rel="stylesheet" href="#{resource['css/structure.css']}?version=#{systemConfig.getVersion()}" />
-        <script>
-            // Break out of iframe
-            // if (window !== top) top.location = window.location;
-        </script>
+        <ui:fragment rendered="#{!widgetWrapper.widgetView}">
+            <script>
+                // Break out of iframe
+                if (window !== top) top.location = window.location;
+            </script>
+        </ui:fragment>
     </h:head>
     <h:body styleClass="#{widgetWrapper.widgetView ? 'widget-view' : ''}">
         <f:loadBundle basename="Bundle" var="bundle"/>

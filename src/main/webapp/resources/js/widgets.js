@@ -40,5 +40,5 @@ if(params.widget === 'iframe') {
     /*
      * Dataverse Listing iFrame
      */
-    document.write('<iframe src="' + params.dvUrl + '/dataverse/' + params.alias + '?widgetView=true&amp;widget=iframe" width="100%" height="' + params.heightPx + '" style="border:0; background:url(' + params.dvUrl + '/resources/images/ajax-loading.gif) no-repeat 50% 50%;"></iframe>');
+    document.write('<iframe src="' + params.dvUrl + '/dataverse/' + params.alias + '?widget=iframe" width="100%" height="' + params.heightPx + '" style="border:0; background:url(' + params.dvUrl + '/resources/images/ajax-loading.gif) no-repeat 50% 50%;"></iframe>');
 }
