@@ -111,7 +111,12 @@ public class GuestbookResponseServiceBean {
         for (Object[] result : guestbookResults) {
             Object[] singleResult = new Object[9];
             singleResult[0] = result[1];
-            singleResult[1] = new SimpleDateFormat("MM/d/yyyy").format((Date) result[2]);
+            if (result[2] != null){
+                singleResult[1] = new SimpleDateFormat("MM/d/yyyy").format((Date) result[2]); 
+            } else {
+                singleResult[1] = "N/A";
+            }
+
             singleResult[2] = result[3];
             singleResult[3] = result[4];
             singleResult[4] = result[5];
@@ -156,7 +161,12 @@ public class GuestbookResponseServiceBean {
         for (Object[] result : guestbookResults) {
             Object[] singleResult = new Object[6];
             singleResult[0] = result[1];
-            singleResult[1] = new SimpleDateFormat("MMMM d, yyyy").format((Date) result[2]);
+            if (result[2] != null){
+                            singleResult[1] = new SimpleDateFormat("MMMM d, yyyy").format((Date) result[2]);
+            } else {
+                singleResult[1] =  "N/A";
+            }
+
             singleResult[2] = result[3];
             singleResult[3] = result[4];
             singleResult[4] = result[5];
