@@ -44,9 +44,7 @@ functionality is also provided by the `TwoRavens
 documentation section <../user/data-exploration/tworavens.html>`_ for
 more information.
 
-To use the ingest functionality for tabular files, a file can only be up to 2GB in size, however, to upload a tabular file without using ingest, a file can be up to 2GB in size.
-
-To use the ingest functionality for RData files, a file can only be up to 1MB in size, however, to upload a RData file without using ingest, a file can be up to 2GB in size.
+For example, the ingest functionality for tabular files in the Harvard Dataverse, a file can only be up to 2GB in size. To use the ingest functionality for RData files, a file can only be up to 1MB in size, however, to upload a RData file without using ingest, a file can be up to 2GB in size.
 
 Additional download options available for tabular data (found
 in the same drop-down menu under the "Download" button): 
