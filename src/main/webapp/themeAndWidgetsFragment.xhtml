@@ -185,6 +185,13 @@
                 </div>
             </p:tab>
             <p:tab id="widgetsTab" title="#{bundle['dataverse.widgets.title']}">
+                <ui:fragment rendered="#{!themeWidgetFragment.editDv.released}">
+                
+                    #{bundle['dataverse.widgets.notPublished']}
+                
+                </ui:fragment>
+                
+                <ui:fragment rendered="#{themeWidgetFragment.editDv.released}">
                 <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.widgets.tip']}</p>
                 <div>
                     <h5>
@@ -210,6 +217,7 @@
                 <div class="button-block">
                     <p:commandButton action="#{themeWidgetFragment.cancel()}" immediate="true" id="widgetsDone" value="#{bundle.done}"/>
                 </div>
+                </ui:fragment>
             </p:tab>
         </p:tabView>
     <p:remoteCommand name="saveRedirectUrl" process="@this" update=":#{p:component('messagePanel')}, :themeWidgetsForm, @([id$=Messages]), advancedOptions" actionListener="#{themeWidgetFragment.save()}"/>
