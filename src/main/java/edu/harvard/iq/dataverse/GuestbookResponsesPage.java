@@ -90,7 +90,7 @@ public class GuestbookResponsesPage implements java.io.Serializable {
     private String convertResponsesToTabDelimited(List<Object[]> guestbookResponses) {
 
         StringBuilder sb = new StringBuilder();
-        sb.append("Dataset, Date, Type, File Name, User Name, Email, Institution, Position, Custom Questions");
+        sb.append("Guestbook, Dataset, Date, Type, File Name, User Name, Email, Institution, Position, Custom Questions");
         sb.append(END_OF_LINE);
         for (Object[] array : guestbookResponses) {
             sb.append(array[0]);
@@ -108,8 +108,10 @@ public class GuestbookResponsesPage implements java.io.Serializable {
             sb.append(array[6] == null ? "" : array[6]);
             sb.append(SEPARATOR);
             sb.append(array[7] == null ? "" : array[7]);
-            if(array[8] != null){
-                List <Object[]> responses = (List<Object[]>) array[8];               
+            sb.append(SEPARATOR);
+            sb.append(array[8] == null ? "" : array[8]);
+            if(array[9] != null){
+                List <Object[]> responses = (List<Object[]>) array[9];               
                 for (Object[] response: responses){
                     sb.append(SEPARATOR);
                     sb.append(response[0]);
