@@ -32,4 +32,12 @@ public class WidgetWrapper implements java.io.Serializable {
         this.widgetView = widgetView;
     }
     
+    public String wrapURL(String URL) {
+        return URL + (getWidgetView() ? getParamSeparator(URL) + "widget=iframe" : "");
+    }
+    
+    private String getParamSeparator(String URL) {
+        return (URL.contains("?") ? "&" : "?");
+    }
+    
 }
