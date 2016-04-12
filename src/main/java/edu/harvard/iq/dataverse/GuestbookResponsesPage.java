@@ -109,12 +109,12 @@ public class GuestbookResponsesPage implements java.io.Serializable {
             sb.append(SEPARATOR);
             sb.append(array[7] == null ? "" : array[7]);
             if(array[8] != null){
-                List <CustomQuestionResponse> responses = (List<CustomQuestionResponse>) array[8];
-                for (CustomQuestionResponse response: responses){
+                List <Object[]> responses = (List<Object[]>) array[8];               
+                for (Object[] response: responses){
                     sb.append(SEPARATOR);
-                    sb.append(response.getCustomQuestion().getQuestionString());
+                    sb.append(response[0]);
                     sb.append(SEPARATOR);
-                    sb.append(response.getResponse() == null ? "" : response.getResponse());
+                    sb.append(response[1] == null ? "" : response[1]);
                 }
             }
             sb.append(END_OF_LINE);

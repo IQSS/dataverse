@@ -123,10 +123,15 @@ public class GuestbookResponseServiceBean {
             singleResult[5] = result[6];
             singleResult[6] = result[7];
             singleResult[7] = result[8];
+            String cqString = "select q.questionstring, r.response  from customquestionresponse r, customquestion q where q.id = r.customquestion_id and r.guestbookResponse_id = " + (Integer) result[0];
+                singleResult[8]  = em.createNativeQuery(cqString).getResultList();
+            
+            /*
             List<CustomQuestionResponse> customResponses = em.createQuery("select o from CustomQuestionResponse as  o where o.guestbookResponse.id = " + (Integer) result[0] + " order by o.customQuestion.id ", CustomQuestionResponse.class).getResultList();
             if(!customResponses.isEmpty()){
                 singleResult[8] =  customResponses;
-            }
+            }*/
+            
             retVal.add(singleResult);
         }
         guestbookResults = null;       
@@ -171,7 +176,8 @@ public class GuestbookResponseServiceBean {
             singleResult[3] = result[4];
             singleResult[4] = result[5];
             if(hasCustomQuestions){
-                singleResult[5] =  em.createQuery("select o from CustomQuestionResponse as  o where o.guestbookResponse.id = " + (Integer) result[0] + " order by o.customQuestion.id ", CustomQuestionResponse.class).getResultList();
+                String cqString = "select q.questionstring, r.response  from customquestionresponse r, customquestion q where q.id = r.customquestion_id and r.guestbookResponse_id = " + (Integer) result[0];
+                singleResult[5]   = em.createNativeQuery(cqString).getResultList();
             }
             retVal.add(singleResult);
         }
@@ -323,33 +329,6 @@ public class GuestbookResponseServiceBean {
         return sb.toString();
     }
 
-    public List<Object[]> findDownloadInfoAll(List<Long> gbrIds) {
-        //this query will return multiple rows per response where the study name has changed over version
-        //these multiples are filtered out by the method that actually writes the download csv,
-        String varString = "(" + generateTempTableString(gbrIds) + ") ";
-        String gbrDownloadQueryString = "select u.username, gbr.sessionid, "
-                + " gbr.firstname, gbr.lastname, gbr.email, gbr.institution, "
-                + " vdc.name, s.protocol, s.authority, m.title, fmd.label, gbr.responsetime, gbr.position, gbr.study_id, gbr.id, gbr.downloadType "
-                + " from guestbookresponse gbr LEFT OUTER JOIN vdcuser u ON  "
-                + "(gbr.vdcuser_id =u.id),  "
-                + " vdc, study s, studyversion sv, metadata m, filemetadata  fmd  "
-                + "where gbr.study_id = s.id  "
-                + "and s.owner_id = vdc.id  "
-                + "and s.id = sv.study_id  "
-                + "and sv.metadata_id = m.id "
-                + "and gbr.studyfile_id = fmd.studyfile_id "
-                + "and sv.id = fmd.studyversion_id "
-                + "and sv.id = gbr.studyversion_id "
-                + " and gbr.id in " + varString
-                + " group by u.username, gbr.sessionid, "
-                + " gbr.firstname, gbr.lastname, gbr.email, gbr.institution, "
-                + " vdc.name, s.protocol, s.authority, m.title, fmd.label, gbr.responsetime, gbr.position, gbr.study_id, gbr.id, s.id, gbr.downloadType  "
-                + "order by s.id, gbr.id";
-        System.out.print(gbrDownloadQueryString);
-        TypedQuery<Object[]> query = em.createQuery(gbrDownloadQueryString, Object[].class);
-
-        return convertIntegerToLong(query.getResultList(), 14);
-    }
 
     public List<Object[]> findCustomResponsePerGuestbookResponse(Long gbrId) {
 

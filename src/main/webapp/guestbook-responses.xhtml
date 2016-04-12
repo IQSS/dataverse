@@ -52,7 +52,7 @@
                         </p:column>
 
                         <p:column headerText="Custom Questions" >
-                            <ui:repeat value="#{response[5]}" var="customQResponse"><b>#{customQResponse.customQuestion.questionString}: </b>#{customQResponse.response} <br></br></ui:repeat>
+                            <ui:repeat value="#{response[5]}" var="customQResponse"><b>#{customQResponse[0]}: </b>#{customQResponse[1]} <br></br></ui:repeat>
                         </p:column> 
                     </p:dataTable>
                 </h:form>
