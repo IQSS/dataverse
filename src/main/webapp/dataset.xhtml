@@ -83,6 +83,11 @@
                                             </ul>
                                         </li>
                                     </ui:fragment>
+                                    <li>
+                                        <h:outputLink value="/dataset-widgets.xhtml?datasetId=#{DatasetPage.dataset.id}">
+                                            <h:outputText value="#{bundle['dataset.editBtn.itemLabel.widgets']}"/>
+                                        </h:outputLink>
+                                    </li>
                                     <ui:fragment rendered="#{!DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and permissionsWrapper.canIssueDeleteDatasetCommand(DatasetPage.dataset)}">
                                         <li class="divider"></li>
                                         <li>
