@@ -10,10 +10,8 @@
       xmlns:cc="http://java.sun.com/jsf/composite"
       xmlns:o="http://omnifaces.org/ui"
       xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
-
     <h:head>
     </h:head>
-
     <h:body>
         <ui:composition template="/dataverse_template.xhtml">
             <ui:param name="pageTitle" value="#{DatasetPage.editMode == 'CREATE' ? bundle['dataset.pageTitle'] : DatasetPage.workingVersion.title} - #{DatasetPage.dataset.owner.name} #{bundle.dataverse}"/>
@@ -34,13 +32,12 @@
                     <f:viewAction action="#{DatasetPage.init}" rendered="true"/>
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(DatasetPage.dataset)}"/>
                     <f:viewAction action="#{EditDatafilesPage.initCreateMode(DatasetPage.editMode, DatasetPage.workingVersion, DatasetPage.newFiles, DatasetPage.selectedFiles)}"/>
-
                 </f:metadata>
                 <h:form id="datasetForm">
                     <!-- Header / Button Panel -->
                     <!-- View editMode -->
                     <div id="topDatasetBlock" jsf:rendered="#{empty DatasetPage.editMode}">
-                        <div id="actionButtonBlock" class="button-block clearfix">
+                        <div id="actionButtonBlock" class="button-block clearfix" jsf:rendered="#{!widgetWrapper.widgetView}">
                             <!-- Edit/Publish Button Group -->
                             <!-- Edit Button -->
                             <div class="btn-group pull-right" jsf:rendered="#{DatasetPage.sessionUserAuthenticated
@@ -108,8 +105,7 @@
                                             <p:commandLink id="deaccessionDatasetLink" onclick="PF('deaccessionBlock').show()"
                                                            action="#{DatasetPage.updateReleasedVersions()}"
                                                            oncomplete="PF('deaccessionBlock').show();bind_bsui_components();"
-                                                           update="deaccessionBlock"
-                                                           >
+                                                           update="deaccessionBlock">
                                                 <h:outputText value="#{bundle['dataset.editBtn.itemLabel.deaccession']}" />
                                             </p:commandLink>
                                         </li>
@@ -339,7 +335,7 @@
                                 </ui:fragment>
                             </div>
                             <div id="metadata-panel" class="row panel panel-default"
-                                 jsf:rendered="#{!DatasetPage.workingVersion.deaccessioned and
+                                 jsf:rendered="#{!widgetWrapper.widgetView and !DatasetPage.workingVersion.deaccessioned and
                                                  (!empty DatasetPage.datasetVersionUI.descriptionDisplay
                                                  or !empty DatasetPage.datasetVersionUI.keywordDisplay
                                                  or !empty DatasetPage.datasetVersionUI.subject.value
@@ -384,6 +380,12 @@
                                     </div>
                                 </div>
                             </div>
+                            <div jsf:rendered="#{widgetWrapper.widgetView and DatasetPage.sessionUserAuthenticated
+                                                                            and DatasetPage.canUpdateDataset()
+                                                                            and !DatasetPage.dataset.deaccessioned}">
+                               <!-- Widget + Autheticated -->
+                               <p class="text-muted"><span class="glyphicon glyphicon-info-sign"/> To edit this dataset and upload files, visit the <a href="#{DatasetPage.dataverseSiteUrl}/dataset.xhtml?persistentId=#{dataset.globalId}" target="_blank" title="#{DatasetPage.datasetVersionUI.title.value}">full version</a> on #{dataverseServiceBean.findRootDataverse().displayName}.</p>
+                           </div>
                         </div>
                     </div>
                     <!-- END View editMode -->
@@ -576,7 +578,7 @@
                                 </ui:include>
                             </p:tab>
                             <!-- 4.2.1: see above -->
-                            <p:tab id="versionsTab" title="#{bundle['file.dataFilesTab.versions']}" rendered="#{empty DatasetPage.editMode}">
+                            <p:tab id="versionsTab" title="#{bundle['file.dataFilesTab.versions']}" rendered="#{!widgetWrapper.widgetView and empty DatasetPage.editMode}">
                                 <ui:include src="dataset-versions.xhtml"></ui:include>
                             </p:tab>
                         </p:tabView>
