@@ -40,7 +40,15 @@ public class GuestbookResponsesPage implements java.io.Serializable {
     
     private Dataverse dataverse;
 
+    private String redirectString = "";
 
+    public String getRedirectString() {
+        return redirectString;
+    }
+
+    public void setRedirectString(String redirectString) {
+        this.redirectString = redirectString;
+    }
 
     private List<GuestbookResponse> responses;
     private List<Object[]> responsesAsArray;
@@ -59,6 +67,7 @@ public class GuestbookResponsesPage implements java.io.Serializable {
         if(guestbook != null){            
             responsesAsArray = guestbookResponseService.findArrayByGuestbookIdAndDataverseId(guestbookId, dataverseId);
         }
+        redirectString = "/manage-guestbooks.xhtml?dataverseId=" + dataverseId;
     }
     
     public void downloadResponsesByDataverseAndGuestbook(){

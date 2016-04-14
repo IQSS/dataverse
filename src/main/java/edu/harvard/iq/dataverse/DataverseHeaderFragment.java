@@ -61,11 +61,11 @@ public class DataverseHeaderFragment implements java.io.Serializable {
 
     @EJB
     UserNotificationServiceBean userNotificationService;
-    
+
     List<Breadcrumb> breadcrumbs = new ArrayList();
 
     private Long unreadNotificationCount = null;
-    
+
     public List<Breadcrumb> getBreadcrumbs() {
         return breadcrumbs;
     }
@@ -73,29 +73,29 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     public void setBreadcrumbs(List<Breadcrumb> breadcrumbs) {
         this.breadcrumbs = breadcrumbs;
     }
-    
+
     public void initBreadcrumbs(DvObject dvObject) {
-            if (dvObject.getId() != null) {
-                initBreadcrumbs(dvObject, null);
-            } else {
-                initBreadcrumbs(dvObject.getOwner(), dvObject instanceof Dataverse ? JH.localize("newDataverse") : 
-                        dvObject instanceof Dataset ? JH.localize("newDataset") : null );
-            }
+        if (dvObject.getId() != null) {
+            initBreadcrumbs(dvObject, null);
+        } else {
+            initBreadcrumbs(dvObject.getOwner(), dvObject instanceof Dataverse ? JH.localize("newDataverse")
+                    : dvObject instanceof Dataset ? JH.localize("newDataset") : null);
+        }
     }
-    
-    public Long getUnreadNotificationCount(Long userId){
-        
-        if (userId == null){
+
+    public Long getUnreadNotificationCount(Long userId) {
+
+        if (userId == null) {
             return new Long("0");
         }
-        
-        if (this.unreadNotificationCount != null){
+
+        if (this.unreadNotificationCount != null) {
             return this.unreadNotificationCount;
         }
-        
-        try{
+
+        try {
             this.unreadNotificationCount = userNotificationService.getUnreadNotificationCountByUser(userId);
-        }catch (Exception e){
+        } catch (Exception e) {
             logger.warning("Error trying to retrieve unread notification count for user." + e.getMessage());
             this.unreadNotificationCount = new Long("0");
         }
@@ -103,19 +103,32 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     }
 
     public void initBreadcrumbs(DvObject dvObject, String subPage) {
-        breadcrumbs.clear();
 
+        ArrayList<String> subPages = new ArrayList();
+        subPages.add(subPage);
+        initBreadcrumbs(dvObject, subPages, null);
+
+    }
+
+    public void initBreadcrumbs(DvObject dvObject, ArrayList<String> subPages, ArrayList<String> redirect) {
+        breadcrumbs.clear();
         while (dvObject != null) {
             breadcrumbs.add(0, new Breadcrumb(dvObject.getDisplayName(), dvObject));
             dvObject = dvObject.getOwner();
-        }        
-        
-        if (subPage != null) {
-            breadcrumbs.add(new Breadcrumb(subPage, null));
+        }
+
+        if (subPages != null) {
+            int i = 0;
+            for (String subPage : subPages) {
+                if (redirect != null && redirect.size() > i) {
+                    breadcrumbs.add(new Breadcrumb(subPage, null, redirect.get(i)));
+                } else {
+                    breadcrumbs.add(new Breadcrumb(subPage, null, null));
+                }
+                i++;
+            }
         }
     }
-
-
 
     /* Old methods for breadcrumb and trees - currently disabled and deferred
 
@@ -183,7 +196,7 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     }
 
     private Boolean signupAllowed = null;
-    
+
     public boolean isSignupAllowed() {
         if (signupAllowed != null) {
             return signupAllowed;
@@ -249,11 +262,18 @@ public class DataverseHeaderFragment implements java.io.Serializable {
 
         private final String breadcrumbText;
         private final DvObject dvObject;
+        private final String redirect;
 
         public Breadcrumb(String breadcrumbText, DvObject dvObject) {
-            this.breadcrumbText = breadcrumbText;            
-            this.dvObject = dvObject;            
+            this.breadcrumbText = breadcrumbText;
+            this.dvObject = dvObject;
+            this.redirect = null;
+        }
 
+        public Breadcrumb(String breadcrumbText, DvObject dvObject, String redirect) {
+            this.breadcrumbText = breadcrumbText;
+            this.dvObject = dvObject;
+            this.redirect = redirect;
         }
 
         public String getBreadcrumbText() {
@@ -264,10 +284,14 @@ public class DataverseHeaderFragment implements java.io.Serializable {
             return dvObject;
         }
 
+        public String getRedirect() {
+            return redirect;
+        }
+
     }
-    
+
     private Boolean debugShibboleth = null;
-    
+
     public boolean isDebugShibboleth() {
         if (debugShibboleth != null) {
             return debugShibboleth;

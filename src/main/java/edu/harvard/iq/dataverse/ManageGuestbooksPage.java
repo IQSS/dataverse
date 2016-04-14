@@ -67,11 +67,19 @@ public class ManageGuestbooksPage implements java.io.Serializable {
     private Dataverse dataverse;
     private Long dataverseId;
     private boolean inheritGuestbooksValue;
+    private boolean displayDownloadAll = false;
+
 
     private Guestbook selectedGuestbook = null;
 
-    public void init() {
+    public void init() {               
         dataverse = dvService.find(dataverseId);
+        
+        Long totalResponses = guestbookResponseService.findCountAll(dataverseId);       
+        if(totalResponses.intValue() > 0){
+            displayDownloadAll = true;
+        }
+        
         dvpage.setDataverse(dataverse);
 
         guestbooks = new LinkedList<>();
@@ -275,7 +283,13 @@ public class ManageGuestbooksPage implements java.io.Serializable {
         guestbookPage.setGuestbook(selectedGuestbook);
     }
 
+    public boolean isDisplayDownloadAll() {
+        return displayDownloadAll;
+    }
 
+    public void setDisplayDownloadAll(boolean displayDownloadAll) {
+        this.displayDownloadAll = displayDownloadAll;
+    }
 
     public String updateGuestbooksRoot(javax.faces.event.AjaxBehaviorEvent event) throws javax.faces.event.AbortProcessingException {
         try {
