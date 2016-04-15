@@ -385,11 +385,15 @@
                                     </div>
                                 </div>
                             </div>
-                            <div jsf:rendered="#{widgetWrapper.widgetView and DatasetPage.sessionUserAuthenticated
-                                                                            and DatasetPage.canUpdateDataset()
-                                                                            and !DatasetPage.dataset.deaccessioned}">
-                               <!-- Widget + Autheticated -->
-                               <p class="text-muted"><span class="glyphicon glyphicon-info-sign"/> To edit this dataset and upload files, visit the <a href="#{DatasetPage.dataverseSiteUrl}/dataset.xhtml?persistentId=#{dataset.globalId}" target="_blank" title="#{DatasetPage.datasetVersionUI.title.value}">full version</a> on #{dataverseServiceBean.findRootDataverse().displayName}.</p>
+                            <div id="widgetMsgLink" jsf:rendered="#{widgetWrapper.widgetView and !DatasetPage.dataset.deaccessioned}">
+                                <!-- Widget + Authetication -->
+                                <ui:fragment rendered="#{DatasetPage.sessionUserAuthenticated and DatasetPage.canUpdateDataset()}">
+                                    <p class="text-muted"><span class="glyphicon glyphicon-info-sign"/> To edit this dataset and upload files, visit the <a href="#{DatasetPage.dataverseSiteUrl}/dataset.xhtml?persistentId=#{dataset.globalId}" target="_blank" title="#{DatasetPage.datasetVersionUI.title.value}">full version</a> on #{dataverseServiceBean.findRootDataverse().displayName}.</p>
+                                </ui:fragment>
+                                
+                                <ui:fragment rendered="#{!DatasetPage.sessionUserAuthenticated or !DatasetPage.canUpdateDataset()}">
+                                    <p class="text-muted"><span class="glyphicon glyphicon-info-sign"/> To view more details of this dataset, visit the <a href="#{DatasetPage.dataverseSiteUrl}/dataset.xhtml?persistentId=#{dataset.globalId}" target="_blank" title="#{DatasetPage.datasetVersionUI.title.value}">full version</a> on #{dataverseServiceBean.findRootDataverse().displayName}.</p>
+                                </ui:fragment>
                            </div>
                         </div>
                     </div>

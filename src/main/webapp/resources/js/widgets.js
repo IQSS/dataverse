@@ -14,6 +14,7 @@ params.dvUrl; // Dataverse Installation URL
 params.widget; // Widget type
 params.heightPx; // iframe height in pixels
 params.text; // search input placeholder text
+params.persistentId; // persistentId
 
 // Utility function to convert "a=b&c=d" into { a:'b', c:'d' }
 function parseQueryString(queryString) {
@@ -41,4 +42,11 @@ if(params.widget === 'iframe') {
      * Dataverse Listing iFrame
      */
     document.write('<iframe src="' + params.dvUrl + '/dataverse/' + params.alias + '?widget=iframe" width="100%" height="' + params.heightPx + '" style="border:0; background:url(' + params.dvUrl + '/resources/images/ajax-loading.gif) no-repeat 50% 50%;"></iframe>');
+}
+
+if(params.persistentId) {
+    /*
+     * Dataset 'Full' iFrame
+     */
+    document.write('<iframe src="' + params.dvUrl + '/dataset.xhtml?persistentId=' + params.persistentId + '&widget=iframe" width="100%" height="' + params.heightPx + '" style="border:0; background:url(' + params.dvUrl + '/resources/images/ajax-loading.gif) no-repeat 50% 50%;"></iframe>');
 }

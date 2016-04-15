@@ -69,7 +69,7 @@
                         <p class="help-block">#{bundle['dataset.widgets.datasetFull.tip']}</p>
                     </div>
                     <div>
-                        <textarea rows="2" cols="54" class="form-control">&lt;script src=&quot;#{systemConfig.dataverseSiteUrl}/resources/js/widgets.js?alias=#{DatasetPage.dataset.owner.alias}&amp;persistentId=#{dataset.globalId}&amp;amp;dvUrl=#{systemConfig.dataverseSiteUrl}&amp;amp;widget=iframe&amp;amp;heightPx=500&quot;&gt;&lt;/script&gt;</textarea>
+                        <textarea rows="2" cols="54" class="form-control">&lt;script src=&quot;#{systemConfig.dataverseSiteUrl}/resources/js/widgets.js?alias=#{DatasetPage.dataset.owner.alias}&amp;persistentId=#{dataset.globalId}&amp;amp;dvUrl=#{systemConfig.dataverseSiteUrl}&amp;amp;widget=dataset&amp;amp;heightPx=500&quot;&gt;&lt;/script&gt;</textarea>
                     </div>
                     <div class="button-block">
                         <p:commandButton class="btn btn-default" action="#{DatasetPage.cancel()}" immediate="true" id="widgetsDone" value="#{bundle.done}"/>
