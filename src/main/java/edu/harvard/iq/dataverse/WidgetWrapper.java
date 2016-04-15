@@ -19,25 +19,50 @@ import javax.inject.Named;
 public class WidgetWrapper implements java.io.Serializable {
     
     private Boolean widgetView;
+    private String widgetScope;
 
-    public Boolean getWidgetView() {
+    public boolean isWidgetView() {
         if (widgetView == null) {
-            String param = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("widget");
-            setWidgetView(param!=null && param.equals("iframe"));
+            String widgetParam = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("widget");
+            widgetView = widgetParam != null && widgetParam.equals("iframe");
         }
-        return (widgetView == true);
-    }
-
-    public void setWidgetView(Boolean widgetView) {
-        this.widgetView = widgetView;
+        return widgetView;
     }
     
+    public String getWidgetScope() {
+        // first check for widgetScope; if not found use alias (if null then this is not a dataverse widget)
+        if (widgetScope == null) {
+            String widgetScopeParam = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("widgetScope");
+            if (widgetScopeParam != null) {
+                widgetScope = widgetScopeParam;
+            } else {
+                String aliasParam = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("alias");
+                widgetScope = aliasParam;
+            }
+        }
+        return widgetScope;
+    }
+
+    
     public String wrapURL(String URL) {
-        return URL + (getWidgetView() ? getParamSeparator(URL) + "widget=iframe" : "");
+        return URL + (isWidgetView() ? getParamSeparator(URL) + "widget=iframe&widgetScope=" + getWidgetScope() : "");
     }
     
     private String getParamSeparator(String URL) {
         return (URL.contains("?") ? "&" : "?");
     }
+    
+    public boolean inWidgetScope(Dataverse dv) {
+        if (isWidgetView()) {
+            while (dv.getOwner() != null) {
+                if (dv.getAlias().equals(getWidgetScope())) {
+                   return true;
+                }
+                dv= dv.getOwner();
+            }
+        }
+        
+        return false;
+    }    
     
 }

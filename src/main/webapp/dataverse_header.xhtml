@@ -5,6 +5,7 @@
      xmlns:p="http://primefaces.org/ui"
      xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
      xmlns:jsf="http://xmlns.jcp.org/jsf"
+     xmlns:c="http://java.sun.com/jsp/jstl/core"
      xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
 
     <div id="dataverse-header-block">
@@ -200,12 +201,13 @@
                         <h:outputText value="#{breadcrumb.breadcrumbText}" rendered="#{!breadcrumb.dvObject.instanceofDataverse and !breadcrumb.dvObject.instanceofDataset}"/>
 
                         <ui:fragment rendered="#{breadcrumb.dvObject.instanceofDataverse}">
-                            <a id="breadcrumbLnk#{status.index}" href="/dataverse/${breadcrumb.dvObject.alias}" target="#{status.first ? '_blank' : ''}">
+                            <c:set var="dvUrl" value="/dataverse/#{breadcrumb.dvObject.alias}"/>
+                           <a id="breadcrumbLnk#{status.index}" href="#{widgetWrapper.inWidgetScope(breadcrumb.dvObject) ? widgetWrapper.wrapURL(dvUrl) : dvUrl}" target="#{!widgetWrapper.widgetView or widgetWrapper.inWidgetScope(breadcrumb.dvObject) ? '' : '_blank'}">
                                 <h:outputText value="#{breadcrumb.breadcrumbText}"/>
                             </a>
                         </ui:fragment>
                         <ui:fragment rendered="#{breadcrumb.dvObject.instanceofDataset}">
-                            <a id="breadcrumbLnk#{status.index}" href="/dataset.xhtml?persistentId=${breadcrumb.dvObject.globalId}">
+                            <a id="breadcrumbLnk#{status.index}" href="#{widgetWrapper.wrapURL('/dataset.xhtml?persistentId='.concat(breadcrumb.dvObject.globalId))}">
                                 <h:outputText value="#{breadcrumb.breadcrumbText}"/>
                             </a>
                         </ui:fragment>
