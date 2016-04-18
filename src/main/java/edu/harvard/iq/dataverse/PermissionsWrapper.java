@@ -44,7 +44,7 @@ public class PermissionsWrapper implements java.io.Serializable {
      *
      * @param commandName
      */
-    private boolean canIssueCommand(DvObject dvo, Class<? extends Command> command) {
+    public boolean canIssueCommand(DvObject dvo, Class<? extends Command> command) {
         if ((dvo==null) || (dvo.getId()==null)){
             return false;
         }
@@ -237,6 +237,15 @@ public class PermissionsWrapper implements java.io.Serializable {
         return canIssueCommand(dvo, PublishDatasetCommand.class);
     }
     
+    public String notAuthorized() {
+        if (!session.getUser().isAuthenticated()){
+            return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
+        } else {
+            return "/403.xhtml"; 
+        }        
+    }
     
-
+    public String notFound() {
+        return "/404.xhtml";
+    }          
 }
