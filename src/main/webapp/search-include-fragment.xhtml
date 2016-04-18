@@ -6,6 +6,8 @@
      xmlns:p="http://primefaces.org/ui"
      xmlns:o="http://omnifaces.org/ui"
      xmlns:jsf="http://xmlns.jcp.org/jsf">
+
+    <c:set var="page" value="/dataverse/#{SearchIncludeFragment.dataverseAlias}"/>    
     
     <!-- Search Form + Add Data Button -->
     <div class="row panelSearchForm" jsf:rendered="#{showSearch == true and !SearchIncludeFragment.solrIsDown}">
@@ -76,7 +78,7 @@
             <h:form id="facetType">
                 <!--DATAVERSE TOGGLE-->
                 <div class="clearfix">
-                    <h:outputLink styleClass="facetTypeChBox facetLink #{SearchIncludeFragment.selectedTypesList.contains('dataverses') ? 'facetSelected': ''}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('dataverses') == null}">
+                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}" styleClass="facetTypeChBox facetLink #{SearchIncludeFragment.selectedTypesList.contains('dataverses') ? 'facetSelected': ''}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('dataverses') == null}">
                         <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                         <f:param name="types" value="#{SearchIncludeFragment.getNewSelectedTypes('dataverses')}"/>
                         <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -88,7 +90,7 @@
                         <p:selectBooleanCheckbox value="#{SearchIncludeFragment.selectedTypesList.contains('dataverses') ? true : false}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('dataverses') == null ? true : false}"/>
                     </h:outputLink>
                     <!--DATAVERSES ONLY-->
-                    <h:outputLink disabled="#{false}" styleClass="facetTypeLink chkbox-label-margin #{SearchIncludeFragment.selectedTypesList.contains('dataverses') ? 'facetSelected': ''}">
+                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}" disabled="#{false}" styleClass="facetTypeLink chkbox-label-margin #{SearchIncludeFragment.selectedTypesList.contains('dataverses') ? 'facetSelected': ''}">
                         <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                         <f:param name="types" value="dataverses"/>
                         <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -107,7 +109,7 @@
                 </div>
                 <!--DATASETS TOGGLE-->
                 <div class="clearfix">
-                    <h:outputLink styleClass="facetTypeChBox facetLink #{SearchIncludeFragment.selectedTypesList.contains('datasets') ? 'facetSelected': ''}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('datasets') == null}">
+                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}" styleClass="facetTypeChBox facetLink #{SearchIncludeFragment.selectedTypesList.contains('datasets') ? 'facetSelected': ''}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('datasets') == null}">
                         <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                         <f:param name="types" value="#{SearchIncludeFragment.getNewSelectedTypes('datasets')}"/>
                         <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -119,7 +121,7 @@
                         <p:selectBooleanCheckbox value="#{SearchIncludeFragment.selectedTypesList.contains('datasets') ? true : false}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('datasets') == null ? true : false}"/>
                     </h:outputLink>
                     <!--DATASETS ONLY-->
-                    <h:outputLink disabled="#{false}" styleClass="facetTypeLink chkbox-label-margin #{SearchIncludeFragment.selectedTypesList.contains('datasets') ? 'facetSelected': ''}">
+                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}" disabled="#{false}" styleClass="facetTypeLink chkbox-label-margin #{SearchIncludeFragment.selectedTypesList.contains('datasets') ? 'facetSelected': ''}">
                         <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                         <f:param name="types" value="datasets"/>
                         <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -138,7 +140,7 @@
                 </div>
                 <!--FILES TOGGLE-->
                 <div class="clearfix">
-                    <h:outputLink styleClass="facetTypeChBox facetLink #{SearchIncludeFragment.selectedTypesList.contains('files') ? 'facetSelected': ''}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('files') == null}">
+                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}" styleClass="facetTypeChBox facetLink #{SearchIncludeFragment.selectedTypesList.contains('files') ? 'facetSelected': ''}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('files') == null}">
                         <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                         <f:param name="types" value="#{SearchIncludeFragment.getNewSelectedTypes('files')}"/>
                         <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -150,7 +152,7 @@
                         <p:selectBooleanCheckbox value="#{SearchIncludeFragment.selectedTypesList.contains('files') ? true : false}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('files') == null ? true : false}"/>
                     </h:outputLink>
                     <!--FILES ONLY-->
-                    <h:outputLink disabled="#{false}" styleClass="facetTypeLink chkbox-label-margin #{SearchIncludeFragment.selectedTypesList.contains('files') ? 'facetSelected': ''}">
+                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}" disabled="#{false}" styleClass="facetTypeLink chkbox-label-margin #{SearchIncludeFragment.selectedTypesList.contains('files') ? 'facetSelected': ''}">
                         <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                         <f:param name="types" value="files"/>
                         <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -174,7 +176,7 @@
                 <p:dataList id="facetCategoryList" value="#{SearchIncludeFragment.facetCategoryList}" var="facetCategory">
                     <h:outputText value="#{facetCategory.friendlyName}" styleClass="facetCategoryName"/>
                     <p:dataList value="#{facetCategory.facetLabel}" var="facetLabel" rows="#{SearchIncludeFragment.getNumberOfFacets(facetCategory.name,5)}">
-                        <h:outputLink rendered="#{!SearchIncludeFragment.filterQueries.contains(facetLabel.filterQuery)}" styleClass="facetLink">
+                        <h:outputLink value="#{widgetWrapper.wrapURL(page)}" rendered="#{!SearchIncludeFragment.filterQueries.contains(facetLabel.filterQuery)}" styleClass="facetLink">
                             <h:outputFormat value="#{facetLabel.name} &#40;{0}&#41;">
                                 <f:param value="#{facetLabel.count}"/>
                             </h:outputFormat>
@@ -188,7 +190,7 @@
                             <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
                         </h:outputLink>
 
-                        <h:outputLink rendered="#{SearchIncludeFragment.filterQueries.contains(facetLabel.filterQuery)}" styleClass="facetLink facetSelected">
+                        <h:outputLink value="#{widgetWrapper.wrapURL(page)}" rendered="#{SearchIncludeFragment.filterQueries.contains(facetLabel.filterQuery)}" styleClass="facetLink facetSelected">
                             <h:outputFormat value="#{facetLabel.name} &#40;{0}&#41;">
                                 <f:param value="#{facetLabel.count}"/>
                             </h:outputFormat>
@@ -313,7 +315,7 @@
             <div id="resultsFacetsTopBlock" jsf:rendered="#{!empty SearchIncludeFragment.filterQueries}">
                 <ui:repeat value="#{SearchIncludeFragment.filterQueries}" var="filterQuery">
                     <ui:param name="friendlyNames" value="#{SearchIncludeFragment.getFriendlyNamesFromFilterQuery(filterQuery)}"/>
-                    <h:outputLink styleClass="facetLink facetSelected">
+                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}" styleClass="facetLink facetSelected">
                         <h:outputText value="#{friendlyNames.get(0)}: #{friendlyNames.get(1)}"/> <span class="glyphicon glyphicon-remove"></span>
                         <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                         <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -344,7 +346,7 @@
                         </button>
                         <ul class="dropdown-menu pull-right text-left" role="menu">
                             <li>
-                                <h:outputLink>
+                                <h:outputLink value="#{widgetWrapper.wrapURL(page)}">
                                     <h:outputText value="#{bundle['dataverse.results.btn.sort.option.nameAZ']}" styleClass="#{SearchIncludeFragment.sortedByNameAsc ? 'highlightBold' : ''}"/>
                                     <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                     <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -357,7 +359,7 @@
                                 </h:outputLink>
                             </li>
                             <li>
-                                <h:outputLink>
+                                <h:outputLink value="#{widgetWrapper.wrapURL(page)}">
                                     <h:outputText value="#{bundle['dataverse.results.btn.sort.option.nameZA']}" styleClass="#{SearchIncludeFragment.sortedByNameDesc ? 'highlightBold' : ''}"/>
                                     <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                     <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -370,7 +372,7 @@
                                 </h:outputLink>
                             </li>
                             <li>
-                                <h:outputLink>
+                                <h:outputLink value="#{widgetWrapper.wrapURL(page)}">
                                     <h:outputText value="#{bundle['dataverse.results.btn.sort.option.newest']}" styleClass="#{SearchIncludeFragment.sortedByReleaseDateDesc? 'highlightBold' : ''}"/>
                                     <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                     <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -383,7 +385,7 @@
                                 </h:outputLink>
                             </li>
                             <li>
-                                <h:outputLink>
+                                <h:outputLink value="#{widgetWrapper.wrapURL(page)}">
                                     <h:outputText value="#{bundle['dataverse.results.btn.sort.option.oldest']}" styleClass="#{SearchIncludeFragment.sortedByReleaseDateAsc? 'highlightBold' : ''}"/>
                                     <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                     <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -397,7 +399,7 @@
                             </li>
                             <ui:fragment rendered="#{SearchIncludeFragment.mode == SearchIncludeFragment.searchModeString}">
                                 <li>
-                                    <h:outputLink>
+                                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}">
                                         <h:outputText value="#{bundle['dataverse.results.btn.sort.option.relevance']}" styleClass="#{SearchIncludeFragment.sortedByRelevance ? 'highlightBold' : ''}"/>
                                         <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                         <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
