@@ -30,6 +30,8 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
@@ -450,6 +452,10 @@ public class DataverseServiceBean implements java.io.Serializable {
         
         return ret;        
     }
+    
+    public List<Dataverse> getAllHarvestedDataverses() {
+        return em.createQuery("SELECT object(d) FROM Dataverse d, harvestingDataverseConfig c AS d WHERE c.dataverse_id IS NOT null AND c.dataverse_id=d.id order by d.id").getResultList();
+    }
 
     public void populateDvSearchCard(SolrSearchResult solrSearchResult) {
   
@@ -499,4 +505,83 @@ public class DataverseServiceBean implements java.io.Serializable {
             }
         }
     }
+    
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public void setHarvestResult(Long hdId, String result) {
+        Dataverse hd = em.find(Dataverse.class, hdId);
+        em.refresh(hd);
+        if (hd.isHarvested()) {
+            hd.getHarvestingDataverseConfig().setHarvestResult(result);
+        }
+    }
+    
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public void resetHarvestingStatus(Long hdId) {
+        Dataverse hd = em.find(Dataverse.class, hdId);
+        em.refresh(hd);
+        if (hd.isHarvested()) {
+            hd.getHarvestingDataverseConfig().setHarvestingNow(false);
+        }
+       
+    }
+    
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public void setHarvestInProgress(Long hdId, boolean inProgress) {
+        Dataverse hd = em.find(Dataverse.class, hdId);
+        em.refresh(hd);
+        if (hd.isHarvested()) {
+            hd.getHarvestingDataverseConfig().setHarvestingNow(inProgress);
+        }
+    }
+    
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public void setLastHarvestTime(Long hdId, Date lastHarvestTime) {
+        Dataverse hd = em.find(Dataverse.class, hdId);
+        em.refresh(hd);
+        if (hd.isHarvested()) {
+            hd.getHarvestingDataverseConfig().setLastHarvestTime(lastHarvestTime);
+        }
+    }
+    
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public void setHarvestSuccess(Long hdId, Date currentTime, int harvestedCount, int failedCount) {
+        Dataverse hd = em.find(Dataverse.class, hdId);
+        em.refresh(hd);
+        if (hd.isHarvested()) {
+            /* TODO: 
+                hd.getHarvestingDataverseConfig().setLastSuccessfulHarvestTime(currentTime);
+                hd.getHarvestingDataverseConfig().setHarvestedStudyCount(new Long(harvestedCount));
+                hd.getHarvestingDataverseConfig().setFailedStudyCount(new Long(failedCount));
+            */
+            hd.getHarvestingDataverseConfig().setHarvestResult(edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean.HARVEST_RESULT_SUCCESS);
+        }
+    }
+
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public void setHarvestSuccessNotEmpty(Long hdId, Date currentTime, int harvestedCount, int failedCount) {
+        Dataverse hd = em.find(Dataverse.class, hdId);
+        em.refresh(hd);
+        if (hd.isHarvested()) {
+            /* TODO: 
+                hd.getHarvestingDataverseConfig().setLastSuccessfulNonZeroHarvestTime(currentTime);
+                hd.getHarvestingDataverseConfig().setHarvestedStudyCountNonZero(new Long(harvestedCount));
+                hd.getHarvestingDataverseConfig().setFailedStudyCountNonZero(new Long(failedCount));
+            */
+        }
+    }
+
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public void setHarvestFailure(Long hdId, int harvestedStudyCount, int failedCount) {
+        Dataverse hd = em.find(Dataverse.class, hdId);
+        em.refresh(hd);
+        if (hd.isHarvested()) {
+            /* TODO: 
+                hd.getHarvestingDataverseConfig().setHarvestedStudyCount(new Long(harvestedStudyCount));
+                hd.getHarvestingDataverseConfig().setFailedStudyCount(new Long(failedCount));
+            */
+            hd.getHarvestingDataverseConfig().setHarvestResult(edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean.HARVEST_RESULT_FAILED);
+        }
+
+    }
+    
 }  
