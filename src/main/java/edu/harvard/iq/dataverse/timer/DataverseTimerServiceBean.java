@@ -81,7 +81,7 @@ public class DataverseTimerServiceBean implements Serializable {
             try {
 
                 logger.log(Level.INFO, "DO HARVESTING of dataverse " + info.getHarvestingDataverseId());
-                harvesterService.doHarvesting(info.getHarvestingDataverseId());
+                harvesterService.doHarvest(info.getHarvestingDataverseId());
 
             } catch (Throwable e) {
                 dataverseService.setHarvestResult(info.getHarvestingDataverseId(), harvesterService.HARVEST_RESULT_FAILED);

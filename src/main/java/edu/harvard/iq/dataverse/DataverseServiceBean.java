@@ -548,15 +548,19 @@ public class DataverseServiceBean implements java.io.Serializable {
         Dataverse hd = em.find(Dataverse.class, hdId);
         em.refresh(hd);
         if (hd.isHarvested()) {
-            /* TODO: 
-                hd.getHarvestingDataverseConfig().setLastSuccessfulHarvestTime(currentTime);
-                hd.getHarvestingDataverseConfig().setHarvestedStudyCount(new Long(harvestedCount));
-                hd.getHarvestingDataverseConfig().setFailedStudyCount(new Long(failedCount));
-            */
+            hd.getHarvestingDataverseConfig().setLastHarvestTime(currentTime);
+            hd.getHarvestingDataverseConfig().setLastSuccessfulHarvestTime(currentTime);
             hd.getHarvestingDataverseConfig().setHarvestResult(edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean.HARVEST_RESULT_SUCCESS);
+            
+            if (harvestedCount > 0 || failedCount > 0) {
+                hd.getHarvestingDataverseConfig().setLastNonEmptyHarvestTime(currentTime);
+                hd.getHarvestingDataverseConfig().setHarvestedDatasetCount(new Long(harvestedCount));
+                hd.getHarvestingDataverseConfig().setFailedDatasetCount(new Long(failedCount));
+                /*TODO: record the number of deleted datasets! */
+            }
         }
     }
-
+/*
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void setHarvestSuccessNotEmpty(Long hdId, Date currentTime, int harvestedCount, int failedCount) {
         Dataverse hd = em.find(Dataverse.class, hdId);
@@ -566,22 +570,17 @@ public class DataverseServiceBean implements java.io.Serializable {
                 hd.getHarvestingDataverseConfig().setLastSuccessfulNonZeroHarvestTime(currentTime);
                 hd.getHarvestingDataverseConfig().setHarvestedStudyCountNonZero(new Long(harvestedCount));
                 hd.getHarvestingDataverseConfig().setFailedStudyCountNonZero(new Long(failedCount));
-            */
+            *
         }
-    }
+    }*/
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public void setHarvestFailure(Long hdId, int harvestedStudyCount, int failedCount) {
+    public void setHarvestFailure(Long hdId, Date currentTime) {
         Dataverse hd = em.find(Dataverse.class, hdId);
         em.refresh(hd);
         if (hd.isHarvested()) {
-            /* TODO: 
-                hd.getHarvestingDataverseConfig().setHarvestedStudyCount(new Long(harvestedStudyCount));
-                hd.getHarvestingDataverseConfig().setFailedStudyCount(new Long(failedCount));
-            */
+            hd.getHarvestingDataverseConfig().setLastHarvestTime(currentTime);
             hd.getHarvestingDataverseConfig().setHarvestResult(edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean.HARVEST_RESULT_FAILED);
         }
-
-    }
-    
+    }    
 }  

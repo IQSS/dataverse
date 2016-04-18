@@ -168,6 +168,10 @@ public class HarvestingDataverseConfig implements Serializable {
         this.harvestResult = harvestResult;
     }
     
+    // "Last Harvest Time" is the last time we *attempted* to harvest 
+    // from this remote resource. 
+    // It wasn't necessarily a successful attempt!
+    
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date lastHarvestTime;
 
@@ -178,6 +182,12 @@ public class HarvestingDataverseConfig implements Serializable {
     public void setLastHarvestTime(Date lastHarvestTime) {
         this.lastHarvestTime = lastHarvestTime;
     }
+    
+    // This the last "successful harvest" - i.e., the last time we 
+    // tried to harvest, and got a response from the remote server. 
+    // We may not have necessarily harvested any useful content though; 
+    // the result may have been a "no content" or "no changes since the last harvest"
+    // response. 
     
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date lastSuccessfulHarvestTime; 
@@ -190,12 +200,48 @@ public class HarvestingDataverseConfig implements Serializable {
         this.lastSuccessfulHarvestTime = lastSuccessfulHarvestTime;
     }
     
+    // Finally, this is the time stamp from the last "non-empty" harvest. 
+    // I.e. the last time we ran a harvest that actually resulted in 
+    // some Datasets created, updated or deleted:
+    
+    private Date lastNonEmptyHarvestTime;
+    @Temporal(value = TemporalType.TIMESTAMP)
+    public Date getLastNonEmptyHarvestTime() {
+        return lastNonEmptyHarvestTime;
+    }
+
+    public void setLastNonEmptyHarvestTime(Date lastNonEmptyHarvestTime) {
+        this.lastNonEmptyHarvestTime = lastNonEmptyHarvestTime;
+    }
+    
+    // And these are the Dataset counts from that last "non-empty" harvest:
     private Long harvestedDatasetCount;
     private Long failedDatasetCount;
-    @Temporal(value = TemporalType.TIMESTAMP)
-    private Date lastSuccessfulNonEmptyHarvestTime;
-    private Long lastNonEmptyHarvestedDatasetCount;
-    private Long lastNonEmptyFailedDatasetCount;
+    private Long deletedDatasetCount;
+    
+    public Long getHarvestedDatasetCount() {
+        return harvestedDatasetCount;
+    }
+
+    public void setHarvestedDatasetCount(Long harvestedDatasetCount) {
+        this.harvestedDatasetCount = harvestedDatasetCount;
+    }
+    
+    public Long getFailedDatasetCount() {
+        return failedDatasetCount;
+    }
+
+    public void setFailedDatasetCount(Long failedDatasetCount) {
+        this.failedDatasetCount = failedDatasetCount;
+    }
+    
+    public Long getDeletedDatasetCount() {
+        return deletedDatasetCount;
+    }
+
+    public void setDeletedDatasetCount(Long deletedDatasetCount) {
+        this.deletedDatasetCount = deletedDatasetCount;
+    }
     
     private boolean scheduled;
 
