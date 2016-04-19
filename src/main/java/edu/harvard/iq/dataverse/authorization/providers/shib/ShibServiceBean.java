@@ -287,7 +287,7 @@ public class ShibServiceBean {
      */
     public Map<String, String> getRandomUser() throws JsonSyntaxException, JsonIOException {
         Map<String, String> fakeUser = new HashMap<>();
-        String sURL = "http://api.randomuser.me";
+        String sURL = "http://api.randomuser.me/0.8";
         URL url = null;
         try {
             url = new URL(sURL);
