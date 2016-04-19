@@ -12,13 +12,8 @@ import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.HarvestingDataverseConfig;
 import edu.harvard.iq.dataverse.timer.DataverseTimerServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Writer;
-import java.net.MalformedURLException;
-import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -33,21 +28,15 @@ import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
-import javax.ejb.Timeout;
 import javax.ejb.Timer;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.faces.bean.ManagedBean;
 import javax.inject.Named;
-import javax.persistence.Query;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import org.apache.commons.lang.mutable.MutableBoolean;
-import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 /**
@@ -76,7 +65,6 @@ public class HarvesterServiceBean {
     public static final String HARVEST_RESULT_FAILED="failed";
 
    
-    private JAXBContext jaxbContext;
     private Unmarshaller unmarshaller;
 
     private long processedSizeThisBatch = 0;
@@ -274,7 +262,7 @@ public class HarvesterServiceBean {
      * @param failedIdentifiers     Study Identifiers for failed "GetRecord" requests
      */
     private List<Long> harvestOAI(Dataverse dataverse, Logger hdLogger, String from, String until, MutableBoolean harvestErrorOccurred, List<String> failedIdentifiers)
-            throws IOException, ParserConfigurationException,SAXException, TransformerException, JAXBException {
+            throws IOException, ParserConfigurationException,SAXException, TransformerException {
    
         List<Long> harvestedDatasetIds = new ArrayList<Long>();
    
