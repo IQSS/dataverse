@@ -14,7 +14,9 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -44,6 +46,8 @@ public class Shib implements java.io.Serializable {
     DataverseServiceBean dataverseService;
     @EJB
     GroupServiceBean groupService;
+    @EJB
+    UserNotificationServiceBean userNotificationService;
 
     HttpServletRequest request;
 
@@ -291,6 +295,9 @@ public class Shib implements java.io.Serializable {
         if (au != null) {
             logger.fine("created user " + au.getIdentifier());
             logInUserAndSetShibAttributes(au);
+            userNotificationService.sendNotification(au,
+                    new Timestamp(new Date().getTime()),
+                    UserNotification.Type.CREATEACC, null);
         } else {
             JsfHelper.addErrorMessage("Couldn't create user.");
         }
