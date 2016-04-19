@@ -86,11 +86,20 @@
                             <div class="panel-body">
                                 <h2 style="margin-top:0;">#{bundle['login.institution']}</h2>
                                 <p class="help-block">
-                                    <h:outputFormat value="#{bundle['login.institution.blurb']} " escape="false">
-                                        <f:param value="#{settingsWrapper.guidesBaseUrl}"/>
-                                        <f:param value="#{systemConfig.version}"/>
-                                    </h:outputFormat>
-                                    <h:outputText value="#{bundle['login.institution.support']}" escape="false"/>
+                                    <h:form>
+                                        <h:outputFormat value="#{bundle['login.institution.blurb']} " escape="false">
+                                            <f:param value="#{settingsWrapper.guidesBaseUrl}"/>
+                                            <f:param value="#{systemConfig.version}"/>
+                                        </h:outputFormat>
+                                        <h:outputText value="#{bundle['login.institution.support.beforeLink']} " />
+                                        <p:commandLink value="#{bundle['contact.support']}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
+                                            <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
+                                            <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
+                                            <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
+                                            <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
+                                        </p:commandLink>
+                                    <h:outputText value=" #{bundle['login.institution.support.afterLink']}" escape="false"/>
+                                    </h:form>
                                 </p>
 
                                 <div id="idpSelect"></div>
