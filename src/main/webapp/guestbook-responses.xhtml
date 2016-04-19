@@ -14,15 +14,15 @@
             <f:viewParam name="guestbookId" value="#{guestbookResponsesPage.guestbookId}"/>
             <f:viewParam name="dataverseId" value="#{guestbookResponsesPage.dataverseId}"/>
             <f:viewAction action="#{guestbookResponsesPage.init}"/> 
-            <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(guestbookResponsesPage.dataverse, [bundle['dataset.manageGuestbooks.pageTitle'],  
-                                    bundle['dataset.guestbookResponses.pageTitle']], [guestbookResponsesPage.redirectString])}"/>
+            <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(guestbookResponsesPage.dataverse)}"/> 
+            <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb(bundle['dataset.manageGuestbooks.pageTitle'], '/manage-guestbooks.xhtml?dataverseId='.concat(guestbookResponsesPage.guestbookId))}"/>   
+            <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb(bundle['dataset.guestbookResponses.pageTitle'], null)}"/>
         </f:metadata>
         <ui:composition template="/dataverse_template.xhtml">
             <ui:param name="pageTitle" value="#{bundle['dataset.guestbookResponses.pageTitle']}"/>
 
             <ui:define name="body">
                 <h:form id="manageGuestbooksForm">
-                    <div class="row">
                         <div class="form-group clearfix">
                             <label for="guestbookNameStatic" class="col-sm-2 control-label">
                                 <span>#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.datasetGuestbook']}</span>
@@ -30,14 +30,12 @@
                             <div class="col-sm-9">
                                 #{guestbookResponsesPage.guestbook.name}
                             </div>
-                        <div class="pull-right">
-                            <button class="btn btn-default" jsf:id="downloadResponsesLink" jsf:action="#{guestbookResponsesPage.downloadResponsesByDataverseAndGuestbook()}"  >
+                            <div class="pull-right">
+                                <button class="btn btn-default" jsf:id="downloadResponsesLink" jsf:action="#{guestbookResponsesPage.downloadResponsesByDataverseAndGuestbook()}"  >
                                      #{bundle['dataset.manageGuestbooks.download.responses']}
-                            </button>  
+                                </button>  
+                            </div>
                         </div>
-                        </div>
-
-                    </div>
                     <p:dataTable id="responsesGuestbook" value="#{guestbookResponsesPage.responsesAsArray}" var="response">
                         <p:column sortBy="#{response[0]}" headerText="#{bundle['dataset.guestbooksResponses.dataset']}">
                             <h:outputText value="#{response[0]}"/>

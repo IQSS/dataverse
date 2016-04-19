@@ -11,7 +11,6 @@ import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
-import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -101,33 +100,21 @@ public class DataverseHeaderFragment implements java.io.Serializable {
         }
         return this.unreadNotificationCount;
     }
-
-    public void initBreadcrumbs(DvObject dvObject, String subPage) {
-
-        ArrayList<String> subPages = new ArrayList();
-        subPages.add(subPage);
-        initBreadcrumbs(dvObject, subPages, null);
-
+    
+    public void addBreadcrumb (String linkString, String url){
+        breadcrumbs.add(new Breadcrumb(linkString, url));
     }
 
-    public void initBreadcrumbs(DvObject dvObject, ArrayList<String> subPages, ArrayList<String> redirect) {
+    public void initBreadcrumbs(DvObject dvObject, String subPage) {
         breadcrumbs.clear();
         while (dvObject != null) {
-            breadcrumbs.add(0, new Breadcrumb(dvObject.getDisplayName(), dvObject));
+            breadcrumbs.add(0, new Breadcrumb( dvObject, dvObject.getDisplayName()));
             dvObject = dvObject.getOwner();
         }
-
-        if (subPages != null) {
-            int i = 0;
-            for (String subPage : subPages) {
-                if (redirect != null && redirect.size() > i) {
-                    breadcrumbs.add(new Breadcrumb(subPage, null, redirect.get(i)));
-                } else {
-                    breadcrumbs.add(new Breadcrumb(subPage, null, null));
-                }
-                i++;
-            }
-        }
+        
+        if(subPage != null){
+            breadcrumbs.add(new Breadcrumb(subPage, null));
+        }        
     }
 
     /* Old methods for breadcrumb and trees - currently disabled and deferred
@@ -261,19 +248,17 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     public static class Breadcrumb {
 
         private final String breadcrumbText;
-        private final DvObject dvObject;
-        private final String redirect;
+        private  DvObject dvObject = null;
+        private  String url = null;
 
-        public Breadcrumb(String breadcrumbText, DvObject dvObject) {
+        public Breadcrumb( DvObject dvObject, String breadcrumbText) {
             this.breadcrumbText = breadcrumbText;
             this.dvObject = dvObject;
-            this.redirect = null;
         }
 
-        public Breadcrumb(String breadcrumbText, DvObject dvObject, String redirect) {
+        public Breadcrumb(String breadcrumbText,  String url) {
             this.breadcrumbText = breadcrumbText;
-            this.dvObject = dvObject;
-            this.redirect = redirect;
+            this.url = url;
         }
 
         public String getBreadcrumbText() {
@@ -284,8 +269,8 @@ public class DataverseHeaderFragment implements java.io.Serializable {
             return dvObject;
         }
 
-        public String getRedirect() {
-            return redirect;
+        public String getUrl() {
+            return url;
         }
 
     }
