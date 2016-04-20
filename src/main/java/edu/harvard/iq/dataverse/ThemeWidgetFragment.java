@@ -65,7 +65,7 @@ public class ThemeWidgetFragment implements java.io.Serializable {
     @Inject
     DataverseRequestServiceBean dvRequestService;
     
-    @Inject LoginWrapper loginWrapper;
+
     @Inject PermissionsWrapper permissionsWrapper;
     
     
