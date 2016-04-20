@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseThemeCommand;
 import edu.harvard.iq.dataverse.util.JsfHelper;
@@ -49,21 +50,24 @@ public class ThemeWidgetFragment implements java.io.Serializable {
     static final String DEFAULT_TEXT_COLOR = "888888";
     private static final Logger logger = Logger.getLogger(ThemeWidgetFragment.class.getCanonicalName());   
 
-    @Inject DataversePage dataversePage;
+
     private File tempDir;
     private File uploadedFile;
     private Dataverse editDv= new Dataverse();
     private HtmlInputText linkUrlInput;
     private HtmlInputText taglineInput;
  
-    @Inject
-    DataverseSession session;
+
     @EJB
     EjbDataverseEngine commandEngine;
     @EJB
     DataverseServiceBean dataverseServiceBean;
     @Inject
     DataverseRequestServiceBean dvRequestService;
+    
+    @Inject LoginWrapper loginWrapper;
+    @Inject PermissionsWrapper permissionsWrapper;
+    
     
     public HtmlInputText getLinkUrlInput() {
         return linkUrlInput;
@@ -118,8 +122,18 @@ public class ThemeWidgetFragment implements java.io.Serializable {
     }
    
 
-    public void initEditDv() {
+    public String initEditDv() {
         editDv = dataverseServiceBean.find(editDv.getId());
+        
+        // check if dv exists and user has permission
+        if (editDv == null) {
+            return permissionsWrapper.notFound();
+        }
+        if (!permissionsWrapper.canIssueCommand(editDv, UpdateDataverseThemeCommand.class)) {
+            return permissionsWrapper.notAuthorized();
+        }        
+        
+        
         if (editDv.getOwner()==null) {
             editDv.setThemeRoot(true);
         }
@@ -127,6 +141,7 @@ public class ThemeWidgetFragment implements java.io.Serializable {
             editDv.setDataverseTheme(initDataverseTheme());
             
         }
+        return null;
      }
     
     private DataverseTheme initDataverseTheme() {
@@ -260,9 +275,7 @@ public class ThemeWidgetFragment implements java.io.Serializable {
         }
         Command<Dataverse>    cmd = new UpdateDataverseThemeCommand(editDv, this.uploadedFile, dvRequestService.getDataverseRequest());
         try {
-            dataversePage.setDataverse(commandEngine.submit(cmd));           
-            dataversePage.setEditMode(null);
-            
+            commandEngine.submit(cmd);
         } catch (Exception ex) {
             logger.log(Level.SEVERE, "error updating dataverse theme", ex);
            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_FATAL, "Dataverse Save Failed-", JH.localize("dataverse.theme.failure")));
@@ -284,9 +297,7 @@ public class ThemeWidgetFragment implements java.io.Serializable {
         }
         Command<Dataverse>    cmd = new UpdateDataverseThemeCommand(editDv, this.uploadedFile, dvRequestService.getDataverseRequest());
         try {
-            dataversePage.setDataverse(commandEngine.submit(cmd));           
-            dataversePage.setEditMode(null);
-            
+            commandEngine.submit(cmd);            
         } catch (Exception ex) {
             logger.log(Level.SEVERE, "error updating dataverse Personal Website URL", ex);
            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_FATAL, "Dataverse Save Failed-", JH.localize("dataverse.theme.failure")));       
