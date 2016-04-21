@@ -1,22 +1,8 @@
 package edu.harvard.iq.dataverse.util.json;
 
-import edu.harvard.iq.dataverse.ControlledVocabularyValue;
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetDistributor;
-import edu.harvard.iq.dataverse.DatasetFieldType;
-import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
-import edu.harvard.iq.dataverse.DatasetFieldValue;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseContact;
-import edu.harvard.iq.dataverse.DataverseFacet;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
-import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.MetadataBlock;
-import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.api.Util;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
@@ -43,6 +29,8 @@ import java.util.LinkedList;
 import java.util.Map;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
+
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Convert objects to Json.
@@ -221,7 +209,31 @@ public class JsonPrinter {
 				.add("releaseTime", format(dsv.getReleaseTime()) )
 				.add("createTime", format(dsv.getCreateTime()) )
 				;
-                
+
+        // terms of use fields, including license
+        TermsOfUseAndAccess terms = dsv.getTermsOfUseAndAccess();
+        if (terms != null) {
+            addNullAware(bld, "termsOfUse", terms.getTermsOfUse());
+            addNullAware(bld, "termsOfAccess", terms.getTermsOfAccess());
+            addNullAware(bld, "confidentialityDeclaration", terms.getConfidentialityDeclaration());
+            addNullAware(bld, "specialPermissions", terms.getSpecialPermissions());
+            addNullAware(bld, "restrictions", terms.getRestrictions());
+            addNullAware(bld, "citationRequirements", terms.getCitationRequirements());
+            addNullAware(bld, "depositorRequirements", terms.getDepositorRequirements());
+            addNullAware(bld, "conditions", terms.getConditions());
+            addNullAware(bld, "disclaimer", terms.getDisclaimer());
+            addNullAware(bld, "dataAccessPlace", terms.getDataAccessPlace());
+            addNullAware(bld, "originalArchive", terms.getOriginalArchive());
+            addNullAware(bld, "availabilityStatus", terms.getAvailabilityStatus());
+            addNullAware(bld, "contactForAccess", terms.getContactForAccess());
+            addNullAware(bld, "sizeOfCollection", terms.getSizeOfCollection());
+            addNullAware(bld, "studyCompletion", terms.getStudyCompletion());
+            TermsOfUseAndAccess.License license = terms.getLicense();
+            if (license != null) {
+                addNullAware(bld, "license", license.name());
+            }
+        }
+
 		bld.add("metadataBlocks", jsonByBlocks(dsv.getDatasetFields()));
         
         bld.add( "files", jsonFileMetadatas(dsv.getFileMetadatas()) );
@@ -502,5 +514,11 @@ public class JsonPrinter {
             bld.add( json(j) );
         }
         return bld;
+    }
+
+    public static void addNullAware(JsonObjectBuilder builder, String name, String value)  {
+        if (StringUtils.isNotBlank(value)) {
+            builder.add(name, value);
+        }
     }
 }

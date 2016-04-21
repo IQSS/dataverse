@@ -211,7 +211,13 @@ public class JsonParser {
             terms.setContactForAccess(obj.getString("contactForAccess", null));
             terms.setSizeOfCollection(obj.getString("sizeOfCollection", null));
             terms.setStudyCompletion(obj.getString("studyCompletion", null));
-            /* License???*/
+            // License: only CC0 or NONE is currently supported
+            TermsOfUseAndAccess.License license = TermsOfUseAndAccess.License.NONE;
+            String jsonLicense = obj.getString("license", null);
+            if (jsonLicense != null && jsonLicense.equalsIgnoreCase("CC0")) {
+                license = TermsOfUseAndAccess.License.CC0;
+            }
+            terms.setLicense(license);
             dsv.setTermsOfUseAndAccess(terms);
             
             dsv.setDatasetFields(parseMetadataBlocks(obj.getJsonObject("metadataBlocks")));
