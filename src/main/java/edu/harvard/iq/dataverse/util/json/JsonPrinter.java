@@ -30,7 +30,6 @@ import java.util.Map;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
-import org.apache.commons.lang.StringUtils;
 
 /**
  * Convert objects to Json.
@@ -213,27 +212,26 @@ public class JsonPrinter {
         // terms of use fields, including license
         TermsOfUseAndAccess terms = dsv.getTermsOfUseAndAccess();
         if (terms != null) {
-            addNullAware(bld, "termsOfUse", terms.getTermsOfUse());
-            addNullAware(bld, "termsOfAccess", terms.getTermsOfAccess());
-            addNullAware(bld, "confidentialityDeclaration", terms.getConfidentialityDeclaration());
-            addNullAware(bld, "specialPermissions", terms.getSpecialPermissions());
-            addNullAware(bld, "restrictions", terms.getRestrictions());
-            addNullAware(bld, "citationRequirements", terms.getCitationRequirements());
-            addNullAware(bld, "depositorRequirements", terms.getDepositorRequirements());
-            addNullAware(bld, "conditions", terms.getConditions());
-            addNullAware(bld, "disclaimer", terms.getDisclaimer());
-            addNullAware(bld, "dataAccessPlace", terms.getDataAccessPlace());
-            addNullAware(bld, "originalArchive", terms.getOriginalArchive());
-            addNullAware(bld, "availabilityStatus", terms.getAvailabilityStatus());
-            addNullAware(bld, "contactForAccess", terms.getContactForAccess());
-            addNullAware(bld, "sizeOfCollection", terms.getSizeOfCollection());
-            addNullAware(bld, "studyCompletion", terms.getStudyCompletion());
+            bld.add("termsOfUse", terms.getTermsOfUse())
+                    .add("termsOfAccess", terms.getTermsOfAccess())
+                    .add("confidentialityDeclaration", terms.getConfidentialityDeclaration())
+                    .add("specialPermissions", terms.getSpecialPermissions())
+                    .add("restrictions", terms.getRestrictions())
+                    .add("citationRequirements", terms.getCitationRequirements())
+                    .add("depositorRequirements", terms.getDepositorRequirements())
+                    .add("conditions", terms.getConditions())
+                    .add("disclaimer", terms.getDisclaimer())
+                    .add("dataAccessPlace", terms.getDataAccessPlace())
+                    .add("originalArchive", terms.getOriginalArchive())
+                    .add("availabilityStatus", terms.getAvailabilityStatus())
+                    .add("contactForAccess", terms.getContactForAccess())
+                    .add("sizeOfCollection", terms.getSizeOfCollection())
+                    .add("studyCompletion", terms.getStudyCompletion());
             TermsOfUseAndAccess.License license = terms.getLicense();
             if (license != null) {
-                addNullAware(bld, "license", license.name());
+                bld.add("license", license.name());
             }
         }
-
 		bld.add("metadataBlocks", jsonByBlocks(dsv.getDatasetFields()));
         
         bld.add( "files", jsonFileMetadatas(dsv.getFileMetadatas()) );
@@ -514,11 +512,5 @@ public class JsonPrinter {
             bld.add( json(j) );
         }
         return bld;
-    }
-
-    public static void addNullAware(JsonObjectBuilder builder, String name, String value)  {
-        if (StringUtils.isNotBlank(value)) {
-            builder.add(name, value);
-        }
     }
 }
