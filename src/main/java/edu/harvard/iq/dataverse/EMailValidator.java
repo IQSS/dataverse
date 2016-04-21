@@ -36,7 +36,9 @@ public class EMailValidator implements ConstraintValidator<ValidateEmail, String
         /**
          * @todo Why are we validating the trimmed value rather than the value
          * itself? Which are we persisting to the database, the trimmed value or
-         * the non-trimmed value?
+         * the non-trimmed value? See also
+         * https://github.com/IQSS/dataverse/issues/2945 and
+         * https://github.com/IQSS/dataverse/issues/3044
          */
         boolean isValid = EmailValidator.getInstance().isValid(value.trim());
         if (!isValid) {
