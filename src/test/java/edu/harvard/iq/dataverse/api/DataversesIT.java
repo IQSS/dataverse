@@ -16,6 +16,10 @@ public class DataversesIT {
     private static String apiToken1;
     private static String dataverseAlias1;
     private static String dataverseAlias2;
+    private static String dataverseAlias3;
+    private static int datasetId1;
+    private static int datasetId2;
+    private static int datasetId3;
 
     @BeforeClass
     public static void setUpClass() {
@@ -63,6 +67,42 @@ public class DataversesIT {
 
     }
 
+    @Test
+    public void testCreateDatasets() {
+
+        // create test dataverse
+        Response createDataverse1Response = UtilIT.createRandomDataverse(apiToken1);
+        dataverseAlias3 = UtilIT.getAliasFromResponse(createDataverse1Response);
+
+        // migrate dataset with global ID
+        Response createDataset1Response = UtilIT.createDatasetWithGlobalIdViaNativeApi(dataverseAlias3, apiToken1,
+                UtilIT.getJson("scripts/search/tests/data/dataset-finch2.json"), "MIGRATION");
+        assertEquals(201, createDataset1Response.getStatusCode());
+        datasetId1 = UtilIT.getDatasetIdFromResponse(createDataset1Response);
+
+        // attempt to migrate dataset with duplicate global ID
+        Response createDataset2Response = UtilIT.createDatasetWithGlobalIdViaNativeApi(dataverseAlias3, apiToken1,
+                UtilIT.getJson("scripts/search/tests/data/dataset-finch2.json"), "MIGRATION");
+        assertEquals(400, createDataset2Response.getStatusCode());
+
+        // attempt to migrate dataset missing global ID param: authority
+        Response createDataset3Response = UtilIT.createDatasetWithGlobalIdViaNativeApi(dataverseAlias3, apiToken1,
+                UtilIT.getJson("scripts/search/tests/data/dataset-finch3.json"), "MIGRATION");
+        assertEquals(400, createDataset3Response.getStatusCode());
+
+        // migrate dataset with no import type specified (should be reset to MIGRATION since all global ID params are present)
+        Response createDataset4Response = UtilIT.createDatasetWithGlobalIdViaNativeApi(dataverseAlias3, apiToken1,
+                UtilIT.getJson("scripts/search/tests/data/dataset-finch4.json"), null);
+        assertEquals(201, createDataset4Response.getStatusCode());
+        datasetId2 = UtilIT.getDatasetIdFromResponse(createDataset4Response);
+
+        // normal dataset creation (NEW, no existing DOI to migrate)
+        Response createDataset5Response = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias3, apiToken1);
+        assertEquals(201, createDataset5Response.getStatusCode());
+        datasetId3 = UtilIT.getDatasetIdFromResponse(createDataset5Response);
+
+    }
+
     @AfterClass
     public static void tearDownClass() {
         boolean disabled = false;
@@ -70,6 +110,22 @@ public class DataversesIT {
         if (disabled) {
             return;
         }
+
+        Response deleteDataset1Response = UtilIT.deleteDatasetViaNativeApi(datasetId1, apiToken1);
+        deleteDataset1Response.prettyPrint();
+        assertEquals(200, deleteDataset1Response.getStatusCode());
+
+        Response deleteDataset2Response = UtilIT.deleteDatasetViaNativeApi(datasetId2, apiToken1);
+        deleteDataset2Response.prettyPrint();
+        assertEquals(200, deleteDataset2Response.getStatusCode());
+
+        Response deleteDataset3Response = UtilIT.deleteDatasetViaNativeApi(datasetId3, apiToken1);
+        deleteDataset3Response.prettyPrint();
+        assertEquals(200, deleteDataset3Response.getStatusCode());
+
+        Response deleteDataverse1Response = UtilIT.deleteDataverse(dataverseAlias3, apiToken1);
+        deleteDataverse1Response.prettyPrint();
+        assertEquals(200, deleteDataverse1Response.getStatusCode());
 
         Response deleteUser1Response = UtilIT.deleteUser(username1);
         deleteUser1Response.prettyPrint();
