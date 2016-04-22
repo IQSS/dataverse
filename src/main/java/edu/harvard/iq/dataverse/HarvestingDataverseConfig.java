@@ -27,15 +27,17 @@ import javax.persistence.TemporalType;
  *
  * @author Leonid Andreev
  */
-@Entity
+
 @Table(indexes = {@Index(columnList="dataverse_id")
 		, @Index(columnList="harvesttype")
 		, @Index(columnList="harveststyle")
 		, @Index(columnList="harvestingurl")})
+@Entity
 public class HarvestingDataverseConfig implements Serializable {
     private static final long serialVersionUID = 1L;
+    
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     public Long getId() {
@@ -45,7 +47,7 @@ public class HarvestingDataverseConfig implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
-    
+
     public static final String HARVEST_TYPE_OAI="oai";
     public static final String HARVEST_TYPE_NESSTAR="nesstar";
     
@@ -83,7 +85,17 @@ public class HarvestingDataverseConfig implements Serializable {
         this.dataverse = dataverse;
     }
 
-    String harvestType;
+    private String name; 
+    
+    public String getName() {
+        return name;
+    }
+    
+    public void setName(String name) {
+        this.name = name; 
+    }
+    
+    private String harvestType;
 
     public String getHarvestType() {
         return harvestType;
@@ -93,11 +105,12 @@ public class HarvestingDataverseConfig implements Serializable {
         this.harvestType = harvestType;
     }
 
+    
     public boolean isOai() {
         return HARVEST_TYPE_OAI.equals(harvestType);
     }
     
-    String harvestStyle;
+    private String harvestStyle;
 
     public String getHarvestStyle() {
         return harvestStyle;
@@ -204,8 +217,9 @@ public class HarvestingDataverseConfig implements Serializable {
     // I.e. the last time we ran a harvest that actually resulted in 
     // some Datasets created, updated or deleted:
     
-    private Date lastNonEmptyHarvestTime;
     @Temporal(value = TemporalType.TIMESTAMP)
+    private Date lastNonEmptyHarvestTime;
+    
     public Date getLastNonEmptyHarvestTime() {
         return lastNonEmptyHarvestTime;
     }
