@@ -35,6 +35,7 @@
                 </ui:fragment>
                 <div id="login-container" class="row">
                     <div id="builtinColumn" class="col-md-6" jsf:rendered="#{LoginPage.authenticationProvidersAvailable}">
+                        <h2 style="margin-top:0;" jsf:rendered="#{systemConfig.shibEnabled == true}">#{bundle['login.builtin']}</h2>
                         <h:form id="loginForm" styleClass="form-horizontal">
                             <p:focus context="loginForm"/>
                             <ui:remove>
