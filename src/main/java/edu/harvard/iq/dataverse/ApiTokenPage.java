@@ -3,16 +3,18 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
-import javax.faces.application.FacesMessage;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+/**
+ * @todo Rename this to ApiTokenFragment? The separate page is being taken out
+ * per https://github.com/IQSS/dataverse/issues/3086
+ */
 @ViewScoped
 @Named("ApiTokenPage")
 public class ApiTokenPage implements java.io.Serializable {

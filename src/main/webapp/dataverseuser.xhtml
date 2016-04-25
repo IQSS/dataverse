@@ -27,7 +27,7 @@
                 <h:form id="dataverseUserForm">
                     <p:focus context="dataverseUserForm"/>
                     <div class="clearfix" jsf:rendered="#{empty DataverseUserPage.editMode}">
-                        <div class="btn-group pull-right">
+                        <div class="btn-group pull-right" jsf:rendered="#{!empty DataverseUserPage.builtinUser}">
                             <button type="button" id="editAccount" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                                 <ui:fragment rendered="#{!empty DataverseUserPage.builtinUser}">
                                     <span class="glyphicon glyphicon-pencil"/> #{bundle['account.edit']} 
@@ -50,11 +50,6 @@
                                         </p:commandLink>
                                     </li>
                                 </ui:fragment>
-                                <li>
-                                    <h:outputLink value="/apitoken.xhtml">
-                                        <h:outputText value="#{bundle.apiTaken}" />
-                                    </h:outputLink>
-                                </li>
                             </ul>
                         </div>
                     </div>
@@ -330,6 +325,24 @@
                                         <p class="form-control-static">#{DataverseUserPage.builtinUser.position}</p>
                                     </div>
                                 </div>
+                            </div>
+                        </p:tab>
+                        <p:tab id="apiTokenTab" title="API Token">
+                            <p class="help-block">
+                                <span class="glyphicon glyphicon-info-sign"/>&#160;
+                                <h:outputFormat value="#{bundle['apitoken.message']}" escape="false">
+                                    <f:param value="&lt;a href=&#34;#{systemConfig.guidesBaseUrl}/#{systemConfig.version}/api&#34; target=&#34;_blank&#34;&gt;"/>
+                                    <f:param value="&lt;/a&gt;"/>
+                                </h:outputFormat>
+                            </p>
+                            <div class="highlight">
+                                 <pre>
+                                    <code class="language-html" data-lang="html">${ApiTokenPage.apiToken}</code>
+                                 </pre>
+                            </div>
+                            <div>
+                                <button class="btn btn-default" jsf:action="#{ApiTokenPage.generate()}">
+                                    #{ApiTokenPage.checkForApiToken() ? bundle['apitoken.regenerateBtn'] : bundle['apitoken.generateBtn']}                                </button>
                             </div>
                         </p:tab>
                         <ui:remove>
