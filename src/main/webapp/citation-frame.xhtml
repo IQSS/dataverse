@@ -33,7 +33,7 @@
                 <a href="https://dataverse.harvard.edu/" title="Original">https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.XXXX/DVN/XXXXXX</a>. Orginal DOI: http://dx.doi.org/10.XXXX/DVN/XXXXXX</p>
         </div>
         
-        <iframe id="citation-forward" src="http://gking.harvard.edu/data" width="100%" style="position: absolute; top:40px; height: calc(100% - 40px); border:0; background:url(/resources/images/ajax-loading.gif) no-repeat 50% 50%;"></iframe>
+        <iframe id="citation-forward" src="#{param['citationRedirectURL']}?persistentId=#{param['persistentId']}" width="100%" style="position: absolute; top:40px; height: calc(100% - 40px); border:0; background:url(/resources/images/ajax-loading.gif) no-repeat 50% 50%;"></iframe>
         
         <ui:include src="google-analytics-snippet.xhtml"></ui:include>
     </h:body>
