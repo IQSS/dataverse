@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.util.MarkupChecker;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.Serializable;
@@ -600,14 +601,92 @@ public class DatasetVersion implements Serializable {
         //todo get "Production Date" from datasetfieldvalue table
         return "Production Date";
     }
+    
+    public String getDescription() {
+        for (DatasetField dsf : this.getDatasetFields()) {
+            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.description)) {
+                String descriptionString = "";
+                if (dsf.getDatasetFieldCompoundValues() != null && dsf.getDatasetFieldCompoundValues().get(0) != null) {
+                    DatasetFieldCompoundValue descriptionValue = dsf.getDatasetFieldCompoundValues().get(0);
+                    for (DatasetField subField : descriptionValue.getChildDatasetFields()) {
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.descriptionText) && !subField.isEmptyForDisplay()) {
+                            descriptionString = subField.getValue();
+                        }
+                    }
+                }
+                return MarkupChecker.sanitizeBasicHTML(descriptionString);
+            }
+        }
+        return "";
+    }
+    
+    public List<String[]> getDatasetContacts(){
+        List <String[]> retList = new ArrayList<>();
+        for (DatasetField dsf : this.getDatasetFields()) {
+            Boolean addContributor = true;
+            String contributorName = "";
+            String contributorAffiliation = "";
+            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContact)) {
+                for (DatasetFieldCompoundValue authorValue : dsf.getDatasetFieldCompoundValues()) {
+                    for (DatasetField subField : authorValue.getChildDatasetFields()) {
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContactName)) {
+                            if (subField.isEmptyForDisplay()) {
+                                addContributor = false;
+                            }
+                            contributorName = subField.getDisplayValue();
+                        }
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContactAffiliation)) {
+                            contributorAffiliation = subField.getDisplayValue();
+                        }
+
+                    }
+                    if (addContributor) {
+                        String[] datasetContributor = new String[] {contributorName, contributorAffiliation};
+                        retList.add(datasetContributor);
+                    }
+                }
+            }
+        }       
+        return retList;        
+    }
+    
+    public List<String[]> getDatasetProducers(){
+        List <String[]> retList = new ArrayList<>();
+        for (DatasetField dsf : this.getDatasetFields()) {
+            Boolean addContributor = true;
+            String contributorName = "";
+            String contributorAffiliation = "";
+            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.producer)) {
+                for (DatasetFieldCompoundValue authorValue : dsf.getDatasetFieldCompoundValues()) {
+                    for (DatasetField subField : authorValue.getChildDatasetFields()) {
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.producerName)) {
+                            if (subField.isEmptyForDisplay()) {
+                                addContributor = false;
+                            }
+                            contributorName = subField.getDisplayValue();
+                        }
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.producerAffiliation)) {
+                            contributorAffiliation = subField.getDisplayValue();
+                        }
+
+                    }
+                    if (addContributor) {
+                        String[] datasetContributor = new String[] {contributorName, contributorAffiliation};
+                        retList.add(datasetContributor);
+                    }
+                }
+            }
+        }       
+        return retList;        
+    }
 
     public List<DatasetAuthor> getDatasetAuthors() {
         //todo get "List of Authors" from datasetfieldvalue table
-        List retList = new ArrayList();
+        List <DatasetAuthor> retList = new ArrayList<>();
         for (DatasetField dsf : this.getDatasetFields()) {
             Boolean addAuthor = true;
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.author)) {
-                for (DatasetFieldCompoundValue authorValue : dsf.getDatasetFieldCompoundValues()) {
+                for (DatasetFieldCompoundValue authorValue : dsf.getDatasetFieldCompoundValues()) {                   
                     DatasetAuthor datasetAuthor = new DatasetAuthor();
                     for (DatasetField subField : authorValue.getChildDatasetFields()) {
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorName)) {
@@ -619,8 +698,14 @@ public class DatasetVersion implements Serializable {
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorAffiliation)) {
                             datasetAuthor.setAffiliation(subField);
                         }
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorIdType)){
+                             datasetAuthor.setIdType(subField.getDisplayValue());
+                        }
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorIdValue)){
+                            datasetAuthor.setIdValue(subField.getDisplayValue());
+                        }
                     }
-                    if (addAuthor) {
+                    if (addAuthor) {                       
                         retList.add(datasetAuthor);
                     }
                 }

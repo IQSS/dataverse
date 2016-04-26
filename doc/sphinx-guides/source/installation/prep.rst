@@ -56,7 +56,7 @@ When planning your installation you should be aware of the following components 
 - PostgreSQL: a relational database.
 - Solr: a search engine. A Dataverse-specific schema is provided.
 - SMTP server: for sending mail for password resets and other notifications.
-- Persistent indentifer service: DOI support is provided. An EZID subscription is required for production use. 
+- Persistent indentifier service: DOI support is provided. An EZID subscription or DataCite account is required for production use. 
 
 There are a number of optional components you may choose to install or configure, including:
 
@@ -101,6 +101,6 @@ Here are some questions to keep in the back of your mind as you test and move in
 Next Steps
 ----------
 
-Proceed to the :doc:`prerequisites` section will help you get ready to run the Dataverse installation script.
+Proceed to the :doc:`prerequisites` section which will help you get ready to run the Dataverse installation script.
 
 .. |3webservers| image:: ./img/3webservers.png

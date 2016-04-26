@@ -10,7 +10,10 @@ Running the Dataverse Installer
 -------------------------------
 
 A scripted, interactive installer is provided. This script will configure your Glassfish environment, create the database, set some required options and start the application. Some configuration tasks will still be required after you run the installer! So make sure to consult the next section. 
-At this point the installer only runs on RHEL 6 and similar.
+At this point the installer only runs on RHEL 6 and similar and MacOS X (recommended as the platform for developers). 
+
+Generally, the installer has a better chance of succeeding if you run it against a freshly installed Glassfish node that still has all the default configuration settings. In any event, please make sure that it is still configured to accept http connections on port 8080 - because that's where the installer expects to find the application once it's deployed. 
+
 
 You should have already downloaded the installer from https://github.com/IQSS/dataverse/releases when setting up and starting Solr under the :doc:`prerequisites` section. Again, it's a zip file with "dvinstall" in the name.
 
@@ -21,31 +24,47 @@ Execute the installer script like this::
         # cd dvinstall
         # ./install
 
-The script will prompt you for some configuration values. If this is a test/evaluation installation, it should be safe to accept the defaults for most of the settings:
+**NEW in Dataverse 4.3:** It is no longer necessary to run the installer as root!
+Just make sure the user that runs the installer has the write permission in the Glassfish directory. For example, if your Glassfish directory is owned by root, and you try to run the installer as a regular user, it's not going to work. 
+(Do note, that you want the Glassfish directory to be owned by the same user that will be running Glassfish. And you most likely won't need to run it as root. The only reason to run it as root would be to be able to run the application on the default HTTP(S) ports 80 and 443, instead of 8080 and 8181. However, an easier, and more secure way to achieve that would be to instead keep Glassfish running on a high port, and hide it behind an Apache Proxy, via AJP, running on port 80. This configuration is in fact required if you choose to have your Dataverse support Shibboleth authentication. See more discussion on this here: :doc:`shibboleth`.)
+
+
+The script will prompt you for some configuration values. If this is a test/evaluation installation, it may be possible to accept the default values provided for most of the settings:
 
 - Internet Address of your host: localhost
 - Glassfish Directory: /usr/local/glassfish4
+- Administrator email address for this Dataverse: (none)
 - SMTP (mail) server to relay notification messages: localhost
-- Postgres Server: localhost
+- Postgres Server Address: [127.0.0.1]
 - Postgres Server Port: 5432
+- Postgres ADMIN password: secret
 - Name of the Postgres Database: dvndb
 - Name of the Postgres User: dvnapp
 - Postgres user password: secret
+- Remote Solr indexing service: LOCAL
+- Will this Dataverse be using TwoRavens application: NOT INSTALLED
 - Rserve Server: localhost
 - Rserve Server Port: 6311
 - Rserve User Name: rserve
 - Rserve User Password: rserve
 
+**New, as of 4.3:**
+
+- Administration Email address for the installation;
+- Postgres admin password - We'll need it in order to create the database and user for the Dataverse to use, without having to run the installer as root. If you don't know your Postgres admin password, you may simply set the authorization level for localhost to "trust" in the PostgreSQL ``pg_hba.conf`` file (See the PostgreSQL section in the Prerequisites). If this is a production evnironment, you may want to change it back to something more secure, such as "password" or "md5", after the installation is complete.
+- Network address of a remote Solr search engine service (if needed) - In most cases, you will be running your Solr server on the same host as the Dataverse application (then you will want to leave this set to the default value of ``LOCAL``). But in a serious production environment you may set it up on a dedicated separate server.
+- The URL of the TwoRavens application GUI, if this Dataverse node will be using a companion TwoRavens installation. Otherwise, leave it set to ``NOT INSTALLED``. 
+
 The script is to a large degree a derivative of the old installer from DVN 3.x. It is written in Perl. If someone in the community is eager to rewrite it, perhaps in a different language, please get in touch. :)
 
 All the Glassfish configuration tasks performed by the installer are isolated in the shell script ``dvinstall/glassfish-setup.sh`` (as ``asadmin`` commands). 
 
-As the installer finishes, it mentions a script called ``post-install-api-block.sh`` which is **very important** to execute for any production installation of Dataverse. Security will be covered in :doc:`config` section but for now, let's make sure your installation is working.
+**IMPORTANT:** Please note, that "out of the box" the installer will configure the Dataverse to leave unrestricted access to the administration APIs from (and only from) localhost. Please consider the security implications of this arrangement (anyone with shell access to the server can potentially mess with your Dataverse). An alternative solution would be to block open access to these sensitive API endpoints completely; and to only allow requests supplying a pre-defined "unblock token" (password). If you prefer that as a solution, please consult the supplied script ``post-install-api-block.sh`` for examples on how to set it up.
 
 Logging In
 ----------
 
-Out of the box, Glassfish runs on port 8080 and 8181 rather than 80 and 443, respectively, so visiting http://localhost:8080 (substituting your hostname) should bring up a login page. See the :doc:`shibboleth` page for more on ports, but for now, let's confirm we can log in by using port 8080. Poke a temporary hole in your firewall.
+Out of the box, Glassfish runs on port 8080 and 8181 rather than 80 and 443, respectively, so visiting http://localhost:8080 (substituting your hostname) should bring up a login page. See the :doc:`shibboleth` page for more on ports, but for now, let's confirm we can log in by using port 8080. Poke a temporary hole in your firewall, if needed. 
 
 Superuser Account
 +++++++++++++++++
@@ -61,8 +80,6 @@ Use the following credentials to log in:
 - password: admin
 
 Congratulations! You have a working Dataverse installation. Soon you'll be tweeting at `@dataverseorg <https://twitter.com/dataverseorg>`_ asking to be added to the map at http://dataverse.org :)
-
-(While you're logged in, you should go ahead and change the email address of the dataverseAdmin account to a real one rather than "dataverse@mailinator.com" so that you receive notifications.)
 
 Trouble? See if you find an answer in the troubleshooting section below.
 
