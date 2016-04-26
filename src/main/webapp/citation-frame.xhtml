@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head>
+        <f:facet name="first">
+            <title><h:outputText value="Hosted by Dataverse"/></title>
+            <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+            <meta http-equiv="Content-Language" content="en"/>
+            <meta name="viewport" content="width=device-width, initial-scale=1"/>
+            <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+            <meta name="description" content="#{bundle['head.meta.description']}"/>
+        </f:facet>
+        <link type="image/png" rel="icon" href="#{resource['images/favicondataverse.png']}" />
+        <link type="image/png" rel="image_src" href="#{resource['images/dataverseproject.png']}" />
+        <link type="text/css" rel="stylesheet" href="#{resource['bs/css/bootstrap.min.css']}?version=#{systemConfig.getVersion()}" />
+        <link type="text/css" rel="stylesheet" href="#{resource['bs/css/bootstrap-theme.min.css']}?version=#{systemConfig.getVersion()}" />
+        <link type="text/css" rel="stylesheet" href="#{resource['css/structure.css']}?version=#{systemConfig.getVersion()}" />
+        <ui:fragment rendered="#{!widgetWrapper.widgetView}">
+            <script>
+                // Break out of iframe
+                if (window !== top) top.location = window.location;
+            </script>
+        </ui:fragment>
+    </h:head>
+
+    <h:body>
+        <div style="width:100%;height:40px;background:gold;">
+            <p class="small">This data is being hosted by the {Root} Dataverse. If the site below is not loading properly, you can also find the data there, by following this link:<br/> 
+                <a href="https://dataverse.harvard.edu/" title="Original">https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.XXXX/DVN/XXXXXX</a>. Orginal DOI: http://dx.doi.org/10.XXXX/DVN/XXXXXX</p>
+        </div>
+        
+        <iframe id="citation-forward" src="http://gking.harvard.edu/data" width="100%" style="position: absolute; top:40px; height: calc(100% - 40px); border:0; background:url(/resources/images/ajax-loading.gif) no-repeat 50% 50%;"></iframe>
+        
+        <ui:include src="google-analytics-snippet.xhtml"></ui:include>
+    </h:body>
+</html>
