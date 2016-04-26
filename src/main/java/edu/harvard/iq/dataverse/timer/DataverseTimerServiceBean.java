@@ -7,7 +7,7 @@ package edu.harvard.iq.dataverse.timer;
 
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.HarvestingDataverseConfig;
+import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.harvest.client.HarvestTimerInfo;
 import edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean;
 import java.io.Serializable;
@@ -129,7 +129,7 @@ public class DataverseTimerServiceBean implements Serializable {
     }
 
     private void createHarvestTimer(Dataverse harvestedDataverse) {
-        HarvestingDataverseConfig harvestedDataverseConfig = harvestedDataverse.getHarvestingDataverseConfig();
+        HarvestingClient harvestedDataverseConfig = harvestedDataverse.getHarvestingClientConfig();
         
         if (harvestedDataverseConfig == null) {
             logger.info("ERROR: No Harvesting Configuration found for dataverse id="+harvestedDataverse.getId());
@@ -141,7 +141,7 @@ public class DataverseTimerServiceBean implements Serializable {
             Calendar initExpiration = Calendar.getInstance();
             initExpiration.set(Calendar.MINUTE, 0);
             initExpiration.set(Calendar.SECOND, 0);
-            if (harvestedDataverseConfig.getSchedulePeriod().equals(HarvestingDataverseConfig.SCHEDULE_PERIOD_DAILY)) {
+            if (harvestedDataverseConfig.getSchedulePeriod().equals(HarvestingClient.SCHEDULE_PERIOD_DAILY)) {
                 intervalDuration = 1000 * 60 * 60 * 24;
                 initExpiration.set(Calendar.HOUR_OF_DAY, harvestedDataverseConfig.getScheduleHourOfDay());
 

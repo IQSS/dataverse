@@ -2,7 +2,7 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.HarvestingDataverseConfig;
+import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean;
@@ -99,7 +99,7 @@ public class Harvesting extends AbstractApiBean {
     }
     
     public static JsonObjectBuilder harvestingConfigAsJson(Dataverse dataverse) {
-        HarvestingDataverseConfig harvestingConfig = dataverse.getHarvestingDataverseConfig();
+        HarvestingClient harvestingConfig = dataverse.getHarvestingClientConfig();
         if (harvestingConfig == null) {
             return null; 
         }

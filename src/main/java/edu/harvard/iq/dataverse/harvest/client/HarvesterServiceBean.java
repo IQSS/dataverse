@@ -9,7 +9,6 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.HarvestingDataverseConfig;
 import edu.harvard.iq.dataverse.timer.DataverseTimerServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.io.File;
@@ -93,7 +92,7 @@ public class HarvesterServiceBean {
         List dataverses = dataverseService.getAllHarvestedDataverses();
         for (Iterator it = dataverses.iterator(); it.hasNext();) {
             Dataverse dataverse = (Dataverse) it.next();
-            HarvestingDataverseConfig harvestingConfig = dataverse.getHarvestingDataverseConfig();
+            HarvestingClient harvestingConfig = dataverse.getHarvestingClientConfig();
             if (harvestingConfig == null) {
                 logger.warning("ERROR: no harvesting config found for dataverse id="+dataverse.getId());
             } else if (harvestingConfig.isScheduled()) {
@@ -125,7 +124,7 @@ public class HarvesterServiceBean {
     }
 
     private void createHarvestTimer(Dataverse harvestingDataverse) {
-        HarvestingDataverseConfig harvestingDataverseConfig = harvestingDataverse.getHarvestingDataverseConfig();
+        HarvestingClient harvestingDataverseConfig = harvestingDataverse.getHarvestingClientConfig();
         
         if (harvestingDataverseConfig == null) {
             logger.info("ERROR: No Harvesting Configuration found for dataverse id="+harvestingDataverse.getId());
@@ -171,7 +170,7 @@ public class HarvesterServiceBean {
             throw new IOException("No such Dataverse: id="+dataverseId);
         }
         
-        HarvestingDataverseConfig harvestingDataverseConfig = harvestingDataverse.getHarvestingDataverseConfig();
+        HarvestingClient harvestingDataverseConfig = harvestingDataverse.getHarvestingClientConfig();
         
         if (harvestingDataverseConfig == null) {
             throw new IOException("Could not find Harvesting Config for Dataverse id="+dataverseId);
@@ -373,7 +372,7 @@ public class HarvesterServiceBean {
     public Long getRecord(Logger hdLogger, Dataverse dataverse, String identifier, String metadataPrefix, MutableBoolean recordErrorOccurred) {
         String errMessage = null;
 
-        HarvestingDataverseConfig harvestingConfig = dataverse.getHarvestingDataverseConfig();
+        HarvestingClient harvestingConfig = dataverse.getHarvestingClientConfig();
         
         if (harvestingConfig == null) {
             errMessage = "Could not find Harvesting Config for Dataverse id="+dataverse.getId();

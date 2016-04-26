@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.util.MarkupChecker;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.util.StringUtil;
@@ -811,9 +812,9 @@ public class DatasetVersion implements Serializable {
         // It is always part of the citation for the local datasets; 
         // And for *some* harvested datasets. 
         if (!this.getDataset().isHarvested()
-                || HarvestingDataverseConfig.HARVEST_STYLE_VDC.equals(this.getDataset().getOwner().getHarvestingDataverseConfig().getHarvestStyle())
-                || HarvestingDataverseConfig.HARVEST_STYLE_ICPSR.equals(this.getDataset().getOwner().getHarvestingDataverseConfig().getHarvestStyle())
-                || HarvestingDataverseConfig.HARVEST_STYLE_DATAVERSE.equals(this.getDataset().getOwner().getHarvestingDataverseConfig().getHarvestStyle())) {
+                || HarvestingClient.HARVEST_STYLE_VDC.equals(this.getDataset().getOwner().getHarvestingClientConfig().getHarvestStyle())
+                || HarvestingClient.HARVEST_STYLE_ICPSR.equals(this.getDataset().getOwner().getHarvestingClientConfig().getHarvestStyle())
+                || HarvestingClient.HARVEST_STYLE_DATAVERSE.equals(this.getDataset().getOwner().getHarvestingClientConfig().getHarvestStyle())) {
             if (!StringUtil.isEmpty(this.getDataset().getIdentifier())) {
                 if (!StringUtil.isEmpty(str)) {
                     str += ", ";

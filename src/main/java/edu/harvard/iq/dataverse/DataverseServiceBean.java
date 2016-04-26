@@ -511,7 +511,7 @@ public class DataverseServiceBean implements java.io.Serializable {
         Dataverse hd = em.find(Dataverse.class, hdId);
         em.refresh(hd);
         if (hd.isHarvested()) {
-            hd.getHarvestingDataverseConfig().setHarvestResult(result);
+            hd.getHarvestingClientConfig().setHarvestResult(result);
         }
     }
     
@@ -520,7 +520,7 @@ public class DataverseServiceBean implements java.io.Serializable {
         Dataverse hd = em.find(Dataverse.class, hdId);
         em.refresh(hd);
         if (hd.isHarvested()) {
-            hd.getHarvestingDataverseConfig().setHarvestingNow(false);
+            hd.getHarvestingClientConfig().setHarvestingNow(false);
         }
        
     }
@@ -530,7 +530,7 @@ public class DataverseServiceBean implements java.io.Serializable {
         Dataverse hd = em.find(Dataverse.class, hdId);
         em.refresh(hd);
         if (hd.isHarvested()) {
-            hd.getHarvestingDataverseConfig().setHarvestingNow(inProgress);
+            hd.getHarvestingClientConfig().setHarvestingNow(inProgress);
         }
     }
     
@@ -539,7 +539,7 @@ public class DataverseServiceBean implements java.io.Serializable {
         Dataverse hd = em.find(Dataverse.class, hdId);
         em.refresh(hd);
         if (hd.isHarvested()) {
-            hd.getHarvestingDataverseConfig().setLastHarvestTime(lastHarvestTime);
+            hd.getHarvestingClientConfig().setLastHarvestTime(lastHarvestTime);
         }
     }
     
@@ -548,14 +548,14 @@ public class DataverseServiceBean implements java.io.Serializable {
         Dataverse hd = em.find(Dataverse.class, hdId);
         em.refresh(hd);
         if (hd.isHarvested()) {
-            hd.getHarvestingDataverseConfig().setLastHarvestTime(currentTime);
-            hd.getHarvestingDataverseConfig().setLastSuccessfulHarvestTime(currentTime);
-            hd.getHarvestingDataverseConfig().setHarvestResult(edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean.HARVEST_RESULT_SUCCESS);
+            hd.getHarvestingClientConfig().setLastHarvestTime(currentTime);
+            hd.getHarvestingClientConfig().setLastSuccessfulHarvestTime(currentTime);
+            hd.getHarvestingClientConfig().setHarvestResult(edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean.HARVEST_RESULT_SUCCESS);
             
             if (harvestedCount > 0 || failedCount > 0) {
-                hd.getHarvestingDataverseConfig().setLastNonEmptyHarvestTime(currentTime);
-                hd.getHarvestingDataverseConfig().setHarvestedDatasetCount(new Long(harvestedCount));
-                hd.getHarvestingDataverseConfig().setFailedDatasetCount(new Long(failedCount));
+                hd.getHarvestingClientConfig().setLastNonEmptyHarvestTime(currentTime);
+                hd.getHarvestingClientConfig().setHarvestedDatasetCount(new Long(harvestedCount));
+                hd.getHarvestingClientConfig().setFailedDatasetCount(new Long(failedCount));
                 /*TODO: record the number of deleted datasets! */
             }
         }
@@ -567,9 +567,9 @@ public class DataverseServiceBean implements java.io.Serializable {
         em.refresh(hd);
         if (hd.isHarvested()) {
             /* TODO: 
-                hd.getHarvestingDataverseConfig().setLastSuccessfulNonZeroHarvestTime(currentTime);
-                hd.getHarvestingDataverseConfig().setHarvestedStudyCountNonZero(new Long(harvestedCount));
-                hd.getHarvestingDataverseConfig().setFailedStudyCountNonZero(new Long(failedCount));
+                hd.getHarvestingClientConfig().setLastSuccessfulNonZeroHarvestTime(currentTime);
+                hd.getHarvestingClientConfig().setHarvestedStudyCountNonZero(new Long(harvestedCount));
+                hd.getHarvestingClientConfig().setFailedStudyCountNonZero(new Long(failedCount));
             *
         }
     }*/
@@ -579,8 +579,8 @@ public class DataverseServiceBean implements java.io.Serializable {
         Dataverse hd = em.find(Dataverse.class, hdId);
         em.refresh(hd);
         if (hd.isHarvested()) {
-            hd.getHarvestingDataverseConfig().setLastHarvestTime(currentTime);
-            hd.getHarvestingDataverseConfig().setHarvestResult(edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean.HARVEST_RESULT_FAILED);
+            hd.getHarvestingClientConfig().setLastHarvestTime(currentTime);
+            hd.getHarvestingClientConfig().setHarvestResult(edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean.HARVEST_RESULT_FAILED);
         }
     }    
 }  

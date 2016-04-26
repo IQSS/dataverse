@@ -3,8 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.harvest.client;
 
+import edu.harvard.iq.dataverse.Dataverse;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -33,7 +34,7 @@ import javax.persistence.TemporalType;
 		, @Index(columnList="harveststyle")
 		, @Index(columnList="harvestingurl")})
 @Entity
-public class HarvestingDataverseConfig implements Serializable {
+public class HarvestingClient implements Serializable {
     private static final long serialVersionUID = 1L;
     
     @Id
@@ -67,7 +68,7 @@ public class HarvestingDataverseConfig implements Serializable {
     public static final String SCHEDULE_PERIOD_DAILY="daily";
     public static final String SCHEDULE_PERIOD_WEEKLY="weekly";
     
-    public HarvestingDataverseConfig() {
+    public HarvestingClient() {
         this.harvestType = HARVEST_TYPE_OAI; // default harvestType
         this.harvestStyle = HARVEST_STYLE_DATAVERSE; // default harvestStyle
     }
@@ -171,6 +172,7 @@ public class HarvestingDataverseConfig implements Serializable {
         this.metadataPrefix = metadataPrefix;
     }
     
+    /* move the fields below to the new HarvestingClientRun class: */
     private String harvestResult;
     
     public String getHarvestResult() {
@@ -256,6 +258,7 @@ public class HarvestingDataverseConfig implements Serializable {
     public void setDeletedDatasetCount(Long deletedDatasetCount) {
         this.deletedDatasetCount = deletedDatasetCount;
     }
+    /**/
     
     private boolean scheduled;
 
@@ -336,10 +339,10 @@ public class HarvestingDataverseConfig implements Serializable {
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof HarvestingDataverseConfig)) {
+        if (!(object instanceof HarvestingClient)) {
             return false;
         }
-        HarvestingDataverseConfig other = (HarvestingDataverseConfig) object;
+        HarvestingClient other = (HarvestingClient) object;
         if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
