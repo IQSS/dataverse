@@ -1399,7 +1399,7 @@ public class DatasetPage implements java.io.Serializable {
                 dataset = datasetService.findByGlobalId(persistentId);
                 if (dataset == null) {
                     logger.warning("No such dataset: "+persistentId);
-                    return "/404.xhtml";
+                    return permissionsWrapper.notFound();
                 }
                 logger.fine("retrived dataset, id="+dataset.getId());
                 
@@ -1413,7 +1413,7 @@ public class DatasetPage implements java.io.Serializable {
                 dataset = datasetService.find(dataset.getId());
                 if (dataset == null) {
                     logger.warning("No such dataset: "+dataset);
-                    return "/404.xhtml";
+                    return permissionsWrapper.notFound();
                 }
                 //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionById(dataset.getId(), version);
                 retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(dataset.getVersions(), version);
@@ -1428,7 +1428,7 @@ public class DatasetPage implements java.io.Serializable {
             } 
 
             if (retrieveDatasetVersionResponse == null) {
-                return "/404.xhtml";
+                return permissionsWrapper.notFound();
             }
 
             
@@ -1439,7 +1439,7 @@ public class DatasetPage implements java.io.Serializable {
             // Is the DatasetVersion or Dataset null?
             //
             if (workingVersion == null || this.dataset == null) {
-                return "/404.xhtml";
+                return permissionsWrapper.notFound();
             }
 
             // Is the Dataset harvested?
@@ -1460,7 +1460,7 @@ public class DatasetPage implements java.io.Serializable {
                     return originalSourceURL;
                 }
 
-                return "/404.xhtml";
+                return permissionsWrapper.notFound();
             }
 
             // If this DatasetVersion is unpublished and permission is doesn't have permissions:
@@ -1472,7 +1472,7 @@ public class DatasetPage implements java.io.Serializable {
                 if (!isSessionUserAuthenticated()) {
                     return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
                 } else {
-                    return "/403.xhtml"; //SEK need a new landing page if user is already logged in but lacks permission
+                    return permissionsWrapper.notAuthorized(); //SEK need a new landing page if user is already logged in but lacks permission
                 }
             }
 
@@ -1520,12 +1520,12 @@ public class DatasetPage implements java.io.Serializable {
             dataset.setIdentifier(datasetService.generateIdentifierSequence(protocol, authority, separator));
 
             if (dataset.getOwner() == null) {
-                return "/404.xhtml";
+                return permissionsWrapper.notFound();
             } else if (!permissionService.on(dataset.getOwner()).has(Permission.AddDataset)) {
                 if (!isSessionUserAuthenticated()) {
                     return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
                 } else {
-                    return "/403.xhtml"; //SEK need a new landing page if user is already logged in but lacks permission
+                    return permissionsWrapper.notAuthorized(); //SEK need a new landing page if user is already logged in but lacks permission
                 }
             }
 
@@ -1552,7 +1552,7 @@ public class DatasetPage implements java.io.Serializable {
 
             // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Add New Dataset", " - Enter metadata to create the dataset's citation. You can add more metadata about this dataset after it's created."));
         } else {
-            return "/404.xhtml";
+            return permissionsWrapper.notFound();
         }
 
         return null;
@@ -2087,9 +2087,7 @@ public class DatasetPage implements java.io.Serializable {
         logger.fine("refreshing");
 
         //dataset = datasetService.find(dataset.getId());
-
         dataset = null;
-
 
         logger.fine("refreshing working version");
 
