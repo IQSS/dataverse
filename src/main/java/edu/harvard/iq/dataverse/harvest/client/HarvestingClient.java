@@ -11,6 +11,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -19,7 +20,9 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
+import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -172,14 +175,129 @@ public class HarvestingClient implements Serializable {
         this.metadataPrefix = metadataPrefix;
     }
     
-    /* move the fields below to the new HarvestingClientRun class: */
+    // TODO: do we need "orphanRemoval=true"? -- L.A. 4.4
+    // TODO: should it be @OrderBy("startTime")? -- L.A. 4.4
+    @OneToMany(mappedBy="harvestingClient", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @OrderBy("id")
+    private List<ClientHarvestRun> harvestHistory;
+
+    List<ClientHarvestRun> getRunHistory() {
+        return harvestHistory;
+    }
+    
+    void setRunHistory(List<ClientHarvestRun> harvestHistory) {
+        this.harvestHistory = harvestHistory;
+    }
+    
+    public String getLastResult() {
+        if (harvestHistory == null || harvestHistory.size() == 0) {
+            return null; 
+        }
+        return harvestHistory.get(harvestHistory.size() - 1).getResultLabel();
+    }
+    
+    public ClientHarvestRun getLastRun() {
+        if (harvestHistory == null || harvestHistory.size() == 0) {
+            return null; 
+        }
+        
+        return harvestHistory.get(harvestHistory.size() - 1);
+    }
+    
+    public ClientHarvestRun getLastSuccessfulRun() {
+        if (harvestHistory == null || harvestHistory.size() == 0) {
+            return null; 
+        }
+        
+        ClientHarvestRun harvestRun = null;
+        int i = harvestHistory.size() - 1;
+        
+        while (i > 0) {
+            if (harvestHistory.get(i).isSuccess()) {
+                return harvestHistory.get(i);
+            }
+            i--;
+        }
+        
+        return null; 
+    }
+    
+    ClientHarvestRun getLastNonEmptyRun() {
+        if (harvestHistory == null || harvestHistory.size() == 0) {
+            return null; 
+        }
+        
+        ClientHarvestRun harvestRun = null;
+        int i = harvestHistory.size() - 1;
+        
+        while (i > 0) {
+            if (harvestHistory.get(i).isSuccess()) {
+                if (harvestHistory.get(i).getHarvestedDatasetCount().longValue() > 0 ||
+                    harvestHistory.get(i).getDeletedDatasetCount().longValue() > 0) {
+                    return harvestHistory.get(i);
+                }
+            }
+            i--;
+        }
+        return null; 
+    }
+    
+    public Date getLastHarvestTime() {
+        ClientHarvestRun lastHarvest = getLastRun();
+        if ( lastHarvest != null) {
+            return lastHarvest.getStartTime();
+        }
+        return null;
+    }
+    
+    public Date getLastSuccessfulHarvestTime() {
+        ClientHarvestRun lastSuccessfulHarvest = getLastSuccessfulRun();
+        if ( lastSuccessfulHarvest != null) {
+            return lastSuccessfulHarvest.getStartTime();
+        }
+        return null;
+    }
+    
+    public Date getLastNonEmptyHarvestTime() {
+        ClientHarvestRun lastNonEmptyHarvest = getLastNonEmptyRun();
+        if ( lastNonEmptyHarvest != null) {
+            return lastNonEmptyHarvest.getStartTime();
+        }
+        return null;
+    }
+    
+    public Long getLastHarvestedDatasetCount() {
+        ClientHarvestRun lastNonEmptyHarvest = getLastNonEmptyRun();
+        if ( lastNonEmptyHarvest != null) {
+            return lastNonEmptyHarvest.getHarvestedDatasetCount();
+        }
+        return null;
+    }
+    
+    public Long getLastFailedDatasetCount() {
+        ClientHarvestRun lastNonEmptyHarvest = getLastNonEmptyRun();
+        if ( lastNonEmptyHarvest != null) {
+            return lastNonEmptyHarvest.getFailedDatasetCount();
+        }
+        return null;
+    }
+    
+    public Long getLastDeletedDatasetCount() {
+        ClientHarvestRun lastNonEmptyHarvest = getLastNonEmptyRun();
+        if ( lastNonEmptyHarvest != null) {
+            return lastNonEmptyHarvest.getDeletedDatasetCount();
+        }
+        return null;
+    }
+    
+    /* move the fields below to the new HarvestingClientRun class: 
     private String harvestResult;
     
-    public String getHarvestResult() {
+    public String getResult() {
         return harvestResult;
     }
 
-    public void setHarvestResult(String harvestResult) {
+    public void setResult(String harvestResult) {
         this.harvestResult = harvestResult;
     }
     
@@ -198,7 +316,7 @@ public class HarvestingClient implements Serializable {
         this.lastHarvestTime = lastHarvestTime;
     }
     
-    // This the last "successful harvest" - i.e., the last time we 
+    // This is the last "successful harvest" - i.e., the last time we 
     // tried to harvest, and got a response from the remote server. 
     // We may not have necessarily harvested any useful content though; 
     // the result may have been a "no content" or "no changes since the last harvest"
@@ -235,7 +353,7 @@ public class HarvestingClient implements Serializable {
     private Long failedDatasetCount;
     private Long deletedDatasetCount;
     
-    public Long getHarvestedDatasetCount() {
+    public Long getLastHarvestedDatasetCount() {
         return harvestedDatasetCount;
     }
 
@@ -243,7 +361,7 @@ public class HarvestingClient implements Serializable {
         this.harvestedDatasetCount = harvestedDatasetCount;
     }
     
-    public Long getFailedDatasetCount() {
+    public Long getLastFailedDatasetCount() {
         return failedDatasetCount;
     }
 
@@ -251,14 +369,14 @@ public class HarvestingClient implements Serializable {
         this.failedDatasetCount = failedDatasetCount;
     }
     
-    public Long getDeletedDatasetCount() {
+    public Long getLastDeletedDatasetCount() {
         return deletedDatasetCount;
     }
 
     public void setDeletedDatasetCount(Long deletedDatasetCount) {
         this.deletedDatasetCount = deletedDatasetCount;
     }
-    /**/
+    */
     
     private boolean scheduled;
 

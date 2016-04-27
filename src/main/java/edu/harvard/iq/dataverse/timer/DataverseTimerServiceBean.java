@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.harvest.client.HarvestTimerInfo;
 import edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean;
+import edu.harvard.iq.dataverse.harvest.client.HarvestingClientServiceBean;
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -43,6 +44,8 @@ public class DataverseTimerServiceBean implements Serializable {
     HarvesterServiceBean harvesterService;
     @EJB
     DataverseServiceBean dataverseService;
+    @EJB
+    HarvestingClientServiceBean harvestingClientService;
     
     /*@EJB
     StudyServiceLocal studyService;*/
@@ -80,11 +83,18 @@ public class DataverseTimerServiceBean implements Serializable {
             HarvestTimerInfo info = (HarvestTimerInfo) timer.getInfo();
             try {
 
-                logger.log(Level.INFO, "DO HARVESTING of dataverse " + info.getHarvestingDataverseId());
+                logger.log(Level.INFO, "running a harvester client configured for dataverse " + info.getHarvestingDataverseId());
                 harvesterService.doHarvest(info.getHarvestingDataverseId());
 
             } catch (Throwable e) {
-                dataverseService.setHarvestResult(info.getHarvestingDataverseId(), harvesterService.HARVEST_RESULT_FAILED);
+                // Harvester Service should be handling any error notifications, 
+                // if/when things go wrong. 
+                // (TODO: -- verify this logic; harvesterService may still be able 
+                // to throw an IOException, if it could not run the harvest at all, 
+                // or could not for whatever reason modify the database record...
+                // in this case we should, probably, log the error and try to send 
+                // a mail notification. -- L.A. 4.4)
+                //dataverseService.setHarvestResult(info.getHarvestingDataverseId(), harvesterService.HARVEST_RESULT_FAILED);
                 //mailService.sendHarvestErrorNotification(dataverseService.find().getSystemEmail(), dataverseService.find().getName());
                 logException(e, logger);
             }

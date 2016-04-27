@@ -54,9 +54,10 @@ public class HarvesterServiceBean {
     javax.ejb.TimerService timerService;
     @EJB
     DataverseTimerServiceBean dataverseTimerService;
+    @EJB
+    HarvestingClientServiceBean harvestingClientService;
     
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean");
-    private static final String HARVEST_TIMER = "HarvestTimer";
     private static final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
     private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
     
@@ -64,8 +65,6 @@ public class HarvesterServiceBean {
     public static final String HARVEST_RESULT_FAILED="failed";
 
    
-    private Unmarshaller unmarshaller;
-
     private long processedSizeThisBatch = 0;
     private List<Long> harvestedDatasetIdsThisBatch = null;
     public HarvesterServiceBean() {
@@ -170,9 +169,9 @@ public class HarvesterServiceBean {
             throw new IOException("No such Dataverse: id="+dataverseId);
         }
         
-        HarvestingClient harvestingDataverseConfig = harvestingDataverse.getHarvestingClientConfig();
+        HarvestingClient harvestingClientConfig = harvestingDataverse.getHarvestingClientConfig();
         
-        if (harvestingDataverseConfig == null) {
+        if (harvestingClientConfig == null) {
             throw new IOException("Could not find Harvesting Config for Dataverse id="+dataverseId);
         }
         
@@ -191,37 +190,36 @@ public class HarvesterServiceBean {
         Date harvestStartTime = new Date();
         
         try {
-            boolean harvestingNow = harvestingDataverseConfig.isHarvestingNow();
+            boolean harvestingNow = harvestingClientConfig.isHarvestingNow();
 
             if (harvestingNow) {
                 harvestErrorOccurred.setValue(true);
                 hdLogger.log(Level.SEVERE, "Cannot begin harvesting, Dataverse " + harvestingDataverse.getName() + " is currently being harvested.");
 
             } else {
-                dataverseService.resetHarvestingStatus(harvestingDataverse.getId());
+                harvestingClientService.resetHarvestInProgress(harvestingDataverse.getId());
                 String until = null;  // If we don't set until date, we will get all the changes since the last harvest.
                 String from = null;
-                Date lastSuccessfulHarvestTime = harvestingDataverseConfig.getLastSuccessfulHarvestTime();
+                // TODO: should it be last *non-empty* time? -- L.A. 4.4
+                Date lastSuccessfulHarvestTime = harvestingClientConfig.getLastSuccessfulHarvestTime();
                 if (lastSuccessfulHarvestTime != null) {
                     from = formatter.format(lastSuccessfulHarvestTime);
                 }
-                dataverseService.setHarvestInProgress(harvestingDataverse.getId(), true);
+                harvestingClientService.setHarvestInProgress(harvestingDataverse.getId(), harvestStartTime);
 
-                dataverseService.setLastHarvestTime(harvestingDataverse.getId(), harvestStartTime);
+                hdLogger.log(Level.INFO, "BEGIN HARVEST..., oaiUrl=" + harvestingClientConfig.getArchiveUrl() + ",set=" + harvestingClientConfig.getHarvestingSet() + ", metadataPrefix=" + harvestingClientConfig.getMetadataPrefix() + ", from=" + from + ", until=" + until);
 
-                hdLogger.log(Level.INFO, "BEGIN HARVEST..., oaiUrl=" + harvestingDataverseConfig.getArchiveUrl() + ",set=" + harvestingDataverseConfig.getHarvestingSet() + ", metadataPrefix=" + harvestingDataverseConfig.getMetadataPrefix() + ", from=" + from + ", until=" + until);
-
-                if (harvestingDataverseConfig.isOai()) {
+                if (harvestingClientConfig.isOai()) {
                     harvestedDatasetIds = harvestOAI(harvestingDataverse, hdLogger, from, until, harvestErrorOccurred, failedIdentifiers);
 
                 } else {
                     throw new IOException("Unsupported harvest type");
                 }
-                dataverseService.setHarvestSuccess(harvestingDataverse.getId(), harvestStartTime, harvestedDatasetIds.size(), failedIdentifiers.size());
-                hdLogger.log(Level.INFO, "COMPLETED HARVEST, server=" + harvestingDataverseConfig.getArchiveUrl() + ", metadataPrefix=" + harvestingDataverseConfig.getMetadataPrefix());
+                harvestingClientService.setHarvestSuccess(harvestingDataverse.getId(), new Date(), harvestedDatasetIds.size(), failedIdentifiers.size());
+                hdLogger.log(Level.INFO, "COMPLETED HARVEST, server=" + harvestingClientConfig.getArchiveUrl() + ", metadataPrefix=" + harvestingClientConfig.getMetadataPrefix());
                 hdLogger.log(Level.INFO, "Datasets created/updated: " + harvestedDatasetIds.size() + ", datasets deleted: [TODO:], datasets failed: " + failedIdentifiers.size());
 
-                // now index all studies (need to modify for update)
+                // now index all the datasets we have harvested - created, modified or deleted:
                 /* (TODO: !!!)
                     if (this.processedSizeThisBatch > 0) {
                         hdLogger.log(Level.INFO, "POST HARVEST, reindexing the remaining studies.");
@@ -239,14 +237,19 @@ public class HarvesterServiceBean {
             //mailService.sendHarvestNotification(...getSystemEmail(), harvestingDataverse.getName(), logFileName, logTimestamp, harvestErrorOccurred.booleanValue(), harvestedDatasetIds.size(), failedIdentifiers);
         } catch (Throwable e) {
             harvestErrorOccurred.setValue(true);
-            String message = "Exception processing harvest, server= " + harvestingDataverseConfig.getArchiveUrl() + ",format=" + harvestingDataverseConfig.getMetadataPrefix() + " " + e.getClass().getName() + " " + e.getMessage();
+            String message = "Exception processing harvest, server= " + harvestingClientConfig.getArchiveUrl() + ",format=" + harvestingClientConfig.getMetadataPrefix() + " " + e.getClass().getName() + " " + e.getMessage();
             hdLogger.log(Level.SEVERE, message);
             logException(e, hdLogger);
             hdLogger.log(Level.INFO, "HARVEST NOT COMPLETED DUE TO UNEXPECTED ERROR.");
-            dataverseService.setHarvestFailure(harvestingDataverse.getId(), harvestStartTime);
+            // TODO: 
+            // even though this harvesting run failed, we may have had successfully 
+            // processed some number of datasets, by the time the exception was thrown. 
+            // We should record that number too. And the number of the datasets that
+            // had failed, that we may have counted.  -- L.A. 4.4
+            harvestingClientService.setHarvestFailure(harvestingDataverse.getId(), new Date());
 
         } finally {
-            dataverseService.setHarvestInProgress(harvestingDataverse.getId(), false);
+            harvestingClientService.resetHarvestInProgress(harvestingDataverse.getId());
             fileHandler.close();
             hdLogger.removeHandler(fileHandler);
         }

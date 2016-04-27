@@ -11,20 +11,23 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 /**
  *
  * @author Leonid Andreev
- * 
- * This is a record of an attempted harvesting client run. 
- * (Should it be named HarvestingClientRunResult instead?)
+ *
+ * This is a record of an attempted harvesting client run. (Should it be named
+ * HarvestingClientRunResult instead?)
  */
 @Entity
-public class HarvestingClientRun implements Serializable {
+public class ClientHarvestRun implements Serializable {
 
     private static final long serialVersionUID = 1L;
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -37,18 +40,71 @@ public class HarvestingClientRun implements Serializable {
         this.id = id;
     }
 
-    private String harvestResult; // TODO: should this me an enum instead? -- L.A. 4.4
+    public enum RunResultType { SUCCESS, FAILURE, INPROGRESS };
     
-    public String getHarvestResult() {
-        return harvestResult;
+    private static String RESULT_LABEL_SUCCESS = "SUCCESS";
+    private static String RESULT_LABEL_FAILURE = "FAILED";
+    private static String RESULT_LABEL_INPROGRESS = "INPROGRESS";
+    
+    @ManyToOne
+    @JoinColumn(nullable = false)
+    private HarvestingClient harvestingClient;
+
+    public HarvestingClient getHarvestingClient() {
+        return harvestingClient;
     }
 
-    public void setHarvestResult(String harvestResult) {
-        this.harvestResult = harvestResult;
+    public void setHarvestingClient(HarvestingClient harvestingClient) {
+        this.harvestingClient = harvestingClient;
+    }
+
+    private RunResultType harvestResult; 
+
+    public RunResultType getResult() {
+        return harvestResult;
     }
     
-    // Time of this harvest attempt:
+    public String getResultLabel() {
+        if (isSuccess()) {
+            return RESULT_LABEL_SUCCESS;
+        } else if (isFailed()) {
+            return RESULT_LABEL_FAILURE;
+        } else if (isInProgress()) {
+            return RESULT_LABEL_INPROGRESS;
+        }
+        return null;
+    }
+
+    public void setResult(RunResultType harvestResult) {
+        this.harvestResult = harvestResult;
+    }
+
+    public boolean isSuccess() {
+        return RunResultType.SUCCESS == harvestResult;
+    }
+
+    public void setSuccess() {
+        harvestResult = RunResultType.SUCCESS;
+    }
+
+    public boolean isFailed() {
+        return RunResultType.FAILURE == harvestResult;
+    }
+
+    public void setFailed() {
+        harvestResult = RunResultType.FAILURE;
+    }
     
+    public boolean isInProgress() {
+        return RunResultType.INPROGRESS == harvestResult ||
+                (harvestResult == null && startTime != null && finishTime == null);
+    }
+    
+    public void setInProgress() {
+        harvestResult = RunResultType.INPROGRESS;
+    }
+
+    // Time of this harvest attempt:
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date startTime;
 
@@ -57,12 +113,12 @@ public class HarvestingClientRun implements Serializable {
     }
 
     public void setStartTime(Date startTime) {
-        this.startTime = startTime; 
+        this.startTime = startTime;
     }
-    
+
     @Temporal(value = TemporalType.TIMESTAMP)
-    private Date finishTime; 
-    
+    private Date finishTime;
+
     public Date getFinishTime() {
         return finishTime;
     }
@@ -70,16 +126,14 @@ public class HarvestingClientRun implements Serializable {
     public void setFinishTime(Date finishTime) {
         this.finishTime = finishTime;
     }
-    
-    
+
     // Tese are the Dataset counts from that last harvest:
     // (TODO: do we need to differentiate between *created* (new), and *updated* 
     // harvested datasets? -- L.A. 4.4
-    
-    private Long harvestedDatasetCount;
-    private Long failedDatasetCount;
-    private Long deletedDatasetCount;
-    
+    private Long harvestedDatasetCount = 0L;
+    private Long failedDatasetCount = 0L;
+    private Long deletedDatasetCount = 0L;
+
     public Long getHarvestedDatasetCount() {
         return harvestedDatasetCount;
     }
@@ -87,7 +141,7 @@ public class HarvestingClientRun implements Serializable {
     public void setHarvestedDatasetCount(Long harvestedDatasetCount) {
         this.harvestedDatasetCount = harvestedDatasetCount;
     }
-    
+
     public Long getFailedDatasetCount() {
         return failedDatasetCount;
     }
@@ -95,7 +149,7 @@ public class HarvestingClientRun implements Serializable {
     public void setFailedDatasetCount(Long failedDatasetCount) {
         this.failedDatasetCount = failedDatasetCount;
     }
-    
+
     public Long getDeletedDatasetCount() {
         return deletedDatasetCount;
     }
@@ -103,7 +157,7 @@ public class HarvestingClientRun implements Serializable {
     public void setDeletedDatasetCount(Long deletedDatasetCount) {
         this.deletedDatasetCount = deletedDatasetCount;
     }
-    
+
     @Override
     public int hashCode() {
         int hash = 0;
@@ -114,10 +168,10 @@ public class HarvestingClientRun implements Serializable {
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof HarvestingClientRun)) {
+        if (!(object instanceof ClientHarvestRun)) {
             return false;
         }
-        HarvestingClientRun other = (HarvestingClientRun) object;
+        ClientHarvestRun other = (ClientHarvestRun) object;
         if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
@@ -128,5 +182,5 @@ public class HarvestingClientRun implements Serializable {
     public String toString() {
         return "edu.harvard.iq.dataverse.harvest.client.HarvestingClientRun[ id=" + id + " ]";
     }
-    
+
 }

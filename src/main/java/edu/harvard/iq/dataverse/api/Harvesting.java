@@ -111,13 +111,13 @@ public class Harvesting extends AbstractApiBean {
                 add("metadataFormat", harvestingConfig.getMetadataPrefix()).
                 add("set", harvestingConfig.getHarvestingSet() == null ? "N/A" : harvestingConfig.getHarvestingSet()).
                 add("schedule", harvestingConfig.isScheduled() ? harvestingConfig.getScheduleDescription() : "none").
-                add("inProgress", harvestingConfig.isHarvestingNow() ? "yes" : "-").
+                add("status", harvestingConfig.isHarvestingNow() ? "inProgress" : "inActive").
                 add("lastHarvest", harvestingConfig.getLastHarvestTime() == null ? "N/A" : harvestingConfig.getLastHarvestTime().toString()).
+                add("lastResult", harvestingConfig.getLastResult()).
                 add("lastSuccessful", harvestingConfig.getLastSuccessfulHarvestTime() == null ? "N/A" : harvestingConfig.getLastSuccessfulHarvestTime().toString()).
                 add("lastNonEmpty", harvestingConfig.getLastNonEmptyHarvestTime() == null ? "N/A" : harvestingConfig.getLastNonEmptyHarvestTime().toString()).
-                add("lastResult", harvestingConfig.getHarvestResult()).
-                add("datasetsHarveted", harvestingConfig.getHarvestedDatasetCount() == null ? "N/A" : harvestingConfig.getHarvestedDatasetCount().toString()).
-                add("datasetsDeleted", harvestingConfig.getDeletedDatasetCount() == null ? "N/A" : harvestingConfig.getDeletedDatasetCount().toString()).
-                add("datasetsFailed", harvestingConfig.getFailedDatasetCount() == null ? "N/A" : harvestingConfig.getFailedDatasetCount().toString());
+                add("lastDatasetsHarvested", harvestingConfig.getLastHarvestedDatasetCount() == null ? "N/A" : harvestingConfig.getLastHarvestedDatasetCount().toString()).
+                add("lastDatasetsDeleted", harvestingConfig.getLastDeletedDatasetCount() == null ? "N/A" : harvestingConfig.getLastDeletedDatasetCount().toString()).
+                add("lastDatasetsFailed", harvestingConfig.getLastFailedDatasetCount() == null ? "N/A" : harvestingConfig.getLastFailedDatasetCount().toString());
     }
 }
