@@ -1,6 +1,6 @@
 #metadataBlock	name    dataverseAlias    displayName													
 	astrophysics		Astronomy and Astrophysics Metadata													
-#datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	showabovefold	required	parent	metadatablock_id
+#datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	metadatablock_id
 	astroType	Type	The nature or genre of the content of the files in the dataset.		text	0		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		astrophysics
 	astroFacility	Facility	The observatory or facility where the data was obtained. 		text	1		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		astrophysics
 	astroInstrument	Instrument	The instrument used to collect the data.		text	2		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		astrophysics
