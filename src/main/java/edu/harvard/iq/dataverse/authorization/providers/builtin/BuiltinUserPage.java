@@ -253,6 +253,9 @@ public class BuiltinUserPage implements java.io.Serializable {
                     activeIndex = 2;
                     // activeIndex = 3;
                     break;
+                case "apiTokenTab":
+                    activeIndex = 3;
+                    break;
                 default:
                     activeIndex = 0;
                     break;
