@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse;
 
 
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.ucsb.nceas.ezid.EZIDException;
 import edu.ucsb.nceas.ezid.EZIDService;
 import edu.ucsb.nceas.ezid.EZIDServiceRequest;
@@ -29,6 +30,8 @@ public class DOIEZIdServiceBean  {
     DataverseServiceBean dataverseService;
     @EJB 
     SettingsServiceBean settingsService;
+    @EJB
+    SystemConfig systemConfig;
     EZIDService ezidService;
     EZIDServiceRequest ezidServiceRequest;
     String baseURLString =  "https://ezid.cdlib.org";
@@ -229,56 +232,20 @@ public class DOIEZIdServiceBean  {
 	metadata.put("datacite.publisher", producerString);
 	metadata.put("datacite.publicationyear", generateYear());
 	metadata.put("datacite.resourcetype", "Dataset");
-        String inetAddress = getSiteUrl();
-        String targetUrl = "";
-        DOISHOULDER = "doi:" + datasetIn.getAuthority();
-        
-        if (inetAddress.equals("localhost")) {
-           targetUrl ="http://localhost:8080" + "/dataset.xhtml?persistentId=" + DOISHOULDER 
-                    + datasetIn.getDoiSeparator()       + datasetIn.getIdentifier();
-        } else {
-           targetUrl = inetAddress + "/dataset.xhtml?persistentId=" + DOISHOULDER 
-                + datasetIn.getDoiSeparator()     + datasetIn.getIdentifier();
-        }            
-        metadata.put("_target", targetUrl);
+        metadata.put("_target", getTargetUrl(datasetIn));
         return metadata;
     }
     
     public HashMap<String, String> getMetadataFromDatasetForTargetURL(Dataset datasetIn) {
-        HashMap<String, String> metadata = new HashMap<>();
-        
-        String inetAddress = getSiteUrl();
-        String targetUrl = "";
-        DOISHOULDER = "doi:" + datasetIn.getAuthority();
-        
-        if (inetAddress.equals("localhost")){
-           targetUrl ="http://localhost:8080" + "/dataset.xhtml?persistentId=" + DOISHOULDER 
-                    + datasetIn.getDoiSeparator()       + datasetIn.getIdentifier();
-        } else{
-           targetUrl = inetAddress + "/dataset.xhtml?persistentId=" + DOISHOULDER 
-                + datasetIn.getDoiSeparator()     + datasetIn.getIdentifier();
-        }            
-        metadata.put("_target", targetUrl);
+        HashMap<String, String> metadata = new HashMap<>();         
+        metadata.put("_target", getTargetUrl(datasetIn));
         return metadata;
     }
     
-    public String getSiteUrl() {
-        String hostUrl = System.getProperty("dataverse.siteUrl");
-        if (hostUrl != null && !"".equals(hostUrl)) {
-            return hostUrl;
-        }
-        String hostName = System.getProperty("dataverse.fqdn");
-        if (hostName == null) {
-            try {
-                hostName = InetAddress.getLocalHost().getCanonicalHostName();
-            } catch (UnknownHostException e) {
-                return null;
-            }
-        }
-        hostUrl = "https://" + hostName;
-        return hostUrl;
+    private String getTargetUrl(Dataset datasetIn) {
+        return systemConfig.getDataverseSiteUrl() + Dataset.TARGET_URL + datasetIn.getGlobalId();
     }
-   
+       
     private String getIdentifierFromDataset(Dataset dataset) {
         return dataset.getGlobalId();
     }
