@@ -58,17 +58,27 @@ public class ManageGuestbooksPage implements java.io.Serializable {
     
     @Inject
     DataverseRequestServiceBean dvRequestService;
+    
+    @Inject
+    PermissionsWrapper permissionsWrapper;
 
     private List<Guestbook> guestbooks;
-    private List<GuestbookResponse> responses;
     private Dataverse dataverse;
     private Long dataverseId;
     private boolean inheritGuestbooksValue;
 
     private Guestbook selectedGuestbook = null;
 
-    public void init() {
+    public String init() {
         dataverse = dvService.find(dataverseId);
+        
+        if (dataverse == null) {
+            return permissionsWrapper.notFound();
+        }
+        if (!permissionsWrapper.canIssueCommand(dataverse, UpdateDataverseCommand.class)) {
+            return permissionsWrapper.notAuthorized();
+        } 
+        
         dvpage.setDataverse(dataverse);
 
         guestbooks = new LinkedList<>();
@@ -93,6 +103,7 @@ public class ManageGuestbooksPage implements java.io.Serializable {
             cg.setDataverse(dataverse);
             guestbooks.add(cg);
         }
+        return null;
     }
 
 

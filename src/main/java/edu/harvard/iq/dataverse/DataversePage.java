@@ -294,13 +294,7 @@ public class DataversePage implements java.io.Serializable {
                 return permissionsWrapper.notFound();
             }
             if (!dataverse.isReleased() && !permissionService.on(dataverse).has(Permission.ViewUnpublishedDataverse)) {
-                System.out.print(" session.getUser().isAuthenticated() " + session.getUser().isAuthenticated());
-                if (!session.getUser().isAuthenticated()){
-                    return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
-                } else {
-                    return permissionsWrapper.notAuthorized();
-                }
-
+                return permissionsWrapper.notAuthorized();
             }
 
             ownerId = dataverse.getOwner() != null ? dataverse.getOwner().getId() : null;
@@ -310,11 +304,7 @@ public class DataversePage implements java.io.Serializable {
             if (dataverse.getOwner() == null) {
                 return  permissionsWrapper.notFound();
             } else if (!permissionService.on(dataverse.getOwner()).has(Permission.AddDataverse)) {
-                if (!session.getUser().isAuthenticated()){
-                    return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
-                } else {
-                    return permissionsWrapper.notAuthorized(); 
-                }              
+                return permissionsWrapper.notAuthorized();            
             }
 
             // set defaults - contact e-mail and affiliation from user
