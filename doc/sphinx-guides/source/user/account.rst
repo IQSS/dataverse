@@ -53,11 +53,10 @@ How to change your Dataverse account to no longer use Institutional Log In
 If you are leaving your institution and need to change your account back to a Dataverse account, you will need to contact support for the Dataverse installation you are using. On your account page, there is a link that will open the contact form for Support: |image4|
 
 
-Generate Your API Token
+Create Your API Token
 ========================
-#. To generate your API token, click on your name in the header on right hand side and then click on Account Information.
-#. On the top right of your account page, click on the "Edit Account" button and click on API Token in the list.
-#. Your API Token is located on that page.
+#. To create your API token, click on your name in the header on right hand side and then click on API Token.
+#. In this tab, you can create your API Token for the first time as well as recreate it if you need a new API Token or your API Token becomes compromised.
 
 My Data
 ========================
