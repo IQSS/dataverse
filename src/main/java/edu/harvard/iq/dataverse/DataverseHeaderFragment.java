@@ -75,6 +75,9 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     }
     
     public void initBreadcrumbs(DvObject dvObject) {
+            if (dvObject == null) {
+                return;
+            }
             if (dvObject.getId() != null) {
                 initBreadcrumbs(dvObject, null);
             } else {

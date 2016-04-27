@@ -241,11 +241,25 @@ public class PermissionsWrapper implements java.io.Serializable {
         if (!session.getUser().isAuthenticated()){
             return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
         } else {
-            return "/403.xhtml"; 
+            notAuthorized = true;
+            return ""; 
         }        
     }
     
     public String notFound() {
-        return "/404.xhtml";
-    }          
+        notFound = true;
+        return "";
+    }
+    
+    private boolean notAuthorized;
+    private boolean notFound;
+ 
+    public boolean showNotAuthorized() {
+        return notAuthorized;
+    }    
+    
+    public boolean showNotFound() {
+        return notFound;
+    }
+    
 }
