@@ -345,14 +345,6 @@
                     <!-- END Edit Mode -->
                     <!-- View Mode / Description Panel -->
                     <ui:fragment rendered="#{empty DataversePage.editMode}">
-                        
-                        <div jsf:rendered="#{widgetWrapper.widgetView and dataverseSession.user.authenticated and 
-                                                     (permissionsWrapper.canIssueUpdateDataverseCommand(DataversePage.dataverse)
-                                                     or permissionsWrapper.canIssuePublishDataverseCommand(DataversePage.dataverse))}">
-                            <!-- Widget + Autheticated -->
-                            <p class="text-muted"><span class="glyphicon glyphicon-info-sign"/> To edit this dataverse and add data, visit the <a href="#{systemConfig.dataverseSiteUrl}/dataverse/#{DataversePage.dataverse.alias}" target="_blank" title="#{DataversePage.dataverse.name} Dataverse">full version</a> on #{dataverseServiceBean.findRootDataverse().displayName}.</p>
-                        </div>
-
                         <div id="actionButtonBlock" class="button-block clearfix" jsf:rendered="#{!widgetWrapper.widgetView}">
                             <!-- Edit/Publish Button Group -->
                             <ui:fragment rendered="#{dataverseSession.user.authenticated and 

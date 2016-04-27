@@ -58,6 +58,21 @@
                     <div class="col-xs-7 small" jsf:rendered="#{widgetWrapper.widgetView}">
                         <span class="widgetBrandMsg">
                             Data is stored at <a href="/" target="_blank" title="#{dataverseServiceBean.findRootDataverse().displayName}">#{dataverseServiceBean.findRootDataverse().displayName}</a>.
+                            
+                            <!--<ui:fragment rendered="#{dataverseSession.user.authenticated}">
+                                View the <a href="#{systemConfig.dataverseSiteUrl}/dataverse/#{DataversePage.dataverse.alias}" target="_blank" title="#{DataversePage.dataverse.name} Dataverse">full version</a> of this dataverse.
+                            </ui:fragment>-->
+                            
+                            <!--<ui:fragment rendered="#{dataverseSession.user.authenticated}">
+                                View the <a href="#{systemConfig.dataverseSiteUrl}/dataset.xhtml?persistentId=#{dataset.globalId}" target="_blank" title="#{DatasetPage.datasetVersionUI.title.value}">full version</a> of this dataset.
+                            </ui:fragment>-->
+                            
+                            <ui:fragment rendered="#{!dataverseSession.user.authenticated}">
+                                <!-- this redirect logic doesn't seem to work... -->
+                                <h:outputLink value="/loginpage.xhtml?#{loginRedirectPage}" target="_blank" title="Log in to...">
+                                    #{bundle.login}
+                                </h:outputLink>
+                            </ui:fragment>
                         </span>
                     </div>
                     <div class="#{widgetWrapper.widgetView ? 'col-xs-5' : 'col-sm-4'} text-right">
