@@ -29,8 +29,9 @@
 
     <h:body>
         <div style="width:100%; height:65px; position: absolute; z-index: 999999; border-radius: 0; border-width: 0 0 1px 0;" class="alert alert-warning">
-            <p class="small pull-left">This data is being archived by the #{dataverseServiceBean.findRootDataverse().displayName}. If the site below does not load properly, you can also find the data by following this link:<br/> 
-                <a href="#{systemConfig.dataverseSiteUrl}/dataset.xhtml?persistentId=#{param['persistentId']}" title="Dataset archived on the #{dataverseServiceBean.findRootDataverse().displayName}">#{systemConfig.dataverseSiteUrl}/dataset.xhtml?persistentId=#{param['persistentId']}</a>.</p>
+            <p class="small pull-left">This data is being archived by the #{dataverseServiceBean.findRootDataverse().displayName}. If the site below does not load, you can find the data here:<br/> 
+                <a href="#{systemConfig.dataverseSiteUrl}/dataset.xhtml?persistentId=#{param['persistentId']}" title="Dataset archived on the #{dataverseServiceBean.findRootDataverse().displayName}">#{systemConfig.dataverseSiteUrl}/dataset.xhtml?persistentId=#{param['persistentId']}</a>
+            </p>
             
             <a style="margin-left:1em;margin-top:4px;" class="close" href="#{param['citationRedirectURL']}?persistentId=#{param['persistentId']}"><span class="glyphicon glyphicon-remove"></span></a>
             
