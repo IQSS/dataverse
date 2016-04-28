@@ -67,10 +67,6 @@ public class SystemConfig {
      */
     private static final int defaultZipUploadFilesLimit = 1000; 
 
-    /**
-     * @todo Reconcile with getApplicationVersion on DataverseServiceBean.java
-     * which we'd like to move to this class.
-     */
     private static String appVersionString = null; 
     private static String buildNumberString = null; 
     
@@ -298,7 +294,7 @@ public class SystemConfig {
      */
     
     public long getZipDownloadLimit() {
-        String zipLimitOption = settingsService.getValueForKey(SettingsServiceBean.Key.ZipDonwloadLimit);   
+        String zipLimitOption = settingsService.getValueForKey(SettingsServiceBean.Key.ZipDownloadLimit);   
         
         Long zipLimit = null; 
         if (zipLimitOption != null && !zipLimitOption.equals("")) {

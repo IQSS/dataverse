@@ -179,7 +179,7 @@ public class RemoteDataFrameService {
             RConnection c = new RConnection(RSERVE_HOST, RSERVE_PORT);
 
             c.login(RSERVE_USER, RSERVE_PWD);
-            dbgLog.fine(">" + c.eval("R.version$version.string").asString() + "<");
+            dbgLog.info(">" + c.eval("R.version$version.string").asString() + "<");
             
             // check working directories
             // This needs to be done *before* we try to create any files 
@@ -231,8 +231,8 @@ public class RemoteDataFrameService {
             
             dbgLog.fine("tmpFmt="+tmpFmt);
             
-            // TODO: figure out what's going on in this awful code fragment below!!
-            // -- L.A. 4.0 alpha 1
+            // In the fragment below we create an R list varFrmt storing 
+            // these format specifications: 
             
             if (tmpFmt != null){
                 Set<String> vfkeys = tmpFmt.keySet();
@@ -270,6 +270,13 @@ public class RemoteDataFrameService {
             String [] tmpjvnames = c.eval("vnames").asStrings();
             dbgLog.fine("vnames:"+ StringUtils.join(tmpjvnames, ","));
             
+           
+            // read.dataverseTabData method, from dataverse_r_functions.R, 
+            // uses R's standard scan() function to read the tabular data we've 
+            // just transfered over and turn it into a dataframe. It adds some 
+            // custom post-processing too - restores missing values, converts 
+            // strings representing dates and times into R date and time objects, 
+            // and more. 
             
             // Parameters for the read.dataverseTabData method executed on the R side:
             
@@ -309,6 +316,8 @@ public class RemoteDataFrameService {
             
             // Restore NAs (missign values) in the data frame:
             // (these are encoded as empty strings in dataverse tab files)
+            // Why are we doing it here? And not in the dataverse_r_functions.R 
+            // fragment? 
             
             String asIsline  = "for (i in 1:dim(x)[2]){ "+
                 "if (attr(x,'var.type')[i] == 0) {" +
@@ -326,16 +335,21 @@ public class RemoteDataFrameService {
             String [] vlbl = c.eval("attr(x, 'var.labels')").asStrings();
             dbgLog.fine("varlabels="+StringUtils.join(vlbl, ","));
         
-            // create the VALTABLE
-            String vtFirstLine = "VALTABLE<-list()";
-            c.voidEval(vtFirstLine);
+            // create the VALTABLE and VALORDER lists:
+            c.voidEval("VALTABLE<-list()");
+            c.voidEval("VALORDER<-list()");
 
+            // In the fragment below, we'll populate the VALTABLE list that we've
+            // just created with the actual values and labels of our categorical varaibles.
             // TODO: 
-            // Again, the fragment below is being imported from the DVN v2-3
-            // implementation... Need to figure out what's going on in the 
-            // awfulness there and clean it up!
-            // -- L.A. 4.0 alpha 1
+            // This code has been imported from the DVN v2-3
+            // implementation. I keep wondering if there is a simpler way to
+            // achive this - to pass these maps of values and labels to R 
+            // in fewer steps/with less code - ?
+            // -- L.A. 4.3
+            
             Map<String, Map<String, String>> vltbl = sro.getValueTable();
+            Map<String, List<String>> orderedCategoryValues = sro.getCategoryValueOrders();
             String[] variableIds = sro.getVariableIds();
 
             for (int j = 0; j < variableIds.length; j++) {
@@ -377,23 +391,52 @@ public class RemoteDataFrameService {
                         dbgLog.fine("jl(" + j + ") = " + jl);
                     }
                 }
+                
+                // If this is an ordered categorical value (and that means,
+                // it was produced from an ordered factor, from an ingested 
+                // R data frame, since no other formats we support have 
+                // ordered categoricals), we'll also supply a list of these
+                // ordered values:
+                
+                
+                if (orderedCategoryValues != null && orderedCategoryValues.containsKey(varId)) {
+                    int indx = j + 1;
+                    List<String> orderList = orderedCategoryValues.get(varId);
+                    if (orderList != null) {
+                        String[] ordv = (String[]) orderList.toArray(new String[orderList.size()]);
+                        dbgLog.fine("ordv="+ StringUtils.join(ordv,","));
+                        c.assign("ordv", new REXPString(ordv));
+                        String sbvl = "VALORDER[['"+ Integer.toString(indx)+"']]" + "<- as.list(ordv)";
+                        dbgLog.fine("VALORDER[...]="+sbvl);
+                        c.voidEval(sbvl);
+                    } else {
+                        dbgLog.fine("NULL orderedCategoryValues list.");
+                    }
+                }
             }
 
-            // debug: confirmation test for value-table
+            // And now we store the VALTABLE and MSVLTBL as attributes of the 
+            // dataframe we are cooking:
             dbgLog.fine("length of vl=" + c.eval("length(VALTABLE)").asInteger());
             String attrValTableLine = "attr(x, 'val.table')<-VALTABLE";
             c.voidEval(attrValTableLine);
-            
-            
-            // missing-value list: TO DO (DO WE STILL NEED IT?? -- L.A. 4.0 alpha 1)
-            /*
-                MSVLTBL<-list(); attr(x, 'missval.table')<-MSVLTBL
-            */
+ 
             String msvStartLine = "MSVLTBL<-list();";
             c.voidEval(msvStartLine);
-            // data structure
             String attrMissvalLine = "attr(x, 'missval.table')<-MSVLTBL";
             c.voidEval(attrMissvalLine);
+            
+            // But we are not done, with these value label maps... We now need
+            // to call these methods from the dataverse_r_functions.R script
+            // to further process the lists. Among other things, they will 
+            // create these new lists - value index and missing value index, that 
+            // simply indicate which variables have any of the above; these will 
+            // also be saved as attributes of the data frame, val.index and 
+            // missval.index respectively. But, also, the methods will reprocess
+            // and overwite the val.table and missval.table attributes already stored in 
+            // the dataframe. I don't fully understand why that is necessary, or what it is
+            // that we are actually adding to the lists there... Another TODO: ? 
+            
             
             String createVIndexLine = "x<-createvalindex(dtfrm=x, attrname='val.index');";
             c.voidEval(createVIndexLine);
@@ -401,7 +444,35 @@ public class RemoteDataFrameService {
             c.voidEval(createMVIndexLine);
 
            
-            // invoke the data frame creation method: 
+            // And now we'll call the last method from the R script - createDataverseDataFrame();
+            // It should probably be renamed. The dataframe has already been created. 
+            // what this method does, it goes through the frame, and changes the 
+            // vectors representing categorical variables to R factors. 
+            // For example, if this tabular file was produced from a Stata file 
+            // that had a categorical in which "Male" and "Female" were represented 
+            // with 0 and 1. In the Dataverse datbase, the string values "Male" and 
+            // "Female" are now stored as "categorical value labels". And the column 
+            // in the tab file has numeric 1 and 0s. That's what the R
+            // dataframe was created from, so it now has a numeric vector of 1s and 0s
+            // representing this variable. So in this step we are going 
+            // to change this vector into a factor, using the labels and values 
+            // that we already passed over via Rserve and stored in the val.table, above. 
+            
+            // TODO: 
+            // I'm going to propose that we go back to what we used to do back in 
+            // DVN 2-3.* - instead of giving the user a single dataframe (.RData) 
+            // file, provide a zip file, with the data frame, and also a README 
+            // file with some documentation explaining how the data frame was 
+            // created, and pointing out some potential issues stemming from the 
+            // conversion between formats. Converting Stata categoricals into 
+            // R factors is one of such issues (if nothing else, do note that 
+            // the UNF of the datafile with the column described in the example 
+            // above will change, if the resulting R dataframe is reingested! See 
+            // the UNF documentation for more info...). We may also make this 
+            // download interactive - giving the user some options for how 
+            // to handle the conversion (so, another choice would be to convert 
+            // the above to a factor of "0" and "1"s), etc. 
+            // -- L.A. 4.3
                             
             String dataFileName = "Data." + PID + "." + sro.getFormatRequested();
             
@@ -418,19 +489,11 @@ public class RemoteDataFrameService {
             
             dbgLog.fine("wbFileSize="+wbFileSize);
             
-            // save workspace:
+            // If the above succeeded, the dataframe has been saved on the 
+            // Rserve side as an .Rdata file. Now we can transfer it back to the
+            // dataverse side:
             
-            String saveWS = "save('x', file='"+ tempFileNameOut +"')";
-            dbgLog.fine("save workspace command: "+saveWS);
-            c.voidEval(saveWS);
-            
-            // Transfer the saved dataframe workspace back to the DVN:
-                        
-            dbgLog.fine("wrkspFileName="+tempFileNameOut);
-            
-            int wrkspflSize = getFileSize(c,tempFileNameOut);
-            
-            File localDataFrameFile = transferRemoteFile(c, tempFileNameOut, RWRKSP_FILE_PREFIX,"RData", wrkspflSize);
+            File localDataFrameFile = transferRemoteFile(c, dsnprfx, RWRKSP_FILE_PREFIX,"RData", wbFileSize);
             
             result.put("dataFrameFileName",localDataFrameFile.getAbsolutePath());
             
@@ -438,6 +501,7 @@ public class RemoteDataFrameService {
                 dbgLog.fine("data frame file name: "+localDataFrameFile.getAbsolutePath());
             } else {
                 dbgLog.fine("data frame file is null!");
+                // throw an exception??
             }
             
             
@@ -715,7 +779,7 @@ public class RemoteDataFrameService {
     
     private static String readLocalResource(String path) {
         
-        dbgLog.info(String.format("Data Frame Service: readLocalResource: reading local path \"%s\"", path));
+        dbgLog.fine(String.format("Data Frame Service: readLocalResource: reading local path \"%s\"", path));
 
         // Get stream
         InputStream resourceStream = RemoteDataFrameService.class.getResourceAsStream(path);

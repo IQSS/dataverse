@@ -19,7 +19,7 @@ public class DataFileDTO {
     private String UNF;
     private String md5;
     private String description;
-    private List<DataTableDTO> dataTables = new ArrayList();
+    private List<DataTableDTO> dataTables = new ArrayList<>();
 
     public List<DataTableDTO> getDataTables() {
         return dataTables;

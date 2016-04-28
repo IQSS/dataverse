@@ -99,7 +99,12 @@ public class TestCommandContext implements CommandContext {
 	public DOIEZIdServiceBean doiEZId() {
 		return null;
 	} 
-        
+
+        @Override
+        public DOIDataCiteServiceBean doiDataCite() {
+            return null;
+        }
+
         @Override
 	public HandlenetServiceBean handleNet() {
 		return null;

@@ -112,7 +112,10 @@
                                 </label>
                                 <div class="col-sm-7">
                                     <p:autoComplete id="addRoleAssigneeName" placeholder="#{bundle['dataverse.manageGroups.tab.action.btn.view.dialog.enterName']}"
-                                                    multiple="true" scrollHeight="180" forceSelection="true" emptyMessage="#{bundle['dataverse.manageGroups.tab.action.btn.view.dialog.invalidMsg']}"
+                                                    multiple="true" scrollHeight="180" forceSelection="true" 
+                                                    minQueryLength="2" queryDelay="1000"                                      
+                                                    groupBy="#{roleAssignee.identifier.startsWith('@')?'Users':'Groups'}"                                                   
+                                                    emptyMessage="#{bundle['dataverse.manageGroups.tab.action.btn.view.dialog.invalidMsg']}"
                                                     value="#{manageGroupsPage.selectedGroupAddRoleAssignees}"
                                                     completeMethod="#{manageGroupsPage.completeRoleAssignee}"
                                                     var="roleAssignee"

@@ -1,6 +1,6 @@
 #metadataBlock	name	dataverseAlias   displayName													
 	customCHIA		CHIA Metadata													
-#datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	showabovefold	required	parent	metadatablock_id
+#datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	metadatablock_id
 	sourceCHIA	Source	Source - This describes the source of the data. Is it from the Bureau of Labor and Statistics? Is it data from the United Nations?		text	0		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		customCHIA
 	datesAdditionalInformationCHIA	Dates - Additional Information	Dates - Additional Information - Note any additional information about dates or time periods in the dataset including intervals (annual, decennial, centennial, etc.) Also note the column(s) in the dataset where dates and other temporal information can be found.		text	1		TRUE	FALSE	FALSE	FALSE	FALSE	FALSE		customCHIA
 	variablesCHIA	Variables	Variables - Define the variables in this dataset. Please note the column in the dataset where variable information can be found.		textbox	2		TRUE	FALSE	FALSE	FALSE	FALSE	FALSE		customCHIA

@@ -1,0 +1,44 @@
+#! /bin/sh
+# chkconfig: 2345 99 01
+# description: GlassFish App Server
+
+set -e
+
+ASADMIN=/usr/local/glassfish4/bin/asadmin
+
+case "$1" in
+  start)
+        echo -n "Starting GlassFish server: glassfish"
+        # Increase file descriptor limit:
+        ulimit -n 32768
+        # Allow "memory overcommit":
+        # (basically, this allows to run exec() calls from inside the
+        # app, without the Unix fork() call physically hogging 2X
+        # the amount of memory glassfish is already using)
+        echo 1 > /proc/sys/vm/overcommit_memory
+
+        #echo
+        #echo "GLASSFISH IS UNDER MAINTENANCE;"
+        #echo "PLEASE DO NOT USE service init script."
+        #echo
+	LANG=en_US.UTF-8; export LANG
+        $ASADMIN start-domain domain1
+        echo "."
+        ;;
+  stop)
+        echo -n "Stopping GlassFish server: glassfish"
+        #echo
+        #echo "GLASSFISH IS UNDER MAINTENANCE;"
+        #echo "PLEASE DO NOT USE service init script."
+        #echo
+
+        $ASADMIN stop-domain domain1
+        echo "."
+        ;;
+
+  *)
+        echo "Usage: /etc/init.d/glassfish {start|stop}"
+        exit 1
+esac
+
+exit 0

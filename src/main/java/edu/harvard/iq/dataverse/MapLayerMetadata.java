@@ -79,6 +79,27 @@ public class MapLayerMetadata implements Serializable {
     @NotBlank(message = "Please specify a WorldMap username.")
     private String worldmapUsername;
    
+
+    /**
+     * Was this layer created by joining a tabular file
+     * to an existing file?
+     */
+    private boolean isJoinLayer;
+    
+    /**
+     * Description if this was created via a tabular join, 
+     */
+    @Column(columnDefinition = "TEXT")
+    private String joinDescription;
+            
+    /**
+     * Links to alternative representations of the map
+     *  in JSON format
+     */
+    @Column(columnDefinition = "TEXT")
+    private String mapLayerLinks;
+
+    
     
     /**
      * Get property layerName.
@@ -161,6 +182,54 @@ public class MapLayerMetadata implements Serializable {
             this.worldmapUsername = worldmapUsername;
     }
 
+    
+    /**
+     * Get property isJoinLayer.
+     * @return value of property isJoinLayer.
+     */
+    public boolean isJoinLayer(){
+            return this.isJoinLayer;
+    }
+
+    /**
+     * Set property isJoinLayer.
+     * @param bool new value of property isJoinLayer.
+     */
+    public void setIsJoinLayer(boolean bool) {
+            this.isJoinLayer = bool;
+    }
+    
+    /**
+     * Get property joinDescription.
+     * @return value of property joinDescription.
+     */
+    public String getJoinDescription() {
+            return this.joinDescription;
+    }
+
+    /**
+     * Set property joinDescription.
+     * @param joinDescription new value of property joinDescription.
+     */
+    public void setJoinDescription(String joinDescription) {
+            this.joinDescription = joinDescription;
+    }
+    
+    /**
+     * Get property mapLayerLinks
+     * @return value of property joinDescription.
+     */
+    public String getMapLayerLinks() {
+            return this.mapLayerLinks;
+    }
+
+    /**
+     * Set property joinDescription.
+     * @param joinDescription new value of property joinDescription.
+     */
+    public void setMapLayerLinks(String mapLayerLinks) {
+            this.mapLayerLinks = mapLayerLinks;
+    }
     
     public Dataset getDataset() {
         return dataset;

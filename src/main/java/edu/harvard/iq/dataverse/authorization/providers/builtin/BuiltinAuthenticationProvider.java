@@ -27,14 +27,26 @@ import java.util.Set;
 public class BuiltinAuthenticationProvider implements CredentialsAuthenticationProvider, UserLister, GroupProvider {
     
     public static final String PROVIDER_ID = "builtin";
+    
+    /*
     private static final String KEY_USERNAME = "Username"; //BundleUtil.getStringFromBundle("user.username"); 
     private static final String KEY_PASSWORD = "Password"; //BundleUtil.getStringFromBundle("passwd");
     private static final List<Credential> CREDENTIALS_LIST = Arrays.asList( new Credential(KEY_USERNAME), new Credential(KEY_PASSWORD, true) );
+    */
+      
+      
+    private static String KEY_USERNAME_OR_EMAIL;
+    private static String KEY_PASSWORD;
+    private static List<Credential> CREDENTIALS_LIST;        
+      
       
     final BuiltinUserServiceBean bean;
 
     public BuiltinAuthenticationProvider( BuiltinUserServiceBean aBean ) {
         bean = aBean;
+        KEY_USERNAME_OR_EMAIL = BundleUtil.getStringFromBundle("login.builtin.credential.usernameOrEmail");
+        KEY_PASSWORD = BundleUtil.getStringFromBundle("login.builtin.credential.password");
+        CREDENTIALS_LIST = Arrays.asList(new Credential(KEY_USERNAME_OR_EMAIL), new Credential(KEY_PASSWORD, true));
     }
 
     @Override
@@ -54,8 +66,8 @@ public class BuiltinAuthenticationProvider implements CredentialsAuthenticationP
 
     @Override
     public AuthenticationResponse authenticate( AuthenticationRequest authReq ) {
-        BuiltinUser u = bean.findByUserName( authReq.getCredential(KEY_USERNAME) );
-        if ( u == null ) return AuthenticationResponse.makeFail("Bad username or password");
+        BuiltinUser u = bean.findByUsernameOrEmail(authReq.getCredential(KEY_USERNAME_OR_EMAIL) );
+        if ( u == null ) return AuthenticationResponse.makeFail("Bad username, email address, or password");
         
         boolean userAuthenticated = PasswordEncryption.getVersion(u.getPasswordEncryptionVersion())
                                             .check(authReq.getCredential(KEY_PASSWORD), u.getEncryptedPassword() );
