@@ -56,11 +56,13 @@ public class FilePage implements java.io.Serializable {
 
     @Inject
     DataverseSession session;
-        @EJB
+    @EJB
     EjbDataverseEngine commandEngine;
-    
-        @Inject
+
+    @Inject
     DataverseRequestServiceBean dvRequestService;
+    @Inject
+    PermissionsWrapper permissionsWrapper;
 
     public String init() {
        
@@ -74,17 +76,17 @@ public class FilePage implements java.io.Serializable {
                file = datafileService.find(fileId);   
 
             }  else if (fileId == null){
-               return "/404.xhtml";
+               return permissionsWrapper.notFound();
             }
 
             if (file == null){
-               return "/404.xhtml";
+               return permissionsWrapper.notFound();
             }
             
             fileMetadata = datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(datasetVersionId, fileId);
 
             if (fileMetadata == null){
-               return "/404.xhtml";
+               return permissionsWrapper.notFound();
             }
             
             
@@ -94,17 +96,13 @@ public class FilePage implements java.io.Serializable {
            //
             
            if ( !permissionService.on(file).has(Permission.DownloadFile)) {
-               if(!session.getUser().isAuthenticated()){
-                   return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
-               } else {
-                   return "/403.xhtml"; //SEK need a new landing page if user is already logged in but lacks permission
-               }               
+               return permissionsWrapper.notAuthorized();            
            }
          
 
         } else {
 
-            return "/404.xhtml";
+            return permissionsWrapper.notFound();
         }
 
         return null;

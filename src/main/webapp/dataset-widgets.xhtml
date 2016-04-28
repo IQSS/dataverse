@@ -12,19 +12,17 @@
 
     <h:body>
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="#{bundle['dataset.widgets.title']} - #{DatasetPage.workingVersion.title}"/>
-            <ui:param name="dataverse" value="#{DatasetPage.dataset.owner}"/>
-            <ui:param name="dataset" value="#{DatasetPage.dataset}"/>
-            <ui:param name="version" value="#{DatasetPage.workingVersion}"/>
+            <ui:param name="pageTitle" value="#{bundle['dataset.widgets.title']} - #{DatasetWidgetsPage.dataset.latestVersion.title}"/>
+            <ui:param name="dataverse" value="#{DatasetWidgetsPage.dataset.owner}"/>
+            <ui:param name="dataset" value="#{DatasetWidgetsPage.dataset}"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:define name="body">
                 <f:metadata>
-                    <f:viewParam name="datasetId" value="#{DatasetPage.dataset.id}"/>
-                    <f:viewAction action="#{DatasetPage.init}" />
-                    <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(DatasetPage.dataset, bundle['dataset.widgets.title'])}"/>
+                    <f:viewParam name="datasetId" value="#{DatasetWidgetsPage.datasetId}"/>
+                    <f:viewAction action="#{DatasetWidgetsPage.init}" />
+                    <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(DatasetWidgetsPage.dataset, bundle['dataset.widgets.title'])}"/>
                 </f:metadata>
-
-                <div id="no-widgets-message" class="panel panel-default" jsf:rendered="#{!DatasetPage.dataset.released}">
+                <div id="no-widgets-message" class="panel panel-default" jsf:rendered="#{DatasetWidgetsPage.dataset.id.intValue() > 0 and !DatasetWidgetsPage.dataset.released}">
                     <div class="panel-body">
                         <span class="help-block h3">#{bundle['dataset.widgets.notPublished.why.header']}</span>
                         <ul>
@@ -51,7 +49,7 @@
                     </div>
                 </div>
 
-                <ui:fragment rendered="#{DatasetPage.dataset.released}">
+                <ui:fragment rendered="#{DatasetWidgetsPage.dataset.released}">
                     <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataset.widgets.tip']}</p>
                     <div>
                         <h5>
@@ -60,7 +58,7 @@
                         <p class="help-block">#{bundle['dataset.widgets.citation.tip']}</p>
                     </div>
                     <div>
-                        <textarea rows="3" cols="54" class="form-control">&lt;script src=&quot;#{systemConfig.dataverseSiteUrl}/resources/js/widgets.js?alias=#{DatasetPage.dataset.owner.alias}&amp;amp;dvUrl=#{systemConfig.dataverseSiteUrl}&amp;amp;widget=search&amp;amp;text=Search&#43;my&#43;dataverse&quot;&gt;&lt;/script&gt;</textarea>
+                        <textarea rows="3" cols="54" class="form-control">&lt;script src=&quot;#{systemConfig.dataverseSiteUrl}/resources/js/widgets.js?alias=#{DatasetWidgetsPage.dataset.owner.alias}&amp;amp;dvUrl=#{systemConfig.dataverseSiteUrl}&amp;amp;widget=search&amp;amp;text=Search&#43;my&#43;dataverse&quot;&gt;&lt;/script&gt;</textarea>
                     </div>
                     <div>
                         <h5>
@@ -69,13 +67,13 @@
                         <p class="help-block">#{bundle['dataset.widgets.datasetFull.tip']}</p>
                     </div>
                     <div>
-                        <textarea rows="2" cols="54" class="form-control">&lt;script src=&quot;#{systemConfig.dataverseSiteUrl}/resources/js/widgets.js?alias=#{DatasetPage.dataset.owner.alias}&amp;persistentId=#{dataset.globalId}&amp;amp;dvUrl=#{systemConfig.dataverseSiteUrl}&amp;amp;widget=dataset&amp;amp;heightPx=500&quot;&gt;&lt;/script&gt;</textarea>
-                    </div>
-                    <div class="button-block">
-                        <p:commandButton class="btn btn-default" action="#{DatasetPage.cancel()}" immediate="true" id="widgetsDone" value="#{bundle.done}"/>
+                        <textarea rows="2" cols="54" class="form-control">&lt;script src=&quot;#{systemConfig.dataverseSiteUrl}/resources/js/widgets.js?alias=#{DatasetWidgetsPage.dataset.owner.alias}&amp;persistentId=#{dataset.globalId}&amp;amp;dvUrl=#{systemConfig.dataverseSiteUrl}&amp;amp;widget=dataset&amp;amp;heightPx=500&quot;&gt;&lt;/script&gt;</textarea>
                     </div>
                 </ui:fragment>
-
+                <div class="button-block" >
+                    <h:outputLink class="btn btn-default" value="/dataset.xhtml?persistentId=#{DatasetWidgetsPage.dataset.globalId}">
+                        <h:outputText value="#{bundle.done}"/></h:outputLink>
+                </div>
             </ui:define>
         </ui:composition>
     </h:body>
