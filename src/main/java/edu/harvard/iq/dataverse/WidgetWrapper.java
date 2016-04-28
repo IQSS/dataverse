@@ -23,8 +23,8 @@ public class WidgetWrapper implements java.io.Serializable {
 
     public boolean isWidgetView() {
         if (widgetView == null) {
-            String widgetParam = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("widgetScope");
-            widgetView = widgetParam != null;
+            String widgetParam = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("widget");
+            widgetView = widgetParam != null && widgetParam.equals("iframe");
         }
         return widgetView;
     }
@@ -45,7 +45,7 @@ public class WidgetWrapper implements java.io.Serializable {
 
     
     public String wrapURL(String URL) {
-        return URL + (isWidgetView() ? getParamSeparator(URL) + "widgetScope=" + getWidgetScope() : "");
+        return URL + (isWidgetView() ? getParamSeparator(URL) + "widget=iframe&widgetScope=" + getWidgetScope() : "");
     }
     
     private String getParamSeparator(String URL) {
