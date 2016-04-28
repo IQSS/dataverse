@@ -10,6 +10,10 @@
         <error-code>500</error-code>
         <location>/500.xhtml</location>
     </error-page>
+    <error-page>
+        <error-code>403</error-code>
+        <location>/403.xhtml</location>
+    </error-page>    
     <!-- Welcome page -->
     <welcome-file-list>
         <welcome-file>dataverse.xhtml</welcome-file>

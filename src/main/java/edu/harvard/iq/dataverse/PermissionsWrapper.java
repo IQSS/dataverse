@@ -9,12 +9,17 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.impl.*;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  *
@@ -237,29 +242,28 @@ public class PermissionsWrapper implements java.io.Serializable {
         return canIssueCommand(dvo, PublishDatasetCommand.class);
     }
     
-    public String notAuthorized() {
+    public String notAuthorized(){
         if (!session.getUser().isAuthenticated()){
             return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
         } else {
-            notAuthorized = true;
-            return ""; 
+            return sendError(HttpServletResponse.SC_FORBIDDEN);
         }        
     }
     
     public String notFound() {
-        notFound = true;
-        return "";
+        return sendError(HttpServletResponse.SC_NOT_FOUND);
     }
     
-    private boolean notAuthorized;
-    private boolean notFound;
- 
-    public boolean showNotAuthorized() {
-        return notAuthorized;
+    private String sendError(int errorCode) {
+        FacesContext context = FacesContext.getCurrentInstance();
+        try {
+            context.getExternalContext().responseSendError(errorCode,null);
+        } catch (IOException ex) {
+            Logger.getLogger(PermissionsWrapper.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        context.responseComplete();
+        return "";
     }    
     
-    public boolean showNotFound() {
-        return notFound;
-    }
     
 }
