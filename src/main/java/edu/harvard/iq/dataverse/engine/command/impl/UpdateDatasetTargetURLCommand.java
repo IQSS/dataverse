@@ -51,7 +51,7 @@ public class UpdateDatasetTargetURLCommand extends AbstractVoidCommand  {
             if (doiProvider.equals("EZID")) {
                 HashMap<String, String> metadata = ctxt.doiEZId().getMetadataFromDatasetForTargetURL(target);
                 String doiRetString = ctxt.doiEZId().modifyIdentifier(target, metadata);
-                if (doiRetString.contains(target.getIdentifier())) {
+                if (doiRetString != null && doiRetString.contains(target.getIdentifier())) {
                     target.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
                     ctxt.em().merge(target);
                     ctxt.em().flush();
@@ -63,7 +63,7 @@ public class UpdateDatasetTargetURLCommand extends AbstractVoidCommand  {
                 HashMap<String, String> metadata = ctxt.doiDataCite().getMetadataFromDatasetForTargetURL(target);
                 try {
                     String doiRetString = ctxt.doiDataCite().modifyIdentifier(target, metadata);
-                    if (doiRetString.contains(target.getIdentifier())) {
+                    if (doiRetString != null && doiRetString.contains(target.getIdentifier())) {
                         target.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
                         ctxt.em().merge(target);
                         ctxt.em().flush();
