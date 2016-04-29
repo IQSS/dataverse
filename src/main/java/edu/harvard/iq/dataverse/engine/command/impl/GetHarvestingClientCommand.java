@@ -26,9 +26,9 @@ import java.util.Set;
 public class GetHarvestingClientCommand extends AbstractCommand<HarvestingClient>{
     private final Dataverse ownerDataverse;
 
-    public GetHarvestingClientCommand(DataverseRequest aRequest, Dataverse ownerDataverse) {
-        super(aRequest, ownerDataverse);
-        this.ownerDataverse = ownerDataverse;
+    public GetHarvestingClientCommand(DataverseRequest aRequest, HarvestingClient harvestingClient) {
+        super(aRequest, harvestingClient.getDataverse());
+        this.ownerDataverse = harvestingClient.getDataverse();
     }
 
     @Override

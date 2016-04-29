@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -12,6 +13,8 @@ import javax.ejb.TransactionAttributeType;
 import javax.faces.bean.ManagedBean;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
+import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 
 /**
@@ -31,17 +34,21 @@ public class HarvestingClientServiceBean {
     private EntityManager em;
     
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.client.HarvestingClinetServiceBean");
-
-    /* let's try and live without this method:
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public void setHarvestResult(Long hdId, String result) {
-        Dataverse hd = em.find(Dataverse.class, hdId);
-        em.refresh(hd); // ??
-        if (hd.isHarvested()) {
-            hd.getHarvestingClientConfig().setHarvestResult(result);
+    
+    public HarvestingClient findByNickname(String nickName) {
+        try {
+            return em.createNamedQuery("HarvestingClient.findByNickname", HarvestingClient.class)
+					.setParameter("nickName", nickName.toLowerCase())
+					.getSingleResult();
+        } catch ( NoResultException|NonUniqueResultException ex ) {
+            logger.fine("Unable to find a single harvesting client by nickname \"" + nickName + "\": " + ex);
+            return null;
         }
     }
-    */
+    
+    public List<HarvestingClient> getAllHarvestingClients() {
+        return em.createQuery("SELECT object(c) FROM Dataverse d, harvestingClient c AS d WHERE c.dataverse_id IS NOT null AND c.dataverse_id=d.id order by d.id").getResultList();
+    }
     
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void resetHarvestInProgress(Long hdId) {
@@ -80,15 +87,6 @@ public class HarvestingClientServiceBean {
         harvestingClient.getRunHistory().add(currentRun);
     }
     
-    /*
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public void setLastHarvestTime(Long hdId, Date lastHarvestTime) {
-        Dataverse hd = em.find(Dataverse.class, hdId);
-        em.refresh(hd);
-        if (hd.isHarvested()) {
-            hd.getHarvestingClientConfig().setLastHarvestTime(lastHarvestTime);
-        }
-    }*/
     
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void setHarvestSuccess(Long hdId, Date currentTime, int harvestedCount, int failedCount) {

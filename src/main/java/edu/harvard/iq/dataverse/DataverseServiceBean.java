@@ -419,7 +419,7 @@ public class DataverseServiceBean implements java.io.Serializable {
      */
     public Map<Long, String> getAllHarvestedDataverseDescriptions(){
         
-        String qstr = "SELECT dataverse_id, archiveDescription FROM harvestingDataverseConfig;";
+        String qstr = "SELECT dataverse_id, archiveDescription FROM harvestingClient;";
         List<Object[]> searchResults = null;
         
         try {
@@ -454,7 +454,7 @@ public class DataverseServiceBean implements java.io.Serializable {
     }
     
     public List<Dataverse> getAllHarvestedDataverses() {
-        return em.createQuery("SELECT object(d) FROM Dataverse d, harvestingDataverseConfig c AS d WHERE c.dataverse_id IS NOT null AND c.dataverse_id=d.id order by d.id").getResultList();
+        return em.createQuery("SELECT object(d) FROM Dataverse d, harvestingClient c AS d WHERE c.dataverse_id IS NOT null AND c.dataverse_id=d.id order by d.id").getResultList();
     }
 
     public void populateDvSearchCard(SolrSearchResult solrSearchResult) {

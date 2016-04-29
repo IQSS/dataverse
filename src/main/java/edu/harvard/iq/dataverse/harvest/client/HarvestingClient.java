@@ -20,12 +20,17 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
+import org.hibernate.validator.constraints.NotBlank;
 
 /**
  *
@@ -37,6 +42,9 @@ import javax.persistence.TemporalType;
 		, @Index(columnList="harveststyle")
 		, @Index(columnList="harvestingurl")})
 @Entity
+@NamedQueries({
+    @NamedQuery(name = "HarvestingClient.findByNickname", query="SELECT hc FROM HarvestingClient hc WHERE LOWER(hc.name)=:nickName")
+})
 public class HarvestingClient implements Serializable {
     private static final long serialVersionUID = 1L;
     
@@ -89,6 +97,11 @@ public class HarvestingClient implements Serializable {
         this.dataverse = dataverse;
     }
 
+    @NotBlank(message = "Please enter a nickname.")
+    @Column(nullable = false, unique=true)
+    @Size(max = 30, message = "Nickname must be at most 30 characters.")
+    @Pattern.List({@Pattern(regexp = "[a-zA-Z0-9\\_\\-]*", message = "Found an illegal character(s). Valid characters are a-Z, 0-9, '_', and '-'."), 
+        @Pattern(regexp=".*\\D.*", message="Nickname should not be a number")})
     private String name; 
     
     public String getName() {

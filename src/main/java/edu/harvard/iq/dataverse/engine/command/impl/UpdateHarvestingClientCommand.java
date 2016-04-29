@@ -17,17 +17,20 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 public class UpdateHarvestingClientCommand extends AbstractCommand<HarvestingClient> {
     
     private final Dataverse dv;
-
-    public UpdateHarvestingClientCommand(DataverseRequest aRequest, Dataverse motherDataverse) {
-        super(aRequest, motherDataverse);
-        dv = motherDataverse;
+    private final HarvestingClient harvestingClient; 
+    
+    public UpdateHarvestingClientCommand(DataverseRequest aRequest, HarvestingClient harvestingClient) {
+        super(aRequest, harvestingClient.getDataverse());
+        this.harvestingClient = harvestingClient;
+        dv = harvestingClient.getDataverse();
     }
 
     @Override
     public HarvestingClient execute(CommandContext ctxt) throws CommandException {
-        // TODO: check if the harvesting client config attached to the dataverse
-        // is legit; and that it already exists. 
-        return ctxt.em().merge(dv).getHarvestingClientConfig();
+        // TODO: check that the harvesting client config is attached to a legit 
+        // dataverse; and that we are in fact modifying a config that already 
+        // exists. -- L.A. 4.4
+        return ctxt.em().merge(this.harvestingClient);
     }
     
 }

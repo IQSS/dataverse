@@ -17,17 +17,21 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 public class CreateHarvestingClientCommand extends AbstractCommand<HarvestingClient> {
     
     private final Dataverse dv;
+    private final HarvestingClient harvestingClient; 
 
-    public CreateHarvestingClientCommand(DataverseRequest aRequest, Dataverse motherDataverse) {
-        super(aRequest, motherDataverse);
-        dv = motherDataverse;
+    public CreateHarvestingClientCommand(DataverseRequest aRequest, HarvestingClient harvestingClient) {
+        super(aRequest, harvestingClient.getDataverse());
+        this.harvestingClient = harvestingClient; 
+        dv = harvestingClient.getDataverse();
     }
 
     @Override
     public HarvestingClient execute(CommandContext ctxt) throws CommandException {
         // TODO: check if the harvesting client config is legit; 
-        // and that it is new. 
-        return ctxt.dataverses().save(dv).getHarvestingClientConfig();
+        // and that it is indeed new and unique? 
+        // (may not be necessary - as the uniqueness should be enforced by 
+        // the persistence layer... -- L.A. 4.4)
+        return ctxt.em().merge(this.harvestingClient);
     }
     
 }

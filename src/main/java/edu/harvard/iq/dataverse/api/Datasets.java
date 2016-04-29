@@ -315,7 +315,7 @@ public class Datasets extends AbstractApiBean {
             boolean updateDraft = ds.getLatestVersion().isDraft();
             DatasetVersion managedVersion = execCommand( updateDraft
                                                              ? new UpdateDatasetVersionCommand(req, incomingVersion)
-                                                             : new CreateDatasetVersionCommand(req, ds, incomingVersion));
+                                                             : new  CreateDatasetVersionCommand(req, ds, incomingVersion));
             return okResponse( json(managedVersion) );
                     
         } catch (JsonParseException ex) {
