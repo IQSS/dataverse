@@ -3,7 +3,8 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:p="http://primefaces.org/ui">
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:jsf="http://xmlns.jcp.org/jsf">
 
     <h:head>
     </h:head>
@@ -18,9 +19,9 @@
                 <div class="alert alert-danger" role="alert" style="margin-top:3em;">
                     <h:outputText value="#{bundle['error.404.message']}" escape="false"/>
                 </div>
-                <div class="row text-center">                   
+                <div class="row text-center" jsf:rendered="#{!widgetWrapper.widgetView}">
                     <h:form>
-                        <input id="search404" type="text" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all" size="28" value="" placeholder="#{bundle['header.search.title']}" 
+                        <input id="search404" type="text" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all" size="28" value="" placeholder="#{bundle['header.search.title']}"
                                style="font-size:1em;margin-right:1em;" onkeypress="if (event.keyCode == 13) {window.location = '/?q=' + document.getElementById('search404').value; return false;}" />
                         <a href="#" id="search404button" class="btn btn-default" onclick="window.location = '/?q=' + document.getElementById('search404').value; return false;">
                             <span class="glyphicon glyphicon-search"/> #{bundle.find}

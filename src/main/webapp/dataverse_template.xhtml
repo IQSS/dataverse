@@ -70,7 +70,7 @@
                             
                             <ui:fragment rendered="#{!dataverseSession.user.authenticated}">
                                 <!-- this redirect logic doesn't seem to work... -->
-                                <h:outputLink value="/loginpage.xhtml?#{loginRedirectPage}" target="_blank" title="Log in to...">
+                                <h:outputLink style="font-weight: bold; margin-left:1em;" value="/loginpage.xhtml?#{loginRedirectPage}" target="_blank" title="Log in to...">
                                     #{bundle.login}
                                 </h:outputLink>
                             </ui:fragment>
