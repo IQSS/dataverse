@@ -17,6 +17,7 @@ import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectB
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.json.Json;
@@ -42,7 +43,7 @@ public class Harvesting extends AbstractApiBean {
     @EJB
     HarvestingClientServiceBean harvestingClientService;
 
-    
+    private static final Logger logger = Logger.getLogger(Harvesting.class.getName());
     /* 
      *  /api/harvest/client
      *  and
@@ -59,7 +60,7 @@ public class Harvesting extends AbstractApiBean {
         try {
             harvestingClients = harvestingClientService.getAllHarvestingClients();
         } catch (Exception ex) {
-            return errorResponse( Response.Status.BAD_REQUEST, "Caught an exception looking up configured harvesting clients; " + ex.getMessage() );
+            return errorResponse( Response.Status.INTERNAL_SERVER_ERROR, "Caught an exception looking up configured harvesting clients; " + ex.getMessage() );
         }
         
         if (harvestingClients == null) {
@@ -96,16 +97,45 @@ public class Harvesting extends AbstractApiBean {
     @GET
     @Path("{nickName}")
     public Response harvestingClient(@PathParam("nickName") String nickName, @QueryParam("key") String apiKey) throws IOException {
+        
+        HarvestingClient harvestingClient = null; 
         try {
-            HarvestingClient harvestingClient = harvestingClientService.findByNickname(nickName);
-            if (harvestingClient == null) {
-                return errorResponse( Response.Status.NOT_FOUND, "Harvesting client " + nickName + " not found.");
-            }
-            DataverseRequest req = createDataverseRequest(findUserOrDie());
-            return okResponse(harvestingConfigAsJson(execCommand( new GetHarvestingClientCommand(req, harvestingClient))));
-            
+            harvestingClient = harvestingClientService.findByNickname(nickName);
         } catch (Exception ex) {
-            return errorResponse( Response.Status.BAD_REQUEST, "Caught an exception looking up harvesting client " + nickName + "; " + ex.getMessage() );
+            logger.warning("Exception caught looking up harvesting client " + nickName + ": " + ex.getMessage());
+            return errorResponse( Response.Status.BAD_REQUEST, "Internal error: failed to look up harvesting client " + nickName + ".");
+        }
+        
+        if (harvestingClient == null) {
+            return errorResponse(Response.Status.NOT_FOUND, "Harvesting client " + nickName + " not found.");
+        }
+        
+        HarvestingClient retrievedHarvestingClient = null; 
+        
+        try {
+            // findUserOrDie() and execCommand() both throw WrappedResponse 
+            // exception, that already has a proper HTTP response in it. 
+            
+            retrievedHarvestingClient = execCommand(new GetHarvestingClientCommand(createDataverseRequest(findUserOrDie()), harvestingClient));
+            logger.info("retrieved Harvesting Client " + retrievedHarvestingClient.getName() + " with the GetHarvestingClient command.");
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        } catch (Exception ex) {
+            logger.warning("Unknown exception caught while executing GetHarvestingClientCommand: "+ex.getMessage());
+            retrievedHarvestingClient = null;
+        }
+        
+        if (retrievedHarvestingClient == null) {
+            return errorResponse( Response.Status.BAD_REQUEST, 
+                    "Internal error: failed to retrieve harvesting client " + nickName + ".");
+        }
+        
+        try {
+            return okResponse(harvestingConfigAsJson(retrievedHarvestingClient));  
+        } catch (Exception ex) {
+            logger.warning("Unknown exception caught while trying to format harvesting client config as json: "+ex.getMessage());
+            return errorResponse( Response.Status.BAD_REQUEST, 
+                    "Internal error: failed to produce output for harvesting client " + nickName + ".");
         }
     }
     

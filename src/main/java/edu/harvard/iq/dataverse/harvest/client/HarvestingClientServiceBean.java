@@ -23,9 +23,9 @@ import javax.persistence.PersistenceContext;
  * 
  * Dedicated service for managing Harvesting Client Configurations
  */
-@Stateless(name = "harvesterService")
+@Stateless
 @Named
-@ManagedBean
+//@ManagedBean
 public class HarvestingClientServiceBean {
     @EJB
     DataverseServiceBean dataverseService;
@@ -47,7 +47,12 @@ public class HarvestingClientServiceBean {
     }
     
     public List<HarvestingClient> getAllHarvestingClients() {
-        return em.createQuery("SELECT object(c) FROM Dataverse d, harvestingClient c AS d WHERE c.dataverse_id IS NOT null AND c.dataverse_id=d.id order by d.id").getResultList();
+        try {
+            return em.createQuery("SELECT object(c) FROM HarvestingClient AS c ORDER BY c.id").getResultList();
+        } catch (Exception ex) {
+            logger.warning("Unknown exception caught while looking up configured Harvesting Clients: "+ex.getMessage());
+        }
+        return null; 
     }
     
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
