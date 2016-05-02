@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.util.LanguageUtil;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
@@ -18,6 +19,7 @@ import javax.persistence.OneToOne;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+
 
 /**
  *
@@ -42,7 +44,9 @@ public class MetadataBlock implements Serializable {
     private String name;
     @Column( nullable = false )
     private String displayName;
-
+    @Column( nullable = false )
+    private String frenchdisplayName;
+    
     public Long getId() {
         return id;
     }
@@ -78,10 +82,30 @@ public class MetadataBlock implements Serializable {
     }
 
     public String getDisplayName() {
-        return displayName;
+    	LanguageUtil lUtil = new LanguageUtil();
+    	String language = lUtil.getLanguage();
+    	String output = "";
+
+    	if(language.equals("fr"))
+    	{
+    		output =    frenchdisplayName;
+    	}
+    	else
+    	{
+    		output =   displayName;
+    	}
+    	return output ;
     }
+
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
+    }
+    
+    public String getfrenchDisplayName() {
+        return frenchdisplayName;
+    }
+    public void setfrenchDisplayName(String frenchdisplayName) {
+        this.frenchdisplayName = frenchdisplayName;
     }
     
     public boolean isRequired() {

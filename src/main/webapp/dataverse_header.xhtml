@@ -43,7 +43,7 @@
                             <button type="submit" class="btn btn-default" onclick="window.location = '/?q=' + document.getElementById('navbarsearch').value; return false;">
                                 <span class="glyphicon glyphicon-search"/> #{bundle.find}
                             </button>
-                        </form>
+                        </form>                       
                         <li>
                             <h:outputLink value="http://dataverse.org/" target="_blank">
                                 #{bundle['header.about']}
@@ -97,6 +97,11 @@
                                 </h:outputLink>
                             </li>
                         </ui:fragment>
+                        <h:form>                            
+                            <h:commandButton action="#{language.changeLanguage('')}" value="en"   />                            
+                             <h:outputText value="&#160;" />                           
+                            <h:commandButton action="#{language.changeLanguage('fr')}" value="fr"   />                            
+                        </h:form>
                         <ui:fragment rendered="#{dataverseSession.user.authenticated}">
                             <li class="dropdown accountName">
                                 <span id="lnk_header_account_dropdown" class="dropdown-toggle" data-toggle="dropdown">

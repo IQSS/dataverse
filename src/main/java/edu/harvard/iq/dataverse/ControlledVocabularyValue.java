@@ -6,6 +6,7 @@
 
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.util.LanguageUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -61,11 +62,37 @@ public class ControlledVocabularyValue implements Serializable  {
     @Column(columnDefinition="TEXT", nullable=false) 
     private String strValue;
 
+    @Column(columnDefinition="TEXT", nullable=false) 
+    private String frenchstrValue;
+    
     public String getStrValue() {
-        return strValue;
-    }
+        
+    	LanguageUtil lUtil = new LanguageUtil();
+    	String language = lUtil.getLanguage();
+    	String output = "";
+
+    	if(language.equals("fr"))
+    	{
+    		output =    frenchstrValue;
+    	}
+    	else
+    	{
+    		output =   strValue;
+    	}
+    	return output ; 
+    }   
+    
     public void setStrValue(String strValue) {
         this.strValue = strValue;
+        
+    }
+    
+    public String getFrenchStrValue() {
+        return frenchstrValue;
+    }   
+    
+    public void setFrenchStrValue(String frenchstrValue) {
+        this.frenchstrValue = frenchstrValue;
         
     }
     

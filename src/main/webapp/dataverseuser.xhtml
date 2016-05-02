@@ -16,7 +16,7 @@
             <ui:param name="showDataverseHeader" value="false"/>
             <ui:param name="loginRedirectPage" value="dataverseuser.xhtml"/>
             <ui:define name="body">
-                <f:loadBundle basename="Bundle" var="bundle"/>
+               
                 <f:metadata>
                     <f:viewParam name="editMode" value="#{DataverseUserPage.editMode}"/>
                     <f:viewParam name="redirectPage" value="#{DataverseUserPage.redirectPage}"/>                    
@@ -44,7 +44,7 @@
                     </ui:remove>
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseServiceBean.findRootDataverse(), (DataverseUserPage.editMode == 'CREATE' ? bundle['user.createBtn'] : bundle.account))}"/>
                 </f:metadata>
-                <h:form id="dataverseUserForm">
+                <h:form id="dataverseUserForm">                
                     <p:focus context="dataverseUserForm"/>
                     <div class="clearfix" jsf:rendered="#{empty DataverseUserPage.editMode}">
                         <div class="btn-group pull-right">
@@ -86,7 +86,7 @@
                         
                     <p:tabView id="dataRelatedToMeView" activeIndex="#{DataverseUserPage.activeIndex}" dynamic="true" rendered="#{empty DataverseUserPage.editMode}">
                         <p:ajax event="tabChange" listener="#{DataverseUserPage.onTabChange}" update="@all" oncomplete="javascript:dataverseuser_page_rebind();" />
-                        <p:tab id="myData" title="My Data">
+                        <p:tab id="myData" title="#{bundle['user.dataRelatedToMe']}">
                             <ui:include src="mydata_fragment.xhtml"></ui:include>
                             <!--ui:include src="mydata_page.xhtml"></ui:include-->
                         </p:tab>
@@ -286,7 +286,7 @@
                                 </ui:repeat>
                             </div>
                         </p:tab>
-                        <p:tab id="accountInfo" title="Account Information">
+                        <p:tab id="accountInfo" title="#{bundle['header.accountInfo']}">
                             <div jsf:rendered="#{empty DataverseUserPage.builtinUser}">
                                 #{bundle['user.toEditDetail']}
                             </div>
@@ -420,14 +420,14 @@
                                         <div class="form-group col-sm-11">
                                             <label for="inputPassword" class="col-sm-3 control-label">
                                                 <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['user.passwd.illegal.tip']}">
-                                                    <h:outputText value="#{DataverseUserPage.editMode == 'CREATE' ? 'Password' : 'New Password'}" />
+                                                    <h:outputText value="#{DataverseUserPage.editMode == 'CREATE' ? bundle['user.password'] : bundle['user.newPassword']}" />
                                                     <span class="glyphicon glyphicon-asterisk text-danger"></span>
                                                 </span>
                                             </label>
                                             <div class="col-sm-9">
                                                 <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['user.updatePassword.password']}</p>
                                                 <p:panelGrid columns="2" styleClass="noBorders">
-                                                    <p:password id="inputPassword" tabindex="2" label="#{DataverseUserPage.editMode == 'CREATE' ? 'Password' : 'New Password'}" styleClass="form-control" match="retypePassword" value="#{DataverseUserPage.inputPassword}" validator="#{DataverseUserPage.validateNewPassword}"  />
+                                                    <p:password id="inputPassword" tabindex="2" label="#{DataverseUserPage.editMode == 'CREATE' ? bundle['user.password'] : bundle['user.newPassword']}" styleClass="form-control" match="retypePassword" value="#{DataverseUserPage.inputPassword}" validator="#{DataverseUserPage.validateNewPassword}"  />
                                                     <p:message for="inputPassword" display="text" />
                                                 </p:panelGrid>
                                             </div>
