@@ -6,6 +6,7 @@
      xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
      xmlns:jsf="http://xmlns.jcp.org/jsf"
      xmlns:c="http://java.sun.com/jsp/jstl/core"
+     xmlns:o="http://omnifaces.org/ui"     
      xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
 
     <div id="dataverse-header-block">
@@ -77,14 +78,14 @@
                                 </li>
                             </ul>
                         </li>
-                        <h:form class="navbar-form navbar-left navbar-form-link">
+                        <o:form useRequestURI="true" class="navbar-form navbar-left navbar-form-link">
                            <p:commandLink value="#{bundle['header.support']}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
                                 <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
                                 <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
                                 <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
                                 <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
                            </p:commandLink>
-                        </h:form>
+                        </o:form>
                         <ui:fragment rendered="#{!dataverseSession.user.authenticated}">
                             <li>
                                 <h:outputLink rendered="#{dataverseHeaderFragment.signupAllowed}"
@@ -141,11 +142,11 @@
                                     </li>
                                     <li class="divider"></li>
                                     <li class="logout">
-                                        <h:form styleClass="navbar-form navbar-left" pt:role="logout">
+                                        <o:form useRequestURI="true" styleClass="navbar-form navbar-left" pt:role="logout">
                                             <h:commandLink action="#{dataverseHeaderFragment.logout}" id="lnk_header_logout">
                                                 <h:outputText value="#{bundle['header.logOut']}" />
                                             </h:commandLink>
-                                        </h:form>
+                                        </o:form>
                                     </li>
                                 </ul>
                             </li>
