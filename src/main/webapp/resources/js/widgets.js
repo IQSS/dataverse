@@ -9,13 +9,12 @@ var scriptSource = (function() {
 
 var params = parseQueryString(scriptSource.split('?')[1]);
 
-params.alias; // Dataverse Alias
-params.dvUrl; // Dataverse Installation URL
 params.widget; // Widget type
-params.widgetScope; // Widget scope
+params.alias; // Dataverse Alias
+params.persistentId; // persistentId
+params.dvUrl; // Dataverse Installation URL
 params.heightPx; // iframe height in pixels
 params.text; // search input placeholder text
-params.persistentId; // persistentId
 
 // Utility function to convert "a=b&c=d" into { a:'b', c:'d' }
 function parseQueryString(queryString) {
@@ -47,12 +46,12 @@ if(params.widget === 'iframe' && params.alias) {
     /*
      * Dataverse Listing iFrame
      */
-    document.write('<iframe id="dataverse-widget" src="' + params.dvUrl + '/dataverse/' + params.alias + '?widget=iframe" width="100%" height="' + params.heightPx + '" style="border:0; background:url(' + params.dvUrl + '/resources/images/ajax-loading.gif) no-repeat 50% 50%;"></iframe><script>var widgetScope = "' + params.alias + '"; var dvUrl = "' + params.dvUrl + '";</script><script src="' + params.dvUrl + '/resources/js/widgets-host.js"></script>');
+    document.write('<iframe id="dataverse-widget" src="' + params.dvUrl + '/dataverse/' + params.alias + '?widget=dataverse@' + params.alias + '" width="100%" height="' + params.heightPx + '" style="border:0; background:url(' + params.dvUrl + '/resources/images/ajax-loading.gif) no-repeat 50% 50%;"></iframe><script>var widgetScope = "' + params.alias + '"; var dvUrl = "' + params.dvUrl + '";</script><script src="' + params.dvUrl + '/resources/js/widgets-host.js"></script>');
 }
 
 if(params.widget === 'iframe' && params.persistentId) {
     /*
      * Dataset 'Full' iFrame
      */
-    document.write('<iframe id="dataset-widget" src="' + params.dvUrl + '/dataset.xhtml?persistentId=' + params.persistentId + '&widget=iframe" width="100%" height="' + params.heightPx + '" style="border:0; background:url(' + params.dvUrl + '/resources/images/ajax-loading.gif) no-repeat 50% 50%;"></iframe><script>var widgetScope = "' + params.alias + '"; var dvUrl = "' + params.dvUrl + '";</script><script src="' + params.dvUrl + '/resources/js/widgets-host.js"></script>');
+    document.write('<iframe id="dataset-widget" src="' + params.dvUrl + '/dataset.xhtml?persistentId=' + params.persistentId + '&widget=dataset@' + params.persistentId + '" width="100%" height="' + params.heightPx + '" style="border:0; background:url(' + params.dvUrl + '/resources/images/ajax-loading.gif) no-repeat 50% 50%;"></iframe><script>var widgetScope = "' + params.alias + '"; var dvUrl = "' + params.dvUrl + '";</script><script src="' + params.dvUrl + '/resources/js/widgets-host.js"></script>');
 }

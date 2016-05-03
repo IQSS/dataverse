@@ -24,9 +24,9 @@ function parseQueryString(queryString) {
 }
 
 if(params.alias) {
-    $('#dataverse-widget').attr({src: dvUrl + '/dataverse/' + params.alias + '?widget=iframe&widgetScope=' + widgetScope});
+    $('#dataverse-widget').attr({src: dvUrl + '/dataverse/' + params.alias + '?widget=dataverse@' + widgetScope});
 }
 
 if(params.persistentId) {
-    $('#dataverse-widget').attr({src: dvUrl + '/dataset.xhtml?widget=iframe&widgetScope=' + widgetScope + '&persistentId=' + params.persistentId});
+    $('#dataverse-widget').attr({src: dvUrl + '/dataset.xhtml?persistentId=' + params.persistentId + '&widget=dataverse@' + widgetScope});
 }
