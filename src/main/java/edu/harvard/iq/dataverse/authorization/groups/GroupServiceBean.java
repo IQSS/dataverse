@@ -78,7 +78,8 @@ public class GroupServiceBean {
         Set<Group> groups = new HashSet<>();
          // first, get all groups the user directly belongs to
         for ( GroupProvider gp : groupProviders.values() ) {
-            groups.addAll( gp.groupsFor(req, dvo) );
+            final Set newGroups = gp.groupsFor(req, dvo);
+            groups.addAll(newGroups);
         }
         
         return groupTransitiveClosure(groups, dvo);

@@ -293,7 +293,6 @@ public class DataversePage implements java.io.Serializable {
                 return "/404.xhtml";
             }
             if (!dataverse.isReleased() && !permissionService.on(dataverse).has(Permission.ViewUnpublishedDataverse)) {
-                System.out.print(" session.getUser().isAuthenticated() " + session.getUser().isAuthenticated());
                 if (!session.getUser().isAuthenticated()){
                     return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
                 } else {
