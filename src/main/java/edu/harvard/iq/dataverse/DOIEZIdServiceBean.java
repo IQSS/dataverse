@@ -251,14 +251,15 @@ public class DOIEZIdServiceBean  {
     }
 
 
-    public boolean publicizeIdentifier(Dataset studyIn) {
-        return updateIdentifierStatus(studyIn, "public");
+    public boolean publicizeIdentifier(Dataset dataset) {
+        return updateIdentifierStatus(dataset, "public");
     }
     
     private boolean updateIdentifierStatus(Dataset dataset, String statusIn) {
         String identifier = getIdentifierFromDataset(dataset);
         HashMap<String, String> metadata = getUpdateMetadataFromDataset(dataset);
         metadata.put("_status", statusIn);
+        metadata.put("_target", getTargetUrl(dataset));
         try {
             ezidService.setMetadata(identifier, metadata);
             return true;

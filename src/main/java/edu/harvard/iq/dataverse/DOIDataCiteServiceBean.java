@@ -249,13 +249,14 @@ public class DOIDataCiteServiceBean {
         return dataset.getGlobalId();
     }
 
-    public void publicizeIdentifier(Dataset studyIn) throws Exception {
-        updateIdentifierStatus(studyIn, "public");
+    public void publicizeIdentifier(Dataset dataset) throws Exception {
+        updateIdentifierStatus(dataset, "public");
     }
 
     private void updateIdentifierStatus(Dataset dataset, String statusIn) throws Exception  {
         String identifier = getIdentifierFromDataset(dataset);
         HashMap metadata = getUpdateMetadataFromDataset(dataset);
+        metadata.put("_target", getTargetUrl(dataset));
         metadata.put("_status", statusIn);
         try {
             doiDataCiteRegisterService.createIdentifier(identifier, metadata, dataset);
