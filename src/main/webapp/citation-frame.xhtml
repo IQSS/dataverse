@@ -28,16 +28,16 @@
     </h:head>
 
     <h:body>
-        <div style="width:100%; height:65px; position: absolute; z-index: 999999; border-radius: 0; border-width: 0 0 1px 0;" class="alert alert-warning">
-            <p class="small pull-left">This data is being archived by the #{dataverseServiceBean.findRootDataverse().displayName}. If the site below does not load, you can find the data here:<br/> 
-                <a href="#{systemConfig.dataverseSiteUrl}/dataset.xhtml?persistentId=#{param['persistentId']}" title="Dataset archived by #{dataverseServiceBean.findRootDataverse().displayName}">#{systemConfig.dataverseSiteUrl}/dataset.xhtml?persistentId=#{param['persistentId']}</a>
+        <div style="width:100%; height:45px; position: absolute; z-index: 999999; border-radius: 0; border-width: 0 0 1px 0;" class="alert alert-warning">
+            <p class="small pull-left">If the site below does not load, the archived data can be found in the #{dataverseServiceBean.findRootDataverse().displayName}     
+                <a href="#{systemConfig.dataverseSiteUrl}/dataset.xhtml?persistentId=#{param['persistentId']}" title="Dataset archived by #{dataverseServiceBean.findRootDataverse().displayName}">here</a>.
             </p>
             
-            <a style="margin-left:1em;margin-top:4px;" class="close" href="#{param['citationRedirectURL']}?persistentId=#{param['persistentId']}" title="Close this message, go to dataset"><span class="glyphicon glyphicon-remove"></span></a>
+            <a style="line-height:.2;" class="close" href="#{param['citationRedirectURL']}?persistentId=#{param['persistentId']}" title="Close this message, go to dataset"><span style="line-height:.2;" class="glyphicon glyphicon-remove"></span></a>
             
-            <a class="btn btn-default btn-sm pull-right" href="#{systemConfig.dataverseSiteUrl}/dataset.xhtml?persistentId=#{param['persistentId']}" role="button">View on Dataverse</a>
+            <!-- <a class="btn btn-default btn-sm pull-right" href="# {systemConfig.dataverseSiteUrl}/dataset.xhtml?persistentId=# {param['persistentId']}" role="button">View on Dataverse</a> -->
         </div>
         
-        <iframe id="citation-forward" src="#{param['citationRedirectURL']}?persistentId=#{param['persistentId']}" width="100%" style="position: absolute; top:65px; height: calc(100% - 65px); border:0; background:url(/resources/images/ajax-loading.gif) no-repeat 50% 50%;"></iframe>
+        <iframe id="citation-forward" src="#{param['citationRedirectURL']}?persistentId=#{param['persistentId']}" width="100%" style="position: absolute; top:45px; height: calc(100% - 65px); border:0; background:url(/resources/images/ajax-loading.gif) no-repeat 50% 50%;"></iframe>
     </h:body>
 </html>
