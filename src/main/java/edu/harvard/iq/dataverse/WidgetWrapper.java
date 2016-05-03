@@ -13,56 +13,78 @@ import javax.inject.Named;
  *
  * @author gdurand
  */
-
 @ViewScoped
 @Named
 public class WidgetWrapper implements java.io.Serializable {
+
+    private final static String WIDGET_PARAMETER = "widget";
+    private final static char WIDGET_SEPARATOR = '@';
     
     private Boolean widgetView;
+    private String widgetHome;
     private String widgetScope;
 
-    public boolean isWidgetView() {
+    private boolean initWidget() {
+        // first check for widgetScope; if not found use alias (if null then this is not a dataverse widget)
         if (widgetView == null) {
-            String widgetParam = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("widget");
-            widgetView = widgetParam != null && widgetParam.equals("iframe");
+            String widgetParam = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get(WIDGET_PARAMETER);
+            // you are in widget view ONLY if this param is supplied AND you have the separator 
+            widgetView = widgetParam != null && widgetParam.indexOf(WIDGET_SEPARATOR) != -1;
+                     
+            if (widgetView) {
+                widgetScope = widgetParam.substring(0, widgetParam.indexOf(WIDGET_SEPARATOR));
+                widgetHome = widgetParam.substring(widgetParam.indexOf(WIDGET_SEPARATOR) + 1);
+            }
         }
         return widgetView;
     }
-    
-    public String getWidgetScope() {
-        // first check for widgetScope; if not found use alias (if null then this is not a dataverse widget)
-        if (widgetScope == null) {
-            String widgetScopeParam = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("widgetScope");
-            if (widgetScopeParam != null) {
-                widgetScope = widgetScopeParam;
-            } else {
-                String aliasParam = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("alias");
-                widgetScope = aliasParam;
-            }
-        }
-        return widgetScope;
+
+    public boolean isWidgetView() {
+        return initWidget();
     }
 
-    
-    public String wrapURL(String URL) {
-        return URL + (isWidgetView() ? getParamSeparator(URL) + "widget=iframe&widgetScope=" + getWidgetScope() : "");
+    public boolean isWidgetTarget(DvObject dvo) {
+        if (isWidgetView()) {
+                       
+            while (dvo != null) {
+                if (dvo instanceof DataFile) {
+                    if ("datafile".equals(widgetScope)) {
+                        //todo: add logic for when we add file widgets
+                    }
+                } else if (dvo instanceof Dataset) {
+                    switch (widgetScope) {
+                        case "dataverse": 
+                            break; // keep looping
+                        case "dataset":
+                            if (((Dataset) dvo).getGlobalId().equals(widgetHome)) {
+                                return true;
+                            }   break;
+                        default:
+                            return false; // scope is for lower type dvObject
+                    }
+                } else if (dvo instanceof Dataverse) {
+                    if ("dataverse".equals(widgetScope)) {
+                        if (((Dataverse) dvo).getAlias().equals(widgetHome)) {
+                            return true;
+                        }
+                    } else {
+                        return false; // scope is for lower type dvObject
+                    }
+                }
+                
+                dvo = dvo.getOwner();                
+            }
+        }
+
+        return false;
     }
-    
+
+    public String wrapURL(String URL) {
+        return URL + (isWidgetView() ? getParamSeparator(URL) + WIDGET_PARAMETER + "=" + widgetScope + WIDGET_SEPARATOR + widgetHome: "");
+    }
+
     private String getParamSeparator(String URL) {
         return (URL.contains("?") ? "&" : "?");
     }
-    
-    public boolean inWidgetScope(Dataverse dv) {
-        if (isWidgetView()) {
-            while (dv.getOwner() != null) {
-                if (dv.getAlias().equals(getWidgetScope())) {
-                   return true;
-                }
-                dv= dv.getOwner();
-            }
-        }
-        
-        return false;
-    }    
-    
+
 }
