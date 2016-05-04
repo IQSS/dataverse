@@ -390,16 +390,6 @@
                                     </div>
                                 </div>
                             </div>
-                            <div id="widgetMsgLink" jsf:rendered="#{widgetWrapper.widgetView and !DatasetPage.dataset.deaccessioned}">
-                                <!-- Widget + Authetication -->
-                                <ui:fragment rendered="#{DatasetPage.sessionUserAuthenticated and DatasetPage.canUpdateDataset()}">
-                                    <p class="text-muted"><span class="glyphicon glyphicon-info-sign"/> To edit this dataset and upload files, visit the <a href="#{DatasetPage.dataverseSiteUrl}/dataset.xhtml?persistentId=#{dataset.globalId}" target="_blank" title="#{DatasetPage.datasetVersionUI.title.value}">full version</a> on #{dataverseServiceBean.findRootDataverse().displayName}.</p>
-                                </ui:fragment>
-                                
-                                <ui:fragment rendered="#{!DatasetPage.sessionUserAuthenticated or !DatasetPage.canUpdateDataset()}">
-                                    <p class="text-muted"><span class="glyphicon glyphicon-info-sign"/> To view more details of this dataset, visit the <a href="#{DatasetPage.dataverseSiteUrl}/dataset.xhtml?persistentId=#{dataset.globalId}" target="_blank" title="#{DatasetPage.datasetVersionUI.title.value}">full version</a> on #{dataverseServiceBean.findRootDataverse().displayName}.</p>
-                                </ui:fragment>
-                           </div>
                         </div>
                     </div>
                     <!-- END View editMode -->
@@ -559,7 +549,7 @@
                             <p:tab id="metadataMapTab" title="#{bundle['file.dataFilesTab.metadata.header']}"
                                    rendered="#{!DatasetPage.workingVersion.deaccessioned and (empty DatasetPage.editMode or DatasetPage.editMode == 'METADATA')}">
                                 <div class="text-right margin-bottom"
-                                     jsf:rendered="#{DatasetPage.sessionUserAuthenticated and empty DatasetPage.editMode
+                                     jsf:rendered="#{DatasetPage.sessionUserAuthenticated and empty DatasetPage.editMode and !widgetWrapper.widgetView
                                                      and DatasetPage.canUpdateDataset()}">
                                     <p:commandLink type="button" styleClass="btn btn-default" actionListener="#{DatasetPage.edit('METADATA')}" update="@form,:messagePanel" oncomplete="javascript:post_edit_metadata()" disabled="#{DatasetPage.locked}">
                                         <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
