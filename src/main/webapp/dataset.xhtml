@@ -1316,8 +1316,11 @@
                         <p class="text-danger">
                             <span class="glyphicon glyphicon-warning-sign"/>
                             <h:outputFormat value="#{bundle['dataset.mayNotPublish.both']}" escape="false">
-                                <f:param value="#{DatasetPage.dataset.owner.alias}"/>
-                                <f:param value="#{DatasetPage.dataset.owner.displayName}"/>
+                                <o:param>
+                                    <a href="/dataverse.xhtml?alias=#{DatasetPage.dataset.owner.alias}" title="#{DatasetPage.dataset.owner.displayName}">
+                                        <h:outputText value="#{DatasetPage.dataset.owner.displayName}"/>
+                                    </a>                           
+                                </o:param>
                             </h:outputFormat>
                         </p>
                         <div id="terms-agreement-block" class="well" jsf:rendered="#{DatasetPage.datasetPublishCustomText.length() > 0}">
@@ -1364,8 +1367,11 @@
                         <p class="text-danger">
                             <span class="glyphicon glyphicon-warning-sign"/>
                             <h:outputFormat value="#{bundle['dataset.mayNotPublish.administrator']}" escape="false">
-                                <f:param value="#{DatasetPage.dataset.owner.alias}"/>
-                                <f:param value="#{DatasetPage.dataset.owner.displayName}"/>
+                                <o:param>
+                                    <a href="/dataverse.xhtml?alias=#{DatasetPage.dataset.owner.alias}" title="#{DatasetPage.dataset.owner.displayName}">
+                                        <h:outputText value="#{DatasetPage.dataset.owner.displayName}"/>
+                                    </a>                           
+                                </o:param>
                             </h:outputFormat>
                         </p>
                         <div class="button-block">
@@ -1377,10 +1383,16 @@
                         <p class="text-danger">
                             <span class="glyphicon glyphicon-warning-sign"/>
                             <h:outputFormat value="#{bundle['dataset.mayNotPublish.twoGenerations']}" escape="false">
-                                <f:param value="#{DatasetPage.dataset.owner.alias}"/>
-                                <f:param value="#{DatasetPage.dataset.owner.displayName}"/>
-                                <f:param value="#{DatasetPage.dataset.owner.owner.alias}"/>
-                                <f:param value="#{DatasetPage.dataset.owner.owner.displayName}"/>
+                                <o:param>
+                                    <a href="/dataverse.xhtml?alias=#{DatasetPage.dataset.owner.alias}" title="#{DatasetPage.dataset.owner.displayName}">
+                                        <h:outputText value="#{DatasetPage.dataset.owner.displayName}"/>
+                                    </a>                           
+                                </o:param>
+                                <o:param>
+                                    <a href="/dataverse.xhtml?alias=#{DatasetPage.dataset.owner.owner.alias}" title="#{DatasetPage.dataset.owner.owner.displayName}">
+                                        <h:outputText value="#{DatasetPage.dataset.owner.owner.displayName}"/>
+                                    </a>                           
+                                </o:param>
                             </h:outputFormat>
                         </p>
                         <div class="button-block">
