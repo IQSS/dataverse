@@ -7,7 +7,7 @@
      xmlns:o="http://omnifaces.org/ui"
      xmlns:jsf="http://xmlns.jcp.org/jsf">
 
-    <c:set var="page" value="/dataverse/#{SearchIncludeFragment.dataverseAlias}"/>    
+    <c:set var="page" value="/dataverse/#{SearchIncludeFragment.dataverse.alias}"/>    
     
     <!-- Search Form + Add Data Button -->
     <div class="row panelSearchForm" jsf:rendered="#{showSearch == true and !SearchIncludeFragment.solrIsDown}">
