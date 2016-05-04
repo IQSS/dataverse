@@ -6,6 +6,7 @@
 package edu.harvard.iq.dataverse.util;
 
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.jsoup.safety.Whitelist;
 
 /**
@@ -32,7 +33,8 @@ public class MarkupChecker {
         //Whitelist wl = Whitelist.basic().addTags("img", "h1", "h2", "h3", "kbd", "hr", "s", "del");  
 
         Whitelist wl = Whitelist.basicWithImages().addTags( "h1", "h2", "h3", "kbd", "hr", "s", "del","map","area").addAttributes("img", "usemap")
-                .addAttributes("map", "name").addAttributes("area", "shape","coords","href","title","alt").addAttributes("a", "target");
+                .addAttributes("map", "name").addAttributes("area", "shape","coords","href","title","alt")
+                .addEnforcedAttribute("a", "target", "_blank");
 
         return Jsoup.clean(unsafe, wl);
         

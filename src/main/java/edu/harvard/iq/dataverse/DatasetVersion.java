@@ -877,7 +877,7 @@ public class DatasetVersion implements Serializable {
          str += " " + distributorNames;
          str += " [Distributor]";
          }*/
-        return str;
+        return MarkupChecker.sanitizeBasicHTML(str);
     }
     
     private Date getCitationDate() {
