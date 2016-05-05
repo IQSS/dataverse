@@ -378,7 +378,19 @@
 	  <artifactId>oclc-harvester2</artifactId>
 	  <version>0.1.12</version>
 	</dependency>
-        
+	<!-- EXPERIMENTAL: -->
+	<!-- lyncode xoai OAI-PMH implementation: -->
+	<dependency>
+	  <groupId>com.lyncode</groupId>
+	  <artifactId>xoai-common</artifactId>
+	  <version>4.1.0</version>
+	</dependency>
+        <dependency>
+	  <groupId>com.lyncode</groupId>
+	  <artifactId>xoai-service-provider</artifactId>
+	  <version>4.1.0</version>
+	</dependency>
+
     </dependencies>
 
     <build>

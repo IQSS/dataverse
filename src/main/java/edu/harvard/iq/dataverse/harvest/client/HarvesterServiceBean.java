@@ -19,6 +19,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.net.URLEncoder;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -37,6 +38,14 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import org.apache.commons.lang.mutable.MutableBoolean;
 import org.xml.sax.SAXException;
+
+import com.lyncode.xoai.model.oaipmh.Granularity;
+import com.lyncode.xoai.model.oaipmh.Header;
+import com.lyncode.xoai.serviceprovider.ServiceProvider;
+import com.lyncode.xoai.serviceprovider.model.Context;
+import com.lyncode.xoai.serviceprovider.client.HttpOAIClient;
+import com.lyncode.xoai.serviceprovider.exceptions.BadArgumentException;
+import com.lyncode.xoai.serviceprovider.parameters.ListIdentifiersParameters;
 
 /**
  *
@@ -64,9 +73,7 @@ public class HarvesterServiceBean {
     public static final String HARVEST_RESULT_SUCCESS="success";
     public static final String HARVEST_RESULT_FAILED="failed";
 
-   
-    private long processedSizeThisBatch = 0;
-    private List<Long> harvestedDatasetIdsThisBatch = null;
+
     public HarvesterServiceBean() {
 
     }
@@ -183,8 +190,7 @@ public class HarvesterServiceBean {
         hdLogger.addHandler(fileHandler);
         List<Long> harvestedDatasetIds = null;
 
-    	this.processedSizeThisBatch = 0;
-        this.harvestedDatasetIdsThisBatch = new ArrayList<Long>();
+        List<Long> harvestedDatasetIdsThisBatch = new ArrayList<Long>();
 
         List<String> failedIdentifiers = new ArrayList<String>();
         Date harvestStartTime = new Date();
@@ -198,19 +204,11 @@ public class HarvesterServiceBean {
 
             } else {
                 harvestingClientService.resetHarvestInProgress(harvestingDataverse.getId());
-                String until = null;  // If we don't set until date, we will get all the changes since the last harvest.
-                String from = null;
-                // TODO: should it be last *non-empty* time? -- L.A. 4.4
-                Date lastSuccessfulHarvestTime = harvestingClientConfig.getLastSuccessfulHarvestTime();
-                if (lastSuccessfulHarvestTime != null) {
-                    from = formatter.format(lastSuccessfulHarvestTime);
-                }
                 harvestingClientService.setHarvestInProgress(harvestingDataverse.getId(), harvestStartTime);
 
-                hdLogger.log(Level.INFO, "BEGIN HARVEST..., oaiUrl=" + harvestingClientConfig.getArchiveUrl() + ",set=" + harvestingClientConfig.getHarvestingSet() + ", metadataPrefix=" + harvestingClientConfig.getMetadataPrefix() + ", from=" + from + ", until=" + until);
-
+               
                 if (harvestingClientConfig.isOai()) {
-                    harvestedDatasetIds = harvestOAI(harvestingDataverse, hdLogger, from, until, harvestErrorOccurred, failedIdentifiers);
+                    harvestedDatasetIds = harvestOAI(harvestingClientConfig, hdLogger, harvestErrorOccurred, failedIdentifiers, harvestedDatasetIdsThisBatch);
 
                 } else {
                     throw new IOException("Unsupported harvest type");
@@ -257,140 +255,121 @@ public class HarvesterServiceBean {
 
     /**
      * 
-     * @param dataverse  the dataverse to harvest into
-     * @param from       get updated studies from this beginning date
-     * @param until      get updated studies until this end date
+     * @param harvestingClient  the harvesting client object
+     * @param hdLogger          custom logger (specific to this harvesting run)
      * @param harvestErrorOccurred  have we encountered any errors during harvest?
      * @param failedIdentifiers     Study Identifiers for failed "GetRecord" requests
      */
-    private List<Long> harvestOAI(Dataverse dataverse, Logger hdLogger, String from, String until, MutableBoolean harvestErrorOccurred, List<String> failedIdentifiers)
-            throws IOException, ParserConfigurationException,SAXException, TransformerException {
-   
+    private List<Long> harvestOAI(HarvestingClient harvestingClient, Logger hdLogger, MutableBoolean harvestErrorOccurred, List<String> failedIdentifiers, List<Long> harvestedDatasetIdsThisBatch)
+            throws IOException, ParserConfigurationException, SAXException, TransformerException {
+
         List<Long> harvestedDatasetIds = new ArrayList<Long>();
-   
-        /*
-            ResumptionTokenType resumptionToken = null;
+        Long processedSizeThisBatch = 0L;
 
-            do {
-                //resumptionToken = harvesterService.harvestFromIdentifiers(hdLogger, resumptionToken, dataverse, from, until, harvestedDatasetIds, failedIdentifiers, harvestErrorOccurred
-                resumptionToken = harvestFromIdentifiers(hdLogger, resumptionToken, dataverse, from, until, harvestedDatasetIds, failedIdentifiers, harvestErrorOccurred);
-            } while (resumptionToken != null && !resumptionToken.equals(""));
 
-            hdLogger.log(Level.INFO, "COMPLETED HARVEST, oaiUrl=" + dataverse.getServerUrl() + ",set=" + dataverse.getHarvestingSet() + ", metadataPrefix=" + dataverse.getHarvestFormatType().getMetadataPrefix() + ", from=" + from + ", until=" + until);
-           
-        */
-        return harvestedDatasetIds;
-     
-    }
+        String baseOaiUrl = harvestingClient.getHarvestingUrl();
+        String metadataPrefix = harvestingClient.getMetadataPrefix();
+        Date fromDate = harvestingClient.getLastNonEmptyHarvestTime();
 
-    /*
-    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-    public ResumptionTokenType harvestFromIdentifiers(Logger hdLogger, ResumptionTokenType resumptionToken, HarvestingDataverse dataverse, String from, String until, List<Long> harvestedDatasetIds, List<String> failedIdentifiers, MutableBoolean harvestErrorOccurred)
-            throws java.io.IOException, ParserConfigurationException, SAXException, TransformerException, JAXBException {
-        String encodedSet = dataverse.getHarvestingSet() == null ? null : URLEncoder.encode(dataverse.getHarvestingSet(), "UTF-8");
-        ListIdentifiers listIdentifiers = null;
+        String set = harvestingClient.getHarvestingSet() == null ? null : URLEncoder.encode(harvestingClient.getHarvestingSet(), "UTF-8");
 
-        if (resumptionToken == null) {
-            listIdentifiers = new ListIdentifiers(dataverse.getServerUrl(),
-                    from,
-                    until,
-                    encodedSet,
-                    URLEncoder.encode(dataverse.getHarvestFormatType().getMetadataPrefix(), "UTF-8"));
-        } else {
-            hdLogger.log(Level.INFO, "harvestFromIdentifiers(), resumptionToken=" + resumptionToken.getValue());
-            listIdentifiers = new ListIdentifiers(dataverse.getServerUrl(), resumptionToken.getValue());
-        }
+        hdLogger.log(Level.INFO, "BEGIN HARVEST..., oaiUrl=" + baseOaiUrl + ",set=" + set + ", metadataPrefix=" + metadataPrefix + ", from=" + fromDate);
         
-        Document doc = listIdentifiers.getDocument();
+        ListIdentifiersParameters parameters = buildParams(metadataPrefix, set, fromDate);
+        ServiceProvider serviceProvider = getServiceProvider(baseOaiUrl, Granularity.Second);
 
-        //       JAXBContext jc = JAXBContext.newInstance("edu.harvard.hmdc.vdcnet.jaxb.oai");
-        //       Unmarshaller unmarshaller = jc.createUnmarshaller();
-        JAXBElement unmarshalObj = (JAXBElement) unmarshaller.unmarshal(doc);
-        OAIPMHtype oaiObj = (OAIPMHtype) unmarshalObj.getValue();
+        try {
+            for (Iterator<Header> idIter = serviceProvider.listIdentifiers(parameters); idIter.hasNext();) {
 
-        if (oaiObj.getError() != null && oaiObj.getError().size() > 0) {
-            if (oaiObj.getError().get(0).getCode().equals(OAIPMHerrorcodeType.NO_RECORDS_MATCH)) {
-                 hdLogger.info("ListIdentifiers returned NO_RECORDS_MATCH - no studies found to be harvested.");
-            } else {
-                handleOAIError(hdLogger, oaiObj, "calling listIdentifiers, oaiServer= " + dataverse.getServerUrl() + ",from=" + from + ",until=" + until + ",encodedSet=" + encodedSet + ",format=" + dataverse.getHarvestFormatType().getMetadataPrefix());
-                throw new EJBException("Received OAI Error response calling ListIdentifiers");
-            }
-        } else {
-            ListIdentifiersType listIdentifiersType = oaiObj.getListIdentifiers();
-            if (listIdentifiersType != null) {
-                resumptionToken = listIdentifiersType.getResumptionToken();
-                for (Iterator it = listIdentifiersType.getHeader().iterator(); it.hasNext();) {
-                    HeaderType header = (HeaderType) it.next();
-                    MutableBoolean getRecordErrorOccurred = new MutableBoolean(false);
-                    Long studyId = getRecord(hdLogger, dataverse, header.getIdentifier(), dataverse.getHarvestFormatType().getMetadataPrefix(), getRecordErrorOccurred);
-                    if (studyId != null) {
-                        harvestedDatasetIds.add(studyId);
-                    }
-                    if (getRecordErrorOccurred.booleanValue()==true) {
-                        failedIdentifiers.add(header.getIdentifier());
-                    }
-                    
+                Header h = idIter.next();
+                String identifier = h.getIdentifier();
+                hdLogger.fine("identifier: " + identifier);
+
+                // Retrieve and process this record with a separate GetRecord call:
+                MutableBoolean getRecordErrorOccurred = new MutableBoolean(false);
+                Long datasetId = getRecord(hdLogger, harvestingClient, identifier, metadataPrefix, getRecordErrorOccurred, processedSizeThisBatch);
+                if (datasetId != null) {
+                    harvestedDatasetIds.add(datasetId);
+                }
+                if (getRecordErrorOccurred.booleanValue() == true) {
+                    failedIdentifiers.add(identifier);
+                }
+                
+                if ( harvestedDatasetIdsThisBatch == null ) {
+                    harvestedDatasetIdsThisBatch = new ArrayList<Long>();
+                }
+                harvestedDatasetIdsThisBatch.add(datasetId);
+
+                // reindexing in batches? - this is from DVN 3; 
+                // we may not need it anymore. 
+                if ( processedSizeThisBatch > 10000000 ) {
+
+                    hdLogger.log(Level.INFO, "REACHED CONTENT BATCH SIZE LIMIT; calling index ("+ harvestedDatasetIdsThisBatch.size()+" datasets in the batch).");
+                    //indexService.updateIndexList(this.harvestedDatasetIdsThisBatch);
+                    hdLogger.log(Level.INFO, "REINDEX DONE.");
+
+
+                    processedSizeThisBatch = 0L;
+                    harvestedDatasetIdsThisBatch = null;
                 }
 
             }
+        } catch (BadArgumentException e) {
+            throw new IOException("Incorrectly formatted OAI parameter", e);
         }
-        String logMsg = "Returning from harvestFromIdentifiers";
 
-        if (resumptionToken == null) {
-            logMsg += " resumptionToken is null";
-        } else if (!StringUtil.isEmpty(resumptionToken.getValue())) {
-            logMsg += " resumptionToken is " + resumptionToken.getValue();
-        } else {
-            // Some OAIServers return an empty resumptionToken element when all
-            // the identifiers have been sent, so need to check  for this, and 
-            // treat it as if resumptiontoken is null.
-            logMsg += " resumptionToken is empty, setting return value to null.";
-            resumptionToken = null;
+        hdLogger.log(Level.INFO, "COMPLETED HARVEST, oaiUrl=" + baseOaiUrl + ",set=" + set + ", metadataPrefix=" + metadataPrefix + ", from=" + fromDate);
+
+        return harvestedDatasetIds;
+
+    }
+    
+    private ServiceProvider getServiceProvider(String baseOaiUrl, Granularity oaiGranularity) {
+        Context context = new Context();
+
+        context.withBaseUrl(baseOaiUrl);
+        context.withGranularity(oaiGranularity);
+        context.withOAIClient(new HttpOAIClient(baseOaiUrl));
+
+        ServiceProvider serviceProvider = new ServiceProvider(context);
+        return serviceProvider;
+    }
+    
+    /**
+     * Creates an XOAI parameters object for the ListIdentifiers call
+     *
+     * @param metadataPrefix
+     * @param set
+     * @param from
+     * @return ListIdentifiersParameters
+     */
+    private ListIdentifiersParameters buildParams(String metadataPrefix, String set, Date from) {
+        ListIdentifiersParameters mip = ListIdentifiersParameters.request();
+        mip.withMetadataPrefix(metadataPrefix);
+
+        if (from != null) {
+            mip.withFrom(from);
         }
-        hdLogger.info(logMsg);
-        return resumptionToken;
-    }
-    */
 
-    /*
-    private void handleOAIError(Logger hdLogger, OAIPMHtype oaiObj, String message) {
-        for (Iterator it = oaiObj.getError().iterator(); it.hasNext();) {
-            OAIPMHerrorType error = (OAIPMHerrorType) it.next();
-            message += ", error code: " + error.getCode();
-            message += ", error value: " + error.getValue();
-            hdLogger.log(Level.SEVERE, message);
-
+        if (set != null) {
+            mip.withSetSpec(set);
         }
+        return mip;
     }
-    */
 
-    /*
-    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-    public Long getRecord(HarvestingDataverse dataverse, String identifier, String metadataPrefix) {
-        return getRecord(logger, dataverse, identifier, metadataPrefix, null);
-    }
-    */
     
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-    public Long getRecord(Logger hdLogger, Dataverse dataverse, String identifier, String metadataPrefix, MutableBoolean recordErrorOccurred) {
+    public Long getRecord(Logger hdLogger, HarvestingClient harvestingClient, String identifier, String metadataPrefix, MutableBoolean recordErrorOccurred, Long processedSizeThisBatch) {
         String errMessage = null;
-
-        HarvestingClient harvestingConfig = dataverse.getHarvestingClientConfig();
-        
-        if (harvestingConfig == null) {
-            errMessage = "Could not find Harvesting Config for Dataverse id="+dataverse.getId();
-            hdLogger.log(Level.SEVERE, errMessage);
-            return null;
-        }
-        
         Dataset harvestedDataset = null;
-        String oaiUrl = harvestingConfig.getHarvestingUrl();
+        String oaiUrl = harvestingClient.getHarvestingUrl();
+        Dataverse parentDataverse = harvestingClient.getDataverse();
+        
         try {
             hdLogger.log(Level.INFO, "Calling GetRecord: oaiUrl =" + oaiUrl + "?verb=GetRecord&identifier=" + identifier + "&metadataPrefix=" + metadataPrefix);
 
             FastGetRecord record = new FastGetRecord(oaiUrl, identifier, metadataPrefix);
             errMessage = record.getErrorMessage();
-            //errMessage=null;
 
             if (errMessage != null) {
                 hdLogger.log(Level.SEVERE, "Error calling GetRecord - " + errMessage);
@@ -409,26 +388,10 @@ public class HarvesterServiceBean {
 
 
                 harvestedDataset = null; // TODO: !!! import
+                
                 hdLogger.log(Level.INFO, "Harvest Successful for identifier " + identifier);
-
-        		this.processedSizeThisBatch += record.getMetadataFile().length();
-                if ( this.harvestedDatasetIdsThisBatch == null ) {
-                    this.harvestedDatasetIdsThisBatch = new ArrayList<Long>();
-                }
-                this.harvestedDatasetIdsThisBatch.add(harvestedDataset.getId());
-
-                // reindexing in batches? - this is from DVN 3; 
-                // we may not need it anymore. 
-                if ( this.processedSizeThisBatch > 10000000 ) {
-
-                    hdLogger.log(Level.INFO, "REACHED CONTENT BATCH SIZE LIMIT; calling index ("+this.harvestedDatasetIdsThisBatch.size()+" studies in the batch).");
-                    //indexService.updateIndexList(this.harvestedDatasetIdsThisBatch);
-                    hdLogger.log(Level.INFO, "REINDEX DONE.");
-
-
-                    this.processedSizeThisBatch = 0;
-                    this.harvestedDatasetIdsThisBatch = null;
-                }
+                
+                processedSizeThisBatch += record.getMetadataFile().length();
             }
         } catch (Throwable e) {
             errMessage = "Exception processing getRecord(), oaiUrl=" + oaiUrl + ",identifier=" + identifier + " " + e.getClass().getName() + " " + e.getMessage();
@@ -440,6 +403,7 @@ public class HarvesterServiceBean {
         // If we got an Error from the OAI server or an exception happened during import, then
         // set recordErrorOccurred to true (if recordErrorOccurred is being used)
         // otherwise throw an exception (if recordErrorOccurred is not used, i.e null)
+        
         if (errMessage != null) {
             if (recordErrorOccurred  != null) {
                 recordErrorOccurred.setValue(true);
@@ -450,122 +414,6 @@ public class HarvesterServiceBean {
 
         return harvestedDataset != null ? harvestedDataset.getId() : null;
     }
-    
-    
-    /*
-    public List<String> getMetadataFormats(String oaiUrl) {
-        JAXBElement unmarshalObj;
-        try {
-
-            Document doc = new ListMetadataFormats(oaiUrl).getDocument();
-            JAXBContext jc = JAXBContext.newInstance("edu.harvard.hmdc.vdcnet.jaxb.oai");
-            Unmarshaller unmarshaller = jc.createUnmarshaller();
-            unmarshalObj = (JAXBElement) unmarshaller.unmarshal(doc);
-        } catch (TransformerException ex) {
-            throw new EJBException(ex);
-        } catch (ParserConfigurationException ex) {
-            throw new EJBException(ex);
-        } catch (JAXBException ex) {
-            throw new EJBException(ex);
-        } catch (SAXException ex) {
-            throw new EJBException(ex);
-        } catch (IOException ex) {
-            throw new EJBException(ex);
-        }
-
-        OAIPMHtype OAIObj = (OAIPMHtype) unmarshalObj.getValue();
-       if (OAIObj.getError()!=null && OAIObj.getError().size()>0) {
-            List<OAIPMHerrorType> errList = OAIObj.getError();
-            String errMessage="";
-            for (OAIPMHerrorType error : OAIObj.getError()){
-                 errMessage += error.getCode()+ " " +error.getValue(); 
-            }
-            throw new EJBException(errMessage);
-        }
-        ListMetadataFormatsType listMetadataFormats = OAIObj.getListMetadataFormats();
-        List<String> formats = null;
-        if (listMetadataFormats != null) {
-            formats = new ArrayList<String>();
-            for (Iterator it = listMetadataFormats.getMetadataFormat().iterator(); it.hasNext();) {
-                //  Object elem = it.next();
-                MetadataFormatType elem = (MetadataFormatType) it.next();
-                formats.add(elem.getMetadataPrefix());
-            }
-        }
-        return formats;
-    }
-    */
-
-    /**
-     *
-     *  SetDetailBean returned rather than the ListSetsType because we get strange errors when trying
-     *  to refer to JAXB generated classes in both Web and EJB tiers.
-     */
-    /*
-    public List<SetDetailBean> getSets(String oaiUrl) {
-        JAXBElement unmarshalObj = null;
-
-        try {
-            ListSets listSets = new ListSets(oaiUrl);
-            int nodeListLength = listSets.getErrors().getLength();
-            if (nodeListLength==1) {
-                 System.out.println("err Node: "+ listSets.getErrors().item(0));
-            }
-           
-            
-            Document doc = new ListSets(oaiUrl).getDocument();
-            JAXBContext jc = JAXBContext.newInstance("edu.harvard.hmdc.vdcnet.jaxb.oai");
-            Unmarshaller unmarshaller = jc.createUnmarshaller();
-            unmarshalObj = (JAXBElement) unmarshaller.unmarshal(doc);
-        } catch (ParserConfigurationException ex) {
-            throw new EJBException(ex);
-        } catch (SAXException ex) {
-            throw new EJBException(ex);
-        } catch (TransformerException ex) {
-            throw new EJBException(ex);
-        } catch (IOException ex) {
-            throw new EJBException(ex);
-        } catch (JAXBException ex) {
-            throw new EJBException(ex);
-        }
-        List<SetDetailBean> sets = null;
-        Object value = unmarshalObj.getValue();
-
-        Package valPackage = value.getClass().getPackage();
-        if (value instanceof edu.harvard.hmdc.vdcnet.jaxb.oai.OAIPMHtype) {
-            OAIPMHtype OAIObj = (OAIPMHtype) value;
-            if (OAIObj.getError()!=null && OAIObj.getError().size()>0 ) {
-                List<OAIPMHerrorType> errList = OAIObj.getError();
-                String errMessage="";
-                for (OAIPMHerrorType error : OAIObj.getError()){
-                     // NO_SET_HIERARCHY is not an error from the perspective of the DVN,
-                     // it just means that the OAI server doesn't support sets.
-                     if (!error.getCode().equals(OAIPMHerrorcodeType.NO_SET_HIERARCHY)) {
-                        errMessage += error.getCode()+ " " +error.getValue(); 
-                     }
-                }
-                if (errMessage!="")  {
-                     throw new EJBException(errMessage);
-                }
-               
-            }
-         
-            ListSetsType listSetsType = OAIObj.getListSets();
-            if (listSetsType != null) {
-                sets = new ArrayList<SetDetailBean>();
-                for (Iterator it = listSetsType.getSet().iterator(); it.hasNext();) {
-                    SetType elem = (SetType) it.next();
-                    SetDetailBean setDetail = new SetDetailBean();
-                    setDetail.setName(elem.getSetName());
-                    setDetail.setSpec(elem.getSetSpec());
-                    sets.add(setDetail);
-                }
-            }
-        }
-        return sets;
-    }
-    */
-    
     
     private void logException(Throwable e, Logger logger) {
 
@@ -586,29 +434,5 @@ public class HarvesterServiceBean {
         } while ((e = e.getCause()) != null);
         logger.severe(fullMessage);
     }
-    
-    /* 
-        Most likely not needed any more: 
-    public List<HarvestFormatType> findAllHarvestFormatTypes() {
-        String queryStr = "SELECT f FROM HarvestFormatType f";
-        Query query = em.createQuery(queryStr);
-        return query.getResultList();
-    }    
-    
-    public HarvestFormatType findHarvestFormatTypeByMetadataPrefix(String metadataPrefix) {
-        String queryStr = "SELECT f FROM HarvestFormatType f WHERE f.metadataPrefix = '" + metadataPrefix + "'";
-        Query query = em.createQuery(queryStr);
-        List resultList = query.getResultList();
-        HarvestFormatType hft = null;
-        if (resultList.size() > 1) {
-            throw new EJBException("More than one HarvestFormatType found with metadata Prefix= '" + metadataPrefix + "'");
-        }
-        if (resultList.size() == 1) {
-            hft = (HarvestFormatType) resultList.get(0);
-        }
-        return hft;
-    }
-*/
-    
     
 }
