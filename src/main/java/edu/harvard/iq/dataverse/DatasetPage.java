@@ -2141,7 +2141,7 @@ public class DatasetPage implements java.io.Serializable {
             fileMetadatasSearch = workingVersion.getFileMetadatasSorted();
         }
 
-        displayCitation = dataset.getCitation(false, workingVersion);
+        displayCitation = dataset.getCitation(true, workingVersion);
         stateChanged = false;
     }
     
