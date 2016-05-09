@@ -231,8 +231,7 @@ public class IndexServiceBean {
         }
 
         dvObjectService.updateContentIndexTime(dataverse);
-        //IndexResponse indexResponse = solrIndexService.indexPermissionsForOneDvObject(dataverse);
-        IndexResponse indexResponse = new IndexResponse("dataverse permissions indexing disabled for debugging");
+        IndexResponse indexResponse = solrIndexService.indexPermissionsForOneDvObject(dataverse);
         String msg = "indexed dataverse " + dataverse.getId() + ":" + dataverse.getAlias() + ". Response from permission indexing: " + indexResponse.getMessage();
         return new AsyncResult<>(msg);
 
@@ -575,7 +574,7 @@ public class IndexServiceBean {
     }
 
     private IndexResponse indexDatasetPermissions(Dataset dataset) {
-        boolean disabledForDebugging = true;
+        boolean disabledForDebugging = false;
         if (disabledForDebugging) {
             /**
              * Performance problems indexing permissions in
@@ -1266,7 +1265,7 @@ public class IndexServiceBean {
      * @return Dataverses that should be reindexed either because they have
      * never been indexed or their index time is before their modification time.
      */
-    public List findStaleOrMissingDataverses() {
+    public List<Dataverse> findStaleOrMissingDataverses() {
         List<Dataverse> staleDataverses = new ArrayList<>();
         for (Dataverse dataverse : dataverseService.findAll()) {
             if (dataverse.equals(dataverseService.findRootDataverse())) {

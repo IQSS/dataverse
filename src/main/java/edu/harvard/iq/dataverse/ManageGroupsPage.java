@@ -258,36 +258,21 @@ public class ManageGroupsPage implements java.io.Serializable {
     }
 
     public List<RoleAssignee> completeRoleAssignee( String query ) {
-        // TODO eliminate redundancy
-        List<RoleAssignee> roleAssigneeList = new ArrayList<>();
-        // TODO push this to the authentication and group services. Below code retrieves all the users.
-        for (AuthenticatedUser au : authenticationService.findAllAuthenticatedUsers()) {
-            roleAssigneeList.add(au);
-        }
-        for ( Group g : groupService.findGlobalGroups() ) {
-            roleAssigneeList.add( g );
-        }
-        roleAssigneeList.addAll( explicitGroupService.findAvailableFor(dataverse) );
-
-        List<RoleAssignee> filteredList = new LinkedList();
-        for (RoleAssignee ra : roleAssigneeList) {
-            // @todo unsure if containsIgnore case will work for all locales
-            // @todo maybe add some solr/lucene style searching, did-you-mean style?
-            if (StringUtils.containsIgnoreCase(ra.getDisplayInfo().getTitle(), query)) {
-                filteredList.add(ra);
-            }
-        }
-        // Remove assignees already assigned to this group
+        
+        List<RoleAssignee> alreadyAssignedRoleAssignees = new ArrayList<>();
+        
         if (this.getNewExplicitGroupRoleAssignees() != null) {
-            filteredList.removeAll(this.getNewExplicitGroupRoleAssignees());
+            alreadyAssignedRoleAssignees.addAll(this.getNewExplicitGroupRoleAssignees());
         }
         if (this.getSelectedGroupRoleAssignees() != null) {
-            filteredList.removeAll(this.getSelectedGroupRoleAssignees());
+            alreadyAssignedRoleAssignees.addAll(this.getSelectedGroupRoleAssignees());
         }
         if (this.getSelectedGroupAddRoleAssignees() != null) {
-            filteredList.removeAll(this.getSelectedGroupAddRoleAssignees());
-        }
-        return filteredList;
+            alreadyAssignedRoleAssignees.addAll(this.getSelectedGroupAddRoleAssignees());
+        }        
+        
+        return roleAssigneeService.filterRoleAssignees(query, dataverse, alreadyAssignedRoleAssignees);         
+        
     }
 
     /*

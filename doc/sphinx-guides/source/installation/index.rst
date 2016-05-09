@@ -4,7 +4,7 @@
    contain the root `toctree` directive.
 
 Installation Guide
-=======================================================
+==================
 
 Contents:
 
@@ -12,9 +12,12 @@ Contents:
    :titlesonly:
    :maxdepth: 2
 
+  intro
+  prep
   prerequisites
-  installer-script
   installation-main
+  config
+  administration
+  upgrading
   r-rapache-tworavens
   shibboleth
-  administration

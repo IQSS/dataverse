@@ -106,7 +106,7 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     /**
      * For docs, see the equivalent method on the DataverseServiceBean.
-     * @see DataverseServiceBean#findAllOrSubset(long, long) 
+     * @see DataverseServiceBean#findAllOrSubset(long, long, boolean)
      */     
     public List<Dataset> findAllOrSubset(long numPartitions, long partitionId, boolean skipIndexed) {
         if (numPartitions < 1) {
@@ -121,7 +121,16 @@ public class DatasetServiceBean implements java.io.Serializable {
         typedQuery.setParameter("partitionId", partitionId);
         return typedQuery.getResultList();
     }
-
+    
+    /**
+     * Merges the passed dataset to the persistence context.
+     * @param ds the dataset whose new state we want to persist.
+     * @return The managed entity representing {@code ds}.
+     */
+    public Dataset merge( Dataset ds ) {
+        return em.merge(ds);
+    }
+    
     public Dataset findByGlobalId(String globalId) {
 
         String protocol = "";
@@ -129,6 +138,13 @@ public class DatasetServiceBean implements java.io.Serializable {
         String identifier = "";
         int index1 = globalId.indexOf(':');
         String nonNullDefaultIfKeyNotFound = ""; 
+        // This is kind of wrong right here: we should not assume that this is *our* DOI - 
+        // it can be somebody else's registered DOI that we harvested. And they can 
+        // have their own separator characters defined - so we should not assume 
+        // that everybody's DOIs will look like ours! 
+        // Also, this separator character gets applied to handles lookups too, below. 
+        // Which is probably wrong too...
+        // -- L.A. 4.2.4
         String separator = settingsService.getValueForKey(SettingsServiceBean.Key.DoiSeparator, nonNullDefaultIfKeyNotFound);        
         int index2 = globalId.indexOf(separator, index1 + 1);
         int index3 = 0;
@@ -142,15 +158,20 @@ public class DatasetServiceBean implements java.io.Serializable {
             logger.info("Error parsing identifier: " + globalId + ". Second separator not found in string");
             return null;
         } else {
-            if (index2 != -1) {
-                authority = globalId.substring(index1 + 1, index2);
-            }
+            authority = globalId.substring(index1 + 1, index2);
         }
         if (protocol.equals("doi")) {
 
             index3 = globalId.indexOf(separator, index2 + 1);
             if (index3 == -1 ) {
-                identifier = globalId.substring(index2 + 1).toUpperCase();
+                // As of now (4.2.4, Feb. 2016) the ICPSR DOIs are the only 
+                // use case where the authority has no "shoulder", so there's only 
+                // 1 slash in the full global id string... hence, we get here. 
+                // Their DOIs also have some lower case characters (for ex., 
+                // 10.3886/ICPSR04599.v1), and that's how are they saved in the 
+                // IQSS production database. So the .toUpperCase() below is 
+                // causing a problem. -- L.A. 
+                identifier = globalId.substring(index2 + 1); //.toUpperCase();
             } else {
                 if (index3 > -1) {
                     authority = globalId.substring(index1 + 1, index3);
@@ -240,6 +261,36 @@ public class DatasetServiceBean implements java.io.Serializable {
         
         // closing element: 
         retString += "ER  - \r\n";
+
+        return retString;
+    }
+
+    public String createCitationBibtex(DatasetVersion version) {
+        return createCitationBibtex(version, null);
+    }
+
+    public String createCitationBibtex(DatasetVersion version, FileMetadata fileMetadata) {
+        String publisher = version.getRootDataverseNameforCitation();
+        List<DatasetAuthor> authorList = version.getDatasetAuthors();
+        List<String> authorDisplayList = new ArrayList<>();
+
+        for (DatasetAuthor author : authorList) {
+            authorDisplayList.add(author.getName().getDisplayValue());
+        }
+
+        String retString = "@data{";
+        retString +=  version.getDataset().getIdentifier() + "_" + version.getVersionYear() + "," + "\r\n";
+        retString += "author = {";
+        retString += String.join("; ", authorDisplayList);
+        retString += "}," + "\r\n";
+        retString += "publisher = {" + publisher + "}," + "\r\n";
+        retString += "title = {" + version.getTitle() + "}," + "\r\n";
+        retString += "year = {" + version.getVersionYear() + "}," + "\r\n";
+        retString += "doi = {" + version.getDataset().getAuthority() +
+                version.getDataset().getDoiSeparator() +
+                version.getDataset().getIdentifier() + "}," + "\r\n";
+        retString += "url = {" + version.getDataset().getPersistentURL() + "}" + "\r\n";
+        retString += "}";
 
         return retString;
     }
@@ -407,6 +458,22 @@ public class DatasetServiceBean implements java.io.Serializable {
         return (List<DatasetLock>) em.createQuery(query).getResultList();
     }
 
+    public boolean checkDatasetLock(Long datasetId) {
+        String nativeQuery = "SELECT sl.id FROM DatasetLock sl WHERE sl.dataset_id = " + datasetId + " LIMIT 1;";
+        Integer lockId = null; 
+        try {
+            lockId = (Integer)em.createNativeQuery(nativeQuery).getSingleResult();
+        } catch (Exception ex) {
+            lockId = null; 
+        }
+        
+        if (lockId != null) {
+            return true;
+        }
+        
+        return false;
+    }
+    
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void addDatasetLock(Long datasetId, Long userId, String info) {
 

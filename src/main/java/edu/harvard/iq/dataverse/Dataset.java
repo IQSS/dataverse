@@ -13,6 +13,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
@@ -81,6 +82,18 @@ public class Dataset extends DvObjectContainer {
     private boolean fileAccessRequest;
     @OneToMany(mappedBy = "dataset", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<DataFileCategory> dataFileCategories = null;
+    
+    @ManyToOne
+    @JoinColumn(name = "citationDateDatasetFieldType_id")
+    private DatasetFieldType citationDateDatasetFieldType;
+    
+    public DatasetFieldType getCitationDateDatasetFieldType() {
+        return citationDateDatasetFieldType;
+    }
+
+    public void setCitationDateDatasetFieldType(DatasetFieldType citationDateDatasetFieldType) {
+        this.citationDateDatasetFieldType = citationDateDatasetFieldType;
+    }    
 
     public Dataset() {
         //this.versions = new ArrayList();

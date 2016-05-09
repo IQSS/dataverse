@@ -571,7 +571,7 @@ public class DataFileServiceBean implements java.io.Serializable {
                     dataFile.addTag(tag);
                 }
             }            
-            //TODO:!dataFile.setFileAccessRequesters(retrieveFileAccessRequesters(dataFile));              
+            dataFile.setFileAccessRequesters(retrieveFileAccessRequesters(dataFile));              
             dataFiles.add(dataFile);
             filesMap.put(dataFile.getId(), i++);
         } 
@@ -781,11 +781,11 @@ public class DataFileServiceBean implements java.io.Serializable {
     }
     
     public boolean isSpssPorFile (DataFile file) {
-        return MIME_TYPE_SPSS_POR.equalsIgnoreCase(file.getContentType());
+        return (file != null) ? MIME_TYPE_SPSS_POR.equalsIgnoreCase(file.getContentType()) : false;
     }
     
     public boolean isSpssSavFile (DataFile file) {
-        return MIME_TYPE_SPSS_SAV.equalsIgnoreCase(file.getContentType());
+        return (file != null) ? MIME_TYPE_SPSS_SAV.equalsIgnoreCase(file.getContentType()) : false;
     }
     
     /*

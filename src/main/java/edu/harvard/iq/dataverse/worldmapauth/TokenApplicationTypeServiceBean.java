@@ -33,12 +33,12 @@ public class TokenApplicationTypeServiceBean {
     public TokenApplicationType getGeoConnectApplication(){
         logger.info("--getGeoConnectApplication--");
         TokenApplicationType tat = this.findByName(TokenApplicationType.DEFAULT_GEOCONNECT_APPLICATION_NAME);
-        if (tat==null){
+        if (tat != null){
             logger.info("-- Got it!!");
-            tat = new TokenApplicationType();
-            //return tat;
+            return tat;
         }
         // Make a default application for GeoConnect
+        tat = new TokenApplicationType();
         tat.setName(TokenApplicationType.DEFAULT_GEOCONNECT_APPLICATION_NAME);
         tat.setContactEmail("info@iq.harvard.edu");
         tat.setHostname("geoconnect.datascience.iq.harvard.edu");

@@ -1,24 +1,19 @@
 package edu.harvard.iq.dataverse.api;
 
 import com.google.common.base.Stopwatch;
-import static com.jayway.restassured.RestAssured.given;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.internal.path.xml.NodeChildrenImpl;
 import com.jayway.restassured.path.json.JsonPath;
-import static com.jayway.restassured.path.json.JsonPath.with;
 import com.jayway.restassured.path.xml.XmlPath;
-import static com.jayway.restassured.path.xml.XmlPath.from;
 import com.jayway.restassured.response.Response;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import static java.lang.Thread.sleep;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -37,10 +32,14 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import junit.framework.Assert;
-import static junit.framework.Assert.assertEquals;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import static com.jayway.restassured.RestAssured.given;
+import static com.jayway.restassured.path.json.JsonPath.with;
+import static com.jayway.restassured.path.xml.XmlPath.from;
+import static java.lang.Thread.sleep;
+import static junit.framework.Assert.assertEquals;
 
 public class SearchIT {
 
@@ -370,6 +369,50 @@ public class SearchIT {
 
         Response disableNonPublicSearch = deleteSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed);
         assertEquals(200, disableNonPublicSearch.getStatusCode());
+
+    }
+
+    @Test
+    public void testAssignRoleAtDataset() throws InterruptedException {
+        Response createUser1 = UtilIT.createRandomUser();
+        String username1 = UtilIT.getUsernameFromResponse(createUser1);
+        String apiToken1 = UtilIT.getApiTokenFromResponse(createUser1);
+
+        Response createDataverse1Response = UtilIT.createRandomDataverse(apiToken1);
+        createDataverse1Response.prettyPrint();
+        assertEquals(201, createDataverse1Response.getStatusCode());
+        String dataverseAlias1 = UtilIT.getAliasFromResponse(createDataverse1Response);
+
+        Response createDataset1Response = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias1, apiToken1);
+        createDataset1Response.prettyPrint();
+        assertEquals(201, createDataset1Response.getStatusCode());
+        Integer datasetId1 = UtilIT.getDatasetIdFromResponse(createDataset1Response);
+
+        Response createUser2 = UtilIT.createRandomUser();
+        String username2 = UtilIT.getUsernameFromResponse(createUser2);
+        String apiToken2 = UtilIT.getApiTokenFromResponse(createUser2);
+
+        String roleToAssign = "admin";
+        Response grantUser2AccessOnDataset = grantRoleOnDataset(datasetId1.toString(), roleToAssign, username2, apiToken1);
+        grantUser2AccessOnDataset.prettyPrint();
+        assertEquals(200, grantUser2AccessOnDataset.getStatusCode());
+        sleep(500l);
+        Response shouldBeVisible = querySolr("id:dataset_" + datasetId1 + "_draft_permission");
+        shouldBeVisible.prettyPrint();
+        String discoverableBy = JsonPath.from(shouldBeVisible.asString()).getString("response.docs.discoverableBy");
+
+        Set actual = new HashSet<>();
+        for (String userOrGroup : discoverableBy.replaceAll("\\[", "").replaceAll("\\]", "").replaceAll(" ", "").split(",")) {
+            actual.add(userOrGroup);
+        }
+
+        Set expected = new HashSet<>();
+        createUser1.prettyPrint();
+        String userid1 = JsonPath.from(createUser1.asString()).getString("data.user.id");
+        String userid2 = JsonPath.from(createUser2.asString()).getString("data.user.id");
+        expected.add("group_user" + userid1);
+        expected.add("group_user" + userid2);
+        assertEquals(expected, actual);
 
     }
 
@@ -744,6 +787,13 @@ public class SearchIT {
                 .post("api/dataverses/" + definitionPoint + "/assignments?key=" + apiToken);
     }
 
+    private Response grantRoleOnDataset(String definitionPoint, String role, String roleAssignee, String apiToken) {
+        System.out.println("Granting role on dataset \"" + definitionPoint + "\": " + role);
+        return given()
+                .body("@" + roleAssignee)
+                .post("api/datasets/" + definitionPoint + "/assignments?key=" + apiToken);
+    }
+
     private static Response revokeRole(String definitionPoint, long doomed, String apiToken) {
         System.out.println("Attempting to revoke role assignment id " + doomed);
         /**
@@ -853,7 +903,7 @@ public class SearchIT {
         Path path = Paths.get(pathToFileName);
         byte[] data = null;
         try {
-             data = Files.readAllBytes(path);
+            data = Files.readAllBytes(path);
         } catch (IOException ex) {
             logger.info("Could not read bytes from " + path + ": " + ex);
         }
