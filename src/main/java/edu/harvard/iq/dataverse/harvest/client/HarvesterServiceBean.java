@@ -46,6 +46,8 @@ import com.lyncode.xoai.serviceprovider.model.Context;
 import com.lyncode.xoai.serviceprovider.client.HttpOAIClient;
 import com.lyncode.xoai.serviceprovider.exceptions.BadArgumentException;
 import com.lyncode.xoai.serviceprovider.parameters.ListIdentifiersParameters;
+import edu.harvard.iq.dataverse.api.imports.ImportServiceBean;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 
 /**
  *
@@ -65,6 +67,8 @@ public class HarvesterServiceBean {
     DataverseTimerServiceBean dataverseTimerService;
     @EJB
     HarvestingClientServiceBean harvestingClientService;
+    @EJB
+    ImportServiceBean importService;
     
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean");
     private static final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
@@ -72,6 +76,7 @@ public class HarvesterServiceBean {
     
     public static final String HARVEST_RESULT_SUCCESS="success";
     public static final String HARVEST_RESULT_FAILED="failed";
+    private static final Long  INDEXING_CONTENT_BATCH_SIZE = 10000000L;
 
 
     public HarvesterServiceBean() {
@@ -82,12 +87,12 @@ public class HarvesterServiceBean {
      * Called to run an "On Demand" harvest.  
      */
     @Asynchronous
-    public void doAsyncHarvest(Dataverse harvestingDataverse) {
+    public void doAsyncHarvest(DataverseRequest dataverseRequest, HarvestingClient harvestingClient) {
         
         try {
-            doHarvest(harvestingDataverse.getId());
+            doHarvest(dataverseRequest, harvestingClient.getId());
         } catch (Exception e) {
-            logger.info("Caught exception running an asynchronous harvest (dataverse \""+harvestingDataverse.getAlias()+"\")");
+            logger.info("Caught exception running an asynchronous harvest (dataverse \""+harvestingClient.getName()+"\")");
         }
     }
 
@@ -95,30 +100,18 @@ public class HarvesterServiceBean {
         logger.log(Level.INFO, "HarvesterService: going to (re)create Scheduled harvest timers.");
         dataverseTimerService.removeHarvestTimers();
 
-        List dataverses = dataverseService.getAllHarvestedDataverses();
-        for (Iterator it = dataverses.iterator(); it.hasNext();) {
-            Dataverse dataverse = (Dataverse) it.next();
-            HarvestingClient harvestingConfig = dataverse.getHarvestingClientConfig();
-            if (harvestingConfig == null) {
-                logger.warning("ERROR: no harvesting config found for dataverse id="+dataverse.getId());
-            } else if (harvestingConfig.isScheduled()) {
-                createHarvestTimer(dataverse);
+        List configuredClients = harvestingClientService.getAllHarvestingClients();
+        for (Iterator it = configuredClients.iterator(); it.hasNext();) {
+            HarvestingClient harvestingConfig = (HarvestingClient) it.next();
+            if (harvestingConfig.isScheduled()) {
+                dataverseTimerService.createHarvestTimer(harvestingConfig);
             }
         }
     }
-
-    public void removeHarvestTimer(Dataverse dataverse) {
-        dataverseTimerService.removeHarvestTimer(dataverse);
-    }
-
-    public void updateHarvestTimer(Dataverse harvestedDataverse) {
-        removeHarvestTimer(harvestedDataverse);
-        createHarvestTimer(harvestedDataverse);
-    }
-    
+  
     public List<HarvestTimerInfo> getHarvestTimers() {
-        ArrayList timers = new ArrayList<HarvestTimerInfo>();
-        // Clear dataverse timer, if one exists 
+        ArrayList <HarvestTimerInfo>timers = new ArrayList<>();
+        
         for (Iterator it = timerService.getTimers().iterator(); it.hasNext();) {
             Timer timer = (Timer) it.next();
             if (timer.getInfo() instanceof HarvestTimerInfo) {
@@ -129,6 +122,10 @@ public class HarvesterServiceBean {
         return timers;
     }
 
+    /*
+     This method is implemented in the DataverseTimerServiceBean; 
+    TODO: make sure that implementation does everything we need. 
+    -- L.A. 4.4, May 08 2016.
     private void createHarvestTimer(Dataverse harvestingDataverse) {
         HarvestingClient harvestingDataverseConfig = harvestingDataverse.getHarvestingClientConfig();
         
@@ -164,28 +161,25 @@ public class HarvesterServiceBean {
             dataverseTimerService.createTimer(initExpirationDate, intervalDuration, new HarvestTimerInfo(harvestingDataverse.getId(), harvestingDataverse.getName(), harvestingDataverseConfig.getSchedulePeriod(), harvestingDataverseConfig.getScheduleHourOfDay(), harvestingDataverseConfig.getScheduleDayOfWeek()));
         }
     }
+    */
 
     /**
      * Run a harvest for an individual harvesting Dataverse
      * @param dataverseId
      */
-    public void doHarvest(Long dataverseId) throws IOException {
-        Dataverse harvestingDataverse = dataverseService.find(dataverseId);
-        
-        if (harvestingDataverse == null) {
-            throw new IOException("No such Dataverse: id="+dataverseId);
-        }
-        
-        HarvestingClient harvestingClientConfig = harvestingDataverse.getHarvestingClientConfig();
+    public void doHarvest(DataverseRequest dataverseRequest, Long harvestingClientId) throws IOException {
+        HarvestingClient harvestingClientConfig = harvestingClientService.find(harvestingClientId);
         
         if (harvestingClientConfig == null) {
-            throw new IOException("Could not find Harvesting Config for Dataverse id="+dataverseId);
+            throw new IOException("No such harvesting client: id="+harvestingClientId);
         }
+        
+        Dataverse harvestingDataverse = harvestingClientConfig.getDataverse();
         
         MutableBoolean harvestErrorOccurred = new MutableBoolean(false);
         String logTimestamp = logFormatter.format(new Date());
         Logger hdLogger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean." + harvestingDataverse.getAlias() + logTimestamp);
-        String logFileName = /* TODO: !!!! FileUtil.getImportFileDir() +*/ File.separator + "harvest_" + harvestingDataverse.getAlias() + logTimestamp + ".log";
+        String logFileName = "../logs" + File.separator + "harvest_" + harvestingClientConfig.getName() + logTimestamp + ".log";
         FileHandler fileHandler = new FileHandler(logFileName);
         hdLogger.addHandler(fileHandler);
         List<Long> harvestedDatasetIds = null;
@@ -208,7 +202,7 @@ public class HarvesterServiceBean {
 
                
                 if (harvestingClientConfig.isOai()) {
-                    harvestedDatasetIds = harvestOAI(harvestingClientConfig, hdLogger, harvestErrorOccurred, failedIdentifiers, harvestedDatasetIdsThisBatch);
+                    harvestedDatasetIds = harvestOAI(dataverseRequest, harvestingClientConfig, hdLogger, harvestErrorOccurred, failedIdentifiers, harvestedDatasetIdsThisBatch);
 
                 } else {
                     throw new IOException("Unsupported harvest type");
@@ -260,7 +254,7 @@ public class HarvesterServiceBean {
      * @param harvestErrorOccurred  have we encountered any errors during harvest?
      * @param failedIdentifiers     Study Identifiers for failed "GetRecord" requests
      */
-    private List<Long> harvestOAI(HarvestingClient harvestingClient, Logger hdLogger, MutableBoolean harvestErrorOccurred, List<String> failedIdentifiers, List<Long> harvestedDatasetIdsThisBatch)
+    private List<Long> harvestOAI(DataverseRequest dataverseRequest, HarvestingClient harvestingClient, Logger hdLogger, MutableBoolean harvestErrorOccurred, List<String> failedIdentifiers, List<Long> harvestedDatasetIdsThisBatch)
             throws IOException, ParserConfigurationException, SAXException, TransformerException {
 
         List<Long> harvestedDatasetIds = new ArrayList<Long>();
@@ -287,7 +281,7 @@ public class HarvesterServiceBean {
 
                 // Retrieve and process this record with a separate GetRecord call:
                 MutableBoolean getRecordErrorOccurred = new MutableBoolean(false);
-                Long datasetId = getRecord(hdLogger, harvestingClient, identifier, metadataPrefix, getRecordErrorOccurred, processedSizeThisBatch);
+                Long datasetId = getRecord(dataverseRequest, hdLogger, harvestingClient, identifier, metadataPrefix, getRecordErrorOccurred, processedSizeThisBatch);
                 if (datasetId != null) {
                     harvestedDatasetIds.add(datasetId);
                 }
@@ -302,7 +296,7 @@ public class HarvesterServiceBean {
 
                 // reindexing in batches? - this is from DVN 3; 
                 // we may not need it anymore. 
-                if ( processedSizeThisBatch > 10000000 ) {
+                if ( processedSizeThisBatch > INDEXING_CONTENT_BATCH_SIZE ) {
 
                     hdLogger.log(Level.INFO, "REACHED CONTENT BATCH SIZE LIMIT; calling index ("+ harvestedDatasetIdsThisBatch.size()+" datasets in the batch).");
                     //indexService.updateIndexList(this.harvestedDatasetIdsThisBatch);
@@ -359,7 +353,7 @@ public class HarvesterServiceBean {
 
     
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-    public Long getRecord(Logger hdLogger, HarvestingClient harvestingClient, String identifier, String metadataPrefix, MutableBoolean recordErrorOccurred, Long processedSizeThisBatch) {
+    public Long getRecord(DataverseRequest dataverseRequest, Logger hdLogger, HarvestingClient harvestingClient, String identifier, String metadataPrefix, MutableBoolean recordErrorOccurred, Long processedSizeThisBatch) {
         String errMessage = null;
         Dataset harvestedDataset = null;
         String oaiUrl = harvestingClient.getHarvestingUrl();
@@ -384,10 +378,9 @@ public class HarvesterServiceBean {
                 }
 
             } else {
-                hdLogger.log(Level.INFO, "Successfully retreived GetRecord response.");
+                hdLogger.log(Level.INFO, "Successfully retrieved GetRecord response.");
 
-
-                harvestedDataset = null; // TODO: !!! import
+                harvestedDataset = importService.doImportHarvestedDataset(dataverseRequest, parentDataverse, metadataPrefix, record.getMetadataFile(), null);
                 
                 hdLogger.log(Level.INFO, "Harvest Successful for identifier " + identifier);
                 

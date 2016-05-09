@@ -222,10 +222,9 @@ public class HarvestingClient implements Serializable {
             return null; 
         }
         
-        ClientHarvestRun harvestRun = null;
         int i = harvestHistory.size() - 1;
         
-        while (i > 0) {
+        while (i > -1) {
             if (harvestHistory.get(i).isSuccess()) {
                 return harvestHistory.get(i);
             }
@@ -240,10 +239,9 @@ public class HarvestingClient implements Serializable {
             return null; 
         }
         
-        ClientHarvestRun harvestRun = null;
         int i = harvestHistory.size() - 1;
         
-        while (i > 0) {
+        while (i > -1) {
             if (harvestHistory.get(i).isSuccess()) {
                 if (harvestHistory.get(i).getHarvestedDatasetCount().longValue() > 0 ||
                     harvestHistory.get(i).getDeletedDatasetCount().longValue() > 0) {

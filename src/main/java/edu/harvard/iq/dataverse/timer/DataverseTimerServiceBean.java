@@ -7,6 +7,11 @@ package edu.harvard.iq.dataverse.timer;
 
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.harvest.client.HarvestTimerInfo;
 import edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean;
@@ -29,6 +34,7 @@ import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
+
 /**
  *
  * @author roberttreacy
@@ -46,6 +52,8 @@ public class DataverseTimerServiceBean implements Serializable {
     DataverseServiceBean dataverseService;
     @EJB
     HarvestingClientServiceBean harvestingClientService;
+    @EJB 
+    AuthenticationServiceBean authSvc;
     
     /*@EJB
     StudyServiceLocal studyService;*/
@@ -83,8 +91,22 @@ public class DataverseTimerServiceBean implements Serializable {
             HarvestTimerInfo info = (HarvestTimerInfo) timer.getInfo();
             try {
 
-                logger.log(Level.INFO, "running a harvester client configured for dataverse " + info.getHarvestingDataverseId());
-                harvesterService.doHarvest(info.getHarvestingDataverseId());
+                logger.log(Level.INFO, "running a harvesting client: id=" + info.getHarvestingClientId());
+                // Timer batch jobs are run by the main Admin user. 
+                // TODO: revisit how we retrieve the superuser here.
+                // (looking it up by the identifier "admin" is not necessarily the 
+                // cleanest way). Should it be configurable somewhere, which superuser
+                // runs these jobs? Should there be a central mechanism for obtaining
+                // the "major", builtin superuser for this Dataverse instance? 
+                // -- L.A. 4.4, May 8 2016
+                DataverseRequest dataverseRequest = null;
+                AuthenticatedUser adminUser = authSvc.getAuthenticatedUser("admin");
+                if (adminUser != null) {
+                    dataverseRequest = new DataverseRequest(adminUser, null);
+                }
+                // TODO: create a real DataverseRequest here, associated with the main admin user (?)
+                // -- L.A. 4.4, May 8 2016
+                harvesterService.doHarvest(dataverseRequest, info.getHarvestingClientId());
 
             } catch (Throwable e) {
                 // Harvester Service should be handling any error notifications, 
@@ -138,30 +160,24 @@ public class DataverseTimerServiceBean implements Serializable {
         }
     }
 
-    private void createHarvestTimer(Dataverse harvestedDataverse) {
-        HarvestingClient harvestedDataverseConfig = harvestedDataverse.getHarvestingClientConfig();
+    public void createHarvestTimer(HarvestingClient harvestingClient) {       
         
-        if (harvestedDataverseConfig == null) {
-            logger.info("ERROR: No Harvesting Configuration found for dataverse id="+harvestedDataverse.getId());
-            return;
-        }        
-        
-        if (harvestedDataverseConfig.isScheduled()) {
+        if (harvestingClient.isScheduled()) {
             long intervalDuration = 0;
             Calendar initExpiration = Calendar.getInstance();
             initExpiration.set(Calendar.MINUTE, 0);
             initExpiration.set(Calendar.SECOND, 0);
-            if (harvestedDataverseConfig.getSchedulePeriod().equals(HarvestingClient.SCHEDULE_PERIOD_DAILY)) {
+            if (harvestingClient.getSchedulePeriod().equals(HarvestingClient.SCHEDULE_PERIOD_DAILY)) {
                 intervalDuration = 1000 * 60 * 60 * 24;
-                initExpiration.set(Calendar.HOUR_OF_DAY, harvestedDataverseConfig.getScheduleHourOfDay());
+                initExpiration.set(Calendar.HOUR_OF_DAY, harvestingClient.getScheduleHourOfDay());
 
-            } else if (harvestedDataverseConfig.getSchedulePeriod().equals(harvestedDataverseConfig.SCHEDULE_PERIOD_WEEKLY)) {
+            } else if (harvestingClient.getSchedulePeriod().equals(harvestingClient.SCHEDULE_PERIOD_WEEKLY)) {
                 intervalDuration = 1000 * 60 * 60 * 24 * 7;
-                initExpiration.set(Calendar.HOUR_OF_DAY, harvestedDataverseConfig.getScheduleHourOfDay());
-                initExpiration.set(Calendar.DAY_OF_WEEK, harvestedDataverseConfig.getScheduleDayOfWeek());
+                initExpiration.set(Calendar.HOUR_OF_DAY, harvestingClient.getScheduleHourOfDay());
+                initExpiration.set(Calendar.DAY_OF_WEEK, harvestingClient.getScheduleDayOfWeek());
 
             } else {
-                logger.log(Level.WARNING, "Could not set timer for harvestedDataverse id, " + harvestedDataverse.getId() + ", unknown schedule period: " + harvestedDataverseConfig.getSchedulePeriod());
+                logger.log(Level.WARNING, "Could not set timer for harvesting client id=" + harvestingClient.getId() + ", unknown schedule period: " + harvestingClient.getSchedulePeriod());
                 return;
             }
             Date initExpirationDate = initExpiration.getTime();
@@ -169,18 +185,18 @@ public class DataverseTimerServiceBean implements Serializable {
             if (initExpirationDate.before(currTime)) {
                 initExpirationDate.setTime(initExpiration.getTimeInMillis() + intervalDuration);
             }
-            logger.log(Level.INFO, "Setting timer for dataverse " + harvestedDataverse.getName() + ", initial expiration: " + initExpirationDate);
-            createTimer(initExpirationDate, intervalDuration, new HarvestTimerInfo(harvestedDataverse.getId(), harvestedDataverse.getName(), harvestedDataverseConfig.getSchedulePeriod(), harvestedDataverseConfig.getScheduleHourOfDay(), harvestedDataverseConfig.getScheduleDayOfWeek()));
+            logger.log(Level.INFO, "Setting timer for harvesting client " + harvestingClient.getName() + ", initial expiration: " + initExpirationDate);
+            createTimer(initExpirationDate, intervalDuration, new HarvestTimerInfo(harvestingClient.getId(), harvestingClient.getName(), harvestingClient.getSchedulePeriod(), harvestingClient.getScheduleHourOfDay(), harvestingClient.getScheduleDayOfWeek()));
         }
     }
 
-    public void updateHarvestTimer(Dataverse harvestedDataverse) {
-        removeHarvestTimer(harvestedDataverse);
-        createHarvestTimer(harvestedDataverse);
+    public void updateHarvestTimer(HarvestingClient harvestingClient) {
+        removeHarvestTimer(harvestingClient);
+        createHarvestTimer(harvestingClient);
     }
 
     
-    public void removeHarvestTimer(Dataverse harvestedDataverse) {
+    public void removeHarvestTimer(HarvestingClient harvestingClient) {
          // Clear dataverse timer, if one exists
         try {
             logger.log(Level.INFO,"Removing harvest timer on " + InetAddress.getLocalHost().getCanonicalHostName());
@@ -191,7 +207,7 @@ public class DataverseTimerServiceBean implements Serializable {
             Timer timer = (Timer) it.next();
             if (timer.getInfo() instanceof HarvestTimerInfo) {
                 HarvestTimerInfo info = (HarvestTimerInfo) timer.getInfo();
-                if (info.getHarvestingDataverseId().equals(harvestedDataverse.getId())) {
+                if (info.getHarvestingClientId().equals(harvestingClient.getId())) {
                     timer.cancel();
                 }
             }

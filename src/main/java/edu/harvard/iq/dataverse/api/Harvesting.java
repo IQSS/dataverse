@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateHarvestingClientCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetHarvestingClientCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateHarvestingClientCommand;
+import edu.harvard.iq.dataverse.harvest.client.ClientHarvestRun;
 import edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClientServiceBean;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
@@ -224,7 +225,7 @@ public class Harvesting extends AbstractApiBean {
     // This POST starts a new harvesting run:
     @POST
     @Path("{nickName}/run")
-    public Response startHarvestingJob(@PathParam("dataverseAlias") String dataverseAlias, @QueryParam("key") String apiKey) throws IOException {
+    public Response startHarvestingJob(@PathParam("nickName") String clientNickname, @QueryParam("key") String apiKey) throws IOException {
         
         try {
             AuthenticatedUser authenticatedUser = null; 
@@ -239,22 +240,17 @@ public class Harvesting extends AbstractApiBean {
                 return errorResponse(Response.Status.FORBIDDEN, "Only the Dataverse Admin user can run harvesting jobs");
             }
             
-            Dataverse dataverse = dataverseService.findByAlias(dataverseAlias);
+            HarvestingClient harvestingClient = harvestingClientService.findByNickname(clientNickname);
             
-            if (dataverse == null) {
-                return errorResponse(Response.Status.NOT_FOUND, "No such dataverse: "+dataverseAlias);
+            if (harvestingClient == null) {
+                return errorResponse(Response.Status.NOT_FOUND, "No such dataverse: "+clientNickname);
             }
             
-            if (!dataverse.isHarvested()) {
-                return errorResponse(Response.Status.BAD_REQUEST, "Not a HARVESTING dataverse: "+dataverseAlias);
-            }
-            
-            //DataverseRequest dataverseRequest = createDataverseRequest(authenticatedUser);
-            
-            harvesterService.doAsyncHarvest(dataverse);
+            DataverseRequest dataverseRequest = createDataverseRequest(authenticatedUser);
+            harvesterService.doAsyncHarvest(dataverseRequest, harvestingClient);
 
         } catch (Exception e) {
-            return this.errorResponse(Response.Status.BAD_REQUEST, "Exception thrown when running a Harvest on dataverse \""+dataverseAlias+"\" via REST API; " + e.getMessage());
+            return this.errorResponse(Response.Status.BAD_REQUEST, "Exception thrown when running harvesting client\""+clientNickname+"\" via REST API; " + e.getMessage());
         }
         return this.accepted();
     }
@@ -286,6 +282,7 @@ public class Harvesting extends AbstractApiBean {
         if (harvestingConfig == null) {
             return null; 
         }
+        
         
         return jsonObjectBuilder().add("nickName", harvestingConfig.getName()).
                 add("dataverseAlias", harvestingConfig.getDataverse().getAlias()).

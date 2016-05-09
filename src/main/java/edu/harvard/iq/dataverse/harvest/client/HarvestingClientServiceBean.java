@@ -35,6 +35,10 @@ public class HarvestingClientServiceBean {
     
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.client.HarvestingClinetServiceBean");
     
+    public HarvestingClient find(Object pk) {
+        return (HarvestingClient) em.find(HarvestingClient.class, pk);
+    }
+    
     public HarvestingClient findByNickname(String nickName) {
         try {
             return em.createNamedQuery("HarvestingClient.findByNickname", HarvestingClient.class)

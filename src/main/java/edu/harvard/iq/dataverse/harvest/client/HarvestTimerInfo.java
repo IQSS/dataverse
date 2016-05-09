@@ -23,8 +23,8 @@ import java.io.Serializable;
 
 /**
  *  This class is used when creating an EJB Timer for scheduling Harvesting.
- *  We use this class rather than the HarvestingDataverse entity because
- *  the class must be Serializable, and there is too much info associated with the HarvestingDataverse
+ *  We use this class rather than the HarvestingClient entity because
+ *  the class must be Serializable, and there is too much info associated with the HarvestingClient
  *  in order to realistically serialize it.  (We can't make related mapped entities transient.)
  *
  *  Based on the DVN 3 implementation, 
@@ -34,7 +34,7 @@ import java.io.Serializable;
  *  @author Leonid Andreev
  */
 public class HarvestTimerInfo implements Serializable {
-    private Long harvestingDataverseId;
+    private Long harvestingClientId;
     private String name;
     private String schedulePeriod;
     private Integer scheduleHourOfDay;
@@ -44,8 +44,8 @@ public class HarvestTimerInfo implements Serializable {
     }
     
    
-    public HarvestTimerInfo(Long harvestingDataverseId, String name, String schedulePeriod, Integer scheduleHourOfDay, Integer scheduleDayOfWeek) {
-        this.harvestingDataverseId=harvestingDataverseId;
+    public HarvestTimerInfo(Long harvestingClientId, String name, String schedulePeriod, Integer scheduleHourOfDay, Integer scheduleDayOfWeek) {
+        this.harvestingClientId=harvestingClientId;
         this.name=name;
         this.schedulePeriod=schedulePeriod;
         this.scheduleDayOfWeek=scheduleDayOfWeek;
@@ -53,12 +53,12 @@ public class HarvestTimerInfo implements Serializable {
     }
     
     
-    public Long getHarvestingDataverseId() {
-        return harvestingDataverseId;
+    public Long getHarvestingClientId() {
+        return harvestingClientId;
     }
 
-    public void setHarvestingDataverseId(Long harvestingDataverseId) {
-        this.harvestingDataverseId = harvestingDataverseId;
+    public void setHarvestingClientId(Long harvestingClientId) {
+        this.harvestingClientId = harvestingClientId;
     }    
     public String getName() {
         return name;
