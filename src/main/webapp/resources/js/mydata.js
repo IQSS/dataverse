@@ -59,7 +59,7 @@ function init_mydata_page(){
    //console.log('init_mydata_page');
    $('#div-more-cards-link').hide();
    // var env = new nunjucks.Environment(new nunjucks.WebLoader('/mydata_templates'), true);
-    //nunjucks.configure({ autoescape: true });
+    nunjucks.configure({ autoescape: true });
 
     // Capture checkbox clicks
     //
