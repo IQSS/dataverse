@@ -5,12 +5,14 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.emory.mathcs.backport.java.util.Arrays;
 import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 
@@ -167,17 +169,19 @@ public class DataCitation {
     }
 
     public String toString(boolean html) {
-
+        // first add comma separated parts        
         List<String> citationList = new ArrayList<>();
-        
-        // first add comma separated parts
-        addNonEmptyStringToList(citationList, formatString(authors, html));
-        addNonEmptyStringToList(citationList, formatNonEmptyDate(citationDate,"yyyy"));
-        addNonEmptyStringToList(citationList, formatString(title, html, "\""));
-        addNonEmptyStringToList(citationList, formatURL(persistentId.toURL(), html));
-        addNonEmptyStringToList(citationList, formatString(distributors, html));
-        addNonEmptyStringToList(citationList, version);
-        StringBuilder citation = new StringBuilder(StringUtils.join(citationList, ", "));
+        citationList.add(formatString(authors, html));
+        citationList.add(formatNonEmptyDate(citationDate,"yyyy"));
+        citationList.add(formatString(title, html, "\""));
+        citationList.add(formatURL(persistentId.toURL(), html));
+        citationList.add(formatString(distributors, html));
+        citationList.add(version);
+                
+        StringBuilder citation = new StringBuilder(
+                citationList.stream()
+                .filter( value -> !StringUtils.isEmpty(value) )
+                .collect(Collectors.joining(", ")));
         
         // append UNF
         if (!StringUtils.isEmpty(UNF)) {
@@ -188,13 +192,7 @@ public class DataCitation {
     }
     
 
-    // helper methods
-    private void addNonEmptyStringToList(List<String> list, String value) {
-        if (!StringUtils.isEmpty(value)) {
-            list.add(value);
-        }
-    }
-    
+    // helper methods   
     private String formatString(String value, boolean escapeHtml) {
         return formatString(value, escapeHtml, "");
     }
