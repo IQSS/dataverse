@@ -562,10 +562,12 @@
                         <h:outputText value="#{DatasetPage.selectedGuestbook.optionalAccountInformationString}" escape="false"/>
                     </div>
                     <div class="form-control-static" jsf:rendered="#{!empty DatasetPage.selectedGuestbook.requiredCustomQuestionsString}">
-                        <h:outputText value="#{DatasetPage.selectedGuestbook.requiredCustomQuestionsString}" escape="false"/>
+                        <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
+                        <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.selectedGuestbook.requiredCustomQuestionsString)}" escape="false"/>
                     </div>
                     <div class="form-control-static" jsf:rendered="#{!empty DatasetPage.selectedGuestbook.optionalCustomQuestionsString}">
-                        <h:outputText value="#{DatasetPage.selectedGuestbook.optionalCustomQuestionsString}" escape="false"/>
+                        <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
+                        <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.selectedGuestbook.optionalCustomQuestionsString)}" escape="false"/>
                     </div>
                 </div>
             </div>

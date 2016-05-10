@@ -15,6 +15,7 @@
     </h:head>
 
     <h:body>
+        <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
         <ui:composition template="/dataverse_template.xhtml">
             <ui:param name="pageTitle" value="#{DatasetPage.editMode == 'CREATE' ? bundle['dataset.pageTitle'] : DatasetPage.workingVersion.title} - #{DatasetPage.dataset.owner.name} #{bundle.dataverse}"/>
             <ui:param name="dataverse" value="#{DatasetPage.dataset.owner}"/>
@@ -374,7 +375,7 @@
                                             <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{DatasetPage.datasetVersionUI.datasetRelPublications.get(0).description}">#{DatasetPage.datasetVersionUI.datasetRelPublications.get(0).title}</span>
                                         </label>
                                         <div class="col-sm-9">
-                                            <h:outputText value="#{DatasetPage.datasetVersionUI.relPublicationCitation}" escape="false"/>
+                                            <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.datasetVersionUI.relPublicationCitation)}" escape="false"/>
                                             <a href="#{DatasetPage.datasetVersionUI.relPublicationUrl}" title="#{DatasetPage.datasetVersionUI.relPublicationUrl}" target="_blank">#{DatasetPage.datasetVersionUI.relPublicationId}</a>
                                         </div>
                                     </div>
@@ -383,7 +384,6 @@
                                             <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{DatasetPage.datasetVersionUI.notes.datasetFieldType.description}">#{DatasetPage.datasetVersionUI.notes.datasetFieldType.title}</span>
                                         </label>
                                         <div class="col-sm-9">
-                                            <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
                                             <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.datasetVersionUI.notes.value)}" escape="false"/>
                                         </div>
                                     </div>
@@ -1324,7 +1324,7 @@
                             </h:outputFormat>
                         </p>
                         <div id="terms-agreement-block" class="well" jsf:rendered="#{DatasetPage.datasetPublishCustomText.length() > 0}">
-                            <h:outputText value="#{DatasetPage.datasetPublishCustomText}" escape="false"/>
+                            <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.datasetPublishCustomText)}" escape="false"/>
                         </div>
                         <p class="help-block">
                             <span class="glyphicon glyphicon-info-sign"/> #{bundle['dataset.publishBoth.tip']}
@@ -1340,7 +1340,7 @@
                             <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.republish.tip']}
                         </p>
                         <div id="terms-agreement-block" class="well" jsf:rendered="#{DatasetPage.datasetPublishCustomText.length() > 0 and DatasetPage.isDatasetPublishPopupCustomTextOnAllVersions()}">
-                            <h:outputText value="#{DatasetPage.datasetPublishCustomText}" escape="false"/>
+                            <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.datasetPublishCustomText)}" escape="false"/>
                         </div>
                         <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.minorUpdate}">
                             <p class="help-block">
