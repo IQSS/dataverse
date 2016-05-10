@@ -15,7 +15,6 @@
     </h:head>
 
     <h:body>
-        <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
         <ui:composition template="/dataverse_template.xhtml">
             <ui:param name="pageTitle" value="#{DatasetPage.editMode == 'CREATE' ? bundle['dataset.pageTitle'] : DatasetPage.workingVersion.title} - #{DatasetPage.dataset.owner.name} #{bundle.dataverse}"/>
             <ui:param name="dataverse" value="#{DatasetPage.dataset.owner}"/>
@@ -24,6 +23,7 @@
             <ui:param name="locked" value="#{DatasetPage.locked}"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:define name="body">
+                <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
                 <f:metadata>
                     <f:viewParam name="id" value="#{DatasetPage.dataset.id}"/>
                     <f:viewParam name="ownerId" value="#{DatasetPage.ownerId}"/>
