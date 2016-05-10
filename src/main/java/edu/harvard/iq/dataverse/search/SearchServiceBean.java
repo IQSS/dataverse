@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.util.JsfHelper;
@@ -747,6 +748,10 @@ public class SearchServiceBean {
 //        String publicOnly = "{!join from=" + SearchFields.GROUPS + " to=" + SearchFields.PERMS + "}id:" + IndexServiceBean.getPublicGroupString();
         // initialize to public only to be safe
         String dangerZoneNoSolrJoin = null;
+
+        if (user instanceof PrivateUrlUser) {
+            user = GuestUser.get();
+        }
 
         // ----------------------------------------------------
         // (1) Is this a GuestUser?  

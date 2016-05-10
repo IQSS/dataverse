@@ -6,14 +6,19 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServi
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
+import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateGuestbookResponseCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.CreatePrivateUrlCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeaccessionDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetVersionCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DeletePrivateUrlCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetPrivateUrlCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.LinkDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
@@ -21,6 +26,9 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.metadataimport.ForeignMetadataImportServiceBean;
+import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
+import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
+import edu.harvard.iq.dataverse.privateurl.PrivateUrlUtil;
 import edu.harvard.iq.dataverse.search.SearchFilesServiceBean;
 import edu.harvard.iq.dataverse.search.SortBy;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -142,6 +150,10 @@ public class DatasetPage implements java.io.Serializable {
     DatasetLinkingServiceBean dsLinkingService;
     @EJB
     SearchFilesServiceBean searchFilesService;
+    @EJB
+    DataverseRoleServiceBean dataverseRoleService;
+    @EJB
+    PrivateUrlServiceBean privateUrlService;
     @Inject
     DataverseRequestServiceBean dvRequestService;
     @Inject
@@ -486,10 +498,19 @@ public class DatasetPage implements java.io.Serializable {
         // --------------------------------------------------------------------
         
         // --------------------------------------------------------------------
-        // (2) Is user authenticated?
-        // No?  Then no button...
+        // (2) In Dataverse 4.3 and earlier we required that users be authenticated
+        // to download files, but in developing the Private URL feature, we have
+        // added a new subclass of "User" called "PrivateUrlUser" that returns false
+        // for isAuthenticated but that should be able to download restricted files
+        // when given the Member role (which includes the DownloadFile permission).
+        // This is consistent with how Builtin and Shib users (both are
+        // AuthenticatedUsers) can download restricted files when they are granted
+        // the Member role. For this reason condition 2 has been changed. Previously,
+        // we required isSessionUserAuthenticated to return true. Now we require
+        // that the User is not an instance of GuestUser, which is similar in
+        // spirit to the previous check.
         // --------------------------------------------------------------------
-        if (!(isSessionUserAuthenticated())){
+        if (session.getUser() instanceof GuestUser){
             this.fileDownloadPermissionMap.put(fid, false);
             return false;
         }
@@ -1555,6 +1576,20 @@ public class DatasetPage implements java.io.Serializable {
             return "/404.xhtml";
         }
 
+        try {
+            privateUrl = commandEngine.submit(new GetPrivateUrlCommand(dvRequestService.getDataverseRequest(), dataset));
+            if (privateUrl != null) {
+                JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.privateurl.infoMessageAuthor", Arrays.asList(getPrivateUrlLink(privateUrl))));
+            }
+        } catch (CommandException ex) {
+            // No big deal. The user simply doesn't have access to create or delete a Private URL.
+        }
+        if (session.getUser() instanceof PrivateUrlUser) {
+            PrivateUrlUser privateUrlUser = (PrivateUrlUser) session.getUser();
+            if (dataset != null && dataset.getId().equals(privateUrlUser.getDatasetId())) {
+                JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.privateurl.infoMessageReviewer"));
+            }
+        }
         return null;
     }
     
@@ -4280,6 +4315,46 @@ public class DatasetPage implements java.io.Serializable {
 
     public String getSortByDescending() {
         return SortBy.DESCENDING;
+    }
+
+    PrivateUrl privateUrl;
+
+    public PrivateUrl getPrivateUrl() {
+        return privateUrl;
+    }
+
+    public void setPrivateUrl(PrivateUrl privateUrl) {
+        this.privateUrl = privateUrl;
+    }
+
+    public void createPrivateUrl() {
+        try {
+            PrivateUrl createdPrivateUrl = commandEngine.submit(new CreatePrivateUrlCommand(dvRequestService.getDataverseRequest(), dataset));
+            privateUrl = createdPrivateUrl;
+            JH.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.privateurl.createdSuccess", Arrays.asList(getPrivateUrlLink(privateUrl))));
+        } catch (CommandException ex) {
+            String msg = BundleUtil.getStringFromBundle("dataset.privateurl.noPermToCreate", PrivateUrlUtil.getRequiredPermissions(ex));
+            logger.info("Unable to create a Private URL for dataset id " + dataset.getId() + ". Message to user: " + msg + " Exception: " + ex);
+            JH.addErrorMessage(msg);
+        }
+    }
+
+    public void disablePrivateUrl() {
+        try {
+            commandEngine.submit(new DeletePrivateUrlCommand(dvRequestService.getDataverseRequest(), dataset));
+            privateUrl = null;
+            JH.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.privateurl.disabledSuccess"));
+        } catch (CommandException ex) {
+            logger.info("CommandException caught calling DeletePrivateUrlCommand: " + ex);
+        }
+    }
+
+    public boolean isUserCanCreatePrivateURL() {
+        return dataset.getLatestVersion().isDraft();
+    }
+
+    public String getPrivateUrlLink(PrivateUrl privateUrl) {
+        return privateUrl.getLink();
     }
 
 }

@@ -56,6 +56,7 @@ public class DataverseRole implements Serializable  {
     public static final String EDITOR = "editor";
     public static final String MANAGER = "manager";
     public static final String CURATOR = "curator";
+    public static final String MEMBER = "member";
     
     
 	public static final Comparator<DataverseRole> CMP_BY_NAME = new Comparator<DataverseRole>(){

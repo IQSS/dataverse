@@ -27,6 +27,7 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroup;
 import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderRow;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.util.DatasetFieldWalker;
 import java.util.Set;
 import javax.json.Json;
@@ -88,6 +89,7 @@ public class JsonPrinter {
 				.add("assignee", ra.getAssigneeIdentifier() )
 				.add("roleId", ra.getRole().getId() )
 				.add("_roleAlias", ra.getRole().getAlias())
+				.add("privateUrlToken", ra.getPrivateUrlToken())
 				.add("definitionPointId", ra.getDefinitionPoint().getId() );
 	}
 	
@@ -472,7 +474,15 @@ public class JsonPrinter {
                         .add("enabled", aRow.isEnabled())
                 ;
     }
-    
+
+    public static JsonObjectBuilder json(PrivateUrl privateUrl) {
+        return jsonObjectBuilder()
+                // We provide the token here as a convenience even though it is also in the role assignment.
+                .add("token", privateUrl.getToken())
+                .add("link", privateUrl.getLink())
+                .add("roleAssignment", json(privateUrl.getRoleAssignment()));
+    }
+
     public static <T> JsonObjectBuilder json(T j ) {
         if (j instanceof ExplicitGroup) {
             ExplicitGroup eg = (ExplicitGroup) j;

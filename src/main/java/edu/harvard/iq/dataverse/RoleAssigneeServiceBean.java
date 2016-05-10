@@ -10,7 +10,9 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedU
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
+import edu.harvard.iq.dataverse.privateurl.PrivateUrlUtil;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -63,7 +65,24 @@ public class RoleAssigneeServiceBean {
     public RoleAssignee getRoleAssignee(String identifier) {
         switch (identifier.charAt(0)) {
             case ':':
-                return predefinedRoleAssignees.get(identifier);
+                /**
+                 * This "startsWith" code in identifier2roleAssignee is here to
+                 * support a functional requirement to display the Private URL
+                 * role assignment when looking at permissions at the dataset
+                 * level in the GUI and allow for revoking the role from that
+                 * page. Interestingly, if you remove the "startsWith" code,
+                 * null will be returned for Private URL but the assignment is
+                 * still visible from the API. When null is returned
+                 * ManagePermissionsPage cannot list the assignment.
+                 *
+                 * "startsWith" is the moral equivalent of
+                 * "identifier.charAt(0)". :)
+                 */
+                if (identifier.startsWith(PrivateUrlUser.PREFIX)) {
+                    return PrivateUrlUtil.identifier2roleAssignee(identifier);
+                } else {
+                    return predefinedRoleAssignees.get(identifier);
+                }
             case '@':
                 return authSvc.getAuthenticatedUser(identifier.substring(1));
             case '&':

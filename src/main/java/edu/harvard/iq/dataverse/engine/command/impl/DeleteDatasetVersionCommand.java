@@ -11,7 +11,9 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import java.util.Iterator;
+import java.util.logging.Logger;
 
 /**
  *
@@ -19,6 +21,8 @@ import java.util.Iterator;
  */
 @RequiredPermissions(Permission.DeleteDatasetDraft)
 public class DeleteDatasetVersionCommand extends AbstractVoidCommand {
+
+    private static final Logger logger = Logger.getLogger(DeleteDatasetVersionCommand.class.getCanonicalName());
 
     private final Dataset doomed;
 
@@ -63,6 +67,11 @@ public class DeleteDatasetVersionCommand extends AbstractVoidCommand {
                     if (versionId.equals(dv.getId())) {
                         dvIt.remove();
                     }
+                }
+                PrivateUrl privateUrl = ctxt.engine().submit(new GetPrivateUrlCommand(getRequest(), doomed));
+                if (privateUrl != null) {
+                    logger.fine("Deleting Private URL for dataset id " + doomed.getId());
+                    ctxt.engine().submit(new DeletePrivateUrlCommand(getRequest(), doomed));
                 }
                 boolean doNormalSolrDocCleanUp = true;
                 ctxt.index().indexDataset(doomed, doNormalSolrDocCleanUp);
