@@ -664,7 +664,8 @@ public class IndexServiceBean {
         if (datasetVersion != null) {
 
             solrInputDocument.addField(SearchFields.DATASET_VERSION_ID, datasetVersion.getId());
-            solrInputDocument.addField(SearchFields.DATASET_CITATION, datasetVersion.getCitation(true));
+            solrInputDocument.addField(SearchFields.DATASET_CITATION, datasetVersion.getCitation(false));
+            solrInputDocument.addField(SearchFields.DATASET_CITATION_HTML, datasetVersion.getCitation(true));
 
             if (datasetVersion.isInReview()) {
                 solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, IN_REVIEW_STRING);

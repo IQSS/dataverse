@@ -52,7 +52,7 @@ public class BundleUtilTest {
         assertEquals("The saved search has been successfully linked to "
                 + "<a href=\"/dataverse/dvAlias\" title=\"DV Name\">DV Name</a>.",
                 BundleUtil.getStringFromBundle("dataverse.saved.search.success",
-                        Arrays.asList("dvAlias", "DV Name")));
+                        Arrays.asList("<a href=\"/dataverse/dvAlias\" title=\"DV Name\">DV Name</a>")));
     }
 
     @Test
