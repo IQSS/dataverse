@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.util.MarkupChecker;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.util.StringUtil;

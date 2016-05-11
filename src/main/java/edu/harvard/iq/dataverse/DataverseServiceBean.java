@@ -30,8 +30,6 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
@@ -419,7 +417,7 @@ public class DataverseServiceBean implements java.io.Serializable {
      */
     public Map<Long, String> getAllHarvestedDataverseDescriptions(){
         
-        String qstr = "SELECT dataverse_id, archiveDescription FROM harvestingClient;";
+        String qstr = "SELECT dataverse_id, archiveDescription FROM harvestingDataverseConfig;";
         List<Object[]> searchResults = null;
         
         try {
@@ -451,10 +449,6 @@ public class DataverseServiceBean implements java.io.Serializable {
         }
         
         return ret;        
-    }
-    
-    public List<Dataverse> getAllHarvestedDataverses() {
-        return em.createQuery("SELECT object(d) FROM Dataverse d, harvestingClient c AS d WHERE c.dataverse.id=d.id order by d.id").getResultList();
     }
 
     public void populateDvSearchCard(SolrSearchResult solrSearchResult) {

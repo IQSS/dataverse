@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearch;
 import java.util.ArrayList;
@@ -278,18 +277,18 @@ public class Dataverse extends DvObjectContainer {
     } 
     
     @OneToOne (mappedBy="dataverse", cascade={CascadeType.PERSIST, CascadeType.REMOVE})
-    private HarvestingClient harvestingClient;
+    private HarvestingDataverseConfig harvestingDataverseConfig;
 
-    public HarvestingClient getHarvestingClientConfig() {
-        return this.harvestingClient;
+    public HarvestingDataverseConfig getHarvestingDataverseConfig() {
+        return this.harvestingDataverseConfig;
     }
 
-    public void setHarvestingClientConfig(HarvestingClient harvestingClient) {
-        this.harvestingClient = harvestingClient;
+    public void setHarvestingDataverseConfig(HarvestingDataverseConfig harvestingDataverseConfig) {
+        this.harvestingDataverseConfig = harvestingDataverseConfig;
     }
 
     public boolean isHarvested() {
-        return harvestingClient != null; 
+        return harvestingDataverseConfig != null; 
     }
     
     

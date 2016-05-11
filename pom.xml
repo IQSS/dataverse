@@ -39,7 +39,7 @@
             <name>Local repository for hosting jars not available from network repositories.</name>
             <url>file://${project.basedir}/local_lib</url>
         </repository>
-        <repository>
+		 <repository>
             <id>dataone.org</id>
             <url>http://dev-testing.dataone.org/maven</url>
             <releases>
@@ -49,7 +49,6 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
-		 
 
     </repositories>
              
@@ -369,28 +368,7 @@
             <artifactId>log4j</artifactId>
             <version>1.2.17</version>
         </dependency>
-	<!-- OCLC harvesting CLIENT -->
-	<!-- Harvesting client in Dataverse 4 itilizes the OCLC implementation for the simple, "cheap" -->
-	<!-- verbs; for the potentially expensive GetRecord - the workhorse method, our own, optimized -->
-	<!-- implementation is used. -->
-	<dependency>
-	  <groupId>org.dspace</groupId>
-	  <artifactId>oclc-harvester2</artifactId>
-	  <version>0.1.12</version>
-	</dependency>
-	<!-- EXPERIMENTAL: -->
-	<!-- lyncode xoai OAI-PMH implementation: -->
-	<dependency>
-	  <groupId>com.lyncode</groupId>
-	  <artifactId>xoai-common</artifactId>
-	  <version>4.1.0</version>
-	</dependency>
-        <dependency>
-	  <groupId>com.lyncode</groupId>
-	  <artifactId>xoai-service-provider</artifactId>
-	  <version>4.1.0</version>
-	</dependency>
-
+        
     </dependencies>
 
     <build>

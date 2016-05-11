@@ -19,7 +19,6 @@ import edu.harvard.iq.dataverse.api.dto.FieldDTO;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddressRange;
-import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.StringReader;
 import java.text.ParseException;
@@ -541,19 +540,5 @@ public class JsonParser {
     int parsePrimitiveInt(String str, int defaultValue) {
         return str == null ? defaultValue : Integer.parseInt(str);
     }
-    
-    public String parseHarvestingClient(JsonObject obj, HarvestingClient harvestingClient) throws JsonParseException {
-        
-        String dataverseAlias = obj.getString("dataverseAlias",null);
-        
-        harvestingClient.setName(obj.getString("nickName",null));
-        harvestingClient.setHarvestType(obj.getString("type",null));
-        harvestingClient.setHarvestingUrl(obj.getString("harvestUrl",null));
-        harvestingClient.setArchiveUrl(obj.getString("archiveUrl",null));
-        harvestingClient.setArchiveDescription(obj.getString("archiveDescription"));
-        harvestingClient.setMetadataPrefix(obj.getString("metadataFormat",null));
-        harvestingClient.setHarvestingSet(obj.getString("set",null));
 
-        return dataverseAlias;
-    }
 }
