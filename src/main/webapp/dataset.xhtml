@@ -297,46 +297,11 @@
                                 <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{!DatasetPage.dataset.released}"/>
                                 <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-danger" rendered="#{DatasetPage.workingVersion.deaccessioned}"/>
                             </div>
-                            <div id="citation-block" class="row" jsf:rendered="#{!empty DatasetPage.displayCitation}">
-                                <div class="col-xs-12">
-                                    <div class="row #{DatasetPage.workingVersion.deaccessioned ? 'bg-danger' : 'bg-citation'}">
-                                        <div id="citation" class="#{DatasetPage.workingVersion.deaccessioned ? 'col-xs-12' : 'col-xs-8 col-md-9'}"
-                                             onclick="if (event.target) { selectText(event.target); } else{ selectText(this); }">
-                                            <h:outputText value="#{DatasetPage.displayCitation}" escape="false"/>
-                                            <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{!DatasetPage.dataset.released}" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.released']}"/>
-                                            <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{DatasetPage.dataset.released and DatasetPage.workingVersion.draft}" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.draft']}"/>
-                                            <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{DatasetPage.workingVersion.deaccessioned}" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.deassessioned']}"/>
-                                        </div>
-                                        <div id="citation-download" class="col-sm-4 col-md-3 text-right" jsf:rendered="#{!DatasetPage.workingVersion.deaccessioned}">
-                                            <div class="dropdown">
-                                                <button type="button" id="downloadCitation" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                                    <span class="glyphicon glyphicon-list"/> #{bundle['dataset.cite.downloadBtn']} <span class="caret"></span>
-                                                </button>
-                                                <ul class="dropdown-menu pull-right text-left" role="menu">
-                                                    <li>
-                                                        <a jsf:id="endNoteLink" jsf:action="#{DatasetPage.downloadDatasetCitationXML()}" >
-                                                            #{bundle['dataset.cite.downloadBtn.xml']}
-                                                        </a>
-                                                    </li>
-                                                    <li>
-                                                        <a jsf:id="risLink" jsf:actionListener="#{DatasetPage.downloadDatasetCitationRIS()}">
-                                                            #{bundle['dataset.cite.downloadBtn.ris']}
-                                                        </a>
-                                                    </li>
-                                                    <li>
-                                                        <a jsf:id="bibLink" jsf:actionListener="#{DatasetPage.downloadDatasetCitationBibtex()}">
-                                                            #{bundle['dataset.cite.downloadBtn.bib']}
-                                                        </a>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="row bg-muted" jsf:rendered="#{!DatasetPage.workingVersion.deaccessioned}">
-                                        <div id="citation-standards" class="col-xs-12 text-muted small"><h:outputText value="#{bundle['dataset.cite.standards.tip']}" escape="false"/></div>
-                                    </div>
-                                </div>
-                            </div>
+                            <!-- CITATION BLOCK -->
+                            <ui:include src="dataset-citation.xhtml" rendered="#{!empty DatasetPage.displayCitation}">
+                                <ui:param name="datasetPage" value="true"/>
+                            </ui:include>
+                            <!-- END: CITATION BLOCK -->
                             <div id="deaccession-reason-block" class="row bg-danger" jsf:rendered="#{DatasetPage.workingVersion.deaccessioned}">
                                 <h5 class="margin-top-half">#{bundle['dataset.deaccession.reason']}</h5>
                                 <p>#{DatasetPage.workingVersion.versionNote}</p>
@@ -620,25 +585,20 @@
                         <div class="button-block">
                             <p:commandButton value="#{bundle.cancel}" onclick="PF('downloadInvalid').hide();" type="button" />
                         </div>
-                    </p:dialog>                    
-                    
+                    </p:dialog>
                     <p:dialog styleClass="smallPopUp" header="#{bundle['dataset.inValidSelectedFilesForDownload']}" widgetVar="downloadMixed" modal="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.mixedSelectedFilesForDownload']}</p>
-
                         <table>
                             <ui:repeat var="resFile" value="#{DatasetPage.selectedNonDownloadableFiles}" >
-
                                 <tr>
                                     <td>#{resFile.label}</td>
                                 </tr>
-
                             </ui:repeat>
                         </table>
-                        
                         <div class="button-block">
                             <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataset.downloadUnrestricted']}</p>                            
                             <ui:fragment rendered="#{!DatasetPage.downloadPopupRequired}">
-                            <p:commandButton value="#{bundle.continue}" onclick="PF('downloadMixed').hide()" action="#{DatasetPage.startMultipleFileDownload()}" />
+                                <p:commandButton value="#{bundle.continue}" onclick="PF('downloadMixed').hide()" action="#{DatasetPage.startMultipleFileDownload()}" />
                             </ui:fragment>
                             <ui:fragment rendered="#{DatasetPage.downloadPopupRequired}">
                                 <p:commandButton value="#{bundle.continue}" onclick="PF('downloadMixed').hide()" 
@@ -647,10 +607,6 @@
                             <p:commandButton value="#{bundle.cancel}" onclick="PF('downloadMixed').hide();" type="button" />
                         </div>
                     </p:dialog>
-                    
-                    
-                    
-                    
                     <p:dialog styleClass="smallPopUp" header="#{bundle['file.deleteDialog.header']}" widgetVar="deleteConfirmation" modal="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteDialog.tip']}</p>
                         <div class="button-block">

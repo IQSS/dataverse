@@ -45,47 +45,8 @@
         <div class="container" id="content">
             <ui:insert name="body">Default Body</ui:insert>
         </div>
-        <div id="footer" class="#{widgetWrapper.widgetView ? 'widget-view' : ''}">
-            <div class="container">
-                <div class="row">
-                    <div class="col-sm-8 small" jsf:rendered="#{!widgetWrapper.widgetView}">
-                        <p>
-                            <h:outputText value="#{bundle['footer.dataScienceIQSS']}" escape="false"/> &#160;|&#160; #{bundle['footer.dataverseProjectOn']} <a href="https://twitter.com/dataverseorg" target="_blank" title="#{bundle['footer.dataverseProjectOn']} #{bundle['footer.Twitter']}"><span class="socicon socicon-twitter" title="#{bundle['footer.dataverseProjectOn']} #{bundle['footer.Twitter']}"/></a> &#160;|&#160; #{bundle['footer.codeAvailable']} <a href="https://github.com/IQSS/dataverse" target="_blank" title="#{bundle['footer.dataverseOnGitHub']}"><span class="socicon socicon-github" title="#{bundle['footer.dataverseOnGitHub']}"/></a>
-                        </p>
-                        <p>
-                            <h:outputText value="#{bundle['footer.copyright']}" escape="false"/> <ui:fragment rendered="#{!empty settingsWrapper.get(':ApplicationPrivacyPolicyUrl')}">&#160;|&#160; <h:outputLink value="#{settingsWrapper.get(':ApplicationPrivacyPolicyUrl')}" target="_blank">#{bundle['footer.privacyPolicy']}</h:outputLink></ui:fragment>
-                        </p>
-                    </div>
-                    <div class="col-xs-7 small" jsf:rendered="#{widgetWrapper.widgetView}">
-                        <span class="widgetBrandMsg">
-                            Data is stored at <a href="/" target="_blank" title="#{dataverseServiceBean.findRootDataverse().displayName}">#{dataverseServiceBean.findRootDataverse().displayName}</a>.
-                            
-                            <!--<ui:fragment rendered="#{dataverseSession.user.authenticated}">
-                                View the <a href="#{systemConfig.dataverseSiteUrl}/dataverse/#{DataversePage.dataverse.alias}" target="_blank" title="#{DataversePage.dataverse.name} Dataverse">full version</a> of this dataverse.
-                            </ui:fragment>-->
-                            
-                            <!--<ui:fragment rendered="#{dataverseSession.user.authenticated}">
-                                View the <a href="#{systemConfig.dataverseSiteUrl}/dataset.xhtml?persistentId=#{dataset.globalId}" target="_blank" title="#{DatasetPage.datasetVersionUI.title.value}">full version</a> of this dataset.
-                            </ui:fragment>-->
-                            
-                            <ui:fragment rendered="#{!dataverseSession.user.authenticated}">
-                                <!-- this redirect logic doesn't seem to work... -->
-                                <h:outputLink style="font-weight: bold; margin-left:1em;" value="/loginpage.xhtml?#{loginRedirectPage}" target="_blank" title="Log in to...">
-                                    #{bundle.login}
-                                </h:outputLink>
-                            </ui:fragment>
-                        </span>
-                    </div>
-                    <div class="#{widgetWrapper.widgetView ? 'col-xs-5' : 'col-sm-4'} text-right">
-                        <div class="poweredbylogo">
-                            <span>#{bundle['footer.poweredby']}</span>
-                            <a href="http://dataverse.org/" title="#{bundle['footer.dataverseProject']}" target="_blank"><img src="/resources/images/dataverseproject_logo.jpg" alt="#{bundle['footer.dataverseProject']}" /></a>
-                            <h:outputText class="version" value="v. #{systemConfig.getVersion(true)}" rendered="#{!widgetWrapper.widgetView}"/>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <!-- FOOTER BLOCK -->
+        <ui:include src="dataverse_footer.xhtml"/>
         <p:ajaxStatus id="ajaxStatusPanel">
             <f:facet name="start">
                 <h:graphicImage value="/resources/images/ajax-loading.gif" alt="Loading" />

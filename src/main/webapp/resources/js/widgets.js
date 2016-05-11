@@ -55,3 +55,10 @@ if(params.widget === 'iframe' && params.persistentId) {
      */
     document.write('<iframe id="dataset-widget" src="' + params.dvUrl + '/dataset.xhtml?persistentId=' + params.persistentId + '&widget=dataset@' + params.persistentId + '" width="100%" height="' + params.heightPx + '" style="border:0; background:url(' + params.dvUrl + '/resources/images/ajax-loading.gif) no-repeat 50% 50%;"></iframe><script>var widgetScope = "' + params.alias + '"; var dvUrl = "' + params.dvUrl + '";</script><script src="' + params.dvUrl + '/resources/js/widgets-host.js"></script>');
 }
+
+if(params.widget === 'citation') {
+    /*
+    * Dataset Citation iFrame
+    */
+   document.write('<iframe id="citation-widget" src="' + params.dvUrl + '/iframe.xhtml?persistentId=' + params.persistentId + '&widget=dataset@' + params.persistentId + '" width="100%" height="' + params.heightPx + '" style="border:0; background:url(' + params.dvUrl + '/resources/images/ajax-loading.gif) no-repeat 50% 50%;"></iframe><script>var widgetScope = "' + params.persistentId + '"; var dvUrl = "' + params.dvUrl + '";</script><script src="' + params.dvUrl + '/resources/js/widgets-host.js"></script>');
+}

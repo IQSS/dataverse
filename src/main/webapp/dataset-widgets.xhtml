@@ -6,7 +6,6 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
       xmlns:jsf="http://xmlns.jcp.org/jsf">
-
     <h:head>
     </h:head>
 
@@ -58,7 +57,7 @@
                         <p class="help-block">#{bundle['dataset.widgets.citation.tip']}</p>
                     </div>
                     <div>
-                        <textarea rows="3" cols="54" class="form-control">&lt;script src=&quot;#{systemConfig.dataverseSiteUrl}/resources/js/widgets.js?persistentId=#{dataset.globalId}&amp;amp;dvUrl=#{systemConfig.dataverseSiteUrl}&amp;amp;widget=citation&amp;amp;heightPx=250&quot;&gt;&lt;/script&gt;</textarea>
+                        <textarea rows="3" cols="54" class="form-control">&lt;script src=&quot;#{systemConfig.dataverseSiteUrl}/resources/js/widgets.js?persistentId=#{dataset.globalId}&amp;amp;dvUrl=#{systemConfig.dataverseSiteUrl}&amp;amp;widget=citation&amp;amp;heightPx=150&quot;&gt;&lt;/script&gt;</textarea>
                     </div>
                     <div>
                         <h5>
@@ -70,7 +69,7 @@
                         <textarea rows="2" cols="54" class="form-control">&lt;script src=&quot;#{systemConfig.dataverseSiteUrl}/resources/js/widgets.js?persistentId=#{dataset.globalId}&amp;amp;dvUrl=#{systemConfig.dataverseSiteUrl}&amp;amp;widget=iframe&amp;amp;heightPx=500&quot;&gt;&lt;/script&gt;</textarea>
                     </div>
                 </ui:fragment>
-                <div class="button-block" >
+                <div class="button-block">
                     <h:outputLink class="btn btn-default" value="/dataset.xhtml?persistentId=#{DatasetWidgetsPage.dataset.globalId}">
                         <h:outputText value="#{bundle.done}"/></h:outputLink>
                 </div>

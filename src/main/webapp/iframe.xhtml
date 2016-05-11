@@ -7,7 +7,6 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:jsf="http://xmlns.jcp.org/jsf"
       lang="en">
-
     <h:head>
         <title><h:outputText value="#{pageTitle}"/></title>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
@@ -23,103 +22,23 @@
         <h:outputStylesheet library="css" name="socicon.css"/>
         <h:outputStylesheet library="css" name="structure.css"/>
     </h:head>
-
     <h:body>
         <f:loadBundle basename="Bundle" var="bundle"/>
         <f:metadata>
-            <f:viewParam name="id" value="#{DataversePage.dataverse.id}"/>
-            <f:viewParam name="alias" value="#{DataversePage.dataverse.alias}"/>
-            <f:viewParam name="ownerId" value="#{DataversePage.ownerId}"/>
-            <f:viewParam name="editMode" value="#{DataversePage.editMode}"/>
-            <f:viewAction action="#{DataversePage.init}"/>
-            <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(DataversePage.dataverse)}"/>
-            <f:viewParam name="alias" value="#{SearchIncludeFragment.dataverseAlias}"/>
-            <f:viewParam name="q" value="#{SearchIncludeFragment.query}"/>
-            <f:viewParam name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
-            <f:viewParam name="fq1" value="#{SearchIncludeFragment.fq1}"/>
-            <f:viewParam name="fq0" value="#{SearchIncludeFragment.fq0}"/>
-            <f:viewParam name="fq2" value="#{SearchIncludeFragment.fq2}"/>
-            <f:viewParam name="fq3" value="#{SearchIncludeFragment.fq3}"/>
-            <f:viewParam name="fq4" value="#{SearchIncludeFragment.fq4}"/>
-            <f:viewParam name="fq5" value="#{SearchIncludeFragment.fq5}"/>
-            <f:viewParam name="fq6" value="#{SearchIncludeFragment.fq6}"/>
-            <f:viewParam name="fq7" value="#{SearchIncludeFragment.fq7}"/>
-            <f:viewParam name="fq8" value="#{SearchIncludeFragment.fq8}"/>
-            <f:viewParam name="fq9" value="#{SearchIncludeFragment.fq9}"/>
-            <f:viewParam name="sort" value="#{SearchIncludeFragment.sortField}"/>
-            <f:viewParam name="order" value="#{SearchIncludeFragment.sortOrder}"/>
-            <f:viewParam name="page" value="#{SearchIncludeFragment.page}"/>
-            <f:viewParam name="debug" value="#{SearchIncludeFragment.debug}"/>
-            <f:viewAction action="#{SearchIncludeFragment.search()}" />
+            <f:viewParam name="persistentId" value="#{DatasetPage.persistentId}"/>
+            <f:viewAction action="#{DatasetPage.init}" rendered="true"/>
         </f:metadata>
-        
-        <div id="breadcrumbNavBlock" class="container" jsf:rendered="#{dataverseHeaderFragment.breadcrumbs.size() > 1}">
-            <!-- Dup Msg -->
-            <div class="breadcrumbBlock text-muted">
-                Duplicate Breadcrumbs Code Block
-            </div>
-            <h:outputText value=" > " styleClass="breadcrumbCarrot"/>
-            <!-- Orginal Code -->
-            <ui:repeat value="#{dataverseHeaderFragment.breadcrumbs}" var="breadcrumb" varStatus="status">
-                <h:outputText value=" > " styleClass="breadcrumbCarrot" rendered="#{!status.first}"/>
-                <div class="breadcrumbBlock">
-                    <h:outputText value="#{breadcrumb.breadcrumbText}" styleClass="#{'breadcrumbActive'}" rendered="#{status.last}"/>
-                    <ui:fragment rendered="#{!status.last}">
-                        <h:outputText value="#{breadcrumb.breadcrumbText}" rendered="#{!breadcrumb.dvObject.instanceofDataverse and !breadcrumb.dvObject.instanceofDataset}"/>
+        <div class="container">
+            <!-- DATASET CITATION BLOCK -->
+            <h:form>
+                <ui:include src="dataset-citation.xhtml" rendered="#{true}">
+                    <ui:param name="showSomething" value="true"/>
+                </ui:include>
+            </h:form>
+        </div>
+        <!-- FOOTER BLOCK -->
+        <ui:include src="dataverse_footer.xhtml"/>
 
-                        <ui:fragment rendered="#{breadcrumb.dvObject.instanceofDataverse}">                       
-                            <a id="breadcrumbLnk#{status.index}" href="/dataverse/${breadcrumb.dvObject.alias}">
-                                <h:outputText value="#{breadcrumb.breadcrumbText}"/>
-                            </a>
-                        </ui:fragment>
-                        <ui:fragment rendered="#{breadcrumb.dvObject.instanceofDataset}">                       
-                            <a id="breadcrumbLnk#{status.index}" href="/dataset.xhtml?persistentId=${breadcrumb.dvObject.globalId}">
-                                <h:outputText value="#{breadcrumb.breadcrumbText}"/>
-                            </a>
-                        </ui:fragment>                        
-                    </ui:fragment>
-                </div>
-            </ui:repeat>                    
-        </div>
-        
-        <div id="messagePanel" jsf:rendered="#{dataverseSession.user.authenticated}">
-            <div class="container messagePanel">
-                <div class="alert alert-dismissable alert-warning" jsf:rendered="#{dataverseSession.user.authenticated}">
-                    <button aria-hidden="true" data-dismiss="alert" class="close" type="button">×</button>
-                    <span class="glyphicon glyphicon-info-sign"></span> <b>Code Update Notification -</b> Please update the Dataverse widget code being used on this site. This messagePanel is a duplicated of the one on dataverse_header.
-                </div>
-            </div>
-        </div>
-        
-        <div id="whereami"><p><span class="glyphicon glyphicon-sunglasses"/> This is the <span id="widget-type"></span> widget. (This is not dynamic.)</p></div>
-        
-        <script>            
-            $(document).ready(function () {
-                $('#widget-type').text('DATAVERSE');
-            });
-        </script>
-        
-        <div>
-
-            <!-- Search-Include -->
-            <ui:include src="search-include-fragment.xhtml" rendered="#{empty DataversePage.editMode}">
-                <ui:param name="showFacets" value="false"/>
-                <ui:param name="showSearch" value="false"/>
-                <ui:param name="showAdvancedSearchLink" value="true"/>
-                <ui:param name="dataverseRedirectPage" value="iframe.xhtml"/>
-            </ui:include>
-        
-        </div>
-        
-        <div class="row">
-            <div class="col-sm-6 text-lext">
-                <p class="text-muted small">Data stored in the <a href="#{systemConfig.dataverseSiteUrl}" title="#{dataverseServiceBean.findRootDataverse().name} #{bundle.dataverse}" target="_blank">#{dataverseServiceBean.findRootDataverse().name} #{bundle.dataverse}</a>.</p>
-            </div>
-            <div class="col-sm-6 text-right">
-                <span class="text-muted small" style="margin-right:6px;">Powered by</span><a target="_blank" title="The Dataverse Project" href="http://dataverse.org/"><img style="vertical-align:middle;" src="/resources/images/dataverseproject_logo.jpg" alt="The Dataverse Project"/></a>
-            </div>
-        </div>
-        
         <p:ajaxStatus id="ajaxStatusPanel">
             <f:facet name="start">
                 <h:graphicImage value="/resources/images/ajax-loading.gif" alt="Loading" />
@@ -128,18 +47,8 @@
                 <!-- DO NOTHING -->
             </f:facet>
         </p:ajaxStatus>
-                
-        <h:outputScript library="bs" name="js/bootstrap.min.js" />
-        <h:outputScript library="bs" name="js/bootstrap-hover-dropdown.min.js" />
-        
-        <!--
         <script type="text/javascript" defer="defer" src="#{resource['bs/js/bootstrap.min.js']}?version=#{systemConfig.getVersion()}"></script>
         <script type="text/javascript" defer="defer" src="#{resource['bs/js/bootstrap-hover-dropdown.min.js']}?version=#{systemConfig.getVersion()}"></script>
-        <script type="text/javascript" defer="defer" src="#{resource['js/ie-compat.js']}?version=#{systemConfig.getVersion()}"></script>
         <script type="text/javascript" defer="defer" src="#{resource['js/dv_rebind_bootstrap_ui.js']}?version=#{systemConfig.getVersion()}"></script>
-        <script type="text/javascript" defer="defer" src="#{resource['js/owl.carousel.js']}?version=#{systemConfig.getVersion()}"></script>
-        <script type="text/javascript" defer="defer" src="#{resource['js/jquery.matchHeight.js']}?version=#{systemConfig.getVersion()}"></script>
-        <script type="text/javascript" defer="defer" src="#{resource['js/jquery.sharrre.js']}?version=#{systemConfig.getVersion()}"></script>
-        -->
     </h:body>
 </html>
