@@ -290,6 +290,7 @@
    <field name="parentName" type="string" stored="true" indexed="false" multiValued="false"/>
    <field name="parentCitation" type="string" stored="true" indexed="false" multiValued="false"/>
    <field name="citation" type="string" stored="true" indexed="false" multiValued="false"/>
+   <field name="citationHtml" type="string" stored="true" indexed="false" multiValued="false"/>
    <field name="identifier" type="string" stored="true" indexed="true" multiValued="false"/>
    <field name="persistentUrl" type="string" stored="true" indexed="false" multiValued="false"/>
    <field name="unf" type="string" stored="true" indexed="true" multiValued="false"/>

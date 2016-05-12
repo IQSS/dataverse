@@ -1,6 +1,6 @@
 #metadataBlock	name	dataverseAlias	displayName												
 	journal		Journal Metadata												
-#datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	showabovefold	required	parent	metadatablock_id
+#datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	metadatablock_id
 	journalVolumeIssue	Journal	Indicates the volume, issue and date of a journal, which this Dataset is associated with.		none	0		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		journal
 	journalVolume	Volume	The journal volume which this Dataset is associated with (e.g., Volume 4).		text	1		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	journalVolumeIssue	journal
 	journalIssue	Issue	The journal issue number which this Dataset is associated with (e.g., Number 2, Autumn).		text	2		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	journalVolumeIssue	journal
