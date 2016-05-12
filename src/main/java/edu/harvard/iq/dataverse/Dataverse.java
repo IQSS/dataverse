@@ -57,7 +57,7 @@ import org.hibernate.validator.constraints.URL;
 public class Dataverse extends DvObjectContainer {
 
     public enum DataverseType {
-        RESEARCHERS, RESEARCH_PROJECTS, JOURNALS, ORGANIZATIONS_INSTITUTIONS, TEACHING_COURSES, UNCATEGORIZED
+        RESEARCHERS, RESEARCH_PROJECTS, JOURNALS, ORGANIZATIONS_INSTITUTIONS, TEACHING_COURSES, UNCATEGORIZED, LABORATORY, RESEARCH_GROUP
     };
     
     private static final long serialVersionUID = 1L;
@@ -116,7 +116,11 @@ public class Dataverse extends DvObjectContainer {
             case ORGANIZATIONS_INSTITUTIONS:
                 return "Organization or Institution";            
             case TEACHING_COURSES:
-                return "Teaching Course";            
+                return "Teaching Course";
+            case LABORATORY:
+               return "Laboratory";
+            case RESEARCH_GROUP:
+               return "Research Group";
             case UNCATEGORIZED:
                 return uncategorizedString;
             default:

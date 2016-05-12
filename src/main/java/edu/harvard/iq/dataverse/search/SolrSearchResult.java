@@ -59,6 +59,7 @@ public class SolrSearchResult {
     private Map<String, String> parent;
     private String dataverseAffiliation;
     private String citation;
+    private String citationHtml;
     /**
      * Files and datasets might have a UNF. Dataverses don't.
      */
@@ -497,6 +498,7 @@ public class SolrSearchResult {
                 .add("unf", getUnf())
                 .add("dataset_citation", datasetCitation)
                 .add("deaccession_reason", this.deaccessionReason)
+                .add("citationHtml", this.citationHtml)
                 .add("citation", this.citation);
         // Now that nullSafeJsonBuilder has been instatiated, check for null before adding to it!
         if (showRelevance) {
@@ -762,6 +764,14 @@ public class SolrSearchResult {
 
     public void setCitation(String citation) {
         this.citation = citation;
+    }
+
+    public String getCitationHtml() {
+        return citationHtml;
+    }
+
+    public void setCitationHtml(String citationHtml) {
+        this.citationHtml = citationHtml;
     }
 
     public String getFiletype() {
