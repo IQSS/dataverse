@@ -3315,7 +3315,7 @@ public class DatasetPage implements java.io.Serializable {
         String bibFormatDowload = new BibtexCitation(workingVersion).toString();
         FacesContext ctx = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
-        response.setContentType("application/download");
+        response.setContentType("text/plain");
 
         String fileNameString = "";
         if (fileMetadata == null || fileMetadata.getLabel() == null) {
