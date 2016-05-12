@@ -38,8 +38,10 @@ import org.junit.Test;
 import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.path.json.JsonPath.with;
 import static com.jayway.restassured.path.xml.XmlPath.from;
-import static java.lang.Thread.sleep;
 import static junit.framework.Assert.assertEquals;
+import static java.lang.Thread.sleep;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class SearchIT {
 
@@ -114,6 +116,49 @@ public class SearchIT {
             // should never reach here: https://github.com/IQSS/dataverse/issues/2418
             clancy.setId(clancyIdFromDatabase);
         }
+
+    }
+
+    @Test
+    public void testSearchCitation() {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        Response solrResponse = querySolr("id:dataset_" + datasetId + "_draft");
+        solrResponse.prettyPrint();
+        Response enableNonPublicSearch = enableSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed);
+        assertEquals(200, enableNonPublicSearch.getStatusCode());
+        Response searchResponse = search("id:dataset_" + datasetId + "_draft", apiToken);
+        searchResponse.prettyPrint();
+        assertFalse(searchResponse.body().jsonPath().getString("data.items[0].citation").contains("href"));
+        assertTrue(searchResponse.body().jsonPath().getString("data.items[0].citationHtml").contains("href"));
+
+        Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
+        deleteDatasetResponse.prettyPrint();
+        assertEquals(200, deleteDatasetResponse.getStatusCode());
+
+        Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        deleteDataverseResponse.prettyPrint();
+        assertEquals(200, deleteDataverseResponse.getStatusCode());
+
+        makeSuperuser(username);
+        search("finch&show_relevance=true&show_facets=true&fq=publicationDate:2016&subtree=birds", apiToken).prettyPrint();
+
+        search("trees", apiToken).prettyPrint();
+
+        Response deleteUserResponse = UtilIT.deleteUser(username);
+        deleteUserResponse.prettyPrint();
+        assertEquals(200, deleteUserResponse.getStatusCode());
 
     }
 
@@ -896,6 +941,12 @@ public class SearchIT {
                         + "&q=" + query.getQuery()
                         + "&show_facets=" + true
                 );
+    }
+
+    static Response search(String query, String apiToken) {
+        return given()
+                .header(keyString, apiToken)
+                .get("/api/search?q=" + query);
     }
 
     private Response uploadZipFile(String persistentId, String zipFileName, String apiToken) throws FileNotFoundException {

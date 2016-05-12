@@ -12,6 +12,8 @@ Unlike the web interface, this new API is limited to *published* data until `iss
 
 The parameters and JSON response are partly inspired by the `GitHub Search API <https://developer.github.com/v3/search/>`_.
 
+Please note that in Dataverse 4.3 and older the "citation" field wrapped the persistent ID URL in an ``<a>`` tag but this has been changed to plaintext. If you want the old value with HTML in it, a new field called "citationHtml" can be used.
+
 Parameters
 ----------
 
@@ -54,7 +56,7 @@ https://apitest.dataverse.org/api/search?q=trees
                     "image_url":"https://apitest.dataverse.org/api/access/dvCardImage/7",
                     "identifier":"trees",
                     "description":"A tree dataverse with some birds",
-                    "published_at":"2015-01-12T16:05:12Z"
+                    "published_at":"2016-05-10T12:53:38Z"
                 },
                 {
                     "name":"Chestnut Trees",
@@ -63,20 +65,21 @@ https://apitest.dataverse.org/api/search?q=trees
                     "image_url":"https://apitest.dataverse.org/api/access/dvCardImage/9",
                     "identifier":"chestnuttrees",
                     "description":"A dataverse with chestnut trees and an oriole",
-                    "published_at":"2015-01-12T18:02:32Z"
+                    "published_at":"2016-05-10T12:52:38Z"
                 },
                 {
                     "name":"trees.png",
                     "type":"file",
                     "url":"https://apitest.dataverse.org/api/access/datafile/12",
-                    "image_url":"https://apitest.dataverse.org/api/access/preview/12",
+                    "image_url":"https://apitest.dataverse.org/api/access/fileCardImage/12",
                     "file_id":"12",
                     "description":"",
-                    "published_at":"2015-01-12T16:05:44Z",
+                    "published_at":"2016-05-10T12:53:39Z",
                     "file_type":"PNG Image",
+                    "file_content_type":"image/png",
                     "size_in_bytes":8361,
                     "md5":"0386269a5acb2c57b4eade587ff4db64",
-                    "dataset_citation":"Spruce, Sabrina, 2015, \"Spruce Goose\", http://dx.doi.org/10.5072/FK2/Y6RGTQ,  Root Dataverse,  V1"
+                    "dataset_citation":"Spruce, Sabrina, 2016, \"Spruce Goose\", http://dx.doi.org/10.5072/FK2/NFSEHG, Root Dataverse, V1"
                 },
                 {
                     "name":"Birds",
@@ -85,7 +88,7 @@ https://apitest.dataverse.org/api/search?q=trees
                     "image_url":"https://apitest.dataverse.org/api/access/dvCardImage/2",
                     "identifier":"birds",
                     "description":"A bird dataverse with some trees",
-                    "published_at":"2015-01-12T18:01:51Z"
+                    "published_at":"2016-05-10T12:57:27Z"
                 }
             ],
             "count_in_response":4
@@ -97,7 +100,7 @@ https://apitest.dataverse.org/api/search?q=trees
 Advanced Search Example
 -----------------------
 
-https://apitest.dataverse.org/api/search?q=finch&show_relevance=true&show_facets=true&fq=publication_date_s:2015&subtree=birds
+https://apitest.dataverse.org/api/search?q=finch&show_relevance=true&show_facets=true&fq=publicationDate:2016&subtree=birds
 
 In this example, ``show_relevance=true`` matches per field are shown. Available facets are shown with ``show_facets=true`` and of the facets is being used with ``fq=publication_date_s:2015``. The search is being narrowed to the dataverse with the identifier "birds" with the parameter ``subtree=birds``.
 
@@ -119,7 +122,7 @@ In this example, ``show_relevance=true`` matches per field are shown. Available 
                     "image_url":"https://apitest.dataverse.org/api/access/dvCardImage/3",
                     "identifier":"finches",
                     "description":"A dataverse with finches",
-                    "published_at":"2015-01-12T18:01:15Z",
+                    "published_at":"2016-05-10T12:57:38Z",
                     "matches":[
                         {
                             "description":{
@@ -135,17 +138,19 @@ In this example, ``show_relevance=true`` matches per field are shown. Available 
                                 ]
                             }
                         }
-                    ]
+                    ],
+                    "score": 3.8500118255615234
                 },
                 {
                     "name":"Darwin's Finches",
                     "type":"dataset",
-                    "url":"http://dx.doi.org/10.5072/FK2/CE0052",
-                    "image_url":"https://apitest.dataverse.org/api/access/dsPreview/2",
-                    "global_id":"doi:10.5072/FK2/CE0052",
-                    "published_at":"2015-01-12T18:01:37Z",
-                    "citation":"Finch, Fiona, 2015, \"Darwin's Finches\", http://dx.doi.org/10.5072/FK2/CE0052,  Root Dataverse,  V1",
+                    "url":"http://dx.doi.org/10.5072/FK2/G2VPE7",
+                    "image_url":"https://apitest.dataverse.org/api/access/dsCardImage/2",
+                    "global_id":"doi:10.5072/FK2/G2VPE7",
                     "description": "Darwin's finches (also known as the Galápagos finches) are a group of about fifteen species of passerine birds.",
+                    "published_at":"2016-05-10T12:57:45Z",
+                    "citationHtml":"Finch, Fiona, 2016, \"Darwin's Finches\", <a href=\"http://dx.doi.org/10.5072/FK2/G2VPE7\" target=\"_blank\">http://dx.doi.org/10.5072/FK2/G2VPE7</a>, Root Dataverse, V1",
+                    "citation":"Finch, Fiona, 2016, \"Darwin's Finches\", http://dx.doi.org/10.5072/FK2/G2VPE7, Root Dataverse, V1",
                     "matches":[
                         {
                             "authorName":{
@@ -169,6 +174,7 @@ In this example, ``show_relevance=true`` matches per field are shown. Available 
                             }
                         }
                     ],
+                    "score": 1.5033848285675049,
                     "authors":[
                         "Finch, Fiona"
                     ]
@@ -176,27 +182,27 @@ In this example, ``show_relevance=true`` matches per field are shown. Available 
             ],
             "facets":[
                 {
-                    "dvCategory_s":{
-                        "friendly":"Dataverse Category",
+                    "subject_ss":{
+                        "friendly":"Subject",
                         "labels":[
                             {
-                                "Uncategorized":1
+                                "Medicine, Health and Life Sciences":2
                             }
                         ]
                     },
-                    "affiliation_ss":{
-                        "friendly":"Affiliation",
-                        "labels":[
+                    "authorName_ss": {
+                        "friendly":"Author Name",
+                        "labels": [
                             {
-                                "Birds Inc.":1
+                                "Finch, Fiona":1
                             }
                         ]
                     },
-                    "publication_date_s":{
+                    "publicationDate":{
                         "friendly":"Publication Date",
                         "labels":[
                             {
-                                "2015":2
+                                "2016":2
                             }
                         ]
                     }

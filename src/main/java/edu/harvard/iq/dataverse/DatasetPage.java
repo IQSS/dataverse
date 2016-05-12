@@ -81,6 +81,7 @@ import javax.faces.component.UIInput;
 import javax.faces.event.AjaxBehaviorEvent;
 
 import javax.faces.context.ExternalContext;
+import org.apache.commons.lang.StringEscapeUtils;
 
 import org.primefaces.component.tabview.TabView;
 import org.primefaces.event.TabChangeEvent;
@@ -2175,7 +2176,7 @@ public class DatasetPage implements java.io.Serializable {
             fileMetadatasSearch = workingVersion.getFileMetadatasSorted();
         }
 
-        displayCitation = dataset.getCitation(false, workingVersion);
+        displayCitation = dataset.getCitation(true, workingVersion);
         stateChanged = false;
     }
     
@@ -2404,7 +2405,16 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
     }
+    
 
+        private List<String> getSuccessMessageArguments() {
+        List<String> arguments = new ArrayList<>();
+        arguments.add(StringEscapeUtils.escapeHtml(dataset.getDisplayName()));
+        String linkString = "<a href=\"/dataverse/" + linkingDataverse.getAlias() + "\">" + StringEscapeUtils.escapeHtml(linkingDataverse.getDisplayName()) + "</a>";
+        arguments.add(linkString);
+        return arguments;
+    }
+    
     public String saveLinkedDataset() {
         if (linkingDataverseId == null) {
             JsfHelper.addFlashMessage("You must select a linking dataverse.");
@@ -2418,15 +2428,7 @@ public class DatasetPage implements java.io.Serializable {
         LinkDatasetCommand cmd = new LinkDatasetCommand(dvRequestService.getDataverseRequest(), linkingDataverse, dataset);
         try {
             commandEngine.submit(cmd);
-            //JsfHelper.addFlashMessage(JH.localize("dataset.message.linkSuccess")  + linkingDataverse.getDisplayName());
-            List<String> arguments = new ArrayList();
-            arguments.add(dataset.getDisplayName());
-            arguments.add(getDataverseSiteUrl());
-            arguments.add(linkingDataverse.getAlias());
-            arguments.add(linkingDataverse.getDisplayName());
-            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.linkSuccess", arguments));
-            //return "";
-
+            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.linkSuccess", getSuccessMessageArguments()));
         } catch (CommandException ex) {
             String msg = "There was a problem linking this dataset to yours: " + ex;
             logger.severe(msg);
@@ -2435,8 +2437,6 @@ public class DatasetPage implements java.io.Serializable {
              */
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetNotLinked", msg);
             FacesContext.getCurrentInstance().addMessage(null, message);
-            //return "";
-
         }
         return returnToLatestVersion();
     }
@@ -2446,9 +2446,7 @@ public class DatasetPage implements java.io.Serializable {
     public boolean isShowAccessPopup() {
         
         for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
-            //System.out.print("restricted :" + fmd.isRestricted());
-            //System.out.print("file id :" + fmd.getDataFile().getId());
-            
+
             if (fmd.isRestricted()) {
             
                 if (editMode == EditMode.CREATE) {
