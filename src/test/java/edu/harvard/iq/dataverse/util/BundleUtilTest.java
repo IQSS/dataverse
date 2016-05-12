@@ -52,7 +52,7 @@ public class BundleUtilTest {
         assertEquals("The saved search has been successfully linked to "
                 + "<a href=\"/dataverse/dvAlias\" title=\"DV Name\">DV Name</a>.",
                 BundleUtil.getStringFromBundle("dataverse.saved.search.success",
-                        Arrays.asList("dvAlias", "DV Name")));
+                        Arrays.asList("<a href=\"/dataverse/dvAlias\" title=\"DV Name\">DV Name</a>")));
         assertEquals("Your institutional log in for TestShib Test IdP matches an email address already being used for a Dataverse "
                 + "account. By entering your current Dataverse password below, your existing Dataverse account can be "
                 + "converted to use your institutional log in. After converting, you will only need to use your institutional log in.",
@@ -64,9 +64,10 @@ public class BundleUtilTest {
                 BundleUtil.getStringFromBundle("shib.welcomeExistingUserMessage",
                         Arrays.asList(BundleUtil.getStringFromBundle("shib.welcomeExistingUserMessageDefaultInstitution"))));
         assertEquals("Welcome to Root Dataverse! Get started by adding or finding data. "
-                + "Have questions? Check out the <a href=\"http://guides.dataverse.org/en/4.3/user/index.html\" title=\"Root Dataverse User Guide\" target=\"_blank\">User Guide</a> or contact",
-                BundleUtil.getStringFromBundle("notification.welcome1",
-                        Arrays.asList("Root", "http://guides.dataverse.org/en", "4.3")));
+                + "Have questions? Check out the <a href=\"http://guides.dataverse.org/en/4.3/user/index.html\">User Guide</a> "
+                + "or contact Dataverse Support for assistance.",
+                BundleUtil.getStringFromBundle("notification.welcome",
+                        Arrays.asList("Root", "<a href=\"http://guides.dataverse.org/en/4.3/user/index.html\">User Guide</a>", "Dataverse Support")));
     }
 
     @Test
