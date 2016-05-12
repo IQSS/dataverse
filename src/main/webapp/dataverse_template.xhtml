@@ -46,7 +46,9 @@
             <ui:insert name="body">Default Body</ui:insert>
         </div>
         <!-- FOOTER BLOCK -->
-        <ui:include src="dataverse_footer.xhtml"/>
+        <ui:include src="dataverse_footer.xhtml">
+            <ui:param name="widgetView" value="#{widgetWrapper.widgetView}"/>
+        </ui:include>
         <p:ajaxStatus id="ajaxStatusPanel">
             <f:facet name="start">
                 <h:graphicImage value="/resources/images/ajax-loading.gif" alt="Loading" />

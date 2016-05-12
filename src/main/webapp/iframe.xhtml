@@ -29,15 +29,15 @@
             <f:viewAction action="#{DatasetPage.init}" rendered="true"/>
         </f:metadata>
         <div class="container">
-            <!-- DATASET CITATION BLOCK -->
-            <h:form>
-                <ui:include src="dataset-citation.xhtml" rendered="#{true}">
-                    <ui:param name="showSomething" value="true"/>
-                </ui:include>
+            <h:form id="iframeForm">
+                <!-- DATASET CITATION BLOCK -->
+                <ui:include src="dataset-citation.xhtml" />
             </h:form>
         </div>
         <!-- FOOTER BLOCK -->
-        <ui:include src="dataverse_footer.xhtml"/>
+        <ui:include src="dataverse_footer.xhtml">
+            <ui:param name="widgetView" value="true"/>
+        </ui:include>
 
         <p:ajaxStatus id="ajaxStatusPanel">
             <f:facet name="start">
