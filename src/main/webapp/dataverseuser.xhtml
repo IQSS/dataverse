@@ -4,7 +4,8 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:jsf="http://xmlns.jcp.org/jsf">
+      xmlns:jsf="http://xmlns.jcp.org/jsf"
+      xmlns:o="http://omnifaces.org/ui">
 
     <h:head>
     </h:head>
@@ -115,103 +116,119 @@
                                                 <ui:fragment rendered="#{item.type == 'CREATEACC'}">
                                                     <i class="icon-dataverse text-icon-inline text-muted"></i>                                        
                                                     <h:outputFormat value="#{bundle['notification.welcome']}" escape="false">
-                                                        <f:param value="#{dataverseServiceBean.findRootDataverse().name}"/>
-                                                        <f:param value="#{systemConfig.guidesBaseUrl}"/>
-                                                        <f:param value="#{systemConfig.version}"/>
+                                                        <o:param>
+                                                            <h:outputText value="#{dataverseServiceBean.findRootDataverse().name}"/>
+                                                        </o:param>                                                            
+                                                        <o:param>
+                                                            <a href="#{systemConfig.guidesBaseUrl}/#{systemConfig.version}/user/index.html" title="#{dataverseServiceBean.findRootDataverse().name} #{bundle['dataverse']} #{bundle['header.guides.user']}" target="_blank">#{bundle['header.guides.user']}</a>                                                              
+                                                        </o:param>
+                                                        <o:param>
+                                                            <a href="#" onclick="event.preventDefault();PF(&#39;contactForm&#39;).show();" title="#{bundle['contact.contact']} #{dataverseServiceBean.findRootDataverse().name} #{bundle['dataverse']} #{bundle['header.support']}">#{bundle['dataverse']} #{bundle['header.support']}</a>                                                         
+                                                        </o:param>         
                                                     </h:outputFormat>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'CREATEDV'}">
                                                     <i class="icon-dataverse text-icon-inline text-muted"></i>
                                                     <h:outputFormat value="#{bundle['notification.createDataverse']}" escape="false">
-                                                        <f:param value="#{item.theObject.getAlias()}"/>
-                                                        <f:param value="#{item.theObject.getDisplayName()}"/>
-                                                        <f:param value="#{item.theObject.getOwner().getAlias()}"/>
-                                                        <f:param value="#{item.theObject.getOwner().getDisplayName()}"/>
-                                                        <f:param value="#{systemConfig.guidesBaseUrl}"/>
-                                                        <f:param value="#{systemConfig.version}"/>
+                                                        <o:param>
+                                                            <a href="/dataverse/#{item.theObject.getAlias()}" title="#{item.theObject.getDisplayName()}">#{item.theObject.getDisplayName()}</a> 
+                                                        </o:param>                                                            
+                                                        <o:param>
+                                                            <a href="/dataverse/#{item.theObject.getOwner().getAlias()}" title="#{item.theObject.getOwner().getDisplayName()}">#{item.theObject.getOwner().getDisplayName()}</a>                                                            
+                                                        </o:param>
+                                                        <o:param>
+                                                            <a href="#{systemConfig.guidesBaseUrl}/#{systemConfig.version}/user/dataverse-management.html" title="#{bundle['notification.dataverse.management.title']}" target="_blank">#{bundle['header.guides.user']}</a>                                                         
+                                                        </o:param> 
                                                     </h:outputFormat>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'CREATEDS'}">
                                                     <i class="icon-dataset text-icon-inline text-muted"></i>
                                                     <h:outputFormat value="#{bundle['notification.createDataset']}" escape="false">
-                                                        <f:param value="#{item.theObject.getDataset().getGlobalId()}"/>
-                                                        <f:param value="#{item.theObject.getDataset().getDisplayName()}"/>
-                                                        <f:param value="#{item.theObject.getDataset().getOwner().getAlias()}"/>
-                                                        <f:param value="#{item.theObject.getDataset().getOwner().getDisplayName()}"/>
-                                                        <f:param value="#{systemConfig.guidesBaseUrl}"/>
-                                                        <f:param value="#{systemConfig.version}"/>
-                                                    </h:outputFormat>
+                                                        <o:param>
+                                                            <a href="/dataset.xhtml?persistentId=#{item.theObject.getDataset().getGlobalId()}" title="#{item.theObject.getDataset().getDisplayName()}">#{item.theObject.getDataset().getDisplayName()}</a> 
+                                                        </o:param>
+                                                        <o:param>
+                                                            <a href="/dataverse/#{item.theObject.getDataset().getOwner().getAlias()}" title="#{item.theObject.getDataset().getOwner().getDisplayName()}">#{item.theObject.getDataset().getOwner().getDisplayName()}</a>
+                                                        </o:param> 
+                                                        <o:param>
+                                                            <a href="#{systemConfig.guidesBaseUrl}/#{systemConfig.version}/user/dataset-management.html" title="#{bundle['notification.dataset.management.title']}" target="_blank">#{bundle['header.guides.user']}</a>
+                                                        </o:param>
+                                                    </h:outputFormat>             
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'SUBMITTEDDS'}">
                                                     <i class="icon-dataset text-icon-inline text-muted"></i>
                                                     <h:outputFormat value="#{bundle['notification.wasSubmittedForReview']}" escape="false">
-                                                        <f:param value="#{item.theObject.getDataset().getGlobalId()}"/>
-                                                        <f:param value="#{item.theObject.getDataset().getDisplayName()}"/>
-                                                        <f:param value="#{item.theObject.getDataset().getOwner().getAlias()}"/>
-                                                        <f:param value="#{item.theObject.getDataset().getOwner().getDisplayName()}"/>
+                                                        <o:param>
+                                                            <a href="/dataset.xhtml?persistentId=#{item.theObject.getDataset().getGlobalId()}&amp;version=DRAFT&amp;faces-redirect=true" title="#{item.theObject.getDataset().getDisplayName()}">#{item.theObject.getDataset().getDisplayName()}</a>
+                                                        </o:param>
+                                                        <o:param>
+                                                            <a href="/dataverse/#{item.theObject.getDataset().getOwner().getAlias()}" title="#{item.theObject.getDataset().getOwner().getDisplayName()}">#{item.theObject.getDataset().getOwner().getDisplayName()}</a>
+                                                        </o:param>
                                                     </h:outputFormat>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'RETURNEDDS'}">
                                                     <i class="icon-dataset text-icon-inline text-muted"></i>
                                                     <h:outputFormat value="#{bundle['notification.wasReturnedByReviewer']}" escape="false">
-                                                        <f:param value="#{item.theObject.getDataset().getGlobalId()}"/>
-                                                        <f:param value="#{item.theObject.getDataset().getDisplayName()}"/>
-                                                        <f:param value="#{item.theObject.getDataset().getOwner().getAlias()}"/>
-                                                        <f:param value="#{item.theObject.getDataset().getOwner().getDisplayName()}"/>
-                                                    </h:outputFormat>                                      
+                                                        <o:param>
+                                                            <a href="/dataset.xhtml?persistentId=#{item.theObject.getDataset().getGlobalId()}&amp;version=DRAFT&amp;faces-redirect=true" title="#{item.theObject.getDataset().getDisplayName()}">#{item.theObject.getDataset().getDisplayName()}</a>
+                                                        </o:param>
+                                                        <o:param>
+                                                            <a href="/dataverse/#{item.theObject.getDataset().getOwner().getAlias()}" title="#{item.theObject.getDataset().getOwner().getDisplayName()}">#{item.theObject.getDataset().getOwner().getDisplayName()}</a>
+                                                        </o:param>
+                                                    </h:outputFormat>                                                  
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'PUBLISHEDDS'}">
                                                     <i class="icon-dataset text-icon-inline text-muted"></i>
                                                     <h:outputFormat value="#{bundle['notification.wasPublished']}" escape="false">
-                                                        <f:param value="#{item.theObject.getDataset().getGlobalId()}"/>
-                                                        <f:param value="#{item.theObject.getDataset().getDisplayName()}"/>
-                                                        <f:param value="#{item.theObject.getDataset().getOwner().getAlias()}"/>
-                                                        <f:param value="#{item.theObject.getDataset().getOwner().getDisplayName()}"/>
-                                                    </h:outputFormat>  
+                                                        <o:param>
+                                                            <a href="/dataset.xhtml?persistentId=#{item.theObject.getDataset().getGlobalId()}&amp;version=DRAFT&amp;faces-redirect=true" title="#{item.theObject.getDataset().getDisplayName()}">#{item.theObject.getDataset().getDisplayName()}</a>
+                                                        </o:param>
+                                                        <o:param>
+                                                            <a href="/dataverse/#{item.theObject.getDataset().getOwner().getAlias()}" title="#{item.theObject.getDataset().getOwner().getDisplayName()}">#{item.theObject.getDataset().getOwner().getDisplayName()}</a>
+                                                        </o:param>
+                                                    </h:outputFormat>                                                    
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'REQUESTFILEACCESS'}">
                                                     <i class="icon-dataset text-icon-inline text-muted"></i>
                                                     <h:outputFormat value="#{bundle['notification.requestFileAccess']}" escape="false">
-                                                        <f:param value="#{item.theObject.id}"/>
-                                                        <f:param value="#{item.theObject.displayName}"/>
+                                                        <o:param>
+                                                            <a href="/permissions-manage-files.xhtml?id=#{item.theObject.id}" title="#{item.theObject.displayName}">#{item.theObject.displayName}</a>
+                                                        </o:param>
                                                     </h:outputFormat>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'GRANTFILEACCESS'}">
                                                     <i class="icon-dataset text-icon-inline text-muted"></i>
                                                     <h:outputFormat value="#{bundle['notification.grantFileAccess']}" escape="false">
-                                                        <f:param value="#{item.theObject.getGlobalId()}"/>
-                                                        <f:param value="#{item.theObject.displayName}"/>
+                                                        <o:param>
+                                                            <a href="/dataset.xhtml?persistentId=#{item.theObject.getGlobalId()}" title="#{item.theObject.displayName}">#{item.theObject.displayName}</a>
+                                                        </o:param>
                                                     </h:outputFormat>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'REJECTFILEACCESS'}">
                                                     <i class="icon-dataset text-icon-inline text-muted"></i>
                                                     <h:outputFormat value="#{bundle['notification.rejectFileAccess']}" escape="false">
-                                                        <f:param value="#{item.theObject.getGlobalId()}"/>
-                                                        <f:param value="#{item.theObject.displayName}"/>
+                                                        <o:param>
+                                                            <a href="/dataset.xhtml?persistentId=#{item.theObject.getGlobalId()}" title="#{item.theObject.displayName}">#{item.theObject.displayName}</a>
+                                                        </o:param>
                                                     </h:outputFormat>
                                                 </ui:fragment>                                    
                                                 <ui:fragment rendered="#{item.type == 'MAPLAYERUPDATED'}">
                                                     <i class="icon-dataset text-icon-inline text-muted"></i>
                                                     <h:outputFormat value="#{bundle['notification.worldMap.added']}" escape="false">
-                                                        <f:param value="#{item.theObject.getDataset().getGlobalId()}"/>
-                                                        <f:param value="#{item.theObject.getDataset().getDisplayName()}"/>
-                                                    </h:outputFormat>  
-                                                </ui:fragment>
-                                                <ui:fragment rendered="#{item.type == 'MAPLAYERUPDATED'}">
-                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
-                                                    <h:outputFormat value="#{bundle['notification.worldMap.added']}" escape="false">
-                                                        <f:param value="#{item.theObject.getDataset().getGlobalId()}"/>
-                                                        <f:param value="#{item.theObject.getDataset().getDisplayName()}"/>
+                                                        <o:param>
+                                                            <a href="/dataset.xhtml?persistentId=#{item.theObject.getDataset().getGlobalId()}" title="#{item.theObject.getDataset().getDisplayName()}">#{item.theObject.getDataset().getDisplayName()}</a>
+                                                        </o:param>
                                                     </h:outputFormat>  
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'ASSIGNROLE'}">
                                                     <ui:fragment rendered="#{item.theObject.isInstanceofDataverse()}">
                                                     <i class="icon-dataset text-icon-inline text-muted"></i>
                                                     <h:outputFormat value="#{bundle['notification.access.granted.dataverse']}" escape="false">
-                                                        <f:param value="#{item.roleString}"/>
-                                                        <f:param value="#{item.theObject.getAlias()}"/>
-                                                        <f:param value="#{item.theObject.getDisplayName()}"/>
-                                                    </h:outputFormat>  
+                                                        <o:param value="#{item.roleString}"/>
+                                                        <o:param>
+                                                            <a href="/dataverse/#{item.theObject.getAlias()}" title="#{item.theObject.getDisplayName()}">#{item.theObject.getDisplayName()}</a>
+                                                        </o:param>
+                                                    </h:outputFormat> 
                                                     <ui:fragment rendered="#{item.roleString == 'File Downloader'}">
                                                         <h:outputFormat value="#{bundle['notification.access.granted.fileDownloader.additionalDataverse']}" escape="false">
                                                             <f:param value=" "/>
@@ -219,12 +236,12 @@
                                                     </ui:fragment>
                                                     </ui:fragment>
                                                     <ui:fragment rendered="#{item.theObject.isInstanceofDataset()}">
-                                                        <f:param value="#{item.roleString}"/>
                                                         <i class="icon-dataset text-icon-inline text-muted"></i>
                                                         <h:outputFormat value="#{bundle['notification.access.granted.dataset']}" escape="false">
-                                                            <f:param value="#{item.roleString}"/>
-                                                            <f:param value="#{item.theObject.getGlobalId()}"/>
-                                                            <f:param value="#{item.theObject.getDisplayName()}"/>
+                                                            <o:param value="#{item.roleString}"/>
+                                                            <o:param>
+                                                                <a href="/dataset.xhtml?persistentId=#{item.theObject.getGlobalId()}" title="#{item.theObject.getDisplayName()}">#{item.theObject.getDisplayName()}</a>
+                                                            </o:param>
                                                         </h:outputFormat> 
                                                         <ui:fragment rendered="#{item.roleString == 'File Downloader'}">
                                                             <h:outputText value="" />
@@ -237,10 +254,11 @@
                                                     <f:param value="#{item.roleString}"/>
                                                     <i class="icon-dataset text-icon-inline text-muted"></i>
                                                     <h:outputFormat value="#{bundle['notification.access.granted.datafile']}" escape="false">
-                                                        <f:param value="#{item.roleString}"/>
-                                                        <f:param value="#{item.theObject.getOwner().getGlobalId()}"/>
-                                                        <f:param value="#{item.theObject.getOwner().getDisplayName()}"/>
-                                                    </h:outputFormat>  
+                                                            <o:param value="#{item.roleString}"/>
+                                                            <o:param>
+                                                                <a href="/dataset.xhtml?persistentId=#{item.theObject.getOwner().getGlobalId()}" title="#{item.theObject.getOwner().getDisplayName()}">#{item.theObject.getOwner().getDisplayName()}</a>
+                                                            </o:param>
+                                                    </h:outputFormat>                                                  
                                                     </ui:fragment>
 
                                                 </ui:fragment>
@@ -248,27 +266,27 @@
                                                     <ui:fragment rendered="#{item.theObject.isInstanceofDataverse()}">
                                                     <i class="icon-dataset text-icon-inline text-muted"></i>
                                                     <h:outputFormat value="#{bundle['notification.access.revoked.dataverse']}" escape="false">
-                                                        <f:param value="#{item.roleString}"/>
-                                                        <f:param value="#{item.theObject.getAlias()}"/>
-                                                        <f:param value="#{item.theObject.getDisplayName()}"/>
+                                                            <o:param>
+                                                                <a href="/dataverse/#{item.theObject.getAlias()}" title="#{item.theObject.getDisplayName()}">#{item.theObject.getDisplayName()}</a>
+                                                            </o:param>
                                                     </h:outputFormat>  
                                                     </ui:fragment>
                                                     <ui:fragment rendered="#{item.theObject.isInstanceofDataset()}">
                                                     <f:param value="#{item.roleString}"/>
                                                     <i class="icon-dataset text-icon-inline text-muted"></i>
                                                     <h:outputFormat value="#{bundle['notification.access.revoked.dataset']}" escape="false">
-                                                        <f:param value="#{item.roleString}"/>
-                                                        <f:param value="#{item.theObject.getGlobalId()}"/>
-                                                        <f:param value="#{item.theObject.getDisplayName()}"/>
+                                                        <o:param>
+                                                                <a href="/dataset.xhtml?persistentId=#{item.theObject.getGlobalId()}" title="#{item.theObject.getDisplayName()}">#{item.theObject.getDisplayName()}</a>
+                                                        </o:param>
                                                     </h:outputFormat>  
                                                     </ui:fragment>
                                                     <ui:fragment rendered="#{item.theObject.isInstanceofDataFile()}">
                                                     <f:param value="#{item.roleString}"/>
                                                     <i class="icon-dataset text-icon-inline text-muted"></i>
                                                     <h:outputFormat value="#{bundle['notification.access.revoked.datafile']}" escape="false">
-                                                        <f:param value="#{item.roleString}"/>
-                                                        <f:param value="#{item.theObject.getOwner().getGlobalId()}"/>
-                                                        <f:param value="#{item.theObject.getOwner().getDisplayName()}"/>
+                                                        <o:param>
+                                                              <a href="/dataset.xhtml?persistentId=#{item.theObject.getOwner().getGlobalId()}" title="#{item.theObject.getOwner().getDisplayName()}">#{item.theObject.getOwner().getDisplayName()}</a>
+                                                        </o:param>
                                                     </h:outputFormat>  
                                                     </ui:fragment>
                                                 </ui:fragment>
