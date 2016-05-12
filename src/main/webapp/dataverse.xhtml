@@ -654,13 +654,8 @@
                 </h:form>
 
                 <!-- Search/Browse Facets Panel -->
-                <ui:fragment rendered="#{empty DataversePage.editMode}">
-                    <ui:include src="search-include-fragment.xhtml">
-                        <ui:param name="showAdvancedSearchLink" value="true"/>
-                        <ui:param name="showFacets" value="true"/>
-                        <ui:param name="showSearch" value="true"/>
-                    </ui:include>
-                </ui:fragment>               
+                <ui:include src="search-include-fragment.xhtml" rendered="#{empty DataversePage.editMode}"/>
+                             
                 <!-- Link Dataverse Popup -->
                 <p:dialog id="linkDataverseForm" header="#{DataversePage.linkMode == 'SAVEDSEARCH' ? bundle['dataverse.savedsearch.link'] : bundle['dataverse.link']}" widgetVar="linkDataverseForm" modal="true">
                     <h:form styleClass="form-horizontal" rendered="#{DataversePage.dataversesForLinking.size() > 1}">
