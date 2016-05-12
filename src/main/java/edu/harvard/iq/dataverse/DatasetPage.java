@@ -3312,7 +3312,7 @@ public class DatasetPage implements java.io.Serializable {
 
     public void downloadCitationBibtex(FileMetadata fileMetadata) {
 
-        String bibFormatDowload = datasetService.createCitationBibtex(workingVersion, fileMetadata);
+        String bibFormatDowload = new BibtexCitation(workingVersion).toString();
         FacesContext ctx = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
         response.setContentType("application/download");
