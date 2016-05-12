@@ -49,7 +49,12 @@
                 </div>
 
                 <ui:fragment rendered="#{DatasetWidgetsPage.dataset.released}">
-                    <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataset.widgets.tip']}</p>
+                    <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> 
+                        <h:outputFormat value=" #{bundle['dataset.widgets.tip']}" escape="false">
+                            <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                            <f:param value="#{systemConfig.version}"/>
+                        </h:outputFormat>
+                    </p>
                     <div>
                         <h5>
                             #{bundle['dataset.widgets.citation.txt']}

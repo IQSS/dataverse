@@ -220,6 +220,11 @@ The file permissions page has two sections: Users/Groups and Files.
 
 To give someone access to your restricted files, click on the Grant Access to Users/Groups button in the Users/Groups section. 
 
+Widgets
+===============================================
+
+[NEW HELP TEXT FOR NEW DATASET WIDGETS HERE]
+
 Publish Dataset
 ====================
 
