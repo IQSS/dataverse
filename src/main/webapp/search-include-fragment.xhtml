@@ -451,7 +451,8 @@
 
                         <h:outputText value="#{result.dateToDisplayOnCard}" styleClass="text-muted" style="margin-right:.5em;"/>
 
-                        <h:outputLink value="#{dataversePage}?alias=#{result.dataverseParentAlias}" target="#{showFacets == true ? '_self' : '_blank'}" rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}">
+                        <c:set var="dvParentUrl" value="#{dataversePage}?alias=#{result.dataverseParentAlias}"/>
+                        <h:outputLink value="#{!SearchIncludeFragment.rootDv and !result.isInTree ? dvParentUrl : widgetWrapper.wrapURL(dvParentUrl)}" target="#{!SearchIncludeFragment.rootDv and !result.isInTree ? '_blank' : ''}" rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}">
                             <h:outputText value="#{result.parent.get('name')} #{bundle.dataverse}"/>
                         </h:outputLink>
 
@@ -511,7 +512,9 @@
                         <h:outputText styleClass="text-muted" value="#{result.dateToDisplayOnCard}"/>
 
                         <h:outputText styleClass="text-muted" value=" - " rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}"/>
-                        <h:outputLink value="#{dataversePage}?alias=#{result.dataverseAlias}" target="#{showFacets == true ? '_self' : '_blank'}" rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}">
+                        
+                        <c:set var="dvParentAlias" value="#{dataversePage}?alias=#{result.dataverseAlias}"/>
+                        <h:outputLink value="#{!SearchIncludeFragment.rootDv and !result.isInTree ? dvParentAlias : widgetWrapper.wrapURL(dvParentAlias)}" target="#{!SearchIncludeFragment.rootDv and !result.isInTree ? '_blank' : ''}" rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}">
                             <h:outputText value="#{result.parent.get('name')} #{bundle.dataverse}"/>
                         </h:outputLink>
 
