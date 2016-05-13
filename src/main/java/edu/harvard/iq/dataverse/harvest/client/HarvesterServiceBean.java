@@ -10,12 +10,10 @@ import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.timer.DataverseTimerServiceBean;
-import edu.harvard.iq.dataverse.util.FileUtil;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -37,6 +35,7 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import org.apache.commons.lang.mutable.MutableBoolean;
+import org.apache.commons.lang.mutable.MutableLong;
 import org.xml.sax.SAXException;
 
 import com.lyncode.xoai.model.oaipmh.Granularity;
@@ -165,7 +164,9 @@ public class HarvesterServiceBean {
 
     /**
      * Run a harvest for an individual harvesting Dataverse
-     * @param dataverseId
+     * @param dataverseRequest
+     * @param harvestingClientId
+     * @throws IOException
      */
     public void doHarvest(DataverseRequest dataverseRequest, Long harvestingClientId) throws IOException {
         HarvestingClient harvestingClientConfig = harvestingClientService.find(harvestingClientId);
@@ -229,7 +230,7 @@ public class HarvesterServiceBean {
             //mailService.sendHarvestNotification(...getSystemEmail(), harvestingDataverse.getName(), logFileName, logTimestamp, harvestErrorOccurred.booleanValue(), harvestedDatasetIds.size(), failedIdentifiers);
         } catch (Throwable e) {
             harvestErrorOccurred.setValue(true);
-            String message = "Exception processing harvest, server= " + harvestingClientConfig.getArchiveUrl() + ",format=" + harvestingClientConfig.getMetadataPrefix() + " " + e.getClass().getName() + " " + e.getMessage();
+            String message = "Exception processing harvest, server= " + harvestingClientConfig.getHarvestingUrl() + ",format=" + harvestingClientConfig.getMetadataPrefix() + " " + e.getClass().getName() + " " + e.getMessage();
             hdLogger.log(Level.SEVERE, message);
             logException(e, hdLogger);
             hdLogger.log(Level.INFO, "HARVEST NOT COMPLETED DUE TO UNEXPECTED ERROR.");
@@ -258,8 +259,7 @@ public class HarvesterServiceBean {
             throws IOException, ParserConfigurationException, SAXException, TransformerException {
 
         List<Long> harvestedDatasetIds = new ArrayList<Long>();
-        Long processedSizeThisBatch = 0L;
-
+        MutableLong processedSizeThisBatch = new MutableLong(0L);
 
         String baseOaiUrl = harvestingClient.getHarvestingUrl();
         String metadataPrefix = harvestingClient.getMetadataPrefix();
@@ -272,38 +272,48 @@ public class HarvesterServiceBean {
         ListIdentifiersParameters parameters = buildParams(metadataPrefix, set, fromDate);
         ServiceProvider serviceProvider = getServiceProvider(baseOaiUrl, Granularity.Second);
 
+        hdLogger.log(Level.INFO, "Created ListIdentifiers parameters and service provider.");
+        
         try {
             for (Iterator<Header> idIter = serviceProvider.listIdentifiers(parameters); idIter.hasNext();) {
 
                 Header h = idIter.next();
+                hdLogger.info("retrieved header;");
                 String identifier = h.getIdentifier();
-                hdLogger.fine("identifier: " + identifier);
+                hdLogger.info("identifier: " + identifier);
 
                 // Retrieve and process this record with a separate GetRecord call:
                 MutableBoolean getRecordErrorOccurred = new MutableBoolean(false);
+                
                 Long datasetId = getRecord(dataverseRequest, hdLogger, harvestingClient, identifier, metadataPrefix, getRecordErrorOccurred, processedSizeThisBatch);
+                
+                hdLogger.info("Total content processed in this batch so far: "+processedSizeThisBatch);
                 if (datasetId != null) {
                     harvestedDatasetIds.add(datasetId);
+                    
+                    if ( harvestedDatasetIdsThisBatch == null ) {
+                        harvestedDatasetIdsThisBatch = new ArrayList<Long>();
+                    }
+                    harvestedDatasetIdsThisBatch.add(datasetId);
+                    
                 }
+                
                 if (getRecordErrorOccurred.booleanValue() == true) {
                     failedIdentifiers.add(identifier);
                 }
                 
-                if ( harvestedDatasetIdsThisBatch == null ) {
-                    harvestedDatasetIdsThisBatch = new ArrayList<Long>();
-                }
-                harvestedDatasetIdsThisBatch.add(datasetId);
+                
 
                 // reindexing in batches? - this is from DVN 3; 
                 // we may not need it anymore. 
-                if ( processedSizeThisBatch > INDEXING_CONTENT_BATCH_SIZE ) {
+                if ( processedSizeThisBatch.longValue() > INDEXING_CONTENT_BATCH_SIZE ) {
 
                     hdLogger.log(Level.INFO, "REACHED CONTENT BATCH SIZE LIMIT; calling index ("+ harvestedDatasetIdsThisBatch.size()+" datasets in the batch).");
                     //indexService.updateIndexList(this.harvestedDatasetIdsThisBatch);
                     hdLogger.log(Level.INFO, "REINDEX DONE.");
 
 
-                    processedSizeThisBatch = 0L;
+                    processedSizeThisBatch.setValue(0L);
                     harvestedDatasetIdsThisBatch = null;
                 }
 
@@ -353,11 +363,10 @@ public class HarvesterServiceBean {
 
     
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-    public Long getRecord(DataverseRequest dataverseRequest, Logger hdLogger, HarvestingClient harvestingClient, String identifier, String metadataPrefix, MutableBoolean recordErrorOccurred, Long processedSizeThisBatch) {
+    public Long getRecord(DataverseRequest dataverseRequest, Logger hdLogger, HarvestingClient harvestingClient, String identifier, String metadataPrefix, MutableBoolean recordErrorOccurred, MutableLong processedSizeThisBatch) {
         String errMessage = null;
         Dataset harvestedDataset = null;
         String oaiUrl = harvestingClient.getHarvestingUrl();
-        Dataverse parentDataverse = harvestingClient.getDataverse();
         
         try {
             hdLogger.log(Level.INFO, "Calling GetRecord: oaiUrl =" + oaiUrl + "?verb=GetRecord&identifier=" + identifier + "&metadataPrefix=" + metadataPrefix);
@@ -380,11 +389,11 @@ public class HarvesterServiceBean {
             } else {
                 hdLogger.log(Level.INFO, "Successfully retrieved GetRecord response.");
 
-                harvestedDataset = importService.doImportHarvestedDataset(dataverseRequest, parentDataverse, metadataPrefix, record.getMetadataFile(), null);
+                ///harvestedDataset = importService.doImportHarvestedDataset(dataverseRequest, parentDataverse, metadataPrefix, record.getMetadataFile(), null);
                 
                 hdLogger.log(Level.INFO, "Harvest Successful for identifier " + identifier);
-                
-                processedSizeThisBatch += record.getMetadataFile().length();
+                hdLogger.info("Size of this record: " + record.getMetadataFile().length());
+                processedSizeThisBatch.add(record.getMetadataFile().length());
             }
         } catch (Throwable e) {
             errMessage = "Exception processing getRecord(), oaiUrl=" + oaiUrl + ",identifier=" + identifier + " " + e.getClass().getName() + " " + e.getMessage();

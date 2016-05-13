@@ -29,7 +29,7 @@ public class ClientHarvestRun implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     public Long getId() {
@@ -67,6 +67,22 @@ public class ClientHarvestRun implements Serializable {
     public String getResultLabel() {
         if (isSuccess()) {
             return RESULT_LABEL_SUCCESS;
+        } else if (isFailed()) {
+            return RESULT_LABEL_FAILURE;
+        } else if (isInProgress()) {
+            return RESULT_LABEL_INPROGRESS;
+        }
+        return null;
+    }
+    
+    public String getDetailedResultLabel() {
+        if (isSuccess()) {
+            String resultLabel = RESULT_LABEL_SUCCESS;
+            
+            resultLabel = resultLabel.concat("; "+harvestedDatasetCount+" harvested, ");
+            resultLabel = resultLabel.concat(deletedDatasetCount+" deleted, ");
+            resultLabel = resultLabel.concat(failedDatasetCount+" failed.");
+            return resultLabel;
         } else if (isFailed()) {
             return RESULT_LABEL_FAILURE;
         } else if (isInProgress()) {

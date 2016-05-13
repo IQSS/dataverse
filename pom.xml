@@ -380,16 +380,30 @@
 	</dependency>
 	<!-- EXPERIMENTAL: -->
 	<!-- lyncode xoai OAI-PMH implementation: -->
+	<!-- ok, unfortunately, their 4.* versions -->
+	<!-- of xoai-service-provider (harvesting client) -->
+	<!-- is still buggy. As an experiment, I'm using -->
+	<!-- a patched version I built locally. - L.A. -->
 	<dependency>
 	  <groupId>com.lyncode</groupId>
 	  <artifactId>xoai-common</artifactId>
 	  <version>4.1.0</version>
 	</dependency>
-        <dependency>
+        <!-- dependency>
 	  <groupId>com.lyncode</groupId>
 	  <artifactId>xoai-service-provider</artifactId>
 	  <version>4.1.0</version>
+	</dependency -->
+        <dependency>
+	  <groupId>com.lyncode</groupId>
+	  <artifactId>xoai-service-provider</artifactId>
+	  <version>4.1.0-header-patch</version>
 	</dependency>
+	<!-- dependency>
+	  <groupId>org.dspace</groupId>
+	  <artifactId>xoai</artifactId>
+	  <version>3.2.10</version>
+	</dependency -->
 
     </dependencies>
 

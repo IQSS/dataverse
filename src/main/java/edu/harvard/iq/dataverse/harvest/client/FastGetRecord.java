@@ -370,6 +370,9 @@ public class FastGetRecord {
             }
 
             if (!(metadataWritten) && !(this.isDeleted())) {
+                if (oaiResponseHeader.length() > 64) {
+                    oaiResponseHeader = oaiResponseHeader.substring(0, 32) + "...";
+                }
                 this.errorMessage = "Failed to parse GetRecord response; "+oaiResponseHeader;
                 //savedMetadataFile.delete();
             }
