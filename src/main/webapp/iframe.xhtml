@@ -37,6 +37,7 @@
         <!-- FOOTER BLOCK -->
         <ui:include src="dataverse_footer.xhtml">
             <ui:param name="widgetView" value="true"/>
+            <ui:param name="loginRedirectPage" value="#{loginRedirectPage != null ? '?redirectPage='.concat(loginRedirectPage) : dataverseHeaderFragment.loginRedirectPage}"/>
         </ui:include>
 
         <p:ajaxStatus id="ajaxStatusPanel">
