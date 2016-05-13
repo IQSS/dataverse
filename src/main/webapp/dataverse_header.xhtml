@@ -200,8 +200,12 @@
                 <div class="breadcrumbBlock">
                     <h:outputText value="#{breadcrumb.breadcrumbText}" styleClass="#{'breadcrumbActive'}" rendered="#{status.last}"/>
                     <ui:fragment rendered="#{!status.last}">
-                        <h:outputText value="#{breadcrumb.breadcrumbText}" rendered="#{!breadcrumb.dvObject.instanceofDataverse and !breadcrumb.dvObject.instanceofDataset}"/>
-
+                        <h:outputText value="#{breadcrumb.breadcrumbText}" rendered="#{!breadcrumb.dvObject.instanceofDataverse and !breadcrumb.dvObject.instanceofDataset and  empty breadcrumb.url }"/>
+                        <ui:fragment rendered="#{breadcrumb.dvObject == null and !empty breadcrumb.url}">                       
+                            <a id="breadcrumbLnk#{status.index}" href="${breadcrumb.url}">
+                                <h:outputText value="#{breadcrumb.breadcrumbText}"/>
+                            </a>
+                        </ui:fragment>
                         <ui:fragment rendered="#{breadcrumb.dvObject.instanceofDataverse}">                       
                             <a id="breadcrumbLnk#{status.index}" href="/dataverse/${breadcrumb.dvObject.alias}">
                                 <h:outputText value="#{breadcrumb.breadcrumbText}"/>
