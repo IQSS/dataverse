@@ -6,14 +6,12 @@ import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.errorResponse;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
-import edu.harvard.iq.dataverse.authorization.AuthenticatedUserLookup;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.UserIdentifier;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationProviderFactoryNotFoundException;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationSetupException;
 import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderFactory;
 import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderRow;
-import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
@@ -35,7 +33,6 @@ import javax.ws.rs.core.Response;
 
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
-import java.sql.SQLException;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -266,9 +263,6 @@ public class Admin extends AbstractApiBean {
     }
 
     /**
-     * @todo Refactor more of this business logic into ShibServiceBean in case
-     * we want to build a superuser GUI around this some day.
-     *
      * curl -X PUT -d "shib@mailinator.com"
      * http://localhost:8080/api/admin/authenticatedUsers/id/11/convertShibToBuiltIn
      */
@@ -283,78 +277,20 @@ public class Admin extends AbstractApiBean {
         } catch (WrappedResponse ex) {
             return errorResponse(Response.Status.FORBIDDEN, "Superusers only.");
         }
-        AuthenticatedUser userToConvert = authSvc.findByID(id);
-        if (userToConvert == null) {
-            return errorResponse(Response.Status.BAD_REQUEST, "User id " + id + " not found.");
-        }
-        AuthenticatedUserLookup lookup = userToConvert.getAuthenticatedUserLookup();
-        if (lookup == null) {
-            return errorResponse(Response.Status.BAD_REQUEST, "User id " + id + " does not have an 'authenticateduserlookup' row");
-        }
-        String providerId = lookup.getAuthenticationProviderId();
-        if (providerId == null) {
-            return errorResponse(Response.Status.BAD_REQUEST, "User id " + id + " provider id is null.");
-        }
-        String shibProviderId = ShibAuthenticationProvider.PROVIDER_ID;
-        if (!providerId.equals(shibProviderId)) {
-            return errorResponse(Response.Status.BAD_REQUEST, "User id " + id + " cannot be converted because current provider id is '" + providerId + "' rather than '" + shibProviderId + "'.");
-        }
-        BuiltinUser builtinUser = null;
         try {
-            /**
-             * @todo Refactor more of the logic and error checking into this
-             * convertShibToBuiltIn method.
-             */
-            builtinUser = authSvc.convertShibToBuiltIn(userToConvert, newEmailAddress);
-        } catch (Throwable ex) {
-            while (ex.getCause() != null) {
-                ex = ex.getCause();
+            BuiltinUser builtinUser = authSvc.convertShibToBuiltIn(id, newEmailAddress);
+            if (builtinUser == null) {
+                return errorResponse(Response.Status.BAD_REQUEST, "User id " + id + " could not be converted from Shibboleth to BuiltIn. An Exception was not thrown.");
             }
-            if (ex instanceof ConstraintViolationException) {
-                ConstraintViolationException constraintViolationException = (ConstraintViolationException) ex;
-                StringBuilder userMsg = new StringBuilder();
-                StringBuilder logMsg = new StringBuilder();
-                logMsg.append("User id " + id + " cannot be converted from Shibboleth to BuiltIn. ");
-                for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
-                    logMsg.append(" Invalid value: <<<").append(violation.getInvalidValue()).append(">>> for ").append(violation.getPropertyPath()).append(" at ").append(violation.getLeafBean()).append(" - ").append(violation.getMessage());
-                    userMsg.append(" Invalid value: <<<").append(violation.getInvalidValue()).append(">>> for ").append(violation.getPropertyPath()).append(" - ").append(violation.getMessage());
-                }
-                logger.warning(logMsg.toString());
-                return errorResponse(Response.Status.BAD_REQUEST, "User id " + id + " could not be converted from Shibboleth to BuiltIn: " + userMsg.toString());
-            } else {
-                return errorResponse(Response.Status.INTERNAL_SERVER_ERROR, "User id " + id + " cannot be converted due to unexpected exception: " + ex);
-            }
+            JsonObjectBuilder output = Json.createObjectBuilder();
+            output.add("email", builtinUser.getEmail());
+            output.add("username", builtinUser.getUserName());
+            return okResponse(output);
+        } catch (Exception ex) {
+            String msg = "User id " + id + " could not be converted from Shibboleth to BuiltIn. Details from Exception: " + ex;
+            logger.info(msg);
+            return errorResponse(Response.Status.BAD_REQUEST, msg);
         }
-        if (builtinUser == null) {
-            return errorResponse(Response.Status.BAD_REQUEST, "User id " + id + " could not be converted from Shibboleth to BuiltIn");
-        }
-        try {
-            /**
-             * @todo Should this logic be moved to the
-             * authSvc.convertShibToBuiltIn() method?
-             */
-            lookup.setAuthenticationProviderId(BuiltinAuthenticationProvider.PROVIDER_ID);
-            lookup.setPersistentUserId(userToConvert.getUserIdentifier());
-            em.persist(lookup);
-            userToConvert.setEmail(newEmailAddress);
-            em.persist(userToConvert);
-            em.flush();
-        } catch (Throwable ex) {
-            while (ex.getCause() != null) {
-                ex = ex.getCause();
-            }
-            if (ex instanceof SQLException) {
-                String msg = "User id " + id + " only half converted from Shibboleth to BuiltIn and may not be able to log in. Manual changes may be necessary on 'authenticationproviderid' and 'authenticationproviderid' on 'authenticateduserlookup' table and 'email' on 'authenticateduser' table.";
-                logger.warning(msg);
-                return errorResponse(Response.Status.BAD_REQUEST, msg);
-            } else {
-                return errorResponse(Response.Status.INTERNAL_SERVER_ERROR, "User id " + id + " only half converted from Shibboleth to BuiltIn and may not be able to log in due to unexpected exception: " + ex.getClass().getName());
-            }
-        }
-        JsonObjectBuilder output = Json.createObjectBuilder();
-        output.add("email", builtinUser.getEmail());
-        output.add("username", builtinUser.getUserName());
-        return okResponse(output);
     }
 
     /**
