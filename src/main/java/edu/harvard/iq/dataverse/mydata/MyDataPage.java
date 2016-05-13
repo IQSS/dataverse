@@ -182,7 +182,7 @@ public class MyDataPage implements java.io.Serializable {
 
         // Initialize a filterParams object to buid the Publication Status checkboxes
         //
-        this.filterParams = new MyDataFilterParams(authUser.getIdentifier(),  MyDataFilterParams.defaultDvObjectTypes, null, null, null);
+        this.filterParams = new MyDataFilterParams(authUser,  MyDataFilterParams.defaultDvObjectTypes, null, null, null);
         
         
         // Temp DataverseRolePermissionHelper -- not in its normal role but for creating initial checkboxes
@@ -259,7 +259,7 @@ public class MyDataPage implements java.io.Serializable {
             roleList = dataverseRoleService.findAll();
         }else{
             // (2) For a regular users
-            roleList = roleAssigneeService.getAssigneeDataverseRoleFor(this.filterParams.getUserIdentifier());
+            roleList = roleAssigneeService.getAssigneeDataverseRoleFor(authUser);
         
             // If there are no assigned roles, show them all?
             // This may not make sense

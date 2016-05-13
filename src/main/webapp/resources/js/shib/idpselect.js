@@ -1774,7 +1774,7 @@ function IdPSelectUI() {
         aval.href = helpURL;
         aval.appendChild(document.createTextNode(getLocalizedMessage('helpText')));
         setClass(aval, 'HelpButton');
-        containerDiv.appendChild(aval);
+//        containerDiv.appendChild(aval);
     } ;
     
     /**
