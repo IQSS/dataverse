@@ -23,6 +23,7 @@
             <ui:param name="locked" value="#{DatasetPage.locked}"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:define name="body">
+                <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
                 <f:metadata>
                     <f:viewParam name="id" value="#{DatasetPage.dataset.id}"/>
                     <f:viewParam name="ownerId" value="#{DatasetPage.ownerId}"/>
@@ -322,6 +323,11 @@
                                                             #{bundle['dataset.cite.downloadBtn.ris']}
                                                         </a>
                                                     </li>
+                                                    <li>
+                                                        <a jsf:id="bibLink" jsf:actionListener="#{DatasetPage.downloadDatasetCitationBibtex()}">
+                                                            #{bundle['dataset.cite.downloadBtn.bib']}
+                                                        </a>
+                                                    </li>
                                                 </ul>
                                             </div>
                                         </div>
@@ -369,7 +375,7 @@
                                             <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{DatasetPage.datasetVersionUI.datasetRelPublications.get(0).description}">#{DatasetPage.datasetVersionUI.datasetRelPublications.get(0).title}</span>
                                         </label>
                                         <div class="col-sm-9">
-                                            <h:outputText value="#{DatasetPage.datasetVersionUI.relPublicationCitation}" escape="false"/>
+                                            <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.datasetVersionUI.relPublicationCitation)}" escape="false"/>
                                             <a href="#{DatasetPage.datasetVersionUI.relPublicationUrl}" title="#{DatasetPage.datasetVersionUI.relPublicationUrl}" target="_blank">#{DatasetPage.datasetVersionUI.relPublicationId}</a>
                                         </div>
                                     </div>
@@ -378,7 +384,6 @@
                                             <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{DatasetPage.datasetVersionUI.notes.datasetFieldType.description}">#{DatasetPage.datasetVersionUI.notes.datasetFieldType.title}</span>
                                         </label>
                                         <div class="col-sm-9">
-                                            <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
                                             <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.datasetVersionUI.notes.value)}" escape="false"/>
                                         </div>
                                     </div>
@@ -915,52 +920,90 @@
                     <p:dialog id="fileTagsPopup" styleClass="smallPopUp" header="#{bundle['file.editTags']}" widgetVar="fileTagsPopup" modal="true">
                         <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['file.editTagsDialog.tip']}</p>
                         <div class="form-horizontal" jsf:rendered="#{!(empty DatasetPage.selectedFiles)}">
-                            <div class="form-group">
-                                <label for="fileTagsMenuDS" class="col-sm-3 control-label">
+                            <div class="form-group text-left">
+                                <label for="selectedTagsList" class="col-sm-4 control-label">
+                                    #{bundle['file.editTagsDialog.selectedTags']}
+                                </label>
+                                <div class="col-sm-8">
+                                    <p:outputPanel id="selectedTagsList" style="padding-top:.5em;">
+                                        <h:outputText value="#{bundle['file.editTagsDialog.selectedTags.none']}" rendered="#{(empty DatasetPage.selectedTags) and (empty DatasetPage.selectedTabFileTags)}" />
+                                       
+                                        <ui:repeat value="#{DatasetPage.selectedTags}" var="tags" rendered="#{!empty DatasetPage.selectedTags}">
+                                            <h:outputText value="#{tags}" styleClass="label label-default" style="margin-right:.5em;display:inline-block;"/>
+                                        </ui:repeat>
+                                        <ui:repeat value="#{DatasetPage.selectedTabFileTags}" var="tags" rendered="#{!empty DatasetPage.selectedTabFileTags}">
+                                            <h:outputText value="#{tags}" styleClass="label label-info" style="margin-right:.5em;display:inline-block;"/>
+                                        </ui:repeat>
+                                    </p:outputPanel>
+                                </div>
+                            </div>
+                            <div class="form-group text-left">
+                                <label for="fileTagsMenuDS" class="col-sm-4 control-label">
                                     #{bundle['file.editTagsDialog.select']}
                                 </label>
                                 <div class="col-sm-8">
                                     <p:selectCheckboxMenu id="fileTagsMenuDS" styleClass="form-control"
                                                           value="#{DatasetPage.selectedTags}" label="#{bundle.select}">
-                                        <f:selectItems value="#{DatasetPage.dataset.categoriesByName}"/>
+                                       
+                                        <p:ajax event="toggleSelect" listener="#{DatasetPage.handleSelection}" update="selectedTagsList" />
+                                        <p:ajax event="change" listener="#{DatasetPage.handleSelection}" update="selectedTagsList" />
+                                       
+                                        <f:selectItems value="#{DatasetPage.categoriesByName}"/>
                                     </p:selectCheckboxMenu>
                                     <p:message for="fileTagsMenuDS" display="text" />
                                 </div>
                             </div>
-                            <div class="form-group">
-                                <label for="fileTagAddNewDS" class="col-sm-3 control-label">
+                            <div class="form-group text-left">
+                                <label for="fileTagAddNewDS" class="col-sm-4 control-label">
                                     #{bundle['file.editTagsDialog.add']}
                                 </label>
                                 <div class="col-sm-8">
-                                    <p:inputText id="fileTagAddNewDS" styleClass="form-control"
-                                                 type="text" value="#{DatasetPage.newCategoryName}"
-                                                 placeholder="#{bundle['file.editTagsDialog.newName']}"
-                                                 onkeypress="if (event.keyCode == 13) {
-                                                             return false;
-                                                         }" />
+                                    <div class="row form-inline">
+                                        <div class="col-sm-12">
+                                            <p class="help-block">#{bundle['file.editTagsDialog.add.tip']}</p>
+                                            <p:inputText id="fileTagAddNewDS" styleClass="form-control"
+                                                         type="text" value="#{DatasetPage.newCategoryName}"
+                                                         placeholder="#{bundle['file.editTagsDialog.newName']}"
+                                                         onkeypress="if (event.keyCode == 13) {
+                                                                     return false;
+                                                                 }" />
+                                            <p:commandLink styleClass="btn btn-default" style="margin-left:.5em;" value="#{bundle.apply}" action="#{DatasetPage.saveNewCategory}" update="selectedTagsList, fileTagAddNewDS, fileTagsMenuDS"/>
+                                        </div>
+                                    </div>
                                     <p:message for="fileTagAddNewDS" display="text" />
                                 </div>
                             </div>
-                        </div>
-                        <div class="form-group" jsf:rendered="#{DatasetPage.tabularDataSelected}">
-                            <label for="tabularDataTagsDsPAge" class="col-sm-3 control-label">
-                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.tabularDataTags.title']}">
+                            <div class="form-group text-left" jsf:rendered="#{DatasetPage.tabularDataSelected}">
+                                <label for="tabularDataTagsDSPage" class="col-sm-4 control-label">
                                     #{bundle['file.tabularDataTags']}
-                                </span>
-                            </label>
-                            <div class="col-sm-8">
-                                <p class="help-block">#{bundle['file.tabularDataTags.tip']}</p>
-                                <p:selectCheckboxMenu id="tabularDataTagsDSPage" styleClass="form-control"
-                                                      value="#{DatasetPage.selectedTabFileTags}" label="#{bundle.select}"
-                                                      filter="false">
-                                    <f:selectItems value="#{DatasetPage.tabFileTags}" />
-                                </p:selectCheckboxMenu>
-                                <p:message for="tabularDataTagsDSPage" display="text" />
+                                </label>
+                                <div class="col-sm-8">
+                                    <p class="help-block">#{bundle['file.tabularDataTags.tip']}</p>
+                                    <p:selectCheckboxMenu id="tabularDataTagsDSPage" styleClass="form-control"
+                                                          value="#{DatasetPage.selectedTabFileTags}" label="#{bundle.select}"
+                                                          filter="false">
+
+                                        <p:ajax event="toggleSelect" listener="#{DatasetPage.handleSelection}" update="selectedTagsList" />
+                                        <p:ajax event="change" listener="#{DatasetPage.handleSelection}" update="selectedTagsList" />
+
+                                        <f:selectItems value="#{DatasetPage.tabFileTags}" />
+                                    </p:selectCheckboxMenu>
+                                    <p:message for="tabularDataTagsDSPage" display="text" />
+                                </div>
+                            </div>
+                            <div class="form-group text-left">
+                                <label class="col-sm-4 control-label">
+                                    #{bundle['dataset.removeUnusedFileTags.label']}
+                                </label>
+                                <div class="col-sm-8">
+                                    <p class="help-block">#{bundle['dataset.removeUnusedFileTags.tip']}</p>
+                                    <p:selectBooleanCheckbox id="removeUnused" itemLabel="#{bundle['dataset.removeUnusedFileTags.check']}" value="#{DatasetPage.removeUnusedTags}" widgetVar="removeUnused"/>
+                                </div>
                             </div>
                         </div>
                         <div class="button-block">
-                            <p:commandButton id="fileTagsPopupSaveButton" value="#{bundle.saveChanges}" oncomplete="PF('fileTagsPopup').hide()" update=":datasetForm:tabView:filesTable, :datasetForm" action="#{DatasetPage.saveFileTagsAndCategories()}"/>
-                            <p:commandButton id="fileTagsPopupCancelButton" value="#{bundle.cancel}" onclick="PF('fileTagsPopup').hide();PF('blockDatasetForm').hide();" actionListener="#{DatasetPage.clearFileMetadataSelectedForTagsPopup()}"/>
+                            <p:commandButton styleClass="btn btn-default" id="fileTagsPopupSaveButton" value="#{bundle.saveChanges}" oncomplete="PF('fileTagsPopup').hide()" update=":datasetForm:tabView:filesTable, :datasetForm" action="#{DatasetPage.saveFileTagsAndCategories()}"/>
+                            <p:commandButton styleClass="btn btn-default" id="fileTagsPopupCancelButton" value="#{bundle.cancel}" onclick="PF('fileTagsPopup').hide();PF('blockDatasetForm').hide();" actionListener="#{DatasetPage.clearFileMetadataSelectedForTagsPopup()}"/>
                         </div>
                     </p:dialog>
 
@@ -1273,12 +1316,15 @@
                         <p class="text-danger">
                             <span class="glyphicon glyphicon-warning-sign"/>
                             <h:outputFormat value="#{bundle['dataset.mayNotPublish.both']}" escape="false">
-                                <f:param value="#{DatasetPage.dataset.owner.alias}"/>
-                                <f:param value="#{DatasetPage.dataset.owner.displayName}"/>
+                                <o:param>
+                                    <a href="/dataverse.xhtml?alias=#{DatasetPage.dataset.owner.alias}" title="#{DatasetPage.dataset.owner.displayName}">
+                                        <h:outputText value="#{DatasetPage.dataset.owner.displayName}"/>
+                                    </a>                           
+                                </o:param>
                             </h:outputFormat>
                         </p>
                         <div id="terms-agreement-block" class="well" jsf:rendered="#{DatasetPage.datasetPublishCustomText.length() > 0}">
-                            <h:outputText value="#{DatasetPage.datasetPublishCustomText}" escape="false"/>
+                            <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.datasetPublishCustomText)}" escape="false"/>
                         </div>
                         <p class="help-block">
                             <span class="glyphicon glyphicon-info-sign"/> #{bundle['dataset.publishBoth.tip']}
@@ -1294,7 +1340,7 @@
                             <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.republish.tip']}
                         </p>
                         <div id="terms-agreement-block" class="well" jsf:rendered="#{DatasetPage.datasetPublishCustomText.length() > 0 and DatasetPage.isDatasetPublishPopupCustomTextOnAllVersions()}">
-                            <h:outputText value="#{DatasetPage.datasetPublishCustomText}" escape="false"/>
+                            <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.datasetPublishCustomText)}" escape="false"/>
                         </div>
                         <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.minorUpdate}">
                             <p class="help-block">
@@ -1321,8 +1367,11 @@
                         <p class="text-danger">
                             <span class="glyphicon glyphicon-warning-sign"/>
                             <h:outputFormat value="#{bundle['dataset.mayNotPublish.administrator']}" escape="false">
-                                <f:param value="#{DatasetPage.dataset.owner.alias}"/>
-                                <f:param value="#{DatasetPage.dataset.owner.displayName}"/>
+                                <o:param>
+                                    <a href="/dataverse.xhtml?alias=#{DatasetPage.dataset.owner.alias}" title="#{DatasetPage.dataset.owner.displayName}">
+                                        <h:outputText value="#{DatasetPage.dataset.owner.displayName}"/>
+                                    </a>                           
+                                </o:param>
                             </h:outputFormat>
                         </p>
                         <div class="button-block">
@@ -1334,10 +1383,16 @@
                         <p class="text-danger">
                             <span class="glyphicon glyphicon-warning-sign"/>
                             <h:outputFormat value="#{bundle['dataset.mayNotPublish.twoGenerations']}" escape="false">
-                                <f:param value="#{DatasetPage.dataset.owner.alias}"/>
-                                <f:param value="#{DatasetPage.dataset.owner.displayName}"/>
-                                <f:param value="#{DatasetPage.dataset.owner.owner.alias}"/>
-                                <f:param value="#{DatasetPage.dataset.owner.owner.displayName}"/>
+                                <o:param>
+                                    <a href="/dataverse.xhtml?alias=#{DatasetPage.dataset.owner.alias}" title="#{DatasetPage.dataset.owner.displayName}">
+                                        <h:outputText value="#{DatasetPage.dataset.owner.displayName}"/>
+                                    </a>                           
+                                </o:param>
+                                <o:param>
+                                    <a href="/dataverse.xhtml?alias=#{DatasetPage.dataset.owner.owner.alias}" title="#{DatasetPage.dataset.owner.owner.displayName}">
+                                        <h:outputText value="#{DatasetPage.dataset.owner.owner.displayName}"/>
+                                    </a>                           
+                                </o:param>
                             </h:outputFormat>
                         </p>
                         <div class="button-block">
@@ -1388,7 +1443,7 @@
                             PF('selectFilesForEditTags').show();
                         } else {
                            refreshTagsCommand();
-                        }                       
+                        }
                     }
                     
                     function testFilesSelectedForDelete(){

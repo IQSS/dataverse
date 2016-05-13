@@ -151,7 +151,7 @@ public class SearchFields {
     /*
      * (tabular) Data Tags are indexed as a string, since we are only planning to
      * use these in facet-like, exact searches:
-    */
+     */
     public static final String TABDATA_TAG = "tabularDataTag";
     public static final String ACCESS = "fileAccess";
 
@@ -195,10 +195,21 @@ public class SearchFields {
     public static final String PARENT_NAME = "parentName";
     public static final String PARENT_ID = "parentId";
     public static final String PARENT_IDENTIFIER = "parentIdentifier";
+    /**
+     * @todo Should we add a "parentCitationHtml" field now or wait for demand
+     * for it?
+     */
     public static final String PARENT_CITATION = "parentCitation";
 
     public static final String DATASET_DESCRIPTION = "dsDescriptionValue";
+    /**
+     * In Datavese 4.3 and earlier "citation" was indexed as the "online" or
+     * HTML version, with the DOI link wrapped in an href tag but now it's the
+     * plaintext version and anyone who was depending on the old version can
+     * switch to the new "citationHTML" field.
+     */
     public static final String DATASET_CITATION = "citation";
+    public static final String DATASET_CITATION_HTML = "citationHtml";
     public static final String DATASET_DEACCESSION_REASON = "deaccessionReason";
     /**
      * In contrast to PUBLICATION_DATE, this field applies only to datasets for

@@ -143,7 +143,8 @@ public class Access extends AbstractApiBean {
         
         downloadInstance.setFileCitationEndNote(datasetService.createCitationXML(datasetVersion, fileMetadata));
         downloadInstance.setFileCitationRIS(datasetService.createCitationRIS(datasetVersion, fileMetadata));
-        
+        downloadInstance.setFileCitationBibtex(datasetService.createCitationBibtex(datasetVersion, fileMetadata));
+
         ByteArrayOutputStream outStream = null;
         outStream = new ByteArrayOutputStream();
 
