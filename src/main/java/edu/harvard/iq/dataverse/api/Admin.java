@@ -286,8 +286,14 @@ public class Admin extends AbstractApiBean {
             output.add("email", builtinUser.getEmail());
             output.add("username", builtinUser.getUserName());
             return okResponse(output);
-        } catch (Exception ex) {
-            String msg = "User id " + id + " could not be converted from Shibboleth to BuiltIn. Details from Exception: " + ex;
+        } catch (Throwable ex) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(ex + " ");
+            while (ex.getCause() != null) {
+                ex = ex.getCause();
+                sb.append(ex + " ");
+            }
+            String msg = "User id " + id + " could not be converted from Shibboleth to BuiltIn. Details from Exception: " + sb;
             logger.info(msg);
             return errorResponse(Response.Status.BAD_REQUEST, msg);
         }

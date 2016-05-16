@@ -518,6 +518,10 @@ public class AuthenticationServiceBean {
         if (authenticatedUser == null) {
             throw new Exception("User id " + idOfAuthUserToConvert + " not found.");
         }
+        AuthenticatedUser existingUserWithSameEmail = getAuthenticatedUserByEmail(newEmailAddress);
+        if (existingUserWithSameEmail != null) {
+            throw new Exception("User id " + idOfAuthUserToConvert + " (" + authenticatedUser.getIdentifier() + ") cannot be converted from Shibboleth to BuiltIn because the email address " + newEmailAddress + " is already in use by user id " + existingUserWithSameEmail.getId() + " (" + existingUserWithSameEmail.getIdentifier() + ").");
+        }
         BuiltinUser builtinUser = new BuiltinUser();
         builtinUser.setUserName(authenticatedUser.getUserIdentifier());
         builtinUser.setFirstName(authenticatedUser.getFirstName());
@@ -552,23 +556,12 @@ public class AuthenticationServiceBean {
         if (!providerId.equals(shibProviderId)) {
             throw new Exception("User id " + idOfAuthUserToConvert + " cannot be converted from Shibboleth to BuiltIn because current provider id is '" + providerId + "' rather than '" + shibProviderId + "'.");
         }
-        try {
-            lookup.setAuthenticationProviderId(BuiltinAuthenticationProvider.PROVIDER_ID);
-            lookup.setPersistentUserId(authenticatedUser.getUserIdentifier());
-            em.persist(lookup);
-            authenticatedUser.setEmail(newEmailAddress);
-            em.persist(authenticatedUser);
-            em.flush();
-        } catch (Throwable ex) {
-            while (ex.getCause() != null) {
-                ex = ex.getCause();
-            }
-            if (ex instanceof SQLException) {
-                throw new Exception("User id " + idOfAuthUserToConvert + " could not be converted from Shibboleth to BuiltIn due to SQLException. Duplicate email? Details of the SQLException: " + ex);
-            } else {
-                throw new Exception("User id " + idOfAuthUserToConvert + " could not be converted from Shibboleth to BuiltIn due to unexpected exception: " + ex);
-            }
-        }
+        lookup.setAuthenticationProviderId(BuiltinAuthenticationProvider.PROVIDER_ID);
+        lookup.setPersistentUserId(authenticatedUser.getUserIdentifier());
+        em.persist(lookup);
+        authenticatedUser.setEmail(newEmailAddress);
+        em.persist(authenticatedUser);
+        em.flush();
         return builtinUser;
     }
 
