@@ -32,11 +32,16 @@
                                 </h:outputFormat>
                             </label>
                         </ui:fragment>
-                        <div class="pull-right">
+                        <div class="pull-right button-block">
                             <h:outputLink type="button" styleClass="btn btn-default"
                                           value="/guestbook.xhtml?ownerId=#{manageGuestbooksPage.dataverse.id}&#38;editMode=CREATE">
                                 <span class="glyphicon glyphicon-plus"/> <h:outputText value="#{bundle['dataset.manageGuestbooks.createBtn']}"/>
-                            </h:outputLink>
+                            </h:outputLink> 
+                            <ui:fragment rendered="#{manageGuestbooksPage.displayDownloadAll}">
+                                <button class="btn btn-default" jsf:id="downloadResponsesLink" jsf:action="#{manageGuestbooksPage.downloadResponsesByDataverse()}"  >
+                                     #{bundle['dataset.manageGuestbooks.download.all.responses']}
+                                </button> 
+                            </ui:fragment>
                         </div>
                     </div>
                     <div>
