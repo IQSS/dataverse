@@ -17,6 +17,7 @@ import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.RoleAssignment;
+import edu.harvard.iq.dataverse.SettingsWrapper;
 import edu.harvard.iq.dataverse.UserNotification;
 import static edu.harvard.iq.dataverse.UserNotification.Type.CREATEDV;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
@@ -27,6 +28,8 @@ import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.mydata.MyDataPage;
 import edu.harvard.iq.dataverse.passwordreset.PasswordValidator;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.io.UnsupportedEncodingException;
@@ -87,6 +90,8 @@ public class BuiltinUserPage implements java.io.Serializable {
     @EJB
     GroupServiceBean groupService;
     @Inject
+    SettingsWrapper settingsWrapper;
+    @Inject
     MyDataPage mydatapage;
     
     @EJB
@@ -134,10 +139,6 @@ public class BuiltinUserPage implements java.io.Serializable {
 
     public void setEditMode(EditMode editMode) {
         this.editMode = editMode;
-        
-        if (editMode == EditMode.CREATE) {
-            JH.addMessage(FacesMessage.SEVERITY_INFO, JH.localize("user.signup.tip"));
-        }
     }
 
     public String getRedirectPage() {
@@ -211,8 +212,19 @@ public class BuiltinUserPage implements java.io.Serializable {
     }
 
     public String init() {
+
+        // prevent creating a user if signup not allowed.
+        boolean safeDefaultIfKeyNotFound = true;
+        boolean signupAllowed = settingsWrapper.isTrueForKey(SettingsServiceBean.Key.AllowSignUp.toString(), safeDefaultIfKeyNotFound);
+        logger.fine("signup is allowed: " + signupAllowed);
+
+        if (editMode == EditMode.CREATE && !signupAllowed) {
+            return "/403.xhtml";
+        }
+
         if (editMode == EditMode.CREATE) {
             if (!session.getUser().isAuthenticated()) { // in create mode for new user
+                JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("user.signup.tip"));
                 builtinUser = new BuiltinUser();
                 return "";
             } else {
@@ -240,6 +252,9 @@ public class BuiltinUserPage implements java.io.Serializable {
                 case "accountInfo":
                     activeIndex = 2;
                     // activeIndex = 3;
+                    break;
+                case "apiTokenTab":
+                    activeIndex = 3;
                     break;
                 default:
                     activeIndex = 0;

@@ -17,9 +17,4 @@
         <view-id value="/search/advanced.xhtml" />
     </url-mapping>
 
-    <url-mapping id="apiToken">
-        <pattern value="/account/apitoken"/>
-        <view-id value="/apitoken.xhtml" />
-    </url-mapping>
-
 </pretty-config>

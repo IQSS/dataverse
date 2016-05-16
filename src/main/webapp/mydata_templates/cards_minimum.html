@@ -62,7 +62,8 @@
             <span class="text-muted">{{ card_info.date_to_display_on_card }}
                 - <a href="/dataverse.xhtml?id={{ card_info.parentId }}">{{ card_info.parentName }} Dataverse</a>
             </span>
-            <span class="resultDatasetCitationBlock{%if card_info.is_deaccesioned %} bg-danger{% else %} bg-citation {% endif %}">{{ card_info.citation|safe }}</span>
+            <span class="resultDatasetCitationBlock{%if card_info.is_deaccesioned %} bg-danger{% else %} bg-citation {% endif %}">
+                {%if card_info.citationHtml %}{{ card_info.citationHtml|safe }}{% else %}{{ card_info.citation|safe }}{% endif %}</span>
             
  {% elif card_info.type == "file" %}
             <div class="card-preview-icon-block text-center">

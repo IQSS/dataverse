@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationProviderF
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationSetupException;
 import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderFactory;
 import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderRow;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProviderFactory;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
@@ -36,6 +37,10 @@ import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 
 /**
  * The AuthenticationManager is responsible for registering and listing
@@ -496,6 +501,34 @@ public class AuthenticationServiceBean {
             return shibUser;
         }
         return null;
+    }
+
+    /**
+     * @param authenticatedUser The AuthenticatedUser (Shibboleth user) to
+     * convert to a BuiltinUser.
+     * @param newEmailAddress The new email address that will be used instead of
+     * the user's old email address from the institution that they have left.
+     * @return BuiltinUser
+     * @throws java.lang.Exception You must catch a potential
+     * ConstraintViolationException due to Bean Validation (non-null, etc.) on
+     * the entities. Report these back to the superuser.
+     */
+    public BuiltinUser convertShibToBuiltIn(AuthenticatedUser authenticatedUser, String newEmailAddress) throws Exception {
+        BuiltinUser builtinUser = new BuiltinUser();
+        builtinUser.setUserName(authenticatedUser.getUserIdentifier());
+        builtinUser.setFirstName(authenticatedUser.getFirstName());
+        builtinUser.setLastName(authenticatedUser.getLastName());
+        builtinUser.setEmail(newEmailAddress);
+        /**
+         * @todo If there are violations, don't even try to persist the user.
+         * Report the violations. Write tests around this.
+         */
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        Validator validator = factory.getValidator();
+        Set<ConstraintViolation<BuiltinUser>> violations = validator.validate(builtinUser);
+        logger.fine("constraint violation count: " + violations.size());
+        builtinUser = builtinUserServiceBean.save(builtinUser);
+        return builtinUser;
     }
 
 }

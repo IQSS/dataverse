@@ -126,7 +126,7 @@ public class GroupServiceBean {
             }
         }
         if (identifierWithoutAtSign != null) {
-            roleAssigneeSvc.getUserGroups(identifierWithoutAtSign).stream().forEach((groupAlias) -> {
+            roleAssigneeSvc.getUserExplicitGroups(identifierWithoutAtSign).stream().forEach((groupAlias) -> {
                 ExplicitGroup explicitGroup = explicitGroupProvider.get(groupAlias);
                 if (explicitGroup != null) {
                     groups.add(explicitGroup);
