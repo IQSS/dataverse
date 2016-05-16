@@ -106,7 +106,7 @@ public class DataverseHeaderFragment implements java.io.Serializable {
         breadcrumbs.clear();
 
         while (dvObject != null) {
-            breadcrumbs.add(0, new Breadcrumb(dvObject.getDisplayName(), dvObject));
+            breadcrumbs.add(0, new Breadcrumb(dvObject, dvObject.getDisplayName()));
             dvObject = dvObject.getOwner();
         }        
         
@@ -243,17 +243,27 @@ public class DataverseHeaderFragment implements java.io.Serializable {
         }
         return "";
     }
+    
+    public void addBreadcrumb (String linkString, String url){
+        breadcrumbs.add(new Breadcrumb(linkString, url));
+    }
+
 
     // inner class used for breadcrumbs
     public static class Breadcrumb {
 
         private final String breadcrumbText;
-        private final DvObject dvObject;
+        private  DvObject dvObject = null;
+        private  String url = null;
 
-        public Breadcrumb(String breadcrumbText, DvObject dvObject) {
-            this.breadcrumbText = breadcrumbText;            
-            this.dvObject = dvObject;            
+        public Breadcrumb( DvObject dvObject, String breadcrumbText) {
+            this.breadcrumbText = breadcrumbText;
+            this.dvObject = dvObject;
+        }
 
+        public Breadcrumb(String breadcrumbText,  String url) {
+            this.breadcrumbText = breadcrumbText;
+            this.url = url;
         }
 
         public String getBreadcrumbText() {
@@ -264,6 +274,9 @@ public class DataverseHeaderFragment implements java.io.Serializable {
             return dvObject;
         }
 
-        
+        public String getUrl() {
+            return url;
+        }
+
     }
 }
