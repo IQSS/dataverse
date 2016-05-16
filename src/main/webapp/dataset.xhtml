@@ -299,9 +299,11 @@
                                 <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-danger" rendered="#{DatasetPage.workingVersion.deaccessioned}"/>
                             </div>
                             <!-- CITATION BLOCK -->
-                            <ui:include src="dataset-citation.xhtml" rendered="#{!empty DatasetPage.displayCitation}">
-                                <ui:param name="datasetPage" value="true"/>
-                            </ui:include>
+                            <ui:fragment rendered="#{!empty DatasetPage.displayCitation}">
+                                <ui:include src="dataset-citation.xhtml">
+                                    <ui:param name="datasetPage" value="true"/>
+                                </ui:include>
+                            </ui:fragment>
                             <!-- END: CITATION BLOCK -->
                             <div id="deaccession-reason-block" class="row bg-danger" jsf:rendered="#{DatasetPage.workingVersion.deaccessioned}">
                                 <h5 class="margin-top-half">#{bundle['dataset.deaccession.reason']}</h5>
