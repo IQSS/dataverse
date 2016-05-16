@@ -515,7 +515,7 @@ TypeAheadControl.prototype.draw = function(setFocus) {
     this.dropDown.className = 'IdPSelectDropDown';
     this.dropDown.style.visibility = 'hidden';
 
-    this.dropDown.style.width = this.textBox.offsetWidth;
+    // this.dropDown.style.width = this.textBox.offsetWidth;
     this.dropDown.current = -1;
     // document.body.appendChild(this.dropDown);
     document.getElementById('idpSelectIdPEntryTile').appendChild(this.dropDown);
@@ -1656,7 +1656,7 @@ function IdPSelectUI() {
         a.onclick = function() { 
             idpEntryDiv.style.display='none';
             setSelector(idpSelect, hidden.value);
-            idpListDiv.style.display='inline';
+            idpListDiv.style.display='block';
             listButton.focus();
         };
         idpEntryDiv.appendChild(a);
@@ -1742,7 +1742,7 @@ function IdPSelectUI() {
         a.href = '#';
         setClass(a, 'DropDownToggle');
         a.onclick = function() { 
-            idpEntryDiv.style.display='inline';
+            idpEntryDiv.style.display='block';
             idpListDiv.style.display='none';
         };
         idpListDiv.appendChild(a);
