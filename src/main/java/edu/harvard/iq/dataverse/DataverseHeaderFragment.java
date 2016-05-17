@@ -111,7 +111,7 @@ public class DataverseHeaderFragment implements java.io.Serializable {
         }        
         
         if (subPage != null) {
-            breadcrumbs.add(new Breadcrumb("", subPage));
+            breadcrumbs.add(new Breadcrumb(subPage));
         }
     }
 
@@ -247,7 +247,10 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     public void addBreadcrumb (String url, String linkString){
         breadcrumbs.add(new Breadcrumb(url, linkString));
     }
-
+    
+    public void addBreadcrumb (String linkString){
+        breadcrumbs.add(new Breadcrumb(linkString));
+    }
 
     // inner class used for breadcrumbs
     public static class Breadcrumb {
@@ -264,6 +267,10 @@ public class DataverseHeaderFragment implements java.io.Serializable {
         public Breadcrumb( String url, String breadcrumbText) {
             this.breadcrumbText = breadcrumbText;
             this.url = url;
+        }
+        
+        public Breadcrumb(String breadcrumbText){
+            this.breadcrumbText = breadcrumbText;
         }
 
         public String getBreadcrumbText() {
