@@ -531,7 +531,7 @@ public class SearchIT {
 
         Set expected = new HashSet<>();
         createUser1.prettyPrint();
-        String userid1 = JsonPath.from(createUser1.asString()).getString("data.user.id");
+        String userid1 = JsonPath.from(createUser1.asString()).getString("data.authenticatedUser.id");
         expected.add("group_user" + userid1);
         expected.add("group_" + dvId + "-" + aliasInOwner);
         logger.info("expected: " + expected);
