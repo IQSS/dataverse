@@ -176,28 +176,42 @@
                                         #{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.userCollectedData']}
                                     </span>
                                 </label>
-                                <div class="col-sm-7">
-                                    <div jsf:rendered="#{!empty manageGuestbooksPage.selectedGuestbook.requiredAccountInformationString}">
-                                        <p class="form-control-static">
-                                            <h:outputText value="#{manageGuestbooksPage.selectedGuestbook.requiredAccountInformationString}" escape="false"/>
-                                        </p>
+                                <div class="col-sm-8" style="padding-top:8px">
+                                    <div jsf:rendered="#{!empty manageGuestbooksPage.selectedGuestbook.requiredAccountInformation}">  
+                                        #{bundle['dataset.manageGuestbooks.guestbook.requiredAccountInformation']} 
+                                        <ui:repeat value="#{manageGuestbooksPage.selectedGuestbook.requiredAccountInformation}" var="q">
+                                            <li  style="padding-left:20px" >
+                                                <h:outputText value="#{q}"/>
+                                            </li>
+                                        </ui:repeat>
+                                        <br/>
                                     </div>
-                                    <div jsf:rendered="#{!empty manageGuestbooksPage.selectedGuestbook.optionalAccountInformationString}">
-                                        <p class="form-control-static">
-                                            <h:outputText value="#{manageGuestbooksPage.selectedGuestbook.optionalAccountInformationString}" escape="false"/>
-                                        </p>
+                                    <div jsf:rendered="#{!empty manageGuestbooksPage.selectedGuestbook.optionalAccountInformation}">  
+                                        #{bundle['dataset.manageGuestbooks.guestbook.optionalAccountInformation']} 
+                                        <ui:repeat value="#{manageGuestbooksPage.selectedGuestbook.optionalAccountInformation}" var="q">
+                                            <li  style="padding-left:20px" >
+                                                <h:outputText value="#{q}"/>
+                                            </li>
+                                        </ui:repeat>
+                                        <br/>
+                                    </div>                                    
+                                    <div jsf:rendered="#{!empty manageGuestbooksPage.selectedGuestbook.requiredQuestionsList}">  
+                                        #{bundle['dataset.manageGuestbooks.guestbook.requiredCustomQuestions']} 
+                                        <ui:repeat value="#{manageGuestbooksPage.selectedGuestbook.requiredQuestionsList}" var="q">
+                                            <li  style="padding-left:20px" >
+                                                <h:outputText value="#{q}"/>
+                                            </li>
+                                        </ui:repeat>
+                                        <br/>
                                     </div>
-                                    <div jsf:rendered="#{!empty manageGuestbooksPage.selectedGuestbook.requiredCustomQuestionsString}">
-                                        <p class="form-control-static">
-                                            
-                                            <h:outputText value="#{StringEscapeUtils:escapeHtml(manageGuestbooksPage.selectedGuestbook.requiredCustomQuestionsString)}" escape="false"/>
-                                        </p>
-                                    </div>
-                                    <div jsf:rendered="#{!empty manageGuestbooksPage.selectedGuestbook.optionalCustomQuestionsString}">
-                                        <p class="form-control-static">
-                                            
-                                            <h:outputText value="#{StringEscapeUtils:escapeHtml(manageGuestbooksPage.selectedGuestbook.optionalCustomQuestionsString)}" escape="false"/>
-                                        </p>
+                                    <div jsf:rendered="#{!empty manageGuestbooksPage.selectedGuestbook.optionalQuestionsList}">  
+                                        #{bundle['dataset.manageGuestbooks.guestbook.optionalCustomQuestions']} 
+                                        <ui:repeat value="#{manageGuestbooksPage.selectedGuestbook.optionalQuestionsList}" var="q">
+                                            <li  style="padding-left:20px" >
+                                                <h:outputText value="#{q}"/>
+                                            </li>
+                                        </ui:repeat>
+                                        <br/>
                                     </div>
                                 </div>
                             </div>

@@ -106,12 +106,12 @@ public class DataverseHeaderFragment implements java.io.Serializable {
         breadcrumbs.clear();
 
         while (dvObject != null) {
-            breadcrumbs.add(0, new Breadcrumb(dvObject.getDisplayName(), dvObject));
+            breadcrumbs.add(0, new Breadcrumb(dvObject, dvObject.getDisplayName()));
             dvObject = dvObject.getOwner();
         }        
         
         if (subPage != null) {
-            breadcrumbs.add(new Breadcrumb(subPage, null));
+            breadcrumbs.add(new Breadcrumb(subPage));
         }
     }
 
@@ -243,17 +243,34 @@ public class DataverseHeaderFragment implements java.io.Serializable {
         }
         return "";
     }
+    
+    public void addBreadcrumb (String url, String linkString){
+        breadcrumbs.add(new Breadcrumb(url, linkString));
+    }
+    
+    public void addBreadcrumb (String linkString){
+        breadcrumbs.add(new Breadcrumb(linkString));
+    }
 
     // inner class used for breadcrumbs
     public static class Breadcrumb {
 
         private final String breadcrumbText;
-        private final DvObject dvObject;
+        private  DvObject dvObject = null;
+        private  String url = null;
 
-        public Breadcrumb(String breadcrumbText, DvObject dvObject) {
-            this.breadcrumbText = breadcrumbText;            
-            this.dvObject = dvObject;            
+        public Breadcrumb( DvObject dvObject, String breadcrumbText) {
+            this.breadcrumbText = breadcrumbText;
+            this.dvObject = dvObject;
+        }
 
+        public Breadcrumb( String url, String breadcrumbText) {
+            this.breadcrumbText = breadcrumbText;
+            this.url = url;
+        }
+        
+        public Breadcrumb(String breadcrumbText){
+            this.breadcrumbText = breadcrumbText;
         }
 
         public String getBreadcrumbText() {
@@ -264,6 +281,9 @@ public class DataverseHeaderFragment implements java.io.Serializable {
             return dvObject;
         }
 
-        
+        public String getUrl() {
+            return url;
+        }
+
     }
 }
