@@ -556,10 +556,11 @@
                     </span>
                 </label>
                 <div class="col-sm-8">
+                    <br/>
                     <div jsf:rendered="#{!empty DatasetPage.selectedGuestbook.requiredAccountInformation}">  
                                         #{bundle['dataset.manageGuestbooks.guestbook.requiredAccountInformation']} 
                         <ui:repeat value="#{DatasetPage.selectedGuestbook.requiredAccountInformation}" var="q">
-                            <li>
+                            <li  style="padding-left:20px" >
                                 <h:outputText value="#{q}"/>
                             </li>
                         </ui:repeat>
@@ -569,7 +570,7 @@
                     <div jsf:rendered="#{!empty DatasetPage.selectedGuestbook.optionalAccountInformation}">  
                                         #{bundle['dataset.manageGuestbooks.guestbook.optionalAccountInformation']} 
                         <ui:repeat value="#{DatasetPage.selectedGuestbook.optionalAccountInformation}" var="q">
-                            <li>
+                            <li  style="padding-left:20px" >
                                 <h:outputText value="#{q}"/>
                             </li>
                         </ui:repeat>
@@ -578,7 +579,7 @@
                     <div jsf:rendered="#{!empty DatasetPage.selectedGuestbook.requiredQuestionsList}">  
                                         #{bundle['dataset.manageGuestbooks.guestbook.requiredCustomQuestions']} 
                         <ui:repeat value="#{DatasetPage.selectedGuestbook.requiredQuestionsList}" var="q">
-                            <li>
+                            <li  style="padding-left:20px" >
                                 <h:outputText value="#{q}"/>
                             </li>
                         </ui:repeat>
@@ -587,7 +588,7 @@
                     <div jsf:rendered="#{!empty DatasetPage.selectedGuestbook.optionalQuestionsList}">  
                                         #{bundle['dataset.manageGuestbooks.guestbook.optionalCustomQuestions']} 
                         <ui:repeat value="#{DatasetPage.selectedGuestbook.optionalQuestionsList}" var="q">
-                            <li>
+                            <li  style="padding-left:20px" >
                                 <h:outputText value="#{q}"/>
                             </li>
                         </ui:repeat>

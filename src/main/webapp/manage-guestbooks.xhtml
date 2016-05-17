@@ -177,10 +177,11 @@
                                     </span>
                                 </label>
                                 <div class="col-sm-7">
+                                    <br/>
                                     <div jsf:rendered="#{!empty manageGuestbooksPage.selectedGuestbook.requiredAccountInformation}">  
                                         #{bundle['dataset.manageGuestbooks.guestbook.requiredAccountInformation']} 
                                         <ui:repeat value="#{manageGuestbooksPage.selectedGuestbook.requiredAccountInformation}" var="q">
-                                            <li>
+                                            <li  style="padding-left:20px" >
                                                 <h:outputText value="#{q}"/>
                                             </li>
                                         </ui:repeat>
@@ -189,7 +190,7 @@
                                     <div jsf:rendered="#{!empty manageGuestbooksPage.selectedGuestbook.optionalAccountInformation}">  
                                         #{bundle['dataset.manageGuestbooks.guestbook.optionalAccountInformation']} 
                                         <ui:repeat value="#{manageGuestbooksPage.selectedGuestbook.optionalAccountInformation}" var="q">
-                                            <li>
+                                            <li  style="padding-left:20px" >
                                                 <h:outputText value="#{q}"/>
                                             </li>
                                         </ui:repeat>
@@ -198,7 +199,7 @@
                                     <div jsf:rendered="#{!empty manageGuestbooksPage.selectedGuestbook.requiredQuestionsList}">  
                                         #{bundle['dataset.manageGuestbooks.guestbook.requiredCustomQuestions']} 
                                         <ui:repeat value="#{manageGuestbooksPage.selectedGuestbook.requiredQuestionsList}" var="q">
-                                            <li>
+                                            <li  style="padding-left:20px" >
                                                 <h:outputText value="#{q}"/>
                                             </li>
                                         </ui:repeat>
@@ -207,7 +208,7 @@
                                     <div jsf:rendered="#{!empty manageGuestbooksPage.selectedGuestbook.optionalQuestionsList}">  
                                         #{bundle['dataset.manageGuestbooks.guestbook.optionalCustomQuestions']} 
                                         <ui:repeat value="#{manageGuestbooksPage.selectedGuestbook.optionalQuestionsList}" var="q">
-                                            <li>
+                                            <li  style="padding-left:20px" >
                                                 <h:outputText value="#{q}"/>
                                             </li>
                                         </ui:repeat>
