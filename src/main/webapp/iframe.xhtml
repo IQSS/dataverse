@@ -21,6 +21,35 @@
         <h:outputStylesheet library="css" name="fontcustom.css"/>
         <h:outputStylesheet library="css" name="socicon.css"/>
         <h:outputStylesheet library="css" name="structure.css"/>
+        
+        <script>
+            //<![CDATA[
+            var pageSource = window.location.href;
+            var params = parseQueryString(pageSource.split('?')[1]);
+            params.alias; // widgetScope
+            params.persistentId; // persistentId
+            
+            function parseQueryString(queryString) {
+                var params = {};
+                var pl     = /\+/g;
+                if (queryString) {
+                    var keyValues = queryString.split('&');
+                    for (var i=0; i < keyValues.length; i++) {
+                        var pair = keyValues[i].split('=');
+                        params[pair[0]] = pair[1].replace(pl, " ");
+                    }
+                }
+                return params;
+            }
+            
+            var forwardSource = "/dataset.xhtml?persistentId=" + params.persistentId;
+
+            // Don't allow to load outside of iframe
+            if (self === top) {
+                top.location = forwardSource;
+            }
+            //]]>
+        </script>
     </h:head>
     <h:body>
         <f:loadBundle basename="Bundle" var="bundle"/>
