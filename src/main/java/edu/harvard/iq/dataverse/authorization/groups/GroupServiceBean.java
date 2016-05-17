@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupProvi
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupsServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroupServiceBean;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -100,6 +101,41 @@ public class GroupServiceBean {
         }
         
         return groupTransitiveClosure(groups, dvo);
+    }
+
+    /**
+     * groupsFor( RoleAssignee ra, DvObject dvo ) doesn't really get *all* the
+     * groups a Role assignee belongs to as advertised but this method comes
+     * closer.
+     *
+     * @todo Determine if this method works with IP Groups.
+     *
+     * @param au An AuthenticatedUser.
+     * @return As many groups as we can find for the AuthenticatedUser.
+     */
+    public Set<Group> groupsFor(AuthenticatedUser au) {
+        Set<Group> groups = new HashSet<>();
+        groups.addAll(groupsFor(au, null));
+        String identifier = au.getIdentifier();
+        String identifierWithoutAtSign = null;
+        if (identifier != null) {
+            try {
+                identifierWithoutAtSign = identifier.substring(1);
+            } catch (IndexOutOfBoundsException ex) {
+                logger.info("Couldn't trim first character (@ sign) from identifier: " + identifier);
+            }
+        }
+        if (identifierWithoutAtSign != null) {
+            roleAssigneeSvc.getUserExplicitGroups(identifierWithoutAtSign).stream().forEach((groupAlias) -> {
+                ExplicitGroup explicitGroup = explicitGroupProvider.get(groupAlias);
+                if (explicitGroup != null) {
+                    groups.add(explicitGroup);
+                } else {
+                    logger.info("Couldn't find group based on alias " + groupAlias);
+                }
+            });
+        }
+        return groups;
     }
 
     /**

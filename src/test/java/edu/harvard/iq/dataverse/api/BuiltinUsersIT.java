@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import com.jayway.restassured.RestAssured;
 import static com.jayway.restassured.RestAssured.given;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.path.json.JsonPath;
@@ -9,6 +10,7 @@ import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 import static junit.framework.Assert.assertEquals;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class BuiltinUsersIT {
@@ -19,6 +21,11 @@ public class BuiltinUsersIT {
     private static final String idKey = "id";
     private static final String usernameKey = "userName";
     private static final String emailKey = "email";
+
+    @BeforeClass
+    public static void setUp() {
+        RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
+    }
 
     @Test
     public void testUserId() {
