@@ -1,6 +1,7 @@
 
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -215,6 +216,61 @@ public class Guestbook implements Serializable {
         }
         }
         return retVal;        
+    }
+    
+    public List<String> getRequiredAccountInformation() {
+        List<String> retList = new ArrayList();
+        if (nameRequired) {
+            retList.add(BundleUtil.getStringFromBundle("name"));
+        }
+        if (emailRequired) {
+            retList.add(BundleUtil.getStringFromBundle("email"));
+        }
+        if (institutionRequired) {
+            retList.add(BundleUtil.getStringFromBundle("institution"));
+        }
+        if (positionRequired) {
+            retList.add(BundleUtil.getStringFromBundle("position"));
+        }
+        return retList;
+    }
+    
+    public List<String> getOptionalAccountInformation(){
+                List <String> retList = new ArrayList();
+        if(!nameRequired){
+           retList.add(BundleUtil.getStringFromBundle("name"));
+        }
+        if(!emailRequired){
+            retList.add(BundleUtil.getStringFromBundle("email"));
+        }
+        if(!institutionRequired){
+            retList.add(BundleUtil.getStringFromBundle("institution"));
+        }
+        if(!positionRequired){
+            retList.add(BundleUtil.getStringFromBundle("position"));
+        }
+        return retList;
+        
+    }
+    
+    public List<String> getRequiredQuestionsList(){
+        List <String> retList = new ArrayList();
+                for (CustomQuestion cq : this.getCustomQuestions()){
+                    if(cq.isRequired()){
+                        retList.add(cq.getQuestionString());
+                    }
+                }
+        return retList;
+    }
+    
+    public List<String> getOptionalQuestionsList(){
+        List <String> retList = new ArrayList();
+                for (CustomQuestion cq : this.getCustomQuestions()){
+                    if(!cq.isRequired()){
+                        retList.add(cq.getQuestionString());
+                    }
+                }
+        return retList;
     }
     
     public String getRequiredAccountInformationString(){
