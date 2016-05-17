@@ -555,10 +555,9 @@
                        #{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.userCollectedData']}
                     </span>
                 </label>
-                <div class="col-sm-8">
-                    <br/>
+                <div class="col-sm-8" style="padding-top:8px">
                     <div jsf:rendered="#{!empty DatasetPage.selectedGuestbook.requiredAccountInformation}">  
-                                        #{bundle['dataset.manageGuestbooks.guestbook.requiredAccountInformation']} 
+                     #{bundle['dataset.manageGuestbooks.guestbook.requiredAccountInformation']}                                         
                         <ui:repeat value="#{DatasetPage.selectedGuestbook.requiredAccountInformation}" var="q">
                             <li  style="padding-left:20px" >
                                 <h:outputText value="#{q}"/>
