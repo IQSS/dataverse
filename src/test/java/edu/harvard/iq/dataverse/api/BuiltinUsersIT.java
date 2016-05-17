@@ -28,7 +28,8 @@ public class BuiltinUsersIT {
         assertEquals(200, createUserResponse.getStatusCode());
 
         JsonPath createdUser = JsonPath.from(createUserResponse.body().asString());
-        int userIdFromJsonCreateResponse = createdUser.getInt("data.user." + idKey);
+        int builtInUserIdFromJsonCreateResponse = createdUser.getInt("data.user." + idKey);
+        int authenticatedUserIdFromJsonCreateResponse = createdUser.getInt("data.authenticatedUser." + idKey);
         String username = createdUser.getString("data.user." + usernameKey);
 
         Response getUserResponse = getUserFromDatabase(username);
@@ -43,14 +44,9 @@ public class BuiltinUsersIT {
         deleteUserResponse.prettyPrint();
 
         System.out.println(userIdFromDatabase + " was the id from the database");
-        System.out.println(userIdFromJsonCreateResponse + " was the id from JSON response on create");
-        /**
-         * This test is expected to pass on a clean, fresh database but for an
-         * unknown reason it fails when you load it up with a production
-         * database from dataverse.harvard.edu. Why? This is what
-         * https://github.com/IQSS/dataverse/issues/2418 is about.
-         */
-        assertEquals(userIdFromDatabase, userIdFromJsonCreateResponse);
+        System.out.println(builtInUserIdFromJsonCreateResponse + " was the id of the BuiltinUser from JSON response on create");
+        System.out.println(authenticatedUserIdFromJsonCreateResponse + " was the id of the AuthenticatedUser from JSON response on create");
+        assertEquals(userIdFromDatabase, authenticatedUserIdFromJsonCreateResponse);
     }
 
     @Test
