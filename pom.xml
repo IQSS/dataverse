@@ -4,7 +4,7 @@
 
     <groupId>edu.harvard.iq</groupId>
     <artifactId>dataverse</artifactId>
-    <version>4.3</version>
+    <version>4.3.1</version>
     <packaging>war</packaging>
 
     <name>dataverse</name>
@@ -16,30 +16,30 @@
 
     <repositories>
         <repository>
-            <id>prime-repo</id>  
-            <name>PrimeFaces Maven Repository</name>  
-            <url>http://repository.primefaces.org</url>  
-            <layout>default</layout>  
+            <id>prime-repo</id>
+            <name>PrimeFaces Maven Repository</name>
+            <url>http://repository.primefaces.org</url>
+            <layout>default</layout>
         </repository>
-	<!-- Geo Toolkit repository is need to obtain the JAI (advanced imaging) libraries; since Oracle kind of abandoned that project, the jars seem to have disappeared from the central repository as well. -->
-        <repository>	    
-            <id>geotk-repo</id>  
-            <name>Geo Toolkit Maven Repository</name>  
-            <url>http://maven.geotoolkit.org</url>  
-            <layout>default</layout>  
-        </repository>   
-	<repository>
-            <id>central-repo</id>  
-            <name>Central Repository</name>  
-            <url>http://repo1.maven.org/maven2</url>  
-            <layout>default</layout>  
-        </repository>   	
-	<repository>
+        <!-- Geo Toolkit repository is need to obtain the JAI (advanced imaging) libraries; since Oracle kind of abandoned that project, the jars seem to have disappeared from the central repository as well. -->
+        <repository>
+            <id>geotk-repo</id>
+            <name>Geo Toolkit Maven Repository</name>
+            <url>http://maven.geotoolkit.org</url>
+            <layout>default</layout>
+        </repository>
+        <repository>
+            <id>central-repo</id>
+            <name>Central Repository</name>
+            <url>http://repo1.maven.org/maven2</url>
+            <layout>default</layout>
+        </repository>
+        <repository>
             <id>dvn.private</id>
             <name>Local repository for hosting jars not available from network repositories.</name>
             <url>file://${project.basedir}/local_lib</url>
         </repository>
-		 <repository>
+        <repository>
             <id>dataone.org</id>
             <url>http://dev-testing.dataone.org/maven</url>
             <releases>
@@ -51,9 +51,9 @@
         </repository>
 
     </repositories>
-             
+
     <dependencies>
-       <dependency>
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.8.1</version>
@@ -117,7 +117,8 @@
             <artifactId>gson</artifactId>
             <version>2.2.4</version>
             <scope>compile</scope>
-        </dependency>                 <dependency>
+        </dependency>
+        <dependency>
             <!-- required by org.swordapp.server.sword2-server -->
             <groupId>xom</groupId>
             <artifactId>xom</artifactId>
@@ -158,20 +159,20 @@
             <version>1.0.10</version>
         </dependency>
         <dependency>
-	  <groupId>org.atmosphere</groupId>
-	  <artifactId>atmosphere-runtime</artifactId>
-	  <version>2.4.2</version>
-	</dependency>
+            <groupId>org.atmosphere</groupId>
+            <artifactId>atmosphere-runtime</artifactId>
+            <version>2.4.2</version>
+        </dependency>
         <dependency>
             <groupId>org.omnifaces</groupId>
             <artifactId>omnifaces</artifactId>
             <version>1.7</version> <!-- Or 1.8-SNAPSHOT -->
-        </dependency>          
-	<dependency>
-	    <groupId>org.hibernate</groupId>
-	    <artifactId>hibernate-validator</artifactId>
-	    <version>5.0.3.Final</version>
-	</dependency>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-validator</artifactId>
+            <version>5.0.3.Final</version>
+        </dependency>
         <dependency>
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
@@ -188,103 +189,103 @@
             <artifactId>commons-logging</artifactId>
             <version>1.1.3</version>
         </dependency>
-	<dependency>
-	     <groupId>org.apache.commons</groupId>
-	     <artifactId>commons-math</artifactId>
-	     <version>2.2</version>
-	</dependency>
-    <dependency>
-	<groupId>commons-validator</groupId>
-	<artifactId>commons-validator</artifactId>
-	<version>1.4.0</version>
-</dependency>     
-	<dependency>
-	     <groupId>colt</groupId>
-	     <artifactId>colt</artifactId>
-	     <version>1.2.0</version>
-	</dependency> 
-	<!-- fits.jar, not available from network repos, supplied in local_lib -->
-	<dependency>
-             <groupId>nom.tam.fits</groupId>
-             <artifactId>fits</artifactId>
-	     <version>2012-10-25-generated</version>
-	</dependency>
-	<dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-math</artifactId>
+            <version>2.2</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-validator</groupId>
+            <artifactId>commons-validator</artifactId>
+            <version>1.4.0</version>
+        </dependency>
+        <dependency>
+            <groupId>colt</groupId>
+            <artifactId>colt</artifactId>
+            <version>1.2.0</version>
+        </dependency>
+        <!-- fits.jar, not available from network repos, supplied in local_lib -->
+        <dependency>
+            <groupId>nom.tam.fits</groupId>
+            <artifactId>fits</artifactId>
+            <version>2012-10-25-generated</version>
+        </dependency>
+        <dependency>
             <groupId>net.handle</groupId>
             <artifactId>handle</artifactId>
             <version>2006-06-16-generated</version>
         </dependency>
-	<!-- UNF v5 (buggy), (temporarily) added for testing ingest against DVN v3  - L.A. -->
-     	<dependency>
-	     <groupId>edu.harvard.iq.dvn</groupId>
-	     <artifactId>unf5</artifactId>
-	     <version>5.0</version>
-	</dependency>
-	<!-- (new) UNF v6: -->
-	<dependency>
-	     <groupId>org.dataverse</groupId>
-	     <artifactId>unf</artifactId>
-	     <version>6.0</version>
-	</dependency>
-	<!-- Rosuda Rengine and Rserve, packaged by org.nuiton.thirdparty -->
-	<!-- TODO: see if there's another, better maintained maven repository for Rosuda libraries? - L.A. -->
-	<dependency>
-	     <groupId>org.nuiton.thirdparty</groupId>
-	     <artifactId>REngine</artifactId>
-	     <version>0.6-1</version>
-	</dependency>
-	<dependency>
-	     <groupId>org.nuiton.thirdparty</groupId>
-	     <artifactId>Rserve</artifactId>
-	     <version>0.6-1</version>
-	</dependency>
-	<!-- Apache POI - used by ingest to parse MS Excel xslx files -->
-	<dependency>
-	     <groupId>org.apache.poi</groupId>
-	     <artifactId>poi</artifactId>
-	     <version>3.10-FINAL</version>
-	</dependency>
-	<dependency>
-	     <groupId>org.apache.poi</groupId>
-	     <artifactId>poi-ooxml</artifactId>
-	     <version>3.10-FINAL</version>
-	</dependency>
-	<dependency>
-	     <groupId>org.apache.poi</groupId>
-	     <artifactId>poi-examples</artifactId>
-	     <version>3.10-FINAL</version>
-	</dependency>
-	<dependency>
-             <groupId>edu.harvard.hul.ois.jhove</groupId>
-             <artifactId>jhove</artifactId>
-             <version>1.11.0</version>
+        <!-- UNF v5 (buggy), (temporarily) added for testing ingest against DVN v3  - L.A. -->
+        <dependency>
+            <groupId>edu.harvard.iq.dvn</groupId>
+            <artifactId>unf5</artifactId>
+            <version>5.0</version>
+        </dependency>
+        <!-- (new) UNF v6: -->
+        <dependency>
+            <groupId>org.dataverse</groupId>
+            <artifactId>unf</artifactId>
+            <version>6.0</version>
+        </dependency>
+        <!-- Rosuda Rengine and Rserve, packaged by org.nuiton.thirdparty -->
+        <!-- TODO: see if there's another, better maintained maven repository for Rosuda libraries? - L.A. -->
+        <dependency>
+            <groupId>org.nuiton.thirdparty</groupId>
+            <artifactId>REngine</artifactId>
+            <version>0.6-1</version>
         </dependency>
         <dependency>
-             <groupId>edu.harvard.hul.ois.jhove</groupId>
-             <artifactId>jhove-module</artifactId>
-             <version>1.11.0</version>
+            <groupId>org.nuiton.thirdparty</groupId>
+            <artifactId>Rserve</artifactId>
+            <version>0.6-1</version>
+        </dependency>
+        <!-- Apache POI - used by ingest to parse MS Excel xslx files -->
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi</artifactId>
+            <version>3.10-FINAL</version>
         </dependency>
         <dependency>
-             <groupId>edu.harvard.hul.ois.jhove</groupId>
-             <artifactId>jhove-handler</artifactId>
-             <version>1.11.0</version>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>3.10-FINAL</version>
         </dependency>
-	<!-- JAI (Java Advanced Imaging) jars: -->
-	<dependency>
-	     <groupId>javax.media</groupId>
-	     <artifactId>jai_imageio</artifactId>
-	     <version>1.1.1</version>
-	</dependency>
-	<dependency>
-	     <groupId>javax.media</groupId>
-	     <artifactId>jai_core</artifactId>
-	     <version>1.1.3</version>
-	</dependency>
-	<dependency>
-	     <groupId>javax.media</groupId>
-	     <artifactId>jai_codec</artifactId>
-	     <version>1.1.3</version>
-	</dependency>
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-examples</artifactId>
+            <version>3.10-FINAL</version>
+        </dependency>
+        <dependency>
+            <groupId>edu.harvard.hul.ois.jhove</groupId>
+            <artifactId>jhove</artifactId>
+            <version>1.11.0</version>
+        </dependency>
+        <dependency>
+            <groupId>edu.harvard.hul.ois.jhove</groupId>
+            <artifactId>jhove-module</artifactId>
+            <version>1.11.0</version>
+        </dependency>
+        <dependency>
+            <groupId>edu.harvard.hul.ois.jhove</groupId>
+            <artifactId>jhove-handler</artifactId>
+            <version>1.11.0</version>
+        </dependency>
+        <!-- JAI (Java Advanced Imaging) jars: -->
+        <dependency>
+            <groupId>javax.media</groupId>
+            <artifactId>jai_imageio</artifactId>
+            <version>1.1.1</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.media</groupId>
+            <artifactId>jai_core</artifactId>
+            <version>1.1.3</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.media</groupId>
+            <artifactId>jai_codec</artifactId>
+            <version>1.1.3</version>
+        </dependency>
         <dependency>
             <groupId>org.ocpsoft.rewrite</groupId>
             <artifactId>rewrite-servlet</artifactId>
@@ -295,8 +296,8 @@
             <artifactId>rewrite-config-prettyfaces</artifactId>
             <version>2.0.12.Final</version>
         </dependency>
-		 <dependency>
-			<groupId>edu.ucsb.nceas</groupId>
+        <dependency>
+            <groupId>edu.ucsb.nceas</groupId>
             <artifactId>ezid</artifactId>
             <version>1.0.0</version>
             <type>jar</type>
@@ -316,6 +317,11 @@
             <groupId>org.jacoco</groupId>
             <artifactId>jacoco-maven-plugin</artifactId>
             <version>0.7.5.201505241946</version>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>1.10.19</version>
         </dependency>
         <!-- Added for DataCite -->
         <dependency>
@@ -368,7 +374,7 @@
             <artifactId>log4j</artifactId>
             <version>1.2.17</version>
         </dependency>
-        
+
     </dependencies>
 
     <build>
@@ -376,8 +382,8 @@
             <resource>
                 <directory>src/main/java</directory>
                 <includes>
-		    <include>*.properties</include>
-		    <include>**/mime.types</include>
+                    <include>*.properties</include>
+                    <include>**/mime.types</include>
                     <include>**/*.R</include>
                 </includes>
             </resource>
@@ -408,12 +414,12 @@
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>2.3</version>
                 <configuration>
-		    <archive>                   
-		      <manifest>
-			<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-			<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
-		      </manifest>
-		    </archive>
+                    <archive>
+                        <manifest>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                            <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+                        </manifest>
+                    </archive>
                 </configuration>
             </plugin>
             <plugin>
@@ -422,12 +428,12 @@
                 <version>2.3</version>
                 <configuration>
                     <failOnMissingWebXml>false</failOnMissingWebXml>
-		    <archive>                   
-		      <manifest>
-			<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-			<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
-		      </manifest>
-		    </archive>
+                    <archive>
+                        <manifest>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                            <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+                        </manifest>
+                    </archive>
                 </configuration>
             </plugin>
             <plugin>

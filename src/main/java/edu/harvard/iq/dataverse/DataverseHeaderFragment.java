@@ -264,32 +264,6 @@ public class DataverseHeaderFragment implements java.io.Serializable {
             return dvObject;
         }
 
-    }
-    
-    private Boolean debugShibboleth = null;
-    
-    public boolean isDebugShibboleth() {
-        if (debugShibboleth != null) {
-            return debugShibboleth;
-        }
-        debugShibboleth = systemConfig.isDebugEnabled();
-        return debugShibboleth;
-    }
-
-    public List<String> getGroups(User user) {
-        List<String> groups = new ArrayList<>();
-        Set<Group> groupsForUser = groupService.groupsFor(user, null);
-        for (Group group : groupsForUser) {
-            groups.add(group.getDisplayName() + " (" + group.getIdentifier() + ")");
-        }
-        return groups;
-    }
-
-    public List<String> getPermissions(User user, Dataverse dataverse) {
-        List<String> permissions = new ArrayList<>();
-        for (Permission permission : permissionService.permissionsFor(user, dataverse)) {
-            permissions.add(permission.name());
-        }
-        return permissions;
+        
     }
 }

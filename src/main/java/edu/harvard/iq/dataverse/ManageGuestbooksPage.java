@@ -17,12 +17,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
+import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  *
@@ -64,38 +67,124 @@ public class ManageGuestbooksPage implements java.io.Serializable {
     private Dataverse dataverse;
     private Long dataverseId;
     private boolean inheritGuestbooksValue;
+    private boolean displayDownloadAll = false;
+
 
     private Guestbook selectedGuestbook = null;
 
-    public void init() {
+    public void init() {               
         dataverse = dvService.find(dataverseId);
+        
+        Long totalResponses = guestbookResponseService.findCountAll(dataverseId);       
+        if(totalResponses.intValue() > 0){
+            displayDownloadAll = true;
+        }
+        
         dvpage.setDataverse(dataverse);
 
         guestbooks = new LinkedList<>();
         setInheritGuestbooksValue(!dataverse.isGuestbookRoot());
         if (inheritGuestbooksValue && dataverse.getOwner() != null) {
             for (Guestbook pg : dataverse.getParentGuestbooks()) {
-                pg.setUsageCount(guestbookService.findCountUsages(pg.getId()));
-                pg.setResponseCount(guestbookResponseService.findCountByGuestbookId(pg.getId()));
+                pg.setUsageCount(guestbookService.findCountUsages(pg.getId(), dataverseId));
+                pg.setResponseCount(guestbookResponseService.findCountByGuestbookId(pg.getId(), dataverseId));
                 guestbooks.add(pg);
             }
         }
         for (Guestbook cg : dataverse.getGuestbooks()) {
             cg.setDeletable(true);
-            cg.setUsageCount(guestbookService.findCountUsages(cg.getId()));
-            if (!(cg.getUsageCount().intValue() == 0)) {
+            cg.setUsageCount(guestbookService.findCountUsages(cg.getId(), dataverseId));
+            if (!(guestbookService.findCountUsages(cg.getId(), null) == 0)) {
                 cg.setDeletable(false);
             }
-            cg.setResponseCount(guestbookResponseService.findCountByGuestbookId(cg.getId()));
-            if (!(cg.getResponseCount().intValue() == 0)) {
+            cg.setResponseCount(guestbookResponseService.findCountByGuestbookId(cg.getId() , dataverseId));
+            if (!(guestbookResponseService.findCountByGuestbookId(cg.getId() , null) == 0)) {
                 cg.setDeletable(false);
             }
             cg.setDataverse(dataverse);
             guestbooks.add(cg);
         }
     }
+    
+    public void downloadResponsesByDataverse(){
+        FacesContext ctx = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
+        response.setContentType("text/comma-separated-values");
+        String fileNameString = "attachment;filename=" + getFileName();
+        response.setHeader("Content-Disposition", fileNameString);
+        String converted = convertResponsesToCommaDelimited(guestbookResponseService.findArrayByDataverseId(dataverseId));
+        try {
+            ServletOutputStream out = response.getOutputStream();
+            out.write(converted.getBytes());                                                                                                                                                                                                                                                                                                                     
+            out.flush();
+            ctx.responseComplete();
+        } catch (Exception e) {
 
+        }
+    }
+    
+    public void downloadResponsesByDataverseAndGuestbook(){
+        FacesContext ctx = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
+        response.setContentType("text/comma-separated-values");
+        String fileNameString = "attachment;filename=" + getFileName();
+        response.setHeader("Content-Disposition", fileNameString);
+        //selectedGuestbook
+        String converted = convertResponsesToCommaDelimited(guestbookResponseService.findArrayByDataverseIdAndGuestbookId(dataverseId, selectedGuestbook.getId()));
+        try {
+            ServletOutputStream out = response.getOutputStream();
+            out.write(converted.getBytes());                                                                                                                                                                                                                                                                                                                     
+            out.flush();
+            ctx.responseComplete();
+        } catch (Exception e) {
 
+        }
+    }
+    
+    private String getFileName(){
+       return  dataverse.getName() + "_GuestbookReponses.csv";
+    }
+
+    private final String SEPARATOR = ",";
+    private final String END_OF_LINE = "\n";
+
+    
+    private String convertResponsesToCommaDelimited(List<Object[]> guestbookResponses) {
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("Guestbook, Dataset, Date, Type, File Name, User Name, Email, Institution, Position, Custom Questions");
+        sb.append(END_OF_LINE);
+        for (Object[] array : guestbookResponses) {
+            sb.append(array[0]);
+            sb.append(SEPARATOR);
+            sb.append(array[1]);
+            sb.append(SEPARATOR);
+            sb.append(array[2]);
+            sb.append(SEPARATOR);
+            sb.append(array[3]);
+            sb.append(SEPARATOR);
+            sb.append(array[4]);
+            sb.append(SEPARATOR);
+            sb.append(array[5] == null ? "" : array[5]);
+            sb.append(SEPARATOR);
+            sb.append(array[6] == null ? "" : array[6]);
+            sb.append(SEPARATOR);
+            sb.append(array[7] == null ? "" : array[7]);
+            sb.append(SEPARATOR);
+            sb.append(array[8] == null ? "" : array[8]);
+            if(array[9] != null){
+                List <Object[]> responses = (List<Object[]>) array[9];               
+                for (Object[] response: responses){
+                    sb.append(SEPARATOR);
+                    sb.append(response[0]);
+                    sb.append(SEPARATOR);
+                    sb.append(response[1] == null ? "" : response[1]);
+                }
+            }
+            sb.append(END_OF_LINE);
+        }
+        return sb.toString();
+    }
 
 
     public void deleteGuestbook() {
@@ -194,7 +283,13 @@ public class ManageGuestbooksPage implements java.io.Serializable {
         guestbookPage.setGuestbook(selectedGuestbook);
     }
 
+    public boolean isDisplayDownloadAll() {
+        return displayDownloadAll;
+    }
 
+    public void setDisplayDownloadAll(boolean displayDownloadAll) {
+        this.displayDownloadAll = displayDownloadAll;
+    }
 
     public String updateGuestbooksRoot(javax.faces.event.AjaxBehaviorEvent event) throws javax.faces.event.AbortProcessingException {
         try {

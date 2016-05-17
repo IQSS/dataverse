@@ -1,6 +1,6 @@
 #metadataBlock	name	dataverseAlias   displayName													
 	geospatial		Geospatial Metadata													
-#datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	showabovefold	required	parent	metadatablock_id
+#datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	metadatablock_id
 	geographicCoverage	Geographic Coverage	Information on the geographic coverage of the data. Includes the total geographic scope of the data.		none	0		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		geospatial
 	country	Country / Nation	The country or nation that the Dataset is about.		text	1		TRUE	TRUE	FALSE	TRUE	FALSE	FALSE	geographicCoverage	geospatial
 	state	State / Province	The state or province that the Dataset is about. Use GeoNames for correct spelling and avoid abbreviations.		text	2		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	geographicCoverage	geospatial
