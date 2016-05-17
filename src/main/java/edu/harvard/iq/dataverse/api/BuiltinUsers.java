@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServi
 import edu.harvard.iq.dataverse.authorization.providers.builtin.PasswordEncryption;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.logging.Level;
@@ -24,6 +25,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.jsonForAuthUser;
 
 /**
  * REST API bean for managing {@link BuiltinUser}s.
@@ -134,6 +136,7 @@ public class BuiltinUsers extends AbstractApiBean {
 
             JsonObjectBuilder resp = Json.createObjectBuilder();
             resp.add("user", json(user));
+            resp.add("authenticatedUser", jsonForAuthUser(au));
             resp.add("apiToken", token.getTokenString());
             
             alr.setInfo("builtinUser:" + user.getUserName() + " authenticatedUser:" + au.getIdentifier() );
