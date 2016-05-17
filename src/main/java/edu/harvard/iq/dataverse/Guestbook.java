@@ -272,65 +272,7 @@ public class Guestbook implements Serializable {
                 }
         return retList;
     }
-    
-    public String getRequiredAccountInformationString(){
-        String retVal = "";
-        if(nameRequired){
-            retVal = "Required Account Information<br/>&#160; &#8226; Name";
-        }
-        if(emailRequired){
-            if(retVal.isEmpty()){
-               retVal = "Required Account Information<br/>&#160; &#8226; Email"; 
-            } else { 
-               retVal += "<br/>&#160; &#8226; Email";  
-            }
-        }
-        if(institutionRequired){
-            if(retVal.isEmpty()){
-               retVal = "Required Account Information<br/>&#160; &#8226; Institution"; 
-            } else { 
-               retVal += "<br/>&#160; &#8226; Institution";  
-            }
-        }
-        if(positionRequired){
-            if(retVal.isEmpty()){
-               retVal = "Required Account Information<br/>&#160; &#8226; Position"; 
-            } else { 
-               retVal += "<br/>&#160; &#8226; Position";  
-            }
-        }
-        return retVal;
-    }
-    
-    public String getOptionalAccountInformationString(){
-        String retVal = "";
-        if(!nameRequired){
-            retVal = "Optional Account Information<br/>&#160; &#8226; Name";
-        }
-        if(!emailRequired){
-            if(retVal.isEmpty()){
-               retVal = "Optional Account Information<br/>&#160; &#8226; Email"; 
-            } else { 
-               retVal += "<br/>&#160; &#8226; Email";  
-            }
-        }
-        if(!institutionRequired){
-            if(retVal.isEmpty()){
-               retVal = "Optional Account Information<br/>&#160; &#8226; Institution"; 
-            } else { 
-               retVal += "<br/>&#160; &#8226; Institution";  
-            }
-        }
-        if(!positionRequired){
-            if(retVal.isEmpty()){
-               retVal = "Optional Account Information<br/>&#160; &#8226; Position"; 
-            } else { 
-               retVal += "<br/>&#160; &#8226; Position";  
-            }
-        }
-        return retVal;
-    }
-    
+        
     public void removeCustomQuestion(int index){
         customQuestions.remove(index);
     }

@@ -111,7 +111,7 @@ public class DataverseHeaderFragment implements java.io.Serializable {
         }        
         
         if (subPage != null) {
-            breadcrumbs.add(new Breadcrumb(subPage, null));
+            breadcrumbs.add(new Breadcrumb("", subPage));
         }
     }
 
@@ -244,8 +244,8 @@ public class DataverseHeaderFragment implements java.io.Serializable {
         return "";
     }
     
-    public void addBreadcrumb (String linkString, String url){
-        breadcrumbs.add(new Breadcrumb(linkString, url));
+    public void addBreadcrumb (String url, String linkString){
+        breadcrumbs.add(new Breadcrumb(url, linkString));
     }
 
 
@@ -261,7 +261,7 @@ public class DataverseHeaderFragment implements java.io.Serializable {
             this.dvObject = dvObject;
         }
 
-        public Breadcrumb(String breadcrumbText,  String url) {
+        public Breadcrumb( String url, String breadcrumbText) {
             this.breadcrumbText = breadcrumbText;
             this.url = url;
         }
