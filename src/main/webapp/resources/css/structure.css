@@ -87,6 +87,7 @@ td.col-select-width {width:36px;}
 .margin-top-half {margin-top:.5em;}
 .margin-bottom {margin-bottom:1em;}
 .margin-bottom-half {margin-bottom:.5em;}
+.no-margin-top {margin-top:0;}
 .no-margin-bottom {margin-bottom:0;}
 .padding-12 {padding: 12px;}
 .clear-both {clear:both;}
