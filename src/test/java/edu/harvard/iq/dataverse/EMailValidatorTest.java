@@ -8,6 +8,17 @@ public class EMailValidatorTest {
     @Test
     public void testIsEmailValid() {
         assertEquals(true, EMailValidator.isEmailValid("pete@mailinator.com", null));
+        /**
+         * @todo How can " leadingWhitespace@mailinator.com" be a valid email
+         * address?
+         */
+        assertEquals(true, EMailValidator.isEmailValid(" leadingWhitespace@mailinator.com", null));
+        /**
+         * @todo How can "trailingWhitespace@mailinator.com " be a valid email
+         * address?
+         */
+        assertEquals(true, EMailValidator.isEmailValid("trailingWhitespace@mailinator.com ", null));
+        assertEquals(false, EMailValidator.isEmailValid("elisah.da mota@example.com", null));
         assertEquals(false, EMailValidator.isEmailValid("pete1@mailinator.com;pete2@mailinator.com", null));
         boolean issue2998resolved = false;
         /**

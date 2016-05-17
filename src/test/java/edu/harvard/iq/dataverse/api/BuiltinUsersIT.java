@@ -23,7 +23,8 @@ public class BuiltinUsersIT {
     @Test
     public void testUserId() {
 
-        Response createUserResponse = createUser(getRandomUsername(), "firstName", "lastName");
+        String email = null;
+        Response createUserResponse = createUser(getRandomUsername(), "firstName", "lastName", email);
         createUserResponse.prettyPrint();
         assertEquals(200, createUserResponse.getStatusCode());
 
@@ -54,10 +55,33 @@ public class BuiltinUsersIT {
     }
 
     @Test
+    public void testLeadingWhitespaceInEmailAddress() {
+        String randomUsername = getRandomUsername();
+        String email = " " + randomUsername + "@mailinator.com";
+        Response createUserResponse = createUser(randomUsername, "firstName", "lastName", email);
+        createUserResponse.prettyPrint();
+        assertEquals(200, createUserResponse.statusCode());
+        String emailActual = JsonPath.from(createUserResponse.body().asString()).getString("data.user." + emailKey);
+        // the backend will trim the email address
+        String emailExpected = email.trim();
+        assertEquals(emailExpected, emailActual);
+    }
+
+    @Test
+    public void testLeadingWhitespaceInUsername() {
+        String randomUsername = " " + getRandomUsername();
+        String email = randomUsername + "@mailinator.com";
+        Response createUserResponse = createUser(randomUsername, "firstName", "lastName", email);
+        createUserResponse.prettyPrint();
+        assertEquals(400, createUserResponse.statusCode());
+    }
+
+    @Test
     public void testLogin() {
 
         String usernameToCreate = getRandomUsername();
-        Response createUserResponse = createUser(usernameToCreate, "firstName", "lastName");
+        String email = null;
+        Response createUserResponse = createUser(usernameToCreate, "firstName", "lastName", email);
         createUserResponse.prettyPrint();
         assertEquals(200, createUserResponse.getStatusCode());
 
@@ -87,8 +111,8 @@ public class BuiltinUsersIT {
 
     }
 
-    private Response createUser(String username, String firstName, String lastName) {
-        String userAsJson = getUserAsJsonString(username, firstName, lastName);
+    private Response createUser(String username, String firstName, String lastName, String email) {
+        String userAsJson = getUserAsJsonString(username, firstName, lastName, email);
         String password = getPassword(userAsJson);
         Response response = given()
                 .body(userAsJson)
@@ -127,12 +151,16 @@ public class BuiltinUsersIT {
         return UUID.randomUUID().toString().substring(0, 8);
     }
 
-    private static String getUserAsJsonString(String username, String firstName, String lastName) {
+    private static String getUserAsJsonString(String username, String firstName, String lastName, String email) {
         JsonObjectBuilder builder = Json.createObjectBuilder();
         builder.add(usernameKey, username);
         builder.add("firstName", firstName);
         builder.add("lastName", lastName);
-        builder.add(emailKey, getEmailFromUserName(username));
+        if (email == null) {
+            builder.add(emailKey, getEmailFromUserName(username));
+        } else {
+            builder.add(emailKey, email);
+        }
         String userAsJson = builder.build().toString();
         logger.fine("User to create: " + userAsJson);
         return userAsJson;

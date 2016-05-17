@@ -62,6 +62,9 @@ public class ShibServiceBean {
         HARVARD2,
         TWO_EMAILS,
         INVALID_EMAIL,
+        EMAIL_WITH_LEADING_SPACE,
+        UID_WITH_LEADING_SPACE,
+        IDENTIFIER_WITH_LEADING_SPACE,
         MISSING_REQUIRED_ATTR,
     };
 
@@ -127,6 +130,18 @@ public class ShibServiceBean {
 
             case INVALID_EMAIL:
                 ShibUtil.mutateRequestForDevConstantInvalidEmail(request);
+                break;
+
+            case EMAIL_WITH_LEADING_SPACE:
+                ShibUtil.mutateRequestForDevConstantEmailWithLeadingSpace(request);
+                break;
+
+            case UID_WITH_LEADING_SPACE:
+                ShibUtil.mutateRequestForDevConstantUidWithLeadingSpace(request);
+                break;
+
+            case IDENTIFIER_WITH_LEADING_SPACE:
+                ShibUtil.mutateRequestForDevConstantIdentifierWithLeadingSpace(request);
                 break;
 
             case MISSING_REQUIRED_ATTR:
