@@ -4,19 +4,20 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:jsf="http://xmlns.jcp.org/jsf"
-      xmlns:p="http://primefaces.org/ui">
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
 
     <h:head>
     </h:head>
 
     <h:body>
         <f:metadata>
-            <f:viewParam name="dataverseId" value="#{HarvestingClientsPage.dataverseId}"/>
-            <f:viewAction action="#{HarvestingClientsPage.init}"/>
-            <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(HarvestingClientsPage.dataverse, bundle['harvestclients.title'])}"/>
+            <f:viewParam name="dataverseId" value="#{harvestingClientsPage.dataverseId}"/>
+            <f:viewAction action="#{harvestingClientsPage.init}"/>
+            <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(harvestingClientsPage.dataverse, bundle['harvestclients.title'])}"/>
         </f:metadata>
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="#{bundle['harvestclients.title']} - #{HarvestingClientsPage.dataverse.name} #{bundle.dataverse}"/>
+            <ui:param name="pageTitle" value="#{bundle['harvestclients.title']} - #{harvestingClientsPage.dataverse.name} #{bundle.dataverse}"/>
             <ui:param name="showDataverseHeader" value="false"/>
             <ui:define name="body">
 
@@ -25,14 +26,15 @@
                     <div class="form-group clearfix">
                         <div class="pull-right">
                             <p:commandLink type="button" id="addClient" styleClass="btn btn-default"
-                                           actionListener="#{HarvestingClientsPage.initNewClient()}"
-                                           update="newHarvestingClientDialog" oncomplete="PF('newHarvestingClientForm').show();handleResizeDialog('newHarvestingClientDialog');bind_bsui_components();">
+                                           actionListener="#{harvestingClientsPage.initNewClient}"
+                                           update="newHarvestingClientDialog" 
+                                           oncomplete="PF('newHarvestingClientForm').show();handleResizeDialog('newHarvestingClientDialog');bind_bsui_components();">
                                 <span class="glyphicon glyphicon-plus"/> Add Client
                             </p:commandLink>
                         </div>
                     </div>
 
-                    <div jsf:rendered="#{empty HarvestingClientsPage.configuredHarvestingClients}">
+                    <div jsf:rendered="#{empty harvestingClientsPage.configuredHarvestingClients}">
                         <p class="help-block">
                             <span class="glyphicon glyphicon-info-sign"/>&#160;
                             <h:outputText value="No harvesting clients are presently configured">
@@ -41,41 +43,41 @@
                         </p>
                     </div>
 
-                    <p:dataTable id="clientsTable" styleClass="manageTable" var="client" value="#{HarvestingClientsPage.configuredHarvestingClients}"
-                                 rendered="#{!empty HarvestingClientsPage.configuredHarvestingClients}">
-                        <p:column width="9%" sortBy="#{client.name}" headerText="#{bundle['harvestclients.tab.header.name']}">
-                            <h:outputText value="#{client.name}" />
+                    <p:dataTable id="clientsTable" styleClass="manageTable" var="harvestClient" value="#{harvestingClientsPage.configuredHarvestingClients}"
+                                 rendered="#{!empty harvestingClientsPage.configuredHarvestingClients}">
+                        <p:column width="9%" headerText="#{bundle['harvestclients.tab.header.name']}">
+                            <h:outputText value="#{harvestClient.name}" />
                         </p:column>
                         <p:column width="29%" headerText="#{bundle['harvestclients.tab.header.url']}">
-                            <h:outputText value="#{client.harvestingUrl}" />
+                            <h:outputText value="#{harvestClient.harvestingUrl}" />
                         </p:column>
                         <p:column width="20%" class="text-center" headerText="#{bundle['harvestclients.tab.header.lastrun']}">
-                            <h:outputText value="#{client.lastRun.startTime}" />
+                            <h:outputText value="#{harvestClient.lastRun.startTime}" />
                         </p:column>
                         <p:column width="27%" class="text-center" headerText="#{bundle['harvestclients.tab.header.lastresults']}">
-                            <h:outputText value="#{client.lastRun.detailedResultLabel}" />
+                            <h:outputText value="#{harvestClient.lastRun.detailedResultLabel}" />
                         </p:column>    
                         <p:column width="15%" class="col-manage-action col-button-action text-center" headerText="#{bundle['harvestclients.tab.header.action']}">
                             <div class="button-block">
                                 <div class="btn-group" role="group">
                                     <!-- TODO: a confirmation dialog? - "sure you want to run harvest now?" -->
                                     <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
-                                                   action="#{HarvestingClientsPage.runHarvest(client)}"
+                                                   action="#{harvestingClientsPage.runHarvest(harvestClient)}"
                                                    update=":harvestingClientsForm"
                                                    title="#{bundle['harvestclients.tab.header.action.btn.run']}">
                                         <span class="glyphicon glyphicon-leaf"></span>
                                     </p:commandLink>
                                     <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
-                                                   action="#{HarvestingClientsPage.setSelectedClient(client)}"
+                                                   action="#{harvestingClientsPage.setSelectedClient(harvestClient)}"
                                                    oncomplete="PF('viewAndEditClient').show();bind_bsui_components();"
                                                    update=":harvestingClientsForm"
                                                    title="#{bundle['harvestclients.tab.header.action.btn.edit']}">
                                         <span class="glyphicon glyphicon-edit"></span>
                                     </p:commandLink>
                                     <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
-                                                   action="#{HarvestingClientsPage.setSelectedClient(client)}"
-                                                   oncomplete="PF('deleteConfirmation').show()"
-                                                   update=":harvestingClientsForm"
+                                                   action="#{harvestingClientsPage.setSelectedClient(harvestClient)}"
+                                                   oncomplete="PF('deleteConfirmation').show();bind_bsui_components();"
+                                                   update=":harvestingClientsForm,:harvestingClientsForm:deleteConfirmation,:harvestingClientsForm:newHarvestingClientDialog"
                                                    title="#{bundle['harvestclients.tab.header.action.btn.delete']}">
                                         <span class="glyphicon glyphicon-trash"></span>
                                     </p:commandLink>
@@ -85,13 +87,13 @@
                     </p:dataTable>
 
                     <!-- confirmation dialog for deleting a harvesting client: -->
-                    <p:dialog header="#{bundle['harvestclients.tab.header.action.btn.delete.dialog.header']}" widgetVar="deleteConfirmation" modal="true">
+                    <p:dialog id="deleteConfirmation" header="#{bundle['harvestclients.tab.header.action.btn.delete.dialog.header']}" widgetVar="deleteConfirmation" modal="true">
                         <p class="help-block">
-                            <span class="glyphicon glyphicon-warning-sign text-danger"/> <span class="text-danger">#{bundle['harvestclients.tab.header.action.btn.delete.dialog.tip']}</span>
+                            <span class="glyphicon glyphicon-warning-sign text-danger"/> <span class="text-danger">#{bundle['harvestclients.tab.header.action.btn.delete.dialog.tip']}(#{harvestingClientsPage.getSelectedClient().name})</span>
                         </p>
                         <div class="button-block">
-                            <p:commandButton value="#{bundle.continue}" onclick="PF('deleteConfirmation').hide()" action="#{manageGroupsPage.deleteClient()}" update="@all" />
-                            <p:commandButton value="#{bundle.cancel}" onclick="PF('deleteConfirmation').hide()" type="button" update="@all"/>
+                            <p:commandButton value="#{bundle.continue}" onclick="PF('deleteConfirmation').hide()" action="#{harvestingClientsPage.deleteClient()}" update=":harvestingClientsForm" />
+                            <p:commandButton value="#{bundle.cancel}" onclick="PF('deleteConfirmation').hide()" type="button" update=":harvestingClientsForm"/>
                         </div>
                     </p:dialog>
                     
@@ -111,12 +113,12 @@
                                     <div class="col-sm-9">
                                         <p:panelGrid columns="2" styleClass="noBorders">
                                             <p:inputText id="nickname" styleClass="form-control"
-                                                         value="#{HarvestingClientsPage.getSelectedClient().name}"
-                                                         required="#{param['DO_VALIDATION']}"
-                                                         requiredMessage="#{bundle['harvestclients.newClientDialog.nickname.required']}"
-                                                         validator="#{HarvestingClientsPage.validateNickname}" 
-                                                         immediate="true"
-                                                         binding="#{HarvestingClientsPage.newClientNicknameInputField}"/>
+                                                         value="#{harvestingClientsPage.newNickname}"
+                                                         
+                                                         binding="#{harvestingClientsPage.newClientNicknameInputField}"/>
+                                            <!-- required="_{param['DO_VALIDATION']}"
+                                                         requiredMessage="_{bundle['harvestclients.newClientDialog.nickname.required']}"
+                                                         validator="_{harvestingClientsPage.validateNickname}" -->
                                             <p:message for="nickname"/>
                                         </p:panelGrid>
                                         <p class="help-block">#{bundle['harvestclients.newClientDialog.nickname.helptext']}</p>
@@ -130,7 +132,7 @@
                                     </label>
                                     <div class="col-sm-9">
                                         <p:panelGrid columns="2" styleClass="noBorders">
-                                            <p:selectOneRadio id="typeOptions" value="#{HarvestingClientsPage.harvestTypeRadio}">
+                                            <p:selectOneRadio id="typeOptions" value="#{harvestingClientsPage.harvestTypeRadio}">
                                                 <f:selectItem itemLabel="#{bundle['harvestclients.newClientDialog.type.OAI']}" itemValue="1" />
                                                 <f:selectItem itemLabel="#{bundle['harvestclients.newClientDialog.type.Nesstar']}" itemDisabled="true" itemValue="2" />
                                             </p:selectOneRadio>
@@ -147,21 +149,146 @@
                                     <div class="col-sm-9">
                                         <p:panelGrid columns="2" styleClass="noBorders">
                                             <p:inputText id="serverUrl" styleClass="form-control"
-                                                         value="#{HarvestingClientsPage.getSelectedClient().harvestingUrl}"
-                                                         required="#{param['DO_VALIDATION']}"
-                                                         requiredMessage="#{bundle['harvestclients.newClientDialog.url.required']}"
-                                                         onchange="testServerUrl()"
-                                                         
-                                                         validator="#{HarvestingClientsPage.validateClientUrl}"
-                                                         binding="#{HarvestingClientsPage.newClientUrlInputField}"/>
+                                                         value="#{harvestingClientsPage.newHarvestingUrl}"
+                                                         binding="#{harvestingClientsPage.newClientUrlInputField}"/>
+                                            
                                             <p:message for="serverUrl"/>
-                                            <p:commandButton value="Direct" id="testServerUrl"
-                                                        style="display:none"
-                                                        update="newHarvestingClientDialog"
-                                                        action="#{HarvestingClientsPage.testClientUrl(HarvestingClientsPage.getSelectedClient().getHarvestingUrl())}">
-                                            </p:commandButton>
+                                            
                                         </p:panelGrid>
                                         <p class="help-block">#{bundle['harvestclients.newClientDialog.url.helptext']}</p>
+                                        <p:commandButton rendered="#{! harvestingClientsPage.initialSettingsValidated}"
+                                                         value="#{bundle['harvestclients.newClientDialog.btn.initialsettings.validate']}"
+                                                         id="validateInitialSettingsBtn"
+                                                         styleClass="btn btn-default"
+                                                         oncomplete="PF('newHarvestingClientForm').show();"
+                                                         update=":harvestingClientsForm:newHarvestingClientDialog"
+                                                         action="#{harvestingClientsPage.validateInitialSettings()}">
+                                        </p:commandButton>
+                                    </div>
+                                </div>
+                                
+                                <!-- the extra settings that appear once/if the initial settings are validated: -->
+                                
+                                <!-- harvesting sets (if available): these are obtained from the oai server response: -->
+                                
+                                <div class="form-group" jsf:rendered="#{harvestingClientsPage.initialSettingsValidated and harvestingClientsPage.harvestTypeOAI}">
+                                    <label for="serverOaiSets" class="col-sm-2 control-label">
+                                        #{bundle['harvestclients.newClientDialog.oaiSets']} 
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <p:panelGrid columns="2" styleClass="noBorders">
+                                            
+                                            <p:selectOneMenu id="serverOaiSets" 
+                                                             styleClass="form-control" value="#{harvestingClientsPage.newOaiSet}"
+                                                             rendered="#{harvestingClientsPage.initialSettingsValidated}">
+                                                <f:selectItem itemLabel="#{bundle['harvestclients.newClientDialog.oaiSets.noset']}" itemValue="" noSelectionOption="true" />
+                                                <f:selectItems value="#{harvestingClientsPage.oaiSetsSelectItems}" />
+                                            </p:selectOneMenu>
+                                            <p:message for="serverOaiSets"/>
+
+                                        </p:panelGrid>
+                                        <p class="help-block" jsf:rendered="#{!empty harvestingClientsPage.oaiSetsSelectItems}">#{bundle['harvestclients.newClientDialog.oaiSets.helptext']}</p>
+                                        <p class="help-block" jsf:rendered="#{empty harvestingClientsPage.oaiSetsSelectItems}">#{bundle['harvestclients.newClientDialog.oaiSets.helptext.noset']}</p>
+
+                                    </div>
+                                </div>
+                                
+                                <!-- metadata formats offered. this is also obtained from the oai server response: -->
+                                
+                                <div class="form-group" jsf:rendered="#{harvestingClientsPage.initialSettingsValidated and harvestingClientsPage.harvestTypeOAI}">
+                                    <label for="oaiMetadataFormat" class="col-sm-2 control-label">
+                                        #{bundle['harvestclients.newClientDialog.oaiMetadataFormat']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <p:panelGrid columns="2" styleClass="noBorders">
+                                            
+                                            <p:selectOneMenu id="oaiMetadataFormat" 
+                                                             styleClass="form-control" value="#{harvestingClientsPage.newMetadataFormat}"
+                                                             rendered="#{harvestingClientsPage.initialSettingsValidated}">
+                                                <f:selectItem itemLabel="#{bundle.select}" itemValue="" noSelectionOption="true" />
+                                                <f:selectItems value="#{harvestingClientsPage.oaiMetadataFormatSelectItems}" />
+                                            </p:selectOneMenu>
+                                            <p:message for="oaiMetadataFormat"/>
+   
+                                        </p:panelGrid>
+                                        <p class="help-block">#{bundle['harvestclients.newClientDialog.oaiMetadataFormat.helptext']}</p>
+
+                                    </div>
+                                </div>
+                                
+                                <!-- scheduling; can be enabled, can be left unscheduled; 
+                                 harvesting can be scheduled daily or weekly. -->
+                                
+                                <div class="form-group" jsf:rendered="#{harvestingClientsPage.initialSettingsValidated and harvestingClientsPage.harvestTypeOAI}">
+                                    <label for="harvestingSchedule" class="col-sm-2 control-label">
+                                        #{bundle['harvestclients.newClientDialog.schedule']} 
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <p:panelGrid columns="2" styleClass="noBorders">
+                                            <p:selectOneRadio id="harvestingSchedule"  onchange="toggleScheduling()" value="#{harvestingClientsPage.harvestingScheduleRadio}">
+                                                <f:selectItem itemLabel="#{bundle['harvestclients.newClientDialog.schedule.none']}" itemValue="0" />
+                                                <f:selectItem itemLabel="#{bundle['harvestclients.newClientDialog.schedule.daily']}" itemValue="1" />
+                                                <f:selectItem itemLabel="#{bundle['harvestclients.newClientDialog.schedule.weekly']}" itemValue="2" />
+                                            </p:selectOneRadio>
+                                            
+                                            <p:commandButton id="toggleSchedule"
+                                                        style="display:none"
+                                                        oncomplete="PF('newHarvestingClientForm').show();"
+                                                        update=":harvestingClientsForm:newHarvestingClientDialog"
+                                                        action="#{harvestingClientsPage.toggleNewClientSchedule()}">
+                                            </p:commandButton>
+                                        </p:panelGrid>
+                                        
+                                        <!-- extra panel grids for configuring the day of week and/or time for scheduled harvests: -->
+                                        
+                                        <p:panelGrid columns="2" styleClass="noBorders" rendered="#{harvestingClientsPage.newHarvestingScheduledWeekly}">
+                                            <p:selectOneMenu id="scheduleDayOfWeek" 
+                                                             styleClass="form-control" 
+                                                             value="#{harvestingClientsPage.newHarvestingScheduleDayOfWeek}">
+                                                <f:selectItem itemLabel="#{bundle.select}" itemValue="" noSelectionOption="true" />
+                                                <f:selectItems value="#{harvestingClientsPage.daysOfWeekSelectItems}" />
+                                            </p:selectOneMenu> 
+                                            <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
+                                        </p:panelGrid>
+                                        
+                                        <p:panelGrid columns="2" styleClass="noBorders" rendered="#{harvestingClientsPage.newHarvestingScheduled}">
+                                            <p:selectOneMenu id="scheduleTimeOfDay" 
+                                                             styleClass="form-control" 
+                                                             value="#{harvestingClientsPage.newHarvestingScheduleTimeOfDay}">
+                                                <f:selectItem itemLabel="#{bundle.select}" itemValue="" noSelectionOption="true" />
+                                                <!-- f:selectItems value="_{harvestingClientsPage.daysOfWeekSelectItems}" / -->
+                                            </p:selectOneMenu> 
+                                            <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
+                                        </p:panelGrid>
+                                        
+                                        
+                                        
+                                        <p class="help-block">#{bundle['harvestclients.newClientDialog.schedule.helptext']}</p>
+
+                                    </div>
+                                </div>
+                                
+                                
+                                
+                                <!-- harvesting "styles" - these define different rules used to format and display metadata harvested from different archives  -->
+                                
+                                <div class="form-group" jsf:rendered="#{harvestingClientsPage.initialSettingsValidated and harvestingClientsPage.harvestTypeOAI}">
+                                    <label for="harvestingStyle" class="col-sm-2 control-label">
+                                        #{bundle['harvestclients.newClientDialog.harvestingStyle']} 
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <p:panelGrid columns="2" styleClass="noBorders">
+                                            
+                                            <p:selectOneMenu id="harvestingStyle" 
+                                                             styleClass="form-control" value="#{harvestingClientsPage.newHarvestingStyle}"
+                                                             rendered="#{harvestingClientsPage.initialSettingsValidated}">
+                                                <f:selectItems value="#{harvestingClientsPage.harvestingStylesSelectItems}" />
+                                            </p:selectOneMenu>
+                                            <p:message for="harvestingStyle"/>
+   
+                                        </p:panelGrid>
+                                        <p class="help-block">#{bundle['harvestclients.newClientDialog.harvestingStyle.helptext']}</p>
+
                                     </div>
                                 </div>
                                 
@@ -169,21 +296,23 @@
                             </div>
                             <div class="button-block">
                                 <p:commandLink type="button" styleClass="btn btn-default" 
+                                               rendered="#{harvestingClientsPage.initialSettingsValidated}"
                                                value="#{bundle['harvestclients.newClientDialog.btn.create']}"
-                                               update="harvestingClientsForm"
-                                               actionListener="#{HarvestingClientsPage.addClient()}"
+                                               update=":harvestingClientsForm:newHarvestingClientDialog"
+                                                
+                                               actionListener="#{harvestingClientsPage.addClient()}"
                                                oncomplete="if (args &amp;&amp; !args.validationFailed) PF('newHarvestingClientForm').hide();">
                                     <f:param name="DO_VALIDATION" value="true"/>
                                 </p:commandLink>
-                                <button type="button" class="btn btn-default" onclick="PF('newHarvestingClientForm').hide()" value="#{bundle.cancel}">#{bundle.cancel}</button>
+                                <button type="button"  jsf:rendered="#{harvestingClientsPage.initialSettingsValidated}" class="btn btn-default" onclick="PF('newHarvestingClientForm').hide()" value="#{bundle.cancel}">#{bundle.cancel}</button>
                             </div>
                         </p:fragment>
     </p:dialog>
                     
                 </h:form>
                 <script type="text/javascript">
-                    function testServerUrl() {
-                        $('button[id$="testServerUrl"]').trigger('click');
+                    function toggleScheduling() {
+                        $('button[id$="toggleSchedule"]').trigger('click');
                     }
                 </script>
                 

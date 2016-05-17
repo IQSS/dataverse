@@ -8,10 +8,14 @@ package edu.harvard.iq.dataverse.harvest.client;
 import edu.harvard.iq.dataverse.Dataverse;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
+
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -59,10 +63,15 @@ public class HarvestingClient implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
-
+    
     public static final String HARVEST_TYPE_OAI="oai";
     public static final String HARVEST_TYPE_NESSTAR="nesstar";
     
+    
+    /* 
+     * Different harvesting "styles". These define how we format and 
+     * display meatada harvested from various remote resources. 
+    */
     public static final String HARVEST_STYLE_DATAVERSE="dataverse";
     // pre-4.0 remote Dataverse:
     public static final String HARVEST_STYLE_VDC="vdc";
@@ -71,7 +80,30 @@ public class HarvestingClient implements Serializable {
     public static final String HARVEST_STYLE_ROPER="roper";
     public static final String HARVEST_STYLE_HGL="hgl";
     public static final String HARVEST_STYLE_DEFAULT="default";
+    
+    public static final String HARVEST_STYLE_DESCRIPTION_DATAVERSE="Dataverse v4+";
+    // pre-4.0 remote Dataverse:
+    public static final String HARVEST_STYLE_DESCRIPTION_VDC="DVN, v2-3";
+    public static final String HARVEST_STYLE_DESCRIPTION_ICPSR="ICPSR";
+    public static final String HARVEST_STYLE_DESCRIPTION_NESSTAR="Nesstar archive";
+    public static final String HARVEST_STYLE_DESCRIPTION_ROPER="Roper Archive";
+    public static final String HARVEST_STYLE_DESCRIPTION_HGL="HGL";
+    public static final String HARVEST_STYLE_DESCRIPTION_DEFAULT="Generic OAI resource (DC)";
+    
+    
+    public static final List<String> HARVEST_STYLE_LIST = Arrays.asList(HARVEST_STYLE_DATAVERSE, HARVEST_STYLE_VDC, HARVEST_STYLE_NESSTAR, HARVEST_STYLE_ROPER, HARVEST_STYLE_HGL, HARVEST_STYLE_DEFAULT);
+    public static final List<String> HARVEST_STYLE_DESCRIPTION_LIST = Arrays.asList(HARVEST_STYLE_DESCRIPTION_DATAVERSE, HARVEST_STYLE_DESCRIPTION_VDC, HARVEST_STYLE_DESCRIPTION_NESSTAR, HARVEST_STYLE_DESCRIPTION_ROPER, HARVEST_STYLE_DESCRIPTION_HGL, HARVEST_STYLE_DESCRIPTION_DEFAULT);
+    
+    public static final Map<String, String> HARVEST_STYLE_INFOMAP = new LinkedHashMap<String, String>();
+    
+    static {
+        for (int i=0; i< HARVEST_STYLE_LIST.size(); i++){
+            HARVEST_STYLE_INFOMAP.put(HARVEST_STYLE_LIST.get(i), HARVEST_STYLE_DESCRIPTION_LIST.get(i));
+        }
+    }
+    
 
+    
     public static final String REMOTE_ARCHIVE_URL_LEVEL_DATAVERSE="dataverse";
     public static final String REMOTE_ARCHIVE_URL_LEVEL_DATASET="dataset";
     public static final String REMOTE_ARCHIVE_URL_LEVEL_FILE="file";
