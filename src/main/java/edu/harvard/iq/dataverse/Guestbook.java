@@ -19,6 +19,7 @@ import javax.persistence.OrderBy;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.hibernate.validator.constraints.NotBlank;
 
 /**
@@ -193,9 +194,9 @@ public class Guestbook implements Serializable {
         for (CustomQuestion cq : this.getCustomQuestions()){
             if(cq.isRequired()){
             if(retVal.isEmpty()){
-               retVal = "Required Custom Questions<br/>&#160; &#8226; " + cq.getQuestionString(); 
+               retVal = "Required Custom Questions<br/>&#160; &#8226; " + StringEscapeUtils.escapeHtml(cq.getQuestionString()); 
             } else { 
-               retVal += "<br/>&#160; &#8226; " + cq.getQuestionString();
+               retVal += "<br/>&#160; &#8226; " + StringEscapeUtils.escapeHtml(cq.getQuestionString());
             }
         }
         }
@@ -207,9 +208,9 @@ public class Guestbook implements Serializable {
         for (CustomQuestion cq : this.getCustomQuestions()){
             if(!cq.isRequired()){
             if(retVal.isEmpty()){
-               retVal = "Optional Custom Questions<br/>&#160; &#8226; " + cq.getQuestionString(); 
+               retVal = "Optional Custom Questions<br/>&#160; &#8226; " + StringEscapeUtils.escapeHtml(cq.getQuestionString()); 
             } else { 
-               retVal += "<br/>&#160; &#8226; " + cq.getQuestionString();
+               retVal += "<br/>&#160; &#8226; " + StringEscapeUtils.escapeHtml(cq.getQuestionString());
             }
         }
         }
