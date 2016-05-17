@@ -357,21 +357,34 @@ public class Shib implements java.io.Serializable {
     }
 
     /**
-     * @return The value of a Shib attribute (if non-empty) or null.
+     * @return The trimmed value of a Shib attribute (if non-empty) or null.
+     *
+     * @todo Move this to ShibUtil
      */
     private String getValueFromAssertion(String key) {
         Object attribute = request.getAttribute(key);
         if (attribute != null) {
             String attributeValue = attribute.toString();
-            logger.fine("The SAML assertion for \"" + key + "\" (optional) was \"" + attributeValue + "\".");
-            if (!attributeValue.isEmpty()) {
-                return attributeValue;
+            String trimmedValue = attributeValue.trim();
+            if (!trimmedValue.isEmpty()) {
+                logger.fine("The SAML assertion for \"" + key + "\" (optional) was \"" + attributeValue + "\" and was trimmed to \"" + trimmedValue + "\".");
+                return trimmedValue;
+            } else {
+                logger.fine("The SAML assertion for \"" + key + "\" (optional) was \"" + attributeValue + "\" and was trimmed to \"" + trimmedValue + "\" (empty string). Returing null.");
+                return null;
             }
+        } else {
+            logger.fine("The SAML assertion for \"" + key + "\" (optional) was null.");
+            return null;
         }
-        logger.info("The SAML assertion for \"" + key + "\" (optional) was null.");
-        return null;
     }
 
+    /**
+     * @return The trimmed value of a Shib attribute (if non-empty) or null.
+     *
+     * @todo Move this to ShibUtil. More objects might be required since
+     * sometimes we want to show messages, etc.
+     */
     private String getRequiredValueFromAssertion(String key) throws Exception {
         Object attribute = request.getAttribute(key);
         if (attribute == null) {
@@ -390,8 +403,9 @@ public class Shib implements java.io.Serializable {
         if (attributeValue.isEmpty()) {
             throw new Exception(key + " was empty");
         }
-        logger.fine("The SAML assertion for \"" + key + "\" (required) was \"" + attributeValue + "\".");
-        return attributeValue;
+        String trimmedValue = attributeValue.trim();
+        logger.fine("The SAML assertion for \"" + key + "\" (required) was \"" + attributeValue + "\" and was trimmed to \"" + trimmedValue + "\".");
+        return trimmedValue;
     }
 
     public String getRootDataverseAlias() {
