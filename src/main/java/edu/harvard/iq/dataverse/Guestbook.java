@@ -188,35 +188,7 @@ public class Guestbook implements Serializable {
 
     public void setDeletable(boolean deletable) {
         this.deletable = deletable;
-    }
-    
-    public String getRequiredCustomQuestionsString(){
-        String retVal = "";
-        for (CustomQuestion cq : this.getCustomQuestions()){
-            if(cq.isRequired()){
-            if(retVal.isEmpty()){
-               retVal = "Required Custom Questions<br/>&#160; &#8226; " + StringEscapeUtils.escapeHtml(cq.getQuestionString()); 
-            } else { 
-               retVal += "<br/>&#160; &#8226; " + StringEscapeUtils.escapeHtml(cq.getQuestionString());
-            }
-        }
-        }
-        return retVal;        
-    }
-    
-    public String getOptionalCustomQuestionsString(){
-        String retVal = "";
-        for (CustomQuestion cq : this.getCustomQuestions()){
-            if(!cq.isRequired()){
-            if(retVal.isEmpty()){
-               retVal = "Optional Custom Questions<br/>&#160; &#8226; " + StringEscapeUtils.escapeHtml(cq.getQuestionString()); 
-            } else { 
-               retVal += "<br/>&#160; &#8226; " + StringEscapeUtils.escapeHtml(cq.getQuestionString());
-            }
-        }
-        }
-        return retVal;        
-    }
+    }    
     
     public List<String> getRequiredAccountInformation() {
         List<String> retList = new ArrayList();
