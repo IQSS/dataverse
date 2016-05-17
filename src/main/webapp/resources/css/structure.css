@@ -228,7 +228,7 @@ div.panel.highlight {
 #idpSelectIdPListTile form, #idpSelectIdPEntryTile form {margin-bottom:1em;}
 #idpSelectIdPListTile input.btn, #idpSelectIdPEntryTile input.btn {margin-left:.5em;}
 #idpSelectIdPEntryTile {position: relative;}
-.IdPSelectPreferredIdPButton {display:inline-block;text-align:center;margin-right:4px;}
+.IdPSelectPreferredIdPButton {display:inline-block;text-align:center;margin-right:4px;margin-bottom:.5em;}
 ul.IdPSelectDropDown {
     background-clip: padding-box;
     background-color: #fff;

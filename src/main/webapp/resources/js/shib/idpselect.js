@@ -1548,7 +1548,7 @@ function IdPSelectUI() {
 
         var preferredIdPDIV = buildDiv('PreferredIdPTile');
 
-        buildTextDiv(preferredIdPDIV, 'idpPreferred.label');
+        // buildTextDiv(preferredIdPDIV, 'idpPreferred.label');
 
         for(var i = 0 ; i < maxPreferredIdPs && i < preferredIdPs.length; i++){
             if (preferredIdPs[i]) {
@@ -1607,11 +1607,11 @@ function IdPSelectUI() {
             idpEntryDiv.style.display = 'none';
         }
 
-        if (preferredTile) {
-            buildTextDiv(idpEntryDiv, 'idpEntry.label');
-        } else {
+        //if (preferredTile) {
+            //buildTextDiv(idpEntryDiv, 'idpEntry.label');
+        //} else {
             buildTextDiv(idpEntryDiv, 'idpEntry.NoPreferred.label');
-        }
+        //}
 
         var form = buildSelectForm();
 
@@ -1687,11 +1687,11 @@ function IdPSelectUI() {
             idpListDiv.style.display = 'none';
         }
 
-        if (preferredTile) {
-            buildTextDiv(idpListDiv, 'idpList.label');
-        } else {
+        //if (preferredTile) {
+            // buildTextDiv(idpListDiv, 'idpList.label');
+        //} else {
             buildTextDiv(idpListDiv, 'idpList.NoPreferred.label');
-        }
+        //}
 
         idpSelect = document.createElement('select');
         setID(idpSelect, 'Selector');
