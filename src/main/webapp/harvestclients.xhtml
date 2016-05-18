@@ -33,15 +33,17 @@
                             </p:commandLink>
                         </div>
                     </div>
+                    
+                    <p:fragment id="emptyClientsTable" rendered="#{empty harvestingClientsPage.configuredHarvestingClients}">
+                        <div >
+                            <p class="help-block">
+                                <span class="glyphicon glyphicon-info-sign"/>&#160;
+                                <h:outputText value="No harvesting clients are presently configured">
 
-                    <div jsf:rendered="#{empty harvestingClientsPage.configuredHarvestingClients}">
-                        <p class="help-block">
-                            <span class="glyphicon glyphicon-info-sign"/>&#160;
-                            <h:outputText value="No harvesting clients are presently configured">
-
-                            </h:outputText>
-                        </p>
-                    </div>
+                                </h:outputText>
+                            </p>
+                        </div>
+                    </p:fragment>
 
                     <p:dataTable id="clientsTable" styleClass="manageTable" var="harvestClient" value="#{harvestingClientsPage.configuredHarvestingClients}"
                                  rendered="#{!empty harvestingClientsPage.configuredHarvestingClients}">
@@ -205,8 +207,12 @@
                                         <p:panelGrid columns="2" styleClass="noBorders">
                                             
                                             <p:selectOneMenu id="oaiMetadataFormat" 
-                                                             styleClass="form-control" value="#{harvestingClientsPage.newMetadataFormat}"
+                                                             binding="#{harvestingClientsPage.metadataFormatMenu}"
+                                                             styleClass="form-control" 
+                                                             value="#{harvestingClientsPage.newMetadataFormat}"
+                                                             validator="#{harvestingClientsPage.validateMetadataFormat}"
                                                              rendered="#{harvestingClientsPage.initialSettingsValidated}">
+                                                                                                
                                                 <f:selectItem itemLabel="#{bundle.select}" itemValue="" noSelectionOption="true" />
                                                 <f:selectItems value="#{harvestingClientsPage.oaiMetadataFormatSelectItems}" />
                                             </p:selectOneMenu>
@@ -303,19 +309,17 @@
 
                                     </div>
                                 </div>
-                                
+                                                                
                                 
                             </div>
                             <div class="button-block">
                                 <p:commandLink type="button" styleClass="btn btn-default" 
                                                rendered="#{harvestingClientsPage.initialSettingsValidated}"
                                                value="#{bundle['harvestclients.newClientDialog.btn.create']}"
-                                               update=":harvestingClientsForm:newHarvestingClientDialog :messagePanel clientsTable"
+                                               update="newHarvestingClientDialogContent :messagePanel :harvestingClientsForm clientsTable emptyClientsTable"
                                                 
                                                actionListener="#{harvestingClientsPage.createClient}"
-                                               
-                                               oncomplete="if (args &amp;&amp; !args.validationFailed) PF('newHarvestingClientForm').hide();">
-                                               <!-- oncomplete="if (!facesContext.validationFailed) PF('newHarvestingClientForm').hide();" -->
+                                               oncomplete="if (args &amp;&amp; !args.validationFailed) PF('newHarvestingClientForm').hide(); else PF('newHarvestingClientForm').show();">
                                     <f:param name="DO_VALIDATION" value="true"/>
                                 </p:commandLink>
                                 <button type="button"  jsf:rendered="#{harvestingClientsPage.initialSettingsValidated}" class="btn btn-default" onclick="PF('newHarvestingClientForm').hide()" value="#{bundle.cancel}">#{bundle.cancel}</button>

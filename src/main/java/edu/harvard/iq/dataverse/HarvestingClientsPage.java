@@ -25,6 +25,7 @@ import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
+import javax.faces.component.UISelectOne;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.faces.model.SelectItem;
@@ -113,13 +114,6 @@ public class HarvestingClientsPage implements java.io.Serializable {
     }
     
     public void createClient(ActionEvent ae) {
-        //FacesContext.getCurrentInstance().addMessage(getNewClientNicknameInputField().getClientId(),
-        //        new FacesMessage(FacesMessage.SEVERITY_ERROR, "", JH.localize("harvestclients.newClientDialog.nickname.alreadyused")));
-        //getNewClientNicknameInputField().setValid(false);
-        //FacesContext.getCurrentInstance().validationFailed();
-        //JsfHelper.JH.addMessage(FacesMessage.SEVERITY_ERROR,
-        //                            "Failed to create client.",
-        //                            "(for no good reason)");
         
         HarvestingClient newHarvestingClient = new HarvestingClient(); // will be set as type OAI by default
         
@@ -215,7 +209,21 @@ public class HarvestingClientsPage implements java.io.Serializable {
         
     }
     
-    //public void validateNickname(FacesContext context, UIComponent toValidate, Object rawValue) {
+    public void validateMetadataFormat(FacesContext context, UIComponent toValidate, Object rawValue) {
+        String value = (String) rawValue;
+        UIInput input = (UIInput) toValidate;
+        input.setValid(true); // Optimistic approach
+
+        if (context.getExternalContext().getRequestParameterMap().get("DO_VALIDATION") != null
+                && StringUtils.isEmpty(value)) {
+
+            input.setValid(false);
+            context.addMessage(toValidate.getClientId(),
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", JH.localize("harvestclients.newClientDialog.oaiMetadataFormat.required")));
+
+        }
+    }
+    
     public boolean validateNickname() {
 
         if ( !StringUtils.isEmpty(getNewNickname()) ) {
@@ -330,6 +338,9 @@ public class HarvestingClientsPage implements java.io.Serializable {
     
     UIInput newClientNicknameInputField;
     UIInput newClientUrlInputField;
+    UIInput hiddenInputField; 
+    /*UISelectOne*/ UIInput metadataFormatMenu; 
+    
     private String newNickname = "";
     private String newHarvestingUrl = "";
     private boolean initialSettingsValidated = false;
@@ -502,6 +513,22 @@ public class HarvestingClientsPage implements java.io.Serializable {
 
     public void setNewClientUrlInputField(UIInput newClientInputField) {
         this.newClientUrlInputField = newClientInputField;
+    }
+    
+    public UIInput getHiddenInputField() {
+        return hiddenInputField;
+    }
+
+    public void setHiddenInputField(UIInput hiddenInputField) {
+        this.hiddenInputField = hiddenInputField;
+    }
+    
+    public UIInput getMetadataFormatMenu() {
+        return metadataFormatMenu;
+    }
+
+    public void setMetadataFormatMenu(UIInput metadataFormatMenu) {
+        this.metadataFormatMenu = metadataFormatMenu;
     }
     
     private List<SelectItem> oaiSetsSelectItems;
