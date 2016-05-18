@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateHarvestingClientCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DeleteHarvestingClientCommand;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClientServiceBean;
 import edu.harvard.iq.dataverse.harvest.client.oai.OaiHandler;
@@ -190,6 +191,23 @@ public class HarvestingClientsPage implements java.io.Serializable {
     
     
     public void deleteClient() {
+        if (selectedClient != null) {
+            //configuredHarvestingClients.remove(selectedClient);
+            logger.info("proceeding to delete harvesting client "+selectedClient.getName());
+            try {
+                engineService.submit(new DeleteHarvestingClientCommand(dvRequestService.getDataverseRequest(), selectedClient));
+                configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();
+                JsfHelper.addFlashMessage("Selected harvesting client has been deleted.");
+            } catch (CommandException ex) {
+                String failMessage = "Selected harvesting client cannot be deleted.";
+                JH.addMessage(FacesMessage.SEVERITY_FATAL, failMessage);
+            } catch (Exception ex) {
+                String failMessage = "Selected harvesting client cannot be deleted; unknown exception: "+ex.getMessage();
+                JH.addMessage(FacesMessage.SEVERITY_FATAL, failMessage);
+            }
+        } else {
+            logger.warning("Delete called, with a null selected harvesting client");
+        }
         
     }
     
@@ -257,7 +275,12 @@ public class HarvestingClientsPage implements java.io.Serializable {
                     List<String> sets = oaiHandler.runListSets();
                     createOaiSetsSelectItems(sets);
                 } catch (Exception ex) {
-                    //success = false; ok - let's try and live without sets...
+                    //success = false; 
+                    // ok - we'll try and live without sets for now... 
+                    // (since listMetadataFormats has succeeded earlier, may 
+                    // be safe to assume that this OAI server is at least 
+                    // somewhat functioning...)
+                    // (XOAI ListSets buggy as well?)
                     message = "Failed to execute ListSets; " + ex.getMessage();
                     logger.warning(message);
                 }

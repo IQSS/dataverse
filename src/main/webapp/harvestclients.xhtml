@@ -92,7 +92,7 @@
                             <span class="glyphicon glyphicon-warning-sign text-danger"/> <span class="text-danger">#{bundle['harvestclients.tab.header.action.btn.delete.dialog.tip']}(#{harvestingClientsPage.getSelectedClient().name})</span>
                         </p>
                         <div class="button-block">
-                            <p:commandButton value="#{bundle.continue}" onclick="PF('deleteConfirmation').hide()" action="#{harvestingClientsPage.deleteClient()}" update=":harvestingClientsForm" />
+                            <p:commandButton value="#{bundle.continue}" onclick="PF('deleteConfirmation').hide()" action="#{harvestingClientsPage.deleteClient()}" update=":harvestingClientsForm :messagePanel" />
                             <p:commandButton value="#{bundle.cancel}" onclick="PF('deleteConfirmation').hide()" type="button" update=":harvestingClientsForm"/>
                         </div>
                     </p:dialog>

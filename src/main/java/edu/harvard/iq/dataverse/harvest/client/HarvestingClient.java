@@ -117,7 +117,8 @@ public class HarvestingClient implements Serializable {
     }
 
     
-    @OneToOne (cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST })
+    //(cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST })
+    @OneToOne 
     @JoinColumn(name="dataverse_id")
     private  Dataverse dataverse;
 
@@ -511,7 +512,7 @@ public class HarvestingClient implements Serializable {
 
     @Override
     public String toString() {
-        return "edu.harvard.iq.dataverse.HarvestingDataverse[ id=" + id + " ]";
+        return "edu.harvard.iq.dataverse.harvest.client.HarvestingClient[ id=" + id + " ]";
     }
     
 }

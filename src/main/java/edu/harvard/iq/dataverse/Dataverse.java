@@ -277,7 +277,7 @@ public class Dataverse extends DvObjectContainer {
         this.guestbooks = guestbooks;
     } 
     
-    @OneToOne (mappedBy="dataverse", cascade={CascadeType.PERSIST, CascadeType.REMOVE})
+    @OneToOne (mappedBy="dataverse", cascade={CascadeType.MERGE, CascadeType.REMOVE})
     private HarvestingClient harvestingClient;
 
     public HarvestingClient getHarvestingClientConfig() {

@@ -99,18 +99,18 @@ public class OaiHandler implements Serializable {
     public List<String> runListMetadataFormats() throws OaiHandlerException {
         ServiceProvider sp = getServiceProvider();
                 
-        Iterator<MetadataFormat> setIter;
+        Iterator<MetadataFormat> mfIter;
         
         try {
-            setIter = sp.listMetadataFormats();
+            mfIter = sp.listMetadataFormats();
         } catch (InvalidOAIResponse ior) {
             throw new OaiHandlerException("No valid response received from the OAI server."); 
         }
         
         List<String> formats = new ArrayList<>();
 
-        while ( setIter.hasNext()) {
-            MetadataFormat format = setIter.next();
+        while ( mfIter.hasNext()) {
+            MetadataFormat format = mfIter.next();
             String formatName = format.getMetadataPrefix();
             if (!StringUtils.isEmpty(formatName)) {
                 formats.add(formatName);
