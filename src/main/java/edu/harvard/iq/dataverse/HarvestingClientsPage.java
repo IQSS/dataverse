@@ -155,6 +155,8 @@ public class HarvestingClientsPage implements java.io.Serializable {
         }
         
         newHarvestingClient.setArchiveUrl(getArchiveUrl());
+        // set default description - they can customize it as they see fit:
+        newHarvestingClient.setArchiveDescription("This Dataset is harvested from our partners. Clicking the link will take you directly to the archival source of the data.");
         
         // will try to save it now:
         
