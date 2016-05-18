@@ -6,12 +6,18 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.CreateHarvestingClientCommand;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClientServiceBean;
+import edu.harvard.iq.dataverse.harvest.client.oai.OaiHandler;
+import edu.harvard.iq.dataverse.harvest.client.oai.OaiHandlerException;
+import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.ejb.EJB;
@@ -44,6 +50,10 @@ public class HarvestingClientsPage implements java.io.Serializable {
     DataverseServiceBean dataverseService;
     @EJB
     HarvestingClientServiceBean harvestingClientService; 
+    @EJB
+    EjbDataverseEngine engineService;
+    @Inject
+    DataverseRequestServiceBean dvRequestService;
  
     private List<HarvestingClient> configuredHarvestingClients;
     private Dataverse dataverse;
@@ -51,17 +61,22 @@ public class HarvestingClientsPage implements java.io.Serializable {
     private HarvestingClient selectedClient;
     
     
-    public void init() {
+    public String init() {
+        if (!isSessionUserAuthenticated()) {
+            return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
+        } else if (!isSuperUser()) {
+            return "/403.xhtml"; 
+        }
+        
         if (dataverseId != null) {
             setDataverse(dataverseService.find(getDataverseId())); 
         } else {
             setDataverse(dataverseService.findRootDataverse());
         }
         configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();
-        harvestTypeRadio = harvestTypeRadioOAI;
-        //selectedClient = new HarvestingClient();
         
         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Harvesting Client Settings", JH.localize("harvestclients.toptip")));
+        return null; 
     }
     
     public List<HarvestingClient> getConfiguredHarvestingClients() {
@@ -96,7 +111,72 @@ public class HarvestingClientsPage implements java.io.Serializable {
         return selectedClient; 
     }
     
-    public void addClient(ActionEvent ae) {
+    public void createClient(ActionEvent ae) {
+        //FacesContext.getCurrentInstance().addMessage(getNewClientNicknameInputField().getClientId(),
+        //        new FacesMessage(FacesMessage.SEVERITY_ERROR, "", JH.localize("harvestclients.newClientDialog.nickname.alreadyused")));
+        //getNewClientNicknameInputField().setValid(false);
+        //FacesContext.getCurrentInstance().validationFailed();
+        //JsfHelper.JH.addMessage(FacesMessage.SEVERITY_ERROR,
+        //                            "Failed to create client.",
+        //                            "(for no good reason)");
+        
+        HarvestingClient newHarvestingClient = new HarvestingClient(); // will be set as type OAI by default
+        
+        newHarvestingClient.setName(newNickname);
+        newHarvestingClient.setDataverse(dataverse);
+        dataverse.setHarvestingClientConfig(newHarvestingClient);
+        newHarvestingClient.setHarvestingUrl(newHarvestingUrl);
+        if (!StringUtils.isEmpty(newOaiSet)) {
+            newHarvestingClient.setHarvestingSet(newOaiSet);
+        }
+        newHarvestingClient.setMetadataPrefix(newMetadataFormat);
+        newHarvestingClient.setHarvestStyle(newHarvestingStyle);
+        
+        if (isNewHarvestingScheduled()) {
+            newHarvestingClient.setScheduled(true);
+            
+            if (isNewHarvestingScheduledWeekly()) {
+                newHarvestingClient.setSchedulePeriod(HarvestingClient.SCHEDULE_PERIOD_WEEKLY);
+                if (getWeekDayNumber() == null) {
+                    // create a "week day is required..." error message, etc. 
+                    // but we may be better off not even giving them an opportunity 
+                    // not to leave the field blank - ?
+                }
+                newHarvestingClient.setScheduleDayOfWeek(getWeekDayNumber());
+            } else {
+                newHarvestingClient.setSchedulePeriod(HarvestingClient.SCHEDULE_PERIOD_DAILY);
+            }
+            
+            if (getHourOfDay() == null) {
+                // see the comment above, about the day of week. same here.
+            }
+            newHarvestingClient.setScheduleHourOfDay(getHourOfDay());
+        }
+        
+        newHarvestingClient.setArchiveUrl(getArchiveUrl());
+        
+        // will try to save it now:
+        
+        try {
+            newHarvestingClient = engineService.submit( new CreateHarvestingClientCommand(dvRequestService.getDataverseRequest(), newHarvestingClient));
+            
+            configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();
+            
+            JsfHelper.addSuccessMessage("Succesfully created harvesting client " + newHarvestingClient.getName());
+
+        } /* catch ( CreateHarvestingClientCommand.NicknameAlreadyExistsException naee ) {
+            FacesContext.getCurrentInstance().addMessage(newHarvestingClient.getName(),
+                           new FacesMessage( FacesMessage.SEVERITY_ERROR, naee.getMessage(), null));
+
+        }*/ catch (CommandException ex) {
+            logger.log(Level.WARNING, "Harvesting client creation command failed", ex);
+            JsfHelper.JH.addMessage(FacesMessage.SEVERITY_ERROR,
+                                    "Harvesting Client creation command failed.",
+                                    ex.getMessage());
+        } catch (Exception ex) {
+            JH.addMessage(FacesMessage.SEVERITY_FATAL, "Harvesting client creation failed (reason unknown).");
+             logger.log(Level.SEVERE, "Harvesting client creation failed (reason unknown)." + ex.getMessage(), ex);
+        }
         
     }
     
@@ -140,18 +220,60 @@ public class HarvestingClientsPage implements java.io.Serializable {
         return false;
     }
     
-    public boolean validateServerUrlOAI() {          
+    public boolean validateServerUrlOAI() {
         if (!StringUtils.isEmpty(getNewHarvestingUrl())) {
-            if (false) {
-                FacesContext.getCurrentInstance().addMessage(getNewClientUrlInputField().getClientId(),
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", getNewHarvestingUrl() + ": " + JH.localize("harvestclients.newClientDialog.url.invalid")));
-                return false;
+
+            OaiHandler oaiHandler = new OaiHandler(getNewHarvestingUrl());
+            boolean success = true;
+            String message = null;
+
+            // First, we'll try to obtain the list of supported metadata formats:
+            try {
+                List<String> formats = oaiHandler.runListMetadataFormats();
+                if (formats != null && formats.size() > 0) {
+                    createOaiMetadataFormatSelectItems(formats);
+                } else {
+                    success = false;
+                    message = "received empty list from ListMetadataFormats";
+                }
+
+                // TODO: differentiate between different exceptions/failure scenarios } catch (OaiHandlerException ohee) {
+            } catch (Exception ex) {
+                success = false;
+                message = "Failed to execute listmetadataformats; " + ex.getMessage();
+
+            }
+
+            if (success) {
+                logger.info("metadataformats: success");
+                logger.info(getOaiMetadataFormatSelectItems().size() + " metadata formats total.");
             } else {
+                logger.info("metadataformats: failed");
+            }
+            // And if that worked, the list of sets provided:
+
+            if (success) {
+                try {
+                    List<String> sets = oaiHandler.runListSets();
+                    createOaiSetsSelectItems(sets);
+                } catch (Exception ex) {
+                    //success = false; ok - let's try and live without sets...
+                    message = "Failed to execute ListSets; " + ex.getMessage();
+                    logger.warning(message);
+                }
+            }
+
+            if (success) {
                 return true;
             }
-        } 
+
+            FacesContext.getCurrentInstance().addMessage(getNewClientUrlInputField().getClientId(),
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", getNewHarvestingUrl() + ": " + JH.localize("harvestclients.newClientDialog.url.invalid")));
+            return false;
+
+        }
         FacesContext.getCurrentInstance().addMessage(getNewClientUrlInputField().getClientId(),
-            new FacesMessage(FacesMessage.SEVERITY_ERROR, "", getNewHarvestingUrl() + ": " + JH.localize("harvestclients.newClientDialog.url.required")));
+                new FacesMessage(FacesMessage.SEVERITY_ERROR, "", getNewHarvestingUrl() + ": " + JH.localize("harvestclients.newClientDialog.url.required")));
         return false;
     }
     
@@ -172,17 +294,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
     }
     
     /*
-    public void validateClientUrl(FacesContext context, UIComponent toValidate, Object rawValue) {
-        String value = (String) rawValue;
-        UIInput input = (UIInput) toValidate;
-        input.setValid(true); 
-
-        // ... 
-    }
-    */
-    
-    /*
-     * Values and methods for creating a new harvesting client: 
+     * Variables and methods for creating a new harvesting client: 
     */
     
     private int harvestTypeRadio; // 1 = OAI; 2 = Nesstar
@@ -204,8 +316,8 @@ public class HarvestingClientsPage implements java.io.Serializable {
     private static final int harvestingScheduleRadioDaily = 1;
     private static final int harvestingScheduleRadioWeekly = 2; 
     
-    private String newHarvestingScheduleDayOfWeek = "";
-    private String newHarvestingScheduleTimeOfDay = "";
+    private String newHarvestingScheduleDayOfWeek = "Sunday";
+    private String newHarvestingScheduleTimeOfDay = "12";
     
     private int harvestingScheduleRadioAMPM;
     private static final int harvestingScheduleRadioAM = 0;
@@ -229,9 +341,9 @@ public class HarvestingClientsPage implements java.io.Serializable {
         
         this.harvestingScheduleRadioAMPM = harvestingScheduleRadioAM;
 
-        setOaiSetsSelectItems(new ArrayList<>());
-        setOaiMetadataFormatSelectItems(new ArrayList<>());
-        getOaiMetadataFormatSelectItems().add(new SelectItem("oai_dc", "oai_dc"));
+        //setOaiSetsSelectItems(new ArrayList<>());
+        //setOaiMetadataFormatSelectItems(new ArrayList<>());
+        //getOaiMetadataFormatSelectItems().add(new SelectItem("oai_dc", "oai_dc"));
         
     }
         
@@ -344,6 +456,10 @@ public class HarvestingClientsPage implements java.io.Serializable {
         this.harvestingScheduleRadioAMPM = harvestingScheduleRadioAMPM;
     }
     
+    public boolean isHarvestingScheduleTimeOfDayPM() {
+        return getHarvestingScheduleRadioAMPM() == harvestingScheduleRadioPM;
+    }
+    
     public void toggleNewClientSchedule() {
         
     }
@@ -375,6 +491,17 @@ public class HarvestingClientsPage implements java.io.Serializable {
         this.oaiSetsSelectItems = oaiSetsSelectItems;
     }
     
+    private void createOaiSetsSelectItems(List<String> setNames) {
+        setOaiSetsSelectItems(new ArrayList<>());
+        if (setNames != null) {
+            for (String set: setNames) {
+                if (!StringUtils.isEmpty(set)) {
+                    getOaiSetsSelectItems().add(new SelectItem(set, set));
+                }
+            }
+        }
+    }
+    
     private List<SelectItem> oaiMetadataFormatSelectItems;
 
     public List<SelectItem> getOaiMetadataFormatSelectItems() {
@@ -384,6 +511,18 @@ public class HarvestingClientsPage implements java.io.Serializable {
     public void setOaiMetadataFormatSelectItems(List<SelectItem> oaiMetadataFormatSelectItems) {
         this.oaiMetadataFormatSelectItems = oaiMetadataFormatSelectItems;
     }
+    
+    private void createOaiMetadataFormatSelectItems(List<String> formats) {
+        setOaiMetadataFormatSelectItems(new ArrayList<>());
+        if (formats != null) {
+            for (String f: formats) {
+                if (!StringUtils.isEmpty(f)) {
+                    getOaiMetadataFormatSelectItems().add(new SelectItem(f, f));
+                }
+            }
+        }
+    }
+    
     
     private List<SelectItem> harvestingStylesSelectItems = null; 
     
@@ -404,11 +543,12 @@ public class HarvestingClientsPage implements java.io.Serializable {
         this.harvestingStylesSelectItems = harvestingStylesSelectItems;
     }
     
+    private List<String> weekDays = null; 
     private List<SelectItem> daysOfWeekSelectItems = null;
     
     public List<SelectItem> getDaysOfWeekSelectItems() {
         if (this.daysOfWeekSelectItems == null) {
-            List<String> weekDays = Arrays.asList("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday");
+            List<String> weekDays = getWeekDays();
             this.daysOfWeekSelectItems = new ArrayList<>();
             for (int i = 0; i < weekDays.size(); i++) {
                 this.daysOfWeekSelectItems.add(new SelectItem(weekDays.get(i), weekDays.get(i)));
@@ -418,7 +558,104 @@ public class HarvestingClientsPage implements java.io.Serializable {
         return this.daysOfWeekSelectItems;
     }
     
+    private List<String> getWeekDays() {
+        if (weekDays == null) {
+            weekDays = Arrays.asList("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday");
+        }
+        return weekDays;
+    }
+    
+    private Integer getWeekDayNumber (String weekDayName) {
+        List<String> weekDays = getWeekDays();
+        int i = 0;
+        for (String weekDayString: weekDays) {
+            if (weekDayString.equals(weekDayName)) {
+                return new Integer(i);
+            }
+            i++;
+        }
+        return null; 
+    }
+     
+    private Integer getWeekDayNumber() {
+        return getWeekDayNumber(getNewHarvestingScheduleDayOfWeek());
+    }
+    
+    private Integer getHourOfDay() {
+        Integer hour = null; 
+        if (getNewHarvestingScheduleTimeOfDay() != null) {
+            try {
+                hour = new Integer(getNewHarvestingScheduleTimeOfDay());
+            } catch (Exception ex) {
+                hour = null; 
+            }
+        }
+        
+        if (hour != null) {
+            if (hour.intValue() == 12) {
+                hour = 0; 
+            }
+            if (isHarvestingScheduleTimeOfDayPM()) {
+                hour = hour + 12;
+            }
+        }
+        
+        return hour;
+    }
+    
+    private String getArchiveUrl() {
+        String archiveUrl = null; 
+        
+        if (getNewHarvestingUrl() != null) {
+            int k = getNewHarvestingUrl().indexOf('/', 8);
+            if (k > -1) {
+                archiveUrl = getNewHarvestingUrl().substring(0, k);
+            }
+        }
+        
+        return archiveUrl; 
+    }
+    
     public void setDaysOfWeekSelectItems(List<SelectItem> daysOfWeekSelectItems) {
         this.daysOfWeekSelectItems = daysOfWeekSelectItems;
+    }
+    
+    private List<SelectItem> hoursOfDaySelectItems = null;
+    
+    public List<SelectItem> getHoursOfDaySelectItems() {
+        if (this.hoursOfDaySelectItems == null) {
+            this.hoursOfDaySelectItems = new ArrayList<>();
+            this.hoursOfDaySelectItems.add(new SelectItem( 12+"", "12:00"));
+            for (int i = 1; i < 12; i++) {
+                this.hoursOfDaySelectItems.add(new SelectItem(i+"", i+":00"));
+            }
+        }
+        
+        return this.hoursOfDaySelectItems;
+    }
+    
+    public void setHoursOfDaySelectItems(List<SelectItem> hoursOfDaySelectItems) {
+        this.hoursOfDaySelectItems = hoursOfDaySelectItems;
+    }
+    
+    public boolean isSessionUserAuthenticated() {
+        
+        if (session == null) {
+            return false;
+        }
+        
+        if (session.getUser() == null) {
+            return false;
+        }
+        
+        if (session.getUser().isAuthenticated()) {
+            return true;
+        }
+        
+        return false;
+    }
+    
+    public boolean isSuperUser() {
+        return session.getUser().isSuperuser();
     }
 }

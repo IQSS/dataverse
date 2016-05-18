@@ -154,7 +154,6 @@ public class HarvestingClient implements Serializable {
         this.harvestType = harvestType;
     }
 
-    
     public boolean isOai() {
         return HARVEST_TYPE_OAI.equals(harvestType);
     }

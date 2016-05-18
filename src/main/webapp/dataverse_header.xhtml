@@ -132,12 +132,18 @@
                                             </h:outputLink>
                                         </li>
                                     </ui:remove>
-                                    <li>
+                                    <li jsf:rendered="#{dataverseSession.user.superuser}">
                                         <h:outputLink value="/dataverseuser.xhtml">
                                             <f:param name="selectTab" value="accountInfo" />
                                             <h:outputText value="#{bundle['header.accountInfo']}" />
                                         </h:outputLink>
                                     </li>
+                                    <li>
+                                        <h:outputLink value="/harvestclients.xhtml?dataverseId=#{dataverse.id}">
+                                            <h:outputText value="#{bundle['header.dashboard']}" />
+                                        </h:outputLink>
+                                    </li>
+                                    
                                     <li class="divider"></li>
                                     <li class="logout">
                                         <h:form styleClass="navbar-form navbar-left" pt:role="logout">

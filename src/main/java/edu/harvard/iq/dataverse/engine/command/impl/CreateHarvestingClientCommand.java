@@ -30,7 +30,10 @@ public class CreateHarvestingClientCommand extends AbstractCommand<HarvestingCli
         // TODO: check if the harvesting client config is legit; 
         // and that it is indeed new and unique? 
         // (may not be necessary - as the uniqueness should be enforced by 
-        // the persistence layer... -- L.A. 4.4)
+        // the persistence layer... - but could still be helpful to have a dedicated
+        // custom exception for "nickname already taken". see CreateExplicitGroupCommand
+        // for an example. -- L.A. 4.4)
+        
         return ctxt.em().merge(this.harvestingClient);
     }
     

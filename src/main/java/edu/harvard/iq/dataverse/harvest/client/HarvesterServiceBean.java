@@ -389,7 +389,7 @@ public class HarvesterServiceBean {
             } else {
                 hdLogger.log(Level.INFO, "Successfully retrieved GetRecord response.");
 
-                ///harvestedDataset = importService.doImportHarvestedDataset(dataverseRequest, parentDataverse, metadataPrefix, record.getMetadataFile(), null);
+                harvestedDataset = importService.doImportHarvestedDataset(dataverseRequest, harvestingClient.getDataverse(), metadataPrefix, record.getMetadataFile(), null);
                 
                 hdLogger.log(Level.INFO, "Harvest Successful for identifier " + identifier);
                 hdLogger.info("Size of this record: " + record.getMetadataFile().length());
