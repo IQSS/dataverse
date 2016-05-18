@@ -199,8 +199,36 @@ public class ShibUtil {
         request.setAttribute(ShibUtil.uniquePersistentIdentifier, "invalidEmail");
         request.setAttribute(ShibUtil.firstNameAttribute, "Invalid");
         request.setAttribute(ShibUtil.lastNameAttribute, "Email");
-        request.setAttribute(ShibUtil.emailAttribute, "invalidEmail");
+        request.setAttribute(ShibUtil.emailAttribute, "elisah.da mota@example.com");
         request.setAttribute(ShibUtil.usernameAttribute, "invalidEmail");
+    }
+
+    static void mutateRequestForDevConstantEmailWithLeadingSpace(HttpServletRequest request) {
+        request.setAttribute(ShibUtil.shibIdpAttribute, "https://fake.example.com/idp/shibboleth");
+        request.setAttribute(ShibUtil.uniquePersistentIdentifier, "leadingWhitespace");
+        request.setAttribute(ShibUtil.firstNameAttribute, "leadingWhitespace");
+        request.setAttribute(ShibUtil.lastNameAttribute, "leadingWhitespace");
+        request.setAttribute(ShibUtil.emailAttribute, " leadingWhitespace@mailinator.com");
+        request.setAttribute(ShibUtil.usernameAttribute, "leadingWhitespace");
+    }
+
+    static void mutateRequestForDevConstantUidWithLeadingSpace(HttpServletRequest request) {
+        request.setAttribute(ShibUtil.shibIdpAttribute, "https://fake.example.com/idp/shibboleth");
+        request.setAttribute(ShibUtil.uniquePersistentIdentifier, "leadingWhitespace");
+        request.setAttribute(ShibUtil.firstNameAttribute, "leadingWhitespace");
+        request.setAttribute(ShibUtil.lastNameAttribute, "leadingWhitespace");
+        request.setAttribute(ShibUtil.emailAttribute, "leadingWhitespace@mailinator.com");
+        request.setAttribute(ShibUtil.usernameAttribute, " leadingWhitespace");
+    }
+
+    // the identifier is the IdP plus the eppn separated by a |
+    static void mutateRequestForDevConstantIdentifierWithLeadingSpace(HttpServletRequest request) {
+        request.setAttribute(ShibUtil.shibIdpAttribute, " https://fake.example.com/idp/shibboleth");
+        request.setAttribute(ShibUtil.uniquePersistentIdentifier, "leadingWhitespace");
+        request.setAttribute(ShibUtil.firstNameAttribute, "leadingWhitespace");
+        request.setAttribute(ShibUtil.lastNameAttribute, "leadingWhitespace");
+        request.setAttribute(ShibUtil.emailAttribute, "leadingWhitespace@mailinator.com");
+        request.setAttribute(ShibUtil.usernameAttribute, "leadingWhitespace");
     }
 
     static void mutateRequestForDevConstantMissingRequiredAttributes(HttpServletRequest request) {

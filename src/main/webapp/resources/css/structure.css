@@ -87,6 +87,7 @@ td.col-select-width {width:36px;}
 .margin-top-half {margin-top:.5em;}
 .margin-bottom {margin-bottom:1em;}
 .margin-bottom-half {margin-bottom:.5em;}
+.no-margin-top {margin-top:0;}
 .no-margin-bottom {margin-bottom:0;}
 .padding-12 {padding: 12px;}
 .clear-both {clear:both;}
@@ -226,16 +227,14 @@ div.panel.highlight {
 }
 #idpSelectIdPListTile form, #idpSelectIdPEntryTile form {margin-bottom:1em;}
 #idpSelectIdPListTile input.btn, #idpSelectIdPEntryTile input.btn {margin-left:.5em;}
-
 #idpSelectIdPEntryTile {position: relative;}
-
+.IdPSelectPreferredIdPButton {display:inline-block;text-align:center;margin-right:4px;margin-bottom:.5em;}
 ul.IdPSelectDropDown {
     background-clip: padding-box;
     background-color: #fff;
     border: 1px solid rgba(0, 0, 0, 0.15);
     border-radius: 4px;
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.176);
-/*    display: none;*/
     float: left;
     font-size: 14px;
     left: 0;
@@ -245,36 +244,35 @@ ul.IdPSelectDropDown {
     padding: 5px 0;
     position: absolute;
     text-align: left;
-    /*top: 100%;*/
-    bottom:-22px;
+    top: calc(100% - 32px);
     z-index: 1000;
 }
 
-ul.IdPSelectDropDown > li > a {
+ul.IdPSelectDropDown > li {
     clear: both;
     color: #333;
-    display: block;
+    /* display: block; */
     font-weight: 400;
     line-height: 1.42857;
     padding: 3px 20px;
     white-space: nowrap;
 }
 
-ul.IdPSelectDropDown > li > a:hover, ul.IdPSelectDropDown > li > a:focus {
+ul.IdPSelectDropDown > li:hover, ul.IdPSelectDropDown > li:focus {
     background-color: #f5f5f5;
     color: #262626;
     text-decoration: none;
 }
-ul.IdPSelectDropDown > .active > a, ul.IdPSelectDropDown > .active > a:hover, ul.IdPSelectDropDown > .active > a:focus {
+ul.IdPSelectDropDown > li.active, ul.IdPSelectDropDown > li.active:hover, ul.IdPSelectDropDown > li.active:focus {
     background-color: #428bca;
     color: #fff;
     outline: 0 none;
     text-decoration: none;
 }
-ul.IdPSelectDropDown > .disabled > a, ul.IdPSelectDropDown > .disabled > a:hover, ul.IdPSelectDropDown > .disabled > a:focus {
+ul.IdPSelectDropDown > li.disabled, ul.IdPSelectDropDown > li.disabled:hover, ul.IdPSelectDropDown > li.disabled:focus {
     color: #777;
 }
-ul.IdPSelectDropDown > .disabled > a:hover, ul.IdPSelectDropDown > .disabled > a:focus {
+ul.IdPSelectDropDown > li.disabled:hover, ul.IdPSelectDropDown > li.disabled:focus {
     background-color: transparent;
     background-image: none;
     cursor: not-allowed;

@@ -136,6 +136,7 @@ public class ShibUtilTest {
     public void testGenerateFriendlyLookingUserIdentifer() {
         int lengthOfUuid = UUID.randomUUID().toString().length();
         assertEquals("uid1", ShibUtil.generateFriendlyLookingUserIdentifer("uid1", null));
+        assertEquals(" leadingWhiteSpace", ShibUtil.generateFriendlyLookingUserIdentifer(" leadingWhiteSpace", null));
         assertEquals("uid1", ShibUtil.generateFriendlyLookingUserIdentifer("uid1", "email1@example.com"));
         assertEquals("email1", ShibUtil.generateFriendlyLookingUserIdentifer(null, "email1@example.com"));
         assertEquals(lengthOfUuid, ShibUtil.generateFriendlyLookingUserIdentifer(null, null).length());

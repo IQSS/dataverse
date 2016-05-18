@@ -820,48 +820,28 @@ public class SearchServiceBean {
 //             * @todo add onlyDatatRelatedToMe option into the experimental JOIN
 //             * before enabling it.
 //             */
+        /**
+         * From a search perspective, we don't care about if the group was
+         * created within one dataverse or another. We just want a list of *all*
+         * the groups the user is part of. We are greedy. We want all BuiltIn
+         * Groups, Shibboleth Groups, IP Groups, "system" groups, everything.
+         *
+         * A JOIN on "permission documents" will determine if the user can find
+         * a given "content document" (dataset version, etc) in Solr.
+         */
         String groupsFromProviders = "";
-        /**
-         * @todo What should the value be? Is null ok? From a search
-         * perspective, we don't care about if the group was created within one
-         * dataverse or another. We just want a list of all the groups the user
-         * is part of. A JOIN on "permission documents" will determine if the
-         * user can find a given "content document" (dataset version, etc) in
-         * Solr.
-         */
-//            DvObject groupsForDvObjectParamNull = null;
-//            Set<Group> groups = groupService.groupsFor(au, groupsForDvObjectParamNull);
-        /**
-         * @todo What is the expected behavior when you pass in a dataverse? It
-         * seems like no matter what you pass in you always get the following
-         * types of groups:
-         *
-         * - BuiltIn Groups
-         *
-         * - IP Groups
-         *
-         * - Shibboleth Groups
-         *
-         * If you pass in the root dataverse it seems like you get all groups
-         * that you're part of.
-         *
-         * If you pass in a non-root dataverse, it seems like you get groups
-         * that you're part of for that dataverse. It's unclear if there is any
-         * inheritance of groups.
-         */
-        DvObject groupsForDvObjectParamCurrentDataverse = dataverse;
-        Set<Group> groups = groupService.groupsFor(au, groupsForDvObjectParamCurrentDataverse);
+        Set<Group> groups = groupService.groupsFor(au);
         StringBuilder sb = new StringBuilder();
         for (Group group : groups) {
             logger.fine("found group " + group.getIdentifier() + " with alias " + group.getAlias());
             String groupAlias = group.getAlias();
             if (groupAlias != null && !groupAlias.isEmpty()) {
                 sb.append(" OR ");
-                // i.e. group_shib/2
+                // i.e. group_builtIn/all-users, group_builtIn/authenticated-users, group_1-explictGroup1, group_shib/2
                 sb.append(IndexServiceBean.getGroupPrefix() + groupAlias);
             }
-            groupsFromProviders = sb.toString();
         }
+        groupsFromProviders = sb.toString();
 
         logger.fine(groupsFromProviders);
         if (true) {

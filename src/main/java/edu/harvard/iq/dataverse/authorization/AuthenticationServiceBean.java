@@ -269,6 +269,11 @@ public class AuthenticationServiceBean {
             // yay! see if we already have this user.
             AuthenticatedUser user = lookupUser(authenticationProviderId, resp.getUserId());
 
+            /**
+             * @todo Why does a method called "authenticate" have the potential
+             * to call "createAuthenticatedUser"? Isn't the creation of a user a
+             * different action than authenticating?
+             */
             return ( user == null ) ?
                 AuthenticationServiceBean.this.createAuthenticatedUser(
                         new UserRecordIdentifier(authenticationProviderId, resp.getUserId()), resp.getUserId(), resp.getUserDisplayInfo(), true )
@@ -391,6 +396,7 @@ public class AuthenticationServiceBean {
      * @param userDisplayInfo
      * @param generateUniqueIdentifier if {@code true}, create a new, unique user identifier for the created user, if the suggested one exists.
      * @return the newly created user, or {@code null} if the proposed identifier exists and {@code generateUniqueIdentifier} was {@code false}.
+     * @throws EJBException which may wrap an ConstraintViolationException if the proposed user does not pass bean validation.
      */
     public AuthenticatedUser createAuthenticatedUser(UserRecordIdentifier userRecordId,
                                                      String proposedAuthenticatedUserIdentifier,
@@ -399,6 +405,10 @@ public class AuthenticationServiceBean {
         AuthenticatedUser authenticatedUser = new AuthenticatedUser();
         authenticatedUser.applyDisplayInfo(userDisplayInfo);
         
+        // we have no desire for leading or trailing whitespace in identifiers
+        if (proposedAuthenticatedUserIdentifier != null) {
+            proposedAuthenticatedUserIdentifier = proposedAuthenticatedUserIdentifier.trim();
+        }
         // we now select a username for the generated AuthenticatedUser, or give up
         String internalUserIdentifer = proposedAuthenticatedUserIdentifier;
         // TODO should lock table authenticated users for write here

@@ -274,7 +274,11 @@ public class RoleAssigneeServiceBean {
         return " AND r.definitionpoint_id IN (" + StringUtils.join(outputList, ",") + ")";
     }
 
-    private List<String> getUserExplicitGroups(String roleAssigneeIdentifier) {
+    /**
+     * @todo Support groups within groups:
+     * https://github.com/IQSS/dataverse/issues/3056
+     */
+    public List<String> getUserExplicitGroups(String roleAssigneeIdentifier) {
 
         String qstr = "select  groupalias from explicitgroup";
         qstr += " where id in ";
