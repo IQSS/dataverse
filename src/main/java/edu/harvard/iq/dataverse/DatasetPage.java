@@ -3320,10 +3320,10 @@ public class DatasetPage implements java.io.Serializable {
         String fileNameString = "";
         if (fileMetadata == null || fileMetadata.getLabel() == null) {
             // Dataset-level citation:
-            fileNameString = "attachment;filename=" + getFileNameDOI() + ".bib";
+            fileNameString = "inline;filename=" + getFileNameDOI() + ".bib";
         } else {
             // Datafile-level citation:
-            fileNameString = "attachment;filename=" + getFileNameDOI() + "-" + fileMetadata.getLabel().replaceAll("\\.tab$", ".bib");
+            fileNameString = "inline;filename=" + getFileNameDOI() + "-" + fileMetadata.getLabel().replaceAll("\\.tab$", ".bib");
         }
         response.setHeader("Content-Disposition", fileNameString);
 
