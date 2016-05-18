@@ -167,7 +167,9 @@ public class HarvestingClientsPage implements java.io.Serializable {
             
             JsfHelper.addSuccessMessage("Succesfully created harvesting client " + newHarvestingClient.getName());
 
-        } /* catch ( CreateHarvestingClientCommand.NicknameAlreadyExistsException naee ) {
+        } /* TODO: (?) add a dedicated "NameAlreadyExists" exception for the 
+             create client command? 
+          catch ( CreateHarvestingClientCommand.NicknameAlreadyExistsException naee ) {
             FacesContext.getCurrentInstance().addMessage(newHarvestingClient.getName(),
                            new FacesMessage( FacesMessage.SEVERITY_ERROR, naee.getMessage(), null));
 
@@ -361,14 +363,10 @@ public class HarvestingClientsPage implements java.io.Serializable {
         this.harvestTypeRadio = harvestTypeRadioOAI;
         this.harvestingScheduleRadio = harvestingScheduleRadioNone; 
         
-        this.newHarvestingScheduleDayOfWeek = "";
-        this.newHarvestingScheduleTimeOfDay = "";
+        this.newHarvestingScheduleDayOfWeek = "Sunday";
+        this.newHarvestingScheduleTimeOfDay = "12";
         
         this.harvestingScheduleRadioAMPM = harvestingScheduleRadioAM;
-
-        //setOaiSetsSelectItems(new ArrayList<>());
-        //setOaiMetadataFormatSelectItems(new ArrayList<>());
-        //getOaiMetadataFormatSelectItems().add(new SelectItem("oai_dc", "oai_dc"));
         
     }
         
@@ -592,7 +590,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
     
     private Integer getWeekDayNumber (String weekDayName) {
         List<String> weekDays = getWeekDays();
-        int i = 0;
+        int i = 1;
         for (String weekDayString: weekDays) {
             if (weekDayString.equals(weekDayName)) {
                 return new Integer(i);
