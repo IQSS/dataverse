@@ -583,7 +583,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
     
     private List<String> getWeekDays() {
         if (weekDays == null) {
-            weekDays = Arrays.asList("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday");
+            weekDays = Arrays.asList("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday");
         }
         return weekDays;
     }
