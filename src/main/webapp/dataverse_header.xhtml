@@ -6,7 +6,7 @@
                 xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
                 xmlns:jsf="http://xmlns.jcp.org/jsf"
                 xmlns:c="http://java.sun.com/jsp/jstl/core"
-                xmlns:o="http://omnifaces.org/ui"     
+                xmlns:o="http://omnifaces.org/ui"
                 xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
 
     <div id="dataverse-header-block">
@@ -165,7 +165,7 @@
         <ui:param name="dataversePage" value="#{dataverseLinksStayOnPage == true ? '' : '/dataverse.xhtml' }"/>
 
         <!-- Header Panel -->
-        <div id="dataverseHeader" class="container bg-muted" 
+        <div id="dataverseHeader" class="container bg-muted"
                 style="background:##{!empty dataverse.dataverseTheme.backgroundColor ? dataverse.dataverseTheme.backgroundColor : 'F5F5F5'};"
                 jsf:rendered="#{showDataverseHeader and !widgetWrapper.widgetView}">
              <o:importFunctions type="org.apache.commons.lang.StringEscapeUtils"/>
@@ -202,8 +202,13 @@
                 <div class="breadcrumbBlock">
                     <h:outputText value="#{breadcrumb.breadcrumbText}" styleClass="#{'breadcrumbActive'}" rendered="#{status.last}"/>
                     <ui:fragment rendered="#{!status.last}">
-                        <h:outputText value="#{breadcrumb.breadcrumbText}" rendered="#{!breadcrumb.dvObject.instanceofDataverse and !breadcrumb.dvObject.instanceofDataset}"/>
-
+                        <h:outputText value="#{breadcrumb.breadcrumbText}" rendered="#{!breadcrumb.dvObject.instanceofDataverse and !breadcrumb.dvObject.instanceofDataset and empty breadcrumb.url}"/>
+                        <ui:fragment rendered="#{breadcrumb.dvObject == null and !empty breadcrumb.url}">
+                            <ui:remove><!-- No widget code for admin pgs that would never display in widget --></ui:remove>
+                            <a id="breadcrumbLnk#{status.index}" href="${breadcrumb.url}">
+                                <h:outputText value="#{breadcrumb.breadcrumbText}"/>
+                            </a>
+                        </ui:fragment>
                         <ui:fragment rendered="#{breadcrumb.dvObject.instanceofDataverse}">
                             <c:set var="dvUrl" value="/dataverse/#{breadcrumb.dvObject.alias}"/>
                             <a id="breadcrumbLnk#{status.index}" href="#{widgetWrapper.isWidgetTarget(breadcrumb.dvObject) ? widgetWrapper.wrapURL(dvUrl) : dvUrl}" target="#{!widgetWrapper.widgetView or widgetWrapper.isWidgetTarget(breadcrumb.dvObject) ? '' : '_blank'}">

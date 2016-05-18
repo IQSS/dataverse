@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import com.jayway.restassured.RestAssured;
 import static com.jayway.restassured.RestAssured.given;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.path.json.JsonPath;
@@ -9,6 +10,7 @@ import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 import static junit.framework.Assert.assertEquals;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class BuiltinUsersIT {
@@ -20,15 +22,22 @@ public class BuiltinUsersIT {
     private static final String usernameKey = "userName";
     private static final String emailKey = "email";
 
+    @BeforeClass
+    public static void setUp() {
+        RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
+    }
+
     @Test
     public void testUserId() {
 
-        Response createUserResponse = createUser(getRandomUsername(), "firstName", "lastName");
+        String email = null;
+        Response createUserResponse = createUser(getRandomUsername(), "firstName", "lastName", email);
         createUserResponse.prettyPrint();
         assertEquals(200, createUserResponse.getStatusCode());
 
         JsonPath createdUser = JsonPath.from(createUserResponse.body().asString());
-        int userIdFromJsonCreateResponse = createdUser.getInt("data.user." + idKey);
+        int builtInUserIdFromJsonCreateResponse = createdUser.getInt("data.user." + idKey);
+        int authenticatedUserIdFromJsonCreateResponse = createdUser.getInt("data.authenticatedUser." + idKey);
         String username = createdUser.getString("data.user." + usernameKey);
 
         Response getUserResponse = getUserFromDatabase(username);
@@ -43,21 +52,39 @@ public class BuiltinUsersIT {
         deleteUserResponse.prettyPrint();
 
         System.out.println(userIdFromDatabase + " was the id from the database");
-        System.out.println(userIdFromJsonCreateResponse + " was the id from JSON response on create");
-        /**
-         * This test is expected to pass on a clean, fresh database but for an
-         * unknown reason it fails when you load it up with a production
-         * database from dataverse.harvard.edu. Why? This is what
-         * https://github.com/IQSS/dataverse/issues/2418 is about.
-         */
-        assertEquals(userIdFromDatabase, userIdFromJsonCreateResponse);
+        System.out.println(builtInUserIdFromJsonCreateResponse + " was the id of the BuiltinUser from JSON response on create");
+        System.out.println(authenticatedUserIdFromJsonCreateResponse + " was the id of the AuthenticatedUser from JSON response on create");
+        assertEquals(userIdFromDatabase, authenticatedUserIdFromJsonCreateResponse);
+    }
+
+    @Test
+    public void testLeadingWhitespaceInEmailAddress() {
+        String randomUsername = getRandomUsername();
+        String email = " " + randomUsername + "@mailinator.com";
+        Response createUserResponse = createUser(randomUsername, "firstName", "lastName", email);
+        createUserResponse.prettyPrint();
+        assertEquals(200, createUserResponse.statusCode());
+        String emailActual = JsonPath.from(createUserResponse.body().asString()).getString("data.user." + emailKey);
+        // the backend will trim the email address
+        String emailExpected = email.trim();
+        assertEquals(emailExpected, emailActual);
+    }
+
+    @Test
+    public void testLeadingWhitespaceInUsername() {
+        String randomUsername = " " + getRandomUsername();
+        String email = randomUsername + "@mailinator.com";
+        Response createUserResponse = createUser(randomUsername, "firstName", "lastName", email);
+        createUserResponse.prettyPrint();
+        assertEquals(400, createUserResponse.statusCode());
     }
 
     @Test
     public void testLogin() {
 
         String usernameToCreate = getRandomUsername();
-        Response createUserResponse = createUser(usernameToCreate, "firstName", "lastName");
+        String email = null;
+        Response createUserResponse = createUser(usernameToCreate, "firstName", "lastName", email);
         createUserResponse.prettyPrint();
         assertEquals(200, createUserResponse.getStatusCode());
 
@@ -87,8 +114,8 @@ public class BuiltinUsersIT {
 
     }
 
-    private Response createUser(String username, String firstName, String lastName) {
-        String userAsJson = getUserAsJsonString(username, firstName, lastName);
+    private Response createUser(String username, String firstName, String lastName, String email) {
+        String userAsJson = getUserAsJsonString(username, firstName, lastName, email);
         String password = getPassword(userAsJson);
         Response response = given()
                 .body(userAsJson)
@@ -127,12 +154,16 @@ public class BuiltinUsersIT {
         return UUID.randomUUID().toString().substring(0, 8);
     }
 
-    private static String getUserAsJsonString(String username, String firstName, String lastName) {
+    private static String getUserAsJsonString(String username, String firstName, String lastName, String email) {
         JsonObjectBuilder builder = Json.createObjectBuilder();
         builder.add(usernameKey, username);
         builder.add("firstName", firstName);
         builder.add("lastName", lastName);
-        builder.add(emailKey, getEmailFromUserName(username));
+        if (email == null) {
+            builder.add(emailKey, getEmailFromUserName(username));
+        } else {
+            builder.add(emailKey, email);
+        }
         String userAsJson = builder.build().toString();
         logger.fine("User to create: " + userAsJson);
         return userAsJson;

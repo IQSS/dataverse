@@ -36,7 +36,7 @@ public class AdminIT {
         Response createUserToConvert = UtilIT.createRandomUser();
         createUserToConvert.prettyPrint();
 
-        idOfUserToConvert = createUserToConvert.body().jsonPath().getLong("data.user.id");
+        idOfUserToConvert = createUserToConvert.body().jsonPath().getLong("data.authenticatedUser.id");
         emailOfUserToConvert = createUserToConvert.body().jsonPath().getString("data.user.email");
         usernameOfUserToConvert = UtilIT.getUsernameFromResponse(createUserToConvert);
 
@@ -97,12 +97,6 @@ public class AdminIT {
 
         Response infoOfUserToConvert = UtilIT.getAuthenticatedUser(usernameOfUserToConvert, superuserApiToken);
         infoOfUserToConvert.prettyPrint();
-        /**
-         * https://github.com/IQSS/dataverse/issues/2418 is cropping up again in
-         * that if we try to reuse this ID below it's the wrong ID (off by one).
-         * Weird and troubling.
-         */
-        idOfUserToConvert = infoOfUserToConvert.body().jsonPath().getLong("data.id");
 
         String invalidEmailAddress = "invalidEmailAddress";
         Response invalidEmailFail = UtilIT.migrateShibToBuiltin(idOfUserToConvert, invalidEmailAddress, superuserApiToken);
