@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateHarvestingClientCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteHarvestingClientCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateHarvestingClientCommand;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClientServiceBean;
 import edu.harvard.iq.dataverse.harvest.client.oai.OaiHandler;
@@ -62,6 +63,11 @@ public class HarvestingClientsPage implements java.io.Serializable {
     private Long dataverseId = null;
     private HarvestingClient selectedClient;
     
+    public enum PageMode {
+
+        VIEW, CREATE, EDIT
+    }  
+    private PageMode pageMode = PageMode.VIEW; 
     
     public String init() {
         if (!isSessionUserAuthenticated()) {
@@ -77,6 +83,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
         }
         configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();
         
+        pageMode = PageMode.VIEW;
         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Harvesting Client Settings", JH.localize("harvestclients.toptip")));
         return null; 
     }
@@ -113,6 +120,97 @@ public class HarvestingClientsPage implements java.io.Serializable {
         return selectedClient; 
     }
     
+    public PageMode getPageMode() {
+        return this.pageMode;
+    } 
+    
+    public void setPageMode(PageMode pageMode) {
+        this.pageMode = pageMode;
+    }
+    
+    public boolean isCreateMode() {
+        return PageMode.CREATE == this.pageMode;
+    }
+    
+    public boolean isEditMode() {
+        return PageMode.EDIT == this.pageMode;
+    }
+    
+    public boolean isViewMode() {
+        return PageMode.VIEW == this.pageMode;
+    }
+    
+    public void runHarvest(HarvestingClient harvestingClient) {
+        
+    }
+    
+    public void editClient(HarvestingClient harvestingClient) {
+        //this.selectedClient = new HarvestingClient();
+        
+        this.newNickname = harvestingClient.getName();
+        this.newHarvestingUrl = harvestingClient.getHarvestingUrl();
+        this.initialSettingsValidated = true;
+        this.newOaiSet = harvestingClient.getHarvestingSet();
+        this.newMetadataFormat = harvestingClient.getMetadataPrefix();
+        this.newHarvestingStyle = harvestingClient.getHarvestStyle();
+        
+        this.harvestTypeRadio = harvestTypeRadioOAI;
+        
+        if (harvestingClient.isScheduled()) {
+            if (HarvestingClient.SCHEDULE_PERIOD_DAILY.equals(harvestingClient.getSchedulePeriod())) {
+                this.harvestingScheduleRadio = harvestingScheduleRadioDaily;                
+                setHourOfDayAMPMfromInteger(harvestingClient.getScheduleHourOfDay());
+                
+            } else if (HarvestingClient.SCHEDULE_PERIOD_DAILY.equals(harvestingClient.getSchedulePeriod())) {
+                this.harvestingScheduleRadio = harvestingScheduleRadioWeekly;
+                setHourOfDayAMPMfromInteger(harvestingClient.getScheduleHourOfDay());
+                setWeekdayFromInteger(harvestingClient.getScheduleDayOfWeek());
+                
+            } else {
+                // ok, the client is marked as "scheduled" - but the actual
+                // schedule type is not specified. 
+                // so we'll show it as unscheduled on the edit form:
+                this.harvestingScheduleRadio = harvestingScheduleRadioNone;
+                this.newHarvestingScheduleDayOfWeek = "Sunday";
+                this.newHarvestingScheduleTimeOfDay = "12";
+                this.harvestingScheduleRadioAMPM = harvestingScheduleRadioAM;
+            }
+        } else {
+            this.harvestingScheduleRadio = harvestingScheduleRadioNone;
+            // unscheduled; but we populate this values to act as the defaults 
+            // if they decide to schedule it and toggle the form to show the 
+            // time and/or day pulldowns:
+            this.newHarvestingScheduleDayOfWeek = "Sunday";
+            this.newHarvestingScheduleTimeOfDay = "12";
+            this.harvestingScheduleRadioAMPM = harvestingScheduleRadioAM;
+        }        
+        
+        this.pageMode = PageMode.EDIT;
+        
+    }
+    
+    
+    public void deleteClient() {
+        if (selectedClient != null) {
+            //configuredHarvestingClients.remove(selectedClient);
+            logger.info("proceeding to delete harvesting client "+selectedClient.getName());
+            try {
+                engineService.submit(new DeleteHarvestingClientCommand(dvRequestService.getDataverseRequest(), selectedClient));
+                configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();
+                JsfHelper.addFlashMessage("Selected harvesting client has been deleted.");
+            } catch (CommandException ex) {
+                String failMessage = "Selected harvesting client cannot be deleted.";
+                JH.addMessage(FacesMessage.SEVERITY_FATAL, failMessage);
+            } catch (Exception ex) {
+                String failMessage = "Selected harvesting client cannot be deleted; unknown exception: "+ex.getMessage();
+                JH.addMessage(FacesMessage.SEVERITY_FATAL, failMessage);
+            }
+        } else {
+            logger.warning("Delete called, with a null selected harvesting client");
+        }
+        
+    }
+    
     public void createClient(ActionEvent ae) {
         
         HarvestingClient newHarvestingClient = new HarvestingClient(); // will be set as type OAI by default
@@ -135,7 +233,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
                 if (getWeekDayNumber() == null) {
                     // create a "week day is required..." error message, etc. 
                     // but we may be better off not even giving them an opportunity 
-                    // not to leave the field blank - ?
+                    // to leave the field blank - ?
                 }
                 newHarvestingClient.setScheduleDayOfWeek(getWeekDayNumber());
             } else {
@@ -150,6 +248,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
         
         newHarvestingClient.setArchiveUrl(getArchiveUrl());
         // set default description - they can customize it as they see fit:
+        // TODO: move this into the resource bundle: 
         newHarvestingClient.setArchiveDescription("This Dataset is harvested from our partners. Clicking the link will take you directly to the archival source of the data.");
         
         // will try to save it now:
@@ -179,32 +278,74 @@ public class HarvestingClientsPage implements java.io.Serializable {
         
     }
     
-    public void runHarvest(HarvestingClient harvestingClient) {
+    // this saves an existing client that the user has edited: 
+    
+    public void saveClient(ActionEvent ae) {
         
-    }
-    
-    public void editClient(HarvestingClient harvestingClient) {
+        HarvestingClient harvestingClient = getSelectedClient(); 
+        if (harvestingClient == null) {
+            // TODO: 
+            // tell the user somehow that the client cannot be saved, and advise
+            // them to save the settings they have entered. 
+            // as of now - we will show an error message, but only after the 
+            // edit form has been closed.        
+        }
         
-    }
-    
-    
-    public void deleteClient() {
-        if (selectedClient != null) {
-            //configuredHarvestingClients.remove(selectedClient);
-            logger.info("proceeding to delete harvesting client "+selectedClient.getName());
-            try {
-                engineService.submit(new DeleteHarvestingClientCommand(dvRequestService.getDataverseRequest(), selectedClient));
-                configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();
-                JsfHelper.addFlashMessage("Selected harvesting client has been deleted.");
-            } catch (CommandException ex) {
-                String failMessage = "Selected harvesting client cannot be deleted.";
-                JH.addMessage(FacesMessage.SEVERITY_FATAL, failMessage);
-            } catch (Exception ex) {
-                String failMessage = "Selected harvesting client cannot be deleted; unknown exception: "+ex.getMessage();
-                JH.addMessage(FacesMessage.SEVERITY_FATAL, failMessage);
+        // nickname and harvesting url are not editable for existing clients:
+        //harvestingClient.setName(newNickname);
+        //harvestingClient.setHarvestingUrl(newHarvestingUrl);
+        
+        if (!StringUtils.isEmpty(newOaiSet)) {
+            harvestingClient.setHarvestingSet(newOaiSet);
+        }
+        // metadataFormat has been validated by now; safe to assume it is not
+        // empty.
+        harvestingClient.setMetadataPrefix(newMetadataFormat);
+        harvestingClient.setHarvestStyle(newHarvestingStyle);
+        
+        if (isNewHarvestingScheduled()) {
+            harvestingClient.setScheduled(true);
+            
+            if (isNewHarvestingScheduledWeekly()) {
+                harvestingClient.setSchedulePeriod(HarvestingClient.SCHEDULE_PERIOD_WEEKLY);
+                if (getWeekDayNumber() == null) {
+                    // create a "week day is required..." error message, etc. 
+                    // but we may be better off not even giving them an opportunity 
+                    // to leave the field blank - ?
+                }
+                harvestingClient.setScheduleDayOfWeek(getWeekDayNumber());
+            } else {
+                harvestingClient.setSchedulePeriod(HarvestingClient.SCHEDULE_PERIOD_DAILY);
             }
-        } else {
-            logger.warning("Delete called, with a null selected harvesting client");
+            
+            if (getHourOfDay() == null) {
+                // see the comment above, about the day of week. same here.
+            }
+            harvestingClient.setScheduleHourOfDay(getHourOfDay());
+        }
+        
+        // TODO: make ArchiveUrl configurable
+        //harvestingClient.setArchiveUrl(getArchiveUrl());
+        // TODO: make description customizable
+        //harvestingClient.setArchiveDescription(...);
+        
+        // will try to save it now:
+        
+        try {
+            harvestingClient = engineService.submit( new UpdateHarvestingClientCommand(dvRequestService.getDataverseRequest(), harvestingClient));
+            
+            configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();
+            
+            JsfHelper.addSuccessMessage("Succesfully updated harvesting client " + harvestingClient.getName());
+
+        } catch (CommandException ex) {
+            logger.log(Level.WARNING, "Failed to save harvesting client", ex);
+            JsfHelper.JH.addMessage(FacesMessage.SEVERITY_ERROR,
+                                    "Failed to save harvesting client",
+                                    ex.getMessage());
+        } catch (Exception ex) {
+            JH.addMessage(FacesMessage.SEVERITY_FATAL, "Failed to save harvesting client (reason unknown).");
+             logger.log(Level.SEVERE, "Failed to save harvesting client (reason unknown)." + ex.getMessage(), ex);
         }
         
     }
@@ -214,6 +355,10 @@ public class HarvestingClientsPage implements java.io.Serializable {
         UIInput input = (UIInput) toValidate;
         input.setValid(true); // Optimistic approach
 
+        // metadataFormats are selected from a pulldown that's populated with 
+        // the values returned by the remote OAI server. 
+        // the only validation we want is to make sure the select one from the 
+        // menu. 
         if (context.getExternalContext().getRequestParameterMap().get("DO_VALIDATION") != null
                 && StringUtils.isEmpty(value)) {
 
@@ -378,6 +523,8 @@ public class HarvestingClientsPage implements java.io.Serializable {
         this.newHarvestingScheduleTimeOfDay = "12";
         
         this.harvestingScheduleRadioAMPM = harvestingScheduleRadioAM;
+        
+        this.pageMode = PageMode.CREATE;
         
     }
         
@@ -631,6 +778,13 @@ public class HarvestingClientsPage implements java.io.Serializable {
         return getWeekDayNumber(getNewHarvestingScheduleDayOfWeek());
     }
     
+    private void setWeekdayFromInteger(Integer weekday) {
+        if (weekday == null || weekday.intValue() < 1 || weekday.intValue() > 7) {
+            weekday = 1;
+        }
+        this.newHarvestingScheduleDayOfWeek = getWeekDays().get(weekday);
+    }
+    
     private Integer getHourOfDay() {
         Integer hour = null; 
         if (getNewHarvestingScheduleTimeOfDay() != null) {
@@ -651,6 +805,25 @@ public class HarvestingClientsPage implements java.io.Serializable {
         }
         
         return hour;
+    }
+    
+    private void setHourOfDayAMPMfromInteger(Integer hour24) {
+        if (hour24 == null || hour24.intValue() > 23) {
+            hour24 = 0;
+        }
+        
+        if (hour24.intValue() > 11) {
+            hour24 = hour24.intValue() - 12;
+            this.harvestingScheduleRadioAMPM = harvestingScheduleRadioPM;
+        } else {
+            this.harvestingScheduleRadioAMPM = harvestingScheduleRadioAM;
+        }
+        
+        if (hour24.intValue() == 0) {
+            this.newHarvestingScheduleTimeOfDay = "12";        
+        } else {
+            this.newHarvestingScheduleTimeOfDay = hour24.toString();
+        }
     }
     
     private String getArchiveUrl() {
