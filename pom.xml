@@ -373,11 +373,13 @@
 	<!-- Harvesting client in Dataverse 4 itilizes the OCLC implementation for the simple, "cheap" -->
 	<!-- verbs; for the potentially expensive GetRecord - the workhorse method, our own, optimized -->
 	<!-- implementation is used. -->
+        <!-- OK, scratch this - the current plan is to stop using OCLC and to
+         use the XOAI implementation (below). 
 	<dependency>
 	  <groupId>org.dspace</groupId>
 	  <artifactId>oclc-harvester2</artifactId>
 	  <version>0.1.12</version>
-	</dependency>
+	</dependency -->
 	<!-- EXPERIMENTAL: -->
 	<!-- lyncode xoai OAI-PMH implementation: -->
 	<!-- ok, unfortunately, their 4.* versions -->

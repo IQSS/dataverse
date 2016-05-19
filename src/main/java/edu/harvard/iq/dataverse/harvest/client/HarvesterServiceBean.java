@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import java.net.URLEncoder;
+//import java.net.URLEncoder;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -31,22 +31,29 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.faces.bean.ManagedBean;
 import javax.inject.Named;
-import javax.xml.bind.Unmarshaller;
+//import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import org.apache.commons.lang.mutable.MutableBoolean;
 import org.apache.commons.lang.mutable.MutableLong;
 import org.xml.sax.SAXException;
 
-import com.lyncode.xoai.model.oaipmh.Granularity;
 import com.lyncode.xoai.model.oaipmh.Header;
+/*
+ unused xoai imports: 
+ (most of xoai functionality has been moved into OaiHandler.  
+ TODO: remove, after harvesting is re-tested. 
+import com.lyncode.xoai.model.oaipmh.Granularity;
 import com.lyncode.xoai.serviceprovider.ServiceProvider;
 import com.lyncode.xoai.serviceprovider.model.Context;
 import com.lyncode.xoai.serviceprovider.client.HttpOAIClient;
 import com.lyncode.xoai.serviceprovider.exceptions.BadArgumentException;
 import com.lyncode.xoai.serviceprovider.parameters.ListIdentifiersParameters;
+*/
 import edu.harvard.iq.dataverse.api.imports.ImportServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.harvest.client.oai.OaiHandler;
+import edu.harvard.iq.dataverse.harvest.client.oai.OaiHandlerException;
 
 /**
  *
@@ -213,7 +220,9 @@ public class HarvesterServiceBean {
                 hdLogger.log(Level.INFO, "Datasets created/updated: " + harvestedDatasetIds.size() + ", datasets deleted: [TODO:], datasets failed: " + failedIdentifiers.size());
 
                 // now index all the datasets we have harvested - created, modified or deleted:
-                /* (TODO: !!!)
+                /* (TODO: may not be needed at all. In Dataverse4, we may be able to get away with the normal 
+                    reindexing after every import. See the rest of the comments about batch indexing throughout 
+                    this service bean)
                     if (this.processedSizeThisBatch > 0) {
                         hdLogger.log(Level.INFO, "POST HARVEST, reindexing the remaining studies.");
                         if (this.harvestedDatasetIdsThisBatch != null) {
@@ -258,34 +267,35 @@ public class HarvesterServiceBean {
     private List<Long> harvestOAI(DataverseRequest dataverseRequest, HarvestingClient harvestingClient, Logger hdLogger, MutableBoolean harvestErrorOccurred, List<String> failedIdentifiers, List<Long> harvestedDatasetIdsThisBatch)
             throws IOException, ParserConfigurationException, SAXException, TransformerException {
 
+        logBeginOaiHarvest(hdLogger, harvestingClient);
+        
         List<Long> harvestedDatasetIds = new ArrayList<Long>();
         MutableLong processedSizeThisBatch = new MutableLong(0L);
+        OaiHandler oaiHandler;
 
-        String baseOaiUrl = harvestingClient.getHarvestingUrl();
-        String metadataPrefix = harvestingClient.getMetadataPrefix();
-        Date fromDate = harvestingClient.getLastNonEmptyHarvestTime();
-
-        String set = harvestingClient.getHarvestingSet() == null ? null : URLEncoder.encode(harvestingClient.getHarvestingSet(), "UTF-8");
-
-        hdLogger.log(Level.INFO, "BEGIN HARVEST..., oaiUrl=" + baseOaiUrl + ",set=" + set + ", metadataPrefix=" + metadataPrefix + ", from=" + fromDate);
-        
-        ListIdentifiersParameters parameters = buildParams(metadataPrefix, set, fromDate);
-        ServiceProvider serviceProvider = getServiceProvider(baseOaiUrl, Granularity.Second);
-
-        hdLogger.log(Level.INFO, "Created ListIdentifiers parameters and service provider.");
-        
         try {
-            for (Iterator<Header> idIter = serviceProvider.listIdentifiers(parameters); idIter.hasNext();) {
+            oaiHandler = new OaiHandler(harvestingClient);
+        } catch (OaiHandlerException ohe) {
+            String errorMessage = "Failed to create OaiHandler for harvesting client "
+                    +harvestingClient.getName()
+                    +"; "
+                    +ohe.getMessage();
+            hdLogger.log(Level.SEVERE, errorMessage);
+            throw new IOException(errorMessage);
+        }
+                
+        try {
+            for (Iterator<Header> idIter = oaiHandler.runListIdentifiers(); idIter.hasNext();) {
 
                 Header h = idIter.next();
-                hdLogger.info("retrieved header;");
                 String identifier = h.getIdentifier();
-                hdLogger.info("identifier: " + identifier);
+                
+                hdLogger.info("processing identifier: " + identifier);
+
+                MutableBoolean getRecordErrorOccurred = new MutableBoolean(false);
 
                 // Retrieve and process this record with a separate GetRecord call:
-                MutableBoolean getRecordErrorOccurred = new MutableBoolean(false);
-                
-                Long datasetId = getRecord(dataverseRequest, hdLogger, harvestingClient, identifier, metadataPrefix, getRecordErrorOccurred, processedSizeThisBatch);
+                Long datasetId = processRecord(dataverseRequest, hdLogger, oaiHandler, identifier, getRecordErrorOccurred, processedSizeThisBatch);
                 
                 hdLogger.info("Total content processed in this batch so far: "+processedSizeThisBatch);
                 if (datasetId != null) {
@@ -300,10 +310,9 @@ public class HarvesterServiceBean {
                 
                 if (getRecordErrorOccurred.booleanValue() == true) {
                     failedIdentifiers.add(identifier);
+                    harvestErrorOccurred.setValue(true);
                 }
                 
-                
-
                 // reindexing in batches? - this is from DVN 3; 
                 // we may not need it anymore. 
                 if ( processedSizeThisBatch.longValue() > INDEXING_CONTENT_BATCH_SIZE ) {
@@ -318,90 +327,60 @@ public class HarvesterServiceBean {
                 }
 
             }
-        } catch (BadArgumentException e) {
-            throw new IOException("Incorrectly formatted OAI parameter", e);
+        } catch (OaiHandlerException e) {
+            throw new IOException("Failed to run ListIdentifiers: " + e.getMessage());
         }
 
-        hdLogger.log(Level.INFO, "COMPLETED HARVEST, oaiUrl=" + baseOaiUrl + ",set=" + set + ", metadataPrefix=" + metadataPrefix + ", from=" + fromDate);
+        logCompletedOaiHarvest(hdLogger, harvestingClient);
 
         return harvestedDatasetIds;
 
     }
     
-    private ServiceProvider getServiceProvider(String baseOaiUrl, Granularity oaiGranularity) {
-        Context context = new Context();
-
-        context.withBaseUrl(baseOaiUrl);
-        context.withGranularity(oaiGranularity);
-        context.withOAIClient(new HttpOAIClient(baseOaiUrl));
-
-        ServiceProvider serviceProvider = new ServiceProvider(context);
-        return serviceProvider;
-    }
     
-    /**
-     * Creates an XOAI parameters object for the ListIdentifiers call
-     *
-     * @param metadataPrefix
-     * @param set
-     * @param from
-     * @return ListIdentifiersParameters
-     */
-    private ListIdentifiersParameters buildParams(String metadataPrefix, String set, Date from) {
-        ListIdentifiersParameters mip = ListIdentifiersParameters.request();
-        mip.withMetadataPrefix(metadataPrefix);
-
-        if (from != null) {
-            mip.withFrom(from);
-        }
-
-        if (set != null) {
-            mip.withSetSpec(set);
-        }
-        return mip;
-    }
-
     
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-    public Long getRecord(DataverseRequest dataverseRequest, Logger hdLogger, HarvestingClient harvestingClient, String identifier, String metadataPrefix, MutableBoolean recordErrorOccurred, MutableLong processedSizeThisBatch) {
+    public Long processRecord(DataverseRequest dataverseRequest, Logger hdLogger, OaiHandler oaiHandler, String identifier, MutableBoolean recordErrorOccurred, MutableLong processedSizeThisBatch) {
         String errMessage = null;
         Dataset harvestedDataset = null;
-        String oaiUrl = harvestingClient.getHarvestingUrl();
+        logGetRecord(hdLogger, oaiHandler, identifier);
         
-        try {
-            hdLogger.log(Level.INFO, "Calling GetRecord: oaiUrl =" + oaiUrl + "?verb=GetRecord&identifier=" + identifier + "&metadataPrefix=" + metadataPrefix);
-
-            FastGetRecord record = new FastGetRecord(oaiUrl, identifier, metadataPrefix);
+        try {  
+            FastGetRecord record = oaiHandler.runGetRecord(identifier);
             errMessage = record.getErrorMessage();
 
             if (errMessage != null) {
                 hdLogger.log(Level.SEVERE, "Error calling GetRecord - " + errMessage);
             } else if (record.isDeleted()) {
-                hdLogger.log(Level.INFO, "Received 'deleted' status from OAI Server.");
                 Dataset dataset = null; //TODO: !!! datasetService.getDatasetByHarvestInfo(dataverse, identifier);
                 if (dataset != null) {
-                    hdLogger.log(Level.INFO, "Deleting study " + dataset.getGlobalId());
+                    hdLogger.info("Deleting dataset " + dataset.getGlobalId());
                     // TODO: !!! datasetService.deleteDataset(dataset.getId());
                 } else {
-                    hdLogger.log(Level.INFO, "No study found for this record, skipping delete. ");
+                    hdLogger.info("No dataset found for "+identifier+", skipping delete. ");
                 }
 
             } else {
-                hdLogger.log(Level.INFO, "Successfully retrieved GetRecord response.");
+                hdLogger.info("Successfully retrieved GetRecord response.");
 
-                harvestedDataset = importService.doImportHarvestedDataset(dataverseRequest, harvestingClient.getDataverse(), metadataPrefix, record.getMetadataFile(), null);
+                harvestedDataset = importService.doImportHarvestedDataset(dataverseRequest, 
+                        oaiHandler.getHarvestingClient().getDataverse(), 
+                        oaiHandler.getMetadataPrefix(), 
+                        record.getMetadataFile(), 
+                        null);
                 
-                hdLogger.log(Level.INFO, "Harvest Successful for identifier " + identifier);
+                hdLogger.info("Harvest Successful for identifier " + identifier);
                 hdLogger.info("Size of this record: " + record.getMetadataFile().length());
                 processedSizeThisBatch.add(record.getMetadataFile().length());
             }
         } catch (Throwable e) {
-            errMessage = "Exception processing getRecord(), oaiUrl=" + oaiUrl + ",identifier=" + identifier + " " + e.getClass().getName() + " " + e.getMessage();
-            hdLogger.log(Level.SEVERE, errMessage);
-            logException(e, hdLogger);
+            logGetRecordException(hdLogger, oaiHandler, identifier, e);
+            //logException(e, hdLogger);
                 
         }
 
+        // TODO: the message below is taken from DVN3; - figure out what it means...
+        // 
         // If we got an Error from the OAI server or an exception happened during import, then
         // set recordErrorOccurred to true (if recordErrorOccurred is being used)
         // otherwise throw an exception (if recordErrorOccurred is not used, i.e null)
@@ -416,7 +395,51 @@ public class HarvesterServiceBean {
 
         return harvestedDataset != null ? harvestedDataset.getId() : null;
     }
+
+    private void logBeginOaiHarvest(Logger hdLogger, HarvestingClient harvestingClient) {
+        hdLogger.log(Level.INFO, "BEGIN HARVEST, oaiUrl=" 
+                +harvestingClient.getHarvestingUrl() 
+                +",set=" 
+                +harvestingClient.getHarvestingSet() 
+                +", metadataPrefix=" 
+                +harvestingClient.getMetadataPrefix()
+                + harvestingClient.getLastNonEmptyHarvestTime() == null ? "" : "from=" + harvestingClient.getLastNonEmptyHarvestTime());
+    }
     
+    private void logCompletedOaiHarvest(Logger hdLogger, HarvestingClient harvestingClient) {
+        hdLogger.log(Level.INFO, "COMPLETED HARVEST, oaiUrl=" 
+                +harvestingClient.getHarvestingUrl() 
+                +",set=" 
+                +harvestingClient.getHarvestingSet() 
+                +", metadataPrefix=" 
+                +harvestingClient.getMetadataPrefix()
+                + harvestingClient.getLastNonEmptyHarvestTime() == null ? "" : "from=" + harvestingClient.getLastNonEmptyHarvestTime());
+    }
+    
+    public void logGetRecord(Logger hdLogger, OaiHandler oaiHandler, String identifier) {
+        hdLogger.log(Level.INFO, "Calling GetRecord: oaiUrl =" 
+                +oaiHandler.getBaseOaiUrl()
+                +"?verb=GetRecord&identifier=" 
+                +identifier 
+                +"&metadataPrefix=" + oaiHandler.getMetadataPrefix());
+    }
+    
+    public void logGetRecordException(Logger hdLogger, OaiHandler oaiHandler, String identifier, Throwable e) {
+        String errMessage = "Exception processing getRecord(), oaiUrl=" 
+                +oaiHandler.getBaseOaiUrl() 
+                +",identifier=" 
+                +identifier 
+                +" " 
+                +e.getClass().getName() 
+                +" " 
+                +e.getMessage();
+        
+            hdLogger.log(Level.SEVERE, errMessage);
+    }
+    
+    
+    // TODO: I doubt we need a full stacktrace in the harvest log - ??
+    // -- L.A. 4.5 May 2016
     private void logException(Throwable e, Logger logger) {
 
         boolean cause = false;
@@ -436,5 +459,47 @@ public class HarvesterServiceBean {
         } while ((e = e.getCause()) != null);
         logger.severe(fullMessage);
     }
+    
+    /*
+     some dead code below: 
+     this functionality has been moved into OaiHandler. 
+    TODO: test that harvesting is still working and remove.
+     
+    private ServiceProvider getServiceProvider(String baseOaiUrl, Granularity oaiGranularity) {
+        Context context = new Context();
+
+        context.withBaseUrl(baseOaiUrl);
+        context.withGranularity(oaiGranularity);
+        context.withOAIClient(new HttpOAIClient(baseOaiUrl));
+
+        ServiceProvider serviceProvider = new ServiceProvider(context);
+        return serviceProvider;
+    }
+    */
+    
+    /**
+     * Creates an XOAI parameters object for the ListIdentifiers call
+     *
+     * @param metadataPrefix
+     * @param set
+     * @param from
+     * @return ListIdentifiersParameters
+     */
+    /*
+    private ListIdentifiersParameters buildParams(String metadataPrefix, String set, Date from) {
+        ListIdentifiersParameters mip = ListIdentifiersParameters.request();
+        mip.withMetadataPrefix(metadataPrefix);
+
+        if (from != null) {
+            mip.withFrom(from);
+        }
+
+        if (set != null) {
+            mip.withSetSpec(set);
+        }
+        return mip;
+    }
+    */
+    
     
 }
