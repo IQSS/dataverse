@@ -145,12 +145,18 @@ public class HarvestingClientsPage implements java.io.Serializable {
     }
     
     public void editClient(HarvestingClient harvestingClient) {
-        //this.selectedClient = new HarvestingClient();
+        setSelectedClient(harvestingClient);
         
         this.newNickname = harvestingClient.getName();
         this.newHarvestingUrl = harvestingClient.getHarvestingUrl();
         this.initialSettingsValidated = true;
-        this.newOaiSet = harvestingClient.getHarvestingSet();
+        
+        // TODO: do we want to try and contact the server, again, to make 
+        // sure the metadataformat and/or set are still supported? 
+        // and if not, what do we do? 
+        // alternatively, should we make these 2 fields not editable at all?
+        
+        this.newOaiSet = !StringUtils.isEmpty(harvestingClient.getHarvestingSet()) ? harvestingClient.getHarvestingSet() : "none";
         this.newMetadataFormat = harvestingClient.getMetadataPrefix();
         this.newHarvestingStyle = harvestingClient.getHarvestStyle();
         
@@ -246,10 +252,12 @@ public class HarvestingClientsPage implements java.io.Serializable {
             newHarvestingClient.setScheduleHourOfDay(getHourOfDay());
         }
         
-        newHarvestingClient.setArchiveUrl(getArchiveUrl());
+        // make default archive url (used to generate links pointing back to the 
+        // archival sources, when harvested datasets are displayed in search results),
+        // from the harvesting url:
+        newHarvestingClient.setArchiveUrl(makeDefaultArchiveUrl());
         // set default description - they can customize it as they see fit:
-        // TODO: move this into the resource bundle: 
-        newHarvestingClient.setArchiveDescription("This Dataset is harvested from our partners. Clicking the link will take you directly to the archival source of the data.");
+        newHarvestingClient.setArchiveDescription(JH.localize("harvestclients.viewEditDialog.archiveDescription.default.generic"));
         
         // will try to save it now:
         
@@ -275,6 +283,8 @@ public class HarvestingClientsPage implements java.io.Serializable {
             JH.addMessage(FacesMessage.SEVERITY_FATAL, "Harvesting client creation failed (reason unknown).");
              logger.log(Level.SEVERE, "Harvesting client creation failed (reason unknown)." + ex.getMessage(), ex);
         }
+        setPageMode(PageMode.VIEW);
+
         
     }
     
@@ -283,6 +293,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
     public void saveClient(ActionEvent ae) {
         
         HarvestingClient harvestingClient = getSelectedClient(); 
+        
         if (harvestingClient == null) {
             // TODO: 
             // tell the user somehow that the client cannot be saved, and advise
@@ -294,13 +305,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
         // nickname and harvesting url are not editable for existing clients:
         //harvestingClient.setName(newNickname);
         //harvestingClient.setHarvestingUrl(newHarvestingUrl);
-        
-        if (!StringUtils.isEmpty(newOaiSet)) {
-            harvestingClient.setHarvestingSet(newOaiSet);
-        }
-        // metadataFormat has been validated by now; safe to assume it is not
-        // empty.
-        harvestingClient.setMetadataPrefix(newMetadataFormat);
+        // (same for the set and metadata format)
         harvestingClient.setHarvestStyle(newHarvestingStyle);
         
         if (isNewHarvestingScheduled()) {
@@ -324,11 +329,6 @@ public class HarvestingClientsPage implements java.io.Serializable {
             harvestingClient.setScheduleHourOfDay(getHourOfDay());
         }
         
-        // TODO: make ArchiveUrl configurable
-        //harvestingClient.setArchiveUrl(getArchiveUrl());
-        // TODO: make description customizable
-        //harvestingClient.setArchiveDescription(...);
-        
         // will try to save it now:
         
         try {
@@ -347,6 +347,8 @@ public class HarvestingClientsPage implements java.io.Serializable {
             JH.addMessage(FacesMessage.SEVERITY_FATAL, "Failed to save harvesting client (reason unknown).");
              logger.log(Level.SEVERE, "Failed to save harvesting client (reason unknown)." + ex.getMessage(), ex);
         }
+        setPageMode(PageMode.VIEW);
+
         
     }
     
@@ -826,7 +828,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
         }
     }
     
-    private String getArchiveUrl() {
+    private String makeDefaultArchiveUrl() {
         String archiveUrl = null; 
         
         if (getNewHarvestingUrl() != null) {

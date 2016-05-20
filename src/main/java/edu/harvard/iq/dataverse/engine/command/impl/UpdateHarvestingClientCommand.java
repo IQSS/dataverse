@@ -22,7 +22,7 @@ public class UpdateHarvestingClientCommand extends AbstractCommand<HarvestingCli
     public UpdateHarvestingClientCommand(DataverseRequest aRequest, HarvestingClient harvestingClient) {
         super(aRequest, harvestingClient.getDataverse());
         this.harvestingClient = harvestingClient;
-        dv = harvestingClient.getDataverse();
+        this.dv = harvestingClient.getDataverse();
     }
 
     @Override
