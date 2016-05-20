@@ -43,12 +43,10 @@
                         <ui:fragment rendered="#{!empty EditDatafilesPage.getMaxFileUploadSizeInBytes()}">
                         <h:outputFormat value=" #{bundle['file.selectToAdd.tipLimit']}" escape="false">
                             <f:param value="#{EditDatafilesPage.getMaxFileUploadSizeInBytes()}"/>
-                            <f:param value="#{systemConfig.guidesBaseUrl}"/>
-                            <f:param value="#{systemConfig.version}"/>
                         </h:outputFormat>                      
                         </ui:fragment>  
-                        <ui:fragment rendered="#{empty EditDatafilesPage.getMaxFileUploadSizeInBytes()}">
-                        <h:outputFormat value=" #{bundle['file.selectToAdd.tipNoSetLimit']}" escape="false">
+                        <ui:fragment rendered="true">
+                        <h:outputFormat value=" #{bundle['file.selectToAdd.tipMoreInformation']}" escape="false">
                             <f:param value="#{systemConfig.guidesBaseUrl}"/>
                             <f:param value="#{systemConfig.version}"/>
                         </h:outputFormat>                      
