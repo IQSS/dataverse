@@ -59,7 +59,7 @@
                     interval = setInterval(function() {
                         countdownElement.firstChild.data = countdownMessage + ' ' + (seconds - second) + ' ' + countdownMessageSeconds + '.';
                         if (second >= seconds) {
-                            window.location.href = "http://gking.harvard.edu/data";
+                            window.location.href = "#{param['citationRedirectURL']}?persistentId=#{param['persistentId']}";
                         }
                         second++;
                     }, 1000);
