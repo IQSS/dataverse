@@ -268,7 +268,7 @@
                         <!--BROWSE GUEST ZERO COUNTS-->
                         <p>
                             <h:outputFormat value="#{bundle['dataverse.results.empty.browse.guest.zero']}" escape="false">
-                                <f:param value="#{dataverseHeaderFragment.loginRedirectPage}"/>
+                                <f:param value="#{navigationWrapper.redirectPage}"/>
                             </h:outputFormat>
                         </p>
                     </ui:fragment>
@@ -276,7 +276,7 @@
                         <!--BROWSE GUEST HIDDEN-->
                         <p>
                             <h:outputFormat value="#{bundle['dataverse.results.empty.browse.guest.hidden']}" escape="false">
-                                <f:param value="#{dataverseHeaderFragment.loginRedirectPage}"/>
+                                <f:param value="#{navigationWrapper.redirectPage}"/>
                             </h:outputFormat>
                         </p>
                     </ui:fragment>
@@ -666,7 +666,7 @@
         <p class="help-block">
             <span class="glyphicon glyphicon-warning-sign text-danger"/>
             <h:outputFormat styleClass="text-danger" value="#{dataverseHeaderFragment.signupAllowed ? bundle['dataverse.results.dialog.addDataGuest.msg.signup'] : bundle['dataverse.results.dialog.addDataGuest.msg']}" escape="false">
-                <f:param value="#{dataverseHeaderFragment.loginRedirectPage}"/>
+                <f:param value="#{navigationWrapper.redirectPage}"/>
             </h:outputFormat>
         </p>
         <div class="button-block">
