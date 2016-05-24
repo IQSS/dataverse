@@ -23,6 +23,8 @@ import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import java.util.UUID;
 import static junit.framework.Assert.assertEquals;
+import org.hamcrest.CoreMatchers;
+import static org.hamcrest.CoreMatchers.equalTo;
 
 public class DatasetsIT {
 
@@ -159,11 +161,15 @@ public class DatasetsIT {
         String contributorUsername = UtilIT.getUsernameFromResponse(createContributorResponse);
         String contributorApiToken = UtilIT.getApiTokenFromResponse(createContributorResponse);
         UtilIT.getRoleAssignmentsOnDataverse(dataverseAlias, apiToken).prettyPrint();
+        Response grantRoleShouldFail = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.DS_CONTRIBUTOR.toString(), "doesNotExist", apiToken);
+        grantRoleShouldFail.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo("Assignee not found"));
         /**
          * dsContributor only has AddDataset per
          * scripts/api/data/role-dsContributor.json
          */
-        Response grantRole = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.DS_CONTRIBUTOR.toString(), contributorUsername, apiToken);
+        Response grantRole = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.DS_CONTRIBUTOR.toString(), "@" + contributorUsername, apiToken);
         grantRole.prettyPrint();
         assertEquals(OK.getStatusCode(), grantRole.getStatusCode());
         UtilIT.getRoleAssignmentsOnDataverse(dataverseAlias, apiToken).prettyPrint();

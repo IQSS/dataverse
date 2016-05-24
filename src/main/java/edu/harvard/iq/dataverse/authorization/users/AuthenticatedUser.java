@@ -49,15 +49,20 @@ public class AuthenticatedUser implements User, Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
+    /**
+     * @todo Shouldn't there be some constraints on what the userIdentifier is
+     * allowed to be? It can't be as restrictive as the "userName" field on
+     * BuiltinUser because we can't predict what Shibboleth Identity Providers
+     * (IdPs) will send (typically in the "eppn" SAML assertion) but perhaps
+     * spaces, for example, should be disallowed. Right now "elisah.da mota" can
+     * be persisted as a userIdentifier per
+     * https://github.com/IQSS/dataverse/issues/2945
+     */
     @NotNull
     @Column(nullable = false, unique=true)
     private String userIdentifier;
 
-    /**
-     * @todo Uncomment the ValidateEmail annotation below for consistency with
-     * the annotation on BuiltinUser.
-     */
-//    @ValidateEmail(message = "Please enter a valid email address.")
+    @ValidateEmail(message = "Please enter a valid email address.")
     @NotNull
     @Column(nullable = false, unique=true)
     private String email;

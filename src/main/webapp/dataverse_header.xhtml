@@ -139,6 +139,12 @@
                                             <h:outputText value="#{bundle['header.accountInfo']}" />
                                         </h:outputLink>
                                     </li>
+                                    <li>
+                                        <h:outputLink value="/dataverseuser.xhtml">
+                                            <f:param name="selectTab" value="apiTokenTab" />
+                                            <h:outputText value="#{bundle['header.user.selectTab.apiToken']}" />
+                                        </h:outputLink>
+                                    </li>
                                     <li class="divider"></li>
                                     <li class="logout">
                                         <h:form styleClass="navbar-form navbar-left" pt:role="logout">
@@ -154,11 +160,6 @@
                 </div>
             </div>
         </nav>
-        <ui:fragment rendered="#{dataverseHeaderFragment.debugShibboleth}">
-          <h:outputText value="groups: #{dataverseHeaderFragment.getGroups(dataverseSession.user)}"/>
-          <br/>
-          <h:outputText value="permissions #{dataverseHeaderFragment.getPermissions(dataverseSession.user, dataverse)}"/>
-        </ui:fragment>
         <ui:param name="dataversePage" value="#{dataverseLinksStayOnPage == true ? '' : '/dataverse.xhtml' }"/>
 
         <!-- Header Panel -->
@@ -199,8 +200,12 @@
                 <div class="breadcrumbBlock">
                     <h:outputText value="#{breadcrumb.breadcrumbText}" styleClass="#{'breadcrumbActive'}" rendered="#{status.last}"/>
                     <ui:fragment rendered="#{!status.last}">
-                        <h:outputText value="#{breadcrumb.breadcrumbText}" rendered="#{!breadcrumb.dvObject.instanceofDataverse and !breadcrumb.dvObject.instanceofDataset}"/>
-
+                        <h:outputText value="#{breadcrumb.breadcrumbText}" rendered="#{!breadcrumb.dvObject.instanceofDataverse and !breadcrumb.dvObject.instanceofDataset and  empty breadcrumb.url }"/>
+                        <ui:fragment rendered="#{breadcrumb.dvObject == null and !empty breadcrumb.url}">                       
+                            <a id="breadcrumbLnk#{status.index}" href="${breadcrumb.url}">
+                                <h:outputText value="#{breadcrumb.breadcrumbText}"/>
+                            </a>
+                        </ui:fragment>
                         <ui:fragment rendered="#{breadcrumb.dvObject.instanceofDataverse}">                       
                             <a id="breadcrumbLnk#{status.index}" href="/dataverse/${breadcrumb.dvObject.alias}">
                                 <h:outputText value="#{breadcrumb.breadcrumbText}"/>

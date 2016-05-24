@@ -39,6 +39,7 @@ import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.ejb.EJBException;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -194,11 +195,21 @@ public abstract class AbstractApiBean {
             return new JsonParser(datasetFieldSvc, metadataBlockSvc,settingsSvc);
         }
     });
-    
-	protected RoleAssignee findAssignee( String identifier ) {
-    	return roleAssigneeSvc.getRoleAssignee(identifier);
-	}
-    
+
+    protected RoleAssignee findAssignee(String identifier) {
+        try {
+            RoleAssignee roleAssignee = roleAssigneeSvc.getRoleAssignee(identifier);
+            return roleAssignee;
+        } catch (EJBException ex) {
+            Throwable cause = ex;
+            while (cause.getCause() != null) {
+                cause = cause.getCause();
+            }
+            logger.info("Exception caught looking up RoleAssignee based on identifier '" + identifier + "': " + cause.getMessage());
+            return null;
+        }
+    }
+
     /**
      * 
      * @param apiKey the key to find the user with

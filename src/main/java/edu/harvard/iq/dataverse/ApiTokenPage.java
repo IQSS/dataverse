@@ -3,16 +3,21 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
-import javax.faces.application.FacesMessage;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+/**
+ * @todo Rename this to ApiTokenFragment? The separate page is being taken out
+ * per https://github.com/IQSS/dataverse/issues/3086
+ */
 @ViewScoped
 @Named("ApiTokenPage")
 public class ApiTokenPage implements java.io.Serializable {
@@ -45,9 +50,12 @@ public class ApiTokenPage implements java.io.Serializable {
             if (apiToken != null) {
                 return apiToken.getTokenString();
             } else {
-                return "API token for " + au.getName() + " not found";
+                List<String> arguments = new ArrayList<>();
+                arguments.add(au.getName());
+                return BundleUtil.getStringFromBundle("apitoken.notFound", arguments);
             }
         } else {
+            // It should be impossible to get here from the UI.
             return "Only authenticated users can have API tokens.";
         }
 

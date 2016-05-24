@@ -13,15 +13,16 @@
         <f:metadata>
             <f:viewParam name="guestbookId" value="#{guestbookResponsesPage.guestbookId}"/>
             <f:viewParam name="dataverseId" value="#{guestbookResponsesPage.dataverseId}"/>
-            <f:viewAction action="#{guestbookResponsesPage.init}"/>
-            <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(guestbookResponsesPage.dataverse, 'Guestbook Responses')}"/>
+            <f:viewAction action="#{guestbookResponsesPage.init}"/> 
+            <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(guestbookResponsesPage.dataverse)}"/> 
+            <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb('/manage-guestbooks.xhtml?dataverseId='.concat(guestbookResponsesPage.dataverseId), bundle['dataset.manageGuestbooks.pageTitle'])}"/>   
+            <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb(bundle['dataset.guestbookResponses.pageTitle'])}"/>
         </f:metadata>
         <ui:composition template="/dataverse_template.xhtml">
             <ui:param name="pageTitle" value="#{bundle['dataset.guestbookResponses.pageTitle']}"/>
 
             <ui:define name="body">
                 <h:form id="manageGuestbooksForm">
-                    <div class="row">
                         <div class="form-group clearfix">
                             <label for="guestbookNameStatic" class="col-sm-2 control-label">
                                 <span>#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.datasetGuestbook']}</span>
@@ -29,27 +30,32 @@
                             <div class="col-sm-9">
                                 #{guestbookResponsesPage.guestbook.name}
                             </div>
+                            <div class="pull-right">
+                                <button class="btn btn-default" jsf:id="downloadResponsesLink" jsf:action="#{guestbookResponsesPage.downloadResponsesByDataverseAndGuestbook()}"  >
+                                     #{bundle['dataset.manageGuestbooks.download.responses']}
+                                </button>  
+                            </div>
                         </div>
-                    </div>
-                    <p:dataTable id="responsesGuestbook" value="#{guestbookResponsesPage.responses}" var="response">
-                        <p:column sortBy="#{response.dataset.releasedVersion.title}" headerText="#{bundle['dataset.guestbooksResponses.dataset']}">
-                            <h:outputText value="#{response.dataset.releasedVersion.title}"/>
+                    <p:dataTable id="responsesGuestbook" value="#{guestbookResponsesPage.responsesAsArray}" var="response">
+                        <p:column sortBy="#{response[0]}" headerText="#{bundle['dataset.guestbooksResponses.dataset']}">
+                            <h:outputText value="#{response[0]}"/>
                         </p:column>
-                        <p:column sortBy="#{response.responseDate}" headerText="#{bundle['dataset.guestbooksResponses.date']}">
-                            #{response.responseDate}
+                        <p:column sortBy="#{response[1]}" headerText="#{bundle['dataset.guestbooksResponses.date']}">
+                            #{response[1]}
                         </p:column>
-                        <p:column sortBy="#{response.downloadtype}" headerText="#{bundle['dataset.guestbooksResponses.type']}">
-                            #{response.downloadtype}
+                        <p:column sortBy="#{response[2]}" headerText="#{bundle['dataset.guestbooksResponses.type']}">
+                            #{response[2]}
                         </p:column>
-                        <p:column sortBy="#{response.dataFile.displayName}" headerText="#{bundle['dataset.guestbooksResponses.file']}">
-                            #{response.dataFile.displayName}
+                        <p:column sortBy="#{response[3]}" headerText="#{bundle['dataset.guestbooksResponses.file']}">
+                            #{response[3]}
                         </p:column>
-                        <p:column sortBy="#{response.name}" headerText="User">
-                            <h:outputText value="#{response.name} (#{response.institution}), #{response.position}"/>
+                        <p:column sortBy="#{response[4]}" headerText="User">
+                            <h:outputText value="#{response[4]}"/>
                         </p:column>
-                        <p:column headerText="Custom Questions">
-                            <ui:repeat value="#{response.customQuestionResponses}" var="customQResponse"><b>#{customQResponse.customQuestion.questionString}: </b>#{customQResponse.response} <br></br></ui:repeat>
-                        </p:column>                        
+
+                        <p:column headerText="Custom Questions" >
+                            <ui:repeat value="#{response[5]}" var="customQResponse"><b>#{customQResponse[0]}: </b>#{customQResponse[1]} <br></br></ui:repeat>
+                        </p:column> 
                     </p:dataTable>
                 </h:form>
             </ui:define>

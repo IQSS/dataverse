@@ -20,6 +20,7 @@ import org.junit.Test;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.path.xml.XmlPath.from;
+import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -321,6 +322,43 @@ public class UtilIT {
         return new XmlPath(swordStatement).getString("feed.title");
     }
 
+    static Response createGroup(String dataverseToCreateGroupIn, String aliasInOwner, String displayName, String apiToken) {
+        JsonObjectBuilder groupBuilder = Json.createObjectBuilder();
+        groupBuilder.add("aliasInOwner", aliasInOwner);
+        groupBuilder.add("displayName", displayName);
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(groupBuilder.build().toString())
+                .contentType(ContentType.JSON)
+                .post("/api/dataverses/" + dataverseToCreateGroupIn + "/groups");
+        return response;
+    }
+
+    static Response addToGroup(String dataverseThatGroupBelongsIn, String groupIdentifier, List<String> roleAssigneesToAdd, String apiToken) {
+        JsonArrayBuilder groupBuilder = Json.createArrayBuilder();
+        roleAssigneesToAdd.stream().forEach((string) -> {
+            groupBuilder.add(string);
+        });
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(groupBuilder.build().toString())
+                .contentType(ContentType.JSON)
+                .post("/api/dataverses/" + dataverseThatGroupBelongsIn + "/groups/" + groupIdentifier + "/roleAssignees");
+        return response;
+    }
+
+    static public Response grantRoleOnDataverse(String definitionPoint, String role, String roleAssignee, String apiToken) {
+        JsonObjectBuilder roleBuilder = Json.createObjectBuilder();
+        roleBuilder.add("assignee", roleAssignee);
+        roleBuilder.add("role", role);
+        JsonObject roleObject = roleBuilder.build();
+        logger.info("Granting role on dataverse alias \"" + definitionPoint + "\": " + roleObject);
+        return given()
+                .body(roleObject.toString())
+                .contentType(ContentType.JSON)
+                .post("api/dataverses/" + definitionPoint + "/assignments?key=" + apiToken);
+    }
+
     public static Response deleteUser(String username) {
         Response deleteUserResponse = given()
                 .delete("/api/admin/authenticatedUsers/" + username + "/");
@@ -396,6 +434,36 @@ public class UtilIT {
         return response;
     }
 
+    static Response listAuthenticatedUsers(String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/admin/authenticatedUsers");
+        return response;
+    }
+
+    static Response getAuthenticatedUser(String userIdentifier, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/admin/authenticatedUsers/" + userIdentifier);
+        return response;
+    }
+
+    static Response migrateShibToBuiltin(Long userIdToConvert, String newEmailAddress, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(newEmailAddress)
+                .put("/api/admin/authenticatedUsers/id/" + userIdToConvert + "/convertShibToBuiltIn");
+        return response;
+    }
+
+    static Response migrateBuiltinToShib(String data, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(data)
+                .put("/api/admin/authenticatedUsers/convert/builtin2shib");
+        return response;
+    }
+
     static Response nativeGet(Integer datasetId, String apiToken) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
@@ -464,17 +532,6 @@ public class UtilIT {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get(url);
-    }
-
-    static Response grantRoleOnDataverse(String definitionPoint, String role, String roleAssignee, String apiToken) {
-        JsonObjectBuilder roleBuilder = Json.createObjectBuilder();
-        roleBuilder.add("assignee", "@" + roleAssignee);
-        roleBuilder.add("role", role);
-        JsonObject roleObject = roleBuilder.build();
-        logger.info("Granting role on dataverse \"" + definitionPoint + "\": " + role + "... " + roleObject);
-        return given()
-                .body(roleObject.toString()).contentType(ContentType.JSON)
-                .post("api/dataverses/" + definitionPoint + "/assignments?key=" + apiToken);
     }
 
     static Response grantRoleOnDataset(String definitionPoint, String role, String roleAssignee, String apiToken) {
