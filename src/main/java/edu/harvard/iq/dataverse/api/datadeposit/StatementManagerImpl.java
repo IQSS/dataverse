@@ -6,8 +6,10 @@ import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.engine.command.impl.GetDraftDatasetVersionCommand;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -36,17 +38,20 @@ public class StatementManagerImpl implements StatementManager {
 
     @EJB
     DatasetServiceBean datasetService;
+    @EJB
+    PermissionServiceBean permissionService;
     @Inject
     SwordAuth swordAuth;
     @Inject
     UrlManager urlManager;
-    
+
     private HttpServletRequest httpRequest;
-    
+
     @Override
     public Statement getStatement(String editUri, Map<String, String> map, AuthCredentials authCredentials, SwordConfiguration swordConfiguration) throws SwordServerException, SwordError, SwordAuthException {
 
         AuthenticatedUser user = swordAuth.auth(authCredentials);
+        DataverseRequest dvReq = new DataverseRequest(user, httpRequest);
         urlManager.processUrl(editUri);
         String globalId = urlManager.getTargetIdentifier();
         if (urlManager.getTargetType().equals("study") && globalId != null) {
@@ -58,7 +63,10 @@ public class StatementManagerImpl implements StatementManager {
             }
 
             Dataverse dvThatOwnsDataset = dataset.getOwner();
-            if (swordAuth.hasAccessToModifyDataverse( new DataverseRequest(user, httpRequest), dvThatOwnsDataset)) {
+            if (!permissionService.isUserAllowedOn(user, new GetDraftDatasetVersionCommand(dvReq, dataset), dataset)) {
+                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + user.getDisplayInfo().getTitle() + " is not authorized to view dataset with global ID " + globalId);
+            }
+            if (swordAuth.hasAccessToModifyDataverse(dvReq, dvThatOwnsDataset)) {
                 String feedUri = urlManager.getHostnamePlusBaseUrlPath(editUri) + "/edit/study/" + dataset.getGlobalId();
                 String author = dataset.getLatestVersion().getAuthorsStr();
                 String title = dataset.getLatestVersion().getTitle();
@@ -149,5 +157,5 @@ public class StatementManagerImpl implements StatementManager {
     public void setHttpRequest(HttpServletRequest httpRequest) {
         this.httpRequest = httpRequest;
     }
-    
+
 }

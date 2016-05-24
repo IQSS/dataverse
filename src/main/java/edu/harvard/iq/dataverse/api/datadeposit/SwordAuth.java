@@ -17,6 +17,12 @@ import org.swordapp.server.SwordAuthException;
 import org.swordapp.server.SwordError;
 import org.swordapp.server.SwordServerException;
 
+/**
+ * In early version of Dataverse 4 this class was responsible for both
+ * instantiating an AuthenticatedUser and enforcing permissions but now
+ * permission enforcement is done inside each of the methods in the "*Impl.java"
+ * files for SWORD.
+ */
 public class SwordAuth extends AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(SwordAuth.class.getCanonicalName());
@@ -27,6 +33,7 @@ public class SwordAuth extends AbstractApiBean {
     DataverseRoleServiceBean roleService;
     @EJB
     UserServiceBean userService;
+    public static boolean fixForIssue1070Enabled = true;
 
     public AuthenticatedUser auth(AuthCredentials authCredentials) throws SwordAuthException, SwordServerException {
 
@@ -58,11 +65,23 @@ public class SwordAuth extends AbstractApiBean {
     }
 
     /**
-     * @todo Review every place this method is called and think about how we can
-     * use more granular permissions rather than the old equivalent of "admin"
-     * in DVN 3.x.
+     * @todo Delete this method. In DVN 3.x we required "admin only" at the
+     * dataverse level. With the fancy new permission system in Dataverse 4 we
+     * can now allow a lowly contributor to do most SWORD operations (except
+     * publishing). See also https://github.com/IQSS/dataverse/issues/1070
+     *
+     * @todo When you delete this method, consider changing the error messages
+     * that are returned in the new permissions check, which were copied from
+     * when this method returns false. This copying was done for backward
+     * compatibility but in some places, now that the check is not always done
+     * on a dataverse, we could say something like "user not authorized to edit
+     * dataset metadata" rather than "is not authorized to modify dataverse
+     * [parent]".
      */
     boolean hasAccessToModifyDataverse(DataverseRequest dataverseRequest, Dataverse dataverse) throws SwordError {
+        if (fixForIssue1070Enabled) {
+            return true;
+        }
         boolean authorized = false;
 
         /**
