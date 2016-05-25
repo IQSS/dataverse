@@ -616,7 +616,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
         //  - isJoinLayer
         //  - joinDescription
         //
-        String joinDescription = jsonInfo.getString("joinDescription");
+        String joinDescription = jsonInfo.getString("joinDescription", null);
         if ((joinDescription == null) || (joinDescription.equals(""))){
             mapLayerMetadata.setIsJoinLayer(true);
             mapLayerMetadata.setJoinDescription(joinDescription);
@@ -627,8 +627,8 @@ public class WorldMapRelatedData extends AbstractApiBean {
             
         // Set the mapLayerLinks 
         //
-        String mapLayerLinks = jsonInfo.getString("mapLayerLinks");
-        if (mapLayerLinks == null){
+        String mapLayerLinks = jsonInfo.getString("mapLayerLinks", null);
+        if ((mapLayerLinks == null) || (mapLayerLinks.equals(""))){
             mapLayerMetadata.setMapLayerLinks(null);                        
         }else{
             mapLayerMetadata.setMapLayerLinks(mapLayerLinks);            
