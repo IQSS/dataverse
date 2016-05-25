@@ -270,7 +270,7 @@
                                update=":#{p:component('messagePanel')}, personalUrlMessages" oncomplete="if (args &amp;&amp; !args.validationFailed) PF('advancedOptions').hide();" actionListener="#{themeWidgetFragment.saveAdvanced()}">
                 </p:commandButton>
                 <p:commandButton class="btn btn-default" onclick="PF('advancedOptions').hide();" immediate="true" update=":#{p:component('messagePanel')}" id="advancedDone" value="#{bundle.cancel}">
-                    <p:ajax update="themeWidgetsForm:personalUrl,themeWidgetsForm:personalUrlMessages" resetValues="true" />
+                    <p:ajax update="themeWidgetsForm:advancedOptions" resetValues="true" />
                 </p:commandButton>
             </div>
         </div>
