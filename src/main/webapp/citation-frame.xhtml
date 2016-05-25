@@ -5,6 +5,7 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:o="http://omnifaces.org/ui"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
       lang="en">
     <h:head>
         <f:facet name="first">
@@ -30,41 +31,45 @@
     </h:head>
 
     <h:body>
+        <c:set var="persistentId" value="#{param['persistentId']}"/>
+        <c:set var="citationRedirectURL" value="#{datasetServiceBean.findByGlobalId(persistentId).owner.citationRedirectURL}"/>
+        
         <div id="citation-banner" class="alert alert-warning">
             <p class="small pull-left">
                 <h:outputFormat value="#{bundle['citationFrame.banner.message']}" escape="false">
                     <o:param value="#{dataverseServiceBean.findRootDataverse().displayName}"/>
                     <o:param>
-                        <a href="#{systemConfig.dataverseSiteUrl}/dataset.xhtml?persistentId=#{param['persistentId']}" title="#{dataverseServiceBean.findRootDataverse().displayName}">#{bundle['citationFrame.banner.message.here']}</a>
+                        <a href="#{systemConfig.dataverseSiteUrl}/dataset.xhtml?persistentId=#{persistentId}" title="#{dataverseServiceBean.findRootDataverse().displayName}">#{bundle['citationFrame.banner.message.here']}</a>
                     </o:param>
                     <o:param>
                         <span id="countdown">&#160;</span>
                     </o:param>
                 </h:outputFormat>
             </p>
-            <a class="close" href="#{param['citationRedirectURL']}?persistentId=#{param['persistentId']}" title="#{bundle['citationFrame.banner.closeIcon']}"><span class="glyphicon glyphicon-remove"></span></a>
+            <a class="close" href="#{citationRedirectURL}?persistentId=#{persistentId}" title="#{bundle['citationFrame.banner.closeIcon']}"><span class="glyphicon glyphicon-remove"></span></a>
         </div>
+        <c:if test="${!empty citationRedirectURL}">
+            <iframe id="citation-forward" src="#{citationRedirectURL}?persistentId=#{persistentId}" width="100%"></iframe>
 
-        <iframe id="citation-forward" src="#{param['citationRedirectURL']}?persistentId=#{param['persistentId']}" width="100%"></iframe>
-
-        <script>
-            $(document).ready(function () {
-                window.onload = function() {
-                    var countdownElement = document.getElementById('countdown'),
-                        seconds = 10,
-                        second = 0,
-                        interval;
-                    var countdownMessage = "#{bundle['citationFrame.banner.countdownMessage']}";
-                    var countdownMessageSeconds = "#{bundle['citationFrame.banner.countdownMessage.seconds']}";
-                    interval = setInterval(function() {
-                        countdownElement.firstChild.data = countdownMessage + ' ' + (seconds - second) + ' ' + countdownMessageSeconds + '.';
-                        if (second >= seconds) {
-                            window.location.href = "#{param['citationRedirectURL']}?persistentId=#{param['persistentId']}";
-                        }
-                        second++;
-                    }, 1000);
-                };
-            });
-        </script>
+            <script>
+                $(document).ready(function () {
+                    window.onload = function() {
+                        var countdownElement = document.getElementById('countdown'),
+                            seconds = 10,
+                            second = 0,
+                            interval;
+                        var countdownMessage = "#{bundle['citationFrame.banner.countdownMessage']}";
+                        var countdownMessageSeconds = "#{bundle['citationFrame.banner.countdownMessage.seconds']}";
+                        interval = setInterval(function() {
+                            countdownElement.firstChild.data = countdownMessage + ' ' + (seconds - second) + ' ' + countdownMessageSeconds + '.';
+                            if (second >= seconds) {
+                                window.location.href = "#{citationRedirectURL}?persistentId=#{persistentId}";
+                            }
+                            second++;
+                        }, 1000);
+                    };
+                });
+            </script>
+        </c:if>
     </h:body>
 </html>

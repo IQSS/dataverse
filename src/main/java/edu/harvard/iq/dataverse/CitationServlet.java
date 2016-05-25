@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.IOException;
 import java.io.PrintWriter;
 import javax.ejb.EJB;
@@ -38,16 +39,13 @@ public class CitationServlet extends HttpServlet {
         if (persistentId != null) {
             Dataset ds = datasetService.findByGlobalId(persistentId);        
             if (ds != null) {
-                String citationRedirectURL = ds.getOwner().getCitationRedirectURL();
-
-                if (citationRedirectURL == null) {
+                if (StringUtil.isEmpty(ds.getOwner().getCitationRedirectURL())) {
                     response.sendRedirect("dataset.xhtml?persistentId=" + persistentId);
                     return;
                 } else {
-                    response.sendRedirect("citation-frame.xhtml?persistentId=" + persistentId + "&citationRedirectURL=" + citationRedirectURL);
+                    response.sendRedirect("citation-frame.xhtml?persistentId=" + persistentId);
                     return;
-                }
-                
+                }           
             }
         }
         response.sendError(HttpServletResponse.SC_NOT_FOUND);
