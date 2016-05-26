@@ -40,9 +40,9 @@
                     </script>
                     <p class="help-block">
                         <span class="glyphicon glyphicon-info-sign"/>
-                        <ui:fragment rendered="#{!empty EditDatafilesPage.getMaxFileUploadSizeInBytes()}">
+                        <ui:fragment rendered="#{systemConfig.maxFileUploadSize !=null and !empty systemConfig.maxFileUploadSize}">
                         <h:outputFormat value=" #{bundle['file.selectToAdd.tipLimit']}" escape="false">
-                            <f:param value="#{EditDatafilesPage.getMaxFileUploadSizeInBytes()}"/>
+                            <f:param value="#{systemConfig.maxFileUploadSize}"/>
                         </h:outputFormat>                      
                         </ui:fragment>  
                         <ui:fragment rendered="true">
