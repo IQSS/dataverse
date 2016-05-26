@@ -3326,15 +3326,15 @@ public class DatasetPage implements java.io.Serializable {
         String bibFormatDowload = new BibtexCitation(workingVersion).toString();
         FacesContext ctx = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
-        response.setContentType("text/plain");
+        response.setContentType("application/download");
 
         String fileNameString = "";
         if (fileMetadata == null || fileMetadata.getLabel() == null) {
             // Dataset-level citation:
-            fileNameString = "inline;filename=" + getFileNameDOI() + ".bib";
+            fileNameString = "attachment;filename=" + getFileNameDOI() + ".bib";
         } else {
             // Datafile-level citation:
-            fileNameString = "inline;filename=" + getFileNameDOI() + "-" + fileMetadata.getLabel().replaceAll("\\.tab$", ".bib");
+            fileNameString = "attachment;filename=" + getFileNameDOI() + "-" + fileMetadata.getLabel().replaceAll("\\.tab$", ".bib");
         }
         response.setHeader("Content-Disposition", fileNameString);
 
