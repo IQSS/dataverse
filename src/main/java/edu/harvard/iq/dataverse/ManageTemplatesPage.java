@@ -53,6 +53,9 @@ public class ManageTemplatesPage implements java.io.Serializable {
     
     @Inject
     DataverseRequestServiceBean dvRequestService;
+    
+    @Inject
+    PermissionsWrapper permissionsWrapper;
 
     private List<Template> templates;
     private Dataverse dataverse;
@@ -62,8 +65,14 @@ public class ManageTemplatesPage implements java.io.Serializable {
 
     private Template selectedTemplate = null;
 
-    public void init() {
+    public String init() {
         dataverse = dvService.find(dataverseId);
+        if (dataverse == null) {
+            return permissionsWrapper.notFound();
+        }
+        if (!permissionsWrapper.canIssueCommand(dataverse, UpdateDataverseCommand.class)) {
+            return permissionsWrapper.notAuthorized();
+        }  
         dvpage.setDataverse(dataverse);
         if (dataverse.getOwner() != null && dataverse.getMetadataBlocks().equals(dataverse.getOwner().getMetadataBlocks())){
            setInheritTemplatesAllowed(true); 
@@ -86,7 +95,7 @@ public class ManageTemplatesPage implements java.io.Serializable {
         if (!templates.isEmpty()){
              JH.addMessage(FacesMessage.SEVERITY_INFO, JH.localize("dataset.manageTemplates.info.message.notEmptyTable"));
         }
-
+        return null;
     }
 
     public void makeDefault(Template templateIn) {

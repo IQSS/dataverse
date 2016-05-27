@@ -6,6 +6,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Calendar;
@@ -35,6 +36,8 @@ public class DOIDataCiteServiceBean {
     SettingsServiceBean settingsService;
     @EJB
     DOIDataCiteRegisterService doiDataCiteRegisterService;
+    @EJB
+    SystemConfig systemConfig;
     
     private String DOISHOULDER = "";
     
@@ -228,67 +231,32 @@ public class DOIDataCiteServiceBean {
         metadata.put("datacite.title", datasetIn.getLatestVersion().getTitle());
         metadata.put("datacite.publisher", producerString);
         metadata.put("datacite.publicationyear", generateYear());
-        String inetAddress = getSiteUrl();
-        String targetUrl = "";
-        DOISHOULDER = "doi:" + datasetIn.getAuthority();
-
-        if (inetAddress.equals("localhost")) {
-            targetUrl = "http://localhost:8080" + "/dataset.xhtml?persistentId=" + DOISHOULDER
-                    + datasetIn.getDoiSeparator() + datasetIn.getIdentifier();
-        } else {
-            targetUrl = inetAddress + "/dataset.xhtml?persistentId=" + DOISHOULDER
-                    + datasetIn.getDoiSeparator() + datasetIn.getIdentifier();
-        }
-        metadata.put("_target", targetUrl);
+        metadata.put("_target", getTargetUrl(datasetIn));
         return metadata;
     }
     
     public HashMap getMetadataFromDatasetForTargetURL(Dataset datasetIn) {
-        HashMap<String, String> metadata = new HashMap<String, String>();
-        
-        String inetAddress = getSiteUrl();
-        String targetUrl = "";     
-        DOISHOULDER = "doi:" + datasetIn.getAuthority();
-        
-        if (inetAddress.equals("localhost")){                    
-           targetUrl ="http://localhost:8080" + "/dataset.xhtml?persistentId=" + DOISHOULDER 
-                    + datasetIn.getDoiSeparator()       + datasetIn.getIdentifier();
-        } else{
-           targetUrl = inetAddress + "/dataset.xhtml?persistentId=" + DOISHOULDER 
-                + datasetIn.getDoiSeparator()     + datasetIn.getIdentifier();
-        }            
-        metadata.put("_target", targetUrl);
+        HashMap<String, String> metadata = new HashMap<>();           
+        metadata.put("_target", getTargetUrl(datasetIn));
         return metadata;
     }
-
-    public String getSiteUrl() {
-        String hostUrl = System.getProperty("dataverse.siteUrl");
-        if (hostUrl != null && !"".equals(hostUrl)) {
-            return hostUrl;
-        }
-        String hostName = System.getProperty("dataverse.fqdn");
-        if (hostName == null) {
-            try {
-                hostName = InetAddress.getLocalHost().getCanonicalHostName();
-            } catch (UnknownHostException e) {
-                return null;
-            }
-        }
-        hostUrl = "https://" + hostName;
-        return hostUrl;
+    
+    private String getTargetUrl(Dataset datasetIn){
+           return systemConfig.getDataverseSiteUrl() + Dataset.TARGET_URL + datasetIn.getGlobalId();      
     }
 
     private String getIdentifierFromDataset(Dataset dataset) {
         return dataset.getGlobalId();
     }
 
-    public void publicizeIdentifier(Dataset studyIn) throws Exception {
-        updateIdentifierStatus(studyIn, "public");
+    public void publicizeIdentifier(Dataset dataset) throws Exception {
+        updateIdentifierStatus(dataset, "public");
     }
 
     private void updateIdentifierStatus(Dataset dataset, String statusIn) throws Exception  {
         String identifier = getIdentifierFromDataset(dataset);
         HashMap metadata = getUpdateMetadataFromDataset(dataset);
+        metadata.put("_target", getTargetUrl(dataset));
         metadata.put("_status", statusIn);
         try {
             doiDataCiteRegisterService.createIdentifier(identifier, metadata, dataset);
