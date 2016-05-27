@@ -123,10 +123,10 @@ function post_cancel_edit_dv(){
  * Hide search panels when editing a dv
  */
 function hide_search_panels(){
-    if($(".panelSerchForm").length>0){
-       $(".panelSerchForm").hide();
-        if($(".panelSerchForm").next().length>0){
-            $(".panelSerchForm").next().hide();
+    if($(".panelSearchForm").length>0){
+       $(".panelSearchForm").hide();
+        if($(".panelSearchForm").next().length>0){
+            $(".panelSearchForm").next().hide();
         }
    }
 }
@@ -136,11 +136,11 @@ function hide_search_panels(){
  */
 
 function show_search_panels(){
-    if($(".panelSerchForm").length>0){
-        if($(".panelSerchForm").next().length>0){
-            $(".panelSerchForm").next().show();
+    if($(".panelSearchForm").length>0){
+        if($(".panelSearchForm").next().length>0){
+            $(".panelSearchForm").next().show();
         }
-       $(".panelSerchForm").show();
+       $(".panelSearchForm").show();
    }
 }
 

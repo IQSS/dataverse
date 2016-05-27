@@ -40,10 +40,10 @@ public class ManageGuestbooksPage implements java.io.Serializable {
 
     @EJB
     GuestbookResponseServiceBean guestbookResponseService;
-    
+
     @EJB
     GuestbookServiceBean guestbookService;
-    
+
     @EJB
     EjbDataverseEngine engineService;
 
@@ -58,28 +58,35 @@ public class ManageGuestbooksPage implements java.io.Serializable {
 
     @Inject
     DataverseSession session;
-    
+
     @Inject
     DataverseRequestServiceBean dvRequestService;
 
+    @Inject
+    PermissionsWrapper permissionsWrapper;
+
     private List<Guestbook> guestbooks;
-    private List<GuestbookResponse> responses;
     private Dataverse dataverse;
     private Long dataverseId;
     private boolean inheritGuestbooksValue;
     private boolean displayDownloadAll = false;
-
-
     private Guestbook selectedGuestbook = null;
 
-    public void init() {               
+    public String init() {
         dataverse = dvService.find(dataverseId);
-        
-        Long totalResponses = guestbookResponseService.findCountAll(dataverseId);       
+
+        if (dataverse == null) {
+            return permissionsWrapper.notFound();
+        }
+        if (!permissionsWrapper.canIssueCommand(dataverse, UpdateDataverseCommand.class)) {
+            return permissionsWrapper.notAuthorized();
+        }
+
+        Long totalResponses = guestbookResponseService.findCountAll(dataverseId);
         if(totalResponses.intValue() > 0){
             displayDownloadAll = true;
         }
-        
+
         dvpage.setDataverse(dataverse);
 
         guestbooks = new LinkedList<>();
@@ -104,8 +111,9 @@ public class ManageGuestbooksPage implements java.io.Serializable {
             cg.setDataverse(dataverse);
             guestbooks.add(cg);
         }
+        return null;
     }
-    
+
     public void downloadResponsesByDataverse(){
         FacesContext ctx = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
@@ -115,14 +123,14 @@ public class ManageGuestbooksPage implements java.io.Serializable {
         String converted = convertResponsesToCommaDelimited(guestbookResponseService.findArrayByDataverseId(dataverseId));
         try {
             ServletOutputStream out = response.getOutputStream();
-            out.write(converted.getBytes());                                                                                                                                                                                                                                                                                                                     
+            out.write(converted.getBytes());
             out.flush();
             ctx.responseComplete();
         } catch (Exception e) {
 
         }
     }
-    
+
     public void downloadResponsesByDataverseAndGuestbook(){
         FacesContext ctx = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
@@ -133,14 +141,14 @@ public class ManageGuestbooksPage implements java.io.Serializable {
         String converted = convertResponsesToCommaDelimited(guestbookResponseService.findArrayByDataverseIdAndGuestbookId(dataverseId, selectedGuestbook.getId()));
         try {
             ServletOutputStream out = response.getOutputStream();
-            out.write(converted.getBytes());                                                                                                                                                                                                                                                                                                                     
+            out.write(converted.getBytes());
             out.flush();
             ctx.responseComplete();
         } catch (Exception e) {
 
         }
     }
-    
+
     private String getFileName(){
        return  dataverse.getName() + "_GuestbookReponses.csv";
     }
@@ -148,7 +156,7 @@ public class ManageGuestbooksPage implements java.io.Serializable {
     private final String SEPARATOR = ",";
     private final String END_OF_LINE = "\n";
 
-    
+
     private String convertResponsesToCommaDelimited(List<Object[]> guestbookResponses) {
 
         StringBuilder sb = new StringBuilder();
@@ -173,7 +181,7 @@ public class ManageGuestbooksPage implements java.io.Serializable {
             sb.append(SEPARATOR);
             sb.append(array[8] == null ? "" : array[8]);
             if(array[9] != null){
-                List <Object[]> responses = (List<Object[]>) array[9];               
+                List <Object[]> responses = (List<Object[]>) array[9];
                 for (Object[] response: responses){
                     sb.append(SEPARATOR);
                     sb.append(response[0]);
@@ -206,7 +214,7 @@ public class ManageGuestbooksPage implements java.io.Serializable {
     public void saveDataverse(ActionEvent e) {
         saveDataverse("", "");
     }
-    
+
     public String enableGuestbook(Guestbook selectedGuestbook) {
         selectedGuestbook.setEnabled(true);
         saveDataverse("dataset.manageGuestbooks.message.enableSuccess", "dataset.manageGuestbooks.message.enableFailure");
@@ -218,7 +226,7 @@ public class ManageGuestbooksPage implements java.io.Serializable {
         saveDataverse("dataset.manageGuestbooks.message.disableSuccess", "dataset.manageGuestbooks.message.disableFailure");
         return "";
     }
-    
+
 
     private void saveDataverse(String successMessage, String failureMessage) {
         if (successMessage.isEmpty()) {
@@ -226,7 +234,7 @@ public class ManageGuestbooksPage implements java.io.Serializable {
         }
         if (failureMessage.isEmpty()) {
             failureMessage = "dataset.manageGuestbooks.message.editFailure";
-        }     
+        }
         try {
             engineService.submit(new UpdateDataverseCommand(getDataverse(), null, null, dvRequestService.getDataverseRequest(), null));
             JsfHelper.addSuccessMessage(JH.localize(successMessage));
@@ -243,7 +251,7 @@ public class ManageGuestbooksPage implements java.io.Serializable {
     public void setGuestbooks(List<Guestbook> guestbooks) {
         this.guestbooks = guestbooks;
     }
-    
+
 
 
     public Dataverse getDataverse() {
@@ -294,8 +302,8 @@ public class ManageGuestbooksPage implements java.io.Serializable {
     public String updateGuestbooksRoot(javax.faces.event.AjaxBehaviorEvent event) throws javax.faces.event.AbortProcessingException {
         try {
             dataverse = engineService.submit(
-                    new UpdateDataverseGuestbookRootCommand(!isInheritGuestbooksValue(), 
-                                                            dvRequestService.getDataverseRequest(), 
+                    new UpdateDataverseGuestbookRootCommand(!isInheritGuestbooksValue(),
+                                                            dvRequestService.getDataverseRequest(),
                                                             getDataverse()));
             init();
             return "";

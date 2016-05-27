@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseThemeCommand;
 import edu.harvard.iq.dataverse.util.JsfHelper;
@@ -22,6 +23,7 @@ import javax.annotation.PreDestroy;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
+import javax.faces.component.UIInput;
 import javax.faces.component.html.HtmlInputText;
 import javax.faces.context.FacesContext;
 import javax.faces.validator.ValidatorException;
@@ -48,21 +50,24 @@ public class ThemeWidgetFragment implements java.io.Serializable {
     static final String DEFAULT_TEXT_COLOR = "888888";
     private static final Logger logger = Logger.getLogger(ThemeWidgetFragment.class.getCanonicalName());   
 
-    @Inject DataversePage dataversePage;
+
     private File tempDir;
     private File uploadedFile;
     private Dataverse editDv= new Dataverse();
     private HtmlInputText linkUrlInput;
     private HtmlInputText taglineInput;
  
-    @Inject
-    DataverseSession session;
+
     @EJB
     EjbDataverseEngine commandEngine;
     @EJB
     DataverseServiceBean dataverseServiceBean;
     @Inject
     DataverseRequestServiceBean dvRequestService;
+    
+
+    @Inject PermissionsWrapper permissionsWrapper;
+    
     
     public HtmlInputText getLinkUrlInput() {
         return linkUrlInput;
@@ -117,8 +122,18 @@ public class ThemeWidgetFragment implements java.io.Serializable {
     }
    
 
-    public void initEditDv() {
+    public String initEditDv() {
         editDv = dataverseServiceBean.find(editDv.getId());
+        
+        // check if dv exists and user has permission
+        if (editDv == null) {
+            return permissionsWrapper.notFound();
+        }
+        if (!permissionsWrapper.canIssueCommand(editDv, UpdateDataverseThemeCommand.class)) {
+            return permissionsWrapper.notAuthorized();
+        }        
+        
+        
         if (editDv.getOwner()==null) {
             editDv.setThemeRoot(true);
         }
@@ -126,6 +141,7 @@ public class ThemeWidgetFragment implements java.io.Serializable {
             editDv.setDataverseTheme(initDataverseTheme());
             
         }
+        return null;
      }
     
     private DataverseTheme initDataverseTheme() {
@@ -158,21 +174,20 @@ public class ThemeWidgetFragment implements java.io.Serializable {
 
     }
     
-public void validateUrl(FacesContext context, UIComponent component, Object value) throws ValidatorException {
-    try {
-        if (!StringUtils.isEmpty((String)value)){
-            URL test = new URL((String)value);
+    public void validateUrl(FacesContext context, UIComponent component, Object value) throws ValidatorException {
+        try {
+            if (!StringUtils.isEmpty((String) value)) {
+                URL test = new URL((String) value);
+            }
+        } catch (MalformedURLException e) {
+            FacesMessage msg
+                    = new FacesMessage(" URL validation failed.",
+                            "Please provide URL.");
+            msg.setSeverity(FacesMessage.SEVERITY_ERROR);
+
+            throw new ValidatorException(msg);
         }
-    } catch(MalformedURLException e) {
-        FacesMessage msg =
-              new FacesMessage(" URL validation failed.",
-              "Please provide URL.");
-      msg.setSeverity(FacesMessage.SEVERITY_ERROR);
-    
-      throw new ValidatorException(msg);
     }
-    
-  }
    
     
     public String getTempDirName() {
@@ -250,9 +265,7 @@ public void validateUrl(FacesContext context, UIComponent component, Object valu
          return "dataverse?faces-redirect=true&alias="+editDv.getAlias();  // go to dataverse page 
     }
     
-   
     
-
     public String save() {
         // If this Dv isn't the root, delete the uploaded file and remove theme
         // before saving.
@@ -262,9 +275,7 @@ public void validateUrl(FacesContext context, UIComponent component, Object valu
         }
         Command<Dataverse>    cmd = new UpdateDataverseThemeCommand(editDv, this.uploadedFile, dvRequestService.getDataverseRequest());
         try {
-            dataversePage.setDataverse(commandEngine.submit(cmd));           
-            dataversePage.setEditMode(null);
-            
+            commandEngine.submit(cmd);
         } catch (Exception ex) {
             logger.log(Level.SEVERE, "error updating dataverse theme", ex);
            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_FATAL, "Dataverse Save Failed-", JH.localize("dataverse.theme.failure")));
@@ -276,8 +287,27 @@ public void validateUrl(FacesContext context, UIComponent component, Object valu
         JsfHelper.addSuccessMessage(JH.localize("dataverse.theme.success"));    
         return "dataverse?faces-redirect=true&alias="+editDv.getAlias();  // go to dataverse page 
     }
-   
     
+    public String saveAdvanced() {
+        // If this Dv isn't the root, delete the uploaded file and remove theme
+        // before saving.
+        if (!editDv.isThemeRoot()) {
+            uploadedFile=null;
+            editDv.setDataverseTheme(null);
+        }
+        Command<Dataverse>    cmd = new UpdateDataverseThemeCommand(editDv, this.uploadedFile, dvRequestService.getDataverseRequest());
+        try {
+            commandEngine.submit(cmd);            
+        } catch (Exception ex) {
+            logger.log(Level.SEVERE, "error updating dataverse Personal Website URL", ex);
+           FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_FATAL, "Dataverse Save Failed-", JH.localize("dataverse.theme.failure")));       
+          return null;
+        } finally {
+              this.cleanupTempDirectory(); 
+        }
+        JsfHelper.addSuccessMessage(JH.localize("dataverse.widgets.advanced.success.message"));    
+        return "dataverse?faces-redirect=true&alias="+editDv.getAlias();  // go to dataverse page 
+    }   
  }
 
 

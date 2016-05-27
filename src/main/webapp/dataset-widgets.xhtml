@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+      xmlns:jsf="http://xmlns.jcp.org/jsf">
+    <h:head>
+    </h:head>
+
+    <h:body>
+        <ui:composition template="/dataverse_template.xhtml">
+            <ui:param name="pageTitle" value="#{bundle['dataset.widgets.title']} - #{DatasetWidgetsPage.dataset.latestVersion.title}"/>
+            <ui:param name="dataverse" value="#{DatasetWidgetsPage.dataset.owner}"/>
+            <ui:param name="dataset" value="#{DatasetWidgetsPage.dataset}"/>
+            <ui:param name="showMessagePanel" value="#{true}"/>
+            <ui:define name="body">
+                <f:metadata>
+                    <f:viewParam name="datasetId" value="#{DatasetWidgetsPage.datasetId}"/>
+                    <f:viewAction action="#{DatasetWidgetsPage.init}" />
+                    <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(DatasetWidgetsPage.dataset, bundle['dataset.widgets.title'])}"/>
+                </f:metadata>
+                <div id="no-widgets-message" class="panel panel-default" jsf:rendered="#{DatasetWidgetsPage.dataset.id.intValue() > 0 and !DatasetWidgetsPage.dataset.released}">
+                    <div class="panel-body">
+                        <span class="help-block h3">#{bundle['dataset.widgets.notPublished.why.header']}</span>
+                        <ul>
+                            <li><h:outputText value="#{bundle['dataset.widgets.notPublished.why.reason1']}" escape="false"/></li>
+                            <li><h:outputText value="#{bundle['dataset.widgets.notPublished.why.reason2']}" escape="false"/></li>
+                        </ul>
+                        <span class="help-block h3">#{bundle['dataset.widgets.notPublished.how.header']}</span>
+                        <ul>
+                            <li><h:outputText value="#{bundle['dataset.widgets.notPublished.how.tip1']}" escape="false"/></li>
+                            <li><h:outputText value="#{bundle['dataset.widgets.notPublished.how.tip2']}" escape="false"/></li>
+                            <li>
+                                <h:outputFormat value="#{bundle['dataset.widgets.notPublished.how.tip3']}" escape="false">
+                                    <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                                    <f:param value="#{systemConfig.version}"/>
+                                </h:outputFormat>
+                            </li>
+                        </ul>
+                        <p>
+                            <h:outputFormat value="#{bundle['dataset.widgets.notPublished.getStarted']}" escape="false">
+                                <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                                <f:param value="#{systemConfig.version}"/>
+                            </h:outputFormat>
+                        </p>
+                    </div>
+                </div>
+
+                <ui:fragment rendered="#{DatasetWidgetsPage.dataset.released}">
+                    <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> 
+                        <h:outputFormat value=" #{bundle['dataset.widgets.tip']}" escape="false">
+                            <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                            <f:param value="#{systemConfig.version}"/>
+                        </h:outputFormat>
+                    </p>
+                    <div>
+                        <h5>
+                            #{bundle['dataset.widgets.citation.txt']}
+                        </h5>
+                        <p class="help-block">#{bundle['dataset.widgets.citation.tip']}</p>
+                    </div>
+                    <div>
+                        <textarea rows="3" cols="54" class="form-control">&lt;script src=&quot;#{systemConfig.dataverseSiteUrl}/resources/js/widgets.js?persistentId=#{dataset.globalId}&amp;amp;dvUrl=#{systemConfig.dataverseSiteUrl}&amp;amp;widget=citation&amp;amp;heightPx=150&quot;&gt;&lt;/script&gt;</textarea>
+                    </div>
+                    <div>
+                        <h5>
+                            #{bundle['dataset.widgets.datasetFull.txt']}
+                        </h5>
+                        <p class="help-block">#{bundle['dataset.widgets.datasetFull.tip']}</p>
+                    </div>
+                    <div>
+                        <textarea rows="3" cols="54" class="form-control">&lt;script src=&quot;#{systemConfig.dataverseSiteUrl}/resources/js/widgets.js?persistentId=#{dataset.globalId}&amp;amp;dvUrl=#{systemConfig.dataverseSiteUrl}&amp;amp;widget=iframe&amp;amp;heightPx=500&quot;&gt;&lt;/script&gt;</textarea>
+                    </div>
+                </ui:fragment>
+                <div class="button-block">
+                    <h:outputLink class="btn btn-default" value="/dataset.xhtml?persistentId=#{DatasetWidgetsPage.dataset.globalId}">
+                        <h:outputText value="#{bundle.done}"/></h:outputLink>
+                </div>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

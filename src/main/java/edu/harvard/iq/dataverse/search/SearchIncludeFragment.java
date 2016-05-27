@@ -5,7 +5,6 @@ import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
@@ -15,11 +14,8 @@ import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.SettingsWrapper;
-import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
-import edu.harvard.iq.dataverse.dataaccess.FileAccessIO;
+import edu.harvard.iq.dataverse.WidgetWrapper;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -34,7 +30,6 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import org.apache.commons.lang.StringUtils;
-import org.primefaces.util.Base64;
 
 @ViewScoped
 @Named("SearchIncludeFragment")
@@ -62,6 +57,8 @@ public class SearchIncludeFragment implements java.io.Serializable {
     SettingsWrapper settingsWrapper;
     @Inject
     PermissionsWrapper permissionsWrapper;
+    @Inject
+    WidgetWrapper widgetWrapper;    
 
     private String browseModeString = "browse";
     private String searchModeString = "search";
@@ -193,7 +190,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
             qParam = "&q=" + query;
         }
 
-        return dataverseRedirectPage + "?faces-redirect=true&q=" + qParam + optionalDataverseScope;
+        return widgetWrapper.wrapURL(dataverseRedirectPage + "?faces-redirect=true&q=" + qParam + optionalDataverseScope);
 
     }
 
