@@ -1,18 +1,11 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetVersionUser;
-import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
-import edu.harvard.iq.dataverse.RoleAssignment;
-import edu.harvard.iq.dataverse.Template;
 import edu.harvard.iq.dataverse.api.imports.ImportUtil;
 import edu.harvard.iq.dataverse.api.imports.ImportUtil.ImportType;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -26,7 +19,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.validation.ConstraintViolation;
@@ -143,19 +135,15 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
                 && theDataset.getGlobalIdCreateTime() == null) {
             if (protocol.equals("doi")) {
                 String doiRetString = "";
-                if (doiProvider.equals("EZID")) {
-                    doiRetString = ctxt.doiEZId().createIdentifier(theDataset);
-                }
-                if (doiProvider.equals("DataCite")) {
-                    try{
-                        doiRetString = ctxt.doiDataCite().createIdentifier(theDataset);
-                    } catch (Exception e){
-                         logger.log(Level.WARNING, "Exception while creating Identifier:" + e.getMessage(), e);
-                    }
+                try{
+                    doiRetString = IdServiceBean.getBean(protocol, doiProvider, ctxt).createIdentifier(theDataset);
+                } catch (Exception e){
+                    logger.log(Level.WARNING, "Exception while creating Identifier:" + e.getMessage(), e);
                 }
 
                 // Check return value to make sure registration succeeded
                 if (doiProvider.equals("EZID") && doiRetString.contains(theDataset.getIdentifier())) {
+                    // TODO Why only EZID and not DataCite?
                     theDataset.setGlobalIdCreateTime(createDate);
                 }
 
