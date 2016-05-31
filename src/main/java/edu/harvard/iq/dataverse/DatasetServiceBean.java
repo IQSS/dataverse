@@ -265,35 +265,6 @@ public class DatasetServiceBean implements java.io.Serializable {
         return retString;
     }
 
-    public String createCitationBibtex(DatasetVersion version) {
-        return createCitationBibtex(version, null);
-    }
-
-    public String createCitationBibtex(DatasetVersion version, FileMetadata fileMetadata) {
-        String publisher = version.getRootDataverseNameforCitation();
-        List<DatasetAuthor> authorList = version.getDatasetAuthors();
-        List<String> authorDisplayList = new ArrayList<>();
-
-        for (DatasetAuthor author : authorList) {
-            authorDisplayList.add(author.getName().getDisplayValue());
-        }
-
-        String retString = "@data{";
-        retString +=  version.getDataset().getIdentifier() + "_" + version.getVersionYear() + "," + "\r\n";
-        retString += "author = {";
-        retString += String.join("; ", authorDisplayList);
-        retString += "}," + "\r\n";
-        retString += "publisher = {" + publisher + "}," + "\r\n";
-        retString += "title = {" + version.getTitle() + "}," + "\r\n";
-        retString += "year = {" + version.getVersionYear() + "}," + "\r\n";
-        retString += "doi = {" + version.getDataset().getAuthority() +
-                version.getDataset().getDoiSeparator() +
-                version.getDataset().getIdentifier() + "}," + "\r\n";
-        retString += "url = {" + version.getDataset().getPersistentURL() + "}" + "\r\n";
-        retString += "}";
-
-        return retString;
-    }
 
     private XMLOutputFactory xmlOutputFactory = null;
 

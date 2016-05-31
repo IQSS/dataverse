@@ -1,0 +1,49 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
+                xmlns:jsf="http://xmlns.jcp.org/jsf"
+                xmlns:c="http://java.sun.com/jsp/jstl/core"
+                xmlns:o="http://omnifaces.org/ui"     
+                xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
+
+    <div id="footer" class="#{widgetView ? 'widget-view' : ''}">
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-8 small" jsf:rendered="#{!widgetView}">
+                    <p>
+                        <h:outputText value="#{bundle['footer.dataScienceIQSS']}" escape="false"/> &#160;|&#160; #{bundle['footer.dataverseProjectOn']} <a href="https://twitter.com/dataverseorg" target="_blank" title="#{bundle['footer.dataverseProjectOn']} #{bundle['footer.Twitter']}"><span class="socicon socicon-twitter" title="#{bundle['footer.dataverseProjectOn']} #{bundle['footer.Twitter']}"/></a> &#160;|&#160; #{bundle['footer.codeAvailable']} <a href="https://github.com/IQSS/dataverse" target="_blank" title="#{bundle['footer.dataverseOnGitHub']}"><span class="socicon socicon-github" title="#{bundle['footer.dataverseOnGitHub']}"/></a>
+                    </p>
+                    <p>
+                        <h:outputText value="#{bundle['footer.copyright']}" escape="false"/> <ui:fragment rendered="#{!empty settingsWrapper.get(':ApplicationPrivacyPolicyUrl')}">&#160;|&#160; <h:outputLink value="#{settingsWrapper.get(':ApplicationPrivacyPolicyUrl')}" target="_blank">#{bundle['footer.privacyPolicy']}</h:outputLink></ui:fragment>
+                    </p>
+                </div>
+                <div class="col-xs-7 small" jsf:rendered="#{widgetView}">
+                    <span class="widgetBrandMsg">
+                        <h:outputFormat value="#{bundle['footer.widget.datastored']}" escape="false">
+                            <o:param>
+                                <a href="/" target="_blank" title="#{dataverseServiceBean.findRootDataverse().displayName}">#{dataverseServiceBean.findRootDataverse().displayName}</a>
+                            </o:param>
+                        </h:outputFormat>
+
+                        <ui:fragment rendered="#{!dataverseSession.user.authenticated}">
+                            <h:outputLink styleClass="margin-sides highlightBold" value="/loginpage.xhtml?#{loginRedirectPage}" target="_blank" title="#{bundle['footer.widget.login']} #{dataverseServiceBean.findRootDataverse().displayName}">
+                                #{bundle.login}
+                            </h:outputLink>
+                        </ui:fragment>
+                    </span>
+                </div>
+                <div class="#{widgetView ? 'col-xs-5' : 'col-sm-4'} text-right">
+                    <div class="poweredbylogo">
+                        <span>#{bundle['footer.poweredby']}</span>
+                        <a href="http://dataverse.org/" title="#{bundle['footer.dataverseProject']}" target="_blank"><img src="/resources/images/dataverseproject_logo.jpg" alt="#{bundle['footer.dataverseProject']}" /></a>
+                        <h:outputText class="version" value="v. #{systemConfig.getVersion(true)}" rendered="#{!widgetView}"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</ui:composition>

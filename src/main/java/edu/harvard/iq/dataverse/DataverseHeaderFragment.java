@@ -58,6 +58,9 @@ public class DataverseHeaderFragment implements java.io.Serializable {
 
     @Inject
     DataverseSession dataverseSession;
+    
+    @Inject 
+    NavigationWrapper navigationWrapper;    
 
     @EJB
     UserNotificationServiceBean userNotificationService;
@@ -75,6 +78,9 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     }
     
     public void initBreadcrumbs(DvObject dvObject) {
+            if (dvObject == null) {
+                return;
+            }
             if (dvObject.getId() != null) {
                 initBreadcrumbs(dvObject, null);
             } else {
@@ -166,7 +172,7 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     public String logout() {
         dataverseSession.setUser(null);
 
-        String redirectPage = getPageFromContext();
+        String redirectPage = navigationWrapper.getPageFromContext();
         try {
             redirectPage = URLDecoder.decode(redirectPage, "UTF-8");
         } catch (UnsupportedEncodingException ex) {
@@ -196,54 +202,14 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     public String getSignupUrl(String loginRedirect) {
         String nonNullDefaultIfKeyNotFound = "";
         String signUpUrl = settingsService.getValueForKey(SettingsServiceBean.Key.SignUpUrl, nonNullDefaultIfKeyNotFound);
-        return signUpUrl + (signUpUrl.indexOf("?") == -1 ? loginRedirect : loginRedirect.replace("?", "&"));
+        return signUpUrl + (!signUpUrl.contains("?") ? loginRedirect : loginRedirect.replace("?", "&"));
     }
 
     public String getLoginRedirectPage() {
-        return getRedirectPage();
+        System.out.println("DEPRECATED call to getLoginRedirectPage method in DataverseHeaderfragment: " + navigationWrapper.getRedirectPage());
+        return navigationWrapper.getRedirectPage();
     }
 
-    // @todo consider creating a base bean, for now just make this static
-    public static String getRedirectPage() {
-
-        String redirectPage = getPageFromContext();
-        if (!StringUtils.isEmpty(redirectPage)) {
-            return "?redirectPage=" + redirectPage;
-        }
-        return "";
-    }
-
-    private static String getPageFromContext() {
-        try {
-            HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-            StringBuilder redirectPage = new StringBuilder();
-            redirectPage.append(req.getServletPath());
-
-            // to regenerate the query string, we need to use the parameter map; however this can contain internal POST parameters
-            // that we don't want, so we filter through a list of paramters we do allow
-            // @todo verify what needs to be in this list of available parameters (for example do we want to repeat searches when you login?
-            List acceptableParameters = new ArrayList();
-            acceptableParameters.addAll(Arrays.asList("id", "alias", "version", "q", "ownerId", "persistentId", "versionId", "datasetId", "selectedFileIds", "mode"));
-
-            if (req.getParameterMap() != null) {
-                StringBuilder queryString = new StringBuilder();
-                for (Map.Entry<String, String[]> entry : ((Map<String, String[]>) req.getParameterMap()).entrySet()) {
-                    String name = entry.getKey();
-                    if (acceptableParameters.contains(name)) {
-                        String value = entry.getValue()[0];
-                        queryString.append(queryString.length() == 0 ? "?" : "&").append(name).append("=").append(value);
-                    }
-                }
-                redirectPage.append(queryString);
-            }
-
-            return URLEncoder.encode(redirectPage.toString(), "UTF-8");
-        } catch (UnsupportedEncodingException ex) {
-            Logger.getLogger(DataverseHeaderFragment.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return "";
-    }
-    
     public void addBreadcrumb (String url, String linkString){
         breadcrumbs.add(new Breadcrumb(url, linkString));
     }

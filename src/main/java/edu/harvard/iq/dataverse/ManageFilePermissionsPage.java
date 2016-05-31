@@ -70,6 +70,8 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     EjbDataverseEngine commandEngine;
     @Inject
     DataverseRequestServiceBean dvRequestService;
+    @Inject
+    PermissionsWrapper permissionsWrapper;
     
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     EntityManager em;
@@ -110,11 +112,11 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
 
         // check if dvObject exists and user has permission
         if (dataset == null) {
-            return "/404.xhtml";
+            return permissionsWrapper.notFound();
         }
 
         if (!permissionService.on(dataset).has(Permission.ManageDatasetPermissions)) {
-            return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
+            return permissionsWrapper.notAuthorized();
         }
         
         initMaps();
