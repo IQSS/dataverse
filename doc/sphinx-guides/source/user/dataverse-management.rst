@@ -1,8 +1,7 @@
 Dataverse Management
 ++++++++++++++++++++++++++++
 
-A dataverse is a container for datasets (research data, code, documentation, and metadata) and other dataverses, 
-which can be setup for individual researchers, departments, journals and organizations.
+A dataverse is a container for datasets (research data, code, documentation, and metadata) and other dataverses, which can be setup for individual researchers, departments, journals and organizations.
 
 |image1|
 
@@ -58,19 +57,26 @@ Tip: The metadata fields you select as required, will appear on the Create Datas
 Theme + Widgets
 ====================================================
 
-The Theme + Widgets feature provides you with a way to customize the look of your dataverse as well as provide code for you to put on your personal website to have your dataverse appear there. (For adding your dataverse to an OpenScholar site, follow these instructions.)
+Theme
+-----------------------
+The Theme feature provides you with a way to customize the look of your dataverse. You can decide either to use the customization from the dataverse above yours or upload your own image file. Supported image types are JPEG, TIFF, or PNG and should be no larger than 500 KB. The maximum display size for an image file in a dataverse's theme is 940 pixels wide by 120 pixels high. Additionally, you can select the colors for the header of your dataverse and the text that appears in your dataverse. You can also add a link to your personal website, the website for your organization or institution, your department, journal, etc.
 
-For Theme, you can decide either to use the customization from the dataverse above yours or upload your own image file. Supported image types are JPEG, TIFF, or PNG and should be no larger than 500 KB. The maximum display size for an image file in a dataverse's theme is 940 pixels wide by 120 pixels high. Additionally, you can select the colors for the header of your dataverse and the text that appears in your dataverse. You can also add a link to your personal website, the website for your organization or institution, your department, journal, etc.
+Widgets
+-----------------------
+The Widgets feature provides you with code for you to put on your personal website to have your dataverse displayed there. There are two types of Widgets for a dataverse, a Dataverse Search Box widget and a Dataverse Listing widget. From the Widgets tab on the Theme + Widgets page, you can copy and paste the code snippets for the widget you would like to add to your website.
 
-There are two options for Widgets, a Dataverse Search box widget and a Dataverse Listing widget. The Dataverse Search Box will add a search box to your website that when someone enters a search term in and clicks Find, will bring them to Dataverse to see the results. The Dataverse Listing widget will provide a listing of all your dataverses and datasets. When someone clicks on a dataverse or dataset in the widget, it will bring them to your dataverse to see the actual data. Within the Widgets page, you can copy and paste the code for the widget you would like to have on your website. 
+The Dataverse Search Box widget will add a search box to your website that is linked to your dataverse. Users are directed to your dataverse in a new browser window, to display the results for search terms entered in the input field. 
+
+The Dataverse Listing widget will provide a listing of all your dataverses and datasets for users to browse, sort, filter and search. When someone clicks on a dataverse or dataset in the widget, it will display the content in the widget on your site. They can download data files directly from the datasets within the widget. If a file is restricted, they will be directed to your dataverse to log in, instead of logging in through the widget on your site.
+
+With the Advanced Options configurations, you may forward dataset citation persistent URL's to your personal website. The page you submit as your Personal Website URL must contain the code snippet for the Dataverse Listing widget. Upon setting up this option, the persistent URL in the citation will direct users to the dataset displayed in the Dataverse Listing widget, on your personal website.
 
 Adding Widgets to an OpenScholar Website
-==============================================
+----------------------------------------------
 #. Log in to your OpenScholar website
 #. Either build a new page or navigate to the page you would like to use to show the Dataverse widgets.
 #. Click on the Settings Cog and select Layout
-#. At the top right, select Add New Widget and under Misc. you will see the Dataverse Search Box and the Dataverse Listing widgets. Click on the widget you would like to add (we recommend using both), fill out the form, and then drag it to where you would like it to display in the page. 
-
+#. At the top right, select Add New Widget and under Misc. you will see the Dataverse Search Box and the Dataverse Listing widgets. Click on the widget you would like to add (we recommend using both), fill out the form, and then drag it to where you would like it to display in the page.
 
 .. _dataverse-permissions:
 

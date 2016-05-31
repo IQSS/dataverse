@@ -248,7 +248,7 @@
             </p:tab>
         </p:tabView>
     <p:remoteCommand name="saveRedirectUrl" process="@this" update=":#{p:component('messagePanel')}, :themeWidgetsForm, @([id$=Messages]), advancedOptions" actionListener="#{themeWidgetFragment.save()}"/>
-    <p:dialog modal="true" id="advancedOptions" widgetVar="advancedOptions" header="#{bundle['dataverse.widgets.advanced.popup.header']}">
+    <p:dialog styleClass="smallPopUp" id="advancedOptions" widgetVar="advancedOptions" modal="true" header="#{bundle['dataverse.widgets.advanced.popup.header']}">
         <div class="form-horizontal">
             <div>
                 <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.widgets.advanced.prompt']}</p>

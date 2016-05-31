@@ -195,7 +195,7 @@ If you restrict any files in your dataset, you will be prompted by a pop-up to e
 Guestbook
 --------------
 
-This is where you will enable a particular Guestbook for your dataset, which is setup at the Dataverse-level. For specific instructions please visit the Dataverse Management Guide > `Dataset Guestbook section <../user/dataverse-management.html#dataset-guestbooks>`_.
+This is where you will enable a particular Guestbook for your dataset, which is setup at the Dataverse-level. For specific instructions please visit the `Dataset Guestbooks <../user/dataverse-management.html#dataset-guestbooks>`_ section of the Dataverse Management page.
 
 .. _permissions:
 
@@ -219,6 +219,17 @@ specific restricted files. Dataset file permissions are located under Permission
 The file permissions page has two sections: Users/Groups and Files.
 
 To give someone access to your restricted files, click on the Grant Access to Users/Groups button in the Users/Groups section. 
+
+.. _widgets:
+
+Widgets
+=============================
+
+The Widgets feature provides you with code for you to put on your personal website to have content related to your dataset displayed there. There are two types of Widgets for a dataset, a Dataset widget and a Dataset Citation widget. From the Widgets page, you can copy and paste the code snippets for the widget you would like to add to your website.
+
+The Dataset widget will provide the citation, metadata, files and terms of your dataset. When someone downloads a data file in the widget, it will download directly from the datasets within the widget. If a file is restricted, they will be directed to your dataverse to log in, instead of logging in through the widget on your site.
+
+The Dataset Citation widget will provide a citation for your dataset to your personal or project website. Users can download the citation in various formats via the Cite Data button. The persistent URL in the citation will direct users to the dataset in your dataverse. You can also forward dataset citation persistent URL's to your personal website. For more information on the widgets available for a dataverse, please visit the `Widgets <../user/dataverse-management.html#widgets>`_ section of the Dataverse Management page.
 
 Publish Dataset
 ====================
