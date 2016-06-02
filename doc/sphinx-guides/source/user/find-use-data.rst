@@ -67,7 +67,7 @@ Once on a dataset page, you will see the title, citation, description, and sever
 Download Citation
 --------------------------
 
-You can find the citation for the dataset at the top of the dataset page in a blue box. Additionally, there is a Download Citation button that offers the option to download the citation as EndNote XML, RIS Format, or BibTeX Format.
+You can find the citation for the dataset at the top of the dataset page in a blue box. Additionally, there is a Cite Data button that offers the option to download the citation as EndNote XML, RIS Format, or BibTeX Format.
 
 Download Files
 -----------------
