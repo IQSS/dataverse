@@ -67,12 +67,12 @@ Once on a dataset page, you will see the title, citation, description, and sever
 Download Citation
 --------------------------
 
-You can find the citation for the dataset at the top of the dataset page in a blue box. Additionally, there is a Download Citation button that offers the option to download the citation as EndNote XML or RIS Format.
+You can find the citation for the dataset at the top of the dataset page in a blue box. Additionally, there is a Download Citation button that offers the option to download the citation as EndNote XML, RIS Format, or BibTeX Format.
 
 Download Files
 -----------------
 
-Within the Files tab on a dataset page, a user can either Explore tabular data files using TwoRavens, Download All File Formats + Information or individually download the Original File Format, Tab Delimited Format, Variable Metadata, Data File Citation (RIS Format or EndNote XML), or Subset (options appear depending on file format).
+Within the Files tab on a dataset page, a user can either Explore tabular data files using TwoRavens, Download All File Formats + Information or individually download the Original File Format, Tab Delimited Format, Variable Metadata, Data File Citation (EndNote XML, RIS Format, or BibTeX Format), or Subset (options appear depending on file format).
 
 To download more than one file at a time, select the files you would like to download and then click the Download button above the files. The selected files will download in zip format.
 
