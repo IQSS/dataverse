@@ -168,11 +168,14 @@ is made public, it can no longer be unpublished.
 
 
 .. |image1| image:: ./img/Dataverse-Diagram.png
+   :class: img-responsive
 .. |image2| image:: ./img/dvperms1.png
+   :class: img-responsive
 .. |image3| image:: ./img/dv2.png
+   :class: img-responsive
 .. |image4| image:: ./img/dv3.png
+   :class: img-responsive
 .. |image5| image:: ./img/dv4.png
+   :class: img-responsive
 .. |image6| image:: ./img/dv5.png
-
-
-
+   :class: img-responsive
