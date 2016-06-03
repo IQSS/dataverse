@@ -225,21 +225,21 @@ To give someone access to your restricted files, click on the Grant Access to Us
 Widgets
 =============================
 
-The Widgets feature provides you with code for your personal website so your dataset can be displayed. There are two types of Widgets for a dataset: the Dataset widget and the Dataset Citation widget. The Widgets are found by going to your dataset page, clicking the Edit button (the one with the pencil icon) and selecting Widgets from the dropdown menu.
+The Widgets feature provides you with code for your personal website so your dataset can be displayed. There are two types of Widgets for a dataset: the Dataset Widget and the Dataset Citation Widget. The Widgets are found by going to your dataset page, clicking the Edit button (the one with the pencil icon) and selecting Widgets from the dropdown menu.
 
 On the Widgets page, you can copy and paste the code snippets for the widget you would like to add to your website.
 
 Dataset Widget
 ---------------------
 
-The Dataset widget allows the citation, metadata, files and terms of your dataset to be displayed on your website. When someone downloads a data file in the widget, it will download directly from the datasets on your website. If a file is restricted, they will be directed to your dataverse to log in, instead of logging in through the widget on your site. 
+The Dataset Widget allows the citation, metadata, files and terms of your dataset to be displayed on your website. When someone downloads a data file in the widget, it will download directly from the datasets on your website. If a file is restricted, they will be directed to your dataverse to log in, instead of logging in through the widget on your site. 
 
-To edit your dataset, you will need to return to the Dataverse repository where the dataset is stored. You can easily do this by clicking on the link that "Data Stored in (Name) Dataverse" found in the bottom of the widget.
+To edit your dataset, you will need to return to the Dataverse repository where the dataset is stored. You can easily do this by clicking on the link that says "Data Stored in (Name) Dataverse" found in the bottom of the widget.
 
 Dataset Citation Widget
 --------------------------
 
-The Dataset Citation widget will provide a citation for your dataset on your personal or project website. Users can download the citation in various formats by using the Cite Data button. The persistent URL in the citation will direct users to the dataset in your dataverse. 
+The Dataset Citation Widget will provide a citation for your dataset on your personal or project website. Users can download the citation in various formats by using the Cite Data button. The persistent URL in the citation will direct users to the dataset in your dataverse. 
 
 Note: You can forward the persistent URL (DOI or Handle) of your dataset to your personal website. For more information on the widgets available for a dataverse, please visit the `Widgets <../user/dataverse-management.html#widgets>`_ section of the Dataverse Management page.
 
