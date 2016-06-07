@@ -54,7 +54,7 @@
                             <h:outputText value="#{harvestClient.harvestingUrl}" />
                         </p:column>
                         <p:column width="15%" headerText="Dataverse">
-                            {harvestClient.dataverseName}
+                            <h:outputText value="#{harvestClient.dataverse.alias}" />
                         </p:column>
                         <p:column width="12%" class="text-center" headerText="#{bundle['harvestclients.tab.header.lastrun']}">
                             <h:outputText value="#{harvestClient.lastRun.startTime}" />

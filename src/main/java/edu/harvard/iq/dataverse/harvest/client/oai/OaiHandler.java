@@ -51,6 +51,9 @@ public class OaiHandler implements Serializable {
     }
       
     public OaiHandler(HarvestingClient harvestingClient) throws OaiHandlerException {
+        this.baseOaiUrl = harvestingClient.getHarvestingUrl();
+        this.metadataPrefix = harvestingClient.getMetadataPrefix();
+        
         if (StringUtils.isEmpty(baseOaiUrl)) {
             throw new OaiHandlerException("Valid OAI url is needed to create a handler");
         }
