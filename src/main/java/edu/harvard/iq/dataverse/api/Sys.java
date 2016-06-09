@@ -6,10 +6,8 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import javax.ejb.EJB;
 import javax.json.Json;
-import javax.json.JsonValue;
 import javax.json.JsonObjectBuilder;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -35,12 +33,10 @@ public class Sys extends AbstractApiBean{
         JsonObjectBuilder response = Json.createObjectBuilder();
         
         if(setting != null){
-            response.add("DatasetPublishPopupCustomText", json(setting));
+            return okResponse(response.add("DatasetPublishPopupCustomText", setting));
         } else {
-        response.add("DatasetPublishPopupCustomText", JsonValue.NULL);
+            return notFound("Setting DatasetPublishPopupCustomText not found");
         }
-
-        return okResponse(response);
     }
  
 }
