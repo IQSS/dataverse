@@ -379,3 +379,11 @@ Execute a saved search by database id and make links to dataverses and datasets 
 Execute all saved searches and make links to dataverses and datasets that are found. ``debug`` works as described above.  ::
 
   PUT http://$SERVER/api/admin/savedsearches/makelinks/all?debug=true
+
+System
+~~~~~~~~~~~~~~~~
+This part of the API exposes settings (namely :DatasetPublishPopupCustomText) necessary for OSF integration.
+
+Get the :DatasetPublishPopupCustomText setting::
+
+  GET http://$SERVER/api/system/settings/:DatasetPublishPopupCustomText
