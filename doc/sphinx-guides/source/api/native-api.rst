@@ -382,7 +382,7 @@ Execute all saved searches and make links to dataverses and datasets that are fo
 
 System
 ~~~~~~~~~~~~~~~~
-This part of the API exposes settings (namely :DatasetPublishPopupCustomText) necessary for OSF integration.
+This part of the API exposes settings system-wide (namely :DatasetPublishPopupCustomText).
 
 Get the :DatasetPublishPopupCustomText setting::
 
