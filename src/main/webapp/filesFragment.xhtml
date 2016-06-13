@@ -48,11 +48,13 @@
                                          or (!(empty DatasetPage.workingVersion.fileMetadatas) and DatasetPage.workingVersion.fileMetadatas.size() > 1))}">
                         <h:outputLink value="/editdatafiles.xhtml?datasetId=#{DatasetPage.dataset.id}&#38;mode=UPLOAD"
                                       type="button" styleClass="btn btn-default #{DatasetPage.locked ? 'ui-state-disabled' : ''}"
-                                      disabled="#{DatasetPage.locked}" rendered="#{DatasetPage.sessionUserAuthenticated and DatasetPage.canUpdateDataset()}">
+                                      disabled="#{DatasetPage.locked}" rendered="#{DatasetPage.sessionUserAuthenticated 
+                                                                                    and DatasetPage.canUpdateDataset()
+                                                                                    and !widgetWrapper.widgetView}">
                             <span class="glyphicon #{DatasetPage.locked ? 'glyphicon-ban-circle' : 'glyphicon-plus'}"/> <h:outputText id="uploadFile-s-Link" value="#{bundle['file.uploadFiles']}"/>
                         </h:outputLink>
                         <div class="btn-group" jsf:rendered="#{DatasetPage.sessionUserAuthenticated
-                                             and DatasetPage.canUpdateDataset()}">
+                                             and DatasetPage.canUpdateDataset() and !widgetWrapper.widgetView}">
                             <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
                                     disabled="#{DatasetPage.locked ? 'disabled' : ''}">
                                 <span class="glyphicon glyphicon-pencil"/> #{bundle['file.editFiles']} <span class="caret"></span>

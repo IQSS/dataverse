@@ -24,21 +24,12 @@ public class DataCitation {
 
     private String authors;
     private String title;
-    private Date citationDate;
+    private String year;
     private GlobalId persistentId;
     private String version;
     private String UNF;
     private String distributors;
 
-    public DataCitation(String authors, String title, Date citationDate, GlobalId persistentId, String version, String UNF, String distributors) {
-        this.authors = authors;
-        this.title = title;
-        this.citationDate = citationDate;
-        this.persistentId = persistentId;
-        this.version = version;
-        this.UNF = UNF;
-        this.distributors = distributors;
-    }
 
     public DataCitation(DatasetVersion dsv) {
         // authors (or producer)
@@ -47,9 +38,10 @@ public class DataCitation {
             authors = dsv.getDatasetProducersString();
         }
 
-        // citation date
+        // year
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy");
         if (!dsv.getDataset().isHarvested()) {
-            citationDate = dsv.getCitationDate();
+            Date citationDate = dsv.getCitationDate();
             if (citationDate == null) {
                 if (dsv.getDataset().getPublicationDate() != null) {
                     citationDate = dsv.getDataset().getPublicationDate();
@@ -57,14 +49,17 @@ public class DataCitation {
                     citationDate = new Date();
                 }
             }
+            
+            year = new SimpleDateFormat("yyyy").format(citationDate);
+            
         } else {
             try {
-                citationDate = new SimpleDateFormat("yyyy").parse(dsv.getDistributionDate());
+                year = sdf.format(sdf.parse(dsv.getDistributionDate()));
             } catch (ParseException ex) {
                 // ignore
             }
         }
-
+              
         // title
         title = dsv.getTitle();
 
@@ -111,58 +106,37 @@ public class DataCitation {
         return authors;
     }
 
-    public void setAuthors(String authors) {
-        this.authors = authors;
-    }
 
     public String getTitle() {
         return title;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
+
+    public String getYear() {
+        return year;
     }
 
-    public Date getCitationDate() {
-        return citationDate;
-    }
-
-    public void setCitationDate(Date citationDate) {
-        this.citationDate = citationDate;
-    }
 
     public GlobalId getPersistentId() {
         return persistentId;
     }
 
-    public void setPersistentId(GlobalId persistentId) {
-        this.persistentId = persistentId;
-    }
 
     public String getVersion() {
         return version;
     }
 
-    public void setVersion(String version) {
-        this.version = version;
-    }
 
     public String getUNF() {
         return UNF;
     }
 
-    public void setUNF(String UNF) {
-        this.UNF = UNF;
-    }
 
     public String getDistributors() {
         return distributors;
     }
 
-    public void setDistributors(String distributors) {
-        this.distributors = distributors;
-    }
-
+    
     @Override
     public String toString() {
         return toString(false);
@@ -172,7 +146,7 @@ public class DataCitation {
         // first add comma separated parts        
         List<String> citationList = new ArrayList<>();
         citationList.add(formatString(authors, html));
-        citationList.add(formatNonEmptyDate(citationDate,"yyyy"));
+        citationList.add(year);
         citationList.add(formatString(title, html, "\""));
         citationList.add(formatURL(persistentId.toURL(), html));
         citationList.add(formatString(distributors, html));
@@ -206,11 +180,7 @@ public class DataCitation {
         }
         return null;
     }  
-    
-    private String formatNonEmptyDate(Date date, String format) {
-        return date == null ? null : new SimpleDateFormat(format).format(date);
-    }
-    
+        
     private String formatURL(URL value, boolean html) {
         if (value ==null) {
             return null;

@@ -7,9 +7,11 @@
      xmlns:o="http://omnifaces.org/ui"
      xmlns:jsf="http://xmlns.jcp.org/jsf">
 
+    <c:set var="page" value="/dataverse/#{SearchIncludeFragment.dataverse.alias}"/>
+
     <!-- Search Form + Add Data Button -->
-    <div class="row panelSerchForm" jsf:rendered="#{showSearch == true and !SearchIncludeFragment.solrIsDown}">
-        <div class="col-sm-8">
+    <div class="row panelSearchForm" jsf:rendered="#{!SearchIncludeFragment.solrIsDown}">
+        <div class="#{widgetWrapper.widgetView ? 'col-sm-12' : 'col-sm-8'}">
             <h:form>
                 <p:inputText id="searchBasic" styleClass="search-input" size="40" value="#{SearchIncludeFragment.query}" onkeypress="if (event.keyCode == 13) { submitsearch(); return false; }"/>
                 <p:watermark for="searchBasic" value="#{dataverseRedirectPage == 'dataverseuser.xhtml' ? bundle['account.search.input.watermark'] : bundle['dataverse.search.input.watermark']}"/>
@@ -17,14 +19,14 @@
                     <span class="glyphicon glyphicon-search"/> #{bundle['dataverse.search.btn.find']}
                 </p:commandLink>
                 <p:remoteCommand name="submitsearch" action="#{SearchIncludeFragment.searchRedirect(dataverseRedirectPage)}"/>
-                <h:outputLink id="advsearchlink" value="/search/advanced.xhtml" target="#{showFacets == true ? '_self' : '_blank'}" rendered="#{showAdvancedSearchLink}">
+                <h:outputLink id="advsearchlink" value="#{widgetWrapper.wrapURL('/search/advanced.xhtml')}">
                     <f:param name="dataverseIdentifier" value="#{SearchIncludeFragment.dataverse.alias}"/>
                     <h:outputText value="#{bundle['dataverse.search.advancedSearch']}"/>
                     <!--<f:param name="q" value="#{SearchIncludeFragment.query}" disable="#{empty SearchIncludeFragment.query}"/>-->
                 </h:outputLink>
             </h:form>
         </div>
-        <div class="col-sm-4 text-right col-manage-action">
+        <div class="col-sm-4 text-right col-manage-action" jsf:rendered="#{!widgetWrapper.widgetView}">
             <div class="button-block pull-right">
                 <!-- ADD DATA -->
                 <o:importFunctions type="edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers" />
@@ -34,7 +36,7 @@
                         <span class="glyphicon glyphicon-plus"/> #{bundle['dataverse.results.btn.addData']}
                     </button>
                 </ui:fragment>
-                <h:form id="shareForm" class="btn-form" 
+                <h:form id="shareForm" class="btn-form"
                         rendered="#{dataverseSession.user.authenticated and (permissionsWrapper.canIssueCreateDataverseCommand(SearchIncludeFragment.dataverse)
                                      or permissionsWrapper.canIssueCreateDatasetCommand(SearchIncludeFragment.dataverse))}">
                     <div class="btn-group">
@@ -54,7 +56,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Message Block / SOLR IS DOWN -->
     <div class="row" jsf:rendered="#{SearchIncludeFragment.solrIsDown}">
         <div class="col-sm-12">
@@ -68,15 +70,15 @@
             <pre><h:outputText value="#{SearchIncludeFragment.searchException.cause.message}"/></pre>
         </div>
     </div>
-    
+
     <!-- Search Results / SOLR IS UP -->
     <div id="search-row-panel" class="row row-offcanvas row-offcanvas-left" jsf:rendered="#{!SearchIncludeFragment.solrIsDown}">
-        <div id="dv-sidebar" class="col-sm-4 col-md-3 sidebar-offcanvas" jsf:rendered="#{showFacets}">
+        <div id="dv-sidebar" class="col-sm-4 col-md-3 sidebar-offcanvas">
             <!--TYPE FACET (DATAVERSES, DATASETS, FILES)-->
             <h:form id="facetType">
                 <!--DATAVERSE TOGGLE-->
                 <div class="clearfix">
-                    <h:outputLink styleClass="facetTypeChBox facetLink #{SearchIncludeFragment.selectedTypesList.contains('dataverses') ? 'facetSelected': ''}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('dataverses') == null}">
+                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}" styleClass="facetTypeChBox facetLink #{SearchIncludeFragment.selectedTypesList.contains('dataverses') ? 'facetSelected': ''}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('dataverses') == null}">
                         <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                         <f:param name="types" value="#{SearchIncludeFragment.getNewSelectedTypes('dataverses')}"/>
                         <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -88,7 +90,7 @@
                         <p:selectBooleanCheckbox value="#{SearchIncludeFragment.selectedTypesList.contains('dataverses') ? true : false}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('dataverses') == null ? true : false}"/>
                     </h:outputLink>
                     <!--DATAVERSES ONLY-->
-                    <h:outputLink disabled="#{false}" styleClass="facetTypeLink chkbox-label-margin #{SearchIncludeFragment.selectedTypesList.contains('dataverses') ? 'facetSelected': ''}">
+                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}" disabled="#{false}" styleClass="facetTypeLink chkbox-label-margin #{SearchIncludeFragment.selectedTypesList.contains('dataverses') ? 'facetSelected': ''}">
                         <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                         <f:param name="types" value="dataverses"/>
                         <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -107,7 +109,7 @@
                 </div>
                 <!--DATASETS TOGGLE-->
                 <div class="clearfix">
-                    <h:outputLink styleClass="facetTypeChBox facetLink #{SearchIncludeFragment.selectedTypesList.contains('datasets') ? 'facetSelected': ''}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('datasets') == null}">
+                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}" styleClass="facetTypeChBox facetLink #{SearchIncludeFragment.selectedTypesList.contains('datasets') ? 'facetSelected': ''}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('datasets') == null}">
                         <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                         <f:param name="types" value="#{SearchIncludeFragment.getNewSelectedTypes('datasets')}"/>
                         <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -119,7 +121,7 @@
                         <p:selectBooleanCheckbox value="#{SearchIncludeFragment.selectedTypesList.contains('datasets') ? true : false}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('datasets') == null ? true : false}"/>
                     </h:outputLink>
                     <!--DATASETS ONLY-->
-                    <h:outputLink disabled="#{false}" styleClass="facetTypeLink chkbox-label-margin #{SearchIncludeFragment.selectedTypesList.contains('datasets') ? 'facetSelected': ''}">
+                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}" disabled="#{false}" styleClass="facetTypeLink chkbox-label-margin #{SearchIncludeFragment.selectedTypesList.contains('datasets') ? 'facetSelected': ''}">
                         <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                         <f:param name="types" value="datasets"/>
                         <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -138,7 +140,7 @@
                 </div>
                 <!--FILES TOGGLE-->
                 <div class="clearfix">
-                    <h:outputLink styleClass="facetTypeChBox facetLink #{SearchIncludeFragment.selectedTypesList.contains('files') ? 'facetSelected': ''}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('files') == null}">
+                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}" styleClass="facetTypeChBox facetLink #{SearchIncludeFragment.selectedTypesList.contains('files') ? 'facetSelected': ''}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('files') == null}">
                         <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                         <f:param name="types" value="#{SearchIncludeFragment.getNewSelectedTypes('files')}"/>
                         <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -150,7 +152,7 @@
                         <p:selectBooleanCheckbox value="#{SearchIncludeFragment.selectedTypesList.contains('files') ? true : false}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('files') == null ? true : false}"/>
                     </h:outputLink>
                     <!--FILES ONLY-->
-                    <h:outputLink disabled="#{false}" styleClass="facetTypeLink chkbox-label-margin #{SearchIncludeFragment.selectedTypesList.contains('files') ? 'facetSelected': ''}">
+                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}" disabled="#{false}" styleClass="facetTypeLink chkbox-label-margin #{SearchIncludeFragment.selectedTypesList.contains('files') ? 'facetSelected': ''}">
                         <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                         <f:param name="types" value="files"/>
                         <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -174,7 +176,7 @@
                 <p:dataList id="facetCategoryList" value="#{SearchIncludeFragment.facetCategoryList}" var="facetCategory">
                     <h:outputText value="#{facetCategory.friendlyName}" styleClass="facetCategoryName"/>
                     <p:dataList value="#{facetCategory.facetLabel}" var="facetLabel" rows="#{SearchIncludeFragment.getNumberOfFacets(facetCategory.name,5)}">
-                        <h:outputLink rendered="#{!SearchIncludeFragment.filterQueries.contains(facetLabel.filterQuery)}" styleClass="facetLink">
+                        <h:outputLink value="#{widgetWrapper.wrapURL(page)}" rendered="#{!SearchIncludeFragment.filterQueries.contains(facetLabel.filterQuery)}" styleClass="facetLink">
                             <h:outputFormat value="#{facetLabel.name} &#40;{0}&#41;">
                                 <f:param value="#{facetLabel.count}"/>
                             </h:outputFormat>
@@ -188,7 +190,7 @@
                             <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
                         </h:outputLink>
 
-                        <h:outputLink rendered="#{SearchIncludeFragment.filterQueries.contains(facetLabel.filterQuery)}" styleClass="facetLink facetSelected">
+                        <h:outputLink value="#{widgetWrapper.wrapURL(page)}" rendered="#{SearchIncludeFragment.filterQueries.contains(facetLabel.filterQuery)}" styleClass="facetLink facetSelected">
                             <h:outputFormat value="#{facetLabel.name} &#40;{0}&#41;">
                                 <f:param value="#{facetLabel.count}"/>
                             </h:outputFormat>
@@ -216,7 +218,7 @@
             </h:form>
         </div>
         <ui:param name="dataversePage" value="#{dataverseLinksStayOnPage == true ? '' : '/dataverse.xhtml' }"/>
-        <div id="dv-main" class="col-sm-8 col-md-9 #{showFacets == true ? 'showfacets' : 'nofacets'}">
+        <div id="dv-main" class="col-sm-8 col-md-9">
             <!--DEBUG BEGIN-->
             <div jsf:rendered="#{SearchIncludeFragment.debug}" style="background-color: lightgray">
                 <tt>
@@ -230,11 +232,9 @@
             <!--DEBUG END-->
 
             <!--toggle sidebar button-->
-            <ui:fragment rendered="#{showFacets}">
-                <p class="visible-xs-block">
-                  <button type="button" class="btn btn-primary btn-xs" data-toggle="offcanvas"><i class="glyphicon glyphicon-chevron-left"></i> Filter Results</button>
-                </p>
-            </ui:fragment>
+            <p class="visible-xs-block">
+              <button type="button" class="btn btn-primary btn-xs" data-toggle="offcanvas"><i class="glyphicon glyphicon-chevron-left"></i> Filter Results</button>
+            </p>
 
             <div id="emptyResults" class="emptyResults bg-warning" jsf:rendered="#{SearchIncludeFragment.searchResultsList.size() == 0}">
                 <ui:fragment rendered="#{SearchIncludeFragment.mode == SearchIncludeFragment.searchModeString}">
@@ -268,7 +268,7 @@
                         <!--BROWSE GUEST ZERO COUNTS-->
                         <p>
                             <h:outputFormat value="#{bundle['dataverse.results.empty.browse.guest.zero']}" escape="false">
-                                <f:param value="#{dataverseHeaderFragment.loginRedirectPage}"/>
+                                <f:param value="#{navigationWrapper.redirectPage}"/>
                             </h:outputFormat>
                         </p>
                     </ui:fragment>
@@ -276,7 +276,7 @@
                         <!--BROWSE GUEST HIDDEN-->
                         <p>
                             <h:outputFormat value="#{bundle['dataverse.results.empty.browse.guest.hidden']}" escape="false">
-                                <f:param value="#{dataverseHeaderFragment.loginRedirectPage}"/>
+                                <f:param value="#{navigationWrapper.redirectPage}"/>
                             </h:outputFormat>
                         </p>
                     </ui:fragment>
@@ -313,7 +313,7 @@
             <div id="resultsFacetsTopBlock" jsf:rendered="#{!empty SearchIncludeFragment.filterQueries}">
                 <ui:repeat value="#{SearchIncludeFragment.filterQueries}" var="filterQuery">
                     <ui:param name="friendlyNames" value="#{SearchIncludeFragment.getFriendlyNamesFromFilterQuery(filterQuery)}"/>
-                    <h:outputLink styleClass="facetLink facetSelected">
+                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}" styleClass="facetLink facetSelected">
                         <h:outputText value="#{friendlyNames.get(0)}: #{friendlyNames.get(1)}"/> <span class="glyphicon glyphicon-remove"></span>
                         <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                         <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -344,7 +344,7 @@
                         </button>
                         <ul class="dropdown-menu pull-right text-left" role="menu">
                             <li>
-                                <h:outputLink>
+                                <h:outputLink value="#{widgetWrapper.wrapURL(page)}">
                                     <h:outputText value="#{bundle['dataverse.results.btn.sort.option.nameAZ']}" styleClass="#{SearchIncludeFragment.sortedByNameAsc ? 'highlightBold' : ''}"/>
                                     <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                     <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -357,7 +357,7 @@
                                 </h:outputLink>
                             </li>
                             <li>
-                                <h:outputLink>
+                                <h:outputLink value="#{widgetWrapper.wrapURL(page)}">
                                     <h:outputText value="#{bundle['dataverse.results.btn.sort.option.nameZA']}" styleClass="#{SearchIncludeFragment.sortedByNameDesc ? 'highlightBold' : ''}"/>
                                     <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                     <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -370,7 +370,7 @@
                                 </h:outputLink>
                             </li>
                             <li>
-                                <h:outputLink>
+                                <h:outputLink value="#{widgetWrapper.wrapURL(page)}">
                                     <h:outputText value="#{bundle['dataverse.results.btn.sort.option.newest']}" styleClass="#{SearchIncludeFragment.sortedByReleaseDateDesc? 'highlightBold' : ''}"/>
                                     <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                     <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -383,7 +383,7 @@
                                 </h:outputLink>
                             </li>
                             <li>
-                                <h:outputLink>
+                                <h:outputLink value="#{widgetWrapper.wrapURL(page)}">
                                     <h:outputText value="#{bundle['dataverse.results.btn.sort.option.oldest']}" styleClass="#{SearchIncludeFragment.sortedByReleaseDateAsc? 'highlightBold' : ''}"/>
                                     <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                     <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -397,7 +397,7 @@
                             </li>
                             <ui:fragment rendered="#{SearchIncludeFragment.mode == SearchIncludeFragment.searchModeString}">
                                 <li>
-                                    <h:outputLink>
+                                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}">
                                         <h:outputText value="#{bundle['dataverse.results.btn.sort.option.relevance']}" styleClass="#{SearchIncludeFragment.sortedByRelevance ? 'highlightBold' : ''}"/>
                                         <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                         <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -424,15 +424,14 @@
                     <ui:fragment rendered="#{SearchIncludeFragment.debug == true}">
                         <h:outputText value="score: #{result.score}" rendered="#{SearchIncludeFragment.mode == SearchIncludeFragment.searchModeString}"/>
                     </ui:fragment>
-
                     <!--DATAVERSE CARDS-->
                     <div class="dataverseResult clearfix" jsf:rendered="#{result.type == 'dataverses'}">
                         <div class="card-title-icon-block">
                             <span class="glyphicon glyphicon-link text-brand pull-right" title="#{bundle.linked}" jsf:rendered="#{!SearchIncludeFragment.rootDv and !result.isInTree}"/>
                             <span class="glyphicon glyphicon-new-window text-brand pull-right" title="#{bundle.harvested}" jsf:rendered="#{result.harvested}"/>
                             <span class="icon-dataverse text-brand pull-right" title="#{bundle.dataverse}"/>
-
-                            <h:outputLink value="#{dataversePage}?alias=#{result.dataverseAlias}" target="#{showFacets == true ? '_self' : '_blank'}">
+                            <c:set var="dvUrl" value="#{dataversePage}?alias=#{result.dataverseAlias}"/>
+                            <h:outputLink value="#{!SearchIncludeFragment.rootDv and !result.isInTree ? dvUrl : widgetWrapper.wrapURL(dvUrl)}" target="#{!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView ? '_blank' : ''}">
                                 <h:outputText value="#{result.name} #{bundle.dataverse}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet == null}"/>
                                 <h:outputText value="#{result.nameHighlightSnippet} #{bundle.dataverse}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet != null}" escape="false"/>
                                 <h:outputText value=" (#{result.entityId})" style="padding:4px 0;" rendered="#{SearchIncludeFragment.debug == true}"/>
@@ -444,7 +443,7 @@
                             <h:outputText value="#{SearchIncludeFragment.UNPUBLISHED}" styleClass="label label-warning" rendered="#{result.unpublishedState}"/>
                         </div>
                         <div class="card-preview-icon-block text-center">
-                            <h:outputLink value="#{dataversePage}?alias=#{result.dataverseAlias}" target="#{showFacets == true ? '_self' : '_blank'}">
+                            <h:outputLink value="#{!SearchIncludeFragment.rootDv and !result.isInTree ? dvUrl : widgetWrapper.wrapURL(dvUrl)}" target="#{!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView ? '_blank' : ''}">
                                 <h:graphicImage value="#{result.imageUrl}" rendered="#{result.displayImage}"/>
                                 <span class="icon-dataverse text-brand" jsf:rendered="#{!result.displayImage}"/>
                             </h:outputLink>
@@ -452,7 +451,8 @@
 
                         <h:outputText value="#{result.dateToDisplayOnCard}" styleClass="text-muted" style="margin-right:.5em;"/>
 
-                        <h:outputLink value="#{dataversePage}?alias=#{result.dataverseParentAlias}" target="#{showFacets == true ? '_self' : '_blank'}" rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}">
+                        <c:set var="dvParentUrl" value="#{dataversePage}?alias=#{result.dataverseParentAlias}"/>
+                        <h:outputLink value="#{!SearchIncludeFragment.rootDv and !result.isInTree ? dvParentUrl : widgetWrapper.wrapURL(dvParentUrl)}" target="#{!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView ? '_blank' : ''}" rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}">
                             <h:outputText value="#{result.parent.get('name')} #{bundle.dataverse}"/>
                         </h:outputLink>
 
@@ -491,11 +491,11 @@
                             <span class="glyphicon glyphicon-link text-info pull-right" title="#{bundle.linked}" jsf:rendered="#{!SearchIncludeFragment.rootDv and !result.isInTree}"/>
                             <span class="glyphicon glyphicon-new-window text-info pull-right" title="#{bundle.harvested}" jsf:rendered="#{result.harvested}"/>
                             <span class="icon-dataset text-info pull-right" title="#{bundle.dataset}"/>
-
-                            <a href="#{result.datasetUrl}" target="#{showFacets == true ? '_self' : '_blank'}">
+                            <a href="#{!SearchIncludeFragment.rootDv and !result.isInTree ? result.datasetUrl : widgetWrapper.wrapURL(result.datasetUrl)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">
                                 <h:outputText value="#{result.title}" style="padding:4px 0;" rendered="#{result.titleHighlightSnippet == null}"/>
                                 <h:outputText value="#{result.titleHighlightSnippet}" style="padding:4px 0;" rendered="#{result.titleHighlightSnippet != null}" escape="false"/>
                                 <h:outputText value=" (#{result.entityId})" style="padding:4px 0;" rendered="#{SearchIncludeFragment.debug == true}"/></a>
+
                             <h:outputText value="#{SearchIncludeFragment.DRAFT}" styleClass="label label-primary" rendered="#{result.draftState}"/>
                             <h:outputText value="#{SearchIncludeFragment.IN_REVIEW}" styleClass="label label-success" rendered="#{result.inReviewState}"/>
                             <h:outputText value="#{SearchIncludeFragment.UNPUBLISHED}" styleClass="label label-warning" rendered="#{result.unpublishedState}"/>
@@ -503,20 +503,25 @@
                             <h:outputText value="#{result.userRole}" styleClass="label label-primary" rendered="#{!empty result.userRole}"/>
                         </div>
                         <div class="card-preview-icon-block text-center">
-                            <a href="#{result.datasetUrl}" target="#{showFacets == true ? '_self' : '_blank'}">
+                            <a href="#{!SearchIncludeFragment.rootDv and !result.isInTree ? result.datasetUrl : widgetWrapper.wrapURL(result.datasetUrl)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">
                                 <h:graphicImage value="#{result.imageUrl}" rendered="#{result.displayImage}"/>
                                 <span class="icon-dataset text-info" jsf:rendered="#{!result.displayImage}"/>
                             </a>
                         </div>
 
                         <h:outputText styleClass="text-muted" value="#{result.dateToDisplayOnCard}"/>
-                        
+
                         <h:outputText styleClass="text-muted" value=" - " rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}"/>
-                        <h:outputLink value="#{dataversePage}?alias=#{result.dataverseAlias}" target="#{showFacets == true ? '_self' : '_blank'}" rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}">
+                        
+                        <c:set var="dvParentAlias" value="#{dataversePage}?alias=#{result.dataverseAlias}"/>
+                        <h:outputLink value="#{!SearchIncludeFragment.rootDv and !result.isInTree ? dvParentAlias : widgetWrapper.wrapURL(dvParentAlias)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}" rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}">
                             <h:outputText value="#{result.parent.get('name')} #{bundle.dataverse}"/>
                         </h:outputLink>
 
-                        <h:outputText value="#{result.citationHtml != null ? result.citationHtml : result.citation}" escape="false" styleClass="resultDatasetCitationBlock #{result.deaccessionedState ? 'bg-danger' : 'bg-citation'}"/>
+                        <div class="resultDatasetCitationBlock #{result.deaccessionedState ? 'alert alert-danger bg-danger' : 'alert alert-info bg-citation'}">
+                            <h:outputText value="#{result.citationHtml != null ? result.citationHtml : result.citation}" escape="false"/>
+                        </div>
+                        
                         <h:outputText value="#{Strings:abbreviate(result.descriptionNoSnippet, descriptionAbbreviationThreshold)}" rendered="#{result.descriptionSnippets.size() eq 0}"/>
 
                         <ui:repeat value="#{result.descriptionSnippets}" var="snippet" varStatus="varStatus"
@@ -557,47 +562,45 @@
                             <span class="text-danger glyphicon glyphicon-lock" title="#{bundle.restricted}" jsf:rendered="#{result.entity.restricted and !permissionsWrapper.hasDownloadFilePermission(result.entity)}"/>
                             <span class="text-success icon-unlock" title="#{bundle.restrictedaccess}" jsf:rendered="#{result.entity.restricted and permissionsWrapper.hasDownloadFilePermission(result.entity)}"/>
                             <ui:fragment rendered="#{settingsWrapper.isTrueForKey(':ShowFileLandingPage', false)}">
-                            <a href="#{result.fileUrl}" target="#{showFacets == true ? '_self' : '_blank'}">
-                                <h:outputText value="#{result.name}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet == null}"/>
-                                <h:outputText value="#{result.nameHighlightSnippet}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet != null}" escape="false"/>
-                                <h:outputText value=" (#{result.entityId})" style="padding:4px 0;" rendered="#{SearchIncludeFragment.debug == true}"/></a>
+                                <a href="#{!SearchIncludeFragment.rootDv and !result.isInTree ? result.fileUrl : widgetWrapper.wrapURL(result.fileUrl)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">
+                                    <h:outputText value="#{result.name}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet == null}"/>
+                                    <h:outputText value="#{result.nameHighlightSnippet}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet != null}" escape="false"/>
+                                    <h:outputText value=" (#{result.entityId})" style="padding:4px 0;" rendered="#{SearchIncludeFragment.debug == true}"/></a>
                             </ui:fragment>
                             <ui:fragment rendered="#{!settingsWrapper.isTrueForKey(':ShowFileLandingPage', false)}">
-                                <a href="#{result.fileDatasetUrl}" target="#{showFacets == true ? '_self' : '_blank'}">
-                                <h:outputText value="#{result.name}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet == null}"/>
-                                <h:outputText value="#{result.nameHighlightSnippet}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet != null}" escape="false"/>
-                                <h:outputText value=" (#{result.entityId})" style="padding:4px 0;" rendered="#{SearchIncludeFragment.debug == true}"/></a>
+                                <a href="#{!SearchIncludeFragment.rootDv and !result.isInTree ? result.fileDatasetUrl : widgetWrapper.wrapURL(result.fileDatasetUrl)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">
+                                    <h:outputText value="#{result.name}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet == null}"/>
+                                    <h:outputText value="#{result.nameHighlightSnippet}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet != null}" escape="false"/>
+                                    <h:outputText value=" (#{result.entityId})" style="padding:4px 0;" rendered="#{SearchIncludeFragment.debug == true}"/></a>
                             </ui:fragment>
                             <h:outputText value="#{SearchIncludeFragment.DRAFT}" styleClass="label label-primary" rendered="#{result.draftState}"/>
-                            <h:outputText value="#{SearchIncludeFragment.IN_REVIEW}" styleClass="label label-success" rendered="#{result.inReviewState}"/> 
+                            <h:outputText value="#{SearchIncludeFragment.IN_REVIEW}" styleClass="label label-success" rendered="#{result.inReviewState}"/>
                             <h:outputText value="#{SearchIncludeFragment.UNPUBLISHED}" styleClass="label label-warning" rendered="#{result.unpublishedState}"/>
                             <h:outputText value="#{result.userRole}" styleClass="label label-primary" rendered="#{!empty result.userRole}"/>
                         </div>
 
                         <div class="card-preview-icon-block text-center" jsf:rendered="#{settingsWrapper.isTrueForKey(':ShowFileLandingPage', false)}">
-                            <h:outputLink value="#{result.fileUrl}" target="#{showFacets == true ? '_self' : '_blank'}"
-                                          rendered="#{result.displayImage}">
-                                <h:graphicImage value="#{result.imageUrl}" />
-                            </h:outputLink>
-                            <span class="icon-#{dataFileServiceBean.getFileClass(result.entity)} text-muted h1"
-                                  jsf:rendered="#{!result.displayImage}"/>
+                            <a href="#{!SearchIncludeFragment.rootDv and !result.isInTree ? result.fileUrl : widgetWrapper.wrapURL(result.fileUrl)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">
+                                <h:graphicImage value="#{result.imageUrl}" rendered="#{result.displayImage}"/>
+                                <span class="icon-#{dataFileServiceBean.getFileClass(result.entity)} text-muted h1"
+                                      jsf:rendered="#{!result.displayImage}"/>
+                            </a>
                         </div>
 
                         <div class="card-preview-icon-block text-center" jsf:rendered="#{!settingsWrapper.isTrueForKey(':ShowFileLandingPage', false)}">
-                            <h:outputLink value="#{result.fileDatasetUrl}" target="#{showFacets == true ? '_self' : '_blank'}"
-                                          rendered="#{result.displayImage}">
-                                <h:graphicImage value="#{result.imageUrl}" />
-                            </h:outputLink>
-                            <span class="icon-#{dataFileServiceBean.getFileClass(result.entity)} text-muted h1"
-                                  jsf:rendered="#{!result.displayImage}"/>
+                            <a href="#{!SearchIncludeFragment.rootDv and !result.isInTree ? result.fileDatasetUrl : widgetWrapper.wrapURL(result.fileDatasetUrl)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">
+                                <h:graphicImage value="#{result.imageUrl}" rendered="#{result.displayImage}"/>
+                                <span class="icon-#{dataFileServiceBean.getFileClass(result.entity)} text-muted h1"
+                                      jsf:rendered="#{!result.displayImage}"/>
+                            </a>
                         </div>
-                        
+
                         <div>
                             <h:outputText styleClass="text-muted" value="#{result.dateToDisplayOnCard} - "/>
-                            <a href="#{result.fileDatasetUrl}" target="#{showFacets == true ? '_self' : '_blank'}">
+                            <a href="#{!SearchIncludeFragment.rootDv and !result.isInTree ? result.fileDatasetUrl : widgetWrapper.wrapURL(result.fileDatasetUrl)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">
                                 <h:outputText value="#{result.parent.get('name')}"/></a>
                         </div>
-                        
+
                         <div>
                             <h:outputText value="#{bundle['dataverse.results.cards.files.tabularData']}" styleClass="text-muted" rendered="#{!empty SearchIncludeFragment.tabularDataDisplayInfo(result.entity)}"/>
                             <h:outputText value="#{result.filetype}" styleClass="text-muted" rendered="#{empty SearchIncludeFragment.tabularDataDisplayInfo(result.entity) and result.fileTypeHighlightSnippet == null}"/>
@@ -611,7 +614,7 @@
                             <h:outputText styleClass="text-muted" value=" - #{SearchIncludeFragment.tabularDataDisplayInfo(result.entity)}"
                                             rendered="#{!empty SearchIncludeFragment.tabularDataDisplayInfo(result.entity)}"/>
                         </div>
-                        
+
                         <div class="file-tags-block" jsf:rendered="#{(!empty result.fileCategories) or (!empty result.tabularDataTags)}">
                             <ui:repeat value="#{result.fileCategories}" var="cat">
                                 <h:outputText value="#{cat}" styleClass="label label-default"/>
@@ -649,7 +652,7 @@
             <ui:include src="search-include-pager.xhtml"></ui:include>
         </div>
     </div>
-    
+
     <!-- this remote command is called once the page finishes its initial load,
             in order to display the images for the card -->
     <h:form>
@@ -658,12 +661,12 @@
                          update=":#{p:component('resultsTable')}"
                          actionListener="#{SearchIncludeFragment.setDisplayCardValues()}" />
     </h:form>
-    
+
     <p:dialog header="#{bundle['dataverse.results.dialog.addDataGuest.header']}" widgetVar="addData_popup" modal="true">
         <p class="help-block">
             <span class="glyphicon glyphicon-warning-sign text-danger"/>
             <h:outputFormat styleClass="text-danger" value="#{dataverseHeaderFragment.signupAllowed ? bundle['dataverse.results.dialog.addDataGuest.msg.signup'] : bundle['dataverse.results.dialog.addDataGuest.msg']}" escape="false">
-                <f:param value="#{dataverseHeaderFragment.loginRedirectPage}"/>
+                <f:param value="#{navigationWrapper.redirectPage}"/>
             </h:outputFormat>
         </p>
         <div class="button-block">

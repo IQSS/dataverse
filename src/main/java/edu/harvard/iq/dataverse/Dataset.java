@@ -40,6 +40,8 @@ import org.hibernate.validator.constraints.NotBlank;
         uniqueConstraints = @UniqueConstraint(columnNames = {"authority,protocol,identifier,doiseparator"}))
 public class Dataset extends DvObjectContainer {
 
+//    public static final String REDIRECT_URL = "/dataset.xhtml?persistentId=";
+    public static final String TARGET_URL = "/citation?persistentId=";
     private static final long serialVersionUID = 1L;
 
     @OneToMany(mappedBy = "owner", cascade = CascadeType.MERGE)

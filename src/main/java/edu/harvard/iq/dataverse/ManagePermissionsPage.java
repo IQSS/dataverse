@@ -71,6 +71,8 @@ public class ManagePermissionsPage implements java.io.Serializable {
     UserNotificationServiceBean userNotificationService;
     @Inject
     DataverseRequestServiceBean dvRequestService;
+    @Inject
+    PermissionsWrapper permissionsWrapper;
 
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
@@ -100,13 +102,13 @@ public class ManagePermissionsPage implements java.io.Serializable {
 
         // check if dvObject exists and user has permission
         if (dvObject == null) {
-            return "/404.xhtml";
+            return permissionsWrapper.notFound();
         }
 
         // for dataFiles, check the perms on its owning dataset
         DvObject checkPermissionsdvObject = dvObject instanceof DataFile ? dvObject.getOwner() : dvObject;
         if (!permissionService.on(checkPermissionsdvObject).has(checkPermissionsdvObject instanceof Dataverse ? Permission.ManageDataversePermissions : Permission.ManageDatasetPermissions)) {
-            return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
+            return permissionsWrapper.notAuthorized();
         }
 
         // initialize the configure settings

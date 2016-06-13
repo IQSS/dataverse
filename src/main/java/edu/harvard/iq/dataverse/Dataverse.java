@@ -30,6 +30,7 @@ import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
+import org.hibernate.validator.constraints.URL;
 
 /**
  *
@@ -82,7 +83,7 @@ public class Dataverse extends DvObjectContainer {
     @NotNull(message = "Please select a category for your dataverse.")
     @Column( nullable = false )
     private DataverseType dataverseType;
-    
+       
     /**
      * When {@code true}, users are not granted permissions the got for parent
      * dataverses.
@@ -700,5 +701,18 @@ public class Dataverse extends DvObjectContainer {
     public void setPermissionRoot(boolean permissionRoot) {
         this.permissionRoot = permissionRoot;
     }
+    
+    
+    
+    @URL
+    private String citationRedirectURL;
+
+    public String getCitationRedirectURL() {
+        return citationRedirectURL;
+    }
+
+    public void setCitationRedirectURL(String citationRedirectURL) {
+        this.citationRedirectURL = citationRedirectURL;
+    }    
 
 }

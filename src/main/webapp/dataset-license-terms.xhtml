@@ -8,7 +8,7 @@
      xmlns:jsf="http://xmlns.jcp.org/jsf">
 <!-- TERMS -->
    <div class="text-right margin-bottom" 
-        jsf:rendered="#{dataverseSession.user.authenticated and empty editMode
+        jsf:rendered="#{dataverseSession.user.authenticated and empty editMode and !widgetWrapper.widgetView
                         and permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset)}">
        <p:commandLink type="button" styleClass="btn btn-default" actionListener="#{DatasetPage.edit('LICENSE')}" 
                       update="@form,:messagePanel" oncomplete="javascript:post_edit_terms()" disabled="#{DatasetPage.locked}">

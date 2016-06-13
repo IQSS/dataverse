@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
+import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.SettingsWrapper;
 import edu.harvard.iq.dataverse.UserNotification;
@@ -93,6 +94,8 @@ public class BuiltinUserPage implements java.io.Serializable {
     SettingsWrapper settingsWrapper;
     @Inject
     MyDataPage mydatapage;
+    @Inject
+    PermissionsWrapper permissionsWrapper;
     
     @EJB
     AuthenticationServiceBean authSvc;
@@ -262,7 +265,7 @@ public class BuiltinUserPage implements java.io.Serializable {
             }            
             
         } else {
-            return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
+            return permissionsWrapper.notAuthorized();
         }
         
         return "";
