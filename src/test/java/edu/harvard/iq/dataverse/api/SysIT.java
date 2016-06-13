@@ -5,17 +5,24 @@
  */
 package edu.harvard.iq.dataverse.api;
 
+import com.jayway.restassured.RestAssured;
 import static com.jayway.restassured.RestAssured.given;
 import com.jayway.restassured.response.Response;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import org.junit.Test;
 import static org.hamcrest.CoreMatchers.equalTo;
+import org.junit.BeforeClass;
 
 /**
  *
  * @author jacksonokuhn
  */
 public class SysIT {
+
+    @BeforeClass
+    public static void setUpClass() {
+        RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
+    }
 
     /**
      * Test of getDatasetPublishPopupCustomText method, of class Sys.
