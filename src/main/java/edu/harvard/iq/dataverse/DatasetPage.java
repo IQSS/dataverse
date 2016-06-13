@@ -18,6 +18,8 @@ import edu.harvard.iq.dataverse.engine.command.impl.LinkDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
+import edu.harvard.iq.dataverse.export.ExportService;
+import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.metadataimport.ForeignMetadataImportServiceBean;
@@ -3404,7 +3406,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public String getTabularDataFileURL(Long fileid) {
-        String myHostURL = getDataverseSiteUrl();;
+        String myHostURL = getDataverseSiteUrl();
         String dataURL = myHostURL + "/api/access/datafile/" + fileid;
 
         return dataURL;
@@ -3416,6 +3418,44 @@ public class DatasetPage implements java.io.Serializable {
             if (datasetId != null) {
                 String myHostURL = getDataverseSiteUrl();
                 String metadataAsJsonUrl = myHostURL + "/api/datasets/" + datasetId;
+                return metadataAsJsonUrl;
+            }
+        }
+        return null;
+    }
+    
+    public List< String[]> getExporters(){
+        List<String[]> retList = new ArrayList();
+        String myHostURL = getDataverseSiteUrl();
+        for (String [] provider : ExportService.getInstance().getExportersLabels() ){
+            String[] temp = new String[2];            
+            temp[0] = provider[0];
+            temp[1] = myHostURL + "/api/datasets/export?exporter=" + provider[1]+ "&persistentId=" + dataset.getGlobalId();
+            retList.add(temp);
+        }
+        return retList;  
+    }
+    
+    public String getExportMetadataDDIUrl() {
+        if (dataset != null) {
+            Long datasetId = dataset.getId();
+            if (datasetId != null) {
+                String myHostURL = getDataverseSiteUrl();
+                String metadataAsJsonUrl = myHostURL + "/api/datasets/" + datasetId + "/export?exporter=DDI&persistentId=" + dataset.getGlobalId();
+                System.out.print(metadataAsJsonUrl);
+                return metadataAsJsonUrl;
+            }
+        }
+        return null;
+    }
+    
+    public String getExportMetadataDublinCoreUrl() {
+        if (dataset != null) {
+            Long datasetId = dataset.getId();
+            if (datasetId != null) {
+                String myHostURL = getDataverseSiteUrl();
+                String metadataAsJsonUrl = myHostURL + "/api/datasets/" + datasetId + "/export?exporter=DublinCore&persistentId=" + dataset.getGlobalId();
+                System.out.print(metadataAsJsonUrl);
                 return metadataAsJsonUrl;
             }
         }

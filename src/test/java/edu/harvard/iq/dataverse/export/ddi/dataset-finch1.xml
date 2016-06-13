@@ -7,9 +7,14 @@
         <IDNo agency="doi">10.5072/FK2/PCA2E3</IDNo>
       </titlStmt>
       <rspStmt>
-        <AuthEnty>Finch, Fiona</AuthEnty>
+        <AuthEnty affiliation="Birds Inc.">Finch, Fiona</AuthEnty>
       </rspStmt>
       <biblCit>Finch, Fiona, 2015, "Darwin's Finches", http://dx.doi.org/10.5072/FK2/PCA2E3,  Root Dataverse,  V1</biblCit>
     </citation>
+    <stdyInfo>
+      <subject/>
+      <abstract>Darwin's finches (also known as the Galápagos finches) are a group of about fifteen species of passerine birds.</abstract>
+      <sumDscr/>
+    </stdyInfo>
   </stdyDscr>
 </codeBook>

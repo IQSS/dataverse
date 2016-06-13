@@ -31,6 +31,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.SetDatasetCitationDateComman
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetTargetURLCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
+import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.export.ddi.DdiExportUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
@@ -76,7 +77,7 @@ public class Datasets extends AbstractApiBean {
 
     @EJB
     DDIExportServiceBean ddiExportService;
-
+    
     @EJB
     SystemConfig systemConfig;
 
@@ -93,21 +94,55 @@ public class Datasets extends AbstractApiBean {
 	
 	@GET
 	@Path("{id}")
-    public Response getDataset( @PathParam("id") String id) {
-        
+    public Response getDataset(@PathParam("id") String id) {
+
         try {
             final DataverseRequest r = createDataverseRequest(findUserOrDie());
-            
+
             Dataset retrieved = execCommand(new GetDatasetCommand(r, findDatasetOrDie(id)));
             DatasetVersion latest = execCommand(new GetLatestAccessibleDatasetVersionCommand(r, retrieved));
             final JsonObjectBuilder jsonbuilder = json(retrieved);
-            
+
             return okResponse(jsonbuilder.add("latestVersion", (latest != null) ? json(latest) : null));
-        } catch ( WrappedResponse ex ) {
-			return ex.refineResponse( "GETting dataset " + id + " failed." );
-		}
-        
+        } catch (WrappedResponse ex) {
+            return ex.refineResponse("GETting dataset " + id + " failed.");
+        }
+
     }
+    
+    
+    @GET
+    @Path("/export")
+    @Produces({"application/xml", "application/json"})
+    public Response exportDataset(@QueryParam("persistentId") String persistentId, @QueryParam("exporter") String exporter) {
+        boolean ddiExportEnabled = systemConfig.isDdiExportEnabled();
+        if (!ddiExportEnabled) {
+            return errorResponse(Response.Status.FORBIDDEN, "Disabled");
+        }
+        try {
+            Dataset dataset = datasetService.findByGlobalId(persistentId);
+            if (dataset == null) {
+                return errorResponse(Response.Status.NOT_FOUND, "A dataset with the persistentId " + persistentId + " could not be found.");
+            }
+            
+            ExportService instance = ExportService.getInstance();
+            final JsonObjectBuilder datasetAsJson = jsonAsDatasetDto(dataset.getLatestVersion());
+            OutputStream output = instance.getExport(datasetAsJson.build(), exporter);
+            String xml = output.toString();
+            LOGGER.fine("xml to return: " + xml);
+            String mediaType = MediaType.TEXT_PLAIN;
+            if (instance.isXMLFormat(exporter)){
+                mediaType = MediaType.APPLICATION_XML;
+            }
+            return Response.ok()
+                    .entity(xml)
+                    .type(mediaType).
+                    build();
+        } catch (Exception wr) {
+            return errorResponse(Response.Status.FORBIDDEN, "Export Failed");
+        }
+    }
+
 	
 	@DELETE
 	@Path("{id}")
@@ -534,7 +569,7 @@ public class Datasets extends AbstractApiBean {
             return wr.getResponse();
         }
     }
-
+    
     /**
      * @todo Make this real. Currently only used for API testing. Copied from
      * the equivalent API endpoint for dataverses and simplified with values

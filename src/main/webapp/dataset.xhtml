@@ -515,15 +515,28 @@
                             <!-- a lot of these however, are repeated queries on AuthenticatedUser and RoleAssignment; once these are optimized, the tabs will become very cheap. -->
                             <p:tab id="metadataMapTab" title="#{bundle['file.dataFilesTab.metadata.header']}"
                                    rendered="#{!DatasetPage.workingVersion.deaccessioned and (empty DatasetPage.editMode or DatasetPage.editMode == 'METADATA')}">
-                                <div class="text-right margin-bottom"
-                                     jsf:rendered="#{DatasetPage.sessionUserAuthenticated and empty DatasetPage.editMode and !widgetWrapper.widgetView
-                                                     and DatasetPage.canUpdateDataset()}">
-                                    <p:commandLink type="button" styleClass="btn btn-default" actionListener="#{DatasetPage.edit('METADATA')}" update="@form,:messagePanel" oncomplete="javascript:post_edit_metadata()" disabled="#{DatasetPage.locked}">
+                                <div  class="text-right margin-bottom" jsf:rendered="#{empty DatasetPage.editMode and !widgetWrapper.widgetView}">
+                                    <div class="btn-group pull-right">
+                                        <button class="btn btn-default dropdown-toggle text-right margin-bottom" type="button" styleClass="btn btn-default" data-toggle="dropdown">#{bundle['dataset.exportBtn']}
+                                            <span class="caret"></span></button>
+                                        <ul class="dropdown-menu text-right" role="menu">
+                                            <ui:repeat var="exporter" value="#{DatasetPage.exporters}" >
+                                                <li>
+                                                    <h:outputLink value="#{exporter[1]}">
+                                                        <h:outputText value="#{exporter[0]}"/>
+                                                    </h:outputLink>
+                                                </li>
+                                            </ui:repeat>
+                                        </ul>
+                                    </div>
+                                    <div></div>
+                                    <p:commandLink type="button" styleClass="btn btn-default" actionListener="#{DatasetPage.edit('METADATA')}" update="@form,:messagePanel" oncomplete="javascript:post_edit_metadata()" 
+                                                   disabled="#{DatasetPage.locked}" rendered="#{DatasetPage.sessionUserAuthenticated and empty DatasetPage.editMode and !widgetWrapper.widgetView
+                                                               and DatasetPage.canUpdateDataset()}">
                                         <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                         <span class="glyphicon glyphicon-pencil"/> #{bundle['file.dataFilesTab.metadata.addBtn']}
                                     </p:commandLink>
                                 </div>
-
                                 <ui:include src="metadataFragment.xhtml">
                                     <ui:param name="datasetPage" value="true"/>
                                     <ui:param name="editMode" value="#{!empty DatasetPage.editMode ? DatasetPage.editMode : ''}"/>

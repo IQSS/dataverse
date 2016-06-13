@@ -48,7 +48,8 @@ public class DatasetFieldConstant implements java.io.Serializable  {
     
     
     public final static String title = "title";
-    public final static String subTitle="subTitle";
+    public final static String subTitle="subtitle"; //SEK 6-7-2016 to match what is in DB
+    public final static String alternativeTitle="alternativeTitle"; //missing from class
     public final static String datasetId = "datasetId";
     public final static String authorName ="authorName";
     public final static String authorAffiliation = "authorAffiliation";
@@ -86,20 +87,24 @@ public class DatasetFieldConstant implements java.io.Serializable  {
     public final static String datasetVersionValue="datasetVersionValue";
     public final static String versionDate="versionDate";
     public final static String keywordValue="keywordValue";
-    public final static String keywordVocab="keywordVocab";
-    public final static String keywordVocabURI="keywordVocabURI";
+    public final static String keywordVocab="keywordVocabulary"; //SEK 6/10/2016 to match what is in the db
+    public final static String keywordVocabURI="keywordVocabularyURI"; //SEK 6/10/2016 to match what is in the db
     public final static String topicClassValue="topicClassValue";
     public final static String topicClassVocab="topicClassVocab";
     public final static String topicClassVocabURI="topicClassVocabURI";
     public final static String descriptionText="dsDescriptionValue";
     public final static String descriptionDate="descriptionDate";
+    public final static String timePeriodCovered="timePeriodCovered"; // SEK added 6/13/2016
     public final static String timePeriodCoveredStart="timePeriodCoveredStart";
     public final static String timePeriodCoveredEnd="timePeriodCoveredEnd";
+    public final static String dateOfCollection="dateOfCollection"; // SEK added 6/13/2016
     public final static String dateOfCollectionStart="dateOfCollectionStart";
     public final static String dateOfCollectionEnd="dateOfCollectionEnd";
     public final static String country="country";
     public final static String geographicCoverage="geographicCoverage";
     public final static String otherGeographicCoverage="otherGeographicCoverage";
+    public final static String city="city";  // SEK added 6/13/2016
+    public final static String state="state";  // SEK added 6/13/2016
     public final static String geographicUnit="geographicUnit";
     public final static String westLongitude="westLongitude";
     public final static String eastLongitude="eastLongitude";
