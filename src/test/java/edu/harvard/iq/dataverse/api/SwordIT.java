@@ -231,13 +231,13 @@ public class SwordIT {
 
         Response attemptToDownloadUnpublishedFileWithoutApiToken = UtilIT.downloadFile(fileId);
         attemptToDownloadUnpublishedFileWithoutApiToken.then().assertThat()
-                .body("html.head.title", equalTo("GlassFish Server Open Source Edition  4.1  - Error report"))
+                .body("html.head.title", equalTo("403 Not Authorized - Root Dataverse"))
                 .statusCode(FORBIDDEN.getStatusCode());
 
         Response attemptToDownloadUnpublishedFileUnauthApiToken = UtilIT.downloadFile(fileId, apiTokenNoPrivs);
         attemptToDownloadUnpublishedFileUnauthApiToken.prettyPrint();
         attemptToDownloadUnpublishedFileUnauthApiToken.then().assertThat()
-                .body("html.head.title", equalTo("GlassFish Server Open Source Edition  4.1  - Error report"))
+                .body("html.head.title", equalTo("403 Not Authorized - Root Dataverse"))
                 .statusCode(FORBIDDEN.getStatusCode());
 
         Response downloadUnpublishedFileWithValidApiToken = UtilIT.downloadFile(fileId, apiToken);
