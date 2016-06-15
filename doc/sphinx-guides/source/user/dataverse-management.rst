@@ -83,7 +83,7 @@ Adding Widgets to an OpenScholar Website
 #. Log in to your OpenScholar website
 #. Either build a new page or navigate to the page you would like to use to show the Dataverse widgets.
 #. Click on the Settings Cog and select Layout
-#. At the top right, select Add New Widget and under Misc. you will see the Dataverse Search Box and the Dataverse Listing widgets. Click on the widget you would like to add (we recommend using both), fill out the form, and then drag it to where you would like it to display in the page.
+#. At the top right, select Add New Widget and under Misc. you will see the Dataverse Search Box and the Dataverse Listing Widgets. Click on the widget you would like to add, fill out the form, and then drag it to where you would like it to display in the page.
 
 .. _dataverse-permissions:
 
