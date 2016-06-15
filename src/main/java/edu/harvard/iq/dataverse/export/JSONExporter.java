@@ -24,7 +24,7 @@ public class JSONExporter implements Exporter {
     }
 
     @Override
-    public String getButtonLabel() {
+    public String getDisplayName() {
         return  BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.json") != null ? BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.json") : "JSON";
     }
 

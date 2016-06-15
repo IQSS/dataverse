@@ -21,7 +21,7 @@ public class DDIExporter implements Exporter {
     }
 
     @Override
-    public String getButtonLabel() {
+    public String getDisplayName() {
         return  BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.ddi") != null ? BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.ddi") : "DDI";
     }
 

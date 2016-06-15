@@ -18,7 +18,7 @@ public interface Exporter {
     
     public String getProvider();
     
-    public String getButtonLabel();
+    public String getDisplayName();
     
     public Boolean isXMLFormat();
     

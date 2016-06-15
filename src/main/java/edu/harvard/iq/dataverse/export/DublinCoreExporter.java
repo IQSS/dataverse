@@ -21,7 +21,7 @@ public class DublinCoreExporter implements Exporter {
     }
 
     @Override
-    public String getButtonLabel() {
+    public String getDisplayName() {
         return  BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.dublinCore") != null ? BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.dublinCore") : "Dublin Core";
     }
 

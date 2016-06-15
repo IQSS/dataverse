@@ -107,6 +107,7 @@ public class DdiExportUtil {
         xmlw.writeEndElement(); // titlStmt
 
         writeAuthorsElement(xmlw, version);
+ //       writeProducersElement(xmlw, version);
         
         if (producer != null && !producer.isEmpty()) {
             xmlw.writeStartElement("rspStmt");
@@ -126,11 +127,16 @@ public class DdiExportUtil {
         // Study Info
         xmlw.writeStartElement("stdyInfo");
         
-        writeSubjectElement(xmlw, version);
-        writeFullElement(xmlw, "abstract", dto2ChildVal(version, DatasetFieldConstant.description, DatasetFieldConstant.descriptionText));
+        writeSubjectElement(xmlw, version); //Subject and Keywords
+        writeAbstractElement(xmlw, version); // Description
+        writeFullElement(xmlw, "notes", dto2Primitive(version, DatasetFieldConstant.notesText));
         
         writeSummaryDescriptionElement(xmlw, version);
+        writeRelPublElement(xmlw, version);
+        writeFullElement(xmlw, "prodDate", dto2Primitive(version, DatasetFieldConstant.productionDate));    
+        writeFullElement(xmlw, "prodPlac", dto2Primitive(version, DatasetFieldConstant.productionPlace));  
         
+        writeGrantElement(xmlw, version);
         xmlw.writeEndElement(); // stdyInfo
         // End Info Block
         
@@ -262,6 +268,14 @@ public class DdiExportUtil {
             MetadataBlockDTO value = entry.getValue();
             if ("citation".equals(key)) {
                 for (FieldDTO fieldDTO : value.getFields()) {
+                    if (DatasetFieldConstant.subject.equals(fieldDTO.getTypeName())){
+                        for ( String subject : fieldDTO.getMultipleVocab()){
+                            xmlw.writeStartElement("keyword");
+                            xmlw.writeCharacters(subject);
+                            xmlw.writeEndElement(); //Keyword
+                        }
+                    }
+                    
                     if (DatasetFieldConstant.keyword.equals(fieldDTO.getTypeName())) {
                         for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             String keywordValue = "";
@@ -363,6 +377,171 @@ public class DdiExportUtil {
             }
         }
         xmlw.writeEndElement(); //rspStmt
+    }
+    
+    private static void writeProducersElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO) throws XMLStreamException {
+        xmlw.writeStartElement("rspStmt");
+        for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
+            String key = entry.getKey();
+            MetadataBlockDTO value = entry.getValue();
+            if ("citation".equals(key)) {
+                for (FieldDTO fieldDTO : value.getFields()) {
+                    if (DatasetFieldConstant.producer.equals(fieldDTO.getTypeName())) {
+                        String producerName = "";
+                        String producerAffiliation = "";
+                        String producerAbbreviation = "";
+                        for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
+                                FieldDTO next = iterator.next();
+                                if (DatasetFieldConstant.producerName.equals(next.getTypeName())) {
+                                    producerName =  next.getSinglePrimitive();
+                                }
+                                if (DatasetFieldConstant.producerAffiliation.equals(next.getTypeName())) {
+                                    producerAffiliation =  next.getSinglePrimitive();
+                                }
+                                if (DatasetFieldConstant.producerAffiliation.equals(next.getTypeName())) {
+                                    producerAffiliation =  next.getSinglePrimitive();
+                                }
+                            }
+                            if (!producerName.isEmpty()){
+                                xmlw.writeStartElement("producer"); 
+                                if(!producerAffiliation.isEmpty()){
+                                   writeAttribute(xmlw,"affiliation",producerAffiliation); 
+                                } 
+                                if(!producerAbbreviation.isEmpty()){
+                                   writeAttribute(xmlw,"abbr",producerAbbreviation); 
+                                }
+                                xmlw.writeCharacters(producerName);
+                                xmlw.writeEndElement(); //AuthEnty
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        xmlw.writeEndElement(); //rspStmt
+    }
+    
+    private static void writeRelPublElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO) throws XMLStreamException {
+        for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
+            String key = entry.getKey();
+            MetadataBlockDTO value = entry.getValue();
+            if ("citation".equals(key)) {
+                for (FieldDTO fieldDTO : value.getFields()) {
+                    if (DatasetFieldConstant.publication.equals(fieldDTO.getTypeName())) {
+                        for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                            String pubString = "";
+                            String citation = "";
+                            String IDType = "";
+                            String IDNo = "";
+                            String url = "";
+                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
+                                FieldDTO next = iterator.next();
+                                if (DatasetFieldConstant.publicationCitation.equals(next.getTypeName())) {
+                                    citation =  next.getSinglePrimitive();
+                                }
+                                if (DatasetFieldConstant.publicationIDType.equals(next.getTypeName())) {
+                                    IDType =  next.getSinglePrimitive();
+                                }
+                                if (DatasetFieldConstant.publicationIDNumber.equals(next.getTypeName())) {
+                                    IDNo =   next.getSinglePrimitive();
+                                }
+                                if (DatasetFieldConstant.publicationURL.equals(next.getTypeName())) {
+                                    url =  next.getSinglePrimitive();
+                                }
+                            }
+                            pubString = appendCommaSeparatedValue(citation, IDType);
+                            pubString = appendCommaSeparatedValue(pubString, IDNo);
+                            pubString = appendCommaSeparatedValue(pubString, url);
+                            if (!pubString.isEmpty()){
+                                xmlw.writeStartElement("relPubl"); 
+                                xmlw.writeCharacters(pubString);
+                                xmlw.writeEndElement(); //relPubl
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    private static String appendCommaSeparatedValue(String inVal, String next) {
+        if (!next.isEmpty()) {
+            if (!inVal.isEmpty()) {
+                return inVal + ", " + next;
+            } else {
+                return next;
+            }
+        }
+        return inVal;
+    }
+    
+    private static void writeAbstractElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO) throws XMLStreamException {
+        for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
+            String key = entry.getKey();
+            MetadataBlockDTO value = entry.getValue();
+            if ("citation".equals(key)) {
+                for (FieldDTO fieldDTO : value.getFields()) {
+                    if (DatasetFieldConstant.description.equals(fieldDTO.getTypeName())) {
+                        String descriptionText = "";
+                        String descriptionDate = "";
+                        for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
+                                FieldDTO next = iterator.next();
+                                if (DatasetFieldConstant.descriptionText.equals(next.getTypeName())) {
+                                    descriptionText =  next.getSinglePrimitive();
+                                }
+                                if (DatasetFieldConstant.descriptionDate.equals(next.getTypeName())) {
+                                    descriptionDate =  next.getSinglePrimitive();
+                                }
+                            }
+                            if (!descriptionText.isEmpty()){
+                                xmlw.writeStartElement("abstract"); 
+                                if(!descriptionDate.isEmpty()){
+                                   writeAttribute(xmlw,"date",descriptionDate); 
+                                } 
+                                xmlw.writeCharacters(descriptionText);
+                                xmlw.writeEndElement(); //abstract
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private static void writeGrantElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO) throws XMLStreamException {
+        for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
+            String key = entry.getKey();
+            MetadataBlockDTO value = entry.getValue();
+            if ("citation".equals(key)) {
+                for (FieldDTO fieldDTO : value.getFields()) {
+                    if (DatasetFieldConstant.grantNumber.equals(fieldDTO.getTypeName())) {
+                        String grantNumber = "";
+                        String grantAgency = "";
+                        for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
+                                FieldDTO next = iterator.next();
+                                if (DatasetFieldConstant.grantNumberValue.equals(next.getTypeName())) {
+                                    grantNumber =  next.getSinglePrimitive();
+                                }
+                                if (DatasetFieldConstant.grantNumberAgency.equals(next.getTypeName())) {
+                                    grantAgency =  next.getSinglePrimitive();
+                                }
+                            }
+                            if (!grantNumber.isEmpty()){
+                                xmlw.writeStartElement("grantNo"); 
+                                if(!grantAgency.isEmpty()){
+                                   writeAttribute(xmlw,"agency",grantAgency); 
+                                } 
+                                xmlw.writeCharacters(grantNumber);
+                                xmlw.writeEndElement(); //grantno
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     /**

@@ -38,7 +38,7 @@ public class ExportService {
         while (exporters.hasNext()) {
             Exporter e = exporters.next();
             String[] temp = new String[2];
-            temp[0] = e.getButtonLabel();
+            temp[0] = e.getDisplayName();
             temp[1] = e.getProvider();
             retList.add(temp);
         }
