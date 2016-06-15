@@ -89,7 +89,6 @@ public class DdiExportUtil {
         String persistentId = datasetDto.getIdentifier();
 
         String citation = datasetDto.getDatasetVersion().getCitation();
-        String producer = dto2producers(datasetDto.getDatasetVersion());
         xmlw.writeStartElement("stdyDscr");
         xmlw.writeStartElement("citation");
         xmlw.writeStartElement("titlStmt");
@@ -107,15 +106,7 @@ public class DdiExportUtil {
         xmlw.writeEndElement(); // titlStmt
 
         writeAuthorsElement(xmlw, version);
- //       writeProducersElement(xmlw, version);
-        
-        if (producer != null && !producer.isEmpty()) {
-            xmlw.writeStartElement("rspStmt");
-            xmlw.writeStartElement("producer");
-            xmlw.writeCharacters(producer);
-            xmlw.writeEndElement(); // producer
-            xmlw.writeEndElement(); // rspStmt
-        }
+        writeProducersElement(xmlw, version);
         
         xmlw.writeStartElement("biblCit");
         xmlw.writeCharacters(citation);
@@ -380,46 +371,46 @@ public class DdiExportUtil {
     }
     
     private static void writeProducersElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO) throws XMLStreamException {
-        xmlw.writeStartElement("rspStmt");
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
             MetadataBlockDTO value = entry.getValue();
             if ("citation".equals(key)) {
                 for (FieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.producer.equals(fieldDTO.getTypeName())) {
-                        String producerName = "";
-                        String producerAffiliation = "";
-                        String producerAbbreviation = "";
+                        xmlw.writeStartElement("rspStmt");
                         for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                            String producerName = "";
+                            String producerAffiliation = "";
+                            String producerAbbreviation = "";
                             for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.producerName.equals(next.getTypeName())) {
-                                    producerName =  next.getSinglePrimitive();
+                                    producerName = next.getSinglePrimitive();
                                 }
                                 if (DatasetFieldConstant.producerAffiliation.equals(next.getTypeName())) {
-                                    producerAffiliation =  next.getSinglePrimitive();
+                                    producerAffiliation = next.getSinglePrimitive();
                                 }
                                 if (DatasetFieldConstant.producerAffiliation.equals(next.getTypeName())) {
-                                    producerAffiliation =  next.getSinglePrimitive();
+                                    producerAffiliation = next.getSinglePrimitive();
                                 }
                             }
-                            if (!producerName.isEmpty()){
-                                xmlw.writeStartElement("producer"); 
-                                if(!producerAffiliation.isEmpty()){
-                                   writeAttribute(xmlw,"affiliation",producerAffiliation); 
-                                } 
-                                if(!producerAbbreviation.isEmpty()){
-                                   writeAttribute(xmlw,"abbr",producerAbbreviation); 
+                            if (!producerName.isEmpty()) {
+                                xmlw.writeStartElement("producer");
+                                if (!producerAffiliation.isEmpty()) {
+                                    writeAttribute(xmlw, "affiliation", producerAffiliation);
+                                }
+                                if (!producerAbbreviation.isEmpty()) {
+                                    writeAttribute(xmlw, "abbr", producerAbbreviation);
                                 }
                                 xmlw.writeCharacters(producerName);
                                 xmlw.writeEndElement(); //AuthEnty
                             }
                         }
+                        xmlw.writeEndElement(); //rspStmt
                     }
                 }
             }
         }
-        xmlw.writeEndElement(); //rspStmt
     }
     
     private static void writeRelPublElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO) throws XMLStreamException {
@@ -612,27 +603,6 @@ public class DdiExportUtil {
         return null;
     }
   
-    private static String dto2producers(DatasetVersionDTO datasetVersionDTO) {
-        for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
-            String key = entry.getKey();
-            MetadataBlockDTO value = entry.getValue();
-            if ("citation".equals(key)) {
-                for (FieldDTO fieldDTO : value.getFields()) {
-                    if (DatasetFieldConstant.producer.equals(fieldDTO.getTypeName())) {
-                        for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
-                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
-                                FieldDTO next = iterator.next();
-                                if (DatasetFieldConstant.producerName.equals(next.getTypeName())) {
-                                    return next.getSinglePrimitive();
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return null;
-    }
     
     private static void writeFullElement (XMLStreamWriter xmlw, String name, String value) throws XMLStreamException {
         //For the simplest Elements we can 
