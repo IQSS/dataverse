@@ -17,6 +17,7 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.RoleAssignment;
+import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.api.Util;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
@@ -229,6 +230,22 @@ public class JsonPrinter {
 				.add("lastUpdateTime", format(dsv.getLastUpdateTime()) )
 				.add("releaseTime", format(dsv.getReleaseTime()) )
 				.add("createTime", format(dsv.getCreateTime()) )
+                                .add("termsOfUse", dsv.getTermsOfUseAndAccess().getTermsOfUse())
+                                .add("confidentialityDeclaration", dsv.getTermsOfUseAndAccess().getConfidentialityDeclaration())
+				.add("availabilityStatus", dsv.getTermsOfUseAndAccess().getAvailabilityStatus())	
+                        	.add("specialPermissions", dsv.getTermsOfUseAndAccess().getSpecialPermissions())
+                                .add("restrictions", dsv.getTermsOfUseAndAccess().getRestrictions())
+                                .add("citationRequirements", dsv.getTermsOfUseAndAccess().getCitationRequirements())
+                                .add("depositorRequirements", dsv.getTermsOfUseAndAccess().getDepositorRequirements())
+                                .add("conditions", dsv.getTermsOfUseAndAccess().getConditions())
+                                .add("disclaimer", dsv.getTermsOfUseAndAccess().getDisclaimer())
+                                .add("termsOfAccess", dsv.getTermsOfUseAndAccess().getTermsOfAccess())
+                                .add("dataAccessPlace", dsv.getTermsOfUseAndAccess().getDataAccessPlace())
+                                .add("originalArchive", dsv.getTermsOfUseAndAccess().getOriginalArchive())
+                                .add("availabilityStatus", dsv.getTermsOfUseAndAccess().getAvailabilityStatus())
+                                .add("contactForAccess", dsv.getTermsOfUseAndAccess().getContactForAccess())
+                                .add("sizeOfCollection", dsv.getTermsOfUseAndAccess().getSizeOfCollection())
+                                .add("studyCompletion", dsv.getTermsOfUseAndAccess().getStudyCompletion())
 				;
                 
 		bld.add("metadataBlocks", jsonByBlocks(dsv.getDatasetFields()));

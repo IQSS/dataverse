@@ -81,6 +81,12 @@
             "value": [
               "Medicine, Health and Life Sciences"
             ]
+          },
+          {
+            "typeName": "depositor",
+            "multiple": false,
+            "typeClass": "primitive",
+            "value": "Added, Depositor"
           }
         ]
       }

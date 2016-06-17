@@ -27,6 +27,8 @@ public class XmlValidator {
             logger.info(xmlFile.getSystemId() + " is valid");
             return true;
         } catch (SAXException ex) {
+            System.out.print(ex.getMessage());
+            System.out.print(ex.getLocalizedMessage());
             logger.info(xmlFile.getSystemId() + " is not valid: " + ex.getLocalizedMessage());
             return false;
         }

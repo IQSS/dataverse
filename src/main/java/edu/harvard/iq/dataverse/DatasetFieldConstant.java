@@ -115,8 +115,12 @@ public class DatasetFieldConstant implements java.io.Serializable  {
     public final static String kindOfData="kindOfData";
     public final static String timeMethod="timeMethod";
     public final static String dataCollector="dataCollector";
+    public final static String collectorTraining="collectorTraining";
     public final static String frequencyOfDataCollection="frequencyOfDataCollection";
     public final static String samplingProcedure="samplingProcedure";
+    public final static String targetSampleSize = "targetSampleSize";
+    public final static String targetSampleActualSize = "targetSampleActualSize";
+    public final static String targetSampleSizeFormula = "targetSampleSizeFormula";
     public final static String deviationsFromSampleDesign="deviationsFromSampleDesign";
     public final static String collectionMode="collectionMode";
     public final static String researchInstrument="researchInstrument";
@@ -132,6 +136,12 @@ public class DatasetFieldConstant implements java.io.Serializable  {
     public final static String datasetLevelErrorNotes="datasetLevelErrorNotes";
     public final static String responseRate="responseRate";
     public final static String samplingErrorEstimates="samplingErrorEstimates";
+    
+    public final static String socialScienceNotes = "socialScienceNotes";
+    public final static String socialScienceNotesType = "socialScienceNotesType";
+    public final static String socialScienceNotesSubject = "socialScienceNotesSubject";
+    public final static String socialScienceNotesText = "socialScienceNotesText";
+
     public final static String otherDataAppraisal="otherDataAppraisal";
     public final static String placeOfAccess="placeOfAccess";
     public final static String originalArchive="originalArchive";

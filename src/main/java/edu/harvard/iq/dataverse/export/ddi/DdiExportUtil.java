@@ -14,10 +14,12 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.JsonObject;
@@ -44,6 +46,7 @@ public class DdiExportUtil {
     public static OutputStream datasetJson2ddi(JsonObject datasetDtoAsJson) {
         logger.fine(JsonUtil.prettyPrint(datasetDtoAsJson.toString()));
         Gson gson = new Gson();
+        System.out.print(datasetDtoAsJson.toString());
         DatasetDTO datasetDto = gson.fromJson(datasetDtoAsJson.toString(), DatasetDTO.class);
         try {
             return dtoddi(datasetDto);
@@ -107,7 +110,7 @@ public class DdiExportUtil {
 
         writeAuthorsElement(xmlw, version);
         writeProducersElement(xmlw, version);
-        
+
         xmlw.writeStartElement("biblCit");
         xmlw.writeCharacters(citation);
         xmlw.writeEndElement(); // biblCit
@@ -125,11 +128,66 @@ public class DdiExportUtil {
         writeSummaryDescriptionElement(xmlw, version);
         writeRelPublElement(xmlw, version);
         writeFullElement(xmlw, "prodDate", dto2Primitive(version, DatasetFieldConstant.productionDate));    
-        writeFullElement(xmlw, "prodPlac", dto2Primitive(version, DatasetFieldConstant.productionPlace));  
-        
+        writeFullElement(xmlw, "prodPlac", dto2Primitive(version, DatasetFieldConstant.productionPlace));
+  
         writeGrantElement(xmlw, version);
+        //xmlw.writeStartElement("distStmt"); //Also need Contact
+        writeDistributorsElement(xmlw, version);
+        //writeFullElement(xmlw, "depositr", dto2Primitive(version, DatasetFieldConstant.depositor));    
+        writeFullElement(xmlw, "depDate", dto2Primitive(version, DatasetFieldConstant.dateOfDeposit));  
+        //xmlw.writeEndElement(); // distStmt
+        
+        writeFullElementList(xmlw, "relMat", dto2PrimitiveList(version, DatasetFieldConstant.relatedMaterial));
+        writeFullElementList(xmlw, "relStdy", dto2PrimitiveList(version, DatasetFieldConstant.relatedDatasets));
+        writeFullElementList(xmlw, "othRefs", dto2PrimitiveList(version, DatasetFieldConstant.otherReferences));
+        writeFullElementList(xmlw, "dataKind", dto2PrimitiveList(version, DatasetFieldConstant.kindOfData));
+        writeSeriesElement(xmlw, version);
+        writeSoftwareElement(xmlw, version);
+        writeFullElementList(xmlw, "dataSrc", dto2PrimitiveList(version, DatasetFieldConstant.dataSources));
+        writeFullElement(xmlw, "srcOrig", dto2Primitive(version, DatasetFieldConstant.originOfSources)); 
+        writeFullElement(xmlw, "srcChar", dto2Primitive(version, DatasetFieldConstant.characteristicOfSources)); 
+        writeFullElement(xmlw, "srcDocu", dto2Primitive(version, DatasetFieldConstant.accessToSources)); 
         xmlw.writeEndElement(); // stdyInfo
         // End Info Block
+        
+        //Social Science Metadata block
+        writeFullElement(xmlw, "timeMeth", dto2Primitive(version, DatasetFieldConstant.timeMethod)); 
+        writeFullElement(xmlw, "dataCollector", dto2Primitive(version, DatasetFieldConstant.dataCollector));         
+        writeFullElement(xmlw, "collectorTraining", dto2Primitive(version, DatasetFieldConstant.collectorTraining));   
+        writeFullElement(xmlw, "frequenc", dto2Primitive(version, DatasetFieldConstant.frequencyOfDataCollection));      
+        writeFullElement(xmlw, "sampProc", dto2Primitive(version, DatasetFieldConstant.samplingProcedure));  
+        writeTargetSampleElement(xmlw, version);
+        writeFullElement(xmlw, "deviat", dto2Primitive(version, DatasetFieldConstant.deviationsFromSampleDesign)); 
+        writeFullElement(xmlw, "collMode", dto2Primitive(version, DatasetFieldConstant.collectionMode)); 
+        writeFullElement(xmlw, "resInstru", dto2Primitive(version, DatasetFieldConstant.researchInstrument)); 
+        writeFullElement(xmlw, "collSitu", dto2Primitive(version, DatasetFieldConstant.dataCollectionSituation)); 
+        writeFullElement(xmlw, "actMin", dto2Primitive(version, DatasetFieldConstant.actionsToMinimizeLoss));
+        writeFullElement(xmlw, "conOps", dto2Primitive(version, DatasetFieldConstant.controlOperations));  
+        writeFullElement(xmlw, "weight", dto2Primitive(version, DatasetFieldConstant.weighting));  
+        writeFullElement(xmlw, "cleanOps", dto2Primitive(version, DatasetFieldConstant.cleaningOperations));
+        writeFullElement(xmlw, "anylInfo", dto2Primitive(version, DatasetFieldConstant.datasetLevelErrorNotes));
+        writeFullElement(xmlw, "respRate", dto2Primitive(version, DatasetFieldConstant.responseRate));  
+        writeFullElement(xmlw, "estSmpErr", dto2Primitive(version, DatasetFieldConstant.samplingErrorEstimates));  
+        writeFullElement(xmlw, "dataAppr", dto2Primitive(version, DatasetFieldConstant.otherDataAppraisal)); 
+        writeNotesElement(xmlw, version);
+        
+        //Terms of Use and Access
+        writeFullElement(xmlw, "useStmt", version.getTermsOfUse()); 
+        writeFullElement(xmlw, "confDec", version.getConfidentialityDeclaration()); 
+        writeFullElement(xmlw, "specPerm", version.getSpecialPermissions()); 
+        writeFullElement(xmlw, "restrctn", version.getRestrictions()); 
+        writeFullElement(xmlw, "citeReq", version.getCitationRequirements()); 
+        writeFullElement(xmlw, "deposReq", version.getDepositorRequirements()); 
+        writeFullElement(xmlw, "conditions", version.getConditions()); 
+        writeFullElement(xmlw, "disclaimer", version.getDisclaimer()); 
+        writeFullElement(xmlw, "dataAccs", version.getTermsOfAccess()); 
+        writeFullElement(xmlw, "accsPlac", version.getDataAccessPlace()); 
+        writeFullElement(xmlw, "origArch", version.getOriginalArchive()); 
+        writeFullElement(xmlw, "avlStatus", version.getAvailabilityStatus()); 
+        writeFullElement(xmlw, "contact", version.getContactForAccess()); 
+        writeFullElement(xmlw, "collSize", version.getSizeOfCollection()); 
+        writeFullElement(xmlw, "complete", version.getStudyCompletion()); 
+        
         
         xmlw.writeEndElement(); // stdyDscr
 
@@ -390,8 +448,8 @@ public class DdiExportUtil {
                                 if (DatasetFieldConstant.producerAffiliation.equals(next.getTypeName())) {
                                     producerAffiliation = next.getSinglePrimitive();
                                 }
-                                if (DatasetFieldConstant.producerAffiliation.equals(next.getTypeName())) {
-                                    producerAffiliation = next.getSinglePrimitive();
+                                if (DatasetFieldConstant.producerAbbreviation.equals(next.getTypeName())) {
+                                    producerAbbreviation = next.getSinglePrimitive();
                                 }
                             }
                             if (!producerName.isEmpty()) {
@@ -403,6 +461,49 @@ public class DdiExportUtil {
                                     writeAttribute(xmlw, "abbr", producerAbbreviation);
                                 }
                                 xmlw.writeCharacters(producerName);
+                                xmlw.writeEndElement(); //AuthEnty
+                            }
+                        }
+                        xmlw.writeEndElement(); //rspStmt
+                    }
+                }
+            }
+        }
+    }
+    
+    private static void writeDistributorsElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO) throws XMLStreamException {
+        for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
+            String key = entry.getKey();
+            MetadataBlockDTO value = entry.getValue();
+            if ("citation".equals(key)) {
+                for (FieldDTO fieldDTO : value.getFields()) {
+                    if (DatasetFieldConstant.distributor.equals(fieldDTO.getTypeName())) {
+                        xmlw.writeStartElement("distrbtr");
+                        for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                            String distributorName = "";
+                            String distributorAffiliation = "";
+                            String distributorAbbreviation = "";
+                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
+                                FieldDTO next = iterator.next();
+                                if (DatasetFieldConstant.distributorName.equals(next.getTypeName())) {
+                                    distributorName = next.getSinglePrimitive();
+                                }
+                                if (DatasetFieldConstant.distributorAffiliation.equals(next.getTypeName())) {
+                                    distributorAffiliation = next.getSinglePrimitive();
+                                }
+                                if (DatasetFieldConstant.distributorAbbreviation.equals(next.getTypeName())) {
+                                    distributorAbbreviation = next.getSinglePrimitive();
+                                }
+                            }
+                            if (!distributorName.isEmpty()) {
+                                xmlw.writeStartElement("distrbtr");
+                                if (!distributorAffiliation.isEmpty()) {
+                                    writeAttribute(xmlw, "affiliation", distributorAffiliation);
+                                }
+                                if (!distributorAbbreviation.isEmpty()) {
+                                    writeAttribute(xmlw, "abbr", distributorAbbreviation);
+                                }
+                                xmlw.writeCharacters(distributorName);
                                 xmlw.writeEndElement(); //AuthEnty
                             }
                         }
@@ -534,6 +635,151 @@ public class DdiExportUtil {
             }
         }
     }
+    
+    private static void writeSoftwareElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO) throws XMLStreamException {
+        for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
+            String key = entry.getKey();
+            MetadataBlockDTO value = entry.getValue();
+            if ("citation".equals(key)) {
+                for (FieldDTO fieldDTO : value.getFields()) {
+                    if (DatasetFieldConstant.software.equals(fieldDTO.getTypeName())) {
+                        String softwareName = "";
+                        String softwareVersion = "";
+                        for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
+                                FieldDTO next = iterator.next();
+                                if (DatasetFieldConstant.softwareName.equals(next.getTypeName())) {
+                                    softwareName =  next.getSinglePrimitive();
+                                }
+                                if (DatasetFieldConstant.softwareVersion.equals(next.getTypeName())) {
+                                    softwareVersion =  next.getSinglePrimitive();
+                                }
+                            }
+                            if (!softwareName.isEmpty()){
+                                xmlw.writeStartElement("software"); 
+                                if(!softwareVersion.isEmpty()){
+                                   writeAttribute(xmlw,"version",softwareVersion); 
+                                } 
+                                xmlw.writeCharacters(softwareName);
+                                xmlw.writeEndElement(); //software
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    private static void writeSeriesElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO) throws XMLStreamException {
+        for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
+            String key = entry.getKey();
+            MetadataBlockDTO value = entry.getValue();
+            if ("citation".equals(key)) {
+                for (FieldDTO fieldDTO : value.getFields()) {
+                    if (DatasetFieldConstant.series.equals(fieldDTO.getTypeName())) {
+                        String seriesName = "";
+                        String seriesInformation = "";
+                        Set<FieldDTO> foo = fieldDTO.getSingleCompound();
+                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
+                                FieldDTO next = iterator.next();
+                                if (DatasetFieldConstant.seriesName.equals(next.getTypeName())) {
+                                    seriesName =  next.getSinglePrimitive();
+                                }
+                                if (DatasetFieldConstant.seriesInformation.equals(next.getTypeName())) {
+                                    seriesInformation =  next.getSinglePrimitive();
+                                }
+                            }
+                            if (!seriesName.isEmpty()){
+                                xmlw.writeStartElement("serName"); 
+                                xmlw.writeCharacters(seriesName);
+                                xmlw.writeEndElement(); //grantno
+                            }
+                            if (!seriesInformation.isEmpty()){
+                                xmlw.writeStartElement("serInfo"); 
+                                xmlw.writeCharacters(seriesInformation);
+                                xmlw.writeEndElement(); //grantno
+                            }
+
+                    }
+                }
+            }
+        }
+    }
+    
+    private static void writeTargetSampleElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO) throws XMLStreamException {
+        for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
+            String key = entry.getKey();
+            MetadataBlockDTO value = entry.getValue();
+            if ("socialscience".equals(key)) {
+                for (FieldDTO fieldDTO : value.getFields()) {
+                    if (DatasetFieldConstant.targetSampleSize.equals(fieldDTO.getTypeName())) {
+                        String sizeFormula = "";
+                        String actualSize = "";
+                        Set<FieldDTO> foo = fieldDTO.getSingleCompound();
+                        for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
+                            FieldDTO next = iterator.next();
+                            if (DatasetFieldConstant.targetSampleSizeFormula.equals(next.getTypeName())) {
+                                sizeFormula = next.getSinglePrimitive();
+                            }
+                            if (DatasetFieldConstant.targetSampleActualSize.equals(next.getTypeName())) {
+                                actualSize = next.getSinglePrimitive();
+                            }
+                        }
+                        if (!sizeFormula.isEmpty()) {
+                            xmlw.writeStartElement("sampleSizeFormula");
+                            xmlw.writeCharacters(sizeFormula);
+                            xmlw.writeEndElement(); //sampleSizeFormula
+                        }
+                        if (!actualSize.isEmpty()) {
+                            xmlw.writeStartElement("sampleSize");
+                            xmlw.writeCharacters(actualSize);
+                            xmlw.writeEndElement(); //sampleSize
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    private static void writeNotesElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO) throws XMLStreamException {
+        for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
+            String key = entry.getKey();
+            MetadataBlockDTO value = entry.getValue();
+            if ("socialscience".equals(key)) {
+                for (FieldDTO fieldDTO : value.getFields()) {
+                    if (DatasetFieldConstant.socialScienceNotes.equals(fieldDTO.getTypeName())) {
+                        String notesText = "";
+                        String notesType = "";
+                        String notesSubject= "";
+                        Set<FieldDTO> foo = fieldDTO.getSingleCompound();
+                        for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
+                            FieldDTO next = iterator.next();
+                            if (DatasetFieldConstant.socialScienceNotesText.equals(next.getTypeName())) {
+                                notesText = next.getSinglePrimitive();
+                            }
+                            if (DatasetFieldConstant.socialScienceNotesType.equals(next.getTypeName())) {
+                                notesType = next.getSinglePrimitive();
+                            }
+                            if (DatasetFieldConstant.socialScienceNotesSubject.equals(next.getTypeName())) {
+                                notesSubject = next.getSinglePrimitive();
+                            }
+                        }
+                        if (!notesText.isEmpty()) {
+                            xmlw.writeStartElement("notes");
+                                if(!notesType.isEmpty()){
+                                   writeAttribute(xmlw,"type",notesType); 
+                                } 
+                                if(!notesSubject.isEmpty()){
+                                   writeAttribute(xmlw,"subject",notesSubject); 
+                                } 
+                            xmlw.writeCharacters(notesText);
+                            xmlw.writeEndElement(); //sampleSizeFormula
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     /**
      * @todo Create a full dataDscr and otherMat sections of the DDI. This stub
@@ -581,6 +827,18 @@ public class DdiExportUtil {
         return null;
     }
     
+    private static List<String> dto2PrimitiveList(DatasetVersionDTO datasetVersionDTO, String datasetFieldTypeName) {
+        for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
+            MetadataBlockDTO value = entry.getValue();
+            for (FieldDTO fieldDTO : value.getFields()) {
+                if (datasetFieldTypeName.equals(fieldDTO.getTypeName())) {
+                    return fieldDTO.getMultiplePrimitive();
+                }
+            }
+        }
+        return null;
+    }
+    
     private static String dto2ChildVal(DatasetVersionDTO datasetVersionDTO, String parentDatasetFieldTypeName, String childDatasetFieldTypeName) {
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
@@ -602,7 +860,17 @@ public class DdiExportUtil {
         }
         return null;
     }
-  
+
+    private static void writeFullElementList(XMLStreamWriter xmlw, String name, List<String> values) throws XMLStreamException {
+        //For the simplest Elements we can 
+        if (values != null && !values.isEmpty()) {
+            for (String value : values) {
+                xmlw.writeStartElement(name);
+                xmlw.writeCharacters(value);
+                xmlw.writeEndElement(); // labl
+            }
+        }
+    }
     
     private static void writeFullElement (XMLStreamWriter xmlw, String name, String value) throws XMLStreamException {
         //For the simplest Elements we can 
@@ -611,7 +879,6 @@ public class DdiExportUtil {
             xmlw.writeCharacters(value);
             xmlw.writeEndElement(); // labl
         }
-
     }
 
     private static void writeAttribute(XMLStreamWriter xmlw, String name, String value) throws XMLStreamException {
