@@ -100,14 +100,14 @@ public class DataCitation {
         UNF = dsv.getUNF();
 
         // optional values
-        dsv.getDataset().getOwner().getCitationDatasetFieldTypes().stream()
-                .map(dsfType -> dsv.getDatasetField(dsfType))
-                .filter(dsf -> dsf != null)
-                .forEach(dsf -> {
-                    optionalValues.add(dsf);
-                });
-
+        for (DatasetFieldType dsfType : dsv.getDataset().getOwner().getCitationDatasetFieldTypes()) {
+            DatasetField dsf = dsv.getDatasetField(dsfType);
+            if (dsf != null) {
+                optionalValues.add(dsf);
+            }
+        }        
     }
+    
 
     public String getAuthors() {
         return authors;
