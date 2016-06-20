@@ -559,21 +559,21 @@
                                             <div class="item">
                                                 <div style="vertical-align:middle;">
                                                     <ui:fragment rendered="#{empty dv.dataverseTheme.logo}">
-                                                        <a href="/dataverse/#{dv.alias}" title="#{dv.name} #{bundle.dataverse}">
+                                                        <a href="/dataverse/#{widgetWrapper.wrapURL(dv.alias)}" title="#{dv.name} #{bundle.dataverse}">
                                                             <i class="icon-dataverse"></i>
                                                         </a>
                                                     </ui:fragment>
                                                     <ui:fragment rendered="#{!empty dv.dataverseTheme.logo and dv.dataverseTheme.logoFormat == 'SQUARE'}">
-                                                        <a href="/dataverse/#{dv.alias}" title="#{dv.name} #{bundle.dataverse}">
+                                                        <a href="/dataverse/#{widgetWrapper.wrapURL(dv.alias)}" title="#{dv.name} #{bundle.dataverse}">
                                                             <img src="/logos/#{dv.logoOwnerId}/#{dv.dataverseTheme.logo}" alt="#{dv.name} #{bundle.dataverse}"/>
                                                         </a>
                                                     </ui:fragment>
                                                     <ui:fragment rendered="#{!empty dv.dataverseTheme.logo and dv.dataverseTheme.logoFormat == 'RECTANGLE'}">
-                                                        <a href="/dataverse/#{dv.alias}" title="#{dv.name} #{bundle.dataverse}">
+                                                        <a href="/dataverse/#{widgetWrapper.wrapURL(dv.alias)}" title="#{dv.name} #{bundle.dataverse}">
                                                             <img src="/logos/#{dv.logoOwnerId}/#{dv.dataverseTheme.logo}" alt="#{dv.name} #{bundle.dataverse}"/>
                                                         </a>
                                                     </ui:fragment>
-                                                    <a href="/dataverse/#{dv.alias}" title="#{dv.name} #{bundle.dataverse}">
+                                                    <a href="/dataverse/#{widgetWrapper.wrapURL(dv.alias)}" title="#{dv.name} #{bundle.dataverse}">
                                                         <h:outputText value="#{dv.name} #{bundle.dataverse}"/>
                                                     </a>
                                                 </div>
