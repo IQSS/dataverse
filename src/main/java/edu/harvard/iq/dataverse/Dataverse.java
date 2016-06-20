@@ -717,18 +717,6 @@ public class Dataverse extends DvObjectContainer {
     public void setPermissionRoot(boolean permissionRoot) {
         this.permissionRoot = permissionRoot;
     }
-    
-    
-    
-    @URL
-    private String citationRedirectURL;
-
-    public String getCitationRedirectURL() {
-        return citationRedirectURL;
-    }
-
-    public void setCitationRedirectURL(String citationRedirectURL) {
-        this.citationRedirectURL = citationRedirectURL;
-    }    
+       
 
 }
