@@ -100,9 +100,12 @@ public class DataCitation {
         UNF = dsv.getUNF();
 
         // optional values
-        for (DatasetFieldType dsfType : dsv.getDataset().getOwner().getCitationDatasetFieldTypes()) {
-            optionalValues.add(dsv.getDatasetField(dsfType));
-        }
+        dsv.getDataset().getOwner().getCitationDatasetFieldTypes().stream()
+                .map(dsfType -> dsv.getDatasetField(dsfType))
+                .filter(dsf -> dsf != null)
+                .forEach(dsf -> {
+                    optionalValues.add(dsf);
+                });
 
     }
 
@@ -166,7 +169,7 @@ public class DataCitation {
             } else {
                 displayValue = formatString(dsf.getDisplayValue(), html);
             }
-            
+
             citation.append(" [").append(dsf.getDatasetFieldType().getDisplayName()).append(":")
                     .append(displayValue)
                     .append("]");
