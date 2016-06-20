@@ -170,7 +170,7 @@ public class DataCitation {
                 displayValue = formatString(dsf.getDisplayValue(), html);
             }
 
-            citation.append(" [").append(dsf.getDatasetFieldType().getDisplayName()).append(":")
+            citation.append(" [").append(dsf.getDatasetFieldType().getDisplayName()).append(": ")
                     .append(displayValue)
                     .append("]");
         }
