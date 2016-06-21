@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse.harvest.client.oai;
 
+import com.lyncode.xoai.model.oaipmh.Description;
 import com.lyncode.xoai.model.oaipmh.Granularity;
 import com.lyncode.xoai.model.oaipmh.Header;
 import com.lyncode.xoai.model.oaipmh.MetadataFormat;
@@ -158,6 +159,12 @@ public class OaiHandler implements Serializable {
         while ( setIter.hasNext()) {
             Set set = setIter.next();
             String setSpec = set.getSpec();
+            /*
+            if (set.getDescriptions() != null && !set.getDescriptions().isEmpty()) {
+                Description description = set.getDescriptions().get(0);
+                
+            }
+            */
             if (!StringUtils.isEmpty(setSpec)) {
                 sets.add(setSpec);
             }

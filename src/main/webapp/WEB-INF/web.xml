@@ -65,6 +65,10 @@
         <async-supported>true</async-supported>
     </servlet>
     <!-- Map these files with JSF -->
+    <servlet>
+        <servlet-name>OAIServlet</servlet-name>
+        <servlet-class>edu.harvard.iq.dataverse.harvest.server.web.servlet.OAIServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>Faces Servlet</servlet-name>
         <url-pattern>/faces/*</url-pattern>
@@ -84,6 +88,10 @@
     <servlet-mapping>
         <servlet-name>Push Servlet</servlet-name>
         <url-pattern>/primepush/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>OAIServlet</servlet-name>
+        <url-pattern>/oai</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

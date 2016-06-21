@@ -33,8 +33,8 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
 @Stateless
-@Path("harvest/client")
-public class Harvesting extends AbstractApiBean {
+@Path("harvest/clients")
+public class HarvestingClients extends AbstractApiBean {
 
     
     @EJB
@@ -44,11 +44,11 @@ public class Harvesting extends AbstractApiBean {
     @EJB
     HarvestingClientServiceBean harvestingClientService;
 
-    private static final Logger logger = Logger.getLogger(Harvesting.class.getName());
+    private static final Logger logger = Logger.getLogger(HarvestingClients.class.getName());
     /* 
-     *  /api/harvest/client
+     *  /api/harvest/clients
      *  and
-     *  /api/harvest/client/{nickname}
+     *  /api/harvest/clients/{nickname}
      *  will, by default, return a JSON record with the information about the
      *  configured remote archives. 
      *  optionally, plain text output may be provided as well.
@@ -73,7 +73,7 @@ public class Harvesting extends AbstractApiBean {
         
         for (HarvestingClient harvestingClient : harvestingClients) {
             // We already have this harvestingClient - wny do we need to 
-            // execute this "Get Harvesting Client Command" in order to get it, 
+            // execute this "Get HarvestingClients Client Command" in order to get it, 
             // again? - the purpose of the command is to run the request through 
             // the Authorization system, to verify that they actually have 
             // the permission to view this harvesting client config. -- L.A. 4.4
@@ -162,7 +162,7 @@ public class Harvesting extends AbstractApiBean {
             
             DataverseRequest req = createDataverseRequest(findUserOrDie());
             HarvestingClient managedHarvestingClient = execCommand( new CreateHarvestingClientCommand(req, harvestingClient));
-            return createdResponse( "/datasets/" + nickName, harvestingConfigAsJson(managedHarvestingClient));
+            return createdResponse( "/harvest/clients/" + nickName, harvestingConfigAsJson(managedHarvestingClient));
                     
         } catch (JsonParseException ex) {
             return errorResponse( Response.Status.BAD_REQUEST, "Error parsing harvesting client: " + ex.getMessage() );
@@ -266,6 +266,10 @@ public class Harvesting extends AbstractApiBean {
     // @DELETE
     // @Path("{nickName}/run")
     // TODO: 
+    
+    
+    
+    
     
     /* Auxiliary, helper methods: */ 
     

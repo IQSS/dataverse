@@ -25,8 +25,7 @@ import javax.persistence.PersistenceContext;
  */
 @Stateless
 @Named
-//@ManagedBean
-public class HarvestingClientServiceBean {
+public class HarvestingClientServiceBean implements java.io.Serializable {
     @EJB
     DataverseServiceBean dataverseService;
     

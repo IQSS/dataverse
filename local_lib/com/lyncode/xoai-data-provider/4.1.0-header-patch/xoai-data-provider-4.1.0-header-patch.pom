@@ -5,10 +5,11 @@
         <groupId>com.lyncode</groupId>
         <version>4.1.0-header-patch</version>
     </parent>
+
     <modelVersion>4.0.0</modelVersion>
 
-    <name>XOAI Service Provider</name>
-    <artifactId>xoai-service-provider</artifactId>
+    <name>XOAI Data Provider</name>
+    <artifactId>xoai-data-provider</artifactId>
     <version>4.1.0-header-patch</version>
 
     <dependencies>
@@ -19,36 +20,23 @@
         </dependency>
 
         <dependency>
-            <groupId>com.lyncode</groupId>
-            <artifactId>xml-io</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
         </dependency>
-
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.codehaus.woodstox</groupId>
-            <artifactId>wstx-asl</artifactId>
-        </dependency>
-
 
         <dependency>
             <groupId>com.lyncode</groupId>
-            <artifactId>xoai-data-provider</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
+            <artifactId>builder-commons</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
         </dependency>
 
         <dependency>
@@ -63,5 +51,4 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
 </project>
