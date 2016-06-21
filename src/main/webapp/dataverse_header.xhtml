@@ -104,10 +104,9 @@
                                         <span class="glyphicon glyphicon-user text-danger"></span>
                                     </ui:fragment>
                                     <h:outputText styleClass="#{dataverseSession.user.superuser ? 'text-danger' : ''}" value="#{dataverseSession.user.displayInfo.title}" id="userDisplayInfoTitle"/>
-                                  <h:outputText styleClass="label label-danger" rendered="#{ dataverseHeaderFragment.getUnreadNotificationCount(dataverseSession.user.id) > 0 }"
+                                    <h:outputText styleClass="label label-danger" rendered="#{ dataverseHeaderFragment.getUnreadNotificationCount(dataverseSession.user.id) > 0 }"
                                                     value="#{ dataverseHeaderFragment.getUnreadNotificationCount(dataverseSession.user.id) }" />
-                                    
-                                  <b class="caret"></b>
+                                    <b class="caret"></b>
                                 </span>
                                 <ul class="dropdown-menu">
                                     <li>
@@ -139,7 +138,7 @@
                                         </h:outputLink>
                                     </li>
                                     <li>
-                                        <h:outputLink value="/harvestclients.xhtml?dataverseId=#{dataverse.id}">
+                                        <h:outputLink value="/dashboard.xhtml?dataverseId=#{dataverse.id}">
                                             <h:outputText value="#{bundle['header.dashboard']}" />
                                         </h:outputLink>
                                     </li>
