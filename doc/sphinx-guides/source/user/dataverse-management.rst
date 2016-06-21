@@ -52,26 +52,27 @@ The General Information page is how you edit the information you filled in while
 
 Tip: The metadata fields you select as required, will appear on the Create Dataset form when someone goes to add a dataset to the dataverse. 
 
-.. _theme-widgets:
+.. _widgets:
 
-Theme + Widgets
+Theme 
 ====================================================
 
-Theme
------------------------
 The Theme feature provides you with a way to customize the look of your dataverse. You can decide either to use the customization from the dataverse above yours or upload your own image file. Supported image types are JPEG, TIFF, or PNG and should be no larger than 500 KB. The maximum display size for an image file in a dataverse's theme is 940 pixels wide by 120 pixels high. Additionally, you can select the colors for the header of your dataverse and the text that appears in your dataverse. You can also add a link to your personal website, the website for your organization or institution, your department, journal, etc.
 
+.. _widgets:
+
 Widgets
------------------------
+=================================================
+
 The Widgets feature provides you with code for you to put on your personal website to have your dataverse displayed there. There are two types of Widgets for a dataverse, a Dataverse Search Box widget and a Dataverse Listing widget. From the Widgets tab on the Theme + Widgets page, you can copy and paste the code snippets for the widget you would like to add to your website. If you need to adjust the height of the widget on your website, you may do so by editing the `heightPx=500` parameter in the code snippet.
 
 Dataverse Search Box Widget
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+--------------------------------
 
 The Dataverse Search Box Widget will add a search box to your website that is linked to your dataverse. Users are directed to your dataverse in a new browser window, to display the results for search terms entered in the input field. 
 
 Dataverse Listing Widget
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-------------------------------
 
 The Dataverse Listing Widget provides a listing of all your dataverses and datasets for users to browse, sort, filter and search. When someone clicks on a dataverse or dataset in the widget, it displays the content in the widget on your website. They can download data files directly from the datasets within the widget. If a file is restricted, they will be directed to your dataverse to log in, instead of logging in through the widget on your website.
 
