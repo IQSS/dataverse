@@ -89,7 +89,7 @@ public class OAIServlet extends HttpServlet {
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
         
-        xoaiContext = new Context().withMetadataFormat("xoai", identity());
+        xoaiContext = new Context().withMetadataFormat("ddi", identity());
         
         setRepository = new XOAISetRepository(setService);
         itemRepository = new XOAIItemRepository(recordService);
