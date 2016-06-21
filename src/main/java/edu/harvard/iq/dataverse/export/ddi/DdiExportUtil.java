@@ -96,22 +96,21 @@ public class DdiExportUtil {
         xmlw.writeStartElement("citation");
         xmlw.writeStartElement("titlStmt");
        
-        writeFullElement(xmlw, "titl", dto2Primitive(version, DatasetFieldConstant.title));
+        writeFullElement(xmlw, "titl", dto2Primitive(version, DatasetFieldConstant.title));                       
+        writeFullElement(xmlw, "subTitl", dto2Primitive(version, DatasetFieldConstant.subTitle));
+        writeFullElement(xmlw, "altTitl", dto2Primitive(version, DatasetFieldConstant.alternativeTitle));
         
         xmlw.writeStartElement("IDNo");
         writeAttribute(xmlw, "agency", persistentAgency);
         xmlw.writeCharacters(persistentAuthority + "/" + persistentId);
         xmlw.writeEndElement(); // IDNo
-               
-        writeFullElement(xmlw, "subTitl", dto2Primitive(version, DatasetFieldConstant.subTitle));
-        writeFullElement(xmlw, "altTitl", dto2Primitive(version, DatasetFieldConstant.alternativeTitle));
-        
+       
         xmlw.writeEndElement(); // titlStmt
 
         writeAuthorsElement(xmlw, version);
         writeProducersElement(xmlw, version);
         
-        xmlw.writeStartElement("diststmt");
+        xmlw.writeStartElement("distStmt");
         writeFullElement(xmlw, "distrbtr", datasetDto.getPublisher());
         writeFullElement(xmlw, "distdate", datasetDto.getPublicationDate());
         xmlw.writeEndElement(); // diststmt
