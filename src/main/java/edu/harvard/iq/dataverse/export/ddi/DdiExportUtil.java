@@ -110,7 +110,12 @@ public class DdiExportUtil {
 
         writeAuthorsElement(xmlw, version);
         writeProducersElement(xmlw, version);
-
+        
+        xmlw.writeStartElement("diststmt");
+        writeFullElement(xmlw, "distrbtr", datasetDto.getPublisher());
+        writeFullElement(xmlw, "distdate", datasetDto.getPublicationDate());
+        xmlw.writeEndElement(); // diststmt
+        
         xmlw.writeStartElement("biblCit");
         xmlw.writeCharacters(citation);
         xmlw.writeEndElement(); // biblCit
@@ -131,8 +136,10 @@ public class DdiExportUtil {
         writeFullElement(xmlw, "prodPlac", dto2Primitive(version, DatasetFieldConstant.productionPlace));
   
         writeGrantElement(xmlw, version);
+        writeOtherIdElement(xmlw, version);
         //xmlw.writeStartElement("distStmt"); //Also need Contact
         writeDistributorsElement(xmlw, version);
+        writeContactsElement(xmlw, version);
         //writeFullElement(xmlw, "depositr", dto2Primitive(version, DatasetFieldConstant.depositor));    
         writeFullElement(xmlw, "depDate", dto2Primitive(version, DatasetFieldConstant.dateOfDeposit));  
         //xmlw.writeEndElement(); // distStmt
@@ -262,18 +269,39 @@ public class DdiExportUtil {
                                     writeFullElement(xmlw, "nation", next.getSinglePrimitive());
                                 }
                                 if (DatasetFieldConstant.city.equals(next.getTypeName())) {
-                                    writeFullElement(xmlw, "georgCover", next.getSinglePrimitive());
+                                    writeFullElement(xmlw, "geogCover", next.getSinglePrimitive());
                                 }
                                 if (DatasetFieldConstant.state.equals(next.getTypeName())) {
-                                    writeFullElement(xmlw, "georgCover", next.getSinglePrimitive());
-                                }                               
+                                    writeFullElement(xmlw, "geogCover", next.getSinglePrimitive());
+                                } 
                                 if (DatasetFieldConstant.otherGeographicCoverage.equals(next.getTypeName())) {
-                                    writeFullElement(xmlw, "georgCover", next.getSinglePrimitive());
-                                }
+                                    writeFullElement(xmlw, "geogCover", next.getSinglePrimitive());
+                                } 
                             }
                         }
                     }
-                }              
+                    if (DatasetFieldConstant.geographicBoundingBox.equals(fieldDTO.getTypeName())) {
+                        for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
+                                FieldDTO next = iterator.next();
+                                if (DatasetFieldConstant.westLongitude.equals(next.getTypeName())) {
+                                    writeFullElement(xmlw, "westBL", next.getSinglePrimitive());
+                                }
+                                if (DatasetFieldConstant.eastLongitude.equals(next.getTypeName())) {
+                                    writeFullElement(xmlw, "eastBL", next.getSinglePrimitive());
+                                }
+                                if (DatasetFieldConstant.northLatitude.equals(next.getTypeName())) {
+                                    writeFullElement(xmlw, "northBL", next.getSinglePrimitive());
+                                }  
+                                if (DatasetFieldConstant.southLatitude.equals(next.getTypeName())) {
+                                    writeFullElement(xmlw, "southBL", next.getSinglePrimitive());
+                                }                               
+
+                            }
+                        }
+                    }
+                }
+                    writeFullElementList(xmlw, "geogUnit", dto2PrimitiveList(datasetVersionDTO, DatasetFieldConstant.geographicUnit));
             }
 
             if("socialscience".equals(key)){                
@@ -428,6 +456,48 @@ public class DdiExportUtil {
         xmlw.writeEndElement(); //rspStmt
     }
     
+    private static void writeContactsElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO) throws XMLStreamException {
+
+        for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
+            String key = entry.getKey();
+            MetadataBlockDTO value = entry.getValue();
+            if ("citation".equals(key)) {
+                for (FieldDTO fieldDTO : value.getFields()) {
+                    if (DatasetFieldConstant.datasetContact.equals(fieldDTO.getTypeName())) {
+                        String datasetContactName = "";
+                        String datasetContactAffiliation = "";
+                        String datasetContactEmail = "";
+                        for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
+                                FieldDTO next = iterator.next();
+                                if (DatasetFieldConstant.datasetContactName.equals(next.getTypeName())) {
+                                    datasetContactName =  next.getSinglePrimitive();
+                                }
+                                if (DatasetFieldConstant.datasetContactAffiliation.equals(next.getTypeName())) {
+                                    datasetContactAffiliation =  next.getSinglePrimitive();
+                                }
+                                if (DatasetFieldConstant.datasetContactEmail.equals(next.getTypeName())) {
+                                    datasetContactEmail =  next.getSinglePrimitive();
+                                }
+                            }
+                            if (!datasetContactName.isEmpty()){
+                                xmlw.writeStartElement("contact"); 
+                                if(!datasetContactAffiliation.isEmpty()){
+                                   writeAttribute(xmlw,"affiliation",datasetContactAffiliation); 
+                                } 
+                                if(!datasetContactEmail.isEmpty()){
+                                   writeAttribute(xmlw,"email",datasetContactEmail); 
+                                } 
+                                xmlw.writeCharacters(datasetContactName);
+                                xmlw.writeEndElement(); //AuthEnty
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
     private static void writeProducersElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO) throws XMLStreamException {
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
@@ -440,6 +510,8 @@ public class DdiExportUtil {
                             String producerName = "";
                             String producerAffiliation = "";
                             String producerAbbreviation = "";
+                            String producerLogo = "";
+                            String producerURL = "";
                             for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.producerName.equals(next.getTypeName())) {
@@ -451,6 +523,13 @@ public class DdiExportUtil {
                                 if (DatasetFieldConstant.producerAbbreviation.equals(next.getTypeName())) {
                                     producerAbbreviation = next.getSinglePrimitive();
                                 }
+                                if (DatasetFieldConstant.producerLogo.equals(next.getTypeName())) {
+                                    producerLogo = next.getSinglePrimitive();
+                                }
+                                if (DatasetFieldConstant.producerURL.equals(next.getTypeName())) {
+                                    producerURL = next.getSinglePrimitive();
+
+                                }
                             }
                             if (!producerName.isEmpty()) {
                                 xmlw.writeStartElement("producer");
@@ -459,6 +538,12 @@ public class DdiExportUtil {
                                 }
                                 if (!producerAbbreviation.isEmpty()) {
                                     writeAttribute(xmlw, "abbr", producerAbbreviation);
+                                }
+                                if (!producerLogo.isEmpty()) {
+                                    writeAttribute(xmlw, "role", producerLogo);
+                                }
+                                if (!producerURL.isEmpty()) {
+                                    writeAttribute(xmlw, "URI", producerURL);
                                 }
                                 xmlw.writeCharacters(producerName);
                                 xmlw.writeEndElement(); //AuthEnty
@@ -483,6 +568,8 @@ public class DdiExportUtil {
                             String distributorName = "";
                             String distributorAffiliation = "";
                             String distributorAbbreviation = "";
+                            String distributorURL = "";
+                            String distributorLogoURL = "";
                             for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.distributorName.equals(next.getTypeName())) {
@@ -494,6 +581,12 @@ public class DdiExportUtil {
                                 if (DatasetFieldConstant.distributorAbbreviation.equals(next.getTypeName())) {
                                     distributorAbbreviation = next.getSinglePrimitive();
                                 }
+                                if (DatasetFieldConstant.distributorURL.equals(next.getTypeName())) {
+                                    distributorURL = next.getSinglePrimitive();
+                                }
+                                if (DatasetFieldConstant.distributorLogo.equals(next.getTypeName())) {
+                                    distributorLogoURL = next.getSinglePrimitive();
+                                }
                             }
                             if (!distributorName.isEmpty()) {
                                 xmlw.writeStartElement("distrbtr");
@@ -502,6 +595,12 @@ public class DdiExportUtil {
                                 }
                                 if (!distributorAbbreviation.isEmpty()) {
                                     writeAttribute(xmlw, "abbr", distributorAbbreviation);
+                                }
+                                if (!distributorURL.isEmpty()) {
+                                    writeAttribute(xmlw, "URI", distributorURL);
+                                }
+                                if (!distributorLogoURL.isEmpty()) {
+                                    writeAttribute(xmlw, "role", distributorLogoURL);
                                 }
                                 xmlw.writeCharacters(distributorName);
                                 xmlw.writeEndElement(); //AuthEnty
@@ -628,6 +727,40 @@ public class DdiExportUtil {
                                 } 
                                 xmlw.writeCharacters(grantNumber);
                                 xmlw.writeEndElement(); //grantno
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    private static void writeOtherIdElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO) throws XMLStreamException {
+        for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
+            String key = entry.getKey();
+            MetadataBlockDTO value = entry.getValue();
+            if ("citation".equals(key)) {
+                for (FieldDTO fieldDTO : value.getFields()) {
+                    if (DatasetFieldConstant.otherId.equals(fieldDTO.getTypeName())) {
+                        String otherId = "";
+                        String otherIdAgency = "";
+                        for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
+                                FieldDTO next = iterator.next();
+                                if (DatasetFieldConstant.otherIdValue.equals(next.getTypeName())) {
+                                    otherId =  next.getSinglePrimitive();
+                                }
+                                if (DatasetFieldConstant.otherIdAgency.equals(next.getTypeName())) {
+                                    otherIdAgency =  next.getSinglePrimitive();
+                                }
+                            }
+                            if (!otherId.isEmpty()){
+                                xmlw.writeStartElement("IDNo"); 
+                                if(!otherIdAgency.isEmpty()){
+                                   writeAttribute(xmlw,"agency",otherIdAgency); 
+                                } 
+                                xmlw.writeCharacters(otherId);
+                                xmlw.writeEndElement(); //IDNo
                             }
                         }
                     }

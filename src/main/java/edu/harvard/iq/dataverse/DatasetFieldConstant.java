@@ -60,7 +60,7 @@ public class DatasetFieldConstant implements java.io.Serializable  {
     
     public final static String producerName="producerName";
     public final static String producerURL="producerURL";
-    public final static String producerLogo="producerLogo";
+    public final static String producerLogo="producerLogoURL";
     public final static String producerAffiliation="producerAffiliation";
     public final static String producerAbbreviation= "producerAbbreviation";
     public final static String productionDate="productionDate";
@@ -72,7 +72,7 @@ public class DatasetFieldConstant implements java.io.Serializable  {
     public final static String grantNumberAgency="grantNumberAgency";
     public final static String distributorName="distributorName";
     public final static String distributorURL="distributorURL";
-    public final static String distributorLogo="distributorLogo";
+    public final static String distributorLogo="distributorLogoURL";
     public final static String distributionDate="distributionDate";
     public final static String distributorContactName="distributorContactName";
     public final static String distributorContactAffiliation="distributorContactAffiliation";
@@ -108,8 +108,8 @@ public class DatasetFieldConstant implements java.io.Serializable  {
     public final static String geographicUnit="geographicUnit";
     public final static String westLongitude="westLongitude";
     public final static String eastLongitude="eastLongitude";
-    public final static String northLatitude="northLatitude";
-    public final static String southLatitude="southLatitude";
+    public final static String northLatitude="northLongitude"; //Changed to match DB - incorrectly entered into DB
+    public final static String southLatitude="southLongitude"; //Incorrect in DB
     public final static String unitOfAnalysis="unitOfAnalysis";
     public final static String universe="universe";
     public final static String kindOfData="kindOfData";
