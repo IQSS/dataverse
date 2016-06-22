@@ -961,15 +961,12 @@ public class DdiExportUtil {
     
     private static String dto2Primitive(DatasetVersionDTO datasetVersionDTO, String datasetFieldTypeName) {
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
-            String key = entry.getKey();
             MetadataBlockDTO value = entry.getValue();
-           // if ("citation".equals(key)) {
-                for (FieldDTO fieldDTO : value.getFields()) {
-                    if (datasetFieldTypeName.equals(fieldDTO.getTypeName())) {
-                        return fieldDTO.getSinglePrimitive();
-                    }
+            for (FieldDTO fieldDTO : value.getFields()) {
+                if (datasetFieldTypeName.equals(fieldDTO.getTypeName())) {
+                    return fieldDTO.getSinglePrimitive();
                 }
-           // }
+            }
         }
         return null;
     }

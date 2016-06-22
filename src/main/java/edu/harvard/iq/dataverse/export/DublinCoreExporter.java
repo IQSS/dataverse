@@ -2,6 +2,8 @@
 package edu.harvard.iq.dataverse.export;
 
 import com.google.auto.service.AutoService;
+import edu.harvard.iq.dataverse.export.ddi.DdiExportUtil;
+import edu.harvard.iq.dataverse.export.dublincore.DublinCoreExportUtil;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.OutputStream;
@@ -27,12 +29,12 @@ public class DublinCoreExporter implements Exporter {
 
     @Override
     public OutputStream exportDataset(JsonObject json) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return DublinCoreExportUtil.datasetJson2dublincore(json);
     }
 
     @Override
     public Boolean isXMLFormat() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return true;
     }
     
 }
