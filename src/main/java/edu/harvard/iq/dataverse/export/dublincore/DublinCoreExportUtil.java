@@ -54,17 +54,7 @@ public class DublinCoreExportUtil {
         xmlw.writeAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
         xmlw.writeAttribute("xmlns:dc", "http://purl.org/dc/elements/1.1/");
         xmlw.writeAttribute("xmlns:dcterms", "http://purl.org/dc/terms/");
-        /*
-        <metadata
-  xmlns="http://example.org/myapp/"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://example.org/myapp/ http://example.org/myapp/schema.xsd"
-  xmlns:dc="http://purl.org/dc/elements/1.1/"
-  xmlns:dcterms="http://purl.org/dc/terms/">
-        */
-        
         xmlw.writeDefaultNamespace("http://dublincore.org/documents/dcmi-terms/"); //
-        //writeAttribute(xmlw, "version", "2.0"); //??
         createStdyDscr(xmlw, datasetDto);
         //createdataDscr(xmlw, datasetDto.getDatasetVersion().getFiles()); No Files, Right?
         xmlw.writeEndElement(); // metadata
@@ -82,8 +72,7 @@ public class DublinCoreExportUtil {
         
         xmlw.writeStartElement("dcterms:identifier");
         xmlw.writeCharacters(persistentAgency + ":" + persistentAuthority + "/" + persistentId);
-        xmlw.writeEndElement(); // decterms:identifier
-       
+        xmlw.writeEndElement(); // decterms:identifier       
 
         writeAuthorsElement(xmlw, version);
         
@@ -92,7 +81,7 @@ public class DublinCoreExportUtil {
         
         writeFullElement(xmlw, "dcterms:modified", datasetDto.getDatasetVersion().getLastUpdateTime());
         writeAbstractElement(xmlw, version); // Description
-        writeSubjectElement(xmlw, version); 
+        writeSubjectElement(xmlw, version);   //Subjects and Key Words
         
         writeRelPublElement(xmlw, version);
         writeFullElement(xmlw, "dcterms:date", dto2Primitive(version, DatasetFieldConstant.productionDate));  
@@ -110,10 +99,11 @@ public class DublinCoreExportUtil {
         
         writeFullElementList(xmlw, "dcterms:source", dto2PrimitiveList(version, DatasetFieldConstant.dataSources));
         
+        //Geo Elements
         writeSpatialElements(xmlw, version);
         
-        writeFullElement(xmlw, "dcterms:license", version.getLicense()); 
-        
+        //License and Terms
+        writeFullElement(xmlw, "dcterms:license", version.getLicense());        
         writeFullElement(xmlw, "dcterms:rights", version.getTermsOfUse()); 
         writeFullElement(xmlw, "dcterms:rights", version.getRestrictions()); 
 
