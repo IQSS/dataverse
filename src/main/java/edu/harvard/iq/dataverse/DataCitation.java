@@ -29,6 +29,7 @@ public class DataCitation {
     private String distributors;
 
     private List<DatasetField> optionalValues = new ArrayList<>();
+    private int optionalURLcount = 0; 
 
     public DataCitation(DatasetVersion dsv) {
         // authors (or producer)
@@ -104,6 +105,10 @@ public class DataCitation {
             DatasetField dsf = dsv.getDatasetField(dsfType);
             if (dsf != null) {
                 optionalValues.add(dsf);
+                
+                if (dsf.getDatasetFieldType().getFieldType().equals(DatasetFieldType.FieldType.URL)) {
+                    optionalURLcount++;
+                }                 
             }
         }        
     }
@@ -163,14 +168,20 @@ public class DataCitation {
         }
 
         for (DatasetField dsf : optionalValues) {
-            String displayValue = "";
+            String displayName = dsf.getDatasetFieldType().getDisplayName();
+            String displayValue;
+            
             if (dsf.getDatasetFieldType().getFieldType().equals(DatasetFieldType.FieldType.URL)) {
                 displayValue = formatURL(dsf.getDisplayValue(), dsf.getDisplayValue(), html);
+                if (optionalURLcount == 1) {
+                    displayName = "URL";
+                }
             } else {
                 displayValue = formatString(dsf.getDisplayValue(), html);
             }
 
-            citation.append(" [").append(dsf.getDatasetFieldType().getDisplayName()).append(": ")
+            citation.append(" [")
+                    .append(displayName).append(": ")
                     .append(displayValue)
                     .append("]");
         }
