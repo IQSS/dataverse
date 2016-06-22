@@ -241,7 +241,6 @@ Dataset Citation Widget
 
 The Dataset Citation Widget will provide a citation for your dataset on your personal or project website. Users can download the citation in various formats by using the Cite Data button. The persistent URL in the citation will direct users to the dataset in your dataverse. 
 
-Note: You can forward the persistent URL (DOI or Handle) of your dataset to your personal website. For more information on the widgets available for a dataverse, please visit the `Widgets <../user/dataverse-management.html#widgets>`_ section of the Dataverse Management page.
 
 Adding Widgets to an OpenScholar Website
 ----------------------------------------------
