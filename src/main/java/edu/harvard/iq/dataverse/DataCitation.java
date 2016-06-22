@@ -6,6 +6,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.emory.mathcs.backport.java.util.Arrays;
+import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -67,9 +68,9 @@ public class DataCitation {
         // It is always part of the citation for the local datasets; 
         // And for *some* harvested datasets. 
         if (!dsv.getDataset().isHarvested()
-                || HarvestingDataverseConfig.HARVEST_STYLE_VDC.equals(dsv.getDataset().getOwner().getHarvestingDataverseConfig().getHarvestStyle())
-                || HarvestingDataverseConfig.HARVEST_STYLE_ICPSR.equals(dsv.getDataset().getOwner().getHarvestingDataverseConfig().getHarvestStyle())
-                || HarvestingDataverseConfig.HARVEST_STYLE_DATAVERSE.equals(dsv.getDataset().getOwner().getHarvestingDataverseConfig().getHarvestStyle())) {
+                || HarvestingClient.HARVEST_STYLE_VDC.equals(dsv.getDataset().getOwner().getHarvestingClientConfig().getHarvestStyle())
+                || HarvestingClient.HARVEST_STYLE_ICPSR.equals(dsv.getDataset().getOwner().getHarvestingClientConfig().getHarvestStyle())
+                || HarvestingClient.HARVEST_STYLE_DATAVERSE.equals(dsv.getDataset().getOwner().getHarvestingClientConfig().getHarvestStyle())) {
             if (!StringUtils.isEmpty(dsv.getDataset().getIdentifier())) {
                 persistentId = new GlobalId(dsv.getDataset().getGlobalId());
             }
