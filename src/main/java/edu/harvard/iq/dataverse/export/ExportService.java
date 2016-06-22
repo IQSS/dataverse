@@ -46,39 +46,33 @@ public class ExportService {
     }
 
     public OutputStream getExport(JsonObject json, String provider) {
-        OutputStream retVal = null;
         try {
             Iterator<Exporter> exporters = loader.iterator();
-            while (retVal == null && exporters.hasNext()) {
+            while ( exporters.hasNext()) {
                 Exporter e = exporters.next();
                 if (e.getProvider().equals(provider)) {
-                    retVal = e.exportDataset(json);
-                    break;
+                    return e.exportDataset(json);
                 }
             }
         } catch (ServiceConfigurationError serviceError) {
-            retVal = null;
             serviceError.printStackTrace();
         }
-        return retVal;
+        return null;
     }
     
     public Boolean isXMLFormat(String provider){
-        Boolean retVal = false;
         try {
             Iterator<Exporter> exporters = loader.iterator();
             while (exporters.hasNext()) {
                 Exporter e = exporters.next();
                 if (e.getProvider().equals(provider)) {
-                    retVal = e.isXMLFormat();
-                    break;
+                    return e.isXMLFormat();
                 }
             }
         } catch (ServiceConfigurationError serviceError) {
-            retVal = null;
             serviceError.printStackTrace();
         }
-        return retVal;       
+        return null;       
     }
 
 }
