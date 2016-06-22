@@ -93,6 +93,16 @@ public class DublinCoreExportUtil {
         writeFullElement(xmlw, "dcterms:modified", datasetDto.getDatasetVersion().getLastUpdateTime());
         writeAbstractElement(xmlw, version); // Description
         writeSubjectElement(xmlw, version); 
+        
+        writeRelPublElement(xmlw, version);
+        writeFullElement(xmlw, "dcterms:date", dto2Primitive(version, DatasetFieldConstant.productionDate));  
+        
+        writeFullElement(xmlw, "dcterms:contributor", dto2Primitive(version, DatasetFieldConstant.depositor));  
+        
+        writeContributorElement(xmlw, version);
+        writeFullElement(xmlw, "dcterms:dateSubmitted", dto2Primitive(version, DatasetFieldConstant.dateOfDeposit));  
+        
+        writeTimeElements(xmlw, version);
        // writeProducersElement(xmlw, version);
      /*   
         xmlw.writeStartElement("distStmt");
@@ -112,7 +122,7 @@ public class DublinCoreExportUtil {
         writeFullElement(xmlw, "notes", dto2Primitive(version, DatasetFieldConstant.notesText));
         
        // writeSummaryDescriptionElement(xmlw, version);
-       // writeRelPublElement(xmlw, version);
+       // 
         writeFullElement(xmlw, "prodDate", dto2Primitive(version, DatasetFieldConstant.productionDate));    
         writeFullElement(xmlw, "prodPlac", dto2Primitive(version, DatasetFieldConstant.productionPlace));
   
@@ -256,6 +266,141 @@ public class DublinCoreExportUtil {
             }
         }             
     }
+    
+    private static void writeRelPublElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO) throws XMLStreamException {
+        for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
+            String key = entry.getKey();
+            MetadataBlockDTO value = entry.getValue();
+            if ("citation".equals(key)) {
+                for (FieldDTO fieldDTO : value.getFields()) {
+                    if (DatasetFieldConstant.publication.equals(fieldDTO.getTypeName())) {
+                        for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                            String pubString = "";
+                            String citation = "";
+                            String IDType = "";
+                            String IDNo = "";
+                            String url = "";
+                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
+                                FieldDTO next = iterator.next();
+                                if (DatasetFieldConstant.publicationCitation.equals(next.getTypeName())) {
+                                    citation =  next.getSinglePrimitive();
+                                }
+                                if (DatasetFieldConstant.publicationIDType.equals(next.getTypeName())) {
+                                    IDType =  next.getSinglePrimitive();
+                                }
+                                if (DatasetFieldConstant.publicationIDNumber.equals(next.getTypeName())) {
+                                    IDNo =   next.getSinglePrimitive();
+                                }
+                                if (DatasetFieldConstant.publicationURL.equals(next.getTypeName())) {
+                                    url =  next.getSinglePrimitive();
+                                }
+                            }
+                            pubString = appendCommaSeparatedValue(citation, IDType);
+                            pubString = appendCommaSeparatedValue(pubString, IDNo);
+                            pubString = appendCommaSeparatedValue(pubString, url);
+                            if (!pubString.isEmpty()){
+                                xmlw.writeStartElement("dcterms:isReferencedBy"); 
+                                xmlw.writeCharacters(pubString);
+                                xmlw.writeEndElement(); //relPubl
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    private static void writeContributorElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO) throws XMLStreamException {
+        for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
+            String key = entry.getKey();
+            MetadataBlockDTO value = entry.getValue();
+            if ("citation".equals(key)) {
+                for (FieldDTO fieldDTO : value.getFields()) {
+                    if (DatasetFieldConstant.contributor.equals(fieldDTO.getTypeName())) {
+                        String contributorName = "";
+                        for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
+                                FieldDTO next = iterator.next();
+                                if (DatasetFieldConstant.contributorName.equals(next.getTypeName())) {
+                                    contributorName =  next.getSinglePrimitive();
+                                }
+                            }
+                            if (!contributorName.isEmpty()){
+                                xmlw.writeStartElement("dcterms:contributor");  
+                                xmlw.writeCharacters(contributorName);
+                                xmlw.writeEndElement(); //abstract
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private static void writeTimeElements(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO) throws XMLStreamException {
+        for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
+            String key = entry.getKey();
+            MetadataBlockDTO value = entry.getValue();
+            if ("citation".equals(key)) {
+                for (FieldDTO fieldDTO : value.getFields()) {
+                    if (DatasetFieldConstant.timePeriodCovered.equals(fieldDTO.getTypeName())) {
+                        String dateValStart = "";
+                        String dateValEnd = "";
+                        for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
+                                FieldDTO next = iterator.next();
+                                if (DatasetFieldConstant.timePeriodCoveredStart.equals(next.getTypeName())) {
+                                    dateValStart = next.getSinglePrimitive();
+                                }
+                                if (DatasetFieldConstant.timePeriodCoveredEnd.equals(next.getTypeName())) {
+                                    dateValEnd = next.getSinglePrimitive();
+                                }
+                            }
+                            if (!dateValStart.isEmpty()) {
+                                writeFullElement(xmlw, "dcterms:temporal", dateValStart); 
+                            }
+                            if (!dateValEnd.isEmpty()) {
+                                writeFullElement(xmlw, "dcterms:temporal", dateValEnd); 
+                            }
+                        }
+                    }
+                    if (DatasetFieldConstant.dateOfCollection.equals(fieldDTO.getTypeName())) {
+                        String dateValStart = "";
+                        String dateValEnd = "";
+                        for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
+                                FieldDTO next = iterator.next();
+                                if (DatasetFieldConstant.dateOfCollectionStart.equals(next.getTypeName())) {
+                                    dateValStart = next.getSinglePrimitive();
+                                }
+                                if (DatasetFieldConstant.dateOfCollectionEnd.equals(next.getTypeName())) {
+                                    dateValEnd = next.getSinglePrimitive();
+                                }
+                            }
+                            if (!dateValStart.isEmpty()) {
+                               writeFullElement(xmlw, "dcterms:temporal", dateValStart); 
+                            }
+                            if (!dateValEnd.isEmpty()) {
+                                writeFullElement(xmlw, "dcterms:temporal", dateValEnd); 
+                            }
+                        }
+                    }
+                }
+            }
+        }    
+    }
+    
+    private static String appendCommaSeparatedValue(String inVal, String next) {
+        if (!next.isEmpty()) {
+            if (!inVal.isEmpty()) {
+                return inVal + ", " + next;
+            } else {
+                return next;
+            }
+        }
+        return inVal;
+    }
+    
     
     private static String dto2Primitive(DatasetVersionDTO datasetVersionDTO, String datasetFieldTypeName) {
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {

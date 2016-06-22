@@ -78,8 +78,12 @@ public class DatasetFieldConstant implements java.io.Serializable  {
     public final static String distributorContactAffiliation="distributorContactAffiliation";
     public final static String distributorContactEmail="distributorContactEmail";
     public final static String distributorAffiliation="distributorAffiliation";
-    
     public final static String distributorAbbreviation="distributorAbbreviation";
+
+    public final static String contributor="contributor"; //SEK added for Dublin Core 6/22
+    public final static String contributorType="contributorType";
+    public final static String contributorName="contributorName";
+
     public final static String depositor="depositor";
     public final static String dateOfDeposit="dateOfDeposit";
     public final static String seriesName="seriesName";
