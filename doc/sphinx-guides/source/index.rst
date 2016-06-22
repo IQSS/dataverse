@@ -3,10 +3,10 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Dataverse 4.3 Guides
+Dataverse 4.3.1 Guides
 ======================
 
-These guides are for the most recent version of Dataverse. For the guides for **version 4.2.4** please go `here <http://guides.dataverse.org/en/4.2.4/>`_.
+These guides are for the most recent version of Dataverse. For the guides for **version 4.3** please go `here <http://guides.dataverse.org/en/4.3/>`_.
 
 .. toctree::
   :glob:

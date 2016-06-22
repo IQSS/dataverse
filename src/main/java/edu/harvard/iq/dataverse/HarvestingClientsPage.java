@@ -71,7 +71,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
     
     public String init() {
         if (!isSessionUserAuthenticated()) {
-            return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
+            return "/loginpage.xhtml"; // + DataverseHeaderFragment.getRedirectPage();
         } else if (!isSuperUser()) {
             return "/403.xhtml"; 
         }

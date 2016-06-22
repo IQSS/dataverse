@@ -1,5 +1,5 @@
 /*--------- BODY --------- */
-body {/*margin-top:50px;*/}
+body.widget-view {margin-bottom:54px;}
 body .ui-widget {font-size: inherit;}
 .ui-widget-content a {color: #428BCA;}
 .ui-widget-content a:hover, .ui-widget-content a:focus {color: #2A6496;}
@@ -34,11 +34,13 @@ body .ui-widget {font-size: inherit;}
 #navbarFixed li.dropdown.open > span.dropdown-toggle {background-color: #e7e7e7;}
 
 #footer {margin-top:3em; padding-bottom:4em; color:#808080;}
+#footer.widget-view {position:fixed; left:0px; bottom:0px; margin:0; padding:4px 0 0 0; height:44px; width:100%; background:#fff;}
 #footer span.socicon-twitter {color:#55acee; font-size:1.3em; vertical-align: top;}
 #footer span.socicon-github {color:#000; font-size:1.3em; vertical-align: top;}
 #footer .poweredbylogo {text-align:right;}
 #footer .poweredbylogo span {font-size:.85em;margin-right:.3em;}
 #footer .version {vertical-align:bottom;white-space:nowrap;}
+#footer.widget-view .widgetBrandMsg {line-height:42px;}
 
 .panelLayoutBlock, .panelLayoutTitleBlock, .panelLayoutButtonBlock {border:0;}
 .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content, .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content > td {border:0;}
@@ -87,7 +89,9 @@ td.col-select-width {width:36px;}
 .margin-top-half {margin-top:.5em;}
 .margin-bottom {margin-bottom:1em;}
 .margin-bottom-half {margin-bottom:.5em;}
+.no-margin-top {margin-top:0;}
 .no-margin-bottom {margin-bottom:0;}
+.margin-sides {margin-left:1em; margin-right:1em;}
 .padding-12 {padding: 12px;}
 .clear-both {clear:both;}
 
@@ -184,6 +188,7 @@ span.glyphicon[data-toggle='tooltip'] {cursor: default;}
 
 /* -------- HEADER -------- */
 #dataverse-header-block {padding-top:50px;}
+body.widget-view #dataverse-header-block {padding-top:0px;}
 #dataverseHeader {margin:0 auto;}
 #dataverseHeader .dataverseHeaderBlock {display:table-row;}
 #dataverseHeader .dataverseHeaderCell {display:table-cell;}
@@ -226,16 +231,14 @@ div.panel.highlight {
 }
 #idpSelectIdPListTile form, #idpSelectIdPEntryTile form {margin-bottom:1em;}
 #idpSelectIdPListTile input.btn, #idpSelectIdPEntryTile input.btn {margin-left:.5em;}
-
 #idpSelectIdPEntryTile {position: relative;}
-
+.IdPSelectPreferredIdPButton {display:inline-block;text-align:center;margin-right:4px;margin-bottom:.5em;}
 ul.IdPSelectDropDown {
     background-clip: padding-box;
     background-color: #fff;
     border: 1px solid rgba(0, 0, 0, 0.15);
     border-radius: 4px;
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.176);
-/*    display: none;*/
     float: left;
     font-size: 14px;
     left: 0;
@@ -245,36 +248,35 @@ ul.IdPSelectDropDown {
     padding: 5px 0;
     position: absolute;
     text-align: left;
-    /*top: 100%;*/
-    bottom:-22px;
+    top: calc(100% - 32px);
     z-index: 1000;
 }
 
-ul.IdPSelectDropDown > li > a {
+ul.IdPSelectDropDown > li {
     clear: both;
     color: #333;
-    display: block;
+    /* display: block; */
     font-weight: 400;
     line-height: 1.42857;
     padding: 3px 20px;
     white-space: nowrap;
 }
 
-ul.IdPSelectDropDown > li > a:hover, ul.IdPSelectDropDown > li > a:focus {
+ul.IdPSelectDropDown > li:hover, ul.IdPSelectDropDown > li:focus {
     background-color: #f5f5f5;
     color: #262626;
     text-decoration: none;
 }
-ul.IdPSelectDropDown > .active > a, ul.IdPSelectDropDown > .active > a:hover, ul.IdPSelectDropDown > .active > a:focus {
+ul.IdPSelectDropDown > li.active, ul.IdPSelectDropDown > li.active:hover, ul.IdPSelectDropDown > li.active:focus {
     background-color: #428bca;
     color: #fff;
     outline: 0 none;
     text-decoration: none;
 }
-ul.IdPSelectDropDown > .disabled > a, ul.IdPSelectDropDown > .disabled > a:hover, ul.IdPSelectDropDown > .disabled > a:focus {
+ul.IdPSelectDropDown > li.disabled, ul.IdPSelectDropDown > li.disabled:hover, ul.IdPSelectDropDown > li.disabled:focus {
     color: #777;
 }
-ul.IdPSelectDropDown > .disabled > a:hover, ul.IdPSelectDropDown > .disabled > a:focus {
+ul.IdPSelectDropDown > li.disabled:hover, ul.IdPSelectDropDown > li.disabled:focus {
     background-color: transparent;
     background-image: none;
     cursor: not-allowed;
@@ -359,8 +361,8 @@ div.field-add-delete a.btn.nolabel-field-btn {margin-top:0;}
 #metadataFieldOptions div.checkbox.child-field {padding-left:18px;}
 
 /* -------- SEARCH -------- */
-div.panelSerchForm {margin-bottom: 15px;}
-div.panelSerchForm input.search-input {margin-right:1em; padding:4px; display: inline-block; vertical-align: middle; width: auto;}
+div.panelSearchForm {margin-bottom: 15px;}
+div.panelSearchForm input.search-input {margin-right:1em; padding:4px; display: inline-block; vertical-align: middle; width: auto;}
 a[id$='advsearchlink'] {margin-left:1em;}
 
 #search-row-panel {border:1px solid #ddd; border-radius: 4px; padding: 15px 0;}
@@ -396,6 +398,7 @@ a[id$='advsearchlink'] {margin-left:1em;}
   }
   
   #footer .poweredbylogo {text-align:center;}
+  #footer.widget-view .poweredbylogo {text-align:right;}
 }
 
 .searchTypeButton {display:block; border:1px solid #DDD; padding:4px 0; margin-bottom: .5em;}
@@ -542,6 +545,8 @@ div[id$='roleDisplay'] span.label, div[id$='roleDetails'] span.label {display:in
 #author, #contact {display:block; margin-bottom:.5em;}
 #citation-block {margin-bottom:.5em;}
 .bg-citation {background:#ECF6FB;}
+div.alert-info.bg-citation, div.alert-danger.bg-danger {padding-top:0; padding-bottom:0; border-radius:0; color:#333;}
+#citation-select {display:inline-block;}
 #citation, #citation-download, #citation-standards {padding:.5em;}
 #citation span.glyphicon-question-sign {margin-left:.5em; margin-bottom:2px; vertical-align: middle;}
 .waiver-CC0-inline {display:inline-block; margin-left:1em;}
@@ -710,3 +715,8 @@ div.ui-widget-overlay {background:#ccc; opacity:.6;}
 .ui-state-disabled, .ui-widget-content .ui-state-disabled, .ui-widget-header .ui-state-disabled {background: #e0e0e0; border-color: #ccc; opacity: 0.65;}
 .ui-autocomplete-input-token input, .ui-autocomplete-input-token {width:100%;}
 .ui-autocomplete-panel {z-index:100002 !important;}
+
+/* CITATION-FRAME */
+#citation-banner {width:100%; height:45px; position: absolute; z-index: 999999; border-radius: 0; border-width: 0 0 1px 0;}
+#citation-banner a.close, #citation-banner a.close span.glyphicon {line-height:.2;}
+#citation-forward {position: absolute; top:45px; height: calc(100% - 65px); border:0; background:url(/resources/images/ajax-loading.gif) no-repeat 50% 50%;}

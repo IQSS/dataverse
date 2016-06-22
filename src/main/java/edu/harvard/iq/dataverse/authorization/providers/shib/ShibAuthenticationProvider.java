@@ -7,9 +7,11 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationResponse;
 
 public class ShibAuthenticationProvider implements AuthenticationProvider {
 
+    public static final String PROVIDER_ID = "shib";
+
     @Override
     public String getId() {
-        return "shib";
+        return PROVIDER_ID;
     }
 
     @Override

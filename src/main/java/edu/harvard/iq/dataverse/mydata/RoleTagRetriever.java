@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.search.SolrQueryResponse;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.search.SearchConstants;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -68,8 +69,13 @@ public class RoleTagRetriever {
        this.dvObjectServiceBean = dvObjectServiceBean;
     }
     
-    public void loadRoles(String userIdentifier, SolrQueryResponse solrQueryResponse){
-
+    public void loadRoles(AuthenticatedUser au , SolrQueryResponse solrQueryResponse){
+        
+        if (au == null){
+            throw new NullPointerException("RoleTagRetriever.constructor. au cannot be null");
+        }
+        
+        String userIdentifier = au.getUserIdentifier();
         if (userIdentifier == null){
             throw new NullPointerException("RoleTagRetriever.constructor. userIdentifier cannot be null");
         }
@@ -88,7 +94,7 @@ public class RoleTagRetriever {
         findDataverseIdsForFiles();
         
         // (4) Retrieve the role ids
-        retrieveRoleIdsForDvObjects(userIdentifier);
+        retrieveRoleIdsForDvObjects(au);
 
         // (5) Prepare final role lists
         prepareFinalRoleLists();
@@ -343,8 +349,9 @@ public class RoleTagRetriever {
     }
     
     
-    private boolean retrieveRoleIdsForDvObjects(String userIdentifier){
-                
+    private boolean retrieveRoleIdsForDvObjects(AuthenticatedUser au ){
+        
+        String userIdentifier = au.getUserIdentifier();
         if (userIdentifier == null){
             throw new NullPointerException("RoleTagRetriever.constructor. userIdentifier cannot be null");
         }        
@@ -358,8 +365,8 @@ public class RoleTagRetriever {
             return true;
         }
         //msg("dvObjectIdList: " + dvObjectIdList.toString());
-        String assigneeIdentifer = MyDataUtil.formatUserIdentifierAsAssigneeIdentifier(userIdentifier);
-        List<Object[]> results = this.roleAssigneeService.getRoleIdsFor(assigneeIdentifer, dvObjectIdList);
+
+        List<Object[]> results = this.roleAssigneeService.getRoleIdsFor(au, dvObjectIdList);
         
         //msgt("runStep1RoleAssignments results: " + results.toString());
 

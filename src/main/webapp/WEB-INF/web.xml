@@ -10,9 +10,13 @@
         <error-code>500</error-code>
         <location>/500.xhtml</location>
     </error-page>
+    <error-page>
+        <error-code>403</error-code>
+        <location>/403.xhtml</location>
+    </error-page>    
     <!-- Welcome page -->
     <welcome-file-list>
-        <welcome-file>dataverse.xhtml</welcome-file>
+        <welcome-file>dataverse.xhtml</welcome-file>g
     </welcome-file-list>
     <context-param>
         <param-name>org.jboss.weld.context.conversation.lazy</param-name>
@@ -69,6 +73,10 @@
         <servlet-name>OAIServlet</servlet-name>
         <servlet-class>edu.harvard.iq.dataverse.harvest.server.web.servlet.OAIServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>Citation Servlet</servlet-name>
+        <servlet-class>edu.harvard.iq.dataverse.CitationServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>Faces Servlet</servlet-name>
         <url-pattern>/faces/*</url-pattern>
@@ -92,6 +100,10 @@
     <servlet-mapping>
         <servlet-name>OAIServlet</servlet-name>
         <url-pattern>/oai</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>Citation Servlet</servlet-name>
+        <url-pattern>/citation</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

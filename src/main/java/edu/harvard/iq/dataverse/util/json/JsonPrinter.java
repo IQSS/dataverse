@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.TreeSet;
 
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Deque;
 import java.util.LinkedList;
@@ -77,9 +78,17 @@ public class JsonPrinter {
      */
     public static JsonObjectBuilder jsonForAuthUser(AuthenticatedUser authenticatedUser) {
         return jsonObjectBuilder()
+                .add("id", authenticatedUser.getId())
                 .add("identifier", authenticatedUser.getIdentifier())
-                .add("id", authenticatedUser.getId()
-                );
+                .add("displayName", authenticatedUser.getDisplayInfo().getTitle())
+                .add("firstName", authenticatedUser.getFirstName())
+                .add("lastName", authenticatedUser.getLastName())
+                .add("email", authenticatedUser.getEmail())
+                .add("superuser", authenticatedUser.isSuperuser())
+                .add("affiliation", authenticatedUser.getAffiliation())
+                .add("position", authenticatedUser.getPosition())
+                .add("persistentUserId", authenticatedUser.getAuthenticatedUserLookup().getPersistentUserId())
+                .add("authenticationProviderId", authenticatedUser.getAuthenticatedUserLookup().getAuthenticationProviderId());
     }
     
     public static JsonObjectBuilder json( RoleAssignment ra ) {

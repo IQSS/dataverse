@@ -180,33 +180,99 @@
                     </ui:fragment>
                 </p:fragment>
                 <div class="button-block">
-                    <p:commandButton value="#{bundle.saveChanges}" update=":#{p:component('messagePanel')}, :themeWidgetsForm" action="#{themeWidgetFragment.save()}"/>
-                    <p:commandButton action="#{themeWidgetFragment.cancel()}" immediate="true" id="themeCancel" value="#{bundle.cancel}"/>
+                    <p:commandButton class="btn btn-default" value="#{bundle.saveChanges}" update=":#{p:component('messagePanel')}, :themeWidgetsForm" action="#{themeWidgetFragment.save()}" oncomplete="bind_bsui_components();"/>
+                    <p:commandButton class="btn btn-default" action="#{themeWidgetFragment.cancel()}" immediate="true" id="themeCancel" value="#{bundle.cancel}"/>
                 </div>
             </p:tab>
             <p:tab id="widgetsTab" title="#{bundle['dataverse.widgets.title']}">
-                <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.widgets.tip']}</p>
-                <div>
-                    <h5>
-                        #{bundle['dataverse.widgets.searchBox.txt']}
-                    </h5>
-                    <p class="help-block">#{bundle['dataverse.widgets.searchBox.tip']}</p>
+                <div id="no-widgets-message" class="panel panel-default" jsf:rendered="#{!themeWidgetFragment.editDv.released}">
+                    <div class="panel-body">
+                        <span class="help-block h3">#{bundle['dataverse.widgets.notPublished.why.header']}</span>
+                        <ul>
+                            <li><h:outputText value="#{bundle['dataverse.widgets.notPublished.why.reason1']}" escape="false"/></li>
+                            <li><h:outputText value="#{bundle['dataverse.widgets.notPublished.why.reason2']}" escape="false"/></li>
+                        </ul>
+                        <span class="help-block h3">#{bundle['dataverse.widgets.notPublished.how.header']}</span>
+                        <ul>
+                            <li><h:outputText value="#{bundle['dataverse.widgets.notPublished.how.tip1']}" escape="false"/></li>
+                            <li><h:outputText value="#{bundle['dataverse.widgets.notPublished.how.tip2']}" escape="false"/></li>
+                            <li>
+                                <h:outputFormat value="#{bundle['dataverse.widgets.notPublished.how.tip3']}" escape="false">
+                                    <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                                    <f:param value="#{systemConfig.version}"/>
+                                </h:outputFormat>
+                            </li>
+                        </ul>
+                        <p>
+                            <h:outputFormat value="#{bundle['dataverse.widgets.notPublished.getStarted']}" escape="false">
+                                <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                                <f:param value="#{systemConfig.version}"/>
+                            </h:outputFormat>
+                        </p>
+                    </div>
                 </div>
-                <div>
-                    <textarea rows="3" cols="54" class="form-control">&lt;script src=&quot;#{systemConfig.dataverseSiteUrl}/resources/js/widgets.js?alias=#{themeWidgetFragment.editDv.alias}&amp;amp;dvUrl=#{systemConfig.dataverseSiteUrl}&amp;amp;widget=search&amp;amp;text=Search&#43;my&#43;dataverse&quot;&gt;&lt;/script&gt;</textarea>
-                </div>
-                <div>
-                    <h5>
-                        #{bundle['dataverse.widgets.dataverseListing.txt']}
-                    </h5>
-                    <p class="help-block">#{bundle['dataverse.widgets.dataverseListing.tip']}</p>
-                </div>
-                <div>
-                    <textarea rows="2" cols="54" class="form-control">&lt;script src=&quot;#{systemConfig.dataverseSiteUrl}/resources/js/widgets.js?alias=#{themeWidgetFragment.editDv.alias}&amp;amp;dvUrl=#{systemConfig.dataverseSiteUrl}&amp;amp;widget=iframe&amp;amp;heightPx=500&quot;&gt;&lt;/script&gt;</textarea>
-                </div>
-                <div class="button-block">
-                    <p:commandButton action="#{themeWidgetFragment.cancel()}" immediate="true" id="widgetsDone" value="#{bundle.done}"/>
-                </div>
+                
+                <ui:fragment rendered="#{themeWidgetFragment.editDv.released}">
+                    <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> 
+                        <h:outputFormat value=" #{bundle['dataverse.widgets.tip']}" escape="false">
+                            <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                            <f:param value="#{systemConfig.version}"/>
+                        </h:outputFormat>
+                    </p>
+                    <div>
+                        <h5>
+                            #{bundle['dataverse.widgets.searchBox.txt']}
+                        </h5>
+                        <p class="help-block">#{bundle['dataverse.widgets.searchBox.tip']}</p>
+                    </div>
+                    <div>
+                        <textarea rows="3" cols="54" class="form-control">&lt;script src=&quot;#{systemConfig.dataverseSiteUrl}/resources/js/widgets.js?alias=#{themeWidgetFragment.editDv.alias}&amp;amp;dvUrl=#{systemConfig.dataverseSiteUrl}&amp;amp;widget=search&amp;amp;text=Search&#43;my&#43;dataverse&quot;&gt;&lt;/script&gt;</textarea>
+                    </div>
+                    <div>
+                        <h5>
+                            #{bundle['dataverse.widgets.dataverseListing.txt']}
+                        </h5>
+                        <p class="help-block">#{bundle['dataverse.widgets.dataverseListing.tip']}</p>
+                    </div>
+                    <div>
+                        <textarea rows="3" cols="54" class="form-control">&lt;script src=&quot;#{systemConfig.dataverseSiteUrl}/resources/js/widgets.js?alias=#{themeWidgetFragment.editDv.alias}&amp;amp;dvUrl=#{systemConfig.dataverseSiteUrl}&amp;amp;widgetScope=#{themeWidgetFragment.editDv.alias}&amp;amp;widget=iframe&amp;amp;heightPx=500&quot;&gt;&lt;/script&gt;</textarea>
+                    </div>
+                    <div class="alert alert-info margin-top">
+                        <p><h:outputText value="#{bundle['dataverse.widgets.editAdvanced.tip']}" escape="false"/></p>
+                        <p:commandButton class="btn btn-default margin-top-half" id="editAdvanced" value="#{bundle['dataverse.widgets.editAdvanced']}" onclick="PF('advancedOptions').show();" />
+                    </div>
+                    <div class="button-block">
+                        <p:commandButton class="btn btn-default" action="#{themeWidgetFragment.cancel()}" immediate="true" id="widgetsDone" value="#{bundle.done}"/>
+                    </div>
+                </ui:fragment>
             </p:tab>
         </p:tabView>
+    <p:remoteCommand name="saveRedirectUrl" process="@this" update=":#{p:component('messagePanel')}, :themeWidgetsForm, @([id$=Messages]), advancedOptions" actionListener="#{themeWidgetFragment.save()}"/>
+    <p:dialog modal="true" id="advancedOptions" widgetVar="advancedOptions" header="#{bundle['dataverse.widgets.advanced.popup.header']}">
+        <div class="form-horizontal">
+            <div>
+                <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.widgets.advanced.prompt']}</p>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-4 control-label" for="personalUrl">
+                    #{bundle['dataverse.widgets.advanced.url.label']}
+                </label>
+                <div class="col-sm-8">
+                    <p:inputText id="personalUrl"  
+                                 styleClass="form-control" value="#{themeWidgetFragment.editDv.citationRedirectURL}"
+                                 />
+                    <p:watermark for="personalUrl" value="#{bundle['dataverse.widgets.advanced.url.watermark']}" id="watermarkURL" />
+                    <p:message id="personalUrlMessages" for="personalUrl" display="text"/>
+                </div>
+            </div>
+            <div class="button-block">
+                <p:commandButton class="btn btn-default" value="#{bundle.saveChanges}"
+                               update=":#{p:component('messagePanel')}, personalUrlMessages" oncomplete="if (args &amp;&amp; !args.validationFailed) PF('advancedOptions').hide();" actionListener="#{themeWidgetFragment.saveAdvanced()}">
+                </p:commandButton>
+                <p:commandButton class="btn btn-default" onclick="PF('advancedOptions').hide();" immediate="true" update=":#{p:component('messagePanel')}" id="advancedDone" value="#{bundle.cancel}">
+                    <p:ajax update="themeWidgetsForm:advancedOptions" resetValues="true" />
+                </p:commandButton>
+            </div>
+        </div>
+    </p:dialog>
 </ui:composition>

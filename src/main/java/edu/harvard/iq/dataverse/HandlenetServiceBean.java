@@ -227,8 +227,9 @@ public class HandlenetServiceBean {
     private String getRegistrationUrl(Dataset dataset) {
         String siteUrl = getSiteUrl();
         
-        String targetUrl = siteUrl + "/dataset.xhtml?persistentId=hdl:" + dataset.getAuthority() 
-                + "/" + dataset.getIdentifier();       
+        //String targetUrl = siteUrl + "/dataset.xhtml?persistentId=hdl:" + dataset.getAuthority() 
+        String targetUrl = siteUrl + Dataset.TARGET_URL + "hdl:" + dataset.getAuthority()         
+                + "/" + dataset.getIdentifier();  
         return targetUrl;
     }
     

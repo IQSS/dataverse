@@ -57,9 +57,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import static edu.harvard.iq.dataverse.api.AbstractApiBean.errorResponse;
-import static edu.harvard.iq.dataverse.api.AbstractApiBean.errorResponse;
-import static edu.harvard.iq.dataverse.api.AbstractApiBean.errorResponse;
 
 @Path("datasets")
 public class Datasets extends AbstractApiBean {
@@ -288,6 +285,23 @@ public class Datasets extends AbstractApiBean {
         }
 
     }
+    
+    @GET
+    @Path("/modifyRegistrationAll")
+    public Response updateDatasetTargetURLAll() {
+        List<Dataset> allDatasets = datasetService.findAll();
+
+        for (Dataset ds : allDatasets){           
+   
+            try {
+                execCommand(new UpdateDatasetTargetURLCommand(findDatasetOrDie(ds.getId().toString()), createDataverseRequest(findUserOrDie())));
+            } catch (WrappedResponse ex) {
+                Logger.getLogger(Datasets.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            
+        }
+        return okResponse("Update All Dataset target url completed");
+    }
   
     @PUT
 	@Path("{id}/versions/{versionId}")
@@ -315,7 +329,7 @@ public class Datasets extends AbstractApiBean {
             boolean updateDraft = ds.getLatestVersion().isDraft();
             DatasetVersion managedVersion = execCommand( updateDraft
                                                              ? new UpdateDatasetVersionCommand(req, incomingVersion)
-                                                             : new  CreateDatasetVersionCommand(req, ds, incomingVersion));
+                                                             : new CreateDatasetVersionCommand(req, ds, incomingVersion));
             return okResponse( json(managedVersion) );
                     
         } catch (JsonParseException ex) {

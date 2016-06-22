@@ -14,6 +14,9 @@
       <ui:param name="pageTitle" value="Superuser - #{dataverseServiceBean.findRootDataverse().name} #{bundle.dataverse}"/>
       <ui:param name="showDataverseHeader" value="false"/>
       <ui:define name="body">
+          <f:metadata>
+              <f:viewAction action="#{SuperUserPage.init}"/>
+          </f:metadata>
         <h:form id="indexAllForm">
           <div>
             <button class="btn btn-default" jsf:action="#{SuperUserPage.startIndexAll()}">
