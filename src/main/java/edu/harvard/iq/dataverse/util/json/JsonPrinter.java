@@ -248,6 +248,7 @@ public class JsonPrinter {
 				.add("lastUpdateTime", format(dsv.getLastUpdateTime()) )
 				.add("releaseTime", format(dsv.getReleaseTime()) )
 				.add("createTime", format(dsv.getCreateTime()) )
+                                .add("license", dsv.getTermsOfUseAndAccess().getLicense().toString())
                                 .add("termsOfUse", getLicenseInfo(dsv))
                                 .add("confidentialityDeclaration", dsv.getTermsOfUseAndAccess().getConfidentialityDeclaration())
 				.add("availabilityStatus", dsv.getTermsOfUseAndAccess().getAvailabilityStatus())	

@@ -37,6 +37,7 @@ public class DatasetVersionDTO {
     String sizeOfCollection;
     String studyCompletion; 
     String citation;
+    String license;
     boolean inReview;
     
     Map<String,MetadataBlockDTO> metadataBlocks;
@@ -283,6 +284,14 @@ public class DatasetVersionDTO {
 
     public void setArchiveTime(String archiveTime) {
         this.archiveTime = archiveTime;
+    }
+    
+    public String getLicense() {
+        return license;
+    }
+
+    public void setLicense(String license) {
+        this.license = license;
     }
 
     public Map<String, MetadataBlockDTO> getMetadataBlocks() {

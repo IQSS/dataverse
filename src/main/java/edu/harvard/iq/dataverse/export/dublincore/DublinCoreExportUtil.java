@@ -103,75 +103,20 @@ public class DublinCoreExportUtil {
         writeFullElement(xmlw, "dcterms:dateSubmitted", dto2Primitive(version, DatasetFieldConstant.dateOfDeposit));  
         
         writeTimeElements(xmlw, version);
-       // writeProducersElement(xmlw, version);
-     /*   
-        xmlw.writeStartElement("distStmt");
-        writeFullElement(xmlw, "distrbtr", datasetDto.getPublisher());
-        writeFullElement(xmlw, "distdate", datasetDto.getPublicationDate());
-        xmlw.writeEndElement(); // diststmt
         
+        writeFullElementList(xmlw, "dcterms:relation", dto2PrimitiveList(version, DatasetFieldConstant.relatedDatasets));
+        
+        writeFullElementList(xmlw, "dcterms:type", dto2PrimitiveList(version, DatasetFieldConstant.kindOfData));
+        
+        writeFullElementList(xmlw, "dcterms:source", dto2PrimitiveList(version, DatasetFieldConstant.dataSources));
+        
+        writeSpatialElements(xmlw, version);
+        
+        writeFullElement(xmlw, "dcterms:license", version.getLicense()); 
+        
+        writeFullElement(xmlw, "dcterms:rights", version.getTermsOfUse()); 
+        writeFullElement(xmlw, "dcterms:rights", version.getRestrictions()); 
 
-        //End Citation Block
-        
-        //Start Study Info Block
-        // Study Info
-        xmlw.writeStartElement("stdyInfo");
-        
-        //writeSubjectElement(xmlw, version); //Subject and Keywords
-        //
-        writeFullElement(xmlw, "notes", dto2Primitive(version, DatasetFieldConstant.notesText));
-        
-       // writeSummaryDescriptionElement(xmlw, version);
-       // 
-        writeFullElement(xmlw, "prodDate", dto2Primitive(version, DatasetFieldConstant.productionDate));    
-        writeFullElement(xmlw, "prodPlac", dto2Primitive(version, DatasetFieldConstant.productionPlace));
-  
-       // writeGrantElement(xmlw, version);
-        //writeOtherIdElement(xmlw, version);
-        //xmlw.writeStartElement("distStmt"); //Also need Contact
-        //writeDistributorsElement(xmlw, version);
-        //writeContactsElement(xmlw, version);
-        //writeFullElement(xmlw, "depositr", dto2Primitive(version, DatasetFieldConstant.depositor));    
-        writeFullElement(xmlw, "depDate", dto2Primitive(version, DatasetFieldConstant.dateOfDeposit));  
-        //xmlw.writeEndElement(); // distStmt
-        
-        //writeFullElementList(xmlw, "relMat", dto2PrimitiveList(version, DatasetFieldConstant.relatedMaterial));
-        //writeFullElementList(xmlw, "relStdy", dto2PrimitiveList(version, DatasetFieldConstant.relatedDatasets));
-       // writeFullElementList(xmlw, "othRefs", dto2PrimitiveList(version, DatasetFieldConstant.otherReferences));
-       // writeFullElementList(xmlw, "dataKind", dto2PrimitiveList(version, DatasetFieldConstant.kindOfData));
-       // writeSeriesElement(xmlw, version);
-       // writeSoftwareElement(xmlw, version);
-        writeFullElementList(xmlw, "dataSrc", dto2PrimitiveList(version, DatasetFieldConstant.dataSources));
-        writeFullElement(xmlw, "srcOrig", dto2Primitive(version, DatasetFieldConstant.originOfSources)); 
-        writeFullElement(xmlw, "srcChar", dto2Primitive(version, DatasetFieldConstant.characteristicOfSources)); 
-        writeFullElement(xmlw, "srcDocu", dto2Primitive(version, DatasetFieldConstant.accessToSources)); 
-        xmlw.writeEndElement(); // stdyInfo
-        // End Info Block
-        
-        //Social Science Metadata block
-               
-        //writeMethodElement(xmlw, version);
-        
-        //Terms of Use and Access
-        writeFullElement(xmlw, "useStmt", version.getTermsOfUse()); 
-        writeFullElement(xmlw, "confDec", version.getConfidentialityDeclaration()); 
-        writeFullElement(xmlw, "specPerm", version.getSpecialPermissions()); 
-        writeFullElement(xmlw, "restrctn", version.getRestrictions()); 
-        writeFullElement(xmlw, "citeReq", version.getCitationRequirements()); 
-        writeFullElement(xmlw, "deposReq", version.getDepositorRequirements()); 
-        writeFullElement(xmlw, "conditions", version.getConditions()); 
-        writeFullElement(xmlw, "disclaimer", version.getDisclaimer()); 
-        writeFullElement(xmlw, "dataAccs", version.getTermsOfAccess()); 
-        writeFullElement(xmlw, "accsPlac", version.getDataAccessPlace()); 
-        writeFullElement(xmlw, "origArch", version.getOriginalArchive()); 
-        writeFullElement(xmlw, "avlStatus", version.getAvailabilityStatus()); 
-        writeFullElement(xmlw, "contact", version.getContactForAccess()); 
-        writeFullElement(xmlw, "collSize", version.getSizeOfCollection()); 
-        writeFullElement(xmlw, "complete", version.getStudyCompletion()); 
-        
-        
-        xmlw.writeEndElement(); // stdyDscr
-*/
     }
     
     private static void writeAuthorsElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO) throws XMLStreamException {
@@ -388,6 +333,36 @@ public class DublinCoreExportUtil {
                 }
             }
         }    
+    }
+    
+        private static void writeSpatialElements(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO) throws XMLStreamException {
+        for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
+            String key = entry.getKey();
+            MetadataBlockDTO value = entry.getValue();
+            if("geospatial".equals(key)){                
+                for (FieldDTO fieldDTO : value.getFields()) {
+                    if (DatasetFieldConstant.geographicCoverage.equals(fieldDTO.getTypeName())) {
+                        for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
+                                FieldDTO next = iterator.next();
+                                if (DatasetFieldConstant.country.equals(next.getTypeName())) {
+                                    writeFullElement(xmlw, "dcterms:spatial", next.getSinglePrimitive());
+                                }
+                                if (DatasetFieldConstant.city.equals(next.getTypeName())) {
+                                    writeFullElement(xmlw, "dcterms:spatial", next.getSinglePrimitive());
+                                }
+                                if (DatasetFieldConstant.state.equals(next.getTypeName())) {
+                                    writeFullElement(xmlw, "dcterms:spatial", next.getSinglePrimitive());
+                                } 
+                                if (DatasetFieldConstant.otherGeographicCoverage.equals(next.getTypeName())) {
+                                    writeFullElement(xmlw, "dcterms:spatial", next.getSinglePrimitive());
+                                } 
+                            }
+                        }
+                    }
+                }
+            }
+        }   
     }
     
     private static String appendCommaSeparatedValue(String inVal, String next) {
