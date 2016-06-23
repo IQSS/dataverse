@@ -631,19 +631,27 @@
                     <p:dialog id="privateUrlId" styleClass="smallPopUp" header="#{bundle['dataset.privateurl.header']}" widgetVar="privateUrlConfirmation" modal="true">
                         <!--FIXME: remove border around p:panel-->
                         <p:panel id="privateUrlPanel" rendered="#{DatasetPage.userCanCreatePrivateURL}">
-                            <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataset.privateurl.tip']}</p>
+                            <p class="help-block"><span class="glyphicon glyphicon-info-sign"/>&#160;
+                                <h:outputFormat value="#{bundle['dataset.privateurl.tip']}" escape="false">
+                                    <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                                    <f:param value="#{systemConfig.version}"/>
+                                </h:outputFormat>
+                            </p>
                             <div class="col-sm-offset-1">
                                 <div class="highlight" jsf:rendered="#{empty(DatasetPage.privateUrl)}">
-                                    <p>#{bundle['dataset.privateurl.absent']}</p>
+                                    <p class="no-margin-bottom">#{bundle['dataset.privateurl.absent']}</p>
                                 </div>
-                                <div class="highlight" jsf:rendered="#{!empty(DatasetPage.privateUrl)}">
+                                <div class="highlight" jsf:rendered="#{!empty(DatasetPage.privateUrl)}" onclick="if (event.target) { selectText(event.target); } else{ selectText(this); }">
+                                    <p class="text-success highlightBold"><span class="glyphicon glyphicon glyphicon-ok"/> #{bundle['dataset.privateurl.createdSuccess']}</p>
                                     <ui:param name="privateUrlLink" value="#{DatasetPage.getPrivateUrlLink(DatasetPage.privateUrl)}" />
-                                    <p><a href="#{privateUrlLink}">#{privateUrlLink}</a></p>
+                                    <p class="no-margin-bottom">
+                                        <span>#{privateUrlLink}</span>
+                                    </p>
                                 </div>
                             </div>
                             <div class="button-block">
                                 <p:commandButton styleClass="btn btn-default" value="#{bundle['dataset.privateurl.createPrivateUrl']}" action="#{DatasetPage.createPrivateUrl()}" update="privateUrlPanel,:messagePanel" rendered="#{empty(DatasetPage.privateUrl)}" />
-                                <p:commandButton styleClass="btn btn-default" value="#{bundle['dataset.privateurl.disablePrivateUrl']}" onclick="PF('disablePrivateUrlConfirmation').show()" rendered="#{!empty(DatasetPage.privateUrl)}"/>
+                                <p:commandButton styleClass="btn btn-default" value="#{bundle['dataset.privateurl.disablePrivateUrl']}" onclick="PF('privateUrlConfirmation').hide();PF('disablePrivateUrlConfirmation').show()" rendered="#{!empty(DatasetPage.privateUrl)}"/>
                                 <p:commandButton styleClass="btn btn-default" value="#{bundle.close}" onclick="PF('privateUrlConfirmation').hide();PF('blockDatasetForm').hide();" type="button" />
                             </div>
                         </p:panel>
@@ -655,10 +663,12 @@
                             </div>
                         </p:panel>
                     </p:dialog>
-                    <p:dialog styleClass="smallPopUp" header="#{bundle['dataset.privateurl.disableConfirmationTitle']}" widgetVar="disablePrivateUrlConfirmation" modal="true">
+                    <p:dialog styleClass="smallPopUp" header="#{bundle['dataset.privateurl.header']}" widgetVar="disablePrivateUrlConfirmation" modal="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.privateurl.disableConfirmationText']}</p>
-                        <p:commandButton styleClass="btn btn-default" value="#{bundle['dataset.privateurl.disablePrivateUrl']}" action="#{DatasetPage.disablePrivateUrl()}" update="privateUrlPanel,:messagePanel" onclick="PF('disablePrivateUrlConfirmation').hide();"/>
-                        <p:commandButton styleClass="btn btn-default" value="#{bundle.cancel}" onclick="PF('disablePrivateUrlConfirmation').hide();" type="button" />
+                        <div class="button-block">
+                            <p:commandButton styleClass="btn btn-default" value="#{bundle['dataset.privateurl.disablePrivateUrlConfirm']}" action="#{DatasetPage.disablePrivateUrl()}" update="privateUrlPanel,:messagePanel" onclick="PF('disablePrivateUrlConfirmation').hide();"/>
+                            <p:commandButton styleClass="btn btn-default" value="#{bundle.cancel}" onclick="PF('disablePrivateUrlConfirmation').hide();PF('privateUrlConfirmation').show();" type="button" />
+                        </div>
                     </p:dialog>
                     <p:dialog styleClass="smallPopUp" header="#{bundle['file.deleteFileDialog.header']}" widgetVar="deleteFileConfirmation" modal="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.tip']}</p>
