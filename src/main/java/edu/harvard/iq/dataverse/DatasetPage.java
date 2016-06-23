@@ -4326,11 +4326,22 @@ public class DatasetPage implements java.io.Serializable {
         this.privateUrl = privateUrl;
     }
 
+    boolean privateUrlWasJustCreated;
+
+    public boolean isPrivateUrlWasJustCreated() {
+        return privateUrlWasJustCreated;
+    }
+
+    public void setPrivateUrlJustCreatedToFalse() {
+        privateUrlWasJustCreated = false;
+    }
+
     public void createPrivateUrl() {
         try {
             PrivateUrl createdPrivateUrl = commandEngine.submit(new CreatePrivateUrlCommand(dvRequestService.getDataverseRequest(), dataset));
             privateUrl = createdPrivateUrl;
-            JH.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.privateurl.createdSuccess", Arrays.asList(getPrivateUrlLink(privateUrl))));
+            JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.privateurl.infoMessageAuthor", Arrays.asList(getPrivateUrlLink(privateUrl))));
+            privateUrlWasJustCreated = true;
         } catch (CommandException ex) {
             String msg = BundleUtil.getStringFromBundle("dataset.privateurl.noPermToCreate", PrivateUrlUtil.getRequiredPermissions(ex));
             logger.info("Unable to create a Private URL for dataset id " + dataset.getId() + ". Message to user: " + msg + " Exception: " + ex);
