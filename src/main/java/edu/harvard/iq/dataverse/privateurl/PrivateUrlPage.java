@@ -9,6 +9,9 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+/**
+ * Backing bean for JSF page. Sets session to {@link PrivateUrlUser}. 
+ */
 @ViewScoped
 @Named("PrivateUrlPage")
 public class PrivateUrlPage implements Serializable {

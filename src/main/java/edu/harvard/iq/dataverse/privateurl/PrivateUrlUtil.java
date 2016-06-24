@@ -14,6 +14,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
+/**
+ * Static, testable methods with no runtime dependencies.
+ */
 public class PrivateUrlUtil {
 
     private static final Logger logger = Logger.getLogger(PrivateUrlUtil.class.getCanonicalName());

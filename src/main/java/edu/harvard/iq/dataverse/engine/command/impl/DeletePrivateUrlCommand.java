@@ -13,10 +13,6 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
 import java.util.List;
 import java.util.logging.Logger;
 
-/**
- * @todo If RevokeRoleCommand ever returns anything other than void (a boolean
- * perhaps) pass that value upstream.
- */
 @RequiredPermissions(Permission.ManageDatasetPermissions)
 public class DeletePrivateUrlCommand extends AbstractVoidCommand {
 
