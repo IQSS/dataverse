@@ -23,32 +23,13 @@ public class PrivateUrlUtil {
 
     /**
      * Use of this method should be limited to
-     * RoleAssigneeServiceBean.getRoleAssignee, which is the centralized place
-     * to return a RoleAssignee (which can be either a User or a Group) when all
-     * you have is the string that is their identifier.
+     * RoleAssigneeServiceBean.getRoleAssignee. If you have the
+     * {@link RoleAssignment} in your hand, just instantiate a
+     * {@link PrivateUrlUser} using the definitionPoint.
      *
-     * @todo Consider using a new character such as "#" (as suggested by
-     * Michael) as the unique namespace for PrivateUrlUser rather than ":" which
-     * means "builtin". Before the introduction of the Private URL feature, the
-     * prefix ":" was only used for a short list of unchanging
-     * "predefinedRoleAssignees" which consisted of the groups
-     * ":authenticated-users" and ":AllUsers" and the user ":guest". A
-     * PrivateUrlUser is something of a different animal in that its identifier
-     * will vary based on the dataset that it is associated with
-     * (":privateUrl42" for dataset 42, for example). The prefix we're using now
-     * is ":privateUrl". If we switch to "#" I guess we would just make it
-     * "#42"? Or would it be "#privateUrl42?" See also getRoleAssignee in
-     * RoleAssigneeServiceBean which is where the code would be cleaner if we
-     * use "#".
-     *
-     * @param identifier The identifier is expected to start with the
-     * PrivateUrlUser.PREFIX and end with a number for a dataset,
-     * ":privateUrl42", for example. The ":" indicates that this is a "builtin"
-     * role assignee. The number at the end of the identifier of a
-     * PrivateUrlUser is all we have to associate the role assignee identifier
-     * with a dataset. If we had the role assignment itself in our hands, we
-     * would simply get the dataset id from RoleAssignment.getDefinitionPoint
-     * and then use it to instantiate a PrivateUrlUser.
+     * @param identifier For example, "#42". The identifier is expected to start
+     * with "#" (the namespace for a PrivateUrlUser and its corresponding
+     * RoleAssignment) and end with the dataset id.
      *
      * @return A valid PrivateUrlUser (which like any User or Group is a
      * RoleAssignee) if a valid identifier is provided or null.
