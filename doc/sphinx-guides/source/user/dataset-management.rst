@@ -243,13 +243,13 @@ notified that they need to make modifications before it can be submitted for rev
 
 .. _privateurl:
 
-Private URL For Draft Dataset Review
+Private URL for Reviewing an Unpublished Dataset
 ==================================================
 
 To share an unpublished dataset using Private URL
 ----------------------------------------------------------------------
 
-Creating a Private URL for your dataset allows you to share your dataset (for viewing and downloading of files) before it is published to a wide group of individuals who may not have a user account on Dataverse.
+Creating a Private URL for your dataset allows you to share your dataset (for viewing and downloading of files) before it is published to a wide group of individuals who may not have a user account on Dataverse. Anyone you send the Private URL to will not have to log into Dataverse to view the dataset.
 
    1. Go to your unpublished dataset
    2. Select the “Edit” button
