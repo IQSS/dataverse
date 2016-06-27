@@ -4326,6 +4326,12 @@ public class DatasetPage implements java.io.Serializable {
         this.privateUrl = privateUrl;
     }
 
+    public void initPrivateUrlPopUp() {
+        if (privateUrl != null) {
+            setPrivateUrlJustCreatedToFalse();
+        }
+    }
+
     boolean privateUrlWasJustCreated;
 
     public boolean isPrivateUrlWasJustCreated() {

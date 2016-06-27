@@ -84,7 +84,7 @@
                                             </ul>
                                         </li>
                                         <li>
-                                            <p:commandLink id="privateUrl" onclick="PF('privateUrlConfirmation').show()">
+                                            <p:commandLink id="privateUrl" oncomplete="PF('privateUrlConfirmation').show()" action="#{DatasetPage.initPrivateUrlPopUp()}" update="privateUrlPanel">
                                                 <h:outputText value="#{bundle['dataset.editBtn.itemLabel.privateUrl']}" />
                                             </p:commandLink>
                                         </li>
