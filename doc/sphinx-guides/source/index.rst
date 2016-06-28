@@ -6,7 +6,7 @@
 Dataverse 4.4 Guides
 ======================
 
-These guides are for the most recent version of Dataverse. For the guides for **version 4.3.1** please go `here <http://guides.dataverse.org/en/4.3/1/>`_.
+These guides are for the most recent version of Dataverse. For the guides for **version 4.3.1** please go `here <http://guides.dataverse.org/en/4.3.1/>`_.
 
 .. toctree::
   :glob:
