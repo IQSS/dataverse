@@ -64,10 +64,10 @@ After performing a search and finding the dataverse or dataset you are looking f
 
 Once on a dataset page, you will see the title, citation, description, and several other fields as well as a button to email the dataset contact. Below that information, the files, metadata, and version information for the dataset are available. 
 
-Download Citation
+Cite Data
 --------------------------
 
-You can find the citation for the dataset at the top of the dataset page in a blue box. Additionally, there is a Download Citation button that offers the option to download the citation as EndNote XML or RIS Format.
+You can find the citation for the dataset at the top of the dataset page in a blue box. Additionally, there is a Cite Data button that offers the option to download the citation as EndNote XML, RIS Format, or BibTeX Format.
 
 Download Files
 -----------------
