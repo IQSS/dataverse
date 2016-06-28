@@ -50,6 +50,9 @@
                             <ui:fragment rendered="#{permissionsWrapper.canIssueCreateDatasetCommand(SearchIncludeFragment.dataverse) }">
                                 <li><a href="/dataset.xhtml?ownerId=#{SearchIncludeFragment.dataverse.id}">#{bundle['dataverse.results.btn.addData.newDataset']}</a></li>
                             </ui:fragment>
+                            <ui:fragment rendered="#{permissionsWrapper.canIssueCreateDatasetCommand(SearchIncludeFragment.dataverse) }">
+                                <li><a href="/harvestclients.xhtml?dataverseId=#{SearchIncludeFragment.dataverse.id}">Add Harvesting Client</a></li>
+                            </ui:fragment>
                         </ul>
                     </div>
                 </h:form>

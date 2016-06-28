@@ -40,7 +40,7 @@
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="card-box">
-                                    <h4 class="header-title">Harvesting <span class="glyphicon glyphicon-cog pull-right"/></h4>
+                                    <h4 class="header-title">Manage Configured Harvesting Clients<span class="glyphicon glyphicon-cog pull-right"/></h4>
                                     <div class="row text-center">
                                         <div class="col-xs-6">
                                             #,###
@@ -54,7 +54,8 @@
                                     <div class="row text-center">
                                         <div  class="col-xs-12">
                                             <p>
-                                                <a href="/harvestclients.xhtml?dataverseId=#{dataverse.id}" class="btn btn-primary" role="button">Manage Harvesting</a>
+                                                <!-- do not supply the dataverse id when calling Harvest Clients page in the "dashboard mode" -->
+                                                <a href="/harvestclients.xhtml" class="btn btn-primary" role="button">Manage Clients</a>
                                             </p>
                                         </div>
                                     </div>
@@ -62,7 +63,7 @@
                             </div>
                             <div class="col-md-4">
                                 <div class="card-box">
-                                    <h4 class="header-title">Title <span class="glyphicon glyphicon-cog pull-right"/></h4>
+                                    <h4 class="header-title">Manage Harvesting (OAI) server<span class="glyphicon glyphicon-cog pull-right"/></h4>
                                     <div class="row text-center">
                                         <div class="col-xs-6">
                                             #,###
@@ -73,11 +74,19 @@
                                             <p class="small text-muted">Label</p>
                                         </div>
                                     </div>
+                                    <div class="row text-center">
+                                        <div  class="col-xs-12">
+                                            <p>
+                                                <!-- harvesting  -->
+                                                <a href="/harvestsets.xhtml" class="btn btn-primary" role="button">Manage OAI Server</a>
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="card-box">
-                                    <h4 class="header-title">Title <span class="glyphicon glyphicon-cog pull-right"/></h4>
+                                    <h4 class="header-title">Metadata Export<span class="glyphicon glyphicon-cog pull-right"/></h4>
                                     <div class="row text-center">
                                         <div class="col-xs-6">
                                             #,###

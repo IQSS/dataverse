@@ -16,6 +16,7 @@ import com.lyncode.xoai.dataprovider.exceptions.UnknownParameterException;
 import com.lyncode.xoai.dataprovider.repository.Repository;
 import com.lyncode.xoai.dataprovider.repository.RepositoryConfiguration;
 import com.lyncode.xoai.dataprovider.model.Context;
+import com.lyncode.xoai.dataprovider.model.MetadataFormat;
 import com.lyncode.xoai.services.impl.SimpleResumptionTokenFormat;
 import static com.lyncode.xoai.dataprovider.model.MetadataFormat.identity;
 import com.lyncode.xoai.dataprovider.parameters.OAICompiledRequest;
@@ -89,31 +90,12 @@ public class OAIServlet extends HttpServlet {
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
         
-        xoaiContext = new Context().withMetadataFormat("ddi", identity());
+        xoaiContext =  createContext();
         
         setRepository = new XOAISetRepository(setService);
         itemRepository = new XOAIItemRepository(recordService);
-        
-        // TODO: 
-        // some of the settings below - such as the max list numbers - 
-        // need to be configurable!
-        
-        String dataverseName = dataverseService.findRootDataverse().getName();
-        String repositoryName = StringUtils.isEmpty(dataverseName) || "Root".equals(dataverseName) ? "Test Dataverse OAI Archive" : dataverseName + " Dataverse OAI Archive";
-        
 
-        repositoryConfiguration = new RepositoryConfiguration()
-                .withRepositoryName(repositoryName)
-                .withBaseUrl(systemConfig.getDataverseSiteUrl()+"/oai")
-                .withCompression("gzip")
-                .withCompression("deflate")
-                .withAdminEmail(settingsService.getValueForKey(SettingsServiceBean.Key.SystemEmail))
-                .withDeleteMethod(DeletedRecord.TRANSIENT)
-                .withGranularity(Granularity.Second)
-                .withMaxListIdentifiers(100)
-                .withMaxListRecords(100)
-                .withMaxListSets(100)
-                .withEarliestDate(new Date());
+        repositoryConfiguration = createRepositoryConfiguration(); 
                         
         xoaiRepository = new Repository()
             .withSetRepository(setRepository)
@@ -124,7 +106,49 @@ public class OAIServlet extends HttpServlet {
         dataProvider = new DataProvider(getXoaiContext(), getXoaiRepository());
     }
     
+    private Context createContext() {
+        // This is a stub. The list of available metadata formats will be
+        // populated dynamically, depending on the available exporters. 
+        
+        MetadataFormat dcMetadataFormat = MetadataFormat.metadataFormat("oai_dc");
+        dcMetadataFormat.withNamespace("http://www.openarchives.org/OAI/2.0/oai_dc/");
+        dcMetadataFormat.withSchemaLocation("http://www.openarchives.org/OAI/2.0/oai_dc.xsd");
+        
+        MetadataFormat ddiMetadataFormat = MetadataFormat.metadataFormat("ddi");
+        ddiMetadataFormat.withNamespace("http://www.icpsr.umich.edu/DDI");
+        ddiMetadataFormat.withSchemaLocation("http://www.icpsr.umich.edu/DDI/Version2-0.xsd");
+        
+        Context context = new Context().withMetadataFormat(dcMetadataFormat).withMetadataFormat(ddiMetadataFormat);
+        
+        return context;
+    }
     
+    private RepositoryConfiguration createRepositoryConfiguration() {
+        // TODO: 
+        // some of the settings below - such as the max list numbers - 
+        // need to be configurable!
+        
+        String dataverseName = dataverseService.findRootDataverse().getName();
+        String repositoryName = StringUtils.isEmpty(dataverseName) || "Root".equals(dataverseName) ? "Test Dataverse OAI Archive" : dataverseName + " Dataverse OAI Archive";
+        
+
+        RepositoryConfiguration repositoryConfiguration = new RepositoryConfiguration()
+                .withRepositoryName(repositoryName)
+                .withBaseUrl(systemConfig.getDataverseSiteUrl()+"/oai")
+                .withCompression("gzip")        // ?
+                .withCompression("deflate")     // ?
+                .withAdminEmail(settingsService.getValueForKey(SettingsServiceBean.Key.SystemEmail))
+                .withDeleteMethod(DeletedRecord.TRANSIENT)
+                .withGranularity(Granularity.Second)
+                .withMaxListIdentifiers(100)
+                .withMaxListRecords(100)
+                .withMaxListSets(100)
+                .withEarliestDate(new Date());
+        
+        return repositoryConfiguration; 
+    }
+    
+        
     /**
      * Handles the HTTP <code>GET</code> method.
      *

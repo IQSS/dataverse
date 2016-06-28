@@ -57,6 +57,8 @@ public class HarvestingClientsPage implements java.io.Serializable {
     EjbDataverseEngine engineService;
     @Inject
     DataverseRequestServiceBean dvRequestService;
+    @Inject
+    NavigationWrapper navigationWrapper;
  
     private List<HarvestingClient> configuredHarvestingClients;
     private Dataverse dataverse;
@@ -71,17 +73,25 @@ public class HarvestingClientsPage implements java.io.Serializable {
     
     public String init() {
         if (!isSessionUserAuthenticated()) {
-            return "/loginpage.xhtml"; // + DataverseHeaderFragment.getRedirectPage();
+            return "/loginpage.xhtml" + navigationWrapper.getRedirectPage();
         } else if (!isSuperUser()) {
             return "/403.xhtml"; 
         }
         
         if (dataverseId != null) {
-            setDataverse(dataverseService.find(getDataverseId())); 
+            setDataverse(dataverseService.find(getDataverseId()));
+            if (getDataverse() == null) {
+                return navigationWrapper.notFound();
+            }
+            configuredHarvestingClients = new ArrayList<>();
+            if (dataverse.getHarvestingClientConfig() != null) {
+                configuredHarvestingClients.add(dataverse.getHarvestingClientConfig());
+            }
         } else {
-            setDataverse(dataverseService.findRootDataverse());
+            //setDataverse(dataverseService.findRootDataverse());
+            configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();
         }
-        configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();
+        
         
         pageMode = PageMode.VIEW;
         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Harvesting Clients", JH.localize("harvestclients.toptip")));
@@ -425,7 +435,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
                 logger.info("metadataformats: success");
                 logger.info(getOaiMetadataFormatSelectItems().size() + " metadata formats total.");
             } else {
-                logger.info("metadataformats: failed");
+                logger.info("metadataformats: failed;"+message);
             }
             // And if that worked, the list of sets provided:
 

@@ -28,6 +28,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Version;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 
 /**
  *
@@ -58,12 +60,16 @@ public class OAISet implements Serializable {
     
     @Column(columnDefinition="TEXT")
     private String name;
-    @Column(columnDefinition="TEXT")
+    @Column(columnDefinition="TEXT", nullable = false, unique=true)
+    @Size(max = 30, message = "Setspec must be at most 30 characters.")
+    @Pattern.List({@Pattern(regexp = "[a-zA-Z0-9\\_\\-]*", message = "Found an illegal character(s). Valid characters are a-Z, 0-9, '_', and '-'."), 
+        @Pattern(regexp=".*\\D.*", message="Setspec should not be a number")})
     private String spec;
-    @Column(columnDefinition="TEXT")
+    
+    @Column(columnDefinition="TEXT", nullable = false)
     private String definition;
    
-    @Column(columnDefinition="TEXT")
+    @Column(columnDefinition="TEXT", nullable = false)
     private String description;
 
     @Version

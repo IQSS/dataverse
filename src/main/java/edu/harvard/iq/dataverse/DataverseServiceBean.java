@@ -417,7 +417,7 @@ public class DataverseServiceBean implements java.io.Serializable {
      */
     public Map<Long, String> getAllHarvestedDataverseDescriptions(){
         
-        String qstr = "SELECT dataverse_id, archiveDescription FROM harvestingDataverseConfig;";
+        String qstr = "SELECT dataverse_id, archiveDescription FROM harvestingClient;";
         List<Object[]> searchResults = null;
         
         try {

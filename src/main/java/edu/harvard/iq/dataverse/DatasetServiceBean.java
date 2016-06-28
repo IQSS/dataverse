@@ -554,7 +554,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         
         String datasetIdStr = Strings.join(datasetIds, ", ");
         
-        String qstr = "SELECT d.id, h.archiveDescription FROM harvestingDataverseConfig h, dataset d, dvobject o WHERE d.id = o.id AND h.dataverse_id = o.owner_id AND d.id IN (" + datasetIdStr + ")";
+        String qstr = "SELECT d.id, h.archiveDescription FROM harvestingClient h, dataset d, dvobject o WHERE d.id = o.id AND h.dataverse_id = o.owner_id AND d.id IN (" + datasetIdStr + ")";
         List<Object[]> searchResults = null;
         
         try {

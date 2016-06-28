@@ -10,6 +10,7 @@
     <h:head>
     </h:head>
 
+    <!-- this is the version of the Harvesting Clients page used for the Odum demo (with the stepped create new client process disabled - L.A. -->
     <h:body>
         <f:metadata>
             <f:viewParam name="dataverseId" value="#{harvestingClientsPage.dataverseId}"/>
@@ -28,6 +29,7 @@
                     <div class="form-group clearfix">
                         <div class="pull-right">
                             <p:commandLink type="button" id="addClient" styleClass="btn btn-default"
+                                           rendered="#{harvestingClientsPage.dataverseId != null}"
                                            actionListener="#{harvestingClientsPage.initNewClient}"
                                            update="newHarvestingClientDialog"
                                            oncomplete="PF('newHarvestingClientForm').show();handleResizeDialog('newHarvestingClientDialog');bind_bsui_components();">
@@ -119,9 +121,9 @@
                                 <!-- nickname: -->
                                 <div class="form-group">
                                     
-                                    <div class="col-sm-12">
+                                    <!-- div class="col-sm-12">
                                         <h4 class="help-block">Step 1 of 4 - Connection</h4>
-                                    </div>
+                                    </div -->
                                     
                                     <label for="nickname" class="col-sm-3 control-label">
                                         #{bundle['harvestclients.newClientDialog.nickname']} <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{!harvestingClientsPage.initialSettingsValidated}" title="#{bundle.requiredField}"/>
@@ -173,16 +175,22 @@
                                 <!-- the extra settings that appear once/if the initial settings are validated: -->
                                 <div class="form-group">
                                     <div class="col-sm-6 col-sm-offset-3">
-                                        <p:commandButton value="#{bundle['harvestclients.newClientDialog.btn.initialsettings.validate']}"
+                                        <p:commandButton rendered="#{!harvestingClientsPage.initialSettingsValidated}"
+                                                        value="#{bundle['harvestclients.newClientDialog.btn.initialsettings.validate']}"
                                                         id="validateInitialSettingsBtn"
                                                         styleClass="btn btn-default"
                                                         oncomplete="PF('newHarvestingClientForm').show();"
                                                         update=":harvestingClientsForm:newHarvestingClientDialog"
+                                                        
                                                         action="#{harvestingClientsPage.validateInitialSettings()}">
                                         </p:commandButton>
                                         
                                         
-                                        <button type="button" onclick="PF('newHarvestingClientForm').hide()" class="btn btn-default" value="#{bundle.cancel}">
+                                        <button type="button" 
+                                                jsf:rendered="#{!harvestingClientsPage.initialSettingsValidated}"
+                                                onclick="PF('newHarvestingClientForm').hide()" 
+                                                class="btn btn-default" 
+                                                value="#{bundle.cancel}">
                                             #{bundle.cancel}
                                         </button>
                                         
@@ -196,9 +204,9 @@
                                 <!-- harvesting sets (if available): these are obtained from the oai server response: -->
                                 <div class="form-group">
                                     
-                                    <div class="col-sm-12">
+                                    <!-- div class="col-sm-12">
                                         <h4 class="help-block">Step 2 of 4 - Format</h4>
-                                    </div>
+                                    </div -->
                                     
                                     <label for="serverOaiSets" class="col-sm-3 control-label">
                                         #{bundle['harvestclients.newClientDialog.oaiSets']}
@@ -253,22 +261,22 @@
                                     </div>
                                 </div>
                                 
-                                <div class="form-group">
+                                <!-- div class="form-group">
                                     <div class="col-sm-6 col-sm-offset-3">
-                                        <button type="button" class="btn btn-default" value="#{bundle.previous}">
-                                            #{bundle.previous}
+                                        <button type="button" class="btn btn-default" value="_{bundle.previous}">
+                                            _{bundle.previous}
                                         </button>
                                         
-                                        <button type="button" class="btn btn-default" value="#{bundle.next}">
-                                            #{bundle.next}
+                                        <button type="button" class="btn btn-default" value="_{bundle.next}">
+                                            _{bundle.next}
                                         </button>                                        
                                         
-                                        <button type="button" onclick="PF('newHarvestingClientForm').hide()" class="btn btn-default" value="#{bundle.cancel}">
-                                            #{bundle.cancel}
+                                        <button type="button" onclick="PF('newHarvestingClientForm').hide()" class="btn btn-default" value="_{bundle.cancel}">
+                                            _{bundle.cancel}
                                         </button>
                                         
                                     </div>
-                                </div>
+                                </div -->
                                 
                                 </fieldset>
                                 
@@ -277,9 +285,9 @@
                                 <!-- scheduling; can be enabled, can be left unscheduled; harvesting can be scheduled daily or weekly -->
                                 <div class="form-group">
                                     
-                                    <div class="col-sm-12">
+                                    <!-- div class="col-sm-12">
                                         <h4 class="help-block">Step 3 of 4 - Schedule</h4>
-                                    </div>
+                                    </div -->
                                     
                                     <label for="harvestingSchedule" class="col-sm-3 control-label">
                                         #{bundle['harvestclients.newClientDialog.schedule']}
@@ -334,7 +342,7 @@
                                     </div>
                                 </div>
                                 
-                                <div class="form-group">
+                                <!-- div class="form-group">
                                     <div class="col-sm-6 col-sm-offset-3">
                                         <button type="button" class="btn btn-default" value="#{bundle.previous}">
                                             #{bundle.previous}
@@ -349,7 +357,7 @@
                                         </button>
                                         
                                     </div>
-                                </div>
+                                </div -->
                                 
                                 </fieldset>
                                 
@@ -358,9 +366,9 @@
                                 <!-- harvesting "styles" - these define different rules used to format and display metadata harvested from different archives  -->
                                 <div class="form-group">
                                     
-                                    <div class="col-sm-12">
+                                    <!-- div class="col-sm-12">
                                         <h4 class="help-block">Step 4 of 4 - Display</h4>
-                                    </div>
+                                    </div -->
                                     
                                     <label for="harvestingStyle" class="col-sm-3 control-label">
                                         #{bundle['harvestclients.newClientDialog.harvestingStyle']}
@@ -406,9 +414,9 @@
                                 
                                 <div class="form-group">
                                     <div class="col-sm-6 col-sm-offset-3">
-                                        <button type="button" class="btn btn-default" value="#{bundle.previous}">
+                                        <!-- button type="button" class="btn btn-default" value="#{bundle.previous}">
                                             #{bundle.previous}
-                                        </button>
+                                        </button -->
                                         
                                         <!-- note that there are 2 different buttons rendered for "create" and "save"! -->
                                         <p:commandLink type="button" styleClass="btn btn-default"

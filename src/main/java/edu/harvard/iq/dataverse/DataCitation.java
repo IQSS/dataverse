@@ -58,6 +58,8 @@ public class DataCitation {
                 year = sdf.format(sdf.parse(dsv.getDistributionDate()));
             } catch (ParseException ex) {
                 // ignore
+            } catch (Exception ex) {
+                // ignore
             }
         }
               

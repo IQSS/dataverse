@@ -487,4 +487,16 @@ public class SystemConfig {
         return getTabularIngestSizeLimit();        
     }
 
+    public boolean isOAIServerEnabled() {
+        boolean defaultResponse = false;
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.OAIServerEnabled, defaultResponse);
+    }
+    
+    public void enableOAIServer() {
+        settingsService.setValueForKey(SettingsServiceBean.Key.OAIServerEnabled, "true");
+    }
+    
+    public void disableOAIServer() {
+        settingsService.deleteValueForKey(SettingsServiceBean.Key.OAIServerEnabled);
+    }    
 }
