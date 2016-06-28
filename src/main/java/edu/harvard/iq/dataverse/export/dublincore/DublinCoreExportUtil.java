@@ -37,7 +37,6 @@ public class DublinCoreExportUtil {
     public static OutputStream datasetJson2dublincore(JsonObject datasetDtoAsJson) {
         logger.fine(JsonUtil.prettyPrint(datasetDtoAsJson.toString()));
         Gson gson = new Gson();
-        System.out.print(datasetDtoAsJson.toString());
         DatasetDTO datasetDto = gson.fromJson(datasetDtoAsJson.toString(), DatasetDTO.class);
         try {
             return dto2dublincore(datasetDto);

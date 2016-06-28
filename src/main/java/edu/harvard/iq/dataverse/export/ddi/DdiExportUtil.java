@@ -46,7 +46,6 @@ public class DdiExportUtil {
     public static OutputStream datasetJson2ddi(JsonObject datasetDtoAsJson) {
         logger.fine(JsonUtil.prettyPrint(datasetDtoAsJson.toString()));
         Gson gson = new Gson();
-        System.out.print(datasetDtoAsJson.toString());
         DatasetDTO datasetDto = gson.fromJson(datasetDtoAsJson.toString(), DatasetDTO.class);
         try {
             return dtoddi(datasetDto);
