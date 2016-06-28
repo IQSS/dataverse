@@ -67,6 +67,11 @@ https://github.com/IQSS/dataverse/issues/2595 contains some information on enabl
 
 There is a database table called ``actionlogrecord`` that captures events that may be of interest. See https://github.com/IQSS/dataverse/issues/2729 for more discussion around this table.
 
+Maintenance
+----------
+
+When you have scheduled down time for your production servers, we have a `static maintenance page template <../_static/installation/files/etc/maintenance/maintenance.xhtml>`_ that we've provided for your convenience.
+
 User Administration
 -------------------
 
