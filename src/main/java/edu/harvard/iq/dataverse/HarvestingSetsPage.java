@@ -131,7 +131,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
             oaiServerStatusRadio = oaiServerStatusRadioDisabled;
         }
                 
-        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Harvesting Sets", JH.localize("harvestsets.toptip")));
+        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, JH.localize("harvestsets.title"), JH.localize("harvestsets.toptip")));
         return null; 
     }
     
