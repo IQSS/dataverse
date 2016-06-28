@@ -104,3 +104,4 @@ Next Steps
 Proceed to the :doc:`prerequisites` section which will help you get ready to run the Dataverse installation script.
 
 .. |3webservers| image:: ./img/3webservers.png
+   :class: img-responsive
