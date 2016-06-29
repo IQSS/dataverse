@@ -287,27 +287,7 @@ public class ThemeWidgetFragment implements java.io.Serializable {
         JsfHelper.addSuccessMessage(JH.localize("dataverse.theme.success"));    
         return "dataverse?faces-redirect=true&alias="+editDv.getAlias();  // go to dataverse page 
     }
-    
-    public String saveAdvanced() {
-        // If this Dv isn't the root, delete the uploaded file and remove theme
-        // before saving.
-        if (!editDv.isThemeRoot()) {
-            uploadedFile=null;
-            editDv.setDataverseTheme(null);
-        }
-        Command<Dataverse>    cmd = new UpdateDataverseThemeCommand(editDv, this.uploadedFile, dvRequestService.getDataverseRequest());
-        try {
-            commandEngine.submit(cmd);            
-        } catch (Exception ex) {
-            logger.log(Level.SEVERE, "error updating dataverse Personal Website URL", ex);
-           FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_FATAL, "Dataverse Save Failed-", JH.localize("dataverse.theme.failure")));       
-          return null;
-        } finally {
-              this.cleanupTempDirectory(); 
-        }
-        JsfHelper.addSuccessMessage(JH.localize("dataverse.widgets.advanced.success.message"));    
-        return "dataverse?faces-redirect=true&alias="+editDv.getAlias();  // go to dataverse page 
-    }   
+      
  }
 
 

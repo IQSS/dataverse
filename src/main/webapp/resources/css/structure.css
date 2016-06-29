@@ -545,7 +545,8 @@ div[id$='roleDisplay'] span.label, div[id$='roleDetails'] span.label {display:in
 #author, #contact {display:block; margin-bottom:.5em;}
 #citation-block {margin-bottom:.5em;}
 .bg-citation {background:#ECF6FB;}
-div.alert-info.bg-citation, div.alert-danger.bg-danger {padding-top:0; padding-bottom:0; border-radius:0; color:#333;}
+div.alert-info.bg-citation, div.alert-danger.bg-danger {padding-top:4px; padding-bottom:4px; border-radius:0; color:#333;}
+#citation-block > div.alert-info.bg-citation, #citation-block > div.alert-danger.bg-danger {padding-top:0; padding-bottom:0;}
 #citation-select {display:inline-block;}
 #citation, #citation-download, #citation-standards {padding:.5em;}
 #citation span.glyphicon-question-sign {margin-left:.5em; margin-bottom:2px; vertical-align: middle;}
