@@ -70,7 +70,9 @@ There is a database table called ``actionlogrecord`` that captures events that m
 Maintenance
 ----------
 
-When you have scheduled down time for your production servers, we have a `static maintenance page template <../_static/installation/files/etc/maintenance/maintenance.xhtml>`_ that we've provided for your convenience.
+When you have scheduled down time for your production servers, we provide a `sample maintenance page <../_static/installation/files/etc/maintenance/maintenance.xhtml>`_ (right-click and select "Save File As" to download).
+
+The maintenance page is intended to be a static page served by Apache to provide users with a nicer, more informative experience when the site is unavailable.
 
 User Administration
 -------------------
