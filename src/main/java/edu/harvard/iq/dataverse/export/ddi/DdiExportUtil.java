@@ -59,8 +59,10 @@ public class DdiExportUtil {
         OutputStream outputStream = new ByteArrayOutputStream();
         XMLStreamWriter xmlw = XMLOutputFactory.newInstance().createXMLStreamWriter(outputStream);
         xmlw.writeStartElement("codeBook");
-        xmlw.writeDefaultNamespace("http://www.icpsr.umich.edu/DDI");
-        writeAttribute(xmlw, "version", "2.0");
+        xmlw.writeDefaultNamespace("ddi:codebook:2_5");
+        xmlw.writeAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
+        xmlw.writeAttribute("xsi:schemaLocation", "ddi:codebook:2_5 http://www.ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd");
+        writeAttribute(xmlw, "version", "2.5");
         createStdyDscr(xmlw, datasetDto);
         createdataDscr(xmlw, datasetDto.getDatasetVersion().getFiles());
         xmlw.writeEndElement(); // codeBook
@@ -138,14 +140,14 @@ public class DdiExportUtil {
         //xmlw.writeStartElement("distStmt"); //Also need Contact
         writeDistributorsElement(xmlw, version);
         writeContactsElement(xmlw, version);
-        //writeFullElement(xmlw, "depositr", dto2Primitive(version, DatasetFieldConstant.depositor));    
+        writeFullElement(xmlw, "depositr", dto2Primitive(version, DatasetFieldConstant.depositor));    
         writeFullElement(xmlw, "depDate", dto2Primitive(version, DatasetFieldConstant.dateOfDeposit));  
         //xmlw.writeEndElement(); // distStmt
         
         writeFullElementList(xmlw, "relMat", dto2PrimitiveList(version, DatasetFieldConstant.relatedMaterial));
         writeFullElementList(xmlw, "relStdy", dto2PrimitiveList(version, DatasetFieldConstant.relatedDatasets));
         writeFullElementList(xmlw, "othRefs", dto2PrimitiveList(version, DatasetFieldConstant.otherReferences));
-        writeFullElementList(xmlw, "dataKind", dto2PrimitiveList(version, DatasetFieldConstant.kindOfData));
+//        writeFullElementList(xmlw, "dataKind", dto2PrimitiveList(version, DatasetFieldConstant.kindOfData));
         writeSeriesElement(xmlw, version);
         writeSoftwareElement(xmlw, version);
         writeFullElementList(xmlw, "dataSrc", dto2PrimitiveList(version, DatasetFieldConstant.dataSources));
@@ -978,28 +980,6 @@ public class DdiExportUtil {
                     return fieldDTO.getMultiplePrimitive();
                 }
             }
-        }
-        return null;
-    }
-    
-    private static String dto2ChildVal(DatasetVersionDTO datasetVersionDTO, String parentDatasetFieldTypeName, String childDatasetFieldTypeName) {
-        for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
-            String key = entry.getKey();
-            MetadataBlockDTO value = entry.getValue();
-           // if ("citation".equals(key)) {
-                for (FieldDTO fieldDTO : value.getFields()) {
-                    if (parentDatasetFieldTypeName.equals(fieldDTO.getTypeName())) {
-                        for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
-                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
-                                FieldDTO next = iterator.next();
-                                if (childDatasetFieldTypeName.equals(next.getTypeName())) {
-                                    return next.getSinglePrimitive();
-                                }
-                            }
-                        }
-                    }
-                }
-           // }
         }
         return null;
     }
