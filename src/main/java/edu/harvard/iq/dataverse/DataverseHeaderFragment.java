@@ -58,6 +58,9 @@ public class DataverseHeaderFragment implements java.io.Serializable {
 
     @Inject
     DataverseSession dataverseSession;
+    
+    @Inject 
+    NavigationWrapper navigationWrapper;    
 
     @EJB
     UserNotificationServiceBean userNotificationService;
@@ -75,6 +78,9 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     }
     
     public void initBreadcrumbs(DvObject dvObject) {
+            if (dvObject == null) {
+                return;
+            }
             if (dvObject.getId() != null) {
                 initBreadcrumbs(dvObject, null);
             } else {
@@ -106,12 +112,12 @@ public class DataverseHeaderFragment implements java.io.Serializable {
         breadcrumbs.clear();
 
         while (dvObject != null) {
-            breadcrumbs.add(0, new Breadcrumb(dvObject.getDisplayName(), dvObject));
+            breadcrumbs.add(0, new Breadcrumb(dvObject, dvObject.getDisplayName()));
             dvObject = dvObject.getOwner();
         }        
         
         if (subPage != null) {
-            breadcrumbs.add(new Breadcrumb(subPage, null));
+            breadcrumbs.add(new Breadcrumb(subPage));
         }
     }
 
@@ -166,7 +172,7 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     public String logout() {
         dataverseSession.setUser(null);
 
-        String redirectPage = getPageFromContext();
+        String redirectPage = navigationWrapper.getPageFromContext();
         try {
             redirectPage = URLDecoder.decode(redirectPage, "UTF-8");
         } catch (UnsupportedEncodingException ex) {
@@ -196,64 +202,41 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     public String getSignupUrl(String loginRedirect) {
         String nonNullDefaultIfKeyNotFound = "";
         String signUpUrl = settingsService.getValueForKey(SettingsServiceBean.Key.SignUpUrl, nonNullDefaultIfKeyNotFound);
-        return signUpUrl + (signUpUrl.indexOf("?") == -1 ? loginRedirect : loginRedirect.replace("?", "&"));
+        return signUpUrl + (!signUpUrl.contains("?") ? loginRedirect : loginRedirect.replace("?", "&"));
     }
 
     public String getLoginRedirectPage() {
-        return getRedirectPage();
+        System.out.println("DEPRECATED call to getLoginRedirectPage method in DataverseHeaderfragment: " + navigationWrapper.getRedirectPage());
+        return navigationWrapper.getRedirectPage();
     }
 
-    // @todo consider creating a base bean, for now just make this static
-    public static String getRedirectPage() {
-
-        String redirectPage = getPageFromContext();
-        if (!StringUtils.isEmpty(redirectPage)) {
-            return "?redirectPage=" + redirectPage;
-        }
-        return "";
+    public void addBreadcrumb (String url, String linkString){
+        breadcrumbs.add(new Breadcrumb(url, linkString));
     }
-
-    private static String getPageFromContext() {
-        try {
-            HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-            StringBuilder redirectPage = new StringBuilder();
-            redirectPage.append(req.getServletPath());
-
-            // to regenerate the query string, we need to use the parameter map; however this can contain internal POST parameters
-            // that we don't want, so we filter through a list of paramters we do allow
-            // @todo verify what needs to be in this list of available parameters (for example do we want to repeat searches when you login?
-            List acceptableParameters = new ArrayList();
-            acceptableParameters.addAll(Arrays.asList("id", "alias", "version", "q", "ownerId", "persistentId", "versionId", "datasetId", "selectedFileIds", "mode"));
-
-            if (req.getParameterMap() != null) {
-                StringBuilder queryString = new StringBuilder();
-                for (Map.Entry<String, String[]> entry : ((Map<String, String[]>) req.getParameterMap()).entrySet()) {
-                    String name = entry.getKey();
-                    if (acceptableParameters.contains(name)) {
-                        String value = entry.getValue()[0];
-                        queryString.append(queryString.length() == 0 ? "?" : "&").append(name).append("=").append(value);
-                    }
-                }
-                redirectPage.append(queryString);
-            }
-
-            return URLEncoder.encode(redirectPage.toString(), "UTF-8");
-        } catch (UnsupportedEncodingException ex) {
-            Logger.getLogger(DataverseHeaderFragment.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return "";
+    
+    public void addBreadcrumb (String linkString){
+        breadcrumbs.add(new Breadcrumb(linkString));
     }
 
     // inner class used for breadcrumbs
     public static class Breadcrumb {
 
         private final String breadcrumbText;
-        private final DvObject dvObject;
+        private  DvObject dvObject = null;
+        private  String url = null;
 
-        public Breadcrumb(String breadcrumbText, DvObject dvObject) {
-            this.breadcrumbText = breadcrumbText;            
-            this.dvObject = dvObject;            
+        public Breadcrumb( DvObject dvObject, String breadcrumbText) {
+            this.breadcrumbText = breadcrumbText;
+            this.dvObject = dvObject;
+        }
 
+        public Breadcrumb( String url, String breadcrumbText) {
+            this.breadcrumbText = breadcrumbText;
+            this.url = url;
+        }
+        
+        public Breadcrumb(String breadcrumbText){
+            this.breadcrumbText = breadcrumbText;
         }
 
         public String getBreadcrumbText() {
@@ -264,32 +247,9 @@ public class DataverseHeaderFragment implements java.io.Serializable {
             return dvObject;
         }
 
-    }
-    
-    private Boolean debugShibboleth = null;
-    
-    public boolean isDebugShibboleth() {
-        if (debugShibboleth != null) {
-            return debugShibboleth;
+        public String getUrl() {
+            return url;
         }
-        debugShibboleth = systemConfig.isDebugEnabled();
-        return debugShibboleth;
-    }
 
-    public List<String> getGroups(User user) {
-        List<String> groups = new ArrayList<>();
-        Set<Group> groupsForUser = groupService.groupsFor(user, null);
-        for (Group group : groupsForUser) {
-            groups.add(group.getDisplayName() + " (" + group.getIdentifier() + ")");
-        }
-        return groups;
-    }
-
-    public List<String> getPermissions(User user, Dataverse dataverse) {
-        List<String> permissions = new ArrayList<>();
-        for (Permission permission : permissionService.permissionsFor(user, dataverse)) {
-            permissions.add(permission.name());
-        }
-        return permissions;
     }
 }

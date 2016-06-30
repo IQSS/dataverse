@@ -4,7 +4,7 @@
 
     <groupId>edu.harvard.iq</groupId>
     <artifactId>dataverse</artifactId>
-    <version>4.3.1</version>
+    <version>4.4</version>
     <packaging>war</packaging>
 
     <name>dataverse</name>
@@ -317,6 +317,11 @@
             <groupId>org.jacoco</groupId>
             <artifactId>jacoco-maven-plugin</artifactId>
             <version>0.7.5.201505241946</version>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>1.10.19</version>
         </dependency>
         <!-- Added for DataCite -->
         <dependency>

@@ -1,16 +1,17 @@
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
-     xmlns:h="http://java.sun.com/jsf/html"
-     xmlns:f="http://java.sun.com/jsf/core"
-     xmlns:ui="http://java.sun.com/jsf/facelets"
-     xmlns:p="http://primefaces.org/ui"
-     xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
-     xmlns:jsf="http://xmlns.jcp.org/jsf"
-     xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs"
-     xmlns:o="http://omnifaces.org/ui">
-    
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
+                xmlns:jsf="http://xmlns.jcp.org/jsf"
+                xmlns:c="http://java.sun.com/jsp/jstl/core"
+                xmlns:o="http://omnifaces.org/ui"
+                xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
+
     <div id="dataverse-header-block">
         <!-- Navbar Panel -->
-        <nav id="navbarFixed" class="navbar navbar-default navbar-fixed-top" role="navigation">
+        <nav id="navbarFixed" class="navbar navbar-default navbar-fixed-top" role="navigation" jsf:rendered="#{!widgetWrapper.widgetView}">
             <div class="container">
                 <div class="navbar-header">
                     <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#topNavBar">
@@ -41,7 +42,8 @@
                                 <label class="sr-only" for="navbarsearch">#{bundle.search}</label>
                                 <input id="navbarsearch" type="text" class="search-input ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all" size="28" value="" placeholder="#{bundle['header.search.title']}"/>
                             </div>
-                            <button type="submit" class="btn btn-default" onclick="window.location = '/?q=' + document.getElementById('navbarsearch').value; return false;">
+                            <button type="submit" class="btn btn-default" onclick="window.location = '/?q=' + document.getElementById('navbarsearch').value;
+                                    return false;">
                                 <span class="glyphicon glyphicon-search"/> #{bundle.find}
                             </button>
                         </form>
@@ -77,18 +79,18 @@
                                 </li>
                             </ul>
                         </li>
-                        <h:form class="navbar-form navbar-left navbar-form-link">
-                           <p:commandLink value="#{bundle['header.support']}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
+                        <o:form useRequestURI="true" class="navbar-form navbar-left navbar-form-link">
+                            <p:commandLink value="#{bundle['header.support']}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
                                 <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
                                 <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
                                 <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
                                 <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
-                           </p:commandLink>
-                        </h:form>
+                            </p:commandLink>
+                        </o:form>
                         <ui:fragment rendered="#{!dataverseSession.user.authenticated}">
                             <li>
                                 <h:outputLink rendered="#{dataverseHeaderFragment.signupAllowed}"
-                                              value="#{dataverseHeaderFragment.getSignupUrl(loginRedirectPage)}">
+                                              value="#{dataverseHeaderFragment.getSignupUrl(navigationWrapper.redirectPage)}">
                                     #{bundle['header.signUp']}
                                 </h:outputLink>
                             </li>
@@ -105,10 +107,10 @@
                                         <span class="glyphicon glyphicon-user text-danger"></span>
                                     </ui:fragment>
                                     <h:outputText styleClass="#{dataverseSession.user.superuser ? 'text-danger' : ''}" value="#{dataverseSession.user.displayInfo.title}" id="userDisplayInfoTitle"/>
-                                  <h:outputText styleClass="label label-danger" rendered="#{ dataverseHeaderFragment.getUnreadNotificationCount(dataverseSession.user.id) > 0 }"
-                                                    value="#{ dataverseHeaderFragment.getUnreadNotificationCount(dataverseSession.user.id) }" />
-                                    
-                                  <b class="caret"></b>
+                                    <h:outputText styleClass="label label-danger" rendered="#{ dataverseHeaderFragment.getUnreadNotificationCount(dataverseSession.user.id) > 0 }"
+                                                  value="#{ dataverseHeaderFragment.getUnreadNotificationCount(dataverseSession.user.id) }" />
+
+                                    <b class="caret"></b>
                                 </span>
                                 <ul class="dropdown-menu">
                                     <li>
@@ -123,7 +125,7 @@
                                             <h:outputText value="#{bundle['header.user.selectTab.notifications']}" />
                                             <h:outputText styleClass="label label-danger" rendered="#{ dataverseHeaderFragment.getUnreadNotificationCount(dataverseSession.user.id) > 0 }"
                                                           value="#{dataverseHeaderFragment.getUnreadNotificationCount(dataverseSession.user.id)}" />
-                                       </h:outputLink>
+                                        </h:outputLink>
                                     </li>
                                     <ui:remove>
                                         <li>
@@ -139,13 +141,19 @@
                                             <h:outputText value="#{bundle['header.accountInfo']}" />
                                         </h:outputLink>
                                     </li>
+                                    <li>
+                                        <h:outputLink value="/dataverseuser.xhtml">
+                                            <f:param name="selectTab" value="apiTokenTab" />
+                                            <h:outputText value="#{bundle['header.user.selectTab.apiToken']}" />
+                                        </h:outputLink>
+                                    </li>
                                     <li class="divider"></li>
                                     <li class="logout">
-                                        <h:form styleClass="navbar-form navbar-left" pt:role="logout">
+                                        <o:form useRequestURI="true" styleClass="navbar-form navbar-left" pt:role="logout">
                                             <h:commandLink action="#{dataverseHeaderFragment.logout}" id="lnk_header_logout">
                                                 <h:outputText value="#{bundle['header.logOut']}" />
                                             </h:commandLink>
-                                        </h:form>
+                                        </o:form>
                                     </li>
                                 </ul>
                             </li>
@@ -154,20 +162,15 @@
                 </div>
             </div>
         </nav>
-        <ui:fragment rendered="#{dataverseHeaderFragment.debugShibboleth}">
-          <h:outputText value="groups: #{dataverseHeaderFragment.getGroups(dataverseSession.user)}"/>
-          <br/>
-          <h:outputText value="permissions #{dataverseHeaderFragment.getPermissions(dataverseSession.user, dataverse)}"/>
-        </ui:fragment>
         <ui:param name="dataversePage" value="#{dataverseLinksStayOnPage == true ? '' : '/dataverse.xhtml' }"/>
 
         <!-- Header Panel -->
-        <div id="dataverseHeader" class="container bg-muted" 
+        <div id="dataverseHeader" class="container bg-muted"
                 style="background:##{!empty dataverse.dataverseTheme.backgroundColor ? dataverse.dataverseTheme.backgroundColor : 'F5F5F5'};"
-                jsf:rendered="#{showDataverseHeader}">
+                jsf:rendered="#{showDataverseHeader and !widgetWrapper.widgetView}">
              <o:importFunctions type="org.apache.commons.lang.StringEscapeUtils"/>
             <div class="dataverseHeaderLogo" style="text-align:#{!empty dataverse.dataverseTheme.logoAlignment ? dataverse.dataverseTheme.logoAlignment : 'center'};; background:##{!empty dataverse.dataverseTheme.logoBackgroundColor ? dataverse.dataverseTheme.logoBackgroundColor : 'F5F5F5'};"
-                    jsf:rendered="#{!empty dataverse.dataverseTheme.logo and dataverse.dataverseTheme.logoFormat == 'RECTANGLE'}">
+                 jsf:rendered="#{!empty dataverse.dataverseTheme.logo and dataverse.dataverseTheme.logoFormat == 'RECTANGLE'}">
                 <img src="/logos/#{dataverse.logoOwnerId}/#{dataverse.dataverseTheme.logo}" alt="#{dataverse.name} #{bundle.dataverse}"/>
             </div>
             <div class="dataverseHeaderBlock">
@@ -199,21 +202,28 @@
                 <div class="breadcrumbBlock">
                     <h:outputText value="#{breadcrumb.breadcrumbText}" styleClass="#{'breadcrumbActive'}" rendered="#{status.last}"/>
                     <ui:fragment rendered="#{!status.last}">
-                        <h:outputText value="#{breadcrumb.breadcrumbText}" rendered="#{!breadcrumb.dvObject.instanceofDataverse and !breadcrumb.dvObject.instanceofDataset}"/>
-
-                        <ui:fragment rendered="#{breadcrumb.dvObject.instanceofDataverse}">                       
-                            <a id="breadcrumbLnk#{status.index}" href="/dataverse/${breadcrumb.dvObject.alias}">
+                        <h:outputText value="#{breadcrumb.breadcrumbText}" rendered="#{!breadcrumb.dvObject.instanceofDataverse and !breadcrumb.dvObject.instanceofDataset and empty breadcrumb.url}"/>
+                        <ui:fragment rendered="#{breadcrumb.dvObject == null and !empty breadcrumb.url}">
+                            <ui:remove><!-- No widget code for admin pgs that would never display in widget --></ui:remove>
+                            <a id="breadcrumbLnk#{status.index}" href="${breadcrumb.url}">
                                 <h:outputText value="#{breadcrumb.breadcrumbText}"/>
                             </a>
                         </ui:fragment>
-                        <ui:fragment rendered="#{breadcrumb.dvObject.instanceofDataset}">                       
-                            <a id="breadcrumbLnk#{status.index}" href="/dataset.xhtml?persistentId=${breadcrumb.dvObject.globalId}">
+                        <ui:fragment rendered="#{breadcrumb.dvObject.instanceofDataverse}">
+                            <c:set var="dvUrl" value="/dataverse/#{breadcrumb.dvObject.alias}"/>
+                            <a id="breadcrumbLnk#{status.index}" href="#{widgetWrapper.isWidgetTarget(breadcrumb.dvObject) ? widgetWrapper.wrapURL(dvUrl) : dvUrl}" target="#{!widgetWrapper.widgetView or widgetWrapper.isWidgetTarget(breadcrumb.dvObject) ? '' : '_blank'}">
                                 <h:outputText value="#{breadcrumb.breadcrumbText}"/>
                             </a>
-                        </ui:fragment>                        
+                        </ui:fragment>
+                        <ui:fragment rendered="#{breadcrumb.dvObject.instanceofDataset}">
+                            <c:set var="dsUrl" value="/dataset.xhtml?persistentId=#{breadcrumb.dvObject.globalId}"/>
+                            <a id="breadcrumbLnk#{status.index}" href="#{widgetWrapper.isWidgetTarget(breadcrumb.dvObject) ? widgetWrapper.wrapURL(dsUrl) : dsUrl}" target="#{!widgetWrapper.widgetView or widgetWrapper.isWidgetTarget(breadcrumb.dvObject) ? '' : '_blank'}">
+                                <h:outputText value="#{breadcrumb.breadcrumbText}"/>
+                            </a>
+                        </ui:fragment>
                     </ui:fragment>
                 </div>
-            </ui:repeat>                    
+            </ui:repeat>
         </div>
 
         <ui:remove>

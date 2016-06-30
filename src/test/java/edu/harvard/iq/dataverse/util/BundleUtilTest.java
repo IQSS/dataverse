@@ -53,6 +53,21 @@ public class BundleUtilTest {
                 + "<a href=\"/dataverse/dvAlias\" title=\"DV Name\">DV Name</a>.",
                 BundleUtil.getStringFromBundle("dataverse.saved.search.success",
                         Arrays.asList("<a href=\"/dataverse/dvAlias\" title=\"DV Name\">DV Name</a>")));
+        assertEquals("Your institutional log in for TestShib Test IdP matches an email address already being used for a Dataverse "
+                + "account. By entering your current Dataverse password below, your existing Dataverse account can be "
+                + "converted to use your institutional log in. After converting, you will only need to use your institutional log in.",
+                BundleUtil.getStringFromBundle("shib.welcomeExistingUserMessage",
+                        Arrays.asList("TestShib Test IdP")));
+        assertEquals("Your institutional log in for your institution matches an email address already being used for a Dataverse "
+                + "account. By entering your current Dataverse password below, your existing Dataverse account can be "
+                + "converted to use your institutional log in. After converting, you will only need to use your institutional log in.",
+                BundleUtil.getStringFromBundle("shib.welcomeExistingUserMessage",
+                        Arrays.asList(BundleUtil.getStringFromBundle("shib.welcomeExistingUserMessageDefaultInstitution"))));
+        assertEquals("Welcome to Root Dataverse! Get started by adding or finding data. "
+                + "Have questions? Check out the <a href=\"http://guides.dataverse.org/en/4.3/user/index.html\">User Guide</a>."
+                + " Want to test out Dataverse features? Use our <a href=\"https://demo.dataverse.org\">Demo Site</a>.",
+                BundleUtil.getStringFromBundle("notification.welcome",
+                        Arrays.asList("Root", "<a href=\"http://guides.dataverse.org/en/4.3/user/index.html\">User Guide</a>", "<a href=\"https://demo.dataverse.org\">Demo Site</a>")));
     }
 
     @Test

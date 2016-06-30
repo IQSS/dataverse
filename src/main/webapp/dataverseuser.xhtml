@@ -23,32 +23,12 @@
                     <f:viewParam name="redirectPage" value="#{DataverseUserPage.redirectPage}"/>                    
                     <f:viewParam name="selectTab" value="#{DataverseUserPage.selectTab}"/>
                     <f:viewAction action="#{DataverseUserPage.init}" />
-
-                    <ui:remove>
-                    <f:viewParam name="q" value="#{SearchIncludeFragment.query}"/>
-                    <f:viewParam name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
-                    <f:viewParam name="fq1" value="#{SearchIncludeFragment.fq1}"/>
-                    <f:viewParam name="fq0" value="#{SearchIncludeFragment.fq0}"/>
-                    <f:viewParam name="fq2" value="#{SearchIncludeFragment.fq2}"/>
-                    <f:viewParam name="fq3" value="#{SearchIncludeFragment.fq3}"/>
-                    <f:viewParam name="fq4" value="#{SearchIncludeFragment.fq4}"/>
-                    <f:viewParam name="fq5" value="#{SearchIncludeFragment.fq5}"/>
-                    <f:viewParam name="fq6" value="#{SearchIncludeFragment.fq6}"/>
-                    <f:viewParam name="fq7" value="#{SearchIncludeFragment.fq7}"/>
-                    <f:viewParam name="fq8" value="#{SearchIncludeFragment.fq8}"/>
-                    <f:viewParam name="fq9" value="#{SearchIncludeFragment.fq9}"/>
-                    <f:viewParam name="sort" value="#{SearchIncludeFragment.sortField}"/>
-                    <f:viewParam name="order" value="#{SearchIncludeFragment.sortOrder}"/>
-                    <f:viewParam name="page" value="#{SearchIncludeFragment.page}"/>
-                    <f:viewParam name="debug" value="#{SearchIncludeFragment.debug}"/>
-                    <f:viewAction action="#{SearchIncludeFragment.search(true)}" />
-                    </ui:remove>
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseServiceBean.findRootDataverse(), (DataverseUserPage.editMode == 'CREATE' ? bundle['user.createBtn'] : bundle.account))}"/>
                 </f:metadata>
                 <h:form id="dataverseUserForm">
                     <p:focus context="dataverseUserForm"/>
                     <div class="clearfix" jsf:rendered="#{empty DataverseUserPage.editMode}">
-                        <div class="btn-group pull-right">
+                        <div class="btn-group pull-right" jsf:rendered="#{!empty DataverseUserPage.builtinUser}">
                             <button type="button" id="editAccount" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                                 <ui:fragment rendered="#{!empty DataverseUserPage.builtinUser}">
                                     <span class="glyphicon glyphicon-pencil"/> #{bundle['account.edit']} 
@@ -61,7 +41,7 @@
                             <ul class="dropdown-menu pull-right text-left" role="menu">
                                 <ui:fragment rendered="#{!empty DataverseUserPage.builtinUser}">
                                     <li>
-                                        <p:commandLink id="editAccount" actionListener="#{DataverseUserPage.edit}" update="@form">
+                                        <p:commandLink id="editAccount" actionListener="#{DataverseUserPage.edit}" update="@form" oncomplete="bind_bsui_components();">
                                             <h:outputText value="#{bundle['account.info']}" />
                                         </p:commandLink>
                                     </li>
@@ -71,11 +51,6 @@
                                         </p:commandLink>
                                     </li>
                                 </ui:fragment>
-                                <li>
-                                    <h:outputLink value="/apitoken.xhtml">
-                                        <h:outputText value="#{bundle.apiTaken}" />
-                                    </h:outputLink>
-                                </li>
                             </ul>
                         </div>
                     </div>
@@ -83,27 +58,12 @@
                     <p:panel rendered="#{DataverseUserPage.editMode == 'FORGOT'}">
                         <h:outputText value="#{bundle['user.lostPasswdTip']}" />
                     </p:panel>
-                    
                         
                     <p:tabView id="dataRelatedToMeView" activeIndex="#{DataverseUserPage.activeIndex}" dynamic="true" rendered="#{empty DataverseUserPage.editMode}">
                         <p:ajax event="tabChange" listener="#{DataverseUserPage.onTabChange}" update="@all" oncomplete="javascript:dataverseuser_page_rebind();" />
                         <p:tab id="myData" title="My Data">
                             <ui:include src="mydata_fragment.xhtml"></ui:include>
-                            <!--ui:include src="mydata_page.xhtml"></ui:include-->
                         </p:tab>
-
-                        <ui:remove>
-                        <p:tab id="dataRelatedToMe" title="#{bundle['user.dataRelatedToMe']}">
-                            <ui:fragment>
-
-                                <ui:include src="search-include-fragment.xhtml">
-                                    <ui:param name="showFacets" value="true"/>
-                                    <ui:param name="showSearch" value="true"/>
-                                    <ui:param name="dataverseRedirectPage" value="dataverseuser.xhtml"/>
-                                </ui:include>
-                            </ui:fragment>
-                        </p:tab>
-                        </ui:remove>
                         <p:tab id="notifications" title="#{bundle['header.user.selectTab.notifications']}">
                             <div class="table-container">
                                 <ui:repeat value="#{DataverseUserPage.notificationsList}" var="item">
@@ -123,7 +83,7 @@
                                                             <a href="#{systemConfig.guidesBaseUrl}/#{systemConfig.version}/user/index.html" title="#{dataverseServiceBean.findRootDataverse().name} #{bundle['dataverse']} #{bundle['header.guides.user']}" target="_blank">#{bundle['header.guides.user']}</a>                                                              
                                                         </o:param>
                                                         <o:param>
-                                                            <a href="#" onclick="event.preventDefault();PF(&#39;contactForm&#39;).show();" title="#{bundle['contact.contact']} #{dataverseServiceBean.findRootDataverse().name} #{bundle['dataverse']} #{bundle['header.support']}">#{bundle['dataverse']} #{bundle['header.support']}</a>                                                         
+                                                            <a href="https://demo.dataverse.org">#{bundle['notification.demoSite']}</a>                                                         
                                                         </o:param>         
                                                     </h:outputFormat>
                                                 </ui:fragment>
@@ -304,82 +264,96 @@
                                 </ui:repeat>
                             </div>
                         </p:tab>
-                        <p:tab id="accountInfo" title="Account Information">
-                            <div jsf:rendered="#{empty DataverseUserPage.builtinUser}">
-                                #{bundle['user.toEditDetail']}
-                            </div>
-                            <div class="form-horizontal" jsf:rendered="#{!empty DataverseUserPage.builtinUser}">
+                        <p:tab id="accountInfo" title="#{bundle['header.user.selectTab.accountInfo']}">
+                            <div class="form-horizontal" jsf:rendered="#{!empty DataverseUserPage.currentUser}">
+                                <div class="form-group" jsf:rendered="#{empty DataverseUserPage.builtinUser}">
+                                    <div class="col-sm-12">
+                                        <p class="help-block">
+                                            <span class="glyphicon glyphicon-info-sign"/> <h:outputText value=" #{bundle['user.isShibUser']}" />
+                                            <h:outputText value=" #{bundle['user.helpShibUserMigrateOffShibBeforeLink']} " />
+                                            <p:commandLink value="#{bundle['contact.support']}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
+                                                <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
+                                                <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
+                                                <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
+                                                <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
+                                            </p:commandLink>
+                                            <h:outputText value=" #{bundle['user.helpShibUserMigrateOffShibAfterLink']}" />
+                                        </p>
+                                    </div>
+                                </div>
                                 <!-- Username -->
                                 <div class="form-group">
                                     <label for="userNameEmail" class="col-sm-3 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['user.username.illegal.tip']}">
-                                            #{bundle['user.username']}
-                                        </span>
+                                        #{bundle['user.username']}
                                     </label>
                                     <div class="col-sm-9">
-                                        <p class="form-control-static">#{DataverseUserPage.builtinUser.userName}</p>
+                                        <p class="form-control-static" jsf:rendered="#{empty DataverseUserPage.builtinUser}">#{DataverseUserPage.currentUser.identifier.replaceFirst("@", "")}</p>
+                                        <p class="form-control-static" jsf:rendered="#{!empty DataverseUserPage.builtinUser}">#{DataverseUserPage.builtinUser.userName}</p>
                                     </div>
                                 </div>
-
                                 <!-- First Name -->
                                 <div class="form-group">
                                     <label for="firstName" class="col-sm-3 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['user.firstName.tip']}">
-                                            #{bundle['user.firstName']}
-                                        </span>
+                                        #{bundle['user.firstName']}
                                     </label>
                                     <div class="col-sm-9">
-                                        <p class="form-control-static">#{DataverseUserPage.builtinUser.firstName}</p>
+                                        <p class="form-control-static">#{DataverseUserPage.currentUser.firstName}</p>
                                     </div>
                                 </div>
-
                                 <!-- Last Name -->
                                 <div class="form-group">
                                     <label for="lastName" class="col-sm-3 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['user.lastName.tip']}">
-                                            #{bundle['user.lastName']}
-                                        </span>
+                                        #{bundle['user.lastName']}
                                     </label>
                                     <div class="col-sm-9">
-                                        <p class="form-control-static">#{DataverseUserPage.builtinUser.lastName}</p>
+                                        <p class="form-control-static">#{DataverseUserPage.currentUser.lastName}</p>
                                     </div>
                                 </div>
-
                                 <!-- Email -->
                                 <div class="form-group">
                                     <label for="email" class="col-sm-3 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['user.email.tip']}">
-                                            #{bundle.email}
-                                        </span>
+                                        #{bundle.email}
                                     </label>
                                     <div class="col-sm-9">
-                                        <p class="form-control-static">#{DataverseUserPage.builtinUser.email}</p>
+                                        <p class="form-control-static">#{DataverseUserPage.currentUser.email}</p>
                                     </div>
                                 </div>
-
                                 <!-- Affiliation -->
-                                <div class="form-group">
+                                <div class="form-group" jsf:rendered="#{!empty DataverseUserPage.currentUser.affiliation}">
                                     <label for="affiliation" class="col-sm-3 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['user.affiliation.tip']}">
-                                            #{bundle.affiliation}
-                                        </span>
+                                        #{bundle.affiliation}
                                     </label>
                                     <div class="col-sm-9">
-                                        <p class="form-control-static">#{DataverseUserPage.builtinUser.affiliation}</p>
+                                        <p class="form-control-static">#{DataverseUserPage.currentUser.affiliation}</p>
                                     </div>
                                 </div>
-
-                                <!-- Position -->
-                                <div class="form-group">
+                                <!-- Position (not populated for Shibboleth users) -->
+                                <div class="form-group" jsf:rendered="#{!empty DataverseUserPage.builtinUser or !empty DataverseUserPage.builtinUser.position}">
                                     <label for="position" class="col-sm-3 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['user.position.tip']}">
-                                            #{bundle['user.position']}
-                                        </span>
+                                        #{bundle['user.position']}
                                     </label>
                                     <div class="col-sm-9">
                                         <p class="form-control-static">#{DataverseUserPage.builtinUser.position}</p>
                                     </div>
                                 </div>
+                            </div>
+                        </p:tab>
+                        <p:tab id="apiTokenTab" title="#{bundle['apitoken.title']}">
+                            <p class="help-block">
+                                <span class="glyphicon glyphicon-info-sign"/>&#160;
+                                <h:outputFormat value="#{bundle['apitoken.message']}" escape="false">
+                                    <f:param value="&lt;a href=&#34;#{systemConfig.guidesBaseUrl}/#{systemConfig.version}/api&#34; target=&#34;_blank&#34;&gt;"/>
+                                    <f:param value="&lt;/a&gt;"/>
+                                </h:outputFormat>
+                            </p>
+                            <div class="highlight">
+                                 <pre>
+                                    <code class="language-html" data-lang="html">${ApiTokenPage.apiToken}</code>
+                                 </pre>
+                            </div>
+                            <div>
+                                <button class="btn btn-default" jsf:action="#{ApiTokenPage.generate()}">
+                                    #{ApiTokenPage.checkForApiToken() ? bundle['apitoken.regenerateBtn'] : bundle['apitoken.generateBtn']}                                </button>
                             </div>
                         </p:tab>
                         <ui:remove>
@@ -391,180 +365,155 @@
 
                     <p:tabView id="accountInfoView" rendered="#{!empty DataverseUserPage.editMode}">
                         <p:tab id="accountInfoEdit" title="#{bundle['account.info']}">
-                            <div class="clearfix">
-                                <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' and systemConfig.shibEnabled == true}">
-                                    <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> <h:outputText value=" #{bundle['user.institutionLogIn.tip']}" escape="false"/></p>
-                                </ui:fragment>
-                                <div class="form-horizontal">
-                                    <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
-                                    <!-- Username -->
-                                        <div class="form-group col-sm-11">
-                                            <label for="userNameEmail" class="col-sm-3 control-label">
-                                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['user.username.illegal.tip']}">
-                                                    #{bundle['user.username']} <span class="glyphicon glyphicon-asterisk text-danger"/>
-                                                </span>
-                                            </label>
-                                            <div class="col-sm-9">
-                                                <p:panelGrid columns="2" styleClass="noBorders">
-                                                    <p:inputText id="userName" styleClass="form-control" tabindex="1" 
-                                                                    validator="#{DataverseUserPage.validateUserName}" 
-                                                                    value="#{DataverseUserPage.builtinUser.userName}"
-                                                                    disabled="#{DataverseUserPage.editMode != 'CREATE'}"
-                                                                    binding="#{DataverseUserPage.usernameField}"/>
-                                                    <p:message for="userName" display="text" />
-                                                </p:panelGrid>
-                                            </div>
-                                        </div>
-                                    </ui:fragment>
-
-                                    <ui:fragment rendered="#{DataverseUserPage.editMode == DataverseUserPage.changePasswordMode}">
-                                    <!-- Current Password -->
-                                        <div class="form-group col-sm-11">
-                                            <label for="currentPassword" class="col-sm-3 control-label">
-                                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['user.currentPasswd.tip']}">
-                                                    #{bundle['user.currentPasswd']} <span class="glyphicon glyphicon-asterisk text-danger"/>
-                                                </span>
-                                            </label>
-                                            <div class="col-sm-9">
-                                                <p:panelGrid columns="2" styleClass="noBorders">
-                                                    <p:password id="currentPassword" tabindex="1" label="#{bundle['user.currentPasswd']}" styleClass="form-control" validator="#{DataverseUserPage.validateCurrentPassword}" value="#{DataverseUserPage.currentPassword}" />
-                                                    <p:message for="currentPassword" display="text" />
-                                                </p:panelGrid>
-                                            </div>
-                                        </div>
-                                    </ui:fragment>
-                                    <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == DataverseUserPage.changePasswordMode}">
-                                    <!-- Password -->
-                                        <div class="form-group col-sm-11">
-                                            <label for="inputPassword" class="col-sm-3 control-label">
-                                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['user.passwd.illegal.tip']}">
-                                                    <h:outputText value="#{DataverseUserPage.editMode == 'CREATE' ? 'Password' : 'New Password'}" />
-                                                    <span class="glyphicon glyphicon-asterisk text-danger"></span>
-                                                </span>
-                                            </label>
-                                            <div class="col-sm-9">
-                                                <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['user.updatePassword.password']}</p>
-                                                <p:panelGrid columns="2" styleClass="noBorders">
-                                                    <p:password id="inputPassword" tabindex="2" label="#{DataverseUserPage.editMode == 'CREATE' ? 'Password' : 'New Password'}" styleClass="form-control" match="retypePassword" value="#{DataverseUserPage.inputPassword}" validator="#{DataverseUserPage.validateNewPassword}"  />
-                                                    <p:message for="inputPassword" display="text" />
-                                                </p:panelGrid>
-                                            </div>
-                                        </div>
-                                    </ui:fragment>
-                                    <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == DataverseUserPage.changePasswordMode}">
-                                    <!-- Retype Password -->
-                                        <div class="form-group col-sm-11">
-                                            <label for="retypePassword" class="col-sm-3 control-label">
-                                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['user.rePasswd.tip']}">
-                                                    #{bundle['user.rePasswd']} <span class="glyphicon glyphicon-asterisk text-danger"/>
-                                                </span>
-                                            </label>
-                                            <div class="col-sm-9">
-                                                <p:panelGrid columns="2" styleClass="noBorders">
-                                                    <p:password id="retypePassword" tabindex="3" label="#{bundle['user.rePasswd']}" styleClass="form-control" value="#{DataverseUserPage.inputPassword}" />
-                                                    <p:message for="retypePassword" display="text" />
-                                                </p:panelGrid>
-                                            </div>
-                                        </div>
-                                    </ui:fragment>
-
-                                    <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
-                                    <!-- First Name -->
-                                        <div class="form-group col-sm-11">
-                                            <label for="firstName" class="col-sm-3 control-label">
-                                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['user.firstName.tip']}">
-                                                    #{bundle['user.firstName']} <span class="glyphicon glyphicon-asterisk text-danger"/>
-                                                </span>
-                                            </label>
-                                            <div class="col-sm-9">
-                                                <p:panelGrid columns="2" styleClass="noBorders">
-                                                    <p:inputText id="firstName" tabindex="4" styleClass="form-control" value="#{DataverseUserPage.builtinUser.firstName}" />
-                                                    <p:message for="firstName" display="text" />
-                                                </p:panelGrid>
-                                            </div>
-                                        </div>
-                                    </ui:fragment>
-                                    <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
-                                    <!-- Last Name -->
-                                        <div class="form-group col-sm-11">
-                                            <label for="lastName" class="col-sm-3 control-label">
-                                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['user.lastName.tip']}">
-                                                    #{bundle['user.lastName']} <span class="glyphicon glyphicon-asterisk text-danger"/>
-                                                </span>
-                                            </label>
-                                            <div class="col-sm-9">
-                                                <p:panelGrid columns="2" styleClass="noBorders">
-                                                    <p:inputText id="lastName" tabindex="5" styleClass="form-control" value="#{DataverseUserPage.builtinUser.lastName}" />
-                                                    <p:message for="lastName" display="text" />
-                                                </p:panelGrid>
-                                            </div>
-                                        </div>
-                                    </ui:fragment>
-
-                                    <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
-                                    <!-- Email -->
-                                        <div class="form-group col-sm-11">
-                                            <label for="email" class="col-sm-3 control-label">
-                                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{user.email.tip}">
-                                                    #{bundle.email} <span class="glyphicon glyphicon-asterisk text-danger"/>
-                                                </span>
-                                            </label>
-                                            <div class="col-sm-9">
-                                                <p:panelGrid columns="2" styleClass="noBorders">
-                                                    <p:inputText id="email" tabindex="6" styleClass="form-control" 
-                                                                 validator="#{DataverseUserPage.validateUserEmail}"
-                                                                 value="#{DataverseUserPage.builtinUser.email}" />
-                                                    <p:message for="email" display="text" />
-                                                </p:panelGrid>
-                                            </div>
-                                        </div>
-                                    </ui:fragment>
-
-                                    <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
-                                    <!-- Affiliation -->
-                                        <div class="form-group col-sm-11">
-                                            <label for="affiliation" class="col-sm-3 control-label">
-                                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['user.affiliation.tip']}">
-                                                    #{bundle.affiliation}
-                                                </span>
-                                            </label>
-                                            <div class="col-sm-9">
-                                                <p:panelGrid columns="2" styleClass="noBorders">
-                                                    <p:inputText id="affiliation" tabindex="7" styleClass="form-control" value="#{DataverseUserPage.builtinUser.affiliation}" />
-                                                    <p:message for="affiliation" display="text" />
-                                                </p:panelGrid>
-                                            </div>
-                                        </div>
-                                    </ui:fragment>
-
-                                    <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
-                                    <!-- Position -->
-                                        <div class="form-group col-sm-11">
-                                            <label for="position" class="col-sm-3 control-label">
-                                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['user.position.tip']}">
-                                                    #{bundle['user.position']}
-                                                </span>
-                                            </label>
-                                            <div class="col-sm-9">
-                                                <p:panelGrid columns="2" styleClass="noBorders">
-                                                    <p:inputText id="position" tabindex="8" styleClass="form-control" value="#{DataverseUserPage.builtinUser.position}" />
-                                                    <p:message for="position" display="text" />
-                                                </p:panelGrid>
-                                            </div>
-                                        </div>
-                                    </ui:fragment>
-                                    
-                                    <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE'}">
-                                    <!-- Terms of Use -->
-                                        <ui:include src="termsofuse.xhtml"/>
-                                    </ui:fragment>
+                            <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' and systemConfig.shibEnabled == true}">
+                                <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> <h:outputText value=" #{bundle['user.institutionLogIn.tip']}" escape="false"/></p>
+                            </ui:fragment>
+                            <div class="form-horizontal">
+                                <div class="form-group" jsf:rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
+                                <!-- Username -->
+                                    <label for="userNameEmail" class="col-sm-3 control-label">
+                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['user.username.illegal.tip']}">
+                                            #{bundle['user.username']} <span class="glyphicon glyphicon-asterisk text-danger"/>
+                                        </span>
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <p:panelGrid columns="2" styleClass="noBorders">
+                                            <p:inputText id="userName" styleClass="form-control" tabindex="1" 
+                                                            validator="#{DataverseUserPage.validateUserName}" 
+                                                            value="#{DataverseUserPage.builtinUser.userName}"
+                                                            disabled="#{DataverseUserPage.editMode != 'CREATE'}"
+                                                            binding="#{DataverseUserPage.usernameField}"/>
+                                            <p:message for="userName" display="text" />
+                                        </p:panelGrid>
+                                    </div>
                                 </div>
-                                
-                                <div class="button-block pull-left">
-                                    <p:commandButton id="save" tabindex="9" value="#{DataverseUserPage.editMode == 'CREATE' ? bundle['user.createBtn']:bundle.saveChanges}" action="#{DataverseUserPage.save}" update="@form,:messagePanel,:userDisplayInfoTitle" />
-                                    <p:commandButton id="cancel" tabindex="10" value="#{bundle.cancel}" action="#{DataverseUserPage.cancel}" process="@this" update="@form">
-                                        <p:resetInput target="@form" />
-                                    </p:commandButton>
+                                <div class="form-group" jsf:rendered="#{DataverseUserPage.editMode == DataverseUserPage.changePasswordMode}">
+                                <!-- Current Password -->
+                                    <label for="currentPassword" class="col-sm-3 control-label">
+                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['user.currentPasswd.tip']}">
+                                            #{bundle['user.currentPasswd']} <span class="glyphicon glyphicon-asterisk text-danger"/>
+                                        </span>
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <p:panelGrid columns="2" styleClass="noBorders">
+                                            <p:password id="currentPassword" tabindex="1" label="#{bundle['user.currentPasswd']}" styleClass="form-control" validator="#{DataverseUserPage.validateCurrentPassword}" value="#{DataverseUserPage.currentPassword}" />
+                                            <p:message for="currentPassword" display="text" />
+                                        </p:panelGrid>
+                                    </div>
+                                </div>
+                                <div class="form-group" jsf:rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == DataverseUserPage.changePasswordMode}">
+                                <!-- Password -->
+                                    <label for="inputPassword" class="col-sm-3 control-label">
+                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['user.passwd.illegal.tip']}">
+                                            <h:outputText value="#{DataverseUserPage.editMode == 'CREATE' ? 'Password' : 'New Password'}" />
+                                            <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                                        </span>
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['user.updatePassword.password']}</p>
+                                        <p:panelGrid columns="2" styleClass="noBorders">
+                                            <p:password id="inputPassword" tabindex="2" label="#{DataverseUserPage.editMode == 'CREATE' ? 'Password' : 'New Password'}" styleClass="form-control" match="retypePassword" value="#{DataverseUserPage.inputPassword}" validator="#{DataverseUserPage.validateNewPassword}"  />
+                                            <p:message for="inputPassword" display="text" />
+                                        </p:panelGrid>
+                                    </div>
+                                </div>
+                                <div class="form-group" jsf:rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == DataverseUserPage.changePasswordMode}">
+                                <!-- Retype Password -->
+                                    <label for="retypePassword" class="col-sm-3 control-label">
+                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['user.rePasswd.tip']}">
+                                            #{bundle['user.rePasswd']} <span class="glyphicon glyphicon-asterisk text-danger"/>
+                                        </span>
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <p:panelGrid columns="2" styleClass="noBorders">
+                                            <p:password id="retypePassword" tabindex="3" label="#{bundle['user.rePasswd']}" styleClass="form-control" value="#{DataverseUserPage.inputPassword}" />
+                                            <p:message for="retypePassword" display="text" />
+                                        </p:panelGrid>
+                                    </div>
+                                </div>
+                                <div class="form-group" jsf:rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
+                                <!-- First Name -->
+                                    <label for="firstName" class="col-sm-3 control-label">
+                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['user.firstName.tip']}">
+                                            #{bundle['user.firstName']} <span class="glyphicon glyphicon-asterisk text-danger"/>
+                                        </span>
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <p:panelGrid columns="2" styleClass="noBorders">
+                                            <p:inputText id="firstName" tabindex="4" styleClass="form-control" value="#{DataverseUserPage.builtinUser.firstName}" />
+                                            <p:message for="firstName" display="text" />
+                                        </p:panelGrid>
+                                    </div>
+                                </div>
+                                <div class="form-group" jsf:rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
+                                <!-- Last Name -->
+                                    <label for="lastName" class="col-sm-3 control-label">
+                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['user.lastName.tip']}">
+                                            #{bundle['user.lastName']} <span class="glyphicon glyphicon-asterisk text-danger"/>
+                                        </span>
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <p:panelGrid columns="2" styleClass="noBorders">
+                                            <p:inputText id="lastName" tabindex="5" styleClass="form-control" value="#{DataverseUserPage.builtinUser.lastName}" />
+                                            <p:message for="lastName" display="text" />
+                                        </p:panelGrid>
+                                    </div>
+                                </div>
+                                <div class="form-group" jsf:rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
+                                <!-- Email -->
+                                    <label for="email" class="col-sm-3 control-label">
+                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{user.email.tip}">
+                                            #{bundle.email} <span class="glyphicon glyphicon-asterisk text-danger"/>
+                                        </span>
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <p:panelGrid columns="2" styleClass="noBorders">
+                                            <p:inputText id="email" tabindex="6" styleClass="form-control" 
+                                                         validator="#{DataverseUserPage.validateUserEmail}"
+                                                         value="#{DataverseUserPage.builtinUser.email}" />
+                                            <p:message for="email" display="text" />
+                                        </p:panelGrid>
+                                    </div>
+                                </div>
+                                <div class="form-group" jsf:rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
+                                <!-- Affiliation -->
+                                    <label for="affiliation" class="col-sm-3 control-label">
+                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['user.affiliation.tip']}">
+                                            #{bundle.affiliation}
+                                        </span>
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <p:panelGrid columns="2" styleClass="noBorders">
+                                            <p:inputText id="affiliation" tabindex="7" styleClass="form-control" value="#{DataverseUserPage.builtinUser.affiliation}" />
+                                            <p:message for="affiliation" display="text" />
+                                        </p:panelGrid>
+                                    </div>
+                                </div>
+                                <div class="form-group" jsf:rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
+                                <!-- Position -->
+                                    <label for="position" class="col-sm-3 control-label">
+                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['user.position.tip']}">
+                                            #{bundle['user.position']}
+                                        </span>
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <p:panelGrid columns="2" styleClass="noBorders">
+                                            <p:inputText id="position" tabindex="8" styleClass="form-control" value="#{DataverseUserPage.builtinUser.position}" />
+                                            <p:message for="position" display="text" />
+                                        </p:panelGrid>
+                                    </div>
+                                </div>
+                                <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE'}">
+                                <!-- Terms of Use -->
+                                    <ui:include src="termsofuse.xhtml"/>
+                                </ui:fragment>
+                                <div class="form-group">
+                                    <div class="col-sm-12 button-block">
+                                        <p:commandButton id="save" styleClass="btn btn-default" tabindex="9" value="#{DataverseUserPage.editMode == 'CREATE' ? bundle['user.createBtn']:bundle.saveChanges}" action="#{DataverseUserPage.save}" update="@form,:messagePanel,:userDisplayInfoTitle" />
+                                        <p:commandButton id="cancel" styleClass="btn btn-default" tabindex="10" value="#{bundle.cancel}" action="#{DataverseUserPage.cancel}" process="@this" update="@form">
+                                            <p:resetInput target="@form" />
+                                        </p:commandButton>
+                                    </div>
                                 </div>
                             </div>
                         </p:tab>

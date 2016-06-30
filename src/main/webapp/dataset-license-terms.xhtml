@@ -8,7 +8,7 @@
      xmlns:jsf="http://xmlns.jcp.org/jsf">
 <!-- TERMS -->
    <div class="text-right margin-bottom" 
-        jsf:rendered="#{dataverseSession.user.authenticated and empty editMode
+        jsf:rendered="#{dataverseSession.user.authenticated and empty editMode and !widgetWrapper.widgetView
                         and permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset)}">
        <p:commandLink type="button" styleClass="btn btn-default" actionListener="#{DatasetPage.edit('LICENSE')}" 
                       update="@form,:messagePanel" oncomplete="javascript:post_edit_terms()" disabled="#{DatasetPage.locked}">
@@ -555,20 +555,42 @@
                        #{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.userCollectedData']}
                     </span>
                 </label>
-                <div class="col-sm-8">
-                    <div class="form-control-static" jsf:rendered="#{!empty DatasetPage.selectedGuestbook.requiredAccountInformationString}">
-                        <h:outputText value="#{DatasetPage.selectedGuestbook.requiredAccountInformationString}" escape="false"/>
+                <div class="col-sm-8" style="padding-top:8px">
+                    <div jsf:rendered="#{!empty DatasetPage.selectedGuestbook.requiredAccountInformation}">  
+                     #{bundle['dataset.manageGuestbooks.guestbook.requiredAccountInformation']}                                         
+                        <ui:repeat value="#{DatasetPage.selectedGuestbook.requiredAccountInformation}" var="q">
+                            <li  style="padding-left:20px" >
+                                <h:outputText value="#{q}"/>
+                            </li>
+                        </ui:repeat>
+                        <br/>
                     </div>
-                    <div class="form-control-static" jsf:rendered="#{!empty DatasetPage.selectedGuestbook.optionalAccountInformationString}">
-                        <h:outputText value="#{DatasetPage.selectedGuestbook.optionalAccountInformationString}" escape="false"/>
+                    
+                    <div jsf:rendered="#{!empty DatasetPage.selectedGuestbook.optionalAccountInformation}">  
+                                        #{bundle['dataset.manageGuestbooks.guestbook.optionalAccountInformation']} 
+                        <ui:repeat value="#{DatasetPage.selectedGuestbook.optionalAccountInformation}" var="q">
+                            <li  style="padding-left:20px" >
+                                <h:outputText value="#{q}"/>
+                            </li>
+                        </ui:repeat>
+                        <br/>
+                    </div>                                    
+                    <div jsf:rendered="#{!empty DatasetPage.selectedGuestbook.requiredQuestionsList}">  
+                                        #{bundle['dataset.manageGuestbooks.guestbook.requiredCustomQuestions']} 
+                        <ui:repeat value="#{DatasetPage.selectedGuestbook.requiredQuestionsList}" var="q">
+                            <li  style="padding-left:20px" >
+                                <h:outputText value="#{q}"/>
+                            </li>
+                        </ui:repeat>
+                        <br/>
                     </div>
-                    <div class="form-control-static" jsf:rendered="#{!empty DatasetPage.selectedGuestbook.requiredCustomQuestionsString}">
-                        <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
-                        <h:outputText value="#{StringEscapeUtils:escapeHtml(DatasetPage.selectedGuestbook.requiredCustomQuestionsString)}" escape="false"/>
-                    </div>
-                    <div class="form-control-static" jsf:rendered="#{!empty DatasetPage.selectedGuestbook.optionalCustomQuestionsString}">
-                        <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
-                        <h:outputText value="#{StringEscapeUtils:escapeHtml(DatasetPage.selectedGuestbook.optionalCustomQuestionsString)}" escape="false"/>
+                    <div jsf:rendered="#{!empty DatasetPage.selectedGuestbook.optionalQuestionsList}">  
+                                        #{bundle['dataset.manageGuestbooks.guestbook.optionalCustomQuestions']} 
+                        <ui:repeat value="#{DatasetPage.selectedGuestbook.optionalQuestionsList}" var="q">
+                            <li  style="padding-left:20px" >
+                                <h:outputText value="#{q}"/>
+                            </li>
+                        </ui:repeat>
                     </div>
                 </div>
             </div>

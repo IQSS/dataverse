@@ -5,8 +5,6 @@
  */
 package edu.harvard.iq.dataverse;
 
-import edu.emory.mathcs.backport.java.util.Arrays;
-import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -24,21 +22,14 @@ public class DataCitation {
 
     private String authors;
     private String title;
-    private Date citationDate;
+    private String year;
     private GlobalId persistentId;
     private String version;
     private String UNF;
     private String distributors;
 
-    public DataCitation(String authors, String title, Date citationDate, GlobalId persistentId, String version, String UNF, String distributors) {
-        this.authors = authors;
-        this.title = title;
-        this.citationDate = citationDate;
-        this.persistentId = persistentId;
-        this.version = version;
-        this.UNF = UNF;
-        this.distributors = distributors;
-    }
+    private List<DatasetField> optionalValues = new ArrayList<>();
+    private int optionalURLcount = 0; 
 
     public DataCitation(DatasetVersion dsv) {
         // authors (or producer)
@@ -47,9 +38,10 @@ public class DataCitation {
             authors = dsv.getDatasetProducersString();
         }
 
-        // citation date
+        // year
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy");
         if (!dsv.getDataset().isHarvested()) {
-            citationDate = dsv.getCitationDate();
+            Date citationDate = dsv.getCitationDate();
             if (citationDate == null) {
                 if (dsv.getDataset().getPublicationDate() != null) {
                     citationDate = dsv.getDataset().getPublicationDate();
@@ -57,9 +49,12 @@ public class DataCitation {
                     citationDate = new Date();
                 }
             }
+
+            year = new SimpleDateFormat("yyyy").format(citationDate);
+
         } else {
             try {
-                citationDate = new SimpleDateFormat("yyyy").parse(dsv.getDistributionDate());
+                year = sdf.format(sdf.parse(dsv.getDistributionDate()));
             } catch (ParseException ex) {
                 // ignore
             }
@@ -101,66 +96,50 @@ public class DataCitation {
                 }
             }
         }
-        
+
         // UNF
         UNF = dsv.getUNF();
 
+        // optional values
+        for (DatasetFieldType dsfType : dsv.getDataset().getOwner().getCitationDatasetFieldTypes()) {
+            DatasetField dsf = dsv.getDatasetField(dsfType);
+            if (dsf != null) {
+                optionalValues.add(dsf);
+                
+                if (dsf.getDatasetFieldType().getFieldType().equals(DatasetFieldType.FieldType.URL)) {
+                    optionalURLcount++;
+                }                 
+            }
+        }        
     }
+    
 
     public String getAuthors() {
         return authors;
-    }
-
-    public void setAuthors(String authors) {
-        this.authors = authors;
     }
 
     public String getTitle() {
         return title;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public Date getCitationDate() {
-        return citationDate;
-    }
-
-    public void setCitationDate(Date citationDate) {
-        this.citationDate = citationDate;
+    public String getYear() {
+        return year;
     }
 
     public GlobalId getPersistentId() {
         return persistentId;
     }
 
-    public void setPersistentId(GlobalId persistentId) {
-        this.persistentId = persistentId;
-    }
-
     public String getVersion() {
         return version;
-    }
-
-    public void setVersion(String version) {
-        this.version = version;
     }
 
     public String getUNF() {
         return UNF;
     }
 
-    public void setUNF(String UNF) {
-        this.UNF = UNF;
-    }
-
     public String getDistributors() {
         return distributors;
-    }
-
-    public void setDistributors(String distributors) {
-        this.distributors = distributors;
     }
 
     @Override
@@ -172,32 +151,49 @@ public class DataCitation {
         // first add comma separated parts        
         List<String> citationList = new ArrayList<>();
         citationList.add(formatString(authors, html));
-        citationList.add(formatNonEmptyDate(citationDate,"yyyy"));
+        citationList.add(year);
         citationList.add(formatString(title, html, "\""));
-        citationList.add(formatURL(persistentId.toURL(), html));
+        citationList.add(formatURL(persistentId.toString(), persistentId.toURL().toString(), html));
         citationList.add(formatString(distributors, html));
         citationList.add(version);
-                
+
         StringBuilder citation = new StringBuilder(
                 citationList.stream()
-                .filter( value -> !StringUtils.isEmpty(value) )
+                .filter(value -> !StringUtils.isEmpty(value))
                 .collect(Collectors.joining(", ")));
-        
+
         // append UNF
         if (!StringUtils.isEmpty(UNF)) {
-            citation.append( " [").append(UNF).append("]");
+            citation.append(" [").append(UNF).append("]");
         }
-        
+
+        for (DatasetField dsf : optionalValues) {
+            String displayName = dsf.getDatasetFieldType().getDisplayName();
+            String displayValue;
+            
+            if (dsf.getDatasetFieldType().getFieldType().equals(DatasetFieldType.FieldType.URL)) {
+                displayValue = formatURL(dsf.getDisplayValue(), dsf.getDisplayValue(), html);
+                if (optionalURLcount == 1) {
+                    displayName = "URL";
+                }
+            } else {
+                displayValue = formatString(dsf.getDisplayValue(), html);
+            }
+
+            citation.append(" [")
+                    .append(displayName).append(": ")
+                    .append(displayValue)
+                    .append("]");
+        }
+
         return citation.toString();
     }
-    
 
     // helper methods   
     private String formatString(String value, boolean escapeHtml) {
         return formatString(value, escapeHtml, "");
     }
-     
-    
+
     private String formatString(String value, boolean escapeHtml, String wrapper) {
         if (!StringUtils.isEmpty(value)) {
             return new StringBuilder(wrapper)
@@ -205,22 +201,18 @@ public class DataCitation {
                     .append(wrapper).toString();
         }
         return null;
-    }  
-    
-    private String formatNonEmptyDate(Date date, String format) {
-        return date == null ? null : new SimpleDateFormat(format).format(date);
     }
-    
-    private String formatURL(URL value, boolean html) {
-        if (value ==null) {
+
+    private String formatURL(String text, String url, boolean html) {
+        if (text == null) {
             return null;
         }
-        
-        if (html) {
-            return "<a href=\"" + value.toString() + "\" target=\"_blank\">" + value.toString() + "</a>";
+
+        if (html && url != null) {
+            return "<a href=\"" + url + "\" target=\"_blank\">" + StringEscapeUtils.escapeHtml(text) + "</a>";
         } else {
-            return value.toString();
+            return text;
         }
-            
-    }   
+
+    }
 }
