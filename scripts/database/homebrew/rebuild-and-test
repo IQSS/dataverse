@@ -1,5 +1,7 @@
 #!/bin/sh
 scripts/database/homebrew/run-post-create-post-deploy
+echo "Publishing root dataverse"
+scripts/search/tests/publish-dataverse-root
 echo "---"
 echo "Creating search users"
 scripts/search/populate-users > /dev/null

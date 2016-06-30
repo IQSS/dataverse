@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
+import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -48,11 +49,13 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
     DataFileServiceBean dataFileService;
     @EJB
     IngestServiceBean ingestService;
+    @EJB
+    PermissionServiceBean permissionService;
     @Inject
     SwordAuth swordAuth;
     @Inject
     UrlManager urlManager;
-    
+
     private HttpServletRequest httpRequest;
 
     @Override
@@ -77,7 +80,12 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                 boolean getMediaResourceRepresentationSupported = false;
                 if (getMediaResourceRepresentationSupported) {
                     Dataverse dvThatOwnsDataset = dataset.getOwner();
-                    if (swordAuth.hasAccessToModifyDataverse(dvReq, dvThatOwnsDataset)) {
+                    /**
+                     * @todo Add Dataverse 4 style permission check here. Is
+                     * there a Command we use for downloading files as zip?
+                     */
+                    boolean authorized = false;
+                    if (authorized) {
                         /**
                          * @todo Zip file download is being implemented in
                          * https://github.com/IQSS/dataverse/issues/338
@@ -123,7 +131,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
     @Override
     public void deleteMediaResource(String uri, AuthCredentials authCredentials, SwordConfiguration swordConfiguration) throws SwordError, SwordServerException, SwordAuthException {
         AuthenticatedUser user = swordAuth.auth(authCredentials);
-        DataverseRequest dvReq = new DataverseRequest(user, httpRequest); 
+        DataverseRequest dvReq = new DataverseRequest(user, httpRequest);
         urlManager.processUrl(uri);
         String targetType = urlManager.getTargetType();
         String fileId = urlManager.getTargetIdentifier();
@@ -145,17 +153,17 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                             SwordUtil.datasetLockCheck(dataset);
                             Dataset datasetThatOwnsFile = fileToDelete.getOwner();
                             Dataverse dataverseThatOwnsFile = datasetThatOwnsFile.getOwner();
+                            /**
+                             * @todo it would be nice to have this check higher
+                             * up. Do we really need the file ID? Should the
+                             * last argument to isUserAllowedOn be changed from
+                             * "dataset" to "fileToDelete"?
+                             */
+                            if (!permissionService.isUserAllowedOn(user, new UpdateDatasetCommand(dataset, dvReq, fileToDelete), dataset)) {
+                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + user.getDisplayInfo().getTitle() + " is not authorized to modify " + dataverseThatOwnsFile.getAlias());
+                            }
                             if (swordAuth.hasAccessToModifyDataverse(dvReq, dataverseThatOwnsFile)) {
                                 try {
-                                    /**
-                                     * @todo with only one command, should we be
-                                     * falling back on the permissions system to
-                                     * enforce if the user can delete a file or
-                                     * not. If we do, a 403 Forbidden is
-                                     * returned. For now, we'll have belt and
-                                     * suspenders and do our normal sword auth
-                                     * check.
-                                     */
                                     commandEngine.submit(new UpdateDatasetCommand(dataset, dvReq, fileToDelete));
                                 } catch (CommandException ex) {
                                     throw SwordUtil.throwSpecialSwordErrorWithoutStackTrace(UriRegistry.ERROR_BAD_REQUEST, "Could not delete file: " + ex);
@@ -189,7 +197,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
     DepositReceipt replaceOrAddFiles(String uri, Deposit deposit, AuthCredentials authCredentials, SwordConfiguration swordConfiguration, boolean shouldReplace) throws SwordError, SwordAuthException, SwordServerException {
         AuthenticatedUser user = swordAuth.auth(authCredentials);
         DataverseRequest dvReq = new DataverseRequest(user, httpRequest);
-        
+
         urlManager.processUrl(uri);
         String globalId = urlManager.getTargetIdentifier();
         if (urlManager.getTargetType().equals("study") && globalId != null) {
@@ -197,6 +205,9 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
             Dataset dataset = datasetService.findByGlobalId(globalId);
             if (dataset == null) {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not find dataset with global ID of " + globalId);
+            }
+            if (!permissionService.isUserAllowedOn(user, new UpdateDatasetCommand(dataset, dvReq), dataset)) {
+                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + user.getDisplayInfo().getTitle() + " is not authorized to modify dataset with global ID " + dataset.getGlobalId());
             }
             SwordUtil.datasetLockCheck(dataset);
             Dataverse dvThatOwnsDataset = dataset.getOwner();
@@ -341,6 +352,5 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
     public void setHttpRequest(HttpServletRequest httpRequest) {
         this.httpRequest = httpRequest;
     }
-    
-    
+
 }
