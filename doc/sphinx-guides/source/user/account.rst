@@ -82,6 +82,10 @@ If you cannot remember the password for your Dataverse account, click on Log In 
 
 
 .. |image1| image:: ./img/image1institutional.png
-.. |image2| image:: ./img/image2institutional.png  
+   :class: img-responsive
+.. |image2| image:: ./img/image2institutional.png
+   :class: img-responsive
 .. |image3| image:: ./img/image3institutional.png
+   :class: img-responsive
 .. |image4| image:: ./img/image4institutional.png
+   :class: img-responsive

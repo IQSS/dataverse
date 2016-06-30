@@ -23,15 +23,21 @@
                  emptyMessage="#{bundle['file.notFound.tip']}">
         <f:facet name="header">
             <div jsf:id="filesHeaderBlock" class="row">
-                <div class="form-inline text-left col-xs-12">
-                    <p:inputText style="margin-right:1em;" size="40" id="searchFiles" styleClass="form-control" value="#{DatasetPage.fileLabelSearchTerm}" widgetVar="inputSearchTerm"
-                                 onkeypress="if (event.keyCode == 13) { submitsearch(); return false; }"/>
-                    <p:watermark for="searchFiles" value="Search this dataset..."/>
-                    <p:commandLink styleClass="btn btn-default" action="#{DatasetPage.updateFileSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true">
-                        <span class="glyphicon glyphicon-search"/> #{bundle['dataverse.search.btn.find']}
-                    </p:commandLink>
-                    <h:inputHidden id="showAccessPopup" value="#{DatasetPage.showAccessPopup}"/>
-                    <p:remoteCommand name="submitsearch" action="#{DatasetPage.updateFileSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true"/>
+                <div class="form-horizontal col-sm-7 col-xs-9 text-left">
+                    <div class="form-group">
+                        <div class="col-xs-8">
+                            <p:inputText id="searchFiles" styleClass="form-control" value="#{DatasetPage.fileLabelSearchTerm}" widgetVar="inputSearchTerm"
+                                         onkeypress="if (event.keyCode == 13) { submitsearch(); return false; }"/>
+                            <p:watermark for="searchFiles" value="Search this dataset..."/>
+                            <h:inputHidden id="showAccessPopup" value="#{DatasetPage.showAccessPopup}"/>
+                            <p:remoteCommand name="submitsearch" action="#{DatasetPage.updateFileSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true"/>
+                        </div>
+                        <div class="col-xs-3">
+                            <p:commandLink styleClass="btn btn-default" action="#{DatasetPage.updateFileSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true">
+                                <span class="glyphicon glyphicon-search"/> #{bundle['dataverse.search.btn.find']}
+                            </p:commandLink>
+                        </div>
+                    </div>
                 </div>
                 <div id="filesHeaderCount" class="col-xs-6 text-left">
                     <!-- Files Count -->

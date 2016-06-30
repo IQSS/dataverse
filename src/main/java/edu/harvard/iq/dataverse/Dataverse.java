@@ -179,6 +179,12 @@ public class Dataverse extends DvObjectContainer {
     @OrderBy("displayOrder")
     private List<DataverseFacet> dataverseFacets = new ArrayList();
     
+    @ManyToMany(cascade = {CascadeType.MERGE})
+    @JoinTable(name = "dataverse_citationDatasetFieldTypes",
+    joinColumns = @JoinColumn(name = "dataverse_id"),
+    inverseJoinColumns = @JoinColumn(name = "citationdatasetfieldtype_id"))
+    private List<DatasetFieldType> citationDatasetFieldTypes = new ArrayList();
+    
     @ManyToMany
     @JoinTable(name = "dataversesubjects",
     joinColumns = @JoinColumn(name = "dataverse_id"),
@@ -530,6 +536,16 @@ public class Dataverse extends DvObjectContainer {
         this.metadataBlocks = metadataBlocks;
     }
 
+    public List<DatasetFieldType> getCitationDatasetFieldTypes() {
+        return citationDatasetFieldTypes;
+    }
+
+    public void setCitationDatasetFieldTypes(List<DatasetFieldType> citationDatasetFieldTypes) {
+        this.citationDatasetFieldTypes = citationDatasetFieldTypes;
+    }
+    
+    
+
     public List<DataverseFacet> getDataverseFacets() {
         return getDataverseFacets(false);
     }
@@ -701,18 +717,6 @@ public class Dataverse extends DvObjectContainer {
     public void setPermissionRoot(boolean permissionRoot) {
         this.permissionRoot = permissionRoot;
     }
-    
-    
-    
-    @URL
-    private String citationRedirectURL;
-
-    public String getCitationRedirectURL() {
-        return citationRedirectURL;
-    }
-
-    public void setCitationRedirectURL(String citationRedirectURL) {
-        this.citationRedirectURL = citationRedirectURL;
-    }    
+       
 
 }
