@@ -195,7 +195,7 @@ If you restrict any files in your dataset, you will be prompted by a pop-up to e
 Guestbook
 --------------
 
-This is where you will enable a particular Guestbook for your dataset, which is setup at the Dataverse-level. For specific instructions please visit the Dataverse Management Guide > `Dataset Guestbook section <../user/dataverse-management.html#dataset-guestbooks>`_.
+This is where you will enable a particular Guestbook for your dataset, which is setup at the Dataverse-level. For specific instructions please visit the `Dataset Guestbooks <../user/dataverse-management.html#dataset-guestbooks>`_ section of the Dataverse Management page.
 
 .. _permissions:
 
@@ -219,6 +219,35 @@ specific restricted files. Dataset file permissions are located under Permission
 The file permissions page has two sections: Users/Groups and Files.
 
 To give someone access to your restricted files, click on the Grant Access to Users/Groups button in the Users/Groups section. 
+
+.. _widgets:
+
+Widgets
+=============================
+
+The Widgets feature provides you with code for your personal website so your dataset can be displayed. There are two types of Widgets for a dataset: the Dataset Widget and the Dataset Citation Widget. The Widgets are found by going to your dataset page, clicking the Edit button (the one with the pencil icon) and selecting Widgets from the dropdown menu.
+
+On the Widgets page, you can copy and paste the code snippets for the widget you would like to add to your website. If you need to adjust the height of the widget on your website, you may do so by editing the `heightPx=500` parameter in the code snippet.
+
+Dataset Widget
+---------------------
+
+The Dataset Widget allows the citation, metadata, files and terms of your dataset to be displayed on your website. When someone downloads a data file in the widget, it will download directly from the datasets on your website. If a file is restricted, they will be directed to your dataverse to log in, instead of logging in through the widget on your site. 
+
+To edit your dataset, you will need to return to the Dataverse repository where the dataset is stored. You can easily do this by clicking on the link that says "Data Stored in (Name) Dataverse" found in the bottom of the widget.
+
+Dataset Citation Widget
+--------------------------
+
+The Dataset Citation Widget will provide a citation for your dataset on your personal or project website. Users can download the citation in various formats by using the Cite Data button. The persistent URL in the citation will direct users to the dataset in your dataverse. 
+
+
+Adding Widgets to an OpenScholar Website
+----------------------------------------------
+#. Log in to your OpenScholar website
+#. Either build a new page or navigate to the page you would like to use to show the Dataverse widgets.
+#. Click on the Settings Cog and select Layout
+#. At the top right, select Add New Widget and under Misc. you will see the Dataverse Dataset and the Dataverse Dataset Citation Widgets. Click on the widget you would like to add, fill out the form, and then drag it to where you would like it to display in the page.
 
 Publish Dataset
 ====================
@@ -300,6 +329,9 @@ If you deaccession the most recently published version of the dataset but not al
 
 
 .. |image1| image:: ./img/DatasetDiagram.png
-.. |image2| image:: ./img/data-download.png 
+   :class: img-responsive
+.. |image2| image:: ./img/data-download.png
+   :class: img-responsive
 .. |image3| image:: http://static.projects.iq.harvard.edu/files/styles/os_files_xxlarge/public/datascience/files/data_publishing_version_workflow.png?itok=8Z0PM-QC
+   :class: img-responsive
 

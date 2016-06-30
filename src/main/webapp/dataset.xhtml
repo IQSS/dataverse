@@ -554,7 +554,7 @@
                                 </ui:include>
                             </p:tab>
                             <!-- 4.2.1: see above -->
-                            <p:tab id="versionsTab" title="#{bundle['file.dataFilesTab.versions']}" rendered="#{!widgetWrapper.widgetView and empty DatasetPage.editMode}">
+                            <p:tab id="versionsTab" title="#{bundle['file.dataFilesTab.versions']}" rendered="#{empty DatasetPage.editMode}">
                                 <ui:include src="dataset-versions.xhtml"></ui:include>
                             </p:tab>
                         </p:tabView>
