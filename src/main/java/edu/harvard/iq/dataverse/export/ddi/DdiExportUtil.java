@@ -132,22 +132,16 @@ public class DdiExportUtil {
         
         writeSummaryDescriptionElement(xmlw, version);
         writeRelPublElement(xmlw, version);
-        writeFullElement(xmlw, "prodDate", dto2Primitive(version, DatasetFieldConstant.productionDate));    
-        writeFullElement(xmlw, "prodPlac", dto2Primitive(version, DatasetFieldConstant.productionPlace));
-  
-        writeGrantElement(xmlw, version);
+
         writeOtherIdElement(xmlw, version);
-        //xmlw.writeStartElement("distStmt"); //Also need Contact
         writeDistributorsElement(xmlw, version);
         writeContactsElement(xmlw, version);
         writeFullElement(xmlw, "depositr", dto2Primitive(version, DatasetFieldConstant.depositor));    
         writeFullElement(xmlw, "depDate", dto2Primitive(version, DatasetFieldConstant.dateOfDeposit));  
-        //xmlw.writeEndElement(); // distStmt
         
         writeFullElementList(xmlw, "relMat", dto2PrimitiveList(version, DatasetFieldConstant.relatedMaterial));
         writeFullElementList(xmlw, "relStdy", dto2PrimitiveList(version, DatasetFieldConstant.relatedDatasets));
         writeFullElementList(xmlw, "othRefs", dto2PrimitiveList(version, DatasetFieldConstant.otherReferences));
-//        writeFullElementList(xmlw, "dataKind", dto2PrimitiveList(version, DatasetFieldConstant.kindOfData));
         writeSeriesElement(xmlw, version);
         writeSoftwareElement(xmlw, version);
         writeFullElementList(xmlw, "dataSrc", dto2PrimitiveList(version, DatasetFieldConstant.dataSources));
@@ -168,10 +162,10 @@ public class DdiExportUtil {
         writeFullElement(xmlw, "restrctn", version.getRestrictions()); 
         writeFullElement(xmlw, "citeReq", version.getCitationRequirements()); 
         writeFullElement(xmlw, "deposReq", version.getDepositorRequirements()); 
-        writeFullElement(xmlw, "conditions", version.getConditions()); 
-        writeFullElement(xmlw, "disclaimer", version.getDisclaimer()); 
         writeFullElement(xmlw, "dataAccs", version.getTermsOfAccess()); 
         writeFullElement(xmlw, "accsPlac", version.getDataAccessPlace()); 
+        writeFullElement(xmlw, "conditions", version.getConditions()); 
+        writeFullElement(xmlw, "disclaimer", version.getDisclaimer()); 
         writeFullElement(xmlw, "origArch", version.getOriginalArchive()); 
         writeFullElement(xmlw, "avlStatus", version.getAvailabilityStatus()); 
         writeFullElement(xmlw, "contact", version.getContactForAccess()); 
@@ -512,14 +506,16 @@ public class DdiExportUtil {
         }
     }
     
-    private static void writeProducersElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO) throws XMLStreamException {
-        for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
+    private static void writeProducersElement(XMLStreamWriter xmlw, DatasetVersionDTO version) throws XMLStreamException {
+        xmlw.writeStartElement("prodStmt");
+        for (Map.Entry<String, MetadataBlockDTO> entry : version.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
             MetadataBlockDTO value = entry.getValue();
+
             if ("citation".equals(key)) {
                 for (FieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.producer.equals(fieldDTO.getTypeName())) {
-                        xmlw.writeStartElement("rspStmt");
+
                         for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             String producerName = "";
                             String producerAffiliation = "";
@@ -563,11 +559,16 @@ public class DdiExportUtil {
                                 xmlw.writeEndElement(); //AuthEnty
                             }
                         }
-                        xmlw.writeEndElement(); //rspStmt
+                        
                     }
                 }
             }
         }
+        writeFullElement(xmlw, "prodDate", dto2Primitive(version, DatasetFieldConstant.productionDate));    
+        writeFullElement(xmlw, "prodPlac", dto2Primitive(version, DatasetFieldConstant.productionPlace));
+  
+        writeGrantElement(xmlw, version);
+        xmlw.writeEndElement(); //prodStmt
     }
     
     private static void writeDistributorsElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO) throws XMLStreamException {

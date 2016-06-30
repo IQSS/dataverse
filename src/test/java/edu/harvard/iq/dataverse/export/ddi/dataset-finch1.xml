@@ -9,9 +9,9 @@
       <rspStmt>
         <AuthEnty affiliation="Birds Inc.">Finch, Fiona</AuthEnty>
       </rspStmt>
-      <rspStmt>
+      <prodStmt>
         <producer affiliation="Hawk Institute" abbr="ProdAbb" role="http://www.hawk.edu/logo" URI="http://www.hawk.edu/url">Johnny Hawk</producer>
-      </rspStmt>
+      </prodStmt>
       <distStmt/>
       <biblCit>Finch, Fiona, 2015, "Darwin's Finches", http://dx.doi.org/10.5072/FK2/PCA2E3,  Root Dataverse,  V1</biblCit>
     </citation>
