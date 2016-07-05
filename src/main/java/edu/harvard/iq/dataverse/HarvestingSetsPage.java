@@ -131,7 +131,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
             oaiServerStatusRadio = oaiServerStatusRadioDisabled;
         }
                 
-        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, JH.localize("harvestsets.title"), JH.localize("harvestsets.toptip")));
+        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, JH.localize("harvestserver.title"), JH.localize("harvestserver.toptip")));
         return null; 
     }
     
@@ -229,7 +229,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
             oaiSetService.save(oaiSet);
             configuredHarvestingSets = oaiSetService.findAll(); 
                         
-            JsfHelper.addSuccessMessage("Succesfully updated OAI set " + oaiSet.getSpec());
+            JsfHelper.addSuccessMessage("Succesfully updated OAI set &#34;" + oaiSet.getSpec() + "&#34;.");
 
         } catch (Exception ex) {
             JH.addMessage(FacesMessage.SEVERITY_FATAL, "Failed to update OAI set.");
@@ -303,7 +303,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
             if (! Pattern.matches("^[a-zA-Z0-9\\_\\-]+$", getNewSetSpec()) ) {
                 //input.setValid(false);
                 FacesContext.getCurrentInstance().addMessage(getNewSetSpecInputField().getClientId(),
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", JH.localize("harvestsets.newSetDialog.setspec.invalid")));
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", JH.localize("harvestserver.newSetDialog.setspec.invalid")));
                 setSetSpecValidated(false);
                 return;
 
@@ -311,7 +311,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
             } else if ( oaiSetService.findBySpec(getNewSetSpec()) != null ) {
                 //input.setValid(false);
                 FacesContext.getCurrentInstance().addMessage(getNewSetSpecInputField().getClientId(),
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", JH.localize("harvestsets.newSetDialog.setspec.alreadyused")));
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", JH.localize("harvestserver.newSetDialog.setspec.alreadyused")));
                 setSetSpecValidated(false);
                 return;
             }
@@ -321,7 +321,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
         
         // Nickname field is empty:
         FacesContext.getCurrentInstance().addMessage(getNewSetSpecInputField().getClientId(),
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", JH.localize("harvestsets.newSetDialog.setspec.required")));
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", JH.localize("harvestserver.newSetDialog.setspec.required")));
         setSetSpecValidated(false);
         return;
     }

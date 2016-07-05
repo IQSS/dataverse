@@ -26,18 +26,6 @@
                 
                 <h:form id="harvestingClientsForm">
 
-                    <div class="form-group clearfix">
-                        <div class="pull-right">
-                            <p:commandLink type="button" id="addClient" styleClass="btn btn-default"
-                                           rendered="#{harvestingClientsPage.dataverseId != null}"
-                                           actionListener="#{harvestingClientsPage.initNewClient}"
-                                           update="newHarvestingClientDialog"
-                                           oncomplete="PF('newHarvestingClientForm').show();handleResizeDialog('newHarvestingClientDialog');bind_bsui_components();">
-                                <span class="glyphicon glyphicon-plus"/> Add Client
-                            </p:commandLink>
-                        </div>
-                    </div>
-
                     <p:fragment id="emptyClientsTable" rendered="#{empty harvestingClientsPage.configuredHarvestingClients}">
                         <div>
                             <p class="help-block">
@@ -49,6 +37,32 @@
 
                     <p:dataTable id="clientsTable" styleClass="manageTable" var="harvestClient" value="#{harvestingClientsPage.configuredHarvestingClients}"
                                  rendered="#{!empty harvestingClientsPage.configuredHarvestingClients}">
+                        
+                        <f:facet name="header">
+                            <div class="row">
+                                <div class="col-sm-6 text-left">
+                                    <div id="datatable_filter" class="dataTables_filter">
+                                        <label>Filter
+                                            <input type="search" style="display:inline !important; width:auto !important;" class="form-control input-sm" placeholder="" aria-controls="datatable"/>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6 text-right">
+                                    <div id="datatable_length" class="dataTables_length">                                        
+                                        <!-- FIXME -->
+                                        <!-- removed render logic {harvestingClientsPage.dataverseId != null} -->
+                                        <p:commandLink style="margin-left:1em;" type="button" id="addClient" styleClass="btn btn-default"
+                                                        rendered="#{true}"
+                                                        actionListener="#{harvestingClientsPage.initNewClient}"
+                                                        update=":harvestingClientsForm:newHarvestingClientDialog"
+                                                        oncomplete="PF('newHarvestingClientForm').show();handleResizeDialog('newHarvestingClientDialog');bind_bsui_components();">
+                                             <span class="glyphicon glyphicon-plus"/> Add Client
+                                         </p:commandLink>
+                                    </div>
+                                </div>
+                            </div>
+                        </f:facet>
+                        
                         <p:column width="10%" headerText="#{bundle['harvestclients.tab.header.name']}">
                             <h:outputText value="#{harvestClient.name}" />
                         </p:column>
@@ -98,7 +112,10 @@
                     <!-- confirmation dialog for deleting a harvesting client: -->
                     <p:dialog id="deleteConfirmation" header="#{bundle['harvestclients.tab.header.action.btn.delete.dialog.header']}" widgetVar="deleteConfirmation" modal="true">
                         <p class="help-block">
-                            <span class="glyphicon glyphicon-warning-sign text-danger"/> <span class="text-danger">#{bundle['harvestclients.tab.header.action.btn.delete.dialog.tip']}(#{harvestingClientsPage.getSelectedClient().name})</span>
+                            <span class="glyphicon glyphicon-warning-sign text-danger"/> 
+                            <h:outputFormat styleClass="text-danger" value=" #{bundle['harvestclients.tab.header.action.btn.delete.dialog.tip']}">
+                                <f:param value="#{harvestingClientsPage.getSelectedClient().name}"/>
+                            </h:outputFormat>
                         </p>
                         <div class="button-block">
                             <p:commandButton value="#{bundle.continue}" onclick="PF('deleteConfirmation').hide()" action="#{harvestingClientsPage.deleteClient()}" update=":harvestingClientsForm :messagePanel" />
