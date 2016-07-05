@@ -113,7 +113,7 @@ public class DdiExportUtil {
         
         xmlw.writeStartElement("distStmt");
         writeFullElement(xmlw, "distrbtr", datasetDto.getPublisher());
-        writeFullElement(xmlw, "distdate", datasetDto.getPublicationDate());
+        writeFullElement(xmlw, "distDate", datasetDto.getPublicationDate());
         xmlw.writeEndElement(); // diststmt
         
         xmlw.writeStartElement("biblCit");
