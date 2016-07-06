@@ -17,6 +17,7 @@ public class DatasetVersionDTO {
     long id;
     VersionState versionState;
     String releaseDate;
+    String releaseTime;
     String lastUpdateTime;
     String createTime;
     String archiveTime;
@@ -260,6 +261,15 @@ public class DatasetVersionDTO {
 
     public void setReleaseDate(String releaseDate) {
         this.releaseDate = releaseDate;
+    }
+    
+    
+    public String getReleaseTime() {
+        return releaseTime;
+    }
+
+    public void setReleaseTime(String releaseTime) {
+        this.releaseTime = releaseTime;
     }
 
     public String getLastUpdateTime() {

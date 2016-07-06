@@ -90,9 +90,10 @@ public class DdiExportUtil {
         DatasetVersionDTO version = datasetDto.getDatasetVersion();
         String persistentAgency = datasetDto.getProtocol();
         String persistentAuthority = datasetDto.getAuthority();
-        String persistentId = datasetDto.getIdentifier();
-
-        String citation = datasetDto.getDatasetVersion().getCitation();
+        String persistentId = datasetDto.getIdentifier();       
+        //docDesc Block
+        writeDocDescElement (xmlw, datasetDto);
+        //stdyDesc Block
         xmlw.writeStartElement("stdyDscr");
         xmlw.writeStartElement("citation");
         xmlw.writeStartElement("titlStmt");
@@ -115,10 +116,7 @@ public class DdiExportUtil {
         writeFullElement(xmlw, "distrbtr", datasetDto.getPublisher());
         writeFullElement(xmlw, "distDate", datasetDto.getPublicationDate());
         xmlw.writeEndElement(); // diststmt
-        
-        xmlw.writeStartElement("biblCit");
-        xmlw.writeCharacters(citation);
-        xmlw.writeEndElement(); // biblCit
+
         xmlw.writeEndElement(); // citation
         //End Citation Block
         
@@ -175,6 +173,48 @@ public class DdiExportUtil {
         
         xmlw.writeEndElement(); // stdyDscr
 
+    }
+    
+    private static void writeDocDescElement (XMLStreamWriter xmlw, DatasetDTO datasetDto) throws XMLStreamException {
+        DatasetVersionDTO version = datasetDto.getDatasetVersion();
+        String persistentAgency = datasetDto.getProtocol();
+        String persistentAuthority = datasetDto.getAuthority();
+        String persistentId = datasetDto.getIdentifier();
+        
+        xmlw.writeStartElement("docDscr");
+        xmlw.writeStartElement("citation");
+        xmlw.writeStartElement("titlStmt");
+        writeFullElement(xmlw, "titl", dto2Primitive(version, DatasetFieldConstant.title));
+        xmlw.writeStartElement("IDNo");
+        writeAttribute(xmlw, "agency", persistentAgency);
+        xmlw.writeCharacters(persistentAuthority + "/" + persistentId);
+        xmlw.writeEndElement(); // IDNo      
+        xmlw.writeEndElement(); // titlStmt
+        xmlw.writeStartElement("distStmt");
+        writeFullElement(xmlw, "distrbtr", datasetDto.getPublisher());
+        writeFullElement(xmlw, "distDate", datasetDto.getPublicationDate());
+        
+        xmlw.writeEndElement(); // diststmt
+        writeVersionStatement(xmlw, version);
+        xmlw.writeStartElement("biblCit");
+        xmlw.writeCharacters(version.getCitation());
+        xmlw.writeEndElement(); // biblCit
+        xmlw.writeEndElement(); // citation      
+        xmlw.writeEndElement(); // docDscr
+        
+    }
+    
+    private static void writeVersionStatement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO) throws XMLStreamException{
+        xmlw.writeStartElement("verStmt");
+        writeAttribute(xmlw,"source","DVN"); 
+        xmlw.writeStartElement("version");
+        System.out.print("datasetVersionDTO.getReleaseDate(): " + datasetVersionDTO.getReleaseDate());
+        System.out.print("datasetVersionDTO.getReleaseTIME(): " + datasetVersionDTO.getReleaseTime());
+        writeAttribute(xmlw,"date", datasetVersionDTO.getReleaseTime().substring(0, 10));
+        writeAttribute(xmlw,"type", datasetVersionDTO.getVersionState().toString()); 
+        xmlw.writeCharacters(datasetVersionDTO.getVersionNumber().toString());
+        xmlw.writeEndElement(); // version
+        xmlw.writeEndElement(); // verStmt
     }
     
     private static void writeSummaryDescriptionElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO) throws XMLStreamException {
@@ -922,7 +962,7 @@ public class DdiExportUtil {
                                    writeAttribute(xmlw,"subject",notesSubject); 
                                 } 
                             xmlw.writeCharacters(notesText);
-                            xmlw.writeEndElement(); //sampleSizeFormula
+                            xmlw.writeEndElement(); 
                         }
                     }
                 }
