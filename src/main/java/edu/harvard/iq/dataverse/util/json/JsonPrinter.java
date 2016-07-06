@@ -17,6 +17,7 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.RoleAssignment;
+import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.api.Util;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
@@ -28,6 +29,7 @@ import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderRo
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.util.DatasetFieldWalker;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import java.util.Set;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -210,8 +212,25 @@ public class JsonPrinter {
 				.add( "identifier", ds.getIdentifier() )
 				.add( "persistentUrl", ds.getPersistentURL() )
 				.add( "protocol", ds.getProtocol() )
-				.add( "authority", ds.getAuthority() );
+				.add( "authority", ds.getAuthority() )
+                                .add( "publisher", getRootDataverseNameforCitation(ds))
+                                .add( "publicationDate", ds.getPublicationDateFormattedYYYYMMDD());
 	}
+        
+
+        
+        private static String getRootDataverseNameforCitation(Dataset dataset){
+        Dataverse root = dataset.getOwner();
+        while (root.getOwner() != null) {
+            root = root.getOwner();
+        }
+        String rootDataverseName = root.getName();
+        if (!StringUtil.isEmpty(rootDataverseName)) {
+            return rootDataverseName + " Dataverse";
+        } else {
+            return "";
+        }
+    }
 	
 	public static JsonObjectBuilder json( DatasetVersion dsv ) {
 		JsonObjectBuilder bld = jsonObjectBuilder()
@@ -229,6 +248,23 @@ public class JsonPrinter {
 				.add("lastUpdateTime", format(dsv.getLastUpdateTime()) )
 				.add("releaseTime", format(dsv.getReleaseTime()) )
 				.add("createTime", format(dsv.getCreateTime()) )
+                                .add("license", dsv.getTermsOfUseAndAccess().getLicense().toString())
+                                .add("termsOfUse", getLicenseInfo(dsv))
+                                .add("confidentialityDeclaration", dsv.getTermsOfUseAndAccess().getConfidentialityDeclaration())
+				.add("availabilityStatus", dsv.getTermsOfUseAndAccess().getAvailabilityStatus())	
+                        	.add("specialPermissions", dsv.getTermsOfUseAndAccess().getSpecialPermissions())
+                                .add("restrictions", dsv.getTermsOfUseAndAccess().getRestrictions())
+                                .add("citationRequirements", dsv.getTermsOfUseAndAccess().getCitationRequirements())
+                                .add("depositorRequirements", dsv.getTermsOfUseAndAccess().getDepositorRequirements())
+                                .add("conditions", dsv.getTermsOfUseAndAccess().getConditions())
+                                .add("disclaimer", dsv.getTermsOfUseAndAccess().getDisclaimer())
+                                .add("termsOfAccess", dsv.getTermsOfUseAndAccess().getTermsOfAccess())
+                                .add("dataAccessPlace", dsv.getTermsOfUseAndAccess().getDataAccessPlace())
+                                .add("originalArchive", dsv.getTermsOfUseAndAccess().getOriginalArchive())
+                                .add("availabilityStatus", dsv.getTermsOfUseAndAccess().getAvailabilityStatus())
+                                .add("contactForAccess", dsv.getTermsOfUseAndAccess().getContactForAccess())
+                                .add("sizeOfCollection", dsv.getTermsOfUseAndAccess().getSizeOfCollection())
+                                .add("studyCompletion", dsv.getTermsOfUseAndAccess().getStudyCompletion())
 				;
                 
 		bld.add("metadataBlocks", jsonByBlocks(dsv.getDatasetFields()));
@@ -237,6 +273,13 @@ public class JsonPrinter {
 		
 		return bld;
 	}
+        
+        private static String getLicenseInfo( DatasetVersion dsv){
+            if (dsv.getTermsOfUseAndAccess().getLicense().equals(TermsOfUseAndAccess.License.CC0)){
+                return "CC0 Waiver";
+            }
+            return dsv.getTermsOfUseAndAccess().getTermsOfUse();
+        }
 
     /**
      * Export formats such as DDI require the citation to be included. See

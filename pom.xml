@@ -395,7 +395,14 @@
 	  <artifactId>xoai-service-provider</artifactId>
 	  <version>4.1.0-header-patch</version>
 	</dependency>
-
+        <!-- Added for AutoService -->
+        <dependency>
+            <groupId>com.google.auto.service</groupId>
+            <artifactId>auto-service</artifactId>
+            <version>1.0-rc2</version>
+            <optional>true</optional>
+            <type>jar</type>
+        </dependency>
     </dependencies>
 
     <build>
