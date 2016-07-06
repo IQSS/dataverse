@@ -1,0 +1,50 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+     xmlns:h="http://java.sun.com/jsf/html"
+     xmlns:f="http://java.sun.com/jsf/core"
+     xmlns:ui="http://java.sun.com/jsf/facelets"
+     xmlns:c="http://java.sun.com/jsp/jstl/core"
+     xmlns:p="http://primefaces.org/ui"
+     xmlns:o="http://omnifaces.org/ui"
+     xmlns:jsf="http://xmlns.jcp.org/jsf">
+
+
+<!-- start: panel --><div class="panel panel-default">
+<!-- start: panel body --><div class="panel-body clearfix">
+    
+    <!-- load nunjucks script -->
+    <script src="#{resource['js/nunjucks.min.js']}?version=#{systemConfig.getVersion()}"></script>
+    <script> 
+        <ui:remove>This variable is needed by mydata.js to make the ajax call</ui:remove>
+        var interactiveDatasetJSON = #{DatasetPage.interactiveDataset.asJSON()};
+        $(document).ready(function() {
+            // Set autoescape to true
+            var env = nunjucks.configure({ autoescape: true });
+        
+            // async filters must be known at compile-time
+            env.addFilter(env.addFilter('jsonPretty', function(someJSON) {
+                return JSON.stringify(someJSON, null, 4);
+            }));
+            
+            // If the "interactiveDatasetJSON" is available, render the Interactive Dataset panel
+            if (typeof interactiveDatasetJSON !== 'undefined') {
+
+                //interactiveDatasetJSON.jsonDump = JSON.stringify(interactiveDatasetJSON, null, 4);
+                // Use the interactive Dataset to render the panel HTML
+                var datasetPanelHTML =  nunjucks.render('interactive_dataset_templates/dataset_panel.html', interactiveDatasetJSON);
+                //$('#id_interactive_ds_panel').html(datasetPanelHTML).show();
+                
+                var headerInfoHTML =  nunjucks.render('interactive_dataset_templates/header_data.html', interactiveDatasetJSON);
+                alert(headerInfoHTML);
+                $('#header-metadata-panel').append(headerInfoHTML);
+                 
+            }
+        });
+    </script>
+    <!-- start: row -->
+    <div class="row">
+       <div id="id_interactive_ds_panel" class="col-xs-12" style="display: none;padding:0 25px;"></div>
+    </div><!-- end row -->
+ 
+</div><!-- end panel body -->
+</div><!-- end panel -->
+</ui:composition>
