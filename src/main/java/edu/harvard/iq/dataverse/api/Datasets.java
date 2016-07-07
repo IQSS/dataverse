@@ -126,10 +126,13 @@ public class Datasets extends AbstractApiBean {
             }
             
             ExportService instance = ExportService.getInstance();
+            LOGGER.info("export service returned ");
             final JsonObjectBuilder datasetAsJson = jsonAsDatasetDto(dataset.getLatestVersion());
+            LOGGER.info("dataset as json to string: " + datasetAsJson.toString());
             OutputStream output = instance.getExport(datasetAsJson.build(), exporter);
+            LOGGER.info("output stream returned ");
             String xml = output.toString();
-            LOGGER.fine("xml to return: " + xml);
+            LOGGER.info("xml to return: " + xml);
             String mediaType = MediaType.TEXT_PLAIN;
             if (instance.isXMLFormat(exporter)){
                 mediaType = MediaType.APPLICATION_XML;

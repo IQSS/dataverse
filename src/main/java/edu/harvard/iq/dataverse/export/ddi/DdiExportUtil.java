@@ -208,8 +208,6 @@ public class DdiExportUtil {
         xmlw.writeStartElement("verStmt");
         writeAttribute(xmlw,"source","DVN"); 
         xmlw.writeStartElement("version");
-        System.out.print("datasetVersionDTO.getReleaseDate(): " + datasetVersionDTO.getReleaseDate());
-        System.out.print("datasetVersionDTO.getReleaseTIME(): " + datasetVersionDTO.getReleaseTime());
         writeAttribute(xmlw,"date", datasetVersionDTO.getReleaseTime().substring(0, 10));
         writeAttribute(xmlw,"type", datasetVersionDTO.getVersionState().toString()); 
         xmlw.writeCharacters(datasetVersionDTO.getVersionNumber().toString());
