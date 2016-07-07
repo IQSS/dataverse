@@ -207,6 +207,9 @@ public class JsonPrinter {
 	}
 	
 	public static JsonObjectBuilder json( Dataset ds ) {
+            System.out.print("in json object builder");
+            System.out.print("ds.getId() " + ds.getId());
+            System.out.print("ds.getPublicationDateFormattedYYYYMMDD() " + ds.getPublicationDateFormattedYYYYMMDD());
 		return jsonObjectBuilder()
 				.add( "id", ds.getId() )
 				.add( "identifier", ds.getIdentifier() )
@@ -248,8 +251,10 @@ public class JsonPrinter {
 				.add("lastUpdateTime", format(dsv.getLastUpdateTime()) )
 				.add("releaseTime", format(dsv.getReleaseTime()) )
 				.add("createTime", format(dsv.getCreateTime()) )
+                        /*
                                 .add("license", dsv.getTermsOfUseAndAccess().getLicense().toString())
                                 .add("termsOfUse", getLicenseInfo(dsv))
+
                                 .add("confidentialityDeclaration", dsv.getTermsOfUseAndAccess().getConfidentialityDeclaration())
 				.add("availabilityStatus", dsv.getTermsOfUseAndAccess().getAvailabilityStatus())	
                         	.add("specialPermissions", dsv.getTermsOfUseAndAccess().getSpecialPermissions())
@@ -264,7 +269,7 @@ public class JsonPrinter {
                                 .add("availabilityStatus", dsv.getTermsOfUseAndAccess().getAvailabilityStatus())
                                 .add("contactForAccess", dsv.getTermsOfUseAndAccess().getContactForAccess())
                                 .add("sizeOfCollection", dsv.getTermsOfUseAndAccess().getSizeOfCollection())
-                                .add("studyCompletion", dsv.getTermsOfUseAndAccess().getStudyCompletion())
+                                .add("studyCompletion", dsv.getTermsOfUseAndAccess().getStudyCompletion())*/
 				;
                 
 		bld.add("metadataBlocks", jsonByBlocks(dsv.getDatasetFields()));
@@ -275,7 +280,7 @@ public class JsonPrinter {
 	}
         
         private static String getLicenseInfo( DatasetVersion dsv){
-            if (dsv.getTermsOfUseAndAccess().getLicense().equals(TermsOfUseAndAccess.License.CC0)){
+            if (dsv.getTermsOfUseAndAccess().getLicense() != null && dsv.getTermsOfUseAndAccess().getLicense().equals(TermsOfUseAndAccess.License.CC0)){
                 return "CC0 Waiver";
             }
             return dsv.getTermsOfUseAndAccess().getTermsOfUse();
@@ -309,7 +314,9 @@ public class JsonPrinter {
      */
     public static JsonObjectBuilder jsonAsDatasetDto(DatasetVersion dsv) {
         JsonObjectBuilder datasetDtoAsJson = json(dsv.getDataset());
+        System.out.print("after dataset dto");
         datasetDtoAsJson.add("datasetVersion", jsonWithCitation(dsv));
+        System.out.print("after add version");
         return datasetDtoAsJson;
     }
 

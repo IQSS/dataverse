@@ -498,7 +498,10 @@ public class Dataset extends DvObjectContainer {
     }
 
     public String getPublicationDateFormattedYYYYMMDD() {
-        return new SimpleDateFormat("yyyy-MM-dd").format(getPublicationDate());
+        if (getPublicationDate() != null){
+                   return new SimpleDateFormat("yyyy-MM-dd").format(getPublicationDate()); 
+        }
+        return null;
     }
 
     public DataFile getThumbnailFile() {
