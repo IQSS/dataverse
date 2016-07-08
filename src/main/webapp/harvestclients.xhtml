@@ -154,7 +154,7 @@
                                     <div class="col-sm-6">
                                         <p:inputText id="nickname" styleClass="form-control"
                                                      value="#{harvestingClientsPage.newNickname}"
-                                                     readonly="#{harvestingClientsPage.initialSettingsValidated}"
+                                                     readonly="#{harvestingClientsPage.editMode}"
                                                      binding="#{harvestingClientsPage.newClientNicknameInputField}"/>
                                         <p:message for="nickname"/>
                                         <p class="help-block" jsf:rendered="#{harvestingClientsPage.createMode}">#{bundle['harvestclients.newClientDialog.nickname.helptext']}</p>
@@ -236,14 +236,14 @@
                                         <p:selectOneMenu id="serverOaiSets"
                                                          styleClass="form-control"
                                                          value="#{harvestingClientsPage.newOaiSet}"
-                                                         rendered="#{harvestingClientsPage.initialSettingsValidated and harvestingClientsPage.createMode}">
+                                                         rendered="#{harvestingClientsPage.initialSettingsValidated}"> <!-- and harvestingClientsPage.createMode}" -->
                                             <f:selectItem itemLabel="#{bundle['harvestclients.newClientDialog.oaiSets.noset']}" itemValue="" noSelectionOption="true" />
                                             <f:selectItems value="#{harvestingClientsPage.oaiSetsSelectItems}" />
                                         </p:selectOneMenu>
                                         <p:message for="serverOaiSets"/>
 
                                         <!-- a readonly label, in "edit existing client" mode: -->
-                                        <p:inputText rendered="#{harvestingClientsPage.editMode}"
+                                        <p:inputText rendered="#{false}"
                                                      readonly="true"
                                                      styleClass="form-control"
                                                      value="#{harvestingClientsPage.newOaiSet}"/>
@@ -265,7 +265,7 @@
                                                          styleClass="form-control"
                                                          value="#{harvestingClientsPage.newMetadataFormat}"
                                                          validator="#{harvestingClientsPage.validateMetadataFormat}"
-                                                         rendered="#{harvestingClientsPage.createMode and harvestingClientsPage.initialSettingsValidated}">
+                                                         rendered="#{harvestingClientsPage.initialSettingsValidated}"> <!-- harvestingClientsPage.createMode and }" -->
                                             <f:selectItem itemLabel="#{bundle.select}" itemValue="" noSelectionOption="true" />
                                             <f:selectItems value="#{harvestingClientsPage.oaiMetadataFormatSelectItems}" />
                                         </p:selectOneMenu>
@@ -445,7 +445,7 @@
                                 </div>
 
                                 <!-- archive description - used to display harvested metadata in search results: -->
-                                <div class="form-group" jsf:rendered="_{harvestingClientsPage.editMode}">
+                                <div class="form-group" jsf:rendered="#{harvestingClientsPage.editMode}">
                                     <label for="archiveDescription" class="col-sm-3 control-label">
                                         #{bundle['harvestclients.viewEditDialog.archiveDescription']}
                                     </label>

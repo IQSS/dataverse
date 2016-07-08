@@ -178,7 +178,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
         
         this.newNickname = harvestingClient.getName();
         this.newHarvestingUrl = harvestingClient.getHarvestingUrl();
-        this.initialSettingsValidated = true;
+        this.initialSettingsValidated = false;
         
         // TODO: do we want to try and contact the server, again, to make 
         // sure the metadataformat and/or set are still supported? 
@@ -492,7 +492,10 @@ public class HarvestingClientsPage implements java.io.Serializable {
     
     public void validateInitialSettings() {
         if (isHarvestTypeOAI()) {
-            boolean nicknameValidated = validateNickname();
+            boolean nicknameValidated = true; 
+            if (isCreateMode()) {
+                nicknameValidated = validateNickname();
+            }
             boolean urlValidated = validateServerUrlOAI();
             
             if (nicknameValidated && urlValidated) {
