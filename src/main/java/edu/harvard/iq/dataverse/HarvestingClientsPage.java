@@ -446,6 +446,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
         if (selectedDestinationDataverse == null) {
             FacesContext.getCurrentInstance().addMessage(getSelectedDataverseMenu().getClientId(),
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "", JH.localize("harvestclients.newClientDialog.dataverse.required")));
+            return false;
         }
         return true;
     }
