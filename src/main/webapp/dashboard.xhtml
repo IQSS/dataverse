@@ -15,8 +15,7 @@
             <ui:param name="showDataverseHeader" value="false"/>
             <ui:define name="body">
                 <f:metadata>
-                    <!-- FIXME -->
-                    <f:viewParam name="dataverseId" value="1"/>
+                    <f:viewParam name="dataverseId" value="#{dataverseServiceBean.findRootDataverse().id}"/>
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseServiceBean.findRootDataverse(), bundle['dashboard.title'])}"/>
                 </f:metadata>
                 
@@ -42,7 +41,7 @@
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="card-box">
-                                    <h4 class="header-title">Harvesting Clients<span class="glyphicon glyphicon-cog pull-right"/></h4>
+                                    <h4 class="header-title">Harvesting Clients</h4>
                                     <div class="row text-center">
                                         <div class="col-xs-6">
                                             #,###
@@ -56,7 +55,6 @@
                                     <div class="row text-center">
                                         <div  class="col-xs-12">
                                             <p>
-                                                <!-- do not supply the dataverse id when calling Harvest Clients page in the "dashboard mode" -->
                                                 <a href="/harvestclients.xhtml?dataverseId=#{dataverseServiceBean.findRootDataverse().id}" class="btn btn-primary" role="button">Manage Clients</a>
                                             </p>
                                         </div>
@@ -66,7 +64,7 @@
                             </div>
                             <div class="col-md-4">
                                 <div class="card-box">
-                                    <h4 class="header-title">Harvesting Server<span class="glyphicon glyphicon-cog pull-right"/></h4>
+                                    <h4 class="header-title">Harvesting Server</h4>
                                     <div class="row text-center">
                                         <div class="col-xs-6">
                                             #,###
@@ -80,8 +78,7 @@
                                     <div class="row text-center">
                                         <div  class="col-xs-12">
                                             <p>
-                                                <!-- harvesting  -->
-                                                <a href="/harvestsets.xhtml?dataverseid=1" class="btn btn-primary" role="button">Manage Server</a>
+                                                <a href="/harvestsets.xhtml?dataverseId=#{dataverseServiceBean.findRootDataverse().id}" class="btn btn-primary" role="button">Manage Server</a>
                                             </p>
                                         </div>
                                     </div>
@@ -89,15 +86,16 @@
                             </div>
                             <div class="col-md-4">
                                 <div class="card-box">
-                                    <h4 class="header-title">Metadata Export<span class="glyphicon glyphicon-cog pull-right"/></h4>
-                                    <div class="row text-center">
-                                        <div class="col-xs-6">
-                                            #,###
-                                            <p class="small text-muted">Label</p>
-                                        </div>
-                                        <div class="col-xs-6">
-                                            #,###
-                                            <p class="small text-muted">Label</p>
+                                    <h4 class="header-title">Metadata Export</h4>
+                                    <div class="row text-left">
+                                        <div class="col-xs-12">
+                                            <p class="help-block">
+                                                <span class="glyphicon glyphicon-info-sign"/> 
+                                                <h:outputFormat value=" #{bundle['dashboard.export.message']}" escape="false">
+                                                    <f:param value="&lt;a href=&#34;#{systemConfig.guidesBaseUrl}/#{systemConfig.version}/api&#34; target=&#34;_blank&#34;&gt;"/>
+                                                    <f:param value="&lt;/a&gt;"/>
+                                                </h:outputFormat>
+                                            </p>
                                         </div>
                                     </div>
                                 </div>

@@ -12,7 +12,7 @@
 
     <h:body>
         <f:metadata>
-            <!-- do we need breadcrumbs for this page? - Once again, this page is only accessible through the "dashboard". -->
+            <f:viewParam name="dataverseId" value="#{harvestingClientsPage.dataverseId}"/>
             <f:viewAction action="#{harvestingSetsPage.init}"/>
             <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb('/dashboard.xhtml?dataverseId='.concat(dataverse.id), bundle['dashboard.title'])}"/>   
             <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb(bundle['harvestserver.title'])}"/>

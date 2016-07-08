@@ -133,21 +133,22 @@
                                             </h:outputLink>
                                         </li>
                                     </ui:remove>
-                                    <li jsf:rendered="#{dataverseSession.user.superuser}">
+                                    <li>
                                         <h:outputLink value="/dataverseuser.xhtml">
                                             <f:param name="selectTab" value="accountInfo" />
                                             <h:outputText value="#{bundle['header.accountInfo']}" />
                                         </h:outputLink>
                                     </li>
                                     <li>
-                                        <h:outputLink value="/dashboard.xhtml?dataverseId=#{dataverse.id}">
-                                            <h:outputText value="#{bundle['header.dashboard']}" />
-                                        </h:outputLink>
-                                    </li>
-                                    <li>
                                         <h:outputLink value="/dataverseuser.xhtml">
                                             <f:param name="selectTab" value="apiTokenTab" />
                                             <h:outputText value="#{bundle['header.user.selectTab.apiToken']}" />
+                                        </h:outputLink>
+                                    </li>
+                                    <li class="divider" jsf:rendered="#{dataverseSession.user.superuser}"></li>
+                                    <li jsf:rendered="#{dataverseSession.user.superuser}">
+                                        <h:outputLink value="/dashboard.xhtml?dataverseId=#{dataverseServiceBean.findRootDataverse().id}">
+                                            <h:outputText value="#{bundle['header.dashboard']}" />
                                         </h:outputLink>
                                     </li>
                                     <li class="divider"></li>
