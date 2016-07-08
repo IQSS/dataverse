@@ -57,9 +57,10 @@
                                         <div  class="col-xs-12">
                                             <p>
                                                 <!-- do not supply the dataverse id when calling Harvest Clients page in the "dashboard mode" -->
-                                                <a href="/harvestclients.xhtml" class="btn btn-primary" role="button">Manage Clients</a>
+                                                <a href="/harvestclients.xhtml?dataverseId=#{dataverseServiceBean.findRootDataverse().id}" class="btn btn-primary" role="button">Manage Clients</a>
                                             </p>
                                         </div>
+                                        
                                     </div>
                                 </div>
                             </div>

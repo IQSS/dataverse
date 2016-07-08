@@ -118,7 +118,11 @@ public class OAIServlet extends HttpServlet {
         ddiMetadataFormat.withNamespace("http://www.icpsr.umich.edu/DDI");
         ddiMetadataFormat.withSchemaLocation("http://www.icpsr.umich.edu/DDI/Version2-0.xsd");
         
-        Context context = new Context().withMetadataFormat(dcMetadataFormat).withMetadataFormat(ddiMetadataFormat);
+        MetadataFormat jsonMetadataFormat = MetadataFormat.metadataFormat("dataverse-custom-json");
+        jsonMetadataFormat.withNamespace("dataverse-custom-json");
+        jsonMetadataFormat.withSchemaLocation("dataverse-custom-json");
+        
+        Context context = new Context().withMetadataFormat(dcMetadataFormat).withMetadataFormat(ddiMetadataFormat).withMetadataFormat(jsonMetadataFormat);
         
         return context;
     }

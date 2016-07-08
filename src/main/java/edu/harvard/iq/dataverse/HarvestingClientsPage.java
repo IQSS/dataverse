@@ -78,7 +78,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
             return "/403.xhtml"; 
         }
         
-        if (dataverseId != null) {
+        /*if (dataverseId != null) {
             setDataverse(dataverseService.find(getDataverseId()));
             if (getDataverse() == null) {
                 return navigationWrapper.notFound();
@@ -87,10 +87,10 @@ public class HarvestingClientsPage implements java.io.Serializable {
             if (dataverse.getHarvestingClientConfig() != null) {
                 configuredHarvestingClients.add(dataverse.getHarvestingClientConfig());
             }
-        } else {
+        } else {*/
             //setDataverse(dataverseService.findRootDataverse());
             configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();
-        }
+        /*}*/
         
         
         pageMode = PageMode.VIEW;

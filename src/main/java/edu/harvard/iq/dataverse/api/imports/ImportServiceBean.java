@@ -190,7 +190,7 @@ public class ImportServiceBean {
 
         DatasetDTO dsDTO = null;
 
-        if ("ddi".equals(metadataFormat)) {
+        if (true) { //"ddi".equals(metadataFormat)) {
             try {
                 String xmlToParse = new String(Files.readAllBytes(metadataFile.toPath()));
                 dsDTO = importDDIService.doImport(ImportType.HARVEST, xmlToParse);
