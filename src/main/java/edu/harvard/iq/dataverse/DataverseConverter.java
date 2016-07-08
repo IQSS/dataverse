@@ -26,6 +26,7 @@ public class DataverseConverter implements Converter {
     @Override
     public Object getAsObject(FacesContext facesContext, UIComponent component, String submittedValue) {
         return dataverseService.find(new Long(submittedValue));
+        //return dataverseService.findByAlias(submittedValue);
     }
 
     @Override
@@ -34,6 +35,7 @@ public class DataverseConverter implements Converter {
             return "";
         } else {
             return ((Dataverse) value).getId().toString();
+            //return ((Dataverse) value).getAlias();
         }
     }
 }

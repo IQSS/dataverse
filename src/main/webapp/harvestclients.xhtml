@@ -210,8 +210,39 @@
                                         <p class="help-block" jsf:rendered="#{harvestingClientsPage.createMode}">#{bundle['harvestclients.newClientDialog.url.helptext']}</p>
                                     </div>
                                 </div>
+                                
+                                <!-- dataverse to which the harvesting configuration is being added: -->
+                                <div class="form-group" jsf:rendered="#{harvestingClientsPage.createMode}">
+                                    <label for="destinationDataverse" class="col-sm-3 control-label">
+                                        #{bundle['harvestclients.newClientDialog.dataverse']} <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{harvestingClientsPage.createMode}" title="#{bundle.requiredField}"/>
+                                    </label>
+                                    <div class="col-sm-6">
+                                        <p:autoComplete id="destinationDataverseMenu" 
+                                                        binding="#{harvestingClientsPage.selectedDataverseMenu}"
 
-                                <!-- the extra settings that appear once/if the initial settings are validated: -->
+                                                        placeholder="#{bundle['harvestclients.newClientDialog.dataverse.menu.enterName']}"
+                                                        multiple="false" scrollHeight="180" forceSelection="true" 
+                                                        minQueryLength="2" queryDelay="1000"                                      
+                                                        emptyMessage="#{bundle['harvestclients.newClientDialog.dataverse.menu.invalidMsg']}"
+                                                        value="#{harvestingClientsPage.selectedDestinationDataverse}"
+                                                        completeMethod="#{harvestingClientsPage.completeSelectedDataverse}"
+                                                        var="destDV"
+                                                        itemLabel="#{destDV.alias}" itemValue="#{destDV}" converter="dataverseConverter">
+
+                                            <p:column>
+                                                <h:outputText value="#{destDV.alias}"/>
+                                            </p:column>
+                                            <p:column>
+                                                <h:outputText value="#{destDV.name}"/>
+                                            </p:column>
+                                            <p:ajax process="@this" event="itemSelect" />
+                                            <p:ajax process="@this" event="itemUnselect" />
+                                        </p:autoComplete>
+                                        <p:message for="destinationDataverseMenu"/>
+                                        <p class="help-block" jsf:rendered="#{harvestingClientsPage.createMode}">#{bundle['harvestclients.newClientDialog.dataverse.helptext']}</p>
+                                    </div>
+                                </div>
+
                                 <div class="form-group">
                                     <div class="col-sm-6 col-sm-offset-3 button-block">
                                         <p:commandLink type="button" rendered="#{!harvestingClientsPage.initialSettingsValidated}"

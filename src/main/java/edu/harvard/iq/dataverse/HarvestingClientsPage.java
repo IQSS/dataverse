@@ -77,6 +77,20 @@ public class HarvestingClientsPage implements java.io.Serializable {
     
     private CreateStep createStep = CreateStep.ONE;
     
+    private Dataverse selectedDestinationDataverse;
+
+    public void setSelectedDestinationDataverse(Dataverse dv) {
+        this.selectedDestinationDataverse = dv;
+    }
+
+    public Dataverse getSelectedDestinationDataverse() {
+        return this.selectedDestinationDataverse;
+    }
+    
+    public List<Dataverse> completeSelectedDataverse(String query) {
+        return dataverseService.filterByAliasQuery(query);
+    }
+    
     public String init() {
         if (!isSessionUserAuthenticated()) {
             return "/loginpage.xhtml" + navigationWrapper.getRedirectPage();
@@ -428,6 +442,14 @@ public class HarvestingClientsPage implements java.io.Serializable {
         return false;
     }
     
+    public boolean validateSelectedDataverse() {
+        if (selectedDestinationDataverse == null) {
+            FacesContext.getCurrentInstance().addMessage(getSelectedDataverseMenu().getClientId(),
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", JH.localize("harvestclients.newClientDialog.dataverse.required")));
+        }
+        return true;
+    }
+    
     public boolean validateServerUrlOAI() {
         if (!StringUtils.isEmpty(getNewHarvestingUrl())) {
 
@@ -493,13 +515,15 @@ public class HarvestingClientsPage implements java.io.Serializable {
     public void validateInitialSettings() {
         if (isHarvestTypeOAI()) {
             boolean nicknameValidated = true; 
+            boolean destinationDataverseValidated = true;
             if (isCreateMode()) {
                 nicknameValidated = validateNickname();
+                destinationDataverseValidated = validateSelectedDataverse();
             }
             boolean urlValidated = validateServerUrlOAI();
             
-            if (nicknameValidated && urlValidated) {
-                // We want to run both validation tests; this is why 
+            if (nicknameValidated && destinationDataverseValidated && urlValidated) {
+                // In Create mode we want to run all 3 validation tests; this is why 
                 // we are not doing "if ((validateNickname() && validateServerUrlOAI())"
                 // in the line above. -- L.A. 4.4 May 2016.
                 
@@ -543,6 +567,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
     UIInput newClientUrlInputField;
     UIInput hiddenInputField; 
     /*UISelectOne*/ UIInput metadataFormatMenu; 
+    UIInput selectedDataverseMenu;
     
     private String newNickname = "";
     private String newHarvestingUrl = "";
@@ -584,6 +609,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
         
         this.pageMode = PageMode.CREATE;
         this.createStep = CreateStep.ONE;
+        this.selectedDestinationDataverse = null;
         
     }
         
@@ -735,6 +761,14 @@ public class HarvestingClientsPage implements java.io.Serializable {
 
     public void setMetadataFormatMenu(UIInput metadataFormatMenu) {
         this.metadataFormatMenu = metadataFormatMenu;
+    }
+    
+    public UIInput getSelectedDataverseMenu() {
+        return selectedDataverseMenu;
+    }
+
+    public void setSelectedDataverseMenu(UIInput selectedDataverseMenu) {
+        this.selectedDataverseMenu = selectedDataverseMenu;
     }
     
     private List<SelectItem> oaiSetsSelectItems;
