@@ -336,48 +336,9 @@ public class DatasetsIT {
         // A Contributor has DeleteDatasetDraft
         Response deleteDraftVersionAsContributor = UtilIT.deleteDatasetVersionViaNativeApi(datasetId, ":draft", contributorApiToken);
         deleteDraftVersionAsContributor.prettyPrint();
-        boolean bugs3200and3201haveBeenFixed = false;
-        if (bugs3200and3201haveBeenFixed) {
-            deleteDraftVersionAsContributor.then().assertThat()
-                    .statusCode(OK.getStatusCode());
-        } else {
-            /**
-             * The problem here is that the deletion of the dataset version by
-             * the contributor only half worked! The version is gone but the
-             * Private URL was not deleted and reindexing didn't happen. The
-             * DeleteDatasetVersionCommand exited early. If you allow more
-             * information to be reported, you will see "status:ERROR" and this
-             * message:
-             *
-             * "User @userbaed3c79 is not permitted to perform requested action.
-             * Can't execute command
-             * edu.harvard.iq.dataverse.engine.command.impl.GetPrivateUrlCommand@70d1d3e4,
-             * because request [DataverseRequest
-             * user:edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser@69@127.0.0.1]
-             * is missing permissions [ManageDatasetPermissions] on Object
-             * Darwin's Finches. granted: [ViewUnpublishedDataset, DownloadFile,
-             * EditDataset, DeleteDatasetDraft]"
-             *
-             * This is fairly awful because you are left with the impression
-             * that the deletion of the dataset version did not happen
-             * (UNAUTHORIZED) but it really did! Yikes!
-             *
-             * To get the dataset out of its invalid state (indexing cruft left
-             * behind and a Private URL on a published version), we create a new
-             * draft.
-             */
-            deleteDraftVersionAsContributor.then().assertThat()
-                    .statusCode(UNAUTHORIZED.getStatusCode())
-                    .body("message", equalTo("User @" + contributorUsername + " is not permitted to perform requested action."));
-            String workaroundTitle = "I am creating a new draft as a workaround while bugs 3200 and 3100 exist. This way the creator can delete it cleanly.";
-            Response workAroundSoWeCanDeleteDraft = UtilIT.updateDatasetTitleViaSword(dataset1PersistentId, workaroundTitle, apiToken);
-            workAroundSoWeCanDeleteDraft.prettyPrint();
-            assertEquals(OK.getStatusCode(), workAroundSoWeCanDeleteDraft.getStatusCode());
-            Response deleteDraftVersionAsCreator = UtilIT.deleteDatasetVersionViaNativeApi(datasetId, ":draft", apiToken);
-            deleteDraftVersionAsCreator.prettyPrint();
-            deleteDraftVersionAsCreator.then().assertThat()
-                    .statusCode(OK.getStatusCode());
-        }
+        deleteDraftVersionAsContributor.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", equalTo("Draft version of dataset " + datasetId + " deleted"));
 
         Response privateUrlRoleAssignmentShouldBeGoneAfterDraftDeleted = UtilIT.getRoleAssignmentsOnDataset(datasetId.toString(), null, apiToken);
         privateUrlRoleAssignmentShouldBeGoneAfterDraftDeleted.prettyPrint();
