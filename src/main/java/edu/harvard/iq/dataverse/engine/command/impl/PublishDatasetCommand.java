@@ -22,13 +22,17 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.search.IndexResponse;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.jsonAsDatasetDto;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 import java.util.ResourceBundle;
+import javax.json.JsonObjectBuilder;
 
 /**
  *
@@ -227,6 +231,18 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
                 throw new CommandException(ResourceBundle.getBundle("Bundle").getString("dataset.publish.error.datacite"), this);
             }
         }
+
+        /*
+        Adding DDI export to Command
+        Leonid please save the outpur stream to the file system
+        Also - I don't see a last export date on Dataset or DVObject
+        Do we need to add it and update it here?
+        */
+        
+        ExportService instance = ExportService.getInstance();
+        final JsonObjectBuilder datasetAsJson = jsonAsDatasetDto(savedDataset.getLatestVersion());
+        OutputStream datasetAsDDI = instance.getExport(datasetAsJson.build(), "DDI");
+
 
         /*
         MoveIndexing to after DOI update so that if command exception is thrown the re-index will not
