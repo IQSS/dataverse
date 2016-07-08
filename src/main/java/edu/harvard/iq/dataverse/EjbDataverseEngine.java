@@ -180,6 +180,11 @@ public class EjbDataverseEngine {
                 if (!granted.containsAll(required)) {
                     required.removeAll(granted);
                     logRec.setActionResult(ActionLogRecord.Result.PermissionError);
+                    /**
+                     * @todo Is there any harm in showing the "granted" set
+                     * since we already show "required"? It would help people
+                     * reason about the mismatch.
+                     */
                     throw new PermissionException("Can't execute command " + aCommand
                             + ", because request " + aCommand.getRequest()
                             + " is missing permissions " + required

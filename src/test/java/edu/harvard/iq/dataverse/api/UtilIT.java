@@ -375,6 +375,12 @@ public class UtilIT {
                 .delete("/api/datasets/" + datasetId);
     }
 
+    public static Response deleteDatasetVersionViaNativeApi(Integer datasetId, String versionId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/datasets/" + datasetId + "/versions/" + versionId);
+    }
+
     static Response deleteLatestDatasetVersionViaSwordApi(String persistentId, String apiToken) {
         return given()
                 .auth().basic(apiToken, EMPTY_STRING)
