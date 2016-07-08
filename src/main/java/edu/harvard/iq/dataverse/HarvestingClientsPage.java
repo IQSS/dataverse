@@ -71,6 +71,12 @@ public class HarvestingClientsPage implements java.io.Serializable {
     }  
     private PageMode pageMode = PageMode.VIEW; 
     
+    public enum CreateStep {
+        ONE, TWO, THREE, FOUR
+    }
+    
+    private CreateStep createStep = CreateStep.ONE;
+    
     public String init() {
         if (!isSessionUserAuthenticated()) {
             return "/loginpage.xhtml" + navigationWrapper.getRedirectPage();
@@ -78,20 +84,16 @@ public class HarvestingClientsPage implements java.io.Serializable {
             return "/403.xhtml"; 
         }
         
-        /*if (dataverseId != null) {
+        if (dataverseId != null) {
             setDataverse(dataverseService.find(getDataverseId()));
             if (getDataverse() == null) {
                 return navigationWrapper.notFound();
             }
-            configuredHarvestingClients = new ArrayList<>();
-            if (dataverse.getHarvestingClientConfig() != null) {
-                configuredHarvestingClients.add(dataverse.getHarvestingClientConfig());
-            }
-        } else {*/
-            //setDataverse(dataverseService.findRootDataverse());
-            configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();
-        /*}*/
+        } else {
+            setDataverse(dataverseService.findRootDataverse());
+        }
         
+        configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();
         
         pageMode = PageMode.VIEW;
         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, JH.localize("harvestclients.title"), JH.localize("harvestclients.toptip")));
@@ -149,6 +151,23 @@ public class HarvestingClientsPage implements java.io.Serializable {
     public boolean isViewMode() {
         return PageMode.VIEW == this.pageMode;
     }
+    
+    public boolean isCreateStepOne() {
+        return CreateStep.ONE == this.createStep;
+    }
+    
+    public boolean isCreateStepTwo() {
+        return CreateStep.TWO == this.createStep;
+    }
+    
+    public boolean isCreateStepThree() {
+        return CreateStep.THREE == this.createStep;
+    }
+    
+    public boolean isCreateStepFour() {
+        return CreateStep.FOUR == this.createStep;
+    }
+    
     
     public void runHarvest(HarvestingClient harvestingClient) {
         
@@ -232,6 +251,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
         HarvestingClient newHarvestingClient = new HarvestingClient(); // will be set as type OAI by default
         
         newHarvestingClient.setName(newNickname);
+        
         newHarvestingClient.setDataverse(dataverse);
         dataverse.setHarvestingClientConfig(newHarvestingClient);
         newHarvestingClient.setHarvestingUrl(newHarvestingUrl);
@@ -268,6 +288,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
         newHarvestingClient.setArchiveUrl(makeDefaultArchiveUrl());
         // set default description - they can customize it as they see fit:
         newHarvestingClient.setArchiveDescription(JH.localize("harvestclients.viewEditDialog.archiveDescription.default.generic"));
+        
         
         // will try to save it now:
         
@@ -480,9 +501,31 @@ public class HarvestingClientsPage implements java.io.Serializable {
                 // in the line above. -- L.A. 4.4 May 2016.
                 
                 setInitialSettingsValidated(true);
+                this.createStep = CreateStep.TWO;
             }
             // (and if not - it stays set to false)
         }
+    }
+    
+    public void backToStepOne() {
+        this.initialSettingsValidated = false;
+        this.createStep = CreateStep.ONE;
+    }
+    
+    public void goToStepThree() {
+        this.createStep = CreateStep.THREE;
+    }
+    
+    public void backToStepTwo() {
+        this.createStep = CreateStep.TWO;
+    }
+    
+    public void goToStepFour() {
+        this.createStep = CreateStep.FOUR;
+    }
+    
+    public void backToStepThree() {
+        this.createStep = CreateStep.THREE;
     }
     
     /*
@@ -537,6 +580,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
         this.harvestingScheduleRadioAMPM = harvestingScheduleRadioAM;
         
         this.pageMode = PageMode.CREATE;
+        this.createStep = CreateStep.ONE;
         
     }
         

@@ -15,7 +15,8 @@
             <ui:param name="showDataverseHeader" value="false"/>
             <ui:define name="body">
                 <f:metadata>
-                    <f:viewParam name="dataverseId" value="#{dataverseServiceBean.findRootDataverse().id}"/>
+                    <f:viewParam name="dataverseId" value="#{dashboardPage.dataverseId}"/>
+                    <f:viewAction action="#{dashboardPage.init}"/>
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseServiceBean.findRootDataverse(), bundle['dashboard.title'])}"/>
                 </f:metadata>
                 
