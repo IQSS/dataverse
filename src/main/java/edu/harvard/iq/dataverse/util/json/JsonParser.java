@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseContact;
+import edu.harvard.iq.dataverse.DataverseTheme;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.api.Util;
@@ -71,6 +72,16 @@ public class JsonParser {
         dv.setPermissionRoot(jobj.getBoolean("permissionRoot", false));
         dv.setFacetRoot(jobj.getBoolean("facetRoot", false));
         dv.setAffiliation(jobj.getString("affiliation", null));
+
+        dv.setDataverseType(Dataverse.DataverseType.UNCATEGORIZED); // default
+        if (jobj.containsKey("dataverseType")) {
+            for (Dataverse.DataverseType dvtype : Dataverse.DataverseType.values()) {
+                if (dvtype.name().equalsIgnoreCase(jobj.getString("dataverseType"))) {
+                    dv.setDataverseType(dvtype);
+                }
+            }
+        }
+
         if (jobj.containsKey("dataverseContacts")) {
             JsonArray dvContacts = jobj.getJsonArray("dataverseContacts");
             int i = 0;
@@ -83,10 +94,16 @@ public class JsonParser {
             }
             dv.setDataverseContacts(dvContactList);
         }
-        
+
+        if (jobj.containsKey("theme")) {
+            DataverseTheme theme = parseDataverseTheme(jobj.getJsonObject("theme"));
+            dv.setDataverseTheme(theme);
+            theme.setDataverse(dv);
+        }
+
         /*  We decided that subject is not user set, but gotten from the subject of the dataverse's
             datasets - leavig this code in for now, in case we need to go back to it at some point
-        
+
         if (jobj.containsKey("dataverseSubjects")) {
             List<ControlledVocabularyValue> dvSubjectList = new LinkedList<>();
             DatasetFieldType subjectType = datasetFieldSvc.findByName(DatasetFieldConstant.subject);
@@ -109,7 +126,7 @@ public class JsonParser {
             dv.setDataverseSubjects(dvSubjectList);
         }
         */
-                
+
         return dv;
     }
 
@@ -182,9 +199,9 @@ public class JsonParser {
             // if the existing datasetversion doesn not have an id
             // use the id from the json object.
             if (dsv.getId()==null) {
-                 dsv.setId(parseLong(obj.getString("id", null)));
+                dsv.setId(parseLong(obj.getString("id", null)));
             }
-           
+
             String versionStateStr = obj.getString("versionState", null);
             if (versionStateStr != null) {
                 dsv.setVersionState(DatasetVersion.VersionState.valueOf(versionStateStr));
@@ -194,9 +211,10 @@ public class JsonParser {
             dsv.setLastUpdateTime(parseTime(obj.getString("lastUpdateTime", null)));
             dsv.setCreateTime(parseTime(obj.getString("createTime", null)));
             dsv.setArchiveTime(parseTime(obj.getString("archiveTime", null)));
+
             // Terms of Use related fields
             TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
-            terms.setTermsOfUse(obj.getString("termsOfUse", null));           
+            terms.setTermsOfUse(obj.getString("termsOfUse", null));
             terms.setTermsOfAccess(obj.getString("termsOfAccess", null));
             terms.setConfidentialityDeclaration(obj.getString("confidentialityDeclaration", null));
             terms.setSpecialPermissions(obj.getString("specialPermissions", null));
@@ -211,9 +229,17 @@ public class JsonParser {
             terms.setContactForAccess(obj.getString("contactForAccess", null));
             terms.setSizeOfCollection(obj.getString("sizeOfCollection", null));
             terms.setStudyCompletion(obj.getString("studyCompletion", null));
-            /* License???*/
+
+            // License: only CC0 or NONE is currently supported
+            TermsOfUseAndAccess.License license = TermsOfUseAndAccess.License.NONE;
+            String jsonLicense = obj.getString("license", null);
+            if (jsonLicense != null && jsonLicense.equalsIgnoreCase("CC0")) {
+                license = TermsOfUseAndAccess.License.CC0;
+            }
+            terms.setLicense(license);
+
             dsv.setTermsOfUseAndAccess(terms);
-            
+
             dsv.setDatasetFields(parseMetadataBlocks(obj.getJsonObject("metadataBlocks")));
 
             return dsv;
@@ -238,7 +264,7 @@ public class JsonParser {
                 } catch (CompoundVocabularyException ex) {
                     DatasetFieldType fieldType = datasetFieldSvc.findByNameOpt(fieldJson.getString("typeName", ""));
                     if (lenient && (DatasetFieldConstant.geographicCoverage).equals(fieldType.getName())) {
-                        fields.add(remapGeographicCoverage( ex));                       
+                        fields.add(remapGeographicCoverage( ex));
                     } else {
                         // if not lenient mode, re-throw exception
                         throw ex;
@@ -254,11 +280,11 @@ public class JsonParser {
      * Special processing for GeographicCoverage compound field:
      * Handle parsing exceptions caused by invalid controlled vocabulary in the "country" field by
      * putting the invalid data in "otherGeographicCoverage" in a new compound value.
-     * 
+     *
      * @param ex - contains the invalid values to be processed
-     * @return a compound DatasetField that contains the newly created values, in addition to 
+     * @return a compound DatasetField that contains the newly created values, in addition to
      * the original valid values.
-     * @throws JsonParseException 
+     * @throws JsonParseException
      */
     private DatasetField remapGeographicCoverage(CompoundVocabularyException ex) throws JsonParseException{
         List<HashSet<FieldDTO>> geoCoverageList = new ArrayList<>();
@@ -286,9 +312,9 @@ public class JsonParser {
         }
         return geoCoverageField;
     }
-     
-    
-  
+
+
+
 
     public DatasetField parseField(JsonObject json) throws JsonParseException {
         if (json == null) {
@@ -297,7 +323,7 @@ public class JsonParser {
 
         DatasetField ret = new DatasetField();
         DatasetFieldType type = datasetFieldSvc.findByNameOpt(json.getString("typeName", ""));
-    
+
 
         if (type == null) {
             throw new JsonParseException("Can't find type '" + json.getString("typeName", "") + "'");
@@ -314,9 +340,9 @@ public class JsonParser {
         if (type.isControlledVocabulary() && !json.getString("typeClass").equals("controlledVocabulary")) {
             throw new JsonParseException("incorrect  typeClass for field " + json.getString("typeName", "") + ", should be controlledVocabulary");
         }
-       
+
         ret.setDatasetFieldType(type);
-               
+
         if (type.isCompound()) {
             List<DatasetFieldCompoundValue> vals = parseCompoundValue(type, json);
             for (DatasetFieldCompoundValue dsfcv : vals) {
@@ -339,13 +365,13 @@ public class JsonParser {
             }
             ret.setDatasetFieldValues(values);
         }
-        
+
         return ret;
     }
 
     /**
-     * Special processing of keywords and subjects.  All keywords and subjects will be input 
-     * from foreign formats (DDI, dcterms, etc) as keywords.  
+     * Special processing of keywords and subjects.  All keywords and subjects will be input
+     * from foreign formats (DDI, dcterms, etc) as keywords.
      * As part of the parsing, we will move keywords that match subject controlled vocabulary values
      * into the subjects datasetField.
      * @param fields - the parsed datasetFields
@@ -380,7 +406,7 @@ public class JsonParser {
                         filteredValues.add(compoundVal);
                     } else {
                         // save the value for our subject field
-                        if (!subjects.contains(cvv)) 
+                        if (!subjects.contains(cvv))
                         {
                             subjects.add(cvv);
                         }
@@ -394,15 +420,15 @@ public class JsonParser {
         if (subjects.size() > 0) {
             keywordField.setDatasetFieldCompoundValues(filteredValues);
 
-               DatasetField subjectField = new DatasetField();
+            DatasetField subjectField = new DatasetField();
             subjectField.setDatasetFieldType(type);
             for (ControlledVocabularyValue val : subjects) {
                 int order = 0;
-              
+
                 val.setDisplayOrder(order);
                 val.setDatasetFieldType(type);
                 order++;
-                
+
             }
 
             subjectField.setControlledVocabularyValues(subjects);
@@ -410,7 +436,7 @@ public class JsonParser {
         }
 
     }
-    
+
     public List<DatasetFieldCompoundValue> parseCompoundValue(DatasetFieldType compoundType, JsonObject json) throws JsonParseException {
         List<ControlledVocabularyException> vocabExceptions = new ArrayList<>();
         List<DatasetFieldCompoundValue> vals = new LinkedList<>();
@@ -427,13 +453,13 @@ public class JsonParser {
                     } catch(ControlledVocabularyException ex) {
                         vocabExceptions.add(ex);
                     }
-                    
+
                     if (f!=null) {
                         if (!compoundType.getChildDatasetFieldTypes().contains(f.getDatasetFieldType())) {
                             throw new JsonParseException("field " + f.getDatasetFieldType().getName() + " is not a child of " + compoundType.getName());
                         }
                         f.setParentDatasetFieldCompoundValue(cv);
-                            fields.add(f);
+                        fields.add(f);
                     }
                 }
                 if (!fields.isEmpty()) {
@@ -444,10 +470,10 @@ public class JsonParser {
                 order++;
             }
 
-           
+
 
         } else {
-            
+
             DatasetFieldCompoundValue cv = new DatasetFieldCompoundValue();
             List<DatasetField> fields = new LinkedList<>();
             JsonObject value = json.getJsonObject("value");
@@ -468,12 +494,12 @@ public class JsonParser {
                 cv.setChildDatasetFields(fields);
                 vals.add(cv);
             }
-      
-    }
+
+        }
         if (!vocabExceptions.isEmpty()) {
             throw new CompoundVocabularyException( "Invalid controlled vocabulary in compound field ", vocabExceptions, vals);
         }
-          return vals;
+        return vals;
     }
 
     public List<DatasetFieldValue> parsePrimitiveValue(JsonObject json) throws JsonParseException {
@@ -505,7 +531,7 @@ public class JsonParser {
                 if (cvv == null) {
                     throw new ControlledVocabularyException("Value '" + strValue + "' does not exist in type '" + cvvType.getName() + "'", cvvType, strValue);
                 }
-                // Only add value to the list if it is not a duplicate 
+                // Only add value to the list if it is not a duplicate
                 if (strValue.equals("Other")) {
                     System.out.println("vals = "+vals+", contains: "+vals.contains(cvv));
                 }
@@ -541,4 +567,54 @@ public class JsonParser {
         return str == null ? defaultValue : Integer.parseInt(str);
     }
 
+
+    public DataverseTheme parseDataverseTheme(JsonObject obj) {
+
+        DataverseTheme theme = new DataverseTheme();
+
+        if (obj.containsKey("backgroundColor")) {
+            theme.setBackgroundColor(obj.getString("backgroundColor", null));
+        }
+        if (obj.containsKey("linkColor")) {
+            theme.setLinkColor(obj.getString("linkColor", null));
+        }
+        if (obj.containsKey("linkUrl")) {
+            theme.setLinkUrl(obj.getString("linkUrl", null));
+        }
+        if (obj.containsKey("logo")) {
+            theme.setLogo(obj.getString("logo", null));
+        }
+        if (obj.containsKey("logoAlignment")) {
+            String align = obj.getString("logoAlignment");
+            if (align.equalsIgnoreCase("left")) {
+                theme.setLogoAlignment(DataverseTheme.Alignment.LEFT);
+            }
+            if (align.equalsIgnoreCase("right")) {
+                theme.setLogoAlignment(DataverseTheme.Alignment.RIGHT);
+            }
+            if (align.equalsIgnoreCase("center")) {
+                theme.setLogoAlignment(DataverseTheme.Alignment.CENTER);
+            }
+        }
+        if (obj.containsKey("logoBackgroundColor")) {
+            theme.setLogoBackgroundColor(obj.getString("logoBackgroundColor", null));
+        }
+        if (obj.containsKey("logoFormat")) {
+            String format = obj.getString("logoFormat");
+            if (format.equalsIgnoreCase("square")){
+                theme.setLogoFormat(DataverseTheme.ImageFormat.SQUARE);
+            }
+            if (format.equalsIgnoreCase("rectangle")){
+                theme.setLogoFormat(DataverseTheme.ImageFormat.RECTANGLE);
+            }
+        }
+        if (obj.containsKey("tagline")) {
+            theme.setTagline(obj.getString("tagline", null));
+        }
+        if (obj.containsKey("textColor")) {
+            theme.setTextColor(obj.getString("textColor", null));
+        }
+
+        return theme;
+    }
 }
