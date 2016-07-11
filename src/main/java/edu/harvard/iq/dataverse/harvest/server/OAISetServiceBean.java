@@ -67,7 +67,8 @@ public class OAISetServiceBean implements java.io.Serializable {
     
     public void remove(OAISet oaiSet) {
         em.createQuery("delete from OAIRecord hs where hs.setName = '" + oaiSet.getSpec() + "'").executeUpdate();
-        em.remove(oaiSet);
+        OAISet merged = em.merge(oaiSet);
+        em.remove(merged);
     }
     
     public OAISet findById(Long id) {

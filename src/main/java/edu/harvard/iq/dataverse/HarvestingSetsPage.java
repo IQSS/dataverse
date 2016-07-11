@@ -240,6 +240,24 @@ public class HarvestingSetsPage implements java.io.Serializable {
         
     }
     
+    public void deleteSet() {
+        if (selectedSet != null) {
+            logger.info("proceeding to delete harvesting set "+ selectedSet.getSpec());
+            try {
+                oaiSetService.remove(selectedSet);
+                configuredHarvestingSets = oaiSetService.findAll();
+                selectedSet = null; 
+                JsfHelper.addFlashMessage("Selected harvesting set has been deleted.");
+            } catch (Exception ex) {
+                String failMessage = "Failed to delete harvesting set; unknown exception: "+ex.getMessage();
+                JH.addMessage(FacesMessage.SEVERITY_FATAL, failMessage);
+            }
+        } else {
+            logger.warning("Delete called, with a null selected harvesting set!");
+        }
+        
+    }
+    
     public boolean isSetSpecValidated() {
         return this.setSpecValidated;
     }
