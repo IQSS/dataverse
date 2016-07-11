@@ -266,8 +266,14 @@ public class HarvestingClientsPage implements java.io.Serializable {
         
         newHarvestingClient.setName(newNickname);
         
-        newHarvestingClient.setDataverse(dataverse);
-        dataverse.setHarvestingClientConfig(newHarvestingClient);
+        if (getSelectedDestinationDataverse() == null) {
+            JsfHelper.JH.addMessage(FacesMessage.SEVERITY_ERROR,
+                                    "Failed to create a new Harvesting Client configuration: no destination dataverse selected.");
+        }
+        
+        newHarvestingClient.setDataverse(getSelectedDestinationDataverse());
+        getSelectedDestinationDataverse().setHarvestingClientConfig(newHarvestingClient);
+        
         newHarvestingClient.setHarvestingUrl(newHarvestingUrl);
         if (!StringUtils.isEmpty(newOaiSet)) {
             newHarvestingClient.setHarvestingSet(newOaiSet);
