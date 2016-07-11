@@ -39,17 +39,6 @@ import org.apache.commons.lang.mutable.MutableLong;
 import org.xml.sax.SAXException;
 
 import com.lyncode.xoai.model.oaipmh.Header;
-/*
- unused xoai imports: 
- (most of xoai functionality has been moved into OaiHandler.  
- TODO: remove, after harvesting is re-tested. 
-import com.lyncode.xoai.model.oaipmh.Granularity;
-import com.lyncode.xoai.serviceprovider.ServiceProvider;
-import com.lyncode.xoai.serviceprovider.model.Context;
-import com.lyncode.xoai.serviceprovider.client.HttpOAIClient;
-import com.lyncode.xoai.serviceprovider.exceptions.BadArgumentException;
-import com.lyncode.xoai.serviceprovider.parameters.ListIdentifiersParameters;
-*/
 import edu.harvard.iq.dataverse.api.imports.ImportServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.harvest.client.oai.OaiHandler;

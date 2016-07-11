@@ -6,10 +6,12 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateHarvestingClientCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteHarvestingClientCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateHarvestingClientCommand;
+import edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClientServiceBean;
 import edu.harvard.iq.dataverse.harvest.client.oai.OaiHandler;
@@ -53,6 +55,8 @@ public class HarvestingClientsPage implements java.io.Serializable {
     DataverseServiceBean dataverseService;
     @EJB
     HarvestingClientServiceBean harvestingClientService; 
+    @EJB
+    HarvesterServiceBean harvesterService;
     @EJB
     EjbDataverseEngine engineService;
     @Inject
@@ -184,7 +188,17 @@ public class HarvestingClientsPage implements java.io.Serializable {
     
     
     public void runHarvest(HarvestingClient harvestingClient) {
+        try {
+            DataverseRequest dataverseRequest = new DataverseRequest(session.getUser(), null);
+            harvesterService.doAsyncHarvest(dataverseRequest, harvestingClient);        
+        } catch (Exception ex) {
+            String failMessage = "Sorry, harvest could not be started for the selected harvesting client configuration (unknown server error).";
+            JH.addMessage(FacesMessage.SEVERITY_FATAL, failMessage);
+            return;
+        } 
         
+        JsfHelper.addSuccessMessage("Succesfully started an asynchronous harvest for client " + harvestingClient.getName() + " (please reload the page to check on the harvest results).");
+                
     }
     
     public void editClient(HarvestingClient harvestingClient) {

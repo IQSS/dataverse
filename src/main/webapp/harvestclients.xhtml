@@ -117,7 +117,7 @@
                                     <!-- TODO: a confirmation dialog? - "sure you want to run harvest now?" -->
                                     <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
                                                    action="#{harvestingClientsPage.runHarvest(harvestClient)}"
-                                                   update=":harvestingClientsForm"
+                                                   update=":harvestingClientsForm :messagePanel"
                                                    title="#{bundle['harvestclients.tab.header.action.btn.run']}">
                                         <span class="glyphicon glyphicon-play"></span>
                                     </p:commandLink>
