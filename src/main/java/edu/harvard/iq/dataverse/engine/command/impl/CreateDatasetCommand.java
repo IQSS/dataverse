@@ -192,8 +192,8 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
             boolean doNormalSolrDocCleanUp = true;
             ctxt.index().indexDataset(savedDataset, doNormalSolrDocCleanUp);
 
-        } catch ( RuntimeException e ) {
-            logger.log(Level.WARNING, "Exception while indexing:" + e.getMessage(), e);
+        } catch ( Exception e ) { // RuntimeException e ) {
+            logger.log(Level.WARNING, "Exception while indexing:" + e.getMessage()); //, e);
         }
           logger.log(Level.FINE, "after index {0}", formatter.format(new Date().getTime()));      
         

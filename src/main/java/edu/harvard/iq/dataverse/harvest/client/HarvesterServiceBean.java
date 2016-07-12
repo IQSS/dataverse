@@ -39,8 +39,13 @@ import org.apache.commons.lang.mutable.MutableLong;
 import org.xml.sax.SAXException;
 
 import com.lyncode.xoai.model.oaipmh.Header;
+import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.api.imports.ImportServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetCommand;
 import edu.harvard.iq.dataverse.harvest.client.oai.OaiHandler;
 import edu.harvard.iq.dataverse.harvest.client.oai.OaiHandlerException;
 
@@ -64,6 +69,8 @@ public class HarvesterServiceBean {
     HarvestingClientServiceBean harvestingClientService;
     @EJB
     ImportServiceBean importService;
+    @EJB
+    EjbDataverseEngine engineService;
     
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean");
     private static final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
@@ -345,7 +352,7 @@ public class HarvesterServiceBean {
                 Dataset dataset = null; //TODO: !!! datasetService.getDatasetByHarvestInfo(dataverse, identifier);
                 if (dataset != null) {
                     hdLogger.info("Deleting dataset " + dataset.getGlobalId());
-                    // TODO: !!! datasetService.deleteDataset(dataset.getId());
+                    deleteHarvestedDataset(dataset, dataverseRequest, hdLogger);
                 } else {
                     hdLogger.info("No dataset found for "+identifier+", skipping delete. ");
                 }
@@ -386,7 +393,23 @@ public class HarvesterServiceBean {
 
         return harvestedDataset != null ? harvestedDataset.getId() : null;
     }
-
+    private void deleteHarvestedDataset(Dataset dataset, DataverseRequest request, Logger hdLogger) {
+        try {
+            engineService.submit(new DeleteDatasetCommand(request, dataset));
+            
+        } catch (IllegalCommandException ex) {
+            // TODO: log the result
+        } catch (PermissionException ex) {
+            // TODO: log the result
+            
+        } catch (CommandException ex) {
+            // TODO: log the result
+        }
+                            
+        // TODO: log the success result
+    }
+    
+    
     private void logBeginOaiHarvest(Logger hdLogger, HarvestingClient harvestingClient) {
         hdLogger.log(Level.INFO, "BEGIN HARVEST, oaiUrl=" 
                 +harvestingClient.getHarvestingUrl() 
