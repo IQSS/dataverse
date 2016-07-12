@@ -341,6 +341,7 @@ public class HarvesterServiceBean {
             if (errMessage != null) {
                 hdLogger.log(Level.SEVERE, "Error calling GetRecord - " + errMessage);
             } else if (record.isDeleted()) {
+                hdLogger.info("Deleting harvesting dataset for "+identifier+", per the OAI server's instructions.");
                 Dataset dataset = null; //TODO: !!! datasetService.getDatasetByHarvestInfo(dataverse, identifier);
                 if (dataset != null) {
                     hdLogger.info("Deleting dataset " + dataset.getGlobalId());
@@ -364,6 +365,7 @@ public class HarvesterServiceBean {
             }
         } catch (Throwable e) {
             logGetRecordException(hdLogger, oaiHandler, identifier, e);
+            errMessage = "Caught exception while executing GetRecord on "+identifier;
             //logException(e, hdLogger);
                 
         }
@@ -420,8 +422,9 @@ public class HarvesterServiceBean {
                 +identifier 
                 +" " 
                 +e.getClass().getName() 
-                +" " 
-                +e.getMessage();
+                +" (exception message suppressed)";
+                //+" " 
+                //+e.getMessage();
         
             hdLogger.log(Level.SEVERE, errMessage);
     }
