@@ -171,7 +171,7 @@
 
                     <!-- a dialog form for creating a new set: -->
                     <p:dialog id="newOAISetDialog" widgetVar="newOAISetForm" 
-                              modal="true" width="75%"
+                              modal="true" width="85%"
                               header="#{harvestingSetsPage.createMode ? bundle['harvestserver.newSetDialog.title.new'] : bundle['harvestserver.viewEditDialog.title']}">
 
                         <p:fragment id="newOAISetDialogContent">
@@ -184,7 +184,7 @@
                                     <label for="setspec" class="col-sm-3 control-label">
                                         #{bundle['harvestserver.newSetDialog.setspec']} <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{!harvestingSetsPage.setSpecValidated}" title="#{bundle.requiredField}"/>
                                     </label>
-                                    <div class="col-sm-6">
+                                    <div class="col-sm-8">
                                         <p:inputText id="setspec" styleClass="form-control"
                                                      value="#{harvestingSetsPage.newSetSpec}"
                                                      readonly="#{harvestingSetsPage.setSpecValidated}"
@@ -194,14 +194,14 @@
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <div class="col-sm-6 col-sm-offset-3 button-block">
+                                    <div class="col-sm-8 col-sm-offset-3 button-block">
                                         <p:commandLink type="button" rendered="#{!harvestingSetsPage.setSpecValidated}"
-                                                         value="#{bundle['harvestserver.newSetDialog.btn.validatesetspec']}"
                                                          id="validateSetSpecBtn"
                                                          styleClass="btn btn-default"
                                                          oncomplete="PF('newOAISetForm').show();"
                                                          update=":harvestingSetsForm:newOAISetDialog"
                                                          action="#{harvestingSetsPage.validateSetSpec()}">
+                                            <span class="glyphicon glyphicon-menu-right"/> #{bundle.next}
                                         </p:commandLink>
                                         <button type="button" 
                                                 jsf:rendered="#{!harvestingSetsPage.setSpecValidated}"
@@ -219,7 +219,7 @@
                                         <label for="setdescription" class="col-sm-3 control-label">
                                             #{bundle['harvestserver.newSetDialog.setdescription']} <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{harvestingSetsPage.setSpecValidated}" title="#{bundle.requiredField}"/>
                                         </label>
-                                        <div class="col-sm-6">
+                                        <div class="col-sm-8">
                                             <p:inputText id="setdescription" styleClass="form-control"
                                                          value="#{harvestingSetsPage.newSetDescription}"/>
                                             <p:message for="setdescription"/>
@@ -230,7 +230,7 @@
                                         <label for="setquery" class="col-sm-3 control-label">
                                             #{bundle['harvestserver.newSetDialog.setquery']} <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{harvestingSetsPage.setSpecValidated}" title="#{bundle.requiredField}"/>
                                         </label>
-                                        <div class="col-sm-6">
+                                        <div class="col-sm-8">
                                             <p:inputText id="setquery" styleClass="form-control"
                                                          value="#{harvestingSetsPage.newSetQuery}"/>
                                             <p:message for="setquery"/>
