@@ -118,7 +118,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
         if (!isSessionUserAuthenticated()) {
             return "/loginpage.xhtml" + navigationWrapper.getRedirectPage();
         } else if (!isSuperUser()) {
-            return "/403.xhtml"; 
+            return navigationWrapper.notAuthorized();
         }
         
         
