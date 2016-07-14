@@ -521,8 +521,8 @@
                                                                and DatasetPage.canUpdateDataset()}">
                                         <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                         <span class="glyphicon glyphicon-pencil"/> #{bundle['file.dataFilesTab.metadata.addBtn']}
-                                    </p:commandLink>
-                                    <div class="btn-group">
+                                    </p:commandLink>                                   
+                                    <div class="btn-group" jsf:rendered="#{DatasetPage.dataset.released}" >
                                         <button class="btn btn-default dropdown-toggle" type="button" styleClass="btn btn-default" data-toggle="dropdown">
                                             <span class="glyphicon glyphicon-export"/> #{bundle['dataset.exportBtn']} <span class="caret"/></button>
                                         <ul class="dropdown-menu" role="menu">

@@ -126,7 +126,7 @@ public class Datasets extends AbstractApiBean {
             }
             
             ExportService instance = ExportService.getInstance();
-            final JsonObjectBuilder datasetAsJson = jsonAsDatasetDto(dataset.getLatestVersion());
+            final JsonObjectBuilder datasetAsJson = jsonAsDatasetDto(dataset.getReleasedVersion());
             OutputStream output = instance.getExport(datasetAsJson.build(), exporter);
             String xml = output.toString();
             LOGGER.fine("xml to return: " + xml);
