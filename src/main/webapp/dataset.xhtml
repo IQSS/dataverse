@@ -528,10 +528,10 @@
                                         <ul class="dropdown-menu" role="menu">
                                             <ui:repeat var="exporter" value="#{DatasetPage.exporters}">
                                                 <li>
-                                                    <h:outputLink value="#{exporter[1]}">
+                                                    <h:outputLink value="#{exporter[1]}" target="_blank">
                                                         <h:outputText value="#{exporter[0]}"/>
                                                     </h:outputLink>
-                                                </li>
+                                                </li>  
                                             </ui:repeat>
                                         </ul>
                                     </div>

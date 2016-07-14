@@ -3436,31 +3436,6 @@ public class DatasetPage implements java.io.Serializable {
         return retList;  
     }
     
-    public String getExportMetadataDDIUrl() {
-        if (dataset != null) {
-            Long datasetId = dataset.getId();
-            if (datasetId != null) {
-                String myHostURL = getDataverseSiteUrl();
-                String metadataAsJsonUrl = myHostURL + "/api/datasets/" + datasetId + "/export?exporter=DDI&persistentId=" + dataset.getGlobalId();
-                System.out.print(metadataAsJsonUrl);
-                return metadataAsJsonUrl;
-            }
-        }
-        return null;
-    }
-    
-    public String getExportMetadataDublinCoreUrl() {
-        if (dataset != null) {
-            Long datasetId = dataset.getId();
-            if (datasetId != null) {
-                String myHostURL = getDataverseSiteUrl();
-                String metadataAsJsonUrl = myHostURL + "/api/datasets/" + datasetId + "/export?exporter=DublinCore&persistentId=" + dataset.getGlobalId();
-                System.out.print(metadataAsJsonUrl);
-                return metadataAsJsonUrl;
-            }
-        }
-        return null;
-    }
 
     private FileMetadata fileMetadataSelected = null;
 
