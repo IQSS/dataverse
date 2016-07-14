@@ -8,7 +8,10 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClientServiceBean;
+import edu.harvard.iq.dataverse.harvest.server.OAISet;
+import edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -28,6 +31,13 @@ public class DashboardPage implements java.io.Serializable {
 
     private static final Logger logger = Logger.getLogger(DashboardPage.class.getCanonicalName());
 
+    @EJB
+    HarvestingClientServiceBean harvestingClientService;
+    @EJB
+    OAISetServiceBean oaiSetService;
+    @EJB
+    SystemConfig systemConfig;
+     
     @Inject
     DataverseSession session;
     @Inject
@@ -73,6 +83,45 @@ public class DashboardPage implements java.io.Serializable {
 
     public void setDataverseId(Long dataverseId) {
         this.dataverseId = dataverseId;
+    }
+    
+    public String getHarvestClientsInfoLabel() {
+        List<HarvestingClient> configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();
+        if (configuredHarvestingClients == null || configuredHarvestingClients.isEmpty()) {
+            return JH.localize("harvestclients.noClients.label");
+        }
+        
+        String infoLabel;
+        
+        if (configuredHarvestingClients.size() == 1) {
+            infoLabel = configuredHarvestingClients.size() + " configured harvesting client; ";
+        } else {
+            infoLabel = configuredHarvestingClients.size() + " harvesting clients configured; ";
+        }        
+        
+        Long numOfDatasets = harvestingClientService.getNumberOfHarvestedDatasetByClients(configuredHarvestingClients);
+        
+        if (numOfDatasets != null && numOfDatasets > 0L) {
+            return infoLabel + numOfDatasets + " harvested datasets";
+        }
+        return infoLabel + "no datasets harvested.";
+    }
+    
+    public String getHarvestServerInfoLabel() {
+        if (!systemConfig.isOAIServerEnabled()) {
+            return "OAI server disabled.";
+        }
+
+        String infoLabel = "OAI server enabled; ";
+        
+        List<OAISet> configuredHarvestingSets = oaiSetService.findAll();
+        if (configuredHarvestingSets == null || configuredHarvestingSets.isEmpty()) {
+            infoLabel = infoLabel.concat(JH.localize("harvestserver.service.empty"));
+            return infoLabel;
+        }
+        
+        infoLabel = infoLabel.concat(configuredHarvestingSets.size() + " configured OAI sets. ");
+        return infoLabel;
     }
     
     public boolean isSessionUserAuthenticated() {

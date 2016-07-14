@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.harvest.client;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
@@ -138,5 +139,26 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
             currentRun.setFailed();
             currentRun.setFinishTime(currentTime);
         }
-    }        
+    }  
+    
+    public Long getNumberOfHarvestedDatasetByClients(List<HarvestingClient> clients) {
+        String dvs = null; 
+        for (HarvestingClient client: clients) {
+            if (dvs == null) {
+                dvs = client.getDataverse().getId().toString();
+            } else {
+                dvs = dvs.concat(","+client.getDataverse().getId().toString());
+            }
+        }
+        
+        try {
+            return (Long) em.createNativeQuery("SELECT count(d.id) FROM dataset d, "
+                    + " dvobject o WHERE d.id = o.id AND o.owner_id in (" 
+                    + dvs + ")").getSingleResult();
+
+        } catch (Exception ex) {
+            logger.info("Warning: exception trying to count harvested datasets by clients: " + ex.getMessage());
+            return 0L;
+        }
+    }
 }
