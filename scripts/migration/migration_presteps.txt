@@ -127,13 +127,13 @@ psql -h localhost -U postgres <4.0 database name> -f /tmp/dvn3_data.sql
 ----------------------------------------------
 
 -- offsets
-update _dvn3_vdcnetwork set id = id + (select max(id) from dvobject);
-update _dvn3_vdc set id = id + (select max(id) from _dvn3_vdcnetwork);
-update _dvn3_vdcrole set vdc_id = vdc_id + (select max(id) from _dvn3_vdcnetwork);
-update _dvn3_vdc_usergroup set vdcs_id = vdcs_id + (select max(id) from _dvn3_vdcnetwork);
-update _dvn3_vdc_linked_collections set vdc_id = vdc_id + (select max(id) from _dvn3_vdcnetwork);
-update _dvn3_study set owner_id = owner_id + (select max(id) from _dvn3_vdcnetwork);
-update _dvn3_vdccollection set owner_id = owner_id + (select max(id) from _dvn3_vdcnetwork);
+update _dvn3_vdcnetwork set id = id + (select coalesce(max(id), 0) from dvobject);
+update _dvn3_vdc set id = id + (select coalesce(max(id), 0) from _dvn3_vdcnetwork);
+update _dvn3_vdcrole set vdc_id = vdc_id + (select coalesce(max(id), 0) from _dvn3_vdcnetwork);
+update _dvn3_vdc_usergroup set vdcs_id = vdcs_id + (select coalesce(max(id), 0) from _dvn3_vdcnetwork);
+update _dvn3_vdc_linked_collections set vdc_id = vdc_id + (select coalesce(max(id), 0) from _dvn3_vdcnetwork);
+update _dvn3_study set owner_id = owner_id + (select coalesce(max(id), 0) from _dvn3_vdcnetwork);
+update _dvn3_vdccollection set owner_id = owner_id + (select coalesce(max(id), 0) from _dvn3_vdcnetwork);
 
 -- note: need to determine what offset to use, based on the file scripts
 --update _dvn3_studyfile_vdcuser set studyfiles_id = studyfiles_id +100000;
