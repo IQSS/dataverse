@@ -38,9 +38,27 @@ import org.junit.Test;
 import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.path.json.JsonPath.with;
 import static com.jayway.restassured.path.xml.XmlPath.from;
-import static java.lang.Thread.sleep;
 import static junit.framework.Assert.assertEquals;
+import static java.lang.Thread.sleep;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import org.junit.Ignore;
 
+/**
+ * @todo These tests are in need of attention for a few reasons:
+ *
+ * - They won't execute on phoenix.dataverse.org because they some tests assume
+ * Solr on localhost.
+ *
+ * - Each test should create its own user (or users) rather than relying on
+ * global users. Once this is done the "Ignore" annotations can be removed.
+ *
+ * - We've seen "PSQLException: ERROR: deadlock detected" when running these
+ * tests per https://github.com/IQSS/dataverse/issues/2460 .
+ *
+ * - Other tests have moved to using UtilIT.java methods and these tests should
+ * follow suit.
+ */
 public class SearchIT {
 
     private static final Logger logger = Logger.getLogger(SearchIT.class.getCanonicalName());
@@ -81,7 +99,7 @@ public class SearchIT {
     @BeforeClass
     public static void setUpClass() {
 
-        boolean enabled = true;
+        boolean enabled = false;
         if (!enabled) {
             return;
         }
@@ -117,6 +135,50 @@ public class SearchIT {
 
     }
 
+    @Test
+    public void testSearchCitation() {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        Response solrResponse = querySolr("id:dataset_" + datasetId + "_draft");
+        solrResponse.prettyPrint();
+        Response enableNonPublicSearch = enableSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed);
+        assertEquals(200, enableNonPublicSearch.getStatusCode());
+        Response searchResponse = search("id:dataset_" + datasetId + "_draft", apiToken);
+        searchResponse.prettyPrint();
+        assertFalse(searchResponse.body().jsonPath().getString("data.items[0].citation").contains("href"));
+        assertTrue(searchResponse.body().jsonPath().getString("data.items[0].citationHtml").contains("href"));
+
+        Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
+        deleteDatasetResponse.prettyPrint();
+        assertEquals(200, deleteDatasetResponse.getStatusCode());
+
+        Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        deleteDataverseResponse.prettyPrint();
+        assertEquals(200, deleteDataverseResponse.getStatusCode());
+
+        makeSuperuser(username);
+        search("finch&show_relevance=true&show_facets=true&fq=publicationDate:2016&subtree=birds", apiToken).prettyPrint();
+
+        search("trees", apiToken).prettyPrint();
+
+        Response deleteUserResponse = UtilIT.deleteUser(username);
+        deleteUserResponse.prettyPrint();
+        assertEquals(200, deleteUserResponse.getStatusCode());
+
+    }
+
+    @Ignore
     @Test
     public void homerGivesNedPermissionAtRoot() {
 
@@ -189,6 +251,7 @@ public class SearchIT {
 
     }
 
+    @Ignore
     @Test
     public void homerGivesNedPermissionAtNewDv() {
 
@@ -372,6 +435,7 @@ public class SearchIT {
 
     }
 
+    @Ignore
     @Test
     public void testAssignRoleAtDataset() throws InterruptedException {
         Response createUser1 = UtilIT.createRandomUser();
@@ -416,6 +480,91 @@ public class SearchIT {
 
     }
 
+    @Test
+    public void testAssignGroupAtDataverse() throws InterruptedException {
+        Response createUser1 = UtilIT.createRandomUser();
+        String username1 = UtilIT.getUsernameFromResponse(createUser1);
+        String apiToken1 = UtilIT.getApiTokenFromResponse(createUser1);
+
+        Response createDataverse1Response = UtilIT.createRandomDataverse(apiToken1);
+        createDataverse1Response.prettyPrint();
+        assertEquals(201, createDataverse1Response.getStatusCode());
+        String dvAlias = UtilIT.getAliasFromResponse(createDataverse1Response);
+        int dvId = JsonPath.from(createDataverse1Response.asString()).getInt("data.id");
+
+        Response createDataset1Response = UtilIT.createRandomDatasetViaNativeApi(dvAlias, apiToken1);
+        createDataset1Response.prettyPrint();
+        assertEquals(201, createDataset1Response.getStatusCode());
+        Integer datasetId1 = UtilIT.getDatasetIdFromResponse(createDataset1Response);
+
+        Response createUser2 = UtilIT.createRandomUser();
+        createUser2.prettyPrint();
+        String username2 = UtilIT.getUsernameFromResponse(createUser2);
+        String apiToken2 = UtilIT.getApiTokenFromResponse(createUser2);
+
+        String aliasInOwner = "groupFor" + dvAlias;
+        String displayName = "Group for " + dvAlias;
+        String user2identifier = "@" + username2;
+        Response createGroup = UtilIT.createGroup(dvAlias, aliasInOwner, displayName, apiToken1);
+        createGroup.prettyPrint();
+        String groupIdentifier = JsonPath.from(createGroup.asString()).getString("data.identifier");
+
+        assertEquals(201, createGroup.getStatusCode());
+        List<String> roleAssigneesToAdd = new ArrayList<>();
+        roleAssigneesToAdd.add(user2identifier);
+        Response addToGroup = UtilIT.addToGroup(dvAlias, aliasInOwner, roleAssigneesToAdd, apiToken1);
+        addToGroup.prettyPrint();
+
+        Response grantRoleResponse = UtilIT.grantRoleOnDataverse(dvAlias, "admin", groupIdentifier, apiToken1);
+        grantRoleResponse.prettyPrint();
+
+        assertEquals(200, grantRoleResponse.getStatusCode());
+        sleep(500l);
+        Response shouldBeVisible = querySolr("id:dataset_" + datasetId1 + "_draft_permission");
+        shouldBeVisible.prettyPrint();
+        String discoverableBy = JsonPath.from(shouldBeVisible.asString()).getString("response.docs.discoverableBy");
+
+        Set actual = new HashSet<>();
+        for (String userOrGroup : discoverableBy.replaceAll("\\[", "").replaceAll("\\]", "").replaceAll(" ", "").split(",")) {
+            actual.add(userOrGroup);
+        }
+
+        Set expected = new HashSet<>();
+        createUser1.prettyPrint();
+        String userid1 = JsonPath.from(createUser1.asString()).getString("data.authenticatedUser.id");
+        expected.add("group_user" + userid1);
+        expected.add("group_" + dvId + "-" + aliasInOwner);
+        logger.info("expected: " + expected);
+        logger.info("actual: " + actual);
+        assertEquals(expected, actual);
+
+        Response enableNonPublicSearch = enableSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed);
+        assertEquals(200, enableNonPublicSearch.getStatusCode());
+
+        TestSearchQuery query = new TestSearchQuery("*");
+
+        JsonObjectBuilder createdUser = Json.createObjectBuilder();
+        createdUser.add(idKey, Integer.MAX_VALUE);
+        createdUser.add(usernameKey, username2);
+        createdUser.add(apiTokenKey, apiToken2);
+        JsonObject json = createdUser.build();
+
+        TestUser testUser = new TestUser(json);
+        Response searchResponse = search(query, testUser);
+
+        searchResponse.prettyPrint();
+        Set<String> titles = new HashSet<>(JsonPath.from(searchResponse.asString()).getList("data.items.name"));
+        System.out.println("title: " + titles);
+        Set expectedNames = new HashSet<>();
+        expectedNames.add(dvAlias);
+        expectedNames.add("Darwin's Finches");
+        assertEquals(expectedNames, titles);
+
+        Response disableNonPublicSearch = deleteSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed);
+        assertEquals(200, disableNonPublicSearch.getStatusCode());
+    }
+
+    @Ignore
     @Test
     public void homerPublishesVersion2AfterDeletingFile() throws InterruptedException {
         if (homerPublishesVersion2AfterDeletingFile) {
@@ -582,6 +731,7 @@ public class SearchIT {
 
     }
 
+    @Ignore
     @Test
     public void dataverseCategory() {
 
@@ -618,7 +768,7 @@ public class SearchIT {
     @AfterClass
     public static void cleanup() {
 
-        boolean enabled = true;
+        boolean enabled = false;
         if (!enabled) {
             return;
         }
@@ -780,7 +930,7 @@ public class SearchIT {
         JsonObjectBuilder roleBuilder = Json.createObjectBuilder();
         roleBuilder.add("assignee", "@" + roleAssignee);
         roleBuilder.add("role", role);
-        JsonObject roleObject = roleBuilder.build();
+        String roleObject = roleBuilder.build().toString();
         System.out.println("Granting role on dataverse alias \"" + definitionPoint + "\": " + roleObject);
         return given()
                 .body(roleObject).contentType(ContentType.JSON)
@@ -896,6 +1046,12 @@ public class SearchIT {
                         + "&q=" + query.getQuery()
                         + "&show_facets=" + true
                 );
+    }
+
+    static Response search(String query, String apiToken) {
+        return given()
+                .header(keyString, apiToken)
+                .get("/api/search?q=" + query);
     }
 
     private Response uploadZipFile(String persistentId, String zipFileName, String apiToken) throws FileNotFoundException {

@@ -65,6 +65,9 @@ public class ManageGroupsPage implements java.io.Serializable {
     GroupServiceBean groupService;
     @Inject
     DataverseRequestServiceBean dvRequestService;
+    
+    @Inject
+    PermissionsWrapper permissionsWrapper;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     EntityManager em;
@@ -83,10 +86,21 @@ public class ManageGroupsPage implements java.io.Serializable {
     private Long dataverseId;
     private ExplicitGroup selectedGroup = null;
 
-    public void init() {
+    public String init() {
         setDataverse(dataverseService.find(getDataverseId()));
-        dvpage.setDataverse(getDataverse());
+        Dataverse editDv = getDataverse();
+        dvpage.setDataverse(editDv);
+        
+        if (editDv == null) {
+            return permissionsWrapper.notFound();
+        }
 
+        Boolean hasPermissions = permissionsWrapper.canIssueCommand(editDv, CreateExplicitGroupCommand.class);
+        hasPermissions |= permissionsWrapper.canIssueCommand(editDv, DeleteExplicitGroupCommand.class);
+        hasPermissions |= permissionsWrapper.canIssueCommand(editDv, UpdateExplicitGroupCommand.class);
+        if (!hasPermissions) {
+            return permissionsWrapper.notAuthorized();
+        } 
         explicitGroups = new LinkedList<>();
 
         List <ExplicitGroup> explicitGroupsForThisDataverse =
@@ -95,6 +109,7 @@ public class ManageGroupsPage implements java.io.Serializable {
         for (ExplicitGroup g : explicitGroupsForThisDataverse) {
             getExplicitGroups().add(g);
         }
+        return null;
     }
 
 

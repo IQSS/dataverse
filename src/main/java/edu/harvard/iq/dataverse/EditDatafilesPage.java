@@ -126,6 +126,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     DataverseLinkingServiceBean dvLinkingService;
     @Inject
     DataverseRequestServiceBean dvRequestService;
+    @Inject PermissionsWrapper permissionsWrapper;
 
     private final DateFormat displayDateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
 
@@ -323,7 +324,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         logger.fine("Initializing Edit Files page in CREATE mode;");
         
         if (version == null) {
-            return "/404.xhtml";
+            return permissionsWrapper.notFound();
         }
         
         workingVersion = version; 
@@ -356,29 +357,25 @@ public class EditDatafilesPage implements java.io.Serializable {
             // Is the Dataset harvested? (because we don't allow editing of harvested 
             // files!)
             if (dataset == null || dataset.isHarvested()) {
-                return "/404.xhtml";
+                return permissionsWrapper.notFound();
             }
         } else {
             // It could be better to show an error page of some sort, explaining
             // that the dataset id is mandatory... But 404 will do for now.
-            return "/404.xhtml";
+            return permissionsWrapper.notFound();
         }
         
         workingVersion = dataset.getEditVersion();
 
         if (workingVersion == null || !workingVersion.isDraft()) {
             // Sorry, we couldn't find/obtain a draft version for this dataset!
-            return "/404.xhtml";
+            return permissionsWrapper.notFound();
         }
         
         // Check if they have permission to modify this dataset: 
         
         if (!permissionService.on(dataset).has(Permission.EditDataset)) {
-            if (!session.getUser().isAuthenticated()) {
-                return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
-            } else {
-                return "/403.xhtml"; 
-            }
+            return permissionsWrapper.notAuthorized();
         }
         
         if (mode == FileEditMode.EDIT || mode == FileEditMode.SINGLE) {
@@ -403,7 +400,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             if (selectedFileIdsList.size() < 1) {
                 logger.fine("No numeric file ids supplied to the page, in the edit mode. Redirecting to the 404 page.");
                 // If no valid file IDs specified, send them to the 404 page...
-                return "/404.xhtml";
+                return permissionsWrapper.notFound();
             }
 
             logger.fine("The page is called with " + selectedFileIdsList.size() + " file ids.");
@@ -417,7 +414,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             // of - could not find the files for the ids specified; or, these 
             // datafiles are not present in the version specified, etc.
             if (fileMetadatas.size() < 1) {
-                return "/404.xhtml";
+                return permissionsWrapper.notFound();
             }
         }
         
@@ -1047,7 +1044,12 @@ public class EditDatafilesPage implements java.io.Serializable {
         // more than a certain number of files... Still, needs to be revisited
         // before the final 4.0. 
         // -- L.A. 4.0
-        Iterator<FileMetadata> fmIt = workingVersion.getFileMetadatas().iterator();
+
+        // make a "defensive copy" to avoid java.util.ConcurrentModificationException from being thrown
+        // when uploading 100+ files
+        List<FileMetadata> wvCopy = new ArrayList<>(workingVersion.getFileMetadatas());
+        Iterator<FileMetadata> fmIt = wvCopy.iterator();
+
         while (fmIt.hasNext()) {
             FileMetadata fm = fmIt.next();
             String md5 = fm.getDataFile().getmd5();
@@ -1116,7 +1118,7 @@ public class EditDatafilesPage implements java.io.Serializable {
      * Using information from the DropBox choose, ingest the chosen files
      *  https://www.dropbox.com/developers/dropins/chooser/js
      * 
-     * @param e 
+     * @param event
      */
     public void handleDropBoxUpload(ActionEvent event) {
         

@@ -10,6 +10,7 @@ import static edu.harvard.iq.dataverse.DvObject.DATASET_DTYPE_STRING;
 import static edu.harvard.iq.dataverse.DvObject.DATAVERSE_DTYPE_STRING;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import java.util.ArrayList;
@@ -73,6 +74,7 @@ public class MyDataFilterParams {
     // -----------------------------------
     // Filter parameters
     // -----------------------------------
+    private AuthenticatedUser authenticatedUser;
     private String userIdentifier;
     private List<String> dvObjectTypes;    
     private List<String> publicationStatuses;
@@ -94,16 +96,19 @@ public class MyDataFilterParams {
     /**
      * Constructor used to get total counts
      * 
+     * @param authenticatedUser
      * @param userIdentifier 
      */
-    public MyDataFilterParams(String userIdentifier, DataverseRolePermissionHelper roleHelper){
-         if ((userIdentifier==null)||(userIdentifier.isEmpty())){
-            throw new NullPointerException("MyDataFilterParams constructor: userIdentifier cannot be null or an empty string");
+    public MyDataFilterParams(AuthenticatedUser authenticatedUser, DataverseRolePermissionHelper roleHelper){
+        if (authenticatedUser==null){
+            throw new NullPointerException("MyDataFilterParams constructor: authenticatedIUser cannot be null ");
         }
+        this.authenticatedUser = authenticatedUser;
+        this.userIdentifier = authenticatedUser.getIdentifier();
+
          if (roleHelper==null){
             throw new NullPointerException("MyDataFilterParams constructor: roleHelper cannot be null");
         }
-        this.userIdentifier = userIdentifier;
         this.dvObjectTypes = MyDataFilterParams.allDvObjectTypes;
         this.publicationStatuses = MyDataFilterParams.allPublishedStates;
         this.searchTerm = MyDataFilterParams.defaultSearchTerm;
@@ -116,16 +121,17 @@ public class MyDataFilterParams {
      * @param publicationStatuses 
      * @param searchTerm 
      */    
-    public MyDataFilterParams(String userIdentifier, List<String> dvObjectTypes, List<String> publicationStatuses, List<Long> roleIds, String searchTerm){
-        if ((userIdentifier==null)||(userIdentifier.isEmpty())){
-            throw new NullPointerException("MyDataFilterParams constructor: userIdentifier cannot be null or an empty string");
+    public MyDataFilterParams(AuthenticatedUser authenticatedUser, List<String> dvObjectTypes, List<String> publicationStatuses, List<Long> roleIds, String searchTerm){
+        if (authenticatedUser==null){
+            throw new NullPointerException("MyDataFilterParams constructor: authenticatedIUser cannot be null ");
         }
+        this.authenticatedUser = authenticatedUser;
+        this.userIdentifier = authenticatedUser.getIdentifier();
 
         if (dvObjectTypes==null){
             throw new NullPointerException("MyDataFilterParams constructor: dvObjectTypes cannot be null");
         }
 
-        this.userIdentifier = userIdentifier;
         this.dvObjectTypes = dvObjectTypes;
 
         if (publicationStatuses == null){
@@ -190,6 +196,11 @@ public class MyDataFilterParams {
     
     public String getUserIdentifier(){
         return this.userIdentifier;
+    }
+    
+    
+    public AuthenticatedUser getAuthenticatedUser() {
+        return authenticatedUser;
     }
     
     public String getErrorMessage(){

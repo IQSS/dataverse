@@ -46,6 +46,9 @@ public class TemplatePage implements java.io.Serializable {
     DataverseRequestServiceBean dvRequestService;
     
     @Inject
+    PermissionsWrapper permissionsWrapper;
+    
+    @Inject
     DataverseSession session;
 
     public enum EditMode {
@@ -109,9 +112,17 @@ public class TemplatePage implements java.io.Serializable {
         this.selectedTabIndex = selectedTabIndex;
     }
 
-    public void init() {
+    public String init() {
+ 
+        dataverse = dataverseService.find(ownerId);
+        if (dataverse == null) {
+            return permissionsWrapper.notFound();
+        }
+        if (!permissionsWrapper.canIssueCommand(dataverse, UpdateDataverseCommand.class)) {
+            return permissionsWrapper.notAuthorized();
+        } 
         if (templateId != null) { // edit or view existing for a template  
-            dataverse = dataverseService.find(ownerId);
+
             template = templateService.find(templateId);
             template.setDataverse(dataverse);
             template.setMetadataValueBlocks();
@@ -128,7 +139,7 @@ public class TemplatePage implements java.io.Serializable {
             updateDatasetFieldInputLevels();
         } else if (ownerId != null) {
             // create mode for a new template
-            dataverse = dataverseService.find(ownerId);
+
             editMode = TemplatePage.EditMode.CREATE;
             template = new Template(this.dataverse);
             TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
@@ -138,7 +149,8 @@ public class TemplatePage implements java.io.Serializable {
             updateDatasetFieldInputLevels();
         } else {
             throw new RuntimeException("On Template page without id or ownerid."); // improve error handling
-        }
+        }       
+        return null;        
     }
     
     private void updateDatasetFieldInputLevels(){

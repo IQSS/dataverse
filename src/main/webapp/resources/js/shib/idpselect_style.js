@@ -7,7 +7,7 @@
 $(document).ready(function() {
     $('#idpSelectIdPListTile form, #idpSelectIdPEntryTile form').addClass("form-inline");
     
-    $('div.IdPSelectTextDiv').addClass("help-block");
+    $('#idpSelectIdPListTile > div.IdPSelectTextDiv, #idpSelectIdPEntryTile > div.IdPSelectTextDiv').addClass("help-block");
 
     $('#idpSelectSelector, #idpSelectInput').addClass("form-control");
 

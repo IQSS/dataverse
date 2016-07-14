@@ -5,11 +5,13 @@
  */
 package edu.harvard.iq.dataverse;
 
-import java.util.LinkedList;
 import java.util.List;
 import javax.ejb.EJB;
+import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  *
@@ -37,16 +39,97 @@ public class GuestbookResponsesPage implements java.io.Serializable {
     
     private Dataverse dataverse;
 
+    private String redirectString = "";
 
+    public String getRedirectString() {
+        return redirectString;
+    }
+
+    public void setRedirectString(String redirectString) {
+        this.redirectString = redirectString;
+    }
 
     private List<GuestbookResponse> responses;
+    private List<Object[]> responsesAsArray;
+
+    public List<Object[]> getResponsesAsArray() {
+        return responsesAsArray;
+    }
+
+    public void setResponsesAsArray(List<Object[]> responsesAsArray) {
+        this.responsesAsArray = responsesAsArray;
+    }
     
     public void init() {
         guestbook = guestbookService.find(guestbookId);
         dataverse = dvService.find(dataverseId);
-        if(guestbook != null){
-            responses = guestbookResponseService.findAllByGuestbookId(guestbookId);
+        if(guestbook != null){            
+            responsesAsArray = guestbookResponseService.findArrayByGuestbookIdAndDataverseId(guestbookId, dataverseId);
         }
+    }
+    
+    public void downloadResponsesByDataverseAndGuestbook(){
+        FacesContext ctx = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
+        response.setContentType("text/comma-separated-values");
+        String fileNameString = "attachment;filename=" + getFileName();
+        response.setHeader("Content-Disposition", fileNameString);
+        //selectedGuestbook
+        String converted = convertResponsesToTabDelimited(guestbookResponseService.findArrayByDataverseIdAndGuestbookId(dataverseId, guestbookId));
+        try {
+            ServletOutputStream out = response.getOutputStream();
+            out.write(converted.getBytes());                                                                                                                                                                                                                                                                                                                     
+            out.flush();
+            ctx.responseComplete();
+        } catch (Exception e) {
+
+        }
+    }
+    
+    private String getFileName(){
+       return  dataverse.getName() + "_GuestbookReponses.csv";
+    }
+
+    private final String SEPARATOR = ",";
+    private final String END_OF_LINE = "\n";
+
+    
+    private String convertResponsesToTabDelimited(List<Object[]> guestbookResponses) {
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("Guestbook, Dataset, Date, Type, File Name, User Name, Email, Institution, Position, Custom Questions");
+        sb.append(END_OF_LINE);
+        for (Object[] array : guestbookResponses) {
+            sb.append(array[0]);
+            sb.append(SEPARATOR);
+            sb.append(array[1]);
+            sb.append(SEPARATOR);
+            sb.append(array[2]);
+            sb.append(SEPARATOR);
+            sb.append(array[3]);
+            sb.append(SEPARATOR);
+            sb.append(array[4]);
+            sb.append(SEPARATOR);
+            sb.append(array[5] == null ? "" : array[5]);
+            sb.append(SEPARATOR);
+            sb.append(array[6] == null ? "" : array[6]);
+            sb.append(SEPARATOR);
+            sb.append(array[7] == null ? "" : array[7]);
+            sb.append(SEPARATOR);
+            sb.append(array[8] == null ? "" : array[8]);
+            if(array[9] != null){
+                List <Object[]> responses = (List<Object[]>) array[9];               
+                for (Object[] response: responses){
+                    sb.append(SEPARATOR);
+                    sb.append(response[0]);
+                    sb.append(SEPARATOR);
+                    sb.append(response[1] == null ? "" : response[1]);
+                }
+            }
+            sb.append(END_OF_LINE);
+        }
+
+        return sb.toString();
     }
     
     public Dataverse getDataverse() {

@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.passwordreset.PasswordResetException;
 import edu.harvard.iq.dataverse.passwordreset.PasswordResetInitResponse;
 import edu.harvard.iq.dataverse.passwordreset.PasswordResetServiceBean;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -16,6 +17,10 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 
 /**
  *
@@ -41,6 +46,28 @@ public class BuiltinUserServiceBean {
     }
        
     public BuiltinUser save(BuiltinUser dataverseUser) {
+        /**
+         * Trim the email address no matter what the user entered or is entered
+         * on their behalf in the case of Shibboleth assertions.
+         *
+         * @todo Why doesn't Bean Validation report that leading and trailing
+         * whitespace in an email address is a problem?
+         */
+        dataverseUser.setEmail(dataverseUser.getEmail().trim());
+        /**
+         * We throw a proper IllegalArgumentException here because otherwise
+         * from the API you get a 500 response and "Can't save user: null".
+         */
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        Validator validator = factory.getValidator();
+        Set<ConstraintViolation<BuiltinUser>> violations = validator.validate(dataverseUser);
+        if (violations.size() > 0) {
+            StringBuilder sb = new StringBuilder();
+            violations.stream().forEach((violation) -> {
+                sb.append(" Invalid value: <<<").append(violation.getInvalidValue()).append(">>> for ").append(violation.getPropertyPath()).append(" at ").append(violation.getLeafBean()).append(" - ").append(violation.getMessage());
+            });
+            throw new IllegalArgumentException("BuiltinUser could not be saved to due constraint violations: " + sb);
+        }
         if ( dataverseUser.getId() == null ) {
             // see that the username is unique
             if ( em.createNamedQuery("BuiltinUser.findByUserName")

@@ -10,6 +10,10 @@
         <error-code>500</error-code>
         <location>/500.xhtml</location>
     </error-page>
+    <error-page>
+        <error-code>403</error-code>
+        <location>/403.xhtml</location>
+    </error-page>    
     <!-- Welcome page -->
     <welcome-file-list>
         <welcome-file>dataverse.xhtml</welcome-file>
@@ -65,6 +69,10 @@
         <async-supported>true</async-supported>
     </servlet>
     <!-- Map these files with JSF -->
+    <servlet>
+        <servlet-name>Citation Servlet</servlet-name>
+        <servlet-class>edu.harvard.iq.dataverse.CitationServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>Faces Servlet</servlet-name>
         <url-pattern>/faces/*</url-pattern>
@@ -84,6 +92,10 @@
     <servlet-mapping>
         <servlet-name>Push Servlet</servlet-name>
         <url-pattern>/primepush/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>Citation Servlet</servlet-name>
+        <url-pattern>/citation</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

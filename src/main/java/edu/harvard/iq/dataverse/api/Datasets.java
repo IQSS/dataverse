@@ -285,6 +285,23 @@ public class Datasets extends AbstractApiBean {
         }
 
     }
+    
+    @GET
+    @Path("/modifyRegistrationAll")
+    public Response updateDatasetTargetURLAll() {
+        List<Dataset> allDatasets = datasetService.findAll();
+
+        for (Dataset ds : allDatasets){           
+   
+            try {
+                execCommand(new UpdateDatasetTargetURLCommand(findDatasetOrDie(ds.getId().toString()), createDataverseRequest(findUserOrDie())));
+            } catch (WrappedResponse ex) {
+                Logger.getLogger(Datasets.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            
+        }
+        return okResponse("Update All Dataset target url completed");
+    }
   
     @PUT
 	@Path("{id}/versions/{versionId}")
