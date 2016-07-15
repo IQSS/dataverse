@@ -9,7 +9,6 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
@@ -159,12 +158,13 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                              * last argument to isUserAllowedOn be changed from
                              * "dataset" to "fileToDelete"?
                              */
-                            if (!permissionService.isUserAllowedOn(user, new UpdateDatasetCommand(dataset, dvReq, fileToDelete), dataset)) {
+                            UpdateDatasetCommand updateDatasetCommand = new UpdateDatasetCommand(dataset, dvReq, fileToDelete);
+                            if (!permissionService.isUserAllowedOn(user, updateDatasetCommand, dataset)) {
                                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + user.getDisplayInfo().getTitle() + " is not authorized to modify " + dataverseThatOwnsFile.getAlias());
                             }
                             if (swordAuth.hasAccessToModifyDataverse(dvReq, dataverseThatOwnsFile)) {
                                 try {
-                                    commandEngine.submit(new UpdateDatasetCommand(dataset, dvReq, fileToDelete));
+                                    commandEngine.submit(updateDatasetCommand);
                                 } catch (CommandException ex) {
                                     throw SwordUtil.throwSpecialSwordErrorWithoutStackTrace(UriRegistry.ERROR_BAD_REQUEST, "Could not delete file: " + ex);
                                 }
@@ -206,7 +206,8 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
             if (dataset == null) {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not find dataset with global ID of " + globalId);
             }
-            if (!permissionService.isUserAllowedOn(user, new UpdateDatasetCommand(dataset, dvReq), dataset)) {
+            UpdateDatasetCommand updateDatasetCommand = new UpdateDatasetCommand(dataset, dvReq);
+            if (!permissionService.isUserAllowedOn(user, updateDatasetCommand, dataset)) {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + user.getDisplayInfo().getTitle() + " is not authorized to modify dataset with global ID " + dataset.getGlobalId());
             }
             SwordUtil.datasetLockCheck(dataset);
@@ -294,10 +295,8 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "No files to add to dataset. Perhaps the zip file was empty.");
             }
 
-            Command<Dataset> cmd;
-            cmd = new UpdateDatasetCommand(dataset, dvReq);
             try {
-                dataset = commandEngine.submit(cmd);
+                dataset = commandEngine.submit(updateDatasetCommand);
             } catch (CommandException ex) {
                 throw returnEarly("Couldn't update dataset " + ex);
             } catch (EJBException ex) {
