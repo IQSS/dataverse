@@ -4,7 +4,6 @@ import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
 import edu.harvard.iq.dataverse.GlobalId;
-import edu.harvard.iq.dataverse.api.datadeposit.SwordAuth;
 import edu.harvard.iq.dataverse.api.datadeposit.SwordConfigurationImpl;
 import java.util.List;
 import java.util.logging.Logger;
@@ -335,196 +334,97 @@ public class SwordIT {
         String authority;
         String identifier = null;
 
-        if (SwordAuth.fixForIssue1070Enabled) {
+        Response createDataset = UtilIT.createDatasetViaSwordApi(rootDataverseAlias, datasetTitle, apiTokenContributor);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode())
+                .body("entry.treatment", equalTo("no treatment information available"));
 
-            Response createDataset = UtilIT.createDatasetViaSwordApi(rootDataverseAlias, datasetTitle, apiTokenContributor);
-            createDataset.prettyPrint();
-            createDataset.then().assertThat()
-                    .statusCode(CREATED.getStatusCode())
-                    .body("entry.treatment", equalTo("no treatment information available"));
+        persistentId = UtilIT.getDatasetPersistentIdFromResponse(createDataset);
+        GlobalId globalId = new GlobalId(persistentId);
+        protocol = globalId.getProtocol();
+        authority = globalId.getAuthority();
+        identifier = globalId.getIdentifier();
 
-            persistentId = UtilIT.getDatasetPersistentIdFromResponse(createDataset);
-            GlobalId globalId = new GlobalId(persistentId);
-            protocol = globalId.getProtocol();
-            authority = globalId.getAuthority();
-            identifier = globalId.getIdentifier();
+        Response listDatasetsAtRoot = UtilIT.listDatasetsViaSword(rootDataverseAlias, apiTokenContributor);
+        listDatasetsAtRoot.prettyPrint();
+        listDatasetsAtRoot.then().assertThat().statusCode(OK.getStatusCode());
+        assertTrue(listDatasetsAtRoot.body().asString().contains(identifier));
 
-            Response listDatasetsAtRoot = UtilIT.listDatasetsViaSword(rootDataverseAlias, apiTokenContributor);
-            listDatasetsAtRoot.prettyPrint();
-            listDatasetsAtRoot.then().assertThat().statusCode(OK.getStatusCode());
-            assertTrue(listDatasetsAtRoot.body().asString().contains(identifier));
+        Response listDatasetsAtRootNoPrivs = UtilIT.listDatasetsViaSword(rootDataverseAlias, apiTokenNoPrivs);
+        listDatasetsAtRootNoPrivs.prettyPrint();
+        listDatasetsAtRootNoPrivs.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                /**
+                 * Because the root dataverse allows anyone to create datasets
+                 * in it, we allow anyone to see via SWORD if the dataverse has
+                 * been published...
+                 */
+                .body("feed.dataverseHasBeenReleased", equalTo("true"));
+        /**
+         * ... but not just anyone should be able to see your dataset, only
+         * those with edit access.
+         */
+        assertFalse(listDatasetsAtRootNoPrivs.body().asString().contains(identifier));
 
-            Response listDatasetsAtRootNoPrivs = UtilIT.listDatasetsViaSword(rootDataverseAlias, apiTokenNoPrivs);
-            listDatasetsAtRootNoPrivs.prettyPrint();
-            listDatasetsAtRootNoPrivs.then().assertThat()
-                    .statusCode(OK.getStatusCode())
-                    /**
-                     * Because the root dataverse allows anyone to create
-                     * datasets in it, we allow anyone to see via SWORD if the
-                     * dataverse has been published...
-                     */
-                    .body("feed.dataverseHasBeenReleased", equalTo("true"));
-            /**
-             * ... but not just anyone should be able to see your dataset, only
-             * those with edit access.
-             */
-            assertFalse(listDatasetsAtRootNoPrivs.body().asString().contains(identifier));
+        Response atomEntry = UtilIT.getSwordAtomEntry(persistentId, apiTokenContributor);
+        atomEntry.prettyPrint();
+        atomEntry.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("entry.id", endsWith(persistentId));
 
-            Response atomEntry = UtilIT.getSwordAtomEntry(persistentId, apiTokenContributor);
-            atomEntry.prettyPrint();
-            atomEntry.then().assertThat()
-                    .statusCode(OK.getStatusCode())
-                    .body("entry.id", endsWith(persistentId));
+        Response uploadFile = UtilIT.uploadRandomFile(persistentId, apiTokenContributor);
+        uploadFile.prettyPrint();
+        uploadFile.then().assertThat().statusCode(CREATED.getStatusCode());
 
-            Response uploadFile = UtilIT.uploadRandomFile(persistentId, apiTokenContributor);
-            uploadFile.prettyPrint();
-            uploadFile.then().assertThat().statusCode(CREATED.getStatusCode());
+        Response statementContainingFile = UtilIT.getSwordStatement(persistentId, apiTokenContributor);
+        statementContainingFile.prettyPrint();
+        statementContainingFile.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("feed.id", endsWith(persistentId))
+                .body("feed.title", equalTo(datasetTitle))
+                .body("feed.author.name", equalTo("Lastname, Firstname"))
+                .body("feed.entry[0].summary", equalTo("Resource Part"))
+                .body("feed.entry[0].id", endsWith("trees.png"));
 
-            Response statementContainingFile = UtilIT.getSwordStatement(persistentId, apiTokenContributor);
-            statementContainingFile.prettyPrint();
-            statementContainingFile.then().assertThat()
-                    .statusCode(OK.getStatusCode())
-                    .body("feed.id", endsWith(persistentId))
-                    .body("feed.title", equalTo(datasetTitle))
-                    .body("feed.author.name", equalTo("Lastname, Firstname"))
-                    .body("feed.entry[0].summary", equalTo("Resource Part"))
-                    .body("feed.entry[0].id", endsWith("trees.png"));
+        String firstAndOnlyFileIdAsString = statementContainingFile.getBody().xmlPath().get("feed.entry[0].id").toString().split("/")[10];
+        Response deleteFile = UtilIT.deleteFile(Integer.parseInt(firstAndOnlyFileIdAsString), apiTokenContributor);
+        deleteFile.prettyPrint();
+        deleteFile.then().assertThat()
+                .statusCode(NO_CONTENT.getStatusCode());
 
-            String firstAndOnlyFileIdAsString = statementContainingFile.getBody().xmlPath().get("feed.entry[0].id").toString().split("/")[10];
-            Response deleteFile = UtilIT.deleteFile(Integer.parseInt(firstAndOnlyFileIdAsString), apiTokenContributor);
-            deleteFile.prettyPrint();
-            deleteFile.then().assertThat()
-                    .statusCode(NO_CONTENT.getStatusCode());
+        Response statementWithNoFiles = UtilIT.getSwordStatement(persistentId, apiTokenContributor);
+        statementWithNoFiles.prettyPrint();
+        statementWithNoFiles.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("feed.title", equalTo(datasetTitle));
 
-            Response statementWithNoFiles = UtilIT.getSwordStatement(persistentId, apiTokenContributor);
-            statementWithNoFiles.prettyPrint();
-            statementWithNoFiles.then().assertThat()
-                    .statusCode(OK.getStatusCode())
-                    .body("feed.title", equalTo(datasetTitle));
-
-            try {
-                String attemptToGetFileId = statementWithNoFiles.getBody().xmlPath().get("feed.entry[0].id").toString().split("/")[10];
-                System.out.println("attemptToGetFileId: " + attemptToGetFileId);
-                assertNull(attemptToGetFileId);
-            } catch (Exception ex) {
-                System.out.println("We expect an exception here because we can no longer find the file because deleted it: " + ex);
-                assertTrue(ex.getClass().getName().equals(ArrayIndexOutOfBoundsException.class.getName()));
-            }
-
-            String newTitle = "A New Hope";
-            Response updateTitle = UtilIT.updateDatasetTitleViaSword(persistentId, newTitle, apiTokenContributor);
-            updateTitle.prettyPrint();
-            updateTitle.then().assertThat()
-                    .statusCode(OK.getStatusCode())
-                    .body("entry.treatment", equalTo("no treatment information available"));
-
-            Response statementWithUpdatedTitle = UtilIT.getSwordStatement(persistentId, apiTokenContributor);
-            statementWithUpdatedTitle.prettyPrint();
-            statementWithUpdatedTitle.then().assertThat()
-                    .statusCode(OK.getStatusCode())
-                    .body("feed.title", equalTo(newTitle));
-
-            Response nativeGetToGetId = UtilIT.nativeGetUsingPersistentId(persistentId, apiTokenContributor);
-            nativeGetToGetId.then().assertThat()
-                    .statusCode(OK.getStatusCode());
-            datasetId = JsonPath.from(nativeGetToGetId.body().asString()).getInt("data.id");
-
-        } else {
-            /**
-             * This is basically all the stuff that's broken right now
-             * permissions-wise for SWORD. Someone who has been made a
-             * "Contributor" for a dataset should be able to do all these things
-             * since they are allowed by the Native API. See also
-             * https://github.com/IQSS/dataverse/issues/1070 and
-             * https://github.com/IQSS/dataverse/issues/2495
-             */
-
-            /**
-             * We have to create the dataset via the native API since we can't
-             * create it via SWORD. It would be awfully nice if we could easily
-             * set the title to the "datasetTitle" variable but it's a long
-             * string of JSON that's hard coded rather than being built on the
-             * fly.
-             */
-            Response createDataset = UtilIT.createRandomDatasetViaNativeApi(rootDataverseAlias, apiTokenContributor);
-            createDataset.prettyPrint();
-            createDataset.then().assertThat()
-                    .statusCode(CREATED.getStatusCode());
-            datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
-            Response getDatasetJson = UtilIT.nativeGet(datasetId, apiTokenContributor);
-            getDatasetJson.prettyPrint();
-            getDatasetJson.then().assertThat().statusCode(OK.getStatusCode());
-            /**
-             * @todo Shouldn't there be an easier way to get the persistent ID
-             * from a dataset via the native API? All as one string would be
-             * nice.
-             */
-            protocol = JsonPath.from(getDatasetJson.getBody().asString()).getString("data.protocol");
-            authority = JsonPath.from(getDatasetJson.getBody().asString()).getString("data.authority");
-            identifier = JsonPath.from(getDatasetJson.getBody().asString()).getString("data.identifier");
-            persistentId = protocol + ":" + authority + "/" + identifier;
-
-            Response listDatasetsAtRoot = UtilIT.listDatasetsViaSword(rootDataverseAlias, apiTokenContributor);
-            listDatasetsAtRoot.prettyPrint();
-            listDatasetsAtRoot.then().assertThat()
-                    .statusCode(BAD_REQUEST.getStatusCode())
-                    .body("error.summary", equalTo("user " + username + " " + username + " is not authorized to list datasets in dataverse " + rootDataverseAlias));
-
-            Response listDatasetsAtRootNoPrivs = UtilIT.listDatasetsViaSword(rootDataverseAlias, apiTokenNoPrivs);
-            listDatasetsAtRootNoPrivs.prettyPrint();
-            listDatasetsAtRootNoPrivs.then().assertThat()
-                    .statusCode(BAD_REQUEST.getStatusCode())
-                    .body("error.summary", equalTo("user " + usernameNoPrivs + " " + usernameNoPrivs + " is not authorized to list datasets in dataverse " + rootDataverseAlias));
-            assertFalse(listDatasetsAtRootNoPrivs.body().asString().contains(identifier));
-
-            Response atomEntry = UtilIT.getSwordAtomEntry(persistentId, apiTokenContributor);
-            atomEntry.prettyPrint();
-            atomEntry.then().assertThat()
-                    .statusCode(BAD_REQUEST.getStatusCode())
-                    .body("error.summary", equalTo("User " + username + " " + username + " is not authorized to retrieve entry for " + persistentId));
-
-            Response uploadFile = UtilIT.uploadRandomFile(persistentId, apiTokenContributor);
-            uploadFile.prettyPrint();
-            uploadFile.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
-
-            Response statement = UtilIT.getSwordStatement(persistentId, apiTokenContributor);
-            statement.prettyPrint();
-            statement.then().assertThat()
-                    .statusCode(BAD_REQUEST.getStatusCode())
-                    .body("error.summary", equalTo("user " + username + " " + username + " is not authorized to view dataset with global ID " + persistentId));
-
-            Response uploadFileAsSuperuser = UtilIT.uploadRandomFile(persistentId, apiTokenSuperuser);
-            uploadFileAsSuperuser.prettyPrint();
-            uploadFileAsSuperuser.then().assertThat().statusCode(CREATED.getStatusCode());
-
-            Response statementAsSuperuser = UtilIT.getSwordStatement(persistentId, apiTokenSuperuser);
-            statementAsSuperuser.prettyPrint();
-            statementAsSuperuser.then().assertThat()
-                    .statusCode(OK.getStatusCode())
-                    .body("feed.title", equalTo("Darwin's Finches"))
-                    .body("feed.entry[0].summary", equalTo("Resource Part"));
-
-            String firstAndOnlyFileIdAsString = statementAsSuperuser.getBody().xmlPath().get("feed.entry[0].id").toString().split("/")[10];
-            Response contributorCannotDeleteFile = UtilIT.deleteFile(Integer.parseInt(firstAndOnlyFileIdAsString), apiTokenContributor);
-            contributorCannotDeleteFile.prettyPrint();
-            contributorCannotDeleteFile.then().assertThat()
-                    .statusCode(BAD_REQUEST.getStatusCode());
-
-            Response statementShouldStillShowFiles = UtilIT.getSwordStatement(persistentId, apiTokenSuperuser);
-            statementShouldStillShowFiles.prettyPrint();
-            statementShouldStillShowFiles.then().assertThat()
-                    .statusCode(OK.getStatusCode())
-                    .body("feed.title", equalTo("Darwin's Finches"))
-                    .body("feed.entry[0].summary", equalTo("Resource Part"));
-
-            String newTitle = "A New Hope";
-            Response updateTitle = UtilIT.updateDatasetTitleViaSword(persistentId, newTitle, apiTokenContributor);
-            updateTitle.prettyPrint();
-            updateTitle.then().assertThat()
-                    .statusCode(BAD_REQUEST.getStatusCode())
-                    .body("error.summary", equalTo("User " + username + " " + username + " is not authorized to modify dataverse " + rootDataverseAlias));
-
+        try {
+            String attemptToGetFileId = statementWithNoFiles.getBody().xmlPath().get("feed.entry[0].id").toString().split("/")[10];
+            System.out.println("attemptToGetFileId: " + attemptToGetFileId);
+            assertNull(attemptToGetFileId);
+        } catch (Exception ex) {
+            System.out.println("We expect an exception here because we can no longer find the file because deleted it: " + ex);
+            assertTrue(ex.getClass().getName().equals(ArrayIndexOutOfBoundsException.class.getName()));
         }
+
+        String newTitle = "A New Hope";
+        Response updateTitle = UtilIT.updateDatasetTitleViaSword(persistentId, newTitle, apiTokenContributor);
+        updateTitle.prettyPrint();
+        updateTitle.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("entry.treatment", equalTo("no treatment information available"));
+
+        Response statementWithUpdatedTitle = UtilIT.getSwordStatement(persistentId, apiTokenContributor);
+        statementWithUpdatedTitle.prettyPrint();
+        statementWithUpdatedTitle.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("feed.title", equalTo(newTitle));
+
+        Response nativeGetToGetId = UtilIT.nativeGetUsingPersistentId(persistentId, apiTokenContributor);
+        nativeGetToGetId.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        datasetId = JsonPath.from(nativeGetToGetId.body().asString()).getInt("data.id");
 
         Response listDatasetsAtRootAsSuperuser = UtilIT.listDatasetsViaSword(rootDataverseAlias, apiTokenSuperuser);
         listDatasetsAtRootAsSuperuser.prettyPrint();
@@ -548,22 +448,10 @@ public class SwordIT {
                 .statusCode(UNAUTHORIZED.getStatusCode())
                 .body("message", equalTo("User @" + username + " is not permitted to perform requested action."));
 
-        if (SwordAuth.fixForIssue1070Enabled) {
-            Response deleteDatasetResponse = UtilIT.deleteLatestDatasetVersionViaSwordApi(persistentId, apiTokenContributor);
-            deleteDatasetResponse.prettyPrint();
-            deleteDatasetResponse.then().assertThat()
-                    .statusCode(NO_CONTENT.getStatusCode());
-        } else {
-            Response deleteDatasetResponse = UtilIT.deleteLatestDatasetVersionViaSwordApi(persistentId, apiTokenContributor);
-            deleteDatasetResponse.prettyPrint();
-            deleteDatasetResponse.then().assertThat()
-                    .statusCode(BAD_REQUEST.getStatusCode())
-                    .body("error.summary", equalTo("User " + username + " " + username + " is not authorized to modify " + rootDataverseAlias));
-
-            Response deleteResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiTokenContributor);
-            deleteResponse.prettyPrint();
-            deleteResponse.then().assertThat().statusCode(OK.getStatusCode());
-        }
+        Response deleteDatasetResponse = UtilIT.deleteLatestDatasetVersionViaSwordApi(persistentId, apiTokenContributor);
+        deleteDatasetResponse.prettyPrint();
+        deleteDatasetResponse.then().assertThat()
+                .statusCode(NO_CONTENT.getStatusCode());
 
         UtilIT.deleteUser(username);
         UtilIT.deleteUser(usernameNoPrivs);

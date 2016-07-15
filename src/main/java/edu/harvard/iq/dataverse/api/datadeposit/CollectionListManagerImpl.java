@@ -64,37 +64,32 @@ public class CollectionListManagerImpl implements CollectionListManager {
                 if (!permissionService.requestOn(dvReq, dv).has(Permission.AddDataset)) {
                     throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + user.getDisplayInfo().getTitle() + " is not authorized to list datasets in dataverse " + dv.getAlias());
                 }
-                if (swordAuth.hasAccessToModifyDataverse(dvReq, dv)) {
-                    Abdera abdera = new Abdera();
-                    Feed feed = abdera.newFeed();
-                    feed.setTitle(dv.getName());
-                    String baseUrl = urlManager.getHostnamePlusBaseUrlPath(iri.toString());
-                    List<Dataset> datasets = datasetService.findByOwnerId(dv.getId());
-                    for (Dataset dataset : datasets) {
-                        /**
-                         * @todo Will this be performant enough with production
-                         * data, say in the root dataverse? Remove this todo if
-                         * there are no complaints. :)
-                         */
-                        if (!permissionService.isUserAllowedOn(user, new UpdateDatasetCommand(dataset, dvReq), dataset)) {
-                            continue;
-                        }
-                        String editUri = baseUrl + "/edit/study/" + dataset.getGlobalId();
-                        String editMediaUri = baseUrl + "/edit-media/study/" + dataset.getGlobalId();
-                        Entry entry = feed.addEntry();
-                        entry.setId(editUri);
-                        entry.setTitle(datasetService.getTitleFromLatestVersion(dataset.getId()));
-                        entry.setBaseUri(new IRI(editUri));
-                        entry.addLink(editMediaUri, "edit-media");
-                        feed.addEntry(entry);
+                Abdera abdera = new Abdera();
+                Feed feed = abdera.newFeed();
+                feed.setTitle(dv.getName());
+                String baseUrl = urlManager.getHostnamePlusBaseUrlPath(iri.toString());
+                List<Dataset> datasets = datasetService.findByOwnerId(dv.getId());
+                for (Dataset dataset : datasets) {
+                    /**
+                     * @todo Will this be performant enough with production
+                     * data, say in the root dataverse? Remove this todo if
+                     * there are no complaints. :)
+                     */
+                    if (!permissionService.isUserAllowedOn(user, new UpdateDatasetCommand(dataset, dvReq), dataset)) {
+                        continue;
                     }
-                    Boolean dvHasBeenReleased = dv.isReleased();
-                    feed.addSimpleExtension(new QName(UriRegistry.SWORD_STATE, "dataverseHasBeenReleased"), dvHasBeenReleased.toString());
-                    return feed;
-                } else {
-                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + user.getDisplayInfo().getTitle() + " is not authorized to list datasets in dataverse " + dv.getAlias());
+                    String editUri = baseUrl + "/edit/study/" + dataset.getGlobalId();
+                    String editMediaUri = baseUrl + "/edit-media/study/" + dataset.getGlobalId();
+                    Entry entry = feed.addEntry();
+                    entry.setId(editUri);
+                    entry.setTitle(datasetService.getTitleFromLatestVersion(dataset.getId()));
+                    entry.setBaseUri(new IRI(editUri));
+                    entry.addLink(editMediaUri, "edit-media");
+                    feed.addEntry(entry);
                 }
-
+                Boolean dvHasBeenReleased = dv.isReleased();
+                feed.addSimpleExtension(new QName(UriRegistry.SWORD_STATE, "dataverseHasBeenReleased"), dvHasBeenReleased.toString());
+                return feed;
             } else {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not find dataverse: " + dvAlias);
             }

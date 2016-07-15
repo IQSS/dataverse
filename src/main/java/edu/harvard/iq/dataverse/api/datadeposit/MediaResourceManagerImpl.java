@@ -162,14 +162,10 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                             if (!permissionService.isUserAllowedOn(user, updateDatasetCommand, dataset)) {
                                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + user.getDisplayInfo().getTitle() + " is not authorized to modify " + dataverseThatOwnsFile.getAlias());
                             }
-                            if (swordAuth.hasAccessToModifyDataverse(dvReq, dataverseThatOwnsFile)) {
-                                try {
-                                    commandEngine.submit(updateDatasetCommand);
-                                } catch (CommandException ex) {
-                                    throw SwordUtil.throwSpecialSwordErrorWithoutStackTrace(UriRegistry.ERROR_BAD_REQUEST, "Could not delete file: " + ex);
-                                }
-                            } else {
-                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + user.getDisplayInfo().getTitle() + " is not authorized to modify " + dataverseThatOwnsFile.getAlias());
+                            try {
+                                commandEngine.submit(updateDatasetCommand);
+                            } catch (CommandException ex) {
+                                throw SwordUtil.throwSpecialSwordErrorWithoutStackTrace(UriRegistry.ERROR_BAD_REQUEST, "Could not delete file: " + ex);
                             }
                         } else {
                             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to find file id " + fileIdLong + " from URL: " + uri);
@@ -211,10 +207,6 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + user.getDisplayInfo().getTitle() + " is not authorized to modify dataset with global ID " + dataset.getGlobalId());
             }
             SwordUtil.datasetLockCheck(dataset);
-            Dataverse dvThatOwnsDataset = dataset.getOwner();
-            if (!swordAuth.hasAccessToModifyDataverse(dvReq, dvThatOwnsDataset)) {
-                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + user.getDisplayInfo().getTitle() + " is not authorized to modify dataset with global ID " + dataset.getGlobalId());
-            }
 
             // Right now we are only supporting UriRegistry.PACKAGE_SIMPLE_ZIP but
             // in the future maybe we'll support other formats? Rdata files? Stata files?
