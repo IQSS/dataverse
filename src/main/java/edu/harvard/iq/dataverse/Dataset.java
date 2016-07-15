@@ -54,6 +54,8 @@ public class Dataset extends DvObjectContainer {
 
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date globalIdCreateTime;
+    @Temporal(value = TemporalType.TIMESTAMP)
+    private Date lastExportTime;
 
     @NotBlank(message = "Please enter an identifier for your dataset.")
     @Column(nullable = false)
@@ -149,6 +151,14 @@ public class Dataset extends DvObjectContainer {
         this.globalIdCreateTime = globalIdCreateTime;
     }
 
+    public Date getLastExportTime() {
+        return lastExportTime;
+    }
+
+    public void setLastExportTime(Date lastExportTime) {
+        this.lastExportTime = lastExportTime;
+    }
+    
     public Guestbook getGuestbook() {
         return guestbook;
     }

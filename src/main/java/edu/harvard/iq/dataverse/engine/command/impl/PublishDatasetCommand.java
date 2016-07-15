@@ -26,8 +26,12 @@ import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.search.IndexResponse;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.jsonAsDatasetDto;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
@@ -178,6 +182,53 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
         }
 
         theDataset.setFileAccessRequest(theDataset.getLatestVersion().getTermsOfUseAndAccess().isFileAccessRequest());
+        
+        
+        /*
+            Adding DDI export to Command
+            Leonid please save the outpur stream to the file system
+        
+            OK, I'm moving the export code up here... Because I want it to be done 
+            before we do a em.merge() on the dataset. (In turn because we may be 
+            modifying the "lastExportTime" timestamp on it) -- L.A. 
+        */
+        
+        boolean exportSuccess = false; 
+        try {
+            ExportService instance = ExportService.getInstance();
+            final JsonObjectBuilder datasetAsJson = jsonAsDatasetDto(theDataset.getLatestVersion());
+            OutputStream datasetAsDDI = instance.getExport(datasetAsJson.build(), "DDI");
+
+            if (theDataset.getFileSystemDirectory() != null && !Files.exists(theDataset.getFileSystemDirectory())) {
+                /* Note that "createDirectories()" must be used - not 
+                     * "createDirectory()", to make sure all the parent 
+                     * directories that may not yet exist are created as well. 
+                 */
+
+                Files.createDirectories(theDataset.getFileSystemDirectory());
+            }
+
+            Path cachedMetadataFilePath = Paths.get(theDataset.getFileSystemDirectory().toString(), "export_ddi.xml");
+            FileOutputStream cachedMetadataOutputStream = new FileOutputStream(cachedMetadataFilePath.toFile());
+
+            // OK, this is super quick and super dirty: 
+            cachedMetadataOutputStream.write(datasetAsDDI.toString().getBytes());
+            // we need to re-work this to use proper streaming. 
+            // why does the export return an OUTPUTstream - and not an INPUTstream???
+            // -- L.A. July 14
+            cachedMetadataOutputStream.close();
+
+            exportSuccess = true;
+
+        } catch (Exception ex) {
+            // Something went wrong! - We declare this attempt to export a failure. 
+            exportSuccess = false;
+        }
+        
+        if (exportSuccess) {
+            theDataset.setLastExportTime(new Timestamp(new Date().getTime()));
+        }
+        
         Dataset savedDataset = ctxt.em().merge(theDataset);
 
         // set the subject of the parent (all the way up) Dataverses
@@ -232,16 +283,7 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
             }
         }
 
-        /*
-        Adding DDI export to Command
-        Leonid please save the outpur stream to the file system
-        Also - I don't see a last export date on Dataset or DVObject
-        Do we need to add it and update it here?
-        */
         
-        ExportService instance = ExportService.getInstance();
-        final JsonObjectBuilder datasetAsJson = jsonAsDatasetDto(savedDataset.getLatestVersion());
-        OutputStream datasetAsDDI = instance.getExport(datasetAsJson.build(), "DDI");
 
 
         /*
