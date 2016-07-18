@@ -249,6 +249,7 @@
    <field name="discoverableBy" type="string" stored="true" indexed="true" multiValued="true"/>
 
    <field name="dvObjectType" type="string" stored="true" indexed="true" multiValued="false"/>
+   <field name="source" type="string" stored="true" indexed="true" multiValued="false"/>
 
    <field name="dvName" type="text_en" stored="true" indexed="true" multiValued="false"/>
    <field name="dvAffiliation" type="text_en" stored="true" indexed="true" multiValued="false"/>

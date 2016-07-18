@@ -102,6 +102,8 @@ public class IndexServiceBean {
     private static final String DRAFT_STRING = "Draft";
     private static final String IN_REVIEW_STRING = "In Review";
     private static final String DEACCESSIONED_STRING = "Deaccessioned";
+    private static final String HARVESTED = "Harvested";
+    private static final String LOCAL = "Local";
     private Dataverse rootDataverseCached; 
     private SolrServer solrServer;
     
@@ -157,6 +159,11 @@ public class IndexServiceBean {
             solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, UNPUBLISHED_STRING);
             solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataverse.getCreateDate());
             solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE_SEARCHABLE_TEXT, convertToFriendlyDate(dataverse.getCreateDate()));
+        }
+        if (dataverse.isHarvested()) {
+            solrInputDocument.addField(SearchFields.SOURCE, HARVESTED);
+        } else {
+            solrInputDocument.addField(SearchFields.SOURCE, LOCAL);
         }
 
         addDataverseReleaseDateToSolrDoc(solrInputDocument, dataverse);
@@ -659,6 +666,12 @@ public class IndexServiceBean {
 
         addDatasetReleaseDateToSolrDoc(solrInputDocument, dataset);
 
+        if (dataset.isHarvested()) {
+            solrInputDocument.addField(SearchFields.SOURCE, HARVESTED);
+        } else {
+            solrInputDocument.addField(SearchFields.SOURCE, LOCAL);
+        }
+
         DatasetVersion datasetVersion = indexableDataset.getDatasetVersion();
         String parentDatasetTitle = "TBD";
         if (datasetVersion != null) {
@@ -878,6 +891,11 @@ public class IndexServiceBean {
                                 logger.info(msg);
                             }
                             datafileSolrInputDocument.addField(SearchFields.ACCESS, fileMetadata.isRestricted() ? SearchConstants.RESTRICTED : SearchConstants.PUBLIC);
+                        }
+                        if (datafile.isHarvested()) {
+                            datafileSolrInputDocument.addField(SearchFields.SOURCE, HARVESTED);
+                        } else {
+                            datafileSolrInputDocument.addField(SearchFields.SOURCE, LOCAL);
                         }
                     }
                     if (fileSortByDate == null) {
