@@ -85,6 +85,47 @@ public class DashboardPage implements java.io.Serializable {
         this.dataverseId = dataverseId;
     }
     
+    public int getNumberOfConfiguredHarvestClients() {
+        List<HarvestingClient> configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();
+        if (configuredHarvestingClients == null || configuredHarvestingClients.isEmpty()) {
+            return 0;
+        }
+        
+        return configuredHarvestingClients.size();
+    }
+    
+    public long getNumberOfHarvestedDatasets() {
+        List<HarvestingClient> configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();
+        if (configuredHarvestingClients == null || configuredHarvestingClients.isEmpty()) {
+            return 0L;
+        }
+        
+        Long numOfDatasets = harvestingClientService.getNumberOfHarvestedDatasetByClients(configuredHarvestingClients);
+        
+        if (numOfDatasets != null && numOfDatasets > 0L) {
+            return numOfDatasets;
+        }
+        
+        return 0L;
+    }
+    
+    public boolean isHarvestServerEnabled() {
+        if (systemConfig.isOAIServerEnabled()) {
+            return true;
+        }
+        return false;
+    }
+    
+    public int getNumberOfOaiSets() {
+        List<OAISet> configuredHarvestingSets = oaiSetService.findAll();
+        if (configuredHarvestingSets == null || configuredHarvestingSets.isEmpty()) {
+            return 0;
+        }
+        
+        return configuredHarvestingSets.size();
+    }
+    
+    @Deprecated
     public String getHarvestClientsInfoLabel() {
         List<HarvestingClient> configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();
         if (configuredHarvestingClients == null || configuredHarvestingClients.isEmpty()) {
@@ -107,6 +148,7 @@ public class DashboardPage implements java.io.Serializable {
         return infoLabel + "no datasets harvested.";
     }
     
+    @Deprecated
     public String getHarvestServerInfoLabel() {
         if (!systemConfig.isOAIServerEnabled()) {
             return "OAI server disabled.";
