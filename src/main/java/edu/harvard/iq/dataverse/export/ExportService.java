@@ -62,10 +62,10 @@ public class ExportService {
     public InputStream getExport(Dataset dataset, String formatName) throws ExportException {
         // first we will try to locate an already existing, cached export 
         // for this format: 
-        InputStream ret = getCachedExportFormat(dataset, formatName);
+        InputStream exportInputStream = getCachedExportFormat(dataset, formatName);
         
-        if (ret != null) {
-            return ret;
+        if (exportInputStream != null) {
+            return exportInputStream;
         }
         
         // if it doesn't exist, we'll try to run the export: 
@@ -74,10 +74,10 @@ public class ExportService {
         
         // and then try again: 
         
-        getCachedExportFormat(dataset, formatName);
+        exportInputStream = getCachedExportFormat(dataset, formatName);
         
-        if (ret != null) {
-            return ret;
+        if (exportInputStream != null) {
+            return exportInputStream;
         }
         
         // if there is no cached export still - we have to give up and throw 
