@@ -34,20 +34,18 @@ public class DublinCoreExportUtil {
  
         private static final Logger logger = Logger.getLogger(DdiExportUtil.class.getCanonicalName());
         
-    public static OutputStream datasetJson2dublincore(JsonObject datasetDtoAsJson) {
+    public static void datasetJson2dublincore(JsonObject datasetDtoAsJson, OutputStream outputStream) throws XMLStreamException {
         logger.fine(JsonUtil.prettyPrint(datasetDtoAsJson.toString()));
         Gson gson = new Gson();
         DatasetDTO datasetDto = gson.fromJson(datasetDtoAsJson.toString(), DatasetDTO.class);
-        try {
-            return dto2dublincore(datasetDto);
-        } catch (XMLStreamException ex) {
-            Logger.getLogger(DdiExportUtil.class.getName()).log(Level.SEVERE, null, ex);
-            return null;
-        }
+        //try {
+        dto2dublincore(datasetDto, outputStream);
+        //} catch (XMLStreamException ex) {
+        //    Logger.getLogger(DdiExportUtil.class.getName()).log(Level.SEVERE, null, ex);
+        //}
     }
     
-    private static OutputStream dto2dublincore(DatasetDTO datasetDto) throws XMLStreamException {
-        OutputStream outputStream = new ByteArrayOutputStream();
+    private static void dto2dublincore(DatasetDTO datasetDto, OutputStream outputStream) throws XMLStreamException {
         XMLStreamWriter xmlw = XMLOutputFactory.newInstance().createXMLStreamWriter(outputStream);
         xmlw.writeStartElement("metadata");
         xmlw.writeAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
@@ -58,7 +56,6 @@ public class DublinCoreExportUtil {
         //createdataDscr(xmlw, datasetDto.getDatasetVersion().getFiles()); No Files, Right?
         xmlw.writeEndElement(); // metadata
         xmlw.flush();
-        return outputStream;
     }
     
     private static void createStdyDscr(XMLStreamWriter xmlw, DatasetDTO datasetDto) throws XMLStreamException {

@@ -22,6 +22,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.search.IndexResponse;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -36,6 +37,8 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.json.JsonObjectBuilder;
 
 /**
@@ -44,6 +47,7 @@ import javax.json.JsonObjectBuilder;
  */
 @RequiredPermissions(Permission.PublishDataset)
 public class PublishDatasetCommand extends AbstractCommand<Dataset> {
+    private static final Logger logger = Logger.getLogger(PublishDatasetCommand.class.getCanonicalName());
 
     boolean minorRelease = false;
     Dataset theDataset;
@@ -185,49 +189,22 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
         
         
         /*
-            Adding DDI export to Command
-            Leonid please save the outpur stream to the file system
-        
-            OK, I'm moving the export code up here... Because I want it to be done 
-            before we do a em.merge() on the dataset. (In turn because we may be 
-            modifying the "lastExportTime" timestamp on it) -- L.A. 
+            Attempting to run metadata export, for all the formats for which 
+            we have metadata Exporters:
         */
         
-        boolean exportSuccess = false; 
         try {
             ExportService instance = ExportService.getInstance();
-            final JsonObjectBuilder datasetAsJson = jsonAsDatasetDto(theDataset.getLatestVersion());
-            OutputStream datasetAsDDI = instance.getExport(datasetAsJson.build(), "DDI");
+            instance.exportAllFormats(theDataset);
 
-            if (theDataset.getFileSystemDirectory() != null && !Files.exists(theDataset.getFileSystemDirectory())) {
-                /* Note that "createDirectories()" must be used - not 
-                     * "createDirectory()", to make sure all the parent 
-                     * directories that may not yet exist are created as well. 
-                 */
-
-                Files.createDirectories(theDataset.getFileSystemDirectory());
-            }
-
-            Path cachedMetadataFilePath = Paths.get(theDataset.getFileSystemDirectory().toString(), "export_ddi.xml");
-            FileOutputStream cachedMetadataOutputStream = new FileOutputStream(cachedMetadataFilePath.toFile());
-
-            // OK, this is super quick and super dirty: 
-            cachedMetadataOutputStream.write(datasetAsDDI.toString().getBytes());
-            // we need to re-work this to use proper streaming. 
-            // why does the export return an OUTPUTstream - and not an INPUTstream???
-            // -- L.A. July 14
-            cachedMetadataOutputStream.close();
-
-            exportSuccess = true;
-
-        } catch (Exception ex) {
-            // Something went wrong! - We declare this attempt to export a failure. 
-            exportSuccess = false;
+        } catch (ExportException ex) {
+            // Something went wrong!  
+            // Just like with indexing, a failure to export is not a fatal 
+            // condition. We'll just log the error as a warning and keep 
+            // going: 
+            logger.log(Level.WARNING, "Exception while exporting:" + ex.getMessage());
         }
         
-        if (exportSuccess) {
-            theDataset.setLastExportTime(new Timestamp(new Date().getTime()));
-        }
         
         Dataset savedDataset = ctxt.em().merge(theDataset);
 

@@ -7,6 +7,7 @@ package edu.harvard.iq.dataverse.export.dublincore;
 
 import edu.harvard.iq.dataverse.export.ddi.DdiExportUtil;
 import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileReader;
 import java.io.InputStream;
@@ -69,9 +70,10 @@ public class DublinCoreExportUtilTest {
         String datasetAsDdi = XmlPrinter.prettyPrintXml(new String(Files.readAllBytes(Paths.get(dubCoreFile.getAbsolutePath()))));
         logger.info(datasetAsDdi);
         
-        OutputStream output = DublinCoreExportUtil.datasetJson2dublincore(obj);
-
+        OutputStream output = new ByteArrayOutputStream();
+        DublinCoreExportUtil.datasetJson2dublincore(obj, output);
         String result = XmlPrinter.prettyPrintXml(output.toString());
+        
         logger.info(result);
         assertEquals(datasetAsDdi, result);
         

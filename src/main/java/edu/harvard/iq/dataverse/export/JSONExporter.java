@@ -29,16 +29,14 @@ public class JSONExporter implements Exporter {
     }
 
     @Override
-    public OutputStream exportDataset(JsonObject json) {
-        OutputStream outputStream = new ByteArrayOutputStream();
+    public void exportDataset(JsonObject json, OutputStream outputStream) throws ExportException {
         try{
             Writer w = new OutputStreamWriter(outputStream, "UTF-8");
-            w.write(json.toString());
-            w.close();
+            w.write(json.toString()); 
+            //w.close();
         } catch (Exception e){
-            //just return waht we have...
+            throw new ExportException("Unknown exception caught during JSON export.");
         }
-        return outputStream;
     }
 
     @Override

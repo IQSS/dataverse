@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse.export.spi;
 
+import edu.harvard.iq.dataverse.export.ExportException;
 import java.io.OutputStream;
 import javax.json.JsonObject;
 
@@ -14,7 +15,7 @@ import javax.json.JsonObject;
  */
 public interface Exporter {
     
-    public OutputStream exportDataset(JsonObject json);
+    public void exportDataset(JsonObject json, OutputStream outputStream) throws ExportException;
     
     public String getProvider();
     

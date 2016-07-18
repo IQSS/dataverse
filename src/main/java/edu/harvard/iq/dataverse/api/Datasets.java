@@ -37,6 +37,7 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.util.List;
@@ -126,9 +127,20 @@ public class Datasets extends AbstractApiBean {
             }
             
             ExportService instance = ExportService.getInstance();
-            final JsonObjectBuilder datasetAsJson = jsonAsDatasetDto(dataset.getReleasedVersion());
-            OutputStream output = instance.getExport(datasetAsJson.build(), exporter);
-            String xml = output.toString();
+            
+            InputStream exportInputStream = instance.getExport(dataset, exporter);
+            String xml = exportInputStream.toString();
+            // I'm wondering if this going to become a performance problem 
+            // with really GIANT datasets,
+            // the fact that we are passing these exports, blobs of JSON, and, 
+            // especially, DDI XML as complete strings. It would be nicer 
+            // if we could stream instead - and the export service already gives
+            // it to as as a stream; then we could start sending the 
+            // output to the remote client as soon as we got the first bytes, 
+            // without waiting for the whole thing to be generated and buffered... 
+            // (the way Access API streams its output). 
+            // -- L.A., 4.5
+            
             LOGGER.fine("xml to return: " + xml);
             String mediaType = MediaType.TEXT_PLAIN;
             if (instance.isXMLFormat(exporter)){

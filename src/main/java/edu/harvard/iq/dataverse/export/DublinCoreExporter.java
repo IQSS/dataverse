@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.OutputStream;
 import javax.json.JsonObject;
+import javax.xml.stream.XMLStreamException;
 
 /**
  *
@@ -28,8 +29,12 @@ public class DublinCoreExporter implements Exporter {
     }
 
     @Override
-    public OutputStream exportDataset(JsonObject json) {
-        return DublinCoreExportUtil.datasetJson2dublincore(json);
+    public void exportDataset(JsonObject json, OutputStream outputStream) throws ExportException {
+        try {
+            DublinCoreExportUtil.datasetJson2dublincore(json, outputStream);
+        } catch (XMLStreamException xse) {
+            throw new ExportException("Caught XMLStreamException performing DDI export");
+        }
     }
 
     @Override

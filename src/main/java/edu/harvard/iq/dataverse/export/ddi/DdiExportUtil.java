@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -43,20 +44,25 @@ public class DdiExportUtil {
         }
     }
     
-    public static OutputStream datasetJson2ddi(JsonObject datasetDtoAsJson) {
+    public static void datasetJson2ddi(JsonObject datasetDtoAsJson, OutputStream outputStream) throws XMLStreamException {
         logger.fine(JsonUtil.prettyPrint(datasetDtoAsJson.toString()));
         Gson gson = new Gson();
         DatasetDTO datasetDto = gson.fromJson(datasetDtoAsJson.toString(), DatasetDTO.class);
-        try {
-            return dtoddi(datasetDto);
-        } catch (XMLStreamException ex) {
-            Logger.getLogger(DdiExportUtil.class.getName()).log(Level.SEVERE, null, ex);
-            return null;
-        }
+        //try {
+        dtoddi(datasetDto, outputStream);
+        //} catch (XMLStreamException ex) {
+        //    Logger.getLogger(DdiExportUtil.class.getName()).log(Level.SEVERE, null, ex);
+        //}
     }
     
-    private static OutputStream dtoddi(DatasetDTO datasetDto) throws XMLStreamException {
+    private static String dto2ddi(DatasetDTO datasetDto) throws XMLStreamException {
         OutputStream outputStream = new ByteArrayOutputStream();
+        dtoddi(datasetDto, outputStream);
+        String xml = outputStream.toString();
+        return XmlPrinter.prettyPrintXml(xml);
+    }
+    
+    private static void dtoddi(DatasetDTO datasetDto, OutputStream outputStream) throws XMLStreamException {
         XMLStreamWriter xmlw = XMLOutputFactory.newInstance().createXMLStreamWriter(outputStream);
         xmlw.writeStartElement("codeBook");
         xmlw.writeDefaultNamespace("ddi:codebook:2_5");
@@ -67,14 +73,9 @@ public class DdiExportUtil {
         createdataDscr(xmlw, datasetDto.getDatasetVersion().getFiles());
         xmlw.writeEndElement(); // codeBook
         xmlw.flush();
-        return outputStream;
     }
 
-    private static String dto2ddi(DatasetDTO datasetDto) throws XMLStreamException {
-        OutputStream outputStream = dtoddi(datasetDto);
-        String xml = outputStream.toString();
-        return XmlPrinter.prettyPrintXml(xml);
-    }
+    
     
     /**
      * @todo This is just a stub, copied from DDIExportServiceBean. It should
