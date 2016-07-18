@@ -196,9 +196,10 @@ public class HarvestingClientsPage implements java.io.Serializable {
             JH.addMessage(FacesMessage.SEVERITY_FATAL, failMessage);
             return;
         } 
-        
-        JsfHelper.addSuccessMessage("Succesfully started an asynchronous harvest for client " + harvestingClient.getName() + " (please reload the page to check on the harvest results).");
                 
+        String successMessage = JH.localize("harvestclients.actions.runharvest.success");
+        successMessage = successMessage.replace("{0}", harvestingClient.getName());
+        JsfHelper.addSuccessMessage(successMessage);
     }
     
     public void editClient(HarvestingClient harvestingClient) {
@@ -331,7 +332,9 @@ public class HarvestingClientsPage implements java.io.Serializable {
             
             configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();
             
-            JsfHelper.addSuccessMessage("Succesfully created harvesting client " + newHarvestingClient.getName());
+            String successMessage = JH.localize("harvestclients.newClientDialog.success");
+            successMessage = successMessage.replace("{0}", newHarvestingClient.getName());
+            JsfHelper.addSuccessMessage(successMessage);
 
         } /* TODO: (?) add a dedicated "NameAlreadyExists" exception for the 
              create client command? 

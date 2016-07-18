@@ -199,8 +199,10 @@ public class HarvestingSetsPage implements java.io.Serializable {
         
         try {
             oaiSetService.save(newOaiSet);
-            configuredHarvestingSets = oaiSetService.findAll();            
-            JsfHelper.addSuccessMessage("Succesfully created OAI set " + newOaiSet.getSpec());
+            configuredHarvestingSets = oaiSetService.findAll();  
+            String successMessage = JH.localize("harvestserver.newSetDialog.success");
+            successMessage = successMessage.replace("{0}", newOaiSet.getSpec());
+            JsfHelper.addSuccessMessage(successMessage);
 
         } catch (Exception ex) {
             JH.addMessage(FacesMessage.SEVERITY_FATAL, "Failed to create OAI set");
