@@ -4,10 +4,12 @@ package edu.harvard.iq.dataverse.export;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.jsonAsDatasetDto;
+import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -85,7 +87,26 @@ public class ExportService {
         
     }
     
-    
+    public String getExportAsString(Dataset dataset, String formatName) {
+        try {
+            InputStream inputStream = getExport(dataset, formatName);
+            if (inputStream != null) {
+                BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, "UTF8"));
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = br.readLine()) != null) {
+                    sb.append(line);
+                    sb.append('\n');
+                }
+                br.close();
+                return sb.toString();
+            }
+        } catch (Exception ex) {
+            return null;
+        }
+        return null;
+
+    }
     
     
     // This method goes through all the Exporters and calls 
@@ -115,6 +136,7 @@ public class ExportService {
         dataset.setLastExportTime(new Timestamp(new Date().getTime()));
         
     }
+    
     
     // This method finds the exporter for the format requested, 
     // then produces the dataset metadata as a JsonObject, then calls
@@ -153,6 +175,8 @@ public class ExportService {
             Path cachedMetadataFilePath = Paths.get(dataset.getFileSystemDirectory().toString(), "export_" + format + ".cached");
             FileOutputStream cachedExportOutputStream = new FileOutputStream(cachedMetadataFilePath.toFile());
             exporter.exportDataset(datasetAsJson, cachedExportOutputStream);
+            cachedExportOutputStream.flush();
+            cachedExportOutputStream.close();
 
         } catch (IOException ioex) {
             throw new ExportException("IO Exception thrown exporting as " + format);

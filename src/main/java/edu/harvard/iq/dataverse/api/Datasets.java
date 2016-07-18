@@ -128,14 +128,13 @@ public class Datasets extends AbstractApiBean {
             
             ExportService instance = ExportService.getInstance();
             
-            InputStream exportInputStream = instance.getExport(dataset, exporter);
-            String xml = exportInputStream.toString();
+            String xml = instance.getExportAsString(dataset, exporter);
             // I'm wondering if this going to become a performance problem 
             // with really GIANT datasets,
             // the fact that we are passing these exports, blobs of JSON, and, 
             // especially, DDI XML as complete strings. It would be nicer 
-            // if we could stream instead - and the export service already gives
-            // it to as as a stream; then we could start sending the 
+            // if we could stream instead - and the export service already can
+            // give it to as as a stream; then we could start sending the 
             // output to the remote client as soon as we got the first bytes, 
             // without waiting for the whole thing to be generated and buffered... 
             // (the way Access API streams its output). 
@@ -155,7 +154,7 @@ public class Datasets extends AbstractApiBean {
         }
     }
 
-	
+   	
 	@DELETE
 	@Path("{id}")
 	public Response deleteDataset( @PathParam("id") String id) {
