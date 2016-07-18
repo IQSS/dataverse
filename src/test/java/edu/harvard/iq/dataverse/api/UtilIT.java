@@ -17,6 +17,7 @@ import java.util.logging.Level;
 import edu.harvard.iq.dataverse.api.datadeposit.SwordConfigurationImpl;
 import com.jayway.restassured.path.xml.XmlPath;
 import org.junit.Test;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.path.xml.XmlPath.from;
 import java.util.List;
@@ -374,6 +375,12 @@ public class UtilIT {
                 .delete("/api/datasets/" + datasetId);
     }
 
+    public static Response deleteDatasetVersionViaNativeApi(Integer datasetId, String versionId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/datasets/" + datasetId + "/versions/" + versionId);
+    }
+
     static Response deleteLatestDatasetVersionViaSwordApi(String persistentId, String apiToken) {
         return given()
                 .auth().basic(apiToken, EMPTY_STRING)
@@ -399,6 +406,20 @@ public class UtilIT {
                 .auth().basic(apiToken, EMPTY_STRING)
                 .header("In-Progress", "false")
                 .post(swordConfiguration.getBaseUrlPathCurrent() + "/edit/study/" + persistentId);
+    }
+
+    static Response publishDatasetViaNativeApi(Integer datasetId, String majorOrMinor, String apiToken) {
+        /**
+         * @todo This should be a POST rather than a GET:
+         * https://github.com/IQSS/dataverse/issues/2431
+         *
+         * @todo Prevent version less than v1.0 to be published (i.e. v0.1):
+         * https://github.com/IQSS/dataverse/issues/2461
+         */
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .urlEncodingEnabled(false)
+                .get("/api/datasets/" + datasetId + "/actions/:publish?type=" + majorOrMinor);
     }
 
     static Response publishDataverseViaSword(String alias, String apiToken) {
@@ -447,6 +468,89 @@ public class UtilIT {
                 .body(data)
                 .put("/api/admin/authenticatedUsers/convert/builtin2shib");
         return response;
+    }
+
+    static Response nativeGet(Integer datasetId, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/" + datasetId);
+        return response;
+    }
+
+    static Response privateUrlGet(Integer datasetId, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/" + datasetId + "/privateUrl");
+        return response;
+    }
+
+    static Response privateUrlCreate(Integer datasetId, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .post("/api/datasets/" + datasetId + "/privateUrl");
+        return response;
+    }
+
+    static Response privateUrlDelete(Integer datasetId, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/datasets/" + datasetId + "/privateUrl");
+        return response;
+    }
+
+    static Response search(String query, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/search?q=" + query);
+    }
+
+    static Response indexClear() {
+        return given()
+                .get("/api/admin/index/clear");
+    }
+
+    static Response index() {
+        return given()
+                .get("/api/admin/index");
+    }
+
+    static Response enableSetting(SettingsServiceBean.Key settingKey) {
+        Response response = given().body("true").when().put("/api/admin/settings/" + settingKey);
+        return response;
+    }
+
+    static Response deleteSetting(SettingsServiceBean.Key settingKey) {
+        Response response = given().when().delete("/api/admin/settings/" + settingKey);
+        return response;
+    }
+
+    static Response getRoleAssignmentsOnDataverse(String dataverseAliasOrId, String apiToken) {
+        String url = "/api/dataverses/" + dataverseAliasOrId + "/assignments";
+        System.out.println("URL: " + url);
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get(url);
+    }
+
+    static Response getRoleAssignmentsOnDataset(String datasetId, String persistentId, String apiToken) {
+        String url = "/api/datasets/" + datasetId + "/assignments";
+        System.out.println("URL: " + url);
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get(url);
+    }
+
+    static Response grantRoleOnDataset(String definitionPoint, String role, String roleAssignee, String apiToken) {
+        logger.info("Granting role on dataset \"" + definitionPoint + "\": " + role);
+        return given()
+                .body("@" + roleAssignee)
+                .post("api/datasets/" + definitionPoint + "/assignments?key=" + apiToken);
+    }
+
+    static Response revokeRole(String definitionPoint, long doomed, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("api/dataverses/" + definitionPoint + "/assignments/" + doomed);
     }
 
     @Test
