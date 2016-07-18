@@ -152,6 +152,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
             systemConfig.disableOAIServer();
         } else {
             systemConfig.enableOAIServer();
+            JsfHelper.addSuccessMessage(JH.localize("harvestserver.service.enable.success"));
         }
     }
     
