@@ -447,6 +447,12 @@ public class SearchServiceBean {
             solrSearchResult.setDescriptionNoSnippet(description);
             solrSearchResult.setDeaccessionReason(deaccessionReason);
             solrSearchResult.setDvTree(dvTree);
+            
+            String originSource = (String) solrDocument.getFieldValue(SearchFields.SOURCE);
+            if ("HARVESTED".equals(originSource)) {
+                solrSearchResult.setHarvested(true);
+            }
+            
             /**
              * @todo start using SearchConstants class here
              */

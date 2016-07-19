@@ -201,8 +201,8 @@ public class HarvesterServiceBean {
                 hdLogger.log(Level.SEVERE, "Cannot begin harvesting, Dataverse " + harvestingDataverse.getName() + " is currently being harvested.");
 
             } else {
-                harvestingClientService.resetHarvestInProgress(harvestingDataverse.getId());
-                harvestingClientService.setHarvestInProgress(harvestingDataverse.getId(), harvestStartTime);
+                harvestingClientService.resetHarvestInProgress(harvestingClientId);
+                harvestingClientService.setHarvestInProgress(harvestingClientId, harvestStartTime);
 
                
                 if (harvestingClientConfig.isOai()) {
@@ -247,7 +247,7 @@ public class HarvesterServiceBean {
             harvestingClientService.setHarvestFailure(harvestingDataverse.getId(), new Date());
 
         } finally {
-            harvestingClientService.resetHarvestInProgress(harvestingDataverse.getId());
+            harvestingClientService.resetHarvestInProgress(harvestingClientId);
             fileHandler.close();
             hdLogger.removeHandler(fileHandler);
         }
@@ -361,7 +361,7 @@ public class HarvesterServiceBean {
                 hdLogger.info("Successfully retrieved GetRecord response.");
 
                 harvestedDataset = importService.doImportHarvestedDataset(dataverseRequest, 
-                        oaiHandler.getHarvestingClient().getDataverse(), 
+                        oaiHandler.getHarvestingClient(),
                         oaiHandler.getMetadataPrefix(), 
                         record.getMetadataFile(), 
                         null);

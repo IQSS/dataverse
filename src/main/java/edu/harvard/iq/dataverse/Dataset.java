@@ -522,39 +522,43 @@ public class Dataset extends DvObjectContainer {
         this.thumbnailFile = thumbnailFile;
     }
 
+    @ManyToOne
+    @JoinColumn(name="harvestingClient_id")
+    private  HarvestingClient harvestedFrom;
+
+    public HarvestingClient getHarvestedFrom() {
+        return this.harvestedFrom;
+    }
+
+    public void setHarvestedFrom(HarvestingClient harvestingClientConfig) {
+        this.harvestedFrom = harvestingClientConfig;
+    }
+    
+    
     public boolean isHarvested() {
-        // TODO: 
-        // eventually, this will be more complex: 
-        // A dataverse owner will be able to harvest some datasets into 
-        // any dataverse, in addition to any local datasets there. 
-        // -- L.A. 4.0 
-        Dataverse ownerDataverse = this.getOwner();
-        if (ownerDataverse != null) {
-            return ownerDataverse.isHarvested();
-        }
-        return false;
+        return this.harvestedFrom != null;
     }
 
     public String getRemoteArchiveURL() {
         if (isHarvested()) {
-            if (HarvestingClient.HARVEST_STYLE_DATAVERSE.equals(this.getOwner().getHarvestingClientConfig().getHarvestStyle())) {
-                return this.getOwner().getHarvestingClientConfig().getArchiveUrl() + "/dataset.xhtml?persistentId=" + getGlobalId();
-            } else if (HarvestingClient.HARVEST_STYLE_VDC.equals(this.getOwner().getHarvestingClientConfig().getHarvestStyle())) {
-                String rootArchiveUrl = this.getOwner().getHarvestingClientConfig().getHarvestingUrl();
+            if (HarvestingClient.HARVEST_STYLE_DATAVERSE.equals(this.getHarvestedFrom().getHarvestStyle())) {
+                return this.getHarvestedFrom().getArchiveUrl() + "/dataset.xhtml?persistentId=" + getGlobalId();
+            } else if (HarvestingClient.HARVEST_STYLE_VDC.equals(this.getHarvestedFrom().getHarvestStyle())) {
+                String rootArchiveUrl = this.getHarvestedFrom().getHarvestingUrl();
                 int c = rootArchiveUrl.indexOf("/OAIHandler");
                 if (c > 0) {
                     rootArchiveUrl = rootArchiveUrl.substring(0, c);
                     return rootArchiveUrl + "/faces/study/StudyPage.xhtml?globalId=" + getGlobalId();
                 }
-            } else if (HarvestingClient.HARVEST_STYLE_ICPSR.equals(this.getOwner().getHarvestingClientConfig().getHarvestStyle())) {
+            } else if (HarvestingClient.HARVEST_STYLE_ICPSR.equals(this.getHarvestedFrom().getHarvestStyle())) {
                 // For the ICPSR, it turns out that the best thing to do is to 
                 // rely on the DOI to send the user to the right landing page for 
                 // the study: 
                 //String icpsrId = identifier;
                 //return this.getOwner().getHarvestingClient().getArchiveUrl() + "/icpsrweb/ICPSR/studies/"+icpsrId+"?q="+icpsrId+"&amp;searchSource=icpsr-landing";
                 return "http://doi.org/" + authority + "/" + identifier;
-            } else if (HarvestingClient.HARVEST_STYLE_NESSTAR.equals(this.getOwner().getHarvestingClientConfig().getHarvestStyle())) {
-                String nServerURL = this.getOwner().getHarvestingClientConfig().getArchiveUrl();
+            } else if (HarvestingClient.HARVEST_STYLE_NESSTAR.equals(this.getHarvestedFrom().getHarvestStyle())) {
+                String nServerURL = this.getHarvestedFrom().getArchiveUrl();
                 // chop any trailing slashes in the server URL - or they will result
                 // in multiple slashes in the final URL pointing to the study 
                 // on server of origin; Nesstar doesn't like it, apparently. 
@@ -572,9 +576,9 @@ public class Dataset extends DvObjectContainer {
                         + "&top=yes";
 
                 return NesstarWebviewPage;
-            } else if (HarvestingClient.HARVEST_STYLE_ROPER.equals(this.getOwner().getHarvestingClientConfig().getHarvestStyle())) {
-                return this.getOwner().getHarvestingClientConfig().getArchiveUrl() + "/CFIDE/cf/action/catalog/abstract.cfm?archno=" + identifier;
-            } else if (HarvestingClient.HARVEST_STYLE_HGL.equals(this.getOwner().getHarvestingClientConfig().getHarvestStyle())) {
+            } else if (HarvestingClient.HARVEST_STYLE_ROPER.equals(this.getHarvestedFrom().getHarvestStyle())) {
+                return this.getHarvestedFrom().getArchiveUrl() + "/CFIDE/cf/action/catalog/abstract.cfm?archno=" + identifier;
+            } else if (HarvestingClient.HARVEST_STYLE_HGL.equals(this.getHarvestedFrom().getHarvestStyle())) {
                 // a bit of a hack, true. 
                 // HGL documents, when turned into Dataverse studies/datasets
                 // all 1 datafile; the location ("storage identifier") of the file
@@ -590,9 +594,9 @@ public class Dataset extends DvObjectContainer {
                         }
                     }
                 }
-                return this.getOwner().getHarvestingClientConfig().getArchiveUrl();
+                return this.getHarvestedFrom().getArchiveUrl();
             }else {
-                return this.getOwner().getHarvestingClientConfig().getArchiveUrl();
+                return this.getHarvestedFrom().getArchiveUrl();
             }
         }
 
@@ -601,7 +605,7 @@ public class Dataset extends DvObjectContainer {
 
     public String getHarvestingDescription() {
         if (isHarvested()) {
-            return this.getOwner().getHarvestingClientConfig().getArchiveDescription();
+            return this.getHarvestedFrom().getArchiveDescription();
         }
 
         return null;

@@ -547,14 +547,14 @@ public class DatasetServiceBean implements java.io.Serializable {
      * 
      * @return 
      */
-    public Map<Long, String> getHarvestingDescriptionsForHarvestedDatasets(Set<Long> datasetIds){
+    public Map<Long, String> getArchiveDescriptionsForHarvestedDatasets(Set<Long> datasetIds){
         if (datasetIds == null || datasetIds.size() < 1) {
             return null;
         }
         
         String datasetIdStr = Strings.join(datasetIds, ", ");
         
-        String qstr = "SELECT d.id, h.archiveDescription FROM harvestingClient h, dataset d, dvobject o WHERE d.id = o.id AND h.dataverse_id = o.owner_id AND d.id IN (" + datasetIdStr + ")";
+        String qstr = "SELECT d.id, h.archiveDescription FROM harvestingClient h, dataset d WHERE d.harvestingClient_id = h.id AND d.id IN (" + datasetIdStr + ")";
         List<Object[]> searchResults = null;
         
         try {

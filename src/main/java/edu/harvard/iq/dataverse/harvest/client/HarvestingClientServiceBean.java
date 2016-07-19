@@ -60,31 +60,30 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
     }
     
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public void resetHarvestInProgress(Long hdId) {
-        Dataverse hd = em.find(Dataverse.class, hdId);
-        em.refresh(hd);
-        if (!hd.isHarvested()) {
-            return; 
+    public void resetHarvestInProgress(Long hcId) {
+        HarvestingClient harvestingClient = em.find(HarvestingClient.class, hcId);
+        if (harvestingClient == null) {
+            return;
         }
-        hd.getHarvestingClientConfig().setHarvestingNow(false);
+        em.refresh(harvestingClient);
+        harvestingClient.setHarvestingNow(false);
         
         // And if there is an unfinished RunResult object, we'll
         // just mark it as a failure:
-        if (hd.getHarvestingClientConfig().getLastRun() != null 
-                && hd.getHarvestingClientConfig().getLastRun().isInProgress()) {
-            hd.getHarvestingClientConfig().getLastRun().setFailed();
+        if (harvestingClient.getLastRun() != null 
+                && harvestingClient.getLastRun().isInProgress()) {
+            harvestingClient.getLastRun().setFailed();
         }
        
     }
     
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public void setHarvestInProgress(Long hdId, Date startTime) {
-        Dataverse hd = em.find(Dataverse.class, hdId);
-        em.refresh(hd);
-        HarvestingClient harvestingClient = hd.getHarvestingClientConfig();
+    public void setHarvestInProgress(Long hcId, Date startTime) {
+        HarvestingClient harvestingClient = em.find(HarvestingClient.class, hcId);
         if (harvestingClient == null) {
             return;
         }
+        em.refresh(harvestingClient);
         harvestingClient.setHarvestingNow(false);
         if (harvestingClient.getRunHistory() == null) {
             harvestingClient.setRunHistory(new ArrayList<ClientHarvestRun>());
@@ -98,13 +97,12 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
     
     
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public void setHarvestSuccess(Long hdId, Date currentTime, int harvestedCount, int failedCount) {
-        Dataverse hd = em.find(Dataverse.class, hdId);
-        em.refresh(hd);
-        HarvestingClient harvestingClient = hd.getHarvestingClientConfig();
+    public void setHarvestSuccess(Long hcId, Date currentTime, int harvestedCount, int failedCount) {
+        HarvestingClient harvestingClient = em.find(HarvestingClient.class, hcId);
         if (harvestingClient == null) {
             return;
         }
+        em.refresh(harvestingClient);
         
         ClientHarvestRun currentRun = harvestingClient.getLastRun();
         
@@ -122,13 +120,12 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public void setHarvestFailure(Long hdId, Date currentTime) {
-        Dataverse hd = em.find(Dataverse.class, hdId);
-        em.refresh(hd);
-        HarvestingClient harvestingClient = hd.getHarvestingClientConfig();
+    public void setHarvestFailure(Long hcId, Date currentTime) {
+        HarvestingClient harvestingClient = em.find(HarvestingClient.class, hcId);
         if (harvestingClient == null) {
             return;
         }
+        em.refresh(harvestingClient);
         
         ClientHarvestRun currentRun = harvestingClient.getLastRun();
         

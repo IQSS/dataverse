@@ -289,20 +289,22 @@ public class Dataverse extends DvObjectContainer {
         this.guestbooks = guestbooks;
     } 
     
-    @OneToOne (mappedBy="dataverse", cascade={CascadeType.MERGE, CascadeType.REMOVE})
-    private HarvestingClient harvestingClient;
+    
+    @OneToMany (mappedBy="dataverse", cascade={CascadeType.MERGE, CascadeType.REMOVE})
+    private List<HarvestingClient> harvestingClientConfigs;
 
-    public HarvestingClient getHarvestingClientConfig() {
-        return this.harvestingClient;
+    public List<HarvestingClient> getHarvestingClientConfigs() {
+        return this.harvestingClientConfigs;
     }
 
-    public void setHarvestingClientConfig(HarvestingClient harvestingClient) {
-        this.harvestingClient = harvestingClient;
+    public void setHarvestingClientConfigs(List<HarvestingClient> harvestingClientConfigs) {
+        this.harvestingClientConfigs = harvestingClientConfigs;
     }
-
+    /*
     public boolean isHarvested() {
         return harvestingClient != null; 
     }
+    */
     
     
     public List<Guestbook> getParentGuestbooks() {

@@ -70,9 +70,9 @@ public class DataCitation {
         // It is always part of the citation for the local datasets; 
         // And for *some* harvested datasets. 
         if (!dsv.getDataset().isHarvested()
-                || HarvestingClient.HARVEST_STYLE_VDC.equals(dsv.getDataset().getOwner().getHarvestingClientConfig().getHarvestStyle())
-                || HarvestingClient.HARVEST_STYLE_ICPSR.equals(dsv.getDataset().getOwner().getHarvestingClientConfig().getHarvestStyle())
-                || HarvestingClient.HARVEST_STYLE_DATAVERSE.equals(dsv.getDataset().getOwner().getHarvestingClientConfig().getHarvestStyle())) {
+                || HarvestingClient.HARVEST_STYLE_VDC.equals(dsv.getDataset().getHarvestedFrom().getHarvestStyle())
+                || HarvestingClient.HARVEST_STYLE_ICPSR.equals(dsv.getDataset().getHarvestedFrom().getHarvestStyle())
+                || HarvestingClient.HARVEST_STYLE_DATAVERSE.equals(dsv.getDataset().getHarvestedFrom().getHarvestStyle())) {
             if (!StringUtils.isEmpty(dsv.getDataset().getIdentifier())) {
                 persistentId = new GlobalId(dsv.getDataset().getGlobalId());
             }

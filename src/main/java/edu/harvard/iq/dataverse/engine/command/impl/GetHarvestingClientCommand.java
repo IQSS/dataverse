@@ -25,21 +25,23 @@ import java.util.Set;
 // This is defined in the getRequiredPermissions() method, below. 
 public class GetHarvestingClientCommand extends AbstractCommand<HarvestingClient>{
     private final Dataverse ownerDataverse;
+    private final HarvestingClient harvestingClient;
 
     public GetHarvestingClientCommand(DataverseRequest aRequest, HarvestingClient harvestingClient) {
         super(aRequest, harvestingClient.getDataverse());
         this.ownerDataverse = harvestingClient.getDataverse();
+        this.harvestingClient = harvestingClient;
     }
 
     @Override
     public HarvestingClient execute(CommandContext ctxt) throws CommandException {
         if (ownerDataverse == null) {
-            throw new IllegalCommandException("GetHarvestingClientCommand called on a null dataverse object", this);
+            throw new IllegalCommandException("GetHarvestingClientCommand called on a null Dataverse object", this);
         }
-        if (ownerDataverse.getHarvestingClientConfig() == null) {
-            throw new IllegalCommandException("No harvesting client is configured for dataverse "+ownerDataverse.getAlias(), this);
+        if (harvestingClient == null) {
+            throw new IllegalCommandException("GetHarvestigClientCommand called on a null HarvestingClient object", this);
         }
-        return ownerDataverse.getHarvestingClientConfig();
+        return harvestingClient;
     }
 
     @Override

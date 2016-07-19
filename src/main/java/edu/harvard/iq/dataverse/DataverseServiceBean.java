@@ -426,7 +426,8 @@ public class DataverseServiceBean implements java.io.Serializable {
     /**
      * Used to identify and properly display Harvested objects on the dataverse page.
      * 
-     */
+     *//*
+    @Deprecated
     public Map<Long, String> getAllHarvestedDataverseDescriptions(){
         
         String qstr = "SELECT dataverse_id, archiveDescription FROM harvestingClient;";
@@ -461,7 +462,7 @@ public class DataverseServiceBean implements java.io.Serializable {
         }
         
         return ret;        
-    }
+    }*/
 
     public void populateDvSearchCard(SolrSearchResult solrSearchResult) {
   

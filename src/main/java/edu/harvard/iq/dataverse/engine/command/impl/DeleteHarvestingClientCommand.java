@@ -33,9 +33,9 @@ public class DeleteHarvestingClientCommand extends AbstractVoidCommand {
             throw new IllegalCommandException("DeleteHarvestingClientCommand: attempted to execute with null harvesting client; dataverse: "+motherDataverse.getAlias(), this);
         }
         HarvestingClient merged = ctxt.em().merge(harvestingClient);
-        motherDataverse.setHarvestingClientConfig(null);
+        //motherDataverse.setHarvestingClientConfig(null);
         ctxt.em().remove(merged);
-        ctxt.em().merge(motherDataverse);
+        //ctxt.em().merge(motherDataverse);
     }
     
 }

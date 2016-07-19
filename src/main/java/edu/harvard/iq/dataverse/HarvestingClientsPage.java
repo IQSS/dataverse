@@ -287,7 +287,10 @@ public class HarvestingClientsPage implements java.io.Serializable {
         }
         
         newHarvestingClient.setDataverse(getSelectedDestinationDataverse());
-        getSelectedDestinationDataverse().setHarvestingClientConfig(newHarvestingClient);
+        if (getSelectedDestinationDataverse().getHarvestingClientConfigs() == null) {
+            getSelectedDestinationDataverse().setHarvestingClientConfigs(new ArrayList<>());
+        }
+        getSelectedDestinationDataverse().getHarvestingClientConfigs().add(newHarvestingClient);
         
         newHarvestingClient.setHarvestingUrl(newHarvestingUrl);
         if (!StringUtils.isEmpty(newOaiSet)) {

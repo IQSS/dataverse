@@ -541,16 +541,8 @@ public class DataFile extends DvObject {
         this.fileAccessRequesters = fileAccessRequesters;
     }
     
-        
     public boolean isHarvested() {
-        // TODO: 
-        // alternatively, we can determine whether this is a harvested file
-        // by looking at the storage identifier of the physical file; 
-        // if it's something that's not a filesystem path (URL, etc.) - 
-        // then it's a harvested object. 
-        // -- L.A. 4.0 
         
-        // OK, here: (4.2.2)
         // (storageIdentifier is not nullable - so no need to check for null
         // pointers below):
         if (this.getStorageIdentifier().startsWith("http://") || this.getStorageIdentifier().startsWith("https://")) {

@@ -30,6 +30,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
+import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
@@ -187,7 +188,11 @@ public class ImportServiceBean {
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public Dataset doImportHarvestedDataset(DataverseRequest dataverseRequest, Dataverse owner, String metadataFormat, File metadataFile, PrintWriter cleanupLog) throws ImportException, IOException {
+    public Dataset doImportHarvestedDataset(DataverseRequest dataverseRequest, HarvestingClient harvestingClient, String metadataFormat, File metadataFile, PrintWriter cleanupLog) throws ImportException, IOException {
+        if (harvestingClient == null || harvestingClient.getDataverse() == null) {
+            throw new ImportException("importHarvestedDataset called wiht a null harvestingClient, or an invalid harvestingClient.");
+        }
+        Dataverse owner = harvestingClient.getDataverse();
         Dataset importedDataset = null;
 
         DatasetDTO dsDTO = null;
@@ -267,6 +272,12 @@ public class ImportServiceBean {
                 }
             }
 
+            ds.setHarvestedFrom(harvestingClient);
+            if (harvestingClient.getHarvestedDatasets() == null) {
+                harvestingClient.setHarvestedDatasets(new ArrayList<>());
+            }
+            harvestingClient.getHarvestedDatasets().add(ds);
+            
             Dataset existingDs = datasetService.findByGlobalId(ds.getGlobalId());
 
             if (existingDs != null) {

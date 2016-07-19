@@ -160,11 +160,13 @@ public class IndexServiceBean {
             solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataverse.getCreateDate());
             solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE_SEARCHABLE_TEXT, convertToFriendlyDate(dataverse.getCreateDate()));
         }
+        /* We don't really have harvested dataverses yet; 
+           (I have in fact just removed the isHarvested() method from the Dataverse object) -- L.A.
         if (dataverse.isHarvested()) {
             solrInputDocument.addField(SearchFields.SOURCE, HARVESTED);
-        } else {
+        } else { (this means that all dataverses are "local" - should this be removed? */
             solrInputDocument.addField(SearchFields.SOURCE, LOCAL);
-        }
+        /*}*/
 
         addDataverseReleaseDateToSolrDoc(solrInputDocument, dataverse);
 //        if (dataverse.getOwner() != null) {

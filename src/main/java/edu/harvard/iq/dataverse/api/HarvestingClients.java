@@ -17,6 +17,7 @@ import javax.json.JsonObjectBuilder;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -158,7 +159,10 @@ public class HarvestingClients extends AbstractApiBean {
             }
             
             harvestingClient.setDataverse(ownerDataverse);
-            ownerDataverse.setHarvestingClientConfig(harvestingClient);
+            if (ownerDataverse.getHarvestingClientConfigs() == null) {
+                ownerDataverse.setHarvestingClientConfigs(new ArrayList<>());
+            }
+            ownerDataverse.getHarvestingClientConfigs().add(harvestingClient);
             
             DataverseRequest req = createDataverseRequest(findUserOrDie());
             HarvestingClient managedHarvestingClient = execCommand( new CreateHarvestingClientCommand(req, harvestingClient));
@@ -273,6 +277,8 @@ public class HarvestingClients extends AbstractApiBean {
     
     /* Auxiliary, helper methods: */ 
     
+    /*
+    @Deprecated
     public static JsonArrayBuilder harvestingConfigsAsJsonArray(List<Dataverse> harvestingDataverses) {
         JsonArrayBuilder hdArr = Json.createArrayBuilder();
         
@@ -280,7 +286,7 @@ public class HarvestingClients extends AbstractApiBean {
             hdArr.add(harvestingConfigAsJson(hd.getHarvestingClientConfig()));
         }
         return hdArr;
-    }
+    }*/
     
     public static JsonObjectBuilder harvestingConfigAsJson(HarvestingClient harvestingConfig) {
         if (harvestingConfig == null) {

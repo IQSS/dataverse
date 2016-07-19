@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse.harvest.client;
 
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
@@ -24,6 +25,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
@@ -117,8 +119,7 @@ public class HarvestingClient implements Serializable {
     }
 
     
-    //(cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST })
-    @OneToOne 
+    @ManyToOne
     @JoinColumn(name="dataverse_id")
     private  Dataverse dataverse;
 
@@ -130,6 +131,17 @@ public class HarvestingClient implements Serializable {
         this.dataverse = dataverse;
     }
 
+    @OneToMany (mappedBy="harvestedFrom", cascade={CascadeType.MERGE, CascadeType.REMOVE}, orphanRemoval=true)
+    private List<Dataset> harvestedDatasets;
+
+    public List<Dataset> getHarvestedDatasets() {
+        return this.harvestedDatasets;
+    }
+
+    public void setHarvestedDatasets(List<Dataset> harvestedDatasets) {
+        this.harvestedDatasets = harvestedDatasets;
+    }
+    
     @NotBlank(message = "Please enter a nickname.")
     @Column(nullable = false, unique=true)
     @Size(max = 30, message = "Nickname must be at most 30 characters.")
