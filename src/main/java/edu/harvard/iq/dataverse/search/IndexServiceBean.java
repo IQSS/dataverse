@@ -102,7 +102,7 @@ public class IndexServiceBean {
     private static final String DRAFT_STRING = "Draft";
     private static final String IN_REVIEW_STRING = "In Review";
     private static final String DEACCESSIONED_STRING = "Deaccessioned";
-    private static final String HARVESTED = "Harvested";
+    public static final String HARVESTED = "Harvested";
     private static final String LOCAL = "Local";
     private Dataverse rootDataverseCached; 
     private SolrServer solrServer;
