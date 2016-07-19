@@ -211,7 +211,7 @@ public class HarvesterServiceBean {
                 } else {
                     throw new IOException("Unsupported harvest type");
                 }
-                harvestingClientService.setHarvestSuccess(harvestingDataverse.getId(), new Date(), harvestedDatasetIds.size(), failedIdentifiers.size());
+                harvestingClientService.setHarvestSuccess(harvestingClientId, new Date(), harvestedDatasetIds.size(), failedIdentifiers.size());
                 hdLogger.log(Level.INFO, "COMPLETED HARVEST, server=" + harvestingClientConfig.getArchiveUrl() + ", metadataPrefix=" + harvestingClientConfig.getMetadataPrefix());
                 hdLogger.log(Level.INFO, "Datasets created/updated: " + harvestedDatasetIds.size() + ", datasets deleted: [TODO:], datasets failed: " + failedIdentifiers.size());
 
@@ -244,7 +244,7 @@ public class HarvesterServiceBean {
             // processed some number of datasets, by the time the exception was thrown. 
             // We should record that number too. And the number of the datasets that
             // had failed, that we may have counted.  -- L.A. 4.4
-            harvestingClientService.setHarvestFailure(harvestingDataverse.getId(), new Date());
+            harvestingClientService.setHarvestFailure(harvestingClientId, new Date());
 
         } finally {
             harvestingClientService.resetHarvestInProgress(harvestingClientId);

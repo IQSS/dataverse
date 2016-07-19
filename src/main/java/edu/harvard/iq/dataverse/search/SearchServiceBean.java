@@ -449,7 +449,6 @@ public class SearchServiceBean {
             solrSearchResult.setDvTree(dvTree);
             
             String originSource = (String) solrDocument.getFieldValue(SearchFields.SOURCE);
-            logger.info("ORIGIN SOURCE: "+originSource);
             if (IndexServiceBean.HARVESTED.equals(originSource)) {
                 solrSearchResult.setHarvested(true);
             }

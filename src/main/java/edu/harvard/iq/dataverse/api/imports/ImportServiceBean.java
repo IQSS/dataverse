@@ -273,10 +273,6 @@ public class ImportServiceBean {
             }
 
             ds.setHarvestedFrom(harvestingClient);
-            if (harvestingClient.getHarvestedDatasets() == null) {
-                harvestingClient.setHarvestedDatasets(new ArrayList<>());
-            }
-            harvestingClient.getHarvestedDatasets().add(ds);
             
             Dataset existingDs = datasetService.findByGlobalId(ds.getGlobalId());
 
