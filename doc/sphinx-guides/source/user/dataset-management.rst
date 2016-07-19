@@ -19,7 +19,7 @@ For more details about what Citation and Domain specific metadata is supported p
 File Handling + Uploading
 ===============================
 
-All file formats are supported, up to 2GB per file for the Harvard Dataverse. Please contact support@dataverse.org if you need to upload a file that is larger than 2GB. You can also add descriptions and categorize each of them by adding tags.
+File upload limit size varies based on Dataverse installation. The file upload size limit can be found in the text above where files are uploaded in the application. If you have further questions, contact support for that installation by clicking on the Support link at the top of the application.
 
 The file types listed below are supported by additional functionality, which can include downloading in different formats, subsets, file-level metadata preservation, file-level data citation; and exploration 
 through data visualization and analysis. 
@@ -44,9 +44,7 @@ functionality is also provided by the `TwoRavens
 documentation section <../user/data-exploration/tworavens.html>`_ for
 more information.
 
-To use the ingest functionality for tabular files, a file can only be up to 2GB in size, however, to upload a tabular file without using ingest, a file can be up to 2GB in size.
-
-To use the ingest functionality for RData files, a file can only be up to 1MB in size, however, to upload a RData file without using ingest, a file can be up to 2GB in size.
+For example, the ingest functionality for tabular files in the Harvard Dataverse, a file can only be up to 2GB in size. To use the ingest functionality for RData files, a file can only be up to 1MB in size, however, to upload a RData file without using ingest, a file can be up to 2GB in size.
 
 Additional download options available for tabular data (found
 in the same drop-down menu under the "Download" button): 
@@ -137,7 +135,7 @@ We currently only support the following HTML tags for any of our textbox meatdat
 <br>, <code>, <del>, <dd>, <dl>, <dt>, <em>, <hr>, <h1>-<h3>, <i>, <img>, <kbd>, <li>, <ol>, <p>, <pre>, <s>, <sup>, <sub>, 
 <strong>, <strike>, <ul>.
 
-Edit Dataset
+Edit Files
 ==================
 
 Go to the dataset you would like to edit where you will see the listing of files. Select the files you would like to edit by using either the Select All checkbox or individually selecting files. Next, click on the Edit button above the files and select if you would like to:
@@ -150,10 +148,18 @@ Go to the dataset you would like to edit where you will see the listing of files
 
 All of these actions, besides editing file metadata, will happen within this page and not bring you to another page. If you restrict files, you will also be asked to fill out the Terms of Access for the files. If Terms of Access already exist, you will be asked to confirm them.
 
-Upload New Files
-===================
+File Tags
+--------------------------------------------------------------
 
-To upload new files to a dataset, go the dataset you want to update and click on the Upload Files Button in the files tab. From there you will be brought to the Upload page for the dataset. Once you have uploaded files, you will be able to edit the file metadata, restrict, add tags, or delete them before saving.
+The File Tags are comprised of custom, category (i.e. Documentation, Data, Code) and tabular data tags (i.e. Event, Genomics, Geospatial, Network, Panel, Survey, Time Series). Use the dropdown select menus as well as the custom file tag input to apply these tags to the selected files. There is also a Delete Tags feature that, if checked, will allow you to delete unused file tags within that dataset.
+
+
+
+Upload New Files
+---------------------------------------------------------------
+
+To upload new files to a dataset, go to the dataset you want to update and click on the Upload Files button in the files tab. From there you will be brought to the Upload Files page for the dataset. Once you have uploaded files, you will be able to edit the file metadata, restrict, add tags, or delete them before saving.
+
 
 .. _license-terms:
 
@@ -189,7 +195,7 @@ If you restrict any files in your dataset, you will be prompted by a pop-up to e
 Guestbook
 --------------
 
-This is where you will enable a particular Guestbook for your dataset, which is setup at the Dataverse-level. For specific instructions please visit the Dataverse Management Guide > `Dataset Guestbook section <../user/dataverse-management.html#dataset-guestbooks>`_.
+This is where you will enable a particular Guestbook for your dataset, which is setup at the Dataverse-level. For specific instructions please visit the `Dataset Guestbooks <../user/dataverse-management.html#dataset-guestbooks>`_ section of the Dataverse Management page.
 
 .. _permissions:
 
@@ -214,6 +220,35 @@ The file permissions page has two sections: Users/Groups and Files.
 
 To give someone access to your restricted files, click on the Grant Access to Users/Groups button in the Users/Groups section. 
 
+.. _widgets:
+
+Widgets
+=============================
+
+The Widgets feature provides you with code for your personal website so your dataset can be displayed. There are two types of Widgets for a dataset: the Dataset Widget and the Dataset Citation Widget. The Widgets are found by going to your dataset page, clicking the Edit button (the one with the pencil icon) and selecting Widgets from the dropdown menu.
+
+On the Widgets page, you can copy and paste the code snippets for the widget you would like to add to your website. If you need to adjust the height of the widget on your website, you may do so by editing the `heightPx=500` parameter in the code snippet.
+
+Dataset Widget
+---------------------
+
+The Dataset Widget allows the citation, metadata, files and terms of your dataset to be displayed on your website. When someone downloads a data file in the widget, it will download directly from the datasets on your website. If a file is restricted, they will be directed to your dataverse to log in, instead of logging in through the widget on your site. 
+
+To edit your dataset, you will need to return to the Dataverse repository where the dataset is stored. You can easily do this by clicking on the link that says "Data Stored in (Name) Dataverse" found in the bottom of the widget.
+
+Dataset Citation Widget
+--------------------------
+
+The Dataset Citation Widget will provide a citation for your dataset on your personal or project website. Users can download the citation in various formats by using the Cite Data button. The persistent URL in the citation will direct users to the dataset in your dataverse. 
+
+
+Adding Widgets to an OpenScholar Website
+----------------------------------------------
+#. Log in to your OpenScholar website
+#. Either build a new page or navigate to the page you would like to use to show the Dataverse widgets.
+#. Click on the Settings Cog and select Layout
+#. At the top right, select Add New Widget and under Misc. you will see the Dataverse Dataset and the Dataverse Dataset Citation Widgets. Click on the widget you would like to add, fill out the form, and then drag it to where you would like it to display in the page.
+
 Publish Dataset
 ====================
 
@@ -234,6 +269,27 @@ which is located next to the "Edit" button on the upper-right. Once Submitted fo
 dataset before they decide to either "Publish" the dataset or "Return to Author". If the dataset is published the contributor
 will be notified that it is now published. If the dataset is returned to the author, the contributor of this dataset will be 
 notified that they need to make modifications before it can be submitted for review again.
+
+.. _privateurl:
+
+Private URL for Reviewing an Unpublished Dataset
+==================================================
+
+To share an unpublished dataset using Private URL
+----------------------------------------------------------------------
+
+Creating a Private URL for your dataset allows you to share your dataset (for viewing and downloading of files) before it is published to a wide group of individuals who may not have a user account on Dataverse. Anyone you send the Private URL to will not have to log into Dataverse to view the dataset.
+
+   1. Go to your unpublished dataset
+   2. Select the “Edit” button
+   3. Select “Private URL” in the dropdown menu
+   4. In the pop-up select “Create Private URL”
+   5. Copy the Private URL which has been created for this dataset and it can now be shared with anyone you wish to have access to view or download files in your unpublished dataset.
+
+To disable a Private URL
+-------------------------------------
+
+If ever you had shared a Private URL to your dataset and wish to revoke access, follow the same steps as above until step #3 but in the pop-up select “Disable Private URL”.
 
 
 Dataset Versioning
@@ -273,6 +329,9 @@ If you deaccession the most recently published version of the dataset but not al
 
 
 .. |image1| image:: ./img/DatasetDiagram.png
-.. |image2| image:: ./img/data-download.png 
+   :class: img-responsive
+.. |image2| image:: ./img/data-download.png
+   :class: img-responsive
 .. |image3| image:: http://static.projects.iq.harvard.edu/files/styles/os_files_xxlarge/public/datascience/files/data_publishing_version_workflow.png?itok=8Z0PM-QC
+   :class: img-responsive
 

@@ -39,6 +39,8 @@ import javax.persistence.UniqueConstraint;
 				 query = "SELECT r FROM RoleAssignment r WHERE r.definitionPoint.id=:definitionPointId" ),
 	@NamedQuery( name  = "RoleAssignment.listByRoleId",
 				 query = "SELECT r FROM RoleAssignment r WHERE r.role=:roleId" ),
+	@NamedQuery( name  = "RoleAssignment.listByPrivateUrlToken",
+				 query = "SELECT r FROM RoleAssignment r WHERE r.privateUrlToken=:privateUrlToken" ),
 	@NamedQuery( name  = "RoleAssignment.deleteByAssigneeIdentifier_RoleIdDefinition_PointId",
 				 query = "DELETE FROM RoleAssignment r WHERE r.assigneeIdentifier=:userId AND r.role.id=:roleId AND r.definitionPoint.id=:definitionPointId"),
 })
@@ -57,13 +59,17 @@ public class RoleAssignment implements java.io.Serializable {
 	@ManyToOne( cascade = CascadeType.MERGE ) 
 	@JoinColumn( nullable=false )
 	private DvObject definitionPoint;
+
+    @Column(nullable = true)
+    private String privateUrlToken;
 	
 	public RoleAssignment() {}
 		
-	public RoleAssignment(DataverseRole aRole, RoleAssignee anAssignee, DvObject aDefinitionPoint) {
+	public RoleAssignment(DataverseRole aRole, RoleAssignee anAssignee, DvObject aDefinitionPoint, String privateUrlToken) {
         role = aRole;
         assigneeIdentifier = anAssignee.getIdentifier();
         definitionPoint = aDefinitionPoint;
+        this.privateUrlToken = privateUrlToken;
     }
 	
 	public Long getId() {
@@ -97,7 +103,11 @@ public class RoleAssignment implements java.io.Serializable {
 	public void setDefinitionPoint(DvObject definitionPoint) {
 		this.definitionPoint = definitionPoint;
 	}
-	
+
+    public String getPrivateUrlToken() {
+        return privateUrlToken;
+    }
+
 	@Override
 	public int hashCode() {
 		int hash = 7;

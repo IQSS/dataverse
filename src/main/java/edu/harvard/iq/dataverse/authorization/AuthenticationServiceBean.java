@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationProviderF
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationSetupException;
 import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderFactory;
 import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderRow;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProviderFactory;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
@@ -17,6 +18,7 @@ import edu.harvard.iq.dataverse.authorization.providers.echo.EchoAuthenticationP
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Date;
@@ -36,6 +38,10 @@ import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 
 /**
  * The AuthenticationManager is responsible for registering and listing
@@ -263,6 +269,11 @@ public class AuthenticationServiceBean {
             // yay! see if we already have this user.
             AuthenticatedUser user = lookupUser(authenticationProviderId, resp.getUserId());
 
+            /**
+             * @todo Why does a method called "authenticate" have the potential
+             * to call "createAuthenticatedUser"? Isn't the creation of a user a
+             * different action than authenticating?
+             */
             return ( user == null ) ?
                 AuthenticationServiceBean.this.createAuthenticatedUser(
                         new UserRecordIdentifier(authenticationProviderId, resp.getUserId()), resp.getUserId(), resp.getUserDisplayInfo(), true )
@@ -385,6 +396,7 @@ public class AuthenticationServiceBean {
      * @param userDisplayInfo
      * @param generateUniqueIdentifier if {@code true}, create a new, unique user identifier for the created user, if the suggested one exists.
      * @return the newly created user, or {@code null} if the proposed identifier exists and {@code generateUniqueIdentifier} was {@code false}.
+     * @throws EJBException which may wrap an ConstraintViolationException if the proposed user does not pass bean validation.
      */
     public AuthenticatedUser createAuthenticatedUser(UserRecordIdentifier userRecordId,
                                                      String proposedAuthenticatedUserIdentifier,
@@ -393,6 +405,10 @@ public class AuthenticationServiceBean {
         AuthenticatedUser authenticatedUser = new AuthenticatedUser();
         authenticatedUser.applyDisplayInfo(userDisplayInfo);
         
+        // we have no desire for leading or trailing whitespace in identifiers
+        if (proposedAuthenticatedUserIdentifier != null) {
+            proposedAuthenticatedUserIdentifier = proposedAuthenticatedUserIdentifier.trim();
+        }
         // we now select a username for the generated AuthenticatedUser, or give up
         String internalUserIdentifer = proposedAuthenticatedUserIdentifier;
         // TODO should lock table authenticated users for write here
@@ -496,6 +512,67 @@ public class AuthenticationServiceBean {
             return shibUser;
         }
         return null;
+    }
+
+    /**
+     * @param idOfAuthUserToConvert The id of the AuthenticatedUser (Shibboleth
+     * user) to convert to a BuiltinUser.
+     * @param newEmailAddress The new email address that will be used instead of
+     * the user's old email address from the institution that they have left.
+     * @return BuiltinUser
+     * @throws java.lang.Exception You must catch and report back to the user (a
+     * superuser) any Exceptions.
+     */
+    public BuiltinUser convertShibToBuiltIn(Long idOfAuthUserToConvert, String newEmailAddress) throws Exception {
+        AuthenticatedUser authenticatedUser = findByID(idOfAuthUserToConvert);
+        if (authenticatedUser == null) {
+            throw new Exception("User id " + idOfAuthUserToConvert + " not found.");
+        }
+        AuthenticatedUser existingUserWithSameEmail = getAuthenticatedUserByEmail(newEmailAddress);
+        if (existingUserWithSameEmail != null) {
+            throw new Exception("User id " + idOfAuthUserToConvert + " (" + authenticatedUser.getIdentifier() + ") cannot be converted from Shibboleth to BuiltIn because the email address " + newEmailAddress + " is already in use by user id " + existingUserWithSameEmail.getId() + " (" + existingUserWithSameEmail.getIdentifier() + ").");
+        }
+        BuiltinUser builtinUser = new BuiltinUser();
+        builtinUser.setUserName(authenticatedUser.getUserIdentifier());
+        builtinUser.setFirstName(authenticatedUser.getFirstName());
+        builtinUser.setLastName(authenticatedUser.getLastName());
+        // Bean Validation will check for null and invalid email addresses
+        builtinUser.setEmail(newEmailAddress);
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        Validator validator = factory.getValidator();
+        Set<ConstraintViolation<BuiltinUser>> violations = validator.validate(builtinUser);
+        int numViolations = violations.size();
+        if (numViolations > 0) {
+            StringBuilder logMsg = new StringBuilder();
+            for (ConstraintViolation<?> violation : violations) {
+                logMsg.append(" Invalid value: <<<").append(violation.getInvalidValue()).append(">>> for ").append(violation.getPropertyPath()).append(" at ").append(violation.getLeafBean()).append(" - ").append(violation.getMessage());
+            }
+            throw new Exception("User id " + idOfAuthUserToConvert + " cannot be converted from Shibboleth to BuiltIn because of constraint violations on the BuiltIn user that would be created: " + numViolations + ". Details: " + logMsg);
+        }
+        try {
+            builtinUser = builtinUserServiceBean.save(builtinUser);
+        } catch (IllegalArgumentException ex) {
+            throw new Exception("User id " + idOfAuthUserToConvert + " cannot be converted from Shibboleth to BuiltIn because of an IllegalArgumentException creating the row in the builtinuser table: " + ex);
+        }
+        AuthenticatedUserLookup lookup = authenticatedUser.getAuthenticatedUserLookup();
+        if (lookup == null) {
+            throw new Exception("User id " + idOfAuthUserToConvert + " does not have an 'authenticateduserlookup' row");
+        }
+        String providerId = lookup.getAuthenticationProviderId();
+        if (providerId == null) {
+            throw new Exception("User id " + idOfAuthUserToConvert + " provider id is null.");
+        }
+        String shibProviderId = ShibAuthenticationProvider.PROVIDER_ID;
+        if (!providerId.equals(shibProviderId)) {
+            throw new Exception("User id " + idOfAuthUserToConvert + " cannot be converted from Shibboleth to BuiltIn because current provider id is '" + providerId + "' rather than '" + shibProviderId + "'.");
+        }
+        lookup.setAuthenticationProviderId(BuiltinAuthenticationProvider.PROVIDER_ID);
+        lookup.setPersistentUserId(authenticatedUser.getUserIdentifier());
+        em.persist(lookup);
+        authenticatedUser.setEmail(newEmailAddress);
+        em.persist(authenticatedUser);
+        em.flush();
+        return builtinUser;
     }
 
 }

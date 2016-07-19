@@ -106,7 +106,7 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     /**
      * For docs, see the equivalent method on the DataverseServiceBean.
-     * @see DataverseServiceBean#findAllOrSubset(long, long) 
+     * @see DataverseServiceBean#findAllOrSubset(long, long, boolean)
      */     
     public List<Dataset> findAllOrSubset(long numPartitions, long partitionId, boolean skipIndexed) {
         if (numPartitions < 1) {
@@ -270,6 +270,7 @@ public class DatasetServiceBean implements java.io.Serializable {
 
         return retString;
     }
+
 
     private XMLOutputFactory xmlOutputFactory = null;
 

@@ -92,7 +92,8 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
 
         // Find the built in admin role (currently by alias)
         DataverseRole adminRole = ctxt.roles().findBuiltinRoleByAlias(DataverseRole.ADMIN);
-        ctxt.roles().save(new RoleAssignment(adminRole, getRequest().getUser(), managedDv));
+        String privateUrlToken = null;
+        ctxt.roles().save(new RoleAssignment(adminRole, getRequest().getUser(), managedDv, privateUrlToken));
 
         managedDv.setPermissionModificationTime(new Timestamp(new Date().getTime()));
         managedDv = ctxt.dataverses().save(managedDv);

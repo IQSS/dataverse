@@ -78,9 +78,11 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.primefaces.context.RequestContext;
 import java.text.DateFormat;
+import java.util.Arrays;
 import java.util.HashSet;
 import javax.faces.model.SelectItem;
 import java.util.logging.Level;
+import javax.faces.event.AjaxBehaviorEvent;
 
 /**
  *
@@ -124,6 +126,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     DataverseLinkingServiceBean dvLinkingService;
     @Inject
     DataverseRequestServiceBean dvRequestService;
+    @Inject PermissionsWrapper permissionsWrapper;
 
     private final DateFormat displayDateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
 
@@ -142,6 +145,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     private String dropBoxSelection = "";
     private String displayCitation;
     private boolean datasetUpdateRequired = false; 
+    private boolean tabularDataTagsUpdated = false; 
     
     private String persistentId;
     
@@ -320,7 +324,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         logger.fine("Initializing Edit Files page in CREATE mode;");
         
         if (version == null) {
-            return "/404.xhtml";
+            return permissionsWrapper.notFound();
         }
         
         workingVersion = version; 
@@ -353,29 +357,25 @@ public class EditDatafilesPage implements java.io.Serializable {
             // Is the Dataset harvested? (because we don't allow editing of harvested 
             // files!)
             if (dataset == null || dataset.isHarvested()) {
-                return "/404.xhtml";
+                return permissionsWrapper.notFound();
             }
         } else {
             // It could be better to show an error page of some sort, explaining
             // that the dataset id is mandatory... But 404 will do for now.
-            return "/404.xhtml";
+            return permissionsWrapper.notFound();
         }
         
         workingVersion = dataset.getEditVersion();
 
         if (workingVersion == null || !workingVersion.isDraft()) {
             // Sorry, we couldn't find/obtain a draft version for this dataset!
-            return "/404.xhtml";
+            return permissionsWrapper.notFound();
         }
         
         // Check if they have permission to modify this dataset: 
         
         if (!permissionService.on(dataset).has(Permission.EditDataset)) {
-            if (!session.getUser().isAuthenticated()) {
-                return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
-            } else {
-                return "/403.xhtml"; 
-            }
+            return permissionsWrapper.notAuthorized();
         }
         
         if (mode == FileEditMode.EDIT || mode == FileEditMode.SINGLE) {
@@ -400,7 +400,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             if (selectedFileIdsList.size() < 1) {
                 logger.fine("No numeric file ids supplied to the page, in the edit mode. Redirecting to the 404 page.");
                 // If no valid file IDs specified, send them to the 404 page...
-                return "/404.xhtml";
+                return permissionsWrapper.notFound();
             }
 
             logger.fine("The page is called with " + selectedFileIdsList.size() + " file ids.");
@@ -414,7 +414,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             // of - could not find the files for the ids specified; or, these 
             // datafiles are not present in the version specified, etc.
             if (fileMetadatas.size() < 1) {
-                return "/404.xhtml";
+                return permissionsWrapper.notFound();
             }
         }
         
@@ -815,6 +815,8 @@ public class EditDatafilesPage implements java.io.Serializable {
         if (workingVersion.getId() == null  || datasetUpdateRequired) {
             logger.info("issuing the dataset update command");
             // We are creating a new draft version; 
+            // (OR, a full update of the dataset has been explicitly requested, 
+            // because of the nature of the updates the user has made).
             // We'll use an Update command for this: 
             
             //newDraftVersion = true;
@@ -828,6 +830,27 @@ public class EditDatafilesPage implements java.io.Serializable {
                             }
                         }
                     }
+                }
+                
+                // Tabular data tags are assigned to datafiles, not to  
+                // version-specfic filemetadatas!
+                // So if tabular tags have been modified, we also need to 
+                // refresh the list of datafiles, as found in dataset.getFiles(),
+                // similarly to what we've just done, above, for the filemetadatas.
+                // Otherwise, when we call UpdateDatasetCommand, it's not going 
+                // to update the tags in the database (issue #2798). 
+                
+                if (tabularDataTagsUpdated) {
+                    for (int i = 0; i < dataset.getFiles().size(); i++) {
+                        for (FileMetadata fileMetadata : fileMetadatas) {
+                            if (fileMetadata.getDataFile().getStorageIdentifier() != null) {
+                                if (fileMetadata.getDataFile().getStorageIdentifier().equals(dataset.getFiles().get(i).getStorageIdentifier())) {
+                                    dataset.getFiles().set(i, fileMetadata.getDataFile());
+                                }
+                            }
+                        }
+                    }
+                    tabularDataTagsUpdated = false;
                 }
             }
             
@@ -860,7 +883,8 @@ public class EditDatafilesPage implements java.io.Serializable {
             datasetUpdateRequired = false;
             saveEnabled = false; 
         } else {
-            // This is an existing Draft version. We'll try to update 
+            // This is an existing Draft version (and nobody has explicitly 
+            // requested that the entire dataset is updated). So we'll try to update 
             // only the filemetadatas and/or files affected, and not the 
             // entire version. 
             // TODO: in 4.3, create SaveDataFileCommand!
@@ -1020,7 +1044,12 @@ public class EditDatafilesPage implements java.io.Serializable {
         // more than a certain number of files... Still, needs to be revisited
         // before the final 4.0. 
         // -- L.A. 4.0
-        Iterator<FileMetadata> fmIt = workingVersion.getFileMetadatas().iterator();
+
+        // make a "defensive copy" to avoid java.util.ConcurrentModificationException from being thrown
+        // when uploading 100+ files
+        List<FileMetadata> wvCopy = new ArrayList<>(workingVersion.getFileMetadatas());
+        Iterator<FileMetadata> fmIt = wvCopy.iterator();
+
         while (fmIt.hasNext()) {
             FileMetadata fm = fmIt.next();
             String md5 = fm.getDataFile().getmd5();
@@ -1089,7 +1118,7 @@ public class EditDatafilesPage implements java.io.Serializable {
      * Using information from the DropBox choose, ingest the chosen files
      *  https://www.dropbox.com/developers/dropins/chooser/js
      * 
-     * @param e 
+     * @param event
      */
     public void handleDropBoxUpload(ActionEvent event) {
         
@@ -1443,6 +1472,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         // And reset the selected fileMetadata:
         fileMetadataSelectedForThumbnailPopup = null;
     }
+    
 
     /* 
      * Items for the "Tags (Categories)" popup.
@@ -1478,32 +1508,107 @@ public class EditDatafilesPage implements java.io.Serializable {
     public void setTabFileTags(List<String> tabFileTags) {
         this.tabFileTags = tabFileTags;
     }
+    
+    private String[] selectedTabFileTags = {};
+
+    public String[] getSelectedTabFileTags() {
+        return selectedTabFileTags;
+    }
+
+    public void setSelectedTabFileTags(String[] selectedTabFileTags) {
+        this.selectedTabFileTags = selectedTabFileTags;
+    }
 
     private String[] selectedTags = {};
+    
+    public void refreshTagsPopUp(FileMetadata fm){
+        setFileMetadataSelectedForTagsPopup(fm);
+        refreshCategoriesByName();
+        refreshTabFileTagsByName();
+    }
+    
+    private List<String> tabFileTagsByName;
 
-    public String[] getSelectedTags() {
+    public List<String> getTabFileTagsByName() {
+        return tabFileTagsByName;
+    }
 
+    public void setTabFileTagsByName(List<String> tabFileTagsByName) {
+        this.tabFileTagsByName = tabFileTagsByName;
+    }
+    
+    private void refreshTabFileTagsByName() {
+        tabFileTagsByName = new ArrayList<>();
+        if (fileMetadataSelectedForTagsPopup.getDataFile().getTags() != null) {
+            for (int i = 0; i < fileMetadataSelectedForTagsPopup.getDataFile().getTags().size(); i++) {
+                tabFileTagsByName.add(fileMetadataSelectedForTagsPopup.getDataFile().getTags().get(i).getTypeLabel());
+            }
+        }
+        refreshSelectedTabFileTags();
+    }
+
+    private void refreshSelectedTabFileTags() {
+        selectedTabFileTags = null;
+        selectedTabFileTags = new String[0];
+        if (tabFileTagsByName.size() > 0) {
+            selectedTabFileTags = new String[tabFileTagsByName.size()];
+            for (int i = 0; i < tabFileTagsByName.size(); i++) {
+                selectedTabFileTags[i] = tabFileTagsByName.get(i);
+            }
+        }
+        Arrays.sort(selectedTabFileTags);
+    }
+    
+    private void refreshCategoriesByName(){
+        categoriesByName= new ArrayList<>();
+        for (String category: dataset.getCategoriesByName() ){
+            categoriesByName.add(category);
+        }
+        refreshSelectedTags();
+    }
+    
+    
+    private List<String> categoriesByName;
+
+    public List<String> getCategoriesByName() {
+        return categoriesByName;
+    }
+
+    public void setCategoriesByName(List<String> categoriesByName) {
+        this.categoriesByName = categoriesByName;
+    }
+    
+    private void refreshSelectedTags() {
         selectedTags = null;
         selectedTags = new String[0];
+        List selectedCategoriesByName = new ArrayList<>();
 
-        if (fileMetadataSelectedForTagsPopup != null) {
-            if (fileMetadataSelectedForTagsPopup.getDataFile() != null
-                    && fileMetadataSelectedForTagsPopup.getDataFile().getTags() != null
-                    && fileMetadataSelectedForTagsPopup.getDataFile().getTags().size() > 0) {
-
-                selectedTags = new String[fileMetadataSelectedForTagsPopup.getDataFile().getTags().size()];
-
-                for (int i = 0; i < fileMetadataSelectedForTagsPopup.getDataFile().getTags().size(); i++) {
-                    selectedTags[i] = fileMetadataSelectedForTagsPopup.getDataFile().getTags().get(i).getTypeLabel();
+        if (fileMetadataSelectedForTagsPopup.getCategories() != null) {
+            for (int i = 0; i < fileMetadataSelectedForTagsPopup.getCategories().size(); i++) {
+                if (!selectedCategoriesByName.contains(fileMetadataSelectedForTagsPopup.getCategories().get(i).getName())) {
+                    selectedCategoriesByName.add(fileMetadataSelectedForTagsPopup.getCategories().get(i).getName());
                 }
             }
         }
+
+        if (selectedCategoriesByName.size() > 0) {
+            selectedTags = new String[selectedCategoriesByName.size()];
+            for (int i = 0; i < selectedCategoriesByName.size(); i++) {
+                selectedTags[i] = (String) selectedCategoriesByName.get(i);
+            }
+        }
+        Arrays.sort(selectedTags);
+    }
+
+    public String[] getSelectedTags() {
         return selectedTags;
     }
 
     public void setSelectedTags(String[] selectedTags) {
         this.selectedTags = selectedTags;
     }
+    
+
 
     /*
      * "File Tags" (aka "File Categories"): 
@@ -1518,18 +1623,45 @@ public class EditDatafilesPage implements java.io.Serializable {
     public void setNewCategoryName(String newCategoryName) {
         this.newCategoryName = newCategoryName;
     }
+       
+    public String saveNewCategory() {
+       
+        if (newCategoryName != null && !newCategoryName.isEmpty()) {
+            categoriesByName.add(newCategoryName);
+        }
+        //Now increase size of selectedTags and add new category
+        String[] temp = new String[selectedTags.length + 1];
+        System.arraycopy(selectedTags, 0, temp, 0, selectedTags.length);
+        selectedTags = temp;
+        selectedTags[selectedTags.length - 1] = newCategoryName;
+        //Blank out added category
+        newCategoryName = "";
+        return "";
+    }
 
     /* This method handles saving both "tabular file tags" and 
      * "file categories" (which are also considered "tags" in 4.0)
     */
     public void saveFileTagsAndCategories() {
         // 1. File categories:
-        // we don't need to do anything for the file categories that the user
-        // selected from the pull down list; that was done directly from the 
-        // page with the FileMetadata.setCategoriesByName() method. 
-        // So here we only need to take care of the new, custom category
-        // name, if entered: 
+        /*
+        In order to get the cancel button to work we had to separate the selected tags 
+        from the file metadata and re-add them on save
         
+        */
+        
+        fileMetadataSelectedForTagsPopup.setCategories(new ArrayList());
+        if (newCategoryName != null) {
+            fileMetadataSelectedForTagsPopup.addCategoryByName(newCategoryName);
+        }
+        // 2. Tabular DataFile Tags: 
+        if (selectedTags != null) {
+            for (int i = 0; i < selectedTags.length; i++) {
+                fileMetadataSelectedForTagsPopup.addCategoryByName(selectedTags[i]);
+            }
+        }
+
+
         logger.fine("New category name: " + newCategoryName);
 
         if (fileMetadataSelectedForTagsPopup != null && newCategoryName != null) {
@@ -1542,15 +1674,14 @@ public class EditDatafilesPage implements java.io.Serializable {
         
         // 2. Tabular DataFile Tags: 
 
-        if (selectedTags != null) {
-        
+        if (tabularDataTagsUpdated && selectedTabFileTags != null) {
             if (fileMetadataSelectedForTagsPopup != null && fileMetadataSelectedForTagsPopup.getDataFile() != null) {
                 fileMetadataSelectedForTagsPopup.getDataFile().setTags(null);
-                for (int i = 0; i < selectedTags.length; i++) {
+                for (int i = 0; i < selectedTabFileTags.length; i++) {
                     
                     DataFileTag tag = new DataFileTag();
                     try {
-                        tag.setTypeByLabel(selectedTags[i]);
+                        tag.setTypeByLabel(selectedTabFileTags[i]);
                         tag.setDataFile(fileMetadataSelectedForTagsPopup.getDataFile());
                         fileMetadataSelectedForTagsPopup.getDataFile().addTag(tag);
                         
@@ -1573,6 +1704,13 @@ public class EditDatafilesPage implements java.io.Serializable {
         
         fileMetadataSelectedForTagsPopup = null;
 
+    }
+    
+    public void handleSelection(final AjaxBehaviorEvent event) {
+        tabularDataTagsUpdated = true;
+        if (selectedTags != null) {
+            selectedTags = selectedTags.clone();
+        }
     }
     
     

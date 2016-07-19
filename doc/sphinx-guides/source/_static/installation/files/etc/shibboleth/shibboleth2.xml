@@ -12,7 +12,7 @@ https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPConfiguration
     clockSkew="1800">
 
     <!-- FIXME: change the entityID to your hostname. -->
-    <ApplicationDefaults entityID="https://shibtest.dataverse.org/sp"
+    <ApplicationDefaults entityID="https://dataverse.example.edu/sp"
         REMOTE_USER="eppn" attributePrefix="AJP_">
 
         <!-- You should use secure cookies if at all possible.  See cookieProps in this Wiki article. -->
@@ -30,7 +30,7 @@ https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPConfiguration
             <!--
                 Handlers allow you to interact with the SP and gather more information.  Try them out!
                 Attribute values received by the SP through SAML will be visible at:
-                http://shibtest.dataverse.org/Shibboleth.sso/Session
+                http://dataverse.example.edu/Shibboleth.sso/Session
             -->
 
             <!-- Extension service that generates "approximate" metadata based on SP configuration. -->

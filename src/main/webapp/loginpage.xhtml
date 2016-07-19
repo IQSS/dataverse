@@ -34,59 +34,89 @@
                     </div>
                 </ui:fragment>
                 <div id="login-container" class="row">
-                    <div id="builtinColumn" class="col-md-6" jsf:rendered="#{LoginPage.authenticationProvidersAvailable}">
-                        <h:form id="loginForm" styleClass="form-horizontal">
-                            <p:focus context="loginForm"/>
-                            <ui:remove>
-                                <ui:fragment rendered="#{LoginPage.multipleProvidersAvailable}">
-                                    <div class="form-group text-left">
-                                        <label class="col-sm-4 control-label" for="loginSystemSelect">
-                                            #{bundle['login.System']}
-                                        </label>
-                                        <div class="col-sm-8">
-                                            <h:selectOneMenu id="loginSystemSelect" styleClass="form-control" value="#{LoginPage.credentialsAuthProviderId}">
-                                                <f:selectItems value="#{LoginPage.listCredentialsAuthenticationProviders()}" var="ap"
-                                                               itemLabel="#{ap.title}" itemValue="#{ap.id}" />
-                                                <f:ajax render="@all" listener="#{LoginPage.resetFilledCredentials}"/>
-                                            </h:selectOneMenu>
+
+                    <div class="panel panel-default highlight #{systemConfig.shibEnabled ? 'col-md-12' : 'col-md-6'}">
+                        <div class="panel-body row">
+
+                            <div id="builtinColumn" class="#{systemConfig.shibEnabled ? 'col-md-5' : 'col-md-12'}" jsf:rendered="#{LoginPage.authenticationProvidersAvailable}">
+                                <h2 class="no-margin-top" jsf:rendered="#{systemConfig.shibEnabled == true}">#{bundle['login.builtin']}</h2>
+                                <h:form id="loginForm" styleClass="form-horizontal">
+                                    <p:focus context="loginForm"/>
+                                    <ui:remove>
+                                        <ui:fragment rendered="#{LoginPage.multipleProvidersAvailable}">
+                                            <div class="form-group text-left">
+                                                <label class="col-sm-4 control-label" for="loginSystemSelect">
+                                                    #{bundle['login.System']}
+                                                </label>
+                                                <div class="col-sm-8">
+                                                    <h:selectOneMenu id="loginSystemSelect" styleClass="form-control" value="#{LoginPage.credentialsAuthProviderId}">
+                                                        <f:selectItems value="#{LoginPage.listCredentialsAuthenticationProviders()}" var="ap"
+                                                                       itemLabel="#{ap.title}" itemValue="#{ap.id}" />
+                                                        <f:ajax render="@all" listener="#{LoginPage.resetFilledCredentials}"/>
+                                                    </h:selectOneMenu>
+                                                </div>
+                                            </div>
+                                        </ui:fragment>
+                                    </ui:remove>
+                                    <ui:repeat id="credentialsContainer2" value="#{LoginPage.filledCredentials}" var="fc">
+                                        <div class="form-group text-left">
+                                            <label class="col-sm-4 control-label" for="credValue">
+                                                #{fc.credential.title}
+                                            </label>
+                                            <div class="col-sm-8">
+                                                <h:inputText rendered="#{not fc.credential.secret}" value="#{fc.value}" id="credValue" styleClass="form-control"/>
+                                                <p:message rendered="#{not fc.credential.secret}" for="credValue" display="text"/>
+                                                <h:inputSecret rendered="#{fc.credential.secret}" value="#{fc.value}" id="sCredValue" styleClass="form-control"/>
+                                                <p:message rendered="#{not fc.credential.secret}" for="sCredValue" display="text"/>
+                                            </div>
+                                        </div>
+                                    </ui:repeat>
+                                    <div class="form-group">
+                                        <div class="col-sm-offset-4 col-sm-9 button-block">
+                                            <p:commandButton id="login" value="#{bundle.login}" update="@all" action="#{LoginPage.login}"/>
+                                            <p:button value="#{bundle.cancel}" outcome="/dataverse.xhtml?alias=#{dataverseServiceBean.findRootDataverse().alias}"/>
                                         </div>
                                     </div>
-                                </ui:fragment>
-                            </ui:remove>
-                            <ui:repeat id="credentialsContainer2" value="#{LoginPage.filledCredentials}" var="fc">
-                                <div class="form-group text-left">
-                                    <label class="col-sm-4 control-label" for="credValue">
-                                        #{fc.credential.title}
-                                    </label>
-                                    <div class="col-sm-8">
-                                        <h:inputText rendered="#{not fc.credential.secret}" value="#{fc.value}" id="credValue" styleClass="form-control"/>
-                                        <p:message rendered="#{not fc.credential.secret}" for="credValue" display="text"/>
-                                        <h:inputSecret rendered="#{fc.credential.secret}" value="#{fc.value}" id="sCredValue" styleClass="form-control"/>
-                                        <p:message rendered="#{not fc.credential.secret}" for="sCredValue" display="text"/>
+                                    <div class="form-group">
+                                        <div class="col-sm-offset-4 col-sm-9">
+                                            <a href="passwordreset.xhtml">
+                                                #{bundle['login.forgot.text']}
+                                            </a>
+                                        </div>
                                     </div>
-                                </div>
-                            </ui:repeat>
-                            <div class="form-group">
-                                <div class="col-sm-offset-4 col-sm-9 button-block">
-                                    <p:commandButton id="login" value="#{bundle.login}" update="@all" action="#{LoginPage.login}"/>
-                                    <p:button value="#{bundle.cancel}" outcome="/dataverse.xhtml?alias=#{dataverseServiceBean.findRootDataverse().alias}"/>
-                                </div>
+                                </h:form>
                             </div>
-                            <div class="form-group">
-                                <div class="col-sm-offset-4 col-sm-9">
-                                    <a href="passwordreset.xhtml">
-                                        #{bundle['login.forgot.text']}
-                                    </a>
-                                </div>
-                            </div>
-                        </h:form>
-                    </div>
-                    <div class="col-md-6" jsf:rendered="#{systemConfig.shibEnabled == true}">
-                        <div class="panel panel-default highlight">
-                            <div class="panel-body">
-                                <h2 style="margin-top:0;">#{bundle['login.institution']}</h2>
 
-                                <div id="idpSelect"></div>
+                            <div class="col-md-1" jsf:rendered="#{systemConfig.shibEnabled == true}">&#160;</div>
+
+                            <div class="col-md-6" jsf:rendered="#{systemConfig.shibEnabled == true}">
+                                <h2 class="no-margin-top">#{bundle['login.institution']}</h2>
+                                
+                                <div id="idpSelect" class="margin-bottom"></div>
+                                
+                                <h:form>
+                                    <p class="help-block">
+                                        <span class="glyphicon glyphicon-info-sign"/>
+                                        <h:outputFormat value=" #{bundle['login.institution.blurb']} " escape="false">
+                                            <f:param value="#{settingsWrapper.guidesBaseUrl}"/>
+                                            <f:param value="#{systemConfig.version}"/>
+                                        </h:outputFormat>
+                                        <h:outputText value="#{bundle['login.institution.support.beforeLink']} " />
+                                        <p:commandLink value="#{bundle['contact.support']}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
+                                            <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
+                                            <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
+                                            <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
+                                            <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
+                                        </p:commandLink>
+                                        <h:outputText value=" #{bundle['login.institution.support.afterLink']}" escape="false"/>
+                                    </p>
+                                </h:form>
+                                
+                                <script type="text/javascript">
+                                    // TODO: get this working for https://github.com/IQSS/dataverse/issues/1551
+                                    //shibRedirectPage = '?redirectPage=' + '#{LoginPage.redirectPage}';
+                                    shibRedirectPage = ''
+                                </script>
 
                                 <script src="/resources/js/shib/idpselect_config.js" type="text/javascript" language="javascript"></script>
 
@@ -114,9 +144,11 @@
                                     <!--<a href="http://federation.org/DS/DS?entityID=https%3A%2F%2FyourentityId.edu.edu%2Fshibboleth&return=https%3A%2F%2Fyourreturn.edu%2FShibboleth.sso%2FDS%3FSAMLDS%3D1%26target%3Dhttps%3A%2F%2Fyourreturn.edu%2F">this link</a>.-->
                                 </noscript>
                             </div>
+
                         </div>
                     </div>
                 </div>
+
             </ui:define>
         </ui:composition>
     </h:body>
