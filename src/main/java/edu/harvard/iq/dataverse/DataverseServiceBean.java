@@ -413,7 +413,11 @@ public class DataverseServiceBean implements java.io.Serializable {
     
     public List<Dataverse> filterByAliasQuery(String filterQuery) {
         //Query query = em.createNativeQuery("select o from Dataverse o where o.alias LIKE '" + filterQuery + "%' order by o.alias");
-        Query query = em.createNamedQuery("Dataverse.filterByAlias", Dataverse.class).setParameter("alias", filterQuery.toLowerCase() + "%");
+        //Query query = em.createNamedQuery("Dataverse.filterByAlias", Dataverse.class).setParameter("alias", filterQuery.toLowerCase() + "%");
+        Query query = em.createNamedQuery("Dataverse.filterByAliasNameAffiliation", Dataverse.class)
+                .setParameter("alias", filterQuery.toLowerCase() + "%")
+                .setParameter("name", "%" + filterQuery.toLowerCase() + "%")
+                .setParameter("affiliation", "%" + filterQuery.toLowerCase() + "%");
         //logger.info("created native query: select o from Dataverse o where o.alias LIKE '" + filterQuery + "%' order by o.alias");
         logger.info("created named query");
         List<Dataverse> ret = query.getResultList();
