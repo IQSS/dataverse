@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseContact;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
+import edu.harvard.iq.dataverse.TermsOfUseAndAccess.License;
 import edu.harvard.iq.dataverse.api.Util;
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
@@ -212,7 +213,7 @@ public class JsonParser {
             terms.setContactForAccess(obj.getString("contactForAccess", null));
             terms.setSizeOfCollection(obj.getString("sizeOfCollection", null));
             terms.setStudyCompletion(obj.getString("studyCompletion", null));
-            /* License???*/
+            terms.setLicense(parseLicense(obj.getString("license", null)));
             dsv.setTermsOfUseAndAccess(terms);
             
             dsv.setDatasetFields(parseMetadataBlocks(obj.getJsonObject("metadataBlocks")));
@@ -224,6 +225,13 @@ public class JsonParser {
         } catch (NumberFormatException ex) {
             throw new JsonParseException("Error parsing number:" + ex.getMessage(), ex);
         }
+    }
+    
+    private License parseLicense(String inString) {
+        if (inString != null && inString.equalsIgnoreCase("CC0")) {
+            return TermsOfUseAndAccess.License.CC0;
+        }
+        return TermsOfUseAndAccess.License.NONE;       
     }
 
     public List<DatasetField> parseMetadataBlocks(JsonObject json) throws JsonParseException {
