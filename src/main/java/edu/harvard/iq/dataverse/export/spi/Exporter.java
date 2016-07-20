@@ -23,4 +23,9 @@ public interface Exporter {
     
     public Boolean isXMLFormat();
     
+    /* These should throw an ExportException if called on an Exporter that is not isXMLFormat(): */
+    public String getXMLNameSpace() throws ExportException;
+    public String getXMLSchemaLocation() throws ExportException; 
+    public String getXMLSchemaVersion() throws ExportException; 
+    
 }

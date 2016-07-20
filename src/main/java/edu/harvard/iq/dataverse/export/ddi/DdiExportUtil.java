@@ -48,11 +48,7 @@ public class DdiExportUtil {
         logger.fine(JsonUtil.prettyPrint(datasetDtoAsJson.toString()));
         Gson gson = new Gson();
         DatasetDTO datasetDto = gson.fromJson(datasetDtoAsJson.toString(), DatasetDTO.class);
-        //try {
         dtoddi(datasetDto, outputStream);
-        //} catch (XMLStreamException ex) {
-        //    Logger.getLogger(DdiExportUtil.class.getName()).log(Level.SEVERE, null, ex);
-        //}
     }
     
     private static String dto2ddi(DatasetDTO datasetDto) throws XMLStreamException {

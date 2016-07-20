@@ -191,6 +191,8 @@ public class HarvesterServiceBean {
         List<Long> harvestedDatasetIdsThisBatch = new ArrayList<Long>();
 
         List<String> failedIdentifiers = new ArrayList<String>();
+        List<String> deletedIdentifiers = new ArrayList<String>();
+        
         Date harvestStartTime = new Date();
         
         try {
@@ -206,14 +208,14 @@ public class HarvesterServiceBean {
 
                
                 if (harvestingClientConfig.isOai()) {
-                    harvestedDatasetIds = harvestOAI(dataverseRequest, harvestingClientConfig, hdLogger, harvestErrorOccurred, failedIdentifiers, harvestedDatasetIdsThisBatch);
+                    harvestedDatasetIds = harvestOAI(dataverseRequest, harvestingClientConfig, hdLogger, harvestErrorOccurred, failedIdentifiers, deletedIdentifiers, harvestedDatasetIdsThisBatch);
 
                 } else {
                     throw new IOException("Unsupported harvest type");
                 }
-                harvestingClientService.setHarvestSuccess(harvestingClientId, new Date(), harvestedDatasetIds.size(), failedIdentifiers.size());
+                harvestingClientService.setHarvestSuccess(harvestingClientId, new Date(), harvestedDatasetIds.size(), failedIdentifiers.size(), deletedIdentifiers.size());
                 hdLogger.log(Level.INFO, "COMPLETED HARVEST, server=" + harvestingClientConfig.getArchiveUrl() + ", metadataPrefix=" + harvestingClientConfig.getMetadataPrefix());
-                hdLogger.log(Level.INFO, "Datasets created/updated: " + harvestedDatasetIds.size() + ", datasets deleted: [TODO:], datasets failed: " + failedIdentifiers.size());
+                hdLogger.log(Level.INFO, "Datasets created/updated: " + harvestedDatasetIds.size() + ", datasets deleted: " + deletedIdentifiers.size() + ", datasets failed: " + failedIdentifiers.size());
 
                 // now index all the datasets we have harvested - created, modified or deleted:
                 /* (TODO: may not be needed at all. In Dataverse4, we may be able to get away with the normal 
@@ -260,7 +262,7 @@ public class HarvesterServiceBean {
      * @param harvestErrorOccurred  have we encountered any errors during harvest?
      * @param failedIdentifiers     Study Identifiers for failed "GetRecord" requests
      */
-    private List<Long> harvestOAI(DataverseRequest dataverseRequest, HarvestingClient harvestingClient, Logger hdLogger, MutableBoolean harvestErrorOccurred, List<String> failedIdentifiers, List<Long> harvestedDatasetIdsThisBatch)
+    private List<Long> harvestOAI(DataverseRequest dataverseRequest, HarvestingClient harvestingClient, Logger hdLogger, MutableBoolean harvestErrorOccurred, List<String> failedIdentifiers, List<String> deletedIdentifiers, List<Long> harvestedDatasetIdsThisBatch)
             throws IOException, ParserConfigurationException, SAXException, TransformerException {
 
         logBeginOaiHarvest(hdLogger, harvestingClient);
@@ -291,7 +293,7 @@ public class HarvesterServiceBean {
                 MutableBoolean getRecordErrorOccurred = new MutableBoolean(false);
 
                 // Retrieve and process this record with a separate GetRecord call:
-                Long datasetId = processRecord(dataverseRequest, hdLogger, oaiHandler, identifier, getRecordErrorOccurred, processedSizeThisBatch);
+                Long datasetId = processRecord(dataverseRequest, hdLogger, oaiHandler, identifier, getRecordErrorOccurred, processedSizeThisBatch, deletedIdentifiers);
                 
                 hdLogger.info("Total content processed in this batch so far: "+processedSizeThisBatch);
                 if (datasetId != null) {
@@ -336,7 +338,7 @@ public class HarvesterServiceBean {
     
     
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-    public Long processRecord(DataverseRequest dataverseRequest, Logger hdLogger, OaiHandler oaiHandler, String identifier, MutableBoolean recordErrorOccurred, MutableLong processedSizeThisBatch) {
+    public Long processRecord(DataverseRequest dataverseRequest, Logger hdLogger, OaiHandler oaiHandler, String identifier, MutableBoolean recordErrorOccurred, MutableLong processedSizeThisBatch, List<String> deletedIdentifiers) {
         String errMessage = null;
         Dataset harvestedDataset = null;
         logGetRecord(hdLogger, oaiHandler, identifier);
@@ -349,10 +351,14 @@ public class HarvesterServiceBean {
                 hdLogger.log(Level.SEVERE, "Error calling GetRecord - " + errMessage);
             } else if (record.isDeleted()) {
                 hdLogger.info("Deleting harvesting dataset for "+identifier+", per the OAI server's instructions.");
-                Dataset dataset = null; //TODO: !!! datasetService.getDatasetByHarvestInfo(dataverse, identifier);
+                
+                Dataset dataset = datasetService.getDatasetByHarvestInfo(oaiHandler.getHarvestingClient().getDataverse(), identifier);
                 if (dataset != null) {
                     hdLogger.info("Deleting dataset " + dataset.getGlobalId());
                     deleteHarvestedDataset(dataset, dataverseRequest, hdLogger);
+                    // TODO: 
+                    // check the status of that Delete - see if it actually succeeded
+                    deletedIdentifiers.add(identifier);
                 } else {
                     hdLogger.info("No dataset found for "+identifier+", skipping delete. ");
                 }
@@ -393,6 +399,7 @@ public class HarvesterServiceBean {
 
         return harvestedDataset != null ? harvestedDataset.getId() : null;
     }
+    
     private void deleteHarvestedDataset(Dataset dataset, DataverseRequest request, Logger hdLogger) {
         try {
             engineService.submit(new DeleteDatasetCommand(request, dataset));

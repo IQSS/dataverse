@@ -17,6 +17,13 @@ import javax.xml.stream.XMLStreamException;
 @AutoService(Exporter.class)
 public class DublinCoreExporter implements Exporter {
     
+    // TODO: 
+    // Add real namespace/schemalocation here:
+    // (consult OAI/OCLC documentation) -- L.A. 4.5
+    
+    private static String DEFAULT_XML_NAMESPACE = ""; 
+    private static String DEFAULT_XML_SCHEMALOCATION = "";
+    private static String DEFAULT_XML_VERSION = "";
     
     @Override
     public String getProvider() {
@@ -42,4 +49,18 @@ public class DublinCoreExporter implements Exporter {
         return true;
     }
     
+    @Override
+    public String getXMLNameSpace() throws ExportException {
+        return DublinCoreExporter.DEFAULT_XML_NAMESPACE;   
+    }
+    
+    @Override
+    public String getXMLSchemaLocation() throws ExportException {
+        return DublinCoreExporter.DEFAULT_XML_SCHEMALOCATION;
+    }
+    
+    @Override
+    public String getXMLSchemaVersion() throws ExportException {
+        return DublinCoreExporter.DEFAULT_XML_VERSION;
+    }
 }

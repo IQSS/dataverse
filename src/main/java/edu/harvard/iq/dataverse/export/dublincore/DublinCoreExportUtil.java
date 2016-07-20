@@ -53,7 +53,7 @@ public class DublinCoreExportUtil {
         xmlw.writeAttribute("xmlns:dcterms", "http://purl.org/dc/terms/");
         xmlw.writeDefaultNamespace("http://dublincore.org/documents/dcmi-terms/"); 
         createStdyDscr(xmlw, datasetDto);
-        //createdataDscr(xmlw, datasetDto.getDatasetVersion().getFiles()); No Files, Right?
+        //createdataDscr(xmlw, datasetDto.getDatasetVersion().getFiles()); No Files, Right? - right! -- L.A. 
         xmlw.writeEndElement(); // metadata
         xmlw.flush();
     }

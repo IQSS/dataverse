@@ -15,6 +15,9 @@ import javax.xml.stream.XMLStreamException;
  */
 @AutoService(Exporter.class)
 public class DDIExporter implements Exporter {
+    private static String DEFAULT_XML_NAMESPACE = "ddi:codebook:2_5"; 
+    private static String DEFAULT_XML_SCHEMALOCATION = "http://www.ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd";
+    private static String DEFAULT_XML_VERSION = "2.5";
 
     @Override
     public String getProvider() {
@@ -40,4 +43,18 @@ public class DDIExporter implements Exporter {
         return true; 
     }
     
+    @Override
+    public String getXMLNameSpace() throws ExportException {
+        return DDIExporter.DEFAULT_XML_NAMESPACE;   
+    }
+    
+    @Override
+    public String getXMLSchemaLocation() throws ExportException {
+        return DDIExporter.DEFAULT_XML_SCHEMALOCATION;
+    }
+    
+    @Override
+    public String getXMLSchemaVersion() throws ExportException {
+        return DDIExporter.DEFAULT_XML_VERSION;
+    }
 }

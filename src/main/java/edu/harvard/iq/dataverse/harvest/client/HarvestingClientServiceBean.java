@@ -97,7 +97,7 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
     
     
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public void setHarvestSuccess(Long hcId, Date currentTime, int harvestedCount, int failedCount) {
+    public void setHarvestSuccess(Long hcId, Date currentTime, int harvestedCount, int failedCount, int deletedCount) {
         HarvestingClient harvestingClient = em.find(HarvestingClient.class, hcId);
         if (harvestingClient == null) {
             return;
@@ -114,8 +114,7 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
             currentRun.setFinishTime(currentTime);
             currentRun.setHarvestedDatasetCount(new Long(harvestedCount));
             currentRun.setFailedDatasetCount(new Long(failedCount));
-
-            /*TODO: still need to record the number of deleted datasets! */
+            currentRun.setDeletedDatasetCount(new Long(deletedCount));
         }
     }
 
