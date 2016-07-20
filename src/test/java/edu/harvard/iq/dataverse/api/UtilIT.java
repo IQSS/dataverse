@@ -407,20 +407,6 @@ public class UtilIT {
                 .delete(swordConfiguration.getBaseUrlPathCurrent() + "/edit-media/file/" + fileId);
     }
 
-    static Response publishDatasetViaNativeApi(Integer datasetId, String majorOrMinor, String apiToken) {
-        /**
-         * @todo This should be a POST rather than a GET:
-         * https://github.com/IQSS/dataverse/issues/2431
-         *
-         * @todo Prevent version less than v1.0 to be published (i.e. v0.1):
-         * https://github.com/IQSS/dataverse/issues/2461
-         */
-        return given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .urlEncodingEnabled(false)
-                .get("/api/datasets/" + datasetId + "/actions/:publish?type=" + majorOrMinor);
-    }
-
     static Response publishDatasetViaSword(String persistentId, String apiToken) {
         return given()
                 .auth().basic(apiToken, EMPTY_STRING)
@@ -447,13 +433,6 @@ public class UtilIT {
                 .auth().basic(apiToken, EMPTY_STRING)
                 .header("In-Progress", "false")
                 .post(swordConfiguration.getBaseUrlPathCurrent() + "/edit/dataverse/" + alias);
-    }
-
-    static Response nativeGet(Integer datasetId, String apiToken) {
-        Response response = given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/datasets/" + datasetId);
-        return response;
     }
 
     static Response nativeGetUsingPersistentId(String persistentId, String apiToken) {
