@@ -197,6 +197,8 @@ Known issues
 
 - Deleting a file from a published version (not a draft) creates a draft but doesn't delete the file: https://github.com/IQSS/dataverse/issues/2464
 
+- The Service Document does not honor groups within groups: https://github.com/IQSS/dataverse/issues/3056
+
 - Should see all the fields filled in for a dataset regardless of what the parent dataverse specifies: https://github.com/IQSS/dataverse/issues/756
 
 - SWORD 2.0 Profile 6.4 "Retrieving the content" has not been implemented: https://github.com/IQSS/dataverse/issues/183
