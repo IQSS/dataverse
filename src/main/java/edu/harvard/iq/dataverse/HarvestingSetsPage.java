@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.harvest.server.OAIRecord;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.OAISet;
 import edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean;
+import edu.harvard.iq.dataverse.harvest.server.OaiSetException;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -24,6 +25,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
+import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
@@ -66,6 +68,8 @@ public class HarvestingSetsPage implements java.io.Serializable {
     private List<OAISet> configuredHarvestingSets;
     private OAISet selectedSet;
     private boolean setSpecValidated = false;
+    private boolean setQueryValidated = false;
+    private int setQueryResult = -1;
     
     public enum PageMode {
 
@@ -78,6 +82,8 @@ public class HarvestingSetsPage implements java.io.Serializable {
     private static final int oaiServerStatusRadioDisabled = 0;
     private static final int oaiServerStatusRadioEnabled = 1;
     private UIInput newSetSpecInputField;
+    private UIInput newSetQueryInputField;
+
     private String newSetSpec = "";
     private String newSetDescription = "";
     private String newSetQuery = "";
@@ -164,6 +170,14 @@ public class HarvestingSetsPage implements java.io.Serializable {
         this.newSetSpecInputField = newSetSpecInputField;
     }
     
+    public UIInput getNewSetQueryInputField() {
+        return newSetQueryInputField;
+    }
+
+    public void setNewSetQueryInputField(UIInput newSetQueryInputField) {
+        this.newSetQueryInputField = newSetQueryInputField;
+    }
+    
     public void disableHarvestingServer() {
         systemConfig.disableOAIServer();
     }
@@ -184,6 +198,8 @@ public class HarvestingSetsPage implements java.io.Serializable {
         
         this.pageMode = PageMode.CREATE;
         this.setSpecValidated = false;
+        this.setQueryValidated = false;
+        this.setQueryResult = -1;
         
     }
     
@@ -269,6 +285,22 @@ public class HarvestingSetsPage implements java.io.Serializable {
         this.setSpecValidated = validated;
     }
     
+    public boolean isSetQueryValidated() {
+        return this.setQueryValidated;
+    }
+    
+    public void setSetQueryValidated(boolean validated) {
+        this.setQueryValidated = validated;
+    }
+    
+    public int getSetQueryResult() {
+        return this.setQueryResult;
+    }
+    
+    public void setSetQueryResult(int setQueryResult) {
+        this.setQueryResult = setQueryResult;
+    }
+    
     public PageMode getPageMode() {
         return this.pageMode;
     } 
@@ -306,16 +338,56 @@ public class HarvestingSetsPage implements java.io.Serializable {
         return false;
     }
     
-    public String getOAISetStats(OAISet oaiSet) {
+    public int getSetInfoNumOfDatasets(OAISet oaiSet) {
+        String query = oaiSet.getDefinition();
+        
+        try {
+            int num = oaiSetService.validateDefinitionQuery(query);
+            if (num > -1) {
+                return num;
+            }
+        } catch (OaiSetException ose) {
+            // do notghin - will return zero.
+        }
+        return 0;
+    }
+    
+    public int getSetInfoNumOfExported(OAISet oaiSet) {
         List<OAIRecord> records = oaiRecordService.findOaiRecordsBySetName(oaiSet.getSpec());
         
         if (records == null || records.isEmpty()) {
-            return "No records (empty set)";
+            return 0; //"No records (empty set)";
         }
         
-        return records.size() + " records exported";
+        return records.size(); // + " records exported";
         
     }
+    
+    public void validateSetQuery() {
+        int datasetsFound = 0;
+        try {
+            datasetsFound = oaiSetService.validateDefinitionQuery(getNewSetQuery());
+        } catch (OaiSetException ose) {
+            FacesContext.getCurrentInstance().addMessage(getNewSetQueryInputField().getClientId(),
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", "Search failed for the query provided. Message from the Dataverse search server: "+ose.getMessage()));
+            setSetQueryValidated(false);
+            return;
+        }
+        
+        setSetQueryValidated(true);
+        setSetQueryResult(datasetsFound);
+        
+    }
+    
+    public void backToQuery() {
+        setSetQueryValidated(false);
+    }
+    
+    /* 
+     
+        version of validateSetSpec() that's not component-driven (must be called explicitly 
+        with action="#{harvestingSetsPage.validateSetSpec}")
+    
     
     public void validateSetSpec() {
 
@@ -345,9 +417,57 @@ public class HarvestingSetsPage implements java.io.Serializable {
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "", JH.localize("harvestserver.newSetDialog.setspec.required")));
         setSetSpecValidated(false);
         return;
+    }*/
+    
+    public void validateSetSpec(FacesContext context, UIComponent toValidate, Object rawValue) {
+        String value = (String) rawValue;
+        UIInput input = (UIInput) toValidate;
+        input.setValid(true); // Optimistic approach
+
+        if (context.getExternalContext().getRequestParameterMap().get("DO_VALIDATION") != null) {
+            
+            if (!StringUtils.isEmpty(value)) {
+                if (!Pattern.matches("^[a-zA-Z0-9\\_\\-]+$", value)) {
+                    input.setValid(false);
+                    context.addMessage(toValidate.getClientId(),
+                            new FacesMessage(FacesMessage.SEVERITY_ERROR, "", JH.localize("harvestserver.newSetDialog.setspec.invalid")));
+                    //FacesContext.getCurrentInstance().addMessage(getNewSetSpecInputField().getClientId(),
+                    //        new FacesMessage(FacesMessage.SEVERITY_ERROR, "", JH.localize("harvestserver.newSetDialog.setspec.invalid")));
+                    //setSetSpecValidated(false);
+                    return;
+
+                    // If it passes the regex test, check 
+                } else if (oaiSetService.findBySpec(value) != null) {
+                    input.setValid(false);
+                    context.addMessage(toValidate.getClientId(),
+                            new FacesMessage(FacesMessage.SEVERITY_ERROR, "", JH.localize("harvestserver.newSetDialog.setspec.alreadyused")));
+                    //FacesContext.getCurrentInstance().addMessage(getNewSetSpecInputField().getClientId(),
+                    //        new FacesMessage(FacesMessage.SEVERITY_ERROR, "", JH.localize("harvestserver.newSetDialog.setspec.alreadyused")));
+                    //setSetSpecValidated(false);
+                    return;
+                }
+
+                // set spec looks legit!
+                return;
+            }
+            
+            // the field can't be left empty either: 
+            input.setValid(false);
+            context.addMessage(toValidate.getClientId(),
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", JH.localize("harvestserver.newSetDialog.setspec.required")));
+
+        }
+        
+        // no validation requested - so we're cool!
+    }
+    
+    // this will re-export the set in the background, asynchronously:
+    public void runSetExport(OAISet oaiSet) {
+        
+        oaiSetService.exportOaiSet(oaiSet);
     }
     
     public boolean isSuperUser() {
         return session.getUser().isSuperuser();
     }
-    }
+}

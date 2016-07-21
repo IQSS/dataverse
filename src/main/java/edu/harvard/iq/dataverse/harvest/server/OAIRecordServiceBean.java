@@ -5,7 +5,10 @@
  */
 package edu.harvard.iq.dataverse.harvest.server;
 
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.export.ExportException;
+import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import java.util.Collection;
 import java.util.Date;
@@ -36,6 +39,8 @@ public class OAIRecordServiceBean implements java.io.Serializable {
     IndexServiceBean indexService;
     @EJB 
     DatasetServiceBean datasetService;
+    @EJB
+    ExportService exportService;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     EntityManager em;   
@@ -60,42 +65,54 @@ public class OAIRecordServiceBean implements java.io.Serializable {
         studyIds = studyService.getViewableStudies(studyIds);        
         updateOaiRecords( null, studyIds, updateTime );
         
-    }    
+    }   */ 
 
-    private void updateOaiRecords(String setName, List<Long> studyIds, Date updateTime) {
+    public void updateOaiRecords(String setName, List<Long> datasetIds, Date updateTime, boolean doExport) {
 
         // create Map of OaiRecords
         List<OAIRecord> harvestStudies = findOaiRecordsBySetName( setName );
-        Map<String,OAIRecord> hsMap = new HashMap();
+        Map<String,OAIRecord> recordMap = new HashMap();
         for (OAIRecord hsEntry : harvestStudies) {
-            hsMap.put(hsEntry.getGlobalId(), hsEntry);
+            recordMap.put(hsEntry.getGlobalId(), hsEntry);
         }
 
 
-        for (Long studyId : studyIds) {
-            Study study = studyService.getStudy(studyId);
-            em.refresh(study); // workaround to get updated lastExportTime (to be investigated)
+        for (Long datasetId : datasetIds) {
+            Dataset dataset = datasetService.find(datasetId);
+            em.refresh(dataset); // workaround to get updated lastExportTime (probably not needed...)
+         
             
-            if ( study.getLastExportTime() != null ) {     
-                OAIRecord hs = hsMap.get( study.getGlobalId() );
-                if (hs == null) {
-                    hs = new OAIRecord( setName, study.getGlobalId(), updateTime );
-                    em.persist(hs);                    
+            
+            if (doExport) {
+                if (dataset.getPublicationDate() != null 
+                        && (dataset.getLastExportTime() == null 
+                            || dataset.getLastExportTime().before(dataset.getPublicationDate()))) {
+                    exportService.exportAllFormatsInNewTransaction(dataset);
+                }
+            }
+            
+            em.refresh(dataset); 
+            
+            if ( dataset.isReleased() && dataset.getLastExportTime() != null ) {     
+                OAIRecord record = recordMap.get( dataset.getGlobalId() );
+                if (record == null) {
+                    record = new OAIRecord( setName, dataset.getGlobalId(), updateTime );
+                    em.persist(record);                    
                 } else {
-                    if (hs.isRemoved()) {
-                        hs.setRemoved(false);
-                        hs.setLastUpdateTime( updateTime );
-                    } else if (study.getLastExportTime().after( hs.getLastUpdateTime() ) ) {
-                        hs.setLastUpdateTime( updateTime );
+                    if (record.isRemoved()) {
+                        record.setRemoved(false);
+                        record.setLastUpdateTime( updateTime );
+                    } else if (dataset.getLastExportTime().after( record.getLastUpdateTime() ) ) {
+                        record.setLastUpdateTime( updateTime );
                     }
 
-                    hsMap.remove(hs.getGlobalId());
+                    recordMap.remove(record.getGlobalId());
                 }
             }
         }
 
-        // anything left in the map should be marked as removed
-        markOaiRecordsAsRemoved( hsMap.values(), updateTime);
+        // anything left in the map should be marked as removed!
+        markOaiRecordsAsRemoved( recordMap.values(), updateTime);
         
     }
     
@@ -109,7 +126,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
         }
        
     }
-    */
+    
     
     public OAIRecord findOAIRecordBySetNameandGlobalId(String setName, String globalId) {
         OAIRecord oaiRecord = null;

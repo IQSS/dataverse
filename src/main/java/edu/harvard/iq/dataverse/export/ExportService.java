@@ -21,6 +21,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
+import javax.ejb.TransactionAttribute;
+import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
@@ -136,6 +138,15 @@ public class ExportService {
         dataset.setLastExportTime(new Timestamp(new Date().getTime()));
         
     }
+    
+    @TransactionAttribute(REQUIRES_NEW)
+    public void exportAllFormatsInNewTransaction(Dataset dataset) {
+        try {
+            exportAllFormats(dataset);
+        } catch (ExportException ee) {}
+    }
+           
+    
     
     
     // This method finds the exporter for the format requested, 

@@ -6,12 +6,29 @@
 package edu.harvard.iq.dataverse.harvest.server;
 
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
+import edu.harvard.iq.dataverse.search.SearchFields;
+import edu.harvard.iq.dataverse.search.SearchUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
+import javax.ejb.Asynchronous;
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import org.apache.commons.lang.StringUtils;
+import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.SolrServer;
+import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.impl.HttpSolrServer;
+import org.apache.solr.client.solrj.impl.HttpSolrServer.RemoteSolrException;
+import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.common.SolrDocument;
+import org.apache.solr.common.SolrDocumentList;
 
 /**
  *
@@ -25,6 +42,12 @@ import javax.persistence.PersistenceContext;
 public class OAISetServiceBean implements java.io.Serializable {
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
+    
+    @EJB
+    SystemConfig systemConfig;
+    
+    @EJB
+    OAIRecordServiceBean oaiRecordService;
     
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean");
     
@@ -74,6 +97,104 @@ public class OAISetServiceBean implements java.io.Serializable {
     public OAISet findById(Long id) {
        return em.find(OAISet.class,id);
     }   
+    
+    private SolrServer solrServer = null;
+    
+    private SolrServer getSolrServer () {
+        if (solrServer == null) {
+        }
+        solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
+        
+        return solrServer;
+        
+    }
+    
+    @Asynchronous
+    public void exportOaiSet(OAISet oaiSet) {
+        String query = oaiSet.getDefinition();
+        
+        List<Long> resultIds = null; 
+        try {
+            resultIds = expandSetQuery(query);
+        } catch (OaiSetException ose) {
+            resultIds = null;
+        }
+        
+        if (resultIds != null) {
+            oaiRecordService.updateOaiRecords(oaiSet.getSpec(), resultIds, new Date(), true);
+        }
+        
+    } 
+        
+    public int validateDefinitionQuery(String query) throws OaiSetException {
+        
+        List<Long> resultIds = expandSetQuery(query);
+        logger.info("Datasets found: "+StringUtils.join(resultIds, ","));
+        
+        if (resultIds != null) {
+            logger.info("returning "+resultIds.size());
+            return resultIds.size();
+        }
+        
+        return 0;
+    }
+    
+    public String addQueryRestrictions(String query) {
+        // "sanitizeQuery()" does something special that's needed to be able 
+        // to search on global ids; which we will most likely need. 
+        query = SearchUtil.sanitizeQuery(query);
+        // append the search clauses that limit the search to a) datasets
+        // b) published and c) local: 
+        // SearchFields.TYPE
+        query = query.concat(" AND dvObjectType:datasets AND source:Local AND publicationStatus:Published");
+        
+        return query;
+    }
+    
+    public List<Long> expandSetQuery(String query) throws OaiSetException {
+        // We do not allow "keyword" queries (like "king") - we require
+        // that they search on specific fields, for ex., "authorName:king":
+        if (query == null || !(query.indexOf(':') > 0)) {
+            throw new OaiSetException("Invalid search query.");
+        }
+        SolrQuery solrQuery = new SolrQuery();
+        String restrictedQuery = addQueryRestrictions(query);
+        
+        solrQuery.setQuery(restrictedQuery);
+        
+        QueryResponse queryResponse = null;
+        try {
+            queryResponse = getSolrServer().query(solrQuery);
+        } catch (RemoteSolrException ex) {
+            String messageFromSolr = ex.getLocalizedMessage();
+            String error = "Search Syntax Error: ";
+            String stringToHide = "org.apache.solr.search.SyntaxError: ";
+            if (messageFromSolr.startsWith(stringToHide)) {
+                // hide "org.apache.solr..."
+                error += messageFromSolr.substring(stringToHide.length());
+            } else {
+                error += messageFromSolr;
+            }
+            logger.info(error);
+            throw new OaiSetException(error);
+        } catch (SolrServerException ex) {
+            logger.info("Internal Dataverse Search Engine Error");
+            throw new OaiSetException("Internal Dataverse Search Engine Error");
+        }
+        
+        SolrDocumentList docs = queryResponse.getResults();
+        Iterator<SolrDocument> iter = docs.iterator();
+        List<Long> resultIds = new ArrayList<>();
+        
+        while (iter.hasNext()) {
+            SolrDocument solrDocument = iter.next();
+            Long entityid = (Long) solrDocument.getFieldValue(SearchFields.ENTITY_ID);
+            resultIds.add(entityid);
+        }
+        
+        return resultIds;
+        
+    }
     
     public void save(OAISet oaiSet) {
         em.merge(oaiSet);
