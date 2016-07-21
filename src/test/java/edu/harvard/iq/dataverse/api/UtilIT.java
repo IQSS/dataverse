@@ -155,6 +155,12 @@ public class UtilIT {
         return createDataverse(alias, apiToken);
     }
 
+    static Response showDataverseContents(String alias, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .when().get("/api/dataverses/" + alias + "/contents");
+    }
+
     static Response createRandomDatasetViaNativeApi(String dataverseAlias, String apiToken) {
         String jsonIn = getDatasetJson();
         Response createDatasetResponse = given()
@@ -182,7 +188,7 @@ public class UtilIT {
     }
 
     static Response createDatasetViaSwordApi(String dataverseToCreateDatasetIn, String title, String apiToken) {
-        String xmlIn = getDatasetXml(title, getRandomIdentifier(), getRandomIdentifier());
+        String xmlIn = getDatasetXml(title, "Lastname, Firstname", getRandomIdentifier());
         return createDatasetViaSwordApiFromXML(dataverseToCreateDatasetIn, xmlIn, apiToken);
     }
 
@@ -427,6 +433,13 @@ public class UtilIT {
                 .auth().basic(apiToken, EMPTY_STRING)
                 .header("In-Progress", "false")
                 .post(swordConfiguration.getBaseUrlPathCurrent() + "/edit/dataverse/" + alias);
+    }
+
+    static Response nativeGetUsingPersistentId(String persistentId, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/:persistentId/?persistentId=" + persistentId);
+        return response;
     }
 
     static Response makeSuperUser(String username) {
