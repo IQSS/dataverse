@@ -373,10 +373,11 @@ public class HarvestingClientsPage implements java.io.Serializable {
             // edit form has been closed.        
         }
         
-        // nickname and harvesting url are not editable for existing clients:
+        // nickname is not editable for existing clients:
         //harvestingClient.setName(newNickname);
-        //harvestingClient.setHarvestingUrl(newHarvestingUrl);
-        // (same for the set and metadata format)
+        harvestingClient.setHarvestingUrl(newHarvestingUrl);
+        harvestingClient.setHarvestingSet(newOaiSet);
+        harvestingClient.setMetadataPrefix(newMetadataFormat);
         harvestingClient.setHarvestStyle(newHarvestingStyle);
         
         if (isNewHarvestingScheduled()) {

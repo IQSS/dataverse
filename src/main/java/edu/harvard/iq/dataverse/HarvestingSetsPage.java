@@ -190,6 +190,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
         return selectedSet; 
     }
     
+    // init method when the user clicks 'add new set':
     public void initNewSet(ActionEvent ae) {
         
         this.newSetSpec = "";
@@ -201,6 +202,18 @@ public class HarvestingSetsPage implements java.io.Serializable {
         this.setQueryValidated = false;
         this.setQueryResult = -1;
         
+    }
+    
+    // init method when the user clicks 'edit existing set':
+    public void editSet(OAISet oaiSet) {
+        this.newSetSpec = oaiSet.getSpec();
+        this.newSetDescription = oaiSet.getDescription();
+        this.newSetQuery = oaiSet.getDefinition();
+        
+        this.pageMode = PageMode.EDIT;
+        this.setSpecValidated = false;
+        this.setQueryValidated = false;
+        this.setQueryResult = -1;
     }
     
     public void createSet(ActionEvent ae) {
@@ -241,6 +254,9 @@ public class HarvestingSetsPage implements java.io.Serializable {
             // them to save the settings they have entered. 
         }
         
+        // Note that the nickname is not editable:
+        oaiSet.setDefinition(getNewSetQuery());
+        oaiSet.setDescription(getNewSetDescription());
         
         // will try to save it now:
         
