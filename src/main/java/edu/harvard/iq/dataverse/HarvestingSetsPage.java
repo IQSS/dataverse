@@ -214,6 +214,8 @@ public class HarvestingSetsPage implements java.io.Serializable {
         this.setSpecValidated = false;
         this.setQueryValidated = false;
         this.setQueryResult = -1;
+        
+        setSelectedSet(oaiSet);
     }
     
     public void createSet(ActionEvent ae) {

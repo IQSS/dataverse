@@ -192,13 +192,26 @@
                                                      rendered="#{!harvestingSetsPage.setQueryValidated}"
                                                      binding="#{harvestingSetsPage.newSetQueryInputField}"/>
                                         <p:message for="setquery"/>
-                                        <h:outputText value="#{harvestingSetsPage.newSetQuery}" rendered="#{harvestingSetsPage.setQueryValidated}"/>
+                                        <h:outputText value="#{harvestingSetsPage.newSetQuery}" class="highlightBold" rendered="#{harvestingSetsPage.setQueryValidated}"/>
                                         <p class="help-block" jsf:rendered="#{harvestingSetsPage.createMode}">#{bundle['harvestserver.newSetDialog.setquery.helptext']}</p>
                                         
-                                        <h:outputText value=" Search query returned #{harvestingSetsPage.setQueryResult} datasets!" rendered="#{harvestingSetsPage.setQueryValidated and harvestingSetsPage.setQueryResult gt 0}"/>
-                                        <h:outputText value=" WARNING: Search query returned no results!" rendered="#{harvestingSetsPage.setQueryValidated and harvestingSetsPage.setQueryResult lt 1}"/>
+                                        <div>
+                                            <h:outputText value=" Search query returned #{harvestingSetsPage.setQueryResult} datasets!" rendered="#{harvestingSetsPage.setQueryValidated and harvestingSetsPage.setQueryResult gt 0}"/>
+                                            <h:outputText value=" WARNING: Search query returned no results!" rendered="#{harvestingSetsPage.setQueryValidated and harvestingSetsPage.setQueryResult lt 1}"/>
+                                        </div>
                                     </div>
                                 </div>
+                                <!-- the set spec is not editable in "edit existing set" mode; so we just show it here as a label: -->
+                                <div class="form-group" jsf:rendered="#{harvestingSetsPage.editMode}">
+                                    <label for="setspec" class="col-sm-3 control-label">
+                                            #{bundle['harvestserver.newSetDialog.setspec']} 
+                                    </label>
+                                    <div class="col-sm-8">
+                                        <h:outputText value="#{harvestingSetsPage.newSetSpec}" class="highlightBold" />
+                                        <p class="help-block">This is the nickname that uniquely identifies the set. Once the set is created, it cannot be edited.</p>
+                                    </div>
+                                </div>
+                                
                                 <div class="form-group">
                                     <div class="col-sm-8 col-sm-offset-3 button-block">
                                         <p:commandLink type="button" rendered="#{!harvestingSetsPage.setQueryValidated}"
@@ -222,7 +235,8 @@
                                 <!-- the extra settings that appear once/if the entered search query  is validated: -->
                                 
                                 <fieldset id="addSetStepTwo" jsf:rendered="#{harvestingSetsPage.setQueryValidated}">
-                                    <div class="form-group">
+                                    <!-- the set spec is only editable in "create" mode; in the "edit existing set" mode the set spec name is shown as a label in the first step popup. -->
+                                    <div class="form-group" jsf:rendered="#{harvestingSetsPage.createMode}">
                                         <label for="setspec" class="col-sm-3 control-label">
                                             #{bundle['harvestserver.newSetDialog.setspec']} <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{harvestingSetsPage.setQueryValidated}" title="#{bundle.requiredField}"/>
                                         </label>
