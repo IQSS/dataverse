@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseContact;
+import edu.harvard.iq.dataverse.DataverseTheme;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess.License;
@@ -86,6 +87,12 @@ public class JsonParser {
             dv.setDataverseContacts(dvContactList);
         }
         
+        if (jobj.containsKey("theme")) {
+            DataverseTheme theme = parseDataverseTheme(jobj.getJsonObject("theme"));
+            dv.setDataverseTheme(theme);
+            theme.setDataverse(dv);
+        }
+        
         /*  We decided that subject is not user set, but gotten from the subject of the dataverse's
             datasets - leavig this code in for now, in case we need to go back to it at some point
         
@@ -113,6 +120,56 @@ public class JsonParser {
         */
                 
         return dv;
+    }
+    
+    public DataverseTheme parseDataverseTheme(JsonObject obj) {
+
+        DataverseTheme theme = new DataverseTheme();
+
+        if (obj.containsKey("backgroundColor")) {
+            theme.setBackgroundColor(obj.getString("backgroundColor", null));
+        }
+        if (obj.containsKey("linkColor")) {
+            theme.setLinkColor(obj.getString("linkColor", null));
+        }
+        if (obj.containsKey("linkUrl")) {
+            theme.setLinkUrl(obj.getString("linkUrl", null));
+        }
+        if (obj.containsKey("logo")) {
+            theme.setLogo(obj.getString("logo", null));
+        }
+        if (obj.containsKey("logoAlignment")) {
+            String align = obj.getString("logoAlignment");
+            if (align.equalsIgnoreCase("left")) {
+                theme.setLogoAlignment(DataverseTheme.Alignment.LEFT);
+            }
+            if (align.equalsIgnoreCase("right")) {
+                theme.setLogoAlignment(DataverseTheme.Alignment.RIGHT);
+            }
+            if (align.equalsIgnoreCase("center")) {
+                theme.setLogoAlignment(DataverseTheme.Alignment.CENTER);
+            }
+        }
+        if (obj.containsKey("logoBackgroundColor")) {
+            theme.setLogoBackgroundColor(obj.getString("logoBackgroundColor", null));
+        }
+        if (obj.containsKey("logoFormat")) {
+            String format = obj.getString("logoFormat");
+            if (format.equalsIgnoreCase("square")) {
+                theme.setLogoFormat(DataverseTheme.ImageFormat.SQUARE);
+            }
+            if (format.equalsIgnoreCase("rectangle")) {
+                theme.setLogoFormat(DataverseTheme.ImageFormat.RECTANGLE);
+            }
+        }
+        if (obj.containsKey("tagline")) {
+            theme.setTagline(obj.getString("tagline", null));
+        }
+        if (obj.containsKey("textColor")) {
+            theme.setTextColor(obj.getString("textColor", null));
+        }
+
+        return theme;
     }
 
     private static String getMandatoryString(JsonObject jobj, String name) throws JsonParseException {
