@@ -449,9 +449,6 @@ public class HarvestingSetsPage implements java.io.Serializable {
                     input.setValid(false);
                     context.addMessage(toValidate.getClientId(),
                             new FacesMessage(FacesMessage.SEVERITY_ERROR, "", JH.localize("harvestserver.newSetDialog.setspec.invalid")));
-                    //FacesContext.getCurrentInstance().addMessage(getNewSetSpecInputField().getClientId(),
-                    //        new FacesMessage(FacesMessage.SEVERITY_ERROR, "", JH.localize("harvestserver.newSetDialog.setspec.invalid")));
-                    //setSetSpecValidated(false);
                     return;
 
                     // If it passes the regex test, check 
@@ -459,9 +456,6 @@ public class HarvestingSetsPage implements java.io.Serializable {
                     input.setValid(false);
                     context.addMessage(toValidate.getClientId(),
                             new FacesMessage(FacesMessage.SEVERITY_ERROR, "", JH.localize("harvestserver.newSetDialog.setspec.alreadyused")));
-                    //FacesContext.getCurrentInstance().addMessage(getNewSetSpecInputField().getClientId(),
-                    //        new FacesMessage(FacesMessage.SEVERITY_ERROR, "", JH.localize("harvestserver.newSetDialog.setspec.alreadyused")));
-                    //setSetSpecValidated(false);
                     return;
                 }
 

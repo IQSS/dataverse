@@ -193,7 +193,7 @@
                                                      binding="#{harvestingSetsPage.newSetQueryInputField}"/>
                                         <p:message for="setquery"/>
                                         <h:outputText value="#{harvestingSetsPage.newSetQuery}" class="highlightBold" rendered="#{harvestingSetsPage.setQueryValidated}"/>
-                                        <p class="help-block" jsf:rendered="#{harvestingSetsPage.createMode}">#{bundle['harvestserver.newSetDialog.setquery.helptext']}</p>
+                                        <p class="help-block" jsf:rendered="#{!harvestingSetsPage.setQueryValidated}">#{bundle['harvestserver.newSetDialog.setquery.helptext']}</p>
                                         
                                         <div>
                                             <h:outputText value=" Search query returned #{harvestingSetsPage.setQueryResult} datasets!" rendered="#{harvestingSetsPage.setQueryValidated and harvestingSetsPage.setQueryResult gt 0}"/>
@@ -208,7 +208,8 @@
                                     </label>
                                     <div class="col-sm-8">
                                         <h:outputText value="#{harvestingSetsPage.newSetSpec}" class="highlightBold" />
-                                        <p class="help-block">This is the nickname that uniquely identifies the set. Once the set is created, it cannot be edited.</p>
+                                        <!-- todo: move this message into the bundle: -->
+                                        <p class="help-block">This is the nickname that uniquely identifies the set. Once the set is created, it cannot be changed.</p>
                                     </div>
                                 </div>
                                 
