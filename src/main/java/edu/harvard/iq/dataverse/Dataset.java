@@ -5,6 +5,7 @@ import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -415,13 +416,15 @@ public class Dataset extends DvObjectContainer {
     }
 
     private Collection<String> getCategoryNames() {
-        ArrayList<String> ret = new ArrayList<>();
         if (dataFileCategories != null) {
-            for (int i = 0; i < dataFileCategories.size(); i++) {
-                ret.add(dataFileCategories.get(i).getName());
+            ArrayList<String> ret = new ArrayList<>(dataFileCategories.size());
+            for ( DataFileCategory dfc : dataFileCategories ) {
+                ret.add( dfc.getName() );
             }
+            return ret;
+        } else {
+            return new ArrayList<>();
         }
-        return ret;
     }
 
     public Path getFileSystemDirectory() {

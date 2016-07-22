@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.engine.command;
 
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 
@@ -17,7 +18,7 @@ public class DataverseRequest {
     private final User user;
     private final IpAddress sourceAddress;
     private static final Logger logger = Logger.getLogger(DataverseRequest.class.getCanonicalName());
-
+    
     public DataverseRequest(User aUser, HttpServletRequest aHttpServletRequest) {
         this.user = aUser;
         String remoteAddressStr = null;
@@ -58,7 +59,6 @@ public class DataverseRequest {
             -- L.A. 4.2.3
         */
         
-
         logger.fine("DataverseRequest: Obtained remote address: "+remoteAddressStr);
         
         if ( remoteAddressStr == null ) {
@@ -67,6 +67,11 @@ public class DataverseRequest {
         sourceAddress = IpAddress.valueOf( remoteAddressStr );
     }
 
+    public DataverseRequest( User aUser, IpAddress aSourceAddress ) {
+        user = aUser;
+        sourceAddress = aSourceAddress;
+    }
+    
     public User getUser() {
         return user;
     }
