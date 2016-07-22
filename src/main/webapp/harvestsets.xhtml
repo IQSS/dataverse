@@ -95,11 +95,14 @@
                         <f:facet name="header">
                             <div class="row">
                                 <div class="col-sm-6 text-left">
+                                    <ui:remove>
+                                    <!-- Filter feature removed -->
                                     <div id="datatable_filter" class="dataTables_filter">
                                         <label>Filter
                                             <input type="search" style="display:inline !important; width:auto !important;" class="form-control input-sm" placeholder="" aria-controls="datatable"/>
                                         </label>
                                     </div>
+                                    </ui:remove>
                                 </div>
                                 <div class="col-sm-6 text-right">
                                     <div id="datatable_length" class="dataTables_length">                                        
@@ -278,7 +281,7 @@
                                                            value="#{bundle['harvestserver.newSetDialog.btn.create']}"
                                                            update="newOAISetDialogContent :messagePanel :harvestingSetsForm setsTable emptySetsTable"
                                                            actionListener="#{harvestingSetsPage.createSet}"
-                                                           oncomplete="if (args &amp;&amp; !args.validationFailed) PF('newOAISetForm').hide(); else PF('newOAISetForm').show();">
+                                                           oncomplete="if (args &amp;&amp; !args.validationFailed) PF('newOAISetForm').hide(); else PF('newOAISetForm').show();bind_bsui_components();">
                                                 <f:param name="DO_VALIDATION" value="true"/>
                                             </p:commandLink>
                                             <p:commandLink type="button" styleClass="btn btn-default"
@@ -286,7 +289,7 @@
                                                            value="#{bundle['harvestserver.viewEditDialog.btn.save']}"
                                                            update="newOAISetDialogContent :messagePanel :harvestingSetsForm setsTable emptySetsTable"
                                                            actionListener="#{harvestingSetsPage.saveSet}"
-                                                           oncomplete="if (args &amp;&amp; !args.validationFailed) PF('newOAISetForm').hide(); else PF('newOAISetForm').show();"/>
+                                                           oncomplete="if (args &amp;&amp; !args.validationFailed) PF('newOAISetForm').hide(); else PF('newOAISetForm').show();bind_bsui_components();"/>
                                             <button type="button" jsf:rendered="#{harvestingSetsPage.setQueryValidated}" class="btn btn-default" onclick="PF('newOAISetForm').hide()" value="#{bundle.cancel}">#{bundle.cancel}</button>
                                         </div>
                                     </div>

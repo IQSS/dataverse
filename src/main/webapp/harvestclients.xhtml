@@ -72,11 +72,14 @@
                         <f:facet name="header">
                             <div class="row">
                                 <div class="col-sm-6 text-left">
+                                    <ui:remove>
+                                    <!-- Filter feature removed -->
                                     <div id="datatable_filter" class="dataTables_filter">
                                         <label>Filter
                                             <input type="search" style="display:inline !important; width:auto !important;" class="form-control input-sm" placeholder="" aria-controls="datatable"/>
                                         </label>
                                     </div>
+                                    </ui:remove>
                                 </div>
                                 <div class="col-sm-6 text-right">
                                     <div id="datatable_length" class="dataTables_length">
@@ -186,12 +189,16 @@
                                         #{bundle['harvestclients.newClientDialog.type']} <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{!harvestingClientsPage.initialSettingsValidated}" title="#{bundle.requiredField}"/>
                                     </label>
                                     <div class="col-sm-9">
+                                        <p class="form-control-static">#{bundle['harvestclients.newClientDialog.type.OAI']}</p>
+                                        <ui:remove>
+                                            <!-- Removed radios, only OAI option available -->
                                         <p:panelGrid columns="2" styleClass="noBorders">
                                             <p:selectOneRadio id="typeOptions" value="#{harvestingClientsPage.harvestTypeRadio}">
                                                 <f:selectItem itemLabel="#{bundle['harvestclients.newClientDialog.type.OAI']}" itemValue="1" />
                                                 <f:selectItem itemLabel="#{bundle['harvestclients.newClientDialog.type.Nesstar']}" itemDisabled="true" itemValue="2" />
                                             </p:selectOneRadio>
                                         </p:panelGrid>
+                                        </ui:remove>
                                         <p class="help-block">#{bundle['harvestclients.newClientDialog.type.helptext']}</p>
                                     </div>
                                 </div>
@@ -482,7 +489,7 @@
                                                        value="#{bundle['harvestclients.newClientDialog.btn.create']}"
                                                        update="newHarvestingClientDialogContent :messagePanel :harvestingClientsForm clientsTable emptyClientsTable"
                                                        actionListener="#{harvestingClientsPage.createClient}"
-                                                       oncomplete="if (args &amp;&amp; !args.validationFailed) PF('newHarvestingClientForm').hide(); else PF('newHarvestingClientForm').show();">
+                                                       oncomplete="if (args &amp;&amp; !args.validationFailed) PF('newHarvestingClientForm').hide(); else PF('newHarvestingClientForm').show();bind_bsui_components();">
                                             <f:param name="DO_VALIDATION" value="true"/>
                                         </p:commandLink>
                                         <p:commandLink type="button" styleClass="btn btn-default"
@@ -490,7 +497,7 @@
                                                        value="#{bundle['harvestclients.viewEditDialog.btn.save']}"
                                                        update="newHarvestingClientDialogContent :messagePanel :harvestingClientsForm clientsTable emptyClientsTable"
                                                        actionListener="#{harvestingClientsPage.saveClient}"
-                                                       oncomplete="if (args &amp;&amp; !args.validationFailed) PF('newHarvestingClientForm').hide(); else PF('newHarvestingClientForm').show();"/>
+                                                       oncomplete="if (args &amp;&amp; !args.validationFailed) PF('newHarvestingClientForm').hide(); else PF('newHarvestingClientForm').show();bind_bsui_components();"/>
                                         <button type="button" jsf:rendered="#{harvestingClientsPage.initialSettingsValidated}" class="btn btn-default" onclick="PF('newHarvestingClientForm').hide()" value="#{bundle.cancel}">#{bundle.cancel}</button>
                                     </div>
                                 </div>
