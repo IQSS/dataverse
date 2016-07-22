@@ -145,13 +145,22 @@
 
                     <div id="fileImageTitle" class="row" style="margin-bottom:12px;">
 
-                        <div id="file-preview-icon-block" class="col-xs-5 text-center">
+                        <div id="file-preview-icon-block" class="col-xs-5 text-center"
+                             style="border:1px solid #DDD;border-radius:4px;">
+                            
+                            <!-- Static icon replacement placeholder for broken render logic in ui:remove below -->
+                            <span class="icon-#{dataFileServiceBean.getFileClass(FilePage.fileMetadata.dataFile)} text-muted h1"
+                                  jsf:rendered="#{true}"/>
+                            
+                            <ui:remove>
+                            <!-- Removing broken dataFileServiceBean.isThumbnailAvailable render logic -->
                             <!-- Image -->
                             <p:graphicImage style="margin:10px;" styleClass="img-responsive img-thumbnail" value="/api/access/datafile/#{FilePage.fileId}?imageThumb=400" rendered="#{dataFileServiceBean.isThumbnailAvailable(FilePage.fileMetadata.dataFile, dataverseSession.user)}"/>
                             <!-- Icon -->
                             <span class="icon-#{dataFileServiceBean.getFileClass(FilePage.fileMetadata.dataFile)} text-muted h1"
                                   jsf:rendered="#{(!dataFileServiceBean.isThumbnailAvailable(FilePage.fileMetadata.dataFile, dataverseSession.user))
                                                   or (empty FilePage.fileMetadata.dataFile.id and !dataFileServiceBean.isTemporaryPreviewAvailable(FilePage.fileMetadata.dataFile.storageIdentifier, FilePage.fileMetadata.dataFile.contentType))}"/>
+                            </ui:remove>
                         </div>
 
                         <div class="col-xs-7">
@@ -166,10 +175,10 @@
                                 <h:outputText style="margin-right:.5em;vertical-align: text-top;" value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-success" rendered="#{FilePage.fileMetadata.datasetVersion.inReview}"/>
                                 <h:outputText style="margin-right:.5em;vertical-align: text-top;" value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{!FilePage.fileMetadata.datasetVersion.dataset.released}"/>                         
                             </div>
-                            <div id="citation-block">
-                                 <div class="">
-                                    <div class="bg-citation">
-                                        <div id="citation" class=""
+                            <div id="citation-block" class="">
+                                 <div class="col-xs-12 alert alert-info bg-citation">
+                                    <div class="row">
+                                        <div id="citation" class="col-xs-12"
                                              onclick="if (event.target) { selectText(event.target); } else{ selectText(this); }">
                                             <h:outputText value="#{FilePage.file.owner.citation}" escape="false"/>
                                             <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{!FilePage.fileMetadata.datasetVersion.dataset.released}" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.released']}"/>
@@ -177,9 +186,9 @@
                                         </div>
                                         <!--<div id="citation-download" class="col-sm-4 col-md-3 text-right" jsf:rendered="">
                                         </div>-->
-                                    </div>
-                                    <div class="bg-muted" jsf:rendered="#{!DatasetPage.workingVersion.deaccessioned}">
-                                        <div id="citation-standards" class="text-muted small"><h:outputText value="#{bundle['dataset.cite.standards.tip']}" escape="false"/></div>
+                                        <div class="col-xs-12" jsf:rendered="#{!DatasetPage.workingVersion.deaccessioned}">
+                                            <div id="citation-standards" class="text-muted small text-right"><span class="glyphicon glyphicon-info-sign"></span>&#160;<h:outputText value="#{bundle['dataset.cite.standards.tip']}" escape="false"/></div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -322,7 +331,14 @@
                                     </ui:remove>
                                 </div>
                             </p:tab>
-
+                            <p:tab id="provenanceTab" title="Provenance">
+                                <!-- Placeholder -->
+                                <em>Coming soon...</em>
+                            </p:tab>
+                            <p:tab id="verionsTab" title="#{bundle['file.dataFilesTab.versions']}">
+                                <!-- Placeholder -->
+                                <em>Coming soon...</em>
+                            </p:tab>
                         </p:tabView>
                     </div>
 

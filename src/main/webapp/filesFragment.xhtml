@@ -244,12 +244,15 @@
             </ui:fragment>
         </p:column>
         <p:column class="col-file-metadata">
-            <h:outputLink rendered="#{settingsWrapper.isTrueForKey(':ShowFileLandingPage', false)}"
-                            value="/file.xhtml?fileId=#{fileMetadata.dataFile.id}&#38;datasetVersionId=#{DatasetPage.workingVersion.id}">
+            <h:outputLink value="/file.xhtml?fileId=#{fileMetadata.dataFile.id}&#38;datasetVersionId=#{DatasetPage.workingVersion.id}">
                 <h:outputText id="fileNameLink" value="#{fileMetadata.label}" style="display:block;font-weight:bold;"/>
-            </h:outputLink>              
+            </h:outputLink>
+            <ui:remove>
+            <!-- No longer need dynamic render logic for displaying link to file pg 
+            rendered="# { settingsWrapper.isTrueForKey(':ShowFileLandingPage', false)}" -->
             <h:outputText id="fileName" value="#{fileMetadata.label}" style="display:block;font-weight:bold;"
                           rendered="#{!settingsWrapper.isTrueForKey(':ShowFileLandingPage',  false)}"/>
+            </ui:remove>
             <!-- TYPE + SIZE + DATE + MD5 -->
             <div class="text-muted small">
                 <!-- id:#{fileMetadata.dataFile.id} -->

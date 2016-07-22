@@ -694,7 +694,7 @@ div.manageTable.ui-datatable div.ui-datatable-tablewrapper, div.manageTable.ui-d
 }
 
 @media screen and (min-width: 1000px) {
-    #file-preview-icon-block span[class^='icon-'] {font-size:28em;}
+    #file-preview-icon-block span[class^='icon-'] {font-size:22em;}
 }
 
 /* BLOCK UI */
