@@ -19,7 +19,7 @@ public class DdiExportUtilTest {
         File ddiFile = new File("src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-finch1.xml");
         String datasetAsDdi = XmlPrinter.prettyPrintXml(new String(Files.readAllBytes(Paths.get(ddiFile.getAbsolutePath()))));
         logger.info(datasetAsDdi);
-        String result = DdiExportUtil.datasetDtoAsJson2ddi(datasetVersionAsJson, "http://localhost:8080");
+        String result = DdiExportUtil.datasetDtoAsJson2ddi(datasetVersionAsJson);
         logger.info(result);
         assertEquals(datasetAsDdi, result);
     }
@@ -37,9 +37,17 @@ public class DdiExportUtilTest {
         File ddiFile = new File("src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-spruce1.xml");
         String datasetAsDdi = XmlPrinter.prettyPrintXml(new String(Files.readAllBytes(Paths.get(ddiFile.getAbsolutePath()))));
         logger.info(datasetAsDdi);
-        String result = DdiExportUtil.datasetDtoAsJson2ddi(datasetVersionAsJson, "http://localhost:8080");
+        String result = DdiExportUtil.datasetDtoAsJson2ddi(datasetVersionAsJson);
         logger.info(result);
         boolean filesMinimallySupported = false;
+        // TODO: 
+        // setting "filesMinimallySupported to false here, thus disabling the test;
+        // before we can reenable it again, we'll need to figure out what to do 
+        // with the access URLs, that are now included in the fileDscr and otherMat
+        // sections. So a) we'll need to add something like URI=http://localhost/api/access/datafile/12 to 
+        // dataset-spruce1.xml, above; and modify the DDI export util so that 
+        // it can be instructed to use "localhost" for the API urls (otherwise 
+        // it will use the real hostname).
         if (filesMinimallySupported) {
             assertEquals(datasetAsDdi, result);
         }

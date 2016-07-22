@@ -65,7 +65,7 @@ public class DublinCoreExporter implements Exporter {
     }
     
     @Override
-    public void setParam(String name, String value) {
+    public void setParam(String name, Object value) {
         // this exporter doesn't need/doesn't currently take any parameters
     }
 }

@@ -36,7 +36,6 @@ public class ExportService {
     
     private static ExportService service;
     private ServiceLoader<Exporter> loader;
-    private static SystemConfig systemConfig; 
 
     private ExportService() {
         loader = ServiceLoader.load(Exporter.class);        
@@ -128,16 +127,6 @@ public class ExportService {
                 Exporter e = exporters.next();
                 String formatName = e.getProvider(); 
                 
-                // the DDI exporter needs this Dataverse's preferred url 
-                // in order to cook the datafile access URLs in otherMat and 
-                // fileDscr sections. 
-                // yeah, this is a hack - but I can't immediately think of a 
-                // better solution
-                if ("DDI".equals(e.getProvider())) {
-                    if (systemConfig != null) {
-                        e.setParam("dataverse_site_url", systemConfig.getDataverseSiteUrl());
-                    }
-                }
                 cacheExport(dataset, formatName, datasetAsJson, e);
                 
             }
@@ -174,16 +163,6 @@ public class ExportService {
                 Exporter e = exporters.next();
                 if (e.getProvider().equals(formatName)) {
                     final JsonObjectBuilder datasetAsJsonBuilder = jsonAsDatasetDto(dataset.getLatestVersion());
-                    // the DDI exporter needs this Dataverse's preferred url 
-                    // in order to cook the datafile access URLs in otherMat and 
-                    // fileDscr sections. 
-                    // yeah, this is a hack - but I can't immediately think of a 
-                    // better solution
-                    if ("DDI".equals(e.getProvider())) {
-                        if (systemConfig != null) {
-                            e.setParam("dataverse_site_url", systemConfig.getDataverseSiteUrl());
-                        }
-                    }
                     cacheExport(dataset, formatName, datasetAsJsonBuilder.build(), e);
                 }
             }
@@ -255,14 +234,6 @@ public class ExportService {
             serviceError.printStackTrace();
         }
         return null;       
-    }
-    
-    public void setSystemConfig(SystemConfig systemConfig) {
-        this.systemConfig = systemConfig;
-    }
-    
-    public SystemConfig getSystemConfig() {
-        return this.systemConfig;
     }
  
 }
