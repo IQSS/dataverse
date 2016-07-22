@@ -2,6 +2,7 @@
 package edu.harvard.iq.dataverse.export;
 
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.jsonAsDatasetDto;
@@ -162,13 +163,18 @@ public class ExportService {
             while (exporters.hasNext()) {
                 Exporter e = exporters.next();
                 if (e.getProvider().equals(formatName)) {
-                    final JsonObjectBuilder datasetAsJsonBuilder = jsonAsDatasetDto(dataset.getLatestVersion());
+                    DatasetVersion releasedVersion = dataset.getReleasedVersion();
+                    if (releasedVersion == null) {
+                        throw new IllegalStateException("No Released Version");
+                    }
+                    final JsonObjectBuilder datasetAsJsonBuilder = jsonAsDatasetDto(releasedVersion);
                     cacheExport(dataset, formatName, datasetAsJsonBuilder.build(), e);
                 }
             }
         } catch (ServiceConfigurationError serviceError) {
-            serviceError.printStackTrace();
             throw new ExportException("Service configuration error during export. " + serviceError.getMessage());
+        } catch (IllegalStateException e) {
+            throw new ExportException("No published version found during export. " + dataset.getGlobalId());
         }
     }
     
