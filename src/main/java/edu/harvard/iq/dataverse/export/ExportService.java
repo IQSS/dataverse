@@ -106,6 +106,7 @@ public class ExportService {
                 return sb.toString();
             }
         } catch (Exception ex) {
+            ex.printStackTrace();
             return null;
         }
         return null;
@@ -131,7 +132,6 @@ public class ExportService {
                 
             }
         } catch (ServiceConfigurationError serviceError) {
-            serviceError.printStackTrace();
             throw new ExportException("Service configuration error during export. "+serviceError.getMessage());
         }
         // Finally, if we have been able to successfully export in all available 

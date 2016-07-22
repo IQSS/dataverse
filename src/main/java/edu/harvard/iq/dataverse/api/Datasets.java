@@ -540,6 +540,7 @@ public class Datasets extends AbstractApiBean {
     @GET
     @Path("ddi")
     @Produces({"application/xml", "application/json"})
+    @Deprecated
     public Response getDdi(@QueryParam("id") long id, @QueryParam("persistentId") String persistentId, @QueryParam("dto") boolean dto) {
         boolean ddiExportEnabled = systemConfig.isDdiExportEnabled();
         if (!ddiExportEnabled) {
@@ -564,7 +565,7 @@ public class Datasets extends AbstractApiBean {
                  * to getLatestVersion
                  */
                 final JsonObjectBuilder datasetAsJson = jsonAsDatasetDto(dataset.getLatestVersion());
-                xml = DdiExportUtil.datasetDtoAsJson2ddi(datasetAsJson.build().toString());
+                xml = DdiExportUtil.datasetDtoAsJson2ddi(datasetAsJson.toString());
             } else {
                 OutputStream outputStream = new ByteArrayOutputStream();
                 ddiExportService.exportDataset(dataset.getId(), outputStream, null, null);

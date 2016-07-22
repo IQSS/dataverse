@@ -39,8 +39,8 @@ public class OAIRecordServiceBean implements java.io.Serializable {
     IndexServiceBean indexService;
     @EJB 
     DatasetServiceBean datasetService;
-    @EJB
-    ExportService exportService;
+    //@EJB
+    //ExportService exportService;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     EntityManager em;   
@@ -87,7 +87,8 @@ public class OAIRecordServiceBean implements java.io.Serializable {
                 if (dataset.getPublicationDate() != null 
                         && (dataset.getLastExportTime() == null 
                             || dataset.getLastExportTime().before(dataset.getPublicationDate()))) {
-                    exportService.exportAllFormatsInNewTransaction(dataset);
+                    ExportService exportServiceInstance = ExportService.getInstance();
+                    exportServiceInstance.exportAllFormatsInNewTransaction(dataset);
                 }
             }
             
