@@ -128,6 +128,7 @@ public class Datasets extends AbstractApiBean {
             
             ExportService instance = ExportService.getInstance();
             
+            instance.setSystemConfig(systemConfig);
             String xml = instance.getExportAsString(dataset, exporter);
             // I'm wondering if this going to become a performance problem 
             // with really GIANT datasets,
@@ -564,7 +565,7 @@ public class Datasets extends AbstractApiBean {
                  * to getLatestVersion
                  */
                 final JsonObjectBuilder datasetAsJson = jsonAsDatasetDto(dataset.getLatestVersion());
-                xml = DdiExportUtil.datasetDtoAsJson2ddi(datasetAsJson.build().toString());
+                xml = DdiExportUtil.datasetDtoAsJson2ddi(datasetAsJson.build().toString(), systemConfig.getDataverseSiteUrl());
             } else {
                 OutputStream outputStream = new ByteArrayOutputStream();
                 ddiExportService.exportDataset(dataset.getId(), outputStream, null, null);

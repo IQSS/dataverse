@@ -35,4 +35,6 @@ public interface Exporter {
     public String getXMLSchemaLocation() throws ExportException; 
     public String getXMLSchemaVersion() throws ExportException; 
     
+    public void setParam(String name, String value);
+    
 }

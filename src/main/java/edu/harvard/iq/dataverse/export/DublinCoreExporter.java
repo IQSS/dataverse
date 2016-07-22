@@ -63,4 +63,9 @@ public class DublinCoreExporter implements Exporter {
     public String getXMLSchemaVersion() throws ExportException {
         return DublinCoreExporter.DEFAULT_XML_VERSION;
     }
+    
+    @Override
+    public void setParam(String name, String value) {
+        // this exporter doesn't need/doesn't currently take any parameters
+    }
 }

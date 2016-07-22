@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.export.ddi;
 
 import com.google.gson.Gson;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
+import edu.harvard.iq.dataverse.api.dto.DataVariableDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
@@ -32,33 +33,33 @@ public class DdiExportUtil {
 
     private static final Logger logger = Logger.getLogger(DdiExportUtil.class.getCanonicalName());
 
-    public static String datasetDtoAsJson2ddi(String datasetDtoAsJson) {
+    public static String datasetDtoAsJson2ddi(String datasetDtoAsJson, String dataverseUrl) {
         logger.fine(JsonUtil.prettyPrint(datasetDtoAsJson));
         Gson gson = new Gson();
         DatasetDTO datasetDto = gson.fromJson(datasetDtoAsJson, DatasetDTO.class);
         try {
-            return dto2ddi(datasetDto);
+            return dto2ddi(datasetDto, dataverseUrl);
         } catch (XMLStreamException ex) {
             Logger.getLogger(DdiExportUtil.class.getName()).log(Level.SEVERE, null, ex);
             return null;
         }
     }
     
-    public static void datasetJson2ddi(JsonObject datasetDtoAsJson, OutputStream outputStream) throws XMLStreamException {
+    public static void datasetJson2ddi(JsonObject datasetDtoAsJson, OutputStream outputStream, String dataverseUrl) throws XMLStreamException {
         logger.fine(JsonUtil.prettyPrint(datasetDtoAsJson.toString()));
         Gson gson = new Gson();
         DatasetDTO datasetDto = gson.fromJson(datasetDtoAsJson.toString(), DatasetDTO.class);
-        dtoddi(datasetDto, outputStream);
+        dtoddi(datasetDto, outputStream, dataverseUrl);
     }
     
-    private static String dto2ddi(DatasetDTO datasetDto) throws XMLStreamException {
+    private static String dto2ddi(DatasetDTO datasetDto, String dataverseUrl) throws XMLStreamException {
         OutputStream outputStream = new ByteArrayOutputStream();
-        dtoddi(datasetDto, outputStream);
+        dtoddi(datasetDto, outputStream, dataverseUrl);
         String xml = outputStream.toString();
         return XmlPrinter.prettyPrintXml(xml);
     }
     
-    private static void dtoddi(DatasetDTO datasetDto, OutputStream outputStream) throws XMLStreamException {
+    private static void dtoddi(DatasetDTO datasetDto, OutputStream outputStream, String dataverseUrl) throws XMLStreamException {
         XMLStreamWriter xmlw = XMLOutputFactory.newInstance().createXMLStreamWriter(outputStream);
         xmlw.writeStartElement("codeBook");
         xmlw.writeDefaultNamespace("ddi:codebook:2_5");
@@ -66,7 +67,9 @@ public class DdiExportUtil {
         xmlw.writeAttribute("xsi:schemaLocation", "ddi:codebook:2_5 http://www.ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd");
         writeAttribute(xmlw, "version", "2.5");
         createStdyDscr(xmlw, datasetDto);
-        createdataDscr(xmlw, datasetDto.getDatasetVersion().getFiles());
+        //createFileDscr(xmlw, datasetDto.getDatasetVersion().getFiles(), dataverseUrl);
+        //createdataDscr(xmlw, datasetDto.getDatasetVersion().getFiles());
+        createOtherMats(xmlw, datasetDto.getDatasetVersion().getFiles(), dataverseUrl);
         xmlw.writeEndElement(); // codeBook
         xmlw.flush();
     }
@@ -969,24 +972,53 @@ public class DdiExportUtil {
      * @todo Create a full dataDscr and otherMat sections of the DDI. This stub
      * adapted from the minimal DDIExportServiceBean example.
      */
+    
+    private static void createFileDscr(XMLStreamWriter xmlw, List<FileDTO> fileDtos, String dataverseUrl) throws XMLStreamException {
+        for (FileDTO fileDTo : fileDtos) {
+            // We'll continue the DVN3 tradition: non-tabular files are put into otherMat,
+            // tabular ones - in fileDscr:
+            if (fileDTo.getDatafile().getDataTables() != null && !fileDTo.getDatafile().getDataTables().isEmpty()) {
+                xmlw.writeStartElement("fileDscr");
+                writeAttribute(xmlw, "ID", "f" + fileDTo.getDatafile().getId());
+                writeAttribute(xmlw, "URI", dataverseUrl + "/api/access/datafile/" + fileDTo.getDatafile().getId());
+                xmlw.writeStartElement("fileTxt");
+                xmlw.writeStartElement("fileName");
+                xmlw.writeCharacters(fileDTo.getDatafile().getName());
+                xmlw.writeEndElement(); // fileName
+                
+                xmlw.writeEndElement(); // fileTxt
+                xmlw.writeEndElement(); // fileDscr
+            }
+        }
+    }
+    
     private static void createdataDscr(XMLStreamWriter xmlw, List<FileDTO> fileDtos) throws XMLStreamException {
         if (fileDtos.isEmpty()) {
             return;
         }
         xmlw.writeStartElement("dataDscr");
+        
         xmlw.writeEndElement(); // dataDscr
+    }
+    
+    private static void createOtherMats(XMLStreamWriter xmlw, List<FileDTO> fileDtos, String dataverseUrl) throws XMLStreamException {
         for (FileDTO fileDTo : fileDtos) {
-            xmlw.writeStartElement("otherMat");
-            writeAttribute(xmlw, "ID", "f" + fileDTo.getDatafile().getId());
-            writeAttribute(xmlw, "level", "datafile");
-            xmlw.writeStartElement("labl");
-            xmlw.writeCharacters(fileDTo.getDatafile().getName());
-            xmlw.writeEndElement(); // labl
-            writeFileDescription(xmlw, fileDTo);
-            xmlw.writeEndElement(); // otherMat
+            // We'll continue the DVN3 tradition: non-tabular files are put into otherMat,
+            // tabular ones - in fileDscr:
+            if (fileDTo.getDatafile().getDataTables() == null || fileDTo.getDatafile().getDataTables().isEmpty()) {
+                xmlw.writeStartElement("otherMat");
+                writeAttribute(xmlw, "ID", "f" + fileDTo.getDatafile().getId());
+                writeAttribute(xmlw, "URI", dataverseUrl + "/api/access/datafile/" + fileDTo.getDatafile().getId());
+                writeAttribute(xmlw, "level", "datafile");
+                xmlw.writeStartElement("labl");
+                xmlw.writeCharacters(fileDTo.getDatafile().getName());
+                xmlw.writeEndElement(); // labl
+                writeFileDescription(xmlw, fileDTo);
+                xmlw.writeEndElement(); // otherMat
+            }
         }
     }
-
+    
     private static void writeFileDescription(XMLStreamWriter xmlw, FileDTO fileDTo) throws XMLStreamException {
         xmlw.writeStartElement("txt");
         String description = fileDTo.getDatafile().getDescription();

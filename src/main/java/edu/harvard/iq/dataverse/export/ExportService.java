@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.export;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.jsonAsDatasetDto;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -21,6 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
+import javax.ejb.EJB;
 import javax.ejb.TransactionAttribute;
 import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
 import javax.json.JsonObject;
@@ -31,9 +33,10 @@ import javax.json.JsonObjectBuilder;
  * @author skraffmi
  */
 public class ExportService {
-
+    
     private static ExportService service;
     private ServiceLoader<Exporter> loader;
+    private static SystemConfig systemConfig; 
 
     private ExportService() {
         loader = ServiceLoader.load(Exporter.class);        
@@ -125,6 +128,16 @@ public class ExportService {
                 Exporter e = exporters.next();
                 String formatName = e.getProvider(); 
                 
+                // the DDI exporter needs this Dataverse's preferred url 
+                // in order to cook the datafile access URLs in otherMat and 
+                // fileDscr sections. 
+                // yeah, this is a hack - but I can't immediately think of a 
+                // better solution
+                if ("DDI".equals(e.getProvider())) {
+                    if (systemConfig != null) {
+                        e.setParam("dataverse_site_url", systemConfig.getDataverseSiteUrl());
+                    }
+                }
                 cacheExport(dataset, formatName, datasetAsJson, e);
                 
             }
@@ -161,6 +174,16 @@ public class ExportService {
                 Exporter e = exporters.next();
                 if (e.getProvider().equals(formatName)) {
                     final JsonObjectBuilder datasetAsJsonBuilder = jsonAsDatasetDto(dataset.getLatestVersion());
+                    // the DDI exporter needs this Dataverse's preferred url 
+                    // in order to cook the datafile access URLs in otherMat and 
+                    // fileDscr sections. 
+                    // yeah, this is a hack - but I can't immediately think of a 
+                    // better solution
+                    if ("DDI".equals(e.getProvider())) {
+                        if (systemConfig != null) {
+                            e.setParam("dataverse_site_url", systemConfig.getDataverseSiteUrl());
+                        }
+                    }
                     cacheExport(dataset, formatName, datasetAsJsonBuilder.build(), e);
                 }
             }
@@ -233,5 +256,13 @@ public class ExportService {
         }
         return null;       
     }
-
+    
+    public void setSystemConfig(SystemConfig systemConfig) {
+        this.systemConfig = systemConfig;
+    }
+    
+    public SystemConfig getSystemConfig() {
+        return this.systemConfig;
+    }
+ 
 }

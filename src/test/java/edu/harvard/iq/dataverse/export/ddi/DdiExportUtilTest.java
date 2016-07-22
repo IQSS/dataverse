@@ -19,7 +19,7 @@ public class DdiExportUtilTest {
         File ddiFile = new File("src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-finch1.xml");
         String datasetAsDdi = XmlPrinter.prettyPrintXml(new String(Files.readAllBytes(Paths.get(ddiFile.getAbsolutePath()))));
         logger.info(datasetAsDdi);
-        String result = DdiExportUtil.datasetDtoAsJson2ddi(datasetVersionAsJson);
+        String result = DdiExportUtil.datasetDtoAsJson2ddi(datasetVersionAsJson, "http://localhost:8080");
         logger.info(result);
         assertEquals(datasetAsDdi, result);
     }
@@ -37,9 +37,9 @@ public class DdiExportUtilTest {
         File ddiFile = new File("src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-spruce1.xml");
         String datasetAsDdi = XmlPrinter.prettyPrintXml(new String(Files.readAllBytes(Paths.get(ddiFile.getAbsolutePath()))));
         logger.info(datasetAsDdi);
-        String result = DdiExportUtil.datasetDtoAsJson2ddi(datasetVersionAsJson);
+        String result = DdiExportUtil.datasetDtoAsJson2ddi(datasetVersionAsJson, "http://localhost:8080");
         logger.info(result);
-        boolean filesMinimallySupported = true;
+        boolean filesMinimallySupported = false;
         if (filesMinimallySupported) {
             assertEquals(datasetAsDdi, result);
         }
