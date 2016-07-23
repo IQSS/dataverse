@@ -15,7 +15,6 @@ import edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClientServiceBean;
 import edu.harvard.iq.dataverse.harvest.client.oai.OaiHandler;
-import edu.harvard.iq.dataverse.harvest.client.oai.OaiHandlerException;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.util.ArrayList;
@@ -28,13 +27,13 @@ import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
-import javax.faces.component.UISelectOne;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.faces.model.SelectItem;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -189,7 +188,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
     
     public void runHarvest(HarvestingClient harvestingClient) {
         try {
-            DataverseRequest dataverseRequest = new DataverseRequest(session.getUser(), null);
+            DataverseRequest dataverseRequest = new DataverseRequest(session.getUser(), (HttpServletRequest)null);
             harvesterService.doAsyncHarvest(dataverseRequest, harvestingClient);        
         } catch (Exception ex) {
             String failMessage = "Sorry, harvest could not be started for the selected harvesting client configuration (unknown server error).";
