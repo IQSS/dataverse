@@ -1,4 +1,4 @@
-package edu.harvard.iq.dataverse.engine.command;
+package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.engine.command.impl.MoveDataverseCommand;
 import edu.harvard.iq.dataverse.Dataverse;

@@ -60,6 +60,12 @@ public class ServiceDocumentManagerImpl implements ServiceDocumentManager {
             return serviceDocument;
         }
 
+        /**
+         * We don't expect this to support Shibboleth groups because even though
+         * a Shibboleth user can have an API token the transient
+         * shibIdentityProvider String on AuthenticatedUser is only set when a
+         * SAML assertion is made at runtime via the browser.
+         */
         List<Dataverse> dataverses = permissionService.getDataversesUserHasPermissionOn(user, Permission.AddDataset);
         for (Dataverse dataverse : dataverses) {
             String dvAlias = dataverse.getAlias();

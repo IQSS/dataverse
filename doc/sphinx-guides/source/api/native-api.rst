@@ -162,6 +162,21 @@ Restores the default logic of the field type to be used as the citation date. Sa
     
     DELETE http://$SERVER/api/datasets/$id/citationdate?key=$apiKey
 
+List all the role assignments at the given dataset::
+
+    GET http://$SERVER/api/datasets/$id/assignments?key=$apiKey
+
+Create a Private URL (must be able to manage dataset permissions)::
+
+    POST http://$SERVER/api/datasets/$id/privateUrl?key=$apiKey
+
+Get a Private URL from a dataset (if available)::
+
+    GET http://$SERVER/api/datasets/$id/privateUrl?key=$apiKey
+
+Delete a Private URL from a dataset (if it exists)::
+
+    DELETE http://$SERVER/api/datasets/$id/privateUrl?key=$apiKey
 
 Builtin Users
 ~~~~~

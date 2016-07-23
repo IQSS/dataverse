@@ -28,6 +28,7 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroup;
 import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderRow;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.util.DatasetFieldWalker;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import java.util.Set;
@@ -92,25 +93,26 @@ public class JsonPrinter {
                 .add("persistentUserId", authenticatedUser.getAuthenticatedUserLookup().getPersistentUserId())
                 .add("authenticationProviderId", authenticatedUser.getAuthenticatedUserLookup().getAuthenticationProviderId());
     }
-
-    public static JsonObjectBuilder json(RoleAssignment ra) {
-        return jsonObjectBuilder()
-                .add("id", ra.getId())
-                .add("assignee", ra.getAssigneeIdentifier())
-                .add("roleId", ra.getRole().getId())
-                .add("_roleAlias", ra.getRole().getAlias())
-                .add("definitionPointId", ra.getDefinitionPoint().getId());
-    }
-
-    public static JsonArrayBuilder json(Set<Permission> permissions) {
-        JsonArrayBuilder bld = Json.createArrayBuilder();
-        for (Permission p : permissions) {
-            bld.add(p.name());
-        }
-        return bld;
-    }
-
-    public static JsonObjectBuilder json(RoleAssigneeDisplayInfo d) {
+    
+    public static JsonObjectBuilder json( RoleAssignment ra ) {
+		return jsonObjectBuilder()
+				.add("id", ra.getId())
+				.add("assignee", ra.getAssigneeIdentifier() )
+				.add("roleId", ra.getRole().getId() )
+				.add("_roleAlias", ra.getRole().getAlias())
+				.add("privateUrlToken", ra.getPrivateUrlToken())
+				.add("definitionPointId", ra.getDefinitionPoint().getId() );
+	}
+	
+	public static JsonArrayBuilder json( Set<Permission> permissions ) {
+		JsonArrayBuilder bld = Json.createArrayBuilder();
+		for ( Permission p : permissions ) {
+			bld.add( p.name() );
+		}
+		return bld;
+	}
+    
+    public static JsonObjectBuilder json( RoleAssigneeDisplayInfo d ) {
         return jsonObjectBuilder()
                 .add("title", d.getTitle())
                 .add("email", d.getEmailAddress())
@@ -518,15 +520,24 @@ public class JsonPrinter {
 
     public static JsonObjectBuilder json(AuthenticationProviderRow aRow) {
         return jsonObjectBuilder()
-                .add("id", aRow.getId())
-                .add("factoryAlias", aRow.getFactoryAlias())
-                .add("title", aRow.getTitle())
-                .add("subtitle", aRow.getSubtitle())
-                .add("factoryData", aRow.getFactoryData())
-                .add("enabled", aRow.isEnabled());
+                        .add("id", aRow.getId())
+                        .add("factoryAlias", aRow.getFactoryAlias() )
+                        .add("title", aRow.getTitle())
+                        .add("subtitle",aRow.getSubtitle())
+                        .add("factoryData", aRow.getFactoryData())
+                        .add("enabled", aRow.isEnabled())
+                ;
     }
 
-    public static <T> JsonObjectBuilder json(T j) {
+    public static JsonObjectBuilder json(PrivateUrl privateUrl) {
+        return jsonObjectBuilder()
+                // We provide the token here as a convenience even though it is also in the role assignment.
+                .add("token", privateUrl.getToken())
+                .add("link", privateUrl.getLink())
+                .add("roleAssignment", json(privateUrl.getRoleAssignment()));
+    }
+
+    public static <T> JsonObjectBuilder json(T j ) {
         if (j instanceof ExplicitGroup) {
             ExplicitGroup eg = (ExplicitGroup) j;
             JsonArrayBuilder ras = Json.createArrayBuilder();

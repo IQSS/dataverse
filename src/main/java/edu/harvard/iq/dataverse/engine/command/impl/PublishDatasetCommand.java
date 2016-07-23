@@ -24,6 +24,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
+import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.search.IndexResponse;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.jsonAsDatasetDto;
@@ -47,6 +48,8 @@ import javax.json.JsonObjectBuilder;
  */
 @RequiredPermissions(Permission.PublishDataset)
 public class PublishDatasetCommand extends AbstractCommand<Dataset> {
+    private static final Logger logger = Logger.getLogger(PublishDatasetCommand.class.getCanonicalName());
+
     private static final Logger logger = Logger.getLogger(PublishDatasetCommand.class.getCanonicalName());
 
     boolean minorRelease = false;
@@ -260,8 +263,11 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
             }
         }
 
-        
-
+        PrivateUrl privateUrl = ctxt.engine().submit(new GetPrivateUrlCommand(getRequest(), savedDataset));
+        if (privateUrl != null) {
+            logger.fine("Deleting Private URL for dataset id " + savedDataset.getId());
+            ctxt.engine().submit(new DeletePrivateUrlCommand(getRequest(), savedDataset));
+        }
 
         /*
         MoveIndexing to after DOI update so that if command exception is thrown the re-index will not

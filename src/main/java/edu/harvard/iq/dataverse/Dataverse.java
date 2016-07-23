@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearch;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -666,13 +667,24 @@ public class Dataverse extends DvObjectContainer {
 
     public void addRole(DataverseRole role) {
         role.setOwner(this);
+        if ( roles == null ) {
+            roles = new HashSet<>();
+        }
         roles.add(role);
     }
-
+    
+    /**
+     * Note: to add a role, use {@link #addRole(edu.harvard.iq.dataverse.authorization.DataverseRole)},
+     * do not call this method and try to add directly to the list. 
+     * @return the roles defined in this Dataverse.
+     */
     public Set<DataverseRole> getRoles() {
+        if ( roles == null ) {
+            roles = new HashSet<>();
+        }
         return roles;
     }
-
+    
     public List<Dataverse> getOwners() {
         List owners = new ArrayList();
         if (getOwner() != null) {

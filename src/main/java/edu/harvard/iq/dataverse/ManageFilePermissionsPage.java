@@ -401,7 +401,8 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
 
     private boolean assignRole(RoleAssignee ra,  DataFile file, DataverseRole r) {
         try {
-            commandEngine.submit(new AssignRoleCommand(ra, r, file, dvRequestService.getDataverseRequest()));
+            String privateUrlToken = null;
+            commandEngine.submit(new AssignRoleCommand(ra, r, file, dvRequestService.getDataverseRequest(), privateUrlToken));
             JsfHelper.addSuccessMessage(r.getName() + " role assigned to " + ra.getDisplayInfo().getTitle() + " for " + file.getDisplayName() + ".");
         } catch (PermissionException ex) {
             JH.addMessage(FacesMessage.SEVERITY_ERROR, "The role was not able to be assigned.", "Permissions " + ex.getRequiredPermissions().toString() + " missing.");
