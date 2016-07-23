@@ -33,6 +33,7 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.servlet.http.HttpServletRequest;
 
 
 /**
@@ -102,7 +103,7 @@ public class DataverseTimerServiceBean implements Serializable {
                 DataverseRequest dataverseRequest = null;
                 AuthenticatedUser adminUser = authSvc.getAuthenticatedUser("admin");
                 if (adminUser != null) {
-                    dataverseRequest = new DataverseRequest(adminUser, null);
+                    dataverseRequest = new DataverseRequest(adminUser, (HttpServletRequest)null);
                 }
                 // TODO: create a real DataverseRequest here, associated with the main admin user (?)
                 // -- L.A. 4.4, May 8 2016

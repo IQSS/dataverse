@@ -50,8 +50,6 @@ import javax.json.JsonObjectBuilder;
 public class PublishDatasetCommand extends AbstractCommand<Dataset> {
     private static final Logger logger = Logger.getLogger(PublishDatasetCommand.class.getCanonicalName());
 
-    private static final Logger logger = Logger.getLogger(PublishDatasetCommand.class.getCanonicalName());
-
     boolean minorRelease = false;
     Dataset theDataset;
 
