@@ -27,6 +27,8 @@ import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailException;
+import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.mydata.MyDataPage;
 import edu.harvard.iq.dataverse.passwordreset.PasswordValidator;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -63,6 +65,9 @@ import org.primefaces.event.TabChangeEvent;
 @Named("DataverseUserPage")
 public class BuiltinUserPage implements java.io.Serializable {
 
+    @EJB
+    private ConfirmEmailServiceBean confirmEmailServiceBean;
+
     private static final Logger logger = Logger.getLogger(BuiltinUserPage.class.getCanonicalName());
 
     public enum EditMode {
@@ -88,6 +93,8 @@ public class BuiltinUserPage implements java.io.Serializable {
     BuiltinUserServiceBean builtinUserService;
     @EJB
     AuthenticationServiceBean authenticationService;
+    @EJB
+    ConfirmEmailServiceBean confirmEmailService;
     @EJB
     GroupServiceBean groupService;
     @Inject
@@ -407,7 +414,8 @@ public class BuiltinUserPage implements java.io.Serializable {
             context.addMessage(toValidate.getClientId(context), message);
         }
     }
-
+    
+    
 
     public void updatePassword(String userName) {
         String plainTextPassword = PasswordEncryption.generateRandomPassword();
@@ -592,4 +600,10 @@ public class BuiltinUserPage implements java.io.Serializable {
             }
         }
     }
+    
+    public void sendConfirmEmail(AuthenticatedUser currentUser) throws ConfirmEmailException{
+        String userEmail = currentUser.getEmail();
+        confirmEmailServiceBean.beginConfirm(userEmail);
+    }
+    
 }

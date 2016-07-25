@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServi
 import edu.harvard.iq.dataverse.authorization.providers.builtin.PasswordEncryption;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailData;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import java.sql.Timestamp;
 import java.util.Calendar;
@@ -134,10 +135,18 @@ public class BuiltinUsers extends AbstractApiBean {
             token.setExpireTime(new Timestamp(c.getTimeInMillis()));
             authSvc.save(token);
 
+            ConfirmEmailData confirmEmailData = confirmEmailSvc.createToken(au);
+
             JsonObjectBuilder resp = Json.createObjectBuilder();
             resp.add("user", json(user));
             resp.add("authenticatedUser", jsonForAuthUser(au));
             resp.add("apiToken", token.getTokenString());
+            /**
+             * @todo Remove this once a superuser can retrieve the token via the
+             * admin API. We don't want users to get the confirm email token
+             * except via email.
+             */
+            resp.add("confirmEmailToken", confirmEmailData.getToken());
             
             alr.setInfo("builtinUser:" + user.getUserName() + " authenticatedUser:" + au.getIdentifier() );
             return okResponse(resp);

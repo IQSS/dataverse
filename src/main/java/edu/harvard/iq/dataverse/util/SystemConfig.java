@@ -201,7 +201,15 @@ public class SystemConfig {
     }
     
     
-    
+    /**
+     * The number of minutes for which a confirmation email link is valid.
+     * @todo: ask Phil about making it possible to set this value as sysadmin
+     *  
+     */
+    public static int getMinutesUntilConfirmEmailTokenExpires() {
+        final int reasonableDefault = 60;
+        return reasonableDefault;
+    }
     /**
      * The number of minutes for which a password reset token is valid. Can be
      * overridden by {@link #PASSWORD_RESET_TIMEOUT_IN_MINUTES}.
