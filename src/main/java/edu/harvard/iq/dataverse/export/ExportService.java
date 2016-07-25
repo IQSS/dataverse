@@ -107,7 +107,7 @@ public class ExportService {
                 return sb.toString();
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            //ex.printStackTrace();
             return null;
         }
         return null;
@@ -148,8 +148,6 @@ public class ExportService {
             exportAllFormats(dataset);
         } catch (ExportException ee) {}
     }
-           
-    
     
     
     // This method finds the exporter for the format requested, 

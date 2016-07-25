@@ -50,50 +50,50 @@
                     </ui:remove>
                 </h:form>
                 
-                <p:fragment id="emptySetsTable" rendered="#{empty harvestingSetsPage.configuredOAISets or !harvestingSetsPage.harvestingServerEnabled}">
-                    <div class="row">
-                        <div class="col-sm-12 text-right">
-                            <p:commandLink type="button" id="addSetEmpty" styleClass="btn btn-default margin-bottom"
-                                           actionListener="#{harvestingSetsPage.initNewSet}"
-                                           update=":harvestingSetsForm:newOAISetDialog"
-                                           oncomplete="PF('newOAISetForm').show();handleResizeDialog('newOAISetDialog');bind_bsui_components();">
-                                <span class="glyphicon glyphicon-plus"/> Add Set
-                            </p:commandLink>
+                <h:form id="harvestingSetsForm" rendered="#{true}">
+                    <p:fragment id="emptySetsTable" rendered="#{empty harvestingSetsPage.configuredOAISets or !harvestingSetsPage.harvestingServerEnabled}">
+                        <div class="row" jsf:rendered="#{empty harvestingSetsPage.configuredOAISets}">
+                            <div class="col-sm-12 text-right">
+                                <p:commandLink type="button" id="addSetEmpty" styleClass="btn btn-default margin-bottom"
+                                               actionListener="#{harvestingSetsPage.initNewSet}"
+                                               update=":harvestingSetsForm:newOAISetDialog"
+                                               oncomplete="PF('newOAISetForm').show();handleResizeDialog('newOAISetDialog');bind_bsui_components();">
+                                    <span class="glyphicon glyphicon-plus"/> Add Set
+                                </p:commandLink>
+                            </div>
                         </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-sm-12">
-                            <div id="no-clients-message" class="panel panel-default">
-                                <div class="panel-body">
-                                    <span class="help-block h3">#{bundle['harvestserver.noSets.why.header']}</span>
-                                    <ul>
-                                        <li><h:outputText value="#{bundle['harvestserver.noSets.why.reason1']}" escape="false"/></li>
-                                        <li><h:outputText value="#{bundle['harvestserver.noSets.why.reason2']}" escape="false"/></li>
-                                    </ul>
-                                    <span class="help-block h3">#{bundle['harvestserver.noSets.how.header']}</span>
-                                    <ul>
-                                        <li><h:outputText value="#{bundle['harvestserver.noSets.how.tip1']}" escape="false"/></li>
-                                        <li>
-                                            <h:outputFormat value="#{bundle['harvestserver.noSets.how.tip2']}" escape="false">
-                                                <f:param value="#{manageTemplatesPage.dataverse.alias}"/>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <div id="no-clients-message" class="panel panel-default">
+                                    <div class="panel-body">
+                                        <span class="help-block h3">#{bundle['harvestserver.noSets.why.header']}</span>
+                                        <ul>
+                                            <li><h:outputText value="#{bundle['harvestserver.noSets.why.reason1']}" escape="false"/></li>
+                                            <li><h:outputText value="#{bundle['harvestserver.noSets.why.reason2']}" escape="false"/></li>
+                                        </ul>
+                                        <span class="help-block h3">#{bundle['harvestserver.noSets.how.header']}</span>
+                                        <ul>
+                                            <li><h:outputText value="#{bundle['harvestserver.noSets.how.tip1']}" escape="false"/></li>
+                                            <li>
+                                                <h:outputFormat value="#{bundle['harvestserver.noSets.how.tip2']}" escape="false">
+                                                    <f:param value="#{manageTemplatesPage.dataverse.alias}"/>
+                                                </h:outputFormat>
+                                            </li>
+                                        </ul>
+                                        <p>
+                                            <h:outputFormat value="#{bundle['harvestserver.noSets.getStarted']}" escape="false">
+                                                <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                                                <f:param value="#{systemConfig.version}"/>
                                             </h:outputFormat>
-                                        </li>
-                                    </ul>
-                                    <p>
-                                        <h:outputFormat value="#{bundle['harvestserver.noSets.getStarted']}" escape="false">
-                                            <f:param value="#{systemConfig.guidesBaseUrl}"/>
-                                            <f:param value="#{systemConfig.version}"/>
-                                        </h:outputFormat>
-                                    </p>
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </p:fragment>
-                
-                <h:form id="harvestingSetsForm" rendered="#{harvestingSetsPage.harvestingServerEnabled}">
+                    </p:fragment>
+                    
                     <p:dataTable id="setsTable" styleClass="manageTable" var="oaiSet" value="#{harvestingSetsPage.configuredOAISets}"
-                                 rendered="#{!empty harvestingSetsPage.configuredOAISets}">
+                                 rendered="#{harvestingSetsPage.harvestingServerEnabled and !empty harvestingSetsPage.configuredOAISets}">
                         <f:facet name="header">
                             <div class="row">
                                 <div class="col-sm-6 text-left">

@@ -68,7 +68,7 @@ public class OAISetServiceBean implements java.io.Serializable {
     public OAISet findBySpec(String spec) {
         String query = "SELECT o FROM OAISet o where o.spec = :specName";
         OAISet oaiSet = null;
-        logger.info("Query: "+query+"; spec: "+spec);
+        logger.fine("Query: "+query+"; spec: "+spec);
         try {
             oaiSet = (OAISet) em.createQuery(query).setParameter("specName", spec).getSingleResult();
         } catch (Exception e) {
@@ -79,9 +79,9 @@ public class OAISetServiceBean implements java.io.Serializable {
 
     public List<OAISet> findAll() {
         try {
-            logger.info("setService, findAll; query: select object(o) from OAISet as o order by o.name");
+            logger.fine("setService, findAll; query: select object(o) from OAISet as o order by o.name");
             List<OAISet> oaiSets = em.createQuery("select object(o) from OAISet as o order by o.name").getResultList();
-            logger.info((oaiSets != null ? oaiSets.size() : 0) + " results found.");
+            logger.fine((oaiSets != null ? oaiSets.size() : 0) + " results found.");
             return oaiSets;
         } catch (Exception e) {
             return null;
@@ -113,15 +113,17 @@ public class OAISetServiceBean implements java.io.Serializable {
     public void exportOaiSet(OAISet oaiSet) {
         String query = oaiSet.getDefinition();
         
-        List<Long> resultIds = null; 
+        List<Long> datasetIds = null; 
         try {
-            resultIds = expandSetQuery(query);
+            datasetIds = expandSetQuery(query);
+            logger.fine("set query expanded to "+datasetIds.size()+" datasets.");
         } catch (OaiSetException ose) {
-            resultIds = null;
+            datasetIds = null;
         }
         
-        if (resultIds != null) {
-            oaiRecordService.updateOaiRecords(oaiSet.getSpec(), resultIds, new Date(), true);
+        if (datasetIds != null && !datasetIds.isEmpty()) {
+            logger.fine("Calling OAI Record Service to re-export "+datasetIds.size()+" datasets.");
+            oaiRecordService.updateOaiRecords(oaiSet.getSpec(), datasetIds, new Date(), true);
         }
         
     } 
@@ -129,10 +131,10 @@ public class OAISetServiceBean implements java.io.Serializable {
     public int validateDefinitionQuery(String query) throws OaiSetException {
         
         List<Long> resultIds = expandSetQuery(query);
-        logger.info("Datasets found: "+StringUtils.join(resultIds, ","));
+        //logger.fine("Datasets found: "+StringUtils.join(resultIds, ","));
         
         if (resultIds != null) {
-            logger.info("returning "+resultIds.size());
+            //logger.fine("returning "+resultIds.size());
             return resultIds.size();
         }
         
@@ -161,6 +163,8 @@ public class OAISetServiceBean implements java.io.Serializable {
         String restrictedQuery = addQueryRestrictions(query);
         
         solrQuery.setQuery(restrictedQuery);
+        solrQuery.setRows(Integer.MAX_VALUE);
+
         
         QueryResponse queryResponse = null;
         try {
@@ -175,10 +179,10 @@ public class OAISetServiceBean implements java.io.Serializable {
             } else {
                 error += messageFromSolr;
             }
-            logger.info(error);
+            logger.fine(error);
             throw new OaiSetException(error);
         } catch (SolrServerException ex) {
-            logger.info("Internal Dataverse Search Engine Error");
+            logger.fine("Internal Dataverse Search Engine Error");
             throw new OaiSetException("Internal Dataverse Search Engine Error");
         }
         
