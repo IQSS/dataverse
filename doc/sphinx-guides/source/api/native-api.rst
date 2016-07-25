@@ -109,7 +109,12 @@ Datasets
   Getting its draft version::
 
     GET http://$SERVER/api/datasets/:persistentId/versions/:draft?persistentId=doi:10.5072/FK2/J8SJZB
+    
+  Exporting its metadata in various formats see Note below::
 
+    GET http://$SERVER/api/datasets/export?exporter=DDI&persistentId=doi:10.5072/FK2/J8SJZB
+  
+    Note: Supported exporters (export formats) are DDI, DublinCore and json.
 
 
 Show the dataset whose id is passed::
