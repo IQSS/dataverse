@@ -101,7 +101,19 @@ public class DdiExportUtil {
      */
     private static void createStdyDscr(XMLStreamWriter xmlw, DatasetDTO datasetDto) throws XMLStreamException {
         DatasetVersionDTO version = datasetDto.getDatasetVersion();
-        String persistentAgency = datasetDto.getProtocol();
+        String persistentAgency = datasetDto.getProtocol(); 
+        
+        // The "persistentAgency" tag is used for the "agency" attribute of the 
+        // <IDNo> ddi section; back in the DVN3 days we used "handle" and "DOI" 
+        // for the 2 supported protocols, respectively. For the sake of backward
+        // compatibility, we should probably stick with these labels: (-- L.A. 4.5)
+        
+        if ("hdl".equals(persistentAgency)) { 
+            persistentAgency = "handle";
+        } else if ("doi".equals(persistentAgency)) {
+            persistentAgency = "DOI";
+        }
+        
         String persistentAuthority = datasetDto.getAuthority();
         String persistentId = datasetDto.getIdentifier();       
         //docDesc Block
@@ -191,6 +203,16 @@ public class DdiExportUtil {
     private static void writeDocDescElement (XMLStreamWriter xmlw, DatasetDTO datasetDto) throws XMLStreamException {
         DatasetVersionDTO version = datasetDto.getDatasetVersion();
         String persistentAgency = datasetDto.getProtocol();
+        // The "persistentAgency" tag is used for the "agency" attribute of the 
+        // <IDNo> ddi section; back in the DVN3 days we used "handle" and "DOI" 
+        // for the 2 supported protocols, respectively. For the sake of backward
+        // compatibility, we should probably stick with these labels: (-- L.A. 4.5)
+        if ("hdl".equals(persistentAgency)) { 
+            persistentAgency = "handle";
+        } else if ("doi".equals(persistentAgency)) {
+            persistentAgency = "DOI";
+        }
+        
         String persistentAuthority = datasetDto.getAuthority();
         String persistentId = datasetDto.getIdentifier();
         

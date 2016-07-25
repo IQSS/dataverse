@@ -68,7 +68,7 @@ public class XOAIItem implements Item {
         try {
             String filesRootDirectory = System.getProperty("dataverse.files.directory");
             String identifier = getIdentifier().replaceFirst("^[^:]*:", "/");
-            InputStream inputStream = new FileInputStream(new File(filesRootDirectory + identifier + "/export_ddi.xml"));
+            InputStream inputStream = new FileInputStream(new File(filesRootDirectory + identifier + "/export_DDI.cached"));
             return new xMetadata(inputStream);
         } catch (Exception e) {
             return new xMetadata("");
