@@ -37,6 +37,7 @@ import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectB
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -524,17 +525,26 @@ public class Admin extends AbstractApiBean {
         }
         return okResponse(msg);
     }
-    
-    //should the path for this method refer instead to the auth user ID? Yes.
-    // Call confirmEmailSvc.findConfirmEmailDataByDataverseUser. We need this
-    // to close the security hole of exposing the token on create.
-    @Path("confirmEmail/{token}")
-    @GET
-    public Response getConfirmEmailToken(@PathParam("token") String token) {
-        ConfirmEmailExecResponse confirmEmailExecResponse = confirmEmailSvc.processToken(token);
-        ConfirmEmailData confirmEmailData = confirmEmailExecResponse.getConfirmEmailData();
 
-        return null;
+    /**
+     * This method is used in integration tests.
+     *
+     * @param userId The database id of an AuthenticatedUser.
+     * @return The confirm email token.
+     */
+    @Path("confirmEmail/{userId}")
+    @GET
+    public Response getConfirmEmailToken(@PathParam("userId") long userId) {
+        AuthenticatedUser user = authSvc.findByID(userId);
+        if (user != null) {
+            List<ConfirmEmailData> confirmEmailDatas = confirmEmailSvc.findConfirmEmailDataByDataverseUser(user);
+            int size = confirmEmailDatas.size();
+            if (size == 1) {
+                ConfirmEmailData confirmEmailData = confirmEmailDatas.get(0);
+                return okResponse(Json.createObjectBuilder().add("token", confirmEmailData.getToken()));
+            }
+        }
+        return errorResponse(Status.BAD_REQUEST, "Could not find confirm email token for user " + userId);
     }
 
     /**

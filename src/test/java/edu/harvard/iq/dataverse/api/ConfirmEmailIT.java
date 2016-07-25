@@ -5,8 +5,6 @@ import static com.jayway.restassured.RestAssured.given;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailData;
 import java.util.UUID;
 import java.util.logging.Logger;
 import javax.json.Json;
@@ -30,8 +28,6 @@ import static org.hamcrest.Matchers.startsWith;
  *
  * - Show on user page if has been email confirmed (see mockups).
  *
- * - Do not expose confirm email token to user.
- *
  * - Call confirmEmailSvc.createToken when user is created in GUI.
  *
  * - Call confirmEmailSvc.createToken when user changes email address.
@@ -51,9 +47,6 @@ public class ConfirmEmailIT {
     private static final String idKey = "id";
     private static final String usernameKey = "userName";
     private static final String emailKey = "email";
-    private static final AuthenticatedUser authenticatedUser = new AuthenticatedUser();
-    private static final ConfirmEmailData emailData = new ConfirmEmailData(authenticatedUser);
-    private static final String confirmToken = getConfirmEmailToken(emailData);
 
     @BeforeClass
     public static void setUp() {
@@ -62,25 +55,19 @@ public class ConfirmEmailIT {
 
     @Test
     public void testConfirm() {
-        //  Can't seem to get timestamp to appear in authenticated user Json output
 
         String email = null;
-
+        /**
+         * @todo Switch this to UtilIT.createRandomUser()
+         */
         Response createUserToConfirm = createUser(getRandomUsername(), "firstName", "lastName", email);
         createUserToConfirm.prettyPrint();
-        // TODO: do not expose confirm email token to user, just in email URL
-        String confirmEmailToken = JsonPath.from(createUserToConfirm.body().asString()).getString("data.confirmEmailToken");
         createUserToConfirm.then().assertThat()
                 .statusCode(200);
 
-        //redundant?  
         long userIdToConfirm = JsonPath.from(createUserToConfirm.body().asString()).getLong("data.authenticatedUser.id");
         String userToConfirmApiToken = JsonPath.from(createUserToConfirm.body().asString()).getString("data.apiToken");
         String usernameToConfirm = JsonPath.from(createUserToConfirm.body().asString()).getString("data.user.userName");
-//        Response getApiToken = getApiTokenUsingUsername(usernameToConfirm, usernameToConfirm);
-//        getApiToken.then().assertThat()
-//                .statusCode(200);
-        String junkToken = "noSuchToken";
 
         Response createSuperuser = createUser(getRandomUsername(), "super", "user", email);
         createSuperuser.then().assertThat()
@@ -92,14 +79,7 @@ public class ConfirmEmailIT {
         createSuperuser.then().assertThat()
                 .statusCode(200);
 
-        /**
-         * @todo: Superuser GET confirm email token based on user's database ID
-         * (primary key). This can answer questions the superuser may have, such
-         * as, "Did the user's token expire?"
-         */
-        Response getConfirmEmailData = given()
-                .get("/api/admin/confirmEmail/" + 42);
-
+        String junkToken = "noSuchToken";
         Response noSuchToken = given()
                 .post("/api/admin/confirmEmail/" + junkToken);
         noSuchToken.prettyPrint();
@@ -114,13 +94,13 @@ public class ConfirmEmailIT {
                 .statusCode(200)
                 .body("data.emailLastConfirmed", nullValue());
 
-        /**
-         *
-         * User will call a second method within admin API to POST token to new
-         * endpoint /api/admin/confirmEmail/{token}
-         *
-         */
-        System.out.println("real token: " + confirmEmailToken);
+        Response getToken = given()
+                .get("/api/admin/confirmEmail/" + userIdToConfirm);
+        getToken.prettyPrint();
+        getToken.then().assertThat()
+                .statusCode(200);
+        String confirmEmailToken = JsonPath.from(getToken.body().asString()).getString("data.token");
+
         // This is simulating the user clicking the URL from their email client.
         Response confirmEmail = given()
                 .post("/api/admin/confirmEmail/" + confirmEmailToken);
@@ -181,18 +161,6 @@ public class ConfirmEmailIT {
 
     private static String getEmailFromUserName(String username) {
         return username + "@mailinator.com";
-    }
-
-    private static String getConfirmEmailToken(ConfirmEmailData emailData) {
-        String confirmToken = emailData.getToken();
-        return confirmToken;
-    }
-
-    private Response getApiTokenUsingUsername(String username, String password) {
-        Response response = given()
-                .contentType(ContentType.JSON)
-                .get("/api/builtin-users/" + username + "/api-token?username=" + username + "&password=" + password);
-        return response;
     }
 
 }
