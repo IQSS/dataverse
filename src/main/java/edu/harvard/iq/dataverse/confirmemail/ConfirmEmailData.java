@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.confirmemail;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.Date;
@@ -53,18 +52,13 @@ public class ConfirmEmailData implements Serializable {
     @Column(nullable = false)
     private Timestamp expires;
 
-    public ConfirmEmailData(AuthenticatedUser anAuthenticatedUser) {
+    public ConfirmEmailData(AuthenticatedUser anAuthenticatedUser, long minutesUntilConfirmEmailTokenExpires) {
         authenticatedUser = anAuthenticatedUser;
         token = UUID.randomUUID().toString();
         long nowInMilliseconds = new Date().getTime();
         created = new Timestamp(nowInMilliseconds);
         long ONE_MINUTE_IN_MILLISECONDS = 60000;
-        /**
-         * @todo: use database setting instead of jvm option for line 75
-         * configurable expiration value
-         */
-
-        long futureInMilliseconds = nowInMilliseconds + (SystemConfig.getMinutesUntilConfirmEmailTokenExpires() * ONE_MINUTE_IN_MILLISECONDS);
+        long futureInMilliseconds = nowInMilliseconds + (minutesUntilConfirmEmailTokenExpires * ONE_MINUTE_IN_MILLISECONDS);
         expires = new Timestamp(new Date(futureInMilliseconds).getTime());
     }
 

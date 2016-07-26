@@ -28,9 +28,6 @@ import static org.hamcrest.Matchers.startsWith;
  * - What effect should there be of not having a confirmed email? No emails are
  * sent? User can't create stuff?
  *
- * - Make getMinutesUntilConfirmEmailTokenExpires configurable. How long should
- * the default be? 24 hours?
- *
  */
 public class ConfirmEmailIT {
 

@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.confirmemail;
 
-import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.MailServiceBean;
@@ -17,7 +16,6 @@ import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
-import javax.ws.rs.core.Response;
 
 /**
  *
@@ -33,6 +31,9 @@ public class ConfirmEmailServiceBean {
 
     @EJB
     MailServiceBean mailService;
+
+    @EJB
+    SystemConfig systemConfig;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -61,7 +62,7 @@ public class ConfirmEmailServiceBean {
         }
 
         // create a fresh token for the user
-        ConfirmEmailData confirmEmailData = new ConfirmEmailData(aUser);
+        ConfirmEmailData confirmEmailData = new ConfirmEmailData(aUser, systemConfig.getMinutesUntilConfirmEmailTokenExpires());
         try {
             em.persist(confirmEmailData);
             ConfirmEmailInitResponse confirmEmailInitResponse = new ConfirmEmailInitResponse(true, confirmEmailData);
@@ -233,7 +234,7 @@ public class ConfirmEmailServiceBean {
     }
 
     public ConfirmEmailData createToken(AuthenticatedUser au) {
-        ConfirmEmailData confirmEmailData = new ConfirmEmailData(au);
+        ConfirmEmailData confirmEmailData = new ConfirmEmailData(au, systemConfig.getMinutesUntilConfirmEmailTokenExpires());
         em.persist(confirmEmailData);
         return confirmEmailData;
     }

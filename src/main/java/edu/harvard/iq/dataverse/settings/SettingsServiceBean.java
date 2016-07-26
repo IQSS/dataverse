@@ -34,6 +34,10 @@ public class SettingsServiceBean {
      */
     public enum Key {
         /**
+         * @todo Document this in the Installation Guide.
+         */
+        MinutesUntilConfirmEmailTokenExpires,
+        /**
          * Override Solr highlighting "fragsize"
          * https://wiki.apache.org/solr/HighlightingParameters#hl.fragsize
          */
