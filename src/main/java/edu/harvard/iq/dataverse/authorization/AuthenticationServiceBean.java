@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.authorization.providers.echo.EchoAuthenticationP
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Calendar;
@@ -71,6 +72,9 @@ public class AuthenticationServiceBean {
     
     @EJB
     UserNotificationServiceBean userNotificationService;
+
+    @EJB
+    ConfirmEmailServiceBean confirmEmailService;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -430,6 +434,8 @@ public class AuthenticationServiceBean {
         AuthenticatedUserLookup auusLookup = userRecordId.createAuthenticatedUserLookup(authenticatedUser);
         em.persist( auusLookup );
         authenticatedUser.setAuthenticatedUserLookup(auusLookup);
+
+        confirmEmailService.createToken(authenticatedUser);
         
         actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Auth, "createUser")
             .setInfo(authenticatedUser.getIdentifier()));

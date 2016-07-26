@@ -21,8 +21,6 @@ import static org.hamcrest.Matchers.startsWith;
  *
  * - Show on user page if has been email confirmed (see mockups).
  *
- * - Call confirmEmailSvc.createToken when user is created in GUI.
- *
  * - Call confirmEmailSvc.createToken when user changes email address.
  *
  * - What effect should there be of not having a confirmed email? No emails are

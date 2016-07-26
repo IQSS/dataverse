@@ -133,8 +133,6 @@ public class BuiltinUsers extends AbstractApiBean {
             token.setExpireTime(new Timestamp(c.getTimeInMillis()));
             authSvc.save(token);
 
-            confirmEmailSvc.createToken(au);
-
             JsonObjectBuilder resp = Json.createObjectBuilder();
             resp.add("user", json(user));
             resp.add("authenticatedUser", jsonForAuthUser(au));
