@@ -102,20 +102,20 @@ public class ConfirmEmailIT {
         String confirmEmailToken = JsonPath.from(getToken.body().asString()).getString("data.token");
 
         // This is simulating the user clicking the URL from their email client.
-        Response confirmEmail = given()
-                .post("/api/admin/confirmEmail/" + confirmEmailToken);
-        confirmEmail.prettyPrint();
-        confirmEmail.then().assertThat()
-                .statusCode(200);
+//        Response confirmEmail = given()
+//                .post("/api/admin/confirmEmail/" + confirmEmailToken);
+//        confirmEmail.prettyPrint();
+//        confirmEmail.then().assertThat()
+//                .statusCode(200);
 
         /**
          * @todo Switch over to this instead of the POST above, once it's
          * working.
          */
-//        Response confirmEmailViaBrowser = given()
-//                .get("/confirmemail.xhtml?token=" + confirmEmailToken);
-//        confirmEmailViaBrowser.then().assertThat()
-//                .statusCode(200);
+        Response confirmEmailViaBrowser = given()
+                .get("/confirmemail.xhtml?token=" + confirmEmailToken);
+        confirmEmailViaBrowser.then().assertThat()
+                .statusCode(200);
         Response getUserWithConfirmedEmail = UtilIT.getAuthenticatedUser(usernameToConfirm, superUserApiToken);
         getUserWithConfirmedEmail.prettyPrint();
         getUserWithConfirmedEmail.then().assertThat()

@@ -5,6 +5,8 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.MailServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -15,6 +17,7 @@ import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
+import javax.ws.rs.core.Response;
 
 /**
  *
@@ -117,6 +120,14 @@ public class ConfirmEmailServiceBean {
                 return tokenUnusable;
             } else {
                 ConfirmEmailExecResponse goodTokenCanProceed = new ConfirmEmailExecResponse(tokenQueried, confirmEmailData);
+                if (confirmEmailData == null) {
+                    logger.info("Invalid token.");
+                    return null;
+                }
+                long nowInMilliseconds = new Date().getTime();
+                Timestamp emailConfirmed = new Timestamp(nowInMilliseconds);
+                AuthenticatedUser authenticatedUser = confirmEmailData.getAuthenticatedUser();
+                authenticatedUser.setEmailConfirmed(emailConfirmed);
                 return goodTokenCanProceed;
             }
         } else {

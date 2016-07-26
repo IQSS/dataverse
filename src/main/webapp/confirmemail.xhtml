@@ -21,12 +21,12 @@
                     <f:viewAction action="#{ConfirmEmailPage.init}" />
                 </f:metadata>
 
-                <ui:fragment id="debugVariables" rendered="false">
+<!--                <ui:fragment id="debugVariables" rendered="false">
                     <div style="background-color: lightgray; margin-top:3em;">
                         <tt>
-                            <h:outputText value="#{bundle['confirmEmail.token']} #{ConfirmEmailPage.token}"/><br/>
-                            <h:outputText value="#{bundle['confirmEmail.userLookedUp']} #{ConfirmEmailPage.user.userName}"/><br/>
-                            <h:outputText value="#{bundle['confirmEmail.emailSubmitted']} #{ConfirmEmailPage.emailAddress}"/><br/>
+                            <h:outputText value="{bundle['confirmEmail.token']} {ConfirmEmailPage.token}"/><br/>
+                            <h:outputText value="{bundle['confirmEmail.userLookedUp']} {ConfirmEmailPage.user.userName}"/><br/>
+                            <h:outputText value="{bundle['confirmEmail.emailSubmitted']} {ConfirmEmailPage.emailAddress}"/><br/>
                         </tt>
                     </div>
                 </ui:fragment>
@@ -52,6 +52,7 @@
                             </div>
                             <div class="form-group col-sm-11">
                                 <div class="col-sm-offset-3 col-sm-9 button-block">
+                                     Need  
                                     <p:commandButton action="#{ConfirmEmailPage.sendEmailConfirmLink()}" update="@all" value="#{bundle['confirmEmail.submitRequest']}"/>
                                     <p:button value="#{bundle.cancel}" outcome="/loginpage.xhtml"/>
                                 </div>
@@ -72,7 +73,7 @@
                                             <h:outputText value="#{ConfirmEmailPage.confirmEmailUrl}"/>
                                         </h:outputLink>
                                     </ui:fragment>
-                                    <ui:fragment rendered="#{empty ConfirmEmailPage.passwordResetUrl}">
+                                    <ui:fragment rendered="#{empty ConfirmEmailPage.confirmEmailUrl}">
                                         <h:outputFormat value="#{bundle['confirmEmail.noEmail.tip']}">
                                             <f:param value="#{ConfirmEmailPage.emailAddress}"/>
                                         </h:outputFormat>
@@ -81,62 +82,13 @@
                             </div>
                         </ui:fragment>
                     </ui:fragment>
-                </ui:fragment>
+                </ui:fragment>-->
                 
                 <ui:fragment rendered="#{not empty ConfirmEmailPage.token}">
                     <h:outputFormat value="#{bundle['confirmEmail.illegalLink.tip']}" escape="false" rendered="#{empty ConfirmEmailPage.user}"> 
                         <f:param value="&lt;a href='/confirmemail.xhtml'&gt;"/>
                         <f:param value="&lt;/a&gt;"/>
                     </h:outputFormat>
-                    <ui:fragment rendered="#{not empty ConfirmEmailPage.user}">
-                        <div class="alert alert-info">  
-                            <span class="glyphicon glyphicon-info-sign"></span>
-                            <h:outputFormat value="#{bundle['passwdReset.newPasswd.details']}" escape="false"> 
-                                <f:param value="&lt;strong&gt;"/>
-                                <f:param value="&lt;/strong&gt;"/>
-                            </h:outputFormat>                 
-                        </div>
-                        <div class="row" jsf:rendered="#{ConfirmEmailPage.isAccountUpgrade()}">
-                            <div class="col-sm-12">
-                                <h:outputFormat styleClass="h2 text-info show" value="#{bundle['user.updatePassword.welcome']}">
-                                    <f:param value="#{systemConfig.getVersion(true)}"/>
-                                    <f:param value="#{PasswordResetPage.user.displayInfo.title}"/>
-                                </h:outputFormat>
-                                <p class="help-block"><span class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['user.updatePassword.warning']}</span></p>
-                            </div>
-                        </div>
-                        <div>
-                            <h:form styleClass="form-horizontal">
-                                <div class="form-group col-sm-11">
-                                    <label for="inputPassword" class="col-sm-3 control-label">
-                                        #{bundle['passwdReset.newPasswd']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"></span>
-                                    </label>
-                                    <div class="col-sm-4">
-                                        <p:password id="inputPassword" label="#{bundle.passwd}" match="retypePassword" styleClass="form-control" value="#{PasswordResetPage.newPassword}"/>
-                                        <p:message for="inputPassword" />
-                                    </div>
-                                </div>
-                                <div class="form-group col-sm-11">
-                                    <label for="retypePassword" class="col-sm-3 control-label">
-                                        #{bundle['passwdReset.rePasswd']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"></span>
-                                    </label>
-                                    <div class="col-sm-4">
-                                        <p:password id="retypePassword" label="#{bundle['passwdReset.rePasswd']}" styleClass="form-control" value="#{PasswordResetPage.newPassword}"/>
-                                        <p:message for="retypePassword" />
-                                    </div>
-                                </div>
-                                <ui:fragment rendered="#{PasswordResetPage.isAccountUpgrade()}">
-                                     Terms of Use 
-                                    <ui:include src="termsofuse.xhtml"/>
-                                </ui:fragment>
-                                <div class="form-group col-sm-11">
-                                    <div class="col-sm-10 button-block">
-                                        <p:commandButton action="#{PasswordResetPage.resetPassword()}" update="@all" value="#{bundle['passwdReset.resetBtn']}"/>
-                                    </div>
-                                </div>
-                            </h:form>
-                        </div>
-                    </ui:fragment>
                 </ui:fragment>
             </ui:define>
         </ui:composition>
