@@ -19,7 +19,6 @@ import edu.harvard.iq.dataverse.authorization.providers.shib.ShibServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibUtil;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailData;
-import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailExecResponse;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.settings.Setting;
 import javax.json.Json;
@@ -35,8 +34,6 @@ import javax.ws.rs.core.Response;
 
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
-import java.sql.Timestamp;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -545,27 +542,6 @@ public class Admin extends AbstractApiBean {
             }
         }
         return errorResponse(Status.BAD_REQUEST, "Could not find confirm email token for user " + userId);
-    }
-
-    /**
-     * This is just for testing the confirm email feature and is used in
-     * integration tests. We may delete this endpoint entirely if we can test
-     * everything via the xhtml file.
-     */
-    @Path("confirmEmail/{token}")
-    @POST
-    public Response confirmTheEmail(@PathParam("token") String token) {
-        // TODO: move as much logic as possible to a central place like confirmEmailSvc.processToken
-        ConfirmEmailExecResponse confirmEmailExecResponse = confirmEmailSvc.processToken(token);
-        ConfirmEmailData confirmEmailData = confirmEmailExecResponse.getConfirmEmailData();
-        if (confirmEmailData == null) {
-            return errorResponse(Status.NOT_FOUND, "Invalid token: " + token);
-        }
-        long nowInMilliseconds = new Date().getTime();
-        Timestamp emailConfirmed = new Timestamp(nowInMilliseconds);
-        AuthenticatedUser authenticatedUser = confirmEmailData.getAuthenticatedUser();
-        authenticatedUser.setEmailConfirmed(emailConfirmed);
-        return okResponse("Email confirmed.");
     }
 
 }
