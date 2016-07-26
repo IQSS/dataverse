@@ -1017,7 +1017,7 @@ public class DdiExportUtil {
                 writeAttribute(xmlw, "URI", dataverseUrl + "/api/access/datafile/" + fileDTo.getDatafile().getId());
                 writeAttribute(xmlw, "level", "datafile");
                 xmlw.writeStartElement("labl");
-                xmlw.writeCharacters(fileDTo.getDatafile().getName());
+                xmlw.writeCharacters(fileDTo.getDatafile().getFilename());
                 xmlw.writeEndElement(); // labl
                 writeFileDescription(xmlw, fileDTo);
                 xmlw.writeEndElement(); // otherMat

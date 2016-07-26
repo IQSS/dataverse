@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.util.json;
 
 import com.google.gson.Gson;
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
+import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
@@ -13,6 +14,7 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseContact;
 import edu.harvard.iq.dataverse.DataverseTheme;
+import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess.License;
@@ -275,6 +277,7 @@ public class JsonParser {
             
             dsv.setDatasetFields(parseMetadataBlocks(obj.getJsonObject("metadataBlocks")));
 
+            //dsv.setFileMetadatas(parseFiles(obj.getJsonArray("files"), dsv));
             return dsv;
 
         } catch (ParseException ex) {
@@ -315,6 +318,44 @@ public class JsonParser {
         }
         convertKeywordsToSubjects(fields);
         return fields;
+    }
+    
+    public List<FileMetadata> parseFiles(JsonArray metadatasJson, DatasetVersion dsv) throws JsonParseException {
+        List<FileMetadata> fileMetadatas = new LinkedList<>();
+        
+        for (JsonObject filemetadataJson : metadatasJson.getValuesAs(JsonObject.class)) {
+            String label = filemetadataJson.getString("label");
+            String description = filemetadataJson.getString("description");
+            
+            FileMetadata fileMetadata = new FileMetadata();
+            fileMetadata.setLabel(label);
+            fileMetadata.setDescription(description);
+            fileMetadata.setDatasetVersion(dsv);
+            
+            DataFile dataFile = parseDataFile(filemetadataJson.getJsonObject("datafile"));
+            
+            fileMetadata.setDataFile(dataFile);
+            dataFile.getFileMetadatas().add(fileMetadata);
+            
+            fileMetadatas.add(fileMetadata);
+        }
+        
+        
+        return fileMetadatas; 
+    }
+    
+    public DataFile parseDataFile(JsonObject datafileJson) {
+        DataFile dataFile = new DataFile();
+        
+        String contentType = datafileJson.getString("contentType");
+        String storageIdentifier = datafileJson.getString("filesystemName");
+        String md5 = datafileJson.getString("md5");
+        
+        dataFile.setContentType(contentType);
+        dataFile.setStorageIdentifier(storageIdentifier);
+        dataFile.setmd5(md5);
+        
+        return dataFile;
     }
     /**
      * Special processing for GeographicCoverage compound field:
