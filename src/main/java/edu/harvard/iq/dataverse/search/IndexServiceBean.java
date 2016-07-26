@@ -912,7 +912,7 @@ public class IndexServiceBean {
                     datafileSolrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, fileSortByDate);
                     datafileSolrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE_SEARCHABLE_TEXT, convertToFriendlyDate(fileSortByDate));
 
-                    if (majorVersionReleaseDate == null) {
+                    if (majorVersionReleaseDate == null && !datafile.isHarvested()) {
                         datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS, UNPUBLISHED_STRING);
                     }
 

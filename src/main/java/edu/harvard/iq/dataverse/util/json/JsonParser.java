@@ -26,6 +26,7 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.StringReader;
+import java.sql.Timestamp;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -215,10 +216,12 @@ public class JsonParser {
         dataset.setProtocol(obj.getString("protocol", null) == null ? settingsService.getValueForKey(SettingsServiceBean.Key.Protocol) : obj.getString("protocol"));
         dataset.setDoiSeparator(obj.getString("doiSeparator", null) == null ? settingsService.getValueForKey(SettingsServiceBean.Key.DoiSeparator) : obj.getString("doiSeparator"));
         dataset.setIdentifier(obj.getString("identifier",null));
-        DatasetVersion dsv = parseDatasetVersion(obj.getJsonObject("datasetVersion"));
+
+        DatasetVersion dsv = new DatasetVersion(); 
+        dsv.setDataset(dataset);
+        dsv = parseDatasetVersion(obj.getJsonObject("datasetVersion"), dsv);
         LinkedList<DatasetVersion> versions = new LinkedList<>();
         versions.add(dsv);
-        dsv.setDataset(dataset);
 
         dataset.setVersions(versions);
         return dataset;
@@ -277,7 +280,13 @@ public class JsonParser {
             
             dsv.setDatasetFields(parseMetadataBlocks(obj.getJsonObject("metadataBlocks")));
 
-            //dsv.setFileMetadatas(parseFiles(obj.getJsonArray("files"), dsv));
+            JsonArray filesJson = obj.getJsonArray("files");
+            if (filesJson == null) {
+                filesJson = obj.getJsonArray("fileMetadatas");
+            }
+            if (filesJson != null) {
+                dsv.setFileMetadatas(parseFiles(filesJson, dsv));
+            }
             return dsv;
 
         } catch (ParseException ex) {
@@ -322,34 +331,46 @@ public class JsonParser {
     
     public List<FileMetadata> parseFiles(JsonArray metadatasJson, DatasetVersion dsv) throws JsonParseException {
         List<FileMetadata> fileMetadatas = new LinkedList<>();
-        
-        for (JsonObject filemetadataJson : metadatasJson.getValuesAs(JsonObject.class)) {
-            String label = filemetadataJson.getString("label");
-            String description = filemetadataJson.getString("description");
-            
-            FileMetadata fileMetadata = new FileMetadata();
-            fileMetadata.setLabel(label);
-            fileMetadata.setDescription(description);
-            fileMetadata.setDatasetVersion(dsv);
-            
-            DataFile dataFile = parseDataFile(filemetadataJson.getJsonObject("datafile"));
-            
-            fileMetadata.setDataFile(dataFile);
-            dataFile.getFileMetadatas().add(fileMetadata);
-            
-            fileMetadatas.add(fileMetadata);
+
+        if (metadatasJson != null) {
+            for (JsonObject filemetadataJson : metadatasJson.getValuesAs(JsonObject.class)) {
+                String label = filemetadataJson.getString("label");
+                String description = filemetadataJson.getString("description");
+
+                FileMetadata fileMetadata = new FileMetadata();
+                fileMetadata.setLabel(label);
+                fileMetadata.setDescription(description);
+                fileMetadata.setDatasetVersion(dsv);
+
+                DataFile dataFile = parseDataFile(filemetadataJson.getJsonObject("dataFile"));
+
+                fileMetadata.setDataFile(dataFile);
+                dataFile.getFileMetadatas().add(fileMetadata);
+                dataFile.setOwner(dsv.getDataset());
+                
+                if (dsv.getDataset().getFiles() == null) {
+                    dsv.getDataset().setFiles(new ArrayList<>());
+                }
+                dsv.getDataset().getFiles().add(dataFile);
+
+                fileMetadatas.add(fileMetadata);
+            }
         }
-        
-        
-        return fileMetadatas; 
+
+        return fileMetadatas;
     }
     
     public DataFile parseDataFile(JsonObject datafileJson) {
         DataFile dataFile = new DataFile();
         
-        String contentType = datafileJson.getString("contentType");
-        String storageIdentifier = datafileJson.getString("filesystemName");
-        String md5 = datafileJson.getString("md5");
+        Timestamp timestamp = new Timestamp(new Date().getTime());
+        dataFile.setCreateDate(timestamp);
+        dataFile.setModificationTime(timestamp);
+        dataFile.setPermissionModificationTime(timestamp);
+        
+        String contentType = "application/octet-stream"; //datafileJson.getString("contentType");
+        String storageIdentifier = datafileJson.getString("storageIdentifier");
+        String md5 = "unknown"; //datafileJson.getString("md5");
         
         dataFile.setContentType(contentType);
         dataFile.setStorageIdentifier(storageIdentifier);

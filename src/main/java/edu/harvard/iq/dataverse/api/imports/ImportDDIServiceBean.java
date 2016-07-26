@@ -228,9 +228,9 @@ public class ImportDDIServiceBean {
                     //processFileDscr(xmlr, datasetDTO, filesMap);
                     
                 }
-                  else if (xmlr.getLocalName().equals("otherMat") && !importType.equals(ImportType.MIGRATION) ) {
+                else if (xmlr.getLocalName().equals("otherMat") && !importType.equals(ImportType.MIGRATION) ) {
                     // EMK TODO: add this back in
-                    //processOtherMat(xmlr, datasetDTO, filesMap);
+                    processOtherMat(xmlr, datasetDTO, filesMap);
                 }
 
             } else if (event == XMLStreamConstants.END_ELEMENT) {
@@ -1532,10 +1532,14 @@ public class ImportDDIServiceBean {
         datasetDTO.getDatasetVersion().getFileMetadatas().add(fmdDTO);
 
         DataFileDTO dfDTO = new DataFileDTO();
-        fmdDTO.setDataFile(dfDTO);
-        datasetDTO.getDataFiles().add(dfDTO);
+        //if (datasetDTO.getDataFiles() == null) {
+        //    datasetDTO.setDataFiles(new ArrayList<>());
+        //}
+        //datasetDTO.getDataFiles().add(dfDTO);
        
         dfDTO.setStorageIdentifier( xmlr.getAttributeValue(null, "URI"));
+        fmdDTO.setDataFile(dfDTO);
+
 
         // TODO: handle categories; note that multiple categories are allowed in Dataverse 4;
         String catName = null;

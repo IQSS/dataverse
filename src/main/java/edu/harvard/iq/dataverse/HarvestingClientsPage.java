@@ -15,6 +15,8 @@ import edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClientServiceBean;
 import edu.harvard.iq.dataverse.harvest.client.oai.OaiHandler;
+import edu.harvard.iq.dataverse.search.IndexResponse;
+import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.util.ArrayList;
@@ -57,6 +59,10 @@ public class HarvestingClientsPage implements java.io.Serializable {
     @EJB
     HarvesterServiceBean harvesterService;
     @EJB
+    DatasetServiceBean datasetService;
+    @EJB
+    SolrIndexServiceBean solrIndexService;
+    @EJB
     EjbDataverseEngine engineService;
     @Inject
     DataverseRequestServiceBean dvRequestService;
@@ -67,6 +73,8 @@ public class HarvestingClientsPage implements java.io.Serializable {
     private Dataverse dataverse;
     private Long dataverseId = null;
     private HarvestingClient selectedClient;
+    
+    private static final String solrDocIdentifierDataset = "dataset_";
     
     public enum PageMode {
 
@@ -258,9 +266,19 @@ public class HarvestingClientsPage implements java.io.Serializable {
             //configuredHarvestingClients.remove(selectedClient);
             logger.info("proceeding to delete harvesting client "+selectedClient.getName());
             try {
+                // TODO: 
+                // separate the code for deleting the datasets from the index
+                // into cleaner helper methods, move it out of here... -- L.A. - 4.5
+                List<String> solrIdsOfDatasetsToDelete = new ArrayList<>();
+                for (Dataset harvestedDataset : selectedClient.getHarvestedDatasets()) {
+                    solrIdsOfDatasetsToDelete.add(solrDocIdentifierDataset + harvestedDataset.getId());
+                }
                 engineService.submit(new DeleteHarvestingClientCommand(dvRequestService.getDataverseRequest(), selectedClient));
                 configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();
                 JsfHelper.addFlashMessage("Selected harvesting client has been deleted.");
+                logger.info("attempting to delete the following datasets from the index: "+StringUtils.join(solrIdsOfDatasetsToDelete, ","));
+                IndexResponse resultOfAttemptToDeleteDatasets = solrIndexService.deleteMultipleSolrIds(solrIdsOfDatasetsToDelete);
+                logger.info("result of attempt to premptively deleted published files before reindexing: " + resultOfAttemptToDeleteDatasets + "\n");
             } catch (CommandException ex) {
                 String failMessage = "Selected harvesting client cannot be deleted.";
                 JH.addMessage(FacesMessage.SEVERITY_FATAL, failMessage);

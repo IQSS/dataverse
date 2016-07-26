@@ -213,6 +213,7 @@ public class ImportServiceBean {
         // convert DTO to Json, 
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         String json = gson.toJson(dsDTO);
+        logger.info("JSON produced for the metadata harvested: "+json);
         JsonReader jsonReader = Json.createReader(new StringReader(json));
         JsonObject obj = jsonReader.readObject();
         //and call parse Json to read it into a dataset   
