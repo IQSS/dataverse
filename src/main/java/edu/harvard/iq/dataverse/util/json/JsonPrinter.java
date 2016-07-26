@@ -440,7 +440,7 @@ public class JsonPrinter {
         }
         return jsonObjectBuilder()
                 .add("id", df.getId())
-                .add("name", fileName)
+                .add("filename", fileName)
                 .add("contentType", df.getContentType())
                 .add("storageIdentifier", df.getStorageIdentifier())
                 .add("originalFileFormat", df.getOriginalFileFormat())
