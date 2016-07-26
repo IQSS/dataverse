@@ -4,7 +4,7 @@
     <citation>
       <titlStmt>
         <titl>Darwin's Finches</titl>
-        <IDNo agency="DOI">10.5072/FK2/PCA2E3</IDNo>
+        <IDNo agency="DOI">doi:10.5072/FK2/PCA2E3</IDNo>
       </titlStmt>
       <distStmt/>
       <verStmt source="DVN">
@@ -17,7 +17,7 @@
     <citation>
       <titlStmt>
         <titl>Darwin's Finches</titl>
-        <IDNo agency="DOI">10.5072/FK2/PCA2E3</IDNo>
+        <IDNo agency="DOI">doi:10.5072/FK2/PCA2E3</IDNo>
       </titlStmt>
       <rspStmt>
         <AuthEnty affiliation="Birds Inc.">Finch, Fiona</AuthEnty>

@@ -98,6 +98,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
             }
          
             
+            // TODO: option to *force* export? 
             
             if (doExport) {
                 if (dataset.getPublicationDate() != null 

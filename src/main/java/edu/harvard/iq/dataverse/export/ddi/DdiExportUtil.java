@@ -101,13 +101,12 @@ public class DdiExportUtil {
      */
     private static void createStdyDscr(XMLStreamWriter xmlw, DatasetDTO datasetDto) throws XMLStreamException {
         DatasetVersionDTO version = datasetDto.getDatasetVersion();
-        String persistentAgency = datasetDto.getProtocol(); 
-        
+        String persistentProtocol = datasetDto.getProtocol();
+        String persistentAgency = persistentProtocol;
         // The "persistentAgency" tag is used for the "agency" attribute of the 
         // <IDNo> ddi section; back in the DVN3 days we used "handle" and "DOI" 
         // for the 2 supported protocols, respectively. For the sake of backward
         // compatibility, we should probably stick with these labels: (-- L.A. 4.5)
-        
         if ("hdl".equals(persistentAgency)) { 
             persistentAgency = "handle";
         } else if ("doi".equals(persistentAgency)) {
@@ -129,7 +128,7 @@ public class DdiExportUtil {
         
         xmlw.writeStartElement("IDNo");
         writeAttribute(xmlw, "agency", persistentAgency);
-        xmlw.writeCharacters(persistentAuthority + "/" + persistentId);
+        xmlw.writeCharacters(persistentProtocol + ":" + persistentAuthority + "/" + persistentId);
         xmlw.writeEndElement(); // IDNo
        
         xmlw.writeEndElement(); // titlStmt
@@ -202,7 +201,8 @@ public class DdiExportUtil {
     
     private static void writeDocDescElement (XMLStreamWriter xmlw, DatasetDTO datasetDto) throws XMLStreamException {
         DatasetVersionDTO version = datasetDto.getDatasetVersion();
-        String persistentAgency = datasetDto.getProtocol();
+        String persistentProtocol = datasetDto.getProtocol();
+        String persistentAgency = persistentProtocol;
         // The "persistentAgency" tag is used for the "agency" attribute of the 
         // <IDNo> ddi section; back in the DVN3 days we used "handle" and "DOI" 
         // for the 2 supported protocols, respectively. For the sake of backward
@@ -222,7 +222,7 @@ public class DdiExportUtil {
         writeFullElement(xmlw, "titl", dto2Primitive(version, DatasetFieldConstant.title));
         xmlw.writeStartElement("IDNo");
         writeAttribute(xmlw, "agency", persistentAgency);
-        xmlw.writeCharacters(persistentAuthority + "/" + persistentId);
+        xmlw.writeCharacters(persistentProtocol + ":" + persistentAuthority + "/" + persistentId);
         xmlw.writeEndElement(); // IDNo      
         xmlw.writeEndElement(); // titlStmt
         xmlw.writeStartElement("distStmt");
