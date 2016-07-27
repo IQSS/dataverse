@@ -200,7 +200,11 @@ public class ImportServiceBean {
         if (true) { //"ddi".equals(metadataFormat)) {
             try {
                 String xmlToParse = new String(Files.readAllBytes(metadataFile.toPath()));
-                dsDTO = importDDIService.doImport(ImportType.HARVEST, xmlToParse);
+                // TODO: 
+                // import type should be configurable - it should be possible to 
+                // select whether you want to harvest with or without files, 
+                // ImportType.HARVEST vs. ImportType.HARVEST_WITH_FILES
+                dsDTO = importDDIService.doImport(ImportType.HARVEST_WITH_FILES, xmlToParse);
             } catch (XMLStreamException e) {
                 throw new ImportException("XMLStreamException" + e);
             }
@@ -213,7 +217,7 @@ public class ImportServiceBean {
         // convert DTO to Json, 
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         String json = gson.toJson(dsDTO);
-        logger.info("JSON produced for the metadata harvested: "+json);
+        logger.fine("JSON produced for the metadata harvested: "+json);
         JsonReader jsonReader = Json.createReader(new StringReader(json));
         JsonObject obj = jsonReader.readObject();
         //and call parse Json to read it into a dataset   
