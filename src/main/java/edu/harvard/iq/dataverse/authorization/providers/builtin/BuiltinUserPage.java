@@ -27,6 +27,7 @@ import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailData;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailException;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.mydata.MyDataPage;
@@ -429,6 +430,7 @@ public class BuiltinUserPage implements java.io.Serializable {
 
     public String save() {
         boolean passwordChanged = false;
+        boolean emailChanged = false;
         if (editMode == EditMode.CREATE || editMode == EditMode.CHANGE_PASSWORD) {
             if (inputPassword != null) {
                 builtinUser.updateEncryptedPassword(PasswordEncryption.get().encrypt(inputPassword), PasswordEncryption.getLatestVersionNumber());
@@ -480,13 +482,30 @@ public class BuiltinUserPage implements java.io.Serializable {
             
             
         } else {
-            authSvc.updateAuthenticatedUser(currentUser, builtinUser.getDisplayInfo());
+            String emailBeforeUpdate = currentUser.getEmail();
+            AuthenticatedUser savedUser = authSvc.updateAuthenticatedUser(currentUser, builtinUser.getDisplayInfo());
+            String emailAfterUpdate = savedUser.getEmail();
+            if (!emailBeforeUpdate.equals(emailAfterUpdate)) {
+                emailChanged = true;
+            }
             editMode = null;
             String msg = "Your account information has been successfully updated.";
             if (passwordChanged) {
                 msg = "Your account password has been successfully changed.";
             }
-            JsfHelper.addFlashMessage(msg);
+            if (emailChanged) {
+                msg = msg + " Your email address changed and must be re-confirmed.";
+                /**
+                 * @todo In addition to creating the token, email the link to
+                 * the user.
+                 */
+                ConfirmEmailData confirmEmailData = confirmEmailService.createToken(savedUser);
+                logger.info("Confirm email token created for user " + savedUser.getId() + ": " + confirmEmailData.getToken());
+                savedUser.setEmailConfirmed(null);
+                JsfHelper.addWarningMessage(msg);
+            } else {
+                JsfHelper.addFlashMessage(msg);
+            }
             return null;            
         }
     }
