@@ -315,7 +315,7 @@
                                         #{bundle.email}
                                     </label>
                                     <div class="col-sm-9">
-                                        <p class="form-control-static">#{DataverseUserPage.currentUser.email}</p>
+                                        <p class="form-control-static">#{DataverseUserPage.currentUser.email} <div jsf:rendered="#{DataverseUserPage.currentUser.emailConfirmed == null}">Not Verified</div></p>
                                     </div>
                                 </div>
                                 <!-- Affiliation -->
