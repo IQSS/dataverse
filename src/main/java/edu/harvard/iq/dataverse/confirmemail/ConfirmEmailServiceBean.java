@@ -3,8 +3,10 @@ package edu.harvard.iq.dataverse.confirmemail;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.MailServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.sql.Timestamp;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
@@ -238,6 +240,23 @@ public class ConfirmEmailServiceBean {
         ConfirmEmailData confirmEmailData = new ConfirmEmailData(au, systemConfig.getMinutesUntilConfirmEmailTokenExpires());
         em.persist(confirmEmailData);
         return confirmEmailData;
+    }
+
+    public String getCreateAccountText(AuthenticatedUser user) {
+        final String emptyString = "";
+        if (user == null) {
+            logger.info("Can't return confirm email text/link. AuthenticatedUser was null!");
+            return emptyString;
+        }
+        List<ConfirmEmailData> datas = findConfirmEmailDataByDataverseUser(user);
+        int size = datas.size();
+        if (size != 1) {
+            logger.info("Can't return confirm email text/link. ConfirmEmailData rows found for user id " + user.getId() + " was " + size + " rather than 1");
+            return emptyString;
+        }
+        ConfirmEmailData confirmEmailData = datas.get(0);
+        String confirmEmailUrl = systemConfig.getDataverseSiteUrl() + "/confirmemail.xhtml?token=" + confirmEmailData.getToken();
+        return confirmEmailUrl;
     }
 
 }

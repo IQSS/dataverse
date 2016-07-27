@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
@@ -25,6 +26,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.jsonForAuthUser;
+import java.util.Date;
 
 /**
  * REST API bean for managing {@link BuiltinUser}s.
@@ -122,6 +124,15 @@ public class BuiltinUsers extends AbstractApiBean {
                     user.getUserName(), 
                     user.getDisplayInfo(),
                     false);
+
+            /**
+             * @todo Move this to
+             * AuthenticationServiceBean.createAuthenticatedUser
+             */
+            userNotificationSvc.sendNotification(au,
+                    new Timestamp(new Date().getTime()),
+                    UserNotification.Type.CREATEACC, null);
+
             ApiToken token = new ApiToken();
 
             token.setTokenString(java.util.UUID.randomUUID().toString());

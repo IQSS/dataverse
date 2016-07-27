@@ -17,9 +17,6 @@ import static org.hamcrest.Matchers.startsWith;
  *
  * Next steps:
  *
- * - Change first email to say, "please click to confirm your email." See
- * confirmUrl in ConfirmEmailInitResponse.
- *
  * - Email a link to users when they change their email address.
  *
  * - What effect should there be of not having a confirmed email? No emails are
@@ -82,6 +79,11 @@ public class ConfirmEmailIT {
         }
         // This is a hack we can remove when the page returns a proper 404 response when no token is found.
         assertEquals("404 Not Found", confirmEmailViaBrowserJunkToken.getBody().htmlPath().getString("html.head.title").substring(0, 13));
+
+        boolean exitEarlyToTestManuallyInBrowser = false;
+        if (exitEarlyToTestManuallyInBrowser) {
+            return;
+        }
 
         Response confirmEmailViaBrowser = given()
                 .get("/confirmemail.xhtml?token=" + confirmEmailToken);
