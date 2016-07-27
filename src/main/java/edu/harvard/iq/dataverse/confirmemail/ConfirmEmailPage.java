@@ -67,7 +67,7 @@ public class ConfirmEmailPage implements java.io.Serializable {
 
     ConfirmEmailData confirmEmailData;
 
-    public void init() {
+    public String init() {
         if (token != null) {
             logger.info("Token found");
             ConfirmEmailExecResponse confirmEmailExecResponse = confirmEmailService.processToken(token);
@@ -75,12 +75,15 @@ public class ConfirmEmailPage implements java.io.Serializable {
             if (confirmEmailData != null) {
                 logger.info("confirmEmailData found");
                 user = confirmEmailData.getAuthenticatedUser();
+                return "/";
             } else {
                 logger.info("confirmEmailData not found");
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Confirm Email Link", "Your email confirmation link is not valid."));
+                return "/404.xhtml";
             }
         } else {
             logger.info("Token not found");
+            return "/404.xhtml";
         }
     }
 

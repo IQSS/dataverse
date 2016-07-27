@@ -129,6 +129,7 @@ public class ConfirmEmailServiceBean {
                 Timestamp emailConfirmed = new Timestamp(nowInMilliseconds);
                 AuthenticatedUser authenticatedUser = confirmEmailData.getAuthenticatedUser();
                 authenticatedUser.setEmailConfirmed(emailConfirmed);
+                em.remove(confirmEmailData);
                 return goodTokenCanProceed;
             }
         } else {

@@ -92,6 +92,7 @@ public class ConfirmEmailIT {
                  * commented code above (the old POST method).
                  */
                 .statusCode(200);
+        
 
         Response confirmEmailViaBrowser = given()
                 .get("/confirmemail.xhtml?token=" + confirmEmailToken);
@@ -104,6 +105,12 @@ public class ConfirmEmailIT {
                 .statusCode(200)
                 // Checking that it's 2016 or whatever. Not y3k compliant! 
                 .body("data.emailLastConfirmed", startsWith("2"));
+        
+        Response getToken2 = given()
+                .get("/api/admin/confirmEmail/" + userIdToConfirm);
+        getToken2.prettyPrint();
+        getToken2.then().assertThat()
+                .statusCode(400);
     }
 
 }

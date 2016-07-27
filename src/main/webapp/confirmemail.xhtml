@@ -20,75 +20,26 @@
                     <f:viewParam name="token" value="#{ConfirmEmailPage.token}"/>
                     <f:viewAction action="#{ConfirmEmailPage.init}" />
                 </f:metadata>
-
-<!--                <ui:fragment id="debugVariables" rendered="false">
-                    <div style="background-color: lightgray; margin-top:3em;">
-                        <tt>
-                            <h:outputText value="{bundle['confirmEmail.token']} {ConfirmEmailPage.token}"/><br/>
-                            <h:outputText value="{bundle['confirmEmail.userLookedUp']} {ConfirmEmailPage.user.userName}"/><br/>
-                            <h:outputText value="{bundle['confirmEmail.emailSubmitted']} {ConfirmEmailPage.emailAddress}"/><br/>
-                        </tt>
-                    </div>
-                </ui:fragment>
                 
-                <ui:fragment rendered="#{empty ConfirmEmailPage.token}">
-                    <div jsf:rendered="#{empty ConfirmEmailPage.emailAddress}">
-                        <div class="alert alert-info">
+                <ui:fragment rendered="#{true}">
+                        <div class="alert alert-danger" jsf:rendered="#{true}">
                             <span class="glyphicon glyphicon-info-sign"></span>
-                            <h:outputFormat value="#{bundle['confirmEmail.details']}" escape="false"> 
+                            <h:outputFormat value="#{bundle['confirmEmail.details.failure']}" escape="false"> 
                                 <f:param value="&lt;strong&gt;"/>
                                 <f:param value="&lt;/strong&gt;"/>
                             </h:outputFormat>
                         </div>
-                        <h:form id="confirmEmail" styleClass="form-horizontal">
-                            <div class="form-group col-sm-11">
-                                <p:outputLabel value="#{bundle.email}" for="email" styleClass="col-sm-3 control-label"/>
-                                <div class="col-sm-4">
-                                    <p:inputText id="email" value="#{ConfirmEmailPage.emailAddress}" styleClass="form-control"/>
-                                    <p:watermark for="email" value="me@example.com"/>
-                                    <p:focus context="confirmEmail"/>
-                                    <p:message for="email" display="text" />
-                                </div>
-                            </div>
-                            <div class="form-group col-sm-11">
-                                <div class="col-sm-offset-3 col-sm-9 button-block">
-                                     Need  
-                                    <p:commandButton action="#{ConfirmEmailPage.sendEmailConfirmLink()}" update="@all" value="#{bundle['confirmEmail.submitRequest']}"/>
-                                    <p:button value="#{bundle.cancel}" outcome="/loginpage.xhtml"/>
-                                </div>
-                            </div>
-                        </h:form>
-                    </div>
-                    <ui:fragment rendered="#{not empty ConfirmEmailPage.emailAddress}">
-                        <h:outputFormat value="#{bundle['confirmEmail.successSubmit.tip']}">
-                            <f:param value="#{ConfirmEmailPage.emailAddress}"/>
-                        </h:outputFormat>
-                        <ui:fragment id="debugEmail" rendered="false">
-                            <div style="background-color: lightgray">
-                                <tt>
-                                    <h:outputText value="#{bundle['confirmEmail.debug']}"/><br/>
-                                    <ui:fragment rendered="#{not empty ConfirmEmailPage.confirmEmailUrl}">
-                                        <h:outputText value="#{bundle['confirmEmail.resetUrl']} "/>
-                                        <h:outputLink value="#{ConfirmEmailPage.confirmEmailUrl}">
-                                            <h:outputText value="#{ConfirmEmailPage.confirmEmailUrl}"/>
-                                        </h:outputLink>
-                                    </ui:fragment>
-                                    <ui:fragment rendered="#{empty ConfirmEmailPage.confirmEmailUrl}">
-                                        <h:outputFormat value="#{bundle['confirmEmail.noEmail.tip']}">
-                                            <f:param value="#{ConfirmEmailPage.emailAddress}"/>
-                                        </h:outputFormat>
-                                    </ui:fragment>
-                                </tt>
-                            </div>
-                        </ui:fragment>
-                    </ui:fragment>
-                </ui:fragment>-->
+                        <div class="alert alert-success" jsf:rendered="#{true}">
+                            <span class="glyphicon glyphicon-info-sign"></span>
+                            <h:outputFormat value="#{bundle['confirmEmail.details.success']}" escape="false"> 
+                                <f:param value="&lt;strong&gt;"/>
+                                <f:param value="&lt;/strong&gt;"/>
+                            </h:outputFormat>
+                        </div>
+                </ui:fragment>
                 
-                <ui:fragment rendered="#{not empty ConfirmEmailPage.token}">
-                    <h:outputFormat value="#{bundle['confirmEmail.illegalLink.tip']}" escape="false" rendered="#{empty ConfirmEmailPage.user}"> 
-                        <f:param value="&lt;a href='/confirmemail.xhtml'&gt;"/>
-                        <f:param value="&lt;/a&gt;"/>
-                    </h:outputFormat>
+                <ui:fragment rendered="#{false}">
+                    <!--button for resend-->
                 </ui:fragment>
             </ui:define>
         </ui:composition>
