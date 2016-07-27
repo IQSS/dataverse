@@ -29,6 +29,7 @@ import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailData;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailException;
+import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailInitResponse;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.mydata.MyDataPage;
 import edu.harvard.iq.dataverse.passwordreset.PasswordValidator;
@@ -495,13 +496,12 @@ public class BuiltinUserPage implements java.io.Serializable {
             }
             if (emailChanged) {
                 msg = msg + " Your email address changed and must be re-confirmed.";
-                /**
-                 * @todo In addition to creating the token, email the link to
-                 * the user.
-                 */
-                ConfirmEmailData confirmEmailData = confirmEmailService.createToken(savedUser);
-                logger.info("Confirm email token created for user " + savedUser.getId() + ": " + confirmEmailData.getToken());
-                savedUser.setEmailConfirmed(null);
+                boolean sendEmail = true;
+                try {
+                    ConfirmEmailInitResponse confirmEmailInitResponse = confirmEmailService.sendConfirm(savedUser, sendEmail);
+                } catch (ConfirmEmailException ex) {
+                    logger.info("Unable to send email confirmation link to user id " + savedUser.getId());
+                }
                 JsfHelper.addWarningMessage(msg);
             } else {
                 JsfHelper.addFlashMessage(msg);

@@ -428,7 +428,7 @@ public class MailServiceBean implements java.io.Serializable {
                 String accountCreatedMessage = BundleUtil.getStringFromBundle("notification.email.welcome", Arrays.asList(
                         systemConfig.getGuidesBaseUrl(),
                         systemConfig.getVersion(),
-                        confirmEmailService.getCreateAccountText(userNotification.getUser())
+                        confirmEmailService.getConfirmEmailUrl(userNotification.getUser())
                 ));
                 logger.fine("accountCreatedMessage: " + accountCreatedMessage);
                 return messageText += accountCreatedMessage;

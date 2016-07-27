@@ -63,13 +63,16 @@ public class ConfirmEmailServiceBean {
             em.remove(oldToken);
         }
 
+        aUser.setEmailConfirmed(null);
+        aUser = em.merge(aUser);
+
         // create a fresh token for the user
         ConfirmEmailData confirmEmailData = new ConfirmEmailData(aUser, systemConfig.getMinutesUntilConfirmEmailTokenExpires());
         try {
             em.persist(confirmEmailData);
-            ConfirmEmailInitResponse confirmEmailInitResponse = new ConfirmEmailInitResponse(true, confirmEmailData);
+            ConfirmEmailInitResponse confirmEmailInitResponse = new ConfirmEmailInitResponse(true, confirmEmailData, getConfirmEmailUrl(aUser));
             if (sendEmail) {
-                sendConfirmEmail(aUser, confirmEmailInitResponse.getConfirmUrl());
+                sendLinkOnEmailChange(aUser, confirmEmailInitResponse.getConfirmUrl());
             }
 
             return confirmEmailInitResponse;
@@ -84,9 +87,12 @@ public class ConfirmEmailServiceBean {
      * @todo: We expect to send two messages. One at signup and another at email
      * change.
      */
-    private void sendConfirmEmail(AuthenticatedUser aUser, String confirmationUrl) throws ConfirmEmailException {
+    private void sendLinkOnEmailChange(AuthenticatedUser aUser, String confirmationUrl) throws ConfirmEmailException {
+        /**
+         * @todo Move this to Bundle.properties and use
+         * BundleUtil.getStringFromBundle
+         */
         String messageBody = "Hi " + aUser.getFirstName() + ",\n\n"
-                + "Hi, " + aUser.getFirstName() + "! Welcome to dataverse.org. To begin publishing data, we require users to confirm their email with us.\n\n"
                 + "Please click the link below to confirm your email address:\n\n"
                 + confirmationUrl + "\n\n"
                 + "The link above will only work for the next " + SystemConfig.getMinutesUntilPasswordResetTokenExpires() + " minutes.\n\n"
@@ -94,7 +100,7 @@ public class ConfirmEmailServiceBean {
 
         try {
             String toAddress = aUser.getEmail();
-            String subject = "Dataverse Password Reset Requested";
+            String subject = "Dataverse Email Confirmation";
             mailService.sendSystemEmail(toAddress, subject, messageBody);
         } catch (Exception ex) {
             /**
@@ -102,7 +108,7 @@ public class ConfirmEmailServiceBean {
              * `asadmin create-javamail-resource` (or equivalent) hasn't been
              * run.
              */
-            throw new ConfirmEmailException("Problem sending password reset email possibily due to mail server not being configured.");
+            throw new ConfirmEmailException("Problem sending email confirmation link possibily due to mail server not being configured.");
         }
         logger.log(Level.INFO, "attempted to send mail to {0}", aUser.getEmail());
     }
@@ -242,16 +248,16 @@ public class ConfirmEmailServiceBean {
         return confirmEmailData;
     }
 
-    public String getCreateAccountText(AuthenticatedUser user) {
+    public String getConfirmEmailUrl(AuthenticatedUser user) {
         final String emptyString = "";
         if (user == null) {
-            logger.info("Can't return confirm email text/link. AuthenticatedUser was null!");
+            logger.info("Can't return confirm email URL. AuthenticatedUser was null!");
             return emptyString;
         }
         List<ConfirmEmailData> datas = findConfirmEmailDataByDataverseUser(user);
         int size = datas.size();
         if (size != 1) {
-            logger.info("Can't return confirm email text/link. ConfirmEmailData rows found for user id " + user.getId() + " was " + size + " rather than 1");
+            logger.info("Can't return confirm email URL. ConfirmEmailData rows found for user id " + user.getId() + " was " + size + " rather than 1");
             return emptyString;
         }
         ConfirmEmailData confirmEmailData = datas.get(0);

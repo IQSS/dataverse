@@ -12,16 +12,7 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.startsWith;
 
 /**
- *
  * @author bsilverstein
- *
- * Next steps:
- *
- * - Email a link to users when they change their email address.
- *
- * - What effect should there be of not having a confirmed email? No emails are
- * sent? User can't create stuff?
- *
  */
 public class ConfirmEmailIT {
 
