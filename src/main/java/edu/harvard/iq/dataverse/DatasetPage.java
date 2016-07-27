@@ -2678,6 +2678,12 @@ public class DatasetPage implements java.io.Serializable {
             successMessage = successMessage.replace("{0}", fileNames);
             JsfHelper.addFlashMessage(successMessage);
         }
+        
+        /* Should we re-calculate the version UNF every time we delete any files,
+           to be safe? Or should we only do it when we know that some of the 
+           deleted files were tabular data/had unfs? -- L.A. 4.5
+        */
+        ingestService.recalculateDatasetVersionUNF(workingVersion);
     }
 
     public String save() {
