@@ -5,6 +5,7 @@ import static com.jayway.restassured.RestAssured.given;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
 import java.util.logging.Logger;
+import static junit.framework.Assert.assertEquals;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -19,9 +20,7 @@ import static org.hamcrest.Matchers.startsWith;
  * - Change first email to say, "please click to confirm your email." See
  * confirmUrl in ConfirmEmailInitResponse.
  *
- * - Show on user page if has been email confirmed (see mockups).
- *
- * - Call confirmEmailSvc.createToken when user changes email address.
+ * - Email a link to users when they change their email address.
  *
  * - What effect should there be of not having a confirmed email? No emails are
  * sent? User can't create stuff?
@@ -30,11 +29,6 @@ import static org.hamcrest.Matchers.startsWith;
 public class ConfirmEmailIT {
 
     private static final Logger logger = Logger.getLogger(ConfirmEmailIT.class.getCanonicalName());
-
-    private static final String builtinUserKey = "burrito";
-    private static final String idKey = "id";
-    private static final String usernameKey = "userName";
-    private static final String emailKey = "email";
 
     @BeforeClass
     public static void setUp() {
@@ -78,21 +72,16 @@ public class ConfirmEmailIT {
         String confirmEmailToken = JsonPath.from(getToken.body().asString()).getString("data.token");
 
         String junkToken = "noSuchToken";
-//        Response noSuchToken = given()
-//                .post("/api/admin/confirmEmail/" + junkToken);
-//        noSuchToken.prettyPrint();
-//        noSuchToken.then().assertThat()
-//                .statusCode(404)
-//                .body("message", equalTo("Invalid token: " + junkToken));
         Response confirmEmailViaBrowserJunkToken = given()
                 .get("/confirmemail.xhtml?token=" + junkToken);
-        confirmEmailViaBrowserJunkToken.then().assertThat()
-                /**
-                 * @todo Make this a 404 rather than a 200. Then remove this
-                 * commented code above (the old POST method).
-                 */
-                .statusCode(200);
-        
+        boolean pageReturnsProper404Response = false;
+        if (pageReturnsProper404Response) {
+            confirmEmailViaBrowserJunkToken.then().assertThat().statusCode(404);
+        } else {
+            confirmEmailViaBrowserJunkToken.then().assertThat().statusCode(200);
+        }
+        // This is a hack we can remove when the page returns a proper 404 response when no token is found.
+        assertEquals("404 Not Found", confirmEmailViaBrowserJunkToken.getBody().htmlPath().getString("html.head.title").substring(0, 13));
 
         Response confirmEmailViaBrowser = given()
                 .get("/confirmemail.xhtml?token=" + confirmEmailToken);
@@ -105,7 +94,7 @@ public class ConfirmEmailIT {
                 .statusCode(200)
                 // Checking that it's 2016 or whatever. Not y3k compliant! 
                 .body("data.emailLastConfirmed", startsWith("2"));
-        
+
         Response getToken2 = given()
                 .get("/api/admin/confirmEmail/" + userIdToConfirm);
         getToken2.prettyPrint();
