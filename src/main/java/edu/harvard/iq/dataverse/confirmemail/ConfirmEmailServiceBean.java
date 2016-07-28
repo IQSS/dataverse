@@ -39,7 +39,7 @@ public class ConfirmEmailServiceBean {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
-
+    
     /**
      * Initiate the email confirmation process.
      *
@@ -92,11 +92,12 @@ public class ConfirmEmailServiceBean {
          * @todo Move this to Bundle.properties and use
          * BundleUtil.getStringFromBundle
          */
-        String messageBody = "Hi " + aUser.getFirstName() + ",\n\n"
-                + "Please click the link below to confirm your email address:\n\n"
-                + confirmationUrl + "\n\n"
-                + "The link above will only work for the next " + SystemConfig.getMinutesUntilPasswordResetTokenExpires() + " minutes.\n\n"
-                + "Please contact us if you did not request this password reset or need further help.\n\n";
+        String messageBody = BundleUtil.getStringFromBundle("notification.email.changeEmail", Arrays.asList(
+                aUser.getFirstName(),
+                confirmationUrl,
+                "24"
+        ));
+                logger.info("messageBody:" + messageBody);
 
         try {
             String toAddress = aUser.getEmail();
