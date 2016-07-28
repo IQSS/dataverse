@@ -564,7 +564,7 @@ public class RemoteDataFrameService {
             // send the tabular data file to the Rserve side:
             
             DataAccessRequest daReq = new DataAccessRequest();
-            DataFileIO accessObject = DataAccess.createDataAccessObject(dataFile, daReq);
+            DataFileIO accessObject = DataAccess.getDataFileIO(dataFile, daReq);
             
             if (accessObject == null) {
                 return null; 

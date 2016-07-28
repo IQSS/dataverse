@@ -36,6 +36,7 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
 import edu.harvard.iq.dataverse.dataaccess.FileAccessIO;
@@ -950,9 +951,11 @@ public class IngestServiceBean {
                     FileChannel readChannel = null;
                     
                     try {
-
-                        DataFileIO dataAccess = dataFile.getAccessObject();
+                        logger.info("Attempting to create a new DataFileIO object for "+storageId);
+                        DataFileIO dataAccess = //dataFile.getAccessObject();
+                                DataAccess.createNewDataFileIO(dataFile, storageId);
      
+                        logger.info("Successfully created a new DataFileIO object.");
                         /* 
                          This commented-out code demonstrates how to copy bytes
                          from a local InputStream (or a readChannel) into the
@@ -990,7 +993,7 @@ public class IngestServiceBean {
                         dataFile.setFilesize(dataAccess.getSize());
                         
                     } catch (IOException ioex) {
-                        logger.warning("Failed to save the file, storage id " + dataFile.getStorageIdentifier());
+                        logger.warning("Failed to save the file, storage id " + dataFile.getStorageIdentifier() + " (" + ioex.getMessage() + ")");
                     } finally {
                         if (readChannel != null) {try{readChannel.close();}catch(IOException e){}}
                         if (writeChannel != null) {try{writeChannel.close();}catch(IOException e){}}

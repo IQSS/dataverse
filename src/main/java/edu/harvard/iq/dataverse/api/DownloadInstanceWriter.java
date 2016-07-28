@@ -59,7 +59,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
             
             
             DataFile sf = di.getDownloadInfo().getDataFile();
-            DataFileIO accessObject = DataAccess.createDataAccessObject(sf, daReq);
+            DataFileIO accessObject = DataAccess.getDataFileIO(sf, daReq);
                         
             if (accessObject != null) {
                 accessObject.open();

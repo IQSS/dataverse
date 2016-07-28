@@ -113,7 +113,7 @@ public class DataFileZipper {
             DataFile file = (DataFile) iter.next();
 
             DataAccessRequest daReq = new DataAccessRequest();
-            DataFileIO accessObject = DataAccess.createDataAccessObject(file, daReq);
+            DataFileIO accessObject = DataAccess.getDataFileIO(file, daReq);
 
             if (accessObject != null) {
                 accessObject.open();
@@ -221,7 +221,7 @@ public class DataFileZipper {
         boolean createManifest = fileManifest != null;
         
         DataAccessRequest daReq = new DataAccessRequest();
-        DataFileIO accessObject = DataAccess.createDataAccessObject(dataFile, daReq);
+        DataFileIO accessObject = DataAccess.getDataFileIO(dataFile, daReq);
 
         if (accessObject != null) {
             accessObject.open();

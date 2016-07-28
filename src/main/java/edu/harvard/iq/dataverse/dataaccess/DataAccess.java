@@ -34,21 +34,31 @@ public class DataAccess {
 
     }
 
-    public static DataFileIO createDataAccessObject (DataFile df) throws IOException {
-        return createDataAccessObject (df, null);
+    public static String DEFAULT_STORAGE_DRIVER_IDENTIFIER = "swift";
+    
+    // The getDataFileIO() methods initialize DataFileIO objects for
+    // datafiles that are already saved using one of the supported Dataverse
+    // DataAccess IO drivers.
+    
+    public static DataFileIO getDataFileIO (DataFile df) throws IOException {
+        return getDataFileIO (df, null);
     }
 
-    public static DataFileIO createDataAccessObject (DataFile df, DataAccessRequest req) throws IOException {
+    public static DataFileIO getDataFileIO (DataFile df, DataAccessRequest req) throws IOException {
 
         if (df == null ||
                 df.getStorageIdentifier() == null ||
                 df.getStorageIdentifier().equals("")) {
-            throw new IOException ("createDataAccessObject: null or invalid datafile.");
+            throw new IOException ("getDataAccessObject: null or invalid datafile.");
         }
 
         if (df.getStorageIdentifier().startsWith("file://")
                 || (!df.getStorageIdentifier().matches("^[a-z][a-z]*://.*"))) {
             return new FileAccessIO (df, req);
+        } else if (df.getStorageIdentifier().startsWith("swift://")) {
+            return new SwiftAccessIO (df, req);
+        } else if (df.getStorageIdentifier().startsWith("tmp://")) {
+            throw new IOException("DataAccess IO attempted on a temporary file that hasn't been permanently saved yet.");
         }
         
         // No other storage methods are supported as of now! -- 4.0.1
@@ -58,6 +68,37 @@ public class DataAccess {
         // "storage identifier". 
         // -- L.A. 4.0.2
         
-        throw new IOException ("createDataAccessObject: Unsupported storage method.");
+        throw new IOException ("getDataAccessObject: Unsupported storage method.");
     }
+    
+    // createDataAccessObject() methods create a *new*, empty DataAccess objects,
+    // for saving new, not yet saved datafiles.
+    
+    public static DataFileIO createNewDataFileIO (DataFile df, String storageTag) throws IOException {
+        return createNewDataFileIO(df, storageTag, DEFAULT_STORAGE_DRIVER_IDENTIFIER);
+    }
+    
+    public static DataFileIO createNewDataFileIO (DataFile df, String storageTag, String driverIdentifier) throws IOException {
+        if (df == null ||
+                storageTag == null ||
+                storageTag.equals("")) {
+            throw new IOException ("getDataAccessObject: null or invalid datafile.");
+        }
+        
+        DataFileIO dataFileIO = null; 
+        
+        df.setStorageIdentifier(storageTag);
+        
+        if (driverIdentifier.equals("file")) {
+            dataFileIO = new FileAccessIO (df, null);
+        } else if (driverIdentifier.equals("swift")) {
+            dataFileIO =  new SwiftAccessIO (df, null);
+        } else { 
+            throw new IOException ("createDataAccessObject: Unsupported storage method.");
+        }
+        
+        dataFileIO.open(DataAccessOption.WRITE_ACCESS);
+        return dataFileIO;
+    }
+    
 }
