@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
+import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -32,10 +33,19 @@ public class DeleteHarvestingClientCommand extends AbstractVoidCommand {
         if (harvestingClient == null) {
             throw new IllegalCommandException("DeleteHarvestingClientCommand: attempted to execute with null harvesting client; dataverse: "+motherDataverse.getAlias(), this);
         }
+        // All the datasets harvested by this client will be cleanly deleted 
+        // through the defined cascade. Cascaded delete does not work for harvested 
+        // files, however. So they need to be removed explicitly; before we 
+        // proceed removing the client itself. 
+       
+        for (DataFile harvestedFile : ctxt.files().findHarvestedFilesByClient(harvestingClient)) {
+            DataFile merged = ctxt.em().merge(harvestedFile);
+            ctxt.em().remove(merged);
+            harvestedFile = null; 
+        }
+        
         HarvestingClient merged = ctxt.em().merge(harvestingClient);
-        //motherDataverse.setHarvestingClientConfig(null);
         ctxt.em().remove(merged);
-        //ctxt.em().merge(motherDataverse);
     }
     
 }

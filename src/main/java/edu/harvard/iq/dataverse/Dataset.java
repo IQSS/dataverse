@@ -545,6 +545,16 @@ public class Dataset extends DvObjectContainer {
         return this.harvestedFrom != null;
     }
 
+    private String harvestIdentifier;
+     
+    public String getHarvestIdentifier() {
+	return harvestIdentifier;
+    }
+
+    public void setHarvestIdentifier(String harvestIdentifier) {
+	this.harvestIdentifier = harvestIdentifier;
+    }
+
     public String getRemoteArchiveURL() {
         if (isHarvested()) {
             if (HarvestingClient.HARVEST_STYLE_DATAVERSE.equals(this.getHarvestedFrom().getHarvestStyle())) {

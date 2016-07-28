@@ -4,3 +4,5 @@ ALTER TABLE roleassignment ADD COLUMN privateurltoken character varying(255);
 ALTER TABLE dataset ADD COLUMN lastExportTime TIMESTAMP;
 -- Direct link to the harvesting configuration, for harvested datasets:
 ALTER TABLE dataset ADD COLUMN harvestingClient_id bigint;
+-- For harveted datasets, native OAI identifier used by the original OAI server 
+ALTER TABLE dataset ADD COLUMN harvestIdentifier VARCHAR(255);

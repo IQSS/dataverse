@@ -269,16 +269,22 @@ public class HarvestingClientsPage implements java.io.Serializable {
                 // TODO: 
                 // separate the code for deleting the datasets from the index
                 // into cleaner helper methods, move it out of here... -- L.A. - 4.5
+                // (think of where to move this code - the OAIRecordServiceBean, 
+                // or the DeleteHarvestingClientCommand? (I think - it should be the latter...)
                 List<String> solrIdsOfDatasetsToDelete = new ArrayList<>();
+                
                 for (Dataset harvestedDataset : selectedClient.getHarvestedDatasets()) {
                     solrIdsOfDatasetsToDelete.add(solrDocIdentifierDataset + harvestedDataset.getId());
                 }
+                
                 engineService.submit(new DeleteHarvestingClientCommand(dvRequestService.getDataverseRequest(), selectedClient));
                 configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();
                 JsfHelper.addFlashMessage("Selected harvesting client has been deleted.");
+                
                 logger.info("attempting to delete the following datasets from the index: "+StringUtils.join(solrIdsOfDatasetsToDelete, ","));
                 IndexResponse resultOfAttemptToDeleteDatasets = solrIndexService.deleteMultipleSolrIds(solrIdsOfDatasetsToDelete);
                 logger.info("result of attempt to premptively deleted published files before reindexing: " + resultOfAttemptToDeleteDatasets + "\n");
+                
             } catch (CommandException ex) {
                 String failMessage = "Selected harvesting client cannot be deleted.";
                 JH.addMessage(FacesMessage.SEVERITY_FATAL, failMessage);
