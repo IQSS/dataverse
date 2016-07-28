@@ -664,7 +664,8 @@ public class IndexServiceBean {
         if (datasetVersion != null) {
 
             solrInputDocument.addField(SearchFields.DATASET_VERSION_ID, datasetVersion.getId());
-            solrInputDocument.addField(SearchFields.DATASET_CITATION, datasetVersion.getCitation(true));
+            solrInputDocument.addField(SearchFields.DATASET_CITATION, datasetVersion.getCitation(false));
+            solrInputDocument.addField(SearchFields.DATASET_CITATION_HTML, datasetVersion.getCitation(true));
 
             if (datasetVersion.isInReview()) {
                 solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, IN_REVIEW_STRING);
@@ -1265,7 +1266,7 @@ public class IndexServiceBean {
      * @return Dataverses that should be reindexed either because they have
      * never been indexed or their index time is before their modification time.
      */
-    public List findStaleOrMissingDataverses() {
+    public List<Dataverse> findStaleOrMissingDataverses() {
         List<Dataverse> staleDataverses = new ArrayList<>();
         for (Dataverse dataverse : dataverseService.findAll()) {
             if (dataverse.equals(dataverseService.findRootDataverse())) {

@@ -17,8 +17,10 @@ import java.util.logging.Level;
 import edu.harvard.iq.dataverse.api.datadeposit.SwordConfigurationImpl;
 import com.jayway.restassured.path.xml.XmlPath;
 import org.junit.Test;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.path.xml.XmlPath.from;
+import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -153,6 +155,12 @@ public class UtilIT {
         return createDataverse(alias, apiToken);
     }
 
+    static Response showDataverseContents(String alias, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .when().get("/api/dataverses/" + alias + "/contents");
+    }
+
     static Response createRandomDatasetViaNativeApi(String dataverseAlias, String apiToken) {
         String jsonIn = getDatasetJson();
         Response createDatasetResponse = given()
@@ -180,7 +188,7 @@ public class UtilIT {
     }
 
     static Response createDatasetViaSwordApi(String dataverseToCreateDatasetIn, String title, String apiToken) {
-        String xmlIn = getDatasetXml(title, getRandomIdentifier(), getRandomIdentifier());
+        String xmlIn = getDatasetXml(title, "Lastname, Firstname", getRandomIdentifier());
         return createDatasetViaSwordApiFromXML(dataverseToCreateDatasetIn, xmlIn, apiToken);
     }
 
@@ -320,6 +328,43 @@ public class UtilIT {
         return new XmlPath(swordStatement).getString("feed.title");
     }
 
+    static Response createGroup(String dataverseToCreateGroupIn, String aliasInOwner, String displayName, String apiToken) {
+        JsonObjectBuilder groupBuilder = Json.createObjectBuilder();
+        groupBuilder.add("aliasInOwner", aliasInOwner);
+        groupBuilder.add("displayName", displayName);
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(groupBuilder.build().toString())
+                .contentType(ContentType.JSON)
+                .post("/api/dataverses/" + dataverseToCreateGroupIn + "/groups");
+        return response;
+    }
+
+    static Response addToGroup(String dataverseThatGroupBelongsIn, String groupIdentifier, List<String> roleAssigneesToAdd, String apiToken) {
+        JsonArrayBuilder groupBuilder = Json.createArrayBuilder();
+        roleAssigneesToAdd.stream().forEach((string) -> {
+            groupBuilder.add(string);
+        });
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(groupBuilder.build().toString())
+                .contentType(ContentType.JSON)
+                .post("/api/dataverses/" + dataverseThatGroupBelongsIn + "/groups/" + groupIdentifier + "/roleAssignees");
+        return response;
+    }
+
+    static public Response grantRoleOnDataverse(String definitionPoint, String role, String roleAssignee, String apiToken) {
+        JsonObjectBuilder roleBuilder = Json.createObjectBuilder();
+        roleBuilder.add("assignee", roleAssignee);
+        roleBuilder.add("role", role);
+        JsonObject roleObject = roleBuilder.build();
+        logger.info("Granting role on dataverse alias \"" + definitionPoint + "\": " + roleObject);
+        return given()
+                .body(roleObject.toString())
+                .contentType(ContentType.JSON)
+                .post("api/dataverses/" + definitionPoint + "/assignments?key=" + apiToken);
+    }
+
     public static Response deleteUser(String username) {
         Response deleteUserResponse = given()
                 .delete("/api/admin/authenticatedUsers/" + username + "/");
@@ -334,6 +379,12 @@ public class UtilIT {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .delete("/api/datasets/" + datasetId);
+    }
+
+    public static Response deleteDatasetVersionViaNativeApi(Integer datasetId, String versionId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/datasets/" + datasetId + "/versions/" + versionId);
     }
 
     static Response deleteLatestDatasetVersionViaSwordApi(String persistentId, String apiToken) {
@@ -363,11 +414,32 @@ public class UtilIT {
                 .post(swordConfiguration.getBaseUrlPathCurrent() + "/edit/study/" + persistentId);
     }
 
+    static Response publishDatasetViaNativeApi(Integer datasetId, String majorOrMinor, String apiToken) {
+        /**
+         * @todo This should be a POST rather than a GET:
+         * https://github.com/IQSS/dataverse/issues/2431
+         *
+         * @todo Prevent version less than v1.0 to be published (i.e. v0.1):
+         * https://github.com/IQSS/dataverse/issues/2461
+         */
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .urlEncodingEnabled(false)
+                .get("/api/datasets/" + datasetId + "/actions/:publish?type=" + majorOrMinor);
+    }
+
     static Response publishDataverseViaSword(String alias, String apiToken) {
         return given()
                 .auth().basic(apiToken, EMPTY_STRING)
                 .header("In-Progress", "false")
                 .post(swordConfiguration.getBaseUrlPathCurrent() + "/edit/dataverse/" + alias);
+    }
+
+    static Response nativeGetUsingPersistentId(String persistentId, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/:persistentId/?persistentId=" + persistentId);
+        return response;
     }
 
     static Response makeSuperUser(String username) {
@@ -379,6 +451,119 @@ public class UtilIT {
         Response response = given()
                 .get("/api/admin/index/dataset?persistentId=" + persistentId);
         return response;
+    }
+
+    static Response listAuthenticatedUsers(String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/admin/authenticatedUsers");
+        return response;
+    }
+
+    static Response getAuthenticatedUser(String userIdentifier, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/admin/authenticatedUsers/" + userIdentifier);
+        return response;
+    }
+
+    static Response migrateShibToBuiltin(Long userIdToConvert, String newEmailAddress, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(newEmailAddress)
+                .put("/api/admin/authenticatedUsers/id/" + userIdToConvert + "/convertShibToBuiltIn");
+        return response;
+    }
+
+    static Response migrateBuiltinToShib(String data, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(data)
+                .put("/api/admin/authenticatedUsers/convert/builtin2shib");
+        return response;
+    }
+
+    static Response nativeGet(Integer datasetId, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/" + datasetId);
+        return response;
+    }
+
+    static Response privateUrlGet(Integer datasetId, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/" + datasetId + "/privateUrl");
+        return response;
+    }
+
+    static Response privateUrlCreate(Integer datasetId, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .post("/api/datasets/" + datasetId + "/privateUrl");
+        return response;
+    }
+
+    static Response privateUrlDelete(Integer datasetId, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/datasets/" + datasetId + "/privateUrl");
+        return response;
+    }
+
+    static Response search(String query, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/search?q=" + query);
+    }
+
+    static Response indexClear() {
+        return given()
+                .get("/api/admin/index/clear");
+    }
+
+    static Response index() {
+        return given()
+                .get("/api/admin/index");
+    }
+
+    static Response enableSetting(SettingsServiceBean.Key settingKey) {
+        Response response = given().body("true").when().put("/api/admin/settings/" + settingKey);
+        return response;
+    }
+
+    static Response deleteSetting(SettingsServiceBean.Key settingKey) {
+        Response response = given().when().delete("/api/admin/settings/" + settingKey);
+        return response;
+    }
+
+    static Response getRoleAssignmentsOnDataverse(String dataverseAliasOrId, String apiToken) {
+        String url = "/api/dataverses/" + dataverseAliasOrId + "/assignments";
+        System.out.println("URL: " + url);
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get(url);
+    }
+
+    static Response getRoleAssignmentsOnDataset(String datasetId, String persistentId, String apiToken) {
+        String url = "/api/datasets/" + datasetId + "/assignments";
+        System.out.println("URL: " + url);
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get(url);
+    }
+
+    static Response grantRoleOnDataset(String definitionPoint, String role, String roleAssignee, String apiToken) {
+        logger.info("Granting role on dataset \"" + definitionPoint + "\": " + role);
+        return given()
+                .body("@" + roleAssignee)
+                .post("api/datasets/" + definitionPoint + "/assignments?key=" + apiToken);
+    }
+
+    static Response revokeRole(String definitionPoint, long doomed, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("api/dataverses/" + definitionPoint + "/assignments/" + doomed);
     }
 
     @Test

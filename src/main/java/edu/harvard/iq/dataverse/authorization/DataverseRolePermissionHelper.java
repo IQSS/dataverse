@@ -96,8 +96,8 @@ public class DataverseRolePermissionHelper implements java.io.Serializable {
                 
         // Row 1: Row Names
         row.add("");
-        for (Map.Entry pair : roleNameSet) {
-            row.add("<b>" + (String)pair.getValue() +  "</b> (" + pair.getKey() + ")");
+        for (Map.Entry<Long,String> pair : roleNameSet) {
+            row.add("<b>" + pair.getValue() +  "</b> (" + pair.getKey() + ")");
         }
         this.rolesByDvObjectTable.add(row);
         
@@ -105,8 +105,8 @@ public class DataverseRolePermissionHelper implements java.io.Serializable {
         //
         row = new ArrayList<>();
         row.add("<b>Dataverse</b>");
-        for (Map.Entry pair : roleNameSet) {
-            Long role_id = (Long)pair.getKey();
+        for (Map.Entry<Long,String> pair : roleNameSet) {
+            Long role_id = pair.getKey();
             if (this.hasDataversePermissions(role_id)){
                 row.add("YES");
             }else{
@@ -121,8 +121,8 @@ public class DataverseRolePermissionHelper implements java.io.Serializable {
         row = new ArrayList<>();
                 row.add("<b>Dataset</b>");
 
-        for (Map.Entry pair : roleNameSet) {
-            Long role_id = (Long)pair.getKey();
+        for (Map.Entry<Long,String> pair : roleNameSet) {
+            Long role_id = pair.getKey();
             if (this.hasDatasetPermissions(role_id)){
                 row.add("YES");
             }else{
@@ -135,8 +135,8 @@ public class DataverseRolePermissionHelper implements java.io.Serializable {
         //
         row = new ArrayList<>();
         row.add("<b>File</b>");
-        for (Map.Entry pair : roleNameSet) {
-            Long role_id = (Long)pair.getKey();
+        for (Map.Entry<Long,String> pair : roleNameSet) {
+            Long role_id = pair.getKey();
             if (this.hasFilePermissions(role_id)){
                 row.add("YES");
             }else{
@@ -241,20 +241,20 @@ public class DataverseRolePermissionHelper implements java.io.Serializable {
     
     public List<String[]> getRoleInfoForCheckboxes(){
         
-        List<String[]> roleInfoList = new ArrayList<String[]>();
+        List<String[]> roleInfoList = new ArrayList<>();
         
-        for (Entry entry : roleNameLookup.entrySet()){
-            String idName = ((String)entry.getValue()).toLowerCase().replace(" + ", "").replace(" ", "");
+        for (Entry<Long,String> entry : roleNameLookup.entrySet()){
+            String idName = entry.getValue().toLowerCase().replace(" + ", "").replace(" ", "");
             // triplet:   key, name, id_name
             // Examples:  { 1, Admin, admin }, {2, File Downloader, filedownloader}
-            String[] singleRole = { ((Long)entry.getKey()).toString(), (String)entry.getValue(), idName };
+            String[] singleRole = { entry.getKey().toString(), entry.getValue(), idName };
             roleInfoList.add(singleRole);
         }
         return roleInfoList;
     }
     
     private void msg(String s){
-        System.out.println(s);
+        logger.info(s);
     }
     
     private void msgt(String s){
@@ -267,8 +267,8 @@ public class DataverseRolePermissionHelper implements java.io.Serializable {
     public List<Long> getRoleIdList(){
         
         List<Long> outputList = new ArrayList<>();
-        for (Map.Entry pair : roleNameLookup.entrySet()) {
-            outputList.add((Long)pair.getKey());
+        for (Map.Entry<Long,String> pair : roleNameLookup.entrySet()) {
+            outputList.add(pair.getKey());
         }
         return outputList;
     }
@@ -277,7 +277,7 @@ public class DataverseRolePermissionHelper implements java.io.Serializable {
     public String getRoleNameListString(){
         List<String> outputList = new ArrayList<>();
         
-        for (Map.Entry pair : roleNameLookup.entrySet()) {
+        for (Map.Entry<Long,String> pair : roleNameLookup.entrySet()) {
             outputList.add(pair.getKey() + " --> " + pair.getValue());
         }
         return StringUtils.join(outputList, "<br />");
@@ -287,7 +287,7 @@ public class DataverseRolePermissionHelper implements java.io.Serializable {
     public String getRolesWithDataversePermissionsAsHTML(){
         
         List<String> outputList = new ArrayList<>();
-        for (Map.Entry pair : rolesWithDataversePermissions.entrySet()) {
+        for (Map.Entry<Long,Boolean> pair : rolesWithDataversePermissions.entrySet()) {
             String roleName = this.roleNameLookup.get(pair.getKey());
             outputList.add(roleName);
         }
@@ -297,7 +297,7 @@ public class DataverseRolePermissionHelper implements java.io.Serializable {
     public String getDatasetRolesAsHTML(){
         
         List<String> outputList = new ArrayList<>();
-        for (Map.Entry pair : this.rolesWithDatasetPermissions.entrySet()) {
+        for (Map.Entry<Long,Boolean> pair : this.rolesWithDatasetPermissions.entrySet()) {
             String roleName = this.roleNameLookup.get(pair.getKey());
             outputList.add(roleName);
         }
@@ -307,7 +307,7 @@ public class DataverseRolePermissionHelper implements java.io.Serializable {
      public String getRolesWithFilePermissionsAsHTML(){
         
         List<String> outputList = new ArrayList<>();
-        for (Map.Entry pair : this.rolesWithFilePermissions.entrySet()) {
+        for (Map.Entry<Long,Boolean> pair : this.rolesWithFilePermissions.entrySet()) {
             String roleName = this.roleNameLookup.get(pair.getKey());
             outputList.add(roleName);
         }

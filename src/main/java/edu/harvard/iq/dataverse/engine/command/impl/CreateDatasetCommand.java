@@ -139,21 +139,32 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
             theDataset.setIdentifier(ctxt.datasets().generateIdentifierSequence(theDataset.getProtocol(), theDataset.getAuthority(), theDataset.getDoiSeparator()));
         }
         // Attempt the registration if importing dataset through the API, or the app (but not harvest or migrate)
-        if ((importType==null || importType.equals(ImportType.NEW)) 
-            && protocol.equals("doi") 
-            && doiProvider.equals("EZID") 
-            && theDataset.getGlobalIdCreateTime() == null) {
-            String doiRetString = ctxt.doiEZId().createIdentifier(theDataset); 
-            // Check return value to make sure registration succeeded
-            if (doiRetString.contains(theDataset.getIdentifier())) {
-                theDataset.setGlobalIdCreateTime(createDate);
-            } 
-        } else {
-            // If harvest or migrate, and this is a released dataset, we don't need to register,
-            // so set the globalIdCreateTime to now
-            if (theDataset.getLatestVersion().getVersionState().equals(VersionState.RELEASED) ){
-                theDataset.setGlobalIdCreateTime(new Date());
+        if ((importType == null || importType.equals(ImportType.NEW))
+                && theDataset.getGlobalIdCreateTime() == null) {
+            if (protocol.equals("doi")) {
+                String doiRetString = "";
+                if (doiProvider.equals("EZID")) {
+                    doiRetString = ctxt.doiEZId().createIdentifier(theDataset);
+                }
+                if (doiProvider.equals("DataCite")) {
+                    try{
+                        doiRetString = ctxt.doiDataCite().createIdentifier(theDataset);
+                    } catch (Exception e){
+                         logger.log(Level.WARNING, "Exception while creating Identifier:" + e.getMessage(), e);
+                    }
+                }
+
+                // Check return value to make sure registration succeeded
+                if (doiProvider.equals("EZID") && doiRetString.contains(theDataset.getIdentifier())) {
+                    theDataset.setGlobalIdCreateTime(createDate);
+                }
+
             }
+
+        } else // If harvest or migrate, and this is a released dataset, we don't need to register,
+        // so set the globalIdCreateTime to now
+        if (theDataset.getLatestVersion().getVersionState().equals(VersionState.RELEASED)) {
+            theDataset.setGlobalIdCreateTime(new Date());
         }
         
         if (registrationRequired && theDataset.getGlobalIdCreateTime() == null) {
@@ -164,7 +175,8 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
          logger.log(Level.FINE, "after db update {0}", formatter.format(new Date().getTime()));       
         // set the role to be default contributor role for its dataverse
         if (importType==null || importType.equals(ImportType.NEW)) {
-            ctxt.roles().save(new RoleAssignment(savedDataset.getOwner().getDefaultContributorRole(),  getRequest().getUser(), savedDataset));
+            String privateUrlToken = null;
+            ctxt.roles().save(new RoleAssignment(savedDataset.getOwner().getDefaultContributorRole(), getRequest().getUser(), savedDataset, privateUrlToken));
          }
         
         savedDataset.setPermissionModificationTime(new Timestamp(new Date().getTime()));

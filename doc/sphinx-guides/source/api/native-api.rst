@@ -99,6 +99,19 @@ Datasets
 * ``x.y`` a specific version, where ``x`` is the major version number and ``y`` is the minor version number.
 * ``x`` same as ``x.0``
 
+
+.. note:: Datasets can be accessed using persistent identifiers. This is done by passing the constant ``:persistentId`` where the numeric id of the dataset is expected, and then passing the actual persistent id as a query parameter with the name ``persistentId``.
+
+  Example: Getting the dataset whose DOI is *10.5072/FK2/J8SJZB* ::
+
+    GET http://$SERVER/api/datasets/:persistentId/?persistentId=doi:10.5072/FK2/J8SJZB
+
+  Getting its draft version::
+
+    GET http://$SERVER/api/datasets/:persistentId/versions/:draft?persistentId=doi:10.5072/FK2/J8SJZB
+
+
+
 Show the dataset whose id is passed::
 
   GET http://$SERVER/api/datasets/$id?key=$apiKey
@@ -138,6 +151,32 @@ Publishes the dataset whose id is passed. The new dataset version number is dete
 Deletes the draft version of dataset ``$id``. Only the draft version can be deleted::
 
     DELETE http://$SERVER/api/datasets/$id/versions/:draft?key=$apiKey
+
+Sets the dataset field type to be used as the citation date for the given dataset (if the dataset does not include the dataset field type, the default logic is used). The name of the dataset field type should be sent in the body of the reqeust.
+To revert to the default logic, use ``:publicationDate`` as the ``$datasetFieldTypeName``.
+Note that the dataset field used has to be a date field::
+
+    PUT http://$SERVER/api/datasets/$id/citationdate?key=$apiKey
+    
+Restores the default logic of the field type to be used as the citation date. Same as ``PUT`` with ``:publicationDate`` body::
+    
+    DELETE http://$SERVER/api/datasets/$id/citationdate?key=$apiKey
+
+List all the role assignments at the given dataset::
+
+    GET http://$SERVER/api/datasets/$id/assignments?key=$apiKey
+
+Create a Private URL (must be able to manage dataset permissions)::
+
+    POST http://$SERVER/api/datasets/$id/privateUrl?key=$apiKey
+
+Get a Private URL from a dataset (if available)::
+
+    GET http://$SERVER/api/datasets/$id/privateUrl?key=$apiKey
+
+Delete a Private URL from a dataset (if it exists)::
+
+    DELETE http://$SERVER/api/datasets/$id/privateUrl?key=$apiKey
 
 Builtin Users
 ~~~~~
@@ -215,7 +254,10 @@ Remove a single role assignee from an explicit group::
 
   DELETE http://$server/api/dataverses/$dv/groups/$groupAlias/roleAssignees/$roleAssigneeIdentifier
 
+Shibboleth Groups
+~~~~~~~~~~~~~~~~~
 
+Management of Shibboleth groups via API is documented in the :doc:`/installation/shibboleth` section of the Installation Guide.
 
 Metadata Blocks
 ~~~~~~~~~~~~~~~
@@ -285,7 +327,31 @@ Creates a global role in the Dataverse installation. The data POSTed are assumed
 
     POST http://$SERVER/api/admin/roles
 
-Toggles superuser mode on the ``AuthenticatedUser`` whose ``identifier`` is passed. ::
+List all users::
+
+    GET http://$SERVER/api/admin/authenticatedUsers
+
+List user whose ``identifier`` (without the ``@`` sign) is passed::
+
+    GET http://$SERVER/api/admin/authenticatedUsers/$identifier
+
+Sample output using "dataverseAdmin" as the ``identifier``::
+
+    {
+      "authenticationProviderId": "builtin",
+      "persistentUserId": "dataverseAdmin",
+      "position": "Admin",
+      "id": 1,
+      "identifier": "@dataverseAdmin",
+      "displayName": "Dataverse Admin",
+      "firstName": "Dataverse",
+      "lastName": "Admin",
+      "email": "dataverse@mailinator.com",
+      "superuser": true,
+      "affiliation": "Dataverse.org"
+    }
+
+Toggles superuser mode on the ``AuthenticatedUser`` whose ``identifier`` (without the ``@`` sign) is passed. ::
 
     POST http://$SERVER/api/admin/superuser/$identifier
 

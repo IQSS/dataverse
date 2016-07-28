@@ -5,6 +5,7 @@ import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -13,6 +14,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
@@ -39,6 +41,8 @@ import org.hibernate.validator.constraints.NotBlank;
         uniqueConstraints = @UniqueConstraint(columnNames = {"authority,protocol,identifier,doiseparator"}))
 public class Dataset extends DvObjectContainer {
 
+//    public static final String REDIRECT_URL = "/dataset.xhtml?persistentId=";
+    public static final String TARGET_URL = "/citation?persistentId=";
     private static final long serialVersionUID = 1L;
 
     @OneToMany(mappedBy = "owner", cascade = CascadeType.MERGE)
@@ -81,6 +85,18 @@ public class Dataset extends DvObjectContainer {
     private boolean fileAccessRequest;
     @OneToMany(mappedBy = "dataset", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<DataFileCategory> dataFileCategories = null;
+    
+    @ManyToOne
+    @JoinColumn(name = "citationDateDatasetFieldType_id")
+    private DatasetFieldType citationDateDatasetFieldType;
+    
+    public DatasetFieldType getCitationDateDatasetFieldType() {
+        return citationDateDatasetFieldType;
+    }
+
+    public void setCitationDateDatasetFieldType(DatasetFieldType citationDateDatasetFieldType) {
+        this.citationDateDatasetFieldType = citationDateDatasetFieldType;
+    }    
 
     public Dataset() {
         //this.versions = new ArrayList();
@@ -400,13 +416,15 @@ public class Dataset extends DvObjectContainer {
     }
 
     private Collection<String> getCategoryNames() {
-        ArrayList<String> ret = new ArrayList<>();
         if (dataFileCategories != null) {
-            for (int i = 0; i < dataFileCategories.size(); i++) {
-                ret.add(dataFileCategories.get(i).getName());
+            ArrayList<String> ret = new ArrayList<>(dataFileCategories.size());
+            for ( DataFileCategory dfc : dataFileCategories ) {
+                ret.add( dfc.getName() );
             }
+            return ret;
+        } else {
+            return new ArrayList<>();
         }
-        return ret;
     }
 
     public Path getFileSystemDirectory() {

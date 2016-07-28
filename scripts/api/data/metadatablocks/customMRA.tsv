@@ -1,6 +1,6 @@
 #metadataBlock	name	dataverseAlias   displayName													
 	customMRA		MRA Metadata													
-#datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	showabovefold	required	parent	metadatablock_id
+#datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	metadatablock_id
 	mraCollection	Murray Research Archive Collection	Browse the Murray Research Archive collection with the following terms.		text	0		FALSE	TRUE	TRUE	TRUE	FALSE	FALSE		customMRA
 #controlledVocabulary	DatasetField	Value	identifier	displayOrder											
 	mraCollection	Diversity samples: Race, Ethnicity, Sexual Orientation, Religion	MRA0	0											

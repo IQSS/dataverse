@@ -1,9 +1,12 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
+import edu.harvard.iq.dataverse.engine.command.RequiredPermissionsMap;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 
@@ -15,12 +18,12 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
 //@todo We will need to revist the permissions for move, once we add this 
 //(will probably need different move commands for unplublished which checks add,
 //versus published which checks publish 
-/*
+
 @RequiredPermissionsMap({
-	@RequiredPermissions( dataverseName = "moved",       value = {Permission.UndoableEdit, Permission.AssignRole} ),
-	@RequiredPermissions( dataverseName = "source",      value = Permission.UndoableEdit ),
-	@RequiredPermissions( dataverseName = "destination", value = Permission.DestructiveEdit )
-})*/
+	@RequiredPermissions( dataverseName = "moved",       value = {Permission.ManageDataversePermissions, Permission.EditDataverse} ),
+	@RequiredPermissions( dataverseName = "source",      value = Permission.DeleteDataverse ),
+	@RequiredPermissions( dataverseName = "destination", value = Permission.AddDataverse )
+})
 public class MoveDataverseCommand extends AbstractVoidCommand {
 	
 	final Dataverse moved;

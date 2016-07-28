@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import java.util.Map;
@@ -23,6 +24,7 @@ import javax.inject.Named;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.EnumSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -96,6 +98,9 @@ public class EjbDataverseEngine {
     DOIEZIdServiceBean doiEZId;
     
     @EJB
+    DOIDataCiteServiceBean doiDataCite;
+    
+    @EJB
     HandlenetServiceBean handleNet;
     
     @EJB
@@ -124,7 +129,13 @@ public class EjbDataverseEngine {
     
     @EJB
     AuthenticationServiceBean authentication; 
-    
+
+    @EJB
+    SystemConfig systemConfig;
+
+    @EJB
+    PrivateUrlServiceBean privateUrlService;
+
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
     
@@ -169,6 +180,11 @@ public class EjbDataverseEngine {
                 if (!granted.containsAll(required)) {
                     required.removeAll(granted);
                     logRec.setActionResult(ActionLogRecord.Result.PermissionError);
+                    /**
+                     * @todo Is there any harm in showing the "granted" set
+                     * since we already show "required"? It would help people
+                     * reason about the mismatch.
+                     */
                     throw new PermissionException("Can't execute command " + aCommand
                             + ", because request " + aCommand.getRequest()
                             + " is missing permissions " + required
@@ -306,6 +322,11 @@ public class EjbDataverseEngine {
                 }
                 
                 @Override
+                public DOIDataCiteServiceBean doiDataCite() {
+                    return doiDataCite;
+                }
+                
+                @Override
                 public HandlenetServiceBean handleNet() {
                     return handleNet;
                 }
@@ -363,7 +384,17 @@ public class EjbDataverseEngine {
                 public AuthenticationServiceBean authentication() {
                     return authentication;
                 } 
-                
+
+                @Override
+                public SystemConfig systemConfig() {
+                    return systemConfig;
+                }
+
+                @Override
+                public PrivateUrlServiceBean privateUrl() {
+                    return privateUrlService;
+                }
+
             };
         }
 

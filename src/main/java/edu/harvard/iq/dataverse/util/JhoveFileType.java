@@ -128,9 +128,9 @@ public class JhoveFileType implements java.io.Serializable  {
                      * throw arbitrary files at it, so we'll skip it.
                      */
                     //Iterator iter = _moduleList.iterator();
-                    Iterator iter = jb.getModuleList().iterator();
+                    Iterator<Module> iter = jb.getModuleList().iterator();
                     while (iter.hasNext()) {
-                        Module mod = (Module) iter.next();
+                        Module mod = iter.next();
                         RepInfo infc = (RepInfo) info.clone();
 
                         if (mod.hasFeature("edu.harvard.hul.ois.jhove.canValidate")) {

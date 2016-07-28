@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.MetadataBlock;
+import edu.harvard.iq.dataverse.WidgetWrapper;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -19,6 +20,7 @@ import java.util.StringTokenizer;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
 import javax.inject.Named;
 import org.apache.commons.lang.StringUtils;
 
@@ -33,6 +35,8 @@ public class AdvancedSearchPage implements java.io.Serializable {
 
     @EJB
     DatasetFieldServiceBean datasetFieldService;
+    
+    @Inject WidgetWrapper widgetWrapper;
 
     private Dataverse dataverse;
     private String dataverseIdentifier;
@@ -84,7 +88,8 @@ public class AdvancedSearchPage implements java.io.Serializable {
         String returnString = "/dataverse.xhtml?q=";
         returnString += URLEncoder.encode(constructQuery(queryStrings, false, false), "UTF-8");
         returnString += "&alias=" + dataverse.getAlias() + "&faces-redirect=true";
-
+        returnString = widgetWrapper.wrapURL(returnString);
+        
         logger.fine(returnString);
         return returnString;
     }

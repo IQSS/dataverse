@@ -6,6 +6,7 @@
 
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.BibtexCitation;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
@@ -20,8 +21,11 @@ import edu.harvard.iq.dataverse.DataverseTheme;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
+import edu.harvard.iq.dataverse.dataaccess.DataFileZipper;
 import edu.harvard.iq.dataverse.dataaccess.FileAccessIO;
 import edu.harvard.iq.dataverse.dataaccess.OptionalAccessService;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
@@ -40,6 +44,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Properties;
 import javax.inject.Inject;
@@ -60,6 +65,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.ServiceUnavailableException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
 
 /*
     Custom API exceptions [NOT YET IMPLEMENTED]
@@ -106,6 +112,8 @@ public class Access extends AbstractApiBean {
     @EJB
     WorldMapTokenServiceBean worldMapTokenServiceBean;
 
+    private static final String API_KEY_HEADER = "X-Dataverse-key";    
+
     //@EJB
     
     // TODO: 
@@ -122,6 +130,10 @@ public class Access extends AbstractApiBean {
             throw new WebApplicationException(Response.Status.NOT_FOUND);
         }
         
+        if (apiToken == null || apiToken.equals("")) {
+            apiToken = headers.getHeaderString(API_KEY_HEADER);
+        }
+        
         // This will throw a WebApplicationException, with the correct 
         // exit code, if access isn't authorized: 
         checkAuthorization(df, apiToken);
@@ -134,7 +146,8 @@ public class Access extends AbstractApiBean {
         
         downloadInstance.setFileCitationEndNote(datasetService.createCitationXML(datasetVersion, fileMetadata));
         downloadInstance.setFileCitationRIS(datasetService.createCitationRIS(datasetVersion, fileMetadata));
-        
+        downloadInstance.setFileCitationBibtex(new BibtexCitation(datasetVersion).toString());
+
         ByteArrayOutputStream outStream = null;
         outStream = new ByteArrayOutputStream();
 
@@ -165,6 +178,10 @@ public class Access extends AbstractApiBean {
         if (df == null) {
             logger.warning("Access: datafile service could not locate a DataFile object for id "+fileId+"!");
             throw new WebApplicationException(Response.Status.NOT_FOUND);
+        }
+        
+        if (apiToken == null || apiToken.equals("")) {
+            apiToken = headers.getHeaderString(API_KEY_HEADER);
         }
         
         // This will throw a WebApplicationException, with the correct 
@@ -371,6 +388,10 @@ public class Access extends AbstractApiBean {
             throw new WebApplicationException(Response.Status.NOT_FOUND);
         }
         
+        if (apiToken == null || apiToken.equals("")) {
+            apiToken = headers.getHeaderString(API_KEY_HEADER);
+        }
+        
         // This will throw a WebApplicationException, with the correct 
         // exit code, if access isn't authorized: 
         checkAuthorization(df, apiToken);
@@ -399,61 +420,117 @@ public class Access extends AbstractApiBean {
     @Path("datafiles/{fileIds}")
     @GET
     @Produces({"application/zip"})
-    public ZippedDownloadInstance datafiles(@PathParam("fileIds") String fileIds, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
-        ByteArrayOutputStream outStream = null;
+    public /*ZippedDownloadInstance*/ Response datafiles(@PathParam("fileIds") String fileIds, @QueryParam("key") String apiTokenParam, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
         // create a Download Instance without, without a primary Download Info object:
-        ZippedDownloadInstance downloadInstance = new ZippedDownloadInstance();
+        //ZippedDownloadInstance downloadInstance = new ZippedDownloadInstance();
 
         
-        long zipDownloadSizeLimit = systemConfig.getZipDownloadLimit();
-        if (zipDownloadSizeLimit > 0L) {
-            logger.fine("setting zip download size limit to " + zipDownloadSizeLimit + " bytes.");
-            downloadInstance.setSizeLimit(zipDownloadSizeLimit);
+        
+        
+        long setLimit = systemConfig.getZipDownloadLimit();
+        if (!(setLimit > 0L)) {
+            setLimit = DataFileZipper.DEFAULT_ZIPFILE_LIMIT;
         }
+        
+        long zipDownloadSizeLimit = setLimit; 
+        
+        logger.fine("setting zip download size limit to " + zipDownloadSizeLimit + " bytes.");
         
         if (fileIds == null || fileIds.equals("")) {
             throw new WebApplicationException(Response.Status.BAD_REQUEST);
         }
 
-        String fileIdParams[] = fileIds.split(",");
-        if (fileIdParams != null && fileIdParams.length > 0) {
-            logger.fine(fileIdParams.length + " tokens;");
-            for (int i = 0; i < fileIdParams.length; i++) {
-                logger.fine("token: " + fileIdParams[i]);
-                Long fileId = null;
-                try {
-                    fileId = new Long(fileIdParams[i]);
-                } catch (NumberFormatException nfe) {
-                    fileId = null;
-                }
-                logger.fine("attempting to look up file id " + fileId);
-                DataFile file = dataFileService.find(fileId);
-                if (file != null) {
-                    if (isAccessAuthorized(file, apiToken)) { 
-                        logger.fine("adding datafile (id=" + file.getId() + ") to the download list of the ZippedDownloadInstance.");
-                        downloadInstance.addDataFile(file);
-                    } else {
-                        downloadInstance.setManifest(downloadInstance.getManifest() + 
-                                file.getFileMetadata().getLabel() + " IS RESTRICTED AND CANNOT BE DOWNLOADED\r\n");
-                    }
-
-                } else {
-                    // Or should we just drop it and make a note in the Manifest?    
-                    throw new WebApplicationException(Response.Status.NOT_FOUND);
-                }
-            }
-        } else {
-            throw new WebApplicationException(Response.Status.BAD_REQUEST);
-        }
-
-        if (downloadInstance.getDataFiles().size() < 1) {
-            // This means the file ids supplied were valid, but none were 
-            // accessible for this user:
-            throw new WebApplicationException(Response.Status.FORBIDDEN);
-        }
+        String apiToken = (apiTokenParam == null || apiTokenParam.equals("")) 
+                ? headers.getHeaderString(API_KEY_HEADER) 
+                : apiTokenParam;
         
+        StreamingOutput stream = new StreamingOutput() {
 
-        return downloadInstance;
+            @Override
+            public void write(OutputStream os) throws IOException,
+                    WebApplicationException {
+                String fileIdParams[] = fileIds.split(",");
+                DataFileZipper zipper = null; 
+                boolean accessToUnrestrictedFileAuthorized = false; 
+                String fileManifest = "";
+                long sizeTotal = 0L;
+                
+                if (fileIdParams != null && fileIdParams.length > 0) {
+                    logger.fine(fileIdParams.length + " tokens;");
+                    for (int i = 0; i < fileIdParams.length; i++) {
+                        logger.fine("token: " + fileIdParams[i]);
+                        Long fileId = null;
+                        try {
+                            fileId = new Long(fileIdParams[i]);
+                        } catch (NumberFormatException nfe) {
+                            fileId = null;
+                        }
+                        if (fileId != null) {
+                            logger.fine("attempting to look up file id " + fileId);
+                            DataFile file = dataFileService.find(fileId);
+                            if (file != null) {
+                                
+                                if ((accessToUnrestrictedFileAuthorized && !file.isRestricted()) 
+                                        || isAccessAuthorized(file, apiToken)) { 
+                                    
+                                    if (!file.isRestricted()) {
+                                        accessToUnrestrictedFileAuthorized = true;
+                                    }
+                                    logger.fine("adding datafile (id=" + file.getId() + ") to the download list of the ZippedDownloadInstance.");
+                                    //downloadInstance.addDataFile(file);
+                                    
+                                    if (zipper == null) {
+                                        // This is the first file we can serve - so we now know that we are going to be able 
+                                        // to produce some output.
+                                        zipper = new DataFileZipper(os);
+                                        zipper.setFileManifest(fileManifest);
+                                        response.setHeader("Content-disposition", "attachment; filename=\"dataverse_files.zip\"");
+                                        response.setHeader("Content-Type", "application/zip; name=\"dataverse_files.zip\"");
+                                    }
+                                    if (sizeTotal + file.getFilesize() < zipDownloadSizeLimit) {
+                                        sizeTotal += zipper.addFileToZipStream(file);
+                                    } else {
+                                        String fileName = file.getFileMetadata().getLabel();
+                                        String mimeType = file.getContentType();
+                                        
+                                        zipper.addToManifest(fileName + " (" + mimeType + ") " + " skipped because the total size of the download bundle exceeded the limit of " + zipDownloadSizeLimit + " bytes.\r\n");
+                                    }
+                                } else {
+                                    if (zipper == null) {
+                                        fileManifest = fileManifest + file.getFileMetadata().getLabel() + " IS RESTRICTED AND CANNOT BE DOWNLOADED\r\n";
+                                    } else {
+                                        zipper.addToManifest(file.getFileMetadata().getLabel() + " IS RESTRICTED AND CANNOT BE DOWNLOADED\r\n");
+                                    }
+                                } 
+
+                            } else {
+                                // Or should we just drop it and make a note in the Manifest?    
+                                throw new WebApplicationException(Response.Status.NOT_FOUND);
+                            }
+                        }
+                    }
+                } else {
+                    throw new WebApplicationException(Response.Status.BAD_REQUEST);
+                }
+
+                if (zipper == null) {
+                    // If the DataFileZipper object is still NULL, it means that 
+                    // there were file ids supplied - but none of the corresponding 
+                    // files were accessible for this user. 
+                    // In which casew we don't bother generating any output, and 
+                    // just give them a 403:
+                    throw new WebApplicationException(Response.Status.FORBIDDEN);
+                }
+
+                // This will add the generated File Manifest to the zipped output, 
+                // then flush and close the stream:
+                zipper.finalizeZipStream();
+                
+                //os.flush();
+                //os.close();
+            }
+        };
+        return Response.ok(stream).build();
     }
     
     @Path("tempPreview/{fileSystemId}")
@@ -871,7 +948,7 @@ public class Access extends AbstractApiBean {
             }
         }
         
-        AuthenticatedUser user = null;
+        User user = null;
        
         /** 
          * Authentication/authorization:
@@ -889,7 +966,11 @@ public class Access extends AbstractApiBean {
                 if (session.getUser().isAuthenticated()) {
                     user = (AuthenticatedUser) session.getUser();
                 } else {
-                    logger.fine("User associated with the session is not an authenticated user. (Guest access will be assumed).");
+                    logger.fine("User associated with the session is not an authenticated user.");
+                    if (session.getUser() instanceof PrivateUrlUser) {
+                        logger.fine("User associated with the session is a PrivateUrlUser user.");
+                        user = session.getUser();
+                    }
                     if (session.getUser() instanceof GuestUser) {
                         logger.fine("User associated with the session is indeed a guest user.");
                     }
@@ -901,13 +982,18 @@ public class Access extends AbstractApiBean {
             logger.fine("Session is null.");
         } 
         
-        AuthenticatedUser apiTokenUser = null;
+        User apiTokenUser = null;
         
         if ((apiToken != null)&&(apiToken.length()!=64)) {
             // We'll also try to obtain the user information from the API token, 
             // if supplied: 
         
-            apiTokenUser = findUserByApiToken(apiToken);
+            try {
+                logger.fine("calling apiTokenUser = findUserOrDie()...");
+                apiTokenUser = findUserOrDie();
+            } catch (WrappedResponse wr) {
+                logger.fine("Message from findUserOrDie(): " + wr.getMessage());
+            }
             
             if (apiTokenUser == null) {
                 logger.warning("API token-based auth: Unable to find a user with the API token provided.");
@@ -926,14 +1012,14 @@ public class Access extends AbstractApiBean {
                 if (user != null) {
                     // it's not unthinkable, that a null user (i.e., guest user) could be given
                     // the ViewUnpublished permission!
-                    logger.fine("Session-based auth: user "+user.getName()+" has access rights on the non-restricted, unpublished datafile.");
+                    logger.fine("Session-based auth: user " + user.getIdentifier() + " has access rights on the non-restricted, unpublished datafile.");
                 }
                 return true;
             }
             
             if (apiTokenUser != null) {
                 if (permissionService.userOn(apiTokenUser, df.getOwner()).has(Permission.ViewUnpublishedDataset)) {
-                    logger.fine("Session-based auth: user "+apiTokenUser.getName()+" has access rights on the non-restricted, unpublished datafile.");
+                    logger.fine("Session-based auth: user " + apiTokenUser.getIdentifier() + " has access rights on the non-restricted, unpublished datafile.");
                     return true;
                 }
             }
@@ -962,12 +1048,12 @@ public class Access extends AbstractApiBean {
                 if (published) {
                     if (hasAccessToRestrictedBySession) {
                         if (user != null) {
-                            logger.fine("Session-based auth: user "+user.getName()+" is granted access to the restricted, published datafile.");
+                            logger.fine("Session-based auth: user " + user.getIdentifier() + " is granted access to the restricted, published datafile.");
                         } else {
                             logger.fine("Session-based auth: guest user is granted access to the restricted, published datafile.");
                         }
                     } else {
-                        logger.fine("Token-based auth: user "+apiTokenUser.getName()+" is granted access to the restricted, published datafile.");
+                        logger.fine("Token-based auth: user " + apiTokenUser.getIdentifier() + " is granted access to the restricted, published datafile.");
                     }
                     return true;
                 } else {
@@ -980,7 +1066,7 @@ public class Access extends AbstractApiBean {
                     if (hasAccessToRestrictedBySession) {
                         if (permissionService.on(df.getOwner()).has(Permission.ViewUnpublishedDataset)) {
                             if (user != null) {
-                                logger.fine("Session-based auth: user " + user.getName() + " is granted access to the restricted, unpublished datafile.");
+                                logger.fine("Session-based auth: user " + user.getIdentifier() + " is granted access to the restricted, unpublished datafile.");
                             } else {
                                 logger.fine("Session-based auth: guest user is granted access to the restricted, unpublished datafile.");
                             }
@@ -988,7 +1074,7 @@ public class Access extends AbstractApiBean {
                         } 
                     } else {
                         if (apiTokenUser != null && permissionService.userOn(apiTokenUser, df.getOwner()).has(Permission.ViewUnpublishedDataset)) {
-                            logger.fine("Token-based auth: user " + apiTokenUser.getName() + " is granted access to the restricted, unpublished datafile.");    
+                            logger.fine("Token-based auth: user " + apiTokenUser.getIdentifier() + " is granted access to the restricted, unpublished datafile.");
                         }
                     }
                 }
@@ -1021,7 +1107,12 @@ public class Access extends AbstractApiBean {
             // Will try to obtain the user information from the API token, 
             // if supplied: 
         
-            user = findUserByApiToken(apiToken);
+            try {
+                logger.fine("calling user = findUserOrDie()...");
+                user = findUserOrDie();
+            } catch (WrappedResponse wr) {
+                logger.fine("Message from findUserOrDie(): " + wr.getMessage());
+            }
             
             if (user == null) {
                 logger.warning("API token-based auth: Unable to find a user with the API token provided.");
@@ -1030,32 +1121,32 @@ public class Access extends AbstractApiBean {
             
             if (permissionService.userOn(user, df).has(Permission.DownloadFile)) { 
                 if (published) {
-                    logger.fine("API token-based auth: User "+user.getName()+" has rights to access the datafile.");
+                    logger.fine("API token-based auth: User " + user.getIdentifier() + " has rights to access the datafile.");
                     return true; 
                 } else {
                     // if the file is NOT published, we will let them download the 
                     // file ONLY if they also have the permission to view 
                     // unpublished verions:
                     if (permissionService.userOn(user, df.getOwner()).has(Permission.ViewUnpublishedDataset)) {
-                        logger.fine("API token-based auth: User "+user.getName()+" has rights to access the (unpublished) datafile.");
+                        logger.fine("API token-based auth: User " + user.getIdentifier() + " has rights to access the (unpublished) datafile.");
                         return true;
                     } else {
-                        logger.fine("API token-based auth: User "+user.getName()+" is not authorized to access the (unpublished) datafile.");
+                        logger.fine("API token-based auth: User " + user.getIdentifier() + " is not authorized to access the (unpublished) datafile.");
                     }
                 }
             } else {
-                logger.fine("API token-based auth: User "+user.getName()+" is not authorized to access the datafile.");
+                logger.fine("API token-based auth: User " + user.getIdentifier() + " is not authorized to access the datafile.");
             }
             
             return false;
         } 
         
         if (user != null) {
-            logger.fine("Session-based auth: user " + user.getName() + " has NO access rights on the requested datafile.");
+            logger.fine("Session-based auth: user " + user.getIdentifier() + " has NO access rights on the requested datafile.");
         } 
         
         if (apiTokenUser != null) {
-            logger.fine("Token-based auth: user " + apiTokenUser.getName() + " has NO access rights on the requested datafile.");
+            logger.fine("Token-based auth: user " + apiTokenUser.getIdentifier() + " has NO access rights on the requested datafile.");
         } 
         
         if (user == null && apiTokenUser == null) {

@@ -611,4 +611,20 @@ public class DataFile extends DvObject {
         // currently this method is not being used
         return getLatestFileMetadata().getLabel();
     }
+    
+    /**
+     * Check if the Geospatial Tag has been assigned to this file
+     * @return 
+     */
+    public boolean hasGeospatialTag(){
+        if (this.dataFileTags == null){
+            return false;
+        }
+        for (DataFileTag tag : this.dataFileTags){
+            if (tag.isGeospatialTag()){
+                return true;
+            }
+        }
+        return false;
+    }
 }

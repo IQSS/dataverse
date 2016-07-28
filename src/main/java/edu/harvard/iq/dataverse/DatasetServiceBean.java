@@ -106,7 +106,7 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     /**
      * For docs, see the equivalent method on the DataverseServiceBean.
-     * @see DataverseServiceBean#findAllOrSubset(long, long) 
+     * @see DataverseServiceBean#findAllOrSubset(long, long, boolean)
      */     
     public List<Dataset> findAllOrSubset(long numPartitions, long partitionId, boolean skipIndexed) {
         if (numPartitions < 1) {
@@ -121,7 +121,16 @@ public class DatasetServiceBean implements java.io.Serializable {
         typedQuery.setParameter("partitionId", partitionId);
         return typedQuery.getResultList();
     }
-
+    
+    /**
+     * Merges the passed dataset to the persistence context.
+     * @param ds the dataset whose new state we want to persist.
+     * @return The managed entity representing {@code ds}.
+     */
+    public Dataset merge( Dataset ds ) {
+        return em.merge(ds);
+    }
+    
     public Dataset findByGlobalId(String globalId) {
 
         String protocol = "";
@@ -217,6 +226,12 @@ public class DatasetServiceBean implements java.io.Serializable {
         return u;
     }
 
+    public DatasetVersion storeVersion( DatasetVersion dsv ) {
+        em.persist(dsv);
+        return dsv;
+    }
+    
+    
     public String createCitationRIS(DatasetVersion version) {
         return createCitationRIS(version, null);
     } 
@@ -255,6 +270,7 @@ public class DatasetServiceBean implements java.io.Serializable {
 
         return retString;
     }
+
 
     private XMLOutputFactory xmlOutputFactory = null;
 

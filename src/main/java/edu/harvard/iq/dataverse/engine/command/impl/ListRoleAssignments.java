@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
@@ -14,12 +14,11 @@ import java.util.List;
  * 
  * @author michael
  */
-//@todo should this command exist for other dvObjects
 @RequiredPermissions( Permission.ManageDataversePermissions )
 public class ListRoleAssignments extends AbstractCommand<List<RoleAssignment>> {
 	
-	private final Dataverse definitionPoint;
-	public ListRoleAssignments(DataverseRequest aRequest, Dataverse aDefinitionPoint) {
+	private final DvObject definitionPoint;
+	public ListRoleAssignments(DataverseRequest aRequest, DvObject aDefinitionPoint) {
 		super(aRequest, aDefinitionPoint);
 		definitionPoint = aDefinitionPoint;
 	}

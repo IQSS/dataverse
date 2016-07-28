@@ -38,6 +38,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -70,6 +71,8 @@ public class ManagePermissionsPage implements java.io.Serializable {
     UserNotificationServiceBean userNotificationService;
     @Inject
     DataverseRequestServiceBean dvRequestService;
+    @Inject
+    PermissionsWrapper permissionsWrapper;
 
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
@@ -99,13 +102,13 @@ public class ManagePermissionsPage implements java.io.Serializable {
 
         // check if dvObject exists and user has permission
         if (dvObject == null) {
-            return "/404.xhtml";
+            return permissionsWrapper.notFound();
         }
 
         // for dataFiles, check the perms on its owning dataset
         DvObject checkPermissionsdvObject = dvObject instanceof DataFile ? dvObject.getOwner() : dvObject;
         if (!permissionService.on(checkPermissionsdvObject).has(checkPermissionsdvObject instanceof Dataverse ? Permission.ManageDataversePermissions : Permission.ManageDatasetPermissions)) {
-            return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
+            return permissionsWrapper.notAuthorized();
         }
 
         // initialize the configure settings
@@ -183,7 +186,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
         if (dvObject != null && dvObject.getId() != null) {
             return roleService.findByOwnerId(dvObject.getId());
         }
-        return new ArrayList();
+        return new ArrayList<>();
     }
 
     public void createNewRole(ActionEvent e) {
@@ -320,31 +323,11 @@ public class ManagePermissionsPage implements java.io.Serializable {
         selectedRoleId = null;
         showNoMessages();
     }
-    
+                
     public List<RoleAssignee> completeRoleAssignee( String query ) {
-        List<RoleAssignee> roleAssigneeList = new ArrayList<>();
-        // TODO push this to the authentication and group services. Below code retrieves all the users.
-        for (AuthenticatedUser au : authenticationService.findAllAuthenticatedUsers()) {
-            roleAssigneeList.add(au);
-        }
-        for ( Group g : groupService.findGlobalGroups() ) {
-            roleAssigneeList.add( g );
-        }
-        roleAssigneeList.addAll( explicitGroupService.findAvailableFor(dvObject) );
-        
-        List<RoleAssignee> filteredList = new LinkedList();
-        for (RoleAssignee ra : roleAssigneeList) {
-            // @todo unsure if containsIgnore case will work for all locales
-            // @todo maybe add some solr/lucene style searching, did-you-mean style?
-            if ((StringUtils.containsIgnoreCase(ra.getDisplayInfo().getTitle(), query) 
-                    || StringUtils.containsIgnoreCase(ra.getIdentifier(), query))
-                    && (roleAssignSelectedRoleAssignees == null || !roleAssignSelectedRoleAssignees.contains(ra))) {
-                filteredList.add(ra);
-            }
-        }
-        return filteredList;
+        return roleAssigneeService.filterRoleAssignees(query, dvObject, roleAssignSelectedRoleAssignees);                  
     }
-
+    
     public List<DataverseRole> getAvailableRoles() {
         List<DataverseRole> roles = new LinkedList<>();
         if (dvObject != null && dvObject.getId() != null) {
@@ -415,8 +398,9 @@ public class ManagePermissionsPage implements java.io.Serializable {
 
     private void assignRole(RoleAssignee ra, DataverseRole r) {
         try {
-            commandEngine.submit(new AssignRoleCommand(ra, r, dvObject, dvRequestService.getDataverseRequest()));
-            JsfHelper.addSuccessMessage(r.getName() + " role assigned to " + ra.getDisplayInfo().getTitle() + " for " + dvObject.getDisplayName() + ".");
+            String privateUrlToken = null;
+            commandEngine.submit(new AssignRoleCommand(ra, r, dvObject, dvRequestService.getDataverseRequest(), privateUrlToken));
+            JsfHelper.addSuccessMessage(r.getName() + " role assigned to " + ra.getDisplayInfo().getTitle() + " for " + StringEscapeUtils.escapeHtml(dvObject.getDisplayName()) + ".");
             // don't notify if role = file downloader and object is not released
             if (!(r.getAlias().equals(DataverseRole.FILE_DOWNLOADER) && !dvObject.isReleased()) ){
                             notifyRoleChange(ra, UserNotification.Type.ASSIGNROLE);

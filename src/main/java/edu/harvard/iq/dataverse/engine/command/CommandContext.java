@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.engine.command;
 
+import edu.harvard.iq.dataverse.DOIDataCiteServiceBean;
 import edu.harvard.iq.dataverse.DOIEZIdServiceBean;
 import edu.harvard.iq.dataverse.HandlenetServiceBean;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
@@ -24,9 +25,11 @@ import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
+import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import javax.persistence.EntityManager;
 
 /**
@@ -37,6 +40,13 @@ import javax.persistence.EntityManager;
  */
 public interface CommandContext {
     
+    /**
+     * Note: While this method is not deprecated *yet*, please consider not using it,
+     * and using a method on the service bean instead. Using the em directly makes
+     * the command less testable.
+     * 
+     * @return the entity manager
+     */
 	public EntityManager em();
 	
 	public DataverseEngine engine();
@@ -75,6 +85,8 @@ public interface CommandContext {
                
     public DOIEZIdServiceBean doiEZId();
     
+    public DOIDataCiteServiceBean doiDataCite();
+    
     public HandlenetServiceBean handleNet();
     
     public GuestbookServiceBean guestbooks();
@@ -92,4 +104,8 @@ public interface CommandContext {
     public UserNotificationServiceBean notifications();
     
     public AuthenticationServiceBean authentication();
+
+    public SystemConfig systemConfig();
+
+    public PrivateUrlServiceBean privateUrl();
 }

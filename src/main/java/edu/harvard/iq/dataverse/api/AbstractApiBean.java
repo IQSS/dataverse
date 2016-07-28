@@ -20,25 +20,33 @@ import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
+import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.validation.BeanValidationServiceBean;
+import java.io.StringReader;
 import java.net.URI;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.ejb.EJBException;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.json.JsonReader;
+import javax.json.JsonValue;
+import javax.json.JsonValue.ValueType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletRequest;
@@ -83,10 +91,39 @@ public abstract class AbstractApiBean {
          */
         public Response refineResponse( String message ) {
             final Status statusCode = Response.Status.fromStatusCode(response.getStatus());
-            final Throwable cause = getCause();
-            return errorResponse(statusCode, message
-                    + (cause!=null ? " "+cause.getMessage() : "")
-                    + " (" + statusCode.toString() + ")" );
+            String baseMessage = getWrappedMessageWhenJson();
+            
+            if ( baseMessage == null ) {
+                final Throwable cause = getCause();
+                baseMessage = (cause!=null ? cause.getMessage() : "");
+            }
+            return errorResponse(statusCode, message+" "+baseMessage);
+        }
+        
+        /**
+         * In the common case of the wrapped response being of type JSON,
+         * return the message field it has (if any).
+         * @return the content of a message field, or {@code null}.
+         */
+        String getWrappedMessageWhenJson() {
+            if ( response.getMediaType().equals(MediaType.APPLICATION_JSON_TYPE) ) {
+                Object entity = response.getEntity();
+                if ( entity == null ) return null;
+                
+                String json = entity.toString();
+                try ( StringReader rdr = new StringReader(json) ){
+                    JsonReader jrdr = Json.createReader(rdr);
+                    JsonObject obj = jrdr.readObject();
+                    if ( obj.containsKey("message") ) {
+                        JsonValue message = obj.get("message");
+                        return message.getValueType() == ValueType.STRING ? obj.getString("message") : message.toString();
+                    } else {
+                        return null;
+                    }
+                }
+            } else {
+                return null;
+            }
         }
     }
     
@@ -135,6 +172,9 @@ public abstract class AbstractApiBean {
     @EJB
     protected SavedSearchServiceBean savedSearchSvc;
 
+    @EJB
+    protected PrivateUrlServiceBean privateUrlSvc;
+
 	@PersistenceContext(unitName = "VDCNet-ejbPU")
 	protected EntityManager em;
     
@@ -155,11 +195,21 @@ public abstract class AbstractApiBean {
             return new JsonParser(datasetFieldSvc, metadataBlockSvc,settingsSvc);
         }
     });
-    
-	protected RoleAssignee findAssignee( String identifier ) {
-    	return roleAssigneeSvc.getRoleAssignee(identifier);
-	}
-    
+
+    protected RoleAssignee findAssignee(String identifier) {
+        try {
+            RoleAssignee roleAssignee = roleAssigneeSvc.getRoleAssignee(identifier);
+            return roleAssignee;
+        } catch (EJBException ex) {
+            Throwable cause = ex;
+            while (cause.getCause() != null) {
+                cause = cause.getCause();
+            }
+            logger.info("Exception caught looking up RoleAssignee based on identifier '" + identifier + "': " + cause.getMessage());
+            return null;
+        }
+    }
+
     /**
      * 
      * @param apiKey the key to find the user with
@@ -168,6 +218,16 @@ public abstract class AbstractApiBean {
      */
     protected AuthenticatedUser findUserByApiToken( String apiKey ) {
         return authSvc.lookupUser(apiKey);
+    }
+    
+    /**
+     * Returns the {@code key} query parameter from the current request, or {@code null} if
+     * the request has no such parameter.
+     * @param key Name of the requested parameter.
+     * @return Value of the requested parameter in the current request.
+     */
+    protected String getRequestParameter( String key ) {
+        return httpRequest.getParameter(key);
     }
     
     protected String getRequestApiKey() {
@@ -183,9 +243,14 @@ public abstract class AbstractApiBean {
      */
     protected User findUserOrDie() throws WrappedResponse {
         final String requestApiKey = getRequestApiKey();
-        return ( requestApiKey == null )
-                ? GuestUser.get()
-                : findAuthenticatedUserOrDie(requestApiKey);
+        if (requestApiKey == null) {
+            return GuestUser.get();
+        }
+        PrivateUrlUser privateUrlUser = privateUrlSvc.getPrivateUrlUserFromToken(requestApiKey);
+        if (privateUrlUser != null) {
+            return privateUrlUser;
+        }
+        return findAuthenticatedUserOrDie(requestApiKey);
     }
     
     /**
@@ -272,6 +337,11 @@ public abstract class AbstractApiBean {
             throw new WrappedResponse( ex, errorResponse(Response.Status.BAD_REQUEST, ex.getMessage() ) );
           
         } catch (PermissionException ex) {
+            /**
+             * @todo Is there any harm in exposing ex.getLocalizedMessage()?
+             * There's valuable information in there that can help people reason
+             * about permissions!
+             */
             throw new WrappedResponse(errorResponse(Response.Status.UNAUTHORIZED, 
                                                     "User " + cmd.getRequest().getUser().getIdentifier() + " is not permitted to perform requested action.") );
             

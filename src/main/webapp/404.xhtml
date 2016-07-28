@@ -3,7 +3,9 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:p="http://primefaces.org/ui">
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:o="http://omnifaces.org/ui"      
+      xmlns:jsf="http://xmlns.jcp.org/jsf">
 
     <h:head>
     </h:head>
@@ -16,16 +18,28 @@
             <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:define name="body">
                 <div class="alert alert-danger" role="alert" style="margin-top:3em;">
-                    <h:outputText value="#{bundle['error.404.message']}" escape="false"/>
-                </div>
-                <div class="row text-center">
-                    <h:form>
-                        <input id="search404" type="text" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all" size="28" value="" placeholder="#{bundle['header.search.title']}" 
+                    <o:form useRequestURI="true">
+                        <h:outputText value="#{bundle['error.404.message']} " escape="false"/>
+                        <h:outputFormat value="#{bundle['error.support.message']}" escape="false">
+                            <o:param>
+                                <p:commandLink value="#{bundle['contact.support']}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
+                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
+                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
+                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
+                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
+                                </p:commandLink>                                
+                            </o:param>
+                        </h:outputFormat>   
+                    </o:form>                  
+                </div>                   
+                <div class="row text-center" jsf:rendered="#{!widgetWrapper.widgetView}">
+                    <o:form useRequestURI="true">
+                        <input id="search404" type="text" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all" size="28" value="" placeholder="#{bundle['header.search.title']}"
                                style="font-size:1em;margin-right:1em;" onkeypress="if (event.keyCode == 13) {window.location = '/?q=' + document.getElementById('search404').value; return false;}" />
                         <a href="#" id="search404button" class="btn btn-default" onclick="window.location = '/?q=' + document.getElementById('search404').value; return false;">
                             <span class="glyphicon glyphicon-search"/> #{bundle.find}
                         </a>
-                    </h:form>
+                    </o:form>
                 </div>
             </ui:define>
         </ui:composition>
