@@ -499,6 +499,7 @@ public class BuiltinUserPage implements java.io.Serializable {
                 boolean sendEmail = true;
                 try {
                     ConfirmEmailInitResponse confirmEmailInitResponse = confirmEmailService.sendConfirm(savedUser, sendEmail);
+                    currentUser = confirmEmailInitResponse.getConfirmEmailData().getAuthenticatedUser();
                 } catch (ConfirmEmailException ex) {
                     logger.info("Unable to send email confirmation link to user id " + savedUser.getId());
                 }
