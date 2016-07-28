@@ -6,7 +6,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import org.junit.Test;
 import static org.hamcrest.CoreMatchers.equalTo;
 
-public class InfoTest {
+public class InfoIT {
 
     @Test
     public void testGetDatasetPublishPopupCustomText() {
