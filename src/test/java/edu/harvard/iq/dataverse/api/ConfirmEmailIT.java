@@ -35,9 +35,6 @@ public class ConfirmEmailIT {
         String userToConfirmApiToken = JsonPath.from(createUserToConfirm.body().asString()).getString("data.apiToken");
         String usernameToConfirm = JsonPath.from(createUserToConfirm.body().asString()).getString("data.user.userName");
 
-        /**
-         * @todo Fix this and delete this test or move it to the bottom.
-         */
         boolean exerciseCannotDeleteUserBug = false;
         if (exerciseCannotDeleteUserBug) {
             Response deleteUser = UtilIT.deleteUser(usernameToConfirm);
@@ -104,6 +101,29 @@ public class ConfirmEmailIT {
         getToken2.prettyPrint();
         getToken2.then().assertThat()
                 .statusCode(400);
+    }
+    
+       
+    @Test
+    public void testConfirmUserWithTokenCanBeDeleted(){
+        
+        Response createUserToConfirm = UtilIT.createRandomUser();
+        createUserToConfirm.prettyPrint();
+        createUserToConfirm.then().assertThat()
+                .statusCode(200);
+
+        long userIdToConfirm = JsonPath.from(createUserToConfirm.body().asString()).getLong("data.authenticatedUser.id");
+        String userToConfirmApiToken = JsonPath.from(createUserToConfirm.body().asString()).getString("data.apiToken");
+        String usernameToConfirm = JsonPath.from(createUserToConfirm.body().asString()).getString("data.user.userName");
+
+        boolean deleteUserBugHasBeenFixed = false;
+        if (deleteUserBugHasBeenFixed) {
+            Response deleteUser = UtilIT.deleteUser(usernameToConfirm);
+            deleteUser.prettyPrint();
+            deleteUser.then().assertThat()
+                    .statusCode(200);
+        }
+
     }
 
 }
