@@ -92,10 +92,11 @@ public class ConfirmEmailServiceBean {
          * @todo Move this to Bundle.properties and use
          * BundleUtil.getStringFromBundle
          */
+        ConfirmEmailUtil confirmEmailUtil = new ConfirmEmailUtil();
         String messageBody = BundleUtil.getStringFromBundle("notification.email.changeEmail", Arrays.asList(
                 aUser.getFirstName(),
                 confirmationUrl,
-                "24"
+                confirmEmailUtil.friendlyExpirationTime(systemConfig.getMinutesUntilConfirmEmailTokenExpires())
         ));
                 logger.info("messageBody:" + messageBody);
 
@@ -167,6 +168,18 @@ public class ConfirmEmailServiceBean {
         typedQuery.setParameter("user", user);
         List<ConfirmEmailData> confirmEmailDatas = typedQuery.getResultList();
         return confirmEmailDatas;
+    }
+    
+    public ConfirmEmailData findSingleConfirmEmailDataByUser(AuthenticatedUser user) {
+        ConfirmEmailData confirmEmailData = null;
+        TypedQuery<ConfirmEmailData> typedQuery = em.createNamedQuery("ConfirmEmailData.findByUser", ConfirmEmailData.class);
+        typedQuery.setParameter("user", user);
+        try {
+            confirmEmailData = typedQuery.getSingleResult();
+        } catch (NoResultException | NonUniqueResultException ex) {
+            logger.info("When looking up user " + user + " caught " + ex);
+        }
+        return confirmEmailData;
     }
 
     public List<ConfirmEmailData> findAllConfirmEmailData() {

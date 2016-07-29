@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.authorization.providers.echo.EchoAuthenticationP
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailData;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -217,10 +218,13 @@ public class AuthenticationServiceBean {
      */
     public void deleteAuthenticatedUser(Object pk) {
         AuthenticatedUser user = em.find(AuthenticatedUser.class, pk);
-        
-        
-        if (user!=null) {
+        ConfirmEmailData confirmEmailData = confirmEmailService.findSingleConfirmEmailDataByUser(user);
+
+        if (user != null) {
             ApiToken apiToken = findApiTokenByUser(user);
+            if (confirmEmailData != null) {
+                em.remove(confirmEmailData);
+            }
             if (apiToken != null) {
                 em.remove(apiToken);
             }
