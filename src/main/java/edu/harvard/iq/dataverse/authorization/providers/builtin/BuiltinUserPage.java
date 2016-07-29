@@ -621,9 +621,21 @@ public class BuiltinUserPage implements java.io.Serializable {
         }
     }
     
-    public void sendConfirmEmail(AuthenticatedUser currentUser) throws ConfirmEmailException{
+    /**
+     * @todo Move ConfirmEmailException to a try/catch
+     */
+    public void sendConfirmEmail() throws ConfirmEmailException {
+        logger.info("called sendConfirmEmail()");
         String userEmail = currentUser.getEmail();
         confirmEmailServiceBean.beginConfirm(userEmail);
     }
     
+    public boolean showVerifyEmailButton() {
+        /**
+         * @todo Show the button if the user doesn't have a timestamp AND their
+         * user ID is not already in the confirmemaildata table.
+         */
+        return true;
+    }
+
 }

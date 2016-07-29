@@ -316,6 +316,9 @@
                                     </label>
                                     <div class="col-sm-9">
                                         <p class="form-control-static">#{DataverseUserPage.currentUser.email} <div jsf:rendered="#{DataverseUserPage.currentUser.emailConfirmed == null}">Not Verified</div></p>
+                                        <div jsf:rendered="#{DataverseUserPage.showVerifyEmailButton()}">
+                                            <h:commandButton styleClass="btn btn-default" value="#{bundle['confirmEmail.submitRequest']}" action="#{DataverseUserPage.sendConfirmEmail()}"/>
+                                        </div>
                                     </div>
                                 </div>
                                 <!-- Affiliation -->
