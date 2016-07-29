@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
@@ -69,6 +70,9 @@ public class EjbDataverseEngine {
 
     @EJB
     SearchServiceBean searchService;
+    
+    @EJB
+    IngestServiceBean ingestService;
 
     @EJB
     PermissionServiceBean permissionService;
@@ -271,6 +275,11 @@ public class EjbDataverseEngine {
                     return searchService;
                 }
 
+                @Override
+                public IngestServiceBean ingest() {
+                    return ingestService;
+                }
+                
                 @Override
                 public PermissionServiceBean permissions() {
                     return permissionService;
