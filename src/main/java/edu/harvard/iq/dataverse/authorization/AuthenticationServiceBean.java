@@ -214,19 +214,22 @@ public class AuthenticationServiceBean {
      * assignments, etc.
      * 
      * Longer term, the intention is to have a "disableAuthenticatedUser"
-     * method/command.
+     * method/command. See https://github.com/IQSS/dataverse/issues/2419
      */
     public void deleteAuthenticatedUser(Object pk) {
         AuthenticatedUser user = em.find(AuthenticatedUser.class, pk);
-        ConfirmEmailData confirmEmailData = confirmEmailService.findSingleConfirmEmailDataByUser(user);
 
         if (user != null) {
             ApiToken apiToken = findApiTokenByUser(user);
-            if (confirmEmailData != null) {
-                em.remove(confirmEmailData);
-            }
             if (apiToken != null) {
                 em.remove(apiToken);
+            }
+            ConfirmEmailData confirmEmailData = confirmEmailService.findSingleConfirmEmailDataByUser(user);
+            if (confirmEmailData != null) {
+                /**
+                 * @todo This could probably be a cascade delete instead.
+                 */
+                em.remove(confirmEmailData);
             }
             for (UserNotification notification : userNotificationService.findByUser(user.getId())) {
                 userNotificationService.delete(notification);

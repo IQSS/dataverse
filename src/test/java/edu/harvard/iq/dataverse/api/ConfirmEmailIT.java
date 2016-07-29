@@ -76,8 +76,6 @@ public class ConfirmEmailIT {
         } else {
             confirmEmailViaBrowserJunkToken.then().assertThat().statusCode(200);
         }
-        // This is a hack we can remove when the page returns a proper 404 response when no token is found.
-        assertEquals("404 Not Found", confirmEmailViaBrowserJunkToken.getBody().htmlPath().getString("html.head.title").substring(0, 13));
 
         boolean exitEarlyToTestManuallyInBrowser = false;
         if (exitEarlyToTestManuallyInBrowser) {
@@ -102,11 +100,10 @@ public class ConfirmEmailIT {
         getToken2.then().assertThat()
                 .statusCode(400);
     }
-    
-       
+
     @Test
-    public void testConfirmUserWithTokenCanBeDeleted(){
-        
+    public void testConfirmUserWithTokenCanBeDeleted() {
+
         Response createUserToConfirm = UtilIT.createRandomUser();
         createUserToConfirm.prettyPrint();
         createUserToConfirm.then().assertThat()
@@ -116,13 +113,14 @@ public class ConfirmEmailIT {
         String userToConfirmApiToken = JsonPath.from(createUserToConfirm.body().asString()).getString("data.apiToken");
         String usernameToConfirm = JsonPath.from(createUserToConfirm.body().asString()).getString("data.user.userName");
 
-        boolean deleteUserBugHasBeenFixed = false;
-        if (deleteUserBugHasBeenFixed) {
-            Response deleteUser = UtilIT.deleteUser(usernameToConfirm);
-            deleteUser.prettyPrint();
-            deleteUser.then().assertThat()
-                    .statusCode(200);
-        }
+        Response attemptToDeleteNonExistentUser = UtilIT.deleteUser("noSuchUser");
+        attemptToDeleteNonExistentUser.then().assertThat()
+                .statusCode(400);
+
+        Response deleteUser = UtilIT.deleteUser(usernameToConfirm);
+        deleteUser.prettyPrint();
+        deleteUser.then().assertThat()
+                .statusCode(200);
 
     }
 
