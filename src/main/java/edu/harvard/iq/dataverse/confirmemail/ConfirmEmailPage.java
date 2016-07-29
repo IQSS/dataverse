@@ -7,6 +7,8 @@ import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.JsfHelper;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -69,22 +71,26 @@ public class ConfirmEmailPage implements java.io.Serializable {
 
     public String init() {
         if (token != null) {
-            logger.info("Token found");
             ConfirmEmailExecResponse confirmEmailExecResponse = confirmEmailService.processToken(token);
             confirmEmailData = confirmEmailExecResponse.getConfirmEmailData();
             if (confirmEmailData != null) {
-                logger.info("confirmEmailData found");
                 user = confirmEmailData.getAuthenticatedUser();
-                return "/";
-            } else {
-                logger.info("confirmEmailData not found");
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Confirm Email Link", "Your email confirmation link is not valid."));
-                return "/404.xhtml";
+                session.setUser(user);
+                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("confirmEmail.details.success"));
+                return "/dataverse.xhtml?faces-redirect=true";
             }
-        } else {
-            logger.info("Token not found");
-            return "/404.xhtml";
         }
+        JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("confirmEmail.details.failure"));
+        /**
+         * @todo It would be nice to send a 404 response but if we enable this
+         * then the user sees the contents of 404.xhtml rather than the contents
+         * of JsfHelper.addErrorMessage above!
+         */
+//        try {
+//            FacesContext.getCurrentInstance().getExternalContext().responseSendError(HttpServletResponse.SC_NOT_FOUND, null);
+//        } catch (IOException ex) {
+//        }
+        return null;
     }
 
     public String sendEmailConfirmLink() {
@@ -156,4 +162,17 @@ public class ConfirmEmailPage implements java.io.Serializable {
     public void setConfirmEmailData(ConfirmEmailData confirmEmailData) {
         this.confirmEmailData = confirmEmailData;
     }
+
+    public boolean isInvalidToken() {
+        if (confirmEmailData == null) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public String getRedirectToAccountInfoTab() {
+        return "/dataverseuser.xhtml?selectTab=accountInfo&faces-redirect=true";
+    }
+
 }
