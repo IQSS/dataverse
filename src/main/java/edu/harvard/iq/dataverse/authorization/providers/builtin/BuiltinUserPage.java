@@ -498,7 +498,7 @@ public class BuiltinUserPage implements java.io.Serializable {
                 msg = msg + " Your email address changed and must be re-confirmed.";
                 boolean sendEmail = true;
                 try {
-                    ConfirmEmailInitResponse confirmEmailInitResponse = confirmEmailService.sendConfirm(savedUser, sendEmail);
+                    ConfirmEmailInitResponse confirmEmailInitResponse = confirmEmailService.beginConfirm(savedUser.getEmail());
                     currentUser = confirmEmailInitResponse.getConfirmEmailData().getAuthenticatedUser();
                 } catch (ConfirmEmailException ex) {
                     logger.info("Unable to send email confirmation link to user id " + savedUser.getId());

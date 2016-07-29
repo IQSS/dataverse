@@ -39,7 +39,7 @@ public class ConfirmEmailServiceBean {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
-    
+
     /**
      * Initiate the email confirmation process.
      *
@@ -56,7 +56,7 @@ public class ConfirmEmailServiceBean {
         }
     }
 
-    public ConfirmEmailInitResponse sendConfirm(AuthenticatedUser aUser, boolean sendEmail) throws ConfirmEmailException {
+    private ConfirmEmailInitResponse sendConfirm(AuthenticatedUser aUser, boolean sendEmail) throws ConfirmEmailException {
         // delete old tokens for the user
         List<ConfirmEmailData> oldTokens = findConfirmEmailDataByDataverseUser(aUser);
         for (ConfirmEmailData oldToken : oldTokens) {
@@ -98,7 +98,7 @@ public class ConfirmEmailServiceBean {
                 confirmationUrl,
                 confirmEmailUtil.friendlyExpirationTime(systemConfig.getMinutesUntilConfirmEmailTokenExpires())
         ));
-                logger.info("messageBody:" + messageBody);
+        logger.info("messageBody:" + messageBody);
 
         try {
             String toAddress = aUser.getEmail();
@@ -169,7 +169,7 @@ public class ConfirmEmailServiceBean {
         List<ConfirmEmailData> confirmEmailDatas = typedQuery.getResultList();
         return confirmEmailDatas;
     }
-    
+
     public ConfirmEmailData findSingleConfirmEmailDataByUser(AuthenticatedUser user) {
         ConfirmEmailData confirmEmailData = null;
         TypedQuery<ConfirmEmailData> typedQuery = em.createNamedQuery("ConfirmEmailData.findByUser", ConfirmEmailData.class);
@@ -201,59 +201,6 @@ public class ConfirmEmailServiceBean {
             }
         }
         return numDeleted;
-    }
-
-    /**
-     * @todo Do we need this method? Delete it if unused.
-     */
-    public ConfirmEmailAttemptResponse attemptEmailConfirm(AuthenticatedUser user, String newPassword, String token) {
-
-        final String messageSummarySuccess = "Email Confirmed Successfully";
-        final String messageDetailSuccess = "";
-
-        // optimistic defaults :)
-        String messageSummary = messageSummarySuccess;
-        String messageDetail = messageDetailSuccess;
-
-        final String messageSummaryFail = "Email Confirmation Problem";
-        if (user == null) {
-            messageSummary = messageSummaryFail;
-            messageDetail = "User could not be found.";
-            return new ConfirmEmailAttemptResponse(false, messageSummary, messageDetail);
-        }
-        if (token == null) {
-            logger.info("No token provided... won't be able to delete it. Email address confirmed though.");
-        }
-
-        AuthenticatedUser savedUser = dataverseUserService.save(user);
-
-        if (savedUser != null) {
-            messageSummary = messageSummarySuccess;
-            messageDetail = messageDetailSuccess;
-            boolean tokenDeleted = deleteToken(token);
-            if (!tokenDeleted) {
-                // suboptimal but when it expires it should be deleted
-                logger.info("token " + token + " for user id " + user.getId() + " was not deleted");
-            }
-            return new ConfirmEmailAttemptResponse(true, messageSummary, messageDetail);
-        } else {
-            messageSummary = messageSummaryFail;
-            messageDetail = "Your email was not confirmed. Please contact support.";
-            logger.info("Unable to save user " + user.getId());
-            return new ConfirmEmailAttemptResponse(false, messageSummary, messageDetail);
-        }
-
-    }
-
-    private boolean deleteToken(String token) {
-        ConfirmEmailData doomed = findSingleConfirmEmailDataByToken(token);
-        try {
-            em.remove(doomed);
-            return true;
-        } catch (Exception ex) {
-            logger.info("Caught exception trying to delete token " + token + " - " + ex);
-            return false;
-        }
     }
 
     public ConfirmEmailData createToken(AuthenticatedUser au) {

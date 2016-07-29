@@ -19,6 +19,8 @@ import edu.harvard.iq.dataverse.authorization.providers.shib.ShibServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibUtil;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailData;
+import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailException;
+import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailInitResponse;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.settings.Setting;
 import javax.json.Json;
@@ -542,6 +544,31 @@ public class Admin extends AbstractApiBean {
             }
         }
         return errorResponse(Status.BAD_REQUEST, "Could not find confirm email token for user " + userId);
+    }
+
+    /**
+     * This method is used in integration tests.
+     *
+     * @param userId The database id of an AuthenticatedUser.
+     */
+    @Path("confirmEmail/{userId}")
+    @POST
+    public Response startConfirmEmailProcess(@PathParam("userId") long userId) {
+        AuthenticatedUser user = authSvc.findByID(userId);
+        if (user != null) {
+            try {
+                ConfirmEmailInitResponse confirmEmailInitResponse = confirmEmailSvc.beginConfirm(user.getEmail());
+                ConfirmEmailData confirmEmailData = confirmEmailInitResponse.getConfirmEmailData();
+                return okResponse(
+                        Json.createObjectBuilder()
+                        .add("tokenCreated", confirmEmailData.getCreated().toString())
+                        .add("identifier", user.getUserIdentifier()
+                        ));
+            } catch (ConfirmEmailException ex) {
+                return errorResponse(Status.BAD_REQUEST, "Could not start confirm email process for user " + userId + ": " + ex.getLocalizedMessage());
+            }
+        }
+        return errorResponse(Status.BAD_REQUEST, "Could not find user based on " + userId);
     }
 
 }

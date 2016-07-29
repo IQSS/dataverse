@@ -99,6 +99,19 @@ public class ConfirmEmailIT {
         getToken2.prettyPrint();
         getToken2.then().assertThat()
                 .statusCode(400);
+
+        Response confirmAgain1 = given()
+                .post("/api/admin/confirmEmail/" + userIdToConfirm);
+        confirmAgain1.prettyPrint();
+        confirmAgain1.then().assertThat()
+                .statusCode(200);
+
+        Response confirmAgain2 = given()
+                .post("/api/admin/confirmEmail/" + userIdToConfirm);
+        confirmAgain2.prettyPrint();
+        confirmAgain2.then().assertThat()
+                .statusCode(400);
+
     }
 
     @Test
