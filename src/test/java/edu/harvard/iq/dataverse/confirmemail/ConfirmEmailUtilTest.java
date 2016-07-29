@@ -1,14 +1,13 @@
 package edu.harvard.iq.dataverse.confirmemail;
 
+import static org.junit.Assert.assertEquals;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 public class ConfirmEmailUtilTest {
-    
-    ConfirmEmailUtil confirmEmailUtil;
-    
+
     @Test
     public void testFriendlyExpirationTime() {
+        ConfirmEmailUtil confirmEmailUtil = new ConfirmEmailUtil();
         System.out.println("1440 Minutes: " + confirmEmailUtil.friendlyExpirationTime(1440));
         assertEquals("24 hours", ConfirmEmailUtil.friendlyExpirationTime(1440));
         System.out.println("60 Minutes: " + confirmEmailUtil.friendlyExpirationTime(60));
@@ -16,5 +15,5 @@ public class ConfirmEmailUtilTest {
         System.out.println("30 Minutes: " + confirmEmailUtil.friendlyExpirationTime(30));
         assertEquals("30 minutes", ConfirmEmailUtil.friendlyExpirationTime(30));
     }
-    
+
 }
