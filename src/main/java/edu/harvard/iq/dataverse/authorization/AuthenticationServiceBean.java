@@ -442,8 +442,19 @@ public class AuthenticationServiceBean {
         em.persist( auusLookup );
         authenticatedUser.setAuthenticatedUserLookup(auusLookup);
 
-        confirmEmailService.createToken(authenticatedUser);
-        
+        if (ShibAuthenticationProvider.PROVIDER_ID.equals(auusLookup.getAuthenticationProviderId())) {
+            Timestamp emailConfirmedNow = new Timestamp(new Date().getTime());
+            // Email addresses for Shib users are confirmed by the Identity Provider.
+            authenticatedUser.setEmailConfirmed(emailConfirmedNow);
+            authenticatedUser = save(authenticatedUser);
+        } else {
+            /**
+             * @todo Rather than creating a token directly here it might be
+             * better to do something like "startConfirmEmailProcessForNewUser".
+             */
+            confirmEmailService.createToken(authenticatedUser);
+        }
+
         actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Auth, "createUser")
             .setInfo(authenticatedUser.getIdentifier()));
 

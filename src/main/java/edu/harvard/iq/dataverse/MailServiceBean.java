@@ -427,10 +427,11 @@ public class MailServiceBean implements java.io.Serializable {
             case CREATEACC:
                 String accountCreatedMessage = BundleUtil.getStringFromBundle("notification.email.welcome", Arrays.asList(
                         systemConfig.getGuidesBaseUrl(),
-                        systemConfig.getVersion(),
-                        confirmEmailService.getConfirmEmailUrl(userNotification.getUser())
+                        systemConfig.getVersion()
                 ));
-                logger.fine("accountCreatedMessage: " + accountCreatedMessage);
+                String optionalConfirmEmailAddon = confirmEmailService.optionalConfirmEmailAddonMsg(userNotification.getUser());
+                accountCreatedMessage += optionalConfirmEmailAddon;
+                logger.info("accountCreatedMessage: " + accountCreatedMessage);
                 return messageText += accountCreatedMessage;
         }
         

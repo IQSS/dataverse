@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.confirmemail;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.MailServiceBean;
+import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.sql.Timestamp;
@@ -70,7 +71,7 @@ public class ConfirmEmailServiceBean {
         ConfirmEmailData confirmEmailData = new ConfirmEmailData(aUser, systemConfig.getMinutesUntilConfirmEmailTokenExpires());
         try {
             em.persist(confirmEmailData);
-            ConfirmEmailInitResponse confirmEmailInitResponse = new ConfirmEmailInitResponse(true, confirmEmailData, getConfirmEmailUrl(aUser));
+            ConfirmEmailInitResponse confirmEmailInitResponse = new ConfirmEmailInitResponse(true, confirmEmailData, optionalConfirmEmailAddonMsg(aUser));
             if (sendEmail) {
                 sendLinkOnEmailChange(aUser, confirmEmailInitResponse.getConfirmUrl());
             }
@@ -158,7 +159,7 @@ public class ConfirmEmailServiceBean {
         try {
             confirmEmailData = typedQuery.getSingleResult();
         } catch (NoResultException | NonUniqueResultException ex) {
-            logger.info("When looking up " + token + " caught " + ex);
+            logger.fine("When looking up " + token + " caught " + ex);
         }
         return confirmEmailData;
     }
@@ -177,7 +178,7 @@ public class ConfirmEmailServiceBean {
         try {
             confirmEmailData = typedQuery.getSingleResult();
         } catch (NoResultException | NonUniqueResultException ex) {
-            logger.info("When looking up user " + user + " caught " + ex);
+            logger.fine("When looking up user " + user + " caught " + ex);
         }
         return confirmEmailData;
     }
@@ -209,10 +210,14 @@ public class ConfirmEmailServiceBean {
         return confirmEmailData;
     }
 
-    public String getConfirmEmailUrl(AuthenticatedUser user) {
+    public String optionalConfirmEmailAddonMsg(AuthenticatedUser user) {
         final String emptyString = "";
         if (user == null) {
             logger.info("Can't return confirm email URL. AuthenticatedUser was null!");
+            return emptyString;
+        }
+        if (ShibAuthenticationProvider.PROVIDER_ID.equals(user.getAuthenticatedUserLookup().getAuthenticationProviderId())) {
+            // Shib users don't have to confirm their email address.
             return emptyString;
         }
         List<ConfirmEmailData> datas = findConfirmEmailDataByDataverseUser(user);
@@ -223,7 +228,8 @@ public class ConfirmEmailServiceBean {
         }
         ConfirmEmailData confirmEmailData = datas.get(0);
         String confirmEmailUrl = systemConfig.getDataverseSiteUrl() + "/confirmemail.xhtml?token=" + confirmEmailData.getToken();
-        return confirmEmailUrl;
+        String optionalConfirmEmailMsg = BundleUtil.getStringFromBundle("notification.email.welcomeConfirmEmailAddOn", Arrays.asList(confirmEmailUrl));
+        return optionalConfirmEmailMsg;
     }
 
 }

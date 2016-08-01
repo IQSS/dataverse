@@ -35,14 +35,6 @@ public class ConfirmEmailIT {
         String userToConfirmApiToken = JsonPath.from(createUserToConfirm.body().asString()).getString("data.apiToken");
         String usernameToConfirm = JsonPath.from(createUserToConfirm.body().asString()).getString("data.user.userName");
 
-        boolean exerciseCannotDeleteUserBug = false;
-        if (exerciseCannotDeleteUserBug) {
-            Response deleteUser = UtilIT.deleteUser(usernameToConfirm);
-            deleteUser.prettyPrint();
-            deleteUser.then().assertThat()
-                    .statusCode(200);
-        }
-
         Response createSuperuser = UtilIT.createRandomUser();
         createSuperuser.then().assertThat()
                 .statusCode(200);
