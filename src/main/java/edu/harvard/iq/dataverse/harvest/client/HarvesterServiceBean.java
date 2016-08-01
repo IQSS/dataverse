@@ -39,6 +39,7 @@ import org.apache.commons.lang.mutable.MutableLong;
 import org.xml.sax.SAXException;
 
 import com.lyncode.xoai.model.oaipmh.Header;
+import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.api.imports.ImportServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -48,6 +49,8 @@ import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetCommand;
 import edu.harvard.iq.dataverse.harvest.client.oai.OaiHandler;
 import edu.harvard.iq.dataverse.harvest.client.oai.OaiHandlerException;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
 /**
  *
@@ -57,6 +60,9 @@ import edu.harvard.iq.dataverse.harvest.client.oai.OaiHandlerException;
 @Named
 @ManagedBean
 public class HarvesterServiceBean {
+    @PersistenceContext(unitName="VDCNet-ejbPU")
+    private EntityManager em;
+    
     @EJB
     DataverseServiceBean dataverseService;
     @EJB
@@ -364,16 +370,17 @@ public class HarvesterServiceBean {
                 }
 
             } else {
-                hdLogger.info("Successfully retrieved GetRecord response.");
+                hdLogger.fine("Successfully retrieved GetRecord response.");
 
                 harvestedDataset = importService.doImportHarvestedDataset(dataverseRequest, 
                         oaiHandler.getHarvestingClient(),
+                        identifier,
                         oaiHandler.getMetadataPrefix(), 
                         record.getMetadataFile(), 
                         null);
                 
-                hdLogger.info("Harvest Successful for identifier " + identifier);
-                hdLogger.info("Size of this record: " + record.getMetadataFile().length());
+                hdLogger.fine("Harvest Successful for identifier " + identifier);
+                hdLogger.fine("Size of this record: " + record.getMetadataFile().length());
                 processedSizeThisBatch.add(record.getMetadataFile().length());
             }
         } catch (Throwable e) {
@@ -401,16 +408,33 @@ public class HarvesterServiceBean {
     }
     
     private void deleteHarvestedDataset(Dataset dataset, DataverseRequest request, Logger hdLogger) {
+        Long fileId = null; 
+
         try {
-            engineService.submit(new DeleteDatasetCommand(request, dataset));
+            // files from harvested datasets are removed unceremoniously, 
+            // directly in the database. no need to bother calling the 
+            // DeleteFileCommand on them.
+            for (DataFile harvestedFile : dataset.getFiles()) {
+                DataFile merged = em.merge(harvestedFile);
+                fileId = merged.getId();
+                em.remove(merged);
+                harvestedFile = null; 
+            }
+            dataset.setFiles(null);
+            Dataset merged = em.merge(dataset);
+            engineService.submit(new DeleteDatasetCommand(request, merged));
             
         } catch (IllegalCommandException ex) {
             // TODO: log the result
+            logger.info("delete harvested file (" + fileId + "): illegalcommandexception");
         } catch (PermissionException ex) {
             // TODO: log the result
+            logger.info("delete harvested file (" + fileId + "): permissionexception");
             
         } catch (CommandException ex) {
             // TODO: log the result
+            logger.info("delete harvested file (" + fileId + "): commandexception");
+                    
         }
                             
         // TODO: log the success result
@@ -438,7 +462,7 @@ public class HarvesterServiceBean {
     }
     
     public void logGetRecord(Logger hdLogger, OaiHandler oaiHandler, String identifier) {
-        hdLogger.log(Level.INFO, "Calling GetRecord: oaiUrl =" 
+        hdLogger.log(Level.FINE, "Calling GetRecord: oaiUrl =" 
                 +oaiHandler.getBaseOaiUrl()
                 +"?verb=GetRecord&identifier=" 
                 +identifier 

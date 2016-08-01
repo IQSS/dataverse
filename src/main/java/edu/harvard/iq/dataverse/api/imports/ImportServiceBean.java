@@ -188,7 +188,7 @@ public class ImportServiceBean {
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public Dataset doImportHarvestedDataset(DataverseRequest dataverseRequest, HarvestingClient harvestingClient, String metadataFormat, File metadataFile, PrintWriter cleanupLog) throws ImportException, IOException {
+    public Dataset doImportHarvestedDataset(DataverseRequest dataverseRequest, HarvestingClient harvestingClient, String harvestIdentifier, String metadataFormat, File metadataFile, PrintWriter cleanupLog) throws ImportException, IOException {
         if (harvestingClient == null || harvestingClient.getDataverse() == null) {
             throw new ImportException("importHarvestedDataset called wiht a null harvestingClient, or an invalid harvestingClient.");
         }
@@ -278,6 +278,7 @@ public class ImportServiceBean {
             }
 
             ds.setHarvestedFrom(harvestingClient);
+            ds.setHarvestIdentifier(harvestIdentifier);
             
             Dataset existingDs = datasetService.findByGlobalId(ds.getGlobalId());
 

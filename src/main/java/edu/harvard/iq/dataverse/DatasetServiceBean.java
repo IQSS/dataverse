@@ -550,7 +550,7 @@ public class DatasetServiceBean implements java.io.Serializable {
     }
     
     public Dataset getDatasetByHarvestInfo(Dataverse dataverse, String harvestIdentifier) {
-        String queryStr = "SELECT d FROM dataset d, dvobject o WHERE d.id = o.id AND o.owner.id = '" + dataverse.getId() + "' and d.harvestIdentifier = '" + harvestIdentifier + "'";
+        String queryStr = "SELECT d FROM Dataset d, DvObject o WHERE d.id = o.id AND o.owner.id = " + dataverse.getId() + " and d.harvestIdentifier = '" + harvestIdentifier + "'";
         Query query = em.createQuery(queryStr);
         List resultList = query.getResultList();
         Dataset dataset = null;
