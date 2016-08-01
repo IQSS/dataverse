@@ -18,6 +18,8 @@ import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+
+import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
 import org.hibernate.validator.constraints.NotBlank;
 
 @ViewScoped
@@ -39,6 +41,9 @@ public class PasswordResetPage implements java.io.Serializable {
     
     @EJB
     ActionLogServiceBean actionLogSvc;
+
+    @EJB
+    PasswordValidatorServiceBean passwordValidatorService;
     
     /**
      * The unique string used to look up a user and continue the password reset
@@ -171,4 +176,7 @@ public class PasswordResetPage implements java.io.Serializable {
         this.passwordResetData = passwordResetData;
     }
 
+    public String getGoodPasswordDescription() {
+        return passwordValidatorService.getGoodPasswordDescription();
+    }
 }

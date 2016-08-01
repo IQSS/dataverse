@@ -410,7 +410,10 @@
                                         </span>
                                     </label>
                                     <div class="col-sm-9">
-                                        <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['user.updatePassword.password']}</p>
+                                        <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> <h:outputFormat value="#{bundle['user.updatePassword.password']}" escape="false">
+                                                <f:param value="#{PasswordResetPage.goodPasswordDescription}}"/>
+                                            </h:outputFormat>
+                                        </p>
                                         <p:panelGrid columns="2" styleClass="noBorders">
                                             <p:password id="inputPassword" tabindex="2" label="#{DataverseUserPage.editMode == 'CREATE' ? 'Password' : 'New Password'}" styleClass="form-control" match="retypePassword" value="#{DataverseUserPage.inputPassword}" validator="#{DataverseUserPage.validateNewPassword}"  />
                                             <p:message for="inputPassword" display="text" />
