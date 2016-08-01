@@ -632,10 +632,13 @@ public class BuiltinUserPage implements java.io.Serializable {
     
     public boolean showVerifyEmailButton() {
         /**
-         * @todo Show the button if the user doesn't have a timestamp AND their
-         * user ID is not already in the confirmemaildata table.
+         * Determines whether the button to send a verification email appears on user page
          */
-        return true;
+        if (confirmEmailService.findSingleConfirmEmailDataByUser(currentUser) == null
+                && currentUser.getEmailConfirmed() == null) {
+            return true;
+        }
+        return false;
     }
 
 }

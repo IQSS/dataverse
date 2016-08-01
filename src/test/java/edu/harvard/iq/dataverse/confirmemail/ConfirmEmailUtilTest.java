@@ -14,6 +14,8 @@ public class ConfirmEmailUtilTest {
         assertEquals("1 hour", ConfirmEmailUtil.friendlyExpirationTime(60));
         System.out.println("30 Minutes: " + confirmEmailUtil.friendlyExpirationTime(30));
         assertEquals("30 minutes", ConfirmEmailUtil.friendlyExpirationTime(30));
+        System.out.println("90 Minutes: " + confirmEmailUtil.friendlyExpirationTime(90));
+        System.out.println("2880 minutes: " + confirmEmailUtil.friendlyExpirationTime(2880));
     }
 
 }

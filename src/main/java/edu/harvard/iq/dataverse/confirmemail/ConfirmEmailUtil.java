@@ -7,18 +7,33 @@ public class ConfirmEmailUtil {
     public static String friendlyExpirationTime(int expirationInt) {
         String measurement;
         String expirationString;
+        long expirationLong = Long.valueOf(expirationInt);
+        boolean hasDecimal = false;
+        double expirationDouble = Double.valueOf(expirationLong);
 
-        if (expirationInt < 60) {
+        if(expirationLong == 1) {
+            measurement = BundleUtil.getStringFromBundle("minute");
+        } else if (expirationLong < 60) {
             measurement = BundleUtil.getStringFromBundle("minutes");
-        } else if (expirationInt == 60) {
-            expirationInt = expirationInt / 60;
+        } else if (expirationLong == 60) {
+            expirationLong = expirationLong / 60;
             measurement = BundleUtil.getStringFromBundle("hour");
         } else {
-            expirationInt = expirationInt / 60;
+            if (expirationLong % 60 == 0) {
+                expirationLong = (long) (expirationLong / 60.0);
+            } else {
+                expirationDouble /= 60;
+                hasDecimal = true;
+            }
             measurement = BundleUtil.getStringFromBundle("hours");
         }
-        expirationString = Integer.toString(expirationInt);
-        return expirationString + " " + measurement;
+        if (hasDecimal == true) {
+            expirationString = String.valueOf(expirationDouble);
+            return expirationString + " " + measurement;
+        } else {
+            expirationString = String.valueOf(expirationLong);
+            return expirationString + " " + measurement;
+        }
     }
 
 }
