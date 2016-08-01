@@ -44,6 +44,10 @@ public class ConfirmEmailServiceBean {
     /**
      * Initiate the email confirmation process.
      *
+     * @todo Refactor this to not take an email address as a parameter. Probably
+     * it should take an AuthenticatedUser instead (be sure to check for null).
+     * Then we could remove the dependency on AuthenticationServiceBean.
+     *
      * @param emailAddress
      * @return {@link ConfirmEmailInitResponse}
      */
@@ -89,10 +93,6 @@ public class ConfirmEmailServiceBean {
      * change.
      */
     private void sendLinkOnEmailChange(AuthenticatedUser aUser, String confirmationUrl) throws ConfirmEmailException {
-        /**
-         * @todo Move this to Bundle.properties and use
-         * BundleUtil.getStringFromBundle
-         */
         ConfirmEmailUtil confirmEmailUtil = new ConfirmEmailUtil();
         String messageBody = BundleUtil.getStringFromBundle("notification.email.changeEmail", Arrays.asList(
                 aUser.getFirstName(),
@@ -103,6 +103,9 @@ public class ConfirmEmailServiceBean {
 
         try {
             String toAddress = aUser.getEmail();
+            /**
+             * @todo Move this to Bundle.properties.
+             */
             String subject = "Dataverse Email Confirmation";
             mailService.sendSystemEmail(toAddress, subject, messageBody);
         } catch (Exception ex) {
