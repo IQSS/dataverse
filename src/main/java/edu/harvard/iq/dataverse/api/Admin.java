@@ -536,10 +536,8 @@ public class Admin extends AbstractApiBean {
     public Response getConfirmEmailToken(@PathParam("userId") long userId) {
         AuthenticatedUser user = authSvc.findByID(userId);
         if (user != null) {
-            List<ConfirmEmailData> confirmEmailDatas = confirmEmailSvc.findConfirmEmailDataByDataverseUser(user);
-            int size = confirmEmailDatas.size();
-            if (size == 1) {
-                ConfirmEmailData confirmEmailData = confirmEmailDatas.get(0);
+            ConfirmEmailData confirmEmailData = confirmEmailSvc.findSingleConfirmEmailDataByUser(user);
+            if (confirmEmailData != null) {
                 return okResponse(Json.createObjectBuilder().add("token", confirmEmailData.getToken()));
             }
         }

@@ -59,8 +59,8 @@ public class ConfirmEmailServiceBean {
 
     private ConfirmEmailInitResponse sendConfirm(AuthenticatedUser aUser, boolean sendEmail) throws ConfirmEmailException {
         // delete old tokens for the user
-        List<ConfirmEmailData> oldTokens = findConfirmEmailDataByDataverseUser(aUser);
-        for (ConfirmEmailData oldToken : oldTokens) {
+        ConfirmEmailData oldToken = findSingleConfirmEmailDataByUser(aUser);
+        if (oldToken != null) {
             em.remove(oldToken);
         }
 
@@ -164,13 +164,6 @@ public class ConfirmEmailServiceBean {
         return confirmEmailData;
     }
 
-    public List<ConfirmEmailData> findConfirmEmailDataByDataverseUser(AuthenticatedUser user) {
-        TypedQuery<ConfirmEmailData> typedQuery = em.createNamedQuery("ConfirmEmailData.findByUser", ConfirmEmailData.class);
-        typedQuery.setParameter("user", user);
-        List<ConfirmEmailData> confirmEmailDatas = typedQuery.getResultList();
-        return confirmEmailDatas;
-    }
-
     public ConfirmEmailData findSingleConfirmEmailDataByUser(AuthenticatedUser user) {
         ConfirmEmailData confirmEmailData = null;
         TypedQuery<ConfirmEmailData> typedQuery = em.createNamedQuery("ConfirmEmailData.findByUser", ConfirmEmailData.class);
@@ -213,20 +206,18 @@ public class ConfirmEmailServiceBean {
     public String optionalConfirmEmailAddonMsg(AuthenticatedUser user) {
         final String emptyString = "";
         if (user == null) {
-            logger.info("Can't return confirm email URL. AuthenticatedUser was null!");
+            logger.info("Can't return confirm email message. AuthenticatedUser was null!");
             return emptyString;
         }
         if (ShibAuthenticationProvider.PROVIDER_ID.equals(user.getAuthenticatedUserLookup().getAuthenticationProviderId())) {
             // Shib users don't have to confirm their email address.
             return emptyString;
         }
-        List<ConfirmEmailData> datas = findConfirmEmailDataByDataverseUser(user);
-        int size = datas.size();
-        if (size != 1) {
-            logger.info("Can't return confirm email URL. ConfirmEmailData rows found for user id " + user.getId() + " was " + size + " rather than 1");
+        ConfirmEmailData confirmEmailData = findSingleConfirmEmailDataByUser(user);
+        if (confirmEmailData == null) {
+            logger.info("Can't return confirm email message. No ConfirmEmailData for user id " + user.getId());
             return emptyString;
         }
-        ConfirmEmailData confirmEmailData = datas.get(0);
         String confirmEmailUrl = systemConfig.getDataverseSiteUrl() + "/confirmemail.xhtml?token=" + confirmEmailData.getToken();
         String optionalConfirmEmailMsg = BundleUtil.getStringFromBundle("notification.email.welcomeConfirmEmailAddOn", Arrays.asList(confirmEmailUrl));
         return optionalConfirmEmailMsg;
