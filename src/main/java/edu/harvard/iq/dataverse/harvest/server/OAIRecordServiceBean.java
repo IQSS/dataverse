@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
+import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -153,8 +154,13 @@ public class OAIRecordServiceBean implements java.io.Serializable {
         try {
             ExportService exportServiceInstance = ExportService.getInstance();
             logger.fine("Attempting to run export on dataset "+dataset.getGlobalId());
-            exportServiceInstance.exportAllFormats(dataset);
-        } catch (ExportException ee) {logger.fine("Caught exception while trying to export. (ignoring)");}
+            //dataset.setLastExportTime(new Timestamp(new Date().getTime()));
+            //em.merge(dataset);
+            
+            //exportServiceInstance.exportAllFormats(dataset);
+            datasetService.updateLastExportTimeStamp(dataset.getId());
+        } // catch (ExportException ee) {logger.fine("Caught export exception while trying to export. (ignoring)");}
+        catch (Exception e) {logger.info("Caught unknown exception while trying to export (ignoring)");}
     }
     
     public void markOaiRecordsAsRemoved(Collection<OAIRecord> records, Date updateTime) {

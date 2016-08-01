@@ -10,6 +10,8 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.export.ExportService;
+import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.ByteArrayOutputStream;
@@ -23,6 +25,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
@@ -68,6 +71,9 @@ public class DatasetServiceBean implements java.io.Serializable {
     
     @EJB
     PermissionServiceBean permissionService;
+    
+    @EJB
+    OAIRecordServiceBean recordService;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -102,6 +108,11 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     public List<Dataset> findAll() {
         return em.createQuery("select object(o) from Dataset as o order by o.id").getResultList();
+    }
+    
+    
+    public List<Long> findAllLocalDatasetIds() {
+        return em.createQuery("SELECT o.id FROM Dataset o WHERE o.harvestedFrom IS null ORDER BY o.id", Long.class).getResultList();
     }
 
     /**
@@ -647,4 +658,39 @@ public class DatasetServiceBean implements java.io.Serializable {
         
         return false;
     }
+    
+    @Asynchronous 
+    public void exportAll() {
+        logger.info("Starting an export all job asynchronously");
+        
+        for (Long datasetId : findAllLocalDatasetIds()) {
+            // Potentially, there's a godzillion datasets in this Dataverse. 
+            // This is why we go through the list of ids here, and instantiate 
+            // only one dtaset at a time. 
+            //logger.info("found dataset id="+datasetId);
+            Dataset dataset = this.find(datasetId);
+            if (dataset != null) {
+                //logger.info("checking dataset "+dataset.getGlobalId());
+                // Accurate "is published?" test:
+                if (dataset.isReleased() && !dataset.isDeaccessioned() 
+                        ) {
+                    logger.fine("exporting dataset "+dataset.getGlobalId());
+                    try {
+                        recordService.exportAllFormatsInNewTransaction(dataset);
+                    } catch (Exception ex) {
+                        logger.info("caught an exception in exportAllFormatsInNewTransaction");
+                    }
+                }
+                dataset = null; 
+            }
+        }
+        
+        logger.info("Finished export all job.");
+    }
+    
+    public void updateLastExportTimeStamp(Long datasetId) {
+        Date now = new Date();
+        em.createNativeQuery("UPDATE Dataset SET lastExportTime='"+now.toString()+"' WHERE id="+datasetId).executeUpdate();
+    }
+    
 }

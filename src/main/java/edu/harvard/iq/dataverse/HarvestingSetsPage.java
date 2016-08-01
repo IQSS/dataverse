@@ -493,6 +493,20 @@ public class HarvestingSetsPage implements java.io.Serializable {
     }
     
     // this will re-export the set in the background, asynchronously:
+    public void startSetExport(OAISet oaiSet) {
+        try {
+            runSetExport(oaiSet);
+        } catch (Exception ex) {
+            String failMessage = "Sorry, could not start re-export on selected OAI set (unknown server error).";
+            JH.addMessage(FacesMessage.SEVERITY_FATAL, failMessage);
+            return;
+        } 
+                
+        String successMessage = JH.localize("harvestserver.actions.runreexport.success");
+        successMessage = successMessage.replace("{0}", oaiSet.getSpec());
+        JsfHelper.addSuccessMessage(successMessage);
+    }
+    
     public void runSetExport(OAISet oaiSet) {
         
         oaiSetService.exportOaiSet(oaiSet);
