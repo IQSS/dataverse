@@ -17,6 +17,7 @@ import edu.harvard.iq.dataverse.harvest.client.HarvestingClientServiceBean;
 import edu.harvard.iq.dataverse.harvest.client.oai.OaiHandler;
 import edu.harvard.iq.dataverse.search.IndexResponse;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
+import edu.harvard.iq.dataverse.timer.DataverseTimerServiceBean;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.util.ArrayList;
@@ -64,6 +65,8 @@ public class HarvestingClientsPage implements java.io.Serializable {
     SolrIndexServiceBean solrIndexService;
     @EJB
     EjbDataverseEngine engineService;
+    @EJB
+    DataverseTimerServiceBean dataverseTimerService;
     @Inject
     DataverseRequestServiceBean dvRequestService;
     @Inject
@@ -358,6 +361,8 @@ public class HarvestingClientsPage implements java.io.Serializable {
             
             configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();
             
+            dataverseTimerService.createHarvestTimer(newHarvestingClient);
+            
             String successMessage = JH.localize("harvestclients.newClientDialog.success");
             successMessage = successMessage.replace("{0}", newHarvestingClient.getName());
             JsfHelper.addSuccessMessage(successMessage);
@@ -431,6 +436,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
             
             configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();
             
+            dataverseTimerService.updateHarvestTimer(harvestingClient);
             JsfHelper.addSuccessMessage("Succesfully updated harvesting client " + harvestingClient.getName());
 
         } catch (CommandException ex) {
