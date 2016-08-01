@@ -67,9 +67,6 @@ import org.primefaces.event.TabChangeEvent;
 @Named("DataverseUserPage")
 public class BuiltinUserPage implements java.io.Serializable {
 
-    @EJB
-    private ConfirmEmailServiceBean confirmEmailServiceBean;
-
     private static final Logger logger = Logger.getLogger(BuiltinUserPage.class.getCanonicalName());
 
     public enum EditMode {
@@ -627,7 +624,7 @@ public class BuiltinUserPage implements java.io.Serializable {
     public void sendConfirmEmail() throws ConfirmEmailException {
         logger.info("called sendConfirmEmail()");
         String userEmail = currentUser.getEmail();
-        confirmEmailServiceBean.beginConfirm(userEmail);
+        confirmEmailService.beginConfirm(userEmail);
     }
     
     public boolean showVerifyEmailButton() {

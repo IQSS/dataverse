@@ -74,6 +74,12 @@ public class ConfirmEmailServiceBean {
         // create a fresh token for the user
         ConfirmEmailData confirmEmailData = new ConfirmEmailData(aUser, systemConfig.getMinutesUntilConfirmEmailTokenExpires());
         try {
+            /**
+             * @todo This "persist" is causing lots of noise in Glassfish's
+             * server.log if a token already exists (i.e. it isn't expired and
+             * wasn't deleted above). Exercise this bug by running
+             * ConfirmEmailIT.
+             */
             em.persist(confirmEmailData);
             ConfirmEmailInitResponse confirmEmailInitResponse = new ConfirmEmailInitResponse(true, confirmEmailData, optionalConfirmEmailAddonMsg(aUser));
             if (sendEmail) {

@@ -120,7 +120,6 @@ public class AuthenticatedUser implements User, Serializable {
         setEmail(inf.getEmailAddress());
         setAffiliation( inf.getAffiliation() );
         setPosition( inf.getPosition());
-        
     }
     
     @Override
@@ -251,7 +250,5 @@ public class AuthenticatedUser implements User, Serializable {
     public void setShibIdentityProvider(String shibIdentityProvider) {
         this.shibIdentityProvider = shibIdentityProvider;
     }
-    
-
     
 }
