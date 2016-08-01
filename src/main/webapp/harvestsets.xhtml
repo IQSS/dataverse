@@ -132,7 +132,9 @@
                             <h:outputText value="No records (empty set)" rendered="#{harvestingSetsPage.getSetInfoNumOfDatasets(oaiSet) == 0}" />
                             <h:outputText value="1 dataset " rendered="#{harvestingSetsPage.getSetInfoNumOfDatasets(oaiSet) == 1}" />
                             <h:outputText value="#{harvestingSetsPage.getSetInfoNumOfDatasets(oaiSet)} datasets " rendered="#{harvestingSetsPage.getSetInfoNumOfDatasets(oaiSet) gt 1}" />
-                            <h:outputText value="(#{harvestingSetsPage.getSetInfoNumOfExported(oaiSet)} datasets exported)" rendered="#{harvestingSetsPage.getSetInfoNumOfDatasets(oaiSet) gt 0}" />
+                            <h:outputText value="(#{harvestingSetsPage.getSetInfoNumOfExported(oaiSet)} records exported" rendered="#{harvestingSetsPage.getSetInfoNumOfDatasets(oaiSet) gt 0}" />
+                            <h:outputText value=", #{harvestingSetsPage.getSetInfoNumOfDeleted(oaiSet)} marked as deleted" rendered="#{(harvestingSetsPage.getSetInfoNumOfDatasets(oaiSet) gt 0) and (harvestingSetsPage.getSetInfoNumOfDeleted(oaiSet) gt 0)}" />
+                            <h:outputText value=")" rendered="#{harvestingSetsPage.getSetInfoNumOfDatasets(oaiSet) gt 0}" />
                         </p:column>
                         <p:column width="18%" class="col-manage-action col-button-action text-center" headerText="#{bundle['harvestserver.tab.header.action']}">
                             <div class="button-block">

@@ -112,20 +112,23 @@ public class OAISetServiceBean implements java.io.Serializable {
     @Asynchronous
     public void exportOaiSet(OAISet oaiSet) {
         String query = oaiSet.getDefinition();
-        
-        List<Long> datasetIds = null; 
+
+        List<Long> datasetIds = null;
         try {
             datasetIds = expandSetQuery(query);
-            logger.fine("set query expanded to "+datasetIds.size()+" datasets.");
+            logger.fine("set query expanded to " + datasetIds.size() + " datasets.");
         } catch (OaiSetException ose) {
             datasetIds = null;
         }
-        
-        if (datasetIds != null && !datasetIds.isEmpty()) {
-            logger.fine("Calling OAI Record Service to re-export "+datasetIds.size()+" datasets.");
-            oaiRecordService.updateOaiRecords(oaiSet.getSpec(), datasetIds, new Date(), true);
-        }
-        
+
+        // We still DO want to update the set, when the search query does not 
+        // find any datasets! - This way if there are records already in the set
+        // they will be properly marked as "deleted"! -- L.A. 4.5
+        //if (datasetIds != null && !datasetIds.isEmpty()) {
+        logger.fine("Calling OAI Record Service to re-export " + datasetIds.size() + " datasets.");
+        oaiRecordService.updateOaiRecords(oaiSet.getSpec(), datasetIds, new Date(), true);
+        //}
+
     } 
         
     public int validateDefinitionQuery(String query) throws OaiSetException {
