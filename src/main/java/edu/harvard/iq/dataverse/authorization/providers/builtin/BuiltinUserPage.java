@@ -31,16 +31,19 @@ import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailData;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailException;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailInitResponse;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
+import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailUtil;
 import edu.harvard.iq.dataverse.mydata.MyDataPage;
 import edu.harvard.iq.dataverse.passwordreset.PasswordValidator;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -94,6 +97,8 @@ public class BuiltinUserPage implements java.io.Serializable {
     AuthenticationServiceBean authenticationService;
     @EJB
     ConfirmEmailServiceBean confirmEmailService;
+    @EJB
+    SystemConfig systemConfig;    
     @EJB
     GroupServiceBean groupService;
     @Inject
@@ -492,7 +497,9 @@ public class BuiltinUserPage implements java.io.Serializable {
                 msg = "Your account password has been successfully changed.";
             }
             if (emailChanged) {
-                msg = msg + " Your email address changed and must be re-confirmed.";
+                ConfirmEmailUtil confirmEmailUtil = new ConfirmEmailUtil();
+                String expTime = confirmEmailUtil.friendlyExpirationTime(systemConfig.getMinutesUntilConfirmEmailTokenExpires());
+                msg = msg + " Your email address changed and must be re-confirmed. \n\nAlso, please note that the link will only work for the next " + expTime + " before it has expired.";
                 boolean sendEmail = true;
                 try {
                     ConfirmEmailInitResponse confirmEmailInitResponse = confirmEmailService.beginConfirm(savedUser.getEmail());
@@ -618,13 +625,20 @@ public class BuiltinUserPage implements java.io.Serializable {
         }
     }
     
-    /**
-     * @todo Move ConfirmEmailException to a try/catch
-     */
-    public void sendConfirmEmail() throws ConfirmEmailException {
+    public void sendConfirmEmail() {
         logger.info("called sendConfirmEmail()");
         String userEmail = currentUser.getEmail();
-        confirmEmailService.beginConfirm(userEmail);
+        ConfirmEmailUtil confirmEmailUtil = new ConfirmEmailUtil();
+        
+        try {
+            confirmEmailService.beginConfirm(userEmail);
+            List<String> args = Arrays.asList(
+                    userEmail,
+                    confirmEmailUtil.friendlyExpirationTime(systemConfig.getMinutesUntilConfirmEmailTokenExpires()));
+            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("confirmEmail.submitRequest.success", args));
+        } catch (ConfirmEmailException ex) {
+            Logger.getLogger(BuiltinUserPage.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
     public boolean showVerifyEmailButton() {

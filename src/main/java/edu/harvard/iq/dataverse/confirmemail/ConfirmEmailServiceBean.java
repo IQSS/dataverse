@@ -213,6 +213,7 @@ public class ConfirmEmailServiceBean {
     }
 
     public String optionalConfirmEmailAddonMsg(AuthenticatedUser user) {
+        ConfirmEmailUtil confirmEmailUtil = new ConfirmEmailUtil();
         final String emptyString = "";
         if (user == null) {
             logger.info("Can't return confirm email message. AuthenticatedUser was null!");
@@ -227,8 +228,10 @@ public class ConfirmEmailServiceBean {
             logger.info("Can't return confirm email message. No ConfirmEmailData for user id " + user.getId());
             return emptyString;
         }
+        String expTime = confirmEmailUtil.friendlyExpirationTime(systemConfig.getMinutesUntilConfirmEmailTokenExpires());
         String confirmEmailUrl = systemConfig.getDataverseSiteUrl() + "/confirmemail.xhtml?token=" + confirmEmailData.getToken();
-        String optionalConfirmEmailMsg = BundleUtil.getStringFromBundle("notification.email.welcomeConfirmEmailAddOn", Arrays.asList(confirmEmailUrl));
+        List<String> args = Arrays.asList(confirmEmailUrl, expTime);
+        String optionalConfirmEmailMsg = BundleUtil.getStringFromBundle("notification.email.welcomeConfirmEmailAddOn", args);
         return optionalConfirmEmailMsg;
     }
 
