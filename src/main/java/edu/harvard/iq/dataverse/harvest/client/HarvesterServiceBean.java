@@ -130,47 +130,6 @@ public class HarvesterServiceBean {
         return timers;
     }
 
-    /*
-     This method is implemented in the DataverseTimerServiceBean; 
-    TODO: make sure that implementation does everything we need. 
-    -- L.A. 4.4, May 08 2016.
-    private void createHarvestTimer(Dataverse harvestingDataverse) {
-        HarvestingClient harvestingDataverseConfig = harvestingDataverse.getHarvestingClientConfig();
-        
-        if (harvestingDataverseConfig == null) {
-            logger.info("ERROR: No Harvesting Configuration found for dataverse id="+harvestingDataverse.getId());
-            return;
-        }
-        
-        if (harvestingDataverseConfig.isScheduled()) {
-            long intervalDuration = 0;
-            Calendar initExpiration = Calendar.getInstance();
-            initExpiration.set(Calendar.MINUTE, 0);
-            initExpiration.set(Calendar.SECOND, 0);
-            if (harvestingDataverseConfig.getSchedulePeriod().equals(harvestingDataverseConfig.SCHEDULE_PERIOD_DAILY)) {
-                intervalDuration = 1000 * 60 * 60 * 24;
-                initExpiration.set(Calendar.HOUR_OF_DAY, harvestingDataverseConfig.getScheduleHourOfDay());
-
-            } else if (harvestingDataverseConfig.getSchedulePeriod().equals(harvestingDataverseConfig.SCHEDULE_PERIOD_WEEKLY)) {
-                intervalDuration = 1000 * 60 * 60 * 24 * 7;
-                initExpiration.set(Calendar.HOUR_OF_DAY, harvestingDataverseConfig.getScheduleHourOfDay());
-                initExpiration.set(Calendar.DAY_OF_WEEK, harvestingDataverseConfig.getScheduleDayOfWeek());
-
-            } else {
-                logger.log(Level.WARNING, "Could not set timer for dataverse id, " + harvestingDataverse.getId() + ", unknown schedule period: " + harvestingDataverseConfig.getSchedulePeriod());
-                return;
-            }
-            Date initExpirationDate = initExpiration.getTime();
-            Date currTime = new Date();
-            if (initExpirationDate.before(currTime)) {
-                initExpirationDate.setTime(initExpiration.getTimeInMillis() + intervalDuration);
-            }
-            logger.log(Level.INFO, "Setting timer for dataverse " + harvestingDataverse.getName() + ", initial expiration: " + initExpirationDate);
-            dataverseTimerService.createTimer(initExpirationDate, intervalDuration, new HarvestTimerInfo(harvestingDataverse.getId(), harvestingDataverse.getName(), harvestingDataverseConfig.getSchedulePeriod(), harvestingDataverseConfig.getScheduleHourOfDay(), harvestingDataverseConfig.getScheduleDayOfWeek()));
-        }
-    }
-    */
-
     /**
      * Run a harvest for an individual harvesting Dataverse
      * @param dataverseRequest
@@ -426,15 +385,10 @@ public class HarvesterServiceBean {
             
         } catch (IllegalCommandException ex) {
             // TODO: log the result
-            logger.info("delete harvested file (" + fileId + "): illegalcommandexception");
         } catch (PermissionException ex) {
             // TODO: log the result
-            logger.info("delete harvested file (" + fileId + "): permissionexception");
-            
         } catch (CommandException ex) {
-            // TODO: log the result
-            logger.info("delete harvested file (" + fileId + "): commandexception");
-                    
+            // TODO: log the result                    
         }
                             
         // TODO: log the success result

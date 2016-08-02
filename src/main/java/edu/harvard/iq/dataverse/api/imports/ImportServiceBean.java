@@ -7,6 +7,7 @@ package edu.harvard.iq.dataverse.api.imports;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
@@ -56,6 +57,8 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
@@ -73,6 +76,9 @@ import org.apache.commons.lang.StringUtils;
  */
 @Stateless
 public class ImportServiceBean {
+    @PersistenceContext(unitName="VDCNet-ejbPU")
+    private EntityManager em;
+    
     private static final Logger logger = Logger.getLogger(ImportServiceBean.class.getCanonicalName());
 
     @EJB
@@ -288,7 +294,17 @@ public class ImportServiceBean {
                 if (existingDs.getVersions().size() != 1) {
                     throw new ImportException("Error importing Harvested Dataset, existing dataset has " + existingDs.getVersions().size() + " versions");
                 }
-                engineSvc.submit(new DestroyDatasetCommand(existingDs, dataverseRequest));
+                // files from harvested datasets are removed unceremoniously, 
+                // directly in the database. no need to bother calling the 
+                // DeleteFileCommand on them.
+                for (DataFile harvestedFile : existingDs.getFiles()) {
+                    DataFile merged = em.merge(harvestedFile);
+                    em.remove(merged);
+                    harvestedFile = null; 
+                }
+                existingDs.setFiles(null);
+                Dataset merged = em.merge(existingDs);
+                engineSvc.submit(new DestroyDatasetCommand(merged, dataverseRequest));
                 importedDataset = engineSvc.submit(new CreateDatasetCommand(ds, dataverseRequest, false, ImportType.HARVEST));
 
             } else {
