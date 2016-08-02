@@ -652,4 +652,19 @@ public class BuiltinUserPage implements java.io.Serializable {
         return false;
     }
 
+    public boolean isEmailIsValid() {
+//        currentUser.getEmailConfirmed() non null and not ConfirmEmailUtil.getGrandfatheredTime
+        return true;
+    }
+
+    public boolean isEmailNotValid() {
+//        currentUser.getEmailConfirmed() is null
+        return true;
+    }
+
+    public boolean isEmailGrandfathered() {
+        // if emailConfirmed is ConfirmEmailUtil.getGrandfatheredTime
+        return false;
+    }
+
 }
