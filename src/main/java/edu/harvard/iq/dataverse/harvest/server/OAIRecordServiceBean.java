@@ -193,9 +193,9 @@ public class OAIRecordServiceBean implements java.io.Serializable {
         
         Query query = em.createQuery(queryString).setParameter("globalId",globalId);
         if (setName != null) { query.setParameter("setName",setName); }        
-
+        
         try {
-           oaiRecord = (OAIRecord) query.getSingleResult();
+           oaiRecord = (OAIRecord) query.setMaxResults(1).getSingleResult();
         } catch (javax.persistence.NoResultException e) {
            // Do nothing, just return null. 
         }
