@@ -279,7 +279,8 @@ public class HarvestingClientsPage implements java.io.Serializable {
                 for (Dataset harvestedDataset : selectedClient.getHarvestedDatasets()) {
                     solrIdsOfDatasetsToDelete.add(solrDocIdentifierDataset + harvestedDataset.getId());
                 }
-                
+                // if this was a scheduled harvester, make sure the timer is deleted:
+                dataverseTimerService.removeHarvestTimer(selectedClient);
                 engineService.submit(new DeleteHarvestingClientCommand(dvRequestService.getDataverseRequest(), selectedClient));
                 configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();
                 JsfHelper.addFlashMessage("Selected harvesting client has been deleted.");
