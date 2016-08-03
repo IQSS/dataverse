@@ -162,6 +162,21 @@ Restores the default logic of the field type to be used as the citation date. Sa
     
     DELETE http://$SERVER/api/datasets/$id/citationdate?key=$apiKey
 
+List all the role assignments at the given dataset::
+
+    GET http://$SERVER/api/datasets/$id/assignments?key=$apiKey
+
+Create a Private URL (must be able to manage dataset permissions)::
+
+    POST http://$SERVER/api/datasets/$id/privateUrl?key=$apiKey
+
+Get a Private URL from a dataset (if available)::
+
+    GET http://$SERVER/api/datasets/$id/privateUrl?key=$apiKey
+
+Delete a Private URL from a dataset (if it exists)::
+
+    DELETE http://$SERVER/api/datasets/$id/privateUrl?key=$apiKey
 
 Builtin Users
 ~~~~~
@@ -243,6 +258,13 @@ Shibboleth Groups
 ~~~~~~~~~~~~~~~~~
 
 Management of Shibboleth groups via API is documented in the :doc:`/installation/shibboleth` section of the Installation Guide.
+
+Info
+~~~~
+
+For now, only the value for the ``:DatasetPublishPopupCustomText`` setting from the :doc:`/installation/config` section of the Installation Guide is exposed::
+
+  GET http://$SERVER/api/info/settings/:DatasetPublishPopupCustomText
 
 Metadata Blocks
 ~~~~~~~~~~~~~~~

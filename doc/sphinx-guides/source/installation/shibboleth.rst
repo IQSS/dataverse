@@ -304,11 +304,13 @@ To create an institution-wide Shibboleth groups, create a JSON file as below and
 
 .. literalinclude:: ../_static/installation/files/etc/shibboleth/shibGroupTestShib.json 
 
-Note that institution-wide Shibboleth groups are based on the "Shib-Identity-Provider" attribute but https://github.com/IQSS/dataverse/issues/1515 tracks adding support for arbitrary attributes such as ""eduPersonScopedAffiliation", etc.
+Institution-wide Shibboleth groups are based on the "Shib-Identity-Provider" SAML attribute asserted at runtime after successful authentication with the Identity Provider (IdP) and held within the browser session rather than being persisted in the database for any length of time. It is for this reason that roles based on these groups, such as the ability to create a dataset, are not honored by non-browser interactions, such as through the SWORD API. 
 
 To list institution-wide Shibboleth groups: ``curl http://localhost:8080/api/admin/groups/shib``
 
 To delete an institution-wide Shibboleth group (assuming id 1): ``curl -X DELETE http://localhost:8080/api/admin/groups/shib/1``
+
+Support for arbitrary attributes beyond "Shib-Identity-Provider" such as "eduPersonScopedAffiliation", etc. is being tracked at https://github.com/IQSS/dataverse/issues/1515
 
 Converting Local Users to Shibboleth
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

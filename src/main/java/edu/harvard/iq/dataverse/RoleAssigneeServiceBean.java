@@ -11,8 +11,7 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
-import edu.harvard.iq.dataverse.search.IndexServiceBean;
-import edu.harvard.iq.dataverse.search.SearchFields;
+import edu.harvard.iq.dataverse.privateurl.PrivateUrlUtil;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -62,7 +61,20 @@ public class RoleAssigneeServiceBean {
         predefinedRoleAssignees.put(AllUsers.get().getIdentifier(), AllUsers.get());
     }
 
+    /**
+     * @param identifier An identifier beginning with ":" (builtin), "@"
+     * ({@link AuthenticatedUser}), "&" ({@link Group}), or "#"
+     * ({@link PrivateUrlUser}).
+     *
+     * @return A RoleAssignee (User or Group) or null.
+     *
+     * @throws IllegalArgumentException if you pass null, empty string, or an
+     * identifier that doesn't start with one of the supported characters.
+     */
     public RoleAssignee getRoleAssignee(String identifier) {
+        if (identifier == null || identifier.isEmpty()) {
+            throw new IllegalArgumentException("Identifier cannot be null or empty string.");
+        }
         switch (identifier.charAt(0)) {
             case ':':
                 return predefinedRoleAssignees.get(identifier);
@@ -70,6 +82,8 @@ public class RoleAssigneeServiceBean {
                 return authSvc.getAuthenticatedUser(identifier.substring(1));
             case '&':
                 return groupSvc.getGroup(identifier.substring(1));
+            case '#':
+                return PrivateUrlUtil.identifier2roleAssignee(identifier);
             default:
                 throw new IllegalArgumentException("Unsupported assignee identifier '" + identifier + "'");
         }

@@ -15,21 +15,22 @@ public class DataverseRequest {
     
     private final User user;
     private final IpAddress sourceAddress;
-
+    
     public DataverseRequest(User aUser, HttpServletRequest aHttpServletRequest) {
         this.user = aUser;
-        String remoteAddressStr = null;
-        
-        try {
-            remoteAddressStr = aHttpServletRequest.getRemoteAddr();
-        } catch (Exception _npe) {}
-        
+
+        String remoteAddressStr = aHttpServletRequest.getRemoteAddr();
         if ( remoteAddressStr == null ) {
             remoteAddressStr = "0.0.0.0";
         }
         sourceAddress = IpAddress.valueOf( remoteAddressStr );
     }
 
+    public DataverseRequest( User aUser, IpAddress aSourceAddress ) {
+        user = aUser;
+        sourceAddress = aSourceAddress;
+    }
+    
     public User getUser() {
         return user;
     }
@@ -41,12 +42,9 @@ public class DataverseRequest {
         return sourceAddress;
     }
 
-    
     @Override
     public String toString() {
-        return "[DataverseRequest user:" + getUser() + "@" + getSourceAddress() + "]";
-                
+        return "[DataverseRequest user:" + getUser() + "@" + getSourceAddress() + "]";                
     }
-    
     
 }
