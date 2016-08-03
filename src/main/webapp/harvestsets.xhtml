@@ -52,7 +52,8 @@
                 
                 <h:form id="harvestingSetsForm" rendered="#{true}">
                     <p:fragment id="emptySetsTable" rendered="#{empty harvestingSetsPage.configuredOAISets or !harvestingSetsPage.harvestingServerEnabled}">
-                        <div class="row" jsf:rendered="#{empty harvestingSetsPage.configuredOAISets}">
+                        <!-- we DON'T want to show the "add set" button until the service is enabled! -->
+                        <div class="row" jsf:rendered="#{empty harvestingSetsPage.configuredOAISets and harvestingSetsPage.harvestingServerEnabled}">
                             <div class="col-sm-12 text-right">
                                 <p:commandLink type="button" id="addSetEmpty" styleClass="btn btn-default margin-bottom"
                                                actionListener="#{harvestingSetsPage.initNewSet}"
@@ -129,16 +130,19 @@
                         </p:column>
                         <p:column width="24%" class="text-center" headerText="#{bundle['harvestserver.tab.header.stats']}">
                             <h:outputText value="No records (empty set)" rendered="#{harvestingSetsPage.getSetInfoNumOfDatasets(oaiSet) == 0}" />
-                            <h:outputText value="1 dataset" rendered="#{harvestingSetsPage.getSetInfoNumOfDatasets(oaiSet) == 1}" />
-                            <h:outputText value="#{harvestingSetsPage.getSetInfoNumOfDatasets(oaiSet)} datasets" rendered="#{harvestingSetsPage.getSetInfoNumOfDatasets(oaiSet) gt 1}" />
+                            <h:outputText value="1 dataset " rendered="#{harvestingSetsPage.getSetInfoNumOfDatasets(oaiSet) == 1}" />
+                            <h:outputText value="#{harvestingSetsPage.getSetInfoNumOfDatasets(oaiSet)} datasets " rendered="#{harvestingSetsPage.getSetInfoNumOfDatasets(oaiSet) gt 1}" />
+                            <h:outputText value="(#{harvestingSetsPage.getSetInfoNumOfExported(oaiSet)} records exported" rendered="#{harvestingSetsPage.getSetInfoNumOfDatasets(oaiSet) gt 0}" />
+                            <h:outputText value=", #{harvestingSetsPage.getSetInfoNumOfDeleted(oaiSet)} marked as deleted" rendered="#{(harvestingSetsPage.getSetInfoNumOfDatasets(oaiSet) gt 0) and (harvestingSetsPage.getSetInfoNumOfDeleted(oaiSet) gt 0)}" />
+                            <h:outputText value=")" rendered="#{harvestingSetsPage.getSetInfoNumOfDatasets(oaiSet) gt 0}" />
                         </p:column>
                         <p:column width="18%" class="col-manage-action col-button-action text-center" headerText="#{bundle['harvestserver.tab.header.action']}">
                             <div class="button-block">
                                 <div class="btn-group" role="group">
                                     <!-- TODO: a confirmation dialog? - "sure you want to run export now?" -->
                                     <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
-                                                   action="#{harvestingSetsPage.runSetExport(oaiSet)}"
-                                                   update=":harvestingSetsForm"
+                                                   action="#{harvestingSetsPage.startSetExport(oaiSet)}"
+                                                   update=":harvestingSetsForm  :messagePanel"
                                                    title="#{bundle['harvestserver.tab.header.action.btn.export']}">
                                         <span class="glyphicon glyphicon-play"></span>
                                     </p:commandLink>

@@ -121,7 +121,11 @@ public class ExportService {
     
     public void exportAllFormats (Dataset dataset) throws ExportException {
         try {
-            final JsonObjectBuilder datasetAsJsonBuilder = jsonAsDatasetDto(dataset.getLatestVersion());
+            DatasetVersion releasedVersion = dataset.getReleasedVersion();
+            if (releasedVersion == null) {
+                throw new ExportException("No released version for dataset "+dataset.getGlobalId());
+            }
+            final JsonObjectBuilder datasetAsJsonBuilder = jsonAsDatasetDto(releasedVersion);
             JsonObject datasetAsJson = datasetAsJsonBuilder.build();
             
             Iterator<Exporter> exporters = loader.iterator();
@@ -141,14 +145,6 @@ public class ExportService {
         dataset.setLastExportTime(new Timestamp(new Date().getTime()));
         
     }
-    
-    @TransactionAttribute(REQUIRES_NEW)
-    public void exportAllFormatsInNewTransaction(Dataset dataset) {
-        try {
-            exportAllFormats(dataset);
-        } catch (ExportException ee) {}
-    }
-    
     
     // This method finds the exporter for the format requested, 
     // then produces the dataset metadata as a JsonObject, then calls

@@ -32,7 +32,15 @@ import javax.xml.stream.XMLStreamWriter;
  */
 public class DublinCoreExportUtil {
  
-        private static final Logger logger = Logger.getLogger(DdiExportUtil.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(DdiExportUtil.class.getCanonicalName());
+    
+    // TODO: 
+    // Add real namespace/schemalocation here:
+    // (consult OAI/OCLC documentation) -- L.A. 4.5
+    
+    public static String DEFAULT_XML_NAMESPACE = "http://www.openarchives.org/OAI/2.0/oai_dc/"; 
+    public static String DEFAULT_XML_SCHEMALOCATION = "http://www.openarchives.org/OAI/2.0/oai_dc.xsd";
+    public static String DEFAULT_XML_VERSION = "2.0";
         
     public static void datasetJson2dublincore(JsonObject datasetDtoAsJson, OutputStream outputStream) throws XMLStreamException {
         logger.fine(JsonUtil.prettyPrint(datasetDtoAsJson.toString()));

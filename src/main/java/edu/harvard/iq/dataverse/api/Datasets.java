@@ -159,6 +159,16 @@ public class Datasets extends AbstractApiBean {
         }
     }
 
+    // Starts an async export all job in the background. 
+    // This API call should probably not be here;
+    // May be under "/admin" somewhere? 
+    @GET
+    @Path("/exportAll")
+    @Produces("application/json")
+    public Response exportAll() {
+        datasetService.exportAll();
+        return this.accepted();
+    }
    	
 	@DELETE
 	@Path("{id}")

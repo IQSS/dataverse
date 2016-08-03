@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.harvest.client.HarvestTimerInfo;
 import edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClientServiceBean;
+import java.io.IOException;
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -37,8 +38,12 @@ import javax.servlet.http.HttpServletRequest;
 
 
 /**
- *
+ * 
+ * This is a largely intact DVN3 implementation. 
+ * original
  * @author roberttreacy
+ * ported by 
+ * @author Leonid Andreev
  */
 @Stateless
 public class DataverseTimerServiceBean implements Serializable {
@@ -56,10 +61,6 @@ public class DataverseTimerServiceBean implements Serializable {
     @EJB 
     AuthenticationServiceBean authSvc;
     
-    /*@EJB
-    StudyServiceLocal studyService;*/
-
-
     public void createTimer(Date initialExpiration, long intervalDuration, Serializable info) {
         try {
             logger.log(Level.INFO,"Creating timer on " + InetAddress.getLocalHost().getCanonicalHostName());
@@ -95,18 +96,17 @@ public class DataverseTimerServiceBean implements Serializable {
                 logger.log(Level.INFO, "running a harvesting client: id=" + info.getHarvestingClientId());
                 // Timer batch jobs are run by the main Admin user. 
                 // TODO: revisit how we retrieve the superuser here.
-                // (looking it up by the identifier "admin" is not necessarily the 
-                // cleanest way). Should it be configurable somewhere, which superuser
+                // Should it be configurable somewhere, which superuser
                 // runs these jobs? Should there be a central mechanism for obtaining
                 // the "major", builtin superuser for this Dataverse instance? 
-                // -- L.A. 4.4, May 8 2016
-                DataverseRequest dataverseRequest = null;
-                AuthenticatedUser adminUser = authSvc.getAuthenticatedUser("admin");
-                if (adminUser != null) {
-                    dataverseRequest = new DataverseRequest(adminUser, (HttpServletRequest)null);
-                }
-                // TODO: create a real DataverseRequest here, associated with the main admin user (?)
-                // -- L.A. 4.4, May 8 2016
+                // -- L.A. 4.5, Aug. 2016
+                AuthenticatedUser adminUser = authSvc.getAdminUser(); // getAuthenticatedUser("admin");
+                if (adminUser == null) {
+                    logger.info("Scheduled harvest: failed to locate the admin user! Exiting.");
+                    throw new IOException("Scheduled harvest: failed to locate the admin user");
+                } 
+                logger.info("found admin user "+adminUser.getName());
+                DataverseRequest dataverseRequest = new DataverseRequest(adminUser, (HttpServletRequest)null);
                 harvesterService.doHarvest(dataverseRequest, info.getHarvestingClientId());
 
             } catch (Throwable e) {

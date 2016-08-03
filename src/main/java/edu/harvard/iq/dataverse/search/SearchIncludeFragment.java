@@ -1105,13 +1105,17 @@ public class SearchIncludeFragment implements java.io.Serializable {
         // SQL query:
         
         if (harvestedDatasetIds != null) {
-            Map<Long,String> descriptionsForHarvestedDatasets = datasetService.getArchiveDescriptionsForHarvestedDatasets(harvestedDatasetIds);
+            Map<Long, String> descriptionsForHarvestedDatasets = datasetService.getArchiveDescriptionsForHarvestedDatasets(harvestedDatasetIds);
             if (descriptionsForHarvestedDatasets != null && descriptionsForHarvestedDatasets.size() > 0) {
                 for (SolrSearchResult result : searchResultsList) {
-                    if (result.getType().equals("files") || result.getType().equals("datasets")) {
-                        if (result.isHarvested()) {
+                    if (result.isHarvested()) {
+                        if (result.getType().equals("files")) { 
                             if (descriptionsForHarvestedDatasets.containsKey(result.getParentIdAsLong())) {
                                 result.setHarvestingDescription(descriptionsForHarvestedDatasets.get(result.getParentIdAsLong()));
+                            }
+                        } else if (result.getType().equals("datasets")) {
+                            if (descriptionsForHarvestedDatasets.containsKey(result.getEntityId())) {
+                                result.setHarvestingDescription(descriptionsForHarvestedDatasets.get(result.getEntityId()));
                             }
                         }
                     }

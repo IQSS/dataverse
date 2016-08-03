@@ -228,6 +228,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
         newOaiSet.setDescription(getNewSetDescription());
         newOaiSet.setDefinition(getNewSetQuery());
         
+        boolean success = false;
         
         try {
             oaiSetService.save(newOaiSet);
@@ -235,10 +236,18 @@ public class HarvestingSetsPage implements java.io.Serializable {
             String successMessage = JH.localize("harvestserver.newSetDialog.success");
             successMessage = successMessage.replace("{0}", newOaiSet.getSpec());
             JsfHelper.addSuccessMessage(successMessage);
+            success = true;
 
         } catch (Exception ex) {
             JH.addMessage(FacesMessage.SEVERITY_FATAL, "Failed to create OAI set");
              logger.log(Level.SEVERE, "Failed to create OAI set" + ex.getMessage(), ex);
+        }
+        
+        if (success) {
+            OAISet savedSet = oaiSetService.findBySpec(getNewSetSpec());
+            if (savedSet != null) {
+                runSetExport(savedSet);
+            }
         }
         
         setPageMode(HarvestingSetsPage.PageMode.VIEW);        
@@ -261,17 +270,27 @@ public class HarvestingSetsPage implements java.io.Serializable {
         oaiSet.setDescription(getNewSetDescription());
         
         // will try to save it now:
+        boolean success = false; 
         
         try {
             oaiSetService.save(oaiSet);
             configuredHarvestingSets = oaiSetService.findAll(); 
                         
             JsfHelper.addSuccessMessage("Succesfully updated OAI set &#34;" + oaiSet.getSpec() + "&#34;.");
+            success = true;
 
         } catch (Exception ex) {
             JH.addMessage(FacesMessage.SEVERITY_FATAL, "Failed to update OAI set.");
              logger.log(Level.SEVERE, "Failed to update OAI set." + ex.getMessage(), ex);
         }
+        
+        if (success) {
+            OAISet createdSet = oaiSetService.findBySpec(getNewSetSpec());
+            if (createdSet != null) {
+                runSetExport(createdSet);
+            }
+        }
+        
         setPageMode(HarvestingSetsPage.PageMode.VIEW);
 
         
@@ -371,13 +390,24 @@ public class HarvestingSetsPage implements java.io.Serializable {
     }
     
     public int getSetInfoNumOfExported(OAISet oaiSet) {
-        List<OAIRecord> records = oaiRecordService.findOaiRecordsBySetName(oaiSet.getSpec());
+        List<OAIRecord> records = oaiRecordService.findActiveOaiRecordsBySetName(oaiSet.getSpec());
         
         if (records == null || records.isEmpty()) {
-            return 0; //"No records (empty set)";
+            return 0; 
         }
         
-        return records.size(); // + " records exported";
+        return records.size();
+        
+    }
+    
+    public int getSetInfoNumOfDeleted(OAISet oaiSet) {
+        List<OAIRecord> records = oaiRecordService.findDeletedOaiRecordsBySetName(oaiSet.getSpec());
+        
+        if (records == null || records.isEmpty()) {
+            return 0; 
+        }
+        
+        return records.size();
         
     }
     
@@ -474,6 +504,20 @@ public class HarvestingSetsPage implements java.io.Serializable {
     }
     
     // this will re-export the set in the background, asynchronously:
+    public void startSetExport(OAISet oaiSet) {
+        try {
+            runSetExport(oaiSet);
+        } catch (Exception ex) {
+            String failMessage = "Sorry, could not start re-export on selected OAI set (unknown server error).";
+            JH.addMessage(FacesMessage.SEVERITY_FATAL, failMessage);
+            return;
+        } 
+                
+        String successMessage = JH.localize("harvestserver.actions.runreexport.success");
+        successMessage = successMessage.replace("{0}", oaiSet.getSpec());
+        JsfHelper.addSuccessMessage(successMessage);
+    }
+    
     public void runSetExport(OAISet oaiSet) {
         
         oaiSetService.exportOaiSet(oaiSet);
