@@ -653,18 +653,29 @@ public class BuiltinUserPage implements java.io.Serializable {
     }
 
     public boolean isEmailIsValid() {
-//        currentUser.getEmailConfirmed() non null and not ConfirmEmailUtil.getGrandfatheredTime
-        return true;
+        ConfirmEmailUtil confirmEmailUtil = new ConfirmEmailUtil();
+        if (currentUser.getEmailConfirmed() != null && currentUser.getEmailConfirmed() != confirmEmailUtil.getGrandfatheredTime()) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public boolean isEmailNotValid() {
-//        currentUser.getEmailConfirmed() is null
-        return true;
+        if (currentUser.getEmailConfirmed() == null || isEmailIsValid() == false) {
+            return true;
+        } else {
+        return false;
+        }
     }
 
     public boolean isEmailGrandfathered() {
-        // if emailConfirmed is ConfirmEmailUtil.getGrandfatheredTime
+        ConfirmEmailUtil confirmEmailUtil = new ConfirmEmailUtil();
+        if (currentUser.getEmailConfirmed() == confirmEmailUtil.getGrandfatheredTime()) {
+            return true;
+        } else {
         return false;
+        }
     }
 
 }
