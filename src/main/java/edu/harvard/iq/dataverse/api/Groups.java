@@ -17,6 +17,7 @@ import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonString;
+import javax.transaction.TransactionRolledbackException;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.POST;
 import javax.ws.rs.PathParam;
@@ -99,8 +100,18 @@ public class Groups extends AbstractApiBean {
         try {
             ipGroupPrv.deleteGroup(grp);
             return okResponse("Group " + grp.getAlias() + " deleted.");
-        } catch ( IllegalArgumentException ex ) {
-            return errorResponse(Response.Status.BAD_REQUEST, ex.getMessage());
+        } catch ( Exception topExp ) {
+            // get to the cause (unwraps EJB exception wrappers).
+            Throwable e = topExp;
+            while ( e.getCause() != null ) {
+                e = e.getCause();
+            }
+            
+            if ( e instanceof IllegalArgumentException ) {
+                return errorResponse(Response.Status.BAD_REQUEST, e.getMessage());
+            } else {
+                throw topExp;
+            }
         }
     }
     
