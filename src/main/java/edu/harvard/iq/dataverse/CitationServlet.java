@@ -39,13 +39,8 @@ public class CitationServlet extends HttpServlet {
         if (persistentId != null) {
             Dataset ds = datasetService.findByGlobalId(persistentId);        
             if (ds != null) {
-                if (StringUtil.isEmpty(ds.getOwner().getCitationRedirectURL())) {
-                    response.sendRedirect("dataset.xhtml?persistentId=" + persistentId);
-                    return;
-                } else {
-                    response.sendRedirect("citation-frame.xhtml?persistentId=" + persistentId);
-                    return;
-                }           
+                response.sendRedirect("dataset.xhtml?persistentId=" + persistentId);
+                return;        
             }
         }
         response.sendError(HttpServletResponse.SC_NOT_FOUND);

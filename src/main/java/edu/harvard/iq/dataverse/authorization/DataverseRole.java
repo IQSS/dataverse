@@ -53,9 +53,15 @@ public class DataverseRole implements Serializable  {
     public static final String FULL_CONTRIBUTOR = "fullContributor";
     public static final String DV_CONTRIBUTOR = "dvContributor";
     public static final String DS_CONTRIBUTOR = "dsContributor";
+    /**
+     * Heads up that this says "editor" which comes from
+     * scripts/api/data/role-editor.json but the name is "Contributor". The
+     * *alias* is "editor". Don't be fooled!
+     */
     public static final String EDITOR = "editor";
     public static final String MANAGER = "manager";
     public static final String CURATOR = "curator";
+    public static final String MEMBER = "member";
     
     
 	public static final Comparator<DataverseRole> CMP_BY_NAME = new Comparator<DataverseRole>(){

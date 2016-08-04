@@ -311,7 +311,7 @@ public class Dataverses extends AbstractApiBean {
         try {
     		Dataverse dataverse = findDataverseOrDie(dvIdtf);
             execute(new UpdateDataverseMetadataBlocksCommand.SetRoot(createDataverseRequest(findUserOrDie()), dataverse, root));
-            return okResponseWithValue("Dataverse " + dataverse.getName() + " is now a metadata root");
+            return okResponseWithValue("Dataverse " + dataverse.getName() + " is now a metadata  " + (root? "" : "non-") + "root");
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
@@ -462,10 +462,11 @@ public class Dataverses extends AbstractApiBean {
             if ( theRole == null ) {
                 return errorResponse( Status.BAD_REQUEST, "Can't find role named '" + ra.getRole() + "' in dataverse " + dataverse);
             }
+                    String privateUrlToken = null;
 
 			return okResponse(
                     json(
-                       execCommand( new AssignRoleCommand(assignee, theRole, dataverse, createDataverseRequest(findUserOrDie())))));
+                                    execCommand(new AssignRoleCommand(assignee, theRole, dataverse, createDataverseRequest(findUserOrDie()), privateUrlToken))));
 			
 		} catch (WrappedResponse ex) {
 			LOGGER.log(Level.WARNING, "Can''t create assignment: {0}", ex.getMessage());

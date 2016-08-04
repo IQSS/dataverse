@@ -5,11 +5,14 @@ import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
+import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import javax.persistence.EntityManager;
 
 /**
@@ -55,6 +58,11 @@ public class TestCommandContext implements CommandContext {
 		return null;
 	}
 
+        @Override
+        public IngestServiceBean ingest() {
+            return null; 
+        }
+        
 	@Override
 	public PermissionServiceBean permissions() {
 		return null;
@@ -163,5 +171,15 @@ public class TestCommandContext implements CommandContext {
     public UserNotificationServiceBean notifications() {
         return null;
     }     
+
+    @Override
+    public SystemConfig systemConfig() {
+        return null;
+    }
+
+    @Override
+    public PrivateUrlServiceBean privateUrl() {
+        return null;
+    }
 	
 }

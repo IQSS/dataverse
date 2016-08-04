@@ -163,7 +163,8 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
          logger.log(Level.FINE, "after db update {0}", formatter.format(new Date().getTime()));       
         // set the role to be default contributor role for its dataverse
         if (importType==null || importType.equals(ImportType.NEW)) {
-            ctxt.roles().save(new RoleAssignment(savedDataset.getOwner().getDefaultContributorRole(),  getRequest().getUser(), savedDataset));
+            String privateUrlToken = null;
+            ctxt.roles().save(new RoleAssignment(savedDataset.getOwner().getDefaultContributorRole(), getRequest().getUser(), savedDataset, privateUrlToken));
          }
         
         savedDataset.setPermissionModificationTime(new Timestamp(new Date().getTime()));

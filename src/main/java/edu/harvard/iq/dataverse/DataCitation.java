@@ -5,8 +5,6 @@
  */
 package edu.harvard.iq.dataverse;
 
-import edu.emory.mathcs.backport.java.util.Arrays;
-import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -30,6 +28,8 @@ public class DataCitation {
     private String UNF;
     private String distributors;
 
+    private List<DatasetField> optionalValues = new ArrayList<>();
+    private int optionalURLcount = 0; 
 
     public DataCitation(DatasetVersion dsv) {
         // authors (or producer)
@@ -49,9 +49,9 @@ public class DataCitation {
                     citationDate = new Date();
                 }
             }
-            
+
             year = new SimpleDateFormat("yyyy").format(citationDate);
-            
+
         } else {
             try {
                 year = sdf.format(sdf.parse(dsv.getDistributionDate()));
@@ -59,7 +59,7 @@ public class DataCitation {
                 // ignore
             }
         }
-              
+
         // title
         title = dsv.getTitle();
 
@@ -96,47 +96,52 @@ public class DataCitation {
                 }
             }
         }
-        
+
         // UNF
         UNF = dsv.getUNF();
 
+        // optional values
+        for (DatasetFieldType dsfType : dsv.getDataset().getOwner().getCitationDatasetFieldTypes()) {
+            DatasetField dsf = dsv.getDatasetField(dsfType);
+            if (dsf != null) {
+                optionalValues.add(dsf);
+                
+                if (dsf.getDatasetFieldType().getFieldType().equals(DatasetFieldType.FieldType.URL)) {
+                    optionalURLcount++;
+                }                 
+            }
+        }        
     }
+    
 
     public String getAuthors() {
         return authors;
     }
 
-
     public String getTitle() {
         return title;
     }
-
 
     public String getYear() {
         return year;
     }
 
-
     public GlobalId getPersistentId() {
         return persistentId;
     }
-
 
     public String getVersion() {
         return version;
     }
 
-
     public String getUNF() {
         return UNF;
     }
-
 
     public String getDistributors() {
         return distributors;
     }
 
-    
     @Override
     public String toString() {
         return toString(false);
@@ -148,30 +153,47 @@ public class DataCitation {
         citationList.add(formatString(authors, html));
         citationList.add(year);
         citationList.add(formatString(title, html, "\""));
-        citationList.add(formatURL(persistentId.toURL(), html));
+        citationList.add(formatURL(persistentId.toString(), persistentId.toURL().toString(), html));
         citationList.add(formatString(distributors, html));
         citationList.add(version);
-                
+
         StringBuilder citation = new StringBuilder(
                 citationList.stream()
-                .filter( value -> !StringUtils.isEmpty(value) )
+                .filter(value -> !StringUtils.isEmpty(value))
                 .collect(Collectors.joining(", ")));
-        
+
         // append UNF
         if (!StringUtils.isEmpty(UNF)) {
-            citation.append( " [").append(UNF).append("]");
+            citation.append(" [").append(UNF).append("]");
         }
-        
+
+        for (DatasetField dsf : optionalValues) {
+            String displayName = dsf.getDatasetFieldType().getDisplayName();
+            String displayValue;
+            
+            if (dsf.getDatasetFieldType().getFieldType().equals(DatasetFieldType.FieldType.URL)) {
+                displayValue = formatURL(dsf.getDisplayValue(), dsf.getDisplayValue(), html);
+                if (optionalURLcount == 1) {
+                    displayName = "URL";
+                }
+            } else {
+                displayValue = formatString(dsf.getDisplayValue(), html);
+            }
+
+            citation.append(" [")
+                    .append(displayName).append(": ")
+                    .append(displayValue)
+                    .append("]");
+        }
+
         return citation.toString();
     }
-    
 
     // helper methods   
     private String formatString(String value, boolean escapeHtml) {
         return formatString(value, escapeHtml, "");
     }
-     
-    
+
     private String formatString(String value, boolean escapeHtml, String wrapper) {
         if (!StringUtils.isEmpty(value)) {
             return new StringBuilder(wrapper)
@@ -179,18 +201,18 @@ public class DataCitation {
                     .append(wrapper).toString();
         }
         return null;
-    }  
-        
-    private String formatURL(URL value, boolean html) {
-        if (value ==null) {
+    }
+
+    private String formatURL(String text, String url, boolean html) {
+        if (text == null) {
             return null;
         }
-        
-        if (html) {
-            return "<a href=\"" + value.toString() + "\" target=\"_blank\">" + value.toString() + "</a>";
+
+        if (html && url != null) {
+            return "<a href=\"" + url + "\" target=\"_blank\">" + StringEscapeUtils.escapeHtml(text) + "</a>";
         } else {
-            return value.toString();
+            return text;
         }
-            
-    }   
+
+    }
 }

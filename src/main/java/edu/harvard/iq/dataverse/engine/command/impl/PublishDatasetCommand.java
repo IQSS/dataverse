@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.search.IndexResponse;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.IOException;
@@ -21,6 +22,7 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.logging.Logger;
 
 /**
  *
@@ -28,6 +30,8 @@ import java.util.ResourceBundle;
  */
 @RequiredPermissions(Permission.PublishDataset)
 public class PublishDatasetCommand extends AbstractCommand<Dataset> {
+
+    private static final Logger logger = Logger.getLogger(PublishDatasetCommand.class.getCanonicalName());
 
     boolean minorRelease = false;
     Dataset theDataset;
@@ -191,6 +195,12 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
         if (idServiceBean!= null)
             if (!idServiceBean.publicizeIdentifier(savedDataset))
                 throw new CommandException(ResourceBundle.getBundle("Bundle").getString("dataset.publish.error.datacite"), this);
+
+        PrivateUrl privateUrl = ctxt.engine().submit(new GetPrivateUrlCommand(getRequest(), savedDataset));
+        if (privateUrl != null) {
+            logger.fine("Deleting Private URL for dataset id " + savedDataset.getId());
+            ctxt.engine().submit(new DeletePrivateUrlCommand(getRequest(), savedDataset));
+        }
 
         /*
         MoveIndexing to after DOI update so that if command exception is thrown the re-index will not

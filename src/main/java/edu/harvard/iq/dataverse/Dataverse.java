@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearch;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -178,6 +179,12 @@ public class Dataverse extends DvObjectContainer {
     @OneToMany(mappedBy = "dataverse",cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST}, orphanRemoval=true)
     @OrderBy("displayOrder")
     private List<DataverseFacet> dataverseFacets = new ArrayList();
+    
+    @ManyToMany(cascade = {CascadeType.MERGE})
+    @JoinTable(name = "dataverse_citationDatasetFieldTypes",
+    joinColumns = @JoinColumn(name = "dataverse_id"),
+    inverseJoinColumns = @JoinColumn(name = "citationdatasetfieldtype_id"))
+    private List<DatasetFieldType> citationDatasetFieldTypes = new ArrayList();
     
     @ManyToMany
     @JoinTable(name = "dataversesubjects",
@@ -530,6 +537,16 @@ public class Dataverse extends DvObjectContainer {
         this.metadataBlocks = metadataBlocks;
     }
 
+    public List<DatasetFieldType> getCitationDatasetFieldTypes() {
+        return citationDatasetFieldTypes;
+    }
+
+    public void setCitationDatasetFieldTypes(List<DatasetFieldType> citationDatasetFieldTypes) {
+        this.citationDatasetFieldTypes = citationDatasetFieldTypes;
+    }
+    
+    
+
     public List<DataverseFacet> getDataverseFacets() {
         return getDataverseFacets(false);
     }
@@ -645,13 +662,24 @@ public class Dataverse extends DvObjectContainer {
 
     public void addRole(DataverseRole role) {
         role.setOwner(this);
+        if ( roles == null ) {
+            roles = new HashSet<>();
+        }
         roles.add(role);
     }
-
+    
+    /**
+     * Note: to add a role, use {@link #addRole(edu.harvard.iq.dataverse.authorization.DataverseRole)},
+     * do not call this method and try to add directly to the list. 
+     * @return the roles defined in this Dataverse.
+     */
     public Set<DataverseRole> getRoles() {
+        if ( roles == null ) {
+            roles = new HashSet<>();
+        }
         return roles;
     }
-
+    
     public List<Dataverse> getOwners() {
         List owners = new ArrayList();
         if (getOwner() != null) {
@@ -701,18 +729,6 @@ public class Dataverse extends DvObjectContainer {
     public void setPermissionRoot(boolean permissionRoot) {
         this.permissionRoot = permissionRoot;
     }
-    
-    
-    
-    @URL
-    private String citationRedirectURL;
-
-    public String getCitationRedirectURL() {
-        return citationRedirectURL;
-    }
-
-    public void setCitationRedirectURL(String citationRedirectURL) {
-        this.citationRedirectURL = citationRedirectURL;
-    }    
+       
 
 }

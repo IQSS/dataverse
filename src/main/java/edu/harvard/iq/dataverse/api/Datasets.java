@@ -9,7 +9,7 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.MetadataBlock;
-import static edu.harvard.iq.dataverse.api.AbstractApiBean.errorResponse;
+import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.User;
@@ -17,14 +17,18 @@ import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetVersionCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.CreatePrivateUrlCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetVersionCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DeletePrivateUrlCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetSpecificPublishedDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDraftDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetLatestAccessibleDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetLatestPublishedDatasetVersionCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetPrivateUrlCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.ListRoleAssignments;
 import edu.harvard.iq.dataverse.engine.command.impl.ListVersionsCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.SetDatasetCitationDateCommand;
@@ -32,6 +36,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetTargetURLComman
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import edu.harvard.iq.dataverse.export.ddi.DdiExportUtil;
+import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
@@ -554,11 +559,70 @@ public class Datasets extends AbstractApiBean {
                 return errorResponse(Response.Status.BAD_REQUEST, "Assignee not found");
             }
             DataverseRole theRole = rolesSvc.findBuiltinRoleByAlias("admin");
+            String privateUrlToken = null;
             return okResponse(
-                    json(execCommand(new AssignRoleCommand(assignee, theRole, dataset, createDataverseRequest(findUserOrDie())))));
+                    json(execCommand(new AssignRoleCommand(assignee, theRole, dataset, createDataverseRequest(findUserOrDie()), privateUrlToken))));
         } catch (WrappedResponse ex) {
             LOGGER.log(Level.WARNING, "Can''t create assignment: {0}", ex.getMessage());
             return ex.getResponse();
+        }
+    }
+
+    @GET
+    @Path("{identifier}/assignments")
+    public Response getAssignments(@PathParam("identifier") String id) {
+        try {
+            JsonArrayBuilder jab = Json.createArrayBuilder();
+            for (RoleAssignment ra : execCommand(new ListRoleAssignments(createDataverseRequest(findUserOrDie()), findDatasetOrDie(id)))) {
+                jab.add(json(ra));
+            }
+            return okResponse(jab);
+        } catch (WrappedResponse ex) {
+            LOGGER.log(Level.WARNING, "Can't list assignments: {0}", ex.getMessage());
+            return ex.getResponse();
+        }
+    }
+
+    @GET
+    @Path("{id}/privateUrl")
+    public Response getPrivateUrlData(@PathParam("id") String idSupplied) {
+        try {
+            PrivateUrl privateUrl = execCommand(new GetPrivateUrlCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(idSupplied)));
+            if (privateUrl != null) {
+                return okResponse(json(privateUrl));
+            } else {
+                return errorResponse(Response.Status.NOT_FOUND, "Private URL not found.");
+            }
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
+
+    @POST
+    @Path("{id}/privateUrl")
+    public Response createPrivateUrl(@PathParam("id") String idSupplied) {
+        try {
+            return okResponse(json(execCommand(new CreatePrivateUrlCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(idSupplied)))));
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
+
+    @DELETE
+    @Path("{id}/privateUrl")
+    public Response deletePrivateUrl(@PathParam("id") String idSupplied) {
+        try {
+            User user = findUserOrDie();
+            Dataset dataset = findDatasetOrDie(idSupplied);
+            PrivateUrl privateUrl = execCommand(new GetPrivateUrlCommand(createDataverseRequest(user), dataset));
+            if (privateUrl != null) {
+                execCommand(new DeletePrivateUrlCommand(createDataverseRequest(user), dataset));
+                return okResponse("Private URL deleted.");
+            } else {
+                return errorResponse(Response.Status.NOT_FOUND, "No Private URL to delete.");
+            }
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
         }
     }
 

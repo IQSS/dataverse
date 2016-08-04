@@ -137,11 +137,21 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
         }
         
         // Remove / delete any files that were removed
+        
+        // If any of the files that we are deleting has a UNF, we will need to 
+        // re-calculate the UNF of the version - since that is the product 
+        // of the UNFs of the individual files. 
+        boolean recalculateUNF = false;
+        
         for (FileMetadata fmd : filesToDelete) {              
             //  check if this file is being used as the default thumbnail
             if (fmd.getDataFile().equals(theDataset.getThumbnailFile())) {
                 logger.info("deleting the dataset thumbnail designation");
                 theDataset.setThumbnailFile(null);
+            }
+            
+            if (fmd.getDataFile().getUnf() != null) {
+                recalculateUNF = true;
             }
             
             if (!fmd.getDataFile().isReleased()) {
@@ -162,6 +172,10 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
                 theDataset.getEditVersion().getFileMetadatas().remove(fmd);
             }      
         }        
+        
+        if (recalculateUNF) {
+            ctxt.ingest().recalculateDatasetVersionUNF(theDataset.getEditVersion());
+        }
         
         String nonNullDefaultIfKeyNotFound = "";
         String doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);

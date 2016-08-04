@@ -22,3 +22,4 @@ scripts/api/py_api_wrapper/local-data/*
 doc/sphinx-guides/build
 faces-config.NavData
 src/main/java/BuildNumber.properties
+/nbproject/

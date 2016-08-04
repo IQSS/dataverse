@@ -187,7 +187,8 @@ public class RolePermissionFragment implements java.io.Serializable {
 
     private void assignRole(RoleAssignee ra, DataverseRole r) {
         try {
-            commandEngine.submit(new AssignRoleCommand(ra, r, dvObject, dvRequestService.getDataverseRequest()));
+            String privateUrlToken = null;
+            commandEngine.submit(new AssignRoleCommand(ra, r, dvObject, dvRequestService.getDataverseRequest(), privateUrlToken));
             JH.addMessage(FacesMessage.SEVERITY_INFO, "Role " + r.getName() + " assigned to " + ra.getDisplayInfo().getTitle() + " on " + StringEscapeUtils.escapeHtml(dvObject.getDisplayName()));
         } catch (CommandException ex) {
             JH.addMessage(FacesMessage.SEVERITY_ERROR, "Can't assign role: " + ex.getMessage());

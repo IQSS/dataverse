@@ -25,9 +25,12 @@ import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
+import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import javax.persistence.EntityManager;
 
 /**
@@ -37,62 +40,75 @@ import javax.persistence.EntityManager;
  * @author michael
  */
 public interface CommandContext {
-    
-	public EntityManager em();
-	
-	public DataverseEngine engine();
-	
-	public DvObjectServiceBean dvObjects();
-	
-	public DatasetServiceBean datasets();
-	
-	public DataverseServiceBean dataverses();
-	
-	public DataverseRoleServiceBean roles();
-	
-	public BuiltinUserServiceBean builtinUsers();
-	
-	public IndexServiceBean index();
+
+    /**
+     * Note: While this method is not deprecated *yet*, please consider not
+     * using it, and using a method on the service bean instead. Using the em
+     * directly makes the command less testable.
+     *
+     * @return the entity manager
+     */
+    public EntityManager em();
+
+    public DataverseEngine engine();
+
+    public DvObjectServiceBean dvObjects();
+
+    public DatasetServiceBean datasets();
+
+    public DataverseServiceBean dataverses();
+
+    public DataverseRoleServiceBean roles();
+
+    public BuiltinUserServiceBean builtinUsers();
+
+    public IndexServiceBean index();
 
     public SolrIndexServiceBean solrIndex();
-	
-	public SearchServiceBean search();
-	
-	public PermissionServiceBean permissions();
+
+    public SearchServiceBean search();
     
+    public IngestServiceBean ingest();
+
+    public PermissionServiceBean permissions();
+
     public RoleAssigneeServiceBean roleAssignees();
-	
-	public DataverseFacetServiceBean facets(); 
-        
-    public FeaturedDataverseServiceBean featuredDataverses();       
-    
-    public DataFileServiceBean files(); 
-    
+
+    public DataverseFacetServiceBean facets();
+
+    public FeaturedDataverseServiceBean featuredDataverses();
+
+    public DataFileServiceBean files();
+
     public TemplateServiceBean templates();
-    
+
     public SavedSearchServiceBean savedSearches();
-    
+
     public DataverseFieldTypeInputLevelServiceBean fieldTypeInputLevels();
-               
+
     public DOIEZIdServiceBean doiEZId();
-    
+
     public DOIDataCiteServiceBean doiDataCite();
-    
+
     public HandlenetServiceBean handleNet();
-    
+
     public GuestbookServiceBean guestbooks();
-    
+
     public GuestbookResponseServiceBean responses();
-    
+
     public DataverseLinkingServiceBean dvLinking();
-    
+
     public DatasetLinkingServiceBean dsLinking();
-    
-    public SettingsServiceBean settings();       
-    
+
+    public SettingsServiceBean settings();
+
     public ExplicitGroupServiceBean explicitGroups();
-    
+
     public UserNotificationServiceBean notifications();
-    
+
     public AuthenticationServiceBean authentication();
+
+    public SystemConfig systemConfig();
+
+    public PrivateUrlServiceBean privateUrl();
 }
