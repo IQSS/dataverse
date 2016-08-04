@@ -80,7 +80,6 @@ import javax.faces.component.UIInput;
 
 import javax.faces.event.AjaxBehaviorEvent;
 
-import javax.faces.context.ExternalContext;
 import org.apache.commons.lang.StringEscapeUtils;
 
 import org.primefaces.component.tabview.TabView;
@@ -555,7 +554,7 @@ public class DatasetPage implements java.io.Serializable {
     
     // Another convenience method - to cache Update Permission on the dataset: 
     public boolean canUpdateDataset() {
-        return permissionsWrapper.canUpdateDataset(this.session.getUser(), this.dataset);
+        return permissionsWrapper.canUpdateDataset(dvRequestService.getDataverseRequest(), this.dataset);
     }
     
     public boolean canPublishDataverse() {
@@ -576,12 +575,8 @@ public class DatasetPage implements java.io.Serializable {
     //}
     
     public boolean canViewUnpublishedDataset() {
-        return permissionsWrapper.canViewUnpublishedDataset(this.session.getUser(), this.dataset);
-        //return doesSessionUserHaveDataSetPermission(Permission.ViewUnpublishedDataset);
+        return permissionsWrapper.canViewUnpublishedDataset( dvRequestService.getDataverseRequest(), dataset);
     }
-    
-    private Boolean sessionUserAuthenticated = null;
-    
     
     /* 
      * 4.2.1 optimization. 
@@ -590,28 +585,7 @@ public class DatasetPage implements java.io.Serializable {
      * every time; it doesn't do any new db lookups. 
     */
     public boolean isSessionUserAuthenticated() {
-        logger.fine("entering isSessionUserAuthenticated;");
-        if (sessionUserAuthenticated != null) {
-            logger.fine("using cached isSessionUserAuthenticated;");
-            
-            return sessionUserAuthenticated;
-        }
-        
-        if (session == null) {
-            return false;
-        }
-        
-        if (session.getUser() == null) {
-            return false;
-        }
-        
-        if (session.getUser().isAuthenticated()) {
-            sessionUserAuthenticated = true; 
-            return true;
-        }
-        
-        sessionUserAuthenticated = false;
-        return false;
+        return session.getUser().isAuthenticated();
     }
     
     /**
