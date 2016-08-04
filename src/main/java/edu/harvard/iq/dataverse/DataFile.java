@@ -613,6 +613,13 @@ public class DataFile extends DvObject implements Comparable {
         return getLatestFileMetadata().getLabel();
     }
     
+    @Override
+    public int compareTo(Object o) {
+        DataFile other = (DataFile) o;
+        return this.getDisplayName().toUpperCase().compareTo(other.getDisplayName().toUpperCase());
+
+    }
+    
     /**
      * Check if the Geospatial Tag has been assigned to this file
      * @return 
@@ -627,11 +634,5 @@ public class DataFile extends DvObject implements Comparable {
             }
         }
         return false;
-
-    @Override
-    public int compareTo(Object o) {
-        DataFile other = (DataFile) o;
-        return this.getDisplayName().toUpperCase().compareTo(other.getDisplayName().toUpperCase());
-
     }
 }

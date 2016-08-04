@@ -98,7 +98,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         return roleAssigneeMap;
     }
 
-    public TreeMap<DataFile, List<RoleAssignmentRow>> getFileMap() {
+    public Map<DataFile, List<RoleAssignmentRow>> getFileMap() {
         return fileMap;
     }
 
