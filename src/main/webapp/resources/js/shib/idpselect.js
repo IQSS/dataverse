@@ -507,7 +507,7 @@ TypeAheadControl.prototype.draw = function(setFocus) {
     // get access to it.
     //
     var myThis = this;
-   
+
     //
     // Set up the 'dropDown'
     //
@@ -515,7 +515,7 @@ TypeAheadControl.prototype.draw = function(setFocus) {
     this.dropDown.className = 'IdPSelectDropDown';
     this.dropDown.style.visibility = 'hidden';
 
-    this.dropDown.style.width = this.textBox.offsetWidth;
+    // this.dropDown.style.width = this.textBox.offsetWidth;
     this.dropDown.current = -1;
     // document.body.appendChild(this.dropDown);
     document.getElementById('idpSelectIdPEntryTile').appendChild(this.dropDown);
@@ -536,7 +536,7 @@ TypeAheadControl.prototype.draw = function(setFocus) {
         }
         myThis.select(target);
     };
-   
+
     this.dropDown.onmousedown = function(event) {
         if (-1 != myThis.dropDown.current) {
             myThis.textBox.value = myThis.results[myThis.dropDown.current][0];
@@ -589,7 +589,7 @@ TypeAheadControl.prototype.getPossible = function(name) {
     var ostr;
 
     name = name.toLowerCase();
-        
+
     while (outIndex <= this.maxResults && inIndex < this.elementList.length) {
         var hit = false;
         var thisName = this.getName(this.elementList[inIndex]);
@@ -599,7 +599,7 @@ TypeAheadControl.prototype.getPossible = function(name) {
         //
         if (thisName.toLowerCase().indexOf(name) != -1) {
             hit = true;
-        }  
+        }
         //
         // Check entityID
         //
@@ -609,24 +609,24 @@ TypeAheadControl.prototype.getPossible = function(name) {
 
         if (!hit) {
             var thisKeywords = this.getKeywords(this.elementList[inIndex]);
-            if (null != thisKeywords && 
+            if (null != thisKeywords &&
                 thisKeywords.toLowerCase().indexOf(name) != -1) {
                 hit = true;
             }
-        }  
-                
+        }
+
         if (hit) {
             possibles[outIndex] = [thisName, this.getEntityId(this.elementList[inIndex]), this.geticon(this.elementList[inIndex])];
             outIndex ++;
         }
-                
+
         inIndex ++;
     }
     //
     // reset the cursor to the top
     //
     this.dropDown.current = -1;
-    
+
     return possibles;
 };
 
@@ -646,7 +646,7 @@ TypeAheadControl.prototype.handleKeyUp = function(event) {
         this.handleChange();
     }
 };
- 
+
 TypeAheadControl.prototype.handleKeyDown = function(event) {
 
     var key = event.keyCode;
@@ -706,7 +706,7 @@ TypeAheadControl.prototype.handleChange = function() {
     var res = this.getPossible(val);
 
 
-    if (0 === val.length || 
+    if (0 === val.length ||
         0 === res.length ||
         (!this.alwaysShow && this.maxResults < res.length)) {
         this.hideDrop();
@@ -726,7 +726,7 @@ TypeAheadControl.prototype.handleChange = function() {
 };
 
 //
-// A lot of the stuff below comes from 
+// A lot of the stuff below comes from
 // http://www.webreference.com/programming/javascript/ncz/column2
 //
 // With thanks to Nicholas C Zakas
@@ -778,7 +778,7 @@ TypeAheadControl.prototype.getXY = function() {
     var node = this.textBox;
     var sumX = 0;
     var sumY = node.offsetHeight;
-   
+
     while(node.tagName != 'BODY') {
         sumX += node.offsetLeft;
         sumY += node.offsetTop;
@@ -864,7 +864,7 @@ TypeAheadControl.prototype.downSelect = function() {
 TypeAheadControl.prototype.upSelect = function() {
     if ((this.results.length > 0) &&
         (this.dropDown.current > 0)) {
-    
+
             //
             // turn off highlight
             //
@@ -930,7 +930,7 @@ function IdPSelectUI() {
     var idpListDiv;
     var idpSelect;
     var listButton;
-    
+
     //
     // local configuration
     //
@@ -949,7 +949,7 @@ function IdPSelectUI() {
     // *************************************
     // Public functions
     // *************************************
-    
+
     /**
        Draws the IdP Selector UI on the screen.  This is the main
        method for the IdPSelectUI class.
@@ -972,12 +972,12 @@ function IdPSelectUI() {
         stripHidden(parms.hiddenIdPs);
 
         idpData.sort(function(a,b) {return getLocalizedName(a).localeCompare(getLocalizedName(b));});
-        
+
         var idpSelector = buildIdPSelector();
         idpSelectDiv.appendChild(idpSelector);
         dropDownControl.draw(parms.setFocusTextBox);
     } ;
-    
+
     // *************************************
     // Private functions
     //
@@ -1169,7 +1169,7 @@ function IdPSelectUI() {
                 }
                 location.href = returnString + retString;
                 return false;
-            }            
+            }
         }
 
         //
@@ -1198,7 +1198,7 @@ function IdPSelectUI() {
        Strips the supllied IdP list from the idpData
     */
     var stripHidden = function(hiddenList) {
-    
+
         if (null == hiddenList || 0 == hiddenList.length) {
             return;
         }
@@ -1253,9 +1253,9 @@ function IdPSelectUI() {
 
 
     /**
-       Loads the data used by the IdP selection UI.  Data is loaded 
+       Loads the data used by the IdP selection UI.  Data is loaded
        from a JSON document fetched from the given url.
-      
+
        @param {Function} failureCallback A function called if the JSON
        document can not be loaded from the source.  This function will
        passed the {@link XMLHttpRequest} used to request the JSON data.
@@ -1302,7 +1302,7 @@ function IdPSelectUI() {
             xhr.overrideMimeType('application/json');
         }
         xhr.send(null);
-        
+
         if(xhr.status == 200){
             //
             // 200 means we got it OK from as web source
@@ -1321,7 +1321,7 @@ function IdPSelectUI() {
             idpData = JSON.parse(jsonData);
 
         }else{
-            fatal(getLocalizedMessage('fatal.loadFailed') + dataSource);
+            fatal(getLocalizedMessage('fatal.loadFailed') + dataSource + '.');
             return false;
         }
         return true;
@@ -1346,10 +1346,10 @@ function IdPSelectUI() {
 
     /**
        Returns a suitable image from the given IdP
-       
+
        @param (Object) The IdP
        @return Object) a DOM object suitable for insertion
-       
+
        TODO - rather more careful selection
     */
 
@@ -1366,9 +1366,9 @@ function IdPSelectUI() {
             }
             for (i in idp.Logos) {
                 if (idp.Logos[i].lang == language &&
-                    idp.Logos[i].width != null &&  
+                    idp.Logos[i].width != null &&
                     idp.Logos[i].width >= minWidth &&
-                    idp.Logos[i].height != null && 
+                    idp.Logos[i].height != null &&
                     idp.Logos[i].height >= minHeight) {
                     if (bestFit === null) {
                         bestFit = idp.Logos[i];
@@ -1397,7 +1397,7 @@ function IdPSelectUI() {
         if (null === bestFit) {
             bestFit = getBestFit(defaultLang);
         }
-               
+
 
         if (null === bestFit) {
             img.src = defaultLogo;
@@ -1424,7 +1424,7 @@ function IdPSelectUI() {
             w = (maxHeight/h) * w;
             w = maxHeight;
         }
-            
+
         img.setAttribute('width', w);
         img.setAttribute('height', h);
         return img;
@@ -1436,12 +1436,12 @@ function IdPSelectUI() {
     // GUI Manipulation
     //
     // *************************************
-    
+
     /**
        Builds the IdP selection UI.
 
        Three divs. PreferredIdPTime, EntryTile and DropdownTile
-      
+
        @return {Element} IdP selector UI
     */
     var buildIdPSelector = function(){
@@ -1464,7 +1464,7 @@ function IdPSelectUI() {
         </div>
 
       @param (Object) The IdP
-      
+
       @return (Element) preselector for the IdP
     */
 
@@ -1509,7 +1509,7 @@ function IdPSelectUI() {
     var buildTextDiv = function(parent, textId)
     {
         var div  = buildDiv(undefined, 'TextDiv');
-        var introTxt = document.createTextNode(getLocalizedMessage(textId)); 
+        var introTxt = document.createTextNode(getLocalizedMessage(textId));
         div.appendChild(introTxt);
         parent.appendChild(div);
     } ;
@@ -1536,7 +1536,7 @@ function IdPSelectUI() {
           <div> [see comprosePreferredIdPButton </div>
           [repeated]
        </div>
-      
+
        @return {Element} preferred IdP selection UI
     */
     var buildPreferredIdPTile = function(parentDiv) {
@@ -1548,7 +1548,7 @@ function IdPSelectUI() {
 
         var preferredIdPDIV = buildDiv('PreferredIdPTile');
 
-        buildTextDiv(preferredIdPDIV, 'idpPreferred.label');
+        // buildTextDiv(preferredIdPDIV, 'idpPreferred.label');
 
         for(var i = 0 ; i < maxPreferredIdPs && i < preferredIdPs.length; i++){
             if (preferredIdPs[i]) {
@@ -1595,8 +1595,8 @@ function IdPSelectUI() {
            <input type="text", id=prefix+"IdPSelectInput/> // select text box
            <input type="hidden" /> param to send
            <input type="submit" />
-           
-      
+
+
        @return {Element} IdP entry UI tile
     */
     var buildIdPEntryTile = function(parentDiv, preferredTile) {
@@ -1607,14 +1607,14 @@ function IdPSelectUI() {
             idpEntryDiv.style.display = 'none';
         }
 
-        if (preferredTile) {
-            buildTextDiv(idpEntryDiv, 'idpEntry.label');
-        } else {
+        //if (preferredTile) {
+            //buildTextDiv(idpEntryDiv, 'idpEntry.label');
+        //} else {
             buildTextDiv(idpEntryDiv, 'idpEntry.NoPreferred.label');
-        }
+        //}
 
         var form = buildSelectForm();
-      
+
         var textInput = document.createElement('input');
         form.appendChild(textInput);
 
@@ -1631,7 +1631,7 @@ function IdPSelectUI() {
         var button = buildContinueButton('Select');
         button.disabled = true;
         form.appendChild(button);
-        
+
         form.onsubmit = function () {
             //
             // Make sure we cannot ask for garbage
@@ -1653,18 +1653,18 @@ function IdPSelectUI() {
         a.appendChild(document.createTextNode(getLocalizedMessage('idpList.showList')));
         a.href = '#';
         setClass(a, 'DropDownToggle');
-        a.onclick = function() { 
+        a.onclick = function() {
             idpEntryDiv.style.display='none';
             setSelector(idpSelect, hidden.value);
-            idpListDiv.style.display='inline';
+            idpListDiv.style.display='block';
             listButton.focus();
         };
         idpEntryDiv.appendChild(a);
         buildHelpText(idpEntryDiv);
-                                              
+
         parentDiv.appendChild(idpEntryDiv);
     };
-    
+
     /**
        Builds the drop down list containing all the IdPs from which a
        user may choose.
@@ -1678,7 +1678,7 @@ function IdPSelectUI() {
           </select>
           <input type="submit"/>
        </div>
-        
+
        @return {Element} IdP drop down selection UI tile
     */
     var buildIdPDropDownListTile = function(parentDiv, preferredTile) {
@@ -1687,22 +1687,22 @@ function IdPSelectUI() {
             idpListDiv.style.display = 'none';
         }
 
-        if (preferredTile) {
-            buildTextDiv(idpListDiv, 'idpList.label');
-        } else {
+        //if (preferredTile) {
+            // buildTextDiv(idpListDiv, 'idpList.label');
+        //} else {
             buildTextDiv(idpListDiv, 'idpList.NoPreferred.label');
-        }
+        //}
 
         idpSelect = document.createElement('select');
         setID(idpSelect, 'Selector');
         idpSelect.name = returnIDParam;
         idpListDiv.appendChild(idpSelect);
-        
+
         var idpOption = buildSelectOption('-', getLocalizedMessage('idpList.defaultOptionLabel'));
         idpOption.selected = true;
 
         idpSelect.appendChild(idpOption);
-    
+
         var idp;
         for(var i=0; i<idpData.length; i++){
             idp = idpData[i];
@@ -1741,8 +1741,8 @@ function IdPSelectUI() {
         a.appendChild(document.createTextNode(getLocalizedMessage('idpList.showSearch')));
         a.href = '#';
         setClass(a, 'DropDownToggle');
-        a.onclick = function() { 
-            idpEntryDiv.style.display='inline';
+        a.onclick = function() {
+            idpEntryDiv.style.display='block';
             idpListDiv.style.display='none';
         };
         idpListDiv.appendChild(a);
@@ -1753,7 +1753,7 @@ function IdPSelectUI() {
 
     /**
        Builds the 'continue' button used to submit the IdP selection.
-      
+
        @return {Element} HTML button used to submit the IdP selection
     */
     var buildContinueButton = function(which) {
@@ -1774,12 +1774,12 @@ function IdPSelectUI() {
         aval.href = helpURL;
         aval.appendChild(document.createTextNode(getLocalizedMessage('helpText')));
         setClass(aval, 'HelpButton');
-        containerDiv.appendChild(aval);
+//        containerDiv.appendChild(aval);
     } ;
-    
+
     /**
        Creates a div element whose id attribute is set to the given ID.
-      
+
        @param {String} id ID for the created div element
        @param {String} [class] class of the created div element
        @return {Element} DOM 'div' element with an 'id' attribute
@@ -1795,10 +1795,10 @@ function IdPSelectUI() {
         }
         return div;
     };
-    
+
     /**
        Builds an HTML select option element
-      
+
        @param {String} value value of the option when selected
        @param {String} label displayed label of the option
     */
@@ -1811,12 +1811,12 @@ function IdPSelectUI() {
         option.appendChild(document.createTextNode(text));
         return option;
     };
-    
+
     /**
        Sets the attribute 'id' on the provided object
        We do it through this function so we have a single
        point where we can prepend a value
-       
+
        @param (Object) The [DOM] Object we want to set the attribute on
        @param (String) The Id we want to set
     */
@@ -1832,7 +1832,7 @@ function IdPSelectUI() {
     /**
        Returns the DOM object with the specified id.  We abstract
        through a function to allow us to prepend to the name
-       
+
        @param (String) the (unprepended) id we want
     */
     var locateElement = function(name) {
@@ -1844,7 +1844,7 @@ function IdPSelectUI() {
     //
     // GUI actions.  Note that there is an element of closure going on
     // here since these names are invisible outside this module.
-    // 
+    //
     //
     // *************************************
 
@@ -1883,7 +1883,7 @@ function IdPSelectUI() {
         if(!message){
             message = 'Missing message for ' + messageId;
         }
-        
+
         return message;
     };
 
@@ -1902,7 +1902,7 @@ function IdPSelectUI() {
     var geticon = function(idp) {
         var i;
 
-        if (null == idp.Logos) { 
+        if (null == idp.Logos) {
             return null;
         }
         for (i =0; i < idp.Logos.length; i++) {
@@ -1946,7 +1946,7 @@ function IdPSelectUI() {
 
         return s;
     }
-        
+
     var getLocalizedEntry = function(theArray){
         var i;
 
@@ -1976,7 +1976,7 @@ function IdPSelectUI() {
                 return theArray[i].value;
             }
         }
-        
+
         //
         // then by default language
         //
@@ -1989,7 +1989,7 @@ function IdPSelectUI() {
         return null;
     };
 
-    
+
     // *************************************
     // Private functions
     //
@@ -2018,7 +2018,7 @@ function IdPSelectUI() {
                 offset++;
             }
         }
-        
+
         //
         // And then the cookie based ones
         //
@@ -2060,10 +2060,10 @@ function IdPSelectUI() {
         userSelectedIdPs = newList;
         return;
     };
-    
+
     /**
        Gets the IdP previously selected by the user.
-      
+
        @return {Array} user selected IdPs identified by their entity ID
     */
     var retrieveUserSelectedIdPs = function(){
@@ -2080,7 +2080,7 @@ function IdPSelectUI() {
             var splitPoint = cookie.indexOf( '=' );
             var cookieName = cookie.substring(0, splitPoint);
             var cookieValues = cookie.substring(splitPoint+1);
-                                
+
             if ( '_saml_idp' == cookieName.replace(/^\s+|\s+$/g, '') ) {
                 cookieValues = cookieValues.replace(/^\s+|\s+$/g, '').split('+');
                 for(j=0; j< cookieValues.length; j++){
@@ -2097,10 +2097,10 @@ function IdPSelectUI() {
 
         return userSelectedIdPs;
     };
-    
+
     /**
        Saves the IdPs selected by the user.
-      
+
        @param {Array} idps idps selected by the user
     */
     var saveUserSelectedIdPs = function(idps){
@@ -2114,23 +2114,23 @@ function IdPSelectUI() {
                 cookieData.push(encodeURIComponent(base64Encode(idps[i])));
             }
         }
-        
+
         var expireDate = null;
         if(samlIdPCookieTTL){
             var now = new Date();
             cookieTTL = samlIdPCookieTTL * 24 * 60 * 60 * 1000;
             expireDate = new Date(now.getTime() + cookieTTL);
         }
-        
+
         document.cookie='_saml_idp' + '=' + cookieData.join('+') + '; path = /' +
             ((expireDate===null) ? '' : '; expires=' + expireDate.toUTCString());
     };
-    
+
     /**
        Base64 encodes the given string.
-      
+
        @param {String} input string to be encoded
-      
+
        @return {String} base64 encoded string
     */
     var base64Encode = function(input) {
@@ -2151,18 +2151,18 @@ function IdPSelectUI() {
             }
             output += base64chars.charAt(e1) +
                 base64chars.charAt(e2) +
-                base64chars.charAt(e3) + 
+                base64chars.charAt(e3) +
                 base64chars.charAt(e4);
         }
 
         return output;
     };
-    
+
     /**
        Base64 decodes the given string.
-      
+
        @param {String} input string to be decoded
-      
+
        @return {String} base64 decoded string
     */
     var base64Decode = function(input) {
@@ -2208,12 +2208,12 @@ function IdPSelectUI() {
     //
     // *************************************
     /**
-       
+
     */
 
     var fatal = function(message) {
-        alert('FATAL - DISCO UI:' + message);
-        var txt = document.createTextNode(message); 
+        alert('Internal Error - ' + message);
+        var txt = document.createTextNode(message);
         idpSelectDiv.appendChild(txt);
     };
 

@@ -15,6 +15,8 @@ echo  "- Google Analytics setting"
 curl -X PUT -d true "$SERVER/admin/settings/:ScrubMigrationData"
 echo  "- Enabling Shibboleth"
 curl -X PUT -d true http://localhost:8080/api/admin/settings/:ShibEnabled
+echo  "- Enabling TwoRavens"
+curl -s -X PUT -d true "$SERVER/admin/settings/:TwoRavensTabularView"
 echo  "- Enabling Geoconnect"
 curl -s -X PUT -d true "$SERVER/admin/settings/:GeoconnectCreateEditMaps"
 curl -s -X PUT -d true "$SERVER/admin/settings/:GeoconnectViewMaps"

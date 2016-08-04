@@ -1,5 +1,5 @@
 #!/bin/sh
 scripts/database/homebrew/run-reference_data.sql > /tmp/run-reference_data.sql
 cd scripts/api
-./setup-all.sh > /tmp/setup-all.sh.out 2> /tmp/setup-all.sh.err
+./setup-all.sh --insecure > /tmp/setup-all.sh.out 2> /tmp/setup-all.sh.err
 cd ../..

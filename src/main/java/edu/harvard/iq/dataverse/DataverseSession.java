@@ -39,7 +39,7 @@ public class DataverseSession implements Serializable{
         return user;
     }
 
-    public void setUser(AuthenticatedUser aUser) {
+    public void setUser(User aUser) {
         logSvc.log( 
                 new ActionLogRecord(ActionLogRecord.ActionType.SessionManagement,(aUser==null) ? "logout" : "login")
                     .setUserIdentifier((aUser!=null) ? aUser.getIdentifier() : (user!=null ? user.getIdentifier() : "") ));

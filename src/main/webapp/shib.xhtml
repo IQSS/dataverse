@@ -3,135 +3,140 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:p="http://primefaces.org/ui">
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:jsf="http://xmlns.jcp.org/jsf">
 
-  <h:head>
-  </h:head>
+    <h:head>
+    </h:head>
 
-  <h:body>
-    <f:metadata>
-      <f:viewAction action="#{Shib.init}"/>
-      <!--Only allow existing email to be specified while in development, to test account conversion.-->
-      <!--<f:viewParam name="exisitingEmail" value="#{Shib.existingEmail}"/>-->
-    </f:metadata>
-    <ui:composition template="/dataverse_template.xhtml">
-      <ui:param name="pageTitle" value="Shib"/>
-      <ui:param name="showDataverseHeader" value="false"/>
-      <ui:param name="showMessagePanel" value="#{true}"/>
-      <ui:define name="body">
-        <!--TODO: take out this debug stuff?-->
-        <ui:fragment rendered="#{Shib.debug}">
-          <tt style="background-color: lightgray">
-            <h:outputText value="State: #{Shib.state}"/>
-            <br/>
-            <h:outputText value="Existing email: #{Shib.existingEmail}"/>
-            <h:outputText value="Result: #{Shib.debugSummary}"/>
-          </tt>
-        </ui:fragment>
-          
-        <ui:fragment rendered="#{Shib.offerToCreateNewAccount}">
-            
-            <!-- THIS MSG SHOULD BE IN THE BACKING BEAN + BUNDLE, NOT HARDCODED HERE IN THE XHTML -->
-          <div class="alert alert-info">
-            <strong>#{bundle['shib.accountInformation']}</strong> - 
-            <ui:fragment rendered="#{Shib.offerToCreateNewAccount}">
-              #{bundle['shib.offerToCreateNewAccount']}
-            </ui:fragment>
-          </div>
-            <!-- END: THIS MSG SHOULD BE IN THE BACKING BEAN + BUNDLE, NOT HARDCODED HERE IN THE XHTML -->
-            
-            <h:form styleClass="form-horizontal">
-                <div class="form-group">
-                    <label for="dataverseUsername" class="col-sm-3 control-label">
-                        #{bundle.name}
-                    </label>
-                    <div class="col-sm-3">
-                        <p class="form-control-static">
-                            #{Shib.displayNameToPersist}
+    <h:body>
+        <f:metadata>
+            <f:viewAction action="#{Shib.init}"/>
+            <!--Only allow existing email to be specified while in development, to test account conversion.-->
+            <!--<f:viewParam name="exisitingEmail" value="#{Shib.existingEmail}"/>-->
+            <f:viewParam name="redirectPage" value="#{Shib.redirectPage}"/>
+        </f:metadata>
+        <ui:composition template="/dataverse_template.xhtml">
+            <ui:param name="pageTitle" value="Shib"/>
+            <ui:param name="showDataverseHeader" value="false"/>
+            <ui:param name="showMessagePanel" value="#{true}"/>
+            <ui:define name="body">
+
+                <ui:fragment rendered="#{Shib.offerToConvertExistingAccount}">
+                    <ui:fragment rendered="#{Shib.existingDisplayName != null}">
+                        <h2>#{bundle['shib.askToConvert']}</h2>
+                    </ui:fragment>
+                    <div class="alert alert-info messagePanel">
+                        <p>
+                            <span class="glyphicon glyphicon-info-sign"/>
+                            <h:outputFormat value=" #{bundle['shib.welcomeExistingUserMessage']}">
+                                <f:param value="#{Shib.friendlyNameForInstitution}"/>
+                            </h:outputFormat>
                         </p>
                     </div>
-                </div>
-                <div class="form-group">
-                    <label for="dataverseUsername" class="col-sm-3 control-label">
-                        #{bundle.email}
-                    </label>
-                    <div class="col-sm-3">
-                        <p class="form-control-static">
-                            #{Shib.emailToPersist}
+                    <div class="alert alert-danger messagePanel" jsf:rendered="#{Shib.passwordRejected}">
+                        <p>
+                            <span class="glyphicon glyphicon-exclamation-sign"/> <h:outputText value=" #{bundle['shib.passwordRejected']}" escape="false"/>
                         </p>
                     </div>
-                </div>
-                <div class="form-group">
-                    <label for="dataverseUsername" class="col-sm-3 control-label">
-                        #{bundle.affiliation}
-                    </label>
-                    <div class="col-sm-3">
-                        <p class="form-control-static">
-                            #{Shib.affiliationToDisplayAtConfirmation}
-                        </p>
+                </ui:fragment>
+
+                <ui:fragment rendered="#{Shib.offerToCreateNewAccount}">
+                    <!-- THIS MSG SHOULD BE IN THE BACKING BEAN + BUNDLE, NOT HARDCODED HERE IN THE XHTML -->
+                    <div class="alert alert-info messagePanel">
+                        <span class="glyphicon glyphicon-info-sign"/> <strong>#{bundle['shib.accountInformation']}</strong> – #{bundle['shib.offerToCreateNewAccount']}
                     </div>
-                </div>
-                
-                <ui:include src="termsofuse.xhtml"/>
-                
-                <div class="form-group">
-                    <h:commandButton styleClass="btn btn-default" value="#{bundle['shib.btn.acceptAndCreate']}" action="#{Shib.confirmAndCreateAccount()}"/>
-                </div>
-            </h:form>
-        </ui:fragment>
-        
-        <ui:fragment rendered="#{Shib.offerToConvertExistingAccount}">
-            <h:form>
-              <ui:fragment rendered="#{Shib.existingDisplayName != null}">
-                <h2>#{bundle['shib.welcome']} #{Shib.existingDisplayName}</h2>
-              </ui:fragment>
-              <div class="alert alert-info">
-                  <p>
-                      <span class="glyphicon glyphicon-warning-sign"/> 
-                      <h:outputFormat value="#{bundle['shib.welcomeExistingUserMessage']}">
-                          <f:param value="#{Shib.friendlyNameForInstitution}"/>
-                      </h:outputFormat>
-                  </p>
-              </div>
-                
-              <ui:fragment rendered="#{Shib.passwordRejected}">
-                <div class="alert alert-danger">
-                   #{bundle['shib.passwordRejected']}
-                </div>
-              </ui:fragment>
-              
-                <div class="form-horizontal">
-                    <div class="form-group">
-                        <label for="dataverseUsername" class="col-sm-3 control-label">
-                            #{bundle['shib.dataverseUsername']}
-                        </label>
-                        <div class="col-sm-9">
-                            <p class="form-control-static">
-                                #{Shib.builtinUsername}
-                            </p>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="dataverseUsername" class="col-sm-3 control-label">
-                            #{bundle['shib.currentDataversePassword']}
-                        </label>
-                        <div class="col-sm-3">
-                            <p:password id="builtinPassword" styleClass="form-control" value="#{Shib.builtinPassword}"/>
-                        </div>
-                    </div>
-                    
-                    <ui:include src="termsofuse.xhtml"/>
-                    
-                    <div class="form-group">
-                        <h:commandButton styleClass="btn btn-default" value="#{bundle['shib.btn.acceptAndConvert']}" action="#{Shib.confirmAndConvertAccount()}"/>
-                    </div>
-                    <div class="form-group">
-                        <a href="passwordreset.xhtml">#{bundle['login.forgot.text']}</a>
-                    </div>
-                </div>
-            </h:form>
-        </ui:fragment>
-      </ui:define>
-    </ui:composition>
-  </h:body>
+                    <!-- END: THIS MSG SHOULD BE IN THE BACKING BEAN + BUNDLE, NOT HARDCODED HERE IN THE XHTML -->
+                </ui:fragment>
+
+                <p:tabView id="accountInfoShib">
+                    <p:tab id="accountInfo" title="#{bundle['header.user.selectTab.accountInfo']}">
+                        <h:form styleClass="form-horizontal" rendered="#{Shib.offerToCreateNewAccount}">
+                            <div class="form-group">
+                                <label for="dataverseUsername" class="col-sm-3 control-label">
+                                    #{bundle.name}
+                                </label>
+                                <div class="col-sm-9">
+                                    <p class="form-control-static">
+                                        #{Shib.displayNameToPersist}
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="dataverseUsername" class="col-sm-3 control-label">
+                                    #{bundle.email}
+                                </label>
+                                <div class="col-sm-9">
+                                    <p class="form-control-static">
+                                        #{Shib.emailToPersist}
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="form-group" jsf:rendered="#{!empty Shib.affiliationToDisplayAtConfirmation}">
+                                <label for="dataverseUsername" class="col-sm-3 control-label">
+                                    #{bundle.affiliation}
+                                </label>
+                                <div class="col-sm-9">
+                                    <p class="form-control-static">
+                                        #{Shib.affiliationToDisplayAtConfirmation}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <ui:include src="termsofuse.xhtml"/>
+
+                            <div class="form-group">
+                                <div class="col-sm-12 button-block">
+                                    <h:commandButton styleClass="btn btn-default" value="#{bundle['shib.btn.createAccount']}" action="#{Shib.confirmAndCreateAccount()}"/>
+                                    <a href="/" class="btn btn-default">Cancel</a>
+                                </div>
+                            </div>
+                        </h:form>
+
+                        <h:form styleClass="form-horizontal" rendered="#{Shib.offerToConvertExistingAccount}">
+                            <div class="form-group">
+                                <label for="dataverseUsername" class="col-sm-3 control-label">
+                                    #{bundle['shib.dataverseUsername']}
+                                </label>
+                                <div class="col-sm-9">
+                                    <p class="form-control-static">
+                                        #{Shib.builtinUsername}
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="dataverseUsername" class="col-sm-3 control-label">
+                                    #{bundle['shib.currentDataversePassword']}
+                                </label>
+                                <div class="col-sm-3">
+                                    <p:password id="builtinPassword" styleClass="form-control" value="#{Shib.builtinPassword}"/>
+                                    <p class="help-block">
+                                        <a href="passwordreset.xhtml">#{bundle['login.forgot.text']}</a>
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="dataverseUsername" class="col-sm-3 control-label">
+                                    #{bundle.email}
+                                </label>
+                                <div class="col-sm-9">
+                                    <p class="form-control-static">
+                                        #{Shib.emailToPersist}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <ui:include src="termsofuse.xhtml"/>
+
+                            <div class="form-group">
+                                <div class="col-sm-12 button-block">
+                                    <h:commandButton styleClass="btn btn-default" value="#{bundle['shib.btn.convertAccount']}" action="#{Shib.confirmAndConvertAccount()}"/>
+                                </div>
+                            </div>
+                        </h:form>
+                    </p:tab>
+                </p:tabView>
+            </ui:define>
+        </ui:composition>
+    </h:body>
 </html>

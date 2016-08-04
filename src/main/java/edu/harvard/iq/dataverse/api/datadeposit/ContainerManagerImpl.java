@@ -7,8 +7,8 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
+import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetCommand;
@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.api.imports.ImportGenericServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.engine.command.impl.GetDraftDatasetVersionCommand;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import java.util.ArrayList;
 import java.util.List;
@@ -57,6 +58,8 @@ public class ContainerManagerImpl implements ContainerManager {
     EntityManager em;
     @EJB
     ImportGenericServiceBean importGenericService;
+    @EJB
+    PermissionServiceBean permissionService;
     @Inject
     SwordAuth swordAuth;
     @Inject
@@ -65,7 +68,7 @@ public class ContainerManagerImpl implements ContainerManager {
     @EJB
     SwordServiceBean swordService;
     private HttpServletRequest httpRequest;
-    
+
     @Override
     public DepositReceipt getEntry(String uri, Map<String, String> map, AuthCredentials authCredentials, SwordConfiguration swordConfiguration) throws SwordServerException, SwordError, SwordAuthException {
         AuthenticatedUser user = swordAuth.auth(authCredentials);
@@ -79,18 +82,17 @@ public class ContainerManagerImpl implements ContainerManager {
                 String globalId = urlManager.getTargetIdentifier();
                 Dataset dataset = datasetService.findByGlobalId(globalId);
                 if (dataset != null) {
-                    Dataverse dvThatOwnsDataset = dataset.getOwner();
-                    if (swordAuth.hasAccessToModifyDataverse(dvReq, dvThatOwnsDataset)) {
-                        ReceiptGenerator receiptGenerator = new ReceiptGenerator();
-                        String baseUrl = urlManager.getHostnamePlusBaseUrlPath(uri);
-                        DepositReceipt depositReceipt = receiptGenerator.createDatasetReceipt(baseUrl, dataset);
-                        if (depositReceipt != null) {
-                            return depositReceipt;
-                        } else {
-                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not generate deposit receipt.");
-                        }
-                    } else {
+                    if (!permissionService.isUserAllowedOn(user, new GetDraftDatasetVersionCommand(dvReq, dataset), dataset)) {
                         throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + user.getDisplayInfo().getTitle() + " is not authorized to retrieve entry for " + dataset.getGlobalId());
+                    }
+                    Dataverse dvThatOwnsDataset = dataset.getOwner();
+                    ReceiptGenerator receiptGenerator = new ReceiptGenerator();
+                    String baseUrl = urlManager.getHostnamePlusBaseUrlPath(uri);
+                    DepositReceipt depositReceipt = receiptGenerator.createDatasetReceipt(baseUrl, dataset);
+                    if (depositReceipt != null) {
+                        return depositReceipt;
+                    } else {
+                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not generate deposit receipt.");
                     }
                 } else {
                     throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not find dataset based on URL: " + uri);
@@ -129,33 +131,33 @@ public class ContainerManagerImpl implements ContainerManager {
                 if (dataset != null) {
                     SwordUtil.datasetLockCheck(dataset);
                     Dataverse dvThatOwnsDataset = dataset.getOwner();
-                    if (swordAuth.hasAccessToModifyDataverse(dvReq, dvThatOwnsDataset)) {
-                        DatasetVersion datasetVersion = dataset.getEditVersion();
-                        // erase all metadata before creating populating dataset version
-                        List<DatasetField> emptyDatasetFields = new ArrayList<>();
-                        datasetVersion.setDatasetFields(emptyDatasetFields);
-                        String foreignFormat = SwordUtil.DCTERMS;
-                        try {
-                            importGenericService.importXML(deposit.getSwordEntry().toString(), foreignFormat, datasetVersion);
-                        } catch (Exception ex) {
-                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "problem calling importXML: " + ex);
-                        }
-                        swordService.addDatasetContact(datasetVersion, user);
-                        swordService.addDatasetDepositor(datasetVersion, user);
-                        swordService.addDatasetSubjectIfMissing(datasetVersion);
-                        swordService.setDatasetLicenseAndTermsOfUse(datasetVersion, deposit.getSwordEntry());
-                        try {
-                            engineSvc.submit(new UpdateDatasetCommand(dataset, dvReq));
-                        } catch (CommandException ex) {
-                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "problem updating dataset: " + ex);
-                        }
-                        ReceiptGenerator receiptGenerator = new ReceiptGenerator();
-                        String baseUrl = urlManager.getHostnamePlusBaseUrlPath(uri);
-                        DepositReceipt depositReceipt = receiptGenerator.createDatasetReceipt(baseUrl, dataset);
-                        return depositReceipt;
-                    } else {
+                    UpdateDatasetCommand updateDatasetCommand = new UpdateDatasetCommand(dataset, dvReq);
+                    if (!permissionService.isUserAllowedOn(user, updateDatasetCommand, dataset)) {
                         throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + user.getDisplayInfo().getTitle() + " is not authorized to modify dataverse " + dvThatOwnsDataset.getAlias());
                     }
+                    DatasetVersion datasetVersion = dataset.getEditVersion();
+                    // erase all metadata before creating populating dataset version
+                    List<DatasetField> emptyDatasetFields = new ArrayList<>();
+                    datasetVersion.setDatasetFields(emptyDatasetFields);
+                    String foreignFormat = SwordUtil.DCTERMS;
+                    try {
+                        importGenericService.importXML(deposit.getSwordEntry().toString(), foreignFormat, datasetVersion);
+                    } catch (Exception ex) {
+                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "problem calling importXML: " + ex);
+                    }
+                    swordService.addDatasetContact(datasetVersion, user);
+                    swordService.addDatasetDepositor(datasetVersion, user);
+                    swordService.addDatasetSubjectIfMissing(datasetVersion);
+                    swordService.setDatasetLicenseAndTermsOfUse(datasetVersion, deposit.getSwordEntry());
+                    try {
+                        engineSvc.submit(updateDatasetCommand);
+                    } catch (CommandException ex) {
+                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "problem updating dataset: " + ex);
+                    }
+                    ReceiptGenerator receiptGenerator = new ReceiptGenerator();
+                    String baseUrl = urlManager.getHostnamePlusBaseUrlPath(uri);
+                    DepositReceipt depositReceipt = receiptGenerator.createDatasetReceipt(baseUrl, dataset);
+                    return depositReceipt;
                 } else {
                     throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not find dataset based on global id (" + globalId + ") in URL: " + uri);
                 }
@@ -209,17 +211,24 @@ public class ContainerManagerImpl implements ContainerManager {
                 if (globalId != null) {
                     Dataset dataset = dataset = datasetService.findByGlobalId(globalId);
                     if (dataset != null) {
-                        SwordUtil.datasetLockCheck(dataset);
                         Dataverse dvThatOwnsDataset = dataset.getOwner();
-                        if (!swordAuth.hasAccessToModifyDataverse(dvRequest, dvThatOwnsDataset)) {
+                        /**
+                         * We are checking if DeleteDatasetVersionCommand can be
+                         * called even though DeleteDatasetCommand can be called
+                         * when a dataset hasn't been published. They should be
+                         * equivalent in terms of a permission check.
+                         */
+                        DeleteDatasetVersionCommand deleteDatasetVersionCommand = new DeleteDatasetVersionCommand(dvRequest, dataset);
+                        if (!permissionService.isUserAllowedOn(user, deleteDatasetVersionCommand, dataset)) {
                             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + user.getDisplayInfo().getTitle() + " is not authorized to modify " + dvThatOwnsDataset.getAlias());
                         }
+                        SwordUtil.datasetLockCheck(dataset);
                         DatasetVersion.VersionState datasetVersionState = dataset.getLatestVersion().getVersionState();
                         if (dataset.isReleased()) {
                             if (datasetVersionState.equals(DatasetVersion.VersionState.DRAFT)) {
                                 logger.info("destroying working copy version of dataset " + dataset.getGlobalId());
                                 try {
-                                    engineSvc.submit(new DeleteDatasetVersionCommand(dvRequest, dataset));
+                                    engineSvc.submit(deleteDatasetVersionCommand);
                                 } catch (CommandException ex) {
                                     throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Can't delete dataset version for " + dataset.getGlobalId() + ": " + ex);
                                 }
@@ -233,6 +242,11 @@ public class ContainerManagerImpl implements ContainerManager {
                             } else {
                                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Operation not valid for dataset " + dataset.getGlobalId() + " in state " + datasetVersionState);
                             }
+                            /**
+                             * @todo Reformat else below properly so you can
+                             * just reformat the whole file in Netbeans or
+                             * similar.
+                             */
                         } else {
                             // dataset has never been published, this is just a sanity check (should always be draft)
                             if (datasetVersionState.equals(DatasetVersion.VersionState.DRAFT)) {
@@ -285,54 +299,52 @@ public class ContainerManagerImpl implements ContainerManager {
                     }
                     if (dataset != null) {
                         Dataverse dvThatOwnsDataset = dataset.getOwner();
-                        if (swordAuth.hasAccessToModifyDataverse(dvRequest, dvThatOwnsDataset)) {
-                            if (!deposit.isInProgress()) {
-                                /**
-                                 * We are considering a draft version of a study
-                                 * to be incomplete and are saying that sending
-                                 * isInProgress=false means the study version is
-                                 * complete and can be released.
-                                 *
-                                 * 9.2. Deposit Incomplete
-                                 *
-                                 * "If In-Progress is true, the server SHOULD
-                                 * expect the client to provide further updates
-                                 * to the item some undetermined time in the
-                                 * future. Details of how this is implemented is
-                                 * dependent on the server's purpose. For
-                                 * example, a repository system may hold items
-                                 * which are marked In-Progress in a workspace
-                                 * until such time as a client request indicates
-                                 * that the deposit is complete." --
-                                 * http://swordapp.github.io/SWORDv2-Profile/SWORDProfile.html#continueddeposit_incomplete
-                                 */
-                                if (!dataset.getLatestVersion().getVersionState().equals(DatasetVersion.VersionState.RELEASED)) {
-                                    Command<Dataset> cmd;
-                                    try {
-                                        boolean doMinorVersionBump = false;
-                                        // if dataset is unreleased, major version; if released, then check if can be minor
-                                        if (dataset.isReleased() && dataset.getLatestVersion().isMinorUpdate()) {
-                                            doMinorVersionBump = true;
-                                        }
-                                        cmd = new PublishDatasetCommand(dataset, dvRequest, doMinorVersionBump);
-                                        dataset = engineSvc.submit(cmd);
-                                    } catch (CommandException ex) {
-                                        String msg = "Unable to publish dataset: " + ex;
-                                        logger.severe(msg + ": " + ex.getMessage());
-                                        throw SwordUtil.throwRegularSwordErrorWithoutStackTrace(msg);
-                                    }
-                                    ReceiptGenerator receiptGenerator = new ReceiptGenerator();
-                                    String baseUrl = urlManager.getHostnamePlusBaseUrlPath(uri);
-                                    DepositReceipt depositReceipt = receiptGenerator.createDatasetReceipt(baseUrl, dataset);
-                                    return depositReceipt;
-                                } else {
-                                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Latest version of dataset " + globalId + " has already been published.");
+                        boolean doMinorVersionBump = false;
+                        // if dataset is unreleased, major version; if released, then check if can be minor
+                        if (dataset.isReleased() && dataset.getLatestVersion().isMinorUpdate()) {
+                            doMinorVersionBump = true;
+                        }
+                        PublishDatasetCommand publishDatasetCommand = new PublishDatasetCommand(dataset, dvRequest, doMinorVersionBump);
+                        if (!permissionService.isUserAllowedOn(user, publishDatasetCommand, dataset)) {
+                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + user.getDisplayInfo().getTitle() + " is not authorized to modify dataverse " + dvThatOwnsDataset.getAlias());
+                        }
+                        if (!deposit.isInProgress()) {
+                            /**
+                             * We are considering a draft version of a study to
+                             * be incomplete and are saying that sending
+                             * isInProgress=false means the study version is
+                             * complete and can be released.
+                             *
+                             * 9.2. Deposit Incomplete
+                             *
+                             * "If In-Progress is true, the server SHOULD expect
+                             * the client to provide further updates to the item
+                             * some undetermined time in the future. Details of
+                             * how this is implemented is dependent on the
+                             * server's purpose. For example, a repository
+                             * system may hold items which are marked
+                             * In-Progress in a workspace until such time as a
+                             * client request indicates that the deposit is
+                             * complete." --
+                             * http://swordapp.github.io/SWORDv2-Profile/SWORDProfile.html#continueddeposit_incomplete
+                             */
+                            if (!dataset.getLatestVersion().getVersionState().equals(DatasetVersion.VersionState.RELEASED)) {
+                                try {
+                                    dataset = engineSvc.submit(publishDatasetCommand);
+                                } catch (CommandException ex) {
+                                    String msg = "Unable to publish dataset: " + ex;
+                                    logger.severe(msg + ": " + ex.getMessage());
+                                    throw SwordUtil.throwRegularSwordErrorWithoutStackTrace(msg);
                                 }
+                                ReceiptGenerator receiptGenerator = new ReceiptGenerator();
+                                String baseUrl = urlManager.getHostnamePlusBaseUrlPath(uri);
+                                DepositReceipt depositReceipt = receiptGenerator.createDatasetReceipt(baseUrl, dataset);
+                                return depositReceipt;
                             } else {
-                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Pass 'In-Progress: false' header to publish a dataset.");
+                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Latest version of dataset " + globalId + " has already been published.");
                             }
                         } else {
-                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + user.getDisplayInfo().getTitle() + " is not authorized to modify dataverse " + dvThatOwnsDataset.getAlias());
+                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Pass 'In-Progress: false' header to publish a dataset.");
                         }
                     } else {
                         throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not find dataset using globalId " + globalId);
@@ -345,15 +357,15 @@ public class ContainerManagerImpl implements ContainerManager {
                 if (dvAlias != null) {
                     Dataverse dvToRelease = dataverseService.findByAlias(dvAlias);
                     if (dvToRelease != null) {
-                        if (!swordAuth.hasAccessToModifyDataverse(dvRequest, dvToRelease)) {
+                        PublishDataverseCommand publishDataverseCommand = new PublishDataverseCommand(dvRequest, dvToRelease);
+                        if (!permissionService.isUserAllowedOn(user, publishDataverseCommand, dvToRelease)) {
                             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + user.getDisplayInfo().getTitle() + " is not authorized to modify dataverse " + dvAlias);
                         }
                         if (deposit.isInProgress()) {
                             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unpublishing a dataverse is not supported.");
                         }
-                        PublishDataverseCommand cmd = new PublishDataverseCommand(dvRequest, dvToRelease);
                         try {
-                            engineSvc.submit(cmd);
+                            engineSvc.submit(publishDataverseCommand);
                             ReceiptGenerator receiptGenerator = new ReceiptGenerator();
                             String baseUrl = urlManager.getHostnamePlusBaseUrlPath(uri);
                             DepositReceipt depositReceipt = receiptGenerator.createDataverseReceipt(baseUrl, dvToRelease);
@@ -390,6 +402,5 @@ public class ContainerManagerImpl implements ContainerManager {
     public void setHttpRequest(HttpServletRequest httpRequest) {
         this.httpRequest = httpRequest;
     }
-    
-    
+
 }

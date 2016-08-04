@@ -30,7 +30,7 @@ public class IPv4Range extends IpAddressRange implements java.io.Serializable {
     @GeneratedValue
     Long id;
     
-    /** The most significant bits of {@code this} range's top addre, i.e the first two numbers of the IP address */
+    /** The most significant bits of {@code this} range's top address, i.e the first two numbers of the IP address */
     long topAsLong;
     
     /** The least significant bits, i.e the last tow numbers of the IP address */

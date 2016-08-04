@@ -66,10 +66,6 @@ public class SystemConfig {
      */
     private static final int defaultZipUploadFilesLimit = 1000; 
 
-    /**
-     * @todo Reconcile with getApplicationVersion on DataverseServiceBean.java
-     * which we'd like to move to this class.
-     */
     private static String appVersionString = null; 
     private static String buildNumberString = null; 
     
@@ -413,19 +409,6 @@ public class SystemConfig {
     public boolean isShibEnabled() {
         boolean safeDefaultIfKeyNotFound = false;
         return settingsService.isTrueForKey(SettingsServiceBean.Key.ShibEnabled, safeDefaultIfKeyNotFound);
-    }
-
-    public boolean isShibUseHeaders() {
-        boolean safeDefaultIfKeyNotFound = false;
-        return settingsService.isTrueForKey(SettingsServiceBean.Key.ShibUseHeaders, safeDefaultIfKeyNotFound);
-    }
-
-    // TODO: 
-    // remove these method! 
-    // pages should be using settingsWrapper.isTrueForKey(":Debug", false) instead. -- 4.2.1
-    public boolean isDebugEnabled() {
-        boolean safeDefaultIfKeyNotFound = false;
-        return settingsService.isTrueForKey(SettingsServiceBean.Key.Debug, safeDefaultIfKeyNotFound);
     }
 
     public boolean myDataDoesNotUsePermissionDocs() {

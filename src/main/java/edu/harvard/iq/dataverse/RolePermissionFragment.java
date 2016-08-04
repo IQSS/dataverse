@@ -34,6 +34,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -106,7 +107,7 @@ public class RolePermissionFragment implements java.io.Serializable {
     private RoleAssignee assignRoleRoleAssignee; // used if input accepts a RoleAssignee through a converter
     private Long assignRoleRoleId;
 
-    private final List<String> identifierList = new ArrayList();
+    private final List<String> identifierList = new ArrayList<>();
 
     public List<String> completeIdentifier(String query) {
         if (identifierList.isEmpty()) {
@@ -114,7 +115,7 @@ public class RolePermissionFragment implements java.io.Serializable {
                 identifierList.add(au.getIdentifier());
             }
         }
-        List<String> returnList = new ArrayList();
+        List<String> returnList = new ArrayList<>();
         for (String identifier : identifierList) {
             if (identifier.contains(query)) {
                 returnList.add(identifier);
@@ -123,7 +124,7 @@ public class RolePermissionFragment implements java.io.Serializable {
         return returnList;
     }
     
-    private final List<RoleAssignee> roleAssigneeList = new ArrayList();
+    private final List<RoleAssignee> roleAssigneeList = new ArrayList<>();
     
     public List<RoleAssignee> completeRoleAssignee(String query) {
         if (roleAssigneeList.isEmpty()) {
@@ -131,7 +132,7 @@ public class RolePermissionFragment implements java.io.Serializable {
                 roleAssigneeList.add(au);
             }
         }
-        List<RoleAssignee> returnList = new ArrayList();
+        List<RoleAssignee> returnList = new ArrayList<>();
         for (RoleAssignee ra : roleAssigneeList) {
             // @todo unsure if containsIgnore case will work for all locales
             if (StringUtils.containsIgnoreCase(ra.getDisplayInfo().getTitle(),query)) {
@@ -186,8 +187,9 @@ public class RolePermissionFragment implements java.io.Serializable {
 
     private void assignRole(RoleAssignee ra, DataverseRole r) {
         try {
-            commandEngine.submit(new AssignRoleCommand(ra, r, dvObject, dvRequestService.getDataverseRequest()));
-            JH.addMessage(FacesMessage.SEVERITY_INFO, "Role " + r.getName() + " assigned to " + ra.getDisplayInfo().getTitle() + " on " + dvObject.getDisplayName());
+            String privateUrlToken = null;
+            commandEngine.submit(new AssignRoleCommand(ra, r, dvObject, dvRequestService.getDataverseRequest(), privateUrlToken));
+            JH.addMessage(FacesMessage.SEVERITY_INFO, "Role " + r.getName() + " assigned to " + ra.getDisplayInfo().getTitle() + " on " + StringEscapeUtils.escapeHtml(dvObject.getDisplayName()));
         } catch (CommandException ex) {
             JH.addMessage(FacesMessage.SEVERITY_ERROR, "Can't assign role: " + ex.getMessage());
         }
@@ -279,7 +281,7 @@ public class RolePermissionFragment implements java.io.Serializable {
         if (dvObject != null) {
             return roleService.findByOwnerId(dvObject.getId());
         }
-        return new ArrayList();
+        return new ArrayList<>();
     }
 
     public void createNewRole(ActionEvent e) {

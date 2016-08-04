@@ -3,6 +3,8 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearch;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -29,6 +31,7 @@ import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
+import org.hibernate.validator.constraints.URL;
 
 /**
  *
@@ -55,7 +58,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 public class Dataverse extends DvObjectContainer {
 
     public enum DataverseType {
-        RESEARCHERS, RESEARCH_PROJECTS, JOURNALS, ORGANIZATIONS_INSTITUTIONS, TEACHING_COURSES, UNCATEGORIZED
+        RESEARCHERS, RESEARCH_PROJECTS, JOURNALS, ORGANIZATIONS_INSTITUTIONS, TEACHING_COURSES, UNCATEGORIZED, LABORATORY, RESEARCH_GROUP
     };
     
     private static final long serialVersionUID = 1L;
@@ -81,7 +84,7 @@ public class Dataverse extends DvObjectContainer {
     @NotNull(message = "Please select a category for your dataverse.")
     @Column( nullable = false )
     private DataverseType dataverseType;
-    
+       
     /**
      * When {@code true}, users are not granted permissions the got for parent
      * dataverses.
@@ -114,7 +117,11 @@ public class Dataverse extends DvObjectContainer {
             case ORGANIZATIONS_INSTITUTIONS:
                 return "Organization or Institution";            
             case TEACHING_COURSES:
-                return "Teaching Course";            
+                return "Teaching Course";
+            case LABORATORY:
+               return "Laboratory";
+            case RESEARCH_GROUP:
+               return "Research Group";
             case UNCATEGORIZED:
                 return uncategorizedString;
             default:
@@ -172,6 +179,12 @@ public class Dataverse extends DvObjectContainer {
     @OneToMany(mappedBy = "dataverse",cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST}, orphanRemoval=true)
     @OrderBy("displayOrder")
     private List<DataverseFacet> dataverseFacets = new ArrayList();
+    
+    @ManyToMany(cascade = {CascadeType.MERGE})
+    @JoinTable(name = "dataverse_citationDatasetFieldTypes",
+    joinColumns = @JoinColumn(name = "dataverse_id"),
+    inverseJoinColumns = @JoinColumn(name = "citationdatasetfieldtype_id"))
+    private List<DatasetFieldType> citationDatasetFieldTypes = new ArrayList();
     
     @ManyToMany
     @JoinTable(name = "dataversesubjects",
@@ -524,6 +537,16 @@ public class Dataverse extends DvObjectContainer {
         this.metadataBlocks = metadataBlocks;
     }
 
+    public List<DatasetFieldType> getCitationDatasetFieldTypes() {
+        return citationDatasetFieldTypes;
+    }
+
+    public void setCitationDatasetFieldTypes(List<DatasetFieldType> citationDatasetFieldTypes) {
+        this.citationDatasetFieldTypes = citationDatasetFieldTypes;
+    }
+    
+    
+
     public List<DataverseFacet> getDataverseFacets() {
         return getDataverseFacets(false);
     }
@@ -552,8 +575,28 @@ public class Dataverse extends DvObjectContainer {
         return dataverseContacts;
     }
     
+    /**
+     * Get the email addresses of the dataverse contacts as a comma-separated
+     * concatenation.
+     * @return a comma-separated concatenation of email addresses, or the empty
+     *  string if there are no contacts.
+     * @author bencomp
+     */
     public String getContactEmails() {
-        return "";
+        if (dataverseContacts != null && !dataverseContacts.isEmpty()) {
+            StringBuilder buf = new StringBuilder();
+            Iterator<DataverseContact> it = dataverseContacts.iterator();
+            while (it.hasNext()) {
+                DataverseContact con = it.next();
+                buf.append(con.getContactEmail());
+                if (it.hasNext()) {
+                    buf.append(",");
+                }
+            }
+            return buf.toString();
+        } else {
+            return "";
+        }
     }
 
     public void setDataverseContacts(List<DataverseContact> dataverseContacts) {
@@ -619,13 +662,24 @@ public class Dataverse extends DvObjectContainer {
 
     public void addRole(DataverseRole role) {
         role.setOwner(this);
+        if ( roles == null ) {
+            roles = new HashSet<>();
+        }
         roles.add(role);
     }
-
+    
+    /**
+     * Note: to add a role, use {@link #addRole(edu.harvard.iq.dataverse.authorization.DataverseRole)},
+     * do not call this method and try to add directly to the list. 
+     * @return the roles defined in this Dataverse.
+     */
     public Set<DataverseRole> getRoles() {
+        if ( roles == null ) {
+            roles = new HashSet<>();
+        }
         return roles;
     }
-
+    
     public List<Dataverse> getOwners() {
         List owners = new ArrayList();
         if (getOwner() != null) {
@@ -675,5 +729,6 @@ public class Dataverse extends DvObjectContainer {
     public void setPermissionRoot(boolean permissionRoot) {
         this.permissionRoot = permissionRoot;
     }
+       
 
 }

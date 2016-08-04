@@ -613,6 +613,20 @@ public class DataFile extends DvObject implements Comparable {
         return getLatestFileMetadata().getLabel();
     }
     
+    /**
+     * Check if the Geospatial Tag has been assigned to this file
+     * @return 
+     */
+    public boolean hasGeospatialTag(){
+        if (this.dataFileTags == null){
+            return false;
+        }
+        for (DataFileTag tag : this.dataFileTags){
+            if (tag.isGeospatialTag()){
+                return true;
+            }
+        }
+        return false;
 
     @Override
     public int compareTo(Object o) {

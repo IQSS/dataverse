@@ -3,6 +3,7 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:o="http://omnifaces.org/ui"      
       xmlns:p="http://primefaces.org/ui">
 
     <h:head>
@@ -16,8 +17,20 @@
             <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:define name="body">
                 <div class="alert alert-danger" role="alert" style="margin-top:3em;">
-                    <h:outputText value="#{bundle['error.403.message']}" escape="false"/>
-                </div>
+                    <o:form useRequestURI="true">
+                        <h:outputText value="#{bundle['error.403.message']} " escape="false"/>
+                        <h:outputFormat value="#{bundle['error.support.message']}" escape="false">
+                            <o:param>
+                                <p:commandLink value="#{bundle['contact.support']}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
+                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
+                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
+                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
+                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
+                                </p:commandLink>                                
+                            </o:param>
+                        </h:outputFormat>   
+                    </o:form>               
+                </div>               
             </ui:define>
         </ui:composition>
     </h:body>

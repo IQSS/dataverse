@@ -14,9 +14,9 @@ function IdPSelectUIParms() {
     // Approaching via the Discovery Protocol for example
     //this.defaultReturn = "https://example.org/Shibboleth.sso/DS?SAMLDS=1&target=https://example.org/secure";
 
-    this.defaultReturn = window.location.protocol + "//" + window.location.hostname + "/Shibboleth.sso/Login?SAMLDS=1&target=" + window.location.protocol + "//" + window.location.hostname + "/shib.xhtml";
+    this.defaultReturn = window.location.protocol + "//" + window.location.hostname + "/Shibboleth.sso/Login?SAMLDS=1&target=" + window.location.protocol + "//" + window.location.hostname + "/shib.xhtml" + shibRedirectPage;
     this.defaultReturnIDParam = null;
-    this.helpURL = '/guides/user/account.html';
+    this.helpURL = 'http://guides.dataverse.org/en/latest/user/account.html';
     this.ie6Hack = null;             // An array of structures to disable when drawing the pull down (needed to 
     // handle the ie6 z axis problem
     this.insertAtDiv = 'idpSelect';  // The div where we will insert the data
@@ -48,7 +48,7 @@ function IdPSelectUIParms() {
             'fatal.badProtocol': "Return request must start with https:// or http://",
             'idpPreferred.label': 'Use a previous selection:',
             'idpEntry.label': 'Or enter your institution\'s name.',
-            'idpEntry.NoPreferred.label': 'Enter your institution\'s name.',
+            'idpEntry.NoPreferred.label': 'Enter your institution\'s name and click "Continue" to log in via your institution\'s authentication system.',
             'idpList.label': 'Or select your institution from the list below.',
             'idpList.NoPreferred.label': 'Select your institution and click "Continue" to log in via your institution\'s authentication system.',
             'idpList.defaultOptionLabel': 'Please select your institution...',

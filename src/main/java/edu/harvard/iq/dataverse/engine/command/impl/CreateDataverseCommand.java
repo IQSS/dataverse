@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -52,7 +53,7 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
 
         if (created.getOwner() == null) {
             if (ctxt.dataverses().isRootDataverseExists()) {
-                throw new CommandException("Root Dataverse already exists. Cannot create another one", this);
+                throw new IllegalCommandException("Root Dataverse already exists. Cannot create another one", this);
             }
         }
 
@@ -61,7 +62,12 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
         }
         
         if (created.getCreator() == null) {
-			created.setCreator((AuthenticatedUser) getRequest().getUser());
+            final User user = getRequest().getUser();
+            if ( user.isAuthenticated() ) {
+                created.setCreator((AuthenticatedUser) user);
+            } else {
+                throw new IllegalCommandException("Guest users cannot create a Dataverse.", this);
+            }
         }
 
         if (created.getDataverseType() == null) {
@@ -86,7 +92,8 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
 
         // Find the built in admin role (currently by alias)
         DataverseRole adminRole = ctxt.roles().findBuiltinRoleByAlias(DataverseRole.ADMIN);
-        ctxt.roles().save(new RoleAssignment(adminRole, getRequest().getUser(), managedDv));
+        String privateUrlToken = null;
+        ctxt.roles().save(new RoleAssignment(adminRole, getRequest().getUser(), managedDv, privateUrlToken));
 
         managedDv.setPermissionModificationTime(new Timestamp(new Date().getTime()));
         managedDv = ctxt.dataverses().save(managedDv);
@@ -96,12 +103,11 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
             ctxt.facets().deleteFacetsFor(managedDv);
             int i = 0;
             for (DatasetFieldType df : facetList) {
-                ctxt.facets().create(i++, df.getId(), managedDv.getId());
+                ctxt.facets().create(i++, df, managedDv);
             }
         }
 
         if (inputLevelList != null) {
-
             ctxt.fieldTypeInputLevels().deleteFacetsFor(managedDv);
             for (DataverseFieldTypeInputLevel obj : inputLevelList) {
                 obj.setDataverse(managedDv);

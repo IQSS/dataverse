@@ -44,7 +44,7 @@ public class PermissionsWrapper implements java.io.Serializable {
      *
      * @param commandName
      */
-    private boolean canIssueCommand(DvObject dvo, Class<? extends Command> command) {
+    public boolean canIssueCommand(DvObject dvo, Class<? extends Command> command) {
         if ((dvo==null) || (dvo.getId()==null)){
             return false;
         }
@@ -238,5 +238,18 @@ public class PermissionsWrapper implements java.io.Serializable {
     }
     
     
+    
+    
+    
+    // todo: move any calls to this to call NavigationWrapper   
+    @Inject NavigationWrapper navigationWrapper;
+    
+    public String notAuthorized(){
+        return navigationWrapper.notAuthorized();
+    }
+    
+    public String notFound() {
+        return navigationWrapper.notFound();
+    }
 
 }
