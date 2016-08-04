@@ -22,6 +22,7 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddressRange;
 import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroup;
 import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderRow;
@@ -38,11 +39,18 @@ import java.util.List;
 import java.util.TreeSet;
 
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
-import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Deque;
+import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collector;
+import static java.util.stream.Collectors.toList;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
@@ -118,17 +126,36 @@ public class JsonPrinter {
     }
     
 	public static JsonObjectBuilder json( IpGroup grp ) {
-        JsonArrayBuilder rangeBld = Json.createArrayBuilder();
-        for ( IpAddressRange r :grp.getRanges() ) {
+        // collect single addresses
+        List<String> singles = grp.getRanges().stream().filter( IpAddressRange::isSingleAddress )
+                                .map( IpAddressRange::getBottom )
+                                .map( IpAddress::toString ).collect(toList());
+        List<List<String>> ranges = grp.getRanges().stream().filter( rng -> !rng.isSingleAddress() )
+                                .map( rng -> Arrays.asList(rng.getBottom().toString(), rng.getTop().toString()) )
+                                .collect(toList());
+        for ( IpAddressRange r : grp.getRanges() ) {
+            JsonArrayBuilder rangeBld = Json.createArrayBuilder();
             rangeBld.add( Json.createArrayBuilder().add(r.getBottom().toString()).add(r.getTop().toString()) );
         }
-        return jsonObjectBuilder()
+
+        JsonObjectBuilder bld = jsonObjectBuilder()
                 .add("alias", grp.getPersistedGroupAlias() )
                 .add("identifier", grp.getIdentifier())
                 .add("id", grp.getId() )
                 .add("name", grp.getDisplayName() )
-                .add("description", grp.getDescription() )
-                .add("ranges", rangeBld);
+                .add("description", grp.getDescription() );
+        
+        if ( ! singles.isEmpty() ) {
+            bld.add("addresses", asJsonArray(singles) );
+        }
+        
+        if ( ! ranges.isEmpty() ) {
+            JsonArrayBuilder rangesBld = Json.createArrayBuilder();
+            ranges.forEach( r -> rangesBld.add( Json.createArrayBuilder().add(r.get(0)).add(r.get(1))) );
+            bld.add("ranges", rangesBld );
+        }
+        
+        return bld;
     }
 
         public static JsonObjectBuilder json(ShibGroup grp) {
@@ -382,8 +409,7 @@ public class JsonPrinter {
 				.add("label", fmd.getLabel())
 				.add("version", fmd.getVersion())
 				.add("datasetVersionId", fmd.getDatasetVersion().getId())
-				.add("datafile", json(fmd.getDataFile()))
-				;
+				.add("datafile", json(fmd.getDataFile()));
 	}
 	
 	public static JsonObjectBuilder json( DataFile df ) {
@@ -521,5 +547,40 @@ public class JsonPrinter {
             bld.add( json(j) );
         }
         return bld;
+    }
+    
+    public static Collector<String, JsonArrayBuilder, JsonArrayBuilder> toJsonArray() {
+        return new Collector<String, JsonArrayBuilder, JsonArrayBuilder>() {
+            
+            @Override
+            public Supplier<JsonArrayBuilder> supplier() {
+                return ()->Json.createArrayBuilder();
+            }
+
+            @Override
+            public BiConsumer<JsonArrayBuilder, String> accumulator() {
+                return (JsonArrayBuilder b, String s ) -> b.add(s);
+            }
+
+            @Override
+            public BinaryOperator<JsonArrayBuilder> combiner() {
+                return (jab1, jab2) -> {
+                    JsonArrayBuilder retVal = Json.createArrayBuilder();
+                    jab1.build().forEach( retVal::add );
+                    jab2.build().forEach( retVal::add );
+                    return retVal;
+                };
+            }
+
+            @Override
+            public Function<JsonArrayBuilder, JsonArrayBuilder> finisher() {
+                return Function.identity();
+            }
+
+            @Override
+            public Set<Collector.Characteristics> characteristics() {
+                return EnumSet.of(Collector.Characteristics.IDENTITY_FINISH);
+            }
+        };
     }
 }
