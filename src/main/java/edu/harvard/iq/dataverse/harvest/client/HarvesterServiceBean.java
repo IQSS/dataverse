@@ -40,8 +40,10 @@ import org.xml.sax.SAXException;
 
 import com.lyncode.xoai.model.oaipmh.Header;
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.api.imports.ImportServiceBean;
+import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
@@ -49,6 +51,11 @@ import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetCommand;
 import edu.harvard.iq.dataverse.harvest.client.oai.OaiHandler;
 import edu.harvard.iq.dataverse.harvest.client.oai.OaiHandlerException;
+
+import edu.harvard.iq.dataverse.harvest.client.datafiletransfer.DataFileDownload;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
@@ -75,6 +82,8 @@ public class HarvesterServiceBean {
     HarvestingClientServiceBean harvestingClientService;
     @EJB
     ImportServiceBean importService;
+    @EJB
+    DataFileServiceBean fileService;
     @EJB
     EjbDataverseEngine engineService;
     
@@ -182,6 +191,94 @@ public class HarvesterServiceBean {
                 hdLogger.log(Level.INFO, "COMPLETED HARVEST, server=" + harvestingClientConfig.getArchiveUrl() + ", metadataPrefix=" + harvestingClientConfig.getMetadataPrefix());
                 hdLogger.log(Level.INFO, "Datasets created/updated: " + harvestedDatasetIds.size() + ", datasets deleted: " + deletedIdentifiers.size() + ", datasets failed: " + failedIdentifiers.size());
 
+                
+                 
+                //Adding code to Download File
+                /*
+                @author Anuj
+                */
+               // List<String> listOfDataFileURL =  new ArrayList<String>();
+               // List<String> listOfDataFileName =  new ArrayList<String>();
+               // HashMap<String, String> fileToLocationMapping = new HashMap<String, String>();
+               
+               //hdLogger.log(Level.INFO, "Fetching the http data file links.");
+               
+               // DataFileHTTPTransfer dfht = new DataFileHTTPTransfer();
+               // listOfDataFileURL = dfht.getListOfDataFileURL();
+               // listOfDataFileName = dfht.getListOfDataFileName();
+               
+               //hdLogger.log(Level.INFO, "Fetching of data file links completed.");
+               
+               String dirName = "/tmp";
+               
+               hdLogger.log(Level.INFO, "Downloading data files at "+dirName);
+               
+               long startTime = System.currentTimeMillis();
+              
+                for (Long datasetId : harvestedDatasetIds) {
+                    Dataset harvestedDataset = datasetService.find(datasetId);
+
+                    for (DataFile harvestedFile : harvestedDataset.getFiles()) {
+
+                        String fileUrl = harvestedFile.getStorageIdentifier();
+                        String fileName = harvestedFile.getFileMetadata().getLabel();
+                        logger.info("fileUrl: "+fileUrl);
+                        logger.info("fileName: "+fileName);
+
+                        //for (int index = 0; index < listOfDataFileURL.size(); index++) {
+                          //  new DataFileDownload(listOfDataFileURL.get(index),
+                          //          dirName + "/" + listOfDataFileName.get(index));
+                          
+                        new DataFileDownload(fileUrl, dirName + "/" + fileName);
+                            
+                        fileService.generateStorageIdentifier(harvestedFile);
+                           
+                        DataFileIO dataAccess = harvestedFile.getAccessObject();
+                        Path tempFilePath = Paths.get(dirName, fileName);
+                        
+                        logger.info("Path: "+tempFilePath);
+                        
+                        try {
+                            if (harvestedDataset.getFileSystemDirectory() != null
+                                    && !Files.exists(harvestedDataset.getFileSystemDirectory())) {
+                                /* Note that "createDirectories()" must be used - not 
+                     * "createDirectory()", to make sure all the parent 
+                     * directories that may not yet exist are created as well. 
+                                 */
+
+                                Files.createDirectories(harvestedDataset.getFileSystemDirectory());
+                            }
+                        } catch (IOException dirEx) {
+                            logger.severe("Failed to create study directory " + 
+                                    harvestedDataset.getFileSystemDirectory().toString());
+                            return;
+                            // TODO:
+                            // Decide how we are communicating failure information back to 
+                            // the page, and what the page should be doing to communicate
+                            // it to the user - if anything. 
+                            // -- L.A. 
+                        }
+                        
+                        // Copies the file from tmp location to the permanent 
+                        // directory 
+                        dataAccess.copyPath(tempFilePath);
+                        em.merge(harvestedFile);
+                        
+                        // Deleting the Data File from the /tmp directory.
+                        if(!harvestedFile.getStorageIdentifier().startsWith("http://"))
+                        Files.delete(tempFilePath);
+                        
+                            
+                    }
+                }
+               
+               long endTime = System.currentTimeMillis();
+               long totalTime = ((endTime - startTime) / 60000);
+               
+               hdLogger.log(Level.INFO,"Total time required to download data files: "+totalTime+" minutes");
+               hdLogger.log(Level.INFO, "Completed downloading of data files at "+dirName);
+               
+               
                 // now index all the datasets we have harvested - created, modified or deleted:
                 /* (TODO: may not be needed at all. In Dataverse4, we may be able to get away with the normal 
                     reindexing after every import. See the rest of the comments about batch indexing throughout 

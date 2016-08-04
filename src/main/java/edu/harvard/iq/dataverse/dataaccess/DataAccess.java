@@ -34,7 +34,7 @@ public class DataAccess {
 
     }
 
-    public static String DEFAULT_STORAGE_DRIVER_IDENTIFIER = "swift";
+    public static String DEFAULT_STORAGE_DRIVER_IDENTIFIER = "file";
     
     // The getDataFileIO() methods initialize DataFileIO objects for
     // datafiles that are already saved using one of the supported Dataverse
