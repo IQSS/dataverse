@@ -3,15 +3,8 @@ package edu.harvard.iq.dataverse.authorization.providers.builtin;
 import edu.harvard.iq.dataverse.ValidateEmail;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import java.io.Serializable;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.Table;
+import java.sql.Timestamp;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
@@ -62,6 +55,9 @@ public class BuiltinUser implements Serializable {
     private String encryptedPassword;
     private String affiliation;
     private String position;
+
+    @Column()
+    private Timestamp passwordModificationTime;
     
     public void updateEncryptedPassword( String encryptedPassword, int algorithmVersion ) {
         setEncryptedPassword(encryptedPassword);
@@ -148,6 +144,14 @@ public class BuiltinUser implements Serializable {
         return new AuthenticatedUserDisplayInfo(getFirstName(), getLastName(), getEmail(), getAffiliation(), getPosition() );
     }
 
+    public Timestamp getPasswordModificationTime() {
+        return passwordModificationTime;
+    }
+
+    public void setPasswordModificationTime(Timestamp expireTime) {
+        this.passwordModificationTime = expireTime;
+    }
+
     @Override
     public int hashCode() {
         int hash = 0;
@@ -176,5 +180,4 @@ public class BuiltinUser implements Serializable {
     public void setPasswordEncryptionVersion(int passwordEncryptionVersion) {
         this.passwordEncryptionVersion = passwordEncryptionVersion;
     }
-    
 }

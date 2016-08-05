@@ -454,3 +454,76 @@ This setting is experimental per :doc:`/installation/shibboleth`.
 ++++++++++++
 
 Set to false to disallow local accounts to be created if you are using :doc:`shibboleth` but not for production use until https://github.com/IQSS/dataverse/issues/2838 has been fixed.
+
+:PVDictionaries
++++++++++++++++
+
+Password policy setting for builtin user accounts: set a comma separated list of dictionaries containing words that cannot be used as a user password.
+
+``curl -X PUT -d "/opt/bad_passwords.txt" http://localhost:8080/api/admin/settings/:PVDictionaries``
+
+This setting can be overruled with VM argument pv.dictionaries
+
+:PVExpirationDays
++++++++++++++++++
+
+Password policy setting for builtin user accounts: the number of days after an unchanged password expires given it's size is under :PVValidatorExpirationMaxLength.
+
+``curl -X PUT -d 365 http://localhost:8080/api/admin/settings/:PVExpirationDays``
+
+This setting can be overruled with VM argument pv.expirationdays
+
+Recommended setting: 365 with :PVValidatorExpirationMaxLength set.
+
+:PVValidatorExpirationMaxLength
++++++++++++++++++++++++++++++++
+
+Password policy setting for builtin user accounts: passwords with a size under :PVValidatorExpirationMaxLength will expire after :PVExpirationDays days.
+
+``curl -X PUT -d 10 http://localhost:8080/api/admin/settings/:PVValidatorExpirationMaxLength``
+
+This setting can be overruled with VM argument pv.expirationmaxlength
+
+Recommended setting: 10 with :PVExpirationDays set.
+
+:PVGoodStrength
++++++++++++++++
+
+Password policy setting for builtin user accounts: passwords equal or larger than the :PVGoodStrength setting are always valid.
+
+``curl -X PUT -d 20 http://localhost:8080/api/admin/settings/:PVGoodStrength``
+
+This setting can be overruled with VM argument pv.goodstrength
+
+Recommended setting: 20.
+
+:PVMinLength
+++++++++++++
+
+Password policy setting for builtin user accounts: a passwords minimum valid size.
+
+``curl -X PUT -d 8 http://localhost:8080/api/admin/settings/:PVMinLength``
+
+This setting can be overruled with VM argument pv.minlength
+
+Recommended setting: 10. If set lower, it is advisable to set the :PVExpirationDays and :PVValidatorExpirationMaxLength default values.
+
+:PVMaxLength
+++++++++++++
+
+Password policy setting for builtin user accounts: a passwords maximum valid size.
+
+``curl -X PUT -d 0 http://localhost:8080/api/admin/settings/:PVMaxLength``
+
+This setting can be overruled with VM argument pv.maxlength
+
+:PVNumberOfCharacteristics
+++++++++++++++++++++++++++
+
+Password policy setting for builtin user accounts: the number indicates how many of the four character rules should be part of a password. The character rules are: use of a capital, lowercase, number and special character.
+
+``curl -X PUT -d 3 http://localhost:8080/api/admin/settings/:PVNumberOfCharacteristics``
+
+This setting can be overruled with VM argument pv.numberofcharacteristics
+
+Recommended setting: 3.

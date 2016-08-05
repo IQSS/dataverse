@@ -6,6 +6,9 @@ import edu.harvard.iq.dataverse.passwordreset.PasswordResetData;
 import edu.harvard.iq.dataverse.passwordreset.PasswordResetException;
 import edu.harvard.iq.dataverse.passwordreset.PasswordResetInitResponse;
 import edu.harvard.iq.dataverse.passwordreset.PasswordResetServiceBean;
+
+import java.sql.Timestamp;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -54,6 +57,10 @@ public class BuiltinUserServiceBean {
          * whitespace in an email address is a problem?
          */
         dataverseUser.setEmail(dataverseUser.getEmail().trim());
+
+        Calendar c = Calendar.getInstance();
+        dataverseUser.setPasswordModificationTime(new Timestamp(c.getTimeInMillis()));
+
         /**
          * We throw a proper IllegalArgumentException here because otherwise
          * from the API you get a 500 response and "Can't save user: null".

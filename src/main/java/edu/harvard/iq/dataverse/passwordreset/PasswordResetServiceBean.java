@@ -1,10 +1,13 @@
 package edu.harvard.iq.dataverse.passwordreset;
 
 import edu.harvard.iq.dataverse.MailServiceBean;
+import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.PasswordEncryption;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -28,6 +31,9 @@ public class PasswordResetServiceBean {
 
     @EJB
     MailServiceBean mailService;
+
+    @EJB
+    PasswordValidatorServiceBean passwordValidatorService;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -193,35 +199,14 @@ public class PasswordResetServiceBean {
             logger.info("No token provided... won't be able to delete it. Let the user change the password though.");
         }
 
-        /**
-         * @todo move these rules deeper into the system
-         */
-        int minPasswordLength = 6;
-        boolean forceNumber = true;
-        boolean forceSpecialChar = false;
-        boolean forceCapitalLetter = false;
-        int maxPasswordLength = 255;
-        /**
-         *
-         * @todo move the business rules for password complexity (once we've
-         * defined them in https://github.com/IQSS/dataverse/issues/694 ) deeper
-         * into the system and have all calls to
-         * DataverseUser.setEncryptedPassword call into the password complexity
-         * validataion method.
-         *
-         * @todo maybe look into why with the combination of minimum 8
-         * characters, max 255 characters, all other rules disabled that the
-         * password "12345678" is not considered valid.
-         */
-        PasswordValidator validator = PasswordValidator.buildValidator(forceSpecialChar, forceCapitalLetter, forceNumber, minPasswordLength, maxPasswordLength);
-        boolean passwordIsComplexEnough = validator.validatePassword(newPassword);
-        if (!passwordIsComplexEnough) {
-            messageSummary = messageSummaryFail;
-            messageDetail = "Password is not complex enough. The password must have at least one letter, one number and be at least " + minPasswordLength + " characters in length.";
+
+        List<String> errors = passwordValidatorService.validate(newPassword);
+        if (!errors.isEmpty()) {
+            messageSummary = PasswordValidatorServiceBean.parseMessages(errors);
             logger.info(messageDetail);
-            return new PasswordChangeAttemptResponse(false, messageSummary, messageDetail);
+            return new PasswordChangeAttemptResponse(false, messageSummary, messageSummaryFail);
         }
-        
+
         String newHashedPass = PasswordEncryption.get().encrypt(newPassword);
         int latestVersionNumber = PasswordEncryption.getLatestVersionNumber();
         user.updateEncryptedPassword(newHashedPass, latestVersionNumber);

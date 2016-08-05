@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationRequest;
 import edu.harvard.iq.dataverse.authorization.AuthenticationResponse;
 import edu.harvard.iq.dataverse.authorization.CredentialsAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.UserLister;
+import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationFailedException;
 import edu.harvard.iq.dataverse.authorization.groups.GroupProvider;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import java.util.Arrays;
@@ -16,6 +17,10 @@ import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.passwordreset.PasswordResetException;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
+
+import javax.ejb.EJB;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -33,8 +38,11 @@ public class BuiltinAuthenticationProvider implements CredentialsAuthenticationP
       
     final BuiltinUserServiceBean bean;
 
-    public BuiltinAuthenticationProvider( BuiltinUserServiceBean aBean ) {
-        bean = aBean;
+    private PasswordValidatorServiceBean passwordValidatorService;
+
+    public BuiltinAuthenticationProvider( BuiltinUserServiceBean aBean, PasswordValidatorServiceBean passwordValidatorService  ) {
+        this.bean = aBean;
+        this.passwordValidatorService = passwordValidatorService;
         KEY_USERNAME_OR_EMAIL = BundleUtil.getStringFromBundle("login.builtin.credential.usernameOrEmail");
         KEY_PASSWORD = BundleUtil.getStringFromBundle("login.builtin.credential.password");
         CREDENTIALS_LIST = Arrays.asList(new Credential(KEY_USERNAME_OR_EMAIL), new Credential(KEY_PASSWORD, true));
@@ -75,9 +83,19 @@ public class BuiltinAuthenticationProvider implements CredentialsAuthenticationP
             } catch (PasswordResetException ex) {
                 return AuthenticationResponse.makeError("Error while attempting to upgrade password", ex);
             }
-        } else {
-            return AuthenticationResponse.makeSuccess(u.getUserName(), u.getDisplayInfo());
         }
+
+        final List<String> errors = passwordValidatorService.validate(authReq.getCredential("Password"), u.getPasswordModificationTime());
+        if (!errors.isEmpty()) {
+            try {
+                String passwordResetUrl = bean.requestPasswordUpgradeLink(u);
+                return AuthenticationResponse.makeBreakout(u.getUserName(), passwordResetUrl);
+            } catch (PasswordResetException ex) {
+                return AuthenticationResponse.makeError("Error while attempting to upgrade password", ex);
+            }
+        }
+
+        return AuthenticationResponse.makeSuccess(u.getUserName(), u.getDisplayInfo());
    }
 
     @Override
@@ -113,5 +131,9 @@ public class BuiltinAuthenticationProvider implements CredentialsAuthenticationP
     @Override
     public Set findGlobalGroups() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    public void setPasswordValidatorService(PasswordValidatorServiceBean passwordValidatorService) {
+        this.passwordValidatorService = passwordValidatorService;
     }
 }
