@@ -43,36 +43,22 @@ public class UpdateDatasetTargetURLCommand extends AbstractVoidCommand  {
                     this, Collections.singleton(Permission.EditDataset), target);
         }
 
-        if (target.getProtocol().equals("doi")) {
-            String nonNullDefaultIfKeyNotFound = "";
-            String doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
-            IdServiceBean idServiceBean = IdServiceBean.getBean(target.getProtocol(), doiProvider, ctxt);
-            HashMap<String, String> metadata = idServiceBean.getMetadataFromDatasetForTargetURL(target);
-            try {
-                String doiRetString = idServiceBean.modifyIdentifier(target, metadata);
-                if (doiRetString != null && doiRetString.contains(target.getIdentifier())) {
-                    target.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
-                    ctxt.em().merge(target);
-                    ctxt.em().flush();
-                } else {
-                    //do nothing - we'll know it failed because the global id create time won't have been updated.
-                }
-            }catch (Exception e) {
-                //do nothing - idem and the problem has been logged
+        String nonNullDefaultIfKeyNotFound = "";
+        String doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
+        IdServiceBean idServiceBean = IdServiceBean.getBean(target.getProtocol(), doiProvider, ctxt);
+        HashMap<String, String> metadata = idServiceBean.getMetadataFromDatasetForTargetURL(target);
+        try {
+            String doiRetString = idServiceBean.modifyIdentifier(target, metadata);
+            if (doiRetString != null && doiRetString.contains(target.getIdentifier())) {
+                target.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
+                ctxt.em().merge(target);
+                ctxt.em().flush();
+            } else {
+                //do nothing - we'll know it failed because the global id create time won't have been updated.
             }
-        } else if ("hdl".equals(target.getProtocol())) {
-            // TODO: 
-            // handlenet registration still needs diagnostics! 
-            // -- L.A. 4.0
-            ctxt.handleNet().reRegisterHandle(target);
-            target.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
-            ctxt.em().merge(target);
-            ctxt.em().flush();
-        } else {
-            // TODO why not throw an IllegalCommandException?
-            throw new UnsupportedOperationException("UpdateDatasetTargetURLCommand only supported for doi protocol."); //To change body of generated methods, choose Tools | Templates.  
+        }catch (Exception e) {
+            //do nothing - idem and the problem has been logged
         }
-                          
     }
     
 }

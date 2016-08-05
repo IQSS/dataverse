@@ -12,7 +12,6 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.ucsb.nceas.ezid.EZIDException;
 import edu.ucsb.nceas.ezid.EZIDService;
 import edu.ucsb.nceas.ezid.EZIDServiceRequest;
-import org.apache.commons.lang.NotImplementedException;
 
 import java.util.*;
 import java.util.logging.Level;
@@ -61,8 +60,19 @@ public class DOIEZIdServiceBean implements IdServiceBean {
     }
 
     @Override
-    public boolean alreadyExists(Dataset dataset) {
-        throw new NotImplementedException();
+    public boolean alreadyExists(Dataset dataset) throws Exception {
+        try {
+            HashMap<String, String> result = ezidService.getMetadata(getIdentifierFromDataset(dataset));
+            return result != null && !result.isEmpty();
+            // TODO just check for HTTP status code 200/404, sadly the status code is swept under the carpet
+        } catch (EZIDException e ){
+            logger.log(Level.WARNING, "alreadyExists failed");
+            logger.log(Level.WARNING, "String {0}", e.toString());
+            logger.log(Level.WARNING, "localized message {0}", e.getLocalizedMessage());
+            logger.log(Level.WARNING, "cause", e.getCause());
+            logger.log(Level.WARNING, "message {0}", e.getMessage());
+            throw e;
+        }
     }
 
     @Override

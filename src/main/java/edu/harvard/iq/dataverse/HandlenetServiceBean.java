@@ -27,7 +27,6 @@ import java.io.FileInputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.*;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -37,9 +36,7 @@ import java.security.PrivateKey;
 import net.handle.hdllib.AbstractMessage;
 import net.handle.hdllib.AbstractResponse;
 import net.handle.hdllib.AdminRecord;
-import net.handle.hdllib.ClientSessionTracker;
 import net.handle.hdllib.CreateHandleRequest;
-import net.handle.hdllib.DeleteHandleRequest;
 import net.handle.hdllib.Encoder;
 import net.handle.hdllib.HandleException;
 import net.handle.hdllib.HandleResolver;
@@ -47,8 +44,8 @@ import net.handle.hdllib.HandleValue;
 import net.handle.hdllib.ModifyValueRequest;
 import net.handle.hdllib.PublicKeyAuthenticationInfo;
 import net.handle.hdllib.ResolutionRequest;
-import net.handle.hdllib.ResolutionResponse;
 import net.handle.hdllib.Util;
+import org.apache.commons.lang.NotImplementedException;
 
 /**
  *
@@ -60,7 +57,7 @@ import net.handle.hdllib.Util;
  * the modifyRegistration datasets API sub-command.
  */
 @Stateless
-public class HandlenetServiceBean {
+public class HandlenetServiceBean  implements IdServiceBean {
     @EJB
     DataverseServiceBean dataverseService;
     @EJB 
@@ -298,6 +295,62 @@ public class HandlenetServiceBean {
     
     private String getHandleAuthority(String handlePrefix) {
         return "0.NA/" + handlePrefix;
+    }
+
+    @Override
+    public boolean alreadyExists(Dataset dataset) throws Exception {
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public String createIdentifier(Dataset dataset) throws Exception  {
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public HashMap getIdentifierMetadata(Dataset dataset)  {
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public HashMap lookupMetadataFromIdentifier(String protocol, String authority, String separator, String identifier)  {
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public String getIdentifierForLookup(String protocol, String authority, String separator, String identifier)  {
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public String modifyIdentifier(Dataset dataset, HashMap<String, String> metadata) throws Exception  {
+        reRegisterHandle(dataset);
+        return getIdentifierFromDataset(dataset);
+    }
+
+    @Override
+    public void deleteIdentifier(Dataset datasetIn) throws Exception  {
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public HashMap getMetadataFromStudyForCreateIndicator(Dataset datasetIn)  {
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public HashMap getMetadataFromDatasetForTargetURL(Dataset datasetIn)  {
+        return new HashMap<String, String>();
+    }
+
+    @Override
+    public String getIdentifierFromDataset(Dataset dataset)  {
+        return dataset.getGlobalId();
+    }
+
+    @Override
+    public boolean publicizeIdentifier(Dataset studyIn)  {
+        throw new NotImplementedException();
     }
 }
 

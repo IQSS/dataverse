@@ -7,7 +7,7 @@ import java.util.*;
 /** TODO Property for Dataset and CommandContext. Apply to DOIDataCiteServiceBean and DOIEZIdServiceBean. Refactor PidServiceBean to match this interface? */
 public interface IdServiceBean {
 
-    public boolean alreadyExists(Dataset dataset);
+    boolean alreadyExists(Dataset dataset) throws Exception;
 
     String createIdentifier(Dataset dataset) throws Exception;
 
@@ -31,12 +31,15 @@ public interface IdServiceBean {
 
     static IdServiceBean getBean(String protocol, String doiProvider, CommandContext ctxt) {
         // TODO rather put the configured bean in the ctxt
-        if (protocol.equals("doi"))
+        if ("hdl".equals(protocol))
+            return (ctxt.handleNet());
+        else if (protocol.equals("doi"))
             if (doiProvider.equals("EZID"))
                 return ctxt.doiEZId();
             else if (doiProvider.equals("DataCite"))
                 return ctxt.doiDataCite();
-        return null;
+            else throw new UnsupportedOperationException("Unknown doiProvider: " + doiProvider);
+        else throw new UnsupportedOperationException("Unknown protocol: " + protocol);
     }
 
     static String generateYear()
