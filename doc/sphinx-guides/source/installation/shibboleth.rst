@@ -177,7 +177,7 @@ Rather than or in addition to specifying individual Identity Provider(s) you may
 
 The details of how to register with an identity federation are out of scope for this document, but a good starting point may be this list of identity federations across the world: http://www.protectnetwork.org/support/faq/identity-federations
 
-One of the benefits of using ``shibd`` is that it can be configured to periodically poll your identify federation for updates as new Identity Providers (IdPs) join the federation you've registered with. For the InCommon federation, the following page describes how to download and verify signed InCommon metadata every hour: https://spaces.internet2.edu/display/InCFederation/Shibboleth+Metadata+Config#ShibbolethMetadataConfig-ConfiguretheShibbolethSP . You can also see an example of as ``maxRefreshDelay="3600"`` in the commented out section of the ``shibboleth2.xml`` file above.
+One of the benefits of using ``shibd`` is that it can be configured to periodically poll your identity federation for updates as new Identity Providers (IdPs) join the federation you've registered with. For the InCommon federation, the following page describes how to download and verify signed InCommon metadata every hour: https://spaces.internet2.edu/display/InCFederation/Shibboleth+Metadata+Config#ShibbolethMetadataConfig-ConfiguretheShibbolethSP . You can also see an example of this as ``maxRefreshDelay="3600"`` in the commented out section of the ``shibboleth2.xml`` file above.
 
 Once you've joined a federation the list of IdPs in the dropdown can be quite long! If you're curious how many are in the list you could try something like this: ``curl https://dataverse.example.edu/Shibboleth.sso/DiscoFeed | jq '.[].entityID' | wc -l``
 
