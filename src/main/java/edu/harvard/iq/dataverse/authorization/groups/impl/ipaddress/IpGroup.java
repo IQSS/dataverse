@@ -36,23 +36,20 @@ public class IpGroup extends PersistedGlobalGroup {
     @Transient
     private IpGroupProvider provider;
     
-    public IpGroup() {
-        
-    }
+    public IpGroup() {}
     
     public IpGroup(IpGroupProvider provider) {
         this.provider = provider;
     }
     
     @Override
-    public boolean contains(DataverseRequest rq) {
+    public boolean contains( DataverseRequest rq ) {
         IpAddress addr = rq.getSourceAddress();
         for ( IpAddressRange r : ((addr instanceof IPv4Address) ? ipv4Ranges : ipv6Ranges) ) {
            Boolean containment =  r.contains(addr);
            if ( (containment != null) && containment ) {
                return true;
            }
-               
         }
         return false;
     }
@@ -149,4 +146,10 @@ public class IpGroup extends PersistedGlobalGroup {
     public int hashCode() {
         return getPersistedGroupAlias().hashCode();
     }
+    
+    @Override
+    public String toString() {
+        return "[IpGroup alias:" + getPersistedGroupAlias() +" id:" + getId() + " ranges:" + getIpv4Ranges() + "," + getIpv6Ranges() + "]";
+    }
+    
 }

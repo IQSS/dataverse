@@ -27,12 +27,22 @@ public class DataverseRequestServiceBean {
     
     private DataverseRequest dataverseRequest;
     
+    @Inject
+    private HttpServletRequest request;
+    
     @PostConstruct
     protected void setup() {
         dataverseRequest = new DataverseRequest(dataverseSessionSvc.getUser(), getRequest());
     }
     
     private HttpServletRequest getRequest() {
+        
+        if ( request != null ) {
+            return request;
+        } else {
+            Logger.getLogger(DataverseRequestServiceBean.class.getName()).log(Level.WARNING, "request not injected");
+        }
+        
         if ( httpRequest != null ) {
             return httpRequest;
         } else {
