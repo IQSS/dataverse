@@ -113,7 +113,7 @@ public class TestApi extends AbstractApiBean {
             return notFound("Can't find a role assignee with identifier " + idtf);
         }
         Set<ExplicitGroup> groups = explicitGroups.findGroups(roleAssignee);
+        logger.log(Level.INFO, "Groups for {0}: {1}", new Object[]{roleAssignee, groups});
         return okResponse( json(groups) );
-        
     }
 }

@@ -121,15 +121,29 @@ public class ExplicitGroupServiceBean {
     public Set<ExplicitGroup> findGroups( RoleAssignee ra ) {
         if ( ra instanceof AuthenticatedUser ) {
             return provider.updateProvider(
-                    new HashSet<>(em.createNamedQuery("ExplicitGroup.findByAuthenticatedUserIdentifier")
-                    .setParameter("authenticatedUserIdentifier", ra.getIdentifier())
-                    .getResultList()
+                    new HashSet<ExplicitGroup>(
+                            em.createNamedQuery("ExplicitGroup.findByAuthenticatedUserIdentifier", ExplicitGroup.class)
+                              .setParameter("authenticatedUserIdentifier", ra.getIdentifier().substring(1))
+                              .getResultList()
                   ));
+        } else if ( ra instanceof ExplicitGroup ) {
+            return provider.updateProvider(
+                    new HashSet<ExplicitGroup>(
+                            em.createNamedQuery("ExplicitGroup.findByContainedExplicitGroupId", ExplicitGroup.class)
+                              .setParameter("containedExplicitGroupId", ((ExplicitGroup) ra).getId())
+                              .getResultList()
+                  ));
+            
         } else {
-            throw new IllegalArgumentException("At this time, only authenticated users are supported");
+            return provider.updateProvider(
+                    new HashSet<ExplicitGroup>(
+                            em.createNamedQuery("ExplicitGroup.findByRoleAssgineeIdentifier", ExplicitGroup.class)
+                              .setParameter("roleAssigneeIdentifier", ra.getIdentifier())
+                              .getResultList()
+                  ));
         }
     }
-    
+
     /**
      * Finds all the groups {@code ra} belongs to in the context of {@code o}. In effect,
      * collects all the groups {@code ra} belongs to and that are defined at {@code o}

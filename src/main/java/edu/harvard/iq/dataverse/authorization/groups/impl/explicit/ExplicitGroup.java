@@ -59,7 +59,13 @@ import org.hibernate.validator.constraints.NotBlank;
                       +"WHERE eg.owner.id=:ownerId AND ra=:raIdtf"),
     @NamedQuery( name="ExplicitGroup.findByAuthenticatedUserIdentifier",
                  query="SELECT eg FROM ExplicitGroup eg JOIN eg.containedAuthenticatedUsers au "
-                     + "WHERE au.userIdentifier=:authenticatedUserIdentifier")
+                     + "WHERE au.userIdentifier=:authenticatedUserIdentifier"),
+    @NamedQuery( name="ExplicitGroup.findByRoleAssgineeIdentifier",
+                 query="SELECT eg FROM ExplicitGroup eg JOIN eg.containedRoleAssignees cra "
+                     + "WHERE cra=:roleAssigneeIdentifier"),
+    @NamedQuery( name="ExplicitGroup.findByContainedExplicitGroupId",
+                 query="SELECT eg FROM ExplicitGroup eg join eg.containedExplicitGroups ceg "
+                      +"WHERE ceg.id=:containedExplicitGroupId")
         
 })
 @Entity

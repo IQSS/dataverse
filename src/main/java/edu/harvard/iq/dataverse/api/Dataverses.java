@@ -599,6 +599,7 @@ public class Dataverses extends AbstractApiBean {
     
     @POST
     @Path("{identifier}/groups/{aliasInOwner}/roleAssignees") 
+    @Consumes("application/json")
     public Response addRoleAssingees(List<String> roleAssingeeIdentifiers, 
                                 @PathParam("identifier") String dvIdtf,
                                 @PathParam("aliasInOwner") String grpAliasInOwner)

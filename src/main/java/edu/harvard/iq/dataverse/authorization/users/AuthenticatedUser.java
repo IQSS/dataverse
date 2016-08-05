@@ -242,4 +242,9 @@ public class AuthenticatedUser implements User, Serializable {
         this.shibIdentityProvider = shibIdentityProvider;
     }
     
+    @Override
+    public String toString() {
+        return "[AuthenticatedUser identifier:" + getIdentifier() + "]";
+    }
+    
 }

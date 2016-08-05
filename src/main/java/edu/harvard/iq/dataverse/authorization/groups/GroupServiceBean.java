@@ -12,7 +12,6 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupsServ
 import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -127,7 +126,7 @@ public class GroupServiceBean {
             try {
                 identifierWithoutAtSign = identifier.substring(1);
             } catch (IndexOutOfBoundsException ex) {
-                logger.info("Couldn't trim first character (@ sign) from identifier: " + identifier);
+                logger.log(Level.INFO, "Couldn''t trim first character (@ sign) from identifier: {0}", identifier);
             }
         }
         if (identifierWithoutAtSign != null) {
@@ -136,7 +135,7 @@ public class GroupServiceBean {
                 if (explicitGroup != null) {
                     groups.add(explicitGroup);
                 } else {
-                    logger.info("Couldn't find group based on alias " + groupAlias);
+                    logger.log(Level.INFO, "Couldn''t find group based on alias {0}", groupAlias);
                 }
             });
         }
@@ -155,22 +154,6 @@ public class GroupServiceBean {
         return groups;
     }
     
-    /**
-     * This method wraps two existing methods to honor IP groups (see bug at
-     * https://github.com/IQSS/dataverse/issues/1513 ) but the plan is to
-     * introduce a better "get *all* groups given a DataverseRequest" method as
-     * part of https://github.com/IQSS/dataverse/pull/3103
-     */
-    public Set<Group> groupsFor(DataverseRequest dataverseRequest) {
-        Set<Group> groups = groupsFor(dataverseRequest, null);
-        User user = dataverseRequest.getUser();
-        if (user instanceof AuthenticatedUser) {
-            AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
-            groups.addAll(groupsFor(authenticatedUser));
-        }
-        return groups;
-    }
-
     /**
      * Given a set of groups and a DV object, return all the groups that are
      * reachable from the set. Effectively, if the initial set has an {@link ExplicitGroup},

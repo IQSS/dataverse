@@ -1,0 +1,3 @@
+#!/bin/bash
+# add-user dv group user api-token
+curl -H "Content-type:application/json" -X POST -d"[$3]" localhost:8080/api/dataverses/$1/groups/$2/roleAssignees?key=$4
