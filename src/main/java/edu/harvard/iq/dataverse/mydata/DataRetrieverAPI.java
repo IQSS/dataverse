@@ -232,7 +232,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
         SolrQueryResponse solrQueryResponseForCounts;
         try {
             solrQueryResponseForCounts = searchService.search(
-                    searchUser, //
+                    createDataverseRequest(searchUser),
                     null, // subtree, default it to Dataverse for now
                     "*",  //    Get everything--always
                     filterQueries,//filterQueries,
@@ -397,7 +397,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
 
         try {
                 solrQueryResponse = searchService.search(
-                        searchUser, // 
+                        createDataverseRequest(searchUser),
                         null, // subtree, default it to Dataverse for now
                         filterParams.getSearchTerm(),  //"*", //
                         filterQueries,//filterQueries,

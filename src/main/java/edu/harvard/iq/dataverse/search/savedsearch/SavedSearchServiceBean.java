@@ -206,7 +206,7 @@ public class SavedSearchServiceBean {
         boolean dataRelatedToMe = false;
         int numResultsPerPage = Integer.MAX_VALUE;
         SolrQueryResponse solrQueryResponse = searchService.search(
-                savedSearch.getCreator(),
+                new DataverseRequest(savedSearch.getCreator(), getHttpServletRequest()),
                 savedSearch.getDefinitionPoint(),
                 savedSearch.getQuery(),
                 savedSearch.getFilterQueriesAsStrings(),

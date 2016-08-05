@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupsServ
 import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -135,6 +136,22 @@ public class GroupServiceBean {
                     logger.info("Couldn't find group based on alias " + groupAlias);
                 }
             });
+        }
+        return groups;
+    }
+
+    /**
+     * This method wraps two existing methods to honor IP groups (see bug at
+     * https://github.com/IQSS/dataverse/issues/1513 ) but the plan is to
+     * introduce a better "get *all* groups given a DataverseRequest" method as
+     * part of https://github.com/IQSS/dataverse/pull/3103
+     */
+    public Set<Group> groupsFor(DataverseRequest dataverseRequest) {
+        Set<Group> groups = groupsFor(dataverseRequest, null);
+        User user = dataverseRequest.getUser();
+        if (user instanceof AuthenticatedUser) {
+            AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
+            groups.addAll(groupsFor(authenticatedUser));
         }
         return groups;
     }
