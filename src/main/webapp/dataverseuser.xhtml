@@ -316,14 +316,12 @@
                                     </label>
                                     <div class="col-sm-9">
                                         <p class="form-control-static">#{DataverseUserPage.currentUser.email}
-                                            <div jsf:rendered="#{DataverseUserPage.emailNotValid}">
-                                                    Not Verified
-                                            </div>
-                                            <div jsf:rendered="#{DataverseUserPage.emailIsValid}">
-                                                    Verified
-                                            </div>
-                                            <div jsf:rendered="#{DataverseUserPage.emailGrandfathered}">
-                                            </div>
+                                            <ui:fragment rendered="#{!DataverseUserPage.emailIsVerified}">
+                                                <span class="glyphicon glyphicon-ban-circle"></span> Not Verified
+                                            </ui:fragment>
+                                            <ui:fragment rendered="#{DataverseUserPage.emailIsVerified}">
+                                                <span class="glyphicon glyphicon-ok"></span> Verified
+                                            </ui:fragment>
                                         </p>
                                         <div jsf:rendered="#{DataverseUserPage.showVerifyEmailButton()}">
                                             <h:commandButton styleClass="btn btn-default" value="#{bundle['confirmEmail.submitRequest']}" action="#{DataverseUserPage.sendConfirmEmail()}"/>

@@ -652,20 +652,12 @@ public class BuiltinUserPage implements java.io.Serializable {
         return false;
     }
 
-    public boolean isEmailIsValid() {
+    public boolean isEmailIsVerified() {
         ConfirmEmailUtil confirmEmailUtil = new ConfirmEmailUtil();
         if (currentUser.getEmailConfirmed() != null && currentUser.getEmailConfirmed() != confirmEmailUtil.getGrandfatheredTime()) {
             return true;
         } else {
             return false;
-        }
-    }
-
-    public boolean isEmailNotValid() {
-        if (currentUser.getEmailConfirmed() == null || isEmailIsValid() == false) {
-            return true;
-        } else {
-        return false;
         }
     }
 
