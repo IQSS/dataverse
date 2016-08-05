@@ -382,7 +382,7 @@ public class BuiltinUserPage implements java.io.Serializable {
         }
 
         final List<String> errors = passwordValidatorService.validate(password);
-        if (errors != null) {
+        if (!errors.isEmpty()) {
             String messageDetail = PasswordValidatorServiceBean.parseMessages(errors);
             ((UIInput) toValidate).setValid(false);
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Password Error", messageDetail);

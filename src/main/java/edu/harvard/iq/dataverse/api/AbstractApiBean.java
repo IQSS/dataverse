@@ -33,6 +33,8 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.validation.BeanValidationServiceBean;
+import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
+
 import java.io.StringReader;
 import java.net.URI;
 import java.util.concurrent.Callable;
@@ -174,6 +176,9 @@ public abstract class AbstractApiBean {
 
     @EJB
     protected PrivateUrlServiceBean privateUrlSvc;
+
+    @EJB
+    protected PasswordValidatorServiceBean passwordValidatorService;
 
 	@PersistenceContext(unitName = "VDCNet-ejbPU")
 	protected EntityManager em;

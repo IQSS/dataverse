@@ -57,14 +57,7 @@ import java.util.stream.Collectors;
 public class PasswordValidatorServiceBean implements java.io.Serializable {
 
     private static final Logger logger = Logger.getLogger(PasswordValidatorServiceBean.class.getCanonicalName());
-    private static int NUMBER_OF_CHARACTERISTICS = 3;
-    private static int EXPIRATION_DAYS = 365;
-    private static int EXPIRATION_MIN_LENGTH = 10;
-    private static int MIN_LENGTH_BIG_LENGTH = 20;
-    private static int MAX_LENGTH = 0;
-    private static int MIN_LENGTH = 8;
     private static String DICTIONARY_FILES = "weak_passwords.txt";
-
 
     private enum ValidatorTypes {
         GoodStrengthValidator, StandardValidator
@@ -72,12 +65,12 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
 
     @SuppressWarnings("unchecked")
     private final static LinkedHashMap<ValidatorTypes, PasswordValidator> validators = new LinkedHashMap(2);
-    private int expirationDays = EXPIRATION_DAYS;
-    private int expirationMaxLength = EXPIRATION_MIN_LENGTH;
-    private int goodStrength = MIN_LENGTH_BIG_LENGTH;
-    private int maxLength = MAX_LENGTH;
-    private int minLength = MIN_LENGTH;
-    private int numberOfCharacteristics = NUMBER_OF_CHARACTERISTICS;
+    private int expirationDays;
+    private int expirationMaxLength;
+    private int goodStrength;
+    private int maxLength;
+    private int minLength;
+    private int numberOfCharacteristics;
     private String dictionaries = DICTIONARY_FILES;
     private PropertiesMessageResolver messageResolver;
 
@@ -86,21 +79,16 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
 
     PasswordValidatorServiceBean() {
         final Properties properties = PropertiesMessageResolver.getDefaultProperties();
-        properties.setProperty(GoodStrengthRule.ERROR_CODE_BIG, GoodStrengthRule.ERROR_MESSAGE_BIG);
+        properties.setProperty(GoodStrengthRule.ERROR_CODE_GOODSTRENGTH, GoodStrengthRule.ERROR_MESSAGE_GOODSTRENGTH);
         properties.setProperty(ExpirationRule.ERROR_CODE_EXPIRED, ExpirationRule.ERROR_MESSAGE_EXPIRED);
         messageResolver = new PropertiesMessageResolver(properties);
     }
 
-
     /**
      * validate
-     * <p>
-     * Validates the password properties and determine if their valid.
-     * Password reset consumers would use this method, because there should be no modification date check for new
-     * passwords.
      *
      * @param password the password to check
-     * @return A List with error messages. Null when the password is valid.
+     * @return A List with human readable error messages. Empty when the password is valid.
      */
     public List<String> validate(String password) {
         return validate(password, new Date());
@@ -109,13 +97,29 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
     /**
      * validate
      * <p>
+     * Validates the password properties and determine if their valid.
+     * Password reset consumers would use this method, because there should be no modification date check for new
+     * passwords.
+     *
+     * @param password                 the password to check
+     * @param passwordModificationTime The time the password was set or changed.
+     * @return A List with human readable error messages. Empty when the password is valid.
+     */
+    public List<String> validate(String password, Date passwordModificationTime) {
+        return validate(password, passwordModificationTime, true);
+    }
+
+    /**
+     * validate
+     * <p>
      * Validates the password properties and its modification date and determine if their valid.
      *
      * @param passwordModificationTime The time the password was set or changed.
-     * @param password                 the password to check
-     * @return A List with error messages. Null when the password is valid.
+     * @param password                 The password to check
+     * @param isHumanReadable          The expression of the error messages. True if the audience is human.
+     * @return A List with error messages. Empty when the password is valid.
      */
-    public List<String> validate(String password, Date passwordModificationTime) {
+    public List<String> validate(String password, Date passwordModificationTime, boolean isHumanReadable) {
 
         init();
         final PasswordData passwordData = PasswordData.newInstance(password, String.valueOf(passwordModificationTime.getTime()), null);
@@ -123,11 +127,15 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
         for (PasswordValidator currentUser : validators.values()) {
             RuleResult r = currentUser.validate(passwordData);
             if (r.isValid())
-                return null;
+                return Collections.emptyList();
             result.getDetails().addAll(r.getDetails());
         }
 
-        return validators.get(ValidatorTypes.StandardValidator).getMessages(result);
+        if (isHumanReadable) {
+            return validators.get(ValidatorTypes.StandardValidator).getMessages(result);
+        } else {
+            return result.getDetails().stream().map(RuleResultDetail::getErrorCode).collect(Collectors.toList());
+        }
     }
 
     /**
@@ -136,8 +144,8 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
      * Instantiates and caches the validators.
      */
     private void init() {
-        setStandardValidator();
-        setGoodStrengthValidator();
+        addStandardValidator();
+        addGoodStrengthValidator();
     }
 
 
@@ -147,7 +155,7 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
      * Apply Rule 4: It will forgo all the above three requirements for passwords that have a minimum length of
      * MIN_LENGTH_BIG_LENGTH.
      */
-    private void setGoodStrengthValidator() {
+    private void addGoodStrengthValidator() {
 
         int goodStrength = getGoodStrength();
         if (goodStrength != 0) {
@@ -168,7 +176,7 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
      * <p>
      * Apply Rules 1, 2 and 3.
      */
-    private void setStandardValidator() {
+    private void addStandardValidator() {
         int maxLength = getMaxLength();
         int minLength = getMinLength();
         int numberOfCharacteristics = getNumberOfCharacteristics();
@@ -280,7 +288,7 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
     public static String parseMessages(List<String> messages) {
         return messages.stream()
                 .map(Object::toString)
-                .collect(Collectors.joining(" "));
+                .collect(Collectors.joining(" \n"));
     }
 
     /**
@@ -289,7 +297,7 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
      * Describes all the characteristics of a valid password.
      */
     public String getGoodPasswordDescription() {
-        final List<String> requirements = new ArrayList<>(5);
+        final List<String> requirements = new ArrayList<>(4);
         if (getMinLength() != 0)
             requirements.add(String.format("a minimum of %s characters", getMinLength()));
         if (getMaxLength() != 0)
@@ -320,11 +328,14 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
     void setGoodStrength(int goodStrength) {
         if (goodStrength == 0)
             validators.remove(ValidatorTypes.GoodStrengthValidator);
-        else if (goodStrength < MIN_LENGTH_BIG_LENGTH) {
-            logger.log(Level.SEVERE, "The PwGoodStrength " + getGoodStrength() + " value is lower than the" +
-                    "current acceptable minimum standard");
-            logger.warning("Setting default for PwGoodStrength: " + MIN_LENGTH_BIG_LENGTH);
-            goodStrength = MIN_LENGTH_BIG_LENGTH;
+        else {
+            int minLength = getMinLength();
+            if (goodStrength <= minLength) {
+                int reset = minLength + 1;
+                logger.log(Level.WARNING, "The PwGoodStrength " + goodStrength + " value competes with the" +
+                        "PwMinLength value of " + minLength + " and is added  to " + reset);
+                goodStrength = reset;
+            }
         }
         if (this.goodStrength != goodStrength) {
             this.goodStrength = goodStrength;

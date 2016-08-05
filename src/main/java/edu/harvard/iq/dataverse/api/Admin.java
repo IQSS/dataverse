@@ -33,6 +33,8 @@ import javax.ws.rs.core.Response;
 
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
+import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -519,6 +521,27 @@ public class Admin extends AbstractApiBean {
             }
         }
         return okResponse(msg);
+    }
+
+    /**
+     * validatePassword
+     * <p>
+     * Validate a password with an API call
+     *
+     * @param password The password
+     * @return A response with the validation result.
+     */
+    @Path("validatePassword")
+    @POST
+    public Response validatePassword(String password) {
+
+        final List<String> errors = passwordValidatorService.validate(password, new Date(), false);
+        final JsonArrayBuilder errorArray = Json.createArrayBuilder();
+        errors.forEach(errorArray::add);
+        return okResponse(Json.createObjectBuilder()
+                .add("password", password)
+                .add("errors", errorArray)
+        );
     }
 
 }

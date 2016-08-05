@@ -498,12 +498,12 @@ public class SystemConfig {
     /**
      * getPVGoodStrength
      *
-     * Get the minimum length of a valid password to apply an expiration rule.
+     * Get the minimum length of a valid password to apply an expiration rule. Defaults to 20.
      *
      * @return The length.
      */
     public int getPVGoodStrength() {
-        int goodStrengthLength = 0;
+        int goodStrengthLength = 20;
         String _goodStrengthLength = System.getProperty("pv.goodstrength", settingsService.get(SettingsServiceBean.Key.PVGoodStrength.toString()));
         try {
             goodStrengthLength = Integer.parseInt(_goodStrengthLength);
@@ -516,12 +516,12 @@ public class SystemConfig {
     /**
      * getPVExpirationDays
      *
-     * Get the number of days a password is valid after it was set or changed.
+     * Get the number of days a password is valid after it was set or changed. Defaults to 365.
      *
      * @return The number.
      */
     public int getPVExpirationDays() {
-        int expirationDays = 0;
+        int expirationDays = 365;
         String _expirationDays = System.getProperty("pv.expirationdays", settingsService.get(SettingsServiceBean.Key.PVExpirationDays.toString()));
         try {
             expirationDays = Integer.parseInt(_expirationDays);
@@ -534,12 +534,12 @@ public class SystemConfig {
     /**
      * getPVExpirationMaxLength
      *
-     * Get the maximum length of a password an expiration date is applicable to.
+     * Get the maximum length of a password an expiration date is applicable to. Defaults to 10.
      *
      * @return The length.
      */
     public int getPVExpirationMaxLength() {
-        int expirationMaxLength = 0;
+        int expirationMaxLength = 10;
         String _expirationMaxLength = System.getProperty("pv.expirationmaxlength", settingsService.get(SettingsServiceBean.Key.PVValidatorExpirationMaxLength.toString()));
         try {
             expirationMaxLength = Integer.parseInt(_expirationMaxLength);
@@ -552,12 +552,12 @@ public class SystemConfig {
     /**
      * getPVMinLength
      *
-     * Get the minimum length of a valid password.
+     * Get the minimum length of a valid password. Defaults to 8.
      *
      * @return The length.
      */
     public int getPVMinLength() {
-        int passportValidatorMinLength = 0;
+        int passportValidatorMinLength = 8;
         String _passportValidatorMinLength = System.getProperty("pv.minlength", settingsService.get(SettingsServiceBean.Key.PVMinLength.toString()));
         try {
             passportValidatorMinLength = Integer.parseInt(_passportValidatorMinLength);
@@ -570,7 +570,7 @@ public class SystemConfig {
     /**
      * getPVMaxLength
      *
-     * Get the maximum length of a valid password.
+     * Get the maximum length of a valid password. Defaults to 0 (disabled).
      *
      * @return The length.
      */
@@ -588,12 +588,12 @@ public class SystemConfig {
     /**
      * getPVNumberOfCharacteristics
      *
-     * Get the number M characteristics.
+     * Get the number M characteristics. Defaults to 3.
      *
      * @return The number.
      */
     public int getPVNumberOfCharacteristics() {
-        int numberOfCharacteristics = 0;
+        int numberOfCharacteristics = 3;
         String _numberOfCharacteristics = System.getProperty("pv.numberofcharacteristics", settingsService.get(SettingsServiceBean.Key.PVNumberOfCharacteristics.toString()));
         try {
             numberOfCharacteristics = Integer.parseInt(_numberOfCharacteristics);

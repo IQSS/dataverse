@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.validation;
 
 import edu.emory.mathcs.backport.java.util.Arrays;
+import org.apache.commons.lang.StringUtils;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -10,6 +11,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * PasswordValidatorTest
@@ -20,6 +22,7 @@ import java.util.List;
  */
 public class PasswordValidatorTest {
 
+    private static final Logger logger = Logger.getLogger(PasswordValidatorTest.class.getCanonicalName());
     private static PasswordValidatorServiceBean passwordValidatorService;
 
     /**
@@ -50,11 +53,11 @@ public class PasswordValidatorTest {
             this.goodStrength = goodStrength;
             this.maxLength = maxLength;
             this.minLength = minLength;
-            this.dictionaries = dictionaries ;
+            this.dictionaries = dictionaries;
             this.numberOfCharacteristics = numberOfCharacteristics;
         }
 
-        int getNumberOfExpectedErrors() {
+        int getExpectedErrors() {
             return numberOfExpectedErrors;
         }
 
@@ -98,11 +101,9 @@ public class PasswordValidatorTest {
         public String toString() {
             return
                     String.format(
-                            "%s@%h::numberOfExpectedErrors=%s,password=%s,passwordModificationTime=%s,expirationDays=%s," +
-                                    "expirationMaxLength=%s,goodStrength=%s,maxLength=%s,minLength=%s,dictionaries=%s" +
-                                    "numberOfCharacteristics=%s",
-                            getClass().getName(),
-                            hashCode(),
+                            "numberOfExpectedErrors=%s\npassword='%s'\npasswordModificationTime=%s\nexpirationDays=%s\n" +
+                                    "expirationMaxLength=%s\ngoodStrength=%s\nmaxLength=%s\nminLength=%s\ndictionaries=%s\n" +
+                                    "numberOfCharacteristics=%s\n%s",
                             numberOfExpectedErrors,
                             password,
                             passwordModificationTime,
@@ -112,7 +113,8 @@ public class PasswordValidatorTest {
                             maxLength,
                             minLength,
                             dictionaries,
-                            numberOfCharacteristics
+                            numberOfCharacteristics,
+                            StringUtils.repeat("-", 80)
                     );
         }
     }
@@ -128,40 +130,41 @@ public class PasswordValidatorTest {
 
         long DAY = 86400000L;
         final Date expired = new Date(new Date().getTime() - DAY * 400);
-        final Date not_expired = new Date(new Date().getTime() - DAY * 300);
-        final int NUMBER_OF_CHARACTERISTICS_3 = 3;
-        final int EXPIRATION_DAYS_365 = 365;
-        final int EXPIRATION_MIN_LENGTH_10 = 10;
-        final int GOOD_STRENGTH_20 = 20;
-        final int MAX_LENGTH_0 = 0;
-        final int MIN_LENGTH_8 = 8;
+        final Date notExpired = new Date(new Date().getTime() - DAY * 300);
+        final int numberOfCharacters = 3;
+        final int expirationDays = 365;
+        final int expirationMinLength = 10;
+        final int goodStrength20 = 20;
+        final int maxLength = 0;
+        final int minLength = 8;
+        final String dictionary = createDictionary("56pOtAtO", false);
 
         final List<Params> paramsList = Arrays.asList(new Params[]{
-                        new Params(7, "p otato", expired, EXPIRATION_DAYS_365, EXPIRATION_MIN_LENGTH_10, GOOD_STRENGTH_20, MAX_LENGTH_0, MIN_LENGTH_8, null, NUMBER_OF_CHARACTERISTICS_3), // everything wrong here for both validators.
-                        new Params(6, "p otato", expired, EXPIRATION_DAYS_365, EXPIRATION_MIN_LENGTH_10, 0, MAX_LENGTH_0, MIN_LENGTH_8, null, NUMBER_OF_CHARACTERISTICS_3), // no GoodStrength validator
-                        new Params(0, "p", expired, EXPIRATION_DAYS_365, 0, 0, 0, 0, null, 0), // no validation... everything if off
-                        new Params(1, "po", expired, EXPIRATION_DAYS_365, 0, 0, 1, 0, null, 0), // this password is too long
-                        new Params(1, "potato", expired, EXPIRATION_DAYS_365, 7, 0, 0, 0, null, 0), // set expiration again
-                        new Params(5, "p otato", expired, 401, EXPIRATION_MIN_LENGTH_10, 0, MAX_LENGTH_0, MIN_LENGTH_8, null, NUMBER_OF_CHARACTERISTICS_3), // 401 days before expiration
-                        new Params(5, "p otato", not_expired, EXPIRATION_DAYS_365, EXPIRATION_MIN_LENGTH_10, 0, MAX_LENGTH_0, MIN_LENGTH_8, null, NUMBER_OF_CHARACTERISTICS_3),
-                        new Params(4, "one potato", not_expired, EXPIRATION_DAYS_365, EXPIRATION_MIN_LENGTH_10, 0, MAX_LENGTH_0, MIN_LENGTH_8, null, NUMBER_OF_CHARACTERISTICS_3),
-                        new Params(3, "Two potato", not_expired, EXPIRATION_DAYS_365, EXPIRATION_MIN_LENGTH_10, 0, MAX_LENGTH_0, MIN_LENGTH_8, null, NUMBER_OF_CHARACTERISTICS_3),
-                        new Params(0, "Three.potato", not_expired, EXPIRATION_DAYS_365, EXPIRATION_MIN_LENGTH_10, 0, MAX_LENGTH_0, MIN_LENGTH_8, null, NUMBER_OF_CHARACTERISTICS_3),
-                        new Params(1, "F0ur.potato", expired, EXPIRATION_DAYS_365, 15, 0, MAX_LENGTH_0, 10, null, NUMBER_OF_CHARACTERISTICS_3),
-                        new Params(0, "F0ur.potatos", not_expired, EXPIRATION_DAYS_365, 15, 0, MAX_LENGTH_0, 10, null, NUMBER_OF_CHARACTERISTICS_3),
-                        new Params(1, "F0ur.potato", expired, EXPIRATION_DAYS_365, 15, 0, MAX_LENGTH_0, 10, null, NUMBER_OF_CHARACTERISTICS_3),
-                        new Params(0, "4.potato", not_expired, EXPIRATION_DAYS_365, EXPIRATION_MIN_LENGTH_10, 0, MAX_LENGTH_0, MIN_LENGTH_8, null, NUMBER_OF_CHARACTERISTICS_3),
-                        new Params(0, "55Potato", not_expired, EXPIRATION_DAYS_365, EXPIRATION_MIN_LENGTH_10, 0, MAX_LENGTH_0, MIN_LENGTH_8, null, NUMBER_OF_CHARACTERISTICS_3),
-                        new Params(1, "56Potato", not_expired, EXPIRATION_DAYS_365, EXPIRATION_MIN_LENGTH_10, 0, MAX_LENGTH_0, MIN_LENGTH_8, createDictionary("56pOtAtO", false), NUMBER_OF_CHARACTERISTICS_3), // password in dictionary
-                        new Params(0, "6 Potato", not_expired, EXPIRATION_DAYS_365, EXPIRATION_MIN_LENGTH_10, GOOD_STRENGTH_20, MAX_LENGTH_0, MIN_LENGTH_8, null, NUMBER_OF_CHARACTERISTICS_3),
-                        new Params(3, "7 Potato", not_expired, EXPIRATION_DAYS_365, EXPIRATION_MIN_LENGTH_10, GOOD_STRENGTH_20, MAX_LENGTH_0, MIN_LENGTH_8, null, 4), // add a fourth characteristic
-                        new Params(0, "7 Potato901234567890", not_expired, EXPIRATION_MIN_LENGTH_10, MIN_LENGTH_8, GOOD_STRENGTH_20, MAX_LENGTH_0, MIN_LENGTH_8, null, 4), // Now it does not matter: 20 characters
-                        new Params(0, "8.Potato", not_expired, EXPIRATION_DAYS_365, EXPIRATION_MIN_LENGTH_10, GOOD_STRENGTH_20, MAX_LENGTH_0, MIN_LENGTH_8, null, 4), // Now we use all four
-                        new Params(1, "Potato.Too.12345.Short", not_expired, EXPIRATION_DAYS_365, EXPIRATION_MIN_LENGTH_10, 0, MAX_LENGTH_0, 23, null, NUMBER_OF_CHARACTERISTICS_3),
-                        new Params(0, "Potatoes on my plate with beef", expired, EXPIRATION_DAYS_365, EXPIRATION_MIN_LENGTH_10, 30, MAX_LENGTH_0, MIN_LENGTH_8, null, NUMBER_OF_CHARACTERISTICS_3),
-                        new Params(0, "Potatoes on my plate with pie.", expired, EXPIRATION_DAYS_365, EXPIRATION_MIN_LENGTH_10, 30, MAX_LENGTH_0, MIN_LENGTH_8, null, NUMBER_OF_CHARACTERISTICS_3),
-                        new Params(0, "Potatoes on a plate          .", expired, EXPIRATION_DAYS_365, EXPIRATION_MIN_LENGTH_10, 30, MAX_LENGTH_0, MIN_LENGTH_8, null, NUMBER_OF_CHARACTERISTICS_3),
-                        new Params(0, "                              ", expired, EXPIRATION_DAYS_365, EXPIRATION_MIN_LENGTH_10, 30, MAX_LENGTH_0, MIN_LENGTH_8, null, NUMBER_OF_CHARACTERISTICS_3)
+                        new Params(7, "p otato", expired, expirationDays, expirationMinLength, goodStrength20, maxLength, minLength, dictionary, numberOfCharacters), // everything wrong here for both validators.
+                        new Params(6, "p otato", expired, expirationDays, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters), // no GoodStrength validator
+                        new Params(0, "p", expired, expirationDays, 0, 0, 0, 0, dictionary, 0), // no validation... everything if off
+                        new Params(1, "po", expired, expirationDays, 0, 0, 1, 0, dictionary, 0), // this password is too long
+                        new Params(1, "potato", expired, expirationDays, 7, 0, 0, 0, dictionary, 0), // set expiration again
+                        new Params(5, "p otato", expired, 401, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters), // 401 days before expiration
+                        new Params(5, "p otato", notExpired, expirationDays, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters),
+                        new Params(4, "one potato", notExpired, expirationDays, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters),
+                        new Params(3, "Two potato", notExpired, expirationDays, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters),
+                        new Params(0, "Three.potato", notExpired, expirationDays, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters),
+                        new Params(1, "F0ur.potato", expired, expirationDays, 15, 0, maxLength, 10, dictionary, numberOfCharacters),
+                        new Params(0, "F0ur.potatos", notExpired, expirationDays, 15, 0, maxLength, 10, dictionary, numberOfCharacters),
+                        new Params(1, "F0ur.potato", expired, expirationDays, 15, 0, maxLength, 10, dictionary, numberOfCharacters),
+                        new Params(0, "4.potato", notExpired, expirationDays, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters),
+                        new Params(0, "55Potato", notExpired, expirationDays, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters),
+                        new Params(1, "56Potato", notExpired, expirationDays, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters), // password in dictionary
+                        new Params(0, "6 Potato", notExpired, expirationDays, expirationMinLength, goodStrength20, maxLength, minLength, dictionary, numberOfCharacters),
+                        new Params(3, "7 Potato", notExpired, expirationDays, expirationMinLength, goodStrength20, maxLength, minLength, dictionary, 4), // add a fourth characteristic
+                        new Params(0, "7 Potato901234567890", notExpired, expirationMinLength, minLength, goodStrength20, maxLength, minLength, dictionary, 4), // Now it does not matter: 20 characters
+                        new Params(0, "8.Potato", notExpired, expirationDays, expirationMinLength, goodStrength20, maxLength, minLength, dictionary, 4), // Now we use all four
+                        new Params(1, "Potato.Too.12345.Short", notExpired, expirationDays, expirationMinLength, 0, maxLength, 23, dictionary, numberOfCharacters),
+                        new Params(0, "Potatoes on my plate with beef", expired, expirationDays, expirationMinLength, 30, maxLength, minLength, dictionary, numberOfCharacters),
+                        new Params(0, "Potatoes on my plate with pie.", expired, expirationDays, expirationMinLength, 30, maxLength, minLength, dictionary, numberOfCharacters),
+                        new Params(0, "Potatoes on a plate          .", expired, expirationDays, expirationMinLength, 30, maxLength, minLength, dictionary, numberOfCharacters),
+                        new Params(0, "                              ", expired, expirationDays, expirationMinLength, 30, maxLength, minLength, dictionary, numberOfCharacters)
                 }
         );
 
@@ -175,9 +178,11 @@ public class PasswordValidatorTest {
                     passwordValidatorService.setDictionaries(params.getDictionaries());
                     passwordValidatorService.setNumberOfCharacteristics(params.getNumberOfCharacteristics());
                     List<String> errors = passwordValidatorService.validate(params.getPassword(), params.getPasswordModificationTime());
-                    int actualErrors = actualErrors(errors);
-                    int numberOfExpectedErrors = params.getNumberOfExpectedErrors();
-                    Assert.assertTrue(message(params, errors, numberOfExpectedErrors, actualErrors), actualErrors == numberOfExpectedErrors);
+                    int actualErrors = errors.size();
+                    int expectedErrors = params.getExpectedErrors();
+                    String message = message(params, errors, expectedErrors, actualErrors);
+                    logger.info(message);
+                    Assert.assertTrue(message, actualErrors == expectedErrors);
                 }
         );
 
@@ -205,13 +210,9 @@ public class PasswordValidatorTest {
         return file.getAbsolutePath();
     }
 
-    private int actualErrors(List<String> errors) {
-        return (errors == null) ? 0 : errors.size();
-    }
-
     private String message(Params params, List<String> errors, int expected, int actual) {
-        String details = (actual == 0) ? params.toString() : PasswordValidatorServiceBean.parseMessages(errors) + " with " + params;
-        return String.format("Expected %s but got %s validation errors. Details: %s", expected, actual, details);
+        String details = (actual == 0) ? params.toString() : PasswordValidatorServiceBean.parseMessages(errors) + "\n" + params;
+        return String.format("Expected errors: %s\nActual errors: %s\nDetails: %s", expected, actual, details);
     }
 
 }

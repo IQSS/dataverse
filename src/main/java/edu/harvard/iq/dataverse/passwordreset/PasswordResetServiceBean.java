@@ -201,7 +201,7 @@ public class PasswordResetServiceBean {
 
 
         List<String> errors = passwordValidatorService.validate(newPassword);
-        if (errors != null) {
+        if (!errors.isEmpty()) {
             messageSummary = PasswordValidatorServiceBean.parseMessages(errors);
             logger.info(messageDetail);
             return new PasswordChangeAttemptResponse(false, messageSummary, messageSummaryFail);
