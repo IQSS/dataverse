@@ -56,12 +56,15 @@ import org.hibernate.validator.constraints.NotBlank;
                       +"WHERE eg.owner.id=:ownerId AND ceg.id=:subExGroupId"),
     @NamedQuery( name="ExplicitGroup.findByOwnerAndRAIdtf",
                  query="SELECT eg FROM ExplicitGroup eg join eg.containedRoleAssignees ra "
-                      +"WHERE eg.owner.id=:ownerId AND ra=:raIdtf")
+                      +"WHERE eg.owner.id=:ownerId AND ra=:raIdtf"),
+    @NamedQuery( name="ExplicitGroup.findByAuthenticatedUserIdentifier",
+                 query="SELECT eg FROM ExplicitGroup eg JOIN eg.containedAuthenticatedUsers au "
+                     + "WHERE au.userIdentifier=:authenticatedUserIdentifier")
+        
 })
 @Entity
-@Table(indexes = {@Index(columnList="owner_id")
-		//, @Index(columnList="groupalias") //@unique takes care of this
-		, @Index(columnList="groupaliasinowner")})
+@Table(indexes = {@Index(columnList="owner_id"),
+                  @Index(columnList="groupaliasinowner")})
 public class ExplicitGroup implements Group, java.io.Serializable {
     
     @Id

@@ -113,7 +113,10 @@ public class GroupServiceBean {
      *
      * @param au An AuthenticatedUser.
      * @return As many groups as we can find for the AuthenticatedUser.
+     * 
+     * @deprecated use {@link #groupsFor(edu.harvard.iq.dataverse.engine.command.DataverseRequest)}
      */
+    @Deprecated
     public Set<Group> groupsFor(AuthenticatedUser au) {
         Set<Group> groups = new HashSet<>();
         groups.addAll(groupsFor(au, null));
@@ -139,6 +142,18 @@ public class GroupServiceBean {
         return groups;
     }
 
+    public Set<Group> groupsFor( DataverseRequest dr ) {
+        Set<Group> groups = new HashSet<>();
+        
+        // get the global groups
+        groups.addAll( groupsFor(dr,null) );
+        
+        // add the explicit groups
+        groups.addAll( explicitGroupService.findGroups(dr.getUser()) );
+        
+        return groups;
+    }
+    
     /**
      * Given a set of groups and a DV object, return all the groups that are
      * reachable from the set. Effectively, if the initial set has an {@link ExplicitGroup},

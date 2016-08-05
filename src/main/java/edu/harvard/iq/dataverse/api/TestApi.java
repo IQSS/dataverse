@@ -2,6 +2,8 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
+import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup;
+import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.PasswordEncryption;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import javax.ejb.Stateless;
@@ -10,8 +12,10 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.ejb.EJB;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 import javax.ws.rs.QueryParam;
@@ -32,6 +36,9 @@ import org.mindrot.jbcrypt.BCrypt;
 @Path("test")
 public class TestApi extends AbstractApiBean {
     private static final Logger logger = Logger.getLogger(TestApi.class.getName());
+    
+    @EJB
+    ExplicitGroupServiceBean explicitGroups;
     
     @Path("echo/{whatever}")
     @GET
@@ -96,5 +103,17 @@ public class TestApi extends AbstractApiBean {
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
+    }
+    
+    @Path("explicitGroups/{identifier: .*}")
+    @GET
+    public Response explicitGroupMembership( @PathParam("identifier") String idtf) {
+        final RoleAssignee roleAssignee = roleAssigneeSvc.getRoleAssignee(idtf);
+        if (roleAssignee==null ) {
+            return notFound("Can't find a role assignee with identifier " + idtf);
+        }
+        Set<ExplicitGroup> groups = explicitGroups.findGroups(roleAssignee);
+        return okResponse( json(groups) );
+        
     }
 }

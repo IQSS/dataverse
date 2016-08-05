@@ -17,7 +17,6 @@ import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
-import org.jboss.logging.Logger;
 
 /**
  * A bean providing the {@link ExplicitGroupProvider}s with container services,
@@ -112,6 +111,23 @@ public class ExplicitGroupServiceBean {
             d = d.getOwner();
         }
         return provider.updateProvider( egs );
+    }
+    
+    /**
+     * Finds all the explicit groups {@code ra} is a member of.
+     * @param ra the role assignee whose membership list we seek
+     * @return set of the explicit groups that contain {@code ra}.
+     */
+    public Set<ExplicitGroup> findGroups( RoleAssignee ra ) {
+        if ( ra instanceof AuthenticatedUser ) {
+            return provider.updateProvider(
+                    new HashSet<>(em.createNamedQuery("ExplicitGroup.findByAuthenticatedUserIdentifier")
+                    .setParameter("authenticatedUserIdentifier", ra.getIdentifier())
+                    .getResultList()
+                  ));
+        } else {
+            throw new IllegalArgumentException("At this time, only authenticated users are supported");
+        }
     }
     
     /**

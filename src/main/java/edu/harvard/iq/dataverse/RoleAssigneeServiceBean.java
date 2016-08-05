@@ -309,7 +309,6 @@ public class RoleAssigneeServiceBean {
         List<String> retVal = new ArrayList();
 
         Set<Group> groups = groupSvc.groupsFor(au, null);
-        StringBuilder sb = new StringBuilder();
         for (Group group : groups) {
             logger.fine("found group " + group.getIdentifier() + " with alias " + group.getAlias());
             if (group.getGroupProvider().getGroupProviderAlias().equals("shib") || group.getGroupProvider().getGroupProviderAlias().equals("ip")) {

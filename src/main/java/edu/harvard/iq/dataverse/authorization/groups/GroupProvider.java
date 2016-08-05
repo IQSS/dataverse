@@ -29,8 +29,8 @@ public interface GroupProvider<T extends Group> {
     
     /**
      * Looks up the groups this provider has for a dataverse request, in the context of a {@link DvObject}.
-     * @param req The request whose group memberships we evaluate
-     * @param dvo the DvObject which is the context for the groups. May be {@code null}
+     * @param req The request whose group memberships we evaluate.
+     * @param dvo the DvObject which is the context for the groups. May be {@code null}.
      * @return The set of groups the user is member of.
      */
     public Set<T> groupsFor( DataverseRequest req, DvObject dvo );

@@ -1,15 +1,11 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.RequestScoped;
-import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.core.Context;
 
 /**
  * The service bean to go to when one needs the current {@link DataverseRequest}.
@@ -22,40 +18,16 @@ public class DataverseRequestServiceBean {
     @Inject
     DataverseSession dataverseSessionSvc;
     
-    @Context
-    HttpServletRequest httpRequest;
-    
-    private DataverseRequest dataverseRequest;
-    
     @Inject
     private HttpServletRequest request;
     
+   private DataverseRequest dataverseRequest;
+    
     @PostConstruct
     protected void setup() {
-        dataverseRequest = new DataverseRequest(dataverseSessionSvc.getUser(), getRequest());
+        dataverseRequest = new DataverseRequest(dataverseSessionSvc.getUser(), request);
     }
     
-    private HttpServletRequest getRequest() {
-        
-        if ( request != null ) {
-            return request;
-        } else {
-            Logger.getLogger(DataverseRequestServiceBean.class.getName()).log(Level.WARNING, "request not injected");
-        }
-        
-        if ( httpRequest != null ) {
-            return httpRequest;
-        } else {
-            final FacesContext jsfCtxt = FacesContext.getCurrentInstance();
-            if ( jsfCtxt != null ) {
-                return (HttpServletRequest) jsfCtxt.getExternalContext().getRequest();
-            } else {
-                Logger.getLogger(DataverseRequestServiceBean.class.getName()).log(Level.WARNING, "Cannot get the HTTP request object.");
-                return null;
-            }
-        }
-    }
-
     public DataverseRequest getDataverseRequest() {
         return dataverseRequest;
     }
