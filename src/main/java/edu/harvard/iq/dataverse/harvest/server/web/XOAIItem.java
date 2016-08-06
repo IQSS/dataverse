@@ -72,7 +72,7 @@ public class XOAIItem implements Item {
             return new xMetadata(inputStream);
         } catch (Exception e) {
             return new xMetadata("");
-        }
+    }
     }
 
     @Override
