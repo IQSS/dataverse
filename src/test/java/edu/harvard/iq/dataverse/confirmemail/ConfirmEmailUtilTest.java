@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.confirmemail;
 
+import java.sql.Timestamp;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
@@ -25,5 +26,14 @@ public class ConfirmEmailUtilTest {
         System.out.println("1 Minute: " + confirmEmailUtil.friendlyExpirationTime(1));
         assertEquals("1 minute", confirmEmailUtil.friendlyExpirationTime(1));
     }
+    
+    @Test
+    public void testGrandfatheredTime() {
+        ConfirmEmailUtil confirmEmailUtil = new ConfirmEmailUtil();
+        System.out.println("Grandfathered Time (y2k): " + confirmEmailUtil.getGrandfatheredTime());
+        assertEquals(Timestamp.valueOf("2000-01-01 00:00:00.0"), confirmEmailUtil.getGrandfatheredTime());
+    }
+    
+    
 
 }

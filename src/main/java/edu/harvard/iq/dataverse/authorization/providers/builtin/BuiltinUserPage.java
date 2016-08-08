@@ -655,7 +655,9 @@ public class BuiltinUserPage implements java.io.Serializable {
     public boolean isEmailIsVerified() {
         ConfirmEmailUtil confirmEmailUtil = new ConfirmEmailUtil();
         if (currentUser.getEmailConfirmed() != null && currentUser.getEmailConfirmed() != confirmEmailUtil.getGrandfatheredTime()) {
+            if (confirmEmailService.findSingleConfirmEmailDataByUser(currentUser) == null) {
             return true;
+            } else return false;
         } else {
             return false;
         }

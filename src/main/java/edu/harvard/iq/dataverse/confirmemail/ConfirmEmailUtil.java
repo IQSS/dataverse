@@ -7,8 +7,12 @@ import java.util.Date;
 public class ConfirmEmailUtil {
 
     public static Timestamp getGrandfatheredTime() {
-        // change this to 2000-01-01, add test for code coverage
-        return new Timestamp(new Date().getTime());
+        /**
+         * Currently set to Y2K as an easter egg to easily set apart
+         * grandfathered accounts from post-launch accounts.
+         */
+        Timestamp grandfatheredTime = Timestamp.valueOf("2000-01-01 00:00:00.0");
+        return grandfatheredTime;
     }
 
     public static String friendlyExpirationTime(int expirationInt) {
