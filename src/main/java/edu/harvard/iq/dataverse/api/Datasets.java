@@ -121,10 +121,7 @@ public class Datasets extends AbstractApiBean {
     @Path("/export")
     @Produces({"application/xml", "application/json"})
     public Response exportDataset(@QueryParam("persistentId") String persistentId, @QueryParam("exporter") String exporter) {
-        boolean ddiExportEnabled = systemConfig.isDdiExportEnabled();
-        if (!ddiExportEnabled) {
-            return errorResponse(Response.Status.FORBIDDEN, "Disabled");
-        }
+
         try {
             Dataset dataset = datasetService.findByGlobalId(persistentId);
             if (dataset == null) {
