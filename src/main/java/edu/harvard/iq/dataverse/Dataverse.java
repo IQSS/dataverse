@@ -728,6 +728,14 @@ public class Dataverse extends DvObjectContainer {
     public void setPermissionRoot(boolean permissionRoot) {
         this.permissionRoot = permissionRoot;
     }
-       
+      
+    @Override
+    public boolean isAncestorOf( DvObject other ) {
+        while ( other != null ) {
+            if ( equals(other) ) return true;
+            other = other.getOwner();
+        }
+        return false;
+    }
 
 }

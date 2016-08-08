@@ -520,5 +520,15 @@ public class Admin extends AbstractApiBean {
         }
         return okResponse(msg);
     }
-
+    
+    
+    @Path("assignments/assignees/{raIdtf: .*}")
+    @GET
+    public Response getAssignmentsFor( @PathParam("raIdtf") String raIdtf ) {
+        
+        JsonArrayBuilder arr = Json.createArrayBuilder();
+        roleAssigneeSvc.getAssignmentsFor(raIdtf).forEach( a -> arr.add(json(a)));
+        
+        return okResponse(arr);
+    }
 }

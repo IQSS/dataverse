@@ -157,9 +157,9 @@ To revert to the default logic, use ``:publicationDate`` as the ``$datasetFieldT
 Note that the dataset field used has to be a date field::
 
     PUT http://$SERVER/api/datasets/$id/citationdate?key=$apiKey
-    
+
 Restores the default logic of the field type to be used as the citation date. Same as ``PUT`` with ``:publicationDate`` body::
-    
+
     DELETE http://$SERVER/api/datasets/$id/citationdate?key=$apiKey
 
 List all the role assignments at the given dataset::
@@ -361,6 +361,12 @@ Sample output using "dataverseAdmin" as the ``identifier``::
 Toggles superuser mode on the ``AuthenticatedUser`` whose ``identifier`` (without the ``@`` sign) is passed. ::
 
     POST http://$SERVER/api/admin/superuser/$identifier
+
+List all role assignments of a role assignee (i.e. a user or a group)::
+
+    GET http://$SERVER/api/admin/assignments/assignee/$identifier
+
+Note that ``identifier`` can contain slashes (e.g. ``&ip/localhost-users``).
 
 IpGroups
 ^^^^^^^^

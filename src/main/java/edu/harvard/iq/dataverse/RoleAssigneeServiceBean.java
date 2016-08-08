@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -133,7 +134,7 @@ public class RoleAssigneeServiceBean {
         }
         List<DataverseRole> retList = new ArrayList();
         roleAssigneeIdentifier = roleAssigneeIdentifier.replaceAll("\\s", "");   // remove spaces from string
-        List<String> userGroups = getUserExplicitGroups(roleAssigneeIdentifier.replace("@", ""));
+        List<String> userGroups = getUserExplicitGroups(au);
         List<String> userRunTimeGroups = getUserRuntimeGroups(au);
         String identifierClause = " WHERE r.assigneeIdentifier= '" + roleAssigneeIdentifier + "'";
         if (userGroups != null || userRunTimeGroups != null) {
@@ -161,7 +162,7 @@ public class RoleAssigneeServiceBean {
             return null;
         }
         roleAssigneeIdentifier = roleAssigneeIdentifier.replaceAll("\\s", "");   // remove spaces from string
-        List<String> userExplicitGroups = getUserExplicitGroups(roleAssigneeIdentifier.replace("@", ""));
+        List<String> userExplicitGroups = getUserExplicitGroups(au);
         List<String> userRunTimeGroups = getUserRuntimeGroups(au);
         String identifierClause = " WHERE r.assigneeIdentifier= '" + roleAssigneeIdentifier + "'";
         if (userExplicitGroups != null || userRunTimeGroups != null) {
@@ -185,7 +186,7 @@ public class RoleAssigneeServiceBean {
             return null;
         }
         roleAssigneeIdentifier = roleAssigneeIdentifier.replaceAll("\\s", "");   // remove spaces from string
-        List<String> userGroups = getUserExplicitGroups(roleAssigneeIdentifier.replace("@", ""));
+        List<String> userGroups = getUserExplicitGroups(au);
         List<String> userRunTimeGroups = getUserRuntimeGroups(au);
         String identifierClause = " WHERE r.assigneeIdentifier= '" + roleAssigneeIdentifier + "'";
         if (userGroups != null || userRunTimeGroups != null) {
@@ -252,7 +253,7 @@ public class RoleAssigneeServiceBean {
         }
 
         roleAssigneeIdentifier = roleAssigneeIdentifier.replaceAll("\\s", "");   // remove spaces from string
-        List<String> userGroups = getUserExplicitGroups(roleAssigneeIdentifier.replace("@", ""));
+        List<String> userGroups = getUserExplicitGroups(au);
         List<String> userRunTimeGroups = getUserRuntimeGroups(au);
         String identifierClause = " WHERE r.assigneeIdentifier= '" + roleAssigneeIdentifier + "'";
         if (userGroups != null || userRunTimeGroups != null) {
@@ -289,20 +290,14 @@ public class RoleAssigneeServiceBean {
     }
 
     /**
-     * @todo Support groups within groups:
-     * https://github.com/IQSS/dataverse/issues/3056
+     * @param ra
+     * @todo Support groups within groups: https://github.com/IQSS/dataverse/issues/3056
+     * @return List of aliases of all explicit groups {@code ra} is in.
      */
-    public List<String> getUserExplicitGroups(String roleAssigneeIdentifier) {
-
-        String qstr = "select  groupalias from explicitgroup";
-        qstr += " where id in ";
-        qstr += " (select explicitgroup_id from explicitgroup_authenticateduser where containedauthenticatedusers_id = ";
-        qstr += " (select id from authenticateduser where useridentifier ='" + roleAssigneeIdentifier + "'";
-        qstr += "));";
-        //msg("qstr: " + qstr);
-
-        return em.createNativeQuery(qstr)
-                .getResultList();
+    public List<String> getUserExplicitGroups(RoleAssignee ra) {
+        return explicitGroupSvc.findGroups(ra).stream()
+                               .map( g -> g.getAlias())
+                               .collect(Collectors.toList());
     }
 
     private List<String> getUserRuntimeGroups(AuthenticatedUser au) {

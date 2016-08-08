@@ -283,6 +283,13 @@ public abstract class DvObject implements java.io.Serializable {
         return null;
     }    
     
+    /**
+     * 
+     * @param other 
+     * @return {@code true} iff {@code other} is {@code this} or below {@code this} in the containment hierarchy.
+     */
+    public abstract boolean isAncestorOf( DvObject other );
+    
     @OneToMany(mappedBy = "definitionPoint",cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST}, orphanRemoval=true)
     List<RoleAssignment> roleAssignments;
 }

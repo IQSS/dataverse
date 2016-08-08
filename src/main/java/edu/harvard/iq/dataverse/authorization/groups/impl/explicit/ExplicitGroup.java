@@ -158,7 +158,8 @@ public class ExplicitGroup implements Group, java.io.Serializable {
      * Adds the {@link RoleAssignee} to {@code this} group. 
      * 
      * @param ra the role assignee to be added to this group.
-     * @throws GroupException if {@code ra} is a group, and is an ancestor of {@code this}.
+     * @throws GroupException if {@code ra} is a group, and is either an ancestor of {@code this},
+     *         or is defined in a dataverse that is not an ancestor of {@code this.owner}.
      */
     public void add( RoleAssignee ra ) throws GroupException {
         
@@ -176,7 +177,11 @@ public class ExplicitGroup implements Group, java.io.Serializable {
                 if ( g.contains(this) ) {
                     throw new GroupException(this, "A group cannot be added to one of its childs.");
                 }
-                containedExplicitGroups.add( g );
+                if ( g.owner.isAncestorOf(owner) ) {
+                    containedExplicitGroups.add( g );
+                } else {
+                    throw new GroupException(this, "Cannot add " + g + ", as it is not defined in " + owner + " or one of its ancestors.");
+                }
             } else {
                 containedRoleAssignees.add( ra.getIdentifier() );
             }

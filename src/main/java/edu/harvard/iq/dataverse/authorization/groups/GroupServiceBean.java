@@ -121,24 +121,14 @@ public class GroupServiceBean {
         Set<Group> groups = new HashSet<>();
         groups.addAll(groupsFor(au, null));
         String identifier = au.getIdentifier();
-        String identifierWithoutAtSign = null;
         if (identifier != null) {
             try {
-                identifierWithoutAtSign = identifier.substring(1);
+                groups.addAll( explicitGroupService.findGroups(au) );
             } catch (IndexOutOfBoundsException ex) {
                 logger.log(Level.INFO, "Couldn''t trim first character (@ sign) from identifier: {0}", identifier);
             }
         }
-        if (identifierWithoutAtSign != null) {
-            roleAssigneeSvc.getUserExplicitGroups(identifierWithoutAtSign).stream().forEach((groupAlias) -> {
-                ExplicitGroup explicitGroup = explicitGroupProvider.get(groupAlias);
-                if (explicitGroup != null) {
-                    groups.add(explicitGroup);
-                } else {
-                    logger.log(Level.INFO, "Couldn''t find group based on alias {0}", groupAlias);
-                }
-            });
-        }
+
         return groups;
     }
 

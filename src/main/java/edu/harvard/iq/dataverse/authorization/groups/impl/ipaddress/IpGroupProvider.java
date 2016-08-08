@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -42,7 +43,9 @@ public class IpGroupProvider implements GroupProvider<IpGroup> {
     @Override
     public Set<IpGroup> groupsFor( DataverseRequest req, DvObject dvo ) {
         if ( req.getSourceAddress() != null ) {
-            return updateProvider( ipGroupsService.findAllIncludingIp(req.getSourceAddress()) );
+            final Set<IpGroup> groups = updateProvider( ipGroupsService.findAllIncludingIp(req.getSourceAddress()) );
+            logger.log(Level.INFO, "IP groups detected: {0}", groups);
+            return groups;
         } else {
             return Collections.emptySet();
         }
