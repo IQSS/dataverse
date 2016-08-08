@@ -109,12 +109,6 @@ Datasets
   Getting its draft version::
 
     GET http://$SERVER/api/datasets/:persistentId/versions/:draft?persistentId=doi:10.5072/FK2/J8SJZB
-    
-  Exporting its metadata in various formats see Note below::
-
-    GET http://$SERVER/api/datasets/export?exporter=DDI&persistentId=doi:10.5072/FK2/J8SJZB
-  
-    Note: Supported exporters (export formats) are DDI, DublinCore and json.
 
 
 Show the dataset whose id is passed::
@@ -132,6 +126,12 @@ List versions of the dataset::
 Show a version of the dataset. The Dataset also include any metadata blocks the data might have::
 
   GET http://$SERVER/api/datasets/$id/versions/$versionNumber?key=$apiKey
+  
+Export the metadata of the current version of the dataset in various formats see Note below::
+
+    GET http://$SERVER/api/datasets/export?exporter=DDI&persistentId=$persistentId
+  
+    Note: Supported exporters (export formats) are DDI, DublinCore and json.
 
 Lists all the file metadata, for the given dataset and version::
 
