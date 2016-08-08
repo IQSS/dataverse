@@ -30,13 +30,11 @@ import static org.apache.commons.lang3.RandomStringUtils.randomNumeric;
 /**
  *
  * @author Leonid Andreev
+ * This is an implemention of an Lyncode XOAI Item; 
+ * You can think of it as an XOAI Item wrapper around the
+ * Dataverse OAIRecord entity.
  */
 public class XOAIItem implements Item {
-    
-    /*
-    public static XOAIItem item () {
-        return new XOAIItem();
-    }*/
     
     public XOAIItem(OAIRecord oaiRecord) {
         super();
@@ -60,19 +58,7 @@ public class XOAIItem implements Item {
 
     @Override
     public xMetadata getMetadata() {
-        // Temporary stub for retrieving DDI metadata records: 
-        // - the assumption is that they are pre-exported and stored in the Dataset
-        // directory, as "export_{format}.xml". 
-        // This stub will be replaced by a call to the export subsystem. 
-        
-        try {
-            String filesRootDirectory = System.getProperty("dataverse.files.directory");
-            String identifier = getIdentifier().replaceFirst("^[^:]*:", "/");
-            InputStream inputStream = new FileInputStream(new File(filesRootDirectory + identifier + "/export_DDI.cached"));
-            return new xMetadata(inputStream);
-        } catch (Exception e) {
-            return new xMetadata("");
-    }
+        return new xMetadata((String)null);
     }
 
     @Override

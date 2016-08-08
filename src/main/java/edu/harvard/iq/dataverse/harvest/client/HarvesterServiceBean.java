@@ -367,7 +367,6 @@ public class HarvesterServiceBean {
     }
     
     private void deleteHarvestedDataset(Dataset dataset, DataverseRequest request, Logger hdLogger) {
-        Long fileId = null; 
 
         try {
             // files from harvested datasets are removed unceremoniously, 
@@ -375,14 +374,12 @@ public class HarvesterServiceBean {
             // DeleteFileCommand on them.
             for (DataFile harvestedFile : dataset.getFiles()) {
                 DataFile merged = em.merge(harvestedFile);
-                fileId = merged.getId();
                 em.remove(merged);
                 harvestedFile = null; 
             }
             dataset.setFiles(null);
             Dataset merged = em.merge(dataset);
             engineService.submit(new DeleteDatasetCommand(request, merged));
-            
         } catch (IllegalCommandException ex) {
             // TODO: log the result
         } catch (PermissionException ex) {

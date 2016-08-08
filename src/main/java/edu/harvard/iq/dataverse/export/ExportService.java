@@ -58,7 +58,7 @@ public class ExportService {
             Exporter e = exporters.next();
             String[] temp = new String[2];
             temp[0] = e.getDisplayName();
-            temp[1] = e.getProvider();
+            temp[1] = e.getProviderName();
             retList.add(temp);
         }
         return retList;
@@ -131,9 +131,9 @@ public class ExportService {
             Iterator<Exporter> exporters = loader.iterator();
             while ( exporters.hasNext()) {
                 Exporter e = exporters.next();
-                String formatName = e.getProvider(); 
+                String formatName = e.getProviderName(); 
                 
-                cacheExport(dataset, formatName, datasetAsJson, e);
+                cacheExport(releasedVersion, formatName, datasetAsJson, e);
                 
             }
         } catch (ServiceConfigurationError serviceError) {
@@ -156,13 +156,13 @@ public class ExportService {
             Iterator<Exporter> exporters = loader.iterator();
             while (exporters.hasNext()) {
                 Exporter e = exporters.next();
-                if (e.getProvider().equals(formatName)) {
+                if (e.getProviderName().equals(formatName)) {
                     DatasetVersion releasedVersion = dataset.getReleasedVersion();
                     if (releasedVersion == null) {
                         throw new IllegalStateException("No Released Version");
                     }
                     final JsonObjectBuilder datasetAsJsonBuilder = jsonAsDatasetDto(releasedVersion);
-                    cacheExport(dataset, formatName, datasetAsJsonBuilder.build(), e);
+                    cacheExport(releasedVersion, formatName, datasetAsJsonBuilder.build(), e);
                 }
             }
         } catch (ServiceConfigurationError serviceError) {
@@ -172,22 +172,39 @@ public class ExportService {
         }
     }
     
+    public Exporter getExporter(String formatName) throws ExportException {
+        try {
+            Iterator<Exporter> exporters = loader.iterator();
+            while (exporters.hasNext()) {
+                Exporter e = exporters.next();
+                if (e.getProviderName().equals(formatName)) {
+                    return e;
+                }
+            }
+        } catch (ServiceConfigurationError serviceError) {
+            throw new ExportException("Service configuration error during export. " + serviceError.getMessage());
+        } catch (Exception ex) {
+            throw new ExportException("Could not find Exporter \""+formatName+"\", unknown exception");
+        }
+        throw new ExportException("No such Exporter: "+formatName);
+    }
+    
     // This method runs the selected metadata exporter, caching the output 
     // in a file in the dataset dirctory:
-    private void cacheExport(Dataset dataset, String format, JsonObject datasetAsJson, Exporter exporter) throws ExportException {
+    private void cacheExport(DatasetVersion version, String format, JsonObject datasetAsJson, Exporter exporter) throws ExportException {
         try {
-            if (dataset.getFileSystemDirectory() != null && !Files.exists(dataset.getFileSystemDirectory())) {
+            if (version.getDataset().getFileSystemDirectory() != null && !Files.exists(version.getDataset().getFileSystemDirectory())) {
                 /* Note that "createDirectories()" must be used - not 
                      * "createDirectory()", to make sure all the parent 
                      * directories that may not yet exist are created as well. 
                  */
 
-                Files.createDirectories(dataset.getFileSystemDirectory());
+                Files.createDirectories(version.getDataset().getFileSystemDirectory());
             }
 
-            Path cachedMetadataFilePath = Paths.get(dataset.getFileSystemDirectory().toString(), "export_" + format + ".cached");
+            Path cachedMetadataFilePath = Paths.get(version.getDataset().getFileSystemDirectory().toString(), "export_" + format + ".cached");
             FileOutputStream cachedExportOutputStream = new FileOutputStream(cachedMetadataFilePath.toFile());
-            exporter.exportDataset(datasetAsJson, cachedExportOutputStream);
+            exporter.exportDataset(version, datasetAsJson, cachedExportOutputStream);
             cachedExportOutputStream.flush();
             cachedExportOutputStream.close();
 
@@ -220,13 +237,28 @@ public class ExportService {
 
     }
     
+    public Long getCachedExportSize(Dataset dataset, String formatName) {
+        try {
+            if (dataset.getFileSystemDirectory() != null) {
+                Path cachedMetadataFilePath = Paths.get(dataset.getFileSystemDirectory().toString(), "export_" + formatName + ".cached");
+                if (Files.exists(cachedMetadataFilePath)) {
+                    return cachedMetadataFilePath.toFile().length();
+                }
+            }
+        } catch (Exception ioex) {
+            // don't do anything - we'll just return null
+        }
+
+        return null;
+    }
+    
     
     public Boolean isXMLFormat(String provider){
         try {
             Iterator<Exporter> exporters = loader.iterator();
             while (exporters.hasNext()) {
                 Exporter e = exporters.next();
-                if (e.getProvider().equals(provider)) {
+                if (e.getProviderName().equals(provider)) {
                     return e.isXMLFormat();
                 }
             }

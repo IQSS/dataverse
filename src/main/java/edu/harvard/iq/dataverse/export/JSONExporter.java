@@ -2,6 +2,7 @@
 package edu.harvard.iq.dataverse.export;
 
 import com.google.auto.service.AutoService;
+import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.OutputStream;
@@ -18,8 +19,8 @@ import javax.json.JsonObject;
 public class JSONExporter implements Exporter {
 
     @Override
-    public String getProvider() {
-        return "json";
+    public String getProviderName() {
+        return "dataverse_json";
     }
 
     @Override
@@ -28,7 +29,7 @@ public class JSONExporter implements Exporter {
     }
 
     @Override
-    public void exportDataset(JsonObject json, OutputStream outputStream) throws ExportException {
+    public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream) throws ExportException {
         try{
             outputStream.write(json.toString().getBytes("UTF8"));
             outputStream.flush();
@@ -40,6 +41,16 @@ public class JSONExporter implements Exporter {
     @Override
     public Boolean isXMLFormat() {
         return false;
+    }
+    
+    @Override
+    public Boolean isHarvestable() {
+        return true;
+    }
+    
+    @Override
+    public Boolean isAvailableToUsers() {
+        return true;
     }
     
     @Override

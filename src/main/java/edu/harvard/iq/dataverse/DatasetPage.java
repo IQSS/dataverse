@@ -23,6 +23,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.LinkDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
+import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
@@ -1393,7 +1394,16 @@ public class DatasetPage implements java.io.Serializable {
     
     private boolean readOnly = true; 
     private boolean metadataExportEnabled;
+    private String originalSourceUrl = null;
 
+    public String getOriginalSourceUrl() {
+        return originalSourceUrl; 
+    }
+    
+    public void setOriginalSourceUrl(String originalSourceUrl) {
+        this.originalSourceUrl = originalSourceUrl;
+    }
+    
     public String init() {
         return init(true);
     }
@@ -1480,21 +1490,27 @@ public class DatasetPage implements java.io.Serializable {
             if (dataset.isHarvested()) {
                 // if so, we'll simply forward to the remote URL for the original
                 // source of this harvested dataset:
-                String originalSourceURL = dataset.getRemoteArchiveURL();
-                if (originalSourceURL != null && !originalSourceURL.equals("")) {
-                    logger.fine("redirecting to "+originalSourceURL);
+                originalSourceUrl = dataset.getRemoteArchiveURL();
+                /*
+                if (originalSourceUrl != null && !originalSourceUrl.equals("")) {
+                    logger.fine("redirecting to "+originalSourceUrl);
                     try {
-                        FacesContext.getCurrentInstance().getExternalContext().redirect(originalSourceURL);
+                        FacesContext.getCurrentInstance().getExternalContext().redirect(originalSourceUrl);
                     } catch (IOException ioex) {
                         // must be a bad URL...
                         // we don't need to do anything special here - we'll redirect
                         // to the local 404 page, below.
-                        logger.warning("failed to issue a redirect to "+originalSourceURL);
+                        logger.warning("failed to issue a redirect to "+originalSourceUrl);
                     }
-                    return originalSourceURL;
+                    return originalSourceUrl;
                 }
 
                 return permissionsWrapper.notFound();
+                */
+                datafileService.findFileMetadataOptimizedExperimental(dataset);
+                fileMetadatasSearch = workingVersion.getFileMetadatas();
+                
+                JsfHelper.addWarningMessage(dataset.getHarvestedFrom().getArchiveDescription()+" <b>Note that the physical files have been cached locally</b>, and can be downloaded from THIS dataverse node. You can see the dataset at the original source here: <A HREF=\""+originalSourceUrl+"\">"+originalSourceUrl+"</A>");
             }
 
             // Check permisisons           
@@ -1511,7 +1527,7 @@ public class DatasetPage implements java.io.Serializable {
             displayCitation = dataset.getCitation(true, workingVersion);
 
 
-            if (initFull) {
+            if (initFull && !dataset.isHarvested()) {
                 // init the files
                 //fileMetadatas = populateFileMetadatas();
                 if (workingVersion.isDraft() && canUpdateDataset()) {
@@ -3463,10 +3479,24 @@ public class DatasetPage implements java.io.Serializable {
         List<String[]> retList = new ArrayList();
         String myHostURL = getDataverseSiteUrl();
         for (String [] provider : ExportService.getInstance().getExportersLabels() ){
-            String[] temp = new String[2];            
-            temp[0] = provider[0];
-            temp[1] = myHostURL + "/api/datasets/export?exporter=" + provider[1]+ "&persistentId=" + dataset.getGlobalId();
-            retList.add(temp);
+            String formatName = provider[1];
+            String formatDisplayName = provider[0];
+            
+            Exporter exporter = null; 
+            try {
+                exporter = ExportService.getInstance().getExporter(formatName);
+            } catch (ExportException ex) {
+                exporter = null;
+            }
+            if (exporter != null && exporter.isAvailableToUsers()) {
+                // Not all metadata exports should be presented to the web users!
+                // Some are only for harvesting clients.
+                
+                String[] temp = new String[2];            
+                temp[0] = formatDisplayName;
+                temp[1] = myHostURL + "/api/datasets/export?exporter=" + formatName + "&persistentId=" + dataset.getGlobalId();
+                retList.add(temp);
+            }
         }
         return retList;  
     }

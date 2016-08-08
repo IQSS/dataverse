@@ -426,18 +426,40 @@ public class JsonPrinter {
     public static JsonObjectBuilder json(FileMetadata fmd) {
         return jsonObjectBuilder()
                 // deprecated: .add("category", fmd.getCategory())
+                // TODO: uh, figure out what to do here... it's deprecated 
+                // in a sense that there's no longer the category field in the 
+                // fileMetadata object; but there are now multiple, oneToMany file 
+                // categories - and we probably need to export them too!) -- L.A. 4.5
                 .add("description", fmd.getDescription())
-                .add("label", fmd.getLabel())
+                .add("label", fmd.getLabel()) // "label" is the filename
                 .add("version", fmd.getVersion())
                 .add("datasetVersionId", fmd.getDatasetVersion().getId())
-                .add("datafile", json(fmd.getDataFile()));
+                .add("datafile", json(fmd.getDataFile(), fmd));
     }
 
     public static JsonObjectBuilder json(DataFile df) {
-        String fileName = "";
-        if (df.getFileMetadata() != null) {
+        return json(df, null);
+    }
+    
+    public static JsonObjectBuilder json(DataFile df, FileMetadata fileMetadata) {
+        // File names are no longer stored in the DataFile entity; 
+        // (they are instead in the FileMetadata (as "labels") - this way 
+        // the filename can change between versions... 
+        // It does appear that for some historical purpose we still need the
+        // filename in the file DTO (?)... We rely on it to be there for the 
+        // DDI export, for example. So we need to make sure this is is the 
+        // *correct* file name - i.e., that it comes from the right version. 
+        // (TODO...? L.A. 4.5, Aug 7 2016)
+        String fileName = null;
+        
+        if (fileMetadata != null) {
+            fileName = fileMetadata.getLabel();
+        } else if (df.getFileMetadata() != null) {
+            // Note that this may not necessarily grab the file metadata from the 
+            // version *you want*! (L.A.)
             fileName = df.getFileMetadata().getLabel();
         }
+        
         return jsonObjectBuilder()
                 .add("id", df.getId())
                 .add("filename", fileName)

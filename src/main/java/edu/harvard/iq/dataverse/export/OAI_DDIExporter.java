@@ -14,24 +14,18 @@ import javax.xml.stream.XMLStreamException;
 
 /**
  *
- * @author Leonid Andreev
- * (based on the original DDIExporter by
  * @author skraffmi
- * - renamed OAI_DDIExporter)
  */
 @AutoService(Exporter.class)
-public class DDIExporter implements Exporter {
-    // TODO: 
-    // move these into the ddi export utility
+public class OAI_DDIExporter implements Exporter {
+    // TODO: move these to the export utility:
     private static String DEFAULT_XML_NAMESPACE = "ddi:codebook:2_5"; 
     private static String DEFAULT_XML_SCHEMALOCATION = "http://www.ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd";
     private static String DEFAULT_XML_VERSION = "2.5";
     
-    // This exporter is for the "full" DDI, that includes the file-level, 
-    // <data> and <var> metadata.
     @Override
     public String getProviderName() {
-        return "ddi";
+        return "oai_ddi";
     }
 
     @Override
@@ -42,7 +36,10 @@ public class DDIExporter implements Exporter {
     @Override
     public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream) throws ExportException {
         try {
-            DdiExportUtil.datasetJson2ddi(json, version, outputStream);
+            // This exporter is for the OAI ("short") flavor of the DDI - 
+            // that is, without the variable/data information. The ddi export 
+            // utility does not need the version entity to produce that. 
+            DdiExportUtil.datasetJson2ddi(json, outputStream);
         } catch (XMLStreamException xse) {
             throw new ExportException ("Caught XMLStreamException performing DDI export");
         }
@@ -55,31 +52,27 @@ public class DDIExporter implements Exporter {
     
     @Override
     public Boolean isHarvestable() {
-        // No, we don't want this format to be harvested!
-        // For datasets with tabular data the <data> portions of the DDIs 
-        // become huge and expensive to parse; even as they don't contain any 
-        // metadata useful to remote harvesters. -- L.A. 4.5
-        return false;
-    }
-    
-    @Override
-    public Boolean isAvailableToUsers() {
         return true;
     }
     
     @Override
+    public Boolean isAvailableToUsers() {
+        return false;
+    }
+    
+    @Override
     public String getXMLNameSpace() throws ExportException {
-        return this.DEFAULT_XML_NAMESPACE;   
+        return OAI_DDIExporter.DEFAULT_XML_NAMESPACE;   
     }
     
     @Override
     public String getXMLSchemaLocation() throws ExportException {
-        return this.DEFAULT_XML_SCHEMALOCATION;
+        return OAI_DDIExporter.DEFAULT_XML_SCHEMALOCATION;
     }
     
     @Override
     public String getXMLSchemaVersion() throws ExportException {
-        return this.DEFAULT_XML_VERSION;
+        return OAI_DDIExporter.DEFAULT_XML_VERSION;
     }
     
     @Override
@@ -87,4 +80,3 @@ public class DDIExporter implements Exporter {
         // this exporter does not uses or supports any parameters as of now.
     }
 }
-

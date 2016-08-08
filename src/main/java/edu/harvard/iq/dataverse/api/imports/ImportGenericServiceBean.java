@@ -65,7 +65,10 @@ public class ImportGenericServiceBean {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
-     ForeignMetadataFormatMapping findFormatMappingByName (String name) {
+    
+    public static String DCTERMS = "http://purl.org/dc/terms/";
+    
+    public ForeignMetadataFormatMapping findFormatMappingByName (String name) {
         try {
             return em.createNamedQuery("ForeignMetadataFormatMapping.findByName", ForeignMetadataFormatMapping.class)
                     .setParameter("name", name)
@@ -171,6 +174,45 @@ public class ImportGenericServiceBean {
                 
         processXMLElement(xmlr, ":", openingTag, foreignFormatMapping, datasetDTO);
   
+        return datasetDTO;
+
+    }
+    
+    // Helper method for importing Dublin Core xml. 
+    // Dublin Core is considered a mandatory, built in metadata format mapping. 
+    // It is distributed as required content, in reference_data.sql. 
+    // Note that arbitrary formatting tags are supported for the outer xml
+    // wrapper. -- L.A. 4.5
+    public DatasetDTO processDublinCoreXml(String DcXmlToParse, String openingTag) throws XMLStreamException {
+        // look up DC metadata mapping: 
+
+        ForeignMetadataFormatMapping dublinCoreMapping = findFormatMappingByName(DCTERMS);
+        if (dublinCoreMapping == null) {
+            throw new EJBException("Failed to find metadata mapping for " + DCTERMS);
+        }
+
+        DatasetDTO datasetDTO = this.initializeDataset();
+        StringReader reader = null;
+        XMLStreamReader xmlr = null;
+
+        try {
+            reader = new StringReader(DcXmlToParse);
+            XMLInputFactory xmlFactory = javax.xml.stream.XMLInputFactory.newInstance();
+            xmlr = xmlFactory.createXMLStreamReader(reader);
+
+            while (xmlr.next() == XMLStreamConstants.COMMENT); // skip pre root comments
+
+            if (openingTag != null) {
+                xmlr.require(XMLStreamConstants.START_ELEMENT, null, openingTag);
+            } else {
+                throw new EJBException("Must specify opening tag for this DC format (for example: oai_dc:dc");
+            }
+
+            processXMLElement(xmlr, ":", openingTag, dublinCoreMapping, datasetDTO);
+        } catch (XMLStreamException ex) {
+            throw new EJBException("ERROR occurred while parsing XML fragment  (" + DcXmlToParse.substring(0, 64) + "...); ", ex);
+        }
+
         return datasetDTO;
 
     }
@@ -299,7 +341,8 @@ public class ImportGenericServiceBean {
         return value;
     }
     
-       
+    public static final String OAI_DC_OPENING_TAG = "oai_dc:dc";
+    
     public static final String SOURCE_DVN_3_0 = "DVN_3_0";
     
     public static final String NAMING_PROTOCOL_HANDLE = "hdl";

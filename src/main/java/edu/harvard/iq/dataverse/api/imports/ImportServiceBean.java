@@ -20,6 +20,7 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseContact;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
+import edu.harvard.iq.dataverse.ForeignMetadataFormatMapping;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.imports.ImportUtil.ImportType;
@@ -95,7 +96,10 @@ public class ImportServiceBean {
     @EJB
     SettingsServiceBean settingsService;
     
-    @EJB ImportDDIServiceBean importDDIService;
+    @EJB 
+    ImportDDIServiceBean importDDIService;
+    @EJB
+    ImportGenericServiceBean importGenericService;
     
     /**
      * This is just a convenience method, for testing migration.  It creates 
@@ -202,8 +206,19 @@ public class ImportServiceBean {
         Dataset importedDataset = null;
 
         DatasetDTO dsDTO = null;
+        String json = null;
+        
+        // TODO: 
+        // At the moment (4.5; the first official "export/harvest release"), there
+        // are 3 supported metadata formats: DDI, DC and native Dataverse metadata 
+        // encoded in JSON. The 2 XML formats are handled by custom implementations;
+        // each of the 2 implementations uses its own parsing approach. (see the 
+        // ImportDDIServiceBean and ImportGenerciServiceBean for details). 
+        // TODO: Need to create a system of standardized import plugins - similar to Stephen
+        // Kraffmiller's export modules; replace the logic below with clean
+        // programmatic lookup of the import plugin needed. 
 
-        if (true) { //"ddi".equals(metadataFormat)) {
+        if ("ddi".equalsIgnoreCase(metadataFormat) || "oai_ddi".equals(metadataFormat)) {
             try {
                 String xmlToParse = new String(Files.readAllBytes(metadataFile.toPath()));
                 // TODO: 
@@ -214,16 +229,34 @@ public class ImportServiceBean {
             } catch (XMLStreamException e) {
                 throw new ImportException("XMLStreamException" + e);
             }
-        } // TODO: handle all supported formats; via plugins, probably
+        // TODO: handle all supported formats; via plugins, probably
         // (and if the format is already JSON - handle that too!
-        else {
+        } else if ("dc".equalsIgnoreCase(metadataFormat) || "oai_dc".equals(metadataFormat)) {
+            try {
+                String xmlToParse = new String(Files.readAllBytes(metadataFile.toPath()));
+                dsDTO = importGenericService.processDublinCoreXml(xmlToParse, ImportGenericServiceBean.OAI_DC_OPENING_TAG);
+            } catch (XMLStreamException e) {
+                throw new ImportException("XMLStreamException processing Dublin Core XML record: "+e.getMessage());
+            }
+        } else if ("dataverse_json".equals(metadataFormat)) {
+            // This is Dataverse metadata already formatted in JSON. 
+            // Simply read it into a string, and pass to the final import further down:
+            json = new String(Files.readAllBytes(metadataFile.toPath())); 
+        } else {
             throw new ImportException("Unsupported import metadata format: " + metadataFormat);
         }
 
-        // convert DTO to Json, 
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        String json = gson.toJson(dsDTO);
-        logger.fine("JSON produced for the metadata harvested: "+json);
+        if (json == null) {
+            if (dsDTO != null ) {
+                // convert DTO to Json, 
+                Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                json = gson.toJson(dsDTO);
+                logger.fine("JSON produced for the metadata harvested: "+json);
+            } else {
+                throw new ImportException("Failed to transform XML metadata format "+metadataFormat+" into a DatasetDTO");
+            }
+        }
+        
         JsonReader jsonReader = Json.createReader(new StringReader(json));
         JsonObject obj = jsonReader.readObject();
         //and call parse Json to read it into a dataset   

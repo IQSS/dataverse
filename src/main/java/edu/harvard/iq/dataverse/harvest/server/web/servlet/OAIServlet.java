@@ -20,6 +20,7 @@ import com.lyncode.xoai.dataprovider.model.MetadataFormat;
 import com.lyncode.xoai.services.impl.SimpleResumptionTokenFormat;
 import static com.lyncode.xoai.dataprovider.model.MetadataFormat.identity;
 import com.lyncode.xoai.dataprovider.parameters.OAICompiledRequest;
+import static com.lyncode.xoai.dataprovider.parameters.OAIRequest.Parameter.MetadataPrefix;
 import com.lyncode.xoai.dataprovider.repository.ItemRepository;
 import com.lyncode.xoai.dataprovider.repository.SetRepository;
 import com.lyncode.xoai.exceptions.InvalidResumptionTokenException;
@@ -29,7 +30,12 @@ import com.lyncode.xoai.model.oaipmh.Granularity;
 import com.lyncode.xoai.model.oaipmh.OAIPMH;
 
 import com.lyncode.xoai.xml.XmlWriter;
+import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.export.ExportException;
+import edu.harvard.iq.dataverse.export.ExportService;
+import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.web.XOAIItemRepository;
@@ -37,8 +43,11 @@ import edu.harvard.iq.dataverse.harvest.server.web.XOAISetRepository;
 import edu.harvard.iq.dataverse.harvest.server.web.xMetadata;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import java.io.File;
+import java.io.FileInputStream;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
@@ -73,11 +82,16 @@ public class OAIServlet extends HttpServlet {
     @EJB
     DataverseServiceBean dataverseService;
     @EJB
+    DatasetServiceBean datasetService;
+    
+    @EJB
     SystemConfig systemConfig;
     
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.server.web.servlet.OAIServlet");
     protected HashMap attributesMap = new HashMap();
     private static boolean debug = false;
+    private static final String DATAVERSE_EXTENDED_METADATA_FORMAT = "dataverse_json";
+    private static final String DATAVERSE_EXTENDED_METADATA_API = "/api/datasets/export";
      
     
     private Context xoaiContext;
@@ -91,6 +105,10 @@ public class OAIServlet extends HttpServlet {
         super.init(config);
         
         xoaiContext =  createContext();
+        
+        if (isDataverseOaiExtensionsSupported()) {
+            xoaiContext = addDataverseJsonMetadataFormat(xoaiContext);
+        }
         
         setRepository = new XOAISetRepository(setService);
         itemRepository = new XOAIItemRepository(recordService);
@@ -107,24 +125,47 @@ public class OAIServlet extends HttpServlet {
     }
     
     private Context createContext() {
-        // This is a stub. The list of available metadata formats will be
-        // populated dynamically, depending on the available exporters. 
         
-        MetadataFormat dcMetadataFormat = MetadataFormat.metadataFormat("oai_dc");
-        dcMetadataFormat.withNamespace("http://www.openarchives.org/OAI/2.0/oai_dc/");
-        dcMetadataFormat.withSchemaLocation("http://www.openarchives.org/OAI/2.0/oai_dc.xsd");
-        
-        MetadataFormat ddiMetadataFormat = MetadataFormat.metadataFormat("ddi");
-        ddiMetadataFormat.withNamespace("http://www.icpsr.umich.edu/DDI");
-        ddiMetadataFormat.withSchemaLocation("http://www.icpsr.umich.edu/DDI/Version2-0.xsd");
-        
-        MetadataFormat jsonMetadataFormat = MetadataFormat.metadataFormat("dataverse-custom-json");
-        jsonMetadataFormat.withNamespace("dataverse-custom-json");
-        jsonMetadataFormat.withSchemaLocation("dataverse-custom-json");
-        
-        Context context = new Context().withMetadataFormat(dcMetadataFormat).withMetadataFormat(ddiMetadataFormat).withMetadataFormat(jsonMetadataFormat);
-        
+        Context context = new Context();
+        addSupportedMetadataFormats(context);
         return context;
+    }
+    
+    private void addSupportedMetadataFormats(Context context) {
+        for (String[] provider : ExportService.getInstance().getExportersLabels()) {
+            String formatName = provider[1];
+            Exporter exporter;
+            try {
+                exporter = ExportService.getInstance().getExporter(formatName);
+            } catch (ExportException ex) {
+                exporter = null;
+            }
+
+            if (exporter != null && exporter.isXMLFormat() && exporter.isHarvestable()) {
+                MetadataFormat metadataFormat;
+
+                try {
+
+                    metadataFormat = MetadataFormat.metadataFormat(formatName);
+                    metadataFormat.withNamespace(exporter.getXMLNameSpace());
+                    metadataFormat.withSchemaLocation(exporter.getXMLSchemaLocation());
+                } catch (ExportException ex) {
+                    metadataFormat = null;
+                }
+                if (metadataFormat != null) {
+                    context.withMetadataFormat(metadataFormat);
+                }
+            }
+        }
+        //return context;
+    }
+    
+    private Context addDataverseJsonMetadataFormat(Context context) {
+        return context;
+    }
+    
+    private boolean isDataverseOaiExtensionsSupported() {
+        return false;
     }
     
     private RepositoryConfiguration createRepositoryConfiguration() {
@@ -182,7 +223,8 @@ public class OAIServlet extends HttpServlet {
             response.setContentType("text/xml;charset=UTF-8");
            
             if (isGetRecord(request)) {
-                writeGetRecord(response, handle);
+                String formatName = parametersBuilder.build().get(MetadataPrefix);
+                writeGetRecord(response, handle, formatName);
             } else {
                 XmlWriter xmlWriter = new XmlWriter(response.getOutputStream());
                 xmlWriter.write(handle);
@@ -209,21 +251,84 @@ public class OAIServlet extends HttpServlet {
         
     }
 
-    private void writeGetRecord(HttpServletResponse response, OAIPMH handle) throws IOException, XmlWriteException, XMLStreamException {
+    private void writeGetRecord(HttpServletResponse response, OAIPMH handle, String formatName) throws IOException, XmlWriteException, XMLStreamException {
+        // TODO: 
+        // produce clean failure records when proper record cannot be 
+        // produced for some reason. 
+        
         String responseBody = XmlWriter.toString(handle);
 
-        responseBody = responseBody.replaceFirst("<metadata/></record></GetRecord></OAI-PMH>", "<metadata>");
+        responseBody = responseBody.replaceFirst("<metadata/></record></GetRecord></OAI-PMH>", "<metadata");
         OutputStream outputStream = response.getOutputStream();
-        outputStream.write(responseBody.getBytes());
 
         GetRecord getRecord = (GetRecord) handle.getVerb();
-        xMetadata metadata = (xMetadata) getRecord.getRecord().getMetadata();
-        metadata.writeToStream(outputStream);
+        String identifier = getRecord.getRecord().getHeader().getIdentifier();
+        logger.info("identifier from GetRecord: " + identifier);
+        
+        Dataset dataset = datasetService.findByGlobalId(identifier);
+        if (dataset == null) {
+            // TODO: Failure record:
+        }
+        
+        if (!isExtendedDataverseMetadataMode(formatName)) {
+            InputStream inputStream = null; 
+            try {
+                inputStream = ExportService.getInstance().getExport(dataset, formatName);
+            } catch (ExportException ex) {
+                inputStream = null; 
+            }
+
+            if (inputStream == null) {
+                // TODO: Failure record:
+            }
+        
+            responseBody = responseBody.concat(">");
+            outputStream.write(responseBody.getBytes());
+            outputStream.flush();
+            
+            writeMetadataStream(inputStream, outputStream);
+        } else {
+            // Custom Dataverse metadata extension: 
+            // (check again if the client has explicitly requested/advertised support
+            // of the extensions?)
+            
+            responseBody = responseBody.concat(customMetadataExtensionAttribute(identifier)+">");
+            outputStream.write(responseBody.getBytes());
+            outputStream.flush();
+        }
+
+        
 
         String responseFooter = "</metadata></record></GetRecord></OAI-PMH>";
         outputStream.write(responseFooter.getBytes());
         outputStream.flush();
         outputStream.close();
+        
+        
+    }
+    
+    private String customMetadataExtensionAttribute(String identifier) {
+        String ret = " directApiCall=\"" 
+                + systemConfig.getDataverseSiteUrl() 
+                + DATAVERSE_EXTENDED_METADATA_API 
+                + "?exporter=" 
+                + DATAVERSE_EXTENDED_METADATA_FORMAT 
+                + "&persistentId="
+                + identifier;
+        
+        return ret;
+    }
+    
+    private void writeMetadataStream(InputStream inputStream, OutputStream outputStream) throws IOException {
+        int bufsize;
+        byte[] buffer = new byte[4 * 8192];
+
+        while ((bufsize = inputStream.read(buffer)) != -1) {
+            outputStream.write(buffer, 0, bufsize);
+            outputStream.flush();
+        }
+
+        inputStream.close();
     }
     
     private boolean isGetRecord(HttpServletRequest request) {
@@ -232,6 +337,9 @@ public class OAIServlet extends HttpServlet {
     }
 
 
+    private boolean isExtendedDataverseMetadataMode(String formatName) {
+        return DATAVERSE_EXTENDED_METADATA_FORMAT.equals(formatName);
+    }
     /**                                                                                                                                      
      * Get a response Writer depending on acceptable encodings                                                                               
      * @param request the servlet's request information                                                                                      

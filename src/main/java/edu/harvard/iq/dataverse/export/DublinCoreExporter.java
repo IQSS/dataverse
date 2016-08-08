@@ -2,7 +2,7 @@
 package edu.harvard.iq.dataverse.export;
 
 import com.google.auto.service.AutoService;
-import edu.harvard.iq.dataverse.export.ddi.DdiExportUtil;
+import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.export.dublincore.DublinCoreExportUtil;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -20,8 +20,8 @@ public class DublinCoreExporter implements Exporter {
     
     
     @Override
-    public String getProvider() {
-        return "DublinCore";
+    public String getProviderName() {
+        return "oai_dc";
     }
 
     @Override
@@ -30,16 +30,26 @@ public class DublinCoreExporter implements Exporter {
     }
 
     @Override
-    public void exportDataset(JsonObject json, OutputStream outputStream) throws ExportException {
+    public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream) throws ExportException {
         try {
-            DublinCoreExportUtil.datasetJson2dublincore(json, outputStream);
+            DublinCoreExportUtil.datasetJson2dublincore(json, outputStream, DublinCoreExportUtil.DC_FLAVOR_OAI);
         } catch (XMLStreamException xse) {
-            throw new ExportException("Caught XMLStreamException performing DDI export");
+            throw new ExportException("Caught XMLStreamException performing DC export");
         }
     }
 
     @Override
     public Boolean isXMLFormat() {
+        return true;
+    }
+    
+    @Override
+    public Boolean isHarvestable() {
+        return true;
+    }
+    
+    @Override
+    public Boolean isAvailableToUsers() {
         return true;
     }
     
