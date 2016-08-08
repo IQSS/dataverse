@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.api.imports;
 
 import com.google.gson.Gson;
 import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
+import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetVersion;
@@ -178,12 +179,12 @@ public class ImportGenericServiceBean {
 
     }
     
-    // Helper method for importing Dublin Core xml. 
+    // Helper method for importing harvested Dublin Core xml.
     // Dublin Core is considered a mandatory, built in metadata format mapping. 
     // It is distributed as required content, in reference_data.sql. 
     // Note that arbitrary formatting tags are supported for the outer xml
     // wrapper. -- L.A. 4.5
-    public DatasetDTO processDublinCoreXml(String DcXmlToParse, String openingTag) throws XMLStreamException {
+    public DatasetDTO processOAIDCxml(String DcXmlToParse) throws XMLStreamException {
         // look up DC metadata mapping: 
         
         ForeignMetadataFormatMapping dublinCoreMapping = findFormatMappingByName(DCTERMS);
@@ -203,21 +204,29 @@ public class ImportGenericServiceBean {
             //while (xmlr.next() == XMLStreamConstants.COMMENT); // skip pre root comments
             xmlr.nextTag();
 
-            if (openingTag != null) {
-                xmlr.require(XMLStreamConstants.START_ELEMENT, null, openingTag);
-            } else {
-                throw new EJBException("Must specify opening tag for this DC format (for example: oai_dc:dc");
-            }
+            xmlr.require(XMLStreamConstants.START_ELEMENT, null, OAI_DC_OPENING_TAG);
 
-            processXMLElement(xmlr, ":", openingTag, dublinCoreMapping, datasetDTO);
+            processXMLElement(xmlr, ":", OAI_DC_OPENING_TAG, dublinCoreMapping, datasetDTO);
         } catch (XMLStreamException ex) {
             throw new EJBException("ERROR occurred while parsing XML fragment  (" + DcXmlToParse.substring(0, 64) + "...); ", ex);
         }
 
         
-        //if (isHarvestImport(importType)) {
         datasetDTO.getDatasetVersion().setVersionState(DatasetVersion.VersionState.RELEASED);
-        //}
+        
+        // Our DC import handles the contents of the dc:identifier field 
+        // as an "other id". In the context of OAI harvesting, we expect 
+        // the identifier to be a global id, so we need to rearrange that: 
+        
+        String identifier = getOtherIdFromDTO(datasetDTO.getDatasetVersion());
+        logger.fine("Imported identifier: "+identifier);
+        
+        String globalIdentifier = reassignIdentifierAsGlobalId(identifier, datasetDTO);
+        logger.fine("Detected global identifier: "+globalIdentifier);
+        
+        if (globalIdentifier == null) {
+            throw new EJBException("Failed to find a global identifier in the OAI_DC XML record.");
+        }
         
         return datasetDTO;
 
@@ -347,6 +356,67 @@ public class ImportGenericServiceBean {
         return value;
     }
     
+    private String getOtherIdFromDTO(DatasetVersionDTO datasetVersionDTO) {
+        for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
+            String key = entry.getKey();
+            MetadataBlockDTO value = entry.getValue();
+            if ("citation".equals(key)) {
+                for (FieldDTO fieldDTO : value.getFields()) {
+                    if (DatasetFieldConstant.otherId.equals(fieldDTO.getTypeName())) {
+                        String otherId = "";
+                        for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
+                                FieldDTO next = iterator.next();
+                                if (DatasetFieldConstant.otherIdValue.equals(next.getTypeName())) {
+                                    otherId =  next.getSinglePrimitive();
+                                }
+                            }
+                            if (!otherId.isEmpty()){
+                                return otherId;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    
+    private String reassignIdentifierAsGlobalId(String identifierString, DatasetDTO datasetDTO) {
+
+        int index1 = identifierString.indexOf(':');
+        int index2 = identifierString.lastIndexOf('/');
+        if (index1==-1) {
+            logger.warning("Error parsing identifier: " + identifierString + ". ':' not found in string");
+            return null; 
+        }  
+       
+        String protocol = identifierString.substring(0, index1);
+        
+        if (!"doi".equals(protocol) && !"hdl".equals(protocol)) {
+            logger.warning("Unsupported protocol: "+identifierString);
+            return null;
+        }
+        
+        
+        if (index2 == -1) {
+            logger.warning("Error parsing identifier: " + identifierString + ". Second separator not found in string");
+            return null;
+        } 
+        
+        String authority = identifierString.substring(index1+1, index2);
+        String identifier = identifierString.substring(index2+1);
+        
+        datasetDTO.setProtocol(protocol);
+        datasetDTO.setDoiSeparator("/");
+        datasetDTO.setAuthority(authority);
+        datasetDTO.setIdentifier(identifier);
+        
+        // reassemble and return: 
+        return protocol + ":" + authority + "/" + identifier;
+    }
+        
+        
     public static final String OAI_DC_OPENING_TAG = "dc";
     public static final String DCTERMS_OPENING_TAG = "dcterms";
     

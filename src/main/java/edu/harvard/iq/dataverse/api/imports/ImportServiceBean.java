@@ -235,7 +235,7 @@ public class ImportServiceBean {
         } else if ("dc".equalsIgnoreCase(metadataFormat) || "oai_dc".equals(metadataFormat)) {
             try {
                 String xmlToParse = new String(Files.readAllBytes(metadataFile.toPath()));
-                dsDTO = importGenericService.processDublinCoreXml(xmlToParse, ImportGenericServiceBean.OAI_DC_OPENING_TAG);
+                dsDTO = importGenericService.processOAIDCxml(xmlToParse);
             } catch (XMLStreamException e) {
                 throw new ImportException("XMLStreamException processing Dublin Core XML record: "+e.getMessage());
             }
