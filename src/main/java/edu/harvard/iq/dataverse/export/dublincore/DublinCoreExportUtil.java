@@ -84,6 +84,12 @@ public class DublinCoreExportUtil {
         xmlw.flush();
     }
     
+    //TODO:
+    // If the requested flavor is "OAI_DC" (the minimal, original 15 field format), 
+    // we shuld NOT be exporting the extended, DCTERMS fields 
+    // - such as, for example, "dateSubmitted" ... (4.5.1?)
+    // -- L.A. 
+    
     private static void createDC(XMLStreamWriter xmlw, DatasetDTO datasetDto, String dcFlavor) throws XMLStreamException {
         DatasetVersionDTO version = datasetDto.getDatasetVersion();
         String persistentAgency = datasetDto.getProtocol();
