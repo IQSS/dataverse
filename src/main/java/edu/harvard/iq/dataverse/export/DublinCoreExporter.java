@@ -50,17 +50,17 @@ public class DublinCoreExporter implements Exporter {
     
     @Override
     public Boolean isAvailableToUsers() {
-        return true;
+        return false;
     }
     
     @Override
     public String getXMLNameSpace() throws ExportException {
-        return DublinCoreExportUtil.DEFAULT_XML_NAMESPACE;   
+        return DublinCoreExportUtil.OAI_DC_XML_NAMESPACE;   
     }
     
     @Override
     public String getXMLSchemaLocation() throws ExportException {
-        return DublinCoreExportUtil.DEFAULT_XML_SCHEMALOCATION;
+        return DublinCoreExportUtil.OAI_DC_XML_SCHEMALOCATION;
     }
     
     @Override

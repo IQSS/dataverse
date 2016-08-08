@@ -34,14 +34,19 @@ public class DublinCoreExportUtil {
  
     private static final Logger logger = Logger.getLogger(DdiExportUtil.class.getCanonicalName());
     
-    public static String DEFAULT_XML_NAMESPACE = "http://www.openarchives.org/OAI/2.0/oai_dc/"; 
-    public static String DEFAULT_XML_SCHEMALOCATION = "http://www.openarchives.org/OAI/2.0/oai_dc.xsd";
+    public static String OAI_DC_XML_NAMESPACE = "http://www.openarchives.org/OAI/2.0/oai_dc/"; 
+    public static String OAI_DC_XML_SCHEMALOCATION = "http://www.openarchives.org/OAI/2.0/oai_dc.xsd";
+    
     public static String DC_XML_NAMESPACE = "http://purl.org/dc/elements/1.1/";
+    
     public static String DCTERMS_XML_NAMESPACE = "http://purl.org/dc/terms/";
+    public static String DCTERMS_DEFAULT_NAMESPACE="http://dublincore.org/documents/dcmi-terms/";
+    public static String DCTERMS_XML_SCHEMALOCATION="http://dublincore.org/schemas/xmls/qdc/dcterms.xsd";
     public static String DEFAULT_XML_VERSION = "2.0";
     
     public static String DC_FLAVOR_OAI = "dc";
     public static String DC_FLAVOR_DCTERMS = "dcterms";
+    
     public static String DEFAULT_DC_FLAVOR = DC_FLAVOR_DCTERMS;
 
         
@@ -61,15 +66,16 @@ public class DublinCoreExportUtil {
         if (DC_FLAVOR_DCTERMS.equals(dcFlavor)) {
             xmlw.writeStartElement("metadata");
             xmlw.writeAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-            xmlw.writeAttribute("xmlns:dc", "http://purl.org/dc/elements/1.1/");
-            xmlw.writeAttribute("xmlns:dcterms", "http://purl.org/dc/terms/");
-            xmlw.writeDefaultNamespace("http://dublincore.org/documents/dcmi-terms/");
+            xmlw.writeAttribute("xmlns:dc", DC_XML_NAMESPACE);
+            xmlw.writeAttribute("xmlns:dcterms", DCTERMS_XML_NAMESPACE);
+            xmlw.writeDefaultNamespace(DCTERMS_DEFAULT_NAMESPACE);
+            //xmlw.writeAttribute("xsi:schemaLocation", DCTERMS_DEFAULT_NAMESPACE+" "+DCTERMS_XML_SCHEMALOCATION);
         } else if (DC_FLAVOR_OAI.equals(dcFlavor)) {      
             xmlw.writeStartElement("oai_dc:dc");        
             xmlw.writeAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-            xmlw.writeAttribute("xmlns:oai_dc", DEFAULT_XML_NAMESPACE);
+            xmlw.writeAttribute("xmlns:oai_dc", OAI_DC_XML_NAMESPACE);
             xmlw.writeAttribute("xmlns:dc", DC_XML_NAMESPACE);
-            xmlw.writeAttribute("xsi:schemaLocation", DEFAULT_XML_NAMESPACE+" "+DEFAULT_XML_SCHEMALOCATION);
+            xmlw.writeAttribute("xsi:schemaLocation", OAI_DC_XML_NAMESPACE+" "+OAI_DC_XML_SCHEMALOCATION);
             writeAttribute(xmlw, "version", DEFAULT_XML_VERSION);
         }
         
