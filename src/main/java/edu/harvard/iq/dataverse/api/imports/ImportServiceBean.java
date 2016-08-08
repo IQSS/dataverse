@@ -225,6 +225,7 @@ public class ImportServiceBean {
                 // import type should be configurable - it should be possible to 
                 // select whether you want to harvest with or without files, 
                 // ImportType.HARVEST vs. ImportType.HARVEST_WITH_FILES
+                logger.info("importing DDI "+metadataFile.getAbsolutePath());
                 dsDTO = importDDIService.doImport(ImportType.HARVEST_WITH_FILES, xmlToParse);
             } catch (XMLStreamException e) {
                 throw new ImportException("XMLStreamException" + e);

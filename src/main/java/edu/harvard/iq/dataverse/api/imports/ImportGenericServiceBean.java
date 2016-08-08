@@ -185,7 +185,7 @@ public class ImportGenericServiceBean {
     // wrapper. -- L.A. 4.5
     public DatasetDTO processDublinCoreXml(String DcXmlToParse, String openingTag) throws XMLStreamException {
         // look up DC metadata mapping: 
-
+        
         ForeignMetadataFormatMapping dublinCoreMapping = findFormatMappingByName(DCTERMS);
         if (dublinCoreMapping == null) {
             throw new EJBException("Failed to find metadata mapping for " + DCTERMS);
@@ -200,7 +200,8 @@ public class ImportGenericServiceBean {
             XMLInputFactory xmlFactory = javax.xml.stream.XMLInputFactory.newInstance();
             xmlr = xmlFactory.createXMLStreamReader(reader);
 
-            while (xmlr.next() == XMLStreamConstants.COMMENT); // skip pre root comments
+            //while (xmlr.next() == XMLStreamConstants.COMMENT); // skip pre root comments
+            xmlr.nextTag();
 
             if (openingTag != null) {
                 xmlr.require(XMLStreamConstants.START_ELEMENT, null, openingTag);
@@ -213,6 +214,11 @@ public class ImportGenericServiceBean {
             throw new EJBException("ERROR occurred while parsing XML fragment  (" + DcXmlToParse.substring(0, 64) + "...); ", ex);
         }
 
+        
+        //if (isHarvestImport(importType)) {
+        datasetDTO.getDatasetVersion().setVersionState(DatasetVersion.VersionState.RELEASED);
+        //}
+        
         return datasetDTO;
 
     }
@@ -341,7 +347,8 @@ public class ImportGenericServiceBean {
         return value;
     }
     
-    public static final String OAI_DC_OPENING_TAG = "oai_dc:dc";
+    public static final String OAI_DC_OPENING_TAG = "dc";
+    public static final String DCTERMS_OPENING_TAG = "dcterms";
     
     public static final String SOURCE_DVN_3_0 = "DVN_3_0";
     

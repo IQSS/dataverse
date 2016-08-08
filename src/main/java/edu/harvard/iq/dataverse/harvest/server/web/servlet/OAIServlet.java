@@ -91,6 +91,8 @@ public class OAIServlet extends HttpServlet {
     protected HashMap attributesMap = new HashMap();
     private static boolean debug = false;
     private static final String DATAVERSE_EXTENDED_METADATA_FORMAT = "dataverse_json";
+    private static final String DATAVERSE_EXTENDED_METADATA_INFO = "Custom Dataverse metadata in JSON format (Dataverse4 to Dataverse4 harvesting only)";
+    private static final String DATAVERSE_EXTENDED_METADATA_SCHEMA = "JSON schema pending";
     private static final String DATAVERSE_EXTENDED_METADATA_API = "/api/datasets/export";
      
     
@@ -161,11 +163,15 @@ public class OAIServlet extends HttpServlet {
     }
     
     private Context addDataverseJsonMetadataFormat(Context context) {
+        MetadataFormat metadataFormat = MetadataFormat.metadataFormat(DATAVERSE_EXTENDED_METADATA_FORMAT);
+        metadataFormat.withNamespace(DATAVERSE_EXTENDED_METADATA_INFO);
+        metadataFormat.withSchemaLocation(DATAVERSE_EXTENDED_METADATA_SCHEMA);
+        context.withMetadataFormat(metadataFormat);
         return context;
     }
     
     private boolean isDataverseOaiExtensionsSupported() {
-        return false;
+        return true;
     }
     
     private RepositoryConfiguration createRepositoryConfiguration() {
@@ -313,8 +319,9 @@ public class OAIServlet extends HttpServlet {
                 + DATAVERSE_EXTENDED_METADATA_API 
                 + "?exporter=" 
                 + DATAVERSE_EXTENDED_METADATA_FORMAT 
-                + "&persistentId="
-                + identifier;
+                + "&amp;persistentId="
+                + identifier
+                + "\"";
         
         return ret;
     }

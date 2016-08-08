@@ -32,6 +32,7 @@ import java.io.FileOutputStream;
 
 import java.io.PrintWriter;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 
 import java.util.zip.GZIPInputStream;
@@ -71,6 +72,7 @@ import javax.xml.stream.XMLInputFactory;
 
 public class FastGetRecord {
    
+    private static String DATAVERSE_EXTENDED_METADATA = "dataverse_json";
     /**
      * Client-side GetRecord verb constructor
      *
@@ -120,7 +122,7 @@ public class FastGetRecord {
         int responseCode = 0;
 
         con = (HttpURLConnection) url.openConnection();
-        con.setRequestProperty("User-Agent", "OAIHarvester/2.0");
+        con.setRequestProperty("User-Agent", "DataverseHarvester/3.0");
         con.setRequestProperty("Accept-Encoding",
                                    "compress, gzip, identify");
         try {
@@ -172,12 +174,12 @@ public class FastGetRecord {
             boolean metadataFlag = false;
             boolean metadataWritten = false;
             boolean schemaChecked = false;
+            FileOutputStream tempFileStream = null;
+            PrintWriter metadataOut = null;
 
             savedMetadataFile = File.createTempFile("meta", ".tmp");
-            FileOutputStream tempFileStream = new FileOutputStream(savedMetadataFile);
-            PrintWriter metadataOut = new PrintWriter (tempFileStream, true);
-
-            metadataOut.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+            
+            
 
             int mopen = 0;
             int mclose = 0;
@@ -191,8 +193,18 @@ public class FastGetRecord {
                         line = line.substring(i+10);
 
                         oaiResponseHeader = oaiResponseHeader.concat(lineCopy.replaceAll("<metadata>.*", "<metadata></metadata></record></GetRecord></OAI-PMH>"));
+                        tempFileStream = new FileOutputStream(savedMetadataFile);
+                        metadataOut = new PrintWriter (tempFileStream, true);
+
+                        //metadataOut.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"); /* ? */
 
                         metadataFlag = true;
+                    } else if (line.matches(".*<metadata [^>]*>.*")) {
+                        if (metadataPrefix.equals(DATAVERSE_EXTENDED_METADATA)) {
+                            oaiResponseHeader = oaiResponseHeader.concat(line);
+                            metadataWritten = true;
+                            metadataFlag = true;
+                        }
                     }
                 }
 
@@ -337,7 +349,7 @@ public class FastGetRecord {
             try {
                 StringReader reader = new StringReader(oaiResponseHeader);
                 xmlr = xmlInputFactory.createXMLStreamReader(reader);
-                processOAIheader(xmlr);
+                processOAIheader(xmlr, metadataPrefix.equals(DATAVERSE_EXTENDED_METADATA));
 
             } catch (XMLStreamException ex) {
                 //Logger.getLogger("global").log(Level.SEVERE, null, ex);
@@ -405,16 +417,16 @@ public class FastGetRecord {
         return requestURL.toString();
     }
 
-    private void processOAIheader (XMLStreamReader xmlr) throws XMLStreamException {
+    private void processOAIheader (XMLStreamReader xmlr, boolean extensionMode) throws XMLStreamException, IOException {
 
         // is this really a GetRecord response?
         xmlr.nextTag();
         xmlr.require(XMLStreamConstants.START_ELEMENT, null, "OAI-PMH");
-        processOAIPMH(xmlr);
+        processOAIPMH(xmlr, extensionMode);
 
     }
 
-    private void processOAIPMH (XMLStreamReader xmlr) throws XMLStreamException {
+    private void processOAIPMH (XMLStreamReader xmlr, boolean extensionMode) throws XMLStreamException, IOException {
 
         for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
             if (event == XMLStreamConstants.START_ELEMENT) {
@@ -436,17 +448,21 @@ public class FastGetRecord {
                     throw new XMLStreamException(this.errorMessage);
 
                 }
-                else if (xmlr.getLocalName().equals("GetRecord")) processGetRecordSection(xmlr);
+                else if (xmlr.getLocalName().equals("GetRecord")) {
+                    processGetRecordSection(xmlr, extensionMode);
+                }
             } else if (event == XMLStreamConstants.END_ELEMENT) {
                 if (xmlr.getLocalName().equals("OAI-PMH")) return;
             }
         }
     }
 
-    private void processGetRecordSection (XMLStreamReader xmlr) throws XMLStreamException {
+    private void processGetRecordSection (XMLStreamReader xmlr, boolean extensionMode) throws XMLStreamException, IOException {
         for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
             if (event == XMLStreamConstants.START_ELEMENT) {
-                 if (xmlr.getLocalName().equals("record")) {processRecord(xmlr);}
+                 if (xmlr.getLocalName().equals("record")) {
+                     processRecord(xmlr, extensionMode);
+                 }
             } else if (event == XMLStreamConstants.END_ELEMENT) {
                 if (xmlr.getLocalName().equals("GetRecord")) return;
             }
@@ -454,7 +470,7 @@ public class FastGetRecord {
 
     }
 
-    private void processRecord (XMLStreamReader xmlr) throws XMLStreamException {
+    private void processRecord (XMLStreamReader xmlr, boolean extensionMode) throws XMLStreamException, IOException {
         for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
             if (event == XMLStreamConstants.START_ELEMENT) {
                  if (xmlr.getLocalName().equals("header")) {
@@ -462,7 +478,12 @@ public class FastGetRecord {
                         this.recordDeleted = true;
                      }
                      processHeader(xmlr);
-                 } else if (xmlr.getLocalName().equals("metadata")) {/*do nothing;*/}
+                 } else if (xmlr.getLocalName().equals("metadata")) {
+                     if (extensionMode) {
+                        String extendedMetadataApiUrl = xmlr.getAttributeValue(null, "directApiCall");
+                        processMetadataExtended(extendedMetadataApiUrl);
+                     }
+                 }
             } else if (event == XMLStreamConstants.END_ELEMENT) {
                 if (xmlr.getLocalName().equals("record")) return;
             }
@@ -481,6 +502,66 @@ public class FastGetRecord {
                 if (xmlr.getLocalName().equals("header")) return;
             }
         }
+    }
+    
+    private void processMetadataExtended (String extendedApiUrl) throws IOException {
+        InputStream in = null;
+        int responseCode = 0;
+        HttpURLConnection con = null;
+
+
+        
+        try {
+            URL url = new URL(extendedApiUrl.replaceAll("&amp;", "&")); // is this necessary?
+
+            con = (HttpURLConnection) url.openConnection();
+            con.setRequestProperty("User-Agent", "DataverseHarvester/3.0");
+            responseCode = con.getResponseCode();
+        } catch (MalformedURLException mue) {
+            throw new IOException ("Bad API URL: "+extendedApiUrl);
+        } catch (FileNotFoundException e) {
+            responseCode = HttpURLConnection.HTTP_UNAVAILABLE;
+        }
+
+        
+
+
+        if (responseCode == 200) {
+            in = con.getInputStream();
+            // TODO: 
+            /* we should probably still support gzip/compress encoding here - ?
+            String contentEncoding = con.getHeaderField("Content-Encoding");
+
+            // support for the standard compress/gzip/deflate compression
+            // schemes:
+
+            if ("compress".equals(contentEncoding)) {
+                ZipInputStream zis = new ZipInputStream(con.getInputStream());
+                zis.getNextEntry();
+                in = zis;
+            } else if ("gzip".equals(contentEncoding)) {
+                in = new GZIPInputStream(con.getInputStream());
+            } else if ("deflate".equals(contentEncoding)) {
+                in = new InflaterInputStream(con.getInputStream());
+            } ...
+            */
+            FileOutputStream tempOut = new FileOutputStream(savedMetadataFile);
+            
+            int bufsize;
+            byte[] buffer = new byte[4 * 8192];
+
+            while ((bufsize = in.read(buffer)) != -1) {
+                tempOut.write(buffer, 0, bufsize);
+                tempOut.flush();
+            }
+
+            in.close();
+            tempOut.close();
+            return;
+        }
+
+        throw new IOException("Failed to download extended metadata.");
+  
     }
 
     
