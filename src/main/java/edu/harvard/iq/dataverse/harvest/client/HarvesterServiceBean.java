@@ -427,9 +427,9 @@ public class HarvesterServiceBean {
                 +identifier 
                 +" " 
                 +e.getClass().getName() 
-                +" (exception message suppressed)";
-                //+" " 
-                //+e.getMessage();
+                //+" (exception message suppressed)";
+                +" " 
+                +e.getMessage();
         
             hdLogger.log(Level.SEVERE, errMessage);
     }

@@ -322,6 +322,11 @@ public class ImportServiceBean {
             Dataset existingDs = datasetService.findByGlobalId(ds.getGlobalId());
 
             if (existingDs != null) {
+                // If this dataset already exists IN ANOTHER DATASET 
+                // we are just going to skip it!
+                if (existingDs.getOwner() != null && !owner.getId().equals(existingDs.getOwner().getId())) {
+                    throw new ImportException("The dataset with the global id "+ds.getGlobalId()+" already exists, in the dataverse "+existingDs.getOwner().getAlias()+", skipping.");
+                }
                 // For harvested datasets, there should always only be one version.
                 // We will replace the current version with the imported version.
                 if (existingDs.getVersions().size() != 1) {
@@ -335,6 +340,9 @@ public class ImportServiceBean {
                     em.remove(merged);
                     harvestedFile = null; 
                 }
+                // TODO: 
+                // Verify what happens with the indexed files in SOLR? 
+                // are they going to be overwritten by the reindexing of the dataset?
                 existingDs.setFiles(null);
                 Dataset merged = em.merge(existingDs);
                 engineSvc.submit(new DestroyDatasetCommand(merged, dataverseRequest));
