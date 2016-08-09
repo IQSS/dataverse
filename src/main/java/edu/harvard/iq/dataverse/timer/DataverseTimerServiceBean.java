@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.harvest.client.HarvestTimerInfo;
 import edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClientServiceBean;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.InetAddress;
@@ -60,6 +61,8 @@ public class DataverseTimerServiceBean implements Serializable {
     HarvestingClientServiceBean harvestingClientService;
     @EJB 
     AuthenticationServiceBean authSvc;
+    @EJB
+    SystemConfig systemConfig;
     
     public void createTimer(Date initialExpiration, long intervalDuration, Serializable info) {
         try {
@@ -84,6 +87,10 @@ public class DataverseTimerServiceBean implements Serializable {
         // if an exception is thrown from this method, Glassfish will automatically
         // call the method a second time. (The minimum number of re-tries for a Timer method is 1)
 
+        if (!systemConfig.isTimerServer()) {
+            logger.info("I am not the timer server! - bailing out of handleTimeout()");
+        }
+        
         try {
             logger.log(Level.INFO,"Handling timeout on " + InetAddress.getLocalHost().getCanonicalHostName());
         } catch (UnknownHostException ex) {

@@ -69,6 +69,8 @@ public class SystemConfig {
     private static String appVersionString = null; 
     private static String buildNumberString = null; 
     
+    private static final String JVM_TIMER_SERVER_OPTION = "dataverse.timerServer";
+    
     public String getVersion() {
         return getVersion(false);
     }
@@ -498,5 +500,13 @@ public class SystemConfig {
     
     public void disableOAIServer() {
         settingsService.deleteValueForKey(SettingsServiceBean.Key.OAIServerEnabled);
-    }    
+    }   
+    
+    public boolean isTimerServer() {
+        String optionValue = System.getProperty(JVM_TIMER_SERVER_OPTION);
+        if ("true".equalsIgnoreCase(optionValue)) {
+            return true;
+        }
+        return false;
+    }
 }
