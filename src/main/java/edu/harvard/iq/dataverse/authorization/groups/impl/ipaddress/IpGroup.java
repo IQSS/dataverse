@@ -45,6 +45,8 @@ public class IpGroup extends PersistedGlobalGroup {
     @Override
     public boolean contains( DataverseRequest rq ) {
         IpAddress addr = rq.getSourceAddress();
+        if ( addr == null ) return false;
+        
         for ( IpAddressRange r : ((addr instanceof IPv4Address) ? ipv4Ranges : ipv6Ranges) ) {
            Boolean containment =  r.contains(addr);
            if ( (containment != null) && containment ) {

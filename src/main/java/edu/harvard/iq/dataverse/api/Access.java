@@ -1088,6 +1088,7 @@ public class Access extends AbstractApiBean {
                     } else {
                         if (apiTokenUser != null && permissionService.requestOn(createDataverseRequest(apiTokenUser), df.getOwner()).has(Permission.ViewUnpublishedDataset)) {
                             logger.log(Level.FINE, "Token-based auth: user {0} is granted access to the restricted, unpublished datafile.", apiTokenUser.getIdentifier());
+                            return true;
                         }
                     }
                 }
@@ -1132,15 +1133,15 @@ public class Access extends AbstractApiBean {
                 return false;
             } 
             
-            if (permissionService.userOn(user, df).has(Permission.DownloadFile)) { 
+        if (permissionService.requestOn(createDataverseRequest(user), df).has(Permission.DownloadFile)) { 
                 if (published) {
                     logger.log(Level.FINE, "API token-based auth: User {0} has rights to access the datafile.", user.getIdentifier());
                     return true; 
                 } else {
                     // if the file is NOT published, we will let them download the 
                     // file ONLY if they also have the permission to view 
-                    // unpublished verions:
-                    if (permissionService.userOn(user, df.getOwner()).has(Permission.ViewUnpublishedDataset)) {
+                    // unpublished versions:
+                    if (permissionService.requestOn(createDataverseRequest(user), df.getOwner()).has(Permission.ViewUnpublishedDataset)) {
                         logger.log(Level.FINE, "API token-based auth: User {0} has rights to access the (unpublished) datafile.", user.getIdentifier());
                         return true;
                     } else {

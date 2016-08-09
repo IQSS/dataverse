@@ -52,10 +52,10 @@ public class RoleAssigneeServiceBean {
     @EJB
     DataverseRoleServiceBean dataverseRoleService;
 
-    Map<String, RoleAssignee> predefinedRoleAssignees = new TreeMap<>();
+    protected Map<String, RoleAssignee> predefinedRoleAssignees = new TreeMap<>();
 
     @PostConstruct
-    void setup() {
+    protected void setup() {
         GuestUser gu = GuestUser.get();
         predefinedRoleAssignees.put(gu.getIdentifier(), gu);
         predefinedRoleAssignees.put(AuthenticatedUsers.get().getIdentifier(), AuthenticatedUsers.get());

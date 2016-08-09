@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.authorization.groups.GroupException;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import java.util.HashSet;
 import java.util.Objects;
@@ -174,7 +175,7 @@ public class ExplicitGroup implements Group, java.io.Serializable {
             if ( ra instanceof ExplicitGroup ) {
                 // validate no circular deps
                 ExplicitGroup g = (ExplicitGroup) ra;
-                if ( g.contains(this) ) {
+                if ( g.structuralContains(this) ) {
                     throw new GroupException(this, "A group cannot be added to one of its childs.");
                 }
                 if ( g.owner.isAncestorOf(owner) ) {
@@ -244,42 +245,89 @@ public class ExplicitGroup implements Group, java.io.Serializable {
 
     @Override
     public boolean contains(DataverseRequest req) {
-        return contains( req.getUser() );
+        return containsDirectly(req) || containsIndirectly(req);
     }
     
-    public boolean contains(RoleAssignee ra) {
-        return containsDirectly(ra) || containsIndirectly(ra);
-    }
-    
-    protected boolean containsDirectly( RoleAssignee ra ) {
+    /**
+     * Looks at structural containment: whether {@code ra} is part of the
+     * group's structure. It mostly the same as {@link #contains(edu.harvard.iq.dataverse.engine.command.DataverseRequest)},
+     * except for logical containment. So if an ExplicitGroup contains {@link AuthenticatedUsers} but not
+     * a specific {@link AuthenticatedUser} {@code u}, {@code structuralContains(u)}
+     * would return {@code false} while {@code contains( request(u, ...) )} would return true;
+     * 
+     * @param ra
+     * @return {@code true} iff the role assignee is structurally a part of the group.
+     */
+    public boolean structuralContains(RoleAssignee ra) {
+        // direct containment
         if ( ra instanceof AuthenticatedUser ) {
-            AuthenticatedUser au = (AuthenticatedUser) ra;
-            return containedAuthenticatedUsers.contains(au);
+            if ( containedAuthenticatedUsers.contains((AuthenticatedUser)ra) ) {
+                return true;
+            }
             
         } else if ( ra instanceof ExplicitGroup ) {
-            ExplicitGroup eg = (ExplicitGroup) ra;
-            return containedExplicitGroups.contains(eg);
+            if ( containedExplicitGroups.contains((ExplicitGroup)ra) ) { 
+                return true;
+            }
             
         } else {
-           return containedRoleAssignees.contains( ra.getIdentifier() );
-        }
-    }
-
-    private boolean containsIndirectly(RoleAssignee ra) {
-        for ( ExplicitGroup ceg : containedExplicitGroups ) {
-            if ( ceg.contains(ra) ) {
+            if ( containedRoleAssignees.contains(ra.getIdentifier()) ) {
                 return true;
             }
         }
         
-        for ( String containedRAIdtf : containedRoleAssignees ) {
-            RoleAssignee containedRa = provider.findRoleAssignee(containedRAIdtf);
-            if ( containedRa != null ) {
-                if ( containedRa instanceof ExplicitGroup ) {
-                    if (((ExplicitGroup)containedRa).contains(ra)) {
+        // no direct containment. Recurse.
+        for ( ExplicitGroup eg: containedExplicitGroups ) {
+            if ( eg.structuralContains(ra) ) {
+                return true;
+            }
+        }
+        
+        return false;
+        
+    }
+    
+    /**
+     * @param req
+     * @return {@code true} iff the request is contained in the group or in an included non-explicit group.
+     */
+    protected boolean containsDirectly( DataverseRequest req ) {
+        User ra = req.getUser();
+        if ( ra instanceof AuthenticatedUser ) {
+            AuthenticatedUser au = (AuthenticatedUser) ra;
+            if ( containedAuthenticatedUsers.contains(au) ) {
+                return true;
+            }    
+        } 
+        
+        if ( containedRoleAssignees.contains(ra.getIdentifier()) ) {
+            return true;
+        }
+        
+        for ( String craIdtf : containedRoleAssignees ) {
+            // Need to retrieve the actual role assingee, and let it's logic decide.
+            RoleAssignee cra = provider.findRoleAssignee(craIdtf);
+            if ( cra != null ) {
+                if ( cra instanceof Group ) {
+                    Group cgrp = (Group) cra;
+                    if ( cgrp.contains(req) ) {
                         return true;
                     }
-                }
+                } // if cra is a user, we would have returned after the .contains() test.
+            } 
+        }
+       // If we get here, the request is not in this group.
+       return false;
+    }
+
+    /**
+     * @param req
+     * @return {@code true} iff the request if contained in an explicit group that's a member of this group.
+     */
+    private boolean containsIndirectly(DataverseRequest req) {
+        for ( ExplicitGroup ceg : containedExplicitGroups ) {
+            if ( ceg.contains(req) ) {
+                return true;
             }
         }
         return false;

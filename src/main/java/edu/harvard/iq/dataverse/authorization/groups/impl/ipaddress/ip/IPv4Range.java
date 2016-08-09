@@ -79,6 +79,7 @@ public class IPv4Range extends IpAddressRange implements java.io.Serializable {
 
     @Override
     public Boolean contains(IpAddress anAddress) {
+        if ( anAddress == null ) return null;
         if ( anAddress instanceof IPv4Address ) {
             IPv4Address adr = (IPv4Address) anAddress;
             return getBottom().compareTo(adr)<=0 && getTop().compareTo(adr)>=0;
