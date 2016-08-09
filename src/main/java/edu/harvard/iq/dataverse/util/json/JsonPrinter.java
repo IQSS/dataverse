@@ -434,7 +434,7 @@ public class JsonPrinter {
                 .add("label", fmd.getLabel()) // "label" is the filename
                 .add("version", fmd.getVersion())
                 .add("datasetVersionId", fmd.getDatasetVersion().getId())
-                .add("datafile", json(fmd.getDataFile(), fmd));
+                .add("dataFile", json(fmd.getDataFile(), fmd));
     }
 
     public static JsonObjectBuilder json(DataFile df) {

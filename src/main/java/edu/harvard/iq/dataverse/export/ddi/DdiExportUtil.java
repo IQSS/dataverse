@@ -1028,6 +1028,10 @@ public class DdiExportUtil {
         }
     }
     
+    // TODO: 
+    // see if there's more information that we could encode in this otherMat. 
+    // contentType? Unfs and such? (in the "short" DDI that is being used for 
+    // harvesting *all* files are encoded as otherMats; even tabular ones.
     private static void createOtherMats(XMLStreamWriter xmlw, List<FileDTO> fileDtos) throws XMLStreamException {
         // The preferred URL for this dataverse, for cooking up the file access API links:
         String dataverseUrl = getDataverseSiteUrl();
@@ -1036,13 +1040,13 @@ public class DdiExportUtil {
             // We'll continue using the scheme we've used before, in DVN2-3: non-tabular files are put into otherMat,
             // tabular ones - in fileDscr sections. (fileDscr sections have special fields for numbers of variables
             // and observations, etc.)
-            if (fileDTo.getDatafile().getDataTables() == null || fileDTo.getDatafile().getDataTables().isEmpty()) {
+            if (fileDTo.getDataFile().getDataTables() == null || fileDTo.getDataFile().getDataTables().isEmpty()) {
                 xmlw.writeStartElement("otherMat");
-                writeAttribute(xmlw, "ID", "f" + fileDTo.getDatafile().getId());
-                writeAttribute(xmlw, "URI", dataverseUrl + "/api/access/datafile/" + fileDTo.getDatafile().getId());
+                writeAttribute(xmlw, "ID", "f" + fileDTo.getDataFile().getId());
+                writeAttribute(xmlw, "URI", dataverseUrl + "/api/access/datafile/" + fileDTo.getDataFile().getId());
                 writeAttribute(xmlw, "level", "datafile");
                 xmlw.writeStartElement("labl");
-                xmlw.writeCharacters(fileDTo.getDatafile().getFilename());
+                xmlw.writeCharacters(fileDTo.getDataFile().getFilename());
                 xmlw.writeEndElement(); // labl
                 writeFileDescription(xmlw, fileDTo);
                 xmlw.writeEndElement(); // otherMat
@@ -1088,7 +1092,7 @@ public class DdiExportUtil {
     
     private static void writeFileDescription(XMLStreamWriter xmlw, FileDTO fileDTo) throws XMLStreamException {
         xmlw.writeStartElement("txt");
-        String description = fileDTo.getDatafile().getDescription();
+        String description = fileDTo.getDataFile().getDescription();
         if (description != null) {
             xmlw.writeCharacters(description);
         }

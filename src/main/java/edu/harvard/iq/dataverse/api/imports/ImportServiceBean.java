@@ -225,13 +225,11 @@ public class ImportServiceBean {
                 // import type should be configurable - it should be possible to 
                 // select whether you want to harvest with or without files, 
                 // ImportType.HARVEST vs. ImportType.HARVEST_WITH_FILES
-                logger.info("importing DDI "+metadataFile.getAbsolutePath());
+                logger.fine("importing DDI "+metadataFile.getAbsolutePath());
                 dsDTO = importDDIService.doImport(ImportType.HARVEST_WITH_FILES, xmlToParse);
             } catch (XMLStreamException e) {
                 throw new ImportException("XMLStreamException" + e);
             }
-        // TODO: handle all supported formats; via plugins, probably
-        // (and if the format is already JSON - handle that too!
         } else if ("dc".equalsIgnoreCase(metadataFormat) || "oai_dc".equals(metadataFormat)) {
             try {
                 String xmlToParse = new String(Files.readAllBytes(metadataFile.toPath()));
@@ -242,6 +240,7 @@ public class ImportServiceBean {
         } else if ("dataverse_json".equals(metadataFormat)) {
             // This is Dataverse metadata already formatted in JSON. 
             // Simply read it into a string, and pass to the final import further down:
+            logger.fine("Attempting to import custom dataverse metadata from file "+metadataFile.getAbsolutePath());
             json = new String(Files.readAllBytes(metadataFile.toPath())); 
         } else {
             throw new ImportException("Unsupported import metadata format: " + metadataFormat);

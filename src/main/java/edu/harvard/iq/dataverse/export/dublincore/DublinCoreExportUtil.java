@@ -80,7 +80,7 @@ public class DublinCoreExportUtil {
         }
         
         createDC(xmlw, datasetDto, dcFlavor);
-        xmlw.writeEndElement(); // metadata
+        xmlw.writeEndElement(); // <metadata> or <oai_dc:dc>
         xmlw.flush();
     }
     
