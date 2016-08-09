@@ -259,6 +259,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
             this.harvestingScheduleRadioAMPM = harvestingScheduleRadioAM;
         }        
         
+        this.createStep = CreateStep.ONE;
         this.pageMode = PageMode.EDIT;
         
     }

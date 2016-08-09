@@ -127,7 +127,7 @@
                                     <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
                                                    action="#{harvestingClientsPage.editClient(harvestClient)}"
                                                    oncomplete="PF('newHarvestingClientForm').show();handleResizeDialog('newHarvestingClientDialog');bind_bsui_components();"
-                                                   update=":harvestingClientsForm:newHarvestingClientDialog"
+                                                   update=":harvestingClientsForm,:harvestingClientsForm:newHarvestingClientDialog"
                                                    title="#{bundle['harvestclients.tab.header.action.btn.edit']}">
                                         <span class="glyphicon glyphicon-pencil"></span>
                                     </p:commandLink>
@@ -157,7 +157,7 @@
                         </div>
                     </p:dialog>
 
-                    <!-- a dialog form for creating a new harvesting client: -->
+                    <!-- a dialog form for creating a new, or editing an existing harvesting client: -->
                     <p:dialog id="newHarvestingClientDialog" widgetVar="newHarvestingClientForm"
                               modal="true" width="85%"
                               header="#{harvestingClientsPage.createMode ? bundle['harvestclients.newClientDialog.title.new'] : bundle['harvestclients.viewEditDialog.title']}">
