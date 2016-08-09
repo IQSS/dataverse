@@ -148,6 +148,9 @@ public class OAISetServiceBean implements java.io.Serializable {
         // "sanitizeQuery()" does something special that's needed to be able 
         // to search on global ids; which we will most likely need. 
         query = SearchUtil.sanitizeQuery(query);
+        // fix case in "and" and "or" operators: 
+        query = query.replaceAll(" [Aa][Nn][Dd] ", " AND ");
+        query = query.replaceAll(" [Oo][Rr] ", " OR ");
         // append the search clauses that limit the search to a) datasets
         // b) published and c) local: 
         // SearchFields.TYPE
