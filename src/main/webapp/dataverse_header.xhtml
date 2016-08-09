@@ -87,6 +87,11 @@
                                 <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
                             </p:commandLink>
                         </o:form>
+                        <li jsf:rendered="#{dataverseSession.user.superuser}">
+                            <h:outputLink value="/dashboard.xhtml?dataverseId=#{dataverseServiceBean.findRootDataverse().id}">
+                                <h:outputText value="#{bundle['header.dashboard']}" />
+                            </h:outputLink>
+                        </li>
                         <ui:fragment rendered="#{!dataverseSession.user.authenticated}">
                             <li>
                                 <h:outputLink rendered="#{dataverseHeaderFragment.signupAllowed}"
@@ -143,12 +148,6 @@
                                         <h:outputLink value="/dataverseuser.xhtml">
                                             <f:param name="selectTab" value="apiTokenTab" />
                                             <h:outputText value="#{bundle['header.user.selectTab.apiToken']}" />
-                                        </h:outputLink>
-                                    </li>
-                                    <li class="divider" jsf:rendered="#{dataverseSession.user.superuser}"></li>
-                                    <li jsf:rendered="#{dataverseSession.user.superuser}">
-                                        <h:outputLink value="/dashboard.xhtml?dataverseId=#{dataverseServiceBean.findRootDataverse().id}">
-                                            <h:outputText value="#{bundle['header.dashboard']}" />
                                         </h:outputLink>
                                     </li>
                                     <li class="divider"></li>
