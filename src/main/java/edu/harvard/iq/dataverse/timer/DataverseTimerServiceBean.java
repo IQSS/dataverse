@@ -26,8 +26,11 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
+import javax.ejb.Singleton;
+import javax.ejb.Startup;
 import javax.ejb.Stateless;
 import javax.ejb.Timeout;
 import javax.ejb.Timer;
@@ -46,7 +49,10 @@ import javax.servlet.http.HttpServletRequest;
  * ported by 
  * @author Leonid Andreev
  */
-@Stateless
+//@Stateless
+
+@Singleton
+@Startup
 public class DataverseTimerServiceBean implements Serializable {
     @Resource
     javax.ejb.TimerService timerService;
@@ -64,6 +70,27 @@ public class DataverseTimerServiceBean implements Serializable {
     @EJB
     SystemConfig systemConfig;
     
+    
+    // The init method that wipes and recreates all the timers on startup
+    //@PostConstruct
+
+    @PostConstruct
+    public void init() {
+        logger.info("PostConstruct timer check.");
+        
+        
+        if (systemConfig.isTimerServer()) {
+            logger.info("I am the dedicated timer server. Initializing mother timer.");
+            
+            removeAllTimers();
+            // create mother timer:
+            createMotherTimer();
+            
+        } else {
+            logger.info("Skipping timer server init (I am not the dedicated timer server)");
+        }
+    }
+    
     public void createTimer(Date initialExpiration, long intervalDuration, Serializable info) {
         try {
             logger.log(Level.INFO,"Creating timer on " + InetAddress.getLocalHost().getCanonicalHostName());
@@ -72,7 +99,6 @@ public class DataverseTimerServiceBean implements Serializable {
         }
         timerService.createTimer(initialExpiration, intervalDuration, info);
     }
-
 
     /**
      * This method is called whenever an EJB Timer goes off.
@@ -88,7 +114,8 @@ public class DataverseTimerServiceBean implements Serializable {
         // call the method a second time. (The minimum number of re-tries for a Timer method is 1)
 
         if (!systemConfig.isTimerServer()) {
-            logger.info("I am not the timer server! - bailing out of handleTimeout()");
+            //logger.info("I am not the timer server! - bailing out of handleTimeout()");
+            Logger.getLogger(DataverseTimerServiceBean.class.getName()).log(Level.WARNING, null, "I am not the timer server! - but handleTimeout() got called. Please investigate!");
         }
         
         try {
@@ -96,7 +123,14 @@ public class DataverseTimerServiceBean implements Serializable {
         } catch (UnknownHostException ex) {
             Logger.getLogger(DataverseTimerServiceBean.class.getName()).log(Level.SEVERE, null, ex);
         }
-        if (timer.getInfo() instanceof HarvestTimerInfo) {
+        
+        if (timer.getInfo() instanceof MotherTimerInfo) {
+            logger.info("Behold! I am the Master Timer, king of all timers! I'm here to create all the lesser timers!");
+            removeHarvestTimers();
+            for (HarvestingClient client : harvestingClientService.getAllHarvestingClients()) {
+                createHarvestTimer(client);
+            }
+        } else if (timer.getInfo() instanceof HarvestTimerInfo) {
             HarvestTimerInfo info = (HarvestTimerInfo) timer.getInfo();
             try {
 
@@ -144,6 +178,23 @@ public class DataverseTimerServiceBean implements Serializable {
 
     }
 
+    public void removeAllTimers() {
+        logger.info("Removing ALL existing timers.");
+
+        int i = 0;
+
+        for (Iterator it = timerService.getTimers().iterator(); it.hasNext();) {
+
+            Timer timer = (Timer) it.next();
+
+            logger.info("Removing timer " + i + ";");
+            timer.cancel();
+
+            i++;
+        }
+        logger.info("Done!");
+    }
+    
     public void removeHarvestTimers() {
         // Remove all the harvest timers, if exist: 
         //
@@ -168,6 +219,23 @@ public class DataverseTimerServiceBean implements Serializable {
         }
     }
 
+    public void createMotherTimer() {
+        MotherTimerInfo info = new MotherTimerInfo();
+        Calendar initExpiration = Calendar.getInstance();
+        long intervalDuration = 60 * 60 * 1000; // every hour
+        initExpiration.set(Calendar.MINUTE, 50);
+        initExpiration.set(Calendar.SECOND, 0);
+        
+        Date initExpirationDate = initExpiration.getTime();
+        Date currTime = new Date();
+        if (initExpirationDate.before(currTime)) {
+            initExpirationDate.setTime(initExpiration.getTimeInMillis() + intervalDuration);
+        }
+        
+        logger.info("Setting the \"Mother Timer\", initial expiration: " + initExpirationDate);
+        createTimer(initExpirationDate, intervalDuration, info);
+    }
+    
     public void createHarvestTimer(HarvestingClient harvestingClient) {       
         
         if (harvestingClient.isScheduled()) {
