@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse.timer;
 
+import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
@@ -16,6 +17,7 @@ import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.harvest.client.HarvestTimerInfo;
 import edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClientServiceBean;
+import edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.io.Serializable;
@@ -68,6 +70,10 @@ public class DataverseTimerServiceBean implements Serializable {
     @EJB 
     AuthenticationServiceBean authSvc;
     @EJB
+    DatasetServiceBean datasetService;
+    @EJB
+    OAISetServiceBean oaiSetService;
+    @EJB
     SystemConfig systemConfig;
     
     
@@ -85,6 +91,8 @@ public class DataverseTimerServiceBean implements Serializable {
             removeAllTimers();
             // create mother timer:
             createMotherTimer();
+            // And the export timer (there is only one)
+            createExportTimer();
             
         } else {
             logger.info("Skipping timer server init (I am not the dedicated timer server)");
@@ -161,20 +169,19 @@ public class DataverseTimerServiceBean implements Serializable {
                 //dataverseService.setHarvestResult(info.getHarvestingDataverseId(), harvesterService.HARVEST_RESULT_FAILED);
                 //mailService.sendHarvestErrorNotification(dataverseService.find().getSystemEmail(), dataverseService.find().getName());
                 logException(e, logger);
-            }
-        }
-        /* Export timers: (not yet implemented!) -- L.A.
-        if (timer.getInfo() instanceof ExportTimerInfo) {
+            } 
+        } else if (timer.getInfo() instanceof ExportTimerInfo) {
             try {
                 ExportTimerInfo info = (ExportTimerInfo) timer.getInfo();
-                logger.info("handling timeout");
-                studyService.exportUpdatedStudies();
+                logger.info("Timer Service: Running a scheduled export job.");
+                // update oai sets:
+                oaiSetService.exportAllSets();
+                // try to export all unexported datasets:
+                datasetService.exportAll();
             } catch (Throwable e) {
-                mailService.sendExportErrorNotification(vdcNetworkService.find().getSystemEmail(), vdcNetworkService.find().getName());
                 logException(e, logger);
             }
         }
-        */
 
     }
 
@@ -291,8 +298,22 @@ public class DataverseTimerServiceBean implements Serializable {
     }
 
     public void createExportTimer() {
-            /* Not yet implemented. The DVN 3 implementation can be used as a model */
-
+        ExportTimerInfo info = new ExportTimerInfo();
+        Calendar initExpiration = Calendar.getInstance();
+        long intervalDuration = 24 * 60 * 60 * 1000; // every day
+        initExpiration.set(Calendar.MINUTE, 0);
+        initExpiration.set(Calendar.SECOND, 0);
+        initExpiration.set(Calendar.HOUR_OF_DAY, 2); // 2AM, fixed.
+        
+        
+        Date initExpirationDate = initExpiration.getTime();
+        Date currTime = new Date();
+        if (initExpirationDate.before(currTime)) {
+            initExpirationDate.setTime(initExpiration.getTimeInMillis() + intervalDuration);
+        }
+        
+        logger.info("Setting the Export Timer, initial expiration: " + initExpirationDate);
+        createTimer(initExpirationDate, intervalDuration, info);
     }
 
     public void createExportTimer(Dataverse dataverse) {

@@ -1,21 +1,29 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DOIEZIdServiceBean;
+import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
+import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
+import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.MetadataBlock;
+import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.RoleAssignment;
+import edu.harvard.iq.dataverse.api.imports.ImportException;
+import edu.harvard.iq.dataverse.api.imports.ImportUtil;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreatePrivateUrlCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetCommand;
@@ -38,8 +46,10 @@ import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.export.ddi.DdiExportUtil;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
+import edu.harvard.iq.dataverse.util.json.JsonParser;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -47,6 +57,7 @@ import java.io.OutputStream;
 import java.io.StringReader;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -54,6 +65,11 @@ import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.json.JsonReader;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -86,6 +102,16 @@ public class Datasets extends AbstractApiBean {
     
     @EJB
     SystemConfig systemConfig;
+    
+    @EJB
+    DatasetFieldServiceBean datasetfieldService;
+
+    @EJB
+    MetadataBlockServiceBean metadataBlockService;
+    
+    @EJB
+    SettingsServiceBean settingsService;
+    
 
     /**
      * Used to consolidate the way we parse and handle dataset versions.
@@ -116,6 +142,84 @@ public class Datasets extends AbstractApiBean {
 
     }
     
+    /* An experimental method for creating a new dataset, from scratch, all from json metadata file
+    @POST
+    @Path("")
+    public Response createDataset(String jsonBody) {
+        Dataset importedDataset = null; 
+        try {
+            final DataverseRequest r = createDataverseRequest(findUserOrDie());
+            
+            StringReader rdr = new StringReader(jsonBody);
+            JsonObject json = Json.createReader(rdr).readObject();
+            JsonParser parser = new JsonParser(datasetfieldService, metadataBlockService, settingsService);
+            parser.setLenient(true);
+            Dataset ds = parser.parseDataset(json);
+
+            
+            Dataverse owner = dataverseService.find(1L);
+            ds.setOwner(owner);
+            ds.getLatestVersion().setDatasetFields(ds.getLatestVersion().initDatasetFields());
+
+            // Check data against required contraints
+            List<ConstraintViolation> violations = ds.getVersions().get(0).validateRequired();
+            if (!violations.isEmpty()) {
+                // For migration and harvest, add NA for missing required values
+                for (ConstraintViolation v : violations) {
+                    DatasetField f = ((DatasetField) v.getRootBean());
+                    f.setSingleValue(DatasetField.NA_VALUE);
+                }
+            }
+
+            
+            Set<ConstraintViolation> invalidViolations = ds.getVersions().get(0).validate();
+            ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+            Validator validator = factory.getValidator();
+            if (!invalidViolations.isEmpty()) {
+                for (ConstraintViolation v : invalidViolations) {
+                    DatasetFieldValue f = ((DatasetFieldValue) v.getRootBean());
+                    boolean fixed = false;
+                    boolean converted = false;
+                    // TODO: Is this scrubbing something we want to continue doing? 
+                    //
+                    //if (settingsService.isTrueForKey(SettingsServiceBean.Key.ScrubMigrationData, false)) {
+                    //    fixed = processMigrationValidationError(f, cleanupLog, metadataFile.getName());
+                    //    converted = true;
+                    //    if (fixed) {
+                    //        Set<ConstraintViolation<DatasetFieldValue>> scrubbedViolations = validator.validate(f);
+                    //        if (!scrubbedViolations.isEmpty()) {
+                    //            fixed = false;
+                    //        }
+                    //    }
+                    //}
+                    if (!fixed) {
+                        String msg = "Field: " + f.getDatasetField().getDatasetFieldType().getDisplayName() + "; "
+                                + "Invalid value:  '" + f.getValue() + "'" + " Converted Value:'" + DatasetField.NA_VALUE + "'";
+                        Logger.getLogger(Datasets.class.getName()).log(Level.INFO, null, msg);
+                        f.setValue(DatasetField.NA_VALUE);
+                    }
+                }
+            }
+
+            //ds.setHarvestedFrom(harvestingClient);
+            //ds.setHarvestIdentifier(harvestIdentifier);
+            
+                importedDataset = engineSvc.submit(new CreateDatasetCommand(ds, r, false, ImportUtil.ImportType.HARVEST));
+
+        } catch (JsonParseException ex) {
+            Logger.getLogger(Datasets.class.getName()).log(Level.INFO, null, "Error parsing datasetVersion: " + ex.getMessage());
+            return errorResponse(Response.Status.NOT_FOUND, "error parsing dataset");
+        } catch (CommandException ex) {
+            Logger.getLogger(Datasets.class.getName()).log(Level.INFO, null, "Error excuting Create dataset command: " + ex.getMessage());  
+            return errorResponse(Response.Status.NOT_FOUND, "error executing create dataset command");
+        } catch (WrappedResponse ex) {
+            return ex.refineResponse("Error: "+ex.getWrappedMessageWhenJson());
+        }
+        
+        final JsonObjectBuilder jsonbuilder = json(importedDataset);
+
+        return okResponse(jsonbuilder.add("latestVersion", json(importedDataset.getLatestVersion())));
+    } */
     
     @GET
     @Path("/export")
@@ -163,7 +267,7 @@ public class Datasets extends AbstractApiBean {
     @Path("/exportAll")
     @Produces("application/json")
     public Response exportAll() {
-        datasetService.exportAll();
+        datasetService.reExportAll();
         return this.accepted();
     }
    	

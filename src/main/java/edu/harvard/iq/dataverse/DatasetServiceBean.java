@@ -659,9 +659,12 @@ public class DatasetServiceBean implements java.io.Serializable {
         return false;
     }
     
+    
+    // reExportAll *forces* a reexport on all published datasets; whether they 
+    // have the "last export" time stamp set or not. 
     @Asynchronous 
-    public void exportAll() {
-        logger.info("Starting an export all job asynchronously");
+    public void reExportAll() {
+        logger.info("Starting a reExport all job asynchronously");
         
         for (Long datasetId : findAllLocalDatasetIds()) {
             // Potentially, there's a godzillion datasets in this Dataverse. 
@@ -672,8 +675,7 @@ public class DatasetServiceBean implements java.io.Serializable {
             if (dataset != null) {
                 //logger.info("checking dataset "+dataset.getGlobalId());
                 // Accurate "is published?" test:
-                if (dataset.isReleased() && !dataset.isDeaccessioned() 
-                        ) {
+                if (dataset.isReleased() && !dataset.isDeaccessioned()) {
                     logger.fine("exporting dataset "+dataset.getGlobalId());
                     try {
                         recordService.exportAllFormatsInNewTransaction(dataset);
@@ -685,7 +687,40 @@ public class DatasetServiceBean implements java.io.Serializable {
             }
         }
         
-        logger.info("Finished export all job.");
+        logger.info("Finished reexport-all job.");
+    }
+    
+    // exportAll() will try to export the yet unexported datasets (it will honor
+    // and trust the "last export" time stamp).
+    public void exportAll() {
+    logger.info("Starting an export all job");
+        
+        for (Long datasetId : findAllLocalDatasetIds()) {
+            // Potentially, there's a godzillion datasets in this Dataverse. 
+            // This is why we go through the list of ids here, and instantiate 
+            // only one dtaset at a time. 
+            //logger.info("found dataset id="+datasetId);
+            Dataset dataset = this.find(datasetId);
+            if (dataset != null) {
+                //logger.info("checking dataset "+dataset.getGlobalId());
+                // Accurate "is published?" test:
+                if (dataset.isReleased() && !dataset.isDeaccessioned()) {
+                    logger.fine("exporting dataset "+dataset.getGlobalId());
+                    if (dataset.getPublicationDate() != null
+                                && (dataset.getLastExportTime() == null
+                                || dataset.getLastExportTime().before(dataset.getPublicationDate()))) {
+                        try {
+                            recordService.exportAllFormatsInNewTransaction(dataset);
+                        } catch (Exception ex) {
+                            logger.info("caught an exception in exportAllFormatsInNewTransaction, dataset "+dataset.getGlobalId());
+                        }
+                    }
+                }
+                dataset = null; 
+            }
+        }
+        
+        logger.info("Finished export all job.");    
     }
     
     public void updateLastExportTimeStamp(Long datasetId) {

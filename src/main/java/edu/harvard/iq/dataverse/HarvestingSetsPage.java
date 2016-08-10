@@ -520,7 +520,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
     
     public void runSetExport(OAISet oaiSet) {
         
-        oaiSetService.exportOaiSet(oaiSet);
+        oaiSetService.exportOaiSetAsync(oaiSet);
     }
     
     public boolean isSuperUser() {

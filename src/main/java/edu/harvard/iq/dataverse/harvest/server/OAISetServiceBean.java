@@ -110,6 +110,10 @@ public class OAISetServiceBean implements java.io.Serializable {
     }
     
     @Asynchronous
+    public void exportOaiSetAsync(OAISet oaiSet) {
+        exportOaiSet(oaiSet);
+    }
+    
     public void exportOaiSet(OAISet oaiSet) {
         String query = oaiSet.getDefinition();
 
@@ -130,6 +134,16 @@ public class OAISetServiceBean implements java.io.Serializable {
         //}
 
     } 
+    
+    public void exportAllSets() {
+        List<OAISet> allSets = findAll();
+        
+        if (allSets != null) {
+            for (OAISet set : allSets) {
+                exportOaiSet(set);
+            }
+        }
+    }
         
     public int validateDefinitionQuery(String query) throws OaiSetException {
         
