@@ -363,7 +363,8 @@ public class HarvestingClientsPage implements java.io.Serializable {
             
             configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();
             
-            dataverseTimerService.createHarvestTimer(newHarvestingClient);
+            // NO, we no longer create timers here. It is the job of the Mother Timer!
+            //dataverseTimerService.createHarvestTimer(newHarvestingClient);
             
             String successMessage = JH.localize("harvestclients.newClientDialog.success");
             successMessage = successMessage.replace("{0}", newHarvestingClient.getName());
@@ -438,7 +439,9 @@ public class HarvestingClientsPage implements java.io.Serializable {
             
             configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();
             
-            dataverseTimerService.updateHarvestTimer(harvestingClient);
+            if (!harvestingClient.isScheduled()) {
+                dataverseTimerService.removeHarvestTimer(harvestingClient);
+            }
             JsfHelper.addSuccessMessage("Succesfully updated harvesting client " + harvestingClient.getName());
 
         } catch (CommandException ex) {
