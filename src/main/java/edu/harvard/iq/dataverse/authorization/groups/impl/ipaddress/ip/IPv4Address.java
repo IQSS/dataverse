@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip;
 
+import java.math.BigInteger;
 import java.util.Arrays;
 
 /**
@@ -33,6 +34,10 @@ public class IPv4Address extends IpAddress implements Comparable<IPv4Address> {
         this( new short[]{(short)a,(short)b,(short)c,(short)d} );
     }
     
+    public IPv4Address( BigInteger bits ) {
+        this( bits.longValue() );
+    }
+    
     public IPv4Address( long l ) {
         bytes[0] = (short)((l >>> 24) & 0xFF);
         bytes[1] = (short)((l >>> 16) & 0xFF);
@@ -59,7 +64,16 @@ public class IPv4Address extends IpAddress implements Comparable<IPv4Address> {
     }
     
     public long toLong() {
-        return (get(0)<<24) + (get(1)<<16) + (get(2)<<8) + get(3);
+        return (get(0)<<24) | (get(1)<<16) | (get(2)<<8) | get(3);
+    }
+    
+    public BigInteger toBigInteger() {
+        BigInteger res = BigInteger.ZERO;
+        for ( int i=0; i<3; i++ ) {
+            res = res.add(BigInteger.valueOf(get(i)))
+                     .shiftLeft(8);
+        }
+        return res.add(BigInteger.valueOf(get(3)));
     }
     
     @Override

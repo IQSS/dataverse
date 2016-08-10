@@ -4,6 +4,10 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupsServiceBean;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IPv4Address;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.PasswordEncryption;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import javax.ejb.Stateless;
@@ -12,6 +16,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
+import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -39,6 +44,9 @@ public class TestApi extends AbstractApiBean {
     
     @EJB
     ExplicitGroupServiceBean explicitGroups;
+    
+    @EJB
+    IpGroupsServiceBean ipGroupsSvc;
     
     @Path("echo/{whatever}")
     @GET
@@ -114,6 +122,26 @@ public class TestApi extends AbstractApiBean {
         }
         Set<ExplicitGroup> groups = explicitGroups.findGroups(roleAssignee);
         logger.log(Level.INFO, "Groups for {0}: {1}", new Object[]{roleAssignee, groups});
-        return okResponse( json(groups) );
+        return okResponse( groups.stream().map( g->json(g).build()).collect(toJsonArray()) );
     }
+    
+    @Path("ipGroups/containing/{address}")
+    @GET
+    public Response getIpGroupsContaining( @PathParam("address") String addrStr ) {
+        try {
+            IpAddress addr = IpAddress.valueOf(addrStr);
+            
+            JsonObjectBuilder r = NullSafeJsonBuilder.jsonObjectBuilder();
+            r.add( "address", addr.toString() );
+            r.add( "addressRaw", (addr instanceof IPv4Address) ? ((IPv4Address)addr).toLong() : null);
+            r.add("groups", ipGroupsSvc.findAllIncludingIp(addr).stream()
+                    .map( IpGroup::toString )
+                    .collect(stringsToJsonArray()));
+            return okResponse( r );
+            
+        } catch ( IllegalArgumentException iae ) {
+            return badRequest(addrStr + " is not a valid address: " + iae.getMessage());
+        }
+    }
+    
 }

@@ -3,7 +3,8 @@ package edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.GroupProvider;
-import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IPv4Address;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import java.util.Collections;
 import java.util.HashSet;
@@ -44,7 +45,13 @@ public class IpGroupProvider implements GroupProvider<IpGroup> {
     public Set<IpGroup> groupsFor( DataverseRequest req, DvObject dvo ) {
         if ( req.getSourceAddress() != null ) {
             final Set<IpGroup> groups = updateProvider( ipGroupsService.findAllIncludingIp(req.getSourceAddress()) );
-            logger.log(Level.INFO, "IP groups detected: {0}", groups);
+            
+            { // FIXME remove this block before merge to DEV
+            final IpAddress sourceAddress = req.getSourceAddress();
+            Long ipAddr = (sourceAddress instanceof IPv4Address) ? ((IPv4Address)sourceAddress).toLong() : null;
+            logger.log(Level.INFO, "ip: {1} ({2}) groups: {0}", new Object[]{groups, sourceAddress, ipAddr});
+            }
+            
             return groups;
         } else {
             return Collections.emptySet();

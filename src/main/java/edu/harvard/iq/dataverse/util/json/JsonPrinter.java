@@ -53,6 +53,7 @@ import java.util.stream.Collector;
 import static java.util.stream.Collectors.toList;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
+import javax.json.JsonValue;
 
 /**
  * Convert objects to Json.
@@ -518,9 +519,7 @@ public class JsonPrinter {
                 .add("roleAssignment", json(privateUrl.getRoleAssignment()));
     }
 
-    public static <T> JsonObjectBuilder json(T j ) {
-        if (j instanceof ExplicitGroup) {
-            ExplicitGroup eg = (ExplicitGroup) j;
+    public static JsonObjectBuilder json( ExplicitGroup eg ) {
             JsonArrayBuilder ras = Json.createArrayBuilder();
             for ( String u : eg.getContainedRoleAssgineeIdentifiers() ) {
                 ras.add(u);
@@ -533,23 +532,16 @@ public class JsonPrinter {
                     .add("displayName", eg.getDisplayName())
                     .add("containedRoleAssignees", ras);
 
-        } else { // implication: (j instanceof DataverseFacet)
-            DataverseFacet f = (DataverseFacet) j;
-            return jsonObjectBuilder()
-                    .add("id", String.valueOf(f.getId())) // TODO should just be id I think
-                    .add("name", f.getDatasetFieldType().getDisplayName());
-        }
     }
     
-    public static <T> JsonArrayBuilder json( Collection<T> jc ) {
-        JsonArrayBuilder bld = Json.createArrayBuilder();
-        for ( T j : jc ) {
-            bld.add( json(j) );
-        }
-        return bld;
+    public static JsonObjectBuilder json(DataverseFacet f) {
+        return jsonObjectBuilder()
+                .add("id", String.valueOf(f.getId())) // TODO should just be id I think
+                .add("name", f.getDatasetFieldType().getDisplayName());
     }
+   
     
-    public static Collector<String, JsonArrayBuilder, JsonArrayBuilder> toJsonArray() {
+    public static Collector<String, JsonArrayBuilder, JsonArrayBuilder> stringsToJsonArray() {
         return new Collector<String, JsonArrayBuilder, JsonArrayBuilder>() {
             
             @Override
@@ -560,6 +552,41 @@ public class JsonPrinter {
             @Override
             public BiConsumer<JsonArrayBuilder, String> accumulator() {
                 return (JsonArrayBuilder b, String s ) -> b.add(s);
+            }
+
+            @Override
+            public BinaryOperator<JsonArrayBuilder> combiner() {
+                return (jab1, jab2) -> {
+                    JsonArrayBuilder retVal = Json.createArrayBuilder();
+                    jab1.build().forEach( retVal::add );
+                    jab2.build().forEach( retVal::add );
+                    return retVal;
+                };
+            }
+
+            @Override
+            public Function<JsonArrayBuilder, JsonArrayBuilder> finisher() {
+                return Function.identity();
+            }
+
+            @Override
+            public Set<Collector.Characteristics> characteristics() {
+                return EnumSet.of(Collector.Characteristics.IDENTITY_FINISH);
+            }
+        };
+    }
+    
+    public static Collector<JsonValue, JsonArrayBuilder, JsonArrayBuilder> toJsonArray() {
+        return new Collector<JsonValue, JsonArrayBuilder, JsonArrayBuilder>() {
+            
+            @Override
+            public Supplier<JsonArrayBuilder> supplier() {
+                return ()->Json.createArrayBuilder();
+            }
+
+            @Override
+            public BiConsumer<JsonArrayBuilder, JsonValue> accumulator() {
+                return (JsonArrayBuilder b, JsonValue s ) -> b.add(s);
             }
 
             @Override

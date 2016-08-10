@@ -42,6 +42,7 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response.Status;
+import static edu.harvard.iq.dataverse.api.AbstractApiBean.errorResponse;
 /**
  * Where the secure, setup API calls live.
  * @author michael
