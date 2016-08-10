@@ -185,6 +185,7 @@
                               header="#{harvestingSetsPage.createMode ? bundle['harvestserver.newSetDialog.title.new'] : bundle['harvestserver.viewEditDialog.title']}">
 
                         <p:fragment id="newOAISetDialogContent">
+                            <p:focus context="newOAISetDialogContent"/>
                             <p class="help-block">
                                 <span class="glyphicon glyphicon-info-sign"/> 
                                 <h:outputText value=" #{harvestingSetsPage.createMode ? bundle['harvestserver.newSetDialog.help'] : bundle['harvestserver.viewEditDialog.help']}"/>

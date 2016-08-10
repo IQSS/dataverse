@@ -162,6 +162,7 @@
                               modal="true" width="85%"
                               header="#{harvestingClientsPage.createMode ? bundle['harvestclients.newClientDialog.title.new'] : bundle['harvestclients.viewEditDialog.title']}">
                         <p:fragment id="newHarvestingClientDialogContent">
+                            <p:focus context="newHarvestingClientDialogContent"/>
                             <p class="help-block">
                                 <span class="glyphicon glyphicon-info-sign"/>
                                 <h:outputText value=" #{harvestingClientsPage.createMode ? bundle['harvestclients.newClientDialog.help'] : bundle['harvestclients.viewEditDialog.help']}"/>
