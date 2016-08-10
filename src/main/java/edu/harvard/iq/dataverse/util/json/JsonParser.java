@@ -335,7 +335,7 @@ public class JsonParser {
         if (metadatasJson != null) {
             for (JsonObject filemetadataJson : metadatasJson.getValuesAs(JsonObject.class)) {
                 String label = filemetadataJson.getString("label");
-                String description = filemetadataJson.getString("description");
+                String description = filemetadataJson.getString("description", null);
 
                 FileMetadata fileMetadata = new FileMetadata();
                 fileMetadata.setLabel(label);
@@ -368,9 +368,19 @@ public class JsonParser {
         dataFile.setModificationTime(timestamp);
         dataFile.setPermissionModificationTime(timestamp);
         
-        String contentType = "application/octet-stream"; //datafileJson.getString("contentType");
+        String contentType = datafileJson.getString("contentType", null);
+        if (contentType == null) {
+            contentType = "application/octet-stream";
+        }
         String storageIdentifier = datafileJson.getString("storageIdentifier");
-        String md5 = "unknown"; //datafileJson.getString("md5");
+        String md5 = datafileJson.getString("md5", null);
+        
+        if (md5 == null) {
+            md5 = "unknown";
+        }
+        
+        // TODO: 
+        // unf (if available)... etc.?
         
         dataFile.setContentType(contentType);
         dataFile.setStorageIdentifier(storageIdentifier);
