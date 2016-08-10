@@ -64,6 +64,7 @@ body .ui-widget {font-size: inherit;}
 .btn span.glyphicon {margin-right:.3em;}
 .btn span.glyphicon.no-text {margin:0;}
 .btn-group .btn span.glyphicon.no-text {margin-left:10px;margin-right:10px;}
+.col-manage-action .btn-group .btn span.glyphicon.no-text {margin:0;}
 .icon-inline-action {margin-left:.3em;}
 .icon-inline-action:first-of-type {margin-left:1em;}
 

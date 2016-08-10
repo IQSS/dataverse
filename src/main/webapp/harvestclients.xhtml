@@ -97,24 +97,22 @@
                             </div>
                         </f:facet>
 
-                        <p:column width="10%" headerText="#{bundle['harvestclients.tab.header.name']}">
+                        <p:column width="30%" headerText="#{bundle['harvestclients.tab.header.name']}/#{bundle['harvestclients.tab.header.url']}">
                             <h:outputText value="#{harvestClient.name}" />
+                            <div class="text-muted small"><h:outputText value="#{harvestClient.harvestingUrl}"/></div>
                         </p:column>
-                        <p:column width="30%" headerText="#{bundle['harvestclients.tab.header.url']}">
-                            <h:outputText value="#{harvestClient.harvestingUrl}" />
-                        </p:column>
-                        <p:column width="15%" headerText="Dataverse">
+                        <p:column width="17%" headerText="Dataverse">
                             <h:outputLink value="/dataverse/#{harvestClient.dataverse.alias}" title="#{harvestClient.dataverse.displayName}">
                                 <h:outputText value="#{harvestClient.dataverse.displayName}" />
                             </h:outputLink>
                         </p:column>
-                        <p:column width="12%" class="text-center" headerText="#{bundle['harvestclients.tab.header.lastrun']}">
+                        <p:column width="19%" class="text-center" headerText="#{bundle['harvestclients.tab.header.lastrun']}">
                             <h:outputText value="#{harvestClient.lastRun.startTime}" />
                         </p:column>
-                        <p:column width="15%" class="text-center" headerText="#{bundle['harvestclients.tab.header.lastresults']}">
+                        <p:column width="19%" class="text-center" headerText="#{bundle['harvestclients.tab.header.lastresults']}">
                             <h:outputText value="#{harvestClient.lastRun.detailedResultLabel}" />
                         </p:column>
-                        <p:column width="18%" class="col-manage-action col-button-action text-center" headerText="#{bundle['harvestclients.tab.header.action']}">
+                        <p:column width="15%" class="col-manage-action col-button-action text-center" headerText="#{bundle['harvestclients.tab.header.action']}">
                             <div class="button-block">
                                 <div class="btn-group" role="group">
                                     <!-- TODO: a confirmation dialog? - "sure you want to run harvest now?" -->
@@ -122,21 +120,21 @@
                                                    action="#{harvestingClientsPage.runHarvest(harvestClient)}"
                                                    update=":harvestingClientsForm :messagePanel"
                                                    title="#{bundle['harvestclients.tab.header.action.btn.run']}">
-                                        <span class="glyphicon glyphicon-play"></span>
+                                        <span class="glyphicon glyphicon-play no-text"></span>
                                     </p:commandLink>
                                     <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
                                                    action="#{harvestingClientsPage.editClient(harvestClient)}"
                                                    oncomplete="PF('newHarvestingClientForm').show();handleResizeDialog('newHarvestingClientDialog');bind_bsui_components();"
                                                    update=":harvestingClientsForm,:harvestingClientsForm:newHarvestingClientDialog"
                                                    title="#{bundle['harvestclients.tab.header.action.btn.edit']}">
-                                        <span class="glyphicon glyphicon-pencil"></span>
+                                        <span class="glyphicon glyphicon-pencil no-text"></span>
                                     </p:commandLink>
                                     <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
                                                    action="#{harvestingClientsPage.setSelectedClient(harvestClient)}"
                                                    oncomplete="PF('deleteConfirmation').show();bind_bsui_components();"
                                                    update=":harvestingClientsForm,:harvestingClientsForm:deleteConfirmation,:harvestingClientsForm:newHarvestingClientDialog"
                                                    title="#{bundle['harvestclients.tab.header.action.btn.delete']}">
-                                        <span class="glyphicon glyphicon-trash"></span>
+                                        <span class="glyphicon glyphicon-trash no-text"></span>
                                     </p:commandLink>
                                 </div>
                             </div>

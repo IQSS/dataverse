@@ -119,16 +119,14 @@
                                 </div>
                             </div>
                         </f:facet>
-                        <p:column width="16%" headerText="#{bundle['harvestserver.tab.header.spec']}">
+                        <p:column width="20%" headerText="#{bundle['harvestserver.tab.header.spec']}/#{bundle['harvestserver.tab.header.description']}">
                             <h:outputText value="#{oaiSet.spec}" />
+                            <div class="text-muted small"><h:outputText value="#{oaiSet.description}" /></div>
                         </p:column>
-                        <p:column width="18%" headerText="#{bundle['harvestserver.tab.header.description']}">
-                            <h:outputText value="#{oaiSet.description}" />
-                        </p:column>
-                        <p:column width="24%" headerText="Definition Query">
+                        <p:column width="31%" class="text-center" headerText="Definition Query">
                             <h:outputText value="#{oaiSet.definition}" />
                         </p:column>
-                        <p:column width="24%" class="text-center" headerText="#{bundle['harvestserver.tab.header.stats']}">
+                        <p:column width="34%" class="text-center" headerText="#{bundle['harvestserver.tab.header.stats']}">
                             <h:outputText value="No records (empty set)" rendered="#{harvestingSetsPage.getSetInfoNumOfDatasets(oaiSet) == 0}" />
                             <h:outputText value="1 dataset " rendered="#{harvestingSetsPage.getSetInfoNumOfDatasets(oaiSet) == 1}" />
                             <h:outputText value="#{harvestingSetsPage.getSetInfoNumOfDatasets(oaiSet)} datasets " rendered="#{harvestingSetsPage.getSetInfoNumOfDatasets(oaiSet) gt 1}" />
@@ -136,7 +134,7 @@
                             <h:outputText value=", #{harvestingSetsPage.getSetInfoNumOfDeleted(oaiSet)} marked as deleted" rendered="#{(harvestingSetsPage.getSetInfoNumOfDatasets(oaiSet) gt 0) and (harvestingSetsPage.getSetInfoNumOfDeleted(oaiSet) gt 0)}" />
                             <h:outputText value=")" rendered="#{harvestingSetsPage.getSetInfoNumOfDatasets(oaiSet) gt 0}" />
                         </p:column>
-                        <p:column width="18%" class="col-manage-action col-button-action text-center" headerText="#{bundle['harvestserver.tab.header.action']}">
+                        <p:column width="15%" class="col-manage-action col-button-action text-center" headerText="#{bundle['harvestserver.tab.header.action']}">
                             <div class="button-block">
                                 <div class="btn-group" role="group">
                                     <!-- TODO: a confirmation dialog? - "sure you want to run export now?" -->
@@ -144,21 +142,21 @@
                                                    action="#{harvestingSetsPage.startSetExport(oaiSet)}"
                                                    update=":harvestingSetsForm  :messagePanel"
                                                    title="#{bundle['harvestserver.tab.header.action.btn.export']}">
-                                        <span class="glyphicon glyphicon-play"></span>
+                                        <span class="glyphicon glyphicon-play no-text"></span>
                                     </p:commandLink>
                                     <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
                                                    action="#{harvestingSetsPage.editSet(oaiSet)}"
                                                    oncomplete="PF('newOAISetForm').show();handleResizeDialog('newOAISetDialog');bind_bsui_components();"
                                                    update=":harvestingSetsForm:newOAISetDialog"
                                                    title="#{bundle['harvestserver.tab.header.action.btn.edit']}">
-                                        <span class="glyphicon glyphicon-pencil"></span>
+                                        <span class="glyphicon glyphicon-pencil no-text"></span>
                                     </p:commandLink>
                                     <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
                                                    action="#{harvestingSetsPage.setSelectedSet(oaiSet)}"
                                                    oncomplete="PF('deleteConfirmation').show();bind_bsui_components();"
                                                    update=":harvestingSetsForm,:harvestingSetsForm:deleteConfirmation,:harvestingSetsForm:newOAISetDialog"
                                                    title="#{bundle['harvestserver.tab.header.action.btn.delete']}">
-                                        <span class="glyphicon glyphicon-trash"></span>
+                                        <span class="glyphicon glyphicon-trash no-text"></span>
                                     </p:commandLink>
                                 </div>
                             </div>
