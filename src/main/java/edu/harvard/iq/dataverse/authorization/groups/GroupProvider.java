@@ -37,11 +37,12 @@ public interface GroupProvider<T extends Group> {
     
     /**
      * Looks up the groups this provider has for a role assignee, in the context of a {@link DvObject}.
-     * This method should be used for group management. Groups for actual requests should be determined
-     * by calling {@link #groupsFor(edu.harvard.iq.dataverse.engine.command.DataverseRequest, edu.harvard.iq.dataverse.DvObject)}.
+     * <B>This method should be used for group management. Groups for actual requests should be determined
+     * by calling {@link #groupsFor(edu.harvard.iq.dataverse.engine.command.DataverseRequest, edu.harvard.iq.dataverse.DvObject)}.</B>
      * @param ra 
      * @param dvo the DvObject which is the context for the groups. May be {@code null}
      * @return The set of groups the role assignee is a member of.
+     * @see #groupsFor(edu.harvard.iq.dataverse.engine.command.DataverseRequest, edu.harvard.iq.dataverse.DvObject)
      */
     public Set<T> groupsFor( RoleAssignee ra, DvObject dvo );
     

@@ -183,7 +183,6 @@ public class DatasetPage implements java.io.Serializable {
     private List<Template> dataverseTemplates = new ArrayList();
     private Template defaultTemplate;
     private Template selectedTemplate;
-    private String globalId;
     private String persistentId;
     private String version;
     private String protocol = "";
@@ -318,11 +317,7 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public boolean isUnlimitedUploadFileSize(){
-        
-        if (this.maxFileUploadSizeInBytes == null){
-            return true;
-        }
-        return false;
+        return (this.maxFileUploadSizeInBytes == null);
     }
 
     public boolean isMetadataExportEnabled() {
@@ -451,9 +446,8 @@ public class DatasetPage implements java.io.Serializable {
      * Convenience method for "Download File" button display logic
      * 
      * Used by the dataset.xhtml render logic when listing files
-     *       > Assume user already has view access to the file list 
-     *         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!!!
-     * 
+     * <b>Assumes user already has view access to the file list.</b>
+     *         
      * @param fileMetadata
      * @return boolean
      */
@@ -510,13 +504,17 @@ public class DatasetPage implements java.io.Serializable {
         // that the User is not an instance of GuestUser, which is similar in
         // spirit to the previous check.
         // --------------------------------------------------------------------
-        if (session.getUser() instanceof GuestUser){
-            this.fileDownloadPermissionMap.put(fid, false);
-            return false;
-        }
+        // Michael: Removeing this for now, might come back later in some version prior
+        //          to releasing this code.
+//        if (session.getUser() instanceof GuestUser){
+//            this.fileDownloadPermissionMap.put(fid, false);
+//            return false;
+//        }
         
         // --------------------------------------------------------------------
         // (3) Does the User have DownloadFile Permission at the **Dataset** level 
+        // Michael: Leaving this in for now, but shouldn't this be alredy resolved
+        //          by the premission system, given that files are never permission roots?
         // --------------------------------------------------------------------
         if (this.doesSessionUserHaveDataSetPermission(Permission.DownloadFile)){
             // Yes, save answer and return true

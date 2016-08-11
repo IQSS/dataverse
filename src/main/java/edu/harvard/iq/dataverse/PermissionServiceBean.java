@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.api.datadeposit.SwordAuth;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
@@ -10,7 +9,7 @@ import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.GroupUtil;
-import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers;
+import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
@@ -28,7 +27,9 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import static edu.harvard.iq.dataverse.engine.command.CommandHelper.CH;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.stream.Collectors;
 import javax.persistence.Query;
 
 /**
@@ -45,15 +46,10 @@ public class PermissionServiceBean {
 
     private static final Logger logger = Logger.getLogger(PermissionServiceBean.class.getName());
     
-    private static final EnumSet<Permission> PERMISSIONS_FOR_AUTHENTICATED_USERS_ONLY = EnumSet.noneOf( Permission.class );
-    
-    static {
-        for ( Permission p : Permission.values() ) {
-            if ( p.requiresAuthenticatedUser() ) {
-                PERMISSIONS_FOR_AUTHENTICATED_USERS_ONLY.add(p);
-            }
-        }
-    }
+    private static final Set<Permission> PERMISSIONS_FOR_AUTHENTICATED_USERS_ONLY = 
+           EnumSet.copyOf(Arrays.asList(Permission.values()).stream()
+                    .filter( Permission::requiresAuthenticatedUser )
+                    .collect( Collectors.toList() ));
     
     @EJB
     BuiltinUserServiceBean userService;
@@ -210,9 +206,11 @@ public class PermissionServiceBean {
         // Add permissions specifically given to the user
         permissions.addAll( permissionsForSingleRoleAssignee(req.getUser(),dvo) );
         Set<Group> groups = groupService.groupsFor(req,dvo);
+        
         // Add permissions gained from groups
         for ( Group g : groups ) {
-            permissions.addAll( permissionsForSingleRoleAssignee(g,dvo) );
+            final Set<Permission> groupPremissions = permissionsForSingleRoleAssignee(g,dvo);
+            permissions.addAll(groupPremissions);
         }
         
         if ( ! req.getUser().isAuthenticated() ) {
@@ -252,15 +250,18 @@ public class PermissionServiceBean {
 
     
     private Set<Permission> permissionsForSingleRoleAssignee(RoleAssignee ra, DvObject d) {
+        logger.info("PSB:pfsra:    "+ ra + " on " + d );
         // super user check
-        // @todo for 4.0, we are allowing superusers all permissions
+        // for 4.0, we are allowing superusers all permissions
         // for secure data, we may need to restrict some of the permissions
         if (ra instanceof AuthenticatedUser && ((AuthenticatedUser) ra).isSuperuser()) {
             return EnumSet.allOf(Permission.class);
         }
-
+        
+        // Start with no permissions, build from there.
         Set<Permission> retVal = EnumSet.noneOf(Permission.class);
 
+        // File special case.
         if (d instanceof DataFile) {
             // unrestricted files that are part of a release dataset 
             // automatically get download permission for everybody:
@@ -274,6 +275,7 @@ public class PermissionServiceBean {
                         for (FileMetadata fm : df.getOwner().getReleasedVersion().getFileMetadatas()) {
                             if (df.equals(fm.getDataFile())) {
                                 retVal.add(Permission.DownloadFile);
+                                break;
                             }
                         }
                     }
@@ -281,10 +283,19 @@ public class PermissionServiceBean {
             }
         }
         
-        for (RoleAssignment asmnt : assignmentsFor(ra, d)) {
-            retVal.addAll(asmnt.getRole().permissions());
-        }
+        // Direct assignments to ra on d
+        assignmentsFor(ra, d).forEach( 
+                asmnt -> retVal.addAll(asmnt.getRole().permissions())
+        );
         
+        // Recurse up the group containment hierarchy.
+        groupService.groupsFor(ra, d).forEach(
+                grp -> { 
+                    logger.info("PSB:pfsra:    groups containing "+ ra + ": " + grp );
+                    retVal.addAll(permissionsForSingleRoleAssignee(grp, d));
+                });
+        
+        logger.info("PSB: /pfsra" );
         return retVal;
     }
 

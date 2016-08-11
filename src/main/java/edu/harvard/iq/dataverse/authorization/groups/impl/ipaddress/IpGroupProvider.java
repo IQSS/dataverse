@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * Creates {@link IpGroup}s.
@@ -48,8 +49,9 @@ public class IpGroupProvider implements GroupProvider<IpGroup> {
             
             { // FIXME remove this block before merge to DEV
             final IpAddress sourceAddress = req.getSourceAddress();
-            Long ipAddr = (sourceAddress instanceof IPv4Address) ? ((IPv4Address)sourceAddress).toLong() : null;
-            logger.log(Level.INFO, "ip: {1} ({2}) groups: {0}", new Object[]{groups, sourceAddress, ipAddr});
+            logger.log(Level.INFO, "ip: {1} ({2}) groups: {0}", new Object[]{
+                groups.stream().map( g->"[" + g.getId() + " " + g.getDisplayName()+"]").collect(Collectors.joining(",")), 
+                sourceAddress});
             }
             
             return groups;

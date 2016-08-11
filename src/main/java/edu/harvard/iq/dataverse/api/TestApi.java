@@ -133,7 +133,7 @@ public class TestApi extends AbstractApiBean {
             
             JsonObjectBuilder r = NullSafeJsonBuilder.jsonObjectBuilder();
             r.add( "address", addr.toString() );
-            r.add( "addressRaw", (addr instanceof IPv4Address) ? ((IPv4Address)addr).toLong() : null);
+            r.add( "addressRaw", (addr instanceof IPv4Address) ? ((IPv4Address)addr).toBigInteger().toString(): null);
             r.add("groups", ipGroupsSvc.findAllIncludingIp(addr).stream()
                     .map( IpGroup::toString )
                     .collect(stringsToJsonArray()));

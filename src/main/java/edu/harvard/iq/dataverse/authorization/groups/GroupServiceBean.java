@@ -19,6 +19,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import static java.util.stream.Collectors.toSet;
+import java.util.stream.Stream;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -75,15 +77,19 @@ public class GroupServiceBean {
         return shibGroupProvider;
     }
     
+    /**
+     * Finds all the groups {@code req} is part of in {@code dvo}'s context.
+     * Recurses upwards in {@link ExplicitGroup}s, as needed.
+     * @param req The request whose group memberships we seek.
+     * @param dvo The {@link DvObject} we determining the context fo the membership.
+     * @return The groups {@code req} is part of under {@code dvo}.
+     */
     public Set<Group> groupsFor( DataverseRequest req, DvObject dvo ) {
-        Set<Group> groups = new HashSet<>();
-         // first, get all groups the user directly belongs to
-        for ( GroupProvider gp : groupProviders.values() ) {
-            final Set newGroups = gp.groupsFor(req, dvo);
-            groups.addAll(newGroups);
-        }
-        
-        return groupTransitiveClosure(groups, dvo);
+        return groupTransitiveClosure(
+                groupProviders.values().stream()
+                              .flatMap(gp->(Stream<Group>)gp.groupsFor(req, dvo).stream())
+                              .collect(toSet()),
+                dvo);
     }
     
     /**
@@ -94,14 +100,11 @@ public class GroupServiceBean {
      * @return 
      */
     public Set<Group> groupsFor( RoleAssignee ra, DvObject dvo ) {
-        Set<Group> groups = new HashSet<>();
-        
-        // first, get all groups the user directly belongs to
-        for ( GroupProvider gp : groupProviders.values() ) {
-            groups.addAll( gp.groupsFor(ra, dvo) );
-        }
-        
-        return groupTransitiveClosure(groups, dvo);
+        return groupTransitiveClosure(
+                groupProviders.values().stream()
+                              .flatMap(gp->(Stream<Group>)gp.groupsFor(ra, dvo).stream())
+                              .collect( toSet() ),
+                dvo);
     }
 
     /**
@@ -158,11 +161,9 @@ public class GroupServiceBean {
         Set<ExplicitGroup> perimeter = new HashSet<>();
         Set<ExplicitGroup> visited = new HashSet<>();
         
-        for ( Group g : groups ) {
-            if ( g instanceof ExplicitGroup ) {
-                perimeter.add((ExplicitGroup) g);
-            }
-        }
+        groups.stream()
+              .filter((g) -> ( g instanceof ExplicitGroup ))
+              .forEachOrdered((g) -> perimeter.add((ExplicitGroup) g));
         visited.addAll(perimeter);
         
         while ( ! perimeter.isEmpty() ) {
@@ -184,9 +185,8 @@ public class GroupServiceBean {
     
     public Set<Group> findGlobalGroups() {
         Set<Group> groups = new HashSet<>();
-        for ( GroupProvider gp : groupProviders.values() ) {
-            groups.addAll( gp.findGlobalGroups() );
-        }
+        groupProviders.values().forEach( 
+                gp-> groups.addAll( gp.findGlobalGroups() ));
         return groups;
     }
     

@@ -134,21 +134,21 @@ public class ExplicitGroupServiceBean {
     public Set<ExplicitGroup> findDirectGroups( RoleAssignee ra ) {
         if ( ra instanceof AuthenticatedUser ) {
             return provider.updateProvider(
-                    new HashSet<ExplicitGroup>(
+                    new HashSet<>(
                             em.createNamedQuery("ExplicitGroup.findByAuthenticatedUserIdentifier", ExplicitGroup.class)
                               .setParameter("authenticatedUserIdentifier", ra.getIdentifier().substring(1))
                               .getResultList()
                   ));
         } else if ( ra instanceof ExplicitGroup ) {
             return provider.updateProvider(
-                    new HashSet<ExplicitGroup>(
+                    new HashSet<>(
                             em.createNamedQuery("ExplicitGroup.findByContainedExplicitGroupId", ExplicitGroup.class)
                               .setParameter("containedExplicitGroupId", ((ExplicitGroup) ra).getId())
                               .getResultList()
                   ));
         } else {
             return provider.updateProvider(
-                    new HashSet<ExplicitGroup>(
+                    new HashSet<>(
                             em.createNamedQuery("ExplicitGroup.findByRoleAssgineeIdentifier", ExplicitGroup.class)
                               .setParameter("roleAssigneeIdentifier", ra.getIdentifier())
                               .getResultList()
