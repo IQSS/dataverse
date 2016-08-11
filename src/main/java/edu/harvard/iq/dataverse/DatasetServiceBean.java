@@ -663,6 +663,10 @@ public class DatasetServiceBean implements java.io.Serializable {
     // reExportAll *forces* a reexport on all published datasets; whether they 
     // have the "last export" time stamp set or not. 
     @Asynchronous 
+    public void reExportAllAsync() {
+        reExportAll();
+    }
+    
     public void reExportAll() {
         logger.info("Starting a reExport all job asynchronously");
         
@@ -692,6 +696,10 @@ public class DatasetServiceBean implements java.io.Serializable {
     
     // exportAll() will try to export the yet unexported datasets (it will honor
     // and trust the "last export" time stamp).
+    public void exportAllAsync() {
+        exportAll();
+    }
+    
     public void exportAll() {
     logger.info("Starting an export all job");
         
