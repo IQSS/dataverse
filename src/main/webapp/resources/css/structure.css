@@ -104,6 +104,7 @@ table.selectManyCheckboxBlock label {font-weight:normal;}
 hr {border-color: #ddd;}
 
 span.glyphicon[data-toggle='tooltip'] {cursor: default;}
+.tooltip {z-index:999999 !important;}
 
 /* Dropdown submenu */
 .dropdown-submenu {

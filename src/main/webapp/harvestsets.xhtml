@@ -43,7 +43,7 @@
                         <div>
                             <p class="help-block">
                                 <span class="glyphicon glyphicon-info-sign"/>&#160;
-                                <h:outputText value="Harvesting Server is currently disabled"/>
+                                <h:outputText value="#{bundle['harvestserver.service.disabled.msg']}"/>
                             </p>
                         </div>
                     </p:fragment>
@@ -59,7 +59,7 @@
                                                actionListener="#{harvestingSetsPage.initNewSet}"
                                                update=":harvestingSetsForm:newOAISetDialog"
                                                oncomplete="PF('newOAISetForm').show();handleResizeDialog('newOAISetDialog');bind_bsui_components();">
-                                    <span class="glyphicon glyphicon-plus"/> Add Set
+                                    <span class="glyphicon glyphicon-plus"/> #{bundle['harvestserver.btn.add']}
                                 </p:commandLink>
                             </div>
                         </div>
@@ -113,7 +113,7 @@
                                                        actionListener="#{harvestingSetsPage.initNewSet}"
                                                        update=":harvestingSetsForm:newOAISetDialog"
                                                        oncomplete="PF('newOAISetForm').show();handleResizeDialog('newOAISetDialog');bind_bsui_components();">
-                                            <span class="glyphicon glyphicon-plus"/> Add Set
+                                            <span class="glyphicon glyphicon-plus"/> #{bundle['harvestserver.btn.add']}
                                         </p:commandLink>
                                     </div>
                                 </div>
@@ -123,16 +123,22 @@
                             <h:outputText value="#{oaiSet.spec}" />
                             <div class="text-muted small"><h:outputText value="#{oaiSet.description}" /></div>
                         </p:column>
-                        <p:column width="31%" class="text-center" headerText="Definition Query">
+                        <p:column width="31%" class="text-center" headerText="#{bundle['harvestserver.tab.header.definition']}">
                             <h:outputText value="#{oaiSet.definition}" />
                         </p:column>
                         <p:column width="34%" class="text-center" headerText="#{bundle['harvestserver.tab.header.stats']}">
-                            <h:outputText value="No records (empty set)" rendered="#{harvestingSetsPage.getSetInfoNumOfDatasets(oaiSet) == 0}" />
+                            <h:outputFormat value="#{harvestingSetsPage.getSetInfoNumOfDatasets(oaiSet) gt 0 ? bundle['harvestserver.tab.col.stats.results'] : bundle['harvestserver.tab.col.stats.empty']}">
+                                <f:param value="#{harvestingSetsPage.getSetInfoNumOfDatasets(oaiSet)}"/>
+                                <f:param value="#{harvestingSetsPage.getSetInfoNumOfExported(oaiSet)}"/>
+                                <f:param value="#{harvestingSetsPage.getSetInfoNumOfDeleted(oaiSet)}"/>
+                            </h:outputFormat>
+                            <ui:remove>
                             <h:outputText value="1 dataset " rendered="#{harvestingSetsPage.getSetInfoNumOfDatasets(oaiSet) == 1}" />
                             <h:outputText value="#{harvestingSetsPage.getSetInfoNumOfDatasets(oaiSet)} datasets " rendered="#{harvestingSetsPage.getSetInfoNumOfDatasets(oaiSet) gt 1}" />
                             <h:outputText value="(#{harvestingSetsPage.getSetInfoNumOfExported(oaiSet)} records exported" rendered="#{harvestingSetsPage.getSetInfoNumOfDatasets(oaiSet) gt 0}" />
                             <h:outputText value=", #{harvestingSetsPage.getSetInfoNumOfDeleted(oaiSet)} marked as deleted" rendered="#{(harvestingSetsPage.getSetInfoNumOfDatasets(oaiSet) gt 0) and (harvestingSetsPage.getSetInfoNumOfDeleted(oaiSet) gt 0)}" />
                             <h:outputText value=")" rendered="#{harvestingSetsPage.getSetInfoNumOfDatasets(oaiSet) gt 0}" />
+                            </ui:remove>
                         </p:column>
                         <p:column width="15%" class="col-manage-action col-button-action text-center" headerText="#{bundle['harvestserver.tab.header.action']}">
                             <div class="button-block">
@@ -185,13 +191,14 @@
                         <p:fragment id="newOAISetDialogContent">
                             <p:focus context="newOAISetDialogContent"/>
                             <p class="help-block">
-                                <span class="glyphicon glyphicon-info-sign"/> 
-                                <h:outputText value=" #{harvestingSetsPage.createMode ? bundle['harvestserver.newSetDialog.help'] : bundle['harvestserver.viewEditDialog.help']}"/>
+                                <span class="glyphicon glyphicon-info-sign"/> <h:outputText value=" #{bundle['harvestserver.newSetDialog.help']}"/>
                             </p>
                             <div class="form-horizontal">
                                 <div class="form-group">
                                     <label for="setquery" class="col-sm-3 control-label">
-                                        #{bundle['harvestserver.newSetDialog.setquery']} <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{!harvestingSetsPage.setQueryValidated}" title="#{bundle.requiredField}"/>
+                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['harvestserver.newSetDialog.setquery.tip']}">
+                                            #{bundle['harvestserver.newSetDialog.setquery']} <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{!harvestingSetsPage.setQueryValidated}" title="#{bundle.requiredField}"/>
+                                        </span>
                                     </label>
                                     <div class="col-sm-8">
                                         <p:inputText id="setquery" styleClass="form-control"
@@ -203,19 +210,27 @@
                                         <p class="form-control-static" jsf:rendered="#{harvestingSetsPage.setQueryValidated}"><h:outputText value="#{harvestingSetsPage.newSetQuery}"/></p>
                                         <p class="help-block" jsf:rendered="#{!harvestingSetsPage.setQueryValidated}">#{bundle['harvestserver.newSetDialog.setquery.helptext']}</p>
                                         
-                                        <p class="help-block" jsf:rendered="#{harvestingSetsPage.setQueryValidated and harvestingSetsPage.setQueryResult gt 0}"><span class="glyphicon glyphicon-ok-sign text-success"/> <h:outputText class="text-success" value=" Search query returned #{harvestingSetsPage.setQueryResult} datasets!"/></p>
-                                        <p class="help-block" jsf:rendered="#{harvestingSetsPage.setQueryValidated and harvestingSetsPage.setQueryResult lt 1}"><span class="glyphicon glyphicon-exclamation-sign text-danger"/> <h:outputText class="text-danger" value=" WARNING: Search query returned no results!"/></p>
+                                        <p class="help-block" jsf:rendered="#{harvestingSetsPage.setQueryValidated and harvestingSetsPage.setQueryResult gt 0}">
+                                            <span class="glyphicon glyphicon-ok-sign text-success"/> 
+                                            <h:outputFormat styleClass="text-success" value=" #{bundle['harvestserver.newSetDialog.setquery.results']}">
+                                                <f:param value="#{harvestingSetsPage.setQueryResult}"/>
+                                            </h:outputFormat>
+                                        </p>
+                                        <p class="help-block" jsf:rendered="#{harvestingSetsPage.setQueryValidated and harvestingSetsPage.setQueryResult lt 1}">
+                                            <span class="glyphicon glyphicon-exclamation-sign text-danger"/> <h:outputText class="text-danger" value=" #{bundle['harvestserver.newSetDialog.setquery.empty']}"/>
+                                        </p>
                                     </div>
                                 </div>
                                 <!-- the set spec is not editable in "edit existing set" mode; so we just show it here as a label: -->
                                 <div class="form-group" jsf:rendered="#{harvestingSetsPage.editMode}">
                                     <label for="setspec" class="col-sm-3 control-label">
-                                            #{bundle['harvestserver.newSetDialog.setspec']} 
+                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['harvestserver.newSetDialog.setspec.tip']}">
+                                            #{bundle['harvestserver.newSetDialog.setspec']}
+                                        </span>
                                     </label>
                                     <div class="col-sm-8">
                                         <p class="form-control-static"><h:outputText value="#{harvestingSetsPage.newSetSpec}"/></p>
-                                        <!-- todo: move this message into the bundle: -->
-                                        <p class="help-block">This is the nickname that uniquely identifies the set. Once the set is created, it cannot be changed.</p>
+                                        <p class="help-block">#{bundle['harvestserver.editSetDialog.setspec.helptext']}</p>
                                     </div>
                                 </div>
                                 
@@ -224,7 +239,7 @@
                                         <p:commandLink type="button" 
                                                          id="validateSetQueryBtn"
                                                          styleClass="btn btn-default"
-                                                         oncomplete="PF('newOAISetForm').show();"
+                                                         oncomplete="PF('newOAISetForm').show();bind_bsui_components();"
                                                          update=":harvestingSetsForm:newOAISetDialog"
                                                          action="#{harvestingSetsPage.validateSetQuery()}">
                                             <span class="glyphicon glyphicon-menu-right"/> #{bundle.next}
@@ -244,7 +259,9 @@
                                     <!-- the set spec is only editable in "create" mode; in the "edit existing set" mode the set spec name is shown as a label in the first step popup. -->
                                     <div class="form-group" jsf:rendered="#{harvestingSetsPage.createMode}">
                                         <label for="setspec" class="col-sm-3 control-label">
-                                            #{bundle['harvestserver.newSetDialog.setspec']} <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{harvestingSetsPage.setQueryValidated}" title="#{bundle.requiredField}"/>
+                                            <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['harvestserver.newSetDialog.setspec.tip']}">
+                                                #{bundle['harvestserver.newSetDialog.setspec']} <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{harvestingSetsPage.setQueryValidated}" title="#{bundle.requiredField}"/>
+                                            </span>
                                         </label>
                                         <div class="col-sm-8">
                                             <p:inputText id="setspec" styleClass="form-control"
@@ -257,13 +274,14 @@
                                     
                                     <div class="form-group">
                                         <label for="setdescription" class="col-sm-3 control-label">
-                                            #{bundle['harvestserver.newSetDialog.setdescription']} <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{harvestingSetsPage.setSpecValidated}" title="#{bundle.requiredField}"/>
+                                            <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['harvestserver.newSetDialog.setdescription.tip']}">
+                                                #{bundle['harvestserver.newSetDialog.setdescription']} <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{harvestingSetsPage.setSpecValidated}" title="#{bundle.requiredField}"/>
+                                            </span>
                                         </label>
                                         <div class="col-sm-8">
                                             <p:inputText id="setdescription" styleClass="form-control"
                                                          value="#{harvestingSetsPage.newSetDescription}"/>
                                             <p:message for="setdescription"/>
-                                            <p class="help-block">#{bundle['harvestserver.newSetDialog.setdescription.helptext']}</p>
                                         </div>
                                     </div>
                                     
@@ -274,7 +292,7 @@
                                                         id="backToQuery"
                                                         styleClass="btn btn-default"
                                                         update=":harvestingSetsForm:newOAISetDialog"
-                                                        oncomplete="PF('newOAISetForm').show();"
+                                                        oncomplete="PF('newOAISetForm').show();bind_bsui_components();"
                                                         action="#{harvestingSetsPage.backToQuery()}">
                                             <span class="glyphicon glyphicon-menu-left"/> #{bundle.previous}
                                             </p:commandLink>
