@@ -121,7 +121,7 @@ public class PermissionsWrapper implements java.io.Serializable {
         if (u==null){            
             return false;
         }
-        return permissionService.userOn(u, dv).has(Permission.ManageDataversePermissions);
+        return permissionService.requestOn(dvRequestService.getDataverseRequest(), dv).has(Permission.ManageDataversePermissions);
     }
     
     public boolean canManageDatasetPermissions(User u, Dataset ds) {
@@ -131,7 +131,7 @@ public class PermissionsWrapper implements java.io.Serializable {
         if (u==null){            
             return false;
         }
-        return permissionService.userOn(u, ds).has(Permission.ManageDatasetPermissions);
+        return permissionService.requestOn(dvRequestService.getDataverseRequest(), ds).has(Permission.ManageDatasetPermissions);
     }
 
     public boolean canViewUnpublishedDataset(DataverseRequest dr, Dataset dataset) {
@@ -198,17 +198,16 @@ public class PermissionsWrapper implements java.io.Serializable {
 
         // Check permissions
         //
-        if (this.permissionService.on(dvo).has(Permission.DownloadFile)){
+        if ( permissionService.on(dvo).has(Permission.DownloadFile) ){
 
             // Yes, has permission, store result
-            //
-            this.fileDownloadPermissionMap.put(dvo.getId(), true);
+            fileDownloadPermissionMap.put(dvo.getId(), true);
             return true;
-        }else {
+            
+        } else {
         
             // No permission, store result
-            //
-            this.fileDownloadPermissionMap.put(dvo.getId(), false);
+            fileDownloadPermissionMap.put(dvo.getId(), false);
             return false;
         }
     }

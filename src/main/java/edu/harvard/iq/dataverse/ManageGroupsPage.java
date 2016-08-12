@@ -85,21 +85,15 @@ public class ManageGroupsPage implements java.io.Serializable {
         if (editDv == null) {
             return permissionsWrapper.notFound();
         }
-
+        
         Boolean hasPermissions = permissionsWrapper.canIssueCommand(editDv, CreateExplicitGroupCommand.class);
         hasPermissions |= permissionsWrapper.canIssueCommand(editDv, DeleteExplicitGroupCommand.class);
         hasPermissions |= permissionsWrapper.canIssueCommand(editDv, UpdateExplicitGroupCommand.class);
         if (!hasPermissions) {
             return permissionsWrapper.notAuthorized();
         } 
-        explicitGroups = new LinkedList<>();
+        explicitGroups = new LinkedList<>(explicitGroupService.findByOwner(getDataverseId()));
 
-        List <ExplicitGroup> explicitGroupsForThisDataverse =
-                explicitGroupService.findByOwner(getDataverseId());
-
-        for (ExplicitGroup g : explicitGroupsForThisDataverse) {
-            getExplicitGroups().add(g);
-        }
         return null;
     }
 
@@ -277,7 +271,7 @@ public class ManageGroupsPage implements java.io.Serializable {
         setExplicitGroupName("");
         setExplicitGroupIdentifier("");
         setNewExplicitGroupDescription("");
-        setNewExplicitGroupRoleAssignees(new LinkedList<RoleAssignee>());
+        setNewExplicitGroupRoleAssignees(new LinkedList<>());
         FacesContext context = FacesContext.getCurrentInstance();
         setSelectedGroupRoleAssignees(null);
     }
