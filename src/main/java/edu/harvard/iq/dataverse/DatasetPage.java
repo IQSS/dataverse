@@ -488,31 +488,11 @@ public class DatasetPage implements java.io.Serializable {
         }
         
         // --------------------------------------------------------------------
-        // Conditions (2) through (4) are for Restricted files
+        // Conditions (2) through (3) are for Restricted files
         // --------------------------------------------------------------------
         
         // --------------------------------------------------------------------
-        // (2) In Dataverse 4.3 and earlier we required that users be authenticated
-        // to download files, but in developing the Private URL feature, we have
-        // added a new subclass of "User" called "PrivateUrlUser" that returns false
-        // for isAuthenticated but that should be able to download restricted files
-        // when given the Member role (which includes the DownloadFile permission).
-        // This is consistent with how Builtin and Shib users (both are
-        // AuthenticatedUsers) can download restricted files when they are granted
-        // the Member role. For this reason condition 2 has been changed. Previously,
-        // we required isSessionUserAuthenticated to return true. Now we require
-        // that the User is not an instance of GuestUser, which is similar in
-        // spirit to the previous check.
-        // --------------------------------------------------------------------
-        // Michael: Removeing this for now, might come back later in some version prior
-        //          to releasing this code.
-//        if (session.getUser() instanceof GuestUser){
-//            this.fileDownloadPermissionMap.put(fid, false);
-//            return false;
-//        }
-        
-        // --------------------------------------------------------------------
-        // (3) Does the User have DownloadFile Permission at the **Dataset** level 
+        // (2) Does the User have DownloadFile Permission at the **Dataset** level 
         // Michael: Leaving this in for now, but shouldn't this be alredy resolved
         //          by the premission system, given that files are never permission roots?
         // --------------------------------------------------------------------
@@ -523,7 +503,7 @@ public class DatasetPage implements java.io.Serializable {
         }
   
         // --------------------------------------------------------------------
-        // (4) Does the user has DownloadFile permission on the DataFile            
+        // (3) Does the user has DownloadFile permission on the DataFile            
         // --------------------------------------------------------------------
         if (this.permissionService.on(fileMetadata.getDataFile()).has(Permission.DownloadFile)){
             this.fileDownloadPermissionMap.put(fid, true);
@@ -531,7 +511,7 @@ public class DatasetPage implements java.io.Serializable {
         }
         
         // --------------------------------------------------------------------
-        // (6) No download....
+        // (4) No download for you! Come back with permissions!
         // --------------------------------------------------------------------
         this.fileDownloadPermissionMap.put(fid, false);
        
