@@ -9,7 +9,6 @@ import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.GroupUtil;
-import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
@@ -29,6 +28,7 @@ import static edu.harvard.iq.dataverse.engine.command.CommandHelper.CH;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 import javax.persistence.Query;
 
@@ -250,7 +250,6 @@ public class PermissionServiceBean {
 
     
     private Set<Permission> permissionsForSingleRoleAssignee(RoleAssignee ra, DvObject d) {
-        logger.info("PSB:pfsra:    "+ ra + " on " + d );
         // super user check
         // for 4.0, we are allowing superusers all permissions
         // for secure data, we may need to restrict some of the permissions
@@ -290,12 +289,7 @@ public class PermissionServiceBean {
         
         // Recurse up the group containment hierarchy.
         groupService.groupsFor(ra, d).forEach(
-                grp -> { 
-                    logger.info("PSB:pfsra:    groups containing "+ ra + ": " + grp );
-                    retVal.addAll(permissionsForSingleRoleAssignee(grp, d));
-                });
-        
-        logger.info("PSB: /pfsra" );
+                grp -> retVal.addAll(permissionsForSingleRoleAssignee(grp, d)));
         return retVal;
     }
 
@@ -397,7 +391,7 @@ public class PermissionServiceBean {
          * query?
          */
         String query = "SELECT id FROM dvobject WHERE dtype = 'Dataverse' and id in (select definitionpoint_id from roleassignment where assigneeidentifier in (" + identifiers + "));";
-        logger.fine("query: " + query);
+        logger.log(Level.FINE, "query: {0}", query);
         Query nativeQuery = em.createNativeQuery(query);
         List<Integer> dataverseIdsToCheck = nativeQuery.getResultList();
         List<Dataverse> dataversesUserHasPermissionOn = new LinkedList<>();
