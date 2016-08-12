@@ -364,7 +364,7 @@ Toggles superuser mode on the ``AuthenticatedUser`` whose ``identifier`` (withou
 
 List all role assignments of a role assignee (i.e. a user or a group)::
 
-    GET http://$SERVER/api/admin/assignments/assignee/$identifier
+    GET http://$SERVER/api/admin/assignments/assignees/$identifier
 
 Note that ``identifier`` can contain slashes (e.g. ``&ip/localhost-users``).
 

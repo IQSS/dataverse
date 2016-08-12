@@ -3,15 +3,10 @@ package edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.GroupProvider;
-import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IPv4Address;
-import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 /**
  * Creates {@link IpGroup}s.
@@ -19,8 +14,6 @@ import java.util.stream.Collectors;
  */
 public class IpGroupProvider implements GroupProvider<IpGroup> {
     
-    private static final Logger logger = Logger.getLogger(IpGroupProvider.class.getCanonicalName());
-
     private final IpGroupsServiceBean ipGroupsService;
     
     public IpGroupProvider(IpGroupsServiceBean ipGroupsService) {
@@ -45,16 +38,7 @@ public class IpGroupProvider implements GroupProvider<IpGroup> {
     @Override
     public Set<IpGroup> groupsFor( DataverseRequest req, DvObject dvo ) {
         if ( req.getSourceAddress() != null ) {
-            final Set<IpGroup> groups = updateProvider( ipGroupsService.findAllIncludingIp(req.getSourceAddress()) );
-            
-            { // FIXME remove this block before merge to DEV
-            final IpAddress sourceAddress = req.getSourceAddress();
-            logger.log(Level.INFO, "ip: {1} ({2}) groups: {0}", new Object[]{
-                groups.stream().map( g->"[" + g.getId() + " " + g.getDisplayName()+"]").collect(Collectors.joining(",")), 
-                sourceAddress});
-            }
-            
-            return groups;
+            return updateProvider( ipGroupsService.findAllIncludingIp(req.getSourceAddress()) );
         } else {
             return Collections.emptySet();
         }
@@ -80,9 +64,7 @@ public class IpGroupProvider implements GroupProvider<IpGroup> {
     }
     
     private Set<IpGroup> updateProvider( Set<IpGroup> groups ) {
-        for ( IpGroup g : groups ) {
-            g.setProvider(this);
-        }
+        groups.forEach( g -> g.setProvider(this) );
         return groups;
     }
     

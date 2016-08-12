@@ -62,9 +62,8 @@ public class Admin extends AbstractApiBean {
     @GET
     public Response listAllSettings() {
         JsonObjectBuilder bld = jsonObjectBuilder();
-        for ( Setting s : settingsSvc.listAll() ) {
-            bld.add(s.getName(), s.getContent());
-        }
+        settingsSvc.listAll().forEach(
+            s -> bld.add(s.getName(), s.getContent())); 
         return okResponse(bld);
     }
     
