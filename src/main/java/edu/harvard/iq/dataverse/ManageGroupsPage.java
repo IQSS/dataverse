@@ -7,7 +7,6 @@ import edu.harvard.iq.dataverse.authorization.groups.GroupException;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateExplicitGroupCommand;
@@ -18,7 +17,6 @@ import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -36,8 +34,6 @@ import javax.persistence.PersistenceContext;
 import org.apache.commons.lang.StringUtils;
 
 /**
- * TODO: should we add groups to dataverse obj?
- * TODO: add support for logical groups.
  * @author michaelsuo
  */
 @ViewScoped
@@ -155,7 +151,7 @@ public class ManageGroupsPage implements java.io.Serializable {
         }
     }
 
-    private List<RoleAssignee> selectedGroupRoleAssignees = new LinkedList<>();
+    private List<RoleAssignee> selectedGroupRoleAssignees = new ArrayList<>();
 
     public void setSelectedGroupRoleAssignees(List<RoleAssignee> newSelectedGroupRoleAssignees) {
         this.selectedGroupRoleAssignees = newSelectedGroupRoleAssignees;
@@ -186,7 +182,6 @@ public class ManageGroupsPage implements java.io.Serializable {
     /**
      * Return the set of all role assignees for an explicit group.
      * Does not traverse subgroups.
-     * TODO right now only checks for authenticated users and explicit groups.
      * @param eg The explicit group to check.
      * @return The set of role assignees belonging to explicit group.
      */
@@ -212,8 +207,15 @@ public class ManageGroupsPage implements java.io.Serializable {
     }
 
     public String getMembershipString(ExplicitGroup eg) {
-        long userCount = getGroupAuthenticatedUserCount(eg);
-        long groupCount = getGroupGroupCount(eg);
+        long userCount = 0;
+        long groupCount = 0;
+        for ( RoleAssignee ra : eg.getDirectMembers() ) {
+            if ( ra instanceof User ) {
+                userCount++;
+            } else {
+                groupCount++;
+            }
+        }
 
         if (userCount == 0 && groupCount == 0) {
             return "No members";
@@ -233,28 +235,6 @@ public class ManageGroupsPage implements java.io.Serializable {
         }
 
         return memberString;
-    }
-
-    /**
-     * Returns the number of authenticated users in an {@code ExplicitGroup}.
-     * Does not traverse subgroups.
-     * @param eg The {@code ExplicitGroup} to get the user count for
-     * @return User count as long
-     */
-    public long getGroupAuthenticatedUserCount(ExplicitGroup eg) {
-        Set<AuthenticatedUser> aus = eg.getContainedAuthenticatedUsers();
-        return aus.size();
-    }
-
-    /**
-     * Returns the number of explicit groups in an {@code ExplicitGroup}.
-     * Does not traverse subgroups.
-     * @param eg The {@code ExplicitGroup} to get the group count for
-     * @return Group count as long
-     */
-    public long getGroupGroupCount(ExplicitGroup eg) {
-        Set<ExplicitGroup> egs = eg.getContainedExplicitGroups();
-        return egs.size();
     }
 
     public void removeMemberFromSelectedGroup(RoleAssignee ra) {
