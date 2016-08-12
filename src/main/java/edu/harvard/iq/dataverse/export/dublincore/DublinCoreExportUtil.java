@@ -111,6 +111,8 @@ public class DublinCoreExportUtil {
         writeAbstractElement(xmlw, version, dcFlavor); // Description
         writeSubjectElement(xmlw, version, dcFlavor);   //Subjects and Key Words
         
+        writeFullElementList(xmlw, dcFlavor+":"+"language", dto2PrimitiveList(version, DatasetFieldConstant.language));        
+        
         writeRelPublElement(xmlw, version, dcFlavor);
         writeFullElement(xmlw, dcFlavor+":"+"date", dto2Primitive(version, DatasetFieldConstant.productionDate));  
         
