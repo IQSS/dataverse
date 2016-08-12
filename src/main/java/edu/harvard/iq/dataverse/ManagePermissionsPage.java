@@ -6,7 +6,6 @@ import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
-import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup;
@@ -41,7 +40,6 @@ import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.StringUtils;
 
 /**
  *
@@ -87,7 +85,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
         private List<DataverseRole> roleList;
 
     DvObject dvObject = new Dataverse(); // by default we use a Dataverse, but this will be overridden in init by the findById
-
+    
     public DvObject getDvObject() {
         return dvObject;
     }
@@ -121,6 +119,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
             initAccessSettings();
         }
         roleList = roleService.findAll();
+        roleAssignments = initRoleAssignments();
         dataverseRolePermissionHelper = new DataverseRolePermissionHelper(roleList);  
         return "";
     }
@@ -138,9 +137,19 @@ public class ManagePermissionsPage implements java.io.Serializable {
 
     public void setSelectedRoleAssignment(RoleAssignment selectedRoleAssignment) {
         this.selectedRoleAssignment = selectedRoleAssignment;
-    }    
-  
+    }   
+    
+    private List<RoleAssignmentRow> roleAssignments;
+
     public List<RoleAssignmentRow> getRoleAssignments() {
+        return roleAssignments;
+    }
+
+    public void setRoleAssignments(List<RoleAssignmentRow> roleAssignments) {
+        this.roleAssignments = roleAssignments;
+    }
+  
+    public List<RoleAssignmentRow> initRoleAssignments() {
         List<RoleAssignmentRow> raList = null;
         if (dvObject != null && dvObject.getId() != null) {
             Set<RoleAssignment> ras = roleService.rolesAssignments(dvObject);
@@ -166,7 +175,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
         if (dvObject instanceof Dataverse) {
             initAccessSettings(); // in case the revoke was for the AuthenticatedUsers group
         }        
-
+        roleAssignments = initRoleAssignments();
         showAssignmentMessages();        
     }
     
@@ -298,6 +307,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
                 }
             }
         }
+        roleAssignments = initRoleAssignments();
         showConfigureMessages();
     }    
 
@@ -456,7 +466,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
             JH.addMessage(FacesMessage.SEVERITY_FATAL, "The role was not able to be assigned.");
             logger.log(Level.SEVERE, "Error assiging role: " + ex.getMessage(), ex);
         }
-        
+        roleAssignments = initRoleAssignments();    
         showAssignmentMessages();
     }
 

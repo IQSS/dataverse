@@ -111,15 +111,15 @@
                                             <span class="highlightBold">#{managePermissionsPage.roleAssignments.size()} Users/Groups</span>
                                         </p>
                                         
-                                        <p:dataTable id="assignedRoles" var="roleAssignment" value="#{managePermissionsPage.roleAssignments}">
-                                            <p:column width="35%" headerText="#{bundle['dataverse.permissions.usersOrGroups.tabHeader.userOrGroup']}">
+                                        <p:dataTable id="assignedRoles" var="roleAssignment" value="#{managePermissionsPage.roleAssignments}" sortBy="#{roleAssignment.assigneeDisplayInfo.title}">
+                                            <p:column width="35%" headerText="#{bundle['dataverse.permissions.usersOrGroups.tabHeader.userOrGroup']}" sortBy="#{roleAssignment.assigneeDisplayInfo.title}">
                                                 <h:outputText value="#{roleAssignment.assigneeDisplayInfo.title}"/>
                                                 <h:outputText value=" (#{roleAssignment.assigneeDisplayInfo.affiliation})" rendered="#{!empty roleAssignment.assigneeDisplayInfo.affiliation}"/>
                                             </p:column>
-                                            <p:column width="15%" headerText="#{bundle['dataverse.permissions.usersOrGroups.tabHeader.id']}">
+                                            <p:column width="15%" headerText="#{bundle['dataverse.permissions.usersOrGroups.tabHeader.id']}" sortBy="#{roleAssignment.roleAssignment.assigneeIdentifier}">
                                                 <h:outputText value="#{roleAssignment.roleAssignment.assigneeIdentifier}"/>
                                             </p:column>
-                                            <p:column width="20%" class="text-center" headerText="#{bundle['dataverse.permissions.usersOrGroups.tabHeader.role']}">
+                                            <p:column width="20%" class="text-center" headerText="#{bundle['dataverse.permissions.usersOrGroups.tabHeader.role']}" sortBy="#{roleAssignment.roleName}">
                                                 <h:outputText value="#{roleAssignment.roleName}"/>
                                             </p:column>
                                             <p:column width="30%" class="text-center" headerText="#{bundle['dataverse.permissions.usersOrGroups.tabHeader.action']}">
@@ -200,7 +200,7 @@
                         <ui:include src="permissions-configure.xhtml"/>
                         <div class="button-block">
                             <p:commandLink value="#{bundle['saveChanges']}" styleClass="btn btn-default"
-                                           update=":#{p:component('configureSettings')} assignedRoles @([id$=Messages])"
+                                           update=":#{p:component('configureSettings')} @([id$=assignedRoles]) assignedRoles @([id$=Messages])"
                                            actionListener="#{managePermissionsPage.saveConfiguration}"
                                            oncomplete="PF('accessForm').hide()"/>
                             <button type="button" class="btn btn-default" onclick="PF('accessForm').hide()" value="#{bundle.cancel}">#{bundle.cancel}</button>

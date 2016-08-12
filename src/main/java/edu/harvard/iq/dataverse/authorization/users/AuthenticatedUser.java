@@ -248,16 +248,16 @@ public class AuthenticatedUser implements User, Serializable, Comparable {
 
     @Override
     public int compareTo(Object o) {
-        if ( o instanceof AuthenticatedUser){
-                    AuthenticatedUser other = (AuthenticatedUser) o;
-        return this.getLastName().toUpperCase().compareTo(other.getLastName().toUpperCase());
+        if (o instanceof AuthenticatedUser) {
+            AuthenticatedUser other = (AuthenticatedUser) o;
+            return this.getLastName().toUpperCase().compareTo(other.getLastName().toUpperCase());
         }
-        
-        if ( o instanceof Group){
-                    Group other = (Group) o;
-        return this.getLastName().toUpperCase().compareTo(other.getDisplayName().toUpperCase());
+
+        if (o instanceof Group) {
+            Group other = (Group) o;
+            return this.getLastName().toUpperCase().compareTo(other.getDisplayName().toUpperCase());
         }
-        
+
         return 0;
 
     }

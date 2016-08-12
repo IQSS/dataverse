@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.authorization.groups.impl;
 
 import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -24,7 +25,7 @@ import javax.persistence.Table;
 })
 @Entity
 @Table(indexes = {@Index(columnList="dtype")})
-public abstract class PersistedGlobalGroup implements Group, Serializable {
+public abstract class PersistedGlobalGroup implements Group, Serializable, Comparable {
     
     @Id
     @GeneratedValue
@@ -91,5 +92,20 @@ public abstract class PersistedGlobalGroup implements Group, Serializable {
     @Override
     public String toString() {
         return "[PersistedGlobalGroup " + getIdentifier() + "]";
+    }
+    
+    @Override
+    public int compareTo(Object o) {
+        if (o instanceof AuthenticatedUser) {
+            AuthenticatedUser other = (AuthenticatedUser) o;
+            return this.getDisplayName().toUpperCase().compareTo(other.getLastName().toUpperCase());
+        }
+
+        if (o instanceof Group) {
+            Group other = (Group) o;
+            return this.getDisplayName().toUpperCase().compareTo(other.getDisplayName().toUpperCase());
+        }
+        
+        return 0;
     }
 }

@@ -62,7 +62,7 @@ import org.hibernate.validator.constraints.NotBlank;
 @Table(indexes = {@Index(columnList="owner_id")
 		//, @Index(columnList="groupalias") //@unique takes care of this
 		, @Index(columnList="groupaliasinowner")})
-public class ExplicitGroup implements Group, java.io.Serializable {
+public class ExplicitGroup implements Group,  Comparable, java.io.Serializable {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -392,5 +392,20 @@ public class ExplicitGroup implements Group, java.io.Serializable {
     @Override
     public String toString() {
         return "[ExplicitGroup " + groupAlias + "]";
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        if (o instanceof AuthenticatedUser) {
+            AuthenticatedUser other = (AuthenticatedUser) o;
+            return this.getDisplayName().toUpperCase().compareTo(other.getLastName().toUpperCase());
+        }
+
+        if (o instanceof Group) {
+            Group other = (Group) o;
+            return this.getDisplayName().toUpperCase().compareTo(other.getDisplayName().toUpperCase());
+        }
+        
+        return 0;
     }
 }
