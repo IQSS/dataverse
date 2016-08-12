@@ -234,6 +234,26 @@ public class ExplicitGroup implements Group, java.io.Serializable {
         }
     }
     
+    /**
+     * Returns a set of all direct members of the group, including 
+     * logical role assignees.
+     * @return members of the group.
+     */
+    public Set<RoleAssignee> getDirectMembers() {
+        Set<RoleAssignee> res = new HashSet<>();
+        
+        res.addAll( containedExplicitGroups );
+        res.addAll( containedAuthenticatedUsers );
+        for ( String idtf : containedRoleAssignees ) {
+            RoleAssignee ra = provider.findRoleAssignee(idtf);
+            if ( ra != null ) {
+                res.add(ra);
+            }
+        }
+        
+        return res;
+    }
+    
     @Override
     public String getDescription() {
         return description;

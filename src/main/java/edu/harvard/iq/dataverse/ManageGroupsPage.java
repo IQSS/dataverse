@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
@@ -184,7 +179,7 @@ public class ManageGroupsPage implements java.io.Serializable {
         this.selectedGroup = selectedGroup;
 
         // initialize member list for autocomplete interface
-        setSelectedGroupAddRoleAssignees(new LinkedList<RoleAssignee>());
+        setSelectedGroupAddRoleAssignees(new LinkedList<>());
         setSelectedGroupRoleAssignees(getExplicitGroupMembers(selectedGroup));
     }
 
@@ -196,14 +191,8 @@ public class ManageGroupsPage implements java.io.Serializable {
      * @return The set of role assignees belonging to explicit group.
      */
     public List<RoleAssignee> getExplicitGroupMembers(ExplicitGroup eg) {
-        if (eg != null) {
-            List<RoleAssignee> ras = new LinkedList<>();
-            ras.addAll(eg.getContainedAuthenticatedUsers());
-            ras.addAll(eg.getContainedExplicitGroups());
-            return ras;
-        } else {
-            return null;
-        }
+        return (eg != null) ? 
+                new ArrayList(eg.getDirectMembers()) : null;
     }
 
     /**
@@ -249,7 +238,7 @@ public class ManageGroupsPage implements java.io.Serializable {
     /**
      * Returns the number of authenticated users in an {@code ExplicitGroup}.
      * Does not traverse subgroups.
-     * @param group The {@code ExplicitGroup} to get the user count for
+     * @param eg The {@code ExplicitGroup} to get the user count for
      * @return User count as long
      */
     public long getGroupAuthenticatedUserCount(ExplicitGroup eg) {
@@ -260,7 +249,7 @@ public class ManageGroupsPage implements java.io.Serializable {
     /**
      * Returns the number of explicit groups in an {@code ExplicitGroup}.
      * Does not traverse subgroups.
-     * @param group The {@code ExplicitGroup} to get the group count for
+     * @param eg The {@code ExplicitGroup} to get the group count for
      * @return Group count as long
      */
     public long getGroupGroupCount(ExplicitGroup eg) {
