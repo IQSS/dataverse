@@ -481,7 +481,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
 
         if ( !StringUtils.isEmpty(getNewNickname()) ) {
 
-            if (! Pattern.matches("^[a-zA-Z0-9\\_\\-]+$", getNewNickname()) ) {
+            if (getNewNickname().length() > 30 || (!Pattern.matches("^[a-zA-Z0-9\\_\\-]+$", getNewNickname())) ) {
                 //input.setValid(false);
                 FacesContext.getCurrentInstance().addMessage(getNewClientNicknameInputField().getClientId(),
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "", JH.localize("harvestclients.newClientDialog.nickname.invalid")));
