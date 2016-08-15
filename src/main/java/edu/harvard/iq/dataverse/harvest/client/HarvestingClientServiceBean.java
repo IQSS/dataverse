@@ -52,7 +52,7 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
     
     public List<HarvestingClient> getAllHarvestingClients() {
         try {
-            return em.createQuery("SELECT object(c) FROM HarvestingClient AS c ORDER BY c.id").getResultList();
+            return em.createQuery("SELECT object(c) FROM HarvestingClient AS c ORDER BY c.name").getResultList();
         } catch (Exception ex) {
             logger.warning("Unknown exception caught while looking up configured Harvesting Clients: "+ex.getMessage());
         }
