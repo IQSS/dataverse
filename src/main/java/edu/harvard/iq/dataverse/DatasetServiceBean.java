@@ -15,6 +15,8 @@ import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -23,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.Asynchronous;
@@ -74,7 +77,9 @@ public class DatasetServiceBean implements java.io.Serializable {
     
     @EJB
     OAIRecordServiceBean recordService;
-
+    
+    private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
+    
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
 
@@ -669,6 +674,23 @@ public class DatasetServiceBean implements java.io.Serializable {
     
     public void reExportAll() {
         logger.info("Starting a reExport all job asynchronously");
+        boolean fileHandlerSuceeded = false;
+        String logTimestamp = logFormatter.format(new Date());
+        Logger hdLogger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.client.DatasetServiceBean." + "ExportAll" + logTimestamp);
+        String logFileName = "../logs" + File.separator + "export_" + logTimestamp + ".log";
+        FileHandler fileHandler = null;
+        try {
+            fileHandler = new FileHandler(logFileName);
+            fileHandlerSuceeded = true;
+        } catch (IOException ex) {
+            Logger.getLogger(DatasetServiceBean.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SecurityException ex) {
+            Logger.getLogger(DatasetServiceBean.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        if (fileHandlerSuceeded){
+            hdLogger.addHandler(fileHandler);
+        }
+
         
         for (Long datasetId : findAllLocalDatasetIds()) {
             // Potentially, there's a godzillion datasets in this Dataverse. 
@@ -680,17 +702,28 @@ public class DatasetServiceBean implements java.io.Serializable {
                 //logger.info("checking dataset "+dataset.getGlobalId());
                 // Accurate "is published?" test:
                 if (dataset.isReleased() && !dataset.isDeaccessioned()) {
-                    logger.fine("exporting dataset "+dataset.getGlobalId());
+                    hdLogger.fine("exporting dataset " + dataset.getGlobalId());
                     try {
                         recordService.exportAllFormatsInNewTransaction(dataset);
                     } catch (Exception ex) {
-                        logger.info("caught an exception in exportAllFormatsInNewTransaction");
+                        if (fileHandlerSuceeded) {
+                            hdLogger.info("Caught an exception in exportAllFormatsInNewTransaction");
+                            hdLogger.info("Error exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId());
+                            hdLogger.info("Export Error message: " + ex.getMessage());
+                        } else {
+                            logger.info("Caught an exception in exportAllFormatsInNewTransaction");
+                            logger.info("Error exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId());
+                            logger.info("Export Error message: " + ex.getMessage());
+                        }
                     }
                 }
-                dataset = null; 
+                dataset = null;
             }
         }
-        
+
+        if (fileHandlerSuceeded) {
+            hdLogger.info("Finished reexport-all job.");
+        }
         logger.info("Finished reexport-all job.");
     }
     
@@ -702,6 +735,25 @@ public class DatasetServiceBean implements java.io.Serializable {
     
     public void exportAll() {
     logger.info("Starting an export all job");
+
+            String logTimestamp = logFormatter.format(new Date());
+        Logger hdLogger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.client.DatasetServiceBean." + "ExportAll" + logTimestamp);
+        String logFileName = "../logs" + File.separator + "export_" + logTimestamp + ".log";
+        FileHandler fileHandler = null;
+        boolean fileHandlerSuceeded = false;
+        try {
+            fileHandler = new FileHandler(logFileName);
+            fileHandlerSuceeded = true;
+        } catch (IOException ex) {
+            Logger.getLogger(DatasetServiceBean.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SecurityException ex) {
+            Logger.getLogger(DatasetServiceBean.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        if (fileHandlerSuceeded){
+            hdLogger.addHandler(fileHandler);
+        }
+        hdLogger.addHandler(fileHandler);
+
         
         for (Long datasetId : findAllLocalDatasetIds()) {
             // Potentially, there's a godzillion datasets in this Dataverse. 
@@ -713,21 +765,31 @@ public class DatasetServiceBean implements java.io.Serializable {
                 //logger.info("checking dataset "+dataset.getGlobalId());
                 // Accurate "is published?" test:
                 if (dataset.isReleased() && !dataset.isDeaccessioned()) {
-                    logger.fine("exporting dataset "+dataset.getGlobalId());
+                    logger.fine("exporting dataset " + dataset.getGlobalId());
                     if (dataset.getPublicationDate() != null
-                                && (dataset.getLastExportTime() == null
-                                || dataset.getLastExportTime().before(dataset.getPublicationDate()))) {
+                            && (dataset.getLastExportTime() == null
+                            || dataset.getLastExportTime().before(dataset.getPublicationDate()))) {
                         try {
                             recordService.exportAllFormatsInNewTransaction(dataset);
                         } catch (Exception ex) {
-                            logger.info("caught an exception in exportAllFormatsInNewTransaction, dataset "+dataset.getGlobalId());
+                            if (fileHandlerSuceeded) {
+                                hdLogger.info("Caught an exception in exportAllFormatsInNewTransaction");
+                                hdLogger.info("Error exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId());
+                                hdLogger.info("Export Error message: " + ex.getMessage());
+                            } else {
+                                logger.info("Caught an exception in exportAllFormatsInNewTransaction");
+                                logger.info("Error exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId());
+                                logger.info("Export Error message: " + ex.getMessage());
+                            }
                         }
                     }
                 }
-                dataset = null; 
+                dataset = null;
             }
         }
-        
+        if (fileHandlerSuceeded) {
+            hdLogger.info("Finished export all job.");
+        }
         logger.info("Finished export all job.");    
     }
     
