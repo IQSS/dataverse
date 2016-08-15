@@ -22,6 +22,7 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -45,12 +46,14 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
      */
     public PublishDatasetCommand(Dataset datasetIn, DataverseRequest aRequest, boolean minor) {
         super(aRequest, datasetIn);
+        logger.log(Level.FINE,"Constructor");
         minorRelease = minor;
         theDataset = datasetIn;
     }
 
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
+        logger.log(Level.FINE,"execute");
 
         if (!theDataset.getOwner().isReleased()) {
             throw new IllegalCommandException("This dataset may not be published because its host dataverse (" + theDataset.getOwner().getAlias() + ") has not been published.", this);

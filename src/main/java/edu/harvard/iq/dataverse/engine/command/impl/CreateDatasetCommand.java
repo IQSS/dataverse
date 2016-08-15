@@ -41,6 +41,7 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
 
     public CreateDatasetCommand(Dataset theDataset, DataverseRequest aRequest) {
         super(aRequest, theDataset.getOwner());
+        logger.log(Level.FINE,"Constructor");
         this.theDataset = theDataset;
         this.registrationRequired = false;
         this.importType=null;
@@ -49,6 +50,7 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
 
     public CreateDatasetCommand(Dataset theDataset, DataverseRequest aRequest, boolean registrationRequired) {
         super(aRequest, theDataset.getOwner());
+        logger.log(Level.FINE,"Constructor");
         this.theDataset = theDataset;
         this.registrationRequired = registrationRequired;
         this.importType=null;
@@ -57,6 +59,7 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
     
     public CreateDatasetCommand(Dataset theDataset, DataverseRequest aRequest, boolean registrationRequired, ImportUtil.ImportType importType) {
         super(aRequest, theDataset.getOwner());
+        logger.log(Level.FINE,"Constructor");
         this.theDataset = theDataset;
         this.registrationRequired = registrationRequired;
         this.importType=importType;
@@ -65,6 +68,7 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
     
     public CreateDatasetCommand(Dataset theDataset, DataverseRequest aRequest, boolean registrationRequired, ImportUtil.ImportType importType, Template template) {
         super(aRequest, theDataset.getOwner());
+        logger.log(Level.FINE,"Constructor");
         this.theDataset = theDataset;
         this.registrationRequired = registrationRequired;
         this.importType=importType;
@@ -74,7 +78,8 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd-hh.mm.ss");
-       
+        logger.log(Level.FINE,"execute");
+
         if ( (importType != ImportType.MIGRATION && importType != ImportType.HARVEST) && !ctxt.datasets().isUniqueIdentifier(theDataset.getIdentifier(), theDataset.getProtocol(), theDataset.getAuthority(), theDataset.getDoiSeparator()) ) {
             throw new IllegalCommandException(String.format("Dataset with identifier '%s', protocol '%s' and authority '%s' already exists",
                                                              theDataset.getIdentifier(), theDataset.getProtocol(), theDataset.getAuthority()),

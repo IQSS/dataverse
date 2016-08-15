@@ -7,6 +7,7 @@
 package edu.harvard.iq.dataverse;
 
 
+import com.google.common.util.concurrent.AbstractIdleService;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.ucsb.nceas.ezid.EZIDException;
@@ -24,7 +25,7 @@ import javax.ejb.Stateless;
  * @author skraffmiller
  */
 @Stateless
-public class DOIEZIdServiceBean implements IdServiceBean {
+public class DOIEZIdServiceBean extends AbstractIdServiceBean {
     @EJB
     DataverseServiceBean dataverseService;
     @EJB 
@@ -41,6 +42,7 @@ public class DOIEZIdServiceBean implements IdServiceBean {
     private String PASSWORD = "";
     
     public DOIEZIdServiceBean() {
+        logger.log(Level.FINE,"Constructor");
         baseURLString = System.getProperty("doi.baseurlstring");
         ezidService = new EZIDService (baseURLString);
         USERNAME  = System.getProperty("doi.username");
@@ -61,6 +63,7 @@ public class DOIEZIdServiceBean implements IdServiceBean {
 
     @Override
     public boolean alreadyExists(Dataset dataset) throws Exception {
+        logger.log(Level.FINE,"alreadyExists");
         try {
             HashMap<String, String> result = ezidService.getMetadata(getIdentifierFromDataset(dataset));
             return result != null && !result.isEmpty();
@@ -77,6 +80,7 @@ public class DOIEZIdServiceBean implements IdServiceBean {
 
     @Override
     public String createIdentifier(Dataset dataset) throws Exception {
+        logger.log(Level.FINE,"createIdentifier");
         String identifier = getIdentifierFromDataset(dataset);
         HashMap<String, String> metadata = getMetadataFromStudyForCreateIndicator(dataset);
         metadata.put("_status", "reserved");
@@ -97,6 +101,7 @@ public class DOIEZIdServiceBean implements IdServiceBean {
 
     @Override
     public HashMap<String, String> getIdentifierMetadata(Dataset dataset) {
+        logger.log(Level.FINE,"getIdentifierMetadata");
         String identifier = getIdentifierFromDataset(dataset);
         HashMap<String, String> metadata = new HashMap<>();
         try {
@@ -123,6 +128,7 @@ public class DOIEZIdServiceBean implements IdServiceBean {
      */
     @Override
     public HashMap<String, String> lookupMetadataFromIdentifier(String protocol, String authority, String separator, String identifier) {
+        logger.log(Level.FINE,"lookupMetadataFromIdentifier");
         String identifierOut = getIdentifierForLookup(protocol, authority, separator, identifier);
         HashMap<String, String> metadata = new HashMap<>();
         try {
@@ -145,6 +151,7 @@ public class DOIEZIdServiceBean implements IdServiceBean {
      */
     @Override
     public String getIdentifierForLookup(String protocol, String authority, String separator, String identifier) {
+        logger.log(Level.FINE,"getIdentifierForLookup");
         return protocol + ":" + authority + separator  + identifier;
     }
 
@@ -156,6 +163,7 @@ public class DOIEZIdServiceBean implements IdServiceBean {
      */
     @Override
     public String modifyIdentifier(Dataset dataset, HashMap<String, String> metadata) throws Exception {
+        logger.log(Level.FINE,"modifyIdentifier");
         String identifier = getIdentifierFromDataset(dataset);
         try {
             ezidService.setMetadata(identifier, metadata);
@@ -172,6 +180,7 @@ public class DOIEZIdServiceBean implements IdServiceBean {
 
     @Override
     public void deleteIdentifier(Dataset datasetIn) {
+        logger.log(Level.FINE,"deleteIdentifier");
         String identifier = getIdentifierFromDataset(datasetIn);
         HashMap<String, String> doiMetadata;
         try {
@@ -215,6 +224,7 @@ public class DOIEZIdServiceBean implements IdServiceBean {
     }
     
     private HashMap<String, String> getUpdateMetadataFromDataset(Dataset datasetIn){
+        logger.log(Level.FINE,"getUpdateMetadataFromDataset");
         HashMap<String, String> metadata = new HashMap<>();
         
         String authorString = datasetIn.getLatestVersion().getAuthorsStr();
@@ -238,6 +248,7 @@ public class DOIEZIdServiceBean implements IdServiceBean {
 
     @Override
     public HashMap<String, String> getMetadataFromStudyForCreateIndicator(Dataset datasetIn) {
+        logger.log(Level.FINE,"getMetadataFromStudyForCreateIndicator");
         HashMap<String, String> metadata = new HashMap<>();
         
         String authorString = datasetIn.getLatestVersion().getAuthorsStr();
@@ -254,7 +265,7 @@ public class DOIEZIdServiceBean implements IdServiceBean {
         metadata.put("datacite.creator", authorString);
 	metadata.put("datacite.title", datasetIn.getLatestVersion().getTitle());
 	metadata.put("datacite.publisher", producerString);
-	metadata.put("datacite.publicationyear", IdServiceBean.generateYear());
+	metadata.put("datacite.publicationyear", generateYear());
 	metadata.put("datacite.resourcetype", "Dataset");
         metadata.put("_target", getTargetUrl(datasetIn));
         return metadata;
@@ -262,12 +273,14 @@ public class DOIEZIdServiceBean implements IdServiceBean {
 
     @Override
     public HashMap<String, String> getMetadataFromDatasetForTargetURL(Dataset datasetIn) {
-        HashMap<String, String> metadata = new HashMap<>();         
+        logger.log(Level.FINE,"getMetadataFromDatasetForTargetURL");
+        HashMap<String, String> metadata = new HashMap<>();
         metadata.put("_target", getTargetUrl(datasetIn));
         return metadata;
     }
     
     private String getTargetUrl(Dataset datasetIn) {
+        logger.log(Level.FINE,"getTargetUrl");
         return systemConfig.getDataverseSiteUrl() + Dataset.TARGET_URL + datasetIn.getGlobalId();
     }
 
@@ -279,10 +292,12 @@ public class DOIEZIdServiceBean implements IdServiceBean {
 
     @Override
     public boolean publicizeIdentifier(Dataset dataset) {
+        logger.log(Level.FINE,"publicizeIdentifier");
         return updateIdentifierStatus(dataset, "public");
     }
     
     private boolean updateIdentifierStatus(Dataset dataset, String statusIn) {
+        logger.log(Level.FINE,"updateIdentifierStatus");
         String identifier = getIdentifierFromDataset(dataset);
         HashMap<String, String> metadata = getUpdateMetadataFromDataset(dataset);
         metadata.put("_status", statusIn);

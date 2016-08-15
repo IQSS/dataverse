@@ -27,6 +27,7 @@ import java.io.FileInputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -57,7 +58,7 @@ import org.apache.commons.lang.NotImplementedException;
  * the modifyRegistration datasets API sub-command.
  */
 @Stateless
-public class HandlenetServiceBean  implements IdServiceBean {
+public class HandlenetServiceBean extends AbstractIdServiceBean {
     @EJB
     DataverseServiceBean dataverseService;
     @EJB 
@@ -67,9 +68,11 @@ public class HandlenetServiceBean  implements IdServiceBean {
     private static final String HANDLE_PROTOCOL_TAG = "hdl";
     
     public HandlenetServiceBean() {
+        logger.log(Level.FINE,"Constructor");
     }
     
     public void reRegisterHandle(Dataset dataset) {
+        logger.log(Level.FINE,"reRegisterHandle");
         if (!HANDLE_PROTOCOL_TAG.equals(dataset.getProtocol())) {
             logger.warning("reRegisterHandle called on a dataset with the non-handle global id: "+dataset.getId());
         }
@@ -129,6 +132,7 @@ public class HandlenetServiceBean  implements IdServiceBean {
     }
     
     public void registerNewHandle(Dataset dataset) {
+        logger.log(Level.FINE,"registerNewHandle");
         String handlePrefix = dataset.getAuthority();
         String handle = getDatasetHandle(dataset);
         String datasetUrl = getRegistrationUrl(dataset);
@@ -174,6 +178,7 @@ public class HandlenetServiceBean  implements IdServiceBean {
     }
     
     public boolean isHandleRegistered(String handle){
+        logger.log(Level.FINE,"isHandleRegistered");
         boolean handleRegistered = false;
         ResolutionRequest req = buildResolutionRequest(handle);
         AbstractResponse response = null;
@@ -192,6 +197,7 @@ public class HandlenetServiceBean  implements IdServiceBean {
     }
     
     private ResolutionRequest buildResolutionRequest(final String handle) {
+        logger.log(Level.FINE,"buildResolutionRequest");
         String handlePrefix = handle.substring(0,handle.indexOf("/"));
         
         PublicKeyAuthenticationInfo auth = getAuthInfo(handlePrefix);
@@ -210,6 +216,7 @@ public class HandlenetServiceBean  implements IdServiceBean {
     }
     
     private PublicKeyAuthenticationInfo getAuthInfo(String handlePrefix) {
+        logger.log(Level.FINE,"getAuthInfo");
         byte[] key = null;
         String adminCredFile = System.getProperty("dataverse.handlenet.admcredfile");
 
@@ -222,6 +229,7 @@ public class HandlenetServiceBean  implements IdServiceBean {
         return auth;
     }
     private String getRegistrationUrl(Dataset dataset) {
+        logger.log(Level.FINE,"getRegistrationUrl");
         String siteUrl = getSiteUrl();
         
         //String targetUrl = siteUrl + "/dataset.xhtml?persistentId=hdl:" + dataset.getAuthority() 
@@ -231,6 +239,7 @@ public class HandlenetServiceBean  implements IdServiceBean {
     }
     
     public String getSiteUrl() {
+        logger.log(Level.FINE,"getSiteUrl");
         String hostUrl = System.getProperty("dataverse.siteUrl");
         if (hostUrl != null && !"".equals(hostUrl)) {
             return hostUrl;
@@ -248,6 +257,7 @@ public class HandlenetServiceBean  implements IdServiceBean {
     }
     
     private byte[] readKey(final String file) {
+        logger.log(Level.FINE,"readKey");
         byte[] key = null;
         try {
             File f = new File(file);
@@ -264,6 +274,7 @@ public class HandlenetServiceBean  implements IdServiceBean {
     }
     
     private PrivateKey readPrivKey(byte[] key, final String file) {
+        logger.log(Level.FINE,"readPrivKey");
         PrivateKey privkey=null;
         
         String secret = System.getProperty("dataverse.handlenet.admprivphrase");
@@ -294,6 +305,7 @@ public class HandlenetServiceBean  implements IdServiceBean {
     }
     
     private String getHandleAuthority(String handlePrefix) {
+        logger.log(Level.FINE,"getHandleAuthority");
         return "0.NA/" + handlePrefix;
     }
 
@@ -324,6 +336,7 @@ public class HandlenetServiceBean  implements IdServiceBean {
 
     @Override
     public String modifyIdentifier(Dataset dataset, HashMap<String, String> metadata) throws Exception  {
+        logger.log(Level.FINE,"modifyIdentifier");
         reRegisterHandle(dataset);
         return getIdentifierFromDataset(dataset);
     }

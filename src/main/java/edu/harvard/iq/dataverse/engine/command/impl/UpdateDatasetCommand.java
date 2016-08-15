@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.validation.ConstraintViolation;
 
@@ -44,18 +45,21 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
     
     public UpdateDatasetCommand(Dataset theDataset, DataverseRequest aRequest) {
         super(aRequest, theDataset);
+        logger.log(Level.FINE,"Constructor");
         this.theDataset = theDataset;
         this.filesToDelete = new ArrayList();
     }    
     
     public UpdateDatasetCommand(Dataset theDataset, DataverseRequest aRequest, List<FileMetadata> filesToDelete) {
         super(aRequest, theDataset);
+        logger.log(Level.FINE,"Constructor");
         this.theDataset = theDataset;
         this.filesToDelete = filesToDelete;
     }
     
     public UpdateDatasetCommand(Dataset theDataset, DataverseRequest aRequest, DataFile fileToDelete) {
         super(aRequest, theDataset);
+        logger.log(Level.FINE,"Constructor");
         this.theDataset = theDataset;
         
         // get the latest file metadata for the file; ensuring that it is a draft version
@@ -80,6 +84,7 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
 
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
+        logger.log(Level.FINE,"execute");
         // first validate
         // @todo for now we run through an initFields method that creates empty fields for anything without a value
         // that way they can be checked for required
