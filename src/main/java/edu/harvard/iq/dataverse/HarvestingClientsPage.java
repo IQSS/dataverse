@@ -15,8 +15,7 @@ import edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClientServiceBean;
 import edu.harvard.iq.dataverse.harvest.client.oai.OaiHandler;
-import edu.harvard.iq.dataverse.search.IndexResponse;
-import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
+import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.timer.DataverseTimerServiceBean;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
@@ -62,7 +61,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
     @EJB
     DatasetServiceBean datasetService;
     @EJB
-    SolrIndexServiceBean solrIndexService;
+    IndexServiceBean indexService;
     @EJB
     EjbDataverseEngine engineService;
     @EJB
@@ -77,7 +76,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
     private Long dataverseId = null;
     private HarvestingClient selectedClient;
     
-    private static final String solrDocIdentifierDataset = "dataset_";
+    //private static final String solrDocIdentifierDataset = "dataset_";
     
     public enum PageMode {
 
@@ -267,28 +266,22 @@ public class HarvestingClientsPage implements java.io.Serializable {
     
     public void deleteClient() {
         if (selectedClient != null) {
+            
             //configuredHarvestingClients.remove(selectedClient);
+            
             logger.info("proceeding to delete harvesting client "+selectedClient.getName());
             try {
                 // TODO: 
-                // separate the code for deleting the datasets from the index
-                // into cleaner helper methods, move it out of here... -- L.A. - 4.5
-                // (think of where to move this code - the OAIRecordServiceBean, 
-                // or the DeleteHarvestingClientCommand? (I think - it should be the latter...)
-                List<String> solrIdsOfDatasetsToDelete = new ArrayList<>();
+                // the following 2 items, purging of the associated solr documents
+                // and the timer, should probably be moved into the Delete command.
                 
-                for (Dataset harvestedDataset : selectedClient.getHarvestedDatasets()) {
-                    solrIdsOfDatasetsToDelete.add(solrDocIdentifierDataset + harvestedDataset.getId());
-                }
+                // Purge all the SOLR documents associated with this client from the 
+                // index server: 
+                indexService.deleteHarvestedDocuments(selectedClient);
                 // if this was a scheduled harvester, make sure the timer is deleted:
                 dataverseTimerService.removeHarvestTimer(selectedClient);
                 engineService.submit(new DeleteHarvestingClientCommand(dvRequestService.getDataverseRequest(), selectedClient));
-                configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();
                 JsfHelper.addFlashMessage("Selected harvesting client has been deleted.");
-                
-                logger.info("attempting to delete the following datasets from the index: "+StringUtils.join(solrIdsOfDatasetsToDelete, ","));
-                IndexResponse resultOfAttemptToDeleteDatasets = solrIndexService.deleteMultipleSolrIds(solrIdsOfDatasetsToDelete);
-                logger.info("result of attempt to premptively deleted published files before reindexing: " + resultOfAttemptToDeleteDatasets + "\n");
                 
             } catch (CommandException ex) {
                 String failMessage = "Selected harvesting client cannot be deleted.";
@@ -300,6 +293,9 @@ public class HarvestingClientsPage implements java.io.Serializable {
         } else {
             logger.warning("Delete called, with a null selected harvesting client");
         }
+        
+        selectedClient = null; 
+        configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();
         
     }
     

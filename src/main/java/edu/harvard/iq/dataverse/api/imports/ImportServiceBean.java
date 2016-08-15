@@ -33,6 +33,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
+import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
@@ -101,6 +102,8 @@ public class ImportServiceBean {
     @EJB
     ImportGenericServiceBean importGenericService;
     
+    @EJB
+    IndexServiceBean indexService;
     /**
      * This is just a convenience method, for testing migration.  It creates 
      * a dummy dataverse with the directory name as dataverse name & alias.
@@ -333,11 +336,20 @@ public class ImportServiceBean {
                 if (existingDs.getOwner() != null && !owner.getId().equals(existingDs.getOwner().getId())) {
                     throw new ImportException("The dataset with the global id "+ds.getGlobalId()+" already exists, in the dataverse "+existingDs.getOwner().getAlias()+", skipping.");
                 }
+                // And if we already have a dataset with this same id, in this same
+                // dataverse, but it is  LOCAL dataset (can happen!), we're going to 
+                // skip it also: 
+                if (!existingDs.isHarvested()) {
+                    throw new ImportException("A LOCAL dataset with the global id "+ds.getGlobalId()+" already exists in this dataverse; skipping.");
+                }
                 // For harvested datasets, there should always only be one version.
                 // We will replace the current version with the imported version.
                 if (existingDs.getVersions().size() != 1) {
                     throw new ImportException("Error importing Harvested Dataset, existing dataset has " + existingDs.getVersions().size() + " versions");
                 }
+                // Purge all the SOLR documents associated with this client from the 
+                // index server: 
+                indexService.deleteHarvestedDocuments(existingDs);
                 // files from harvested datasets are removed unceremoniously, 
                 // directly in the database. no need to bother calling the 
                 // DeleteFileCommand on them.

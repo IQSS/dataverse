@@ -33,18 +33,20 @@ public class DeleteHarvestingClientCommand extends AbstractVoidCommand {
         if (harvestingClient == null) {
             throw new IllegalCommandException("DeleteHarvestingClientCommand: attempted to execute with null harvesting client; dataverse: "+motherDataverse.getAlias(), this);
         }
+        
+        HarvestingClient merged = ctxt.em().merge(harvestingClient);
+
         // All the datasets harvested by this client will be cleanly deleted 
         // through the defined cascade. Cascaded delete does not work for harvested 
         // files, however. So they need to be removed explicitly; before we 
         // proceed removing the client itself. 
        
-        for (DataFile harvestedFile : ctxt.files().findHarvestedFilesByClient(harvestingClient)) {
-            DataFile merged = ctxt.em().merge(harvestedFile);
-            ctxt.em().remove(merged);
+        for (DataFile harvestedFile : ctxt.files().findHarvestedFilesByClient(merged)) {
+            DataFile mergedFile = ctxt.em().merge(harvestedFile);
+            ctxt.em().remove(mergedFile);
             harvestedFile = null; 
         }
         
-        HarvestingClient merged = ctxt.em().merge(harvestingClient);
         ctxt.em().remove(merged);
     }
     

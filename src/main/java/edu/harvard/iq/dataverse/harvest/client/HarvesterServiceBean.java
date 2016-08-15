@@ -49,6 +49,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetCommand;
 import edu.harvard.iq.dataverse.harvest.client.oai.OaiHandler;
 import edu.harvard.iq.dataverse.harvest.client.oai.OaiHandlerException;
+import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
@@ -77,6 +78,8 @@ public class HarvesterServiceBean {
     ImportServiceBean importService;
     @EJB
     EjbDataverseEngine engineService;
+    @EJB
+    IndexServiceBean indexService;
     
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean");
     private static final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
@@ -373,7 +376,10 @@ public class HarvesterServiceBean {
     }
     
     private void deleteHarvestedDataset(Dataset dataset, DataverseRequest request, Logger hdLogger) {
-
+        // Purge all the SOLR documents associated with this client from the 
+        // index server: 
+        indexService.deleteHarvestedDocuments(dataset);
+        
         try {
             // files from harvested datasets are removed unceremoniously, 
             // directly in the database. no need to bother calling the 
