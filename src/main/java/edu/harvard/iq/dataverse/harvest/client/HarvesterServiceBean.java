@@ -307,6 +307,7 @@ public class HarvesterServiceBean {
         String errMessage = null;
         Dataset harvestedDataset = null;
         logGetRecord(hdLogger, oaiHandler, identifier);
+        File tempFile = null;
         
         try {  
             FastGetRecord record = oaiHandler.runGetRecord(identifier);
@@ -331,6 +332,7 @@ public class HarvesterServiceBean {
             } else {
                 hdLogger.fine("Successfully retrieved GetRecord response.");
 
+                tempFile = record.getMetadataFile();
                 harvestedDataset = importService.doImportHarvestedDataset(dataverseRequest, 
                         oaiHandler.getHarvestingClient(),
                         identifier,
@@ -347,6 +349,10 @@ public class HarvesterServiceBean {
             errMessage = "Caught exception while executing GetRecord on "+identifier;
             //logException(e, hdLogger);
                 
+        } finally {
+            if (tempFile != null) {
+                try{tempFile.delete();}catch(Throwable t){};
+            }
         }
 
         // TODO: the message below is taken from DVN3; - figure out what it means...
