@@ -48,14 +48,13 @@ can go back and try to re-define the query.
 
 Some useful examples of search queries to define OAI sets: 
 
-
 - A good way to create a set that would include all your local, published datasets is to do so by the Unique Identifier authority registered to your Dataverse, for example: 
 
   ``dsPersistentId:"doi:1234/"``
 
   Note that double quotes must be used, since the search field value contains the colon symbol!
   
-  Note also that the search terms limiting the results to published and local datasets **are added to the query automatically**, so you don't need to worry abou that. 
+  Note also that the search terms limiting the results to published and local datasets **are added to the query automatically**, so you don't need to worry about that. 
   
 - A query to create a set to include the datasets from a specific local dataverse: 
 
@@ -85,12 +84,12 @@ Every time a new harvesting set is created, or changes are made to an
 existing set, the contents of the set are automatically updated - the
 Dataverse application will find the datasets defined by the query, and
 attempt to run the metadata export on the ones that haven't been
-exported yet. (Only the datasets for which the export has completed
+exported yet. Only the datasets for which the export has completed
 successfully, and the results cached on the filesystem are included in
-the OAI sets advertised to the harvesting clients!)
+the OAI sets advertised to the harvesting clients!
 
 This is in contrast to how the sets used to be managed in DVN v.3,
-where sets had to be exported manually before any such changes made
+where sets had to be exported manually before any such changes had
 effect.
 
 **Important:** Note however that changes made to the actual dataset
@@ -98,14 +97,15 @@ metadata do not automatically trigger any corresponding OAI sets to
 be updated immediately! For example: let's say you have created an OAI set defined by
 the search query ``authorName:king``, that resulted in 43
 dataset records. If a new dataset by the same author is added and published, this **does not** immediately add the extra
-record to the set! (It would simply be too expensive, to refresh all
-the sets every time any changes to the metadata are made!). The OAI set will however
-be updated automatically by a scheduled metadata export job that
+record to the set! It would simply be too expensive, to refresh all
+the sets every time any changes to the metadata are made. 
+
+The OAI set will however be updated automatically by a scheduled metadata export job that
 runs every night (at 2AM, by default). This export timer is created
 and activated automatically every time the application is deployed
 or restarted. Once again, this is new in Dataverse 4, and unlike DVN
 v3, where export jobs had to be scheduled and activated by the admin
-user. (See the "Export" section of the Admin guide, for more information on the automated metadata exports).
+user. See the "Export" section of the Admin guide, for more information on the automated metadata exports.
 
 It is still possible however to make changes like this be immediately
 reflected in the OAI server, by going to the *Harvesting Server* page
