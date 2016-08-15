@@ -214,6 +214,13 @@ public class OAIServlet extends HttpServlet {
         
         
         try {
+            if (!isHarvestingServerEnabled()) {
+                response.sendError(
+                        HttpServletResponse.SC_SERVICE_UNAVAILABLE,
+                        "Sorry. OAI Service is disabled on this Dataverse node.");
+                return;
+            }
+            
             OAIRequestParametersBuilder parametersBuilder = newXoaiRequest();
             
             for (Object p : request.getParameterMap().keySet()) {
@@ -405,6 +412,11 @@ public class OAIServlet extends HttpServlet {
     protected OAICompiledRequest compileXoaiRequest (OAIRequestParametersBuilder builder) throws BadArgumentException, InvalidResumptionTokenException, UnknownParameterException, IllegalVerbException, DuplicateDefinitionException {
         return OAICompiledRequest.compile(builder);
     }
+    
+    public boolean isHarvestingServerEnabled() {
+        return systemConfig.isOAIServerEnabled();
+    }
+    
     /**
      * Returns a short description of the servlet.
      *

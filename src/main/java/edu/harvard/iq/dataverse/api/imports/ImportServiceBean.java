@@ -315,6 +315,12 @@ public class ImportServiceBean {
                     }
                 }
             }
+            
+            // A Global ID is required, in order for us to be able to harvest and import
+            // this dataset:
+            if (StringUtils.isEmpty(ds.getGlobalId())) {
+                throw new ImportException("The harvested metadata record with the OAI server identifier "+harvestIdentifier+" does not contain a global unique identifier that we could recognize, skipping.");
+            }
 
             ds.setHarvestedFrom(harvestingClient);
             ds.setHarvestIdentifier(harvestIdentifier);
@@ -322,7 +328,7 @@ public class ImportServiceBean {
             Dataset existingDs = datasetService.findByGlobalId(ds.getGlobalId());
 
             if (existingDs != null) {
-                // If this dataset already exists IN ANOTHER DATASET 
+                // If this dataset already exists IN ANOTHER DATAVERSE
                 // we are just going to skip it!
                 if (existingDs.getOwner() != null && !owner.getId().equals(existingDs.getOwner().getId())) {
                     throw new ImportException("The dataset with the global id "+ds.getGlobalId()+" already exists, in the dataverse "+existingDs.getOwner().getAlias()+", skipping.");
