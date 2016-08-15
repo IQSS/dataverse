@@ -77,6 +77,11 @@
                                         <h:outputText value="#{bundle['header.guides.api']}" />
                                     </h:outputLink>
                                 </li>
+                                <li jsf:rendered="#{dataverseSession.user.superuser}">
+                                    <h:outputLink value="#{settingsWrapper.guidesBaseUrl}/latest/admin" target="_blank">
+                                        <h:outputText value="#{bundle['header.guides.admin']}" />
+                                    </h:outputLink>
+                                </li>
                             </ul>
                         </li>
                         <o:form useRequestURI="true" class="navbar-form navbar-left navbar-form-link">
