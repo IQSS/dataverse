@@ -6,6 +6,8 @@
 package edu.harvard.iq.dataverse.harvest.server;
 
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
+import edu.harvard.iq.dataverse.search.IndexServiceBean;
+import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SearchUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -158,6 +160,11 @@ public class OAISetServiceBean implements java.io.Serializable {
         return 0;
     }
     
+    /**
+     * @deprecated Consider using commented out solrQuery.addFilterQuery
+     * examples instead.
+     */
+    @Deprecated
     public String addQueryRestrictions(String query) {
         // "sanitizeQuery()" does something special that's needed to be able 
         // to search on global ids; which we will most likely need. 
@@ -169,7 +176,7 @@ public class OAISetServiceBean implements java.io.Serializable {
         // append the search clauses that limit the search to a) datasets
         // b) published and c) local: 
         // SearchFields.TYPE
-        query = query.concat(" AND dvObjectType:datasets AND source:Local AND publicationStatus:Published");
+        query = query.concat(" AND " + SearchFields.TYPE + ":" + SearchConstants.DATASETS + " AND " + SearchFields.IS_HARVESTED + ":" + false + " AND " + SearchFields.PUBLICATION_STATUS + ":" + IndexServiceBean.PUBLISHED_STRING);
         
         return query;
     }
@@ -184,6 +191,13 @@ public class OAISetServiceBean implements java.io.Serializable {
         String restrictedQuery = addQueryRestrictions(query);
         
         solrQuery.setQuery(restrictedQuery);
+
+        // addFilterQuery equivalent to addQueryRestrictions
+//        solrQuery.setQuery(query);
+//        solrQuery.addFilterQuery(SearchFields.TYPE + ":" + SearchConstants.DATASETS);
+//        solrQuery.addFilterQuery(SearchFields.IS_HARVESTED + ":" + false);
+//        solrQuery.addFilterQuery(SearchFields.PUBLICATION_STATUS + ":" + IndexServiceBean.PUBLISHED_STRING);
+
         solrQuery.setRows(Integer.MAX_VALUE);
 
         

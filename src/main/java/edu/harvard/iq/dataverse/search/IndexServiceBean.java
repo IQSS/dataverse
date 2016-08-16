@@ -22,6 +22,7 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServi
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
@@ -99,19 +100,20 @@ public class IndexServiceBean {
     private static final String groupPerUserPrefix = "group_user";
     private static final String publicGroupIdString = "public";
     private static final String publicGroupString = groupPrefix + "public";
-    private static final String PUBLISHED_STRING = "Published";
+    public static final String PUBLISHED_STRING = "Published";
     private static final String UNPUBLISHED_STRING = "Unpublished";
     private static final String DRAFT_STRING = "Draft";
     private static final String IN_REVIEW_STRING = "In Review";
     private static final String DEACCESSIONED_STRING = "Deaccessioned";
     public static final String HARVESTED = "Harvested";
-    private static final String LOCAL = "Local";
+    private String rootDataverseName;
     private Dataverse rootDataverseCached; 
     private SolrServer solrServer;
     
     @PostConstruct
     public void init(){
         solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
+        rootDataverseName = findRootDataverseCached().getName() + " " + BundleUtil.getStringFromBundle("dataverse");
     }
     
     @PreDestroy
@@ -165,9 +167,11 @@ public class IndexServiceBean {
         /* We don't really have harvested dataverses yet; 
            (I have in fact just removed the isHarvested() method from the Dataverse object) -- L.A.
         if (dataverse.isHarvested()) {
+            solrInputDocument.addField(SearchFields.IS_HARVESTED, true);
             solrInputDocument.addField(SearchFields.SOURCE, HARVESTED);
         } else { (this means that all dataverses are "local" - should this be removed? */
-            solrInputDocument.addField(SearchFields.SOURCE, LOCAL);
+            solrInputDocument.addField(SearchFields.IS_HARVESTED, false);
+            solrInputDocument.addField(SearchFields.METADATA_SOURCE, rootDataverseName);
         /*}*/
 
         addDataverseReleaseDateToSolrDoc(solrInputDocument, dataverse);
@@ -671,9 +675,11 @@ public class IndexServiceBean {
         addDatasetReleaseDateToSolrDoc(solrInputDocument, dataset);
 
         if (dataset.isHarvested()) {
-            solrInputDocument.addField(SearchFields.SOURCE, HARVESTED);
+            solrInputDocument.addField(SearchFields.IS_HARVESTED, true);
+            solrInputDocument.addField(SearchFields.METADATA_SOURCE, HARVESTED);
         } else {
-            solrInputDocument.addField(SearchFields.SOURCE, LOCAL);
+            solrInputDocument.addField(SearchFields.IS_HARVESTED, false);
+            solrInputDocument.addField(SearchFields.METADATA_SOURCE, rootDataverseName);
         }
 
         DatasetVersion datasetVersion = indexableDataset.getDatasetVersion();
@@ -897,9 +903,11 @@ public class IndexServiceBean {
                             datafileSolrInputDocument.addField(SearchFields.ACCESS, fileMetadata.isRestricted() ? SearchConstants.RESTRICTED : SearchConstants.PUBLIC);
                         }
                         if (datafile.isHarvested()) {
-                            datafileSolrInputDocument.addField(SearchFields.SOURCE, HARVESTED);
+                            datafileSolrInputDocument.addField(SearchFields.IS_HARVESTED, true);
+                            datafileSolrInputDocument.addField(SearchFields.METADATA_SOURCE, HARVESTED);
                         } else {
-                            datafileSolrInputDocument.addField(SearchFields.SOURCE, LOCAL);
+                            datafileSolrInputDocument.addField(SearchFields.IS_HARVESTED, false);
+                            datafileSolrInputDocument.addField(SearchFields.METADATA_SOURCE, rootDataverseName);
                         }
                     }
                     if (fileSortByDate == null) {
