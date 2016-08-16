@@ -234,6 +234,7 @@ public class ImportServiceBean {
                 throw new ImportException("XMLStreamException" + e);
             }
         } else if ("dc".equalsIgnoreCase(metadataFormat) || "oai_dc".equals(metadataFormat)) {
+            logger.fine("importing DC "+metadataFile.getAbsolutePath());
             try {
                 String xmlToParse = new String(Files.readAllBytes(metadataFile.toPath()));
                 dsDTO = importGenericService.processOAIDCxml(xmlToParse);

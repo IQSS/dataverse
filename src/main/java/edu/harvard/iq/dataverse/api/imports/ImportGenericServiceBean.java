@@ -296,23 +296,26 @@ public class ImportGenericServiceBean {
                             MetadataBlockDTO citationBlock = datasetDTO.getDatasetVersion().getMetadataBlocks().get(mappingDefinedFieldType.getMetadataBlock().getName());
                             citationBlock.addField(value);
                         }
-                    } else {
+                    } else // Process the payload of this XML element:
+                    //xxString dataverseFieldName = mappingDefined.getDatasetfieldName();
+                    if (dataverseFieldName != null && !dataverseFieldName.equals("")) {
+                        DatasetFieldType dataverseFieldType = datasetfieldService.findByNameOpt(dataverseFieldName);
+                        FieldDTO value;
+                        if (dataverseFieldType != null) {
 
-                        // Process the payload of this XML element:
-                        //xxString dataverseFieldName = mappingDefined.getDatasetfieldName();
-                        if (dataverseFieldName != null && !dataverseFieldName.equals("")) {
-                            FieldDTO value = FieldDTO.createPrimitiveFieldDTO(dataverseFieldName, parseText(xmlr));
-                            DatasetFieldType dataverseFieldType = datasetfieldService.findByNameOpt(dataverseFieldName);
-                            if (dataverseFieldType != null) {
-                                value = makeDTO(dataverseFieldType, value, dataverseFieldName);
-//                                value = FieldDTO.createPrimitiveFieldDTO(dataverseFieldName, parseText(xmlr));
-//                            FieldDTO dataverseField = FieldDTO.createCompoundFieldDTO(dataverseFieldName, value);
-                                MetadataBlockDTO citationBlock = datasetDTO.getDatasetVersion().getMetadataBlocks().get(mappingDefinedFieldType.getMetadataBlock().getName());
-                                citationBlock.addField(value);
-// TO DO replace database output with Json                             createDatasetFieldValue(dataverseFieldType, cachedCompoundValue, elementTextPayload, datasetVersion);
+                            if (dataverseFieldType.isControlledVocabulary()) {
+                                value = FieldDTO.createVocabFieldDTO(dataverseFieldName, parseText(xmlr));
                             } else {
-                                throw new EJBException("Bad foreign metadata field mapping: no such DatasetField " + dataverseFieldName + "!");
+                                value = FieldDTO.createPrimitiveFieldDTO(dataverseFieldName, parseText(xmlr));
                             }
+                            value = makeDTO(dataverseFieldType, value, dataverseFieldName);
+                            //  value = FieldDTO.createPrimitiveFieldDTO(dataverseFieldName, parseText(xmlr));
+                            //  FieldDTO dataverseField = FieldDTO.createCompoundFieldDTO(dataverseFieldName, value);
+                            MetadataBlockDTO citationBlock = datasetDTO.getDatasetVersion().getMetadataBlocks().get(mappingDefinedFieldType.getMetadataBlock().getName());
+                            citationBlock.addField(value);
+                            // TO DO replace database output with Json                             createDatasetFieldValue(dataverseFieldType, cachedCompoundValue, elementTextPayload, datasetVersion);
+                        } else {
+                            throw new EJBException("Bad foreign metadata field mapping: no such DatasetField " + dataverseFieldName + "!");
                         }
                     }
                 } else {
@@ -328,10 +331,11 @@ public class ImportGenericServiceBean {
 
     private FieldDTO makeDTO(DatasetFieldType dataverseFieldType, FieldDTO value, String dataverseFieldName) {
         if (dataverseFieldType.isAllowMultiples()){
-            if(dataverseFieldType.isCompound()){
+            if(dataverseFieldType.isCompound()) {
                 value = FieldDTO.createMultipleCompoundFieldDTO(dataverseFieldName, value);
-            }
-            else {
+            } else if (dataverseFieldType.isControlledVocabulary()) {
+                value = FieldDTO.createMultipleVocabFieldDTO(dataverseFieldName, Arrays.asList(value.getSinglePrimitive()));
+            } else {
                 value = FieldDTO.createMultiplePrimitiveFieldDTO(dataverseFieldName, Arrays.asList(value.getSinglePrimitive()));
             }
             if (dataverseFieldType.isChild()) {
@@ -346,6 +350,10 @@ public class ImportGenericServiceBean {
                 value = FieldDTO.createCompoundFieldDTO(dataverseFieldName, value);
             }
         }
+        
+        // TODO: 
+        // it looks like the code below has already been executed, in one of the 
+        // if () blocks above... is this ok to be doing it again?? -- L.A. 4.5
         if (dataverseFieldType.isChild()) {
                                     DatasetFieldType parentDatasetFieldType = dataverseFieldType.getParentDatasetFieldType();
                                     if (parentDatasetFieldType.isAllowMultiples()) {
