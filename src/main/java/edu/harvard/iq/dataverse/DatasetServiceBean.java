@@ -681,7 +681,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         boolean fileHandlerSuceeded = false;
         String logTimestamp = logFormatter.format(new Date());
         Logger hdLogger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.client.DatasetServiceBean." + "ExportAll" + logTimestamp);
-        String logFileName = "../logs" + File.separator + "export_" + logTimestamp + ".log";
+        String logFileName = "../logs" + File.separator + "ReExport_" + logTimestamp + ".log";
         FileHandler fileHandler = null;
         try {
             fileHandler = new FileHandler(logFileName);
@@ -779,7 +779,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         if (fileHandlerSuceeded){
             hdLogger.addHandler(fileHandler);
         }
-        hdLogger.addHandler(fileHandler);
+
         if (fileHandlerSuceeded) {
             hdLogger.info("Starting an export all job");
 
