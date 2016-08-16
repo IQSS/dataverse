@@ -117,12 +117,14 @@
                                 <div class="btn-group" role="group">
                                     <!-- TODO: a confirmation dialog? - "sure you want to run harvest now?" -->
                                     <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
+                                                   disabled="#{harvestClient.harvestingNow}"
                                                    action="#{harvestingClientsPage.runHarvest(harvestClient)}"
-                                                   update=":harvestingClientsForm :messagePanel"
+                                                   update=":harvestingClientsForm,:messagePanel,:harvestingClientsForm:clientsTable"
                                                    title="#{bundle['harvestclients.tab.header.action.btn.run']}">
                                         <span class="glyphicon glyphicon-play no-text"></span>
                                     </p:commandLink>
                                     <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
+                                                   disabled="#{harvestClient.harvestingNow}"
                                                    action="#{harvestingClientsPage.editClient(harvestClient)}"
                                                    oncomplete="PF('newHarvestingClientForm').show();handleResizeDialog('newHarvestingClientDialog');bind_bsui_components();"
                                                    update=":harvestingClientsForm,:harvestingClientsForm:newHarvestingClientDialog"
@@ -130,6 +132,7 @@
                                         <span class="glyphicon glyphicon-pencil no-text"></span>
                                     </p:commandLink>
                                     <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
+                                                   disabled="#{harvestClient.harvestingNow}"
                                                    action="#{harvestingClientsPage.setSelectedClient(harvestClient)}"
                                                    oncomplete="PF('deleteConfirmation').show();bind_bsui_components();"
                                                    update=":harvestingClientsForm,:harvestingClientsForm:deleteConfirmation,:harvestingClientsForm:newHarvestingClientDialog"

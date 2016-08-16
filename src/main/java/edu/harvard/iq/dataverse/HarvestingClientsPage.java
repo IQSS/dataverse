@@ -209,6 +209,18 @@ public class HarvestingClientsPage implements java.io.Serializable {
         String successMessage = JH.localize("harvestclients.actions.runharvest.success");
         successMessage = successMessage.replace("{0}", harvestingClient.getName());
         JsfHelper.addSuccessMessage(successMessage);
+        
+        // refresh the harvesting clients list - we want this one to be showing
+        // "inprogress"; and we want to be able to disable all the actions buttons
+        // for it:
+        // (looks like we need to sleep for a few milliseconds here, to make sure 
+        // it has already been updated with the "inprogress" setting)
+        try{Thread.sleep(500L);}catch(Exception e){}
+        
+        
+        configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();
+        
+        
     }
     
     public void editClient(HarvestingClient harvestingClient) {

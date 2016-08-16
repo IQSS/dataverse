@@ -84,7 +84,7 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
             return;
         }
         em.refresh(harvestingClient);
-        harvestingClient.setHarvestingNow(false);
+        harvestingClient.setHarvestingNow(true);
         if (harvestingClient.getRunHistory() == null) {
             harvestingClient.setRunHistory(new ArrayList<ClientHarvestRun>());
         }
