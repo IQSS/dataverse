@@ -784,7 +784,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         if (fileHandlerSuceeded){
             hdLogger.addHandler(fileHandler);
         }
-
+        
         if (fileHandlerSuceeded) {
             hdLogger.info("Starting an export all job");
         } else{
