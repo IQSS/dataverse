@@ -80,7 +80,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
     
     public enum PageMode {
 
-        VIEW, CREATE, EDIT
+        VIEW, CREATE, EDIT, DELETE
     }  
     private PageMode pageMode = PageMode.VIEW; 
     
@@ -155,6 +155,11 @@ public class HarvestingClientsPage implements java.io.Serializable {
         selectedClient = harvestingClient; 
     }
     
+    public void setClientForDelete(HarvestingClient harvestingClient) {
+        selectedClient = harvestingClient;
+        this.pageMode = PageMode.DELETE;
+    }
+    
     public HarvestingClient getSelectedClient() {
         return selectedClient; 
     }
@@ -177,6 +182,10 @@ public class HarvestingClientsPage implements java.io.Serializable {
     
     public boolean isViewMode() {
         return PageMode.VIEW == this.pageMode;
+    }
+    
+    public boolean isDeleteMode() {
+        return PageMode.DELETE == this.pageMode;
     }
     
     public boolean isCreateStepOne() {
@@ -308,6 +317,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
         
         selectedClient = null; 
         configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();
+        this.pageMode = PageMode.VIEW;
         
     }
     

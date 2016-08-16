@@ -29,6 +29,7 @@
                         <div class="row">
                             <div class="col-sm-12 text-right">
                                 <p:commandLink type="button" id="addClientEmpty" styleClass="btn btn-default margin-bottom"
+                                               disabled="#{harvestingClientsPage.deleteMode}"
                                                actionListener="#{harvestingClientsPage.initNewClient}"
                                                update=":harvestingClientsForm:newHarvestingClientDialog"
                                                oncomplete="PF('newHarvestingClientForm').show();handleResizeDialog('newHarvestingClientDialog');bind_bsui_components();">
@@ -86,7 +87,7 @@
                                         <!-- FIXME -->
                                         <!-- removed render logic {harvestingClientsPage.dataverseId != null} -->
                                         <p:commandLink style="margin-left:1em;" type="button" id="addClient" styleClass="btn btn-default"
-                                                        rendered="#{true}"
+                                                        disabled="#{harvestingClientsPage.deleteMode}"
                                                         actionListener="#{harvestingClientsPage.initNewClient}"
                                                         update=":harvestingClientsForm:newHarvestingClientDialog"
                                                         oncomplete="PF('newHarvestingClientForm').show();handleResizeDialog('newHarvestingClientDialog');bind_bsui_components();">
@@ -117,14 +118,14 @@
                                 <div class="btn-group" role="group">
                                     <!-- TODO: a confirmation dialog? - "sure you want to run harvest now?" -->
                                     <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
-                                                   disabled="#{harvestClient.harvestingNow}"
+                                                   disabled="#{harvestClient.harvestingNow or harvestingClientsPage.deleteMode}"
                                                    action="#{harvestingClientsPage.runHarvest(harvestClient)}"
                                                    update=":harvestingClientsForm,:messagePanel,:harvestingClientsForm:clientsTable"
                                                    title="#{bundle['harvestclients.tab.header.action.btn.run']}">
                                         <span class="glyphicon glyphicon-play no-text"></span>
                                     </p:commandLink>
                                     <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
-                                                   disabled="#{harvestClient.harvestingNow}"
+                                                   disabled="#{harvestClient.harvestingNow or harvestingClientsPage.deleteMode}"
                                                    action="#{harvestingClientsPage.editClient(harvestClient)}"
                                                    oncomplete="PF('newHarvestingClientForm').show();handleResizeDialog('newHarvestingClientDialog');bind_bsui_components();"
                                                    update=":harvestingClientsForm,:harvestingClientsForm:newHarvestingClientDialog"
@@ -132,10 +133,10 @@
                                         <span class="glyphicon glyphicon-pencil no-text"></span>
                                     </p:commandLink>
                                     <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
-                                                   disabled="#{harvestClient.harvestingNow}"
-                                                   action="#{harvestingClientsPage.setSelectedClient(harvestClient)}"
+                                                   disabled="#{harvestClient.harvestingNow or harvestingClientsPage.deleteMode}"
+                                                   action="#{harvestingClientsPage.setClientForDelete(harvestClient)}"
                                                    oncomplete="PF('deleteConfirmation').show();bind_bsui_components();"
-                                                   update=":harvestingClientsForm,:harvestingClientsForm:deleteConfirmation,:harvestingClientsForm:newHarvestingClientDialog"
+                                                   update=":harvestingClientsForm, :messagePanel,:harvestingClientsForm:clientsTable, :harvestingClientsForm:deleteConfirmation, :harvestingClientsForm:newHarvestingClientDialog"
                                                    title="#{bundle['harvestclients.tab.header.action.btn.delete']}">
                                         <span class="glyphicon glyphicon-trash no-text"></span>
                                     </p:commandLink>
