@@ -74,7 +74,14 @@ public class SearchFields {
      * datasets, and database id for files.
      */
     public static final String IDENTIFIER = "identifier";
-    public static final String SOURCE = "source";
+    /**
+     * Visible in the GUI as a facet to click: "Harvested" vs. "Root Dataverse".
+     */
+    public static final String METADATA_SOURCE = "metadataSource";
+    /**
+     * Internal boolean used when creating OAI sets, for example.
+     */
+    public static final String IS_HARVESTED = "isHarvested";
     /**
      * Such as http://dx.doi.org/10.5072/FK2/HXI35W
      *
