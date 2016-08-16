@@ -9,6 +9,7 @@ public class ConfirmEmailUtilTest {
     @Test
     public void testFriendlyExpirationTime() {
         ConfirmEmailUtil confirmEmailUtil = new ConfirmEmailUtil();
+        System.out.println("Friendly expiration timestamp / measurement test");
         System.out.println("1440 Minutes: " + confirmEmailUtil.friendlyExpirationTime(1440));
         assertEquals("24 hours", ConfirmEmailUtil.friendlyExpirationTime(1440));
         System.out.println("60 Minutes: " + confirmEmailUtil.friendlyExpirationTime(60));
@@ -25,15 +26,17 @@ public class ConfirmEmailUtilTest {
         assertEquals("2.75 hours", confirmEmailUtil.friendlyExpirationTime(165));
         System.out.println("1 Minute: " + confirmEmailUtil.friendlyExpirationTime(1));
         assertEquals("1 minute", confirmEmailUtil.friendlyExpirationTime(1));
+        System.out.println();
     }
-    
+
     @Test
     public void testGrandfatheredTime() {
         ConfirmEmailUtil confirmEmailUtil = new ConfirmEmailUtil();
+        System.out.println();
+        System.out.println("Grandfathered account timestamp test");
         System.out.println("Grandfathered Time (y2k): " + confirmEmailUtil.getGrandfatheredTime());
         assertEquals(Timestamp.valueOf("2000-01-01 00:00:00.0"), confirmEmailUtil.getGrandfatheredTime());
+        System.out.println();
     }
-    
-    
 
 }

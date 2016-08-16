@@ -315,17 +315,20 @@
                                         #{bundle.email}
                                     </label>
                                     <div class="col-sm-9">
-                                        <p class="form-control-static">#{DataverseUserPage.currentUser.email}
-                                            <ui:fragment rendered="#{!DataverseUserPage.emailIsVerified}">
-                                                <span class="glyphicon glyphicon-ban-circle"></span> Not Verified
-                                            </ui:fragment>
-                                            <ui:fragment rendered="#{DataverseUserPage.emailIsVerified}">
-                                                <span class="glyphicon glyphicon-ok"></span> Verified
-                                            </ui:fragment>
-                                        </p>
-                                        <div jsf:rendered="#{DataverseUserPage.showVerifyEmailButton()}">
-                                            <h:commandButton styleClass="btn btn-default" value="#{bundle['confirmEmail.submitRequest']}" action="#{DataverseUserPage.sendConfirmEmail()}"/>
+                                        <div class="col-sm-4" style="padding-left:0;">
+                                            <p class="form-control-static">#{DataverseUserPage.currentUser.email}</p>
                                         </div>
+                                        <div class="col-sm-6" style="padding-left:0;">
+                                            <p class="form-control-static">
+                                                <ui:fragment rendered="#{!DataverseUserPage.emailIsVerified}"> 
+                                                    <span class="glyphicon glyphicon-ban-circle text-danger"></span> Not Verified
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{DataverseUserPage.emailIsVerified}">
+                                                    <span class="glyphicon glyphicon-ok text-success"></span> Verified
+                                                </ui:fragment>
+                                                <h:commandButton rendered="#{DataverseUserPage.showVerifyEmailButton()}" styleClass="btn btn-default" value="#{bundle['confirmEmail.submitRequest']}" action="#{DataverseUserPage.sendConfirmEmail()}"/>
+                                            </p>
+                                        </div>    
                                     </div>
                                 </div>
                                 <!-- Affiliation -->
