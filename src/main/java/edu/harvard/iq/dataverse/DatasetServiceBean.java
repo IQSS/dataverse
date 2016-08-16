@@ -672,6 +672,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         reExportAll();
     }
     
+    
     public void reExportAll() {
         
         Integer countAll = 0;
@@ -685,6 +686,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         FileHandler fileHandler = null;
         try {
             fileHandler = new FileHandler(logFileName);
+            hdLogger.setUseParentHandlers(false);
             fileHandlerSuceeded = true;
         } catch (IOException ex) {
             Logger.getLogger(DatasetServiceBean.class.getName()).log(Level.SEVERE, null, ex);
@@ -755,6 +757,8 @@ public class DatasetServiceBean implements java.io.Serializable {
     
     // exportAll() will try to export the yet unexported datasets (it will honor
     // and trust the "last export" time stamp).
+    
+    @Asynchronous
     public void exportAllAsync() {
         exportAll();
     }
@@ -770,6 +774,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         boolean fileHandlerSuceeded = false;
         try {
             fileHandler = new FileHandler(logFileName);
+            hdLogger.setUseParentHandlers(false);
             fileHandlerSuceeded = true;
         } catch (IOException ex) {
             Logger.getLogger(DatasetServiceBean.class.getName()).log(Level.SEVERE, null, ex);
@@ -782,7 +787,6 @@ public class DatasetServiceBean implements java.io.Serializable {
 
         if (fileHandlerSuceeded) {
             hdLogger.info("Starting an export all job");
-
         } else{
             logger.info("Starting an export all job");
         }
