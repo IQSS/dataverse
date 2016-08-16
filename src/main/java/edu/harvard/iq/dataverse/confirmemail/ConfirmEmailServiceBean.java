@@ -112,7 +112,7 @@ public class ConfirmEmailServiceBean {
             /**
              * @todo Move this to Bundle.properties.
              */
-            String subject = "Dataverse Email Confirmation";
+            String subject = BundleUtil.getStringFromBundle("notification.email.verifyEmail.subject");
             mailService.sendSystemEmail(toAddress, subject, messageBody);
         } catch (Exception ex) {
             /**
