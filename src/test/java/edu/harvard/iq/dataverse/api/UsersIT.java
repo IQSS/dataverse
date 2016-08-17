@@ -7,8 +7,11 @@ import com.jayway.restassured.response.Response;
 import java.util.UUID;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.OK;
 import static junit.framework.Assert.assertEquals;
+import static org.hamcrest.CoreMatchers.equalTo;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -52,10 +55,18 @@ public class UsersIT {
         toggleSuperuser.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
+        String dataWithBadPassword = emailOfNonBcryptUserToConvert + ":" + "badPassword" + ":" + newEmailAddressToUse;
+        Response makeShibUserWrongSha1Password = UtilIT.migrateBuiltinToShib(dataWithBadPassword, superuserApiToken);
+        makeShibUserWrongSha1Password.prettyPrint();
+        makeShibUserWrongSha1Password.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo("[\"User doesn't know password.\"]"));
+
         Response makeShibUser = UtilIT.migrateBuiltinToShib(data, superuserApiToken);
         makeShibUser.prettyPrint();
         makeShibUser.then().assertThat()
-                .statusCode(OK.getStatusCode());
+                .statusCode(OK.getStatusCode())
+                .body("data.affiliation", equalTo("TestShib Test IdP"));
 
     }
 
