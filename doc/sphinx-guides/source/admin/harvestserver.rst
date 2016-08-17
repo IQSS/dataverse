@@ -71,6 +71,24 @@ Some useful examples of search queries to define OAI sets:
 - Complex queries can be created with multiple logical AND and OR operators. For example, 
 
   ``(authorName:YYY OR authorName:ZZZ) AND dsPublicationDate:NNNN``
+  
+- Some further query examples: 
+
+  For specific datasets using a persistentID:
+  
+  ``(dsPersistentId:10.5000/ZZYYXX/ OR dsPersistentId:10.5000/XXYYZZ)``
+
+  For all datasets within a specific ID authority:
+  
+  ``dsPersistentId:10.5000/XXYYZZ``
+
+ For all dataverses with subjects of Astronomy and Astrophysics or Earth and Environmental Sciences:
+ 
+  ``(dvSubject:"Astronomy and Astrophysics" OR dvSubject:"Earth and Environmental Sciences")``
+
+ For all datasets containing the keyword "censorship":
+
+  ``keywordValue:censorship``
 
 Important: New SOLR schema required!
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
