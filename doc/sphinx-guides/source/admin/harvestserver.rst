@@ -82,11 +82,11 @@ Some useful examples of search queries to define OAI sets:
   
   ``dsPersistentId:10.5000/XXYYZZ``
 
- For all dataverses with subjects of Astronomy and Astrophysics or Earth and Environmental Sciences:
+  For all dataverses with subjects of Astronomy and Astrophysics or Earth and Environmental Sciences:
  
   ``(dvSubject:"Astronomy and Astrophysics" OR dvSubject:"Earth and Environmental Sciences")``
 
- For all datasets containing the keyword "censorship":
+  For all datasets containing the keyword "censorship":
 
   ``keywordValue:censorship``
 
