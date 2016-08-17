@@ -156,7 +156,9 @@ public class DataCitation {
         citationList.add(formatString(authors, html));
         citationList.add(year);
         citationList.add(formatString(title, html, "\""));
-        citationList.add(formatURL(persistentId.toString(), persistentId.toURL().toString(), html));
+        if (persistentId != null) {
+            citationList.add(formatURL(persistentId.toString(), persistentId.toURL().toString(), html));
+        }
         citationList.add(formatString(distributors, html));
         citationList.add(version);
 
