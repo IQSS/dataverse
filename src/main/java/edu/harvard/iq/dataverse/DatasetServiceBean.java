@@ -712,6 +712,11 @@ public class DatasetServiceBean implements java.io.Serializable {
             if (dataset != null) {
                 //logger.info("checking dataset "+dataset.getGlobalId());
                 // Accurate "is published?" test:
+                // Yes, it is! We can't trust dataset.isReleased() alone; because it is a dvobject method 
+                // that returns (publicationDate != null). And "publicationDate" is essentially
+                // "the first publication date"; that stays the same as versions get 
+                // published and/or deaccessioned. But in combination with !isDeaccessioned() 
+                // it is indeed an accurate test.
                 if (dataset.isReleased() && !dataset.isDeaccessioned()) {
                     hdLogger.fine("exporting dataset " + dataset.getGlobalId());
                     countAll++;
@@ -794,17 +799,18 @@ public class DatasetServiceBean implements java.io.Serializable {
         for (Long datasetId : findAllLocalDatasetIds()) {
             // Potentially, there's a godzillion datasets in this Dataverse. 
             // This is why we go through the list of ids here, and instantiate 
-            // only one dtaset at a time. 
-            //logger.info("found dataset id="+datasetId);
+            // only one dataset at a time. 
             Dataset dataset = this.find(datasetId);
             if (dataset != null) {
-                //logger.info("checking dataset "+dataset.getGlobalId());
-                // Accurate "is published?" test:
+                // Accurate "is published?" test - ?
+                // Answer: yes. See the comment in the reExportAll() method.
                 if (dataset.isReleased() && !dataset.isDeaccessioned()) {
                     logger.fine("exporting dataset " + dataset.getGlobalId());
-                    if (dataset.getPublicationDate() != null
+                    // can't trust dataset.getPublicationDate(), no. 
+                    Date publicationDate = dataset.getReleasedVersion().getReleaseTime(); // we know this dataset has a non-null released version!
+                    if (publicationDate != null
                             && (dataset.getLastExportTime() == null
-                            || dataset.getLastExportTime().before(dataset.getPublicationDate()))) {
+                            || dataset.getLastExportTime().before(publicationDate))) {
                         countAll++;
                         try {
                             recordService.exportAllFormatsInNewTransaction(dataset);
@@ -835,13 +841,13 @@ public class DatasetServiceBean implements java.io.Serializable {
             hdLogger.info("Datasets processed: " + countAll.toString());
             hdLogger.info("Datasets exported successfully: " + countSuccess.toString());
             hdLogger.info("Datasets failures: " + countError.toString());
-            hdLogger.info("Finished reexport-all job.");
+            hdLogger.info("Finished export-all job.");
 
         } else{
             logger.info("Datasets processed: " + countAll.toString());
             logger.info("Datasets exported successfully: " + countSuccess.toString());
             logger.info("Datasets export failures: " + countError.toString());
-            logger.info("Finished reexport-all job.");
+            logger.info("Finished export-all job.");
         }   
     }
     

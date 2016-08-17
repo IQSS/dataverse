@@ -120,6 +120,8 @@ public class ExportService {
     // in a file in the dataset directory, on each Exporter available. 
     
     public void exportAllFormats (Dataset dataset) throws ExportException {
+        clearAllCachedFormats(dataset);
+        
         try {
             DatasetVersion releasedVersion = dataset.getReleasedVersion();
             if (releasedVersion == null) {
@@ -144,6 +146,18 @@ public class ExportService {
         
         dataset.setLastExportTime(new Timestamp(new Date().getTime()));
         
+    }
+    
+    public void clearAllCachedFormats(Dataset dataset) {
+        Iterator<Exporter> exporters = loader.iterator();
+        while (exporters.hasNext()) {
+            Exporter e = exporters.next();
+            String formatName = e.getProviderName();
+            
+            clearCachedExport(dataset, formatName);
+        }
+        
+        dataset.setLastExportTime(null);
     }
     
     // This method finds the exporter for the format requested, 
@@ -214,6 +228,16 @@ public class ExportService {
 
     }
     
+    private void clearCachedExport(Dataset dataset, String format) {
+        if (dataset != null && dataset.getFileSystemDirectory() != null && Files.exists(dataset.getFileSystemDirectory())) {
+
+            Path cachedMetadataFilePath = Paths.get(dataset.getFileSystemDirectory().toString(), "export_" + format + ".cached");
+            try {
+                Files.delete(cachedMetadataFilePath);
+            } catch (IOException ioex) {
+            }
+        }
+    }
     
     // This method checks if the metadata has already been exported in this 
     // format and cached on disk. If it has, it'll open the file and retun 

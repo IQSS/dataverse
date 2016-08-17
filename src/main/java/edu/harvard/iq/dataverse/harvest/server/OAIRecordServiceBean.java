@@ -7,6 +7,7 @@ package edu.harvard.iq.dataverse.harvest.server;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
@@ -77,35 +78,48 @@ public class OAIRecordServiceBean implements java.io.Serializable {
         Map<String,OAIRecord> recordMap = new HashMap();
         if (oaiRecords != null) {
             for (OAIRecord record : oaiRecords) {
+                // look for duplicates here? delete?
                 recordMap.put(record.getGlobalId(), record);
             }
         } else {
-            logger.info("Null returned - no records found.");
+            logger.fine("Null returned - no records found.");
         } 
 
         if (!recordMap.isEmpty()) {
-            logger.info("Found "+recordMap.size()+" existing records");
+            logger.fine("Found "+recordMap.size()+" existing records");
         } else {
-            logger.info("No records in the set yet.");
+            logger.fine("No records in the set yet.");
         }
 
         if (datasetIds != null) {
             for (Long datasetId : datasetIds) {
-                logger.info("processing dataset id=" + datasetId);
+                logger.fine("processing dataset id=" + datasetId);
                 Dataset dataset = datasetService.find(datasetId);
                 if (dataset == null) {
-                    logger.info("failed to find dataset!");
+                    logger.fine("failed to find dataset!");
                 } else {
-                    logger.info("found dataset.");
+                    logger.fine("found dataset.");
 
                     // TODO: option to *force* export? 
                     if (doExport) {
                         // TODO: 
                         // Review this logic - specifically for handling of 
                         // deaccessioned datasets. -- L.A. 4.5
-                        if (dataset.getPublicationDate() != null
+                        // OK, it looks like we can't rely on .getPublicationDate() - 
+                        // as it is essentially the *first publication* date; 
+                        // and we are interested in the *last*
+                        
+                        DatasetVersion releasedVersion = dataset.getReleasedVersion();
+                        Date publicationDate = releasedVersion == null ? null : releasedVersion.getReleaseTime();
+                        
+                        //if (dataset.getPublicationDate() != null
+                        //        && (dataset.getLastExportTime() == null
+                        //        || dataset.getLastExportTime().before(dataset.getPublicationDate()))) {
+                        
+                        if (publicationDate != null 
                                 && (dataset.getLastExportTime() == null
-                                || dataset.getLastExportTime().before(dataset.getPublicationDate()))) {
+                                || dataset.getLastExportTime().before(publicationDate))) {
+                        
                             logger.info("Attempting to run export on dataset " + dataset.getGlobalId());
                             exportAllFormats(dataset);
                         }
@@ -128,11 +142,16 @@ public class OAIRecordServiceBean implements java.io.Serializable {
     // This method updates -  creates/refreshes/un-marks-as-deleted - one OAI 
     // record at a time. It does so inside its own transaction, to ensure that 
     // the changes take place immediately. (except the method is called from 
-    // reight here, in this EJB - so the attribute does not do anything! (TODO:!)
+    // right here, in this EJB - so the attribute does not do anything! (TODO:!)
     @TransactionAttribute(REQUIRES_NEW)
     public void updateOaiRecordForDataset(Dataset dataset, String setName, Map<String, OAIRecord> recordMap) {
         // TODO: review .isReleased() logic
-        if (dataset.isReleased() && dataset.getLastExportTime() != null) {
+        // Answer: no, we can't trust isReleased()! It's a dvobject method that
+        // simply returns (publicationDate != null). And the publication date 
+        // stays in place even if all the released versions have been deaccessioned. 
+        boolean isReleased = dataset.getReleasedVersion() != null;
+        
+        if (isReleased && dataset.getLastExportTime() != null) {
             OAIRecord record = recordMap.get(dataset.getGlobalId());
             if (record == null) {
                 logger.info("creating a new OAI Record for " + dataset.getGlobalId());
@@ -153,6 +172,46 @@ public class OAIRecordServiceBean implements java.io.Serializable {
         }
     }
     
+    
+    // Updates any existing OAI records for this dataset
+    // Should be called whenever there's a change in the release status of the Dataset
+    // (i.e., when it's published or deaccessioned), so that the timestamps and 
+    // on the records could be freshened before the next reexport of the corresponding
+    // sets. 
+    // *Note* that the method assumes that a full metadata reexport has already 
+    // been attempted on the dataset. (Meaning that if getLastExportTime is null, 
+    // we'll just assume that the exports failed and the OAI records must be marked
+    // as "deleted". 
+    @TransactionAttribute(REQUIRES_NEW)
+    public void updateOaiRecordsForDataset(Dataset dataset) {
+        // create Map of OaiRecords
+
+        List<OAIRecord> oaiRecords = findOaiRecordsByGlobalId(dataset.getGlobalId());
+        if (oaiRecords != null) {
+
+            DatasetVersion releasedVersion = dataset.getReleasedVersion();
+
+            if (releasedVersion == null || dataset.getLastExportTime() == null) {
+                // Datast must have been deaccessioned.
+                markOaiRecordsAsRemoved(oaiRecords, new Date());
+                return;
+
+            }
+            
+            for (OAIRecord record : oaiRecords) {
+                if (record.isRemoved()) {
+                    logger.fine("\"un-deleting\" an existing OAI Record for " + dataset.getGlobalId());
+                    record.setRemoved(false);
+                    record.setLastUpdateTime(new Date());
+                } else if (dataset.getLastExportTime().after(record.getLastUpdateTime())) {
+                    record.setLastUpdateTime(new Date());
+                }
+            }
+        } else {
+            logger.fine("Null returned - no records found.");
+        }
+    }
+    
     public void exportAllFormats(Dataset dataset) {
         try {
             ExportService exportServiceInstance = ExportService.getInstance();
@@ -160,7 +219,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
             exportServiceInstance.exportAllFormats(dataset);
             datasetService.updateLastExportTimeStamp(dataset.getId());
         } catch (ExportException ee) {logger.fine("Caught export exception while trying to export. (ignoring)");}
-        catch (Exception e) {logger.info("Caught unknown exception while trying to export (ignoring)");}
+        catch (Exception e) {logger.fine("Caught unknown exception while trying to export (ignoring)");}
     }
     
     @TransactionAttribute(REQUIRES_NEW)
@@ -171,11 +230,11 @@ public class OAIRecordServiceBean implements java.io.Serializable {
     public void markOaiRecordsAsRemoved(Collection<OAIRecord> records, Date updateTime) {
         for (OAIRecord oaiRecord : records) {
             if ( !oaiRecord.isRemoved() ) {
-                logger.info("marking OAI record "+oaiRecord.getGlobalId()+" as removed");
+                logger.fine("marking OAI record "+oaiRecord.getGlobalId()+" as removed");
                 oaiRecord.setRemoved(true);
                 oaiRecord.setLastUpdateTime(updateTime);
             } else {
-                logger.info("OAI record "+oaiRecord.getGlobalId()+" is already marked as removed.");
+                logger.fine("OAI record "+oaiRecord.getGlobalId()+" is already marked as removed.");
             }
         }
        
