@@ -327,6 +327,8 @@
                                         <p class="form-control-static">#{DataverseUserPage.currentUser.affiliation}</p>
                                     </div>
                                 </div>
+                               
+                                               
                                 <!-- Position (not populated for Shibboleth users) -->
                                 <div class="form-group" jsf:rendered="#{!empty DataverseUserPage.builtinUser or !empty DataverseUserPage.builtinUser.position}">
                                     <label for="position" class="col-sm-3 control-label">
@@ -475,20 +477,69 @@
                                         </p:panelGrid>
                                     </div>
                                 </div>
-                                <div class="form-group" jsf:rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
+                                 <div class="form-group" jsf:rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
                                 <!-- Affiliation -->
                                     <label for="affiliation" class="col-sm-3 control-label">
                                         <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['user.affiliation.tip']}">
-                                            #{bundle.affiliation}
+                                            #{bundle.affiliation}<span class="glyphicon glyphicon-asterisk text-danger"/>
                                         </span>
+                                       
                                     </label>
                                     <div class="col-sm-9">
                                         <p:panelGrid columns="2" styleClass="noBorders">
-                                            <p:inputText id="affiliation" tabindex="7" styleClass="form-control" value="#{DataverseUserPage.builtinUser.affiliation}" />
+                                            <h:inputHidden id="affiliation" styleClass="form-control" value="#{DataverseUserPage.builtinUser.affiliation}" />
                                             <p:message for="affiliation" display="text" />
                                         </p:panelGrid>
+										<select id="select_affiliation" class="demo-default" placeholder="Select Affiliation..." tabindex="7">
+										</select>
+										 <p:message for="affiliation" display="text" />
                                     </div>
                                 </div>
+                                 <script type="text/javascript" defer="defer" src="/resources/js/selectize.js"></script>
+                                <script type="text/javascript">
+                   					//<![CDATA[
+                   					    //auto populate the affiliation textfield (now hidden) by using a dynamically populated dropdown
+                   					    var select_elm="#select_affiliation";
+                   					    var input_elm="#dataverseUserForm\\:accountInfoView\\:affiliation";
+                   					    $(document).ready(function () {
+                   					   	//Get the users affiliation from their ip - if the value is blank 
+                       					ip_range_checker= new IPRangeChecker(setUserAffiliation)  
+					                    });
+                   						function setUserAffiliation(){
+                   							var selectize=setUpAffiliateDropDown();
+                							if($(input_elm).val()!=""){
+                								selectize.val($(input_elm).val());
+                					    	}else if(affiliation && $(select_elm+" option[value='"+affiliation+"']").length > 0){
+                					    		selectize.setValue(affiliation);
+                					    	}else{
+                					    		selectize.setValue("OTHER");
+                					    	}
+                							selectize.trigger( "change" );
+                					      }    
+                   					    
+                   					    function setUpAffiliateDropDown(){
+                   					    	$.each(institution_mapping.affiliates, function (i, item) {
+                   					    	    $(select_elm).append($('<option>', { 
+                   					    	        value: institution_mapping.affiliates[i].name,
+                   					    	        text : institution_mapping.affiliates[i].name 
+                   					    	    }));
+                   					    	});
+                   					    	 $(select_elm).append($('<option>', { 
+            					    	        value: "OTHER",
+            					    	        text : "OTHER"
+            					    	    }));
+                   					    	var $select = $(select_elm).selectize({
+                   					    	    create: true,
+                   					    	    sortField: 'text',
+	                   					    	onChange: function (value) {
+	                   					    		var val = $select[0].selectize.getValue();
+	                   					    		$(input_elm).val(val)
+	                   					    	}
+                   					    	});
+                   					    	return $select[0].selectize;
+                   					    }
+				                    //]]>
+				                </script>
                                 <div class="form-group" jsf:rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
                                 <!-- Position -->
                                     <label for="position" class="col-sm-3 control-label">
@@ -507,7 +558,16 @@
                                 <!-- Terms of Use -->
                                     <ui:include src="termsofuse.xhtml"/>
                                 </ui:fragment>
+                                <div class="form-group" >
+                                    <label class="col-sm-3 control-label">    
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <script src='https://www.google.com/recaptcha/api.js'></script>
+                               			<div class="g-recaptcha" data-sitekey="6Le1QiQTAAAAAA-3y61xzXcfjpPd0LhLqQhExh6X"></div>
+                                    </div>
+                                </div>
                                 <div class="form-group">
+                                	
                                     <div class="col-sm-12 button-block">
                                         <p:commandButton id="save" styleClass="btn btn-default" tabindex="9" value="#{DataverseUserPage.editMode == 'CREATE' ? bundle['user.createBtn']:bundle.saveChanges}" action="#{DataverseUserPage.save}" update="@form,:messagePanel,:userDisplayInfoTitle" />
                                         <p:commandButton id="cancel" styleClass="btn btn-default" tabindex="10" value="#{bundle.cancel}" action="#{DataverseUserPage.cancel}" process="@this" update="@form">

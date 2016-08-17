@@ -1137,10 +1137,11 @@
                                                  actionListener="#{DatasetPage.saveGuestbookResponse('multiple')}" />
                                 <p:commandButton value="#{bundle.submit}" oncomplete="PF('downloadPopup').hide();PF('downloadDataSubsetPopup').show()"
                                                  update="downloadDataSubsetPopup" actionListener="#{DatasetPage.saveGuestbookResponse('subset')}" rendered="#{DatasetPage.downloadType=='subset'}" />
-
+								<!-- Updated explore button -->
                                 <p:commandButton value="#{bundle.submit}" oncomplete="PF('downloadPopup').hide()"
-                                                 actionListener="#{DatasetPage.saveGuestbookResponse('explore')}" rendered="#{DatasetPage.downloadType=='explore'}" />
+                                                 onclick="showData(#{fileMetadata.getDataFile().getId()}, '#{DatasetPage.getApiTokenKey()}')" rendered="#{DatasetPage.downloadType=='explore'}" />
                             </ui:remove>
+                            
                             <button type="button" class="btn btn-default" onclick="PF('downloadPopup').hide();PF('blockDatasetForm').hide();" value="#{bundle.cancel}">#{bundle.cancel}</button>
                         </div>
                     </p:dialog>
@@ -1527,6 +1528,17 @@
 
 
                 </script>
+                <script type="text/javascript">
+                    //<![CDATA[
+                         function showData(id,key){
+	                    	var pathArray = location.href.split( '/' );
+							var protocol = pathArray[0];
+							var host = pathArray[2];
+							var url = protocol + '//' + host;
+	                    	window.open("/ddi_explore/index.html?uri="+url+"/api/access/datafile/"+id+"/metadata/ddi&="+key, '_new');
+                    	}       
+                     //]]>
+                	</script>
             </ui:define>
         </ui:composition>
     </h:body>

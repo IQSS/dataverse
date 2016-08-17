@@ -343,11 +343,11 @@
 
                 <!-- TwoRavens Explore button ONLY ... not WorldMap -->
                 <ui:fragment rendered="#{ DatasetPage.canSeeTwoRavensExploreButton(fileMetadata) and !DatasetPage.canUserSeeExploreWorldMapButton(fileMetadata)}">
-                    <h:commandLink rendered="#{!DatasetPage.downloadPopupRequired}"
+                    <h:commandLink rendered="#{!DatasetPage.downloadPopupRequired}" onclick="showData(#{fileMetadata.getDataFile().getId()}, '#{DatasetPage.getApiTokenKey()}')"
                                    type="button" styleClass="btn btn-default #{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}"
-                                   disabled="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}"
-                                   actionListener="#{DatasetPage.exploreOutputLink(fileMetadata, 'explore')}" target="_blank">
+                                   disabled="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}">
                         <span class="glyphicon glyphicon-equalizer"/> <span class="ladda-label">#{bundle.explore}</span>
+                         <f:ajax execute="@form" render="@form" />
                     </h:commandLink>
                     <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"
                                    type="button" styleClass="btn btn-default"
@@ -356,6 +356,8 @@
                                    oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
                         <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore}
                     </p:commandLink>
+                    
+                    
                 </ui:fragment>
                 
                 <!-- WorldMap Explore button ONLY ... not TwoRavens -->
