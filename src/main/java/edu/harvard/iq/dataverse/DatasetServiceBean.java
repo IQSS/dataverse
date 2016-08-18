@@ -669,11 +669,14 @@ public class DatasetServiceBean implements java.io.Serializable {
     // have the "last export" time stamp set or not. 
     @Asynchronous 
     public void reExportAllAsync() {
-        reExportAll();
+        exportAllDatasets(true);
     }
     
-    
     public void reExportAll() {
+        exportAllDatasets(true);
+    }
+    
+    /*public void reExportAll() {
         
         Integer countAll = 0;
         Integer countSuccess = 0;
@@ -758,44 +761,48 @@ public class DatasetServiceBean implements java.io.Serializable {
             logger.info("Finished reexport-all job.");
         }
 
-    }
+    }*/
     
     // exportAll() will try to export the yet unexported datasets (it will honor
     // and trust the "last export" time stamp).
     
     @Asynchronous
     public void exportAllAsync() {
-        exportAll();
+        exportAllDatasets(false);
     }
     
     public void exportAll() {
+        exportAllDatasets(false);
+    }
+    
+    public void exportAllDatasets(boolean forceReExport) {
         Integer countAll = 0;
         Integer countSuccess = 0;
         Integer countError = 0;
         String logTimestamp = logFormatter.format(new Date());
-        Logger hdLogger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.client.DatasetServiceBean." + "ExportAll" + logTimestamp);
+        Logger exportLogger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.client.DatasetServiceBean." + "ExportAll" + logTimestamp);
         String logFileName = "../logs" + File.separator + "export_" + logTimestamp + ".log";
         FileHandler fileHandler = null;
         boolean fileHandlerSuceeded = false;
         try {
             fileHandler = new FileHandler(logFileName);
-            hdLogger.setUseParentHandlers(false);
+            exportLogger.setUseParentHandlers(false);
             fileHandlerSuceeded = true;
         } catch (IOException ex) {
             Logger.getLogger(DatasetServiceBean.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SecurityException ex) {
             Logger.getLogger(DatasetServiceBean.class.getName()).log(Level.SEVERE, null, ex);
         }
-        if (fileHandlerSuceeded){
-            hdLogger.addHandler(fileHandler);
-        }
-        
+
         if (fileHandlerSuceeded) {
-            hdLogger.info("Starting an export all job");
-        } else{
-            logger.info("Starting an export all job");
+            exportLogger.addHandler(fileHandler);
+        } else {
+            exportLogger = null;
+            exportLogger = logger;
         }
-        
+
+        exportLogger.info("Starting an export all job");
+
         for (Long datasetId : findAllLocalDatasetIds()) {
             // Potentially, there's a godzillion datasets in this Dataverse. 
             // This is why we go through the list of ids here, and instantiate 
@@ -803,33 +810,25 @@ public class DatasetServiceBean implements java.io.Serializable {
             Dataset dataset = this.find(datasetId);
             if (dataset != null) {
                 // Accurate "is published?" test - ?
-                // Answer: yes. See the comment in the reExportAll() method.
+                // Answer: Yes, it is! We can't trust dataset.isReleased() alone; because it is a dvobject method 
+                // that returns (publicationDate != null). And "publicationDate" is essentially
+                // "the first publication date"; that stays the same as versions get 
+                // published and/or deaccessioned. But in combination with !isDeaccessioned() 
+                // it is indeed an accurate test.
                 if (dataset.isReleased() && !dataset.isDeaccessioned()) {
-                    logger.fine("exporting dataset " + dataset.getGlobalId());
+
                     // can't trust dataset.getPublicationDate(), no. 
                     Date publicationDate = dataset.getReleasedVersion().getReleaseTime(); // we know this dataset has a non-null released version!
-                    if (publicationDate != null
+                    if (forceReExport || (publicationDate != null
                             && (dataset.getLastExportTime() == null
-                            || dataset.getLastExportTime().before(publicationDate))) {
+                            || dataset.getLastExportTime().before(publicationDate)))) {
                         countAll++;
                         try {
                             recordService.exportAllFormatsInNewTransaction(dataset);
-                            if (fileHandlerSuceeded) {
-                                hdLogger.info("Success exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId());
-                            } else {
-                                logger.info("Success exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId());
-                            }
+                            exportLogger.info("Success exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId());
                             countSuccess++;
                         } catch (Exception ex) {
-                            if (fileHandlerSuceeded) {
-                                hdLogger.info("Caught an exception in exportAllFormatsInNewTransaction");
-                                hdLogger.info("Error exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId());
-                                hdLogger.info("Export Error message: " + ex.getMessage());
-                            } else {
-                                logger.info("Caught an exception in exportAllFormatsInNewTransaction");
-                                logger.info("Error exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId());
-                                logger.info("Export Error message: " + ex.getMessage());
-                            }
+                            exportLogger.info("Error exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId() + "; " + ex.getMessage());
                             countError++;
                         }
                     }
@@ -837,18 +836,15 @@ public class DatasetServiceBean implements java.io.Serializable {
                 dataset = null;
             }
         }
+        exportLogger.info("Datasets processed: " + countAll.toString());
+        exportLogger.info("Datasets exported successfully: " + countSuccess.toString());
+        exportLogger.info("Datasets failures: " + countError.toString());
+        exportLogger.info("Finished export-all job.");
+        
         if (fileHandlerSuceeded) {
-            hdLogger.info("Datasets processed: " + countAll.toString());
-            hdLogger.info("Datasets exported successfully: " + countSuccess.toString());
-            hdLogger.info("Datasets failures: " + countError.toString());
-            hdLogger.info("Finished export-all job.");
+            fileHandler.close();
+        }
 
-        } else{
-            logger.info("Datasets processed: " + countAll.toString());
-            logger.info("Datasets exported successfully: " + countSuccess.toString());
-            logger.info("Datasets export failures: " + countError.toString());
-            logger.info("Finished export-all job.");
-        }   
     }
     
     public void updateLastExportTimeStamp(Long datasetId) {

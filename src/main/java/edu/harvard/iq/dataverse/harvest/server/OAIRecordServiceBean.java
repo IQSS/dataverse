@@ -11,12 +11,17 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
+import java.io.File;
+import java.io.IOException;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -51,6 +56,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
     
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean");
     
+    private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
     /*
     public void updateOaiRecords() {
         Date updateTime = new Date();
@@ -72,7 +78,11 @@ public class OAIRecordServiceBean implements java.io.Serializable {
     }   */ 
 
     public void updateOaiRecords(String setName, List<Long> datasetIds, Date updateTime, boolean doExport) {
-
+        updateOaiRecords(setName, datasetIds, updateTime, doExport, logger);
+    }
+    
+    public void updateOaiRecords(String setName, List<Long> datasetIds, Date updateTime, boolean doExport, Logger setUpdateLogger) {
+        
         // create Map of OaiRecords
         List<OAIRecord> oaiRecords = findOaiRecordsBySetName( setName );
         Map<String,OAIRecord> recordMap = new HashMap();
@@ -82,23 +92,23 @@ public class OAIRecordServiceBean implements java.io.Serializable {
                 recordMap.put(record.getGlobalId(), record);
             }
         } else {
-            logger.fine("Null returned - no records found.");
+            setUpdateLogger.fine("Null returned - no records found.");
         } 
 
         if (!recordMap.isEmpty()) {
-            logger.fine("Found "+recordMap.size()+" existing records");
+            setUpdateLogger.fine("Found "+recordMap.size()+" existing records");
         } else {
-            logger.fine("No records in the set yet.");
+            setUpdateLogger.fine("No records in the set yet.");
         }
 
         if (datasetIds != null) {
             for (Long datasetId : datasetIds) {
-                logger.fine("processing dataset id=" + datasetId);
+                setUpdateLogger.fine("processing dataset id=" + datasetId);
                 Dataset dataset = datasetService.find(datasetId);
                 if (dataset == null) {
-                    logger.fine("failed to find dataset!");
+                    setUpdateLogger.fine("failed to find dataset!");
                 } else {
-                    logger.fine("found dataset.");
+                    setUpdateLogger.fine("found dataset.");
 
                     // TODO: option to *force* export? 
                     if (doExport) {
@@ -120,22 +130,22 @@ public class OAIRecordServiceBean implements java.io.Serializable {
                                 && (dataset.getLastExportTime() == null
                                 || dataset.getLastExportTime().before(publicationDate))) {
                         
-                            logger.info("Attempting to run export on dataset " + dataset.getGlobalId());
+                            setUpdateLogger.fine("Attempting to run export on dataset " + dataset.getGlobalId());
                             exportAllFormats(dataset);
                         }
                     }
 
-                    logger.info("\"last exported\" timestamp: " + dataset.getLastExportTime());
+                    setUpdateLogger.fine("\"last exported\" timestamp: " + dataset.getLastExportTime());
                     em.refresh(dataset);
-                    logger.info("\"last exported\" timestamp, after db refresh: " + dataset.getLastExportTime());
+                    setUpdateLogger.fine("\"last exported\" timestamp, after db refresh: " + dataset.getLastExportTime());
 
-                    updateOaiRecordForDataset(dataset, setName, recordMap);
+                    updateOaiRecordForDataset(dataset, setName, recordMap, setUpdateLogger);
                 }
             }
         }
 
         // anything left in the map should be marked as removed!
-        markOaiRecordsAsRemoved( recordMap.values(), updateTime);
+        markOaiRecordsAsRemoved( recordMap.values(), updateTime, setUpdateLogger);
         
     }
     
@@ -144,7 +154,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
     // the changes take place immediately. (except the method is called from 
     // right here, in this EJB - so the attribute does not do anything! (TODO:!)
     @TransactionAttribute(REQUIRES_NEW)
-    public void updateOaiRecordForDataset(Dataset dataset, String setName, Map<String, OAIRecord> recordMap) {
+    public void updateOaiRecordForDataset(Dataset dataset, String setName, Map<String, OAIRecord> recordMap, Logger setUpdateLogger) {
         // TODO: review .isReleased() logic
         // Answer: no, we can't trust isReleased()! It's a dvobject method that
         // simply returns (publicationDate != null). And the publication date 
@@ -154,16 +164,16 @@ public class OAIRecordServiceBean implements java.io.Serializable {
         if (isReleased && dataset.getLastExportTime() != null) {
             OAIRecord record = recordMap.get(dataset.getGlobalId());
             if (record == null) {
-                logger.info("creating a new OAI Record for " + dataset.getGlobalId());
+                setUpdateLogger.info("creating a new OAI Record for " + dataset.getGlobalId());
                 record = new OAIRecord(setName, dataset.getGlobalId(), new Date());
                 em.persist(record);
             } else {
                 if (record.isRemoved()) {
-                    logger.info("\"un-deleting\" an existing OAI Record for " + dataset.getGlobalId());
+                    setUpdateLogger.info("\"un-deleting\" an existing OAI Record for " + dataset.getGlobalId());
                     record.setRemoved(false);
                     record.setLastUpdateTime(new Date());
                 } else if (dataset.getLastExportTime().after(record.getLastUpdateTime())) {
-                    logger.info("updating the timestamp on an existing record.");
+                    setUpdateLogger.info("updating the timestamp on an existing record.");
                     record.setLastUpdateTime(new Date());
                 }
 
@@ -193,7 +203,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
 
             if (releasedVersion == null || dataset.getLastExportTime() == null) {
                 // Datast must have been deaccessioned.
-                markOaiRecordsAsRemoved(oaiRecords, new Date());
+                markOaiRecordsAsRemoved(oaiRecords, new Date(), logger);
                 return;
 
             }
@@ -212,6 +222,14 @@ public class OAIRecordServiceBean implements java.io.Serializable {
         }
     }
     
+    // TODO: 
+    // Export functionality probably deserves it's own EJB ServiceBean - 
+    // so maybe create ExportServiceBean, and move these methods there? 
+    // (why these need to be in an EJB bean at all, what's wrong with keeping 
+    // them in the loadable ExportService? - since we need to modify the 
+    // "last export" timestamp on the dataset, being able to do that in the 
+    // @EJB context is convenient. 
+    
     public void exportAllFormats(Dataset dataset) {
         try {
             ExportService exportServiceInstance = ExportService.getInstance();
@@ -223,18 +241,25 @@ public class OAIRecordServiceBean implements java.io.Serializable {
     }
     
     @TransactionAttribute(REQUIRES_NEW)
-    public void exportAllFormatsInNewTransaction(Dataset dataset) {
-        exportAllFormats(dataset);
+    public void exportAllFormatsInNewTransaction(Dataset dataset) throws ExportException {
+        try {
+            ExportService exportServiceInstance = ExportService.getInstance();
+            exportServiceInstance.exportAllFormats(dataset);
+            datasetService.updateLastExportTimeStamp(dataset.getId());
+        } catch (Exception e) {
+            logger.fine("Caught unknown exception while trying to export");
+            throw new ExportException(e.getMessage());
+        }
     }
     
-    public void markOaiRecordsAsRemoved(Collection<OAIRecord> records, Date updateTime) {
+    public void markOaiRecordsAsRemoved(Collection<OAIRecord> records, Date updateTime, Logger setUpdateLogger) {
         for (OAIRecord oaiRecord : records) {
             if ( !oaiRecord.isRemoved() ) {
-                logger.fine("marking OAI record "+oaiRecord.getGlobalId()+" as removed");
+                setUpdateLogger.fine("marking OAI record "+oaiRecord.getGlobalId()+" as removed");
                 oaiRecord.setRemoved(true);
                 oaiRecord.setLastUpdateTime(updateTime);
             } else {
-                logger.fine("OAI record "+oaiRecord.getGlobalId()+" is already marked as removed.");
+                setUpdateLogger.fine("OAI record "+oaiRecord.getGlobalId()+" is already marked as removed.");
             }
         }
        
