@@ -56,7 +56,6 @@ public class OAIRecordServiceBean implements java.io.Serializable {
     
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean");
     
-    private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
     /*
     public void updateOaiRecords() {
         Date updateTime = new Date();
@@ -222,8 +221,21 @@ public class OAIRecordServiceBean implements java.io.Serializable {
         }
     }
     
+    public void markOaiRecordsAsRemoved(Collection<OAIRecord> records, Date updateTime, Logger setUpdateLogger) {
+        for (OAIRecord oaiRecord : records) {
+            if ( !oaiRecord.isRemoved() ) {
+                setUpdateLogger.fine("marking OAI record "+oaiRecord.getGlobalId()+" as removed");
+                oaiRecord.setRemoved(true);
+                oaiRecord.setLastUpdateTime(updateTime);
+            } else {
+                setUpdateLogger.fine("OAI record "+oaiRecord.getGlobalId()+" is already marked as removed.");
+            }
+        }
+       
+    }
+    
     // TODO: 
-    // Export functionality probably deserves it's own EJB ServiceBean - 
+    // Export functionality probably deserves its own EJB ServiceBean - 
     // so maybe create ExportServiceBean, and move these methods there? 
     // (why these need to be in an EJB bean at all, what's wrong with keeping 
     // them in the loadable ExportService? - since we need to modify the 
@@ -250,19 +262,6 @@ public class OAIRecordServiceBean implements java.io.Serializable {
             logger.fine("Caught unknown exception while trying to export");
             throw new ExportException(e.getMessage());
         }
-    }
-    
-    public void markOaiRecordsAsRemoved(Collection<OAIRecord> records, Date updateTime, Logger setUpdateLogger) {
-        for (OAIRecord oaiRecord : records) {
-            if ( !oaiRecord.isRemoved() ) {
-                setUpdateLogger.fine("marking OAI record "+oaiRecord.getGlobalId()+" as removed");
-                oaiRecord.setRemoved(true);
-                oaiRecord.setLastUpdateTime(updateTime);
-            } else {
-                setUpdateLogger.fine("OAI record "+oaiRecord.getGlobalId()+" is already marked as removed.");
-            }
-        }
-       
     }
     
     

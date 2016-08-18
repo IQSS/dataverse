@@ -5,16 +5,22 @@
  */
 package edu.harvard.iq.dataverse.harvest.server;
 
+import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SearchUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
@@ -22,7 +28,6 @@ import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import org.apache.commons.lang.StringUtils;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -52,6 +57,8 @@ public class OAISetServiceBean implements java.io.Serializable {
     OAIRecordServiceBean oaiRecordService;
     
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean");
+    
+    private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
     
     public HarvestingClient find(Object pk) {
         return (HarvestingClient) em.find(HarvestingClient.class, pk);
@@ -117,6 +124,10 @@ public class OAISetServiceBean implements java.io.Serializable {
     }
     
     public void exportOaiSet(OAISet oaiSet) {
+        exportOaiSet(oaiSet, logger);
+    }
+    
+    public void exportOaiSet(OAISet oaiSet, Logger exportLogger) {
         String query = oaiSet.getDefinition();
 
         List<Long> datasetIds = null;
@@ -138,12 +149,40 @@ public class OAISetServiceBean implements java.io.Serializable {
     } 
     
     public void exportAllSets() {
+        String logTimestamp = logFormatter.format(new Date());
+        Logger exportLogger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.client.OAISetServiceBean." + "UpdateAllSets." + logTimestamp);
+        String logFileName = "../logs" + File.separator + "oaiSetsUpdate_" + logTimestamp + ".log";
+        FileHandler fileHandler = null;
+        boolean fileHandlerSuceeded = false;
+        try {
+            fileHandler = new FileHandler(logFileName);
+            exportLogger.setUseParentHandlers(false);
+            fileHandlerSuceeded = true;
+        } catch (IOException ex) {
+            Logger.getLogger(DatasetServiceBean.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SecurityException ex) {
+            Logger.getLogger(DatasetServiceBean.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        if (fileHandlerSuceeded) {
+            exportLogger.addHandler(fileHandler);
+        } else {
+            exportLogger = null;
+            exportLogger = logger;
+        }
+        
         List<OAISet> allSets = findAll();
         
         if (allSets != null) {
             for (OAISet set : allSets) {
-                exportOaiSet(set);
+                exportOaiSet(set, exportLogger);
             }
+        }
+        
+        if (fileHandlerSuceeded) {
+            // no, we are not potentially de-referencing a NULL pointer - 
+            // it's not NULL if fileHandlerSucceeded is true.
+            fileHandler.close();
         }
     }
         
