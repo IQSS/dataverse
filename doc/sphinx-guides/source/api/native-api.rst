@@ -127,11 +127,11 @@ Show a version of the dataset. The Dataset also include any metadata blocks the 
   GET http://$SERVER/api/datasets/$id/versions/$versionNumber?key=$apiKey
   
       
-Export the metadata of the current version of a dataset in various formats see Note below::
+Export the metadata of the current published version of a dataset in various formats see Note below::
 
-    GET http://$SERVER/api/datasets/export?exporter=DDI&persistentId=$persistentId
+    GET http://$SERVER/api/datasets/export?exporter=ddi&persistentId=$persistentId
   
-    Note: Supported exporters (export formats) are DDI, DublinCore and json.
+    Note: Supported exporters (export formats) are ddi, oai_ddi, dcterms, oai_dc, and dataverse_json.
 
 
 Lists all the file metadata, for the given dataset and version::
