@@ -88,9 +88,7 @@ public class DataCitation {
             distributors = dsv.getRootDataverseNameforCitation();
         } else {
             distributors = dsv.getDistributorName();
-            if (!StringUtils.isEmpty(distributors)) {
-                distributors += " [distributor]";
-            }
+            //remove += [distributor] SEK 8-18-2016
         }
 
         // version
