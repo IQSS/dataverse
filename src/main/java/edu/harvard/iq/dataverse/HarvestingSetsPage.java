@@ -247,6 +247,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
             OAISet savedSet = oaiSetService.findBySpec(getNewSetSpec());
             if (savedSet != null) {
                 runSetExport(savedSet);
+                configuredHarvestingSets = oaiSetService.findAll(); 
             }
         }
         
@@ -288,6 +289,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
             OAISet createdSet = oaiSetService.findBySpec(getNewSetSpec());
             if (createdSet != null) {
                 runSetExport(createdSet);
+                configuredHarvestingSets = oaiSetService.findAll(); 
             }
         }
         
@@ -518,6 +520,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
         String successMessage = JH.localize("harvestserver.actions.runreexport.success");
         successMessage = successMessage.replace("{0}", oaiSet.getSpec());
         JsfHelper.addSuccessMessage(successMessage);
+        configuredHarvestingSets = oaiSetService.findAll(); 
     }
     
     public void runSetExport(OAISet oaiSet) {

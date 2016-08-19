@@ -491,7 +491,6 @@ public class HarvestingClient implements Serializable {
         }
         return desc;
     }
-    
     private boolean harvestingNow;
 
     public boolean isHarvestingNow() {
@@ -500,6 +499,17 @@ public class HarvestingClient implements Serializable {
 
     public void setHarvestingNow(boolean harvestingNow) {
         this.harvestingNow = harvestingNow;
+    }
+    
+    private boolean deleted;
+
+    
+    public boolean isDeleteInProgress() {
+        return this.deleted;
+    }
+
+    public void setDeleteInProgress(boolean deleteInProgress) {
+        this.deleted = deleteInProgress; 
     }
     
     @Override

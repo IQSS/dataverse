@@ -149,7 +149,7 @@
                                     <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
                                                    disabled="#{oaiSet.updateInProgress or oaiSet.deleteInProgress}"
                                                    action="#{harvestingSetsPage.startSetExport(oaiSet)}"
-                                                   update=":harvestingSetsForm  :messagePanel"
+                                                   update=":harvestingSetsForm  :messagePanel :harvestingSetsForm:setsTable"
                                                    title="#{bundle['harvestserver.tab.header.action.btn.export']}">
                                         <span class="glyphicon glyphicon-play no-text"></span>
                                     </p:commandLink>

@@ -136,7 +136,9 @@ public class OAISetServiceBean implements java.io.Serializable {
     }
     
     public void exportOaiSet(OAISet oaiSet, Logger exportLogger) {
-        String query = oaiSet.getDefinition();
+        OAISet managedSet = find(oaiSet.getId());
+        
+        String query = managedSet.getDefinition();
 
         List<Long> datasetIds = null;
         try {
@@ -151,8 +153,9 @@ public class OAISetServiceBean implements java.io.Serializable {
         // they will be properly marked as "deleted"! -- L.A. 4.5
         //if (datasetIds != null && !datasetIds.isEmpty()) {
         logger.fine("Calling OAI Record Service to re-export " + datasetIds.size() + " datasets.");
-        oaiRecordService.updateOaiRecords(oaiSet.getSpec(), datasetIds, new Date(), true);
+        oaiRecordService.updateOaiRecords(managedSet.getSpec(), datasetIds, new Date(), true);
         //}
+        managedSet.setUpdateInProgress(false);
 
     } 
     
