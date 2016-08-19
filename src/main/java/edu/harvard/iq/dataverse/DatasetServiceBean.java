@@ -818,7 +818,7 @@ public class DatasetServiceBean implements java.io.Serializable {
                 if (dataset.isReleased() && dataset.getReleasedVersion() != null && !dataset.isDeaccessioned()) {
 
                     // can't trust dataset.getPublicationDate(), no. 
-                    Date publicationDate = dataset.getReleasedVersion().getReleaseTime(); // we know this dataset has a non-null released version! Maybe not - SEK 8/19
+                    Date publicationDate = dataset.getReleasedVersion().getReleaseTime(); // we know this dataset has a non-null released version! Maybe not - SEK 8/19 (We do now! :)
                     if (forceReExport || (publicationDate != null
                             && (dataset.getLastExportTime() == null
                             || dataset.getLastExportTime().before(publicationDate)))) {

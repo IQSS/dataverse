@@ -6,6 +6,7 @@
 package edu.harvard.iq.dataverse.harvest.server;
 
 import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.harvest.client.ClientHarvestRun;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SearchConstants;
@@ -25,6 +26,8 @@ import java.util.logging.Logger;
 import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -60,8 +63,8 @@ public class OAISetServiceBean implements java.io.Serializable {
     
     private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
     
-    public HarvestingClient find(Object pk) {
-        return (HarvestingClient) em.find(HarvestingClient.class, pk);
+    public OAISet find(Object pk) {
+        return (OAISet) em.find(OAISet.class, pk);
     }
     
     public boolean specExists(String spec) {
@@ -97,10 +100,15 @@ public class OAISetServiceBean implements java.io.Serializable {
         }
     }
     
-    public void remove(OAISet oaiSet) {
+    @Asynchronous
+    public void remove(Long setId) {
+        OAISet oaiSet = find(setId);
+        if (oaiSet == null) {
+            return;
+        }
         em.createQuery("delete from OAIRecord hs where hs.setName = '" + oaiSet.getSpec() + "'").executeUpdate();
-        OAISet merged = em.merge(oaiSet);
-        em.remove(merged);
+        //OAISet merged = em.merge(oaiSet);
+        em.remove(oaiSet);
     }
     
     public OAISet findById(Long id) {
@@ -272,6 +280,27 @@ public class OAISetServiceBean implements java.io.Serializable {
         
         return resultIds;
         
+    }
+    
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public void setUpdateInProgress(Long setId) {
+        OAISet oaiSet = find(setId);
+        if (oaiSet == null) {
+            return;
+        }
+        em.refresh(oaiSet);
+        oaiSet.setUpdateInProgress(true);
+    }
+    
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public void setDeleteInProgress(Long setId) {
+        OAISet oaiSet = find(setId);
+        
+        if (oaiSet == null) {
+            return;
+        }
+        em.refresh(oaiSet);
+        oaiSet.setDeleteInProgress(true);
     }
     
     public void save(OAISet oaiSet) {

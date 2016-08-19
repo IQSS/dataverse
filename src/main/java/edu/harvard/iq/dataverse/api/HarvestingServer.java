@@ -154,7 +154,8 @@ public class HarvestingServer extends AbstractApiBean {
         }
         
         try {
-            oaiSetService.remove(set);
+            oaiSetService.setDeleteInProgress(set.getId());
+            oaiSetService.remove(set.getId());
         } catch (Exception ex) {
             return errorResponse( Response.Status.BAD_REQUEST, "Internal error: failed to delete OAI set " + spec + "; " + ex.getMessage());
         }

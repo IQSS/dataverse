@@ -300,10 +300,12 @@ public class HarvestingSetsPage implements java.io.Serializable {
         if (selectedSet != null) {
             logger.info("proceeding to delete harvesting set "+ selectedSet.getSpec());
             try {
-                oaiSetService.remove(selectedSet);
-                configuredHarvestingSets = oaiSetService.findAll();
+                oaiSetService.setDeleteInProgress(selectedSet.getId());
+                oaiSetService.remove(selectedSet.getId());
                 selectedSet = null; 
-                JsfHelper.addFlashMessage("Selected harvesting set has been deleted.");
+
+                configuredHarvestingSets = oaiSetService.findAll();
+                JsfHelper.addFlashMessage("Selected harvesting set is being deleted.");
             } catch (Exception ex) {
                 String failMessage = "Failed to delete harvesting set; unknown exception: "+ex.getMessage();
                 JH.addMessage(FacesMessage.SEVERITY_FATAL, failMessage);
@@ -505,7 +507,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
     
     // this will re-export the set in the background, asynchronously:
     public void startSetExport(OAISet oaiSet) {
-        try {
+        try {          
             runSetExport(oaiSet);
         } catch (Exception ex) {
             String failMessage = "Sorry, could not start re-export on selected OAI set (unknown server error).";
@@ -519,7 +521,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
     }
     
     public void runSetExport(OAISet oaiSet) {
-        
+        oaiSetService.setUpdateInProgress(oaiSet.getId());
         oaiSetService.exportOaiSetAsync(oaiSet);
     }
     

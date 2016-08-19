@@ -127,11 +127,13 @@
                             <h:outputText value="#{oaiSet.definition}" />
                         </p:column>
                         <p:column width="34%" class="text-center" headerText="#{bundle['harvestserver.tab.header.stats']}">
-                            <h:outputFormat value="#{harvestingSetsPage.getSetInfoNumOfDatasets(oaiSet) gt 0 ? bundle['harvestserver.tab.col.stats.results'] : bundle['harvestserver.tab.col.stats.empty']}">
+                            <h:outputFormat rendered="#{!oaiSet.updateInProgress and !oaiSet.deleteInProgress}" value="#{harvestingSetsPage.getSetInfoNumOfDatasets(oaiSet) gt 0 ? bundle['harvestserver.tab.col.stats.results'] : bundle['harvestserver.tab.col.stats.empty']}">
                                 <f:param value="#{harvestingSetsPage.getSetInfoNumOfDatasets(oaiSet)}"/>
                                 <f:param value="#{harvestingSetsPage.getSetInfoNumOfExported(oaiSet)}"/>
                                 <f:param value="#{harvestingSetsPage.getSetInfoNumOfDeleted(oaiSet)}"/>
                             </h:outputFormat>
+                            <h:outputText value="update in progress" rendered="#{oaiSet.updateInProgress}" />
+                            <h:outputText value="set is being deleted" rendered="#{oaiSet.deleteInProgress}" />
                             <ui:remove>
                             <h:outputText value="1 dataset " rendered="#{harvestingSetsPage.getSetInfoNumOfDatasets(oaiSet) == 1}" />
                             <h:outputText value="#{harvestingSetsPage.getSetInfoNumOfDatasets(oaiSet)} datasets " rendered="#{harvestingSetsPage.getSetInfoNumOfDatasets(oaiSet) gt 1}" />
@@ -145,12 +147,14 @@
                                 <div class="btn-group" role="group">
                                     <!-- TODO: a confirmation dialog? - "sure you want to run export now?" -->
                                     <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
+                                                   disabled="#{oaiSet.updateInProgress or oaiSet.deleteInProgress}"
                                                    action="#{harvestingSetsPage.startSetExport(oaiSet)}"
                                                    update=":harvestingSetsForm  :messagePanel"
                                                    title="#{bundle['harvestserver.tab.header.action.btn.export']}">
                                         <span class="glyphicon glyphicon-play no-text"></span>
                                     </p:commandLink>
                                     <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
+                                                   disabled="#{oaiSet.updateInProgress or oaiSet.deleteInProgress}"
                                                    action="#{harvestingSetsPage.editSet(oaiSet)}"
                                                    oncomplete="PF('newOAISetForm').show();handleResizeDialog('newOAISetDialog');bind_bsui_components();"
                                                    update=":harvestingSetsForm:newOAISetDialog"
@@ -158,6 +162,7 @@
                                         <span class="glyphicon glyphicon-pencil no-text"></span>
                                     </p:commandLink>
                                     <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
+                                                   disabled="#{oaiSet.updateInProgress or oaiSet.deleteInProgress}"
                                                    action="#{harvestingSetsPage.setSelectedSet(oaiSet)}"
                                                    oncomplete="PF('deleteConfirmation').show();bind_bsui_components();"
                                                    update=":harvestingSetsForm,:harvestingSetsForm:deleteConfirmation,:harvestingSetsForm:newOAISetDialog"
