@@ -815,10 +815,10 @@ public class DatasetServiceBean implements java.io.Serializable {
                 // "the first publication date"; that stays the same as versions get 
                 // published and/or deaccessioned. But in combination with !isDeaccessioned() 
                 // it is indeed an accurate test.
-                if (dataset.isReleased() && !dataset.isDeaccessioned()) {
+                if (dataset.isReleased() && dataset.getReleasedVersion() != null && !dataset.isDeaccessioned()) {
 
                     // can't trust dataset.getPublicationDate(), no. 
-                    Date publicationDate = dataset.getReleasedVersion().getReleaseTime(); // we know this dataset has a non-null released version!
+                    Date publicationDate = dataset.getReleasedVersion().getReleaseTime(); // we know this dataset has a non-null released version! Maybe not - SEK 8/19
                     if (forceReExport || (publicationDate != null
                             && (dataset.getLastExportTime() == null
                             || dataset.getLastExportTime().before(publicationDate)))) {
