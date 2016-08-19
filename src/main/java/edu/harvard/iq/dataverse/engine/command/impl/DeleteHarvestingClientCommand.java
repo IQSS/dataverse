@@ -36,6 +36,10 @@ public class DeleteHarvestingClientCommand extends AbstractVoidCommand {
         
         HarvestingClient merged = ctxt.em().merge(harvestingClient);
 
+        // Purge all the SOLR documents associated with this client from the 
+        // index server: 
+        // ctxt.index().deleteHarvestedDocuments(merged);
+        
         // All the datasets harvested by this client will be cleanly deleted 
         // through the defined cascade. Cascaded delete does not work for harvested 
         // files, however. So they need to be removed explicitly; before we 

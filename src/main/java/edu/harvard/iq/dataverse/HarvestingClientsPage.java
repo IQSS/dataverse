@@ -292,21 +292,20 @@ public class HarvestingClientsPage implements java.io.Serializable {
             
             logger.info("proceeding to delete harvesting client "+selectedClient.getName());
             try {
-                // TODO: 
-                // the following 2 items, purging of the associated solr documents
-                // and the timer, should probably be moved into the Delete command.
+                harvestingClientService.setDeleteInProgress(selectedClient.getId());
                 
-                // Purge all the SOLR documents associated with this client from the 
-                // index server: 
-                indexService.deleteHarvestedDocuments(selectedClient);
                 // if this was a scheduled harvester, make sure the timer is deleted:
                 dataverseTimerService.removeHarvestTimer(selectedClient);
-                engineService.submit(new DeleteHarvestingClientCommand(dvRequestService.getDataverseRequest(), selectedClient));
-                JsfHelper.addFlashMessage("Selected harvesting client has been deleted.");
                 
-            } catch (CommandException ex) {
-                String failMessage = "Selected harvesting client cannot be deleted.";
-                JH.addMessage(FacesMessage.SEVERITY_FATAL, failMessage);
+                // purge indexed objects:
+                indexService.deleteHarvestedDocuments(selectedClient);
+                //engineService.submit(new DeleteHarvestingClientCommand(dvRequestService.getDataverseRequest(), selectedClient));
+                harvestingClientService.deleteClient(selectedClient.getId());
+                JsfHelper.addFlashMessage("Selected harvesting client is being deleted.");
+                
+            //} catch (CommandException ex) {
+            //    String failMessage = "Selected harvesting client cannot be deleted.";
+            //    JH.addMessage(FacesMessage.SEVERITY_FATAL, failMessage);
             } catch (Exception ex) {
                 String failMessage = "Selected harvesting client cannot be deleted; unknown exception: "+ex.getMessage();
                 JH.addMessage(FacesMessage.SEVERITY_FATAL, failMessage);
