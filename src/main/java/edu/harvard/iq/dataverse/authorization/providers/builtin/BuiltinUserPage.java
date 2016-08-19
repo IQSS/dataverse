@@ -626,7 +626,7 @@ public class BuiltinUserPage implements java.io.Serializable {
     }
     
     public void sendConfirmEmail() {
-        logger.info("called sendConfirmEmail()");
+        logger.fine("called sendConfirmEmail()");
         String userEmail = currentUser.getEmail();
         ConfirmEmailUtil confirmEmailUtil = new ConfirmEmailUtil();
         
