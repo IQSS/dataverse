@@ -340,6 +340,7 @@ td.col-file-action > .button-block, .col-manage-action > .button-block,
 div.ui-datatable-header > .button-block, .button-block.tab-header {margin-top:0;}
 form.btn-form {display:inline-block;}
 .button-block button, .button-block a.btn, .button-block input.btn, .button-block div.btn-group, .button-block span.btn.ui-state-disabled {margin-right:1em;}
+.col-manage-action .button-block button, .col-manage-action .button-block a.btn, .col-manage-action .button-block input.btn, .col-manage-action .button-block div.btn-group, .col-manage-action .button-block span.btn.ui-state-disabled {margin-right:0em;}
 .button-block span.ingest-warning {margin-right:.5em;}
 .button-block div.btn-group div.btn-group {margin-right:0;}
 .button-block button.pull-right:first-child, .button-block a.btn.pull-right:first-child, .button-block div.btn-group.pull-right:first-child, 
