@@ -521,7 +521,7 @@ div.ui-dialog div.highlight {
 .ui-dialog.dialog-submenu, .ui-dialog.dialog-submenu .ui-dialog-content, .ui-dialog.dialog-submenu .form-inline, .ui-dialog.dialog-submenu .form-group {overflow:visible !important;}
 .ui-dialog.dialog-submenu .ui-menu-list.ui-menu-child {z-index: 9999 !important; width: auto; min-width: 12.5em;}
 
-.ui-dialog-content {min-width:600px;}
+.ui-dialog.ui-widget.ui-widget-content {min-width:600px;}
 
 /* -------- SUBTABS -------- */
 div.popupSubTabParent > div.ui-tabs-panels > div.ui-tabs-panel.ui-widget-content {padding-left:0; padding-right:0;}
