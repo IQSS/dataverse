@@ -2678,6 +2678,12 @@ public class DatasetPage implements java.io.Serializable {
             successMessage = successMessage.replace("{0}", fileNames);
             JsfHelper.addFlashMessage(successMessage);
         }
+        
+        /* 
+           Do note that if we are deleting any files that have UNFs (i.e., 
+           tabular files), we DO NEED TO RECALCULATE the UNF of the version!
+           - but we will do this inside the UpdateDatasetCommand.
+        */
     }
 
     public String save() {

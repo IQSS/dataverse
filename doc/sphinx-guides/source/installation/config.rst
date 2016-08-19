@@ -422,7 +422,7 @@ For Development only.  Set ``GeoconnectDebug`` to true to allow a user to see SQ
 :DatasetPublishPopupCustomText
 ++++++++++++++++++++++++++++++
 
-Set custom text a user will view when publishing a dataset.
+Set custom text a user will view when publishing a dataset. Note that this text is exposed via the "Info" endpoint of the :doc:`/api/native-api`.
 
 ``curl -X PUT -d "Deposit License Requirements" http://localhost:8080/api/admin/settings/:DatasetPublishPopupCustomText``
 

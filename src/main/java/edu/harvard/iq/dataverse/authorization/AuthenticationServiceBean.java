@@ -20,6 +20,8 @@ import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailData;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
+import edu.harvard.iq.dataverse.passwordreset.PasswordResetData;
+import edu.harvard.iq.dataverse.passwordreset.PasswordResetServiceBean;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Calendar;
@@ -76,6 +78,9 @@ public class AuthenticationServiceBean {
 
     @EJB
     ConfirmEmailServiceBean confirmEmailService;
+    
+    @EJB
+    PasswordResetServiceBean passwordResetServiceBean;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -527,6 +532,11 @@ public class AuthenticationServiceBean {
         String builtinUsername = builtInUserIdentifier.replaceFirst(AuthenticatedUser.IDENTIFIER_PREFIX, "");
         BuiltinUser builtin = builtinUserServiceBean.findByUserName(builtinUsername);
         if (builtin != null) {
+            // These were created by AuthenticationResponse.Status.BREAKOUT in ShibServiceBean.canLogInAsBuiltinUser
+            List<PasswordResetData> oldTokens = passwordResetServiceBean.findPasswordResetDataByDataverseUser(builtin);
+            for (PasswordResetData oldToken : oldTokens) {
+                em.remove(oldToken);
+            }
             em.remove(builtin);
         } else {
             logger.info("Couldn't delete builtin user because could find it based on username " + builtinUsername);
