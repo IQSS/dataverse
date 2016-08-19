@@ -41,7 +41,6 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
 
     public CreateDatasetCommand(Dataset theDataset, DataverseRequest aRequest) {
         super(aRequest, theDataset.getOwner());
-        logger.log(Level.FINE,"Constructor");
         this.theDataset = theDataset;
         this.registrationRequired = false;
         this.importType=null;
@@ -50,7 +49,6 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
 
     public CreateDatasetCommand(Dataset theDataset, DataverseRequest aRequest, boolean registrationRequired) {
         super(aRequest, theDataset.getOwner());
-        logger.log(Level.FINE,"Constructor");
         this.theDataset = theDataset;
         this.registrationRequired = registrationRequired;
         this.importType=null;
@@ -59,7 +57,6 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
     
     public CreateDatasetCommand(Dataset theDataset, DataverseRequest aRequest, boolean registrationRequired, ImportUtil.ImportType importType) {
         super(aRequest, theDataset.getOwner());
-        logger.log(Level.FINE,"Constructor");
         this.theDataset = theDataset;
         this.registrationRequired = registrationRequired;
         this.importType=importType;
@@ -68,7 +65,6 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
     
     public CreateDatasetCommand(Dataset theDataset, DataverseRequest aRequest, boolean registrationRequired, ImportUtil.ImportType importType, Template template) {
         super(aRequest, theDataset.getOwner());
-        logger.log(Level.FINE,"Constructor");
         this.theDataset = theDataset;
         this.registrationRequired = registrationRequired;
         this.importType=importType;
@@ -78,7 +74,6 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd-hh.mm.ss");
-        logger.log(Level.FINE,"execute");
 
         if ( (importType != ImportType.MIGRATION && importType != ImportType.HARVEST) && !ctxt.datasets().isUniqueIdentifier(theDataset.getIdentifier(), theDataset.getProtocol(), theDataset.getAuthority(), theDataset.getDoiSeparator()) ) {
             throw new IllegalCommandException(String.format("Dataset with identifier '%s', protocol '%s' and authority '%s' already exists",
@@ -104,7 +99,7 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         theDataset.setCreator((AuthenticatedUser) getRequest().getUser());
         
         theDataset.setCreateDate(new Timestamp(new Date().getTime()));
-        
+
         Iterator<DatasetField> dsfIt = dsv.getDatasetFields().iterator();
         while (dsfIt.hasNext()) {
             if (dsfIt.next().removeBlankDatasetFieldValues()) {
@@ -135,20 +130,21 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         if (theDataset.getIdentifier()==null) {
             theDataset.setIdentifier(ctxt.datasets().generateIdentifierSequence(theDataset.getProtocol(), theDataset.getAuthority(), theDataset.getDoiSeparator()));
         }
+        logger.log(Level.FINE,"doiProvider={0} protocol={1}  importType={2}  GlobalIdCreateTime=={3}", new Object[]{doiProvider, protocol,  importType, theDataset.getGlobalIdCreateTime()});
         // Attempt the registration if importing dataset through the API, or the app (but not harvest or migrate)
         if ((importType == null || importType.equals(ImportType.NEW))
                 && theDataset.getGlobalIdCreateTime() == null) {
             if (protocol.equals("doi")) {
                 String doiRetString = "";
                 try{
-                    doiRetString = IdServiceBean.getBean(protocol, doiProvider, ctxt).createIdentifier(theDataset);
+                    logger.log(Level.FINE,"creating identifier");
+                    doiRetString = IdServiceBean.getBean(ctxt).createIdentifier(theDataset);
                 } catch (Exception e){
-                    logger.log(Level.WARNING, "Exception while creating Identifier:" + e.getMessage(), e);
+                    logger.log(Level.WARNING, "Exception while creating Identifier: " + e.getMessage(), e);
                 }
 
                 // Check return value to make sure registration succeeded
                 if (doiProvider.equals("EZID") && doiRetString.contains(theDataset.getIdentifier())) {
-                    // TODO Why only EZID and not DataCite?
                     theDataset.setGlobalIdCreateTime(createDate);
                 }
 
@@ -163,9 +159,9 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         if (registrationRequired && theDataset.getGlobalIdCreateTime() == null) {
             throw new IllegalCommandException("Dataset could not be created.  Registration failed", this);
                }
-        logger.log(Level.FINE, "after doi {0}", formatter.format(new Date().getTime()));          
+        logger.log(Level.FINE, "after doi {0}", formatter.format(new Date().getTime()));
         Dataset savedDataset = ctxt.em().merge(theDataset);
-         logger.log(Level.FINE, "after db update {0}", formatter.format(new Date().getTime()));       
+        logger.log(Level.FINE, "after db update {0}", formatter.format(new Date().getTime()));
         // set the role to be default contributor role for its dataverse
         if (importType==null || importType.equals(ImportType.NEW)) {
             String privateUrlToken = null;

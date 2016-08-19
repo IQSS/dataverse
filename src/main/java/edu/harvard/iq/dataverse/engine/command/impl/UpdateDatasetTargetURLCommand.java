@@ -43,9 +43,7 @@ public class UpdateDatasetTargetURLCommand extends AbstractVoidCommand  {
                     this, Collections.singleton(Permission.EditDataset), target);
         }
 
-        String nonNullDefaultIfKeyNotFound = "";
-        String doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
-        IdServiceBean idServiceBean = IdServiceBean.getBean(target.getProtocol(), doiProvider, ctxt);
+        IdServiceBean idServiceBean = IdServiceBean.getBean(target.getProtocol(), ctxt);
         HashMap<String, String> metadata = idServiceBean.getMetadataFromDatasetForTargetURL(target);
         try {
             String doiRetString = idServiceBean.modifyIdentifier(target, metadata);

@@ -45,21 +45,18 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
     
     public UpdateDatasetCommand(Dataset theDataset, DataverseRequest aRequest) {
         super(aRequest, theDataset);
-        logger.log(Level.FINE,"Constructor");
         this.theDataset = theDataset;
         this.filesToDelete = new ArrayList();
     }    
     
     public UpdateDatasetCommand(Dataset theDataset, DataverseRequest aRequest, List<FileMetadata> filesToDelete) {
         super(aRequest, theDataset);
-        logger.log(Level.FINE,"Constructor");
         this.theDataset = theDataset;
         this.filesToDelete = filesToDelete;
     }
     
     public UpdateDatasetCommand(Dataset theDataset, DataverseRequest aRequest, DataFile fileToDelete) {
         super(aRequest, theDataset);
-        logger.log(Level.FINE,"Constructor");
         this.theDataset = theDataset;
         
         // get the latest file metadata for the file; ensuring that it is a draft version
@@ -84,7 +81,6 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
 
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
-        logger.log(Level.FINE,"execute");
         // first validate
         // @todo for now we run through an initFields method that creates empty fields for anything without a value
         // that way they can be checked for required
@@ -185,18 +181,23 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
         String nonNullDefaultIfKeyNotFound = "";
         String doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
 
+        logger.log(Level.FINE,"doiProvider={0} protocol={1} GlobalIdCreateTime=={2}", new Object[]{doiProvider, theDataset.getProtocol(), theDataset.getGlobalIdCreateTime()});
         if (theDataset.getProtocol().equals("doi")
                 && doiProvider.equals("EZID") && theDataset.getGlobalIdCreateTime() == null) {
             String doiRetString = null;
             try {
+                logger.fine("creating identifier");
                 doiRetString = ctxt.doiEZId().createIdentifier(theDataset);
                 if (doiRetString.contains(theDataset.getIdentifier())) {
+                    logger.fine("created: "+doiRetString);
                     theDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
                 } else {
                     //try again if identifier exists
                     if (doiRetString.contains("identifier already exists")) {
                         theDataset.setIdentifier(ctxt.datasets().generateIdentifierSequence(theDataset.getProtocol(), theDataset.getAuthority(), theDataset.getDoiSeparator()));
+                        logger.fine("creating identifier again because it exists: "+doiRetString);
                         doiRetString = ctxt.doiEZId().createIdentifier(theDataset);
+                        logger.fine("new value: "+doiRetString);
                         if (!doiRetString.contains(theDataset.getIdentifier())) {
                             // didn't register new identifier
                         } else {

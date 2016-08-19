@@ -71,11 +71,12 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
         String protocol = theDataset.getProtocol();
         String doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
         String authority = theDataset.getAuthority();
-        IdServiceBean idServiceBean = IdServiceBean.getBean(protocol, doiProvider, ctxt);
+        IdServiceBean idServiceBean = IdServiceBean.getBean(protocol, ctxt);
+        logger.log(Level.FINE,"doiProvider={0} protocol={1} GlobalIdCreateTime=={2}", new Object[]{doiProvider, protocol, theDataset.getGlobalIdCreateTime()});
         if (theDataset.getGlobalIdCreateTime() == null) {
             if (idServiceBean!=null) {
                 try {
-                    if (!idServiceBean.alreadyExists(theDataset)) {// TODO implementation for DoiEzIdServiceBean !
+                    if (!idServiceBean.alreadyExists(theDataset)) {
                         idServiceBean.createIdentifier(theDataset);
                         theDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
                     } else {
@@ -193,7 +194,7 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
 
         if (protocol.equals("doi")
                 && doiProvider.equals("EZID")) {
-            ctxt.doiEZId().publicizeIdentifier(savedDataset);
+            idServiceBean.publicizeIdentifier(savedDataset);
         }
         if (idServiceBean!= null)
             if (!idServiceBean.publicizeIdentifier(savedDataset))

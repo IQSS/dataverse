@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.IdServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 
@@ -45,15 +46,12 @@ public class DeaccessionDatasetVersionCommand extends AbstractCommand<DatasetVer
         
         if (deleteDOIIdentifier) {
             String nonNullDefaultIfKeyNotFound = "";
+            String    protocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
+            IdServiceBean idServiceBean = IdServiceBean.getBean(ctxt);
 
-            String doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
-
-            if (doiProvider.equals("EZID")) {
-                ctxt.doiEZId().deleteIdentifier(ds);
-            }
-            if (doiProvider.equals("DataCite")) {
+            if (protocol.equals("doi")) {
                 try {
-                    ctxt.doiDataCite().deleteIdentifier(ds);
+                    idServiceBean.deleteIdentifier(ds);
                 } catch (Exception e) {
                     if (e.toString().contains("Internal Server Error")) {
                         throw new CommandException(ResourceBundle.getBundle("Bundle").getString("dataset.publish.error.datacite"), this);
@@ -61,7 +59,7 @@ public class DeaccessionDatasetVersionCommand extends AbstractCommand<DatasetVer
                     throw new CommandException(ResourceBundle.getBundle("Bundle").getString("dataset.delete.error.datacite"), this);
                 }
             }
-        }     
+        }
         DatasetVersion managed = ctxt.em().merge(theVersion);
         
         boolean doNormalSolrDocCleanUp = true;
