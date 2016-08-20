@@ -1,0 +1,247 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
+VAGRANTFILE_API_VERSION = "2"
+
+unless defined? OUTPUT_VERBOSITY
+  # Output Verbosity 0..3 least..most
+  if ENV['OUTPUT_VERBOSITY'].nil?
+    OUTPUT_VERBOSITY = '3'
+  else
+    OUTPUT_VERBOSITY = ENV['OUTPUT_VERBOSITY']
+  end
+end
+
+unless defined? STATIC_IP_KRBKDC 
+  STATIC_IP_KRBKDC = "192.168.40.30"
+end
+
+unless defined? STATIC_IP_DATAVERSE 
+  STATIC_IP_DATAVERSE = "192.168.40.20"
+end
+
+unless defined? STATIC_IP_SOLRCLOUD 
+  STATIC_IP_SOLRCLOUD = ["192.168.40.11","192.168.40.12","192.168.40.13"]
+end
+
+unless defined? ZOOKEEPER_ENSEMBLE
+  ZOOKEEPER_ENSEMBLE = STATIC_IP_SOLRCLOUD.join(":2181,") + ":2181"
+end
+
+unless defined? ZOOKEEPER_CFG
+  ZOOKEEPER_CFG = ''
+  STATIC_IP_SOLRCLOUD.each_with_index { |node,index|
+    ZOOKEEPER_CFG << "server." + (index + 1).to_s + "=#{node}:2888:3888\n"
+  }
+end
+
+unless defined? ZOOKEEPER_KEYTAB_PATH
+  ZOOKEEPER_KEYTAB_PATH = '/etc/zookeeper/conf/zookeeper.keytab'
+end
+
+unless defined? SOLR_VERSION
+  SOLR_VERSION = '5.4.1'
+end
+
+unless defined? SOLR_INSTALL_DIR
+  SOLR_INSTALL_DIR = '/opt'
+end
+
+unless defined? SOLR_KEYTAB_PATH
+  SOLR_KEYTAB_PATH = '/var/solr/solr.keytab'
+end
+
+unless defined? ENABLE_TLS_ON_SOLR
+  # Set this to non-zero to configure the solr service to use TLS/SSL
+  if ENV['ENABLE_TLS_ON_SOLR'].nil?
+    ENABLE_TLS_ON_SOLR = 0
+  else
+    ENABLE_TLS_ON_SOLR = ENV['ENABLE_TLS_ON_SOLR']
+  end
+end
+
+unless defined? KEYSTORE_PATH
+  KEYSTORE_PATH = '/etc/pki/java/dataverse_keystore.jks'
+end
+
+unless defined? KEYSTORE_PASSWORD
+  KEYSTORE_PASSWORD = 'dataverse'
+end
+
+unless defined? TRUSTSTORE_PATH
+  TRUSTSTORE_PATH = '/etc/pki/java/dataverse_truststore.jks'
+end
+
+unless defined? TRUSTSTORE_PASSWORD
+  TRUSTSTORE_PASSWORD = 'dataverse'
+end
+
+unless defined? DVCOLLECTION_NAME
+  DVCOLLECTION_NAME = 'dvcollection'
+end
+
+unless defined? DATAVERSE_HOME
+  DATAVERSE_HOME = "/home/glassfish/glassfish4/glassfish/domains/domain1"
+end
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+
+  config.vm.provider "virtualbox" do |v|
+    v.memory = 2048
+    v.cpus = 1
+  end
+
+  config.vm.synced_folder "../../../", "/dataverse"
+  config.vm.provision "killFirewall", type: "shell", inline: "service iptables stop"
+
+  config.vm.define "krbkdc" do |krb|
+    krb.vm.hostname = "krbkdc"
+    krb.vm.box = "puppetlabs/centos-6.6-64-puppet"
+    krb.vm.network "private_network", ip: STATIC_IP_KRBKDC
+  
+    krb.vm.provision "installKerberos", type: "shell", 
+      path: "./install-krb5kdc.sh", args: "-i #{STATIC_IP_KRBKDC} -v #{OUTPUT_VERBOSITY}"
+      
+    krb.vm.provision "addDataversePrincipal", type: "shell",
+      path: "./setup-krb-principal.sh", args: "-i #{STATIC_IP_DATAVERSE} -p 'dataverse' -v #{OUTPUT_VERBOSITY} -w 'password' "
+    STATIC_IP_SOLRCLOUD.each_with_index { |node,index|
+      krb.vm.provision "addSolrCloud" + (index + 1).to_s + "Principals", type: "shell", 
+      path: "./setup-krb-principal.sh", args: "-i #{node} -p 'solr' -q 'HTTP' -r 'zookeeper' -v #{OUTPUT_VERBOSITY} -w 'password' "
+      krb.vm.provision "makeZookeeperKeytabForSolrCloud" + (index + 1).to_s, type: "shell", 
+      path: "./setup-krb-principal.sh", args: "-i #{node} -p 'zookeeper' -q 'HTTP' -v #{OUTPUT_VERBOSITY} -w 'password' -k"
+    }
+    
+    krb.vm.provision "addDataverseUserPrincipal", type: "shell",
+      inline: "kadmin.local -q \"addprinc -pw password dataverse_user\""
+  end
+
+  (1..STATIC_IP_SOLRCLOUD.length).each do |i|
+    config.vm.define "solrcloud#{i}" do |solr|
+      solr.vm.hostname = "solrcloud#{i}"
+      solr.vm.box = "puppetlabs/centos-6.6-64-puppet"
+      solr.vm.network "private_network", ip: STATIC_IP_SOLRCLOUD[(i-1)]
+      
+      #solr.vm.provision "killFirewall", type: "shell", inline: "service iptables stop"
+      solr.vm.provision "installKerberos", type: "shell", 
+        path: "./install-krbGateway.sh", args:  [ "-k",STATIC_IP_KRBKDC,"-v",OUTPUT_VERBOSITY ]
+      solr.vm.provision "installZookeeperService", type: "shell",
+        path: "../install-zookeeper-service.sh",
+        args: [ "-e",ZOOKEEPER_CFG,"-i","#{i}","-v",OUTPUT_VERBOSITY ]
+      solr.vm.provision "zookeeperKeytab", type: "shell", 
+        inline: "cp /vagrant/zookeeper-" + STATIC_IP_SOLRCLOUD[(i-1)] + ".keytab /etc/zookeeper/conf/zookeeper.keytab; rm /vagrant/zookeeper-" + STATIC_IP_SOLRCLOUD[(i-1)] + ".keytab; chown zookeeper:zookeeper /etc/zookeeper/conf/zookeeper.keytab; chmod 0600 /etc/zookeeper/conf/zookeeper.keytab"
+      solr.vm.provision "enableZookeeperKerberos", type: "shell",
+        path: "./enable-kerberos-onZookeeper.sh",
+        args: [ "-i",STATIC_IP_SOLRCLOUD[(i-1)],"-k",ZOOKEEPER_KEYTAB_PATH,"-v",OUTPUT_VERBOSITY ]
+      solr.vm.provision "installSolrService", type: "shell",
+        path: "../install-solr-service.sh", 
+        args: "-s #{SOLR_VERSION} -v #{OUTPUT_VERBOSITY} -x " + STATIC_IP_SOLRCLOUD[(i-1)] + " -i #{SOLR_INSTALL_DIR}"
+      solr.vm.provision "solrKeytab", type: "shell", 
+        inline: "cp /vagrant/solr-" + STATIC_IP_SOLRCLOUD[(i-1)] + ".keytab /var/solr/solr.keytab; rm /vagrant/solr-" + STATIC_IP_SOLRCLOUD[(i-1)] + ".keytab; chown solr:solr /var/solr/solr.keytab; chmod 0600 /var/solr/solr.keytab"
+      solr.vm.provision "enableSolrKerberos", type: "shell",
+        path: "./enable-kerberos-onSolr.sh",
+        args: [ "-i",STATIC_IP_SOLRCLOUD[(i-1)],"-k",SOLR_KEYTAB_PATH,"-v",OUTPUT_VERBOSITY ]
+
+      if (ENABLE_TLS_ON_SOLR != 0)
+        solr.vm.provision "setupTLS", type: "shell", 
+          path: "../setup-tls-solr.sh",
+          args: "-k #{KEYSTORE_PATH} -p #{KEYSTORE_PASSWORD} -v #{OUTPUT_VERBOSITY} -w #{TRUSTSTORE_PASSWORD} -x " + STATIC_IP_SOLRCLOUD[(i-1)]
+        solr.vm.provision "enableTLSonSolr", type: "shell", 
+          path: "../enable-tls-onSolr.sh",
+          args: "-k #{KEYSTORE_PATH} -p #{KEYSTORE_PASSWORD} -t #{TRUSTSTORE_PATH} -v #{OUTPUT_VERBOSITY} -w #{TRUSTSTORE_PASSWORD}"
+          #args: "-k #{KEYSTORE_PATH} -p #{KEYSTORE_PASSWORD} -s -t #{TRUSTSTORE_PATH} -v #{OUTPUT_VERBOSITY} -w #{TRUSTSTORE_PASSWORD}"
+          #### Glassfish TLS client certificate configuration isn't working currently -s/-r options break the connection ####
+      end
+      solr.vm.provision "enableSolrCloud", type: "shell", path: "../setup-solrCloud.sh",
+        args: [ "-e",ZOOKEEPER_ENSEMBLE,"-v",OUTPUT_VERBOSITY ]
+      
+      #### Only the last solrCloud node to provision will do the following ####  
+      if ( i == STATIC_IP_SOLRCLOUD.length ) 
+        solr.vm.provision "createSolrZnode", type: "shell",
+          path: "../setup-solr-znode.sh", 
+          args: [ "-e",ZOOKEEPER_ENSEMBLE,"-i",SOLR_INSTALL_DIR,"-t",ENABLE_TLS_ON_SOLR,"-v",OUTPUT_VERBOSITY ]
+
+        solr.vm.provision "enableSolrCloudKerberos", type: "shell",
+          inline: "#{SOLR_INSTALL_DIR}/solr/server/scripts/cloud-scripts/zkcli.sh -zkhost #{ZOOKEEPER_ENSEMBLE}/solr -cmd put /security.json '{\"authentication\":{\"class\": \"org.apache.solr.security.KerberosPlugin\"}}'"
+
+        addTrustCmd = ''
+        STATIC_IP_SOLRCLOUD.each_with_index { |node,index|
+          if (ENABLE_TLS_ON_SOLR != 0)
+            if (node != STATIC_IP_SOLRCLOUD.last)
+              addTrustCmd << "ssh  -o StrictHostKeyChecking=no -i /vagrant/.vagrant/machines/solrcloud" + (index + 1).to_s + "/virtualbox/private_key vagrant@#{node} 'sudo cp /vagrant/dataverse_truststore.jks #{TRUSTSTORE_PATH} ; sudo service solr restart' ; "
+            else
+              addTrustCmd << "cp /vagrant/dataverse_truststore.jks #{TRUSTSTORE_PATH} ; service solr restart ; "
+            end
+          else
+            if (node != STATIC_IP_SOLRCLOUD.last)
+              addTrustCmd << "ssh  -o StrictHostKeyChecking=no -i /vagrant/.vagrant/machines/solrcloud" + (index + 1).to_s + "/virtualbox/private_key vagrant@#{node} 'sudo service solr restart' ; "
+            else
+              addTrustCmd << "service solr restart ; "
+            end
+          end
+        }
+        solr.vm.provision "addTrustRestartSolr", type: "shell", inline: addTrustCmd
+
+        solr.vm.provision "createDataverseCollection", type: "shell", 
+          path: "../setup-dvcollection.sh", 
+          args: "-c '#{DVCOLLECTION_NAME}' -i #{SOLR_INSTALL_DIR} -v #{OUTPUT_VERBOSITY} -r " + STATIC_IP_SOLRCLOUD.length.to_s + " -s 1"
+
+          #### args: "-c '#{DVCOLLECTION_NAME}' -i #{SOLR_INSTALL_DIR} -v #{OUTPUT_VERBOSITY} -r " + STATIC_IP_SOLRCLOUD.length.to_s + " -s " + STATIC_IP_SOLRCLOUD.length.to_s
+        #### There is currently a weird bug when querying dataverse on a collection that is sharded! use -s 1 ####
+      end
+    end
+  end
+
+  config.vm.define "dataverse", primary: true do |dataverse|
+    dataverse.vm.hostname = "dataverse"
+    dataverse.vm.box = "puppetlabs/centos-6.6-64-puppet"
+    dataverse.vm.network "private_network", ip: STATIC_IP_DATAVERSE
+    
+    unless defined? mailserver
+      mailserver = "localhost"
+      if ENV['MAIL_SERVER'].nil?
+        puts "MAIL_SERVER environment variable not specified. Using #{mailserver} by default.\nTo specify it in bash: export MAIL_SERVER=localhost"
+      else
+        mailserver = ENV['MAIL_SERVER']
+        puts "MAIL_SERVER environment variable found, using #{mailserver}"
+      end
+    end
+
+    #dataverse.vm.provision "killFirewall", type: "shell", inline: "service iptables stop"
+    dataverse.vm.provision "dataversePrereqs", type: "shell", 
+      path: "../setup.sh", args: "-v #{OUTPUT_VERBOSITY}"
+    dataverse.vm.provision "installKerberos", type: "shell", 
+        path: "./install-krbGateway.sh", args:  [ "-k",STATIC_IP_KRBKDC,"-v",OUTPUT_VERBOSITY ]
+    dataverse.vm.provision "dataverseKeytab", type: "shell", 
+      inline: "cp /vagrant/dataverse-#{STATIC_IP_DATAVERSE}.keytab #{DATAVERSE_HOME}/config/dataverse.keytab; rm /vagrant/dataverse-#{STATIC_IP_DATAVERSE}.keytab; chown glassfish:glassfish #{DATAVERSE_HOME}/config/dataverse.keytab; chmod 0600 #{DATAVERSE_HOME}/config/dataverse.keytab"
+    dataverse.vm.provision "configureKerberos", type: "shell", 
+        path: "./setup-dv-jaas.sh", args:  [ "-c","#{DATAVERSE_HOME}/config/login.conf","-i",STATIC_IP_DATAVERSE,"-k","#{DATAVERSE_HOME}/config/dataverse.keytab","-p","dataverse","-v",OUTPUT_VERBOSITY ]
+    
+    if (ENABLE_TLS_ON_SOLR != 0)
+      dataverse.vm.provision "addGlassfishDomainTLS", type: "shell", 
+        path: "../setup-tls-dataverse.sh",
+        args: "-v #{OUTPUT_VERBOSITY} -w #{TRUSTSTORE_PASSWORD} -x #{STATIC_IP_DATAVERSE}" 
+      dataverse.vm.provision "addTrustToGlassfishDomain", type: "shell", 
+        inline: "keytool -importkeystore -noprompt -srckeystore /vagrant/dataverse_truststore.jks -srcstorepass #{KEYSTORE_PASSWORD} -destkeystore #{DATAVERSE_HOME}/config/cacerts.jks -deststorepass changeit"
+
+      STATIC_IP_SOLRCLOUD.each_with_index { |node,index|
+        dataverse.vm.provision "remoteAddTrustRestartSolrCloud" + (index + 1).to_s, type: "shell", 
+          inline: "ssh -o StrictHostKeyChecking=no -i /vagrant/.vagrant/machines/solrcloud" + (index + 1).to_s + "/virtualbox/private_key vagrant@#{node} 'sudo cp /vagrant/dataverse_truststore.jks #{TRUSTSTORE_PATH}; sudo service solr restart'"      
+      }
+
+      dataverse.vm.provision "cleanupTmpTrustore", type: "shell", inline: "rm /vagrant/dataverse_truststore.jks"
+    end
+ 
+    dataverse.vm.provision "cleanupTmpKrb5Conf", type: "shell", inline: "rm /vagrant/krb5.conf"
+    dataverse.vm.provision "dataverseSetup", type: "shell", path: "../install-dataverse.sh",
+      args: "-c #{DVCOLLECTION_NAME} -h #{STATIC_IP_DATAVERSE} -m #{mailserver} -z '#{ZOOKEEPER_ENSEMBLE}' -u #{ENABLE_TLS_ON_SOLR} -v #{OUTPUT_VERBOSITY}"
+    dataverse.vm.provision "enableDataverseSolrJKerberos", type: "shell", 
+      path: "./enable-kerberos-onDataverse.sh", args:  [ "-v",OUTPUT_VERBOSITY,"-x",STATIC_IP_DATAVERSE ]
+
+
+    dataverse.vm.provision "dvTestUsers", type: "shell", path: "../setup-dv-test_addUsers.sh"
+    dataverse.vm.provision "dvTestPublishRoot", type: "shell", path: "../setup-dv-test_publishRoot.sh"
+    dataverse.vm.provision "dvTestSetupUserDVs", type: "shell", path: "../setup-dv-test_setupUserDVs.sh"
+  end
+
+end

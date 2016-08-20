@@ -117,8 +117,18 @@ public class SettingsServiceBean {
          *
          */
         SearchRespectPermissionRoot,
+        /** Key for selecting to use CloudSolrServer or SolrServer class */
+        useSolrCloudViaZookeeper,
+        /** Key for selecting to use TLS/SSL to communicate with the solr server */
+        useSolrViaHTTPS,
+        /** Solr hostname and port, such as "localhost:2181/solr". */
+        SolrZookeeperEnsemble,
         /** Solr hostname and port, such as "localhost:8983". */
         SolrHostColonPort,
+        /** Solr service and collection name, such as "solr". */
+        SolrServiceName,
+        /** Solr service and collection name, such as "collection1". */
+        SolrCollectionName,
         /** Key for limiting the number of bytes uploaded via the Data Deposit API, UI (web site and . */
         MaxFileUploadSizeInBytes,
         /**

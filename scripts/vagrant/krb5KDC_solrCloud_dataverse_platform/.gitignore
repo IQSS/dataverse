@@ -1,0 +1,4 @@
+*.keytab
+*.jks
+krb5.conf
+

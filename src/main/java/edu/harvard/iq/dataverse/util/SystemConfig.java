@@ -55,10 +55,26 @@ public class SystemConfig {
     private static final String PASSWORD_RESET_TIMEOUT_IN_MINUTES = "dataverse.auth.password-reset-timeout-in-minutes";
 
     /**
+     * A common place to find the String for a sane solrCloud zookeeper
+     * ensemble locator.
+     */
+    private String saneDefaultForSolrZookeeperEnsemble = "localhost:2181/solr";
+    
+    /**
      * A common place to find the String for a sane Solr hostname:port
      * combination.
      */
     private String saneDefaultForSolrHostColonPort = "localhost:8983";
+ 
+    /**
+     * A common place to find the String for a sane Solr service name
+     */
+    private String saneDefaultForSolrServiceName = "solr";
+
+    /**
+     * A common place to find the String for a sane Solr collection name
+     */
+    private String saneDefaultForSolrCollectionName = "collection1";
 
     /**
      * The default number of datafiles that we allow to be created through 
@@ -195,12 +211,50 @@ public class SystemConfig {
         return appVersionString; 
     }
 
+    private Boolean solrTLS_Enabled = null;
+    public boolean solrUsesHttps() {
+      if (solrTLS_Enabled != null) {
+        return solrTLS_Enabled;
+      }
+      boolean safeDefaultIfKeyNotFound = false;
+      solrTLS_Enabled = settingsService.isTrueForKey(SettingsServiceBean.Key.useSolrViaHTTPS, safeDefaultIfKeyNotFound);
+      return solrTLS_Enabled;
+    }
+    
+    public String getSolrUrlSchema() {
+        return (solrUsesHttps()) ? "https://" : "http://";
+    }
+            
     public String getSolrHostColonPort() {
         String solrHostColonPort = settingsService.getValueForKey(SettingsServiceBean.Key.SolrHostColonPort, saneDefaultForSolrHostColonPort);
         return solrHostColonPort;
     }
     
+    public String getSolrServiceName() {
+        String solrServiceName = settingsService.getValueForKey(SettingsServiceBean.Key.SolrServiceName, saneDefaultForSolrServiceName);
+        return solrServiceName;
+    }
+       
+    public String getSolrCollectionName() {
+        String solrCollectionName = settingsService.getValueForKey(SettingsServiceBean.Key.SolrCollectionName, saneDefaultForSolrCollectionName);
+        return solrCollectionName;
+    }
+       
+    private Boolean solrCloudZkEnabled = null;
     
+    public boolean isSolrCloudZookeeperEnabled() {
+      if (solrCloudZkEnabled != null) {
+        return solrCloudZkEnabled;
+      }
+      boolean safeDefaultIfKeyNotFound = false;
+      solrCloudZkEnabled = settingsService.isTrueForKey(SettingsServiceBean.Key.useSolrCloudViaZookeeper, safeDefaultIfKeyNotFound);
+      return solrCloudZkEnabled;
+    }
+    
+    public String getSolrZookeeperEnsemble() {
+        String solrZookeeperEnsemble = settingsService.getValueForKey(SettingsServiceBean.Key.SolrZookeeperEnsemble, saneDefaultForSolrZookeeperEnsemble);
+        return solrZookeeperEnsemble;
+    }
     
     /**
      * The number of minutes for which a password reset token is valid. Can be

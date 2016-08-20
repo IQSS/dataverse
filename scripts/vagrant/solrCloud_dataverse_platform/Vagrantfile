@@ -1,0 +1,189 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
+VAGRANTFILE_API_VERSION = "2"
+
+unless defined? OUTPUT_VERBOSITY
+  # Output Verbosity 0..3 least..most
+  if ENV['OUTPUT_VERBOSITY'].nil?
+    OUTPUT_VERBOSITY = '3'
+  else
+    OUTPUT_VERBOSITY = ENV['OUTPUT_VERBOSITY']
+  end
+end
+
+unless defined? STATIC_IP_DATAVERSE 
+  STATIC_IP_DATAVERSE = "192.168.30.20"
+end
+
+unless defined? STATIC_IP_SOLRCLOUD 
+  STATIC_IP_SOLRCLOUD = ["192.168.30.11","192.168.30.12","192.168.30.13"]
+end
+
+unless defined? ZOOKEEPER_ENSEMBLE
+  ZOOKEEPER_ENSEMBLE = STATIC_IP_SOLRCLOUD.join(":2181,") + ":2181"
+end
+
+unless defined? ZOOKEEPER_CFG
+  ZOOKEEPER_CFG = ''
+  STATIC_IP_SOLRCLOUD.each_with_index { |node,index|
+    ZOOKEEPER_CFG << "server." + (index + 1).to_s + "=#{node}:2888:3888\n"
+  }
+end
+
+unless defined? SOLR_VERSION
+  SOLR_VERSION = '5.4.1'
+end
+
+unless defined? SOLR_INSTALL_DIR
+  SOLR_INSTALL_DIR = '/opt'
+end
+
+unless defined? ENABLE_TLS_ON_SOLR
+  # Set this to non-zero to configure the solr service to use TLS/SSL
+  if ENV['ENABLE_TLS_ON_SOLR'].nil?
+    ENABLE_TLS_ON_SOLR = 0
+  else
+    ENABLE_TLS_ON_SOLR = ENV['ENABLE_TLS_ON_SOLR']
+  end
+end
+
+unless defined? KEYSTORE_PATH
+  KEYSTORE_PATH = '/etc/pki/java/dataverse_keystore.jks'
+end
+
+unless defined? KEYSTORE_PASSWORD
+  KEYSTORE_PASSWORD = 'dataverse'
+end
+
+unless defined? TRUSTSTORE_PATH
+  TRUSTSTORE_PATH = '/etc/pki/java/dataverse_truststore.jks'
+end
+
+unless defined? TRUSTSTORE_PASSWORD
+  TRUSTSTORE_PASSWORD = 'dataverse'
+end
+
+unless defined? DVCOLLECTION_NAME
+  DVCOLLECTION_NAME = 'dvcollection'
+end
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+
+  config.vm.provider "virtualbox" do |v|
+    v.memory = 2048
+    v.cpus = 1
+  end
+
+  (1..STATIC_IP_SOLRCLOUD.length).each do |i|
+    config.vm.define "solrcloud#{i}" do |solr|
+      solr.vm.hostname = "solrcloud#{i}"
+      solr.vm.box = "puppetlabs/centos-6.6-64-puppet"
+      solr.vm.network "private_network", ip: STATIC_IP_SOLRCLOUD[(i-1)]
+      solr.vm.synced_folder "../../../", "/dataverse"
+
+      solr.vm.provision "killFirewall", type: "shell", inline: "service iptables stop"
+      solr.vm.provision "installZookeeperService", type: "shell",
+        path: "../install-zookeeper-service.sh",
+        args: [ "-e",ZOOKEEPER_CFG,"-i","#{i}","-v",OUTPUT_VERBOSITY ]
+      solr.vm.provision "installSolrService", type: "shell",
+        path: "../install-solr-service.sh", 
+        args: "-s #{SOLR_VERSION} -v #{OUTPUT_VERBOSITY} -x " + STATIC_IP_SOLRCLOUD[(i-1)] + " -i #{SOLR_INSTALL_DIR}"
+      if (ENABLE_TLS_ON_SOLR != 0)
+        solr.vm.provision "setupTLS", type: "shell", 
+          path: "../setup-tls-solr.sh",
+          args: "-k #{KEYSTORE_PATH} -p #{KEYSTORE_PASSWORD} -v #{OUTPUT_VERBOSITY} -w #{TRUSTSTORE_PASSWORD} -x " + STATIC_IP_SOLRCLOUD[(i-1)]
+        solr.vm.provision "enableTLSonSolr", type: "shell", 
+          path: "../enable-tls-onSolr.sh",
+          args: "-k #{KEYSTORE_PATH} -p #{KEYSTORE_PASSWORD} -t #{TRUSTSTORE_PATH} -v #{OUTPUT_VERBOSITY} -w #{TRUSTSTORE_PASSWORD}"
+          #args: "-k #{KEYSTORE_PATH} -p #{KEYSTORE_PASSWORD} -s -t #{TRUSTSTORE_PATH} -v #{OUTPUT_VERBOSITY} -w #{TRUSTSTORE_PASSWORD}"
+          #### Glassfish TLS client certificate configuration isn't working currently -s/-r options break the connection ####
+      end
+      solr.vm.provision "enableSolrCloud", type: "shell", path: "../setup-solrCloud.sh",
+        args: [ "-e",ZOOKEEPER_ENSEMBLE,"-v",OUTPUT_VERBOSITY ]
+      if ( i == STATIC_IP_SOLRCLOUD.length )
+        solr.vm.provision "createSolrZnode", type: "shell",
+          path: "../setup-solr-znode.sh", 
+          args: [ "-e",ZOOKEEPER_ENSEMBLE,"-i",SOLR_INSTALL_DIR,"-t",ENABLE_TLS_ON_SOLR,"-v",OUTPUT_VERBOSITY ]
+
+        addTrustCmd = ''
+        STATIC_IP_SOLRCLOUD.each_with_index { |node,index|
+          if (ENABLE_TLS_ON_SOLR != 0)
+            if (node != STATIC_IP_SOLRCLOUD.last)
+              addTrustCmd << "ssh  -o StrictHostKeyChecking=no -i /vagrant/.vagrant/machines/solrcloud" + (index + 1).to_s + "/virtualbox/private_key vagrant@#{node} 'sudo cp /vagrant/dataverse_truststore.jks #{TRUSTSTORE_PATH} ; sudo service solr restart' ; "
+            else
+              addTrustCmd << "cp /vagrant/dataverse_truststore.jks #{TRUSTSTORE_PATH} ; service solr restart ; "
+            end
+          else
+            if (node != STATIC_IP_SOLRCLOUD.last)
+              addTrustCmd << "ssh  -o StrictHostKeyChecking=no -i /vagrant/.vagrant/machines/solrcloud" + (index + 1).to_s + "/virtualbox/private_key vagrant@#{node} 'sudo service solr restart' ; "
+            else
+              addTrustCmd << "service solr restart ; "
+            end
+          end
+        }
+        solr.vm.provision "addTrustRestartSolr", type: "shell", inline: addTrustCmd
+
+        if ((! ENV['TestSharding'].nil?) && (ENV['TestSharding'] != 0))
+          #### There is currently a weird bug when querying dataverse on a collection that is sharded! use -s 1 ####
+          solr.vm.provision "createDataverseCollection", type: "shell", 
+            path: "../setup-dvcollection.sh", 
+            args: "-c '#{DVCOLLECTION_NAME}' -i #{SOLR_INSTALL_DIR} -v #{OUTPUT_VERBOSITY} -r " + STATIC_IP_SOLRCLOUD.length.to_s + " -s " + STATIC_IP_SOLRCLOUD.length.to_s
+        else
+          solr.vm.provision "createDataverseCollection", type: "shell", 
+            path: "../setup-dvcollection.sh", 
+            args: "-c '#{DVCOLLECTION_NAME}' -i #{SOLR_INSTALL_DIR} -v #{OUTPUT_VERBOSITY} -r " + STATIC_IP_SOLRCLOUD.length.to_s + " -s 1"
+        end
+      end
+    end
+  end
+
+  config.vm.define "dataverse", primary: true do |dataverse|
+    dataverse.vm.hostname = "dataverse"
+    dataverse.vm.box = "puppetlabs/centos-6.6-64-puppet"
+    dataverse.vm.network "private_network", ip: STATIC_IP_DATAVERSE
+    dataverse.vm.synced_folder "../../../", "/dataverse"
+
+    unless defined? mailserver
+      mailserver = "localhost"
+      if ENV['MAIL_SERVER'].nil?
+        puts "MAIL_SERVER environment variable not specified. Using #{mailserver} by default.\nTo specify it in bash: export MAIL_SERVER=localhost"
+      else
+        mailserver = ENV['MAIL_SERVER']
+        puts "MAIL_SERVER environment variable found, using #{mailserver}"
+      end
+    end
+
+    dataverse.vm.provision "dataversePrereqs", type: "shell", 
+      path: "../setup.sh", args: "-v #{OUTPUT_VERBOSITY}"
+    dataverse.vm.provision "killFirewall", type: "shell", inline: "service iptables stop"
+
+    if (ENABLE_TLS_ON_SOLR != 0)
+      dataverse.vm.provision "addGlassfishDomainTLS", type: "shell", 
+        path: "../setup-tls-dataverse.sh",
+        args: "-v #{OUTPUT_VERBOSITY} -w #{TRUSTSTORE_PASSWORD} -x #{STATIC_IP_DATAVERSE}" 
+      dataverse.vm.provision "addTrustToGlassfishDomain", type: "shell", 
+        inline: "keytool -importkeystore -noprompt -srckeystore /vagrant/dataverse_truststore.jks -srcstorepass #{KEYSTORE_PASSWORD} -destkeystore ~glassfish/glassfish4/glassfish/domains/domain1/config/cacerts.jks -deststorepass changeit"
+
+      STATIC_IP_SOLRCLOUD.each_with_index { |node,index|
+        dataverse.vm.provision "remoteAddTrustRestartSolr", type: "shell", 
+          inline: "ssh -o StrictHostKeyChecking=no -i /vagrant/.vagrant/machines/solrcloud" + (index + 1).to_s + "/virtualbox/private_key vagrant@#{node} 'sudo cp /vagrant/dataverse_truststore.jks #{TRUSTSTORE_PATH}; sudo service solr restart'"      
+      }
+
+      dataverse.vm.provision "cleanupTmpTrustore", type: "shell", inline: "rm /vagrant/dataverse_truststore.jks"
+    end
+ 
+    dataverse.vm.provision "dataverseSetup", type: "shell", path: "../install-dataverse.sh",
+      args: "-c #{DVCOLLECTION_NAME} -h #{STATIC_IP_DATAVERSE} -m #{mailserver} -z '#{ZOOKEEPER_ENSEMBLE}' -u #{ENABLE_TLS_ON_SOLR} -v #{OUTPUT_VERBOSITY}"
+
+
+    dataverse.vm.provision "dvTestUsers", type: "shell", 
+      path: "../setup-dv-test_addUsers.sh", args: "#{STATIC_IP_DATAVERSE}"
+    dataverse.vm.provision "dvTestPublishRoot", type: "shell", 
+      path: "../setup-dv-test_publishRoot.sh", args: "#{STATIC_IP_DATAVERSE}"
+    dataverse.vm.provision "dvTestSetupUserDVs", type: "shell", 
+      path: "../setup-dv-test_setupUserDVs.sh", args: "#{STATIC_IP_DATAVERSE}"
+  end
+
+end

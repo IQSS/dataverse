@@ -42,9 +42,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       v.memory = 2048
       v.cpus = 1
     end
-    config.vm.provision "shell", path: "scripts/vagrant/setup.sh"
-    config.vm.provision "shell", path: "scripts/vagrant/setup-solr.sh"
-    config.vm.provision "shell", path: "scripts/vagrant/install-dataverse.sh", args: mailserver
+    config.vm.provision "setupPrereqs", type: "shell", path: "scripts/vagrant/setup.sh", args: "-v 3"
+    config.vm.provision "setupSolr", type: "shell", path: "scripts/vagrant/setup-solr.sh"
+    config.vm.provision "installDataverse", type: "shell", path: "scripts/vagrant/install-dataverse.sh", args: "-m #{mailserver} -v 3"
     # FIXME: get tests working and re-enable them!
     #config.vm.provision "shell", path: "scripts/vagrant/test.sh"
 

@@ -1,0 +1,78 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
+VAGRANTFILE_API_VERSION = "2"
+
+unless defined? STATIC_IP_SOLR 
+  STATIC_IP_SOLR = "192.168.10.10"
+end
+
+unless defined? STATIC_IP_DATAVERSE 
+  STATIC_IP_DATAVERSE = "192.168.10.20"
+end
+
+unless defined? OUTPUT_VERBOSITY
+  # Output Verbosity 0..3 least..most
+  if ENV['OUTPUT_VERBOSITY'].nil?
+    OUTPUT_VERBOSITY = '3'
+  else
+    OUTPUT_VERBOSITY = ENV['OUTPUT_VERBOSITY']
+  end
+end
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+
+  config.vm.provider "virtualbox" do |v|
+    v.memory = 2048
+    v.cpus = 1
+  end
+
+  config.vm.define "solr" do |solr|
+    solr.vm.hostname = "solr"
+    solr.vm.box = "puppetlabs/centos-6.6-64-puppet"
+    solr.vm.network "private_network", ip: STATIC_IP_SOLR
+    solr.vm.synced_folder "../../../", "/dataverse"
+    
+    unless defined? SOLR_VERSION
+      SOLR_VERSION = '4.6.0'
+    end
+    
+    solr.vm.provision "installSolr", type: "shell",
+      path: "./install-solr.sh", args: "-s #{SOLR_VERSION} -v #{OUTPUT_VERBOSITY}"
+    solr.vm.provision "killFirewall", type: "shell", inline: "service iptables stop"
+
+  end
+
+  config.vm.define "dataverse", primary: true do |dataverse|
+    dataverse.vm.hostname = "dataverse"
+    dataverse.vm.box = "puppetlabs/centos-6.6-64-puppet"
+    dataverse.vm.network "private_network", ip: STATIC_IP_DATAVERSE
+    dataverse.vm.synced_folder "../../../", "/dataverse"
+
+    unless defined? mailserver
+      mailserver = "localhost"
+      if ENV['MAIL_SERVER'].nil?
+        puts "MAIL_SERVER environment variable not specified. Using #{mailserver} by default.\nTo specify it in bash: export MAIL_SERVER=localhost"
+      else
+        mailserver = ENV['MAIL_SERVER']
+        puts "MAIL_SERVER environment variable found, using #{mailserver}"
+      end
+    end
+
+    dataverse.vm.provision "dataversePrereqs", type: "shell",
+      path: "../setup.sh", args: "-v #{OUTPUT_VERBOSITY}"
+    dataverse.vm.provision "killFirewall", type: "shell", inline: "service iptables stop"
+    dataverse.vm.provision "dataverseSetup", type: "shell", path: "../install-dataverse.sh",
+      args: "-c collection1 -h #{STATIC_IP_DATAVERSE} -m #{mailserver} -s #{STATIC_IP_SOLR} -v #{OUTPUT_VERBOSITY}"
+
+
+    dataverse.vm.provision "dvTestUsers", type: "shell", 
+      path: "../setup-dv-test_addUsers.sh", args: "#{STATIC_IP_DATAVERSE}"
+    dataverse.vm.provision "dvTestPublishRoot", type: "shell", 
+      path: "../setup-dv-test_publishRoot.sh", args: "#{STATIC_IP_DATAVERSE}"
+    dataverse.vm.provision "dvTestSetupUserDVs", type: "shell", 
+      path: "../setup-dv-test_setupUserDVs.sh", args: "#{STATIC_IP_DATAVERSE}"
+  end
+
+end

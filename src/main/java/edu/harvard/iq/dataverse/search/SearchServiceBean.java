@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,10 +44,11 @@ import javax.inject.Named;
 import javax.persistence.NoResultException;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrQuery.SortClause;
-import org.apache.solr.client.solrj.SolrServer;
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.HttpSolrServer;
-import org.apache.solr.client.solrj.impl.HttpSolrServer.RemoteSolrException;
+import org.apache.solr.client.solrj.impl.CloudSolrClient;
+import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.impl.HttpSolrClient.RemoteSolrException;
 import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.RangeFacet;
@@ -85,11 +87,17 @@ public class SearchServiceBean {
     SystemConfig systemConfig;
 
     public static final JsfHelper JH = new JsfHelper();
-    private SolrServer solrServer;
+    private SolrClient solrServer;
     
     @PostConstruct
     public void init(){
-        solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
+        if (systemConfig.isSolrCloudZookeeperEnabled()) {
+            solrServer = new CloudSolrClient(systemConfig.getSolrZookeeperEnsemble());
+            ((CloudSolrClient)solrServer).setDefaultCollection(systemConfig.getSolrCollectionName());
+            ((CloudSolrClient)solrServer).connect();
+        }else{
+            solrServer = new HttpSolrClient(systemConfig.getSolrUrlSchema() + systemConfig.getSolrHostColonPort() + "/" + systemConfig.getSolrServiceName() + "/" + systemConfig.getSolrCollectionName());
+        }
     }
     
     @PreDestroy
@@ -306,7 +314,7 @@ public class SearchServiceBean {
         QueryResponse queryResponse;
         try {
             queryResponse = solrServer.query(solrQuery);
-        } catch (RemoteSolrException ex) {
+        } catch (RemoteSolrException | IOException ex) {
             String messageFromSolr = ex.getLocalizedMessage();
             String error = "Search Syntax Error: ";
             String stringToHide = "org.apache.solr.search.SyntaxError: ";
