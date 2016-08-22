@@ -294,11 +294,6 @@ public class HarvestingClientsPage implements java.io.Serializable {
             try {
                 harvestingClientService.setDeleteInProgress(selectedClient.getId());
                 
-                // if this was a scheduled harvester, make sure the timer is deleted:
-                dataverseTimerService.removeHarvestTimer(selectedClient);
-                
-                // purge indexed objects:
-                indexService.deleteHarvestedDocuments(selectedClient);
                 //engineService.submit(new DeleteHarvestingClientCommand(dvRequestService.getDataverseRequest(), selectedClient));
                 harvestingClientService.deleteClient(selectedClient.getId());
                 JsfHelper.addInfoMessage(JH.localize("harvestclients.tab.header.action.delete.infomessage"));
