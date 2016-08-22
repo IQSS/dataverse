@@ -51,6 +51,9 @@ import javax.xml.stream.XMLStreamWriter;
 public class DdiExportUtil {
 
     private static final Logger logger = Logger.getLogger(DdiExportUtil.class.getCanonicalName());
+    
+    public static final String NOTE_TYPE_CONTENTTYPE = "DATAVERSE:CONTENTTYPE";
+    public static final String NOTE_SUBJECT_CONTENTTYPE = "Content/MIME Type";
 
     public static String datasetDtoAsJson2ddi(String datasetDtoAsJson) {
         logger.fine(JsonUtil.prettyPrint(datasetDtoAsJson));
@@ -1049,6 +1052,18 @@ public class DdiExportUtil {
                 xmlw.writeCharacters(fileDTo.getDataFile().getFilename());
                 xmlw.writeEndElement(); // labl
                 writeFileDescription(xmlw, fileDTo);
+                // there's no readily available field in the othermat section 
+                // for the content type (aka mime type); so we'll store it in this
+                // specially formatted notes section:
+                String contentType = fileDTo.getDataFile().getContentType();
+                if (!StringUtilisEmpty(contentType)) {
+                    xmlw.writeStartElement("notes");
+                    writeAttribute(xmlw, "level", LEVEL_FILE);
+                    writeAttribute(xmlw, "type", NOTE_TYPE_CONTENTTYPE);
+                    writeAttribute(xmlw, "subject", NOTE_SUBJECT_CONTENTTYPE);
+                    xmlw.writeCharacters(contentType);
+                    xmlw.writeEndElement(); // notes
+                }
                 xmlw.writeEndElement(); // otherMat
             }
         }
@@ -1084,6 +1099,18 @@ public class DdiExportUtil {
                     xmlw.writeStartElement("txt");
                     xmlw.writeCharacters(description);
                     xmlw.writeEndElement(); // txt
+                }
+                // there's no readily available field in the othermat section 
+                // for the content type (aka mime type); so we'll store it in this
+                // specially formatted notes section:
+                String contentType = fileMetadata.getDataFile().getContentType();
+                if (!StringUtilisEmpty(contentType)) {
+                    xmlw.writeStartElement("notes");
+                    writeAttribute(xmlw, "level", LEVEL_FILE);
+                    writeAttribute(xmlw, "type", NOTE_TYPE_CONTENTTYPE);
+                    writeAttribute(xmlw, "subject", NOTE_SUBJECT_CONTENTTYPE);
+                    xmlw.writeCharacters(contentType);
+                    xmlw.writeEndElement(); // notes
                 }
                 xmlw.writeEndElement(); // otherMat
             }

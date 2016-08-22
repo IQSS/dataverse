@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.api.dto.*;
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
 import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
 import edu.harvard.iq.dataverse.api.imports.ImportUtil.ImportType;
+import static edu.harvard.iq.dataverse.export.ddi.DdiExportUtil.NOTE_TYPE_CONTENTTYPE;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.File;
 import java.io.FileInputStream;
@@ -1587,8 +1588,13 @@ public class ImportDDIServiceBean {
                         } else if ("id".equalsIgnoreCase(subjectType)) {
                             icpsrId = parseText(xmlr);
                         }
+                    } else if (NOTE_TYPE_CONTENTTYPE.equalsIgnoreCase(noteType)) {
+                        String contentType = parseText(xmlr);
+                        if (!StringUtil.isEmpty(contentType)) {
+                            dfDTO.setContentType(contentType);
+                        }
                     }
-                }
+                } 
             } else if (event == XMLStreamConstants.END_ELEMENT) {// </codeBook>
                 if (xmlr.getLocalName().equals("otherMat")) {
                     // post process
@@ -1652,7 +1658,7 @@ public class ImportDDIServiceBean {
                         } else if ("id".equalsIgnoreCase(subjectType)) {
                             icpsrId = parseText(xmlr);
                         }
-                    }
+                    } 
                 }
             } else if (event == XMLStreamConstants.END_ELEMENT) {// </codeBook>
                 if (xmlr.getLocalName().equals("fileDscr")) {
@@ -1709,22 +1715,30 @@ public class ImportDDIServiceBean {
                     fmdDTO.setLabel( parseText(xmlr) );
                     /*sf.setFileType( FileUtil.determineFileType( fmdDTO.getLabel() ) );*/
 
+                } else if (xmlr.getLocalName().equals("fileType")) {
+                    String contentType = parseText(xmlr);
+                    if (!StringUtil.isEmpty(contentType)) {
+                        dfDTO.setContentType(contentType);
+                    }
                 } else if (xmlr.getLocalName().equals("fileCont")) {
                     fmdDTO.setDescription( parseText(xmlr) );
                 }  else if (xmlr.getLocalName().equals("dimensns")) processDimensns(xmlr, dtDTO);
             } else if (event == XMLStreamConstants.END_ELEMENT) {
                 if (xmlr.getLocalName().equals("fileTxt")) {
-                    // Now is the good time to determine the type of this subsettable
-                    // file (now that the "<dimensns>" section has been parsed, we 
-                    // should know whether it's a tab, or a fixed field:
-                    String subsettableFileType = "application/octet-stream"; // better this than nothing!
-                    if ( dtDTO.getRecordsPerCase() != null )  {
-                        subsettableFileType="text/x-fixed-field";
-                    } else {
-                        subsettableFileType="text/tab-separated-values";
-                    }        
+                    // If we still don't know the content type of this file 
+                    // (i.e., if there was no "<fileType>" tag explicitly specifying
+                    // the type), we can try and make an educated guess. We already 
+                    // now that this is a subsettable file. And now that the 
+                    // "<dimensns>" section has been parsed, we can further  
+                    // decide if it's a tab, or a fixed field:
+                    if (StringUtil.isEmpty(dfDTO.getContentType())) {
+                        String subsettableFileType = "text/tab-separated-values";
+                        if (dtDTO.getRecordsPerCase() != null) {
+                            subsettableFileType = "text/x-fixed-field";
+                        }
+                    }
                     //EMK TODO: ask Gustavo & Leonid what should be used here instead of setFileType
-              //      dfDTO.setFileType( subsettableFileType );
+                    // dfDTO.setFileType( subsettableFileType );
                     
                     return ddiFileId;
                 }
