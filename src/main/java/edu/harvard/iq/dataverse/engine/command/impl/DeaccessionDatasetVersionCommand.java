@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.ResourceBundle;
+import java.util.logging.Logger;
 
 /**
  *
@@ -27,6 +28,7 @@ import java.util.ResourceBundle;
 @RequiredPermissions(Permission.PublishDataset)
 public class DeaccessionDatasetVersionCommand extends AbstractCommand<DatasetVersion> {
 
+   private static final Logger logger = Logger.getLogger(DeaccessionDatasetVersionCommand.class.getCanonicalName());
 
    final DatasetVersion theVersion;
    final boolean deleteDOIIdentifier;
@@ -43,12 +45,14 @@ public class DeaccessionDatasetVersionCommand extends AbstractCommand<DatasetVer
         Dataset ds = theVersion.getDataset();        
 
         theVersion.setVersionState(DatasetVersion.VersionState.DEACCESSIONED);
-        
+
+        logger.fine("deleteDOIIdentifier=" + deleteDOIIdentifier);
         if (deleteDOIIdentifier) {
             String nonNullDefaultIfKeyNotFound = "";
             String    protocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
             IdServiceBean idServiceBean = IdServiceBean.getBean(ctxt);
 
+            logger.fine("protocol=" + protocol);
             if (protocol.equals("doi")) {
                 try {
                     idServiceBean.deleteIdentifier(ds);
