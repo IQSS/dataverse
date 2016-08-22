@@ -34,7 +34,7 @@ body .ui-widget {font-size: inherit;}
 #navbarFixed li.dropdown.open > span.dropdown-toggle {background-color: #e7e7e7;}
 
 #footer {margin-top:3em; padding-bottom:4em; color:#808080;}
-#footer.widget-view {position:fixed; left:0px; bottom:0px; margin:0; padding:4px 0 0 0; height:44px; width:100%; background:#fff;}
+#footer.widget-view {position:fixed; left:0px; bottom:0px; margin:0; padding:4px 0 0 0; min-height:44px; width:100%; background:#fff;}
 #footer span.socicon-twitter {color:#55acee; font-size:1.3em; vertical-align: top;}
 #footer span.socicon-github {color:#000; font-size:1.3em; vertical-align: top;}
 #footer .poweredbylogo {text-align:right;}

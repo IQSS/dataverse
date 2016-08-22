@@ -9,6 +9,7 @@ https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPConfiguration
 -->
 
 <SPConfig xmlns="urn:mace:shibboleth:2.0:native:sp:config" xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata"
+    xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
     clockSkew="1800">
 
     <!-- FIXME: change the entityID to your hostname. -->
@@ -54,6 +55,23 @@ https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPConfiguration
         <!-- Loads and trusts a metadata file that describes only the Testshib IdP and how to communicate with it. -->
         <!-- IdPs we want allow go in /etc/shibboleth/dataverse-idp-metadata.xml -->
         <MetadataProvider type="XML" file="dataverse-idp-metadata.xml" backingFilePath="local-idp-metadata.xml" legacyOrgNames="true" reloadInterval="7200"/>
+        <!-- Uncomment to enable all the Research & Scholarship IdPs from InCommon -->
+        <!--
+        <MetadataProvider type="XML" url="http://md.incommon.org/InCommon/InCommon-metadata.xml" backingFilePath="InCommon-metadata.xml" maxRefreshDelay="3600">
+            <DiscoveryFilter type="Whitelist" matcher="EntityAttributes">
+                <saml:Attribute
+                    Name="http://macedir.org/entity-category-support"
+                    NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri">
+                    <saml:AttributeValue>http://id.incommon.org/category/research-and-scholarship</saml:AttributeValue>
+                </saml:Attribute>
+                <saml:Attribute
+                    Name="http://macedir.org/entity-category-support"
+                    NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri">
+                    <saml:AttributeValue>http://refeds.org/category/research-and-scholarship</saml:AttributeValue>
+                </saml:Attribute>
+            </DiscoveryFilter>
+        </MetadataProvider>
+        -->
 
         <!-- Attribute and trust options you shouldn't need to change. -->
         <AttributeExtractor type="XML" validate="true" path="attribute-map.xml"/>
