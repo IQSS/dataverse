@@ -153,6 +153,7 @@ public class HarvesterServiceBean {
         Logger hdLogger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean." + harvestingDataverse.getAlias() + logTimestamp);
         String logFileName = "../logs" + File.separator + "harvest_" + harvestingClientConfig.getName() + logTimestamp + ".log";
         FileHandler fileHandler = new FileHandler(logFileName);
+        hdLogger.setUseParentHandlers(false);
         hdLogger.addHandler(fileHandler);
         List<Long> harvestedDatasetIds = null;
 

@@ -327,7 +327,7 @@ public class IndexServiceBean {
                 List<String> allFilesForDataset = findFilesOfParentDataset(dataset.getId());
                 solrIdsOfFilesToDelete.addAll(allFilesForDataset);
             } catch (SearchException | NullPointerException ex) {
-                logger.info("could not run search of files to delete: " + ex);
+                logger.fine("could not run search of files to delete: " + ex);
             }
             int numFiles = 0;
             if (fileMetadatas != null) {

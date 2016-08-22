@@ -229,10 +229,10 @@ public class OAIServlet extends HttpServlet {
                 
                 parametersBuilder = parametersBuilder.with(parameterName, parameterValue);
             }
-            logger.info("executing dataProvider.handle():");
+            logger.fine("executing dataProvider.handle():");
             
             OAIPMH handle = dataProvider.handle(parametersBuilder);
-            logger.info("executed dataProvider.handle().");
+            logger.fine("executed dataProvider.handle().");
             response.setContentType("text/xml;charset=UTF-8");
            
             if (isGetRecord(request)) {
@@ -246,19 +246,19 @@ public class OAIServlet extends HttpServlet {
             }
                        
         } catch (IOException ex) {
-            logger.info("IO exception in Get; "+ex.getMessage());
+            logger.warning("IO exception in Get; "+ex.getMessage());
             throw new ServletException ("IO Exception in Get");
         } catch (OAIException oex) {
-            logger.info("OAI exception in Get; "+oex.getMessage());
+            logger.warning("OAI exception in Get; "+oex.getMessage());
             throw new ServletException ("OAI Exception in Get");
         } catch (XMLStreamException xse) {
-            logger.info("XML Stream exception in Get; "+xse.getMessage());
+            logger.warning("XML Stream exception in Get; "+xse.getMessage());
             throw new ServletException ("XML Stream Exception in Get");
         } catch (XmlWriteException xwe) {
-            logger.info("XML Write exception in Get; "+xwe.getMessage());
+            logger.warning("XML Write exception in Get; "+xwe.getMessage());
             throw new ServletException ("XML Write Exception in Get");  
         } catch (Exception e) {
-            logger.info("Unknown exception in Get; "+e.getMessage());
+            logger.warning("Unknown exception in Get; "+e.getMessage());
             throw new ServletException ("Unknown servlet exception in Get.");
         }
         
@@ -276,7 +276,7 @@ public class OAIServlet extends HttpServlet {
 
         GetRecord getRecord = (GetRecord) handle.getVerb();
         String identifier = getRecord.getRecord().getHeader().getIdentifier();
-        logger.info("identifier from GetRecord: " + identifier);
+        logger.fine("identifier from GetRecord: " + identifier);
         
         Dataset dataset = datasetService.findByGlobalId(identifier);
         if (dataset == null) {
