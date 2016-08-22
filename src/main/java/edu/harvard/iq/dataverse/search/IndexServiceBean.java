@@ -856,7 +856,7 @@ public class IndexServiceBean {
                                     filenameWithoutExtension = "";
                                 }
                             } else {
-                                logger.info("problem with filename '" + filenameComplete + "': no extension? empty string as filename?");
+                                logger.fine("problem with filename '" + filenameComplete + "': no extension? empty string as filename?");
                                 filenameWithoutExtension = filenameComplete;
                             }
                             filenameCompleteFinal = filenameComplete;
