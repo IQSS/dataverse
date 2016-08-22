@@ -143,7 +143,7 @@ public class OAISetServiceBean implements java.io.Serializable {
         List<Long> datasetIds = null;
         try {
             datasetIds = expandSetQuery(query);
-            logger.fine("set query expanded to " + datasetIds.size() + " datasets.");
+            exportLogger.info("set query expanded to " + datasetIds.size() + " datasets.");
         } catch (OaiSetException ose) {
             datasetIds = null;
         }
@@ -152,8 +152,8 @@ public class OAISetServiceBean implements java.io.Serializable {
         // find any datasets! - This way if there are records already in the set
         // they will be properly marked as "deleted"! -- L.A. 4.5
         //if (datasetIds != null && !datasetIds.isEmpty()) {
-        logger.fine("Calling OAI Record Service to re-export " + datasetIds.size() + " datasets.");
-        oaiRecordService.updateOaiRecords(managedSet.getSpec(), datasetIds, new Date(), true);
+        exportLogger.info("Calling OAI Record Service to re-export " + datasetIds.size() + " datasets.");
+        oaiRecordService.updateOaiRecords(managedSet.getSpec(), datasetIds, new Date(), true, exportLogger);
         //}
         managedSet.setUpdateInProgress(false);
 

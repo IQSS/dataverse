@@ -307,7 +307,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
                 selectedSet = null; 
 
                 configuredHarvestingSets = oaiSetService.findAll();
-                JsfHelper.addFlashMessage("Selected harvesting set is being deleted.");
+                JsfHelper.addInfoMessage(JH.localize("harvestserver.tab.header.action.delete.infomessage"));
             } catch (Exception ex) {
                 String failMessage = "Failed to delete harvesting set; unknown exception: "+ex.getMessage();
                 JH.addMessage(FacesMessage.SEVERITY_FATAL, failMessage);

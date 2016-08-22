@@ -301,7 +301,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
                 indexService.deleteHarvestedDocuments(selectedClient);
                 //engineService.submit(new DeleteHarvestingClientCommand(dvRequestService.getDataverseRequest(), selectedClient));
                 harvestingClientService.deleteClient(selectedClient.getId());
-                JsfHelper.addFlashMessage("Selected harvesting client is being deleted.");
+                JsfHelper.addInfoMessage(JH.localize("harvestclients.tab.header.action.delete.infomessage"));
                 
             //} catch (CommandException ex) {
             //    String failMessage = "Selected harvesting client cannot be deleted.";
