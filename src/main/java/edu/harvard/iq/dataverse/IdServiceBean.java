@@ -8,7 +8,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/** TODO Property for Dataset and CommandContext. Apply to DOIDataCiteServiceBean and DOIEZIdServiceBean. Refactor PidServiceBean to match this interface? */
+/** TODO Property for Dataset and CommandContext. */
 public interface IdServiceBean {
 
     static final Logger logger = Logger.getLogger(IdServiceBean.class.getCanonicalName());
@@ -36,7 +36,7 @@ public interface IdServiceBean {
     boolean publicizeIdentifier(Dataset studyIn);
 
     static IdServiceBean getBean(String protocol, CommandContext ctxt) {
-        logger.log(Level.FINE,"getting bean");
+        logger.log(Level.FINE,"getting bean, protocol=" + protocol);
         String nonNullDefaultIfKeyNotFound = "";
         String doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
 
@@ -52,20 +52,11 @@ public interface IdServiceBean {
     }
 
     static IdServiceBean getBean(CommandContext ctxt) {
-        logger.log(Level.FINE,"getting bean");
+        logger.log(Level.FINE,"getting bean with protocol from context");
 
         String nonNullDefaultIfKeyNotFound = "";
-        String doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
         String    protocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
-        if ("hdl".equals(protocol))
-            return (ctxt.handleNet());
-        else if (protocol.equals("doi"))
-            if (doiProvider.equals("EZID"))
-                return ctxt.doiEZId();
-            else if (doiProvider.equals("DataCite"))
-                return ctxt.doiDataCite();
-            else throw new UnsupportedOperationException("Unknown doiProvider: " + doiProvider);
-        else throw new UnsupportedOperationException("Unknown protocol: " + protocol);
+        return getBean(protocol, ctxt);
     }
 
     String generateYear();
