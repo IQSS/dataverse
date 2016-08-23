@@ -20,7 +20,7 @@ The following JVM option instructs the application to act as the dedicated timer
 
 ``-Ddataverse.timerServer=true``
 
-**IMPORTANT:** Note, that this option is automatically set by the Dataverse installer script. That means that when configuring a milti-server cluster, it will be the responsibility of the installer to remove the option from the domain.xml of every node except the one intended to be the timer server. 
+**IMPORTANT:** Note, that this option is automatically set by the Dataverse installer script. That means that when configuring a multi-server cluster, it will be the responsibility of the installer to remove the option from the domain.xml of every node except the one intended to be the timer server. 
 
 Harvesting Timers 
 -----------------
@@ -29,7 +29,7 @@ These timers are created when scheduled harvesting is enabled by a local admin u
 
 In a multi-node cluster, all these timers will be created on the dedicated timer node (and not necessarily on the node where the harvesting clients was created and/or saved). 
 
-A timer will be automatically removed, when a harvesting client with an active schedule is deleted, or if the schedule is turned off fpr an existing client. 
+A timer will be automatically removed, when a harvesting client with an active schedule is deleted, or if the schedule is turned off for an existing client. 
 
 Metadata Export Timer
 ---------------------
