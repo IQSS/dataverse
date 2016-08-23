@@ -217,7 +217,11 @@ public class SettingsServiceBean {
         /*
         Whether to display the publish text for every published version
         */
-        DatasetPublishPopupCustomTextOnAllVersions;
+        DatasetPublishPopupCustomTextOnAllVersions,
+        /*
+        Whether Harvesting (OAI) service is enabled
+        */
+        OAIServerEnabled;
         
         @Override
         public String toString() {

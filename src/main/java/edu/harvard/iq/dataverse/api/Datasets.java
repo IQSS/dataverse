@@ -1,21 +1,29 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DOIEZIdServiceBean;
+import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
+import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
+import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.MetadataBlock;
+import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.RoleAssignment;
+import edu.harvard.iq.dataverse.api.imports.ImportException;
+import edu.harvard.iq.dataverse.api.imports.ImportUtil;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreatePrivateUrlCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetCommand;
@@ -35,16 +43,21 @@ import edu.harvard.iq.dataverse.engine.command.impl.SetDatasetCitationDateComman
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetTargetURLCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
+import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.export.ddi.DdiExportUtil;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
+import edu.harvard.iq.dataverse.util.json.JsonParser;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -52,6 +65,11 @@ import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.json.JsonReader;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -81,9 +99,19 @@ public class Datasets extends AbstractApiBean {
 
     @EJB
     DDIExportServiceBean ddiExportService;
-
+    
     @EJB
     SystemConfig systemConfig;
+    
+    @EJB
+    DatasetFieldServiceBean datasetfieldService;
+
+    @EJB
+    MetadataBlockServiceBean metadataBlockService;
+    
+    @EJB
+    SettingsServiceBean settingsService;
+    
 
     /**
      * Used to consolidate the way we parse and handle dataset versions.
@@ -98,22 +126,166 @@ public class Datasets extends AbstractApiBean {
 	
 	@GET
 	@Path("{id}")
-    public Response getDataset( @PathParam("id") String id) {
-        
+    public Response getDataset(@PathParam("id") String id) {
+
         try {
             final DataverseRequest r = createDataverseRequest(findUserOrDie());
-            
+
             Dataset retrieved = execCommand(new GetDatasetCommand(r, findDatasetOrDie(id)));
             DatasetVersion latest = execCommand(new GetLatestAccessibleDatasetVersionCommand(r, retrieved));
             final JsonObjectBuilder jsonbuilder = json(retrieved);
-            
+
             return okResponse(jsonbuilder.add("latestVersion", (latest != null) ? json(latest) : null));
-        } catch ( WrappedResponse ex ) {
-			return ex.refineResponse( "GETting dataset " + id + " failed." );
-		}
-        
+        } catch (WrappedResponse ex) {
+            return ex.refineResponse("GETting dataset " + id + " failed.");
+        }
+
     }
-	
+    
+    /* An experimental method for creating a new dataset, from scratch, all from json metadata file
+    @POST
+    @Path("")
+    public Response createDataset(String jsonBody) {
+        Dataset importedDataset = null; 
+        try {
+            final DataverseRequest r = createDataverseRequest(findUserOrDie());
+            
+            StringReader rdr = new StringReader(jsonBody);
+            JsonObject json = Json.createReader(rdr).readObject();
+            JsonParser parser = new JsonParser(datasetfieldService, metadataBlockService, settingsService);
+            parser.setLenient(true);
+            Dataset ds = parser.parseDataset(json);
+
+            
+            Dataverse owner = dataverseService.find(1L);
+            ds.setOwner(owner);
+            ds.getLatestVersion().setDatasetFields(ds.getLatestVersion().initDatasetFields());
+
+            // Check data against required contraints
+            List<ConstraintViolation> violations = ds.getVersions().get(0).validateRequired();
+            if (!violations.isEmpty()) {
+                // For migration and harvest, add NA for missing required values
+                for (ConstraintViolation v : violations) {
+                    DatasetField f = ((DatasetField) v.getRootBean());
+                    f.setSingleValue(DatasetField.NA_VALUE);
+                }
+            }
+
+            
+            Set<ConstraintViolation> invalidViolations = ds.getVersions().get(0).validate();
+            ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+            Validator validator = factory.getValidator();
+            if (!invalidViolations.isEmpty()) {
+                for (ConstraintViolation v : invalidViolations) {
+                    DatasetFieldValue f = ((DatasetFieldValue) v.getRootBean());
+                    boolean fixed = false;
+                    boolean converted = false;
+                    // TODO: Is this scrubbing something we want to continue doing? 
+                    //
+                    //if (settingsService.isTrueForKey(SettingsServiceBean.Key.ScrubMigrationData, false)) {
+                    //    fixed = processMigrationValidationError(f, cleanupLog, metadataFile.getName());
+                    //    converted = true;
+                    //    if (fixed) {
+                    //        Set<ConstraintViolation<DatasetFieldValue>> scrubbedViolations = validator.validate(f);
+                    //        if (!scrubbedViolations.isEmpty()) {
+                    //            fixed = false;
+                    //        }
+                    //    }
+                    //}
+                    if (!fixed) {
+                        String msg = "Field: " + f.getDatasetField().getDatasetFieldType().getDisplayName() + "; "
+                                + "Invalid value:  '" + f.getValue() + "'" + " Converted Value:'" + DatasetField.NA_VALUE + "'";
+                        Logger.getLogger(Datasets.class.getName()).log(Level.INFO, null, msg);
+                        f.setValue(DatasetField.NA_VALUE);
+                    }
+                }
+            }
+
+            //ds.setHarvestedFrom(harvestingClient);
+            //ds.setHarvestIdentifier(harvestIdentifier);
+            
+                importedDataset = engineSvc.submit(new CreateDatasetCommand(ds, r, false, ImportUtil.ImportType.HARVEST));
+
+        } catch (JsonParseException ex) {
+            Logger.getLogger(Datasets.class.getName()).log(Level.INFO, null, "Error parsing datasetVersion: " + ex.getMessage());
+            return errorResponse(Response.Status.NOT_FOUND, "error parsing dataset");
+        } catch (CommandException ex) {
+            Logger.getLogger(Datasets.class.getName()).log(Level.INFO, null, "Error excuting Create dataset command: " + ex.getMessage());  
+            return errorResponse(Response.Status.NOT_FOUND, "error executing create dataset command");
+        } catch (WrappedResponse ex) {
+            return ex.refineResponse("Error: "+ex.getWrappedMessageWhenJson());
+        }
+        
+        final JsonObjectBuilder jsonbuilder = json(importedDataset);
+
+        return okResponse(jsonbuilder.add("latestVersion", json(importedDataset.getLatestVersion())));
+    } */
+    
+    @GET
+    @Path("/export")
+    @Produces({"application/xml", "application/json"})
+    public Response exportDataset(@QueryParam("persistentId") String persistentId, @QueryParam("exporter") String exporter) {
+
+        try {
+            Dataset dataset = datasetService.findByGlobalId(persistentId);
+            if (dataset == null) {
+                return errorResponse(Response.Status.NOT_FOUND, "A dataset with the persistentId " + persistentId + " could not be found.");
+            }
+            
+            ExportService instance = ExportService.getInstance();
+            
+            String xml = instance.getExportAsString(dataset, exporter);
+            // I'm wondering if this going to become a performance problem 
+            // with really GIANT datasets,
+            // the fact that we are passing these exports, blobs of JSON, and, 
+            // especially, DDI XML as complete strings. It would be nicer 
+            // if we could stream instead - and the export service already can
+            // give it to as as a stream; then we could start sending the 
+            // output to the remote client as soon as we got the first bytes, 
+            // without waiting for the whole thing to be generated and buffered... 
+            // (the way Access API streams its output). 
+            // -- L.A., 4.5
+            
+            LOGGER.fine("xml to return: " + xml);
+            String mediaType = MediaType.TEXT_PLAIN;
+            if (instance.isXMLFormat(exporter)){
+                mediaType = MediaType.APPLICATION_XML;
+            }
+            return Response.ok()
+                    .entity(xml)
+                    .type(mediaType).
+                    build();
+        } catch (Exception wr) {
+            return errorResponse(Response.Status.FORBIDDEN, "Export Failed");
+        }
+    }
+
+    // The following 2 commands start export all jobs in the background, 
+    // asynchronously. 
+    // (These API calls should probably not be here;
+    // May be under "/admin" somewhere?)
+    // exportAll will attempt to go through all the published, local 
+    // datasets *that haven't been exported yet* - which is determined by
+    // checking the lastexporttime value of the dataset; if it's null, or < the last 
+    // publication date = "unexported" - and export them. 
+    @GET
+    @Path("/exportAll")
+    @Produces("application/json")
+    public Response exportAll() {
+        datasetService.exportAllAsync();
+        return this.accepted();
+    }
+    
+    // reExportAll will FORCE A FULL REEXPORT on every published, local 
+    // dataset, regardless of the lastexporttime value.
+    @GET
+    @Path("/reExportAll")
+    @Produces("application/json")
+    public Response reExportAll() {
+        datasetService.reExportAllAsync();
+        return this.accepted();
+    }
+   	
 	@DELETE
 	@Path("{id}")
 	public Response deleteDataset( @PathParam("id") String id) {
@@ -499,6 +671,7 @@ public class Datasets extends AbstractApiBean {
     @GET
     @Path("ddi")
     @Produces({"application/xml", "application/json"})
+    @Deprecated
     public Response getDdi(@QueryParam("id") long id, @QueryParam("persistentId") String persistentId, @QueryParam("dto") boolean dto) {
         boolean ddiExportEnabled = systemConfig.isDdiExportEnabled();
         if (!ddiExportEnabled) {
@@ -523,7 +696,7 @@ public class Datasets extends AbstractApiBean {
                  * to getLatestVersion
                  */
                 final JsonObjectBuilder datasetAsJson = jsonAsDatasetDto(dataset.getLatestVersion());
-                xml = DdiExportUtil.datasetDtoAsJson2ddi(datasetAsJson.build().toString());
+                xml = DdiExportUtil.datasetDtoAsJson2ddi(datasetAsJson.toString());
             } else {
                 OutputStream outputStream = new ByteArrayOutputStream();
                 ddiExportService.exportDataset(dataset.getId(), outputStream, null, null);
@@ -539,7 +712,7 @@ public class Datasets extends AbstractApiBean {
             return wr.getResponse();
         }
     }
-
+    
     /**
      * @todo Make this real. Currently only used for API testing. Copied from
      * the equivalent API endpoint for dataverses and simplified with values

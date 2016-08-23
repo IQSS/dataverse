@@ -249,6 +249,16 @@ public class AuthenticationServiceBean {
             return null;
         }
     }
+    
+    public AuthenticatedUser getAdminUser() {
+        try {
+            return em.createNamedQuery("AuthenticatedUser.findAdminUser", AuthenticatedUser.class)
+                    .setMaxResults(1)
+                    .getSingleResult();
+        } catch (Exception ex) {
+            return null;
+        }
+    }
 
     public AuthenticatedUser getAuthenticatedUserByEmail( String email ) {
         try {

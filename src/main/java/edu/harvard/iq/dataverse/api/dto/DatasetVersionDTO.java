@@ -17,6 +17,7 @@ public class DatasetVersionDTO {
     long id;
     VersionState versionState;
     String releaseDate;
+    String releaseTime;
     String lastUpdateTime;
     String createTime;
     String archiveTime;
@@ -37,6 +38,7 @@ public class DatasetVersionDTO {
     String sizeOfCollection;
     String studyCompletion; 
     String citation;
+    String license;
     boolean inReview;
     
     Map<String,MetadataBlockDTO> metadataBlocks;
@@ -260,6 +262,15 @@ public class DatasetVersionDTO {
     public void setReleaseDate(String releaseDate) {
         this.releaseDate = releaseDate;
     }
+    
+    
+    public String getReleaseTime() {
+        return releaseTime;
+    }
+
+    public void setReleaseTime(String releaseTime) {
+        this.releaseTime = releaseTime;
+    }
 
     public String getLastUpdateTime() {
         return lastUpdateTime;
@@ -283,6 +294,14 @@ public class DatasetVersionDTO {
 
     public void setArchiveTime(String archiveTime) {
         this.archiveTime = archiveTime;
+    }
+    
+    public String getLicense() {
+        return license;
+    }
+
+    public void setLicense(String license) {
+        this.license = license;
     }
 
     public Map<String, MetadataBlockDTO> getMetadataBlocks() {

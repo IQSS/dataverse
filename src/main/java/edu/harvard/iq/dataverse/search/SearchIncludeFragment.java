@@ -120,7 +120,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
     private String errorFromSolr;
     private SearchException searchException;
     private boolean rootDv = false;
-    private Map<Long, String> harvestedDataverseDescriptions = null;
+    private Map<Long, String> harvestedDatasetDescriptions = null;
     
     /**
      * @todo:
@@ -364,9 +364,11 @@ public class SearchIncludeFragment implements java.io.Serializable {
                     //logger.info("XXRESULT: dataverse: "+solrSearchResult.getEntityId());
                     dataverseService.populateDvSearchCard(solrSearchResult);
                     
+                    /*
+                    Datasets cannot be harvested yet.
                     if (isHarvestedDataverse(solrSearchResult.getEntityId())) {
                         solrSearchResult.setHarvested(true);
-                    }
+                    }*/
 
                 } else if (solrSearchResult.getType().equals("datasets")) {
                     //logger.info("XXRESULT: dataset: "+solrSearchResult.getEntityId());
@@ -379,10 +381,6 @@ public class SearchIncludeFragment implements java.io.Serializable {
                         solrSearchResult.setDescriptionNoSnippet(deaccesssionReason);
                     }
                     
-                    if (isHarvestedDataverse(solrSearchResult.getParentIdAsLong())) {
-                        solrSearchResult.setHarvestingDescription(getHarvestingDataverseDescription(solrSearchResult.getParentIdAsLong()));
-                        solrSearchResult.setHarvested(true);
-                    }
                 } else if (solrSearchResult.getType().equals("files")) {
                     //logger.info("XXRESULT: datafile: "+solrSearchResult.getEntityId());
                     dataFileService.populateFileSearchCard(solrSearchResult);
@@ -1061,7 +1059,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
         int i = 0;
         dvobjectThumbnailsMap = new HashMap<>();
         dvobjectViewMap = new HashMap<>();
-        Set<Long> fileParentDatasets = null;
+        Set<Long> harvestedDatasetIds = null;
         for (SolrSearchResult result : searchResultsList) {
             //logger.info("checking DisplayImage for the search result " + i++);
             boolean valueSet = false;
@@ -1071,16 +1069,24 @@ public class SearchIncludeFragment implements java.io.Serializable {
             } else if (result.getType().equals("datasets") /*&& result.getEntity() instanceof Dataset*/) {
                 result.setImageUrl(getDatasetCardImageUrl(result));
                 valueSet = true;
+                if (result.isHarvested()) {
+                    if (harvestedDatasetIds == null) {
+                        harvestedDatasetIds = new HashSet<>();
+                    }
+                    harvestedDatasetIds.add(result.getEntityId());
+                }
             } else if (result.getType().equals("files") /*&& result.getEntity() instanceof DataFile*/) {
                 // TODO: 
                 // use permissionsWrapper?  -- L.A. 4.2.1
                 // OK, done! (4.2.2; in the getFileCardImageUrl() method, below)
                 result.setImageUrl(getFileCardImageUrl(result));
                 valueSet = true;
-                if (fileParentDatasets == null) {
-                    fileParentDatasets = new HashSet<>();
+                if (result.isHarvested()) {
+                    if (harvestedDatasetIds == null) {
+                        harvestedDatasetIds = new HashSet<>();
+                    }
+                    harvestedDatasetIds.add(result.getParentIdAsLong());
                 }
-                fileParentDatasets.add(result.getParentIdAsLong());
             }
 
             if (valueSet) {
@@ -1094,22 +1100,29 @@ public class SearchIncludeFragment implements java.io.Serializable {
         dvobjectThumbnailsMap = null;
         dvobjectViewMap = null;
         
-        // determine which of the datafile objects are harvested:
+        // Now, make another pass, and add the remote archive descriptions to the 
+        // harvested dataset and datafile cards (at the expense of one extra 
+        // SQL query:
         
-        if (fileParentDatasets != null) {
-            Map<Long,String> descriptionsForHarvestedDatasets = datasetService.getHarvestingDescriptionsForHarvestedDatasets(fileParentDatasets);
+        if (harvestedDatasetIds != null) {
+            Map<Long, String> descriptionsForHarvestedDatasets = datasetService.getArchiveDescriptionsForHarvestedDatasets(harvestedDatasetIds);
             if (descriptionsForHarvestedDatasets != null && descriptionsForHarvestedDatasets.size() > 0) {
                 for (SolrSearchResult result : searchResultsList) {
-                    if (result.getType().equals("files")) {
-                        if (descriptionsForHarvestedDatasets.containsKey(result.getParentIdAsLong())) {
-                            result.setHarvestingDescription(descriptionsForHarvestedDatasets.get(result.getParentIdAsLong()));
-                            result.setHarvested(true);
+                    if (result.isHarvested()) {
+                        if (result.getType().equals("files")) { 
+                            if (descriptionsForHarvestedDatasets.containsKey(result.getParentIdAsLong())) {
+                                result.setHarvestingDescription(descriptionsForHarvestedDatasets.get(result.getParentIdAsLong()));
+                            }
+                        } else if (result.getType().equals("datasets")) {
+                            if (descriptionsForHarvestedDatasets.containsKey(result.getEntityId())) {
+                                result.setHarvestingDescription(descriptionsForHarvestedDatasets.get(result.getEntityId()));
+                            }
                         }
                     }
                 }
             }
             descriptionsForHarvestedDatasets = null;
-            fileParentDatasets = null;
+            harvestedDatasetIds = null;
         }
         
         // determine which of the objects are linked:
@@ -1313,15 +1326,21 @@ public class SearchIncludeFragment implements java.io.Serializable {
         return dataverseService.getDataverseLogoThumbnailAsBase64ById(result.getEntityId());
     }
     
-    private Map<Long, String> getHarvestedDataverseDescriptions() {
-        if (harvestedDataverseDescriptions != null) {
-            return harvestedDataverseDescriptions;
+    /* 
+        These commented out methods below are old optimizations that are no longer 
+        necessary, since there is now a more direct connection between a harvested
+        dataset and its HarvestingClient configuration. -- L.A. 4.5 
+    */
+    /*
+    private Map<Long, String> getHarvestedDatasetDescriptions() {
+        if (harvestedDatasetDescriptions != null) {
+            return harvestedDatasetDescriptions;
         }
-        harvestedDataverseDescriptions = dataverseService.getAllHarvestedDataverseDescriptions();
+        harvestedDatasetDescriptions = dataverseService.getAllHarvestedDataverseDescriptions();
         return harvestedDataverseDescriptions;
-    }
+    }*/
     
-    private boolean isHarvestedDataverse(Long id) {
+    /*private boolean isHarvestedDataverse(Long id) {
         return this.getHarvestedDataverseDescriptions().containsKey(id);
     }
 
@@ -1330,7 +1349,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
             return this.getHarvestedDataverseDescriptions().get(id);
         }
         return null;
-    }
+    }*/
     public enum SortOrder {
 
         asc, desc

@@ -16,6 +16,8 @@ A dataset contains three levels of metadata:
 
 For more details about what Citation and Domain specific metadata is supported please see our `Appendix <../user/appendix.html#metadata-references>`_.
 
+Note that once a dataset has been published its metadata may be exported. A button on the dataset page's metadata tab will allow a user to export the metadata of the most recently published version of the dataset. Currently supported export formats are DDI, Dublin Core and JSON.
+
 File Handling + Uploading
 ===============================
 
