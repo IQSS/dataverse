@@ -18,3 +18,4 @@ Contents:
   harvestclients
   harvestserver
   metadataexport
+  timers
