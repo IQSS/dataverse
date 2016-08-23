@@ -43,7 +43,7 @@
 	producerLogoURL	Logo URL	URL for the producer's logo, which points to this  producer's web-accessible logo image. Enter an absolute URL where the producer's logo image is found, such as http://www.my.org/images/logo.gif.	Enter full URL for image, starting with http://	url	39	"<img src=""#VALUE"" alt=""#NAME"" class=""metadata-logo""/><br/>"	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	citation	Adresse URL du logo	Adresse URL du logo du producteur qui pointe vers le logo accessible sur le Web. Indiquer une adresse URL absolue où l'image se trouve, par exemple http://www.my.org/images/logo.gif.
 	productionDate	Production Date	Date when the data collection or other materials were produced (not distributed, published or archived).	YYYY-MM-DD	date	40		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		citation	Date de production	Date à laquelle la collecte de données ou d'autres documents ont été produits (non distribués, publiés ou archivés).
 	productionPlace	Production Place	The location where the data collection and any other related materials were produced.		text	41		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation	Endroit de production	L'emplacement où la collecte de données et autres documents connexes ont été produits.
-	contributor	Contributor	The organization or person responsible for either collecting, managing, or otherwise contributing in some form to the development of the resource.		none	42	:	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation	Contributeur	L'organisation ou la personne responsable de la collecte ou de la gestion d'une ressource, ou contribuant autrement à son développement.
+	contributor	Contributor	The organization or person responsible for either collecting, managing, or otherwise contributing in some form to the development of the resource.		none	42	:	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation	Collaborateur	L'organisation ou la personne responsable de la collecte ou de la gestion d'une ressource, ou contribuant autrement à son développement.
 	contributorType	Type	The type of contributor of the  resource.  		text	43	#VALUE 	TRUE	TRUE	FALSE	TRUE	FALSE	FALSE	contributor	citation	Type	Le type de collaborateur à la ressource.
 	contributorName	Name	The Family Name, Given Name or organization name of the contributor.	FamilyName, GivenName or Organization	text	44	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	contributor	citation	Nom	Le nom du collaborateur (le Nom, Prénom ou le nom de l'organisation)
 	grantNumber	Grant Information	Grant Information		none	45	:	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation	Renseignements sur la subvention	Renseignements sur la subvention
@@ -79,7 +79,7 @@
 	characteristicOfSources	Characteristic of Sources Noted	Assessment of characteristics and source material.		textbox	75		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation	Caractéristiques des sources notées	Évaluation et caractéristiques des sources de données. 
 	accessToSources	Documentation and Access to Sources	Level of documentation of the original sources.		textbox	76		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation	Documentation et accès aux sources	Niveau de documentation des sources originales
 #controlledVocabulary	DatasetField	Value	identifier	displayOrder													Identifiant
-	subject	Agricultural Sciences	D01	0													D01
+	subject	Agricultural Sciences	D01	0													Sciences de l’agriculture
 	subject	Arts and Humanities	D0	1													Arts et sciences humaines
 	subject	Astronomy and Astrophysics	D1	2													Astronomie et astrophysique
 	subject	Business and Management	D2	3													Affaires et gestion
@@ -110,9 +110,9 @@
 	publicationIDType	upc		14													upc
 	publicationIDType	url		15													url
 	publicationIDType	urn		16													urn
-	contributorType	Data Collector		0													Responsable de la collecte de données
-	contributorType	Data Curator		1													Gestionnaire de données
-	contributorType	Data Manager		2													Gestionnaire
+	contributorType	Data Collector		0													Chargé de la collecte de données
+	contributorType	Data Curator		1													Intendant des données
+	contributorType	Data Manager		2													Gestionnaire de données
 	contributorType	Editor		3													Éditeur
 	contributorType	Funder		4													Bailleur de fonds
 	contributorType	Hosting Institution		5													Établissement hôte
