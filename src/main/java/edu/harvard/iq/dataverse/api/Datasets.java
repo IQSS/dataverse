@@ -221,6 +221,12 @@ public class Datasets extends AbstractApiBean {
         return okResponse(jsonbuilder.add("latestVersion", json(importedDataset.getLatestVersion())));
     } */
     
+    // TODO: 
+    // This API call should, ideally, call findUserOrDie() and the GetDatasetCommand 
+    // to obtain the dataset that we are trying to export - which would handle
+    // Auth in the process... For now, Auth isn't necessary - since export ONLY 
+    // WORKS on published datasets, which are open to the world. -- L.A. 4.5
+    
     @GET
     @Path("/export")
     @Produces({"application/xml", "application/json"})
@@ -260,32 +266,6 @@ public class Datasets extends AbstractApiBean {
         }
     }
 
-    // The following 2 commands start export all jobs in the background, 
-    // asynchronously. 
-    // (These API calls should probably not be here;
-    // May be under "/admin" somewhere?)
-    // exportAll will attempt to go through all the published, local 
-    // datasets *that haven't been exported yet* - which is determined by
-    // checking the lastexporttime value of the dataset; if it's null, or < the last 
-    // publication date = "unexported" - and export them. 
-    @GET
-    @Path("/exportAll")
-    @Produces("application/json")
-    public Response exportAll() {
-        datasetService.exportAllAsync();
-        return this.accepted();
-    }
-    
-    // reExportAll will FORCE A FULL REEXPORT on every published, local 
-    // dataset, regardless of the lastexporttime value.
-    @GET
-    @Path("/reExportAll")
-    @Produces("application/json")
-    public Response reExportAll() {
-        datasetService.reExportAllAsync();
-        return this.accepted();
-    }
-   	
 	@DELETE
 	@Path("{id}")
 	public Response deleteDataset( @PathParam("id") String id) {
