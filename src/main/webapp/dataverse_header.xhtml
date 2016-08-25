@@ -293,13 +293,30 @@
                  			$("#footer").hide();
                  			$("#actionButtonBlock").hide();
                  			$(".panelSearchForm").hide();
-                 			$("#statement").show();
+                 			$("#statement").hide();
                  			//if we are at the home page consider redirecting to a more suitable one based on the ip
                      		ip_range_checker=new IPRangeChecker(updateFeaturedSites)
                  		}else{
-                 			showContent()
+                 			showContent();
                  		}
                  	}
+                    function showStatement(){
+                    	var elm= $("#more_link")
+                    	if(elm.data("showing")!=true){
+                    		elm.data("showing",true)
+                    		$("#statement").slideDown();
+                    		elm.html("less...")
+                    		scrollToID('#dataverseForm\\:statement_wrapper');
+                    	}else{
+                    		elm.data("showing",false)
+                    		$("#statement").slideUp();
+                    		elm.html("more...")
+                    	}
+                    }
+                    function scrollToID(id){
+                        var aTag = $(id);
+                        $('html,body').animate({scrollTop: aTag.offset().top-($("#navbarFixed").height()+10)});
+                    }
                     function showContent(){
                     	$(".overlay").fadeOut();
                     	showing_content=true;
@@ -344,12 +361,14 @@
                     		  url: "/resources/js/affiliates.json?callback=?",
                     		  data: {},
                     		  success: function (data) {
-                    			  console.log(data)
+                    			  
                    					institution_mapping=data
                    					ip_range_checker.findIP();
                     			  },
                     			  error: function (e) {
-                      			 	console.log(e)
+                    				  institution_mapping=$.parseJSON(e.responseText)
+                      			 	console.log(institution_mapping)
+                      			 	ip_range_checker.findIP();
                       			  }
                     		});
                     }
@@ -389,9 +408,10 @@
                     }
                     }
                     IPRangeChecker.prototype.setIP = function(_ip){
+                    	console.log(_ip)
                     	var reg_pat="|\\*|\\-)\\.("
                     	var ip_reg_ex="("+_ip.split(".").join(reg_pat)+reg_pat.slice(0, -3);
-                    	//console.log(ip_reg_ex)
+                    	console.log(ip_reg_ex)
                     	this.patt=new RegExp(ip_reg_ex)
                     }
                     IPRangeChecker.prototype.loadXMLFile = function(file,func){

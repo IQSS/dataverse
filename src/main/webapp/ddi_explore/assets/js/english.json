@@ -261,7 +261,17 @@ var en = {
 		missing:"Missing",
 		graph:"Chart",
 		deselect_all:'Clear',
-		multi_var:"Mulitple Variable Comparison"
+		multi_var:"Multiple Variable Comparison",
+		download_all:"Download All",
+		download_my_variables:"Download My Variables",
+		chart_my_variables:"Chart My Variables",
+		select_all:"Select All",
+		results : 'Results',
+		orig_file_format:'Original File Format',
+		tab_delimited:'Tab-Delimited',
+		rdata_format:'RData Format',
+		variable_metadata:'Variable Metadata',
+		advanced_analysis:'Advanced Analysis'
 	},
     contact : {
         head : 'Contact',

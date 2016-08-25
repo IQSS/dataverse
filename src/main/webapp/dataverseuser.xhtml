@@ -508,7 +508,7 @@
                    						function setUserAffiliation(){
                    							var selectize=setUpAffiliateDropDown();
                 							if($(input_elm).val()!=""){
-                								selectize.val($(input_elm).val());
+                								selectize.setValue($(input_elm).val());
                 					    	}else if(affiliation && $(select_elm+" option[value='"+affiliation+"']").length > 0){
                 					    		selectize.setValue(affiliation);
                 					    	}else{

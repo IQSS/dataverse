@@ -259,7 +259,17 @@ var fr = {
 		missing:"Manquant",
 		graph:"Graphique",
 		deselect_all:'Clair',
-		multi_var:"Comparaison des variables mulitple"
+		multi_var:"Comparaison des variables mulitple",
+		download_all:"Tout télécharger",
+		download_my_variables:"Téléchargement Mes Variables",
+		chart_my_variables:"Graphique Mes Variables",
+		select_all:"Sélectionner tout",
+		results : 'Résultats',
+		orig_file_format:"Format de fichier d'origine",
+		tab_delimited:'Onglet délimité',
+		rdata_format:'Format RData',
+		variable_metadata:'Métadonnées variable',
+		advanced_analysis:'Analyse avancée'
 	},
     contact : {
         head : 'Contactez-nous',

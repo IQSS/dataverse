@@ -16,12 +16,21 @@ angular.module('odesiApp').controller('detailsCtrl', function($scope,$cookies, $
 	$scope.searchParams = searchParams;	
 	$scope._variableData;
 	$scope._filtered_num=0;
+	$scope.sortReverse=true; 
+	$scope.has_no_selection=true;
+	$scope.sortReverse=true; 
+	//
+	$scope.citation="";
+	//
 	if($scope.variableClick.params == true) {
 		$scope.active = {matches: true};
 	} else {
 		$scope.active = {abstract: true};
 	};
 	var populateVariables = function() {
+		//get a piece of the citatin for display
+		var citation_pieces=$scope.details.stdydscr.citation.biblcit["#text"].split(",")
+		$scope.citation=citation_pieces[0]+", "+citation_pieces[1]+", "+citation_pieces[2]
 		//create a reference to a specific link for dataverse
 		$scope.surveyVariables = [];
 		if ($scope.details.datadscr ){
@@ -30,19 +39,17 @@ angular.module('odesiApp').controller('detailsCtrl', function($scope,$cookies, $
 				counter++
 				//join the variable data
 				$scope.details.datadscr['var'][i].variable_data=$scope._variableData[$scope.details.datadscr['var'][i].name]
+				
 				var chartable=false;
 				if(typeof($scope.details.datadscr['var'][i].variable_data.plotvalues)!="undefined" && typeof($scope.details.datadscr['var'][i].catgry)!="undefined"){
 						chartable=true
 					}
-					/*Note: all variables need a label
-					if(!$scope.details.datadscr['var'][i].labl){
-						console.log(counter,$scope.details.datadscr['var'][i])
-					}*/
-				if ($scope.details.datadscr['var'][i].labl){
+				
+				//if ($scope.details.datadscr['var'][i].labl){
 					
 					//exception for dataverse
 					var labl=""
-					if ($scope.details.datadscr['var'][i].labl["#text"]) {
+					if ($scope.details.datadscr['var'][i].labl && $scope.details.datadscr['var'][i].labl["#text"]) {
 						labl= $scope.details.datadscr['var'][i].labl["#text"]				
 					}else if($scope.details.datadscr['var'][i].labl) {
 						labl= $scope.details.datadscr['var'][i].labl				
@@ -50,13 +57,13 @@ angular.module('odesiApp').controller('detailsCtrl', function($scope,$cookies, $
 					
 					$scope.details.datadscr['var'][i].labl=labl;
 					$scope.surveyVariables.push({
-						id : $scope.details.datadscr['var'][i].id.substring(1),
+						id : parseFloat($scope.details.datadscr['var'][i].id.substring(1)),
 						vid : $scope.details.datadscr['var'][i].id,
 						label : labl,
 						chartable : chartable,
 						name : $scope.details.datadscr['var'][i].name,							
 						fullData : $scope.details.datadscr['var'][i]
-					});			
+					});				
 					//If a location element exists - need to catagorize the questions by files
 					if(typeof($scope.details.datadscr['var'][i].location)!="undefined" && $scope.details.datadscr['var'][i].location.fileid){
 						//get the file description 
@@ -130,7 +137,7 @@ angular.module('odesiApp').controller('detailsCtrl', function($scope,$cookies, $
 								$scope.survey_files_filtered[file_array_pos_filtered][2].push(var_obj);
 							}
 						}
-					}
+					//}
 					//
 					var index = $scope.surveyVariables.length - 1;
 					//since DLIMF does not have a sumstat - check if it exists first before looping
@@ -166,10 +173,12 @@ angular.module('odesiApp').controller('detailsCtrl', function($scope,$cookies, $
 		//Allow filtering search results
 		$scope.updateFilter = function(value){
 		  filterService.setFilter(value)
+		  $scope.currentTablePage[0]=0
 		}
 		$scope.filterResults = function(vl) {
-			return vl.label.toLowerCase().indexOf(filterService.getFilter().toLowerCase()) !== -1
+			return vl.label.toLowerCase().indexOf(filterService.getFilter().toLowerCase()) !== -1 || vl.name.toLowerCase().indexOf(filterService.getFilter().toLowerCase()) !== -1 || vl.vid.toLowerCase().indexOf(filterService.getFilter().toLowerCase()) !== -1
 		};
+		
 		//if only one file - treat it as if there were none by removing file reference
 		if(typeof($scope.survey_files)!="undefined" && $scope.survey_files.length==1){
 			$scope.survey_files=null;
@@ -201,7 +210,11 @@ angular.module('odesiApp').controller('detailsCtrl', function($scope,$cookies, $
 		}
 	}
 $scope.viewVariable = function (vl) {
-	$scope.selectedVariable = vl.fullData;
+	if(vl){
+		$scope.selectedVariable = vl.fullData;
+	}else{
+		$scope.selectedVariable=null	
+	}
 	var modalInstance = $modal.open({
 		templateUrl: $scope.chartTemplatePath,
 		controller: ModalInstanceCtrl,
@@ -213,17 +226,67 @@ $scope.viewVariable = function (vl) {
 		}
 	});
 };
+$scope.my_option = 0;
+$scope.downloadData = function (my_option) {
+	var url=base_url+file_id//api/access/datafile/$id
+	switch(Number(my_option)) {
+    case 1:
+        url+="?format=original"
+        break;
+    case 2:
+       //add nothing to download the tab file
+	    url+="?"
+        break;
+	case 3:
+		 url+="?format=RData"
+		break;
+	case 4:
+	
+		//need to prep the url a bit - should look like //https://sand9.scholarsportal.info/api/meta/datafile/15
+		var base_url_api=base_url.substring(0,base_url.indexOf("/api/"));
+		url=base_url_api+"/api/meta/datafile/"+file_id+"?"
+		break;
+    default:
+		return
+	}
+	//add the key
+	url+="&key="+detailsURL.key
+	window.location.assign(url);
+};
+$scope.goToTwoRavens =function (){
+	var base_url_api=base_url.substring(0,base_url.indexOf("/api/"));
+	var	url=base_url_api+"/dataexplore/gui.html?dfId="+file_id+"&key="+detailsURL.key
+
+	window.open(url, "new");
+}
+$scope.reset = function() {
+	$('#download').val( 0 );
+};
+$scope.selectFilter=function(){
+	$(".search_field").select()
+}
+$scope.clearField=function(){
+	$(".search_field").val("")
+	$(".search_field").trigger( "change" );
+}
+$scope.downloadMyVariables = function (vl) {
+	var temp_array=$cookies.variableCompare.split(",")
+	window.location.assign(base_url+file_id+"?key="+detailsURL.key+"&variables="+temp_array.join(","));
+};
+$scope.chartMyVariables = function (vl) {
+	$scope.viewVariable()
+};
 $scope.isChecked=function(vid){
 		var temp_array=$cookies.variableCompare.split(",")
 		return temp_array.indexOf(vid) !== -1
 }
-$scope.downloadVariable=function(vl){
-	var temp_array=$cookies.variableCompare.split(",")
-	//check to see if the current variable is in the array
-	if(temp_array.indexOf(vl.vid)==-1){
-		temp_array.push(vl.vid)
-	}
-	window.location.assign(base_url+file_id+"?key="+detailsURL.key+"&variables="+temp_array.join(","));
+$scope.toggleButtons=function(vid){
+	var temp_array=$cookies.variableCompare.split(",");
+	if(temp_array.length>0 && temp_array[0]!=""){
+		$scope.has_no_selection=false
+	}else{
+		$scope.has_no_selection=true
+	}	
 }
 	
  var ModalInstanceCtrl = function ($scope, $modalInstance, items) {
@@ -281,6 +344,7 @@ var traverse = function(o,func) {
 			if(loadcount>1){
 				populateVariables();          		
 				$scope.loadingDetails = false;
+				$(".overlay").fadeOut();
 			}
 		}		
 			   
@@ -294,15 +358,24 @@ $scope.show = {};
 		//loop through page unchecking boxes
 		 var temp_array=$cookies.variableCompare.split(",");
 		 for(var i = 0; i< temp_array.length; i++){
-			 document.getElementById(temp_array[i]+"_checkbox").checked = false;
+			 $("#"+temp_array[i]+"_checkbox").checked = false;
 		 }
 		 
 		 $cookies.variableCompare=""; 			 
 	 }
+	 $scope.selectAll = function(){	
+		$('.checkbox').each(function(){ //iterate all listed checkbox items
+			if(!$(this).is(":checked")){
+				$(this).prop('checked', true);
+				$scope.updateCompareList($(this).attr("id").substring(0,$(this).attr("id").indexOf("_checkbox")))
+			}
+		});		
+	 }
 	//keep track of the variables the user has selected
 	//remember that cookies can not be arrays so we'll need to split them
 $scope.updateCompareList = function(id){
-	var temp_array=$cookies.variableCompare.split(",")
+	var temp_array=$cookies.variableCompare.split(",");
+	
 	if($cookies.variableCompare==""){
 		//prevent blanks
 		temp_array=[] 
@@ -314,8 +387,12 @@ $scope.updateCompareList = function(id){
 		temp_array.push(id);
 	}
 	//reset cookie to a string
-	$cookies.variableCompare = temp_array.join(",")	  
-}}).controller('PagerCtrl', function($scope){
+	$cookies.variableCompare = temp_array.join(",")
+	
+	$scope.toggleButtons();
+	}
+})
+.controller('PagerCtrl', function($scope){
 	$scope.showPaging =true;
 })
 

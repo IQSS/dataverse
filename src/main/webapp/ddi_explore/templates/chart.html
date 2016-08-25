@@ -10,7 +10,7 @@
 	<div class="modal-body">	
 		<div  ng-repeat="selectedVariable in variableCompare">
 				<div ng-if="variableCompare.length>1">
-				   <h4 class="modal-title" id="myModalLabel"><span ng-if="selectedVariable.file_obj">{{selectedVariable.file_obj[1].file_note}} - </span>{{lang.detailsPage.variable}}:  {{selectedVariable.label}}</h4>	
+				   <h4 class="modal-title" id="myModalLabel">{{lang.detailsPage.variable}}:  {{selectedVariable.label}}</h4>	
 				</div>
 				<div id="chart" google-chart chart="selectedVariable.chart" style="{{selectedVariable.chart.cssStyle}}"></div>
 				<div id="{{selectedVariable.vid}}_chart_text" style="{{selectedVariable.chart_text.cssStyle}}">{{lang.error.no_data}}</div>
@@ -62,7 +62,8 @@
 			   <div class="accordion-group">
 		            <div class="accordion-heading">
 		          
-		                <a class="accordion-toggle" ng-click="toggle('a')" data-toggle="collapse" data-target="#collapse_{{selectedVariable.id}}">{{lang.detailsPage.summarystats}}</a>
+		                <a class="accordion-toggle" ng-click="toggle('a');is_collapsed = !is_collapsed" data-toggle="collapse" data-target="#collapse_{{selectedVariable.id}}" >{{lang.detailsPage.summarystats}} <span class="glyphicon pull-right accordion-icon" ng-class="{'glyphicon-chevron-up': is_collapsed, 'glyphicon-chevron-down': !is_collapsed}" ></span></a>
+						
 		            </div>
 		            <div class="accordion-body" class="collapse" id="collapse_{{selectedVariable.id}}">
 		                <div class="accordion-inner" ng-show="show.a">

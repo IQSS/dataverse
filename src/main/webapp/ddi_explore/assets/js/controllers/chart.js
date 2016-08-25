@@ -7,26 +7,32 @@ angular.module('odesiApp').controller('chartCtrl', function($scope, $cookies,sha
 		if($cookies.variableCompare){
 			var temp_array=$cookies.variableCompare.split(",");//because they are stored in an serialized array	
 		}
-		//check if the current selection is in the array
-		if(temp_array.indexOf($scope.selectedVariable.id)==-1){
-			temp_array.unshift($scope.selectedVariable.id)
-		}
-		//
-		for(var i=0;i<temp_array.length;i++){
-			//find the the variable in the survey
+		if(!$scope.selectedVariable){
+			//create an array with the selection
+			for(var i=0;i<temp_array.length;i++){
+				//find the the variable in the survey
+				for(var j=0;j<sharedVariableStore.getVariableStore().length;j++){
+					if(sharedVariableStore.getVariableStore()[j].vid==temp_array[i]){
+						$scope.variableCompare.push(sharedVariableStore.getVariableStore()[j]);
+					}
+				}
+			}
+		}else{
+			//Show just the one
 			for(var j=0;j<sharedVariableStore.getVariableStore().length;j++){
-				if(sharedVariableStore.getVariableStore()[j].vid==temp_array[i]){
+				if(sharedVariableStore.getVariableStore()[j].vid==$scope.selectedVariable.id){
 					$scope.variableCompare.push(sharedVariableStore.getVariableStore()[j]);
 				}
 			}
 		}
 		//
 		$scope.$watch ('selectedVariable', function(){
-			if ($scope.selectedVariable){	
 			//get the data for the selected variable
 				for(var k=0;k<$scope.variableCompare.length;k++){
+					
 					var _variableData=$scope.variableCompare[k].fullData.variable_data
 					var obj_full=$scope.variableCompare[k].fullData;
+					
 					var obj=$scope.variableCompare[k];
 					//store all properties with the variableCompare object
 					var data = obj_full.catgry;
@@ -56,10 +62,10 @@ angular.module('odesiApp').controller('chartCtrl', function($scope, $cookies,sha
 							}
 						}
 						summary=summary_ordered
+						obj.summary = summary;
 					}catch(e){
 						console.log(e);
 					}
-					
 					//exception for dataverse
 					if(typeof (obj_full.labl._)!=="undefined"){
 						obj.labl= [obj_full.labl._]
@@ -70,9 +76,24 @@ angular.module('odesiApp').controller('chartCtrl', function($scope, $cookies,sha
 					var non_sequential=false;
 					//need to blend the descriptions with the freqency data (stored in the _variableData)
 					var total=parseFloat(_variableData.valid);
+					if(typeof(data)=="undefined" ){//there is no 'catgry' values
+						if(typeof(_variableData.plotvalues)=="undefined"){
+							return	
+						}else{
+							//artificially create data obj - we likely have value and freq
+							var temp_data=[]
+							for (var i in _variableData.plotvalues){
+								temp_data.push({labl:{"#text":i}, catvalu:{"#text":i},freq:_variableData.plotvalues[i]})
+							}
+							data = temp_data
+						}
+						
+					}
 					for (var i = 0; i < data.length; i++){
 						rows.push({c:[]});
+						table.push({c:[]});
 						var num=rows.length-1//use a separate number since counts may be missaligned
+						var table_num=table.length-1
 						//
 						var labl="";
 						if(typeof (data[i].labl["#text"])!=="undefined"){
@@ -93,52 +114,61 @@ angular.module('odesiApp').controller('chartCtrl', function($scope, $cookies,sha
 								if(typeof(_variableData.plotvalues[data[i].catvalu["#text"]])!="undefined"){
 									rows[num].c.push({v: parseFloat(_variableData.plotvalues[data[i].catvalu["#text"]])});
 								}else{
-									rows[num].c.push({v:0})
+									rows[num].c.push({v:data[i].freq})
 								}								
 							}catch(e){
 								rows.pop();
 								data[i].missing=true;
+								//no data to show
 							}
-						}//
-						if(!data[i].missing) {
-							table.push({c:[]});		
+						}
+						//
+						if(!data[i].missing || data[i].catvalu) {
+							//table structure Values,Categories,N
 							//keep track of the items location
-							table[num].n=num
+							table[table_num].n=num
 							//
 							if (data[i].catvalu["#text"]) {
-								table[num].c.push({v: data[i].catvalu["#text"]});
+								table[table_num].c.push({v: data[i].catvalu["#text"]});
 							} else {
-								table[num].c.push({v: 0});	
+								table[table_num].c.push({v: 0});	
 							}
-							table[num].c.push({v:labl});
-							//
-							if(!isNaN(_variableData.plotvalues[data[i].catvalu["#text"]])){
-								table[num].c.push({v: parseFloat(_variableData.plotvalues[data[i].catvalu["#text"]])});
+							table[table_num].c.push({v:labl});
+							//make sure there are frequency values
+							if( _variableData.plotvalues && typeof(_variableData.plotvalues[data[i].catvalu["#text"]])!="undefined"){
+								if(!isNaN(_variableData.plotvalues[data[i].catvalu["#text"]])){
+									table[table_num].c.push({v: parseFloat(_variableData.plotvalues[data[i].catvalu["#text"]])});
+								}else{
+									table[num].c.push({v: 0});	
+								}
 							}else{
-								table[num].c.push({v: 0});	
+								table[table_num].c.push({v: ""});	
 							}
 							if(non_sequential){
 								//check if the value is a number
-								if(!isNaN(table[num].c[0])){
+								if(!isNaN(table[table_num].c[0])){
 									//adjust the number order
-									var temp_obj= jQuery.extend({},table[num].c)
-									table[num].c[0]=temp_obj[1]
-									table[num].c[1]=temp_obj[2]
-									table[num].c[2]=temp_obj[0]
+									var temp_obj= jQuery.extend({},table[table_num].c)
+									table[table_num].c[0]=temp_obj[1]
+									table[table_num].c[1]=temp_obj[2]
+									table[table_num].c[2]=temp_obj[0]
 									rows[num].c[1]=temp_obj[0]
 								}
 							}
 							//add color if valid value
-							if(rows[num].c.length>0){
+							if(rows[num] && rows[num].c.length>0){
 								rows[num].c.push({v: getColor(i)})
 								var display_val="";
 								if(total>0){
 									//Calculate the percent to 1 decimal
-									display_val=Math.round(Number(table[num].c[2].v)/total*1000)/10+"%";
+									display_val=Math.round(Number(table[table_num].c[2].v)/total*1000)/10+"%";
 								}else{
-									display_val= table[num].c[2].v
+									display_val= table[table_num].c[2].v
 								}
 								rows[num].c.push({v:display_val})
+								//also add 'value' for initial ordering
+								rows[num].c.push({v:data[i].catvalu["#text"]})
+								
 							}
 						}
 					}
@@ -164,8 +194,14 @@ angular.module('odesiApp').controller('chartCtrl', function($scope, $cookies,sha
 					for(var i = invalid_rows.length-1;i>=0;i--){	
 						rows.splice(invalid_rows[i],1)
 					}
-					
-					
+					//resort the responses based on the value ascending
+					if(table.length>0){
+						table.sort(function(a, b) {  return (b.c[0].v < a.c[0].v);});
+					}
+					if(rows.length>0){
+						rows.sort(function(a, b) {return (b.c[4].v < a.c[4].v);});
+					}
+
 					//
 					obj.chart= {
 							type : 'BarChart',
@@ -214,9 +250,9 @@ angular.module('odesiApp').controller('chartCtrl', function($scope, $cookies,sha
 					//
 					obj.table = table;
 					//
-					obj.summary = summary;
+					
 				}
-			}
+			
 			var sort_states=["default","desc","asc"];
 			$scope.sortgraph = function(num) {
 				var obj=$scope.variableCompare[num]

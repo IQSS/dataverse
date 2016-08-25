@@ -1124,9 +1124,11 @@
                                            update="@([id$=Messages])" oncomplete="if (args &amp;&amp; !args.validationFailed) PF('downloadPopup').hide();PF('downloadDataSubsetPopup').show();">
                                 <f:param name="DO_GB_VALIDATION" value="true"/>
                             </p:commandLink>
+                             
                             <p:commandLink type="button" styleClass="btn btn-default" value="#{bundle.acceptTerms}"
                                            rendered="#{DatasetPage.downloadType=='explore'}"
-                                           actionListener="#{DatasetPage.saveGuestbookResponse('explore')}"
+                                            actionListener="#{DatasetPage.saveGuestbookResponse('explore')}"
+                                           onclick="showData(#{DatasetPage.selectedDownloadFile.getId()}, '#{DatasetPage.getApiTokenKey()}')" 
                                            update="@([id$=Messages])" oncomplete="if (args &amp;&amp; !args.validationFailed) PF('downloadPopup').hide();">
                                 <f:param name="DO_GB_VALIDATION" value="true"/>
                             </p:commandLink>
@@ -1137,11 +1139,10 @@
                                                  actionListener="#{DatasetPage.saveGuestbookResponse('multiple')}" />
                                 <p:commandButton value="#{bundle.submit}" oncomplete="PF('downloadPopup').hide();PF('downloadDataSubsetPopup').show()"
                                                  update="downloadDataSubsetPopup" actionListener="#{DatasetPage.saveGuestbookResponse('subset')}" rendered="#{DatasetPage.downloadType=='subset'}" />
-								<!-- Updated explore button -->
+
                                 <p:commandButton value="#{bundle.submit}" oncomplete="PF('downloadPopup').hide()"
-                                                 onclick="showData(#{fileMetadata.getDataFile().getId()}, '#{DatasetPage.getApiTokenKey()}')" rendered="#{DatasetPage.downloadType=='explore'}" />
+                                                 actionListener="#{DatasetPage.saveGuestbookResponse('explore')}" rendered="#{DatasetPage.downloadType=='explore'}" />
                             </ui:remove>
-                            
                             <button type="button" class="btn btn-default" onclick="PF('downloadPopup').hide();PF('blockDatasetForm').hide();" value="#{bundle.cancel}">#{bundle.cancel}</button>
                         </div>
                     </p:dialog>
@@ -1535,7 +1536,7 @@
 							var protocol = pathArray[0];
 							var host = pathArray[2];
 							var url = protocol + '//' + host;
-	                    	window.open("/ddi_explore/index.html?uri="+url+"/api/access/datafile/"+id+"/metadata/ddi&="+key, '_new');
+	                    	window.open("/ddi_explore/index.html?uri="+url+"/api/access/datafile/"+id+"/metadata/ddi&"+key, '_new');
                     	}       
                      //]]>
                 	</script>
