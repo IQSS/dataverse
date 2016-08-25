@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.search.SortBy;
 import edu.harvard.iq.dataverse.util.FileSortFieldAndOrder;
@@ -750,6 +751,12 @@ public class DataFileServiceBean implements java.io.Serializable {
     public void removeFileMetadata(FileMetadata fileMetadata) {
         FileMetadata mergedFM = em.merge(fileMetadata);
         em.remove(mergedFM);
+    }
+    
+    public List<DataFile> findHarvestedFilesByClient(HarvestingClient harvestingClient) {
+        TypedQuery query = em.createQuery("SELECT d FROM DataFile d, DvObject o, Dataset s WHERE o.id = d.id AND o.owner.id = s.id AND s.harvestedFrom.id = :harvestingClientId", DataFile.class);
+        query.setParameter("harvestingClientId", harvestingClient.getId());
+        return query.getResultList();
     }
     
     /**/

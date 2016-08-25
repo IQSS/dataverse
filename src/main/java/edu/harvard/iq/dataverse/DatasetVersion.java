@@ -785,7 +785,7 @@ public class DatasetVersion implements Serializable {
     }
 
     public String getDistributorName() {
-        for (DatasetField dsf : this.getDatasetFields()) {
+        for (DatasetField dsf : this.getFlatDatasetFields()) {
             if (DatasetFieldConstant.distributorName.equals(dsf.getDatasetFieldType().getName())) {
                 return dsf.getValue();
             }
