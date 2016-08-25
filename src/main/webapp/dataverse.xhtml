@@ -12,6 +12,7 @@
 
     <h:body>
         <ui:composition template="/dataverse_template.xhtml">
+        
             <ui:param name="pageTitle" value="#{empty DataversePage.dataverse.name ? bundle.new : DataversePage.dataverse.name} #{bundle.dataverse}"/>
             <ui:param name="dataverse" value="#{DataversePage.dataverse}"/>
             <ui:define name="body">
@@ -588,7 +589,163 @@
                             <!-- END: Featured Dataverses Carousel -->
                         </ui:fragment>
                     </ui:fragment>
-
+				<p:fragment id="statement_wrapper" >
+				Are you interested in learning about how Dataverse can help you manage your research data and support the Canadian Tri-Agency Statement of <h:outputLink value="http://www.science.gc.ca/default.asp?lang=En&amp;n=83F7624E-1" target="_blank">Principles on Digital Data Management</h:outputLink>, read <a onclick="showStatement();" href="javascript:void(0)" id="more_link">more...</a>
+                 <div class="container">
+                <div class="panel-body row" id="statement">
+                <table class="full-table"><tr>
+                <td class="half-td">
+                	<p>Canada's federal research agencies are strong advocates for making publically-funded research data as accessible as possible. In 2016, the Tri-Agency released a Statement of the <h:outputLink value="http://www.science.gc.ca/default.asp?lang=En&amp;n=83F7624E-1">Principles on Digital Data Management</h:outputLink> that outlines expectations and responsibilities for research data management and open data sharing.</p>  				
+                </td>
+                <td class="half-td">
+                	<p>Dataverse is a publically accessible, secure and curated data repository platform, open to researchers and the public to deposit and share research data openly with anyone in the world.</p>
+					<p>For more information about Dataverse at your institution or for general inquiries, please contact us at <h:outputLink value="mailto:dataverse@scholarsportal.info">dataverse@scholarsportal.info</h:outputLink></p>	
+                </td>
+                </tr></table>
+             		<ul>
+					  <li>
+					    <input type="checkbox" checked="checked"></input>
+					    <i></i>
+					    <h2>Data Management Planning</h2>
+					    <div>
+						    <table class="full-table"><tr>
+						    <td class="half-td">
+						    	<blockquote>
+						    	<p>Tri-Council: "Data management plans are key elements of the data management process. They describe how data are collected, formatted, preserved and shared, as well as how existing datasets will be used and what new data will be created."</p>
+						    	</blockquote>
+						    </td>
+						    <td class="half-td">
+						    	 <p style="font-style: italic;">Dataverse includes features that allow you to implement aspects of a formal Data Management Plan, including documenting data using standard metadata, data deposit, and open data sharing.</p>
+						  	     <p style="font-style: italic;">A data management planning tool called <h:outputLink value="https://portagenetwork.ca/">DMP Assistant</h:outputLink> is available through the Portage National Data Service to guide you through the production of a formal Data Management Plan. Support is available through your university library, and for a list of institutional support contacts please refer to the <h:outputLink value="https://assistant.portagenetwork.ca/en/help#contact_info">Portage DMP Assistant Institutional Contacts</h:outputLink> webpage.</p>
+						    </td>
+						    </tr></table>
+					    </div>
+					  </li>
+					  <li>
+					    <input type="checkbox" checked="checked"></input>
+					    <i></i>
+					    <h2>Constraints and obligations</h2>
+					    <div>
+					    <table class="full-table"><tr>
+					    <td class="half-td"><blockquote>
+					     	<p>Tri-Council: "Research data must be managed in agreement with all commercial, legal and ethical obligations."</p>
+					    </blockquote></td>
+					    <td class="half-td">
+					    	<p style="font-style: italic;">Dataverse includes features that let you manage access and restrictions to your data for selected groups of users and to require others to agree to specific terms and conditions as necessary when viewing or downloading data.</p>
+						</td>
+					    </tr></table>
+						</div>
+					     </li>
+					  <li>
+					    <input type="checkbox" checked="checked"></input>
+					    <i></i>
+					    <h2>Adherence to Standards</h2>
+					     <div>
+					    <table class="full-table"><tr>
+					    <td class="half-td"><blockquote>
+					     <p>Tri-Council: "Data should be managed in accordance with the most appropriate and relevant standards and best practices, while recognizing that these are in a state of rapid evolution."</p>
+					    </blockquote></td>
+					    <td class="half-td">
+					    	<p style="font-style: italic;">Dataverse supports key metadata standards and best practices required for data management  in order to capture information about data so that it can be meaningfully reproduced and reused. Dataverse is designed using open source tools and is continuously evolving to meet the needs and requirements of the research community.</p>
+					  		<p style="font-style: italic;">For more information about the latest developments, visit the <h:outputLink value="http://dataverse.org/">Dataverse Project</h:outputLink> website.</p>
+					    </td>
+					    </tr></table>
+						</div>
+					  </li>
+					  <li>
+					    <input type="checkbox" checked="checked"></input>
+					    <i></i>
+					    <h2>Collection and Storage</h2>
+					     <div>
+					    <table class="full-table"><tr>
+					    <td class="half-td"><blockquote>
+					     <p>Tri-Council: "Data should be collected and stored throughout the research project using software and formats that ensure secure storage, and enable preservation of and access to the data well beyond the duration of the research project."</p>
+					    </blockquote></td>
+					    <td class="half-td"> <p style="font-style: italic;">Dataverse provides a robust server infrastructure to ensure that data uploaded to it is backed up and managed according to high quality systems standards.  Integration with library and archive’s digital preservation services and standards ensures the long-term preservation of records managed in the Dataverse collection.</p>
+					    </td>
+					    </tr></table>
+						</div>
+					  </li>
+					  <li>
+					    <input type="checkbox" checked="checked"></input>
+					    <i></i>
+					    <h2>Metadata</h2>
+					     <div>
+					    <table class="full-table"><tr>
+					    <td class="half-td"><blockquote>
+					    <p>Tri-Council: "All research data should be accompanied by metadata that accord with international and disciplinary best practices to enable future users to access, understand and reuse the data."</p>
+					    </blockquote></td>
+					    <td class="half-td">
+					       <p style="font-style: italic;">Dataverse implements key metadata standards to capture information about datasets and data files.  Support for metadata standards such as DDI, ISO 19115, FITS and others, allows researchers to capture critical data elements that will support reuse and interpretation of data.</p> 
+					    </td>
+					    </tr></table>
+						</div>
+					  </li>
+					  <li>
+					    <input type="checkbox" checked="checked"></input>
+					    <i></i>
+					    <h2>Preservation, Retention and Sharing</h2>
+					     <div>
+					    <table class="full-table"><tr>
+					    <td class="half-td"><blockquote>
+					     <p>Tri-Council: "Research data resulting from agency funding should normally be preserved in a publicly accessible, secure and curated repository or other platform for discovery and reuse by others."</p>
+					    </blockquote></td>
+					    <td class="half-td">
+					       <p style="font-style: italic;">Dataverse provides researchers with a professionally managed and publicly available repository for publishing and sharing data in a wide range of disciplines and fields. It is preservation capable, with data processed for long-term preservation and stored in the <h:outputLink value="https://spotdocs.scholarsportal.info/display/ODLRC/About+the+OLRC">Ontario Library Research Cloud</h:outputLink> for long-term preservation and reuse</p>
+					    </td>
+					    </tr></table>
+						</div>
+					  </li>
+					  <li>
+					    <input type="checkbox" checked="checked"></input>
+					    <i></i>
+					    <h2>Timeliness</h2>
+					     <div>
+					    <table class="full-table"><tr>
+					    <td class="half-td"><blockquote>
+					        <p>Data should be shared as early as possible in the research process when they are considered to be informative and of appropriate quality. </p>
+					    </blockquote></td>
+					    <td class="half-td">
+					    <p style="font-style: italic;">Dataverse supports data versioning so that data can be consistently documented, versioned, and shared, as it evolves throughout its lifecycle. Whether it is sharing data with project members or with close colleagues during the initial data collection or project phases, or, sharing data openly with anyone at the point of publication; dataverse supports timely release of data to key stakeholders and audiences as needed.</p>
+					    </td>
+					    </tr></table>
+						</div>
+					  </li>
+					  <li>
+					    <input type="checkbox" checked="checked"></input>
+					    <i></i>
+					    <h2>Acknowledgement and Citation</h2>
+					     <div>
+					    <table class="full-table"><tr>
+					    <td class="half-td"><blockquote>
+					     <p>Data are significant and legitimate products of research and must be recognized as such.</p>
+					    </blockquote></td>
+					    <td class="half-td">
+					    	<p style="font-style: italic;">Dataverse supports <h:outputLink value="https://www.datacite.org/">DataCite</h:outputLink> and other citation standards such as <h:outputLink value="http://orcid.org/">ORCID</h:outputLink>, to integrate data as a first class contribution into the broader array of scholarly publishing outputs.</p>
+					   		<p style="font-style: italic;">Dataverse also supports easy and unique identification of your data on the web, offering a Digital Object Identifier (DOI) upon deposit. DOIs are becoming the standard for citation; you can cite your data using a DOI in journal articles, on project websites, personal online CVs, etc. The DOI will remain persistent and resolvable so that your data will always be identifiable on the web.</p>
+					    </td>
+					    </tr></table>
+						</div>
+					  </li>
+					  <li>
+					    <input type="checkbox" checked="checked"></input>
+					    <i></i>
+					    <h2>Efficient and Cost Effective</h2>
+					     <div>
+					    <table class="full-table"><tr>
+					    <td class="half-td"><blockquote>
+					      <p>Data management should be efficient and cost effective. All data need to be managed, but not all data need to be shared or preserved – costs and benefits of doing so should be considered in the data management planning process.</p>
+					    </blockquote></td>
+					    <td class="half-td">
+					    	<p style="font-style: italic;">As open source software, Dataverse is a cost effective solution with a transparent development process. Scholars Portal Dataverse offers data deposit and sharing at no charge to researchers.  Scholars Portal is supported by university libraries in Ontario, through the Ontario Council of University Libraries (OCUL).  </p>
+					    </td>
+					    </tr></table>
+						</div>
+					  					   </li>
+				</ul>
+				</div>
+				</div>
+                </p:fragment>
                     <!-- Save / Cancel Button Panel -->
                     <div class="button-block" jsf:rendered="#{!empty DataversePage.editMode}">
                         <p:commandButton id="save" tabindex="9" value="#{DataversePage.dataverse.id == null ? bundle.createDataverse : bundle.saveChanges}" action="#{DataversePage.save}" update="@all">
@@ -844,8 +1001,8 @@
                     
                     //]]>
                 </script>
-
             </ui:define>
         </ui:composition>
+         
     </h:body>
 </html>

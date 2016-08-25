@@ -1,0 +1,114 @@
+<div id="chartModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"  ng-controller="chartCtrl">
+	<div >
+		<div class="modal-header">
+			<button type="button" class="close" ng-click="cancel()" data-dismiss="modal" aria-hidden="true">&times;</button>
+			<h4 ng-if="variableCompare.length==1" class="modal-title" id="myModalLabel">{{lang.detailsPage.variable}}: {{selectedVariable.labl}}</h4>
+			
+			<h4 ng-if="variableCompare.length>1" class="modal-title" id="myModalLabel">{{lang.detailsPage.multi_var}}</h4>
+		</div>
+	</div>
+	<div class="modal-body">	
+		<div  ng-repeat="selectedVariable in variableCompare">
+				<div ng-if="variableCompare.length>1">
+				   <h4 class="modal-title" id="myModalLabel">{{lang.detailsPage.variable}}:  {{selectedVariable.label}}</h4>	
+				</div>
+				<div id="chart" google-chart chart="selectedVariable.chart" style="{{selectedVariable.chart.cssStyle}}"></div>
+				<div id="{{selectedVariable.vid}}_chart_text" style="{{selectedVariable.chart_text.cssStyle}}">{{lang.error.no_data}}</div>
+				<div ng-show="selectedVariable.qstn[0].preqtxt[0].length > 0">
+					<h5>{{lang.detailsPage.prequestion}}</h5>
+					{{selectedVariable.qstn[0].preqtxt[0]}}
+				</div>
+				<div ng-show="selectedVariable.qstn[0].qstnlit[0].length > 0">
+					<h5>{{lang.detailsPage.literalquestion}}</h5>
+					{{selectedVariable.qstn[0].qstnlit[0]}}
+				</div>
+				<div class="variable-data-table">
+				
+					<table class="table table-bordered table-hover table-condensed">
+						<tr>
+							<th>
+								{{lang.detailsPage.values}}
+							</th>
+							<th>
+								{{lang.detailsPage.categories}}
+							</th>
+							<th >
+								<a ng-click="sortgraph($index)" href="javascript:void(0)">{{lang.detailsPage.n}}&nbsp;<table cellpadding="0" cellspacing="0" style="display: inline-table;font-size: 8px;  top: -5px; margin-bottom:-10px; position:relative;"><tr><td><div id="{{selectedVariable.vid}}_sort_up">&#9650;</div></td></tr><tr><td><div id="{{selectedVariable.vid}}_sort_down">&#9660;</div></td></tr></table></a>
+							</th>
+							<th ng-if="selectedVariable.table[0].c[3]">
+								{{lang.detailsPage.nw}}
+							</th>
+						</tr>
+						<tr ng-repeat="item in selectedVariable.table">
+							<td>
+								{{item.c[0].v}}
+							</td>
+							<td>
+								{{item.c[1].v}}
+							</td>
+							<td>
+								{{item.c[2].v}}
+							</td>
+							<td ng-if="item.c[3]">
+								{{item.c[3].v}}
+							</td>
+							
+						</tr>
+					</table>
+				</div>
+				
+				 
+			<div class="accordion" ng-controller="AccordionCtrl" >
+			   <div class="accordion-group">
+		            <div class="accordion-heading">
+		          
+		                <a class="accordion-toggle" ng-click="toggle('a');is_collapsed = !is_collapsed" data-toggle="collapse" data-target="#collapse_{{selectedVariable.id}}" >{{lang.detailsPage.summarystats}} <span class="glyphicon pull-right accordion-icon" ng-class="{'glyphicon-chevron-up': is_collapsed, 'glyphicon-chevron-down': !is_collapsed}" ></span></a>
+						
+		            </div>
+		            <div class="accordion-body" class="collapse" id="collapse_{{selectedVariable.id}}">
+		                <div class="accordion-inner" ng-show="show.a">
+		                	<table class="table table-bordered table-hover table-condensed">
+								<tr>
+									<th>{{lang.detailsPage.cases}}</th>
+									<th>{{lang.detailsPage.n}}</th>
+									<th ng-if="selectedVariable.summary[0].c[2]">{{lang.detailsPage.nw}}</th>
+								</tr>
+							<span>
+								<tr ng-repeat="item in selectedVariable.summary" ng-if="item.c[0]">
+									<td ng-html-bind="">
+										{{lang.detailsPage[item.c[0].v]}}
+									</td>
+									<td>
+										{{item.c[1].v}}
+									</td>
+									<td ng-if="item.c[2]">
+										{{item.c[2].v}}
+									</td>
+								</tr>
+							</span>
+							
+							</table>
+		                </div>
+		            </div>    
+				</div>
+       		</div>
+
+				<div ng-show="selectedVariable.qstn[0].ivuinstr[0].length > 0">
+					<h5>{{lang.detailsPage.interviewerinstruct}}</h5>
+					{{selectedVariable.qstn[0].ivuinstr[0]}}
+				</div>
+				<div ng-show="selectedVariable.universe[0]._.length || selectedVariable.universe[0].length > 0">
+					<h5>{{lang.detailsPage.universe}}</h5>
+					{{selectedVariable.universe[0]._}}
+				</div>
+				<div ng-show="selectedVariable.notes[0].length > 0">
+					<h5>{{lang.detailsPage.notes}}</h5>
+					{{selectedVariable.notes[0]}}
+				</div>
+			</div>
+		 <div class="modal-footer">
+            <button class="btn btn-default" ng-click="cancel()">{{lang.detailsPage.close}}</button>
+		</div>	
+    </div>    
+</div><!-- /.modal -->
+

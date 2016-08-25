@@ -1,0 +1,19 @@
+			<div id="loading-details" ng-show="loadingDetails" class="row content-area">
+		<div class="progress progress-striped active">
+		  <div class="progress-bar"  role="progressbar" aria-valuemin="0" aria-valuemax="100" style="width: 100%">	   
+		  </div>
+		</div>
+</div>
+<div id="header" class="pull-right">DDI Explorer - Beta</div>
+<div class="overlay"></div>
+<div class="pull-right">
+<button type="button" ng-class="{'hidden': lang.language=='English', 'btn btn-link' : lang.language=='French'}" ng-click="switchLanguage('en')" class="btn btn-link"><small><span class="long">English</span></small></button>
+<button type="button" ng-class="{'hidden': lang.language=='French', 'btn btn-link' : lang.language=='English'}" ng-click="switchLanguage('fr')" class="btn btn-link"><small><span class="long">Français</span></small></button>
+</div>
+	<div id="details-page">	
+			<h2>{{details.stdydscr.citation.titlstmt.titl['#text']}}</h2> <h4>{{citation}}</h4>	
+			
+			<div ng-include="'templates/survey-variables.html'"></div>
+        </div>
+
+</div>

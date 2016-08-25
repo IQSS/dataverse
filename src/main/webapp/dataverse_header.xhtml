@@ -8,7 +8,7 @@
                 xmlns:c="http://java.sun.com/jsp/jstl/core"
                 xmlns:o="http://omnifaces.org/ui"
                 xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
-
+	<div class="overlay"></div>
     <div id="dataverse-header-block">
         <!-- Navbar Panel -->
         <nav id="navbarFixed" class="navbar navbar-default navbar-fixed-top" role="navigation" jsf:rendered="#{!widgetWrapper.widgetView}">
@@ -20,8 +20,8 @@
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
-                    <a href="/">
-                        <span class="navbar-brand"><i id="icon-dataverse" class="icon-dataverse"></i> #{bundle.dataverse}</span>
+                   <a href="/">
+                        <img class="header_image" src="/resources/images/logo.png"/>
                     </a>
                     <h:outputLink value="#" onclick="PF('statusInfo').show()" rendered="#{!empty settingsWrapper.get(':StatusMessageText')}">
                         <span class="label label-default status">#{!empty settingsWrapper.get(':StatusMessageHeader') ? settingsWrapper.get(':StatusMessageHeader') : bundle['header.status.header']}</span>
@@ -33,22 +33,21 @@
                 <div class="collapse navbar-collapse" id="topNavBar">
                     <ul class="nav navbar-nav navbar-right">
                         <li>
-                            <a id="navbar-search-toggle" title="#{bundle['header.search.title']}">
+                            <a id="navbar-search-toggle" title="#{bundle['header.search.title']}" style="display:none;">
                                 <span class="glyphicon glyphicon-search"></span>
                             </a>
                         </li>
-                        <form class="navbar-form navbar-left" role="search" style="display:none;">
+                        <form id="navbarsearchform" class="navbar-form navbar-left" role="search">
                             <div class="form-group">
                                 <label class="sr-only" for="navbarsearch">#{bundle.search}</label>
                                 <input id="navbarsearch" type="text" class="search-input ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all" size="28" value="" placeholder="#{bundle['header.search.title']}"/>
                             </div>
-                            <button type="submit" class="btn btn-default" onclick="window.location = '/?q=' + document.getElementById('navbarsearch').value;
-                                    return false;">
-                                <span class="glyphicon glyphicon-search"/> #{bundle.find}
-                            </button>
+                            <a  id="navbarsearchbut" class="but_link but_link_small" href="#" onclick="window.location = '/?q=' + document.getElementById('navbarsearch').value; return false;" role="button">
+                                <span class="glyphicon glyphicon-search"/> Search
+                            </a>
                         </form>
                         <li>
-                            <h:outputLink value="http://dataverse.org/" target="_blank">
+                            <h:outputLink value="http://guides.scholarsportal.info/dataverse" target="_blank">
                                 #{bundle['header.about']}
                             </h:outputLink>
                         </li>
@@ -262,7 +261,19 @@
                 </p:tree>
             </div>
         </ui:remove>
-
+	<p:fragment id="bannerPanel">
+           <div class="jumbotron">
+	                <div class="container">
+	                    <div class="row">
+	                        <div class="float_left" id="institutional_dataverse">
+	                        </div>
+	                        <div class="float_right"><img src="/resources/images/slogan_1.png" class="slogan1"/>
+	                            <p id="cta-area"><a class="but_link but_link_lg" id="create-my-space" href="dataverse.xhtml?ownerId=1" role="button">Create My Dataverse</a><span class="or-text">or</span><a class="or-link" href="dataverse.xhtml"><span style="margin-right: 5px;" class="glyphicon glyphicon-list" aria-hidden="true"></span>Explore</a></p>
+	                        </div>
+	                    </div>
+	                </div>
+	          </div>
+        </p:fragment>
         <!-- Message Panel -->
         <p:fragment id="messagePanel" rendered="#{showMessagePanel}">
             <div class="container messagePanel">
@@ -270,4 +281,184 @@
             </div>
         </p:fragment>
     </div>
+      <script type="text/javascript">
+                    //<![CDATA[
+                     var ip_range_checker;
+                     var affiliation;
+                     var showing_content=false;
+                    $(document).ready(function () {
+                        displayBannerCheck();
+                    	$("#navbarsearch").focus();
+                    });
+                    function displayBannerCheck(){
+                     	var locate = window.location;
+                     	//only do this from the home page
+                 		if(locate.search=="" && locate.pathname=="/"){
+                 			$("#bannerPanel").show();
+                 			$("#dataverseHeader").hide();
+                 			$("#metrics-block").hide();
+                 			$("#search-row-panel").hide();
+                 			$("#footer").hide();
+                 			$("#actionButtonBlock").hide();
+                 			$(".panelSearchForm").hide();
+                 			$("#statement").hide();
+                 			//if we are at the home page consider redirecting to a more suitable one based on the ip
+                     		ip_range_checker=new IPRangeChecker(updateFeaturedSites)
+                 		}else{
+                 			showContent();
+                 		}
+                 	}
+                    function showStatement(){
+                    	var elm= $("#more_link")
+                    	if(elm.data("showing")!=true){
+                    		elm.data("showing",true)
+                    		$("#statement").slideDown();
+                    		elm.html("less...")
+                    		scrollToID('#dataverseForm\\:statement_wrapper');
+                    	}else{
+                    		elm.data("showing",false)
+                    		$("#statement").slideUp();
+                    		elm.html("more...")
+                    	}
+                    }
+                    function scrollToID(id){
+                        var aTag = $(id);
+                        $('html,body').animate({scrollTop: aTag.offset().top-($("#navbarFixed").height()+10)});
+                    }
+                    function showContent(){
+                    	$(".overlay").fadeOut();
+                    	showing_content=true;
+                    }
+                    //failsafe if ip range can't be determined
+                    setTimeout(function() {
+                	   if(!showing_content){
+                		   showContent() 
+                	   }
+                	}, 1500);
+                    
+                    function updateFeaturedSites(){
+                    	//note: we have to wait a bit of time before these items are loaded
+             			if(affiliation=="ADMIN"){
+         					affiliation="RYERSON";
+         				}
+             			//get the home by looking up the name
+             			var home;
+             			$.each(institution_mapping.affiliates, function (i, item) {
+             				if(institution_mapping.affiliates[i].name==affiliation){
+             					home=institution_mapping.affiliates[i].home
+             				}
+				    	});
+             			$("div.owl-item").each(function( index ) {
+             				  var path =$( this ).find("a")[0].pathname
+             				  if(path.indexOf(home)>-1){
+             					 $("div.owl-wrapper").prepend($( this ))
+             				  }
+             				 
+             			});
+             			showContent()
+                    }
+                    /*
+                    The following appliation loads ip ranges and compares them to the system ip to see if there are any matches
+                    */
+                    IPRangeChecker=function(func){
+                    	this.entitlements_xml="https://entitlements.scholarsportal.info/entitlements/entitlements/geo.xml"
+                    	this.func=func
+                    	//first load the json list
+                    	$.ajax({
+                    		  dataType: 'json',
+                    		  url: "/resources/js/affiliates.json?callback=?",
+                    		  data: {},
+                    		  success: function (data) {
+                    			  
+                   					institution_mapping=data
+                   					ip_range_checker.findIP();
+                    			  },
+                    			  error: function (e) {
+                    				  institution_mapping=$.parseJSON(e.responseText)
+                      			 	console.log(institution_mapping)
+                      			 	ip_range_checker.findIP();
+                      			  }
+                    		});
+                    }
+
+                    IPRangeChecker.prototype.findIP=function() {
+                    try{
+                      var myPeerConnection = window.RTCPeerConnection || window.mozRTCPeerConnection || window.webkitRTCPeerConnection; //compatibility for firefox and chrome
+                      var pc = new myPeerConnection({iceServers: []}),
+                    	noop = function() {},
+                    	localIPs = {},
+                    	ipRegex = /([0-9]{1,3}(\.[0-9]{1,3}){3}|[a-f0-9]{1,4}(:[a-f0-9]{1,4}){7})/g,
+                    	key;
+                    
+                      function ipIterate(ip) {
+                    	if (!localIPs[ip]) {
+                    		//
+                    		ip_range_checker.setIP(ip)
+                    		ip_range_checker.loadXMLFile(ip_range_checker.entitlements_xml,ip_range_checker.getIPRanges)
+                    		localIPs[ip] = true;
+                    	}
+                      }
+                      pc.createDataChannel(""); //create a bogus data channel
+                      pc.createOffer(function(sdp) {
+                    	sdp.sdp.split('\n').forEach(function(line) {
+                    	  if (line.indexOf('candidate') < 0) return;
+                    	  line.match(ipRegex).forEach(ipIterate);
+                    	});
+                    	pc.setLocalDescription(sdp, noop, noop);
+                      }, noop); // create offer and set local description
+                      pc.onicecandidate = function(ice) { //listen for candidate events
+                    	if (!ice || !ice.candidate || !ice.candidate.candidate || !ice.candidate.candidate.match(ipRegex)) return;
+                    	ice.candidate.candidate.match(ipRegex).forEach(ipIterate);
+                      };
+                    }catch(e){
+                    	//unable to get the users ip
+                    	ip_range_checker.func();
+                    }
+                    }
+                    IPRangeChecker.prototype.setIP = function(_ip){
+                    	console.log(_ip)
+                    	var reg_pat="|\\*|\\-)\\.("
+                    	var ip_reg_ex="("+_ip.split(".").join(reg_pat)+reg_pat.slice(0, -3);
+                    	console.log(ip_reg_ex)
+                    	this.patt=new RegExp(ip_reg_ex)
+                    }
+                    IPRangeChecker.prototype.loadXMLFile = function(file,func){
+                    	var xhttp = new XMLHttpRequest();
+                    	xhttp.onreadystatechange = function() {
+                    		
+                    	    if (xhttp.readyState == 4 && xhttp.status == 200) {
+                    	    	func(xhttp.responseXML);
+                    	    }
+                    	};
+                    	xhttp.open("GET", file, true);
+                    	xhttp.send();
+                    }
+                    
+                    IPRangeChecker.prototype.getIPRanges=function(xml){
+                    	var pattern_array=[];
+                    	var match_array=[];
+                    	var group =xml.getElementsByTagName("group");
+                    	for (var i = 0; i <group.length; i++) {
+                    		var pattern=group[i].getElementsByTagName("pattern");
+                    		for (var j = 0; j <pattern.length; j++) {
+                    			pattern_array.push({"name":group[i].attributes['name'].value,"range":pattern[j].innerHTML})
+                    		}
+                    	}
+                    	//loop through each of the items and compare it to the ip
+                    	for (var i = 0; i <pattern_array.length; i++) {
+                    		if(ip_range_checker.patt.test(pattern_array[i]["range"])){
+                    			match_array.push(pattern_array[i])
+                    		}
+                    		
+                    	}
+                    	if(match_array.length>0){
+                    	//take the first match
+                    		var redirect_page = window.location.hostname+"/dataverse/"
+                    		affiliation =match_array[0].name;
+                    		ip_range_checker.func();
+                    	}
+                    }
+                    //]]>
+                </script>
+               
 </ui:composition>

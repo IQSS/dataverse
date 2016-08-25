@@ -1,0 +1,47 @@
+<!doctype html>
+<html ng-app="odesiApp" ng-controller="mainCtrl">
+	<head>	
+		<meta charset="utf-8">
+		<title>DDI Explorer - Beta</title>
+		<meta name="description" content="">
+		<link rel="stylesheet" href="assets/css/main.css">
+		<script type="text/javascript" src="assets/js/vendor/jquery/jquery-1.11.2.min.js"></script>
+		<script type="text/javascript" src="assets/js/english.json"></script>
+		<script type="text/javascript" src="assets/js/french.json"></script>	
+		
+	</head>
+	<body id="scrollArea">
+		<!--[if IE 8]>
+	    <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+	    <![endif]-->
+	    <div id="main" class="container" >
+	    	
+      		<div class="outer-wrap"> 
+				<div class="inner-wrap" ng-class="{true: 'opendrawer', false: 'closeddrawer'}[isOpen]">
+					
+					<div class="wrapper" ng-click="closeDrawer()">						
+						<div ng-view="" autoscroll="true"></div>
+						<div class="clearfix"></div>
+					
+					</div>      		
+      				
+				</div>
+			</div>
+    	</div>
+		
+		<script type="text/javascript" src="assets/js/vendor/angular/angular.js"></script>
+		<script type="text/javascript" src="assets/js/vendor/angular/angular-route.min.js"></script>
+		<script type="text/javascript" src="assets/js/vendor/bootstrap/bootstrap.min.js"></script>
+		<script type="text/javascript" src="assets/js/vendor/angular/ui-bootstrap-tpls-0.12.1.min.js"></script>
+		<script type="text/javascript" src="assets/js/vendor/angular/ng-google-chart.js"></script>
+		<script type="text/javascript" src="assets/js/vendor/angular/angular-cookies.min.js"></script>
+    	<script type="text/javascript" src="assets/js/vendor/angular/angular-sanitize.min.js"></script>
+		<script type="text/javascript" src="assets/js/app.js"></script> 
+		<script type="text/javascript" src="assets/js/controllers/main.js"></script> 
+		<script type="text/javascript" src="assets/js/controllers/details.js"></script>  
+		<script type="text/javascript" src="assets/js/controllers/smoothscroll.js"></script>
+	    <script type="text/javascript" src="assets/js/controllers/chart.js"></script>
+	   
+	</body>
+
+</html>
