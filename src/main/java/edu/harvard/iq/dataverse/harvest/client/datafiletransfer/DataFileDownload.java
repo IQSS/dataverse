@@ -16,38 +16,70 @@ import java.util.logging.Logger;
 
 /**
  *
- * @author anuj
+ * @author Anuj Thakur
+ * @version 4.5 
  */
-public class DataFileDownload {
+public class DataFileDownload extends Thread {
     
     private static final Logger logger = Logger.getLogger("edu.harvard.iq."
             + "dataverse.harvest.client.datafiletransfer.DataFileDownload");
     
-    /*
-    @param fileURL a String variable for the Data File Url
+    /**
+    @param fileURL a String variable for the data file url
     @param fileAbsolutePath a String variable for the Data File name and path 
            i.e it's absolute path
     @throws FileNotFoundException, IOException
     */
+    String fileURL;
+    String fileAbsolutePath;
+    public long size = 0;
+    
     public DataFileDownload(String fileURL , String fileAbsolutePath ) throws 
             FileNotFoundException, IOException{
-        this.saveDataFile(fileURL , fileAbsolutePath);      
+        /**
+         * The Url of the data file where it is initially present i.e on the 
+         * harvesting server
+         */
+        this.fileURL = fileURL;
+        /**
+         * The absolute path where the file has to be saved.
+         */
+        this.fileAbsolutePath = fileAbsolutePath;
+        /**
+         * Used to measure the performance of this transfer mechanism.
+         */
+        this.size = 0;    
     }    
     
+    /**
+     * Downloads the data file from the fileURL to the fileAbsolutePath location on
+     * the current system.
+     * 
+     * @param fileURL a String variable for the data file url
+     * @param fileAbsolutePath a String variable for the data file name and path
+     *        i.e it's absolute path
+     * @throws MalformedURLException
+     * @throws FileNotFoundException
+     * @throws IOException 
+     */
     public void saveDataFile(String fileURL, String fileAbsolutePath) throws 
             MalformedURLException, FileNotFoundException, IOException {
         BufferedInputStream in = null;
         FileOutputStream fout = null;
         try {
-            logger.log( Level.INFO , "Downloading file at URL: "+fileURL);
+            //logger.log( Level.INFO , "Downloading file at URL: "+fileURL);
             in = new BufferedInputStream(new URL(fileURL).openStream());
             fout = new FileOutputStream(fileAbsolutePath);
 
             byte data[] = new byte[2048];
             int count;
             while ((count = in.read(data, 0, 2048)) != -1) {
-                fout.write(data, 0, count);
+                fout.write(data, 0, 2048);
+                this.size = this.size + 2048;
             }
+        }
+        catch (MalformedURLException mue) {
+            logger.log( Level.WARNING , "Malformed URL: "+fileURL);
         }
         catch (IOException ioe){
             logger.log( Level.WARNING , "Unable to download file with URL: "
@@ -61,4 +93,5 @@ public class DataFileDownload {
                 fout.close();
         }
     }
+    
 }

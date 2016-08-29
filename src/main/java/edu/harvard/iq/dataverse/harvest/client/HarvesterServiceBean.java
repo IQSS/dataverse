@@ -43,6 +43,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.api.imports.ImportServiceBean;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -187,34 +188,31 @@ public class HarvesterServiceBean {
                 } else {
                     throw new IOException("Unsupported harvest type");
                 }
-                harvestingClientService.setHarvestSuccess(harvestingClientId, new Date(), harvestedDatasetIds.size(), failedIdentifiers.size(), deletedIdentifiers.size());
-                hdLogger.log(Level.INFO, "COMPLETED HARVEST, server=" + harvestingClientConfig.getArchiveUrl() + ", metadataPrefix=" + harvestingClientConfig.getMetadataPrefix());
-                hdLogger.log(Level.INFO, "Datasets created/updated: " + harvestedDatasetIds.size() + ", datasets deleted: " + deletedIdentifiers.size() + ", datasets failed: " + failedIdentifiers.size());
-
+             
                 
                  
-                //Adding code to Download File
+                //Adding code for caching data file.
                 /*
-                @author Anuj
+                @author Anuj, Leonid
+                * This part of the code caches the data file on Object store
+                * service endpoint of MOC's Openstack production infrastructure.
+                * For ever datafile in every harvested dataset the following steps
+                * are repeated.
+                * 1. Download the data file under /tmp directory.
+                * 2. New DataFileIO object is created and the file is copied
+                *    to it's permanent location. This is 'Swift' by default.
+                *    This can be changed by changing the DEFAULT_STORAGE_DRIVER_IDENTIFIER
+                *    static variable in DataAccess file.
+                * 3. EntityManager is updated with the new harvestedFile and it's 
+                *    updated information.
+                * 4. The file is deleted from the /tmp directory.
+                * After completion of this process the Harvesting is marked successful.
+                *
                 */
-               // List<String> listOfDataFileURL =  new ArrayList<String>();
-               // List<String> listOfDataFileName =  new ArrayList<String>();
-               // HashMap<String, String> fileToLocationMapping = new HashMap<String, String>();
-               
-               //hdLogger.log(Level.INFO, "Fetching the http data file links.");
-               
-               // DataFileHTTPTransfer dfht = new DataFileHTTPTransfer();
-               // listOfDataFileURL = dfht.getListOfDataFileURL();
-               // listOfDataFileName = dfht.getListOfDataFileName();
-               
-               //hdLogger.log(Level.INFO, "Fetching of data file links completed.");
-               
                String dirName = "/tmp";
                
-               hdLogger.log(Level.INFO, "Downloading data files at "+dirName);
+               hdLogger.log(Level.INFO, "Downloading data files to Swift");
                
-               long startTime = System.currentTimeMillis();
-              
                 for (Long datasetId : harvestedDatasetIds) {
                     Dataset harvestedDataset = datasetService.find(datasetId);
 
@@ -222,30 +220,22 @@ public class HarvesterServiceBean {
 
                         String fileUrl = harvestedFile.getStorageIdentifier();
                         String fileName = harvestedFile.getFileMetadata().getLabel();
-                        logger.info("fileUrl: "+fileUrl);
-                        logger.info("fileName: "+fileName);
 
-                        //for (int index = 0; index < listOfDataFileURL.size(); index++) {
-                          //  new DataFileDownload(listOfDataFileURL.get(index),
-                          //          dirName + "/" + listOfDataFileName.get(index));
-                          
-                        new DataFileDownload(fileUrl, dirName + "/" + fileName);
-                            
+                        DataFileDownload dfd = new DataFileDownload(fileUrl, dirName + "/" + fileName);
+                        dfd.saveDataFile(fileUrl, dirName + "/" + fileName);
+                        
                         fileService.generateStorageIdentifier(harvestedFile);
-                           
-                        DataFileIO dataAccess = harvestedFile.getAccessObject();
+                            
+                        DataFileIO dataAccess = DataAccess.createNewDataFileIO(harvestedFile, harvestedFile.getStorageIdentifier());
                         Path tempFilePath = Paths.get(dirName, fileName);
-                        
-                        logger.info("Path: "+tempFilePath);
-                        
+                                                
                         try {
                             if (harvestedDataset.getFileSystemDirectory() != null
                                     && !Files.exists(harvestedDataset.getFileSystemDirectory())) {
                                 /* Note that "createDirectories()" must be used - not 
-                     * "createDirectory()", to make sure all the parent 
-                     * directories that may not yet exist are created as well. 
+                                 * "createDirectory()", to make sure all the parent 
+                                 * directories that may not yet exist are created as well. 
                                  */
-
                                 Files.createDirectories(harvestedDataset.getFileSystemDirectory());
                             }
                         } catch (IOException dirEx) {
@@ -258,25 +248,24 @@ public class HarvesterServiceBean {
                             // it to the user - if anything. 
                             // -- L.A. 
                         }
-                        
+                       
                         // Copies the file from tmp location to the permanent 
-                        // directory 
+                        // directory i.e swift service endpoint.
                         dataAccess.copyPath(tempFilePath);
                         em.merge(harvestedFile);
                         
                         // Deleting the Data File from the /tmp directory.
-                        if(!harvestedFile.getStorageIdentifier().startsWith("http://"))
+                        if(harvestedFile.getStorageIdentifier().startsWith("http://rdgw"))
                         Files.delete(tempFilePath);
-                        
-                            
+                  
+
                     }
                 }
-               
-               long endTime = System.currentTimeMillis();
-               long totalTime = ((endTime - startTime) / 60000);
-               
-               hdLogger.log(Level.INFO,"Total time required to download data files: "+totalTime+" minutes");
-               hdLogger.log(Level.INFO, "Completed downloading of data files at "+dirName);
+           
+               harvestingClientService.setHarvestSuccess(harvestingClientId, new Date(), harvestedDatasetIds.size(), failedIdentifiers.size(), deletedIdentifiers.size());
+               hdLogger.log(Level.INFO, "COMPLETED HARVEST, server=" + harvestingClientConfig.getArchiveUrl() + ", metadataPrefix=" + harvestingClientConfig.getMetadataPrefix());
+               hdLogger.log(Level.INFO, "Datasets created/updated: " + harvestedDatasetIds.size() + ", datasets deleted: " + deletedIdentifiers.size() + ", datasets failed: " + failedIdentifiers.size());
+
                
                
                 // now index all the datasets we have harvested - created, modified or deleted:
@@ -294,8 +283,9 @@ public class HarvesterServiceBean {
                     } else {
                         hdLogger.log(Level.INFO, "(All harvested content already reindexed)");
                     }
-                 */
+                 //*/
             }
+                        
             //mailService.sendHarvestNotification(...getSystemEmail(), harvestingDataverse.getName(), logFileName, logTimestamp, harvestErrorOccurred.booleanValue(), harvestedDatasetIds.size(), failedIdentifiers);
         } catch (Throwable e) {
             harvestErrorOccurred.setValue(true);
