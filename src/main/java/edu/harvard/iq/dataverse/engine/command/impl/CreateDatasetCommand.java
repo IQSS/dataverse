@@ -136,15 +136,16 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
                 && theDataset.getGlobalIdCreateTime() == null) {
             if (protocol.equals("doi")) {
                 String doiRetString = "";
+                IdServiceBean idServiceBean = IdServiceBean.getBean(ctxt);
                 try{
                     logger.log(Level.FINE,"creating identifier");
-                    doiRetString = IdServiceBean.getBean(ctxt).createIdentifier(theDataset);
+                    doiRetString = idServiceBean.createIdentifier(theDataset);
                 } catch (Exception e){
                     logger.log(Level.WARNING, "Exception while creating Identifier: " + e.getMessage(), e);
                 }
 
                 // Check return value to make sure registration succeeded
-                if (doiProvider.equals("EZID") && doiRetString.contains(theDataset.getIdentifier())) {
+                if (!idServiceBean.registerWhenPublished() && doiRetString.contains(theDataset.getIdentifier())) {
                     theDataset.setGlobalIdCreateTime(createDate);
                 }
 

@@ -37,6 +37,11 @@ public class DOIDataCiteServiceBean extends AbstractIdServiceBean {
     }
 
     @Override
+    public boolean registerWhenPublished() {
+        return true;
+    }
+
+    @Override
     public boolean alreadyExists (Dataset dataset){
         logger.log(Level.FINE,"alreadyExists");
         boolean alreadyExists;

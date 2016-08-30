@@ -62,6 +62,11 @@ public class DOIEZIdServiceBean extends AbstractIdServiceBean {
     }
 
     @Override
+    public boolean registerWhenPublished() {
+        return false;
+    }
+
+    @Override
     public boolean alreadyExists(Dataset dataset) throws Exception {
         logger.log(Level.FINE,"alreadyExists");
         try {

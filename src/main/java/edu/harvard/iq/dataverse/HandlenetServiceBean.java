@@ -70,7 +70,12 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
     public HandlenetServiceBean() {
         logger.log(Level.FINE,"Constructor");
     }
-    
+
+    @Override
+    public boolean registerWhenPublished() {
+        throw new NotImplementedException();
+    }
+
     public void reRegisterHandle(Dataset dataset) {
         logger.log(Level.FINE,"reRegisterHandle");
         if (!HANDLE_PROTOCOL_TAG.equals(dataset.getProtocol())) {

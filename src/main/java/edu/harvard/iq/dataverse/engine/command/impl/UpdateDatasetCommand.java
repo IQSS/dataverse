@@ -5,12 +5,7 @@
  */
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.DataFileCategory;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetVersionUser;
-import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
@@ -181,13 +176,15 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
         String nonNullDefaultIfKeyNotFound = "";
         String doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
 
+        IdServiceBean idServiceBean = IdServiceBean.getBean(ctxt);
+        boolean registerWhenPublished = idServiceBean.registerWhenPublished();
         logger.log(Level.FINE,"doiProvider={0} protocol={1} GlobalIdCreateTime=={2}", new Object[]{doiProvider, theDataset.getProtocol(), theDataset.getGlobalIdCreateTime()});
         if (theDataset.getProtocol().equals("doi")
-                && doiProvider.equals("EZID") && theDataset.getGlobalIdCreateTime() == null) {
+                && !registerWhenPublished && theDataset.getGlobalIdCreateTime() == null) {
             String doiRetString = null;
             try {
                 logger.fine("creating identifier");
-                doiRetString = ctxt.doiEZId().createIdentifier(theDataset);
+                doiRetString = idServiceBean.createIdentifier(theDataset);
                 if (doiRetString.contains(theDataset.getIdentifier())) {
                     logger.fine("created: "+doiRetString);
                     theDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
@@ -196,7 +193,7 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
                     if (doiRetString.contains("identifier already exists")) {
                         theDataset.setIdentifier(ctxt.datasets().generateIdentifierSequence(theDataset.getProtocol(), theDataset.getAuthority(), theDataset.getDoiSeparator()));
                         logger.fine("creating identifier again because it exists: "+doiRetString);
-                        doiRetString = ctxt.doiEZId().createIdentifier(theDataset);
+                        doiRetString = idServiceBean.createIdentifier(theDataset);
                         logger.fine("new value: "+doiRetString);
                         if (!doiRetString.contains(theDataset.getIdentifier())) {
                             // didn't register new identifier

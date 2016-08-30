@@ -15,6 +15,8 @@ public interface IdServiceBean {
 
     boolean alreadyExists(Dataset dataset) throws Exception;
 
+    boolean registerWhenPublished();
+
     String createIdentifier(Dataset dataset) throws Exception;
 
     HashMap getIdentifierMetadata(Dataset dataset);
