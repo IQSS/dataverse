@@ -320,7 +320,7 @@ public class SwiftAccessIO extends DataFileIO {
         
         if (!dataContainer.exists()) {
             if (writeAccess) {
-                dataContainer.create().makePublic();
+                dataContainer.create();
                 //dataContainer.makePublic();
             } else {
                 // This is a fatal condition - it has to exist, if we were to 
