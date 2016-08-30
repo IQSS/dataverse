@@ -20,7 +20,7 @@ import javax.ejb.Stateless;
 @Stateless
 public class DOIDataCiteServiceBean extends AbstractIdServiceBean {
     
-    private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.DOIDataCiteServiceBean");
+    private static final Logger logger = Logger.getLogger(DOIDataCiteServiceBean.class.getCanonicalName());
 
 
     @EJB

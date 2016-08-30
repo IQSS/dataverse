@@ -63,7 +63,7 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
     DataverseServiceBean dataverseService;
     @EJB 
     SettingsServiceBean settingsService;    
-    private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.HandlenetServiceBean");
+    private static final Logger logger = Logger.getLogger(HandlenetServiceBean.class.getCanonicalName());
     
     private static final String HANDLE_PROTOCOL_TAG = "hdl";
     

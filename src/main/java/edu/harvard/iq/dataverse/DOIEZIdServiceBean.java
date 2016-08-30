@@ -35,7 +35,7 @@ public class DOIEZIdServiceBean extends AbstractIdServiceBean {
     EZIDService ezidService;
     EZIDServiceRequest ezidServiceRequest;
     String baseURLString =  "https://ezid.cdlib.org";
-    private static final Logger logger = Logger.getLogger("edu.harvard.iq.dvn.core.index.DOIEZIdServiceBean");
+    private static final Logger logger = Logger.getLogger(DOIEZIdServiceBean.class.getCanonicalName());
     
     // get username and password from system properties
     private String USERNAME = "";
