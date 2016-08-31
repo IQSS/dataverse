@@ -256,7 +256,7 @@ public class SwiftAccessIO extends DataFileIO {
         
        //
        // if (storageIdentifier.startsWith("swift://")) {
-        if (storageIdentifier.startsWith("http://rdgw")) {
+        if (storageIdentifier.startsWith(DataAccess.DEFAULT_SWIFT_ENDPOINT_START_CHARACTERS)) {
             // This is a call on an already existing swift object. 
 
             //String[] swiftStorageTokens = storageIdentifier.substring(8).split(":", 3);
@@ -312,7 +312,7 @@ public class SwiftAccessIO extends DataFileIO {
         */
         Container dataContainer;
           
-        if (storageIdentifier.startsWith("http://rdgw")) {
+        if (storageIdentifier.startsWith(DataAccess.DEFAULT_SWIFT_ENDPOINT_START_CHARACTERS)) {
             dataContainer = account.getContainer(swiftContainer); 
         } else {
             dataContainer = account.getContainer(swiftEndPoint + "" +swiftContainer);
