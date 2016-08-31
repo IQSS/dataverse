@@ -255,7 +255,7 @@ public class HarvesterServiceBean {
                         em.merge(harvestedFile);
                         
                         // Deleting the Data File from the /tmp directory.
-                        if(harvestedFile.getStorageIdentifier().startsWith("http://rdgw"))
+                        if(harvestedFile.getStorageIdentifier().startsWith(DataAccess.DEFAULT_SWIFT_ENDPOINT_START_CHARACTERS))
                         Files.delete(tempFilePath);
                   
 
