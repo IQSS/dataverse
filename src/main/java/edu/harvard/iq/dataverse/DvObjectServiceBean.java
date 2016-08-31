@@ -174,7 +174,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
      */
     public List<Long> getAllHarvestedDataverseIds(){
         
-        String qstr = "SELECT h.dataverse_id FROM harvestingdataverseconfig h;";
+        String qstr = "SELECT h.dataverse_id FROM harvestingclient h;";
 
         return em.createNativeQuery(qstr)
                         .getResultList();

@@ -71,6 +71,8 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     EjbDataverseEngine commandEngine;
     @Inject
     DataverseRequestServiceBean dvRequestService;
+    @Inject
+    PermissionsWrapper permissionsWrapper;
     
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     EntityManager em;
@@ -111,11 +113,11 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
 
         // check if dvObject exists and user has permission
         if (dataset == null) {
-            return "/404.xhtml";
+            return permissionsWrapper.notFound();
         }
 
         if (!permissionService.on(dataset).has(Permission.ManageDatasetPermissions)) {
-            return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
+            return permissionsWrapper.notAuthorized();
         }
         
         initMaps();
@@ -399,9 +401,10 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     }    
 
     private boolean assignRole(RoleAssignee ra,  DataFile file, DataverseRole r) {
-        try {
-            commandEngine.submit(new AssignRoleCommand(ra, r, file, dvRequestService.getDataverseRequest()));
-            JsfHelper.addSuccessMessage(r.getName() + java.text.MessageFormat.format(ResourceBundle.getBundle("Bundle").getString("permission.roleAssignedToFor"), new Object[] {ra.getDisplayInfo().getTitle(), file.getDisplayName()}));
+        try { 
+            String privateUrlToken = null;
+            commandEngine.submit(new AssignRoleCommand(ra, r, file, dvRequestService.getDataverseRequest(), privateUrlToken));
+            JsfHelper.addSuccessMessage(r.getName() + " role assigned to " + ra.getDisplayInfo().getTitle() + " for " + file.getDisplayName() + ".");
         } catch (PermissionException ex) {
             JH.addMessage(FacesMessage.SEVERITY_ERROR, ResourceBundle.getBundle("Bundle").getString("permission.roleNotAbleToBeAssigned"), java.text.MessageFormat.format(ResourceBundle.getBundle("Bundle").getString("permission.permissionsMissing"), new Object[] {ex.getRequiredPermissions().toString()}));
             return false;

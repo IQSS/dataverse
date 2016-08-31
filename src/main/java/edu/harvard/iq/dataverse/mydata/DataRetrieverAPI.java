@@ -17,6 +17,7 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
 import edu.harvard.iq.dataverse.authorization.MyDataQueryHelperServiceBean;
+import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchException;
@@ -67,8 +68,10 @@ public class DataRetrieverAPI extends AbstractApiBean {
     SearchServiceBean searchService;
     @EJB
     AuthenticationServiceBean authenticationService;
-        @EJB
+    @EJB
     MyDataQueryHelperServiceBean myDataQueryHelperServiceBean;
+    @EJB
+    GroupServiceBean groupService;
     
     private List<DataverseRole> roleList;
     private DataverseRolePermissionHelper rolePermissionHelper;
@@ -196,7 +199,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
         // -------------------------------------------------------
         // Create new filter params that only check by the User 
         // -------------------------------------------------------
-        MyDataFilterParams filterParams = new MyDataFilterParams(searchUser.getIdentifier(), myDataFinder.getRolePermissionHelper());
+        MyDataFilterParams filterParams = new MyDataFilterParams(searchUser, myDataFinder.getRolePermissionHelper());
         if (filterParams.hasError()){
             logger.severe("getTotalCountsFromSolr. filterParams error: " + filterParams.getErrorMessage());           
             return null;
@@ -348,7 +351,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
         // ---------------------------------
         // (1) Initialize filterParams and check for Errors 
         // ---------------------------------
-        MyDataFilterParams filterParams = new MyDataFilterParams(authUser.getIdentifier(), dtypes, pub_states, roleIds, searchTerm);
+        MyDataFilterParams filterParams = new MyDataFilterParams(authUser, dtypes, pub_states, roleIds, searchTerm);
         if (filterParams.hasError()){
             return this.getJSONErrorString(filterParams.getErrorMessage(), filterParams.getErrorMessage());
         }
@@ -358,7 +361,8 @@ public class DataRetrieverAPI extends AbstractApiBean {
         // ---------------------------------
         myDataFinder = new MyDataFinder(rolePermissionHelper,
                                         roleAssigneeService,
-                                        dvObjectServiceBean);
+                                        dvObjectServiceBean, 
+                                        groupService);
         this.myDataFinder.runFindDataSteps(filterParams);
         if (myDataFinder.hasError()){
             return this.getJSONErrorString(myDataFinder.getErrorMessage(), myDataFinder.getErrorMessage());
@@ -437,7 +441,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
                                 paginationStart);
         
         RoleTagRetriever roleTagRetriever = new RoleTagRetriever(this.rolePermissionHelper, this.roleAssigneeSvc, this.dvObjectServiceBean);
-        roleTagRetriever.loadRoles(searchUser.getIdentifier(), solrQueryResponse);
+        roleTagRetriever.loadRoles(searchUser, solrQueryResponse);
 
                 
         jsonData.add(DataRetrieverAPI.JSON_SUCCESS_FIELD_NAME, true)

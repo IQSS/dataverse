@@ -70,6 +70,8 @@ public class SystemConfig {
     private static String appVersionString = null; 
     private static String buildNumberString = null; 
     
+    private static final String JVM_TIMER_SERVER_OPTION = "dataverse.timerServer";
+    
     public String getVersion() {
         return getVersion(false);
     }
@@ -412,19 +414,6 @@ public class SystemConfig {
         return settingsService.isTrueForKey(SettingsServiceBean.Key.ShibEnabled, safeDefaultIfKeyNotFound);
     }
 
-    public boolean isShibUseHeaders() {
-        boolean safeDefaultIfKeyNotFound = false;
-        return settingsService.isTrueForKey(SettingsServiceBean.Key.ShibUseHeaders, safeDefaultIfKeyNotFound);
-    }
-
-    // TODO: 
-    // remove these method! 
-    // pages should be using settingsWrapper.isTrueForKey(":Debug", false) instead. -- 4.2.1
-    public boolean isDebugEnabled() {
-        boolean safeDefaultIfKeyNotFound = false;
-        return settingsService.isTrueForKey(SettingsServiceBean.Key.Debug, safeDefaultIfKeyNotFound);
-    }
-
     public boolean myDataDoesNotUsePermissionDocs() {
         boolean safeDefaultIfKeyNotFound = false;
         return settingsService.isTrueForKey(SettingsServiceBean.Key.MyDataDoesNotUseSolrPermissionDocs, safeDefaultIfKeyNotFound);
@@ -501,4 +490,24 @@ public class SystemConfig {
         return getTabularIngestSizeLimit();        
     }
 
+    public boolean isOAIServerEnabled() {
+        boolean defaultResponse = false;
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.OAIServerEnabled, defaultResponse);
+    }
+    
+    public void enableOAIServer() {
+        settingsService.setValueForKey(SettingsServiceBean.Key.OAIServerEnabled, "true");
+    }
+    
+    public void disableOAIServer() {
+        settingsService.deleteValueForKey(SettingsServiceBean.Key.OAIServerEnabled);
+    }   
+    
+    public boolean isTimerServer() {
+        String optionValue = System.getProperty(JVM_TIMER_SERVER_OPTION);
+        if ("true".equalsIgnoreCase(optionValue)) {
+            return true;
+        }
+        return false;
+    }
 }

@@ -16,6 +16,8 @@ A dataset contains three levels of metadata:
 
 For more details about what Citation and Domain specific metadata is supported please see our `Appendix <../user/appendix.html#metadata-references>`_.
 
+Note that once a dataset has been published its metadata may be exported. A button on the dataset page's metadata tab will allow a user to export the metadata of the most recently published version of the dataset. Currently supported export formats are DDI, Dublin Core and JSON.
+
 File Handling + Uploading
 ===============================
 
@@ -195,7 +197,7 @@ If you restrict any files in your dataset, you will be prompted by a pop-up to e
 Guestbook
 --------------
 
-This is where you will enable a particular Guestbook for your dataset, which is setup at the Dataverse-level. For specific instructions please visit the Dataverse Management Guide > `Dataset Guestbook section <../user/dataverse-management.html#dataset-guestbooks>`_.
+This is where you will enable a particular Guestbook for your dataset, which is setup at the Dataverse-level. For specific instructions please visit the `Dataset Guestbooks <../user/dataverse-management.html#dataset-guestbooks>`_ section of the Dataverse Management page.
 
 .. _permissions:
 
@@ -220,6 +222,35 @@ The file permissions page has two sections: Users/Groups and Files.
 
 To give someone access to your restricted files, click on the Grant Access to Users/Groups button in the Users/Groups section. 
 
+.. _widgets:
+
+Widgets
+=============================
+
+The Widgets feature provides you with code for your personal website so your dataset can be displayed. There are two types of Widgets for a dataset: the Dataset Widget and the Dataset Citation Widget. The Widgets are found by going to your dataset page, clicking the Edit button (the one with the pencil icon) and selecting Widgets from the dropdown menu.
+
+On the Widgets page, you can copy and paste the code snippets for the widget you would like to add to your website. If you need to adjust the height of the widget on your website, you may do so by editing the `heightPx=500` parameter in the code snippet.
+
+Dataset Widget
+---------------------
+
+The Dataset Widget allows the citation, metadata, files and terms of your dataset to be displayed on your website. When someone downloads a data file in the widget, it will download directly from the datasets on your website. If a file is restricted, they will be directed to your dataverse to log in, instead of logging in through the widget on your site. 
+
+To edit your dataset, you will need to return to the Dataverse repository where the dataset is stored. You can easily do this by clicking on the link that says "Data Stored in (Name) Dataverse" found in the bottom of the widget.
+
+Dataset Citation Widget
+--------------------------
+
+The Dataset Citation Widget will provide a citation for your dataset on your personal or project website. Users can download the citation in various formats by using the Cite Data button. The persistent URL in the citation will direct users to the dataset in your dataverse. 
+
+
+Adding Widgets to an OpenScholar Website
+----------------------------------------------
+#. Log in to your OpenScholar website
+#. Either build a new page or navigate to the page you would like to use to show the Dataverse widgets.
+#. Click on the Settings Cog and select Layout
+#. At the top right, select Add New Widget and under Misc. you will see the Dataverse Dataset and the Dataverse Dataset Citation Widgets. Click on the widget you would like to add, fill out the form, and then drag it to where you would like it to display in the page.
+
 Publish Dataset
 ====================
 
@@ -240,6 +271,27 @@ which is located next to the "Edit" button on the upper-right. Once Submitted fo
 dataset before they decide to either "Publish" the dataset or "Return to Author". If the dataset is published the contributor
 will be notified that it is now published. If the dataset is returned to the author, the contributor of this dataset will be 
 notified that they need to make modifications before it can be submitted for review again.
+
+.. _privateurl:
+
+Private URL for Reviewing an Unpublished Dataset
+==================================================
+
+To share an unpublished dataset using Private URL
+----------------------------------------------------------------------
+
+Creating a Private URL for your dataset allows you to share your dataset (for viewing and downloading of files) before it is published to a wide group of individuals who may not have a user account on Dataverse. Anyone you send the Private URL to will not have to log into Dataverse to view the dataset.
+
+   1. Go to your unpublished dataset
+   2. Select the “Edit” button
+   3. Select “Private URL” in the dropdown menu
+   4. In the pop-up select “Create Private URL”
+   5. Copy the Private URL which has been created for this dataset and it can now be shared with anyone you wish to have access to view or download files in your unpublished dataset.
+
+To disable a Private URL
+-------------------------------------
+
+If ever you had shared a Private URL to your dataset and wish to revoke access, follow the same steps as above until step #3 but in the pop-up select “Disable Private URL”.
 
 
 Dataset Versioning
@@ -279,6 +331,9 @@ If you deaccession the most recently published version of the dataset but not al
 
 
 .. |image1| image:: ./img/DatasetDiagram.png
-.. |image2| image:: ./img/data-download.png 
+   :class: img-responsive
+.. |image2| image:: ./img/data-download.png
+   :class: img-responsive
 .. |image3| image:: http://static.projects.iq.harvard.edu/files/styles/os_files_xxlarge/public/datascience/files/data_publishing_version_workflow.png?itok=8Z0PM-QC
+   :class: img-responsive
 

@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.util.JsfHelper;
@@ -231,6 +232,7 @@ public class SearchServiceBean {
 //        solrQuery.addFacetField(SearchFields.HOST_DATAVERSE);
 //        solrQuery.addFacetField(SearchFields.AUTHOR_STRING);
         solrQuery.addFacetField(SearchFields.DATAVERSE_CATEGORY);
+        solrQuery.addFacetField(SearchFields.METADATA_SOURCE);
 //        solrQuery.addFacetField(SearchFields.AFFILIATION);
         solrQuery.addFacetField(SearchFields.PUBLICATION_DATE);
 //        solrQuery.addFacetField(SearchFields.CATEGORY);
@@ -371,6 +373,7 @@ public class SearchServiceBean {
             logger.fine("score for " + id + ": " + score);
             String identifier = (String) solrDocument.getFieldValue(SearchFields.IDENTIFIER);
             String citation = (String) solrDocument.getFieldValue(SearchFields.DATASET_CITATION);
+            String citationPlainHtml = (String) solrDocument.getFieldValue(SearchFields.DATASET_CITATION_HTML);
             String persistentUrl = (String) solrDocument.getFieldValue(SearchFields.PERSISTENT_URL);
             String name = (String) solrDocument.getFieldValue(SearchFields.NAME);
             String nameSort = (String) solrDocument.getFieldValue(SearchFields.NAME_SORT);
@@ -445,6 +448,12 @@ public class SearchServiceBean {
             solrSearchResult.setDescriptionNoSnippet(description);
             solrSearchResult.setDeaccessionReason(deaccessionReason);
             solrSearchResult.setDvTree(dvTree);
+            
+            String originSource = (String) solrDocument.getFieldValue(SearchFields.METADATA_SOURCE);
+            if (IndexServiceBean.HARVESTED.equals(originSource)) {
+                solrSearchResult.setHarvested(true);
+            }
+            
             /**
              * @todo start using SearchConstants class here
              */
@@ -475,6 +484,7 @@ public class SearchServiceBean {
                 solrSearchResult.setDatasetVersionId(datasetVersionId);
 
                 solrSearchResult.setCitation(citation);
+                solrSearchResult.setCitationHtml(citationPlainHtml);
                 if (title != null) {
 //                    solrSearchResult.setTitle((String) titles.get(0));
                     solrSearchResult.setTitle((String) title);
@@ -553,9 +563,11 @@ public class SearchServiceBean {
         boolean draftsAvailable = false;
         boolean unpublishedAvailable = false;
         boolean deaccessionedAvailable = false;
+        boolean hideMetadataSourceFacet = true;
         for (FacetField facetField : queryResponse.getFacetFields()) {
             FacetCategory facetCategory = new FacetCategory();
             List<FacetLabel> facetLabelList = new ArrayList<>();
+            int numMetadataSources = 0;
             for (FacetField.Count facetFieldCount : facetField.getValues()) {
                 /**
                  * @todo we do want to show the count for each facet
@@ -575,7 +587,13 @@ public class SearchServiceBean {
                             deaccessionedAvailable = true;
                         }
                     }
+                    if (facetField.getName().equals(SearchFields.METADATA_SOURCE)) {
+                        numMetadataSources++;
+                    }
                 }
+            }
+            if (numMetadataSources > 1) {
+                hideMetadataSourceFacet = false;
             }
             facetCategory.setName(facetField.getName());
             // hopefully people will never see the raw facetField.getName() because it may well have an _s at the end
@@ -643,6 +661,10 @@ public class SearchServiceBean {
                         hidePublicationStatusFacet = false;
                     }
                     if (!hidePublicationStatusFacet) {
+                        facetCategoryList.add(facetCategory);
+                    }
+                } else if (facetCategory.getName().equals(SearchFields.METADATA_SOURCE)) {
+                    if (!hideMetadataSourceFacet) {
                         facetCategoryList.add(facetCategory);
                     }
                 } else {
@@ -748,6 +770,10 @@ public class SearchServiceBean {
         // initialize to public only to be safe
         String dangerZoneNoSolrJoin = null;
 
+        if (user instanceof PrivateUrlUser) {
+            user = GuestUser.get();
+        }
+
         // ----------------------------------------------------
         // (1) Is this a GuestUser?  
         // Yes, all set, give back "publicOnly" filter string
@@ -818,48 +844,28 @@ public class SearchServiceBean {
 //             * @todo add onlyDatatRelatedToMe option into the experimental JOIN
 //             * before enabling it.
 //             */
+        /**
+         * From a search perspective, we don't care about if the group was
+         * created within one dataverse or another. We just want a list of *all*
+         * the groups the user is part of. We are greedy. We want all BuiltIn
+         * Groups, Shibboleth Groups, IP Groups, "system" groups, everything.
+         *
+         * A JOIN on "permission documents" will determine if the user can find
+         * a given "content document" (dataset version, etc) in Solr.
+         */
         String groupsFromProviders = "";
-        /**
-         * @todo What should the value be? Is null ok? From a search
-         * perspective, we don't care about if the group was created within one
-         * dataverse or another. We just want a list of all the groups the user
-         * is part of. A JOIN on "permission documents" will determine if the
-         * user can find a given "content document" (dataset version, etc) in
-         * Solr.
-         */
-//            DvObject groupsForDvObjectParamNull = null;
-//            Set<Group> groups = groupService.groupsFor(au, groupsForDvObjectParamNull);
-        /**
-         * @todo What is the expected behavior when you pass in a dataverse? It
-         * seems like no matter what you pass in you always get the following
-         * types of groups:
-         *
-         * - BuiltIn Groups
-         *
-         * - IP Groups
-         *
-         * - Shibboleth Groups
-         *
-         * If you pass in the root dataverse it seems like you get all groups
-         * that you're part of.
-         *
-         * If you pass in a non-root dataverse, it seems like you get groups
-         * that you're part of for that dataverse. It's unclear if there is any
-         * inheritance of groups.
-         */
-        DvObject groupsForDvObjectParamCurrentDataverse = dataverse;
-        Set<Group> groups = groupService.groupsFor(au, groupsForDvObjectParamCurrentDataverse);
+        Set<Group> groups = groupService.groupsFor(au);
         StringBuilder sb = new StringBuilder();
         for (Group group : groups) {
             logger.fine("found group " + group.getIdentifier() + " with alias " + group.getAlias());
             String groupAlias = group.getAlias();
             if (groupAlias != null && !groupAlias.isEmpty()) {
                 sb.append(" OR ");
-                // i.e. group_shib/2
+                // i.e. group_builtIn/all-users, group_builtIn/authenticated-users, group_1-explictGroup1, group_shib/2
                 sb.append(IndexServiceBean.getGroupPrefix() + groupAlias);
             }
-            groupsFromProviders = sb.toString();
         }
+        groupsFromProviders = sb.toString();
 
         logger.fine(groupsFromProviders);
         if (true) {

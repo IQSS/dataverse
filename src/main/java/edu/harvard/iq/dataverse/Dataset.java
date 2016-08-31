@@ -1,10 +1,12 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -40,6 +42,8 @@ import org.hibernate.validator.constraints.NotBlank;
         uniqueConstraints = @UniqueConstraint(columnNames = {"authority,protocol,identifier,doiseparator"}))
 public class Dataset extends DvObjectContainer {
 
+//    public static final String REDIRECT_URL = "/dataset.xhtml?persistentId=";
+    public static final String TARGET_URL = "/citation?persistentId=";
     private static final long serialVersionUID = 1L;
 
     @OneToMany(mappedBy = "owner", cascade = CascadeType.MERGE)
@@ -51,6 +55,8 @@ public class Dataset extends DvObjectContainer {
 
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date globalIdCreateTime;
+    @Temporal(value = TemporalType.TIMESTAMP)
+    private Date lastExportTime;
 
     @NotBlank(message = "Please enter an identifier for your dataset.")
     @Column(nullable = false)
@@ -146,6 +152,14 @@ public class Dataset extends DvObjectContainer {
         this.globalIdCreateTime = globalIdCreateTime;
     }
 
+    public Date getLastExportTime() {
+        return lastExportTime;
+    }
+
+    public void setLastExportTime(Date lastExportTime) {
+        this.lastExportTime = lastExportTime;
+    }
+    
     public Guestbook getGuestbook() {
         return guestbook;
     }
@@ -239,6 +253,11 @@ public class Dataset extends DvObjectContainer {
             dsv.updateDefaultValuesFromTemplate(template);
         } else {
             latestVersion = getLatestVersionForCopy();
+            
+            if (latestVersion.getUNF() != null){
+                dsv.setUNF(latestVersion.getUNF());
+            }
+            
             if (latestVersion.getDatasetFields() != null && !latestVersion.getDatasetFields().isEmpty()) {
                 dsv.setDatasetFields(dsv.copyDatasetFields(latestVersion.getDatasetFields()));
             }
@@ -413,13 +432,15 @@ public class Dataset extends DvObjectContainer {
     }
 
     private Collection<String> getCategoryNames() {
-        ArrayList<String> ret = new ArrayList<>();
         if (dataFileCategories != null) {
-            for (int i = 0; i < dataFileCategories.size(); i++) {
-                ret.add(dataFileCategories.get(i).getName());
+            ArrayList<String> ret = new ArrayList<>(dataFileCategories.size());
+            for ( DataFileCategory dfc : dataFileCategories ) {
+                ret.add( dfc.getName() );
             }
+            return ret;
+        } else {
+            return new ArrayList<>();
         }
-        return ret;
     }
 
     public Path getFileSystemDirectory() {
@@ -495,7 +516,10 @@ public class Dataset extends DvObjectContainer {
     }
 
     public String getPublicationDateFormattedYYYYMMDD() {
-        return new SimpleDateFormat("yyyy-MM-dd").format(getPublicationDate());
+        if (getPublicationDate() != null){
+                   return new SimpleDateFormat("yyyy-MM-dd").format(getPublicationDate()); 
+        }
+        return null;
     }
 
     public DataFile getThumbnailFile() {
@@ -506,39 +530,53 @@ public class Dataset extends DvObjectContainer {
         this.thumbnailFile = thumbnailFile;
     }
 
+    @ManyToOne
+    @JoinColumn(name="harvestingClient_id")
+    private  HarvestingClient harvestedFrom;
+
+    public HarvestingClient getHarvestedFrom() {
+        return this.harvestedFrom;
+    }
+
+    public void setHarvestedFrom(HarvestingClient harvestingClientConfig) {
+        this.harvestedFrom = harvestingClientConfig;
+    }
+    
+    
     public boolean isHarvested() {
-        // TODO: 
-        // eventually, this will be more complex: 
-        // A dataverse owner will be able to harvest some datasets into 
-        // any dataverse, in addition to any local datasets there. 
-        // -- L.A. 4.0 
-        Dataverse ownerDataverse = this.getOwner();
-        if (ownerDataverse != null) {
-            return ownerDataverse.isHarvested();
-        }
-        return false;
+        return this.harvestedFrom != null;
+    }
+
+    private String harvestIdentifier;
+     
+    public String getHarvestIdentifier() {
+	return harvestIdentifier;
+    }
+
+    public void setHarvestIdentifier(String harvestIdentifier) {
+	this.harvestIdentifier = harvestIdentifier;
     }
 
     public String getRemoteArchiveURL() {
         if (isHarvested()) {
-            if (HarvestingDataverseConfig.HARVEST_STYLE_DATAVERSE.equals(this.getOwner().getHarvestingDataverseConfig().getHarvestStyle())) {
-                return this.getOwner().getHarvestingDataverseConfig().getArchiveUrl() + "/dataset.xhtml?persistentId=" + getGlobalId();
-            } else if (HarvestingDataverseConfig.HARVEST_STYLE_VDC.equals(this.getOwner().getHarvestingDataverseConfig().getHarvestStyle())) {
-                String rootArchiveUrl = this.getOwner().getHarvestingDataverseConfig().getHarvestingUrl();
+            if (HarvestingClient.HARVEST_STYLE_DATAVERSE.equals(this.getHarvestedFrom().getHarvestStyle())) {
+                return this.getHarvestedFrom().getArchiveUrl() + "/dataset.xhtml?persistentId=" + getGlobalId();
+            } else if (HarvestingClient.HARVEST_STYLE_VDC.equals(this.getHarvestedFrom().getHarvestStyle())) {
+                String rootArchiveUrl = this.getHarvestedFrom().getHarvestingUrl();
                 int c = rootArchiveUrl.indexOf("/OAIHandler");
                 if (c > 0) {
                     rootArchiveUrl = rootArchiveUrl.substring(0, c);
                     return rootArchiveUrl + "/faces/study/StudyPage.xhtml?globalId=" + getGlobalId();
                 }
-            } else if (HarvestingDataverseConfig.HARVEST_STYLE_ICPSR.equals(this.getOwner().getHarvestingDataverseConfig().getHarvestStyle())) {
+            } else if (HarvestingClient.HARVEST_STYLE_ICPSR.equals(this.getHarvestedFrom().getHarvestStyle())) {
                 // For the ICPSR, it turns out that the best thing to do is to 
                 // rely on the DOI to send the user to the right landing page for 
                 // the study: 
                 //String icpsrId = identifier;
-                //return this.getOwner().getHarvestingDataverseConfig().getArchiveUrl() + "/icpsrweb/ICPSR/studies/"+icpsrId+"?q="+icpsrId+"&amp;searchSource=icpsr-landing";
+                //return this.getOwner().getHarvestingClient().getArchiveUrl() + "/icpsrweb/ICPSR/studies/"+icpsrId+"?q="+icpsrId+"&amp;searchSource=icpsr-landing";
                 return "http://doi.org/" + authority + "/" + identifier;
-            } else if (HarvestingDataverseConfig.HARVEST_STYLE_NESSTAR.equals(this.getOwner().getHarvestingDataverseConfig().getHarvestStyle())) {
-                String nServerURL = this.getOwner().getHarvestingDataverseConfig().getArchiveUrl();
+            } else if (HarvestingClient.HARVEST_STYLE_NESSTAR.equals(this.getHarvestedFrom().getHarvestStyle())) {
+                String nServerURL = this.getHarvestedFrom().getArchiveUrl();
                 // chop any trailing slashes in the server URL - or they will result
                 // in multiple slashes in the final URL pointing to the study 
                 // on server of origin; Nesstar doesn't like it, apparently. 
@@ -556,9 +594,9 @@ public class Dataset extends DvObjectContainer {
                         + "&top=yes";
 
                 return NesstarWebviewPage;
-            } else if (HarvestingDataverseConfig.HARVEST_STYLE_ROPER.equals(this.getOwner().getHarvestingDataverseConfig().getHarvestStyle())) {
-                return this.getOwner().getHarvestingDataverseConfig().getArchiveUrl() + "/CFIDE/cf/action/catalog/abstract.cfm?archno=" + identifier;
-            } else if (HarvestingDataverseConfig.HARVEST_STYLE_HGL.equals(this.getOwner().getHarvestingDataverseConfig().getHarvestStyle())) {
+            } else if (HarvestingClient.HARVEST_STYLE_ROPER.equals(this.getHarvestedFrom().getHarvestStyle())) {
+                return this.getHarvestedFrom().getArchiveUrl() + "/CFIDE/cf/action/catalog/abstract.cfm?archno=" + identifier;
+            } else if (HarvestingClient.HARVEST_STYLE_HGL.equals(this.getHarvestedFrom().getHarvestStyle())) {
                 // a bit of a hack, true. 
                 // HGL documents, when turned into Dataverse studies/datasets
                 // all 1 datafile; the location ("storage identifier") of the file
@@ -574,9 +612,9 @@ public class Dataset extends DvObjectContainer {
                         }
                     }
                 }
-                return this.getOwner().getHarvestingDataverseConfig().getArchiveUrl();
+                return this.getHarvestedFrom().getArchiveUrl();
             }else {
-                return this.getOwner().getHarvestingDataverseConfig().getArchiveUrl();
+                return this.getHarvestedFrom().getArchiveUrl();
             }
         }
 
@@ -585,7 +623,7 @@ public class Dataset extends DvObjectContainer {
 
     public String getHarvestingDescription() {
         if (isHarvested()) {
-            return this.getOwner().getHarvestingDataverseConfig().getArchiveDescription();
+            return this.getHarvestedFrom().getArchiveDescription();
         }
 
         return null;

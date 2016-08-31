@@ -96,8 +96,6 @@ public class SettingsServiceBean {
          * to from the footer.
          */
         ApplicationPrivacyPolicyUrl,
-        /** Expose debug information in the UI that users shouldn't normally see. */
-        Debug,
         /**
          * A boolean defining if indexing and search should respect the concept
          * of "permission root".
@@ -129,8 +127,6 @@ public class SettingsServiceBean {
         DdiExportEnabled,
         /** Key for if Shibboleth is enabled or disabled. */
         ShibEnabled,
-        /** Key for if Shibboleth is enabled or disabled. */
-        ShibUseHeaders,
         /** Key for if ScrubMigrationData is enabled or disabled. */
         ScrubMigrationData,
         /** Key for the url to send users who want to sign up to. */
@@ -221,7 +217,11 @@ public class SettingsServiceBean {
         /*
         Whether to display the publish text for every published version
         */
-        DatasetPublishPopupCustomTextOnAllVersions;
+        DatasetPublishPopupCustomTextOnAllVersions,
+        /*
+        Whether Harvesting (OAI) service is enabled
+        */
+        OAIServerEnabled;
         
         @Override
         public String toString() {

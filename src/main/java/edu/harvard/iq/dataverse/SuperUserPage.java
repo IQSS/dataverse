@@ -18,6 +18,8 @@ public class SuperUserPage implements java.io.Serializable {
 
     @Inject
     DataverseSession session;
+    @Inject
+    PermissionsWrapper permissionsWrapper;
 
     @EJB
     IndexServiceBean indexService;
@@ -27,6 +29,13 @@ public class SuperUserPage implements java.io.Serializable {
     private String indexAllStatus = "No status available";
 
     private Future<JsonObjectBuilder> indexAllFuture;
+    
+    public String init(){
+        if (!session.getUser().isSuperuser()) {
+            return  permissionsWrapper.notAuthorized();
+        }
+        return null;
+    }
 
     // modeled off http://docs.oracle.com/javaee/7/tutorial/ejb-async002.htm
     public String getIndexAllStatus() {

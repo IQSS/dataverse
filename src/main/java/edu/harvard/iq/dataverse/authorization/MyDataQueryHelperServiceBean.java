@@ -123,7 +123,7 @@ public class MyDataQueryHelperServiceBean {
 
         }
         
-        List<Long> roles = roleAssigneeService.getRoleIdListForGivenAssigneeDvObject(user.getIdentifier(), idsForSelect, dvoId);
+        List<Long> roles = roleAssigneeService.getRoleIdListForGivenAssigneeDvObject(user, idsForSelect, dvoId);
         
        /* List<Object> results = em.createNativeQuery("Select distinct role.role_id FROM roleassignment role WHERE  "
                 + " role.definitionpoint_id = " + dvoId + " "
@@ -155,7 +155,7 @@ public class MyDataQueryHelperServiceBean {
                 + ")"
                 + roleClause
                 + ";").getResultList();*/
-        List<Long> resultsParent = roleAssigneeService.getRoleIdListForGivenAssigneeDvObject(user.getIdentifier(), idsForSelect, parentId);
+        List<Long> resultsParent = roleAssigneeService.getRoleIdListForGivenAssigneeDvObject(user, idsForSelect, parentId);
         if (resultsParent != null && !resultsParent.isEmpty()) {
             for (Object result : resultsParent) {
                 Long role_id = (Long) result;
@@ -181,7 +181,7 @@ public class MyDataQueryHelperServiceBean {
                 + roleClause
                 + ";").getResultList();
                 */
-        List<Long> resultsGrandParent = roleAssigneeService.getRoleIdListForGivenAssigneeDvObject(user.getIdentifier(), idsForSelect, grandParentId);
+        List<Long> resultsGrandParent = roleAssigneeService.getRoleIdListForGivenAssigneeDvObject(user, idsForSelect, grandParentId);
         if (resultsGrandParent != null && !resultsGrandParent.isEmpty()) {
             for (Object result : resultsGrandParent) {
                 Long role_id = (Long) result;

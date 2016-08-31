@@ -41,6 +41,7 @@ import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
+import org.apache.commons.lang.StringEscapeUtils;
 
 /**
  *
@@ -742,145 +743,11 @@ public class DatasetVersion implements Serializable {
         return getCitation(false);
     }
 
-    public String getCitation(boolean isOnlineVersion) {
-
-        String str = "";
-
-        boolean includeAffiliation = false;
-        String authors = this.getAuthorsStr(includeAffiliation);
-        if (!StringUtil.isEmpty(authors)) {
-            str += authors;
-        } else {
-            str += getDatasetProducersString();
-        }
-        
-        Date citationDate = getCitationDate();    
-        if (citationDate != null) {
-          if (!StringUtil.isEmpty(str)) {
-                str += ", ";
-            }      
-          str += new SimpleDateFormat("yyyy").format(citationDate);
-          
-        } else {
-            if (this.getDataset().getPublicationDate() == null || StringUtil.isEmpty(this.getDataset().getPublicationDate().toString())) {
-
-                if (!this.getDataset().isHarvested()) {
-                    //if not released use current year
-                    if (!StringUtil.isEmpty(str)) {
-                        str += ", ";
-                    }
-                    str += new SimpleDateFormat("yyyy").format(new Timestamp(new Date().getTime()));
-                } else {
-                    String distDate = getDistributionDate();
-                    if (distDate != null) {
-                        if (!StringUtil.isEmpty(str)) {
-                            str += ", ";
-                        }
-                        str += distDate;
-                    }
-                }
-            } else {
-                if (!StringUtil.isEmpty(str)) {
-                    str += ", ";
-                }
-                str += new SimpleDateFormat("yyyy").format(new Timestamp(this.getDataset().getPublicationDate().getTime()));
-            }
-        }
-        
-        if (this.getTitle() != null) {
-            if (!StringUtil.isEmpty(this.getTitle())) {
-                if (!StringUtil.isEmpty(str)) {
-                    str += ", ";
-                }
-                str += "\"" + this.getTitle() + "\"";
-            }
-        }
-        
-        if (this.getDataset().isHarvested()) {
-            String distributorName = getDistributorName();
-            if (distributorName != null && distributorName.trim().length() > 0) {
-                if (!StringUtil.isEmpty(str)) {
-                    str += ". ";
-                }
-                str += " " + distributorName;
-                str += " [distributor]";
-            }
-        }
-        
-        // The Global Identifier: 
-        // It is always part of the citation for the local datasets; 
-        // And for *some* harvested datasets. 
-        if (!this.getDataset().isHarvested()
-                || HarvestingDataverseConfig.HARVEST_STYLE_VDC.equals(this.getDataset().getOwner().getHarvestingDataverseConfig().getHarvestStyle())
-                || HarvestingDataverseConfig.HARVEST_STYLE_ICPSR.equals(this.getDataset().getOwner().getHarvestingDataverseConfig().getHarvestStyle())
-                || HarvestingDataverseConfig.HARVEST_STYLE_DATAVERSE.equals(this.getDataset().getOwner().getHarvestingDataverseConfig().getHarvestStyle())) {
-            if (!StringUtil.isEmpty(this.getDataset().getIdentifier())) {
-                if (!StringUtil.isEmpty(str)) {
-                    str += ", ";
-                }
-                if (isOnlineVersion) {
-                    str += "<a target=\"_top\" href=\"" + this.getDataset().getPersistentURL() + "\">" + this.getDataset().getPersistentURL() + "</a>";
-                } else {
-                    str += this.getDataset().getPersistentURL();
-                }
-            }
-        }
-
-        // Get root dataverse name for Citation
-        // (only for non-harvested datasets):
-        if (!this.getDataset().isHarvested()) {
-            String dataverseName = getRootDataverseNameforCitation();
-            if (!StringUtil.isEmpty(dataverseName)) {
-                if (!StringUtil.isEmpty(str)) {
-                    str += ", ";
-                }
-                str += " " + dataverseName;
-            }
-        }
-
-        // Version status:
-        // Again, this is needed for non-harvested stuff only:
-        // (the check may be redundant - we may already be dropping version 
-        // numbers when harvesting -- L.A. 4.0 beta15)
-        if (!this.getDataset().isHarvested()) {
-            if (this.isDraft()) {
-                if (!StringUtil.isEmpty(str)) {
-                    str += ", ";
-                }
-                str += " DRAFT VERSION ";
-
-            } else if (this.getVersionNumber() != null) {
-                if (!StringUtil.isEmpty(str)) {
-                    str += ", ";
-                }
-                str += " V" + this.getVersionNumber();
-
-            }
-            if (this.isDeaccessioned()) {
-                if (!StringUtil.isEmpty(str)) {
-                    str += ", ";
-                }
-                str += " DEACCESSIONED VERSION ";
-
-            }
-        }
-        
-        if (!StringUtil.isEmpty(getUNF())) {
-            if (!StringUtil.isEmpty(str)) {
-                str += " ";
-            }
-            str += "[" + getUNF() + "]";
-        }
-         /*
-         String distributorNames = getDistributorNames();
-         if (distributorNames.trim().length() > 0) {
-         str += " " + distributorNames;
-         str += " [Distributor]";
-         }*/
-        return str;
+    public String getCitation(boolean html) {
+        return new DataCitation(this).toString(html);
     }
     
-    private Date getCitationDate() {
+    public Date getCitationDate() {
         DatasetField citationDate = getDatasetField(this.getDataset().getCitationDateDatasetFieldType());        
         if (citationDate != null && citationDate.getDatasetFieldType().getFieldType().equals(FieldType.DATE)){          
             try {  
@@ -918,7 +785,7 @@ public class DatasetVersion implements Serializable {
     }
 
     public String getDistributorName() {
-        for (DatasetField dsf : this.getDatasetFields()) {
+        for (DatasetField dsf : this.getFlatDatasetFields()) {
             if (DatasetFieldConstant.distributorName.equals(dsf.getDatasetFieldType().getName())) {
                 return dsf.getValue();
             }

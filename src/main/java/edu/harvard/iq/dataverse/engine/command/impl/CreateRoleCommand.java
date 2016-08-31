@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 
 /**
  * Create a new role in a dataverse.
@@ -33,11 +34,11 @@ public class CreateRoleCommand extends AbstractCommand<DataverseRole> {
         User user = getUser();
         //todo: temporary for 4.0 - only superusers can create and edit roles
         if ((!(user instanceof AuthenticatedUser) || !user.isSuperuser())) {
-            throw new CommandException("Roles can only be created or edited by superusers.",this);
+            throw new IllegalCommandException("Roles can only be created or edited by superusers.",this);
         }
 
         dv.addRole(created);
         return ctxt.roles().save(created);
     }
-
+    
 }

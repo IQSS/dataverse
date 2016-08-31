@@ -49,7 +49,7 @@ public class DOIDataCiteRegisterService {
         metadataTemplate.setDescription(dataset.getLatestVersion().getDescription());
         metadataTemplate.setContacts(dataset.getLatestVersion().getDatasetContacts());
         metadataTemplate.setProducers(dataset.getLatestVersion().getDatasetProducers());
-        metadataTemplate.setTitle(metadata.get("datacite.title"));
+        metadataTemplate.setTitle(dataset.getLatestVersion().getTitle());
         metadataTemplate.setPublisher(metadata.get("datacite.publisher"));
         metadataTemplate.setPublisherYear(metadata.get("datacite.publicationyear"));
 

@@ -26,6 +26,10 @@ public class GlobalId implements java.io.Serializable {
     @EJB
     SettingsServiceBean settingsService;
 
+    // I'm marking this constructor as "deprecated" because it's not reliable;
+    // it uses the parser (below) that makes incorrect assumptions about 
+    // handles and dois. (see comments there)
+    @Deprecated
     public GlobalId(String identifier) {
         
         // set the protocol, authority, and identifier via parsePersistentId        
@@ -109,6 +113,16 @@ public class GlobalId implements java.io.Serializable {
      * @param persistentId
      * 
      */
+    // This parser makes an incorrect assumption, that a handle has to be made of 2
+    // "/"-separated parts, and a doi - of 3. ICPSR's DOIs are an example of a DOI
+    // that has 2 parts only: doi:10.3886/ICPSR24006.v2
+    // We already have working global id parsers elsewhere in the app:
+    // for ex., parseStudyIdDOI() and parseStudyIdHandle() in importDDIServiceBean;
+    // We should probably copy that code here, than change the app so that all 
+    // the pieces are using this class, instead of replicating the functionality
+    // in multiple places.
+
+    @Deprecated
     private boolean parsePersistentId(String persistentId){
 
         if (persistentId==null){

@@ -33,9 +33,11 @@ public class EMailValidator implements ConstraintValidator<ValidateEmail, String
             //we'll let someone else decide if it's required
             return true;
         }
-        boolean isValid = EmailValidator.getInstance().isValid(value.trim());
+        boolean isValid = EmailValidator.getInstance().isValid(value);
         if (!isValid) {
+        	if (context != null) {
             context.buildConstraintViolationWithTemplate(java.text.MessageFormat.format("emailvalidator.notValid", value)).addConstraintViolation();
+             } 
             return false;
         }
         return true;

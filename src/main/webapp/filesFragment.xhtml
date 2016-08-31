@@ -23,15 +23,21 @@
                  emptyMessage="#{bundle['file.notFound.tip']}">
         <f:facet name="header">
             <div jsf:id="filesHeaderBlock" class="row">
-                <div class="form-inline text-left col-xs-12">
-                    <p:inputText style="margin-right:1em;" size="40" id="searchFiles" styleClass="form-control" value="#{DatasetPage.fileLabelSearchTerm}" widgetVar="inputSearchTerm"
-                                 onkeypress="if (event.keyCode == 13) { submitsearch(); return false; }"/>
-                    <p:watermark for="searchFiles" value="Search this dataset..."/>
-                    <p:commandLink styleClass="btn btn-default" action="#{DatasetPage.updateFileSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true">
-                        <span class="glyphicon glyphicon-search"/> #{bundle['dataverse.search.btn.find']}
-                    </p:commandLink>
-                    <h:inputHidden id="showAccessPopup" value="#{DatasetPage.showAccessPopup}"/>
-                    <p:remoteCommand name="submitsearch" action="#{DatasetPage.updateFileSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true"/>
+                <div class="form-horizontal col-sm-7 col-xs-9 text-left">
+                    <div class="form-group">
+                        <div class="col-xs-8">
+                            <p:inputText id="searchFiles" styleClass="form-control" value="#{DatasetPage.fileLabelSearchTerm}" widgetVar="inputSearchTerm"
+                                         onkeypress="if (event.keyCode == 13) { submitsearch(); return false; }"/>
+                            <p:watermark for="searchFiles" value="Search this dataset..."/>
+                            <h:inputHidden id="showAccessPopup" value="#{DatasetPage.showAccessPopup}"/>
+                            <p:remoteCommand name="submitsearch" action="#{DatasetPage.updateFileSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true"/>
+                        </div>
+                        <div class="col-xs-3">
+                            <p:commandLink styleClass="btn btn-default" action="#{DatasetPage.updateFileSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true">
+                                <span class="glyphicon glyphicon-search"/> #{bundle['dataverse.search.btn.find']}
+                            </p:commandLink>
+                        </div>
+                    </div>
                 </div>
                 <div id="filesHeaderCount" class="col-xs-6 text-left">
                     <!-- Files Count -->
@@ -42,17 +48,19 @@
                 <div class="col-xs-6">
                     <!-- Button Panels -->
                     <!-- 4.2.1: replaced permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset) with DatasetPage.canUpdateDataset() -->
-                    <div jsf:id="zipDownloadPanel" class="button-block pull-right text-right"
+                    <div jsf:id="zipDownloadPanel" class="button-block tab-header pull-right text-right"
                          jsf:rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')
                                          and (DatasetPage.canUpdateDataset()
                                          or (!(empty DatasetPage.workingVersion.fileMetadatas) and DatasetPage.workingVersion.fileMetadatas.size() > 1))}">
                         <h:outputLink value="/editdatafiles.xhtml?datasetId=#{DatasetPage.dataset.id}&#38;mode=UPLOAD"
                                       type="button" styleClass="btn btn-default #{DatasetPage.locked ? 'ui-state-disabled' : ''}"
-                                      disabled="#{DatasetPage.locked}" rendered="#{DatasetPage.sessionUserAuthenticated and DatasetPage.canUpdateDataset()}">
+                                      disabled="#{DatasetPage.locked}" rendered="#{DatasetPage.sessionUserAuthenticated 
+                                                                                    and DatasetPage.canUpdateDataset()
+                                                                                    and !widgetWrapper.widgetView}">
                             <span class="glyphicon #{DatasetPage.locked ? 'glyphicon-ban-circle' : 'glyphicon-plus'}"/> <h:outputText id="uploadFile-s-Link" value="#{bundle['file.uploadFiles']}"/>
                         </h:outputLink>
                         <div class="btn-group" jsf:rendered="#{DatasetPage.sessionUserAuthenticated
-                                             and DatasetPage.canUpdateDataset()}">
+                                             and DatasetPage.canUpdateDataset() and !widgetWrapper.widgetView}">
                             <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
                                     disabled="#{DatasetPage.locked ? 'disabled' : ''}">
                                 <span class="glyphicon glyphicon-pencil"/> #{bundle['file.editFiles']} <span class="caret"></span>

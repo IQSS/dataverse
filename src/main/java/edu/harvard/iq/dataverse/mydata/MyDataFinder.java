@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
+import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,7 +32,7 @@ import org.apache.commons.lang.StringUtils;
  */
 //@Stateless
 public class MyDataFinder {
-        
+      
     private static final Logger logger = Logger.getLogger(MyDataFinder.class.getCanonicalName());
 
     private String userIdentifier;
@@ -45,6 +46,7 @@ public class MyDataFinder {
     private DataverseRolePermissionHelper rolePermissionHelper;
     private RoleAssigneeServiceBean roleAssigneeService;
     private DvObjectServiceBean dvObjectServiceBean;
+    private GroupServiceBean groupService; 
     //private RoleAssigneeServiceBean roleService = new RoleAssigneeServiceBean();
     //private MyDataQueryHelperServiceBean myDataQueryHelperService;
     // --------------------
@@ -83,11 +85,12 @@ public class MyDataFinder {
     private List<Long> fileGrandparentFileIds = new ArrayList<>();  // dataverse has file permissions
 
     
-    public MyDataFinder(DataverseRolePermissionHelper rolePermissionHelper, RoleAssigneeServiceBean roleAssigneeService, DvObjectServiceBean dvObjectServiceBean) {
+    public MyDataFinder(DataverseRolePermissionHelper rolePermissionHelper, RoleAssigneeServiceBean roleAssigneeService, DvObjectServiceBean dvObjectServiceBean, GroupServiceBean groupService) {
         this.msgt("MyDataFinder, constructor");
         this.rolePermissionHelper = rolePermissionHelper;
         this.roleAssigneeService = roleAssigneeService;
         this.dvObjectServiceBean = dvObjectServiceBean;
+        this.groupService = groupService;
         this.loadHarvestedDataverseIds();
     }
 
@@ -234,7 +237,6 @@ public class MyDataFinder {
             return null;
         }
         filterQueries.add(dvObjectFQ);
-                
         // -----------------------------------------------------------------
         // For total counts, don't filter by publicationStatus or DvObjectType
         // -----------------------------------------------------------------
@@ -255,12 +257,12 @@ public class MyDataFinder {
         // -----------------------------------------------------------------
         filterQueries.add(this.filterParams.getSolrFragmentForPublicationStatus());
         //fq=publicationStatus:"Unpublished"&fq=publicationStatus:"Draft"
-                
+        
         return filterQueries;
     }
     
-    
-    
+
+   
     
     
     
@@ -444,7 +446,7 @@ public class MyDataFinder {
     
     private boolean runStep1RoleAssignments(){
                 
-        List<Object[]> results = this.roleAssigneeService.getAssigneeAndRoleIdListFor(MyDataUtil.formatUserIdentifierAsAssigneeIdentifier(this.userIdentifier)
+        List<Object[]> results = this.roleAssigneeService.getAssigneeAndRoleIdListFor(filterParams.getAuthenticatedUser()
                                         , this.filterParams.getRoleIds());
         
         //msgt("runStep1RoleAssignments results: " + results.toString());

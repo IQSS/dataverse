@@ -48,7 +48,8 @@ public class DatasetFieldConstant implements java.io.Serializable  {
     
     
     public final static String title = "title";
-    public final static String subTitle="subTitle";
+    public final static String subTitle="subtitle"; //SEK 6-7-2016 to match what is in DB
+    public final static String alternativeTitle="alternativeTitle"; //missing from class
     public final static String datasetId = "datasetId";
     public final static String authorName ="authorName";
     public final static String authorAffiliation = "authorAffiliation";
@@ -59,7 +60,7 @@ public class DatasetFieldConstant implements java.io.Serializable  {
     
     public final static String producerName="producerName";
     public final static String producerURL="producerURL";
-    public final static String producerLogo="producerLogo";
+    public final static String producerLogo="producerLogoURL";
     public final static String producerAffiliation="producerAffiliation";
     public final static String producerAbbreviation= "producerAbbreviation";
     public final static String productionDate="productionDate";
@@ -71,14 +72,18 @@ public class DatasetFieldConstant implements java.io.Serializable  {
     public final static String grantNumberAgency="grantNumberAgency";
     public final static String distributorName="distributorName";
     public final static String distributorURL="distributorURL";
-    public final static String distributorLogo="distributorLogo";
+    public final static String distributorLogo="distributorLogoURL";
     public final static String distributionDate="distributionDate";
     public final static String distributorContactName="distributorContactName";
     public final static String distributorContactAffiliation="distributorContactAffiliation";
     public final static String distributorContactEmail="distributorContactEmail";
     public final static String distributorAffiliation="distributorAffiliation";
-    
     public final static String distributorAbbreviation="distributorAbbreviation";
+
+    public final static String contributor="contributor"; //SEK added for Dublin Core 6/22
+    public final static String contributorType="contributorType";
+    public final static String contributorName="contributorName";
+
     public final static String depositor="depositor";
     public final static String dateOfDeposit="dateOfDeposit";
     public final static String seriesName="seriesName";
@@ -86,32 +91,40 @@ public class DatasetFieldConstant implements java.io.Serializable  {
     public final static String datasetVersionValue="datasetVersionValue";
     public final static String versionDate="versionDate";
     public final static String keywordValue="keywordValue";
-    public final static String keywordVocab="keywordVocab";
-    public final static String keywordVocabURI="keywordVocabURI";
+    public final static String keywordVocab="keywordVocabulary"; //SEK 6/10/2016 to match what is in the db
+    public final static String keywordVocabURI="keywordVocabularyURI"; //SEK 6/10/2016 to match what is in the db
     public final static String topicClassValue="topicClassValue";
     public final static String topicClassVocab="topicClassVocab";
     public final static String topicClassVocabURI="topicClassVocabURI";
     public final static String descriptionText="dsDescriptionValue";
     public final static String descriptionDate="descriptionDate";
+    public final static String timePeriodCovered="timePeriodCovered"; // SEK added 6/13/2016
     public final static String timePeriodCoveredStart="timePeriodCoveredStart";
     public final static String timePeriodCoveredEnd="timePeriodCoveredEnd";
+    public final static String dateOfCollection="dateOfCollection"; // SEK added 6/13/2016
     public final static String dateOfCollectionStart="dateOfCollectionStart";
     public final static String dateOfCollectionEnd="dateOfCollectionEnd";
     public final static String country="country";
     public final static String geographicCoverage="geographicCoverage";
     public final static String otherGeographicCoverage="otherGeographicCoverage";
+    public final static String city="city";  // SEK added 6/13/2016
+    public final static String state="state";  // SEK added 6/13/2016
     public final static String geographicUnit="geographicUnit";
     public final static String westLongitude="westLongitude";
     public final static String eastLongitude="eastLongitude";
-    public final static String northLatitude="northLatitude";
-    public final static String southLatitude="southLatitude";
+    public final static String northLatitude="northLongitude"; //Changed to match DB - incorrectly entered into DB
+    public final static String southLatitude="southLongitude"; //Incorrect in DB
     public final static String unitOfAnalysis="unitOfAnalysis";
     public final static String universe="universe";
     public final static String kindOfData="kindOfData";
     public final static String timeMethod="timeMethod";
     public final static String dataCollector="dataCollector";
+    public final static String collectorTraining="collectorTraining";
     public final static String frequencyOfDataCollection="frequencyOfDataCollection";
     public final static String samplingProcedure="samplingProcedure";
+    public final static String targetSampleSize = "targetSampleSize";
+    public final static String targetSampleActualSize = "targetSampleActualSize";
+    public final static String targetSampleSizeFormula = "targetSampleSizeFormula";
     public final static String deviationsFromSampleDesign="deviationsFromSampleDesign";
     public final static String collectionMode="collectionMode";
     public final static String researchInstrument="researchInstrument";
@@ -127,6 +140,12 @@ public class DatasetFieldConstant implements java.io.Serializable  {
     public final static String datasetLevelErrorNotes="datasetLevelErrorNotes";
     public final static String responseRate="responseRate";
     public final static String samplingErrorEstimates="samplingErrorEstimates";
+    
+    public final static String socialScienceNotes = "socialScienceNotes";
+    public final static String socialScienceNotesType = "socialScienceNotesType";
+    public final static String socialScienceNotesSubject = "socialScienceNotesSubject";
+    public final static String socialScienceNotesText = "socialScienceNotesText";
+
     public final static String otherDataAppraisal="otherDataAppraisal";
     public final static String placeOfAccess="placeOfAccess";
     public final static String originalArchive="originalArchive";
@@ -148,6 +167,7 @@ public class DatasetFieldConstant implements java.io.Serializable  {
     public final static String relatedDatasets="relatedDatasets";
     public final static String otherReferences="otherReferences";
     public final static String notesText="notesText";
+    public final static String language="language";
     public final static String noteInformationType="noteInformationType";
     public final static String notesInformationSubject="notesInformationSubject";
     public final static String subject="subject";
