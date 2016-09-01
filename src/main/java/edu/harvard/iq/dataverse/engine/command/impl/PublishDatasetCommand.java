@@ -93,7 +93,7 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
                             idServiceBean.createIdentifier(theDataset);
                             theDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
                         } else {
-                            throw new IllegalCommandException("This dataset may not be published because its identifier is already in use by another dataset. Please contact Dataverse Support for assistance.", this);
+                            throw new IllegalCommandException("This dataset may not be published because its identifier is already in use by another dataset.", this);
                         }
                     }
                 } catch (Exception e) {
@@ -102,7 +102,7 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
                 }
             } else {
                 // TODO message not accurate: protocol may not be DOI
-                throw new IllegalCommandException("This dataset may not be published because its DOI provider is not supported. Please contact Dataverse Support for assistance.", this);
+                throw new IllegalCommandException("This dataset may not be published because its id registry service is not supported.", this);
             }
         }
         
