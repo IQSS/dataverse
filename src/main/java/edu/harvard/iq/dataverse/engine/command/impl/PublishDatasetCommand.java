@@ -101,7 +101,6 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
                     throw new CommandException(ResourceBundle.getBundle("Bundle").getString("dataset.publish.error.datacite"), this);
                 }
             } else {
-                // TODO message not accurate: protocol may not be DOI
                 throw new IllegalCommandException("This dataset may not be published because its id registry service is not supported.", this);
             }
         }

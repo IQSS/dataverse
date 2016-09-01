@@ -49,8 +49,9 @@ public interface IdServiceBean {
                 return ctxt.doiEZId();
             else if (doiProvider.equals("DataCite"))
                 return ctxt.doiDataCite();
-            else throw new UnsupportedOperationException("Unknown doiProvider: " + doiProvider);
-        else throw new UnsupportedOperationException("Unknown protocol: " + protocol);
+            else logger.log(Level.SEVERE,"Unknown doiProvider: " + doiProvider);
+        else logger.log(Level.SEVERE,"Unknown protocol: " + protocol);
+        return null;
     }
 
     static IdServiceBean getBean(CommandContext ctxt) {
