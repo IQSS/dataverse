@@ -320,11 +320,11 @@
                                         </div>
                                         <div class="col-sm-2 form-col-container">
                                             <p class="form-control-static #{DataverseUserPage.emailIsVerified ? 'text-success' : 'text-danger'}">
-                                                <ui:fragment rendered="#{DataverseUserPage.emailIsVerified}">
-                                                    <span class="glyphicon glyphicon-ok"/> Verified
-                                                </ui:fragment>
-                                                <ui:fragment rendered="#{!DataverseUserPage.emailIsVerified}">
+                                                <ui:fragment rendered="#{DataverseUserPage.emailNotVerified}">
                                                     <span class="glyphicon glyphicon-ban-circle"/> Not Verified
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{!DataverseUserPage.emailNotVerified}">
+                                                    <span class="glyphicon glyphicon-ok"/> Verified
                                                 </ui:fragment>
                                             </p>
                                         </div>

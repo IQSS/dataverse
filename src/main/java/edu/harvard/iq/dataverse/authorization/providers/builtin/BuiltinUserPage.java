@@ -499,7 +499,7 @@ public class BuiltinUserPage implements java.io.Serializable {
             if (emailChanged) {
                 ConfirmEmailUtil confirmEmailUtil = new ConfirmEmailUtil();
                 String expTime = confirmEmailUtil.friendlyExpirationTime(systemConfig.getMinutesUntilConfirmEmailTokenExpires());
-                msg = msg + " Your email address changed and must be re-confirmed. \n\nAlso, please note that the link will only work for the next " + expTime + " before it has expired.";
+                msg = msg + " Your email address has changed and must be re-verified. Please check your inbox at " + currentUser.getEmail() + " and follow the link we've sent. \n\nAlso, please note that the link will only work for the next " + expTime + " before it has expired.";
                 boolean sendEmail = true;
                 try {
                     ConfirmEmailInitResponse confirmEmailInitResponse = confirmEmailService.beginConfirm(savedUser.getEmail());
@@ -507,7 +507,8 @@ public class BuiltinUserPage implements java.io.Serializable {
                 } catch (ConfirmEmailException ex) {
                     logger.info("Unable to send email confirmation link to user id " + savedUser.getId());
                 }
-                JsfHelper.addWarningMessage(msg);
+                session.setUser(currentUser);
+                JsfHelper.addSuccessMessage(msg);
             } else {
                 JsfHelper.addFlashMessage(msg);
             }
@@ -653,23 +654,22 @@ public class BuiltinUserPage implements java.io.Serializable {
     }
 
     public boolean isEmailIsVerified() {
-        ConfirmEmailUtil confirmEmailUtil = new ConfirmEmailUtil();
-        if (currentUser.getEmailConfirmed() != null && currentUser.getEmailConfirmed() != confirmEmailUtil.getGrandfatheredTime()) {
-            if (confirmEmailService.findSingleConfirmEmailDataByUser(currentUser) == null) {
+        if (currentUser.getEmailConfirmed() != null && confirmEmailService.findSingleConfirmEmailDataByUser(currentUser) == null) {
             return true;
-            } else return false;
-        } else {
-            return false;
-        }
+         } else return false;
     }
-
+    
+    public boolean isEmailNotVerified() {
+        if (currentUser.getEmailConfirmed() == null || confirmEmailService.findSingleConfirmEmailDataByUser(currentUser) != null) {
+            return true;
+        } else return false;
+    }
+    
     public boolean isEmailGrandfathered() {
         ConfirmEmailUtil confirmEmailUtil = new ConfirmEmailUtil();
         if (currentUser.getEmailConfirmed() == confirmEmailUtil.getGrandfatheredTime()) {
             return true;
-        } else {
-        return false;
-        }
+        } else return false;
     }
 
 }
