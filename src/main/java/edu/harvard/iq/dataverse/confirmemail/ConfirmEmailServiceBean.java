@@ -105,7 +105,7 @@ public class ConfirmEmailServiceBean {
                 confirmationUrl,
                 confirmEmailUtil.friendlyExpirationTime(systemConfig.getMinutesUntilConfirmEmailTokenExpires())
         ));
-        logger.info("messageBody:" + messageBody);
+        logger.log(Level.FINE, "messageBody:" + messageBody);
 
         try {
             String toAddress = aUser.getEmail();
@@ -122,7 +122,7 @@ public class ConfirmEmailServiceBean {
              */
             throw new ConfirmEmailException("Problem sending email confirmation link possibily due to mail server not being configured.");
         }
-        logger.log(Level.INFO, "attempted to send mail to {0}", aUser.getEmail());
+        logger.log(Level.FINE, "attempted to send mail to {0}", aUser.getEmail());
     }
 
     /**
@@ -142,7 +142,7 @@ public class ConfirmEmailServiceBean {
             } else {
                 ConfirmEmailExecResponse goodTokenCanProceed = new ConfirmEmailExecResponse(tokenQueried, confirmEmailData);
                 if (confirmEmailData == null) {
-                    logger.info("Invalid token.");
+                    logger.fine("Invalid token.");
                     return null;
                 }
                 long nowInMilliseconds = new Date().getTime();
