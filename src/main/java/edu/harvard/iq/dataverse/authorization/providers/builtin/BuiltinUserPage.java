@@ -502,8 +502,7 @@ public class BuiltinUserPage implements java.io.Serializable {
                 msg = msg + " Your email address has changed and must be re-verified. Please check your inbox at " + currentUser.getEmail() + " and follow the link we've sent. \n\nAlso, please note that the link will only work for the next " + expTime + " before it has expired.";
                 boolean sendEmail = true;
                 try {
-                    ConfirmEmailInitResponse confirmEmailInitResponse = confirmEmailService.beginConfirm(savedUser.getEmail());
-                    currentUser = confirmEmailInitResponse.getConfirmEmailData().getAuthenticatedUser();
+                    ConfirmEmailInitResponse confirmEmailInitResponse = confirmEmailService.beginConfirm(currentUser);
                 } catch (ConfirmEmailException ex) {
                     logger.info("Unable to send email confirmation link to user id " + savedUser.getId());
                 }
@@ -632,7 +631,7 @@ public class BuiltinUserPage implements java.io.Serializable {
         ConfirmEmailUtil confirmEmailUtil = new ConfirmEmailUtil();
         
         try {
-            confirmEmailService.beginConfirm(userEmail);
+            confirmEmailService.beginConfirm(currentUser);
             List<String> args = Arrays.asList(
                     userEmail,
                     confirmEmailUtil.friendlyExpirationTime(systemConfig.getMinutesUntilConfirmEmailTokenExpires()));

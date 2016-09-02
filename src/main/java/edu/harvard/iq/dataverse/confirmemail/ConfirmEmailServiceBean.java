@@ -44,16 +44,11 @@ public class ConfirmEmailServiceBean {
     /**
      * Initiate the email confirmation process.
      *
-     * @todo Refactor this to not take an email address as a parameter. Probably
-     * it should take an AuthenticatedUser instead (be sure to check for null).
-     * Then we could remove the dependency on AuthenticationServiceBean.
-     *
-     * @param emailAddress
+     * @param user
      * @return {@link ConfirmEmailInitResponse}
      */
-    public ConfirmEmailInitResponse beginConfirm(String emailAddress) throws ConfirmEmailException {
+    public ConfirmEmailInitResponse beginConfirm(AuthenticatedUser user) throws ConfirmEmailException {
         deleteAllExpiredTokens();
-        AuthenticatedUser user = dataverseUserService.getAuthenticatedUserByEmail(emailAddress);
         if (user != null) {
             return sendConfirm(user, true);
         } else {
@@ -70,8 +65,7 @@ public class ConfirmEmailServiceBean {
 
         aUser.setEmailConfirmed(null);
         aUser = em.merge(aUser);
-
-        // create a fresh token for the user
+        // create a fresh token for the user iff they don't have an existing token
         ConfirmEmailData confirmEmailData = new ConfirmEmailData(aUser, systemConfig.getMinutesUntilConfirmEmailTokenExpires());
         try {
             /**
@@ -105,7 +99,7 @@ public class ConfirmEmailServiceBean {
                 confirmationUrl,
                 confirmEmailUtil.friendlyExpirationTime(systemConfig.getMinutesUntilConfirmEmailTokenExpires())
         ));
-        logger.log(Level.FINE, "messageBody:" + messageBody);
+        logger.fine("messageBody:" + messageBody);
 
         try {
             String toAddress = aUser.getEmail();

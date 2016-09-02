@@ -6,22 +6,22 @@ package edu.harvard.iq.dataverse.confirmemail;
  */
 public class ConfirmEmailInitResponse {
 
-    private boolean emailFound;
+    private boolean userFound;
     private String confirmUrl;
     private ConfirmEmailData confirmEmailData;
 
-    public ConfirmEmailInitResponse(boolean emailFound) {
-        this.emailFound = emailFound;
+    public ConfirmEmailInitResponse(boolean userFound) {
+        this.userFound = userFound;
     }
 
-    public ConfirmEmailInitResponse(boolean emailFound, ConfirmEmailData confirmEmailData, String confirmUrl) {
-        this.emailFound = emailFound;
+    public ConfirmEmailInitResponse(boolean userFound, ConfirmEmailData confirmEmailData, String confirmUrl) {
+        this.userFound = userFound;
         this.confirmEmailData = confirmEmailData;
         this.confirmUrl = confirmUrl;
     }
 
-    public boolean isEmailFound() {
-        return emailFound;
+    public boolean isUserFound() {
+        return userFound;
     }
 
     public String getConfirmUrl() {

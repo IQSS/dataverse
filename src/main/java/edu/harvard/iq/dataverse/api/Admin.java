@@ -562,7 +562,7 @@ public class Admin extends AbstractApiBean {
         AuthenticatedUser user = authSvc.findByID(userId);
         if (user != null) {
             try {
-                ConfirmEmailInitResponse confirmEmailInitResponse = confirmEmailSvc.beginConfirm(user.getEmail());
+                ConfirmEmailInitResponse confirmEmailInitResponse = confirmEmailSvc.beginConfirm(user);
                 ConfirmEmailData confirmEmailData = confirmEmailInitResponse.getConfirmEmailData();
                 return okResponse(
                         Json.createObjectBuilder()
