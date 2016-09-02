@@ -14,6 +14,8 @@ import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseTheme;
+import edu.harvard.iq.dataverse.DataverseTheme.Alignment;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.IOException;
 import java.io.InputStream;
@@ -237,6 +239,33 @@ public class JsonParserTest {
             assertEquals("testAlias", actual.getAlias());
             assertEquals("Test-Driven University", actual.getAffiliation());
             assertEquals("test Description.", actual.getDescription());
+            assertEquals(2, actual.getDataverseContacts().size());
+            assertEquals("test@example.com,test@example.org", actual.getContactEmails());
+            assertEquals(0, actual.getDataverseContacts().get(0).getDisplayOrder());
+            assertEquals(1, actual.getDataverseContacts().get(1).getDisplayOrder());
+            assertTrue(actual.isPermissionRoot());
+        } catch (IOException ioe) {
+            throw new JsonParseException("Couldn't read test file", ioe);
+        }
+    }
+    
+    @Test
+    public void testParseThemeDataverse() throws JsonParseException {
+        
+        JsonObject dvJson;
+        try (InputStream jsonFile = ClassLoader.getSystemResourceAsStream("json/dataverse-theme.json")) {
+            InputStreamReader reader = new InputStreamReader(jsonFile, "UTF-8");
+            dvJson = Json.createReader(reader).readObject();
+            Dataverse actual = sut.parseDataverse(dvJson);
+            assertEquals("testDv", actual.getName());
+            assertEquals("testAlias", actual.getAlias());
+            assertEquals("Test-Driven University", actual.getAffiliation());
+            assertEquals("test Description.", actual.getDescription());
+            assertEquals("gray", actual.getDataverseTheme().getBackgroundColor());
+            assertEquals("red", actual.getDataverseTheme().getLinkColor());
+            assertEquals("http://www.cnn.com", actual.getDataverseTheme().getLinkUrl());
+            assertEquals("lion", actual.getDataverseTheme().getLogo());
+            assertEquals(Alignment.CENTER, actual.getDataverseTheme().getLogoAlignment());
             assertEquals(2, actual.getDataverseContacts().size());
             assertEquals("test@example.com,test@example.org", actual.getContactEmails());
             assertEquals(0, actual.getDataverseContacts().get(0).getDisplayOrder());

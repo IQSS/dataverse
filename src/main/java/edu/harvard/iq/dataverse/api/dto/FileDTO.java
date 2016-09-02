@@ -2,14 +2,14 @@ package edu.harvard.iq.dataverse.api.dto;
 
 public class FileDTO {
 
-    DataFileDTO datafile;
+    DataFileDTO dataFile;
 
-    public DataFileDTO getDatafile() {
-        return datafile;
+    public DataFileDTO getDataFile() {
+        return dataFile;
     }
 
-    public void setDatafile(DataFileDTO datafile) {
-        this.datafile = datafile;
+    public void setDataFile(DataFileDTO datafile) {
+        this.dataFile = datafile;
     }
 
 }
