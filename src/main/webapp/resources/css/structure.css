@@ -34,7 +34,7 @@ body .ui-widget {font-size: inherit;}
 #navbarFixed li.dropdown.open > span.dropdown-toggle {background-color: #e7e7e7;}
 
 #footer {margin-top:3em; padding-bottom:4em; color:#808080;}
-#footer.widget-view {position:fixed; left:0px; bottom:0px; margin:0; padding:4px 0 0 0; height:44px; width:100%; background:#fff;}
+#footer.widget-view {position:fixed; left:0px; bottom:0px; margin:0; padding:4px 0 0 0; min-height:44px; width:100%; background:#fff;}
 #footer span.socicon-twitter {color:#55acee; font-size:1.3em; vertical-align: top;}
 #footer span.socicon-github {color:#000; font-size:1.3em; vertical-align: top;}
 #footer .poweredbylogo {text-align:right;}
@@ -64,6 +64,7 @@ body .ui-widget {font-size: inherit;}
 .btn span.glyphicon {margin-right:.3em;}
 .btn span.glyphicon.no-text {margin:0;}
 .btn-group .btn span.glyphicon.no-text {margin-left:10px;margin-right:10px;}
+.col-manage-action .btn-group .btn span.glyphicon.no-text {margin:0;}
 .icon-inline-action {margin-left:.3em;}
 .icon-inline-action:first-of-type {margin-left:1em;}
 
@@ -103,6 +104,7 @@ table.selectManyCheckboxBlock label {font-weight:normal;}
 hr {border-color: #ddd;}
 
 span.glyphicon[data-toggle='tooltip'] {cursor: default;}
+.tooltip {z-index:999999 !important;}
 
 /* Dropdown submenu */
 .dropdown-submenu {
@@ -283,6 +285,18 @@ ul.IdPSelectDropDown > li.disabled:hover, ul.IdPSelectDropDown > li.disabled:foc
     text-decoration: none;
 }
 
+/* -------- DASHBOARD -------- */
+#dashboard-block div.card-box {
+    background-clip: padding-box;
+    background-color: #ffffff;
+    border: 1px solid #e8e8e8;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    padding: 20px;
+}
+#dashboard-block div.card-box > .header-title {margin-top: 0;}
+#dashboard-block div.card-box > .row {margin-top: 20px}
+
 /* -------- USER -------- */
 #terms-agreement-block {max-height:200px; margin-bottom: .5em; padding: 12px; overflow-y:scroll; box-shadow:none; background-image: none; background-color: #f5f5f5;}
 #terms-agreement-block h1, #terms-agreement-block h2, #terms-agreement-block h3, 
@@ -323,9 +337,10 @@ div.ui-state-focus span.ui-chkbox-icon {outline: -webkit-focus-ring-color auto 5
 .form-group > .button-block, 
 .panel-body > .button-block, 
 td.col-file-action > .button-block, .col-manage-action > .button-block,
-div.ui-datatable-header > .button-block, div[id$="filesHeaderBlock"] > div.col-xs-6 > .button-block {margin-top:0;}
+div.ui-datatable-header > .button-block, .button-block.tab-header {margin-top:0;}
 form.btn-form {display:inline-block;}
 .button-block button, .button-block a.btn, .button-block input.btn, .button-block div.btn-group, .button-block span.btn.ui-state-disabled {margin-right:1em;}
+.col-manage-action .button-block button, .col-manage-action .button-block a.btn, .col-manage-action .button-block input.btn, .col-manage-action .button-block div.btn-group, .col-manage-action .button-block span.btn.ui-state-disabled {margin-right:0em;}
 .button-block span.ingest-warning {margin-right:.5em;}
 .button-block div.btn-group div.btn-group {margin-right:0;}
 .button-block button.pull-right:first-child, .button-block a.btn.pull-right:first-child, .button-block div.btn-group.pull-right:first-child, 
@@ -506,7 +521,7 @@ div.ui-dialog div.highlight {
 .ui-dialog.dialog-submenu, .ui-dialog.dialog-submenu .ui-dialog-content, .ui-dialog.dialog-submenu .form-inline, .ui-dialog.dialog-submenu .form-group {overflow:visible !important;}
 .ui-dialog.dialog-submenu .ui-menu-list.ui-menu-child {z-index: 9999 !important; width: auto; min-width: 12.5em;}
 
-.ui-dialog-content {min-width:600px;}
+.ui-dialog.ui-widget.ui-widget-content {min-width:600px;}
 
 /* -------- SUBTABS -------- */
 div.popupSubTabParent > div.ui-tabs-panels > div.ui-tabs-panel.ui-widget-content {padding-left:0; padding-right:0;}

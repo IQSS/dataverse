@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.util.json;
 
 import com.google.gson.Gson;
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
+import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
@@ -12,15 +13,20 @@ import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseContact;
+import edu.harvard.iq.dataverse.DataverseTheme;
+import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
+import edu.harvard.iq.dataverse.TermsOfUseAndAccess.License;
 import edu.harvard.iq.dataverse.api.Util;
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddressRange;
+import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.StringReader;
+import java.sql.Timestamp;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -84,6 +90,12 @@ public class JsonParser {
             dv.setDataverseContacts(dvContactList);
         }
         
+        if (jobj.containsKey("theme")) {
+            DataverseTheme theme = parseDataverseTheme(jobj.getJsonObject("theme"));
+            dv.setDataverseTheme(theme);
+            theme.setDataverse(dv);
+        }
+        
         /*  We decided that subject is not user set, but gotten from the subject of the dataverse's
             datasets - leavig this code in for now, in case we need to go back to it at some point
         
@@ -111,6 +123,56 @@ public class JsonParser {
         */
                 
         return dv;
+    }
+    
+    public DataverseTheme parseDataverseTheme(JsonObject obj) {
+
+        DataverseTheme theme = new DataverseTheme();
+
+        if (obj.containsKey("backgroundColor")) {
+            theme.setBackgroundColor(obj.getString("backgroundColor", null));
+        }
+        if (obj.containsKey("linkColor")) {
+            theme.setLinkColor(obj.getString("linkColor", null));
+        }
+        if (obj.containsKey("linkUrl")) {
+            theme.setLinkUrl(obj.getString("linkUrl", null));
+        }
+        if (obj.containsKey("logo")) {
+            theme.setLogo(obj.getString("logo", null));
+        }
+        if (obj.containsKey("logoAlignment")) {
+            String align = obj.getString("logoAlignment");
+            if (align.equalsIgnoreCase("left")) {
+                theme.setLogoAlignment(DataverseTheme.Alignment.LEFT);
+            }
+            if (align.equalsIgnoreCase("right")) {
+                theme.setLogoAlignment(DataverseTheme.Alignment.RIGHT);
+            }
+            if (align.equalsIgnoreCase("center")) {
+                theme.setLogoAlignment(DataverseTheme.Alignment.CENTER);
+            }
+        }
+        if (obj.containsKey("logoBackgroundColor")) {
+            theme.setLogoBackgroundColor(obj.getString("logoBackgroundColor", null));
+        }
+        if (obj.containsKey("logoFormat")) {
+            String format = obj.getString("logoFormat");
+            if (format.equalsIgnoreCase("square")) {
+                theme.setLogoFormat(DataverseTheme.ImageFormat.SQUARE);
+            }
+            if (format.equalsIgnoreCase("rectangle")) {
+                theme.setLogoFormat(DataverseTheme.ImageFormat.RECTANGLE);
+            }
+        }
+        if (obj.containsKey("tagline")) {
+            theme.setTagline(obj.getString("tagline", null));
+        }
+        if (obj.containsKey("textColor")) {
+            theme.setTextColor(obj.getString("textColor", null));
+        }
+
+        return theme;
     }
 
     private static String getMandatoryString(JsonObject jobj, String name) throws JsonParseException {
@@ -154,10 +216,12 @@ public class JsonParser {
         dataset.setProtocol(obj.getString("protocol", null) == null ? settingsService.getValueForKey(SettingsServiceBean.Key.Protocol) : obj.getString("protocol"));
         dataset.setDoiSeparator(obj.getString("doiSeparator", null) == null ? settingsService.getValueForKey(SettingsServiceBean.Key.DoiSeparator) : obj.getString("doiSeparator"));
         dataset.setIdentifier(obj.getString("identifier",null));
-        DatasetVersion dsv = parseDatasetVersion(obj.getJsonObject("datasetVersion"));
+
+        DatasetVersion dsv = new DatasetVersion(); 
+        dsv.setDataset(dataset);
+        dsv = parseDatasetVersion(obj.getJsonObject("datasetVersion"), dsv);
         LinkedList<DatasetVersion> versions = new LinkedList<>();
         versions.add(dsv);
-        dsv.setDataset(dataset);
 
         dataset.setVersions(versions);
         return dataset;
@@ -211,11 +275,18 @@ public class JsonParser {
             terms.setContactForAccess(obj.getString("contactForAccess", null));
             terms.setSizeOfCollection(obj.getString("sizeOfCollection", null));
             terms.setStudyCompletion(obj.getString("studyCompletion", null));
-            /* License???*/
+            terms.setLicense(parseLicense(obj.getString("license", null)));
             dsv.setTermsOfUseAndAccess(terms);
             
             dsv.setDatasetFields(parseMetadataBlocks(obj.getJsonObject("metadataBlocks")));
 
+            JsonArray filesJson = obj.getJsonArray("files");
+            if (filesJson == null) {
+                filesJson = obj.getJsonArray("fileMetadatas");
+            }
+            if (filesJson != null) {
+                dsv.setFileMetadatas(parseFiles(filesJson, dsv));
+            }
             return dsv;
 
         } catch (ParseException ex) {
@@ -223,6 +294,13 @@ public class JsonParser {
         } catch (NumberFormatException ex) {
             throw new JsonParseException("Error parsing number:" + ex.getMessage(), ex);
         }
+    }
+    
+    private License parseLicense(String inString) {
+        if (inString != null && inString.equalsIgnoreCase("CC0")) {
+            return TermsOfUseAndAccess.License.CC0;
+        }
+        return TermsOfUseAndAccess.License.NONE;       
     }
 
     public List<DatasetField> parseMetadataBlocks(JsonObject json) throws JsonParseException {
@@ -249,6 +327,66 @@ public class JsonParser {
         }
         convertKeywordsToSubjects(fields);
         return fields;
+    }
+    
+    public List<FileMetadata> parseFiles(JsonArray metadatasJson, DatasetVersion dsv) throws JsonParseException {
+        List<FileMetadata> fileMetadatas = new LinkedList<>();
+
+        if (metadatasJson != null) {
+            for (JsonObject filemetadataJson : metadatasJson.getValuesAs(JsonObject.class)) {
+                String label = filemetadataJson.getString("label");
+                String description = filemetadataJson.getString("description", null);
+
+                FileMetadata fileMetadata = new FileMetadata();
+                fileMetadata.setLabel(label);
+                fileMetadata.setDescription(description);
+                fileMetadata.setDatasetVersion(dsv);
+
+                DataFile dataFile = parseDataFile(filemetadataJson.getJsonObject("dataFile"));
+
+                fileMetadata.setDataFile(dataFile);
+                dataFile.getFileMetadatas().add(fileMetadata);
+                dataFile.setOwner(dsv.getDataset());
+                
+                if (dsv.getDataset().getFiles() == null) {
+                    dsv.getDataset().setFiles(new ArrayList<>());
+                }
+                dsv.getDataset().getFiles().add(dataFile);
+
+                fileMetadatas.add(fileMetadata);
+            }
+        }
+
+        return fileMetadatas;
+    }
+    
+    public DataFile parseDataFile(JsonObject datafileJson) {
+        DataFile dataFile = new DataFile();
+        
+        Timestamp timestamp = new Timestamp(new Date().getTime());
+        dataFile.setCreateDate(timestamp);
+        dataFile.setModificationTime(timestamp);
+        dataFile.setPermissionModificationTime(timestamp);
+        
+        String contentType = datafileJson.getString("contentType", null);
+        if (contentType == null) {
+            contentType = "application/octet-stream";
+        }
+        String storageIdentifier = datafileJson.getString("storageIdentifier");
+        String md5 = datafileJson.getString("md5", null);
+        
+        if (md5 == null) {
+            md5 = "unknown";
+        }
+        
+        // TODO: 
+        // unf (if available)... etc.?
+        
+        dataFile.setContentType(contentType);
+        dataFile.setStorageIdentifier(storageIdentifier);
+        dataFile.setmd5(md5);
+        
+        return dataFile;
     }
     /**
      * Special processing for GeographicCoverage compound field:
@@ -540,5 +678,19 @@ public class JsonParser {
     int parsePrimitiveInt(String str, int defaultValue) {
         return str == null ? defaultValue : Integer.parseInt(str);
     }
+    
+    public String parseHarvestingClient(JsonObject obj, HarvestingClient harvestingClient) throws JsonParseException {
+        
+        String dataverseAlias = obj.getString("dataverseAlias",null);
+        
+        harvestingClient.setName(obj.getString("nickName",null));
+        harvestingClient.setHarvestType(obj.getString("type",null));
+        harvestingClient.setHarvestingUrl(obj.getString("harvestUrl",null));
+        harvestingClient.setArchiveUrl(obj.getString("archiveUrl",null));
+        harvestingClient.setArchiveDescription(obj.getString("archiveDescription"));
+        harvestingClient.setMetadataPrefix(obj.getString("metadataFormat",null));
+        harvestingClient.setHarvestingSet(obj.getString("set",null));
 
+        return dataverseAlias;
+    }
 }

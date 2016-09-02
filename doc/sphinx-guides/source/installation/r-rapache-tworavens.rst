@@ -53,7 +53,9 @@ install rApache as follows::
 	yum install libapreq2
 	rpm -ivh http://mirror.hmdc.harvard.edu/HMDC-Public/RedHat-6/rapache-1.2.6-rpm0.x86_64.rpm
 
+If you are using RHEL/CentOS 7, you can `download an experimental rapache-1.2.7-rpm0.x86_64.rpm <../_static/installation/files/home/rpmbuild/rpmbuild/RPMS/x86_64/rapache-1.2.7-rpm0.x86_64.rpm>`_ and install it with::
 
+	rpm -ivh rapache-1.2.7-rpm0.x86_64.rpm
 
 d. Install libcurl-devel:
 -------------------------

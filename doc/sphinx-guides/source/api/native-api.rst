@@ -110,8 +110,6 @@ Datasets
 
     GET http://$SERVER/api/datasets/:persistentId/versions/:draft?persistentId=doi:10.5072/FK2/J8SJZB
 
-
-
 Show the dataset whose id is passed::
 
   GET http://$SERVER/api/datasets/$id?key=$apiKey
@@ -127,6 +125,14 @@ List versions of the dataset::
 Show a version of the dataset. The Dataset also include any metadata blocks the data might have::
 
   GET http://$SERVER/api/datasets/$id/versions/$versionNumber?key=$apiKey
+  
+      
+Export the metadata of the current published version of a dataset in various formats see Note below::
+
+    GET http://$SERVER/api/datasets/export?exporter=ddi&persistentId=$persistentId
+  
+    Note: Supported exporters (export formats) are ddi, oai_ddi, dcterms, oai_dc, and dataverse_json.
+
 
 Lists all the file metadata, for the given dataset and version::
 
@@ -162,6 +168,21 @@ Restores the default logic of the field type to be used as the citation date. Sa
     
     DELETE http://$SERVER/api/datasets/$id/citationdate?key=$apiKey
 
+List all the role assignments at the given dataset::
+
+    GET http://$SERVER/api/datasets/$id/assignments?key=$apiKey
+
+Create a Private URL (must be able to manage dataset permissions)::
+
+    POST http://$SERVER/api/datasets/$id/privateUrl?key=$apiKey
+
+Get a Private URL from a dataset (if available)::
+
+    GET http://$SERVER/api/datasets/$id/privateUrl?key=$apiKey
+
+Delete a Private URL from a dataset (if it exists)::
+
+    DELETE http://$SERVER/api/datasets/$id/privateUrl?key=$apiKey
 
 Builtin Users
 ~~~~~
@@ -243,6 +264,13 @@ Shibboleth Groups
 ~~~~~~~~~~~~~~~~~
 
 Management of Shibboleth groups via API is documented in the :doc:`/installation/shibboleth` section of the Installation Guide.
+
+Info
+~~~~
+
+For now, only the value for the ``:DatasetPublishPopupCustomText`` setting from the :doc:`/installation/config` section of the Installation Guide is exposed::
+
+  GET http://$SERVER/api/info/settings/:DatasetPublishPopupCustomText
 
 Metadata Blocks
 ~~~~~~~~~~~~~~~

@@ -16,6 +16,8 @@ A dataset contains three levels of metadata:
 
 For more details about what Citation and Domain specific metadata is supported please see our `Appendix <../user/appendix.html#metadata-references>`_.
 
+Note that once a dataset has been published its metadata may be exported. A button on the dataset page's metadata tab will allow a user to export the metadata of the most recently published version of the dataset. Currently supported export formats are DDI, Dublin Core and JSON.
+
 File Handling + Uploading
 ===============================
 
@@ -269,6 +271,27 @@ which is located next to the "Edit" button on the upper-right. Once Submitted fo
 dataset before they decide to either "Publish" the dataset or "Return to Author". If the dataset is published the contributor
 will be notified that it is now published. If the dataset is returned to the author, the contributor of this dataset will be 
 notified that they need to make modifications before it can be submitted for review again.
+
+.. _privateurl:
+
+Private URL for Reviewing an Unpublished Dataset
+==================================================
+
+To share an unpublished dataset using Private URL
+----------------------------------------------------------------------
+
+Creating a Private URL for your dataset allows you to share your dataset (for viewing and downloading of files) before it is published to a wide group of individuals who may not have a user account on Dataverse. Anyone you send the Private URL to will not have to log into Dataverse to view the dataset.
+
+   1. Go to your unpublished dataset
+   2. Select the “Edit” button
+   3. Select “Private URL” in the dropdown menu
+   4. In the pop-up select “Create Private URL”
+   5. Copy the Private URL which has been created for this dataset and it can now be shared with anyone you wish to have access to view or download files in your unpublished dataset.
+
+To disable a Private URL
+-------------------------------------
+
+If ever you had shared a Private URL to your dataset and wish to revoke access, follow the same steps as above until step #3 but in the pop-up select “Disable Private URL”.
 
 
 Dataset Versioning

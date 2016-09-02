@@ -3,11 +3,6 @@ Shibboleth
 
 .. contents:: :local:
 
-Status: Experimental
---------------------
-
-Shibboleth support in Dataverse should be considered **experimental** until https://github.com/IQSS/dataverse/issues/2117 is closed (indicating that the feature has been in used in production at https://dataverse.harvard.edu for a while), but the `Dataverse development team <http://dataverse.org/about>`_ is eager to receive feedback on the Shibboleth feature (including these docs!) via any channel listed in the :doc:`intro` section.
-
 Introduction
 ------------
 
@@ -178,11 +173,13 @@ Most Dataverse installations will probably only want to authenticate users via S
 Identity Federation
 +++++++++++++++++++
 
-Rather than specifying individual Identity Provider(s) you may wish to broaden the number of users who can log into your Dataverse installation by registering your Dataverse installation as a Service Provider (SP) within an identity federation. For example, in the United States, users from `hundreds of institutions registered with the "InCommon" identity federation <https://incommon.org/federation/info/all-entities.html#IdPs>`_ will be able to log into your Dataverse installation if you register it as one of the `thousands of Service Providers registered with InCommon <https://incommon.org/federation/info/all-entities.html#SPs>`_.
+Rather than or in addition to specifying individual Identity Provider(s) you may wish to broaden the number of users who can log into your Dataverse installation by registering your Dataverse installation as a Service Provider (SP) within an identity federation. For example, in the United States, users from the `many institutions registered with the "InCommon" identity federation <https://incommon.org/federation/info/all-entities.html#IdPs>`_ that release the `"Research & Scholarship Attribute Bundle" <https://spaces.internet2.edu/display/InCFederation/Research+and+Scholarship+Attribute+Bundle>`_  will be able to log into your Dataverse installation if you register it as an `InCommon Service Provider <https://incommon.org/federation/info/all-entities.html#SPs>`_ that is part of the `Research & Scholarship (R&S) category <https://incommon.org/federation/info/all-entity-categories.html#SPs>`_.
 
 The details of how to register with an identity federation are out of scope for this document, but a good starting point may be this list of identity federations across the world: http://www.protectnetwork.org/support/faq/identity-federations
 
-One of the benefits of using ``shibd`` is that it can be configured to periodically poll your identify federation for updates as new Identity Providers (IdPs) join the federation you've registered with. For the InCommon federation, the following page describes how to download and verify signed InCommon metadata every hour: https://spaces.internet2.edu/display/InCFederation/Shibboleth+Metadata+Config#ShibbolethMetadataConfig-ConfiguretheShibbolethSP
+One of the benefits of using ``shibd`` is that it can be configured to periodically poll your identity federation for updates as new Identity Providers (IdPs) join the federation you've registered with. For the InCommon federation, the following page describes how to download and verify signed InCommon metadata every hour: https://spaces.internet2.edu/display/InCFederation/Shibboleth+Metadata+Config#ShibbolethMetadataConfig-ConfiguretheShibbolethSP . You can also see an example of this as ``maxRefreshDelay="3600"`` in the commented out section of the ``shibboleth2.xml`` file above.
+
+Once you've joined a federation the list of IdPs in the dropdown can be quite long! If you're curious how many are in the list you could try something like this: ``curl https://dataverse.example.edu/Shibboleth.sso/DiscoFeed | jq '.[].entityID' | wc -l``
 
 .. _shibboleth-attributes:
 
@@ -304,11 +301,13 @@ To create an institution-wide Shibboleth groups, create a JSON file as below and
 
 .. literalinclude:: ../_static/installation/files/etc/shibboleth/shibGroupTestShib.json 
 
-Note that institution-wide Shibboleth groups are based on the "Shib-Identity-Provider" attribute but https://github.com/IQSS/dataverse/issues/1515 tracks adding support for arbitrary attributes such as ""eduPersonScopedAffiliation", etc.
+Institution-wide Shibboleth groups are based on the "Shib-Identity-Provider" SAML attribute asserted at runtime after successful authentication with the Identity Provider (IdP) and held within the browser session rather than being persisted in the database for any length of time. It is for this reason that roles based on these groups, such as the ability to create a dataset, are not honored by non-browser interactions, such as through the SWORD API. 
 
 To list institution-wide Shibboleth groups: ``curl http://localhost:8080/api/admin/groups/shib``
 
 To delete an institution-wide Shibboleth group (assuming id 1): ``curl -X DELETE http://localhost:8080/api/admin/groups/shib/1``
+
+Support for arbitrary attributes beyond "Shib-Identity-Provider" such as "eduPersonScopedAffiliation", etc. is being tracked at https://github.com/IQSS/dataverse/issues/1515
 
 Converting Local Users to Shibboleth
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

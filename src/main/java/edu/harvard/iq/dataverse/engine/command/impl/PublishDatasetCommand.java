@@ -22,13 +22,25 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.export.ExportException;
+import edu.harvard.iq.dataverse.export.ExportService;
+import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.search.IndexResponse;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.jsonAsDatasetDto;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.json.JsonObjectBuilder;
 
 /**
  *
@@ -36,6 +48,7 @@ import java.util.ResourceBundle;
  */
 @RequiredPermissions(Permission.PublishDataset)
 public class PublishDatasetCommand extends AbstractCommand<Dataset> {
+    private static final Logger logger = Logger.getLogger(PublishDatasetCommand.class.getCanonicalName());
 
     boolean minorRelease = false;
     Dataset theDataset;
@@ -174,6 +187,26 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
         }
 
         theDataset.setFileAccessRequest(theDataset.getLatestVersion().getTermsOfUseAndAccess().isFileAccessRequest());
+        
+        
+        /*
+            Attempting to run metadata export, for all the formats for which 
+            we have metadata Exporters:
+        */
+        
+        try {
+            ExportService instance = ExportService.getInstance();
+            instance.exportAllFormats(theDataset);
+
+        } catch (ExportException ex) {
+            // Something went wrong!  
+            // Just like with indexing, a failure to export is not a fatal 
+            // condition. We'll just log the error as a warning and keep 
+            // going: 
+            logger.log(Level.WARNING, "Exception while exporting:" + ex.getMessage());
+        }
+        
+        
         Dataset savedDataset = ctxt.em().merge(theDataset);
 
         // set the subject of the parent (all the way up) Dataverses
@@ -226,6 +259,12 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
                 }
                 throw new CommandException(ResourceBundle.getBundle("Bundle").getString("dataset.publish.error.datacite"), this);
             }
+        }
+
+        PrivateUrl privateUrl = ctxt.engine().submit(new GetPrivateUrlCommand(getRequest(), savedDataset));
+        if (privateUrl != null) {
+            logger.fine("Deleting Private URL for dataset id " + savedDataset.getId());
+            ctxt.engine().submit(new DeletePrivateUrlCommand(getRequest(), savedDataset));
         }
 
         /*

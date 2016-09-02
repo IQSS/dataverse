@@ -181,6 +181,15 @@ public class UrlManager {
          * users are operating on the URLs returned (as they should) returning
          * the current version will avoid deprecation warnings on the Dataverse
          * side.
+         *
+         * @todo Prevent "https://localhost:8080" from being returned. It should
+         * either be "http://localhost:8080" or "https://localhost:8181". Use
+         * SystemConfig.getDataverseSiteUrl instead of SystemConfig.FQDN above.
+         * It's worse for security to not have https hard coded here but if
+         * users have configured dataverse.siteUrl to be http rather than https
+         * we assume they are doing this on purpose (despite our warnings in the
+         * Installation Guide), perhaps because they are only kicking the tires
+         * on Dataverse.
          */
         return "https://" + hostName + optionalPort + swordConfiguration.getBaseUrlPathCurrent();
     }

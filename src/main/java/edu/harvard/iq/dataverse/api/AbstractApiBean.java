@@ -20,12 +20,14 @@ import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
+import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
@@ -37,6 +39,7 @@ import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.ejb.EJBException;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -169,6 +172,9 @@ public abstract class AbstractApiBean {
     @EJB
     protected SavedSearchServiceBean savedSearchSvc;
 
+    @EJB
+    protected PrivateUrlServiceBean privateUrlSvc;
+
 	@PersistenceContext(unitName = "VDCNet-ejbPU")
 	protected EntityManager em;
     
@@ -189,11 +195,21 @@ public abstract class AbstractApiBean {
             return new JsonParser(datasetFieldSvc, metadataBlockSvc,settingsSvc);
         }
     });
-    
-	protected RoleAssignee findAssignee( String identifier ) {
-    	return roleAssigneeSvc.getRoleAssignee(identifier);
-	}
-    
+
+    protected RoleAssignee findAssignee(String identifier) {
+        try {
+            RoleAssignee roleAssignee = roleAssigneeSvc.getRoleAssignee(identifier);
+            return roleAssignee;
+        } catch (EJBException ex) {
+            Throwable cause = ex;
+            while (cause.getCause() != null) {
+                cause = cause.getCause();
+            }
+            logger.info("Exception caught looking up RoleAssignee based on identifier '" + identifier + "': " + cause.getMessage());
+            return null;
+        }
+    }
+
     /**
      * 
      * @param apiKey the key to find the user with
@@ -227,9 +243,14 @@ public abstract class AbstractApiBean {
      */
     protected User findUserOrDie() throws WrappedResponse {
         final String requestApiKey = getRequestApiKey();
-        return ( requestApiKey == null )
-                ? GuestUser.get()
-                : findAuthenticatedUserOrDie(requestApiKey);
+        if (requestApiKey == null) {
+            return GuestUser.get();
+        }
+        PrivateUrlUser privateUrlUser = privateUrlSvc.getPrivateUrlUserFromToken(requestApiKey);
+        if (privateUrlUser != null) {
+            return privateUrlUser;
+        }
+        return findAuthenticatedUserOrDie(requestApiKey);
     }
     
     /**
@@ -316,6 +337,11 @@ public abstract class AbstractApiBean {
             throw new WrappedResponse( ex, errorResponse(Response.Status.BAD_REQUEST, ex.getMessage() ) );
           
         } catch (PermissionException ex) {
+            /**
+             * @todo Is there any harm in exposing ex.getLocalizedMessage()?
+             * There's valuable information in there that can help people reason
+             * about permissions!
+             */
             throw new WrappedResponse(errorResponse(Response.Status.UNAUTHORIZED, 
                                                     "User " + cmd.getRequest().getUser().getIdentifier() + " is not permitted to perform requested action.") );
             

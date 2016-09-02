@@ -175,7 +175,8 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
          logger.log(Level.FINE, "after db update {0}", formatter.format(new Date().getTime()));       
         // set the role to be default contributor role for its dataverse
         if (importType==null || importType.equals(ImportType.NEW)) {
-            ctxt.roles().save(new RoleAssignment(savedDataset.getOwner().getDefaultContributorRole(),  getRequest().getUser(), savedDataset));
+            String privateUrlToken = null;
+            ctxt.roles().save(new RoleAssignment(savedDataset.getOwner().getDefaultContributorRole(), getRequest().getUser(), savedDataset, privateUrlToken));
          }
         
         savedDataset.setPermissionModificationTime(new Timestamp(new Date().getTime()));
@@ -191,11 +192,27 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
              */
             boolean doNormalSolrDocCleanUp = true;
             ctxt.index().indexDataset(savedDataset, doNormalSolrDocCleanUp);
-
-        } catch ( RuntimeException e ) {
-            logger.log(Level.WARNING, "Exception while indexing:" + e.getMessage(), e);
+        
+        } catch ( Exception e ) { // RuntimeException e ) {
+            logger.log(Level.WARNING, "Exception while indexing:" + e.getMessage()); //, e);
+            /**
+             * Even though the original intention appears to have been to allow the 
+             * dataset to be successfully created, even if an exception is thrown during 
+             * the indexing - in reality, a runtime exception there, even caught, 
+             * still forces the EJB transaction to be rolled back; hence the 
+             * dataset is NOT created... but the command completes and exits as if
+             * it has been successful. 
+             * So I am going to throw a Command Exception here, to avoid this. 
+             * If we DO want to be able to create datasets even if they cannot 
+             * be immediately indexed, we'll have to figure out how to do that. 
+             * (Note that import is still possible when Solr is down - because indexDataset() 
+             * does NOT throw an exception if it is.
+             * -- L.A. 4.5
+             */
+            throw new CommandException("Dataset could not be created. Indexing failed", this);
+            
         }
-          logger.log(Level.FINE, "after index {0}", formatter.format(new Date().getTime()));      
+        logger.log(Level.FINE, "after index {0}", formatter.format(new Date().getTime()));      
         
         // if we are not migrating, assign the user to this version
         if (importType==null || importType.equals(ImportType.NEW)) {  

@@ -1,8 +1,10 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearch;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -39,7 +41,9 @@ import org.hibernate.validator.constraints.URL;
  */
 @NamedQueries({
     @NamedQuery(name = "Dataverse.ownedObjectsById", query = "SELECT COUNT(obj) FROM DvObject obj WHERE obj.owner.id=:id"),
-    @NamedQuery(name = "Dataverse.findByAlias", query="SELECT dv FROM Dataverse dv WHERE LOWER(dv.alias)=:alias")
+    @NamedQuery(name = "Dataverse.findByAlias", query="SELECT dv FROM Dataverse dv WHERE LOWER(dv.alias)=:alias"),
+    @NamedQuery(name = "Dataverse.filterByAlias", query="SELECT dv FROM Dataverse dv WHERE LOWER(dv.alias) LIKE :alias order by dv.alias"),
+    @NamedQuery(name = "Dataverse.filterByAliasNameAffiliation", query="SELECT dv FROM Dataverse dv WHERE (LOWER(dv.alias) LIKE :alias) OR (LOWER(dv.name) LIKE :name) OR (LOWER(dv.affiliation) LIKE :affiliation) order by dv.alias")
 })
 @Entity
 @Table(indexes = {@Index(columnList="fk_dataverse_id")
@@ -287,20 +291,22 @@ public class Dataverse extends DvObjectContainer {
         this.guestbooks = guestbooks;
     } 
     
-    @OneToOne (mappedBy="dataverse", cascade={CascadeType.PERSIST, CascadeType.REMOVE})
-    private HarvestingDataverseConfig harvestingDataverseConfig;
+    
+    @OneToMany (mappedBy="dataverse", cascade={CascadeType.MERGE, CascadeType.REMOVE})
+    private List<HarvestingClient> harvestingClientConfigs;
 
-    public HarvestingDataverseConfig getHarvestingDataverseConfig() {
-        return this.harvestingDataverseConfig;
+    public List<HarvestingClient> getHarvestingClientConfigs() {
+        return this.harvestingClientConfigs;
     }
 
-    public void setHarvestingDataverseConfig(HarvestingDataverseConfig harvestingDataverseConfig) {
-        this.harvestingDataverseConfig = harvestingDataverseConfig;
+    public void setHarvestingClientConfigs(List<HarvestingClient> harvestingClientConfigs) {
+        this.harvestingClientConfigs = harvestingClientConfigs;
     }
-
+    /*
     public boolean isHarvested() {
-        return harvestingDataverseConfig != null; 
+        return harvestingClient != null; 
     }
+    */
     
     
     public List<Guestbook> getParentGuestbooks() {
@@ -661,13 +667,24 @@ public class Dataverse extends DvObjectContainer {
 
     public void addRole(DataverseRole role) {
         role.setOwner(this);
+        if ( roles == null ) {
+            roles = new HashSet<>();
+        }
         roles.add(role);
     }
-
+    
+    /**
+     * Note: to add a role, use {@link #addRole(edu.harvard.iq.dataverse.authorization.DataverseRole)},
+     * do not call this method and try to add directly to the list. 
+     * @return the roles defined in this Dataverse.
+     */
     public Set<DataverseRole> getRoles() {
+        if ( roles == null ) {
+            roles = new HashSet<>();
+        }
         return roles;
     }
-
+    
     public List<Dataverse> getOwners() {
         List owners = new ArrayList();
         if (getOwner() != null) {
