@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroupProvider
 import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -135,6 +136,7 @@ public class GroupServiceBean {
         return groups;
     }
 
+    
     public Set<Group> groupsFor( DataverseRequest dr ) {
         Set<Group> groups = new HashSet<>();
         
@@ -145,6 +147,44 @@ public class GroupServiceBean {
         groups.addAll( explicitGroupService.findGroups(dr.getUser()) );
         
         return groups;
+    }
+    
+    /**
+     * Collections of groups may include {@link ExplicitGroup}s, which have a 
+     * recursive structure (more precisely, a Composite Pattern}. This has many 
+     * advantages, but it makes answering the question "which groups are 
+     * contained in this group" non-trivial. This method deals with this issue by
+     * providing a "flat list" of the groups contained in the groups at the 
+     * passed collection.
+     * 
+     * The resultant stream is distinct - groups appear in it only once, even if
+     * some of them are members of multiple groups.
+     * 
+     * @param groups A collection of groups
+     * @return A distinct stream of groups who are members of, or are 
+     * descendants of members of the groups in {@code groups}.
+     */
+    public Stream<Group> flattenGroupsCollection( Collection<Group> groups ) {
+        Stream.Builder<Group> out = Stream.builder();
+        groups.forEach( g -> {
+            out.accept(g);
+            if ( g instanceof ExplicitGroup ) {
+                collectGroupContent((ExplicitGroup) g, out);
+            } 
+        });
+        return out.build().distinct();
+    }
+    
+    private void collectGroupContent( ExplicitGroup eg, Stream.Builder<Group> out ) {
+        eg.getContainedRoleAssgineeIdentifiers().stream()
+                .map( idtf -> roleAssigneeSvc.getRoleAssignee(idtf) )
+                .filter( asn -> asn instanceof Group )
+                .forEach( group ->  out.accept((Group)group) );
+        
+        eg.getContainedExplicitGroups().forEach( meg -> {
+            out.accept(meg);
+            collectGroupContent(meg, out);
+        });
     }
     
     /**
