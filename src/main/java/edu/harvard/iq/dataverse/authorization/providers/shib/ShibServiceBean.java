@@ -8,11 +8,13 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import edu.harvard.iq.dataverse.Shib;
 import edu.harvard.iq.dataverse.authorization.AuthenticationRequest;
+import edu.harvard.iq.dataverse.authorization.AuthenticationResponse;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationFailedException;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.PasswordEncryption;
 import static edu.harvard.iq.dataverse.authorization.providers.shib.ShibUtil.getRandomUserStatic;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -188,6 +190,30 @@ public class ShibServiceBean {
             return au;
         } catch (AuthenticationFailedException ex) {
             logger.info("The username and/or password entered is invalid: " + ex.getResponse().getMessage());
+            if (AuthenticationResponse.Status.BREAKOUT.equals(ex.getResponse().getStatus())) {
+                /**
+                 * Note that this "BREAKOUT" status creates PasswordResetData!
+                 * We'll delete it just before blowing away the BuiltinUser in
+                 * AuthenticationServiceBean.convertBuiltInToShib
+                 */
+                logger.info("AuthenticationFailedException caught in canLogInAsBuiltinUser: The username and/or password entered is invalid: " + ex.getResponse().getMessage() + " - Maybe the user (" + username + ") hasn't upgraded their password? Checking the old password...");
+                BuiltinUser builtinUser = builtinUserService.findByUsernameOrEmail(username);
+                if (builtinUser != null) {
+                    boolean userAuthenticated = PasswordEncryption.getVersion(builtinUser.getPasswordEncryptionVersion()).check(password, builtinUser.getEncryptedPassword());
+                    if (userAuthenticated == true) {
+                        AuthenticatedUser authUser = authSvc.lookupUser(BuiltinAuthenticationProvider.PROVIDER_ID, builtinUser.getUserName());
+                        if (authUser != null) {
+                            return authUser;
+                        } else {
+                            logger.info("canLogInAsBuiltinUser: Couldn't find AuthenticatedUser based on BuiltinUser username " + builtinUser.getUserName());
+                        }
+                    } else {
+                        logger.info("canLogInAsBuiltinUser: User doesn't know old pre-bcrypt password either.");
+                    }
+                } else {
+                    logger.info("canLogInAsBuiltinUser: Couldn't run `check` because no BuiltinUser found with username " + username);
+                }
+            }
             return null;
         } catch (EJBException ex) {
             Throwable cause = ex;

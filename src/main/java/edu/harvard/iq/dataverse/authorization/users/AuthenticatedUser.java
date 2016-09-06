@@ -39,7 +39,11 @@ import javax.validation.constraints.NotNull;
     @NamedQuery( name="AuthenticatedUser.filter",
                 query="select au from AuthenticatedUser au WHERE ("
                         + "au.userIdentifier like :query OR "
-                        + "lower(concat(au.firstName,' ',au.lastName)) like lower(:query))")    
+                        + "lower(concat(au.firstName,' ',au.lastName)) like lower(:query))"),
+    @NamedQuery( name="AuthenticatedUser.findAdminUser",
+                query="select au from AuthenticatedUser au WHERE "
+                        + "au.superuser = true "
+                        + "order by au.id")
     
 })
 @Entity
