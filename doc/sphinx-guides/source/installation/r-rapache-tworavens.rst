@@ -82,7 +82,7 @@ R is used both by the Dataverse application, directly, and the TwoRavens compani
 
 Two distinct interfaces are used to access R: Dataverse uses Rserve; and TwoRavens sends jobs to R running under rApache using Rook interface. 
 
-We provide a shell script (``conf/R/r-setup.sh`` in the Dataverse source tree; you will need the other 3 files in that directory as well - `https://github.com/IQSS/dataverse/tree/develop/conf/R <https://github.com/IQSS/dataverse/tree/develop/conf/R>`__) that will attempt to install the required 3rd party packages; it will also configure Rserve and rserve user. rApache configuration will be addressed in its own section.
+We provide a shell script (``conf/R/r-setup.sh`` in the Dataverse source tree; you will need the other 3 files in that directory as well - `https://github.com/IQSS/dataverse/tree/master/conf/R <https://github.com/IQSS/dataverse/tree/master/conf/R>`__) that will attempt to install the required 3rd party packages; it will also configure Rserve and rserve user. rApache configuration will be addressed in its own section.
 
 The script will attempt to download the packages from CRAN (or a mirror) and GitHub, so the system must have access to the internet. On a server fully firewalled from the world, packages can be installed from downloaded sources. This is left as an exercise for the reader. Consult the script for insight.
 
