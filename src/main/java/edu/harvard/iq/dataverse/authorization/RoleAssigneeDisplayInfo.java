@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse.authorization;
 
+import java.util.Objects;
+
 /**
  * Contains display info for an assignee.
  * @author michael
@@ -51,6 +53,34 @@ public class RoleAssigneeDisplayInfo {
     @Override
     public String toString() {
         return "RoleAssigneeDisplayInfo{" + "title=" + title + ", emailAddress=" + emailAddress + ", affiliation=" + affiliation + '}';
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 89 * hash + Objects.hashCode(this.title);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if ( ! (obj instanceof RoleAssigneeDisplayInfo)) {
+            return false;
+        }
+        final RoleAssigneeDisplayInfo other = (RoleAssigneeDisplayInfo) obj;
+        if (!Objects.equals(this.title, other.title)) {
+            return false;
+        }
+        if (!Objects.equals(this.emailAddress, other.emailAddress)) {
+            return false;
+        }
+        return Objects.equals(this.affiliation, other.affiliation);
     }
     
 }

@@ -12,10 +12,13 @@
     <h:body>
         Welcome Back! Getting the token and your data.
         <br></br>
-        Response code: <pre>#{OAuth2Page.responseCode}</pre>
-        <pre><code>
-#{OAuth2Page.responseBody}
-        </code></pre>
+        <h3>User:</h3>
+        <ul>
+            <li>Token: #{OAuth2Page.user.accessToken}</li>
+            <li>ID in service: #{OAuth2Page.user.idInService}</li>
+            <li>Service ID: #{OAuth2Page.user.serviceId}</li>
+            <li>Display Info: <pre>#{OAuth2Page.user.displayInfo}</pre></li>
+        </ul>
     </h:body>
 </html>
 
