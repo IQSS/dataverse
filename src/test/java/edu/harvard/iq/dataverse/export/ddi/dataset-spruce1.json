@@ -91,7 +91,7 @@
         "label": "trees.png",
         "version": 1,
         "datasetVersionId": 1,
-        "datafile": {
+        "dataFile": {
           "id": 12,
           "name": "trees.png",
           "contentType": "image/png",

@@ -77,6 +77,11 @@
                                         <h:outputText value="#{bundle['header.guides.api']}" />
                                     </h:outputLink>
                                 </li>
+                                <li jsf:rendered="#{dataverseSession.user.superuser}">
+                                    <h:outputLink value="#{settingsWrapper.guidesBaseUrl}/latest/admin" target="_blank">
+                                        <h:outputText value="#{bundle['header.guides.admin']}" />
+                                    </h:outputLink>
+                                </li>
                             </ul>
                         </li>
                         <o:form useRequestURI="true" class="navbar-form navbar-left navbar-form-link">
@@ -87,6 +92,11 @@
                                 <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
                             </p:commandLink>
                         </o:form>
+                        <li jsf:rendered="#{dataverseSession.user.superuser}">
+                            <h:outputLink value="/dashboard.xhtml?dataverseId=#{dataverseServiceBean.findRootDataverse().id}">
+                                <h:outputText value="#{bundle['header.dashboard']}" />
+                            </h:outputLink>
+                        </li>
                         <ui:fragment rendered="#{!dataverseSession.user.authenticated}">
                             <li>
                                 <h:outputLink rendered="#{dataverseHeaderFragment.signupAllowed}"
@@ -108,9 +118,7 @@
                                     </ui:fragment>
                                     <h:outputText styleClass="#{dataverseSession.user.superuser ? 'text-danger' : ''}" value="#{dataverseSession.user.displayInfo.title}" id="userDisplayInfoTitle"/>
                                     <h:outputText styleClass="label label-danger" rendered="#{ dataverseHeaderFragment.getUnreadNotificationCount(dataverseSession.user.id) > 0 }"
-                                                  value="#{ dataverseHeaderFragment.getUnreadNotificationCount(dataverseSession.user.id) }" />
-
-                                    <b class="caret"></b>
+                                                  value="#{ dataverseHeaderFragment.getUnreadNotificationCount(dataverseSession.user.id) }" />                                    <b class="caret"></b>
                                 </span>
                                 <ul class="dropdown-menu">
                                     <li>

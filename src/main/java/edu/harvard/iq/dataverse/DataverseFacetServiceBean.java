@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.util.LruCache;
 import java.util.List;
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
@@ -21,6 +22,9 @@ public class DataverseFacetServiceBean implements java.io.Serializable {
     
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
+    
+    @EJB
+    DataverseServiceBean dataverses;
     
     public List<DataverseFacet> findByDataverseId(Long dataverseId) {
         List<DataverseFacet> res = cache.get(dataverseId);
@@ -48,19 +52,22 @@ public class DataverseFacetServiceBean implements java.io.Serializable {
         
 	}
 	
-    public void create(int diplayOrder, Long datasetFieldId, Long dataverseId) {
+    public DataverseFacet create(int displayOrder, DatasetFieldType fieldType, Dataverse ownerDv) {
         DataverseFacet dataverseFacet = new DataverseFacet();
         
-        dataverseFacet.setDisplayOrder(diplayOrder);
+        dataverseFacet.setDisplayOrder(displayOrder);
+        dataverseFacet.setDatasetFieldType(fieldType);
+        dataverseFacet.setDataverse(ownerDv);
         
-        DatasetFieldType dsfType = (DatasetFieldType)em.find(DatasetFieldType.class,datasetFieldId);
-        dataverseFacet.setDatasetFieldType(dsfType);
-        
-        Dataverse dataverse = (Dataverse)em.find(Dataverse.class,dataverseId);
-        dataverseFacet.setDataverse(dataverse);
-        
-        dataverse.getDataverseFacets().add(dataverseFacet);
+        ownerDv.getDataverseFacets().add(dataverseFacet);
         em.persist(dataverseFacet);
+        return dataverseFacet;
+    }
+    
+    public DataverseFacet create(int displayOrder, Long datasetFieldTypeId, Long dataverseId) {
+        return create( displayOrder,
+                        (DatasetFieldType)em.find(DatasetFieldType.class,datasetFieldTypeId),
+                        dataverses.find(dataverseId) );
     }
     
 }
