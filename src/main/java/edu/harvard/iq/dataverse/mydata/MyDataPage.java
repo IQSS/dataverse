@@ -175,7 +175,7 @@ public class MyDataPage implements java.io.Serializable {
         
         // Temp DataverseRolePermissionHelper -- not in its normal role but for creating initial checkboxes
         //
-        rolePermissionHelper = new DataverseRolePermissionHelper(getRolesUsedToCreateCheckboxes(authUser));
+        rolePermissionHelper = new DataverseRolePermissionHelper(getRolesUsedToCreateCheckboxes(dataverseRequest));
        
         //this.setUserCountTotals(authUser, rolePermissionHelper);
         return null;
@@ -188,10 +188,10 @@ public class MyDataPage implements java.io.Serializable {
         return MyDataUtil.formatUserIdentifierForMyDataForm(this.authUser.getIdentifier());
     }
     
-    private List<DataverseRole> getRolesUsedToCreateCheckboxes(AuthenticatedUser authUser){
+    private List<DataverseRole> getRolesUsedToCreateCheckboxes(DataverseRequest dataverseRequest){
 
-        if (authUser==null){
-            throw new NullPointerException("authUser cannot be null");
+        if (dataverseRequest==null){
+            throw new NullPointerException("dataverseRequest cannot be null");
         }
         // Initialize the role checboxes
         //
@@ -203,7 +203,7 @@ public class MyDataPage implements java.io.Serializable {
             roleList = dataverseRoleService.findAll();
         }else{
             // (2) For a regular users
-            roleList = roleAssigneeService.getAssigneeDataverseRoleFor(authUser);
+            roleList = roleAssigneeService.getAssigneeDataverseRoleFor(dataverseRequest);
         
             // If there are no assigned roles, show them all?
             // This may not make sense

@@ -362,5 +362,8 @@ public class MyDataFilterParams {
         return publicationStateInfoList;
     }
   
+    public DataverseRequest getDataverseRequest(){
+        return this.dataverseRequest;
+    }
   
 }

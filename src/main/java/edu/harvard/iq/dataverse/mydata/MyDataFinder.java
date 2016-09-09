@@ -446,8 +446,7 @@ public class MyDataFinder {
     
     private boolean runStep1RoleAssignments(){
                 
-        List<Object[]> results = this.roleAssigneeService.getAssigneeAndRoleIdListFor(filterParams.getAuthenticatedUser()
-                                        , this.filterParams.getRoleIds());
+        List<Object[]> results = this.roleAssigneeService.getAssigneeAndRoleIdListFor(filterParams);
         
         //msgt("runStep1RoleAssignments results: " + results.toString());
 
