@@ -283,7 +283,11 @@ public class AuthenticationServiceBean {
             throw new AuthenticationFailedException(resp, "Authentication Failed: " + resp.getMessage());
         }
     }
-
+    
+    public AuthenticatedUser lookupUser(UserRecordIdentifier id) {
+        return lookupUser(id.repoId, id.userIdInRepo);
+    }
+    
     public AuthenticatedUser lookupUser(String authPrvId, String userPersistentId) {
         TypedQuery<AuthenticatedUserLookup> typedQuery = em.createNamedQuery("AuthenticatedUserLookup.findByAuthPrvID_PersUserId", AuthenticatedUserLookup.class);
         typedQuery.setParameter("authPrvId", authPrvId);

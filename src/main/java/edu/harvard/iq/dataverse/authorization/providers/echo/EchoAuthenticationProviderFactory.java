@@ -19,7 +19,7 @@ public class EchoAuthenticationProviderFactory implements AuthenticationProvider
 
     @Override
     public String getInfo() {
-        return "A proof-of-concept provider that approved everyone,";
+        return "A proof-of-concept provider that approves everyone.";
     }
 
     @Override

@@ -10,15 +10,23 @@
         </f:metadata>
     </h:head>
     <h:body>
-        Welcome Back! Getting the token and your data.
+        <h1>
+            OAuth2 error
+        </h1>
         <br></br>
-        <h3>User:</h3>
-        <ul>
-            <li>Token: #{OAuth2Page.user.accessToken}</li>
-            <li>ID in service: #{OAuth2Page.user.idInService}</li>
-            <li>Service ID: #{OAuth2Page.user.serviceId}</li>
-            <li>Display Info: <pre>#{OAuth2Page.user.displayInfo}</pre></li>
-        </ul>
+        Sorry, the identification process did not succeed.
+        <br></br>
+        <h3>Info:</h3>
+        <pre><code>
+            #{OAuth2Page.error.message}    
+        </code></pre>
+        <h5>Additional Info:</h5>
+        Http Return Code: <code>#{OAuth2Page.error.httpReturnCode}</code><br></br>
+        Raw message body:
+        <pre><code>
+            #{OAuth2Page.error.messageBody}
+        </code></pre>
+        
     </h:body>
 </html>
 

@@ -1,6 +1,7 @@
-package edu.harvard.iq.dataverse.authorization.oauth2;
+package edu.harvard.iq.dataverse.authorization.providers.oauth2;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
+import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 
 /**
  * Describes a single user on a remote IDP that uses OAuth2.
@@ -47,4 +48,7 @@ public class OAuth2UserRecord {
         return "OAuth2UserRecord{" + "serviceId=" + serviceId + ", idInService=" + idInService + '}';
     }
     
+    public UserRecordIdentifier getUserRecordIdentifier() {
+        return new UserRecordIdentifier(serviceId, idInService);
+    }
 }

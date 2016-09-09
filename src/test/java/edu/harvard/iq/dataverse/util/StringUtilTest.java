@@ -119,4 +119,14 @@ public class StringUtilTest {
         assertEquals( "hello", StringUtil.nullToEmpty("hello") );
         assertEquals( "", StringUtil.nullToEmpty(null) );
     }
+    
+    @Test
+    public void testSymmetricEncryption() {
+        String source = "Hello, world! This is an encryption test";
+        String password = "12345678";
+        final String encrypted = StringUtil.encrypt(source, password);
+        final String decrypted = StringUtil.decrypt(encrypted, password);
+        
+        assertEquals(source, decrypted);
+    }
 }

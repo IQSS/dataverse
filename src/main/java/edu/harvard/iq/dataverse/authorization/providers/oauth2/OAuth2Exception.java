@@ -1,4 +1,4 @@
-package edu.harvard.iq.dataverse.authorization.oauth2;
+package edu.harvard.iq.dataverse.authorization.providers.oauth2;
 
 /**
  * Captures errors thrown during the OAuth process.

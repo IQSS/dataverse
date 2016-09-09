@@ -1,7 +1,8 @@
 package edu.harvard.iq.dataverse.authorization.oauth2.identityproviders;
 
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.identityproviders.GitHubOAuth2Idp;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
-import edu.harvard.iq.dataverse.authorization.oauth2.AbstractOAuth2Idp;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2Idp;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -60,12 +61,11 @@ public class GitHubOAuth2IdpTest extends GitHubOAuth2Idp {
      */
     @Test
     public void testParseUserResponse() {
-        GitHubOAuth2Idp instance = new GitHubOAuth2Idp();
         AbstractOAuth2Idp.ParsedUserResponse expResult = new AbstractOAuth2Idp.ParsedUserResponse(
                 new AuthenticatedUserDisplayInfo("Jane", "", "jane@janedoe.com", "ACME Sprokets, Inc.", ""),
                 "jane_doe"
         );
-        AbstractOAuth2Idp.ParsedUserResponse result = instance.parseUserResponse(GITHUB_RESPONSE);
+        AbstractOAuth2Idp.ParsedUserResponse result = parseUserResponse(GITHUB_RESPONSE);
         
         assertEquals(expResult.displayInfo, result.displayInfo);
         assertEquals(expResult.userIdInProvider, result.userIdInProvider);

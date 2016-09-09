@@ -1,10 +1,9 @@
-package edu.harvard.iq.dataverse.authorization.oauth2.identityproviders;
+package edu.harvard.iq.dataverse.authorization.providers.oauth2.identityproviders;
 
 import com.github.scribejava.apis.GitHubApi;
 import com.github.scribejava.core.builder.api.BaseApi;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
-import edu.harvard.iq.dataverse.authorization.oauth2.AbstractOAuth2Idp;
-import edu.harvard.iq.dataverse.authorization.oauth2.OAuth2UserRecord;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2Idp;
 import java.io.StringReader;
 import javax.json.Json;
 import javax.json.JsonObject;
