@@ -113,12 +113,10 @@ public class GroupServiceBean {
      * groups a Role assignee belongs to as advertised but this method comes
      * closer.
      *
-     * @todo Determine if this method works with IP Groups.
-     *
      * @param au An AuthenticatedUser.
      * @return As many groups as we can find for the AuthenticatedUser.
      * 
-     * @deprecated use {@link #groupsFor(edu.harvard.iq.dataverse.engine.command.DataverseRequest)}
+     * @deprecated Does not look into IP Groups. Use {@link #groupsFor(edu.harvard.iq.dataverse.engine.command.DataverseRequest)}
      */
     @Deprecated
     public Set<Group> groupsFor(AuthenticatedUser au) {
@@ -185,6 +183,34 @@ public class GroupServiceBean {
             out.accept(meg);
             collectGroupContent(meg, out);
         });
+    }
+    
+    /**
+     * Returns all the groups that are in, of are ancestors of a group in
+     * the passed group collection.
+     * 
+     * @param groups 
+     * @return {@code groups} and their ancestors.
+     */
+    public Set<Group> collectAncestors( Collection<Group> groups ) {
+        // Ancestors will be collected here.
+        Set<Group> retVal = new HashSet<>(); 
+        
+         // Groups whose ancestors were not collected yet.
+        Set<Group> perimeter = new HashSet(groups);
+        
+        while ( ! perimeter.isEmpty() ) {
+            Group next = perimeter.iterator().next();
+            retVal.add(next);
+            perimeter.remove(next);
+            explicitGroupService.findDirectlyContainingGroups(next).forEach( g -> {
+                if ( ! retVal.contains(g) ) {
+                    perimeter.add( g );
+                }
+            });
+        }
+        
+        return retVal;
     }
     
     /**

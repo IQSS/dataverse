@@ -120,7 +120,7 @@ public class ExplicitGroupServiceBean {
      * @return set of the explicit groups that contain {@code ra}.
      */
     public Set<ExplicitGroup> findGroups( RoleAssignee ra ) {
-        return findClosure(findDirectGroups(ra));
+        return findClosure(findDirectlyContainingGroups(ra));
     }
     
     /**
@@ -131,7 +131,7 @@ public class ExplicitGroupServiceBean {
      * @return set of the explicit groups that contain {@code ra} directly.
      * @see #findGroups(edu.harvard.iq.dataverse.authorization.RoleAssignee)
      */
-    public Set<ExplicitGroup> findDirectGroups( RoleAssignee ra ) {
+    public Set<ExplicitGroup> findDirectlyContainingGroups( RoleAssignee ra ) {
         if ( ra instanceof AuthenticatedUser ) {
             return provider.updateProvider(
                     new HashSet<>(
@@ -233,7 +233,7 @@ public class ExplicitGroupServiceBean {
            result.add(g);
            
            // add all of g's parents to the fringe, unless already visited.
-           findDirectGroups(g).stream()
+           findDirectlyContainingGroups(g).stream()
                    .filter( eg -> !(result.contains(eg)||fringe.contains(eg) ))
                    .forEach( fringe::add );
         }
