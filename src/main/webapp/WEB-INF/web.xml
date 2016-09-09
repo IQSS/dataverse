@@ -70,6 +70,10 @@
     </servlet>
     <!-- Map these files with JSF -->
     <servlet>
+        <servlet-name>OAIServlet</servlet-name>
+        <servlet-class>edu.harvard.iq.dataverse.harvest.server.web.servlet.OAIServlet</servlet-class>
+    </servlet>
+    <servlet>
         <servlet-name>Citation Servlet</servlet-name>
         <servlet-class>edu.harvard.iq.dataverse.CitationServlet</servlet-class>
     </servlet>
@@ -92,6 +96,10 @@
     <servlet-mapping>
         <servlet-name>Push Servlet</servlet-name>
         <url-pattern>/primepush/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>OAIServlet</servlet-name>
+        <url-pattern>/oai</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>Citation Servlet</servlet-name>
