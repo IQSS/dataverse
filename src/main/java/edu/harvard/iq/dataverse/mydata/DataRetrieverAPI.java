@@ -16,7 +16,7 @@ import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
-import edu.harvard.iq.dataverse.authorization.MyDataQueryHelperServiceBean;
+//import edu.harvard.iq.dataverse.authorization.MyDataQueryHelperServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -69,8 +69,8 @@ public class DataRetrieverAPI extends AbstractApiBean {
     SearchServiceBean searchService;
     @EJB
     AuthenticationServiceBean authenticationService;
-    @EJB
-    MyDataQueryHelperServiceBean myDataQueryHelperServiceBean;
+    //@EJB
+    //MyDataQueryHelperServiceBean myDataQueryHelperServiceBean;
     @EJB
     GroupServiceBean groupService;
     
@@ -444,7 +444,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
                                 paginationStart);
         
         RoleTagRetriever roleTagRetriever = new RoleTagRetriever(this.rolePermissionHelper, this.roleAssigneeSvc, this.dvObjectServiceBean);
-        roleTagRetriever.loadRoles(searchUser, solrQueryResponse);
+        roleTagRetriever.loadRoles(dataverseRequest, solrQueryResponse);
 
                 
         jsonData.add(DataRetrieverAPI.JSON_SUCCESS_FIELD_NAME, true)
