@@ -448,7 +448,7 @@ public class MyDataFinder {
                 
         List<Object[]> results = this.roleAssigneeService.getAssigneeAndRoleIdListFor(filterParams);
         
-        //msgt("runStep1RoleAssignments results: " + results.toString());
+        System.out.println("runStep1RoleAssignments results: " + results.toString());
 
         if (results == null){
             this.addErrorMessage("Sorry, the EntityManager isn't working (still).");
@@ -472,6 +472,8 @@ public class MyDataFinder {
         for (Object[] ra : results) {
             Long dvId = (Long)ra[0];
             Long roleId = (Long)ra[1];
+            
+            
             
             //----------------------------------
             // Is this is a harvested Dataverse?

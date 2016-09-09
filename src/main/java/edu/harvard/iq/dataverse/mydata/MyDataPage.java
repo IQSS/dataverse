@@ -168,6 +168,7 @@ public class MyDataPage implements java.io.Serializable {
         // Initialize a filterParams object to buid the Publication Status checkboxes
         //
         HttpServletRequest httpServletRequest = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
+
         DataverseRequest dataverseRequest = new DataverseRequest(authUser, httpServletRequest);
         this.filterParams = new MyDataFilterParams(dataverseRequest,  MyDataFilterParams.defaultDvObjectTypes, null, null, null);
         

@@ -125,7 +125,7 @@ public class MyDataFilterParams {
      * @param searchTerm 
      */    
     public MyDataFilterParams(DataverseRequest dataverseRequest, List<String> dvObjectTypes, List<String> publicationStatuses, List<Long> roleIds, String searchTerm){
-        if (authenticatedUser==null){
+        if (dataverseRequest==null){
             throw new NullPointerException("MyDataFilterParams constructor: dataverseRequest cannot be null ");
         }
         this.dataverseRequest = dataverseRequest;

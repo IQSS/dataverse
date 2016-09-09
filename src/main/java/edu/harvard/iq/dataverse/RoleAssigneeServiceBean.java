@@ -331,13 +331,14 @@ public class RoleAssigneeServiceBean {
         Set<Group> groups = groupSvc.groupsFor(dataverseRequest, null);
         for (Group group : groups) {
             logger.fine("found group " + group.getIdentifier() + " with alias " + group.getAlias());
-            if (group.getGroupProvider().getGroupProviderAlias().equals("shib") || group.getGroupProvider().getGroupProviderAlias().equals("ip")) {
+           // if (group.getGroupProvider().getGroupProviderAlias().equals("shib") || group.getGroupProvider().getGroupProviderAlias().equals("ip")) {
                 String groupAlias = group.getAlias();
                 if (groupAlias != null && !groupAlias.isEmpty()) {
                     retVal.add('&' + groupAlias);
                 }
-            }
+            //}
         }
+        System.out.println("retVal" + retVal);
         return retVal;
     }
 
