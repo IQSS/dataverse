@@ -400,7 +400,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
 
         try {
                 solrQueryResponse = searchService.search(
-                        createDataverseRequest(searchUser),
+                        dataverseRequest,
                         null, // subtree, default it to Dataverse for now
                         filterParams.getSearchTerm(),  //"*", //
                         filterQueries,//filterQueries,
