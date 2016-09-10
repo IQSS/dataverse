@@ -232,6 +232,7 @@ public class SearchServiceBean {
 //        solrQuery.addFacetField(SearchFields.HOST_DATAVERSE);
 //        solrQuery.addFacetField(SearchFields.AUTHOR_STRING);
         solrQuery.addFacetField(SearchFields.DATAVERSE_CATEGORY);
+        solrQuery.addFacetField(SearchFields.METADATA_SOURCE);
 //        solrQuery.addFacetField(SearchFields.AFFILIATION);
         solrQuery.addFacetField(SearchFields.PUBLICATION_DATE);
 //        solrQuery.addFacetField(SearchFields.CATEGORY);
@@ -447,6 +448,12 @@ public class SearchServiceBean {
             solrSearchResult.setDescriptionNoSnippet(description);
             solrSearchResult.setDeaccessionReason(deaccessionReason);
             solrSearchResult.setDvTree(dvTree);
+            
+            String originSource = (String) solrDocument.getFieldValue(SearchFields.METADATA_SOURCE);
+            if (IndexServiceBean.HARVESTED.equals(originSource)) {
+                solrSearchResult.setHarvested(true);
+            }
+            
             /**
              * @todo start using SearchConstants class here
              */
@@ -556,9 +563,11 @@ public class SearchServiceBean {
         boolean draftsAvailable = false;
         boolean unpublishedAvailable = false;
         boolean deaccessionedAvailable = false;
+        boolean hideMetadataSourceFacet = true;
         for (FacetField facetField : queryResponse.getFacetFields()) {
             FacetCategory facetCategory = new FacetCategory();
             List<FacetLabel> facetLabelList = new ArrayList<>();
+            int numMetadataSources = 0;
             for (FacetField.Count facetFieldCount : facetField.getValues()) {
                 /**
                  * @todo we do want to show the count for each facet
@@ -578,7 +587,13 @@ public class SearchServiceBean {
                             deaccessionedAvailable = true;
                         }
                     }
+                    if (facetField.getName().equals(SearchFields.METADATA_SOURCE)) {
+                        numMetadataSources++;
+                    }
                 }
+            }
+            if (numMetadataSources > 1) {
+                hideMetadataSourceFacet = false;
             }
             facetCategory.setName(facetField.getName());
             // hopefully people will never see the raw facetField.getName() because it may well have an _s at the end
@@ -646,6 +661,10 @@ public class SearchServiceBean {
                         hidePublicationStatusFacet = false;
                     }
                     if (!hidePublicationStatusFacet) {
+                        facetCategoryList.add(facetCategory);
+                    }
+                } else if (facetCategory.getName().equals(SearchFields.METADATA_SOURCE)) {
+                    if (!hideMetadataSourceFacet) {
                         facetCategoryList.add(facetCategory);
                     }
                 } else {

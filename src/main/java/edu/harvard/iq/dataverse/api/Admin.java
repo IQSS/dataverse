@@ -33,11 +33,14 @@ import javax.ws.rs.core.Response;
 
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
+import java.io.StringReader;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.ws.rs.Produces;
@@ -416,7 +419,11 @@ public class Admin extends AbstractApiBean {
             if (!knowsExistingPassword) {
                 String message = "User doesn't know password.";
                 problems.add(message);
-                return errorResponse(Status.BAD_REQUEST, message);
+                /**
+                 * @todo Someday we should make a errorResponse method that
+                 * takes JSON arrays and objects.
+                 */
+                return errorResponse(Status.BAD_REQUEST, problems.build().toString());
             }
 //            response.add("knows existing password", knowsExistingPassword);
         }
@@ -521,7 +528,6 @@ public class Admin extends AbstractApiBean {
         return okResponse(msg);
     }
     
-    
     @Path("assignments/assignees/{raIdtf: .*}")
     @GET
     public Response getAssignmentsFor( @PathParam("raIdtf") String raIdtf ) {
@@ -531,4 +537,24 @@ public class Admin extends AbstractApiBean {
         
         return okResponse(arr);
     }
+
+    /**
+     * This method is used by an integration test in UsersIT.java to exercise
+     * bug https://github.com/IQSS/dataverse/issues/3287 . Not for use by users!
+     * @param json
+     * @return 
+     */
+    @Path("convertUserFromBcryptToSha1")
+    @POST
+    public Response convertUserFromBcryptToSha1(String json) {
+        JsonObject object;
+        try (JsonReader jsonReader = Json.createReader(new StringReader(json))) {
+            object = jsonReader.readObject();
+        }
+        BuiltinUser builtinUser  = builtinUserService.find(new Long(object.getInt("builtinUserId")));
+        builtinUser.updateEncryptedPassword("4G7xxL9z11/JKN4jHPn4g9iIQck=", 0); // password is "sha-1Pass", 0 means SHA-1
+        BuiltinUser savedUser = builtinUserService.save(builtinUser);
+        return okResponse("foo: " + savedUser);
+    }
+
 }

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns="http://dublincore.org/documents/dcmi-terms/">
+  <dcterms:title>Darwin's Finches</dcterms:title>
+  <dcterms:identifier>doi:10.5072/FK2/PCA2E3</dcterms:identifier>
+  <dcterms:creator>Finch, Fiona</dcterms:creator>
+  <dcterms:modified>2015-09-24T17:07:57Z</dcterms:modified>
+  <dcterms:description>Darwin's finches (also known as the Galápagos finches) are a group of about fifteen species of passerine birds.</dcterms:description>
+  <dcterms:subject>Medicine, Health and Life Sciences</dcterms:subject>
+  <dcterms:subject>Keyword Value 1</dcterms:subject>
+  <dcterms:subject>Keyword Value Two</dcterms:subject>
+  <dcterms:contributor>Added, Depositor</dcterms:contributor>
+  <dcterms:temporal>20020816</dcterms:temporal>
+  <dcterms:temporal>20160630</dcterms:temporal>
+  <dcterms:temporal>20070831</dcterms:temporal>
+  <dcterms:temporal>20130630</dcterms:temporal>
+  <dcterms:type>Kind of Data</dcterms:type>
+  <dcterms:spatial>Cambridge</dcterms:spatial>
+  <dcterms:spatial>USA</dcterms:spatial>
+  <dcterms:spatial>MA</dcterms:spatial>
+  <dcterms:spatial>Other Geographic Coverage</dcterms:spatial>
+</metadata>
