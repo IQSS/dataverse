@@ -9,6 +9,7 @@ import com.github.scribejava.core.model.Verb;
 import com.github.scribejava.core.oauth.OAuth20Service;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import java.io.IOException;
+import java.util.Objects;
 import java.util.logging.Logger;
 
 /**
@@ -36,6 +37,7 @@ public abstract class AbstractOAuth2Idp {
     protected String userEndpoint;
     protected String redirectUrl;
     protected String imageUrl;
+    protected String scope;
     
     public AbstractOAuth2Idp(){}
     
@@ -44,18 +46,21 @@ public abstract class AbstractOAuth2Idp {
     protected abstract ParsedUserResponse parseUserResponse( String responseBody );
     
     public OAuth20Service getService(String state) {
-        return (OAuth20Service) new ServiceBuilder()
+        ServiceBuilder svcBuilder = new ServiceBuilder()
                 .apiKey(getClientId())
                 .apiSecret(getClientSecret())
                 .state(state)
-                .callback(getRedirectUrl())
-                .scope(getUserEndpoint())
-                .build( getApiInstance() );
+                .callback(getRedirectUrl());
+        if ( scope != null ) {        
+            svcBuilder.scope(scope);
+        }
+        return (OAuth20Service) svcBuilder.build( getApiInstance() );
     }
     
     public OAuth2UserRecord getUserRecord(String code, String state) throws IOException, OAuth2Exception {
         OAuth20Service service = getService(state);
         OAuth2AccessToken accessToken = service.getAccessToken(code);
+        Logger.getAnonymousLogger().info("Token: " + accessToken.getAccessToken()); // TODO remove.
         
         final OAuthRequest request = new OAuthRequest(Verb.GET, getUserEndpoint(), service);
         service.signRequest(accessToken, request);
@@ -66,7 +71,7 @@ public abstract class AbstractOAuth2Idp {
             ParsedUserResponse parsed = parseUserResponse(body);
             return new OAuth2UserRecord(getId(), parsed.userIdInProvider, accessToken.getAccessToken(), parsed.displayInfo);
         } else {
-            throw new OAuth2Exception(responseCode, body, "Error while exchanging OAuth code for an access token.");
+            throw new OAuth2Exception(responseCode, body, "Error getting the user info record.");
         }
     }
     
@@ -97,5 +102,38 @@ public abstract class AbstractOAuth2Idp {
     public String getRedirectUrl() {
         return redirectUrl;
     }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 97 * hash + Objects.hashCode(this.id);
+        hash = 97 * hash + Objects.hashCode(this.clientId);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if ( ! (obj instanceof AbstractOAuth2Idp)) {
+            return false;
+        }
+        final AbstractOAuth2Idp other = (AbstractOAuth2Idp) obj;
+        if (!Objects.equals(this.id, other.id)) {
+            return false;
+        }
+        if (!Objects.equals(this.clientId, other.clientId)) {
+            return false;
+        }
+        if (!Objects.equals(this.clientSecret, other.clientSecret)) {
+            return false;
+        }
+        return true;
+    }
+
     
 }

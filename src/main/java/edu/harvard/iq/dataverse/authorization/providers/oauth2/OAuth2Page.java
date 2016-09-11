@@ -5,11 +5,11 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.util.StringUtil;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -31,7 +31,7 @@ public class OAuth2Page implements Serializable {
     static int counter = 0;
     
     private static final Logger logger = Logger.getLogger(OAuth2Page.class.getName());
-    private static final long STATE_TIMEOUT = 1000*60*10;
+    private static final long STATE_TIMEOUT = 1000*60*15; // 15 minutes in msec
     private int responseCode;
     private String responseBody;
     private OAuth2Exception error;
@@ -56,10 +56,18 @@ public class OAuth2Page implements Serializable {
     public void exchangeCodeForToken() throws IOException {
         HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
         
-        // TODO check for parameter "error", or catch OAuthException.
         final String code = req.getParameter("code");
-        if ( code == null ) {
-            return;
+        logger.info("Code: '" + code + "'"); // TODO remove
+        if ( code == null || code.trim().isEmpty() ) {
+            try( BufferedReader rdr = req.getReader() ) {
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ( (line=rdr.readLine())!=null ) {
+                    sb.append(line).append("\n");
+                }
+                error = new OAuth2Exception(-1, sb.toString(), "Remote system did not return an authorization code.");
+                return;
+            }
         }
         
         final String state = req.getParameter("state");
@@ -96,6 +104,7 @@ public class OAuth2Page implements Serializable {
     private AbstractOAuth2Idp getIdpFromState( String state ) {
         String[] topFields = state.split("~",2);
         if ( topFields.length != 2 ) {
+            logger.log(Level.INFO, "Wrong number of fields in state string", state);
             return null;
         }
         AbstractOAuth2Idp idp = oauthPrv.getProvider( topFields[0] );
@@ -115,7 +124,7 @@ public class OAuth2Page implements Serializable {
                 return null;
             }
         } else {
-            logger.info("Invalid id field");
+            logger.log(Level.INFO, "Invalid id field: ''{0}''", stateFields[0]);
             return null;
         }
     }
@@ -124,7 +133,8 @@ public class OAuth2Page implements Serializable {
         if ( idp == null ) {
             throw new IllegalArgumentException("idp cannot be null");
         }
-        String base = idp.getId() + "~" + System.currentTimeMillis();
+        String base = idp.getId() + "~" + System.currentTimeMillis() + "~" + (int)java.lang.Math.round( java.lang.Math.random()*1000 );
+        
         String encrypted = StringUtil.encrypt(base, idp.clientSecret);
         final String state = idp.getId() + "~" + encrypted;
         return state;

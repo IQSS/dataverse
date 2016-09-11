@@ -19,10 +19,11 @@ public class GitHubOAuth2Idp extends AbstractOAuth2Idp {
         id = "github";
         title = "GitHub";
         clientId = "de1bf3127f3201d3e3a2"; // TODO load from config
-        clientSecret = "be71dc2176a37ae72b086dbc3223fc9da5a6d29c"; // TODO load from config
+        clientSecret = "WITHELD"; // TODO load from config
         userEndpoint = "https://api.github.com/user";
         redirectUrl = "http://localhost:8080/oauth2/callback.xhtml"; // TODO load from config
         imageUrl = null;
+//        scope = "user";
     }
     
     @Override
@@ -39,7 +40,7 @@ public class GitHubOAuth2Idp extends AbstractOAuth2Idp {
             
             AuthenticatedUserDisplayInfo displayInfo = new AuthenticatedUserDisplayInfo(
                     response.getString("name",""),
-                    "", // Github has no concept of family name
+                    "", // Github has no concept of a family name
                     response.getString("email",""),
                     response.getString("company",""),
                     ""

@@ -5,6 +5,8 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationProviderDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationRequest;
 import edu.harvard.iq.dataverse.authorization.AuthenticationResponse;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.identityproviders.GitHubOAuth2Idp;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.identityproviders.GoogleOAuth2Idp;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.identityproviders.OrcidPublicOAuth2Idp;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -20,7 +22,9 @@ public class OAuth2AuthenticationProvider implements AuthenticationProvider {
     
     public OAuth2AuthenticationProvider() {
         // TODO change this to be from the DB.
-        registedProvider( new GitHubOAuth2Idp() );
+        registerProvider( new OrcidPublicOAuth2Idp() );
+        registerProvider( new GitHubOAuth2Idp() );
+        registerProvider( new GoogleOAuth2Idp() );
     }
     
     @Override
@@ -39,7 +43,7 @@ public class OAuth2AuthenticationProvider implements AuthenticationProvider {
         throw new UnsupportedOperationException("Does not apply for OAuth.");
     }
     
-    public final void registedProvider( AbstractOAuth2Idp p ) {
+    public final void registerProvider( AbstractOAuth2Idp p ) {
         providers.put( p.getId(), p );
     }
 
