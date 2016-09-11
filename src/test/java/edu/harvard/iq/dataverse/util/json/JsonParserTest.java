@@ -514,12 +514,15 @@ public class JsonParserTest {
     static class MockSettingsSvc extends SettingsServiceBean {
         @Override
         public String getValueForKey( Key key /*, String defaultValue */) {
-            if (key.equals(SettingsServiceBean.Key.Authority)) {
-                return "10.5072/FK2";
-            } else if (key.equals(SettingsServiceBean.Key.Protocol)) {
-                return "doi";
-            } else if( key.equals(SettingsServiceBean.Key.DoiSeparator)) {
-                return "/";
+            switch (key) {
+                case Authority:
+                    return "10.5072/FK2";
+                case Protocol:
+                    return "doi";
+                case DoiSeparator:
+                    return "/";
+                default:
+                    break;
             }
              return null;
         }
