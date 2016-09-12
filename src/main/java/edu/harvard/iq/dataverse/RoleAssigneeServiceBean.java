@@ -343,7 +343,7 @@ public class RoleAssigneeServiceBean {
                 }
             //}
         }
-        System.out.println("retVal" + retVal);
+        logger.fine("retVal: " + retVal);
         return retVal;
     }
 
