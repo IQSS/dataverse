@@ -23,6 +23,7 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddressRange;
 import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroup;
 import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderRow;
@@ -31,6 +32,7 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.util.DatasetFieldWalker;
 import edu.harvard.iq.dataverse.util.StringUtil;
+import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import java.util.Set;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -39,8 +41,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.TreeSet;
 
-import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
-import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Deque;
 import java.util.EnumSet;
@@ -51,6 +52,7 @@ import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
+import static java.util.stream.Collectors.toList;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
@@ -127,17 +129,33 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(IpGroup grp) {
-        JsonArrayBuilder rangeBld = Json.createArrayBuilder();
-        for (IpAddressRange r : grp.getRanges()) {
-            rangeBld.add(Json.createArrayBuilder().add(r.getBottom().toString()).add(r.getTop().toString()));
-        }
-        return jsonObjectBuilder()
-                .add("alias", grp.getPersistedGroupAlias())
+         // collect single addresses
+        List<String> singles = grp.getRanges().stream().filter( IpAddressRange::isSingleAddress )
+                                .map( IpAddressRange::getBottom )
+                                .map( IpAddress::toString ).collect(toList());
+        // collect "real" ranges
+        List<List<String>> ranges = grp.getRanges().stream().filter( rng -> !rng.isSingleAddress() )
+                                .map( rng -> Arrays.asList(rng.getBottom().toString(), rng.getTop().toString()) )
+                                .collect(toList());
+
+        JsonObjectBuilder bld = jsonObjectBuilder()
+                .add("alias", grp.getPersistedGroupAlias() )
                 .add("identifier", grp.getIdentifier())
-                .add("id", grp.getId())
-                .add("name", grp.getDisplayName())
-                .add("description", grp.getDescription())
-                .add("ranges", rangeBld);
+                .add("id", grp.getId() )
+                .add("name", grp.getDisplayName() )
+                .add("description", grp.getDescription() );
+       
+        if ( ! singles.isEmpty() ) {
+            bld.add("addresses", asJsonArray(singles) );
+        }
+        
+        if ( ! ranges.isEmpty() ) {
+            JsonArrayBuilder rangesBld = Json.createArrayBuilder();
+            ranges.forEach( r -> rangesBld.add( Json.createArrayBuilder().add(r.get(0)).add(r.get(1))) );
+            bld.add("ranges", rangesBld );
+        }
+        
+        return bld;
     }
 
     public static JsonObjectBuilder json(ShibGroup grp) {
