@@ -4,7 +4,7 @@
 
     <groupId>edu.harvard.iq</groupId>
     <artifactId>dataverse</artifactId>
-    <version>4.4</version>
+    <version>4.5</version>
     <packaging>war</packaging>
 
     <name>dataverse</name>
@@ -41,7 +41,7 @@
         </repository>
         <repository>
             <id>dataone.org</id>
-            <url>http://dev-testing.dataone.org/maven</url>
+            <url>http://maven.dataone.org</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
@@ -374,7 +374,35 @@
             <artifactId>log4j</artifactId>
             <version>1.2.17</version>
         </dependency>
-
+	<!-- EXPERIMENTAL: -->
+	<!-- lyncode xoai OAI-PMH implementation: -->
+	<!-- unfortunately, their 4.10 version -->
+	<!-- is still buggy. As an experiment, I'm using -->
+	<!-- a patched version I built locally. -->
+	<!-- (pull requests pending - L.A. -->
+	<dependency>
+	  <groupId>com.lyncode</groupId>
+	  <artifactId>xoai-common</artifactId>
+	  <version>4.1.0-header-patch</version>
+	</dependency>
+	<dependency>
+	  <groupId>com.lyncode</groupId>
+	  <artifactId>xoai-data-provider</artifactId>
+	  <version>4.1.0-header-patch</version>
+	</dependency>
+        <dependency>
+	  <groupId>com.lyncode</groupId>
+	  <artifactId>xoai-service-provider</artifactId>
+	  <version>4.1.0-header-patch</version>
+	</dependency>
+        <!-- Added for AutoService -->
+        <dependency>
+            <groupId>com.google.auto.service</groupId>
+            <artifactId>auto-service</artifactId>
+            <version>1.0-rc2</version>
+            <optional>true</optional>
+            <type>jar</type>
+        </dependency>
     </dependencies>
 
     <build>
@@ -427,6 +455,7 @@
                 <artifactId>maven-war-plugin</artifactId>
                 <version>2.3</version>
                 <configuration>
+		    <attachClasses>true</attachClasses>
                     <failOnMissingWebXml>false</failOnMissingWebXml>
                     <archive>
                         <manifest>

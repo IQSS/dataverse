@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.api.imports;
 
 import com.google.gson.Gson;
 import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
+import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetVersion;
@@ -65,7 +66,10 @@ public class ImportGenericServiceBean {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
-     ForeignMetadataFormatMapping findFormatMappingByName (String name) {
+    
+    public static String DCTERMS = "http://purl.org/dc/terms/";
+    
+    public ForeignMetadataFormatMapping findFormatMappingByName (String name) {
         try {
             return em.createNamedQuery("ForeignMetadataFormatMapping.findByName", ForeignMetadataFormatMapping.class)
                     .setParameter("name", name)
@@ -175,6 +179,59 @@ public class ImportGenericServiceBean {
 
     }
     
+    // Helper method for importing harvested Dublin Core xml.
+    // Dublin Core is considered a mandatory, built in metadata format mapping. 
+    // It is distributed as required content, in reference_data.sql. 
+    // Note that arbitrary formatting tags are supported for the outer xml
+    // wrapper. -- L.A. 4.5
+    public DatasetDTO processOAIDCxml(String DcXmlToParse) throws XMLStreamException {
+        // look up DC metadata mapping: 
+        
+        ForeignMetadataFormatMapping dublinCoreMapping = findFormatMappingByName(DCTERMS);
+        if (dublinCoreMapping == null) {
+            throw new EJBException("Failed to find metadata mapping for " + DCTERMS);
+        }
+
+        DatasetDTO datasetDTO = this.initializeDataset();
+        StringReader reader = null;
+        XMLStreamReader xmlr = null;
+
+        try {
+            reader = new StringReader(DcXmlToParse);
+            XMLInputFactory xmlFactory = javax.xml.stream.XMLInputFactory.newInstance();
+            xmlr = xmlFactory.createXMLStreamReader(reader);
+
+            //while (xmlr.next() == XMLStreamConstants.COMMENT); // skip pre root comments
+            xmlr.nextTag();
+
+            xmlr.require(XMLStreamConstants.START_ELEMENT, null, OAI_DC_OPENING_TAG);
+
+            processXMLElement(xmlr, ":", OAI_DC_OPENING_TAG, dublinCoreMapping, datasetDTO);
+        } catch (XMLStreamException ex) {
+            throw new EJBException("ERROR occurred while parsing XML fragment  (" + DcXmlToParse.substring(0, 64) + "...); ", ex);
+        }
+
+        
+        datasetDTO.getDatasetVersion().setVersionState(DatasetVersion.VersionState.RELEASED);
+        
+        // Our DC import handles the contents of the dc:identifier field 
+        // as an "other id". In the context of OAI harvesting, we expect 
+        // the identifier to be a global id, so we need to rearrange that: 
+        
+        String identifier = getOtherIdFromDTO(datasetDTO.getDatasetVersion());
+        logger.fine("Imported identifier: "+identifier);
+        
+        String globalIdentifier = reassignIdentifierAsGlobalId(identifier, datasetDTO);
+        logger.fine("Detected global identifier: "+globalIdentifier);
+        
+        if (globalIdentifier == null) {
+            throw new EJBException("Failed to find a global identifier in the OAI_DC XML record.");
+        }
+        
+        return datasetDTO;
+
+    }
+    
     private void processXMLElement(XMLStreamReader xmlr, String currentPath, String openingTag, ForeignMetadataFormatMapping foreignFormatMapping, DatasetDTO datasetDTO) throws XMLStreamException {
         logger.fine("entering processXMLElement; ("+currentPath+")");
         
@@ -239,23 +296,26 @@ public class ImportGenericServiceBean {
                             MetadataBlockDTO citationBlock = datasetDTO.getDatasetVersion().getMetadataBlocks().get(mappingDefinedFieldType.getMetadataBlock().getName());
                             citationBlock.addField(value);
                         }
-                    } else {
+                    } else // Process the payload of this XML element:
+                    //xxString dataverseFieldName = mappingDefined.getDatasetfieldName();
+                    if (dataverseFieldName != null && !dataverseFieldName.equals("")) {
+                        DatasetFieldType dataverseFieldType = datasetfieldService.findByNameOpt(dataverseFieldName);
+                        FieldDTO value;
+                        if (dataverseFieldType != null) {
 
-                        // Process the payload of this XML element:
-                        //xxString dataverseFieldName = mappingDefined.getDatasetfieldName();
-                        if (dataverseFieldName != null && !dataverseFieldName.equals("")) {
-                            FieldDTO value = FieldDTO.createPrimitiveFieldDTO(dataverseFieldName, parseText(xmlr));
-                            DatasetFieldType dataverseFieldType = datasetfieldService.findByNameOpt(dataverseFieldName);
-                            if (dataverseFieldType != null) {
-                                value = makeDTO(dataverseFieldType, value, dataverseFieldName);
-//                                value = FieldDTO.createPrimitiveFieldDTO(dataverseFieldName, parseText(xmlr));
-//                            FieldDTO dataverseField = FieldDTO.createCompoundFieldDTO(dataverseFieldName, value);
-                                MetadataBlockDTO citationBlock = datasetDTO.getDatasetVersion().getMetadataBlocks().get(mappingDefinedFieldType.getMetadataBlock().getName());
-                                citationBlock.addField(value);
-// TO DO replace database output with Json                             createDatasetFieldValue(dataverseFieldType, cachedCompoundValue, elementTextPayload, datasetVersion);
+                            if (dataverseFieldType.isControlledVocabulary()) {
+                                value = FieldDTO.createVocabFieldDTO(dataverseFieldName, parseText(xmlr));
                             } else {
-                                throw new EJBException("Bad foreign metadata field mapping: no such DatasetField " + dataverseFieldName + "!");
+                                value = FieldDTO.createPrimitiveFieldDTO(dataverseFieldName, parseText(xmlr));
                             }
+                            value = makeDTO(dataverseFieldType, value, dataverseFieldName);
+                            //  value = FieldDTO.createPrimitiveFieldDTO(dataverseFieldName, parseText(xmlr));
+                            //  FieldDTO dataverseField = FieldDTO.createCompoundFieldDTO(dataverseFieldName, value);
+                            MetadataBlockDTO citationBlock = datasetDTO.getDatasetVersion().getMetadataBlocks().get(mappingDefinedFieldType.getMetadataBlock().getName());
+                            citationBlock.addField(value);
+                            // TO DO replace database output with Json                             createDatasetFieldValue(dataverseFieldType, cachedCompoundValue, elementTextPayload, datasetVersion);
+                        } else {
+                            throw new EJBException("Bad foreign metadata field mapping: no such DatasetField " + dataverseFieldName + "!");
                         }
                     }
                 } else {
@@ -271,10 +331,11 @@ public class ImportGenericServiceBean {
 
     private FieldDTO makeDTO(DatasetFieldType dataverseFieldType, FieldDTO value, String dataverseFieldName) {
         if (dataverseFieldType.isAllowMultiples()){
-            if(dataverseFieldType.isCompound()){
+            if(dataverseFieldType.isCompound()) {
                 value = FieldDTO.createMultipleCompoundFieldDTO(dataverseFieldName, value);
-            }
-            else {
+            } else if (dataverseFieldType.isControlledVocabulary()) {
+                value = FieldDTO.createMultipleVocabFieldDTO(dataverseFieldName, Arrays.asList(value.getSinglePrimitive()));
+            } else {
                 value = FieldDTO.createMultiplePrimitiveFieldDTO(dataverseFieldName, Arrays.asList(value.getSinglePrimitive()));
             }
             if (dataverseFieldType.isChild()) {
@@ -289,6 +350,10 @@ public class ImportGenericServiceBean {
                 value = FieldDTO.createCompoundFieldDTO(dataverseFieldName, value);
             }
         }
+        
+        // TODO: 
+        // it looks like the code below has already been executed, in one of the 
+        // if () blocks above... is this ok to be doing it again?? -- L.A. 4.5
         if (dataverseFieldType.isChild()) {
                                     DatasetFieldType parentDatasetFieldType = dataverseFieldType.getParentDatasetFieldType();
                                     if (parentDatasetFieldType.isAllowMultiples()) {
@@ -299,7 +364,70 @@ public class ImportGenericServiceBean {
         return value;
     }
     
+    private String getOtherIdFromDTO(DatasetVersionDTO datasetVersionDTO) {
+        for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
+            String key = entry.getKey();
+            MetadataBlockDTO value = entry.getValue();
+            if ("citation".equals(key)) {
+                for (FieldDTO fieldDTO : value.getFields()) {
+                    if (DatasetFieldConstant.otherId.equals(fieldDTO.getTypeName())) {
+                        String otherId = "";
+                        for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
+                                FieldDTO next = iterator.next();
+                                if (DatasetFieldConstant.otherIdValue.equals(next.getTypeName())) {
+                                    otherId =  next.getSinglePrimitive();
+                                }
+                            }
+                            if (!otherId.isEmpty()){
+                                return otherId;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    
+    private String reassignIdentifierAsGlobalId(String identifierString, DatasetDTO datasetDTO) {
+
+        int index1 = identifierString.indexOf(':');
+        int index2 = identifierString.lastIndexOf('/');
+        if (index1==-1) {
+            logger.warning("Error parsing identifier: " + identifierString + ". ':' not found in string");
+            return null; 
+        }  
        
+        String protocol = identifierString.substring(0, index1);
+        
+        if (!"doi".equals(protocol) && !"hdl".equals(protocol)) {
+            logger.warning("Unsupported protocol: "+identifierString);
+            return null;
+        }
+        
+        
+        if (index2 == -1) {
+            logger.warning("Error parsing identifier: " + identifierString + ". Second separator not found in string");
+            return null;
+        } 
+        
+        String authority = identifierString.substring(index1+1, index2);
+        String identifier = identifierString.substring(index2+1);
+        
+        datasetDTO.setProtocol(protocol);
+        datasetDTO.setDoiSeparator("/");
+        datasetDTO.setAuthority(authority);
+        datasetDTO.setIdentifier(identifier);
+        
+        // reassemble and return: 
+        return protocol + ":" + authority + "/" + identifier;
+    }
+        
+        
+    public static final String OAI_DC_OPENING_TAG = "dc";
+    public static final String DCTERMS_OPENING_TAG = "dcterms";
+    
     public static final String SOURCE_DVN_3_0 = "DVN_3_0";
     
     public static final String NAMING_PROTOCOL_HANDLE = "hdl";

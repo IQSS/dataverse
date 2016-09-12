@@ -23,6 +23,9 @@ import edu.harvard.iq.dataverse.engine.command.impl.LinkDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
+import edu.harvard.iq.dataverse.export.ExportException;
+import edu.harvard.iq.dataverse.export.ExportService;
+import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.metadataimport.ForeignMetadataImportServiceBean;
@@ -1391,7 +1394,16 @@ public class DatasetPage implements java.io.Serializable {
     
     private boolean readOnly = true; 
     private boolean metadataExportEnabled;
+    private String originalSourceUrl = null;
 
+    public String getOriginalSourceUrl() {
+        return originalSourceUrl; 
+    }
+    
+    public void setOriginalSourceUrl(String originalSourceUrl) {
+        this.originalSourceUrl = originalSourceUrl;
+    }
+    
     public String init() {
         return init(true);
     }
@@ -2678,6 +2690,12 @@ public class DatasetPage implements java.io.Serializable {
             successMessage = successMessage.replace("{0}", fileNames);
             JsfHelper.addFlashMessage(successMessage);
         }
+        
+        /* 
+           Do note that if we are deleting any files that have UNFs (i.e., 
+           tabular files), we DO NEED TO RECALCULATE the UNF of the version!
+           - but we will do this inside the UpdateDatasetCommand.
+        */
     }
 
     public String save() {
@@ -3439,7 +3457,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public String getTabularDataFileURL(Long fileid) {
-        String myHostURL = getDataverseSiteUrl();;
+        String myHostURL = getDataverseSiteUrl();
         String dataURL = myHostURL + "/api/access/datafile/" + fileid;
 
         return dataURL;
@@ -3456,6 +3474,33 @@ public class DatasetPage implements java.io.Serializable {
         }
         return null;
     }
+    
+    public List< String[]> getExporters(){
+        List<String[]> retList = new ArrayList();
+        String myHostURL = getDataverseSiteUrl();
+        for (String [] provider : ExportService.getInstance().getExportersLabels() ){
+            String formatName = provider[1];
+            String formatDisplayName = provider[0];
+            
+            Exporter exporter = null; 
+            try {
+                exporter = ExportService.getInstance().getExporter(formatName);
+            } catch (ExportException ex) {
+                exporter = null;
+            }
+            if (exporter != null && exporter.isAvailableToUsers()) {
+                // Not all metadata exports should be presented to the web users!
+                // Some are only for harvesting clients.
+                
+                String[] temp = new String[2];            
+                temp[0] = formatDisplayName;
+                temp[1] = myHostURL + "/api/datasets/export?exporter=" + formatName + "&persistentId=" + dataset.getGlobalId();
+                retList.add(temp);
+            }
+        }
+        return retList;  
+    }
+    
 
     private FileMetadata fileMetadataSelected = null;
 

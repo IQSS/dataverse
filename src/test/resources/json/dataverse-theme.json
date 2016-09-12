@@ -1,0 +1,26 @@
+{
+    "name": "testDv",
+    "alias": "testAlias",
+    "affiliation": "Test-Driven University",
+    "dataverseContacts": [
+        {
+            "contactEmail": "test@example.com"
+        },
+        {
+            "contactEmail": "test@example.org"
+        }
+    ],
+    "permissionRoot": true,
+    "description": "test Description.",
+    "theme": {
+        "backgroundColor" : "gray",
+        "linkColor" : "red",
+        "linkUrl" : "http://www.cnn.com",
+        "logo" : "lion",
+        "logoAlignment" : "center",
+        "logoBackgroundColor" : "navy",
+        "logoFormat" : "square",
+        "tagline" : "The Real Thing",
+        "textColor" : "black"
+    }   
+}

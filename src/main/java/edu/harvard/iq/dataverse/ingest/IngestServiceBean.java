@@ -1344,6 +1344,12 @@ public class IngestServiceBean {
                 version.setUNF(datasetUnfValue);
                 logger.fine("Recalculated the UNF for the dataset version id="+version.getId()+", new signature: "+datasetUnfValue);
             }
+        } else {
+            // Of course if no files in the version have UNFs, we need to make sure
+            // that the version has the NULL UNF too.
+            // Otherwise, the version will still have a UNF if the user deletes
+            // all the tabular files from the version!
+            version.setUNF(null);
         }
     }
     

@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
+import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
@@ -57,6 +58,11 @@ public class TestCommandContext implements CommandContext {
 		return null;
 	}
 
+        @Override
+        public IngestServiceBean ingest() {
+            return null; 
+        }
+        
 	@Override
 	public PermissionServiceBean permissions() {
 		return null;
