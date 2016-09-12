@@ -15,7 +15,7 @@
 
     <h:body>
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="#{FilePage.fileMetadata.dataFile.displayName}"/>
+            <ui:param name="pageTitle" value="#{FilePage.fileMetadata.dataFile.displayName} - {FilePage.parentDataverse.name.?} #{bundle.dataverse}"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:define name="body">
                 <f:metadata>
@@ -67,7 +67,26 @@
                             </ui:fragment>
                             <!-- END: Edit Button -->
                             <!-- END: Edit Button Group -->
+                            
+                            <!-- Download Button ++ DISABLED/STATIC -->
+                            <a href="#" class="ui-commandlink ui-widget btn btn-default pull-right disabled" type="button">
+                                <span class="glyphicon glyphicon-download-alt"></span> Download
+                            </a>
+                            <!-- END: Download Button -->
+                            
+                            <!-- Request Access Button ++ DISABLED/STATIC -->
+                            <a href="#" class="ui-commandlink ui-widget btn btn-default pull-right disabled" type="button">
+                                <span class="glyphicon glyphicon-bullhorn"></span> Request Access
+                            </a>
+                            <!-- END: Request Access Button -->
+                            
+                            <!-- Explore Button ++ DISABLED/STATIC -->
+                            <a href="#" class="ui-commandlink ui-widget btn btn-default pull-right disabled" type="button">
+                                <span class="glyphicon glyphicon-equalizer"></span> Explore
+                            </a>
+                            <!-- END: Explore Button -->
 
+                            <!-- TO-DO: Tooltips for these buttons say "dataset" -->
                             <!-- Email/Share Button Group -->
                             <div class="btn-group pull-right" id="datasetButtonBar" role="group">
                                 <p:commandLink class="btn btn-default bootstrap-button-tooltip" title="#{bundle['dataset.email.datasetContactBtn']}"
@@ -145,17 +164,23 @@
 
                     <div id="fileImageTitle" class="row" style="margin-bottom:12px;">
 
-                        <div id="file-preview-icon-block" class="col-xs-5 text-center"
-                             style="border:1px solid #DDD;border-radius:4px;">
+                        <div id="file-preview-icon-block" class="col-xs-3 text-center"
+                             style="border:1px solid #DDD;border-radius:4px;height:240px;width:240px;">
                             
-                            <!-- Static icon replacement placeholder for broken render logic in ui:remove below -->
-                            <span class="icon-#{dataFileServiceBean.getFileClass(FilePage.fileMetadata.dataFile)} text-muted h1"
-                                  jsf:rendered="#{true}"/>
+                            <!-- Vertical spacer -->
+                            <span style="display:inline-block;height:100%;vertical-align:middle;" jsf:rendered="#{true}"></span>
+                            
+                            <ui:remove>
+                                <!-- Static icon replacement placeholder for broken render logic in ui:remove below -->
+                            </ui:remove>
+                            <span style="vertical-align:middle;font-size:12em;" class="icon-#{dataFileServiceBean.getFileClass(FilePage.fileMetadata.dataFile)} text-muted h4"
+                                  jsf:rendered="#{false}"/>
+                            <p:graphicImage style="display:inline-block;vertical-align:middle;max-height:210px;max-width:210px;margin:0;border:0;" styleClass="" value="/api/access/datafile/#{FilePage.fileId}?imageThumb=400" rendered="#{true}"/>
                             
                             <ui:remove>
                             <!-- Removing broken dataFileServiceBean.isThumbnailAvailable render logic -->
                             <!-- Image -->
-                            <p:graphicImage style="margin:10px;" styleClass="img-responsive img-thumbnail" value="/api/access/datafile/#{FilePage.fileId}?imageThumb=400" rendered="#{dataFileServiceBean.isThumbnailAvailable(FilePage.fileMetadata.dataFile, dataverseSession.user)}"/>
+                            <p:graphicImage style="vertical-align: middle;max-height:210px;max-width:210px;margin:0;border:0;" styleClass="img-responsive img-thumbnail" value="/api/access/datafile/#{FilePage.fileId}?imageThumb=400" rendered="#{dataFileServiceBean.isThumbnailAvailable(FilePage.fileMetadata.dataFile, dataverseSession.user)}"/>
                             <!-- Icon -->
                             <span class="icon-#{dataFileServiceBean.getFileClass(FilePage.fileMetadata.dataFile)} text-muted h1"
                                   jsf:rendered="#{(!dataFileServiceBean.isThumbnailAvailable(FilePage.fileMetadata.dataFile, dataverseSession.user))
@@ -163,7 +188,7 @@
                             </ui:remove>
                         </div>
 
-                        <div class="col-xs-7">
+                        <div class="col-xs-9">
                             <div class="" style="margin-top:0;padding:6px 0;">
                                 <!-- Restricted File Icon -->
                                 <span style="font-size:1.5em;" class="glyphicon glyphicon-lock text-danger" jsf:rendered="#{FilePage.fileMetadata.restricted and ((empty FilePage.fileMetadata.dataFile.id)  )}" />
@@ -178,17 +203,39 @@
                             <div id="citation-block" class="">
                                  <div class="col-xs-12 alert alert-info bg-citation">
                                     <div class="row">
-                                        <div id="citation" class="col-xs-12"
+                                        <div id="citation" class="col-xs-7"
                                              onclick="if (event.target) { selectText(event.target); } else{ selectText(this); }">
                                             <h:outputText value="#{FilePage.file.owner.citation}" escape="false"/>
                                             <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{!FilePage.fileMetadata.datasetVersion.dataset.released}" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.released']}"/>
                                             <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{FilePage.fileMetadata.datasetVersion.dataset.released and FilePage.fileMetadata.datasetVersion.draft}" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.draft']}"/>
                                         </div>
-                                        <!--<div id="citation-download" class="col-sm-4 col-md-3 text-right" jsf:rendered="">
-                                        </div>-->
-                                        <div class="col-xs-12" jsf:rendered="#{!DatasetPage.workingVersion.deaccessioned}">
-                                            <div id="citation-standards" class="text-muted small text-right"><span class="glyphicon glyphicon-info-sign"></span>&#160;<h:outputText value="#{bundle['dataset.cite.standards.tip']}" escape="false"/></div>
+                                        
+                                        <!-- Cite Data Button ++ DISABLED/STATIC -->
+                                        <div id="citation-download" class="col-xs-5 text-right">
+                                            <div class="dropdown">
+                                                <button type="button" id="downloadCitation" class="btn btn-default dropdown-toggle disabled" data-toggle="dropdown">
+                                                    <span class="glyphicon glyphicon-list"></span> Cite Data <span class="caret"></span>
+                                                </button>
+                                                <ul class="dropdown-menu pull-right text-left" role="menu">
+                                                    <li><a id="datasetForm:endNoteLink" href="#" onclick="mojarra.jsfcljs(document.getElementById('datasetForm'),{'datasetForm:endNoteLink':'datasetForm:endNoteLink'},'');return false">
+                                                            EndNote XML
+                                                        </a>
+                                                    </li>
+                                                    <li><a id="datasetForm:risLink" href="#" onclick="mojarra.jsfcljs(document.getElementById('datasetForm'),{'datasetForm:risLink':'datasetForm:risLink'},'');return false">
+                                                            RIS
+                                                        </a>
+                                                    </li>
+                                                    <li><a id="datasetForm:bibLink" href="#" onclick="mojarra.jsfcljs(document.getElementById('datasetForm'),{'datasetForm:bibLink':'datasetForm:bibLink'},'_blank');return false" target="_blank">
+                                                            BibTeX
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                            <div id="citation-standards" class="small text-muted text-right">
+                                                <span class="glyphicon glyphicon-info-sign"></span> Learn about <a href="http://best-practices.dataverse.org/data-citation/" title="Get Recognition: Data Citation  - Dataverse Best Practices" target="_blank">Data Citation Standards</a>.
+                                            </div>
                                         </div>
+                                        <!-- END: Cite Data Button -->
                                     </div>
                                 </div>
                             </div>
@@ -198,6 +245,10 @@
                                     <h:outputText id="fileTypeOutputTabular" value="#{bundle['file.type.tabularData']}" rendered="#{FilePage.fileMetadata.dataFile.tabularData}"/>
                                     <h:outputText id="fileSize" value=" - #{FilePage.fileMetadata.dataFile.friendlySize}" />
 
+                                    <!-- TODO: Date note properly formatted compared to DatasetPage.getFileDateToDisplay(fileMetadata) -->
+                                    <h:outputText id="fileCreatePublishDate" value=" - #{FilePage.fileMetadata.dataFile.createDate}" rendered="#{true}"/>
+                                    
+                                    <!-- TODO: Not needed if included in the Metrics block? -->
                                     <h:outputFormat id="fileDownloadCount" value=" - {0} #{bundle['metrics.downloads']}">
                                         <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDataFileId(FilePage.fileMetadata.dataFile.id)}"/>
                                     </h:outputFormat>
@@ -214,8 +265,8 @@
                                     </div>
                                 </div>
                             </div>
-                            <div jsf:rendered="#{FilePage.fileMetadata.description}">
-                                 #{bundle['file.description.label']}  #{FilePage.fileMetadata.description}
+                            <div class="fileDescription" jsf:rendered="#{!empty FilePage.fileMetadata.description}">
+                                 #{FilePage.fileMetadata.description}
                             </div>
                             <div jsf:rendered="#{!(empty FilePage.fileMetadata.categoriesByName)}">
                                 <ui:repeat value="#{FilePage.fileMetadata.categoriesByName}" var="tag" rendered="#{!(empty FilePage.fileMetadata.categoriesByName)}">
@@ -229,6 +280,15 @@
                         <!-- Metadata -->
                         <p:tabView id="tabView" styleClass="col-xs-12" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}">
                             <p:tab id="metadataMapTab" title="#{bundle['file.dataFilesTab.metadata.header']}">
+                                
+                                <!-- Add + Edit Metadata Button ++ DISABLED/STATIC -->
+                                <div class="button-block tab-header margin-bottom text-right" jsf:rendered="#{true}">
+                                    <a href="#" class="ui-commandlink ui-widget btn btn-default disabled" type="button">
+                                        <span class="glyphicon glyphicon-pencil"></span> Add + Edit Metadata
+                                    </a>
+                                </div>
+                                <!-- END: Add + Edit Metadata Button -->
+                                
                                 <div class="panel panel-default">
                                     <div data-toggle="collapse" data-target="#panelCollapseFMD" class="panel-heading text-info">
                                         #{bundle['file.metadataTab.fileMetadata.header']} &#160;<span class="glyphicon glyphicon-chevron-up"/>
