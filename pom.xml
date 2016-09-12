@@ -41,7 +41,7 @@
         </repository>
         <repository>
             <id>dataone.org</id>
-            <url>http://dev-testing.dataone.org/maven</url>
+            <url>http://maven.dataone.org/maven</url>
             <releases>
                 <enabled>true</enabled>
             </releases>

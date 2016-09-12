@@ -328,13 +328,18 @@ public class RoleAssigneeServiceBean {
     private List<String> getUserRuntimeGroups(DataverseRequest dataverseRequest) {
         List<String> retVal = new ArrayList();
 
-        Set<Group> groups = groupSvc.groupsFor(dataverseRequest, null);
+        //Set<Group> groups = groupSvc.groupsFor(dataverseRequest, null);
+        Set<Group> groups = groupSvc.collectAncestors(groupSvc.groupsFor(dataverseRequest));
         for (Group group : groups) {
             logger.fine("found group " + group.getIdentifier() + " with alias " + group.getAlias());
            // if (group.getGroupProvider().getGroupProviderAlias().equals("shib") || group.getGroupProvider().getGroupProviderAlias().equals("ip")) {
                 String groupAlias = group.getAlias();
                 if (groupAlias != null && !groupAlias.isEmpty()) {
-                    retVal.add('&' + groupAlias);
+                    if( group instanceof ExplicitGroup){
+                        retVal.add("&explicit/" + groupAlias);
+                    } else{
+                        retVal.add('&' + groupAlias);
+                    }
                 }
             //}
         }
