@@ -67,9 +67,4 @@ public class PrivateUrlUser implements User {
         return BundleUtil.getStringFromBundle("dataset.privateurl.roleassigeeTitle");
     }
 
-    @Override
-    public int compareTo(RoleAssignee o) {
-        return this.getSortByString().toUpperCase().compareTo(o.getSortByString().toUpperCase());
-    }
-
 }

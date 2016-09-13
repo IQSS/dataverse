@@ -80,9 +80,5 @@ public final class AllUsers implements Group {
     public String getSortByString() {
         return displayInfo;
     }
-
-    @Override
-    public int compareTo(RoleAssignee o) {
-        return this.getSortByString().toUpperCase().compareTo(o.getSortByString().toUpperCase());
-    }
+    
 }

@@ -53,10 +53,5 @@ public class GuestUser implements User {
     public String getSortByString() {
         return "Guest User";
     }
-
-    @Override
-    public int compareTo(RoleAssignee o) {
-        return this.getSortByString().toUpperCase().compareTo(o.getSortByString().toUpperCase());
-    }
     
 }

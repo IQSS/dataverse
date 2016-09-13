@@ -136,10 +136,4 @@ public class IpGroup extends PersistedGlobalGroup {
         return this.getDisplayName();
     }
 
-    @Override
-    public int compareTo(RoleAssignee o) {
-        return this.getSortByString().toUpperCase().compareTo(o.getSortByString().toUpperCase());
-    }
-    
-    
 }

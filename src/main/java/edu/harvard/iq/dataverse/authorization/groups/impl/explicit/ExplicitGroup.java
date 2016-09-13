@@ -399,8 +399,4 @@ public class ExplicitGroup implements Group, java.io.Serializable {
         return getDisplayName();
     }
 
-    @Override
-    public int compareTo(RoleAssignee o) {
-        return this.getSortByString().toUpperCase().compareTo(o.getSortByString().toUpperCase());
-    }
 }
