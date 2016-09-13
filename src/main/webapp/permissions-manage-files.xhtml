@@ -213,9 +213,9 @@
                                          sortBy="#{!empty manageFilePermissionsPage.selectedFile ? roleAssignment.assigneeDisplayInfo.title : roleAssignment.definitionPoint.displayName}"
                                          scrollable="true" scrollHeight="300" disabledSelection="#{!roleAssignment.definitionPoint.instanceofDataFile}">
                                 
-                                <p:ajax event="rowSelectCheckbox" listener="#{manageFilePermissionsPage.rowSelected}" update=":rolesPermissionsForm:selectionRemoveCounter" />
-                                <p:ajax event="rowUnselectCheckbox" listener="#{manageFilePermissionsPage.rowSelected}" update=":rolesPermissionsForm:selectionRemoveCounter" />
-                                <p:ajax event="toggleSelect" listener="#{manageFilePermissionsPage.rowSelected}" update=":rolesPermissionsForm:selectionRemoveCounter" />
+                                <p:ajax event="rowSelectCheckbox"  update=":rolesPermissionsForm:selectionRemoveCounter" />
+                                <p:ajax event="rowUnselectCheckbox"  update=":rolesPermissionsForm:selectionRemoveCounter" />
+                                <p:ajax event="toggleSelect"  update=":rolesPermissionsForm:selectionRemoveCounter" />
                                 
                                 <p:column selectionMode="multiple" style="width:2%;text-align:center"/>
                                 <p:column width="98%" headerText="#{bundle['dataverse.permissionsFiles.usersOrGroups.tabHeader.userOrGroup']}" rendered="#{!empty manageFilePermissionsPage.selectedFile}">
@@ -298,9 +298,9 @@
                                              selection="#{manageFilePermissionsPage.selectedFiles}" rowKey="#{file.id}" sortBy="#{file.displayName}"
                                              scrollable="true" scrollHeight="300">
 
-                                    <p:ajax event="rowSelectCheckbox" listener="#{manageFilePermissionsPage.rowSelected}" update=":rolesPermissionsForm:selectionCounter" />
-                                    <p:ajax event="rowUnselectCheckbox" listener="#{manageFilePermissionsPage.rowSelected}" update=":rolesPermissionsForm:selectionCounter" />
-                                    <p:ajax event="toggleSelect" listener="#{manageFilePermissionsPage.rowSelected}" update=":rolesPermissionsForm:selectionCounter" />
+                                    <p:ajax event="rowSelectCheckbox"  update=":rolesPermissionsForm:selectionCounter" />
+                                    <p:ajax event="rowUnselectCheckbox" update=":rolesPermissionsForm:selectionCounter" />
+                                    <p:ajax event="toggleSelect"  update=":rolesPermissionsForm:selectionCounter" />
 
                                     <p:column selectionMode="multiple" style="width:2%;text-align:center"/>
                                     <p:column headerText="#{bundle['dataverse.permissionsFiles.assignDialog.fileName']}">

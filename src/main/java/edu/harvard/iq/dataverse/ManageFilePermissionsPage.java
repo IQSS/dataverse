@@ -229,18 +229,6 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     public void setSelectedRoleAssignmentRows(List<RoleAssignmentRow> selectedRoleAssignmentRows) {
         this.selectedRoleAssignmentRows = selectedRoleAssignmentRows;
     }
-
-    public void rowSelected(SelectEvent event) {
-        // System.out.println("rowSelected");
-    }
-    
-    public void rowSelected(UnselectEvent event) {
-        // System.out.println("rowSelected");
-    }
-    
-    public void rowSelected(ToggleSelectEvent event) {
-        // System.out.println("rowSelected");
-    }
     
     public void initViewRemoveDialogByFile(DataFile file, List<RoleAssignmentRow> raRows) {
         setSelectedRoleAssignmentRows(new ArrayList());
