@@ -25,7 +25,7 @@ import javax.persistence.Table;
 })
 @Entity
 @Table(indexes = {@Index(columnList="dtype")})
-public abstract class PersistedGlobalGroup implements Group, Serializable, Comparable {
+public abstract class PersistedGlobalGroup implements Group, Serializable {
     
     @Id
     @GeneratedValue
@@ -94,18 +94,5 @@ public abstract class PersistedGlobalGroup implements Group, Serializable, Compa
         return "[PersistedGlobalGroup " + getIdentifier() + "]";
     }
     
-    @Override
-    public int compareTo(Object o) {
-        if (o instanceof AuthenticatedUser) {
-            AuthenticatedUser other = (AuthenticatedUser) o;
-            return this.getDisplayName().toUpperCase().compareTo(other.getLastName().toUpperCase());
-        }
 
-        if (o instanceof Group) {
-            Group other = (Group) o;
-            return this.getDisplayName().toUpperCase().compareTo(other.getDisplayName().toUpperCase());
-        }
-        
-        return 0;
-    }
 }

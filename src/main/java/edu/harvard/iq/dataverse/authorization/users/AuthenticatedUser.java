@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.ValidateEmail;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserLookup;
+import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroup;
@@ -47,7 +48,7 @@ import javax.validation.constraints.NotNull;
     
 })
 @Entity
-public class AuthenticatedUser implements User, Serializable, Comparable {
+public class AuthenticatedUser implements User, Serializable {
     
     public static final String IDENTIFIER_PREFIX = "@";
     
@@ -251,19 +252,13 @@ public class AuthenticatedUser implements User, Serializable, Comparable {
 
 
     @Override
-    public int compareTo(Object o) {
-        if (o instanceof AuthenticatedUser) {
-            AuthenticatedUser other = (AuthenticatedUser) o;
-            return this.getLastName().toUpperCase().compareTo(other.getLastName().toUpperCase());
-        }
+    public String getSortByString() {
+        return this.getLastName() + " " + this.getFirstName() + " " + this.getUserIdentifier();
+    }
 
-        if (o instanceof Group) {
-            Group other = (Group) o;
-            return this.getLastName().toUpperCase().compareTo(other.getDisplayName().toUpperCase());
-        }
-
-        return 0;
-
+    @Override
+    public int compareTo(RoleAssignee o) {
+        return this.getSortByString().toUpperCase().compareTo(o.getSortByString().toUpperCase());
     }
 
 

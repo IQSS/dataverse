@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl.builtin;
 
+import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
@@ -58,5 +59,15 @@ public class AuthenticatedUsers implements Group {
     @Override
     public String toString() {
         return "[AuthenticatedUsers " + getIdentifier() + "]";
+    }
+
+    @Override
+    public String getSortByString() {
+        return getDisplayName();
+    }
+
+    @Override
+    public int compareTo(RoleAssignee o) {
+        return this.getSortByString().toUpperCase().compareTo(o.getSortByString().toUpperCase());
     }
 }

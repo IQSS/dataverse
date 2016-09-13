@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl.shib;
 
+import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupProvider;
@@ -133,6 +134,16 @@ public class ShibGroup implements Group, Serializable {
     @Override
     public boolean contains(DataverseRequest aRequest) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public String getSortByString() {
+        return getDisplayName();
+    }
+
+    @Override
+    public int compareTo(RoleAssignee o) {
+        return this.getSortByString().toUpperCase().compareTo(o.getSortByString().toUpperCase());
     }
 
 }

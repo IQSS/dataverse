@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.authorization.users;
 
+import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 
 /**
@@ -46,6 +47,16 @@ public class GuestUser implements User {
     @Override
     public int hashCode() {
         return 7;
+    }
+
+    @Override
+    public String getSortByString() {
+        return "Guest User";
+    }
+
+    @Override
+    public int compareTo(RoleAssignee o) {
+        return this.getSortByString().toUpperCase().compareTo(o.getSortByString().toUpperCase());
     }
     
 }

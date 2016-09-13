@@ -229,7 +229,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     public void setSelectedRoleAssignmentRows(List<RoleAssignmentRow> selectedRoleAssignmentRows) {
         this.selectedRoleAssignmentRows = selectedRoleAssignmentRows;
     }
-    
+
     public void rowSelected(SelectEvent event) {
         // System.out.println("rowSelected");
     }

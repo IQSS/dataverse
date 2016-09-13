@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress;
 
+import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.authorization.groups.GroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.PersistedGlobalGroup;
@@ -128,6 +129,16 @@ public class IpGroup extends PersistedGlobalGroup {
 
     public void setIpv4Ranges(Set<IPv4Range> ipv4Ranges) {
         this.ipv4Ranges = ipv4Ranges;
+    }
+
+    @Override
+    public String getSortByString() {
+        return this.getDisplayName();
+    }
+
+    @Override
+    public int compareTo(RoleAssignee o) {
+        return this.getSortByString().toUpperCase().compareTo(o.getSortByString().toUpperCase());
     }
     
     

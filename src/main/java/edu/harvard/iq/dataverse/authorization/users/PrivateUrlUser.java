@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.authorization.users;
 
+import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
@@ -59,6 +60,16 @@ public class PrivateUrlUser implements User {
     public RoleAssigneeDisplayInfo getDisplayInfo() {
         String title = BundleUtil.getStringFromBundle("dataset.privateurl.roleassigeeTitle");
         return new RoleAssigneeDisplayInfo(title, null);
+    }
+
+    @Override
+    public String getSortByString() {
+        return BundleUtil.getStringFromBundle("dataset.privateurl.roleassigeeTitle");
+    }
+
+    @Override
+    public int compareTo(RoleAssignee o) {
+        return this.getSortByString().toUpperCase().compareTo(o.getSortByString().toUpperCase());
     }
 
 }
