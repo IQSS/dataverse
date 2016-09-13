@@ -394,9 +394,4 @@ public class ExplicitGroup implements Group, java.io.Serializable {
         return "[ExplicitGroup " + groupAlias + "]";
     }
 
-    @Override
-    public String getSortByString() {
-        return getDisplayName();
-    }
-
 }

@@ -60,9 +60,5 @@ public class AuthenticatedUsers implements Group {
         return "[AuthenticatedUsers " + getIdentifier() + "]";
     }
 
-    @Override
-    public String getSortByString() {
-        return getDisplayName();
-    }
 
 }

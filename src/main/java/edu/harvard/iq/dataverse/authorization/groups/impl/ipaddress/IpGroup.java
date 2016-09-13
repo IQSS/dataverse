@@ -129,9 +129,4 @@ public class IpGroup extends PersistedGlobalGroup {
         this.ipv4Ranges = ipv4Ranges;
     }
 
-    @Override
-    public String getSortByString() {
-        return this.getDisplayName();
-    }
-
 }

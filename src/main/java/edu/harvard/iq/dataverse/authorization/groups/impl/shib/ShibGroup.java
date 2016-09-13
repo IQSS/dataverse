@@ -136,9 +136,4 @@ public class ShibGroup implements Group, Serializable {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    @Override
-    public String getSortByString() {
-        return getDisplayName();
-    }
-
 }

@@ -75,10 +75,5 @@ public final class AllUsers implements Group {
     public String toString() {
         return "[AllUsers " + getIdentifier() + "]";
     }
-
-    @Override
-    public String getSortByString() {
-        return displayInfo;
-    }
     
 }
