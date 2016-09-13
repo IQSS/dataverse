@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl.builtin;
 
-import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.groups.Group;

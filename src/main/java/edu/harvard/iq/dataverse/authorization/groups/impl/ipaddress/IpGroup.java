@@ -1,7 +1,5 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress;
 
-import edu.harvard.iq.dataverse.authorization.RoleAssignee;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.authorization.groups.GroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.PersistedGlobalGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IPv4Address;
