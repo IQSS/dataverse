@@ -427,6 +427,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
         for (RoleAssignee roleAssignee : selectedRoleAssigneesList) {
             assignRole(roleAssignee, roleService.find(selectedRoleId));
         }
+        roleAssignments = initRoleAssignments();  
     }
 
     /**
@@ -466,7 +467,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
             JH.addMessage(FacesMessage.SEVERITY_FATAL, "The role was not able to be assigned.");
             logger.log(Level.SEVERE, "Error assiging role: " + ex.getMessage(), ex);
         }
-        roleAssignments = initRoleAssignments();    
+  
         showAssignmentMessages();
     }
 
