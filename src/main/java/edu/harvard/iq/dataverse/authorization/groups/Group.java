@@ -37,10 +37,6 @@ public interface Group extends RoleAssignee {
      */
     public String getDisplayName();
     
-    @Override
-    default String getSortByString(){
-        return this.getDisplayName();
-    }
     
     /**
      * @return Description of this group
