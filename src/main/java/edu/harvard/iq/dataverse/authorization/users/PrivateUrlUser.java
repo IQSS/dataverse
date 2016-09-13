@@ -61,9 +61,6 @@ public class PrivateUrlUser implements User {
         return new RoleAssigneeDisplayInfo(title, null);
     }
 
-    @Override
-    public String getSortByString() {
-        return BundleUtil.getStringFromBundle("dataset.privateurl.roleassigeeTitle");
-    }
+
 
 }

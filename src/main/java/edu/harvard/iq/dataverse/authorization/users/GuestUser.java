@@ -47,10 +47,5 @@ public class GuestUser implements User {
     public int hashCode() {
         return 7;
     }
-
-    @Override
-    public String getSortByString() {
-        return "Guest User";
-    }
     
 }
