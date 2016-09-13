@@ -147,7 +147,9 @@
                                     </p:fragment>
                                     
                                     <p>
-                                        <span class="highlightBold">#{manageFilePermissionsPage.fileMap.size()} Restricted Files</span>
+                                        <h:outputFormat styleClass="highlightBold" value="#{manageFilePermissionsPage.fileMap.size()} #{bundle['dataverse.permissionsFiles.files.label']}">
+                                            <f:param value="#{manageFilePermissionsPage.fileMap.size()}"/>
+                                        </h:outputFormat>
                                     </p>
                                     
                                     <p:dataTable id="restrictedFiles" var="fileEntry" value="#{manageFilePermissionsPage.fileMap.entrySet().toArray()}"
@@ -198,13 +200,11 @@
                         <div>
                             <p:outputPanel id="selectionRemoveCounter">
                                 <p>
-                                    <span class="highlightBold">Selecting #{manageFilePermissionsPage.selectedRoleAssignmentRows.size()} of
-
-                                        #{manageFilePermissionsPage.roleAssignments.size()} 
-                                        
-                                        #{!empty manageFilePermissionsPage.selectedFile ? 'Users/Groups' : 'Restricted Files'}
-                                        
-                                    </span>
+                                    <h:outputFormat styleClass="highlightBold" value="#{bundle['dataverse.permissionsFiles.files.selected']}">
+                                        <f:param value="#{manageFilePermissionsPage.selectedRoleAssignmentRows.size()}"/>
+                                        <f:param value="#{manageFilePermissionsPage.roleAssignments.size()} "/>
+                                        <f:param value="#{!empty manageFilePermissionsPage.selectedFile ? bundle['dataverse.permissionsFiles.files.roleAssignees'] : bundle['dataverse.permissionsFiles.files']}"/>
+                                    </h:outputFormat>
                                 </p>
                             </p:outputPanel>
                             
@@ -276,18 +276,17 @@
                             <div>
                                 <p:outputPanel id="selectionCounter">
                                     <p>
-                                        <span class="highlightBold">Selecting #{manageFilePermissionsPage.selectedFiles.size()} of 
-
-                                            #{!empty manageFilePermissionsPage.fileRequester ? 
+                                        <h:outputFormat styleClass="highlightBold" value="#{bundle['dataverse.permissionsFiles.files.selected']}">
+                                            <f:param value="#{manageFilePermissionsPage.selectedFiles.size()}"/>
+                                            <f:param value="#{!empty manageFilePermissionsPage.fileRequester ? 
                                                         manageFilePermissionsPage.fileAccessRequestMap.get(manageFilePermissionsPage.fileRequester).size()
                                                         :
-                                                        manageFilePermissionsPage.fileMap.size()}
-
-                                            #{!empty manageFilePermissionsPage.fileRequester ? 
-                                                        'Requested Files'
+                                                        manageFilePermissionsPage.fileMap.size()}"/>
+                                            <f:param value="#{!empty manageFilePermissionsPage.fileRequester ? 
+                                                        bundle['dataverse.permissionsFiles.files.requested']
                                                         :
-                                                        'Restricted Files'}
-                                        </span>
+                                                        bundle['dataverse.permissionsFiles.files']}"/>
+                                        </h:outputFormat>
                                     </p>
                                 </p:outputPanel>
 
