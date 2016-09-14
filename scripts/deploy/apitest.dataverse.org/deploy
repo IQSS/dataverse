@@ -1,4 +1,0 @@
-#!/bin/sh
-scripts/deploy/apitest.dataverse.org/prep
-sudo /home/jenkins/dataverse/scripts/deploy/apitest.dataverse.org/rebuild
-scripts/deploy/apitest.dataverse.org/post
