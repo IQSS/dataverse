@@ -20,9 +20,15 @@ public class DataverseRequest {
     public DataverseRequest(User aUser, HttpServletRequest aHttpServletRequest) {
         this.user = aUser;
 
-        String remoteAddressStr = aHttpServletRequest.getRemoteAddr();
-        if ( remoteAddressStr == null ) {
-            remoteAddressStr = "0.0.0.0";
+        final String undefined = "0.0.0.0";
+        String saneDefault = undefined;
+        String remoteAddressStr = saneDefault;
+
+        if (aHttpServletRequest != null) {
+            String remoteAddressFromRequest = aHttpServletRequest.getRemoteAddr();
+            if (remoteAddressFromRequest != null) {
+                remoteAddressStr = remoteAddressFromRequest;
+            }
         }
         sourceAddress = IpAddress.valueOf( remoteAddressStr );
     }
