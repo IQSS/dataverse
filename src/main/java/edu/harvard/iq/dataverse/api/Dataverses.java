@@ -550,11 +550,9 @@ public class Dataverses extends AbstractApiBean {
                                                     @PathParam("aliasInOwner") String grpAliasInOwner )
     {
         try {
-            ExplicitGroup eg = findExplicitGroupOrDie(findDataverseOrDie(dvIdtf),
+            return okResponse( json(findExplicitGroupOrDie(findDataverseOrDie(dvIdtf),
                                                       createDataverseRequest(findUserOrDie()),
-                                                      grpAliasInOwner);
-            
-            return (eg!=null) ? okResponse( json(eg) ) : notFound("Can't find " + grpAliasInOwner + " in dataverse " + dvIdtf);
+                                                      grpAliasInOwner)) );
             
         } catch (WrappedResponse wr) {
             return wr.getResponse();

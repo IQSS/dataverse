@@ -44,8 +44,7 @@ public class Roles extends AbstractApiBean {
                 return notFound("role with id " + id + " not found");
             } else  {
                 return ( permissionSvc.userOn(findUserOrDie(), role.getOwner()).has(Permission.ManageDataversePermissions) ) 
-                    ? okResponse( json(role) )
-                        : errorResponse(Status.UNAUTHORIZED, "");
+                    ? okResponse( json(role) ) : permissionError("Permission required to view roles.");
             }
         } catch (WrappedResponse ex) {
             return ex.getResponse();

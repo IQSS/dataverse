@@ -424,7 +424,11 @@ public abstract class AbstractApiBean {
     }
     
     protected Response permissionError( PermissionException pe ) {
-        return errorResponse( Status.UNAUTHORIZED, pe.getMessage() );
+        return permissionError( pe.getMessage() );
+    }
+
+    protected Response permissionError( String message ) {
+        return errorResponse( Status.UNAUTHORIZED, message );
     }
     
     protected static Response errorResponse( Status sts ) {
