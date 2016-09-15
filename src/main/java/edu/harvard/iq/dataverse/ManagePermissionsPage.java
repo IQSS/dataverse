@@ -92,6 +92,10 @@ public class ManagePermissionsPage implements java.io.Serializable {
 
     public void setDvObject(DvObject dvObject) {
         this.dvObject = dvObject;
+        /*
+        SEK 09/15/2016 - may need to do something here if permissions are transmitted/inherited from dataverse to dataverse
+        */
+        
         /*if (dvObject instanceof DvObjectContainer) {
          inheritAssignments = !((DvObjectContainer) dvObject).isPermissionRoot();
          }*/
@@ -383,10 +387,14 @@ public class ManagePermissionsPage implements java.io.Serializable {
     public String getAssignedRoleObjectTypes(){
         String retString = "";
         if (selectedRoleId != null) {
+            /* SEK 09/15/2016 SEK commenting out for now 
+                because permissions are not inherited
+            
             if (dataverseRolePermissionHelper.hasDataversePermissions(selectedRoleId) && dvObject instanceof Dataverse){
                 String dvLabel = ResourceBundle.getBundle("Bundle").getString("dataverses");
                 retString = dvLabel;
             }
+            */
             if (dataverseRolePermissionHelper.hasDatasetPermissions(selectedRoleId) && dvObject instanceof Dataverse){
                 String dsLabel = ResourceBundle.getBundle("Bundle").getString("datasets");
                 if(!retString.isEmpty()) {
