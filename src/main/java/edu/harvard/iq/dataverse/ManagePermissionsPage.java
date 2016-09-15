@@ -383,11 +383,11 @@ public class ManagePermissionsPage implements java.io.Serializable {
     public String getAssignedRoleObjectTypes(){
         String retString = "";
         if (selectedRoleId != null) {
-            if (dataverseRolePermissionHelper.hasDataversePermissions(selectedRoleId)){
+            if (dataverseRolePermissionHelper.hasDataversePermissions(selectedRoleId) && dvObject instanceof Dataverse){
                 String dvLabel = ResourceBundle.getBundle("Bundle").getString("dataverses");
                 retString = dvLabel;
             }
-            if (dataverseRolePermissionHelper.hasDatasetPermissions(selectedRoleId)){
+            if (dataverseRolePermissionHelper.hasDatasetPermissions(selectedRoleId) && dvObject instanceof Dataverse){
                 String dsLabel = ResourceBundle.getBundle("Bundle").getString("datasets");
                 if(!retString.isEmpty()) {
                     retString +=", " +  dsLabel;
