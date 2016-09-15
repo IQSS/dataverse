@@ -56,15 +56,13 @@ public class DeaccessionDatasetVersionCommand extends AbstractCommand<DatasetVer
             IdServiceBean idServiceBean = IdServiceBean.getBean(ctxt);
 
             logger.fine("protocol=" + protocol);
-            if (protocol.equals("doi")) {
-                try {
-                    idServiceBean.deleteIdentifier(ds);
-                } catch (Exception e) {
-                    if (e.toString().contains("Internal Server Error")) {
-                        throw new CommandException(ResourceBundle.getBundle("Bundle").getString("dataset.publish.error.datacite"), this);
-                    }
-                    throw new CommandException(ResourceBundle.getBundle("Bundle").getString("dataset.delete.error.datacite"), this);
+            try {
+                idServiceBean.deleteIdentifier(ds);
+            } catch (Exception e) {
+                if (e.toString().contains("Internal Server Error")) {
+                    throw new CommandException(ResourceBundle.getBundle("Bundle").getString("dataset.publish.error.datacite"), this);
                 }
+                throw new CommandException(ResourceBundle.getBundle("Bundle").getString("dataset.delete.error.datacite"), this);
             }
         }
         DatasetVersion managed = ctxt.em().merge(theVersion);

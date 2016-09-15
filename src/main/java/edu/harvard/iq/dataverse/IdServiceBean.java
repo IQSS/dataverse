@@ -8,7 +8,6 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/** TODO Property for Dataset and CommandContext. */
 public interface IdServiceBean {
 
     static final Logger logger = Logger.getLogger(IdServiceBean.class.getCanonicalName());
@@ -17,12 +16,20 @@ public interface IdServiceBean {
 
     boolean registerWhenPublished();
 
-    String createIdentifier(Dataset dataset) throws Exception;
+    String createIdentifier(Dataset dataset) throws Throwable;
 
     HashMap getIdentifierMetadata(Dataset dataset);
 
     HashMap lookupMetadataFromIdentifier(String protocol, String authority, String separator, String identifier);
 
+    /**
+     * Concatenate the parts that make up a Global Identifier.
+     * @param protocol the identifier system, e.g. "doi"
+     * @param authority the namespace that the authority manages in the identifier system
+     * @param separator the string that separates authority from local identifier part
+     * @param identifier the local identifier part
+     * @return the Global Identifier, e.g. "doi:10.12345/67890"
+     */
     String getIdentifierForLookup(String protocol, String authority, String separator, String identifier);
 
     String modifyIdentifier(Dataset dataset, HashMap<String, String> metadata) throws Exception;

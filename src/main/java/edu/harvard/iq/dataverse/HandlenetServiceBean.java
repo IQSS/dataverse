@@ -37,7 +37,9 @@ import java.security.PrivateKey;
 import net.handle.hdllib.AbstractMessage;
 import net.handle.hdllib.AbstractResponse;
 import net.handle.hdllib.AdminRecord;
+import net.handle.hdllib.ClientSessionTracker;
 import net.handle.hdllib.CreateHandleRequest;
+import net.handle.hdllib.DeleteHandleRequest;
 import net.handle.hdllib.Encoder;
 import net.handle.hdllib.HandleException;
 import net.handle.hdllib.HandleResolver;
@@ -59,6 +61,7 @@ import org.apache.commons.lang.NotImplementedException;
  */
 @Stateless
 public class HandlenetServiceBean extends AbstractIdServiceBean {
+
     @EJB
     DataverseServiceBean dataverseService;
     @EJB 
@@ -73,7 +76,7 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
 
     @Override
     public boolean registerWhenPublished() {
-        throw new NotImplementedException();
+        return true; // TODO current value plays safe, can we loosen up?
     }
 
     public void reRegisterHandle(Dataset dataset) {
@@ -136,7 +139,7 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
         }
     }
     
-    public void registerNewHandle(Dataset dataset) {
+    public Throwable registerNewHandle(Dataset dataset) {
         logger.log(Level.FINE,"registerNewHandle");
         String handlePrefix = dataset.getAuthority();
         String handle = getDatasetHandle(dataset);
@@ -148,8 +151,6 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
 
         PublicKeyAuthenticationInfo auth = getAuthInfo(handlePrefix);
         HandleResolver resolver = new HandleResolver();
-
-        int index = 300;
 
         try {
 
@@ -174,11 +175,19 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
             AbstractResponse response = resolver.processRequest(req);
             if (response.responseCode == AbstractMessage.RC_SUCCESS) {
                 logger.info("Success! Response: \n" + response);
+                return null;
             } else {
+                logger.log(Level.WARNING, "registerNewHandle failed");
                 logger.warning("Error response: \n" + response);
+                return new Exception("registerNewHandle failed: " + response);
             }
         } catch (Throwable t) {
-            logger.warning("\nError (caught exception): " + t);
+            logger.log(Level.WARNING, "registerNewHandle failed");
+            logger.log(Level.WARNING, "String {0}", t.toString());
+            logger.log(Level.WARNING, "localized message {0}", t.getLocalizedMessage());
+            logger.log(Level.WARNING, "cause", t.getCause());
+            logger.log(Level.WARNING, "message {0}", t.getMessage());
+            return t;
         }
     }
     
@@ -316,12 +325,17 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
 
     @Override
     public boolean alreadyExists(Dataset dataset) throws Exception {
-        throw new NotImplementedException();
+        String handle = getDatasetHandle(dataset);
+        return isHandleRegistered(handle);
     }
 
     @Override
-    public String createIdentifier(Dataset dataset) throws Exception  {
-        throw new NotImplementedException();
+    public String createIdentifier(Dataset dataset) throws Throwable  {
+        Throwable result = registerNewHandle(dataset);
+        if (result != null)
+            throw result;
+        // TODO get exceptions from under the carpet
+        return getDatasetHandle(dataset);
     }
 
     @Override
@@ -335,11 +349,6 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
     }
 
     @Override
-    public String getIdentifierForLookup(String protocol, String authority, String separator, String identifier)  {
-        throw new NotImplementedException();
-    }
-
-    @Override
     public String modifyIdentifier(Dataset dataset, HashMap<String, String> metadata) throws Exception  {
         logger.log(Level.FINE,"modifyIdentifier");
         reRegisterHandle(dataset);
@@ -348,27 +357,54 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
 
     @Override
     public void deleteIdentifier(Dataset datasetIn) throws Exception  {
-        throw new NotImplementedException();
+        String handle = getDatasetHandle(datasetIn);
+        String authHandle = getAuthHandle(datasetIn);
+
+        String adminCredFile = System.getProperty("dataverse.handlenet.admcredfile");
+
+        byte[] key = readKey(adminCredFile);
+        PrivateKey privkey = readPrivKey(key, adminCredFile);
+
+        HandleResolver resolver = new HandleResolver();
+        resolver.setSessionTracker(new ClientSessionTracker());
+
+        PublicKeyAuthenticationInfo auth =
+                new PublicKeyAuthenticationInfo(Util.encodeString(authHandle), 300, privkey);
+
+        DeleteHandleRequest req =
+                new DeleteHandleRequest(Util.encodeString(handle), auth);
+        AbstractResponse response=null;
+        try {
+            response = resolver.processRequest(req);
+        } catch (HandleException ex) {
+            ex.printStackTrace();
+        }
+        if(response==null || response.responseCode!=AbstractMessage.RC_SUCCESS) {
+            logger.fine("error deleting '"+handle+"': "+response);
+        } else {
+            logger.fine("deleted "+handle);
+        }
     }
 
     @Override
-    public HashMap getMetadataFromStudyForCreateIndicator(Dataset datasetIn)  {
-        throw new NotImplementedException();
+    public boolean publicizeIdentifier(Dataset dataset)  {
+        logger.log(Level.FINE,"publicizeIdentifier");
+        return updateIdentifierStatus(dataset, "public");
     }
 
-    @Override
-    public HashMap getMetadataFromDatasetForTargetURL(Dataset datasetIn)  {
-        return new HashMap<String, String>();
+    private boolean updateIdentifierStatus(Dataset dataset, String statusIn) {
+        logger.log(Level.FINE,"updateIdentifierStatus");
+        String identifier = getIdentifierFromDataset(dataset);
+        HashMap<String, String> metadata = getUpdateMetadataFromDataset(dataset);
+        metadata.put("_status", statusIn);
+        metadata.put("_target", getTargetUrl(dataset));
+        // TODO drop getting identifier and meatdata if indeed not required
+        return null == registerNewHandle(dataset); // Exception have been logged
     }
 
-    @Override
-    public String getIdentifierFromDataset(Dataset dataset)  {
-        return dataset.getGlobalId();
-    }
-
-    @Override
-    public boolean publicizeIdentifier(Dataset studyIn)  {
-        throw new NotImplementedException();
+    private String getAuthHandle(Dataset datasetIn) {
+        // TODO hack: GNRSServiceBean retrieved this from vdcNetworkService
+        return "0.NA/" + datasetIn.getAuthority();
     }
 }
 

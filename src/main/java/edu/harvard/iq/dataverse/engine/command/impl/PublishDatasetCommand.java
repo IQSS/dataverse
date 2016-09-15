@@ -96,7 +96,7 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
                             throw new IllegalCommandException("This dataset may not be published because its identifier is already in use by another dataset.", this);
                         }
                     }
-                } catch (Exception e) {
+                } catch (Throwable e) {
                     // TODO add a variant for EZId
                     throw new CommandException(ResourceBundle.getBundle("Bundle").getString("dataset.publish.error.datacite"), this);
                 }
@@ -219,11 +219,7 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
             ctxt.em().merge(datasetDataverseUser);
         }
 
-        if (protocol.equals("doi")
-                && doiProvider.equals("EZID")) {
-            idServiceBean.publicizeIdentifier(savedDataset);
-        }
-        if (idServiceBean!= null)
+        if (idServiceBean!= null && !idServiceBean.registerWhenPublished())
             if (!idServiceBean.publicizeIdentifier(savedDataset))
                 throw new CommandException(ResourceBundle.getBundle("Bundle").getString("dataset.publish.error.datacite"), this);
 

@@ -179,8 +179,7 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
         IdServiceBean idServiceBean = IdServiceBean.getBean(ctxt);
         boolean registerWhenPublished = idServiceBean.registerWhenPublished();
         logger.log(Level.FINE,"doiProvider={0} protocol={1} GlobalIdCreateTime=={2}", new Object[]{doiProvider, theDataset.getProtocol(), theDataset.getGlobalIdCreateTime()});
-        if (theDataset.getProtocol().equals("doi")
-                && !registerWhenPublished && theDataset.getGlobalIdCreateTime() == null) {
+        if ( !registerWhenPublished && theDataset.getGlobalIdCreateTime() == null) {
             String doiRetString = null;
             try {
                 logger.fine("creating identifier");
@@ -204,7 +203,7 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
                         //some reason other than duplicate identifier so don't try again
                     }
                 }
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 // EZID probably down
             }
         }
