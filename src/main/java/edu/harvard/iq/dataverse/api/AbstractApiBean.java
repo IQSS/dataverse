@@ -334,7 +334,7 @@ public abstract class AbstractApiBean {
             return engineSvc.submit(cmd);
             
         } catch (IllegalCommandException ex) {
-            throw new WrappedResponse( ex, errorResponse(Response.Status.BAD_REQUEST, ex.getMessage() ) );
+            throw new WrappedResponse( ex, errorResponse(Response.Status.FORBIDDEN, ex.getMessage() ) );
           
         } catch (PermissionException ex) {
             /**
