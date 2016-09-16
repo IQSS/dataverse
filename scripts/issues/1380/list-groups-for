@@ -1,0 +1,2 @@
+#!/bin/bash
+curl -s -X GET http://localhost:8080/api/test/explicitGroups/$1 | jq .

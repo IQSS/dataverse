@@ -42,7 +42,7 @@ public class Groups extends AbstractApiBean {
     @Path("ip")
     public Response createIpGroups( JsonObject dto ){
         try {
-           IpGroup grp = new JsonParser(null,null,null).parseIpGroup(dto);
+           IpGroup grp = new JsonParser().parseIpGroup(dto);
             
             if ( grp.getPersistedGroupAlias()== null ) {
                 return errorResponse(Response.Status.BAD_REQUEST, "Must provide valid group alias");
@@ -99,8 +99,18 @@ public class Groups extends AbstractApiBean {
         try {
             ipGroupPrv.deleteGroup(grp);
             return okResponse("Group " + grp.getAlias() + " deleted.");
-        } catch ( IllegalArgumentException ex ) {
-            return errorResponse(Response.Status.BAD_REQUEST, ex.getMessage());
+        } catch ( Exception topExp ) {
+            // get to the cause (unwraps EJB exception wrappers).
+            Throwable e = topExp;
+            while ( e.getCause() != null ) {
+                e = e.getCause();
+            }
+            
+            if ( e instanceof IllegalArgumentException ) {
+                return errorResponse(Response.Status.BAD_REQUEST, e.getMessage());
+            } else {
+                throw topExp;
+            }
         }
     }
     

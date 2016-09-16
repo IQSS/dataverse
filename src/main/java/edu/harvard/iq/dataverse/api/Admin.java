@@ -3,7 +3,6 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.EMailValidator;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
-import static edu.harvard.iq.dataverse.api.AbstractApiBean.errorResponse;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
@@ -45,6 +44,7 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response.Status;
+import static edu.harvard.iq.dataverse.api.AbstractApiBean.errorResponse;
 /**
  * Where the secure, setup API calls live.
  * @author michael
@@ -64,9 +64,8 @@ public class Admin extends AbstractApiBean {
     @GET
     public Response listAllSettings() {
         JsonObjectBuilder bld = jsonObjectBuilder();
-        for ( Setting s : settingsSvc.listAll() ) {
-            bld.add(s.getName(), s.getContent());
-        }
+        settingsSvc.listAll().forEach(
+            s -> bld.add(s.getName(), s.getContent())); 
         return okResponse(bld);
     }
     
@@ -544,4 +543,15 @@ public class Admin extends AbstractApiBean {
         return okResponse("foo: " + savedUser);
     }
 
+    
+    
+    @Path("assignments/assignees/{raIdtf: .*}")
+    @GET
+    public Response getAssignmentsFor( @PathParam("raIdtf") String raIdtf ) {
+        
+        JsonArrayBuilder arr = Json.createArrayBuilder();
+        roleAssigneeSvc.getAssignmentsFor(raIdtf).forEach( a -> arr.add(json(a)));
+        
+        return okResponse(arr);
+    }
 }

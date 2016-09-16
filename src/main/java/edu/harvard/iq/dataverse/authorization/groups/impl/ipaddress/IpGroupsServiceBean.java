@@ -98,7 +98,7 @@ public class IpGroupsServiceBean {
         if ( ipa instanceof IPv4Address ) {
             IPv4Address ip4 = (IPv4Address) ipa;
             List<IpGroup> groupList = em.createNamedQuery("IPv4Range.findGroupsContainingAddressAsLong", IpGroup.class)
-                    .setParameter("addressAsLong", ip4.toLong()).getResultList();
+                    .setParameter("addressAsLong", ip4.toBigInteger()).getResultList();
             return new HashSet<>(groupList);
             
         } else if ( ipa instanceof IPv6Address ) {

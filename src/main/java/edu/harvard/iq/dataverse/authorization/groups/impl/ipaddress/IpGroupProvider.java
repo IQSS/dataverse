@@ -3,12 +3,10 @@ package edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.GroupProvider;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Logger;
 
 /**
  * Creates {@link IpGroup}s.
@@ -16,8 +14,6 @@ import java.util.logging.Logger;
  */
 public class IpGroupProvider implements GroupProvider<IpGroup> {
     
-    private static final Logger logger = Logger.getLogger(IpGroupProvider.class.getCanonicalName());
-
     private final IpGroupsServiceBean ipGroupsService;
     
     public IpGroupProvider(IpGroupsServiceBean ipGroupsService) {
@@ -68,9 +64,7 @@ public class IpGroupProvider implements GroupProvider<IpGroup> {
     }
     
     private Set<IpGroup> updateProvider( Set<IpGroup> groups ) {
-        for ( IpGroup g : groups ) {
-            g.setProvider(this);
-        }
+        groups.forEach( g -> g.setProvider(this) );
         return groups;
     }
     

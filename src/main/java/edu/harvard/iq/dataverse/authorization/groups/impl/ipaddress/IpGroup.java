@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress;
 
-import edu.harvard.iq.dataverse.authorization.users.User;
+import com.google.common.base.Objects;
 import edu.harvard.iq.dataverse.authorization.groups.GroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.PersistedGlobalGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IPv4Address;
@@ -36,23 +36,22 @@ public class IpGroup extends PersistedGlobalGroup {
     @Transient
     private IpGroupProvider provider;
     
-    public IpGroup() {
-        
-    }
+    public IpGroup() {}
     
     public IpGroup(IpGroupProvider provider) {
         this.provider = provider;
     }
     
     @Override
-    public boolean contains(DataverseRequest rq) {
+    public boolean contains( DataverseRequest rq ) {
         IpAddress addr = rq.getSourceAddress();
+        if ( addr == null ) return false;
+        
         for ( IpAddressRange r : ((addr instanceof IPv4Address) ? ipv4Ranges : ipv6Ranges) ) {
            Boolean containment =  r.contains(addr);
            if ( (containment != null) && containment ) {
                return true;
            }
-               
         }
         return false;
     }
@@ -130,5 +129,29 @@ public class IpGroup extends PersistedGlobalGroup {
         this.ipv4Ranges = ipv4Ranges;
     }
     
+    @Override
+    public boolean equals( Object o ) {
+        if ( o == null ) return false;
+        if ( o == this ) return true;
+        if ( ! (o instanceof IpGroup) ) return false;
+        
+        IpGroup other = (IpGroup) o;
+        
+        if ( ! Objects.equal(getId(), other.getId()) ) return false;
+        if ( ! Objects.equal(getDescription(), other.getDescription()) ) return false;
+        if ( ! Objects.equal(getDisplayName(), other.getDisplayName()) ) return false;
+        if ( ! Objects.equal(getPersistedGroupAlias(), other.getPersistedGroupAlias()) ) return false;
+        return getRanges().equals( other.getRanges() );
+    }
+
+    @Override
+    public int hashCode() {
+        return getPersistedGroupAlias().hashCode();
+    }
+    
+    @Override
+    public String toString() {
+        return "[IpGroup alias:" + getPersistedGroupAlias() +" id:" + getId() + " ranges:" + getIpv4Ranges() + "," + getIpv6Ranges() + "]";
+    }
     
 }

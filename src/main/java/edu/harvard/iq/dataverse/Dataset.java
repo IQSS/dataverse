@@ -654,5 +654,9 @@ public class Dataset extends DvObjectContainer {
     protected boolean isPermissionRoot() {
         return false;
     }
-
+    
+    @Override
+    public boolean isAncestorOf( DvObject other ) {
+        return equals(other) || equals(other.getOwner());
+    }
 }
