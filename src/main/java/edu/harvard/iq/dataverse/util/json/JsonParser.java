@@ -95,7 +95,16 @@ public class JsonParser {
             dv.setDataverseTheme(theme);
             theme.setDataverse(dv);
         }
-        
+
+        dv.setDataverseType(Dataverse.DataverseType.UNCATEGORIZED); // default
+        if (jobj.containsKey("dataverseType")) {
+            for (Dataverse.DataverseType dvtype : Dataverse.DataverseType.values()) {
+                if (dvtype.name().equalsIgnoreCase(jobj.getString("dataverseType"))) {
+                    dv.setDataverseType(dvtype);
+                }
+            }
+        }
+
         /*  We decided that subject is not user set, but gotten from the subject of the dataverse's
             datasets - leavig this code in for now, in case we need to go back to it at some point
         
