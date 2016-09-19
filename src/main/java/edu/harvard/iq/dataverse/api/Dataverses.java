@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseContact;
+import edu.harvard.iq.dataverse.api.imports.ImportUtil;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.MetadataBlock;
@@ -44,6 +45,8 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseMetadataBlocksCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateExplicitGroupCommand;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
+import org.apache.commons.lang.StringUtils;
+
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.brief;
 import java.io.StringReader;
 import java.util.Collections;
@@ -68,6 +71,7 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -158,11 +162,27 @@ public class Dataverses extends AbstractApiBean {
     
     @POST
     @Path("{identifier}/datasets")
-    public Response createDataset( String jsonBody, @PathParam("identifier") String parentIdtf  ) {
+    public Response createDataset( String jsonBody, @PathParam("identifier") String parentIdtf,
+                                   @DefaultValue("new") @QueryParam("importType") String datasetImportType,
+                                   @DefaultValue("/") @QueryParam("separator") String datasetSeparator) {
         try {
             User u = findUserOrDie();
             Dataverse owner = findDataverseOrDie(parentIdtf);
-            
+
+            // set the import type, default to NEW
+            ImportUtil.ImportType it = null;
+            if (StringUtils.isNotBlank(datasetImportType)) {
+                if (datasetImportType.equalsIgnoreCase("migration")) {
+                    it = ImportUtil.ImportType.MIGRATION;
+                }
+                if (datasetImportType.equalsIgnoreCase("harvest")) {
+                    it = ImportUtil.ImportType.HARVEST;
+                }
+                if (datasetImportType.equalsIgnoreCase("new")) {
+                    it = ImportUtil.ImportType.NEW;
+                }
+            }
+
             JsonObject json;
             try ( StringReader rdr = new StringReader(jsonBody) ) {
                 json = Json.createReader(rdr).readObject();
@@ -173,7 +193,43 @@ public class Dataverses extends AbstractApiBean {
             
             Dataset ds = new Dataset();
             ds.setOwner(owner);
-          
+
+            // migration using an existing identifier
+            String datasetIdentifier = json.getString("identifier", null);
+            String datasetProtocol = json.getString("protocol", null);
+            String datasetAuthority = json.getString("authority", null);
+
+            if (StringUtils.isNotBlank(datasetIdentifier) ||
+                    StringUtils.isNotBlank(datasetProtocol) ||
+                    StringUtils.isNotBlank(datasetAuthority)) {
+
+                // we need all of these parameters to construct a global ID
+                if (StringUtils.isNotBlank(datasetIdentifier) &&
+                        StringUtils.isNotBlank(datasetProtocol) &&
+                        StringUtils.isNotBlank(datasetAuthority)) {
+
+                    // reset import type to MIGRATION when we are sent all of the global id params but no import type
+                    if (it != ImportUtil.ImportType.MIGRATION && it != ImportUtil.ImportType.HARVEST) {
+                        it = ImportUtil.ImportType.MIGRATION;
+                    }
+
+                    // make sure it doesn't already exist
+                    String globalId = datasetProtocol + ":" + datasetAuthority + datasetSeparator + datasetIdentifier;
+                    if (findDvo(globalId) == null) {
+                        ds.setAuthority(datasetAuthority);
+                        ds.setProtocol(datasetProtocol);
+                        ds.setIdentifier(datasetIdentifier);
+                    } else {
+                        return errorResponse(Status.BAD_REQUEST,
+                                "A dataset with the identifier " + globalId + " already exists.");
+                    }
+                } else {
+                    return errorResponse(Status.BAD_REQUEST,
+                            "Protocol, authority and identifier must all be specified when migrating a dataset " +
+                                    "with an existing global identifier.");
+                }
+            }
+
             JsonObject jsonVersion = json.getJsonObject("datasetVersion");
             if ( jsonVersion == null) {
                 return errorResponse(Status.BAD_REQUEST, "Json POST data are missing datasetVersion object.");
@@ -201,11 +257,11 @@ public class Dataverses extends AbstractApiBean {
                 LOGGER.log( Level.WARNING, "Error parsing dataset version from Json", e);
                 return errorResponse(Status.INTERNAL_SERVER_ERROR, "Error parsing datasetVersion: " + e.getMessage() );
             }
-            
-            Dataset managedDs = execCommand(new CreateDatasetCommand(ds, createDataverseRequest(u)));
-            return createdResponse( "/datasets/" + managedDs.getId(),
-                    Json.createObjectBuilder().add("id", managedDs.getId()) );
-                
+
+            Dataset managedDs = execCommand(new CreateDatasetCommand(ds, createDataverseRequest(u), false, it));
+            return createdResponse("/datasets/" + managedDs.getId(),
+                    Json.createObjectBuilder().add("id", managedDs.getId()));
+
         } catch ( WrappedResponse ex ) {
             return ex.getResponse();
         }
