@@ -472,7 +472,9 @@ public class ManagePermissionsPage implements java.io.Serializable {
         } catch (PermissionException ex) {
             JH.addMessage(FacesMessage.SEVERITY_ERROR, "The role was not able to be assigned.", "Permissions " + ex.getRequiredPermissions().toString() + " missing.");
         } catch (CommandException ex) {
-            JH.addMessage(FacesMessage.SEVERITY_FATAL, "The role was not able to be assigned.");
+            String message = r.getName() + " role could NOT be assigned to " + ra.getDisplayInfo().getTitle() + " for " + StringEscapeUtils.escapeHtml(dvObject.getDisplayName()) + ".";
+            JsfHelper.addErrorMessage(message);
+            //JH.addMessage(FacesMessage.SEVERITY_FATAL, "The role was not able to be assigned.");
             logger.log(Level.SEVERE, "Error assiging role: " + ex.getMessage(), ex);
         }
   
