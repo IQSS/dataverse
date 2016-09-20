@@ -75,6 +75,7 @@
             </div><span class="text-muted">{{ sdoc.date_to_display_on_card }}</span> - 
             <a href="/dataset.xhtml?persistentId={{ sdoc.parentIdentifier }}">{{ sdoc.parentName }}</a>
             {#<br /><span class="resultDatasetCitationBlock bg-citation">{{ sdoc.dataset_citation|safe }}</span>#}
+            <!-- FIXME: MD5 is hard-coded here but this "cards.html" file doesn't seem to be used at all. Can it be deleted? -->
             <br /><span class="text-muted">{{ sdoc.file_type }}</span><span class="text-muted"> - {{ sdoc.size_in_bytes }} KB - </span><span class="text-muted"> MD5: {{ sdoc.md5 }} </span>       
 {% endif %}
 </div>   

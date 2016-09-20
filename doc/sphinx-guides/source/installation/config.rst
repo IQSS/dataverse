@@ -454,3 +454,10 @@ This setting is experimental per :doc:`/installation/shibboleth`.
 ++++++++++++
 
 Set to false to disallow local accounts to be created if you are using :doc:`shibboleth` but not for production use until https://github.com/IQSS/dataverse/issues/2838 has been fixed.
+
+:FileFixityChecksumAlgorithm
+++++++++++++++++++++++++++++
+
+Dataverse calculates checksums for uploaded files so that users can determine if their file was corrupted via upload or download. This is sometimes called "file fixity": https://en.wikipedia.org/wiki/File_Fixity
+
+The default checksum algorithm used is MD5 and should be sufficient for establishing file fixity. "SHA-1" is an experimental alternate value for this setting.
