@@ -173,7 +173,7 @@ public class WorldMapPermissionHelper {
     }
     
      /**
-     * Call this for a Dataset or File page
+     * Call this from a Dataset or File page
      *   - calls private method canUserSeeExploreWorldMapButton
      * 
      *  WARNING: Before calling this, make sure the user has download
@@ -204,12 +204,13 @@ public class WorldMapPermissionHelper {
      * @param fm FileMetadata
      * @return boolean
      */
-    public boolean canUserSeeExploreWorldMapButton(FileMetadata fm, boolean permissionsChecked){
+    private boolean canUserSeeExploreWorldMapButton(FileMetadata fm, boolean permissionsChecked){
 
         if (fm==null){
             return false;
         }
         
+        // This is only here to make the public method users think...
         if (!permissionsChecked){
             return false;
         }
@@ -325,7 +326,7 @@ public class WorldMapPermissionHelper {
 
     
     /**
-     * Call this for a Dataset or File page
+     * Call this from a Dataset or File page
      *   - calls private method canSeeMapButtonReminderToPublish
      * 
      *  WARNING: Assumes user isAuthenicated AND has Permission.EditDataset
@@ -387,6 +388,7 @@ public class WorldMapPermissionHelper {
             return false;
         } 
         
+        // This is only here as a reminder to the public method users 
         if (!permissionsChecked){
             return false;
         }
@@ -483,6 +485,7 @@ public class WorldMapPermissionHelper {
             return false;
         }         
                  
+        // This is only here as a reminder to the public method users 
         if (!permissionsChecked){
             return false;
         }

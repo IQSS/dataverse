@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.datasetutility.DuplicateFileChecker;
+import edu.harvard.iq.dataverse.datasetutility.TwoRavensHelper;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
@@ -213,11 +214,12 @@ public class DatasetPage implements java.io.Serializable {
     // Used to help with displaying buttons related to the WorldMap
     private WorldMapPermissionHelper worldMapPermissionHelper;
     
+    // Used to help with displaying buttons related to TwoRavens
+    private TwoRavensHelper twoRavensHelper;
+    
     // Used to store results of permissions checks
     private final Map<String, Boolean> datasetPermissionMap = new HashMap<>(); // { Permission human_name : Boolean }
     private final Map<Long, Boolean> fileDownloadPermissionMap = new HashMap<>(); // { FileMetadata.id : Boolean }
-
-    private final Map<Long, Boolean> fileMetadataTwoRavensExploreMap = new HashMap<>(); // { FileMetadata.id : Boolean } 
     
     private DataFile selectedDownloadFile;
 
@@ -1019,67 +1021,7 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     
-    /**
-     * Used in the .xhtml file to check whether a tabular file 
-     * may be viewed via TwoRavens
-     * 
-     * @param fm
-     * @return 
-     */
-    public boolean canSeeTwoRavensExploreButton(FileMetadata fm){
-       
-        if (fm == null){
-            return false;
-        }
-        
-        // Has this already been checked?
-        if (this.fileMetadataTwoRavensExploreMap.containsKey(fm.getId())){
-            // Yes, return previous answer
-            //logger.info("using cached result for candownloadfile on filemetadata "+fid);
-            return this.fileMetadataTwoRavensExploreMap.get(fm.getId());
-        }
-        
-        
-        // (1) Is TwoRavens active via the "setting" table?
-        //      Nope: get out
-        //
-        if (!settingsService.isTrueForKey(SettingsServiceBean.Key.TwoRavensTabularView, false)){
-            this.fileMetadataTwoRavensExploreMap.put(fm.getId(), false);
-            return false;
-        }
-        
-        // (2) Does the user have download permission?
-        //      Nope: get out
-        //
-        if (!(this.canDownloadFile(fm))){
-            this.fileMetadataTwoRavensExploreMap.put(fm.getId(), false);
-            return false;
-        } 
-        // (3) Is the DataFile object there and persisted?
-        //      Nope: scat
-        //
-        if ((fm.getDataFile() == null)||(fm.getDataFile().getId()==null)){
-            this.fileMetadataTwoRavensExploreMap.put(fm.getId(), false);
-            return false;
-        }
-        
-        // (4) Is there tabular data or is the ingest in progress?
-        //      Yes: great
-        //
-        if ((fm.getDataFile().isTabularData())||(fm.getDataFile().isIngestInProgress())){
-            this.fileMetadataTwoRavensExploreMap.put(fm.getId(), true);
-            return true;
-        }
-        
-        // Nope
-        this.fileMetadataTwoRavensExploreMap.put(fm.getId(), false);            
-        return false;
-        
-        //       (empty fileMetadata.dataFile.id) and (fileMetadata.dataFile.tabularData or fileMetadata.dataFile.ingestInProgress)
-        //                                        and DatasetPage.canDownloadFile(fileMetadata) 
-    }
-    
-   
+ 
     /**
      * For development
      * 
@@ -1100,6 +1042,47 @@ public class DatasetPage implements java.io.Serializable {
         }    
         return false;
       
+    }
+    
+    
+    /**
+     * This object wraps methods used for hiding/displaying WorldMap related messages
+     *
+     */
+    private void loadTwoRavensHelper() {
+       
+        twoRavensHelper = new TwoRavensHelper(settingsService, permissionService);
+        
+    }
+    
+    public boolean canSeeTwoRavensExploreButton(FileMetadata fm){
+        if (fm == null){
+            return false;
+        }
+        if (twoRavensHelper == null){
+            return false;
+        }
+        
+        return twoRavensHelper.canSeeTwoRavensExploreButtonFromPage(fm);
+    }
+    
+    
+    public String getDataExploreURL() {
+        if (twoRavensHelper == null){
+            return "";
+        }
+        return twoRavensHelper.getDataExploreURL();
+    }
+    
+    
+    public String getDataExploreURLComplete(Long fileid) {
+        if (twoRavensHelper == null){
+            return "";
+        }
+        return twoRavensHelper.getDataExploreURLComplete(fileid, getApiTokenKey());
+        
+       
+       // return TwoRavensDefaultLocal + fileid + "&" + getApiTokenKey();
     }
     
     
@@ -1380,6 +1363,7 @@ public class DatasetPage implements java.io.Serializable {
                 // lazyModel = new LazyFileMetadataDataModel(workingVersion.getId(), datafileService );
                 // populate MapLayerMetadata
                 this.loadWorldMapPermissionHelper();  // A DataFile may have a related MapLayerMetadata object
+                this.loadTwoRavensHelper();
             }
         } else if (ownerId != null) {
             // create mode for a new child dataset
@@ -3220,40 +3204,7 @@ public class DatasetPage implements java.io.Serializable {
         return  settingsService.isTrueForKey(SettingsServiceBean.Key.DatasetPublishPopupCustomTextOnAllVersions, false);
     }
 
-    public String getDataExploreURL() {
-        String TwoRavensUrl = settingsService.getValueForKey(SettingsServiceBean.Key.TwoRavensUrl);
 
-        if (TwoRavensUrl != null && !TwoRavensUrl.equals("")) {
-            return TwoRavensUrl;
-        }
-
-        return "";
-    }
-
-    public String getDataExploreURLComplete(Long fileid) {
-        String TwoRavensUrl = settingsService.getValueForKey(SettingsServiceBean.Key.TwoRavensUrl);
-        String TwoRavensDefaultLocal = "/dataexplore/gui.html?dfId=";
-
-        if (TwoRavensUrl != null && !TwoRavensUrl.equals("")) {
-            // If we have TwoRavensUrl set up as, as an optional 
-            // configuration service, it must mean that TwoRavens is sitting 
-            // on some remote server. And that in turn means that we must use 
-            // full URLs to pass data and metadata to it. 
-            // update: actually, no we don't want to use this "dataurl" notation.
-            // switching back to the dfId=:
-            // -- L.A. 4.1
-            /*
-            String tabularDataURL = getTabularDataFileURL(fileid);
-            String tabularMetaURL = getVariableMetadataURL(fileid);
-            return TwoRavensUrl + "?ddiurl=" + tabularMetaURL + "&dataurl=" + tabularDataURL + "&" + getApiTokenKey();
-            */
-            return TwoRavensUrl + "?dfId=" + fileid + "&" + getApiTokenKey();
-        }
-
-        // For a local TwoRavens setup it's enough to call it with just 
-        // the file id:
-        return TwoRavensDefaultLocal + fileid + "&" + getApiTokenKey();
-    }
 
     public String getVariableMetadataURL(Long fileid) {
         String myHostURL = getDataverseSiteUrl();
