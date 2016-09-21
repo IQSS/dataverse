@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServi
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.datasetutility.DuplicateFileChecker;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -1030,41 +1031,10 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
 
     public boolean isDuplicate(FileMetadata fileMetadata) {
-        String thisMd5 = fileMetadata.getDataFile().getmd5();
-        if (thisMd5 == null) {
-            return false;
-        }
 
-        Map<String, Integer> MD5Map = new HashMap<String, Integer>();
-
-        // TODO: 
-        // think of a way to do this that doesn't involve populating this 
-        // map for every file on the page? 
-        // man not be that much of a problem, if we paginate and never display 
-        // more than a certain number of files... Still, needs to be revisited
-        // before the final 4.0. 
-        // -- L.A. 4.0
-
-        // make a "defensive copy" to avoid java.util.ConcurrentModificationException from being thrown
-        // when uploading 100+ files
-        List<FileMetadata> wvCopy = new ArrayList<>(workingVersion.getFileMetadatas());
-        Iterator<FileMetadata> fmIt = wvCopy.iterator();
-
-        while (fmIt.hasNext()) {
-            FileMetadata fm = fmIt.next();
-            String md5 = fm.getDataFile().getmd5();
-            if (md5 != null) {
-                if (MD5Map.get(md5) != null) {
-                    MD5Map.put(md5, MD5Map.get(md5).intValue() + 1);
-                } else {
-                    MD5Map.put(md5, 1);
-                }
-            }
-        }
-
-        return MD5Map.get(thisMd5) != null && MD5Map.get(thisMd5).intValue() > 1;
+        return DuplicateFileChecker.IsDuplicateOriginalWay(workingVersion, fileMetadata);
     }
-
+        
     private HttpClient getClient() {
         // TODO: 
         // cache the http client? -- L.A. 4.0 alpha
