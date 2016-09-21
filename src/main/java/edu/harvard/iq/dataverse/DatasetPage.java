@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.datasetutility.DuplicateFileChecker;
+import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -210,13 +211,14 @@ public class DatasetPage implements java.io.Serializable {
     private List<DatasetVersion> versionTabList = new ArrayList();
     private List<DatasetVersion> versionTabListForPostLoad = new ArrayList();
 
+    // Used to help with displaying buttons related to the WorldMap
+    private WorldMapPermissionHelper worldMapPermissionHelper;
     
     // Used to store results of permissions checks
     private final Map<String, Boolean> datasetPermissionMap = new HashMap<>(); // { Permission human_name : Boolean }
     private final Map<Long, Boolean> fileDownloadPermissionMap = new HashMap<>(); // { FileMetadata.id : Boolean }
 
     private final Map<Long, Boolean> fileMetadataTwoRavensExploreMap = new HashMap<>(); // { FileMetadata.id : Boolean } 
-    private final Map<Long, Boolean> fileMetadataWorldMapExplore = new HashMap<>(); // { FileMetadata.id : Boolean } 
     
     private DataFile selectedDownloadFile;
 
@@ -676,9 +678,7 @@ public class DatasetPage implements java.io.Serializable {
     public void setNoDVsRemaining(boolean noDVsRemaining) {
         this.noDVsRemaining = noDVsRemaining;
     }
-
-    private final Map<Long, MapLayerMetadata> mapLayerMetadataLookup = new HashMap<>();
-
+    
     private GuestbookResponse guestbookResponse;
     private Guestbook selectedGuestbook;
 
@@ -1013,179 +1013,10 @@ public class DatasetPage implements java.io.Serializable {
 
     public void handleChangeButton() {
 
-    }
-
-    public boolean isShapefileType(FileMetadata fm) {
-        if (fm == null) {
-            return false;
-        }
-        if (fm.getDataFile() == null) {
-            return false;
-        }
-
-        return fm.getDataFile().isShapefileType();
-    }
-
-    /*
-     Check if the FileMetadata.dataFile has an associated MapLayerMetadata object
-    
-     The MapLayerMetadata objects have been fetched at page inception by "loadMapLayerMetadataLookup()" 
-     */
-    public boolean hasMapLayerMetadata(FileMetadata fm) {
-        if (fm == null) {
-            return false;
-        }
-        if (fm.getDataFile() == null) {
-            return false;
-        }
-        return doesDataFileHaveMapLayerMetadata(fm.getDataFile());
-    }
-
-    /**
-     * Check if a DataFile has an associated MapLayerMetadata object
-     *
-     * The MapLayerMetadata objects have been fetched at page inception by
-     * "loadMapLayerMetadataLookup()"
-     */
-    private boolean doesDataFileHaveMapLayerMetadata(DataFile df) {
-        if (df == null) {
-            return false;
-        }
-        if (df.getId() == null) {
-            return false;
-        }
-        return this.mapLayerMetadataLookup.containsKey(df.getId());
-    }
-
-    /**
-     * Using a DataFile id, retrieve an associated MapLayerMetadata object
-     *
-     * The MapLayerMetadata objects have been fetched at page inception by
-     * "loadMapLayerMetadataLookup()"
-     */
-    public MapLayerMetadata getMapLayerMetadata(DataFile df) {
-        if (df == null) {
-            return null;
-        }
-        return this.mapLayerMetadataLookup.get(df.getId());
-    }
+    }   
 
     private void msg(String s){
         // System.out.println(s);
-    }
-    
-    /**
-     *  See table in: https://github.com/IQSS/dataverse/issues/1618
-     * 
-     *  Can the user see a reminder to publish button?
-     *   (0) The application has to be set to Create Edit Maps - true
-     *   (1) Logged in user
-     *   (2) Is geospatial file?
-     *   (3) File has NOT been released
-     *   (4) No existing Map
-     *   (5) Can Edit Dataset
-     *   
-     * @param FileMetadata fm
-     * @return boolean
-     */
-    public boolean canSeeMapButtonReminderToPublish(FileMetadata fm){
-        if (fm==null){
-
-            return false;
-        } 
-        
-        //  (0) Is the view GeoconnectViewMaps 
-        if (!settingsService.isTrueForKey(SettingsServiceBean.Key.GeoconnectCreateEditMaps, false)){
-            return false;
-        }
-        
-        
-        // (1) Is there an authenticated user?
-        //
-        if (!(isSessionUserAuthenticated())){
-            return false;
-        }
-
-
-        // Is this file a Shapefile or a Tabular file tagged as Geospatial?
-        //
-        if (!(this.isPotentiallyMappableFileType(fm))){
-            return false;
-        }
-
-        // (3) Is this DataFile released?  Yes, don't need reminder
-        //
-        if (fm.getDataFile().isReleased()){
-            return false;
-        }
-        
-        // (4) Does a map already exist?  Yes, don't need reminder
-        //
-        if (this.hasMapLayerMetadata(fm)){
-            return false;
-        }
-
-        // (5) If so, can the logged in user edit the Dataset to which this FileMetadata belongs?
-        if (!this.doesSessionUserHaveDataSetPermission(Permission.EditDataset)){
-            return false;
-        }
-
-        // Looks good
-        //
-        return true;
-    }
-    
-     /**
-     * Should there be a Map Data Button for this file?
-     *  see table in: https://github.com/IQSS/dataverse/issues/1618
-     *  (1) Is the user logged in?
-     *  (2) Is this file a Shapefile or a Tabular file tagged as Geospatial?
-     *  (3) Does the logged in user have permission to edit the Dataset to which this FileMetadata belongs?
-     *  (4) Is the create Edit Maps flag set to true?
-     *  (5) Any of these conditions:
-     *        9a) File Published 
-     *        (b) Draft: File Previously published  
-     * @param fm FileMetadata
-     * @return boolean
-     */
-    public boolean canUserSeeMapDataButton(FileMetadata fm){
-
-        if (fm==null){
-            return false;
-        }  
-        
-        
-        // (1) Is there an authenticated user?
-        if (!(isSessionUserAuthenticated())){
-            return false;
-        }
-
-        //  (2) Is this file a Shapefile or a Tabular file tagged as Geospatial?
-        //  TO DO:  EXPAND FOR TABULAR FILES TAGGED AS GEOSPATIAL!
-        //
-        if (!(this.isPotentiallyMappableFileType(fm))){
-            return false;
-        }
-
-        //  (3) Does the user have Edit Dataset permissions?
-        //
-        if (!this.doesSessionUserHaveDataSetPermission(Permission.EditDataset)){
-            return false;
-        }
-        
-        //  (4) Is the view GeoconnectViewMaps 
-        if (!settingsService.isTrueForKey(SettingsServiceBean.Key.GeoconnectCreateEditMaps, false)){
-            return false;
-        }
-                     
-        //  (5) Is File released?
-        //
-        if (fm.getDataFile().isReleased()){
-            return true;
-        }
-        
-        // Nope
-        return false;
     }
     
     
@@ -1249,37 +1080,6 @@ public class DatasetPage implements java.io.Serializable {
         //                                        and DatasetPage.canDownloadFile(fileMetadata) 
     }
     
-    /**
-     * Check if this is a mappable file type.
-     * 
-     * Currently (2/2016)
-     * - Shapefile (zipped shapefile)
-     * - Tabular file with Geospatial Data tag
-     * 
-     * @param fm
-     * @return 
-     */
-    private boolean isPotentiallyMappableFileType(FileMetadata fm){
-        if (fm==null){
-            return false;
-        }
-        
-        // Yes, it's a shapefile
-        //
-        if (this.isShapefileType(fm)){
-            return true;
-        }
-        
-        // Yes, it's tabular with a geospatial tag
-        //
-        if (fm.getDataFile().isTabularData()){
-            if (fm.getDataFile().hasGeospatialTag()){
-                return true;
-            } 
-        }
-        return false;
-    }
-    
    
     /**
      * For development
@@ -1305,83 +1105,114 @@ public class DatasetPage implements java.io.Serializable {
     
     
     /**
-     * Should there be a Explore WorldMap Button for this file?
-     *   See table in: https://github.com/IQSS/dataverse/issues/1618
+     * This object wraps methods used for hiding/displaying WorldMap related messages
+     *
+     */
+    private void loadWorldMapPermissionHelper() {
+       
+        worldMapPermissionHelper = new WorldMapPermissionHelper(settingsService, mapLayerMetadataService, dataset);
+        
+    }
+    
+    /**
      * 
-     *  (1) Does the file have MapLayerMetadata?
-     *  (2) Is there DownloadFile permission for this file?
+     *  WARNING: Check if the user has file download permission
+     *  - This check is assumed when calling to the worldMapPermissionHelper
      * 
-     * @param fm FileMetadata
-     * @return boolean
+     * Should the user be able to see the WorldMap Explore button?
+     * 
+     * @param fm
+     * @return 
      */
     public boolean canUserSeeExploreWorldMapButton(FileMetadata fm){
-        if (fm==null){
+        if ((worldMapPermissionHelper == null)||(fm == null)){
             return false;
         }
         
-        if (this.fileMetadataWorldMapExplore.containsKey(fm.getId())){
-            // Yes, return previous answer
-            //logger.info("using cached result for candownloadfile on filemetadata "+fid);
-            return this.fileMetadataWorldMapExplore.get(fm.getId());
-        }
-        
-        /* -----------------------------------------------------
-           Does a Map Exist?
-         ----------------------------------------------------- */
-        if (!(this.hasMapLayerMetadata(fm))){
-            // Nope: no button
-            this.fileMetadataWorldMapExplore.put(fm.getId(), false);
-            return false;
-        }
-              
-        /*
-            Is setting for GeoconnectViewMaps true?
-            Nope? no button
-        */
-        if (!settingsService.isTrueForKey(SettingsServiceBean.Key.GeoconnectViewMaps, false)){
-            this.fileMetadataWorldMapExplore.put(fm.getId(), false);
+        // You need to have download file permissions as a prereq!
+        //
+        if (!this.canDownloadFile(fm)){
             return false;
         }        
         
-        /* -----------------------------------------------------
-            Does user have DownloadFile permission for this file?
-             Yes: User can view button!
-         ----------------------------------------------------- */                    
-        if (this.canDownloadFile(fm)){
-            this.fileMetadataWorldMapExplore.put(fm.getId(), true);
-            return true;
-        }
-                      
-        // Nope: Can't see button
-        //
-        this.fileMetadataWorldMapExplore.put(fm.getId(), false);
-        return false;
-    }
-
-    /**
-     * Create a hashmap consisting of { DataFile.id : MapLayerMetadata object}
-     *
-     * Very few DataFiles will have associated MapLayerMetadata objects so only
-     * use 1 query to get them
-     */
-    private void loadMapLayerMetadataLookup() {
-        if (this.dataset == null) {
-            return;
-        }
-        if (this.dataset.getId() == null) {
-            return;
-        }
-        List<MapLayerMetadata> mapLayerMetadataList = mapLayerMetadataService.getMapLayerMetadataForDataset(this.dataset);
-        if (mapLayerMetadataList == null) {
-            return;
-        }
-        for (MapLayerMetadata layer_metadata : mapLayerMetadataList) {
-            mapLayerMetadataLookup.put(layer_metadata.getDataFile().getId(), layer_metadata);
-        }
-
-    }// A DataFile may have a related MapLayerMetadata object
-
+        return worldMapPermissionHelper.canUserSeeExploreWorldMapButton(fm);
+        
+    }   // end: canUserSeeExploreWorldMapButton
     
+    
+    /**
+     *  WARNING: Check if the user isAuthenicated AND has Permission.EditDataset
+     *  - These checks are assumed when calling to the worldMapPermissionHelper
+     * 
+     * If this is an unpublished Dataset with a mappable file,
+     * should the user see the "Reminder to Publish" button
+     * 
+     * @param fm
+     * @return 
+     */
+    public boolean canSeeMapButtonReminderToPublish(FileMetadata fm){
+        
+        if ((worldMapPermissionHelper == null)||(fm == null)){
+            return false;
+        }
+        
+        // Is this user authenticated with EditDataset permission?
+        //
+        if (!(isUserAuthenticatedWithEditDatasetPermission())){
+            return false;
+        }
+        
+        return worldMapPermissionHelper.canSeeMapButtonReminderToPublish(fm);
+
+        
+    }   // end: canSeeMapButtonReminderToPublish
+    
+    /**
+     * WARNING: Check if the user isAuthenicated AND has Permission.EditDataset
+     *  - These checks are assumed when calling to the worldMapPermissionHelper
+     * 
+     * Should the user be able to map this file?
+     * 
+     * @param fm
+     * @return 
+     */
+    public boolean canUserSeeMapDataButton(FileMetadata fm){
+
+       if ((worldMapPermissionHelper == null)||(fm == null)){
+            return false;
+        }
+        
+        // Is this user authenticated with EditDataset permission?
+        //
+        if (!(isUserAuthenticatedWithEditDatasetPermission())){
+            return false;
+        }
+                
+        return worldMapPermissionHelper.canUserSeeMapDataButton(fm);
+          
+    }
+    
+    /**
+     * Is this user authenticated with EditDataset permission
+     * 
+     * @return 
+     */
+    private boolean isUserAuthenticatedWithEditDatasetPermission(){
+        
+        // Is the user authenticated?
+        //
+        if (!(isSessionUserAuthenticated())){
+            return false;
+        }
+        
+        //  If so, can the logged in user edit the Dataset to which this FileMetadata belongs?
+        //
+        if (!this.doesSessionUserHaveDataSetPermission(Permission.EditDataset)){
+            return false;
+        }
+        
+        return true;
+    }
     
     private List<FileMetadata> displayFileMetadata;
 
@@ -1549,7 +1380,7 @@ public class DatasetPage implements java.io.Serializable {
                 //SEK - lazymodel may be needed for datascroller in future release
                 // lazyModel = new LazyFileMetadataDataModel(workingVersion.getId(), datafileService );
                 // populate MapLayerMetadata
-                this.loadMapLayerMetadataLookup();  // A DataFile may have a related MapLayerMetadata object
+                this.loadWorldMapPermissionHelper();  // A DataFile may have a related MapLayerMetadata object
             }
         } else if (ownerId != null) {
             // create mode for a new child dataset

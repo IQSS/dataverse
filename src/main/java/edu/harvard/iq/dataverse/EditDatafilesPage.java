@@ -1030,6 +1030,12 @@ public class EditDatafilesPage implements java.io.Serializable {
         return  returnToDatasetOnly();
     }
 
+    /**
+     * Just moved to another class for now
+     * 
+     * @param fileMetadata
+     * @return 
+     */
     public boolean isDuplicate(FileMetadata fileMetadata) {
 
         return DuplicateFileChecker.IsDuplicateOriginalWay(workingVersion, fileMetadata);
@@ -1229,6 +1235,9 @@ public class EditDatafilesPage implements java.io.Serializable {
         boolean multipleDupes = false;
         String warningMessage = null;
 
+        // NOTE: for native file uploads, the dFileList will only 
+        // contain 1 file--method is called for every file even if the UI shows "simultaneous uploads"
+        
         // -----------------------------------------------------------
         // Iterate through list of DataFile objects
         // -----------------------------------------------------------
@@ -1255,9 +1264,11 @@ public class EditDatafilesPage implements java.io.Serializable {
                 // -----------------------------------------------------------
                 // Check for duplicates -- e.g. file is already in the dataset
                 // -----------------------------------------------------------
+
                 if (!isDuplicate(dataFile.getFileMetadata())) {
                     newFiles.add(dataFile);        // looks good
                     fileMetadatas.add(dataFile.getFileMetadata());
+                    
                 } else {
                     if (duplicateFileNames == null) {
                         duplicateFileNames = dataFile.getFileMetadata().getLabel();
@@ -1289,7 +1300,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 }
             }
         }
-
+        
         // -----------------------------------------------------------
         // Formate error message for duplicate files
         // -----------------------------------------------------------
