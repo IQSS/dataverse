@@ -10,20 +10,39 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.MapLayerMetadata;
 import edu.harvard.iq.dataverse.MapLayerMetadataServiceBean;
+import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
- *
+ * This class originally encapsulated display logic for the DatasetPage
+ * 
+ * It allows the following checks without redundantly querying the db to 
+ * check permissions or if MapLayerMetadata exists
+ * 
+ * - canUserSeeMapDataButton (private)
+ *      - canUserSeeMapDataButtonFromPage (public)
+ *      - canUserSeeMapDataButtonFromAPI (public)
+ * 
+ * - canSeeMapButtonReminderToPublish (private)
+ *      - canSeeMapButtonReminderToPublishFromPage (public)
+ *      - canSeeMapButtonReminderToPublishFromAPI (public)
+ * 
+ * - canUserSeeExploreWorldMapButton (private)
+ *      - canUserSeeExploreWorldMapButtonFromPage (public)
+ *      - canUserSeeExploreWorldMapButtonFromAPI (public)
+ * 
  * @author rmp553
  */
 public class WorldMapPermissionHelper {
     
     private SettingsServiceBean settingsService;
     private MapLayerMetadataServiceBean mapLayerMetadataService;
+    private PermissionServiceBean permissionService;
 
     private Dataset dataset;
     
@@ -32,7 +51,7 @@ public class WorldMapPermissionHelper {
 
     
     public WorldMapPermissionHelper(SettingsServiceBean settingsService, MapLayerMetadataServiceBean mapLayerMetadataService,
-                Dataset dataset){
+                Dataset dataset, PermissionServiceBean permissionService){
 
         if (dataset == null){
             throw new NullPointerException("dataset cannot be null");
@@ -47,14 +66,57 @@ public class WorldMapPermissionHelper {
         if (mapLayerMetadataService == null){
             throw new NullPointerException("mapLayerMetadataService cannot be null");
         }
+ 
         this.dataset = dataset;
         
         this.settingsService = settingsService;
         this.mapLayerMetadataService = mapLayerMetadataService;
+        this.permissionService = permissionService;
         
         loadMapLayerMetadataLookup();
     }
  
+    
+    /**
+     * Convenience method for instantiating from dataset page or File page
+     * 
+     * Does NOT use PermissionServiceBean
+     * 
+     * @param settingsService
+     * @param mapLayerMetadataService
+     * @param dataset
+     * @return 
+     */
+    public static WorldMapPermissionHelper getPermissionHelperForDatasetPage(
+                SettingsServiceBean settingsService, MapLayerMetadataServiceBean mapLayerMetadataService,
+                Dataset dataset){
+
+       return new WorldMapPermissionHelper(settingsService, mapLayerMetadataService, dataset, null);        
+    }
+    
+    /**
+     * Convenience method for instantiating from the API
+     * 
+     *  REQUIRES PermissionServiceBean
+     * 
+     * @param settingsService
+     * @param mapLayerMetadataService
+     * @param dataset
+     * @param permissionService
+     * @return 
+     */
+    public static WorldMapPermissionHelper getPermissionHelperForAPI(
+                SettingsServiceBean settingsService, 
+                MapLayerMetadataServiceBean mapLayerMetadataService,
+                Dataset dataset,
+                PermissionServiceBean permissionService){
+
+       if (permissionService == null){
+           throw new NullPointerException("permissionService is required for API checks");
+       }
+       
+       return new WorldMapPermissionHelper(settingsService, mapLayerMetadataService, dataset, permissionService);        
+    }
     
     
     /**
@@ -90,6 +152,45 @@ public class WorldMapPermissionHelper {
         return this.mapLayerMetadataLookup.get(df.getId());
     }
     
+ 
+    /*
+     * Call this when using the API
+     *   - calls private method canUserSeeExploreWorldMapButton
+     */ 
+    public boolean canUserSeeExploreWorldMapButtonFromAPI(FileMetadata fm, User user){
+     
+        if (fm == null){
+            return false;
+        }
+        if (user==null){
+            return false;
+        }
+        if (!this.permissionService.userOn(user, fm.getDataFile()).has(Permission.DownloadFile)){
+            return false;
+        }
+
+        return this.canUserSeeExploreWorldMapButton(fm, true);    
+    }
+    
+     /**
+     * Call this for a Dataset or File page
+     *   - calls private method canUserSeeExploreWorldMapButton
+     * 
+     *  WARNING: Before calling this, make sure the user has download
+     *  permission for the file!!  (See DatasetPage.canDownloadFile())
+     *   
+     * @param FileMetadata fm
+     * @return boolean
+     */
+    public boolean canUserSeeExploreWorldMapButtonFromPage(FileMetadata fm){
+        
+        if (fm==null){
+            return false;
+        }
+        
+        return this.canUserSeeExploreWorldMapButton(fm, true);
+    }
+    
     /**
      *  WARNING: Before calling this, make sure the user has download
      *  permission for the file!!  (See DatasetPage.canDownloadFile())
@@ -103,8 +204,13 @@ public class WorldMapPermissionHelper {
      * @param fm FileMetadata
      * @return boolean
      */
-    public boolean canUserSeeExploreWorldMapButton(FileMetadata fm){
+    public boolean canUserSeeExploreWorldMapButton(FileMetadata fm, boolean permissionsChecked){
+
         if (fm==null){
+            return false;
+        }
+        
+        if (!permissionsChecked){
             return false;
         }
         
@@ -219,27 +325,71 @@ public class WorldMapPermissionHelper {
 
     
     /**
+     * Call this for a Dataset or File page
+     *   - calls private method canSeeMapButtonReminderToPublish
+     * 
      *  WARNING: Assumes user isAuthenicated AND has Permission.EditDataset
-     *      - These checks are made on the DatasetPage which calls this method
+     *      - These checks should be made on the DatasetPage or FilePage which calls this method
      * 
-     *  See table in: https://github.com/IQSS/dataverse/issues/1618
-     * 
-     *  Can the user see a reminder to publish button?
-     *   (0) The application has to be set to Create Edit Maps - true
-     *   (1) Logged in user
-     *   (2) Is geospatial file?
-     *   (3) File has NOT been released
-     *   (4) No existing Map
-     *   (5) Can Edit Dataset
      *   
      * @param FileMetadata fm
      * @return boolean
      */
-    public boolean canSeeMapButtonReminderToPublish(FileMetadata fm){
-        if (fm==null){
+    public boolean canSeeMapButtonReminderToPublishFromPage(FileMetadata fm){
+        if (fm == null){
+            return false;
+        }
+        
+        return this.canSeeMapButtonReminderToPublish(fm, true);
+        
+    }
 
+
+    /**
+     * Call this when using the API
+     *   - calls private method canSeeMapButtonReminderToPublish
+     * 
+     * @param fm
+     * @param user
+     * @return 
+     */
+    public boolean canSeeMapButtonReminderToPublishFromAPI(FileMetadata fm, User user){
+        if (fm == null){
+            return false;
+        }
+        if (user==null){
+            return false;
+        }
+        
+        if (!this.permissionService.userOn(user, this.dataset).has(Permission.EditDataset)){
+            return false;
+        }
+
+        return this.canSeeMapButtonReminderToPublish(fm, true);
+        
+    }
+
+
+    
+    /**
+     *   Assumes permissions have been checked!!
+     *
+     *  See table in: https://github.com/IQSS/dataverse/issues/1618
+     * 
+     *  Can the user see a reminder to publish button?
+     *   (1) Is the view GeoconnectViewMaps
+     *   (2) Is this file a Shapefile or a Tabular file tagged as Geospatial?
+     *   (3) Is this DataFile released?  Yes, don't need reminder
+     *   (4) Does a map already exist?  Yes, don't need reminder
+     */
+    private boolean canSeeMapButtonReminderToPublish(FileMetadata fm, boolean permissionsChecked){
+        if (fm==null){
             return false;
         } 
+        
+        if (!permissionsChecked){
+            return false;
+        }
         
         //  (1) Is the view GeoconnectViewMaps 
         if (!settingsService.isTrueForKey(SettingsServiceBean.Key.GeoconnectCreateEditMaps, false)){
@@ -275,6 +425,46 @@ public class WorldMapPermissionHelper {
      *  WARNING: Assumes user isAuthenicated AND has Permission.EditDataset
      *      - These checks are made on the DatasetPage which calls this method
      * 
+     */ 
+    public boolean canUserSeeMapDataButtonFromPage(FileMetadata fm){
+
+        if (fm==null){
+            return false;
+        }         
+        return this.canUserSeeMapDataButton(fm, true);
+    }
+            
+
+    
+    /**
+     * Call this when using the API
+     *   - calls private method canUserSeeMapDataButton
+     * 
+     * @param fm
+     * @param user
+     * @return 
+     */
+    public boolean canUserSeeMapDataButtonFromAPI(FileMetadata fm, User user){
+        if (fm == null){
+            return false;
+        }
+        if (user==null){
+            return false;
+        }
+        
+        if (!this.permissionService.userOn(user, this.dataset).has(Permission.EditDataset)){
+            return false;
+        }
+
+        return this.canUserSeeMapDataButton(fm, true);
+        
+    }
+    
+     /**
+     * 
+     *  WARNING: Assumes user isAuthenicated AND has Permission.EditDataset
+     *      - These checks are made on the DatasetPage which calls this method
+     * 
      * Should there be a Map Data Button for this file?
      *  see table in: https://github.com/IQSS/dataverse/issues/1618
      *  (1) Is the user logged in?
@@ -287,11 +477,15 @@ public class WorldMapPermissionHelper {
      * @param fm FileMetadata
      * @return boolean
      */
-    public boolean canUserSeeMapDataButton(FileMetadata fm){
+    private boolean canUserSeeMapDataButton(FileMetadata fm, boolean permissionsChecked){
 
         if (fm==null){
             return false;
         }         
+                 
+        if (!permissionsChecked){
+            return false;
+        }
         
         //  (1) Is this file a Shapefile or a Tabular file tagged as Geospatial?
         //  TO DO:  EXPAND FOR TABULAR FILES TAGGED AS GEOSPATIAL!

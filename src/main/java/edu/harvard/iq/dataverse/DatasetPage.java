@@ -85,7 +85,6 @@ import javax.faces.component.UIInput;
 
 import javax.faces.event.AjaxBehaviorEvent;
 
-import javax.faces.context.ExternalContext;
 import org.apache.commons.lang.StringEscapeUtils;
 
 import org.primefaces.component.tabview.TabView;
@@ -1110,7 +1109,7 @@ public class DatasetPage implements java.io.Serializable {
      */
     private void loadWorldMapPermissionHelper() {
        
-        worldMapPermissionHelper = new WorldMapPermissionHelper(settingsService, mapLayerMetadataService, dataset);
+        worldMapPermissionHelper = WorldMapPermissionHelper.getPermissionHelperForDatasetPage(settingsService, mapLayerMetadataService, dataset);
         
     }
     
@@ -1135,7 +1134,7 @@ public class DatasetPage implements java.io.Serializable {
             return false;
         }        
         
-        return worldMapPermissionHelper.canUserSeeExploreWorldMapButton(fm);
+        return worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fm);
         
     }   // end: canUserSeeExploreWorldMapButton
     
@@ -1162,7 +1161,7 @@ public class DatasetPage implements java.io.Serializable {
             return false;
         }
         
-        return worldMapPermissionHelper.canSeeMapButtonReminderToPublish(fm);
+        return worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fm);
 
         
     }   // end: canSeeMapButtonReminderToPublish
@@ -1188,7 +1187,7 @@ public class DatasetPage implements java.io.Serializable {
             return false;
         }
                 
-        return worldMapPermissionHelper.canUserSeeMapDataButton(fm);
+        return worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fm);
           
     }
     
