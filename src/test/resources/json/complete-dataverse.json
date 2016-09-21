@@ -11,5 +11,6 @@
         }
     ],
     "permissionRoot": true,
+    "dataverseType": "LABORATORY",
     "description": "test Description."
 }

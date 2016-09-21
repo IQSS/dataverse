@@ -239,6 +239,7 @@ public class JsonParserTest {
             assertEquals("testAlias", actual.getAlias());
             assertEquals("Test-Driven University", actual.getAffiliation());
             assertEquals("test Description.", actual.getDescription());
+            assertEquals("LABORATORY", actual.getDataverseType().toString());
             assertEquals(2, actual.getDataverseContacts().size());
             assertEquals("test@example.com,test@example.org", actual.getContactEmails());
             assertEquals(0, actual.getDataverseContacts().get(0).getDisplayOrder());
@@ -261,6 +262,7 @@ public class JsonParserTest {
             assertEquals("testAlias", actual.getAlias());
             assertEquals("Test-Driven University", actual.getAffiliation());
             assertEquals("test Description.", actual.getDescription());
+            assertEquals("UNCATEGORIZED", actual.getDataverseType().toString());
             assertEquals("gray", actual.getDataverseTheme().getBackgroundColor());
             assertEquals("red", actual.getDataverseTheme().getLinkColor());
             assertEquals("http://www.cnn.com", actual.getDataverseTheme().getLinkUrl());
@@ -292,6 +294,7 @@ public class JsonParserTest {
             Dataverse actual = sut.parseDataverse(dvJson);
             assertEquals("testDv", actual.getName());
             assertEquals("testAlias", actual.getAlias());
+            assertEquals("UNCATEGORIZED", actual.getDataverseType().toString());
             assertTrue(actual.getDataverseContacts().isEmpty());
             assertEquals("", actual.getContactEmails());
             assertFalse(actual.isPermissionRoot());
