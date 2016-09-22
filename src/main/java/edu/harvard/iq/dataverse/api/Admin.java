@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.EMailValidator;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
@@ -30,7 +31,6 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
-
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import java.io.StringReader;
@@ -543,5 +543,14 @@ public class Admin extends AbstractApiBean {
         BuiltinUser savedUser = builtinUserService.save(builtinUser);
         return okResponse("foo: " + savedUser);
     }
-
+    
+    
+    @Path("mymy")
+    @GET
+    public Response testIt_001() {
+    
+        return okResponse("hullo, system!");
+    }    
+    
+         
 }

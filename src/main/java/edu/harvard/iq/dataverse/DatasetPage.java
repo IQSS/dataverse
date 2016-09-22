@@ -2654,7 +2654,7 @@ public class DatasetPage implements java.io.Serializable {
     
     public boolean isDuplicate(FileMetadata fileMetadata) {
 
-        return DuplicateFileChecker.IsDuplicateOriginalWay(workingVersion, fileMetadata);
+        return DuplicateFileChecker.isDuplicateOriginalWay(workingVersion, fileMetadata);
     }
     
     private HttpClient getClient() {
