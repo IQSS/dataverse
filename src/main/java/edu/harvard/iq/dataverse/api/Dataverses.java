@@ -183,6 +183,21 @@ public class Dataverses extends AbstractApiBean {
                 }
             }
 
+            if (!ImportUtil.ImportType.NEW.equals(it)) {
+                if (!u.isSuperuser()) {
+                    /**
+                     * @todo Once we are prepare to support migration via JSON
+                     * (versions and files are supported, etc.), update the API
+                     * Guide (or some other guide) to explain how to do a
+                     * migration with JSON. For the https://data.sbgrid.org
+                     * migration, the migrated datasets only have a single
+                     * version and files will be recorded in the database with
+                     * an importer that crawls the filesystem.
+                     */
+                    return errorResponse(Status.UNAUTHORIZED, "Attempting to migrate or harvest datasets via this API endpoint is experimental and requires a superuser's API token. Migrating datasets using DDI (XML) is better supported (versions are handled, files are handled, etc.).");
+                }
+            }
+
             JsonObject json;
             try ( StringReader rdr = new StringReader(jsonBody) ) {
                 json = Json.createReader(rdr).readObject();

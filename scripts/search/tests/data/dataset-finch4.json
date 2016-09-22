@@ -9,7 +9,7 @@
       "citation": {
         "fields": [
           {
-            "value": "Darwin's Finches",
+            "value": "dataset-finch4.json",
             "typeClass": "primitive",
             "multiple": false,
             "typeName": "title"
