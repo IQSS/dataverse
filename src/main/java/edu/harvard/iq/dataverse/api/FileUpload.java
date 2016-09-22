@@ -12,29 +12,34 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
+import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.Template;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.datasetutility.DuplicateFileChecker;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.ejb.EJBException;
 import javax.ejb.Stateless;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DefaultValue;
+import javax.faces.application.FacesMessage;
+import javax.faces.context.FacesContext;
+import javax.inject.Inject;
+import javax.validation.ConstraintViolation;
 import javax.ws.rs.GET;
-import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 /**
@@ -53,7 +58,12 @@ public class FileUpload extends AbstractApiBean {
     DataverseServiceBean dataverseService;    
     @EJB
     IngestServiceBean ingestService;
-        
+    @Inject
+    DataverseRequestServiceBean dvRequestService;
+    @EJB
+    EjbDataverseEngine commandEngine;
+    
+    
     private static final Logger logger = Logger.getLogger(FileUpload.class.getName());
     
     // for testing
@@ -175,56 +185,42 @@ public class FileUpload extends AbstractApiBean {
     private void dashes(){
         msg("----------------");
     }
+    private void msgt(String m){
+        dashes(); msg(m); dashes();
+    }
     
     @GET
     @Path("hi")
     public Response hi(){
         
+        // -------------------------------------
+        msgt("(1) getSampleFile() + workingVersion");
+        // -------------------------------------
+
         InputStream testFile = getSampleFile();
         if (testFile == null){
             return okResponse("Couldn't find the file!!");
         }
         DatasetVersion workingVersion = datasetVersionService.find(new Long(3));
-        Dataset dataset = workingVersion.getDataset(); //datasetService.find(new Long(26));
-
+        
+        if (workingVersion.getVersionState()!=DatasetVersion.VersionState.DRAFT){
+            return okResponse("For testing, making the sure the state is DRAFT.  This workingVersion is: " + workingVersion.getVersionState());
+        }
+        
+        // List the current files
+        //
         int cnt = 0;
         for (FileMetadata fm : workingVersion.getFileMetadatas()){
             cnt++;
             msg("File " + cnt + ": " + fm.getLabel());
         }
         dashes();
-        //DatasetVersion workingVersion = null;
-                
-        /*
-        ------------------------------------------
-        ------------------------------------------
-            Set up the workingVersion for editing
-            - copied from DatasetPage*
-                * undisputed king of tech debt...
-        ------------------------------------------
-        */
-        List<Template> dataverseTemplates = new ArrayList();
-        Long ownerId = dataset.getOwner().getId();
-        Template defaultTemplate = null;
-        Template selectedTemplate = null;
-        dataverseTemplates = dataverseService.find(ownerId).getTemplates();
         
-        if (!dataverseService.find(ownerId).isTemplateRoot()) {
-            dataverseTemplates.addAll(dataverseService.find(ownerId).getParentTemplates());
-        }
-        
-        defaultTemplate = dataverseService.find(ownerId).getDefaultTemplate();
-        if (defaultTemplate != null) {
-            selectedTemplate = defaultTemplate;
-            for (Template testT : dataverseTemplates) {
-                if (defaultTemplate.getId().equals(testT.getId())) {
-                    selectedTemplate = testT;
-                }
-            }
-            workingVersion = dataset.getEditVersion(selectedTemplate);
-        } 
+          
         // -------------------------------------
-        
+        msgt("(2) ingestService.createDataFiles");
+        // -------------------------------------
+
         List<DataFile> dFileList = null; 
         msg("state of the workingVersion: " + workingVersion.getVersionState());
         try {
@@ -240,8 +236,74 @@ public class FileUpload extends AbstractApiBean {
             return okResponse("IOException when trying to ingest: " + testFile.toString());
         }
         msg("But ok, we can continue now...");
-  //      testDataset = 
-                
+
+        // -------------------------------------
+        msgt("3 Duplicate check");
+        // -------------------------------------
+        List<DataFile> newFiles = new ArrayList();
+
+        DuplicateFileChecker dfc = new DuplicateFileChecker(datasetVersionService);
+        for (DataFile df : dFileList){
+            //if (dfc.isFileInSavedDatasetVersion(workingVersion, df.getmd5())){               
+            //    return okResponse("This file has a dupe md5! " + df.getFileMetadata().getLabel());
+            if (DuplicateFileChecker.isDuplicateOriginalWay(workingVersion, df.getFileMetadata())){
+               return okResponse("This file has a dupe md5! " + df.getFileMetadata().getLabel());
+            }else{
+                newFiles.add(df);
+            }
+        }
+        
+        // -------------------------------------
+        msgt("4 Check constraints");
+        // -------------------------------------
+        Set<ConstraintViolation> constraintViolations = workingVersion.validate();    
+        List<String> errMsgs = new ArrayList<>();
+        for (ConstraintViolation violation : constraintViolations){
+            msg("Violation found! :" + violation.getMessage());
+            errMsgs.add(violation.getMessage());
+        }
+        if (errMsgs.size() > 0){
+            return okResponse("Constraint violations found! " + String.join("<br />\n", errMsgs));
+        }
+        
+        // -------------------------------------
+        msgt("5 Add the files!");
+        // -------------------------------------
+        ingestService.addFiles(workingVersion, newFiles);
+
+
+        // -------------------------------------
+        msgt("6 Make the command!");
+        // -------------------------------------
+        /*
+        
+            execCommand(new SetDatasetCitationDateCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(id), dsfType));
+
+        */
+        AuthenticatedUser authUser = authSvc.findByID(new Long(1));        
+        msg("authUser: " + authUser);
+        DataverseRequest dvRequest = createDataverseRequest(authUser);
+        msg("dvRequest: " + dvRequest);
+
+        if (dvRequest == null){
+            return okResponse("Failed, dvRequest is null");
+        }
+        CreateDatasetCommand cmd = new CreateDatasetCommand(workingVersion.getDataset(), 
+                                dvRequest);
+
+        // -------------------------------------
+        msgt("7 Run the command!");
+        // -------------------------------------
+        try {
+            Dataset newDataset = commandEngine.submit(cmd);
+        } catch (CommandException ex) {
+            //ex.getMessage()
+            msgt("Bombed: " + ex.getMessage());
+            //Logger.getLogger(FileUpload.class.getName()).log(Level.SEVERE, null, ex);
+        }catch (EJBException ex) {
+            msgt("Bombed2: " + ex.getMessage());
+        } 
+        
         return okResponse("hi");
 
     }
