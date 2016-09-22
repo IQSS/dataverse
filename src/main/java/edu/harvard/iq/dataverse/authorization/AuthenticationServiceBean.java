@@ -18,6 +18,8 @@ import edu.harvard.iq.dataverse.authorization.providers.echo.EchoAuthenticationP
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailData;
+import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.passwordreset.PasswordResetData;
 import edu.harvard.iq.dataverse.passwordreset.PasswordResetServiceBean;
 import java.sql.SQLException;
@@ -74,6 +76,9 @@ public class AuthenticationServiceBean {
     @EJB
     UserNotificationServiceBean userNotificationService;
 
+    @EJB
+    ConfirmEmailServiceBean confirmEmailService;
+    
     @EJB
     PasswordResetServiceBean passwordResetServiceBean;
 
@@ -214,16 +219,22 @@ public class AuthenticationServiceBean {
      * assignments, etc.
      * 
      * Longer term, the intention is to have a "disableAuthenticatedUser"
-     * method/command.
+     * method/command. See https://github.com/IQSS/dataverse/issues/2419
      */
     public void deleteAuthenticatedUser(Object pk) {
         AuthenticatedUser user = em.find(AuthenticatedUser.class, pk);
-        
-        
-        if (user!=null) {
+
+        if (user != null) {
             ApiToken apiToken = findApiTokenByUser(user);
             if (apiToken != null) {
                 em.remove(apiToken);
+            }
+            ConfirmEmailData confirmEmailData = confirmEmailService.findSingleConfirmEmailDataByUser(user);
+            if (confirmEmailData != null) {
+                /**
+                 * @todo This could probably be a cascade delete instead.
+                 */
+                em.remove(confirmEmailData);
             }
             for (UserNotification notification : userNotificationService.findByUser(user.getId())) {
                 userNotificationService.delete(notification);
@@ -445,7 +456,20 @@ public class AuthenticationServiceBean {
         AuthenticatedUserLookup auusLookup = userRecordId.createAuthenticatedUserLookup(authenticatedUser);
         em.persist( auusLookup );
         authenticatedUser.setAuthenticatedUserLookup(auusLookup);
-        
+
+        if (ShibAuthenticationProvider.PROVIDER_ID.equals(auusLookup.getAuthenticationProviderId())) {
+            Timestamp emailConfirmedNow = new Timestamp(new Date().getTime());
+            // Email addresses for Shib users are confirmed by the Identity Provider.
+            authenticatedUser.setEmailConfirmed(emailConfirmedNow);
+            authenticatedUser = save(authenticatedUser);
+        } else {
+            /**
+             * @todo Rather than creating a token directly here it might be
+             * better to do something like "startConfirmEmailProcessForNewUser".
+             */
+            confirmEmailService.createToken(authenticatedUser);
+        }
+
         actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Auth, "createUser")
             .setInfo(authenticatedUser.getIdentifier()));
 
