@@ -122,7 +122,7 @@ public class DuplicateFileChecker {
      * @param fileMetadata
      * @return 
      */
-    public static boolean IsDuplicateOriginalWay(DatasetVersion workingVersion, FileMetadata fileMetadata) {
+    public static boolean isDuplicateOriginalWay(DatasetVersion workingVersion, FileMetadata fileMetadata) {
         if (workingVersion == null){
             throw new NullPointerException("datasetVersion cannot be null");
         }
