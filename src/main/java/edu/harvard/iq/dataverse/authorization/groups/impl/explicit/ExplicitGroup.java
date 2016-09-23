@@ -393,4 +393,5 @@ public class ExplicitGroup implements Group, java.io.Serializable {
     public String toString() {
         return "[ExplicitGroup " + groupAlias + "]";
     }
+
 }
