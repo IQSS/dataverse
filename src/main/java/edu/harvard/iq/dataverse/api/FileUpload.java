@@ -171,7 +171,7 @@ public class FileUpload extends AbstractApiBean {
     private InputStream getSampleFile(){
         
         InputStream is = null;
-        String testFileName = "/Users/rmp553/Documents/iqss-git/dataverse-helper-scripts/src/api_scripts/input/howdy.txt";
+        String testFileName = "/Users/rmp553/Documents/iqss-git/dataverse-helper-scripts/src/api_scripts/input/howdy2.txt";
         //testFileName = "/Users/rmp553/NetBeansProjects/dataverse/src/main/java/edu/harvard/iq/dataverse/datasetutility/howdy.txt";
         try {
             is = new FileInputStream(testFileName);
@@ -363,9 +363,10 @@ public class FileUpload extends AbstractApiBean {
                     Logger.getLogger(FileUpload.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 
+                String dupeName = df.getFileMetadata().getLabel();
                 removeLinkedFileFromDataset(selectedDataset, df);
                 
-                return okResponse("This file has a dupe md5! " + df.toString());
+                return okResponse("This file has a dupe md5! " + dupeName + " checksum: " + df.getmd5());
             }else{
                 //df.save();
                 newFiles.add(df);
