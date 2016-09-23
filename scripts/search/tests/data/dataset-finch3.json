@@ -8,7 +8,7 @@
       "citation": {
         "fields": [
           {
-            "value": "dataset-finch4.json",
+            "value": "dataset-finch3.json",
             "typeClass": "primitive",
             "multiple": false,
             "typeName": "title"
