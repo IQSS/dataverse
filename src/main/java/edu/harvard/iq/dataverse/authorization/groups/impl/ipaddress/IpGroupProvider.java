@@ -59,18 +59,22 @@ public class IpGroupProvider implements GroupProvider<IpGroup> {
     }
     
     private IpGroup setProvider( IpGroup g ) {
-        g.setProvider(this);
+        if ( g != null ) {
+            g.setGroupProvider(this);
+        }
         return g;
     }
     
     private Set<IpGroup> updateProvider( Set<IpGroup> groups ) {
-        groups.forEach( g -> g.setProvider(this) );
+        groups.forEach( g -> g.setGroupProvider(this) );
         return groups;
     }
     
     public IpGroup store(IpGroup grp) {
-        grp.setProvider(this);
-        return ipGroupsService.store(grp);
+        grp.setGroupProvider(this);
+        final IpGroup storedGroup = ipGroupsService.store(grp);
+        storedGroup.setGroupProvider(this); // The storage might un-set the provider, e.g. for when a group is updated.
+        return storedGroup;
     }
 
     public void deleteGroup(IpGroup grp) {

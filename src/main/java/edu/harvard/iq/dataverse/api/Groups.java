@@ -20,6 +20,7 @@ import javax.json.JsonString;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.POST;
 import javax.ws.rs.PathParam;
+
 /**
  *
  * @author michael
@@ -47,8 +48,7 @@ public class Groups extends AbstractApiBean {
             if ( grp.getPersistedGroupAlias()== null ) {
                 return errorResponse(Response.Status.BAD_REQUEST, "Must provide valid group alias");
             }
-            grp.setProvider( groupSvc.getIpGroupProvider() );
-            
+            grp.setGroupProvider( ipGroupPrv );
             grp = ipGroupPrv.store(grp);
             return createdResponse("/groups/ip/" + grp.getPersistedGroupAlias(), json(grp) );
         
@@ -58,7 +58,6 @@ public class Groups extends AbstractApiBean {
             
         }
     }
-    
     
     @GET
     @Path("ip")

@@ -439,7 +439,7 @@ public class JsonParserTest {
         original.setDisplayName("Test-ip-group");
         original.setId(42l);
         original.setPersistedGroupAlias("test-ip-group");
-        original.setProvider( new IpGroupProvider(null) );
+        original.setGroupProvider( new IpGroupProvider(null) );
         
         original.add( IpAddressRange.make(IpAddress.valueOf("1.2.1.1"), IpAddress.valueOf("1.2.1.10")) );
         original.add( IpAddressRange.make(IpAddress.valueOf("1.1.1.1"), IpAddress.valueOf("1.1.1.1")) );
@@ -464,7 +464,7 @@ public class JsonParserTest {
         original.setDisplayName("Test-ip-group");
         original.setId(42l);
         original.setPersistedGroupAlias("test-ip-group");
-        original.setProvider( new IpGroupProvider(null) );
+        original.setGroupProvider( new IpGroupProvider(null) );
         
         original.add( IpAddressRange.make(IpAddress.valueOf("1.1.1.1"), IpAddress.valueOf("1.1.1.1")) );
         
@@ -494,7 +494,7 @@ public class JsonParserTest {
         original.setDisplayName("Test-ip-group");
         original.setId(42l);
         original.setPersistedGroupAlias("test-ip-group");
-        original.setProvider( new IpGroupProvider(null) );
+        original.setGroupProvider( new IpGroupProvider(null) );
         
         original.add( IpAddressRange.make(IpAddress.valueOf("fe80::22c9:d0ff:fe48:ce61"),
                                           IpAddress.valueOf("fe80::22c9:d0ff:fe48:ce61")) );
