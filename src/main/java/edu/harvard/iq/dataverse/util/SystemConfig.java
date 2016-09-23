@@ -528,4 +528,9 @@ public class SystemConfig {
         }
         return false;
     }
+
+    public String getFooterCopyright() {
+        String footerCopyright = settingsService.getValueForKey(SettingsServiceBean.Key.FooterCopyright, BundleUtil.getStringFromBundle("footer.copyright"));
+        return footerCopyright;
+    }
 }
