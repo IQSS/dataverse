@@ -1,6 +1,9 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress;
 
+<<<<<<< HEAD
 import com.google.common.base.Objects;
+=======
+>>>>>>> develop
 import edu.harvard.iq.dataverse.authorization.groups.GroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.PersistedGlobalGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IPv4Address;
@@ -131,6 +134,7 @@ public class IpGroup extends PersistedGlobalGroup {
         this.ipv4Ranges = ipv4Ranges;
         updateRangeOwnership(ipv4Ranges);
     }
+<<<<<<< HEAD
     
     @Override
     public boolean equals( Object o ) {
@@ -162,4 +166,7 @@ public class IpGroup extends PersistedGlobalGroup {
             rng.setOwner(this);
         }
     }
+=======
+
+>>>>>>> develop
 }

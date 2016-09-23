@@ -445,6 +445,11 @@ Set ``SearchHighlightFragmentSize`` to override the default value of 100 from ht
 
 Allow for migration of non-conformant data (especially dates) from DVN 3.x to Dataverse 4.
 
+:MinutesUntilConfirmEmailTokenExpires
++++++++++++++++++++++++++++++++++++++
+
+The duration in minutes before "Confirm Email" URLs expire. The default is 1440 minutes (24 hours).  See also :doc:`/installation/administration`.
+
 :ShibEnabled
 ++++++++++++
 
