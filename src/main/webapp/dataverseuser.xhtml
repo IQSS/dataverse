@@ -20,7 +20,7 @@
                 <f:loadBundle basename="Bundle" var="bundle"/>
                 <f:metadata>
                     <f:viewParam name="editMode" value="#{DataverseUserPage.editMode}"/>
-                    <f:viewParam name="redirectPage" value="#{DataverseUserPage.redirectPage}"/>                    
+                    <f:viewParam name="redirectPage" value="#{DataverseUserPage.redirectPage}"/>
                     <f:viewParam name="selectTab" value="#{DataverseUserPage.selectTab}"/>
                     <f:viewAction action="#{DataverseUserPage.init}" />
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseServiceBean.findRootDataverse(), (DataverseUserPage.editMode == 'CREATE' ? bundle['user.createBtn'] : bundle.account))}"/>
@@ -31,10 +31,10 @@
                         <div class="btn-group pull-right" jsf:rendered="#{!empty DataverseUserPage.builtinUser}">
                             <button type="button" id="editAccount" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                                 <ui:fragment rendered="#{!empty DataverseUserPage.builtinUser}">
-                                    <span class="glyphicon glyphicon-pencil"/> #{bundle['account.edit']} 
+                                    <span class="glyphicon glyphicon-pencil"/> #{bundle['account.edit']}
                                 </ui:fragment>
                                 <ui:fragment rendered="#{empty DataverseUserPage.builtinUser}">
-                                    #{bundle['account.info']} 
+                                    #{bundle['account.info']}
                                 </ui:fragment>
                                 <span class="caret"></span>
                             </button>
@@ -58,7 +58,7 @@
                     <p:panel rendered="#{DataverseUserPage.editMode == 'FORGOT'}">
                         <h:outputText value="#{bundle['user.lostPasswdTip']}" />
                     </p:panel>
-                        
+
                     <p:tabView id="dataRelatedToMeView" activeIndex="#{DataverseUserPage.activeIndex}" dynamic="true" rendered="#{empty DataverseUserPage.editMode}">
                         <p:ajax event="tabChange" listener="#{DataverseUserPage.onTabChange}" update="@all" oncomplete="javascript:dataverseuser_page_rebind();" />
                         <p:tab id="myData" title="My Data">
@@ -74,46 +74,46 @@
                                             </ui:fragment>
                                             <ui:fragment rendered="#{item.theObject != null}">
                                                 <ui:fragment rendered="#{item.type == 'CREATEACC'}">
-                                                    <i class="icon-dataverse text-icon-inline text-muted"></i>                                        
+                                                    <i class="icon-dataverse text-icon-inline text-muted"></i>
                                                     <h:outputFormat value="#{bundle['notification.welcome']}" escape="false">
                                                         <o:param>
                                                             <h:outputText value="#{dataverseServiceBean.findRootDataverse().name}"/>
-                                                        </o:param>                                                            
-                                                        <o:param>
-                                                            <a href="#{systemConfig.guidesBaseUrl}/#{systemConfig.version}/user/index.html" title="#{dataverseServiceBean.findRootDataverse().name} #{bundle['dataverse']} #{bundle['header.guides.user']}" target="_blank">#{bundle['header.guides.user']}</a>                                                              
                                                         </o:param>
                                                         <o:param>
-                                                            <a href="https://demo.dataverse.org">#{bundle['notification.demoSite']}</a>                                                         
-                                                        </o:param>         
+                                                            <a href="#{systemConfig.guidesBaseUrl}/#{systemConfig.version}/user/index.html" title="#{dataverseServiceBean.findRootDataverse().name} #{bundle['dataverse']} #{bundle['header.guides.user']}" target="_blank">#{bundle['header.guides.user']}</a>
+                                                        </o:param>
+                                                        <o:param>
+                                                            <a href="https://demo.dataverse.org">#{bundle['notification.demoSite']}</a>
+                                                        </o:param>
                                                     </h:outputFormat>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'CREATEDV'}">
                                                     <i class="icon-dataverse text-icon-inline text-muted"></i>
                                                     <h:outputFormat value="#{bundle['notification.createDataverse']}" escape="false">
                                                         <o:param>
-                                                            <a href="/dataverse/#{item.theObject.getAlias()}" title="#{item.theObject.getDisplayName()}">#{item.theObject.getDisplayName()}</a> 
-                                                        </o:param>                                                            
-                                                        <o:param>
-                                                            <a href="/dataverse/#{item.theObject.getOwner().getAlias()}" title="#{item.theObject.getOwner().getDisplayName()}">#{item.theObject.getOwner().getDisplayName()}</a>                                                            
+                                                            <a href="/dataverse/#{item.theObject.getAlias()}" title="#{item.theObject.getDisplayName()}">#{item.theObject.getDisplayName()}</a>
                                                         </o:param>
                                                         <o:param>
-                                                            <a href="#{systemConfig.guidesBaseUrl}/#{systemConfig.version}/user/dataverse-management.html" title="#{bundle['notification.dataverse.management.title']}" target="_blank">#{bundle['header.guides.user']}</a>                                                         
-                                                        </o:param> 
+                                                            <a href="/dataverse/#{item.theObject.getOwner().getAlias()}" title="#{item.theObject.getOwner().getDisplayName()}">#{item.theObject.getOwner().getDisplayName()}</a>
+                                                        </o:param>
+                                                        <o:param>
+                                                            <a href="#{systemConfig.guidesBaseUrl}/#{systemConfig.version}/user/dataverse-management.html" title="#{bundle['notification.dataverse.management.title']}" target="_blank">#{bundle['header.guides.user']}</a>
+                                                        </o:param>
                                                     </h:outputFormat>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'CREATEDS'}">
                                                     <i class="icon-dataset text-icon-inline text-muted"></i>
                                                     <h:outputFormat value="#{bundle['notification.createDataset']}" escape="false">
                                                         <o:param>
-                                                            <a href="/dataset.xhtml?persistentId=#{item.theObject.getDataset().getGlobalId()}" title="#{item.theObject.getDataset().getDisplayName()}">#{item.theObject.getDataset().getDisplayName()}</a> 
+                                                            <a href="/dataset.xhtml?persistentId=#{item.theObject.getDataset().getGlobalId()}" title="#{item.theObject.getDataset().getDisplayName()}">#{item.theObject.getDataset().getDisplayName()}</a>
                                                         </o:param>
                                                         <o:param>
                                                             <a href="/dataverse/#{item.theObject.getDataset().getOwner().getAlias()}" title="#{item.theObject.getDataset().getOwner().getDisplayName()}">#{item.theObject.getDataset().getOwner().getDisplayName()}</a>
-                                                        </o:param> 
+                                                        </o:param>
                                                         <o:param>
                                                             <a href="#{systemConfig.guidesBaseUrl}/#{systemConfig.version}/user/dataset-management.html" title="#{bundle['notification.dataset.management.title']}" target="_blank">#{bundle['header.guides.user']}</a>
                                                         </o:param>
-                                                    </h:outputFormat>             
+                                                    </h:outputFormat>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'SUBMITTEDDS'}">
                                                     <i class="icon-dataset text-icon-inline text-muted"></i>
@@ -135,7 +135,7 @@
                                                         <o:param>
                                                             <a href="/dataverse/#{item.theObject.getDataset().getOwner().getAlias()}" title="#{item.theObject.getDataset().getOwner().getDisplayName()}">#{item.theObject.getDataset().getOwner().getDisplayName()}</a>
                                                         </o:param>
-                                                    </h:outputFormat>                                                  
+                                                    </h:outputFormat>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'PUBLISHEDDS'}">
                                                     <i class="icon-dataset text-icon-inline text-muted"></i>
@@ -146,7 +146,7 @@
                                                         <o:param>
                                                             <a href="/dataverse/#{item.theObject.getDataset().getOwner().getAlias()}" title="#{item.theObject.getDataset().getOwner().getDisplayName()}">#{item.theObject.getDataset().getOwner().getDisplayName()}</a>
                                                         </o:param>
-                                                    </h:outputFormat>                                                    
+                                                    </h:outputFormat>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'REQUESTFILEACCESS'}">
                                                     <i class="icon-dataset text-icon-inline text-muted"></i>
@@ -171,14 +171,14 @@
                                                             <a href="/dataset.xhtml?persistentId=#{item.theObject.getGlobalId()}" title="#{item.theObject.displayName}">#{item.theObject.displayName}</a>
                                                         </o:param>
                                                     </h:outputFormat>
-                                                </ui:fragment>                                    
+                                                </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'MAPLAYERUPDATED'}">
                                                     <i class="icon-dataset text-icon-inline text-muted"></i>
                                                     <h:outputFormat value="#{bundle['notification.worldMap.added']}" escape="false">
                                                         <o:param>
                                                             <a href="/dataset.xhtml?persistentId=#{item.theObject.getDataset().getGlobalId()}" title="#{item.theObject.getDataset().getDisplayName()}">#{item.theObject.getDataset().getDisplayName()}</a>
                                                         </o:param>
-                                                    </h:outputFormat>  
+                                                    </h:outputFormat>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'ASSIGNROLE'}">
                                                     <ui:fragment rendered="#{item.theObject.isInstanceofDataverse()}">
@@ -188,11 +188,11 @@
                                                         <o:param>
                                                             <a href="/dataverse/#{item.theObject.getAlias()}" title="#{item.theObject.getDisplayName()}">#{item.theObject.getDisplayName()}</a>
                                                         </o:param>
-                                                    </h:outputFormat> 
+                                                    </h:outputFormat>
                                                     <ui:fragment rendered="#{item.roleString == 'File Downloader'}">
                                                         <h:outputFormat value="#{bundle['notification.access.granted.fileDownloader.additionalDataverse']}" escape="false">
                                                             <f:param value=" "/>
-                                                        </h:outputFormat> 
+                                                        </h:outputFormat>
                                                     </ui:fragment>
                                                     </ui:fragment>
                                                     <ui:fragment rendered="#{item.theObject.isInstanceofDataset()}">
@@ -202,12 +202,12 @@
                                                             <o:param>
                                                                 <a href="/dataset.xhtml?persistentId=#{item.theObject.getGlobalId()}" title="#{item.theObject.getDisplayName()}">#{item.theObject.getDisplayName()}</a>
                                                             </o:param>
-                                                        </h:outputFormat> 
+                                                        </h:outputFormat>
                                                         <ui:fragment rendered="#{item.roleString == 'File Downloader'}">
                                                             <h:outputText value="" />
                                                             <h:outputFormat value="#{bundle['notification.access.granted.fileDownloader.additionalDataset']}" escape="false">
                                                                 <f:param value=" "/>
-                                                            </h:outputFormat> 
+                                                            </h:outputFormat>
                                                     </ui:fragment>
                                                     </ui:fragment>
                                                     <ui:fragment rendered="#{item.theObject.isInstanceofDataFile()}">
@@ -218,7 +218,7 @@
                                                             <o:param>
                                                                 <a href="/dataset.xhtml?persistentId=#{item.theObject.getOwner().getGlobalId()}" title="#{item.theObject.getOwner().getDisplayName()}">#{item.theObject.getOwner().getDisplayName()}</a>
                                                             </o:param>
-                                                    </h:outputFormat>                                                  
+                                                    </h:outputFormat>
                                                     </ui:fragment>
 
                                                 </ui:fragment>
@@ -229,7 +229,7 @@
                                                             <o:param>
                                                                 <a href="/dataverse/#{item.theObject.getAlias()}" title="#{item.theObject.getDisplayName()}">#{item.theObject.getDisplayName()}</a>
                                                             </o:param>
-                                                    </h:outputFormat>  
+                                                    </h:outputFormat>
                                                     </ui:fragment>
                                                     <ui:fragment rendered="#{item.theObject.isInstanceofDataset()}">
                                                     <f:param value="#{item.roleString}"/>
@@ -238,7 +238,7 @@
                                                         <o:param>
                                                                 <a href="/dataset.xhtml?persistentId=#{item.theObject.getGlobalId()}" title="#{item.theObject.getDisplayName()}">#{item.theObject.getDisplayName()}</a>
                                                         </o:param>
-                                                    </h:outputFormat>  
+                                                    </h:outputFormat>
                                                     </ui:fragment>
                                                     <ui:fragment rendered="#{item.theObject.isInstanceofDataFile()}">
                                                     <f:param value="#{item.roleString}"/>
@@ -247,7 +247,7 @@
                                                         <o:param>
                                                               <a href="/dataset.xhtml?persistentId=#{item.theObject.getOwner().getGlobalId()}" title="#{item.theObject.getOwner().getDisplayName()}">#{item.theObject.getOwner().getDisplayName()}</a>
                                                         </o:param>
-                                                    </h:outputFormat>  
+                                                    </h:outputFormat>
                                                     </ui:fragment>
                                                 </ui:fragment>
                                             </ui:fragment>
@@ -314,8 +314,25 @@
                                     <label for="email" class="col-sm-3 control-label">
                                         #{bundle.email}
                                     </label>
-                                    <div class="col-sm-9">
-                                        <p class="form-control-static">#{DataverseUserPage.currentUser.email}</p>
+                                    <div class="col-sm-9 form-col-container">
+                                        <div class="col-sm-4 form-col-container">
+                                            <p class="form-control-static">#{DataverseUserPage.currentUser.email}</p>
+                                        </div>
+                                        <div class="col-sm-2 form-col-container">
+                                            <p class="form-control-static #{DataverseUserPage.emailIsVerified ? 'text-success' : 'text-danger'}">
+                                                <ui:fragment rendered="#{DataverseUserPage.emailNotVerified}">
+                                                    <span class="glyphicon glyphicon-ban-circle"/> Not Verified
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{!DataverseUserPage.emailNotVerified}">
+                                                    <span class="glyphicon glyphicon-ok"/> Verified
+                                                </ui:fragment>
+                                            </p>
+                                        </div>
+                                        <div class="col-sm-1">
+                                            <h:commandLink rendered="#{DataverseUserPage.showVerifyEmailButton()}" styleClass="btn btn-default" action="#{DataverseUserPage.sendConfirmEmail()}">
+                                                <span class="glyphicon glyphicon-ok"></span> #{bundle['confirmEmail.submitRequest']}
+                                            </h:commandLink>
+                                        </div>
                                     </div>
                                 </div>
                                 <!-- Affiliation -->
@@ -378,8 +395,8 @@
                                     </label>
                                     <div class="col-sm-9">
                                         <p:panelGrid columns="2" styleClass="noBorders">
-                                            <p:inputText id="userName" styleClass="form-control" tabindex="1" 
-                                                            validator="#{DataverseUserPage.validateUserName}" 
+                                            <p:inputText id="userName" styleClass="form-control" tabindex="1"
+                                                            validator="#{DataverseUserPage.validateUserName}"
                                                             value="#{DataverseUserPage.builtinUser.userName}"
                                                             disabled="#{DataverseUserPage.editMode != 'CREATE'}"
                                                             binding="#{DataverseUserPage.usernameField}"/>
@@ -468,7 +485,7 @@
                                     </label>
                                     <div class="col-sm-9">
                                         <p:panelGrid columns="2" styleClass="noBorders">
-                                            <p:inputText id="email" tabindex="6" styleClass="form-control" 
+                                            <p:inputText id="email" tabindex="6" styleClass="form-control"
                                                          validator="#{DataverseUserPage.validateUserEmail}"
                                                          value="#{DataverseUserPage.builtinUser.email}" />
                                             <p:message for="email" display="text" />

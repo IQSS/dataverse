@@ -91,6 +91,7 @@ public class JsonPrinter {
                 .add("affiliation", authenticatedUser.getAffiliation())
                 .add("position", authenticatedUser.getPosition())
                 .add("persistentUserId", authenticatedUser.getAuthenticatedUserLookup().getPersistentUserId())
+                .add("emailLastConfirmed", authenticatedUser.getEmailConfirmed())
                 .add("authenticationProviderId", authenticatedUser.getAuthenticatedUserLookup().getAuthenticationProviderId());
     }
     
