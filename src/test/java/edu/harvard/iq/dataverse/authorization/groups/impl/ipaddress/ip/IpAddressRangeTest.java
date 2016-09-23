@@ -1,11 +1,5 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip;
 
-import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IPv4Range;
-import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IPv6Address;
-import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IPv6Range;
-import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
-import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IPv4Address;
-import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddressRange;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -76,6 +70,15 @@ public class IpAddressRangeTest {
         testRange( null, sut, 
                     IPv6Address.valueOf("::1")
                 );
+    }
+    
+    @Test
+    public void testSingleAddress() {
+        assertTrue( new IPv4Range( IPv4Address.valueOf("127.5.5.5"), IPv4Address.valueOf("127.5.5.5")).isSingleAddress() );
+        assertFalse( new IPv4Range( IPv4Address.valueOf("17.5.5.5"), IPv4Address.valueOf("127.5.5.5")).isSingleAddress() );
+        
+        assertTrue( new IPv6Range( IPv6Address.valueOf("::1:1"), IPv6Address.valueOf("::1:1")).isSingleAddress() );
+        assertFalse( new IPv6Range( IPv6Address.valueOf("::1:1"), IPv6Address.valueOf("::1:2")).isSingleAddress() );
     }
     
     public void testRange( Boolean expected, IpAddressRange range, IpAddress... addresses ) {
