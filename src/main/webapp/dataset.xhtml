@@ -71,13 +71,13 @@
                                             <ul class="dropdown-menu">
                                                 <li>
                                                     <h:link id="managePermissions" styleClass="ui-commandlink ui-widget" outcome="permissions-manage">
-                                                        <h:outputText value="Dataset" />
+                                                        <h:outputText value="#{bundle['dataset.editBtn.itemLabel.permissionsDataset']}" />
                                                         <f:param name="id" value="#{DatasetPage.dataset.id}" />
                                                     </h:link>
                                                 </li>
                                                 <li>
                                                     <h:link id="manageFilePermissions" styleClass="ui-commandlink ui-widget" outcome="permissions-manage-files">
-                                                        <h:outputText value="File" />
+                                                        <h:outputText value="#{bundle['dataset.editBtn.itemLabel.permissionsFile']}" />
                                                         <f:param name="id" value="#{DatasetPage.dataset.id}" />
                                                     </h:link>
                                                 </li>
