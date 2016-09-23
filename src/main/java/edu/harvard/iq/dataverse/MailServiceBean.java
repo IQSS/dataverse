@@ -9,6 +9,7 @@ import com.sun.mail.smtp.SMTPSendFailedException;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -62,6 +63,8 @@ public class MailServiceBean implements java.io.Serializable {
     PermissionServiceBean permissionService;
     @EJB
     GroupServiceBean groupService;
+    @EJB
+    ConfirmEmailServiceBean confirmEmailService;
     
     private static final Logger logger = Logger.getLogger(MailServiceBean.class.getCanonicalName());
     
@@ -426,6 +429,9 @@ public class MailServiceBean implements java.io.Serializable {
                         systemConfig.getGuidesBaseUrl(),
                         systemConfig.getVersion()
                 ));
+                String optionalConfirmEmailAddon = confirmEmailService.optionalConfirmEmailAddonMsg(userNotification.getUser());
+                accountCreatedMessage += optionalConfirmEmailAddon;
+                logger.info("accountCreatedMessage: " + accountCreatedMessage);
                 return messageText += accountCreatedMessage;
         }
         

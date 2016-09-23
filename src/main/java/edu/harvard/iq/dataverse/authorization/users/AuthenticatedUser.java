@@ -74,6 +74,8 @@ public class AuthenticatedUser implements User, Serializable {
     private String position;
     private String lastName;
     private String firstName;
+    @Column(nullable = true)
+    private Timestamp emailConfirmed;
     private boolean superuser;
 
     /**
@@ -122,7 +124,6 @@ public class AuthenticatedUser implements User, Serializable {
         setEmail(inf.getEmailAddress());
         setAffiliation( inf.getAffiliation() );
         setPosition( inf.getPosition());
-
     }
     
     @Override
@@ -188,6 +189,14 @@ public class AuthenticatedUser implements User, Serializable {
         this.firstName = firstName;
     }
 
+    public Timestamp getEmailConfirmed() {
+        return emailConfirmed;
+    }
+
+    public void setEmailConfirmed(Timestamp emailConfirmed) {
+        this.emailConfirmed = emailConfirmed;
+    }
+
     @Override
     public boolean isSuperuser() {
         return superuser;
@@ -249,6 +258,10 @@ public class AuthenticatedUser implements User, Serializable {
     @Override
     public String toString() {
         return "[AuthenticatedUser identifier:" + getIdentifier() + "]";
+    }
+    
+    public String getSortByString() {
+        return this.getLastName() + " " + this.getFirstName() + " " + this.getUserIdentifier();
     }
     
 }

@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl.builtin;
 
+import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupProvider;
@@ -20,6 +21,8 @@ public final class AllUsers implements Group {
     public static final AllUsers instance = new AllUsers();
        
     private final String identifier = ":AllUsers";
+    
+    private final String displayInfo = "Everyone (including guests)";
     
     public static final AllUsers get() { return instance; }
     
@@ -50,7 +53,7 @@ public final class AllUsers implements Group {
 
     @Override
     public RoleAssigneeDisplayInfo getDisplayInfo() {
-        return new RoleAssigneeDisplayInfo("Everyone (including guests)", null);
+        return new RoleAssigneeDisplayInfo(displayInfo, null);
     }
 
     @Override
@@ -72,4 +75,5 @@ public final class AllUsers implements Group {
     public String toString() {
         return "[AllUsers " + getIdentifier() + "]";
     }
+    
 }
