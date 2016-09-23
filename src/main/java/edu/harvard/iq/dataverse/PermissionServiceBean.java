@@ -209,11 +209,14 @@ public class PermissionServiceBean {
         
         // Add permissions specifically given to the user
         permissions.addAll( permissionsForSingleRoleAssignee(req.getUser(),dvo) );
+        
+        /*
         Set<Group> groups = groupService.groupsFor(req,dvo);
         // Add permissions gained from groups
         for ( Group g : groups ) {
             permissions.addAll( permissionsForSingleRoleAssignee(g,dvo) );
         }
+        */
         
         if ( ! req.getUser().isAuthenticated() ) {
             permissions.removeAll( PERMISSIONS_FOR_AUTHENTICATED_USERS_ONLY );
