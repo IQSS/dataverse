@@ -62,8 +62,6 @@ public class IpGroupsServiceBean {
                     return grp;
                     
                 } else {
-                    logger.log(Level.INFO, "*** Updating ip group {0} id {1}", new Object[]{grp.getPersistedGroupAlias(), grp.getId()}); // FIXME MBS remote
-                    logger.log(Level.INFO, "***             Using {0} id {1}", new Object[]{existing.getPersistedGroupAlias(), existing.getId()}); // FIXME MBS remote
                     existing.setDescription(grp.getDescription());
                     existing.setDisplayName(grp.getDisplayName());
                     existing.setIpv4Ranges(grp.getIpv4Ranges());

@@ -125,12 +125,12 @@ List versions of the dataset::
 Show a version of the dataset. The Dataset also include any metadata blocks the data might have::
 
   GET http://$SERVER/api/datasets/$id/versions/$versionNumber?key=$apiKey
-  
-      
+
+
 Export the metadata of the current published version of a dataset in various formats see Note below::
 
     GET http://$SERVER/api/datasets/export?exporter=ddi&persistentId=$persistentId
-  
+
     Note: Supported exporters (export formats) are ddi, oai_ddi, dcterms, oai_dc, and dataverse_json.
 
 
@@ -377,15 +377,20 @@ Note that ``identifier`` can contain slashes (e.g. ``&ip/localhost-users``).
 IpGroups
 ^^^^^^^^
 
-List all the ip groups::
+Lists all the ip groups::
 
   GET http://$SERVER/api/admin/groups/ip
 
-Adds a new ip group. POST data should specify the group in JSON format. Examples are available at ``data/ipGroup1.json``. ::
+Adds a new ip group. POST data should specify the group in JSON format. Examples are available at the ``data`` folder. Using this method, an IP Group is always created, but its ``alias`` might be different than the one appearing in the
+JSON file, to ensure it is unique. ::
 
   POST http://$SERVER/api/admin/groups/ip
 
-Returns a the group in a JSON format. ``groupIdtf`` can either be the group id in the database (in case it is numeric), or the group alias. ::
+Creates or updates the ip group ``$groupAlias``. ::
+
+    POST http://$SERVER/api/admin/groups/ip/$groupAlias
+
+Returns a the group in a JSON format. ``$groupIdtf`` can either be the group id in the database (in case it is numeric), or the group alias. ::
 
   GET http://$SERVER/api/admin/groups/ip/$groupIdtf
 
