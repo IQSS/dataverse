@@ -27,16 +27,23 @@ import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailData;
+import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailException;
+import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailInitResponse;
+import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
+import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailUtil;
 import edu.harvard.iq.dataverse.mydata.MyDataPage;
 import edu.harvard.iq.dataverse.passwordreset.PasswordValidator;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -88,6 +95,10 @@ public class BuiltinUserPage implements java.io.Serializable {
     BuiltinUserServiceBean builtinUserService;
     @EJB
     AuthenticationServiceBean authenticationService;
+    @EJB
+    ConfirmEmailServiceBean confirmEmailService;
+    @EJB
+    SystemConfig systemConfig;    
     @EJB
     GroupServiceBean groupService;
     @Inject
@@ -407,7 +418,8 @@ public class BuiltinUserPage implements java.io.Serializable {
             context.addMessage(toValidate.getClientId(context), message);
         }
     }
-
+    
+    
 
     public void updatePassword(String userName) {
         String plainTextPassword = PasswordEncryption.generateRandomPassword();
@@ -421,6 +433,7 @@ public class BuiltinUserPage implements java.io.Serializable {
 
     public String save() {
         boolean passwordChanged = false;
+        boolean emailChanged = false;
         if (editMode == EditMode.CREATE || editMode == EditMode.CHANGE_PASSWORD) {
             if (inputPassword != null) {
                 builtinUser.updateEncryptedPassword(PasswordEncryption.get().encrypt(inputPassword), PasswordEncryption.getLatestVersionNumber());
@@ -472,13 +485,32 @@ public class BuiltinUserPage implements java.io.Serializable {
             
             
         } else {
-            authSvc.updateAuthenticatedUser(currentUser, builtinUser.getDisplayInfo());
+            String emailBeforeUpdate = currentUser.getEmail();
+            AuthenticatedUser savedUser = authSvc.updateAuthenticatedUser(currentUser, builtinUser.getDisplayInfo());
+            String emailAfterUpdate = savedUser.getEmail();
+            if (!emailBeforeUpdate.equals(emailAfterUpdate)) {
+                emailChanged = true;
+            }
             editMode = null;
             String msg = "Your account information has been successfully updated.";
             if (passwordChanged) {
                 msg = "Your account password has been successfully changed.";
             }
-            JsfHelper.addFlashMessage(msg);
+            if (emailChanged) {
+                ConfirmEmailUtil confirmEmailUtil = new ConfirmEmailUtil();
+                String expTime = confirmEmailUtil.friendlyExpirationTime(systemConfig.getMinutesUntilConfirmEmailTokenExpires());
+                msg = msg + " Your email address has changed and must be re-verified. Please check your inbox at " + currentUser.getEmail() + " and follow the link we've sent. \n\nAlso, please note that the link will only work for the next " + expTime + " before it has expired.";
+                boolean sendEmail = true;
+                try {
+                    ConfirmEmailInitResponse confirmEmailInitResponse = confirmEmailService.beginConfirm(currentUser);
+                } catch (ConfirmEmailException ex) {
+                    logger.info("Unable to send email confirmation link to user id " + savedUser.getId());
+                }
+                session.setUser(currentUser);
+                JsfHelper.addSuccessMessage(msg);
+            } else {
+                JsfHelper.addFlashMessage(msg);
+            }
             return null;            
         }
     }
@@ -592,4 +624,51 @@ public class BuiltinUserPage implements java.io.Serializable {
             }
         }
     }
+    
+    public void sendConfirmEmail() {
+        logger.fine("called sendConfirmEmail()");
+        String userEmail = currentUser.getEmail();
+        ConfirmEmailUtil confirmEmailUtil = new ConfirmEmailUtil();
+        
+        try {
+            confirmEmailService.beginConfirm(currentUser);
+            List<String> args = Arrays.asList(
+                    userEmail,
+                    confirmEmailUtil.friendlyExpirationTime(systemConfig.getMinutesUntilConfirmEmailTokenExpires()));
+            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("confirmEmail.submitRequest.success", args));
+        } catch (ConfirmEmailException ex) {
+            Logger.getLogger(BuiltinUserPage.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    public boolean showVerifyEmailButton() {
+        /**
+         * Determines whether the button to send a verification email appears on user page
+         */
+        if (confirmEmailService.findSingleConfirmEmailDataByUser(currentUser) == null
+                && currentUser.getEmailConfirmed() == null) {
+            return true;
+        }
+        return false;
+    }
+
+    public boolean isEmailIsVerified() {
+        if (currentUser.getEmailConfirmed() != null && confirmEmailService.findSingleConfirmEmailDataByUser(currentUser) == null) {
+            return true;
+         } else return false;
+    }
+    
+    public boolean isEmailNotVerified() {
+        if (currentUser.getEmailConfirmed() == null || confirmEmailService.findSingleConfirmEmailDataByUser(currentUser) != null) {
+            return true;
+        } else return false;
+    }
+    
+    public boolean isEmailGrandfathered() {
+        ConfirmEmailUtil confirmEmailUtil = new ConfirmEmailUtil();
+        if (currentUser.getEmailConfirmed() == confirmEmailUtil.getGrandfatheredTime()) {
+            return true;
+        } else return false;
+    }
+
 }
