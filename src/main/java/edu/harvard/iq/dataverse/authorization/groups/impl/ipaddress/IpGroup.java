@@ -1,9 +1,5 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress;
 
-<<<<<<< HEAD
-import com.google.common.base.Objects;
-=======
->>>>>>> develop
 import edu.harvard.iq.dataverse.authorization.groups.GroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.PersistedGlobalGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IPv4Address;
@@ -14,6 +10,7 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -134,7 +131,6 @@ public class IpGroup extends PersistedGlobalGroup {
         this.ipv4Ranges = ipv4Ranges;
         updateRangeOwnership(ipv4Ranges);
     }
-<<<<<<< HEAD
     
     @Override
     public boolean equals( Object o ) {
@@ -144,10 +140,10 @@ public class IpGroup extends PersistedGlobalGroup {
         
         IpGroup other = (IpGroup) o;
         
-        if ( ! Objects.equal(getId(), other.getId()) ) return false;
-        if ( ! Objects.equal(getDescription(), other.getDescription()) ) return false;
-        if ( ! Objects.equal(getDisplayName(), other.getDisplayName()) ) return false;
-        if ( ! Objects.equal(getPersistedGroupAlias(), other.getPersistedGroupAlias()) ) return false;
+        if ( ! Objects.equals(getId(), other.getId()) ) return false;
+        if ( ! Objects.equals(getDescription(), other.getDescription()) ) return false;
+        if ( ! Objects.equals(getDisplayName(), other.getDisplayName()) ) return false;
+        if ( ! Objects.equals(getPersistedGroupAlias(), other.getPersistedGroupAlias()) ) return false;
         return getRanges().equals( other.getRanges() );
     }
 
@@ -166,7 +162,4 @@ public class IpGroup extends PersistedGlobalGroup {
             rng.setOwner(this);
         }
     }
-=======
-
->>>>>>> develop
 }
