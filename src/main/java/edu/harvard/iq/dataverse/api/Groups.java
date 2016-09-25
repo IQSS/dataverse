@@ -55,18 +55,10 @@ public class Groups extends AbstractApiBean {
     public Response postIpGroup( JsonObject dto ){
         try {
            IpGroup grp = new JsonParser().parseIpGroup(dto);
-<<<<<<< HEAD
-            
-            if ( grp.getPersistedGroupAlias()== null ) {
-                return error(Response.Status.BAD_REQUEST, "Must provide valid group alias");
-            }
-            grp.setProvider( groupSvc.getIpGroupProvider() );
-=======
             grp.setGroupProvider( ipGroupPrv );
             grp.setPersistedGroupAlias(
                     ipGroupPrv.findAvailableName( 
                             grp.getPersistedGroupAlias()==null ? "ipGroup" : grp.getPersistedGroupAlias()));
->>>>>>> develop
             
             grp = ipGroupPrv.store(grp);
             return created("/groups/ip/" + grp.getPersistedGroupAlias(), json(grp) );
@@ -99,11 +91,11 @@ public class Groups extends AbstractApiBean {
             grp.setGroupProvider( ipGroupPrv );
             grp.setPersistedGroupAlias( groupName );
             grp = ipGroupPrv.store(grp);
-            return createdResponse("/groups/ip/" + grp.getPersistedGroupAlias(), json(grp) );
+            return created("/groups/ip/" + grp.getPersistedGroupAlias(), json(grp) );
         
         } catch ( Exception e ) {
             logger.log( Level.WARNING, "Error while storing a new IP group: " + e.getMessage(), e);
-            return errorResponse(Response.Status.INTERNAL_SERVER_ERROR, "Error: " + e.getMessage() );
+            return error(Response.Status.INTERNAL_SERVER_ERROR, "Error: " + e.getMessage() );
             
         }
     }

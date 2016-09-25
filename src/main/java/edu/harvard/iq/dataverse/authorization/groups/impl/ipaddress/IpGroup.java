@@ -157,12 +157,9 @@ public class IpGroup extends PersistedGlobalGroup {
         return "[IpGroup alias:" + getPersistedGroupAlias() +" id:" + getId() + " ranges:" + getIpv4Ranges() + "," + getIpv6Ranges() + "]";
     }
     
-<<<<<<< HEAD
-=======
     private void updateRangeOwnership( Collection<? extends IpAddressRange> ranges ) {
         for ( IpAddressRange rng : ranges ) {
             rng.setOwner(this);
         }
     }
->>>>>>> develop
 }
