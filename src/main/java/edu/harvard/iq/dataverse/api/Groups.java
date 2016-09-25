@@ -63,12 +63,8 @@ public class Groups extends AbstractApiBean {
     @GET
     @Path("ip")
     public Response listIpGroups() {
-         
-        JsonArrayBuilder arrBld = Json.createArrayBuilder();
-        for ( IpGroup g : ipGroupPrv.findGlobalGroups() ) {
-            arrBld.add( json(g) );
-        }
-        return ok( arrBld );
+        return ok( ipGroupPrv.findGlobalGroups()
+                             .stream().map(g->json(g)).collect(toJsonArray()) );
     }
     
     @GET

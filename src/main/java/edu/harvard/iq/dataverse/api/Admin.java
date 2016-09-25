@@ -9,7 +9,6 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.UserIdentifier;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationProviderFactoryNotFoundException;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationSetupException;
-import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderFactory;
 import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderRow;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
@@ -36,7 +35,6 @@ import javax.ws.rs.core.Response;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import java.io.StringReader;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -101,14 +99,13 @@ public class Admin extends AbstractApiBean {
     @Path("authenticationProviderFactories")
     @GET
     public Response listAuthProviderFactories() {
-        JsonArrayBuilder arb = Json.createArrayBuilder();
-        for ( AuthenticationProviderFactory f : authSvc.listProviderFactories() ){
-            arb.add( jsonObjectBuilder()
+        return ok(authSvc.listProviderFactories()
+                .stream()
+                .map( f -> jsonObjectBuilder()
                         .add("alias", f.getAlias() )
-                        .add("info", f.getInfo() ));
-        }
-        
-        return ok(arb);
+                        .add("info", f.getInfo() ) )
+                .collect( toJsonArray() )
+        );
     }
 
     

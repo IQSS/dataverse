@@ -38,22 +38,18 @@ public class Roles extends AbstractApiBean {
 	@DELETE
 	@Path("{id}")
 	public Response deleteRole( @PathParam("id") Long id ) {
-        try {
-            execCommand( new DeleteRoleCommand(createDataverseRequest(findUserOrDie()), findRoleOrDie(id)) );
+        return response( req -> {
+            execCommand( new DeleteRoleCommand(req, findRoleOrDie(id)) );
             return ok("role " + id + " deleted.");
-
-        } catch (WrappedResponse ex) {
-            return ex.refineResponse( "Cannot delete role " + id + "." );
-        }
+        });
 	}
 	
 	@POST
 	public Response createNewRole( RoleDTO roleDto,
                                    @QueryParam("dvo") String dvoIdtf ) {
-        return response( ()-> ok(json(execCommand(
+        return response( req -> ok(json(execCommand(
                                   new CreateRoleCommand(roleDto.asRole(),
-                                                         createDataverseRequest(findUserOrDie()),
-                                                                                findDataverseOrDie(dvoIdtf))))));
+                                                        req,findDataverseOrDie(dvoIdtf))))));
 	}
     
     private DataverseRole findRoleOrDie( long id ) throws WrappedResponse {

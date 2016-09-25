@@ -108,19 +108,13 @@ public class Datasets extends AbstractApiBean {
 	@GET
 	@Path("{id}")
     public Response getDataset(@PathParam("id") String id) {
-
-        try {
-            final DataverseRequest r = createDataverseRequest(findUserOrDie());
-                
-            Dataset retrieved = execCommand(new GetDatasetCommand(r, findDatasetOrDie(id)));
-            DatasetVersion latest = execCommand(new GetLatestAccessibleDatasetVersionCommand(r, retrieved));
+        return response( req -> {
+            final Dataset retrieved = execCommand(new GetDatasetCommand(req, findDatasetOrDie(id)));
+            final DatasetVersion latest = execCommand(new GetLatestAccessibleDatasetVersionCommand(req, retrieved));
             final JsonObjectBuilder jsonbuilder = json(retrieved);
 
             return ok(jsonbuilder.add("latestVersion", (latest != null) ? json(latest) : null));
-        } catch (WrappedResponse ex) {
-            return ex.refineResponse("GETting dataset " + id + " failed.");
-        }
-
+        });
     }
     
     // TODO: 
@@ -171,58 +165,46 @@ public class Datasets extends AbstractApiBean {
 	@DELETE
 	@Path("{id}")
 	public Response deleteDataset( @PathParam("id") String id) {
-		
-		try {
-			execCommand( new DeleteDatasetCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(id)));
+		return response( req -> {
+			execCommand( new DeleteDatasetCommand(req, findDatasetOrDie(id)));
 			return ok("Dataset " + id + " deleted");
-			
-		} catch (WrappedResponse ex) {
-			return ex.refineResponse( "Failed to delete dataset " + id );
-		}
-		
+        });
 	}
         
 	@DELETE
 	@Path("{id}/destroy")
 	public Response destroyDataset( @PathParam("id") String id) {
-		try {
-			execCommand( new DestroyDatasetCommand(findDatasetOrDie(id), createDataverseRequest(findUserOrDie()) ));
+		return response( req -> {
+			execCommand( new DestroyDatasetCommand(findDatasetOrDie(id), req) );
 			return ok("Dataset " + id + " destroyed");
-			
-		} catch (WrappedResponse ex) {
-			return ex.refineResponse( "Failed to detroy dataset " + id );
-		}		
+        });
 	}
         
 	@PUT
 	@Path("{id}/citationdate")
 	public Response setCitationDate( @PathParam("id") String id, String dsfTypeName) {
-            try {
-                if ( dsfTypeName.trim().isEmpty() ){
-                    throw new WrappedResponse( badRequest("Please provide a dataset field type in the requst body.") );
-                }
-                DatasetFieldType dsfType = null;
-                if (!":publicationDate".equals(dsfTypeName)) {
-                    dsfType = datasetFieldSvc.findByName(dsfTypeName);
-                    if (dsfType == null) {
-                        throw new WrappedResponse( badRequest("Dataset Field Type Name " + dsfTypeName + " not found.") );
-                    }
-                }
-
-                execCommand(new SetDatasetCitationDateCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(id), dsfType));
-                
-                return ok("Citation Date for dataset " + id + " set to: " + (dsfType != null ? dsfType.getDisplayName() : "default"));
-
-            } catch (WrappedResponse ex) {
-                return ex.refineResponse("Unable to set citation date for dataset " + id + ".");
+        return response( req -> {
+            if ( dsfTypeName.trim().isEmpty() ){
+                return badRequest("Please provide a dataset field type in the requst body.");
             }
+            DatasetFieldType dsfType = null;
+            if (!":publicationDate".equals(dsfTypeName)) {
+                dsfType = datasetFieldSvc.findByName(dsfTypeName);
+                if (dsfType == null) {
+                    return badRequest("Dataset Field Type Name " + dsfTypeName + " not found.");
+                }
+            }
+
+            execCommand(new SetDatasetCitationDateCommand(req, findDatasetOrDie(id), dsfType));
+            return ok("Citation Date for dataset " + id + " set to: " + (dsfType != null ? dsfType.getDisplayName() : "default"));
+        });
 	}    
     
 	@DELETE
 	@Path("{id}/citationdate")
 	public Response useDefaultCitationDate( @PathParam("id") String id) {
-        return response( ()->{
-            execCommand(new SetDatasetCitationDateCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(id), null));
+        return response( req -> {
+            execCommand(new SetDatasetCitationDateCommand(req, findDatasetOrDie(id), null));
             return ok("Citation Date for dataset " + id + " set to default");
         });
 	}         
@@ -230,11 +212,10 @@ public class Datasets extends AbstractApiBean {
 	@GET
 	@Path("{id}/versions")
     public Response listVersions( @PathParam("id") String id ) {
-        return response( ()->{
+        return response( req -> {
             return ok( 
                     execCommand(
-                        new ListVersionsCommand(createDataverseRequest(findUserOrDie()),
-                                                findDatasetOrDie(id)) )
+                        new ListVersionsCommand(req, findDatasetOrDie(id)) )
                         .stream()
                         .map( d -> json(d) )
                         .collect(toJsonArray()));});
@@ -243,44 +224,27 @@ public class Datasets extends AbstractApiBean {
 	@GET
 	@Path("{id}/versions/{versionId}")
     public Response getVersion( @PathParam("id") String datasetId, @PathParam("versionId") String versionId) {
-		
-        try {
-            DatasetVersion dsv = getDatasetVersionOrDie(createDataverseRequest(findUserOrDie()), versionId, findDatasetOrDie(datasetId));
-            
+        return response( req -> {
+            DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId));            
             return (dsv == null || dsv.getId() == null) ? notFound("Dataset version not found")
                                                         : ok(json(dsv));
-            
-        } catch (WrappedResponse ex) {
-            return ex.getResponse();
-        }
+        });
     }
 	
     @GET
 	@Path("{id}/versions/{versionId}/files")
     public Response getVersionFiles( @PathParam("id") String datasetId, @PathParam("versionId") String versionId) {
-        try {
-            return ok( jsonFileMetadatas(
-                                            getDatasetVersionOrDie(createDataverseRequest(findUserOrDie()), 
-                                                                versionId, 
-                                                                findDatasetOrDie(datasetId)).getFileMetadatas()));
-        } catch (WrappedResponse ex) {
-            return ex.getResponse();
-        }
+        return response( req -> ok( jsonFileMetadatas(
+                         getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId)).getFileMetadatas())) );
     }
     
     @GET
 	@Path("{id}/versions/{versionId}/metadata")
     public Response getVersionMetadata( @PathParam("id") String datasetId, @PathParam("versionId") String versionId) {
-		
-        try {
-            return ok(
+		return response( req -> ok(
                     jsonByBlocks(
-                        getDatasetVersionOrDie( createDataverseRequest(findUserOrDie()), versionId, findDatasetOrDie(datasetId) )
-                                .getDatasetFields()));
-            
-        } catch (WrappedResponse ex) {
-            return ex.getResponse();
-        }
+                        getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId) )
+                                .getDatasetFields())));
     }
     
     @GET
@@ -289,8 +253,8 @@ public class Datasets extends AbstractApiBean {
                                              @PathParam("versionNumber") String versionNumber, 
                                              @PathParam("block") String blockName ) {
 		
-        try {
-            DatasetVersion dsv = getDatasetVersionOrDie(createDataverseRequest(findUserOrDie()), versionNumber, findDatasetOrDie(datasetId) );
+        return response( req -> {
+            DatasetVersion dsv = getDatasetVersionOrDie(req, versionNumber, findDatasetOrDie(datasetId) );
             
             Map<MetadataBlock, List<DatasetField>> fieldsByBlock = DatasetField.groupByBlock(dsv.getDatasetFields());
             for ( Map.Entry<MetadataBlock, List<DatasetField>> p : fieldsByBlock.entrySet() ) {
@@ -299,11 +263,7 @@ public class Datasets extends AbstractApiBean {
                 }
             }
             return notFound("metadata block named " + blockName + " not found");
-            
-        } catch (WrappedResponse ex) {
-            return ex.getResponse();
-        }
-		
+        });
     }
 	
     @DELETE
@@ -312,45 +272,36 @@ public class Datasets extends AbstractApiBean {
         if ( ! ":draft".equals(versionId) ) {
             return badRequest("Only the :draft version can be deleted");
         }
-        
-        try {
-            execCommand( new DeleteDatasetVersionCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(id)) );
+
+        return response( req -> {
+            execCommand( new DeleteDatasetVersionCommand(req, findDatasetOrDie(id)) );
             return ok("Draft version of dataset " + id + " deleted");
-        } catch (WrappedResponse ex) {
-            return ex.getResponse();
-        }
+        });
     }
         
     
     @GET
     @Path("{id}/modifyRegistration")
     public Response updateDatasetTargetURL(@PathParam("id") String id ) {
-
-        try {
-            execCommand(new UpdateDatasetTargetURLCommand(findDatasetOrDie(id), createDataverseRequest(findUserOrDie())));
+        return response( req -> {
+            execCommand(new UpdateDatasetTargetURLCommand(findDatasetOrDie(id), req));
             return ok("Dataset " + id + " target url updated");
-
-        } catch (WrappedResponse ex) {
-            return ex.getResponse();
-        }
-
+        });
     }
     
     @GET
     @Path("/modifyRegistrationAll")
     public Response updateDatasetTargetURLAll() {
-        List<Dataset> allDatasets = datasetService.findAll();
-
-        for (Dataset ds : allDatasets){           
-   
-            try {
-                execCommand(new UpdateDatasetTargetURLCommand(findDatasetOrDie(ds.getId().toString()), createDataverseRequest(findUserOrDie())));
-            } catch (WrappedResponse ex) {
-                Logger.getLogger(Datasets.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            
-        }
-        return ok("Update All Dataset target url completed");
+        return response( req -> {
+            datasetService.findAll().forEach( ds -> {
+                try {
+                    execCommand(new UpdateDatasetTargetURLCommand(findDatasetOrDie(ds.getId().toString()), req));
+                } catch (WrappedResponse ex) {
+                    Logger.getLogger(Datasets.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            });
+            return ok("Update All Dataset target url completed");
+        });
     }
   
     @PUT
@@ -450,91 +401,6 @@ public class Datasets extends AbstractApiBean {
         }
     }
 
-
-    private <T> T handleVersion( String versionId, DsVersionHandler<T> hdl )
-        throws WrappedResponse {
-        switch (versionId) {
-			case ":latest": return hdl.handleLatest();
-			case ":draft": return hdl.handleDraft();
-            case ":latest-published": return hdl.handleLatestPublished();
-			default:
-                try {
-                    String[] versions = versionId.split("\\.");
-                    switch (versions.length) {
-                        case 1:
-                            return hdl.handleSpecific(Long.parseLong(versions[0]), (long)0.0);
-                        case 2:
-                            return hdl.handleSpecific( Long.parseLong(versions[0]), Long.parseLong(versions[1]) );
-                        default:
-                            throw new WrappedResponse(error( Response.Status.BAD_REQUEST, "Illegal version identifier '" + versionId + "'"));
-                    }
-                } catch ( NumberFormatException nfe ) {
-                    throw new WrappedResponse( error( Response.Status.BAD_REQUEST, "Illegal version identifier '" + versionId + "'") );
-                }
-		}
-    }
-    
-    private DatasetVersion getDatasetVersionOrDie( final DataverseRequest req, String versionNumber, final Dataset ds ) throws WrappedResponse {
-        DatasetVersion dsv = execCommand( handleVersion(versionNumber, new DsVersionHandler<Command<DatasetVersion>>(){
-
-                @Override
-                public Command<DatasetVersion> handleLatest() {
-                    return new GetLatestAccessibleDatasetVersionCommand(req, ds);
-                }
-
-                @Override
-                public Command<DatasetVersion> handleDraft() {
-                    return new GetDraftDatasetVersionCommand(req, ds);
-                }
-
-                @Override
-                public Command<DatasetVersion> handleSpecific(long major, long minor) {
-                    return new GetSpecificPublishedDatasetVersionCommand(req, ds, major, minor);
-                }
-
-                @Override
-                public Command<DatasetVersion> handleLatestPublished() {
-                    return new GetLatestPublishedDatasetVersionCommand(req, ds);
-                }
-            }));
-        if ( dsv == null || dsv.getId() == null ) {
-            throw new WrappedResponse( notFound("Dataset version " + versionNumber + " of dataset " + ds.getId() + " not found") );
-        }
-        return dsv;
-    }
-    
-    Dataset findDatasetOrDie( String id ) throws WrappedResponse {
-        Dataset dataset;
-        if ( id.equals(PERSISTENT_ID_KEY) ) {
-            String persistentId = getRequestParameter(PERSISTENT_ID_KEY.substring(1));
-            if ( persistentId == null ) {
-                throw new WrappedResponse( 
-                        badRequest("When accessing a dataset based on persistent id, "
-                                + "a " + PERSISTENT_ID_KEY.substring(1) + " query parameter "
-                                + "must be present"));
-            }
-            dataset = datasetService.findByGlobalId(persistentId);
-            if (dataset == null) {
-                throw new WrappedResponse( notFound("dataset " + persistentId + " not found") );
-            }   
-            return dataset;
-            
-        } else {
-            try {
-                dataset = datasetService.find( Long.parseLong(id) );
-                if (dataset == null) {
-                    throw new WrappedResponse( notFound("dataset " + id + " not found") );
-                }   
-                return dataset;
-            } catch ( NumberFormatException nfe ) {
-                throw new WrappedResponse( 
-                        badRequest("Bad dataset id number: '" + id + "'"));
-            }
-        }
-        
-    }
-    
-    
     /**
      * @todo Implement this for real as part of
      * https://github.com/IQSS/dataverse/issues/2579
@@ -615,52 +481,127 @@ public class Datasets extends AbstractApiBean {
     @GET
     @Path("{identifier}/assignments")
     public Response getAssignments(@PathParam("identifier") String id) {
-        return response( ()-> 
+        return response( req -> 
             ok( execCommand(
-                       new ListRoleAssignments(createDataverseRequest(findUserOrDie()), findDatasetOrDie(id)))
+                       new ListRoleAssignments(req, findDatasetOrDie(id)))
                      .stream().map(ra->json(ra)).collect(toJsonArray())) );
     }
 
     @GET
     @Path("{id}/privateUrl")
     public Response getPrivateUrlData(@PathParam("id") String idSupplied) {
-        try {
-            PrivateUrl privateUrl = execCommand(new GetPrivateUrlCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(idSupplied)));
-            if (privateUrl != null) {
-                return ok(json(privateUrl));
-            } else {
-                return error(Response.Status.NOT_FOUND, "Private URL not found.");
-            }
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
-        }
+        return response( req -> {
+            PrivateUrl privateUrl = execCommand(new GetPrivateUrlCommand(req, findDatasetOrDie(idSupplied)));
+            return (privateUrl != null) ? ok(json(privateUrl)) 
+                                        : error(Response.Status.NOT_FOUND, "Private URL not found.");
+        });
     }
 
     @POST
     @Path("{id}/privateUrl")
     public Response createPrivateUrl(@PathParam("id") String idSupplied) {
-        return response( ()-> 
+        return response( req -> 
                 ok(json(execCommand(
-                        new CreatePrivateUrlCommand(createDataverseRequest(findUserOrDie()), 
-                                                    findDatasetOrDie(idSupplied))))));
+                        new CreatePrivateUrlCommand(req, findDatasetOrDie(idSupplied))))));
     }
 
     @DELETE
     @Path("{id}/privateUrl")
     public Response deletePrivateUrl(@PathParam("id") String idSupplied) {
-        try {
-            User user = findUserOrDie();
+        return response( req -> {
             Dataset dataset = findDatasetOrDie(idSupplied);
-            PrivateUrl privateUrl = execCommand(new GetPrivateUrlCommand(createDataverseRequest(user), dataset));
+            PrivateUrl privateUrl = execCommand(new GetPrivateUrlCommand(req, dataset));
             if (privateUrl != null) {
-                execCommand(new DeletePrivateUrlCommand(createDataverseRequest(user), dataset));
+                execCommand(new DeletePrivateUrlCommand(req, dataset));
                 return ok("Private URL deleted.");
             } else {
-                return error(Response.Status.NOT_FOUND, "No Private URL to delete.");
+                return notFound("No Private URL to delete.");
             }
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
-        }
+        });
     }
+    
+    private Dataset findDatasetOrDie( String id ) throws WrappedResponse {
+        Dataset dataset;
+        if ( id.equals(PERSISTENT_ID_KEY) ) {
+            String persistentId = getRequestParameter(PERSISTENT_ID_KEY.substring(1));
+            if ( persistentId == null ) {
+                throw new WrappedResponse( 
+                        badRequest("When accessing a dataset based on persistent id, "
+                                + "a " + PERSISTENT_ID_KEY.substring(1) + " query parameter "
+                                + "must be present"));
+            }
+            dataset = datasetService.findByGlobalId(persistentId);
+            if (dataset == null) {
+                throw new WrappedResponse( notFound("dataset " + persistentId + " not found") );
+            }   
+            return dataset;
+            
+        } else {
+            try {
+                dataset = datasetService.find( Long.parseLong(id) );
+                if (dataset == null) {
+                    throw new WrappedResponse( notFound("dataset " + id + " not found") );
+                }   
+                return dataset;
+            } catch ( NumberFormatException nfe ) {
+                throw new WrappedResponse( 
+                        badRequest("Bad dataset id number: '" + id + "'"));
+            }
+        }
+        
+    }
+    
+    
+    private <T> T handleVersion( String versionId, DsVersionHandler<T> hdl )
+        throws WrappedResponse {
+        switch (versionId) {
+			case ":latest": return hdl.handleLatest();
+			case ":draft": return hdl.handleDraft();
+            case ":latest-published": return hdl.handleLatestPublished();
+			default:
+                try {
+                    String[] versions = versionId.split("\\.");
+                    switch (versions.length) {
+                        case 1:
+                            return hdl.handleSpecific(Long.parseLong(versions[0]), (long)0.0);
+                        case 2:
+                            return hdl.handleSpecific( Long.parseLong(versions[0]), Long.parseLong(versions[1]) );
+                        default:
+                            throw new WrappedResponse(error( Response.Status.BAD_REQUEST, "Illegal version identifier '" + versionId + "'"));
+                    }
+                } catch ( NumberFormatException nfe ) {
+                    throw new WrappedResponse( error( Response.Status.BAD_REQUEST, "Illegal version identifier '" + versionId + "'") );
+                }
+		}
+    }
+    
+    private DatasetVersion getDatasetVersionOrDie( final DataverseRequest req, String versionNumber, final Dataset ds ) throws WrappedResponse {
+        DatasetVersion dsv = execCommand( handleVersion(versionNumber, new DsVersionHandler<Command<DatasetVersion>>(){
 
+                @Override
+                public Command<DatasetVersion> handleLatest() {
+                    return new GetLatestAccessibleDatasetVersionCommand(req, ds);
+                }
+
+                @Override
+                public Command<DatasetVersion> handleDraft() {
+                    return new GetDraftDatasetVersionCommand(req, ds);
+                }
+
+                @Override
+                public Command<DatasetVersion> handleSpecific(long major, long minor) {
+                    return new GetSpecificPublishedDatasetVersionCommand(req, ds, major, minor);
+                }
+
+                @Override
+                public Command<DatasetVersion> handleLatestPublished() {
+                    return new GetLatestPublishedDatasetVersionCommand(req, ds);
+                }
+            }));
+        if ( dsv == null || dsv.getId() == null ) {
+            throw new WrappedResponse( notFound("Dataset version " + versionNumber + " of dataset " + ds.getId() + " not found") );
+        }
+        return dsv;
+    }
+    
 }

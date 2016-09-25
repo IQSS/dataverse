@@ -5,14 +5,10 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.brief;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import javax.ws.rs.PathParam;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
 
 /**
  * Api bean for managing metadata blocks.
@@ -24,12 +20,7 @@ public class MetadataBlocks extends AbstractApiBean {
     
     @GET
     public Response list()  {
-        JsonArrayBuilder bld = Json.createArrayBuilder();
-        for ( MetadataBlock block : metadataBlockSvc.listMetadataBlocks() )  {
-            bld.add( brief.json(block) );
-        }
-        
-        return ok(bld);
+        return ok(metadataBlockSvc.listMetadataBlocks().stream().map(brief::json).collect(toJsonArray()));
     }
     
     @Path("{identifier}")
