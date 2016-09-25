@@ -29,7 +29,7 @@ public class MetadataBlocks extends AbstractApiBean {
             bld.add( brief.json(block) );
         }
         
-        return okResponse(bld);
+        return ok(bld);
     }
     
     @Path("{identifier}")
@@ -37,7 +37,7 @@ public class MetadataBlocks extends AbstractApiBean {
     public Response getBlock( @PathParam("identifier") String idtf ) {
         MetadataBlock b = findMetadataBlock(idtf);
         
-        return  (b != null ) ? okResponse(json(b)) : notFound("Can't find metadata block '" + idtf + "'");
+        return  (b != null ) ? ok(json(b)) : notFound("Can't find metadata block '" + idtf + "'");
     }
     
 }

@@ -51,7 +51,7 @@ public class TestApi extends AbstractApiBean {
     @Path("echo/{whatever}")
     @GET
     public Response echo( @PathParam("whatever") String body ) {
-        return okResponse(body);
+        return ok(body);
     }
     
     @Path("permissions/{dvo}")
@@ -67,14 +67,14 @@ public class TestApi extends AbstractApiBean {
                 JsonObjectBuilder bld = Json.createObjectBuilder();
                 bld.add("user", aUser.getIdentifier() );
                 bld.add("permissions", json(permissionSvc.permissionsFor(createDataverseRequest(aUser), dvObj)) );
-                return okResponse(bld);
+                return ok(bld);
 
             } catch (WrappedResponse wr) {
                 return wr.getResponse();
             }
         } catch (Exception e) {
             logger.log( Level.SEVERE, "Error while testing permissions", e );
-            return errorResponse(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
+            return error(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
 
@@ -83,7 +83,7 @@ public class TestApi extends AbstractApiBean {
     public Response findRoleAssignee(@PathParam("idtf") String idtf) {
         RoleAssignee ra = roleAssigneeSvc.getRoleAssignee(idtf);
         return (ra == null) ? notFound("Role Assignee '" + idtf + "' not found.")
-                : okResponse(json(ra.getDisplayInfo()));
+                : ok(json(ra.getDisplayInfo()));
     }
     
     @Path("bcrypt/encrypt/{word}")
@@ -107,7 +107,7 @@ public class TestApi extends AbstractApiBean {
     @GET
     public Response testUserLookup() {
         try {
-            return okResponse( json(findAuthenticatedUserOrDie()) );
+            return ok( json(findAuthenticatedUserOrDie()) );
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
@@ -122,7 +122,7 @@ public class TestApi extends AbstractApiBean {
         }
         Set<ExplicitGroup> groups = explicitGroups.findGroups(roleAssignee);
         logger.log(Level.INFO, "Groups for {0}: {1}", new Object[]{roleAssignee, groups});
-        return okResponse( groups.stream().map( g->json(g).build()).collect(toJsonArray()) );
+        return ok( groups.stream().map( g->json(g) ).collect(toJsonArray()) );
     }
     
     @Path("ipGroups/containing/{address}")
@@ -137,7 +137,7 @@ public class TestApi extends AbstractApiBean {
             r.add("groups", ipGroupsSvc.findAllIncludingIp(addr).stream()
                     .map( IpGroup::toString )
                     .collect(stringsToJsonArray()));
-            return okResponse( r );
+            return ok( r );
             
         } catch ( IllegalArgumentException iae ) {
             return badRequest(addrStr + " is not a valid address: " + iae.getMessage());

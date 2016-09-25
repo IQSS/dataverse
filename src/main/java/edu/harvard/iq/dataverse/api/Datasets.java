@@ -8,10 +8,8 @@ import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
-import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.User;
@@ -78,9 +76,6 @@ public class Datasets extends AbstractApiBean {
     DatasetServiceBean datasetService;
 
     @EJB
-    DataverseServiceBean dataverseService;
-    
-    @EJB
     DOIEZIdServiceBean doiEZIdServiceBean;
 
     @EJB
@@ -116,96 +111,17 @@ public class Datasets extends AbstractApiBean {
 
         try {
             final DataverseRequest r = createDataverseRequest(findUserOrDie());
-
+                
             Dataset retrieved = execCommand(new GetDatasetCommand(r, findDatasetOrDie(id)));
             DatasetVersion latest = execCommand(new GetLatestAccessibleDatasetVersionCommand(r, retrieved));
             final JsonObjectBuilder jsonbuilder = json(retrieved);
 
-            return okResponse(jsonbuilder.add("latestVersion", (latest != null) ? json(latest) : null));
+            return ok(jsonbuilder.add("latestVersion", (latest != null) ? json(latest) : null));
         } catch (WrappedResponse ex) {
             return ex.refineResponse("GETting dataset " + id + " failed.");
         }
 
     }
-    
-    /* An experimental method for creating a new dataset, from scratch, all from json metadata file
-    @POST
-    @Path("")
-    public Response createDataset(String jsonBody) {
-        Dataset importedDataset = null; 
-        try {
-            final DataverseRequest r = createDataverseRequest(findUserOrDie());
-            
-            StringReader rdr = new StringReader(jsonBody);
-            JsonObject json = Json.createReader(rdr).readObject();
-            JsonParser parser = new JsonParser(datasetfieldService, metadataBlockService, settingsService);
-            parser.setLenient(true);
-            Dataset ds = parser.parseDataset(json);
-
-            
-            Dataverse owner = dataverseService.find(1L);
-            ds.setOwner(owner);
-            ds.getLatestVersion().setDatasetFields(ds.getLatestVersion().initDatasetFields());
-
-            // Check data against required contraints
-            List<ConstraintViolation> violations = ds.getVersions().get(0).validateRequired();
-            if (!violations.isEmpty()) {
-                // For migration and harvest, add NA for missing required values
-                for (ConstraintViolation v : violations) {
-                    DatasetField f = ((DatasetField) v.getRootBean());
-                    f.setSingleValue(DatasetField.NA_VALUE);
-                }
-            }
-
-            
-            Set<ConstraintViolation> invalidViolations = ds.getVersions().get(0).validate();
-            ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-            Validator validator = factory.getValidator();
-            if (!invalidViolations.isEmpty()) {
-                for (ConstraintViolation v : invalidViolations) {
-                    DatasetFieldValue f = ((DatasetFieldValue) v.getRootBean());
-                    boolean fixed = false;
-                    boolean converted = false;
-                    // TODO: Is this scrubbing something we want to continue doing? 
-                    //
-                    //if (settingsService.isTrueForKey(SettingsServiceBean.Key.ScrubMigrationData, false)) {
-                    //    fixed = processMigrationValidationError(f, cleanupLog, metadataFile.getName());
-                    //    converted = true;
-                    //    if (fixed) {
-                    //        Set<ConstraintViolation<DatasetFieldValue>> scrubbedViolations = validator.validate(f);
-                    //        if (!scrubbedViolations.isEmpty()) {
-                    //            fixed = false;
-                    //        }
-                    //    }
-                    //}
-                    if (!fixed) {
-                        String msg = "Field: " + f.getDatasetField().getDatasetFieldType().getDisplayName() + "; "
-                                + "Invalid value:  '" + f.getValue() + "'" + " Converted Value:'" + DatasetField.NA_VALUE + "'";
-                        Logger.getLogger(Datasets.class.getName()).log(Level.INFO, null, msg);
-                        f.setValue(DatasetField.NA_VALUE);
-                    }
-                }
-            }
-
-            //ds.setHarvestedFrom(harvestingClient);
-            //ds.setHarvestIdentifier(harvestIdentifier);
-            
-                importedDataset = engineSvc.submit(new CreateDatasetCommand(ds, r, false, ImportUtil.ImportType.HARVEST));
-
-        } catch (JsonParseException ex) {
-            Logger.getLogger(Datasets.class.getName()).log(Level.INFO, null, "Error parsing datasetVersion: " + ex.getMessage());
-            return errorResponse(Response.Status.NOT_FOUND, "error parsing dataset");
-        } catch (CommandException ex) {
-            Logger.getLogger(Datasets.class.getName()).log(Level.INFO, null, "Error excuting Create dataset command: " + ex.getMessage());  
-            return errorResponse(Response.Status.NOT_FOUND, "error executing create dataset command");
-        } catch (WrappedResponse ex) {
-            return ex.refineResponse("Error: "+ex.getWrappedMessageWhenJson());
-        }
-        
-        final JsonObjectBuilder jsonbuilder = json(importedDataset);
-
-        return okResponse(jsonbuilder.add("latestVersion", json(importedDataset.getLatestVersion())));
-    } */
     
     // TODO: 
     // This API call should, ideally, call findUserOrDie() and the GetDatasetCommand 
@@ -221,7 +137,7 @@ public class Datasets extends AbstractApiBean {
         try {
             Dataset dataset = datasetService.findByGlobalId(persistentId);
             if (dataset == null) {
-                return errorResponse(Response.Status.NOT_FOUND, "A dataset with the persistentId " + persistentId + " could not be found.");
+                return error(Response.Status.NOT_FOUND, "A dataset with the persistentId " + persistentId + " could not be found.");
             }
             
             ExportService instance = ExportService.getInstance();
@@ -248,7 +164,7 @@ public class Datasets extends AbstractApiBean {
                     .type(mediaType).
                     build();
         } catch (Exception wr) {
-            return errorResponse(Response.Status.FORBIDDEN, "Export Failed");
+            return error(Response.Status.FORBIDDEN, "Export Failed");
         }
     }
 
@@ -258,7 +174,7 @@ public class Datasets extends AbstractApiBean {
 		
 		try {
 			execCommand( new DeleteDatasetCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(id)));
-			return okResponse("Dataset " + id + " deleted");
+			return ok("Dataset " + id + " deleted");
 			
 		} catch (WrappedResponse ex) {
 			return ex.refineResponse( "Failed to delete dataset " + id );
@@ -271,7 +187,7 @@ public class Datasets extends AbstractApiBean {
 	public Response destroyDataset( @PathParam("id") String id) {
 		try {
 			execCommand( new DestroyDatasetCommand(findDatasetOrDie(id), createDataverseRequest(findUserOrDie()) ));
-			return okResponse("Dataset " + id + " destroyed");
+			return ok("Dataset " + id + " destroyed");
 			
 		} catch (WrappedResponse ex) {
 			return ex.refineResponse( "Failed to detroy dataset " + id );
@@ -295,7 +211,7 @@ public class Datasets extends AbstractApiBean {
 
                 execCommand(new SetDatasetCitationDateCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(id), dsfType));
                 
-                return okResponse("Citation Date for dataset " + id + " set to: " + (dsfType != null ? dsfType.getDisplayName() : "default"));
+                return ok("Citation Date for dataset " + id + " set to: " + (dsfType != null ? dsfType.getDisplayName() : "default"));
 
             } catch (WrappedResponse ex) {
                 return ex.refineResponse("Unable to set citation date for dataset " + id + ".");
@@ -305,29 +221,23 @@ public class Datasets extends AbstractApiBean {
 	@DELETE
 	@Path("{id}/citationdate")
 	public Response useDefaultCitationDate( @PathParam("id") String id) {
-            try {
-                execCommand(new SetDatasetCitationDateCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(id), null));
-                return okResponse("Citation Date for dataset " + id + " set to default");
-            } catch (WrappedResponse ex) {
-                return ex.refineResponse("Unable to restore default citation date for dataset " + id + ".");
-            }
+        return response( ()->{
+            execCommand(new SetDatasetCitationDateCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(id), null));
+            return ok("Citation Date for dataset " + id + " set to default");
+        });
 	}         
 	
 	@GET
 	@Path("{id}/versions")
     public Response listVersions( @PathParam("id") String id ) {
-        try {
-            JsonArrayBuilder bld = Json.createArrayBuilder();
-            for ( DatasetVersion dsv : execCommand(
-                    new ListVersionsCommand(
-                            createDataverseRequest(findUserOrDie()), findDatasetOrDie(id)) ) ) {
-                bld.add( json(dsv) );
-            }
-            return okResponse( bld );
-            
-        } catch (WrappedResponse ex) {
-            return ex.getResponse();
-        }
+        return response( ()->{
+            return ok( 
+                    execCommand(
+                        new ListVersionsCommand(createDataverseRequest(findUserOrDie()),
+                                                findDatasetOrDie(id)) )
+                        .stream()
+                        .map( d -> json(d) )
+                        .collect(toJsonArray()));});
     }
 	
 	@GET
@@ -338,7 +248,7 @@ public class Datasets extends AbstractApiBean {
             DatasetVersion dsv = getDatasetVersionOrDie(createDataverseRequest(findUserOrDie()), versionId, findDatasetOrDie(datasetId));
             
             return (dsv == null || dsv.getId() == null) ? notFound("Dataset version not found")
-                                                        : okResponse(json(dsv));
+                                                        : ok(json(dsv));
             
         } catch (WrappedResponse ex) {
             return ex.getResponse();
@@ -349,7 +259,7 @@ public class Datasets extends AbstractApiBean {
 	@Path("{id}/versions/{versionId}/files")
     public Response getVersionFiles( @PathParam("id") String datasetId, @PathParam("versionId") String versionId) {
         try {
-            return okResponse( jsonFileMetadatas(
+            return ok( jsonFileMetadatas(
                                             getDatasetVersionOrDie(createDataverseRequest(findUserOrDie()), 
                                                                 versionId, 
                                                                 findDatasetOrDie(datasetId)).getFileMetadatas()));
@@ -363,7 +273,7 @@ public class Datasets extends AbstractApiBean {
     public Response getVersionMetadata( @PathParam("id") String datasetId, @PathParam("versionId") String versionId) {
 		
         try {
-            return okResponse(
+            return ok(
                     jsonByBlocks(
                         getDatasetVersionOrDie( createDataverseRequest(findUserOrDie()), versionId, findDatasetOrDie(datasetId) )
                                 .getDatasetFields()));
@@ -385,7 +295,7 @@ public class Datasets extends AbstractApiBean {
             Map<MetadataBlock, List<DatasetField>> fieldsByBlock = DatasetField.groupByBlock(dsv.getDatasetFields());
             for ( Map.Entry<MetadataBlock, List<DatasetField>> p : fieldsByBlock.entrySet() ) {
                 if ( p.getKey().getName().equals(blockName) ) {
-                    return okResponse( json(p.getKey(), p.getValue()) );
+                    return ok( json(p.getKey(), p.getValue()) );
                 }
             }
             return notFound("metadata block named " + blockName + " not found");
@@ -405,7 +315,7 @@ public class Datasets extends AbstractApiBean {
         
         try {
             execCommand( new DeleteDatasetVersionCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(id)) );
-            return okResponse("Draft version of dataset " + id + " deleted");
+            return ok("Draft version of dataset " + id + " deleted");
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
@@ -418,7 +328,7 @@ public class Datasets extends AbstractApiBean {
 
         try {
             execCommand(new UpdateDatasetTargetURLCommand(findDatasetOrDie(id), createDataverseRequest(findUserOrDie())));
-            return okResponse("Dataset " + id + " target url updated");
+            return ok("Dataset " + id + " target url updated");
 
         } catch (WrappedResponse ex) {
             return ex.getResponse();
@@ -440,7 +350,7 @@ public class Datasets extends AbstractApiBean {
             }
             
         }
-        return okResponse("Update All Dataset target url completed");
+        return ok("Update All Dataset target url completed");
     }
   
     @PUT
@@ -448,7 +358,7 @@ public class Datasets extends AbstractApiBean {
 	public Response updateDraftVersion( String jsonBody, @PathParam("id") String id,  @PathParam("versionId") String versionId ){
         
         if ( ! ":draft".equals(versionId) ) {
-            return errorResponse( Response.Status.BAD_REQUEST, "Only the :draft version can be updated");
+            return error( Response.Status.BAD_REQUEST, "Only the :draft version can be updated");
         }
         
         try ( StringReader rdr = new StringReader(jsonBody) ) {
@@ -470,11 +380,11 @@ public class Datasets extends AbstractApiBean {
             DatasetVersion managedVersion = execCommand( updateDraft
                                                              ? new UpdateDatasetVersionCommand(req, incomingVersion)
                                                              : new CreateDatasetVersionCommand(req, ds, incomingVersion));
-            return okResponse( json(managedVersion) );
+            return ok( json(managedVersion) );
                     
         } catch (JsonParseException ex) {
             LOGGER.log(Level.SEVERE, "Semantic error parsing dataset version Json: " + ex.getMessage(), ex);
-            return errorResponse( Response.Status.BAD_REQUEST, "Error parsing dataset version: " + ex.getMessage() );
+            return error( Response.Status.BAD_REQUEST, "Error parsing dataset version: " + ex.getMessage() );
             
         } catch (WrappedResponse ex) {
             return ex.getResponse();
@@ -487,7 +397,7 @@ public class Datasets extends AbstractApiBean {
     public Response publishDataset( @PathParam("id") String id, @QueryParam("type") String type ) {
         try {
             if ( type == null ) {
-                return errorResponse( Response.Status.BAD_REQUEST, "Missing 'type' parameter (either 'major' or 'minor').");
+                return error( Response.Status.BAD_REQUEST, "Missing 'type' parameter (either 'major' or 'minor').");
             }
             
             type = type.toLowerCase();
@@ -495,19 +405,19 @@ public class Datasets extends AbstractApiBean {
             switch ( type ) {
                 case "minor": isMinor = true; break;
                 case "major": isMinor = false; break;
-                default: return errorResponse( Response.Status.BAD_REQUEST, "Illegal 'type' parameter value '" + type + "'. It needs to be either 'major' or 'minor'.");
+                default: return error( Response.Status.BAD_REQUEST, "Illegal 'type' parameter value '" + type + "'. It needs to be either 'major' or 'minor'.");
             }
             long dsId;
             try {
                 dsId = Long.parseLong(id);
             } catch ( NumberFormatException nfe ) {
-                return errorResponse( Response.Status.BAD_REQUEST, "Bad dataset id. Please provide a number.");
+                return error( Response.Status.BAD_REQUEST, "Bad dataset id. Please provide a number.");
             }
             
             Dataset ds = datasetService.find(dsId);
             
             return ( ds == null ) ? notFound("Can't find dataset with id '" + id + "'")
-                                  : okResponse( json(execCommand(new PublishDatasetCommand(ds, 
+                                  : ok( json(execCommand(new PublishDatasetCommand(ds, 
                                                                             createDataverseRequest(findAuthenticatedUserOrDie()),
                                                                             isMinor))) );
         
@@ -522,7 +432,7 @@ public class Datasets extends AbstractApiBean {
         try {
             User u = findUserOrDie();
             if (!u.isSuperuser()) {
-                return errorResponse(Response.Status.FORBIDDEN, "Not a superuser");
+                return error(Response.Status.FORBIDDEN, "Not a superuser");
             }
             Dataset dataset = findDatasetOrDie(idSupplied);
 
@@ -534,7 +444,7 @@ public class Datasets extends AbstractApiBean {
             }
             JsonObjectBuilder response = Json.createObjectBuilder();
             response.add("dataverses that link to dataset id " + datasetId, dataversesThatLinkToThisDatasetIdBuilder);
-            return okResponse(response);
+            return ok(response);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
@@ -556,10 +466,10 @@ public class Datasets extends AbstractApiBean {
                         case 2:
                             return hdl.handleSpecific( Long.parseLong(versions[0]), Long.parseLong(versions[1]) );
                         default:
-                            throw new WrappedResponse(errorResponse( Response.Status.BAD_REQUEST, "Illegal version identifier '" + versionId + "'"));
+                            throw new WrappedResponse(error( Response.Status.BAD_REQUEST, "Illegal version identifier '" + versionId + "'"));
                     }
                 } catch ( NumberFormatException nfe ) {
-                    throw new WrappedResponse( errorResponse( Response.Status.BAD_REQUEST, "Illegal version identifier '" + versionId + "'") );
+                    throw new WrappedResponse( error( Response.Status.BAD_REQUEST, "Illegal version identifier '" + versionId + "'") );
                 }
 		}
     }
@@ -595,10 +505,8 @@ public class Datasets extends AbstractApiBean {
     
     Dataset findDatasetOrDie( String id ) throws WrappedResponse {
         Dataset dataset;
-        LOGGER.info("Looking for dataset " + id);
         if ( id.equals(PERSISTENT_ID_KEY) ) {
             String persistentId = getRequestParameter(PERSISTENT_ID_KEY.substring(1));
-            LOGGER.info("Looking for dataset " + persistentId);
             if ( persistentId == null ) {
                 throw new WrappedResponse( 
                         badRequest("When accessing a dataset based on persistent id, "
@@ -638,18 +546,18 @@ public class Datasets extends AbstractApiBean {
     public Response getDdi(@QueryParam("id") long id, @QueryParam("persistentId") String persistentId, @QueryParam("dto") boolean dto) {
         boolean ddiExportEnabled = systemConfig.isDdiExportEnabled();
         if (!ddiExportEnabled) {
-            return errorResponse(Response.Status.FORBIDDEN, "Disabled");
+            return error(Response.Status.FORBIDDEN, "Disabled");
         }
         try {
             User u = findUserOrDie();
             if (!u.isSuperuser()) {
-                return errorResponse(Response.Status.FORBIDDEN, "Not a superuser");
+                return error(Response.Status.FORBIDDEN, "Not a superuser");
             }
 
             LOGGER.fine("looking up " + persistentId);
             Dataset dataset = datasetService.findByGlobalId(persistentId);
             if (dataset == null) {
-                return errorResponse(Response.Status.NOT_FOUND, "A dataset with the persistentId " + persistentId + " could not be found.");
+                return error(Response.Status.NOT_FOUND, "A dataset with the persistentId " + persistentId + " could not be found.");
             }
 
             String xml = "<codeBook>XML_BEING_COOKED</codeBook>";
@@ -686,17 +594,17 @@ public class Datasets extends AbstractApiBean {
     public Response createAssignment(String userOrGroup, @PathParam("identifier") String id, @QueryParam("key") String apiKey) {
         boolean apiTestingOnly = true;
         if (apiTestingOnly) {
-            return errorResponse(Response.Status.FORBIDDEN, "This is only for API tests.");
+            return error(Response.Status.FORBIDDEN, "This is only for API tests.");
         }
         try {
             Dataset dataset = findDatasetOrDie(id);
             RoleAssignee assignee = findAssignee(userOrGroup);
             if (assignee == null) {
-                return errorResponse(Response.Status.BAD_REQUEST, "Assignee not found");
+                return error(Response.Status.BAD_REQUEST, "Assignee not found");
             }
             DataverseRole theRole = rolesSvc.findBuiltinRoleByAlias("admin");
             String privateUrlToken = null;
-            return okResponse(
+            return ok(
                     json(execCommand(new AssignRoleCommand(assignee, theRole, dataset, createDataverseRequest(findUserOrDie()), privateUrlToken))));
         } catch (WrappedResponse ex) {
             LOGGER.log(Level.WARNING, "Can''t create assignment: {0}", ex.getMessage());
@@ -707,16 +615,10 @@ public class Datasets extends AbstractApiBean {
     @GET
     @Path("{identifier}/assignments")
     public Response getAssignments(@PathParam("identifier") String id) {
-        try {
-            JsonArrayBuilder jab = Json.createArrayBuilder();
-            for (RoleAssignment ra : execCommand(new ListRoleAssignments(createDataverseRequest(findUserOrDie()), findDatasetOrDie(id)))) {
-                jab.add(json(ra));
-            }
-            return okResponse(jab);
-        } catch (WrappedResponse ex) {
-            LOGGER.log(Level.WARNING, "Can't list assignments: {0}", ex.getMessage());
-            return ex.getResponse();
-        }
+        return response( ()-> 
+            ok( execCommand(
+                       new ListRoleAssignments(createDataverseRequest(findUserOrDie()), findDatasetOrDie(id)))
+                     .stream().map(ra->json(ra)).collect(toJsonArray())) );
     }
 
     @GET
@@ -725,9 +627,9 @@ public class Datasets extends AbstractApiBean {
         try {
             PrivateUrl privateUrl = execCommand(new GetPrivateUrlCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(idSupplied)));
             if (privateUrl != null) {
-                return okResponse(json(privateUrl));
+                return ok(json(privateUrl));
             } else {
-                return errorResponse(Response.Status.NOT_FOUND, "Private URL not found.");
+                return error(Response.Status.NOT_FOUND, "Private URL not found.");
             }
         } catch (WrappedResponse wr) {
             return wr.getResponse();
@@ -737,11 +639,10 @@ public class Datasets extends AbstractApiBean {
     @POST
     @Path("{id}/privateUrl")
     public Response createPrivateUrl(@PathParam("id") String idSupplied) {
-        try {
-            return okResponse(json(execCommand(new CreatePrivateUrlCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(idSupplied)))));
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
-        }
+        return response( ()-> 
+                ok(json(execCommand(
+                        new CreatePrivateUrlCommand(createDataverseRequest(findUserOrDie()), 
+                                                    findDatasetOrDie(idSupplied))))));
     }
 
     @DELETE
@@ -753,9 +654,9 @@ public class Datasets extends AbstractApiBean {
             PrivateUrl privateUrl = execCommand(new GetPrivateUrlCommand(createDataverseRequest(user), dataset));
             if (privateUrl != null) {
                 execCommand(new DeletePrivateUrlCommand(createDataverseRequest(user), dataset));
-                return okResponse("Private URL deleted.");
+                return ok("Private URL deleted.");
             } else {
-                return errorResponse(Response.Status.NOT_FOUND, "No Private URL to delete.");
+                return error(Response.Status.NOT_FOUND, "No Private URL to delete.");
             }
         } catch (WrappedResponse wr) {
             return wr.getResponse();

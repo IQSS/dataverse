@@ -101,7 +101,7 @@ public class Search extends AbstractApiBean {
                     filterQueries.add(filterDownToSubtree);
                 }
             } catch (Exception ex) {
-                return errorResponse(Response.Status.BAD_REQUEST, ex.getLocalizedMessage());
+                return error(Response.Status.BAD_REQUEST, ex.getLocalizedMessage());
             }
 
             // users can't change these (yet anyway)
@@ -132,7 +132,7 @@ public class Search extends AbstractApiBean {
                 }
                 String message = "Exception running search for [" + query + "] with filterQueries " + filterQueries + " and paginationStart [" + paginationStart + "]: " + sb.toString();
                 logger.info(message);
-                return errorResponse(Response.Status.INTERNAL_SERVER_ERROR, message);
+                return error(Response.Status.INTERNAL_SERVER_ERROR, message);
             }
 
             JsonArrayBuilder itemsArrayBuilder = Json.createArrayBuilder();
@@ -183,12 +183,12 @@ public class Search extends AbstractApiBean {
                  * @todo You get here if you pass only ":" as a query, for
                  * example. Should we return more or better information?
                  */
-                return errorResponse(Response.Status.BAD_REQUEST, solrQueryResponse.getError());
+                return error(Response.Status.BAD_REQUEST, solrQueryResponse.getError());
             }
             response.setHeader("Access-Control-Allow-Origin", "*");
-            return okResponse(value);
+            return ok(value);
         } else {
-            return errorResponse(Response.Status.BAD_REQUEST, "q parameter is missing");
+            return error(Response.Status.BAD_REQUEST, "q parameter is missing");
         }
     }
 
