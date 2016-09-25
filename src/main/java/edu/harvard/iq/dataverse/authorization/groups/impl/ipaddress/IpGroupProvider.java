@@ -59,21 +59,48 @@ public class IpGroupProvider implements GroupProvider<IpGroup> {
     }
     
     private IpGroup setProvider( IpGroup g ) {
-        g.setProvider(this);
+        if ( g != null ) {
+            g.setGroupProvider(this);
+        }
         return g;
     }
     
     private Set<IpGroup> updateProvider( Set<IpGroup> groups ) {
-        groups.forEach( g -> g.setProvider(this) );
+        groups.forEach( g -> g.setGroupProvider(this) );
         return groups;
     }
     
     public IpGroup store(IpGroup grp) {
-        grp.setProvider(this);
-        return ipGroupsService.store(grp);
+        grp.setGroupProvider(this);
+        final IpGroup storedGroup = ipGroupsService.store(grp);
+        storedGroup.setGroupProvider(this); // The storage might un-set the provider, e.g. for when a group is updated.
+        return storedGroup;
     }
 
     public void deleteGroup(IpGroup grp) {
         ipGroupsService.deleteGroup(grp);
+    }
+    
+    /**
+     * Finds an available name for an IP group. The name is based on the {@code base}
+     * parameter, but may be changed in case there's already a group with that name.
+     * 
+     * <strong>
+     * Note: This method might fail under very heavy loads. But we do not expect
+     * heavy creation of IP groups at this point.
+     * </strong>
+     *      
+     * @param base A base name.
+     * @return An available group name.
+     */
+    public String findAvailableName( String base ) {
+        if ( ipGroupsService.getByGroupName(base) == null ) {
+            return base;
+        }
+        int i=1;
+        while ( ipGroupsService.getByGroupName(base + "-" + i) != null ) {
+            i++;
+        }
+        return base + "-" + i;
     }
 }
