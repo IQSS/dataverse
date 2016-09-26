@@ -110,7 +110,7 @@ public class Search extends AbstractApiBean {
             SolrQueryResponse solrQueryResponse;
             try {
                 solrQueryResponse = searchService.search(
-                        user,
+                        createDataverseRequest(user),
                         subtree,
                         query,
                         filterQueries,

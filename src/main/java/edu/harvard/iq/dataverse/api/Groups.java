@@ -12,6 +12,7 @@ import javax.ws.rs.core.Response;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.annotation.PostConstruct;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -19,7 +20,9 @@ import javax.json.JsonObject;
 import javax.json.JsonString;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.PathParam;
+
 /**
  *
  * @author michael
@@ -32,22 +35,30 @@ public class Groups extends AbstractApiBean {
     private IpGroupProvider ipGroupPrv;
     private ShibGroupProvider shibGroupPrv;
     
+    Pattern legalGroupName = Pattern.compile("^[-_a-zA-Z0-9]+$");
+    
     @PostConstruct
     void postConstruct() {
         ipGroupPrv = groupSvc.getIpGroupProvider();
         shibGroupPrv = groupSvc.getShibGroupProvider();
     }
     
+    /**
+     * Creates a new {@link IpGroup}. The name of the group is based on the 
+     * {@code alias:} field, but might be changed to ensure uniqueness.
+     * @param dto 
+     * @return Response describing the created group or the error that prevented
+     *         that group from being created.
+     */
     @POST
     @Path("ip")
-    public Response createIpGroups( JsonObject dto ){
+    public Response postIpGroup( JsonObject dto ){
         try {
-           IpGroup grp = new JsonParser(null,null,null).parseIpGroup(dto);
-            
-            if ( grp.getPersistedGroupAlias()== null ) {
-                return errorResponse(Response.Status.BAD_REQUEST, "Must provide valid group alias");
-            }
-            grp.setProvider( groupSvc.getIpGroupProvider() );
+           IpGroup grp = new JsonParser().parseIpGroup(dto);
+            grp.setGroupProvider( ipGroupPrv );
+            grp.setPersistedGroupAlias(
+                    ipGroupPrv.findAvailableName( 
+                            grp.getPersistedGroupAlias()==null ? "ipGroup" : grp.getPersistedGroupAlias()));
             
             grp = ipGroupPrv.store(grp);
             return createdResponse("/groups/ip/" + grp.getPersistedGroupAlias(), json(grp) );
@@ -59,6 +70,35 @@ public class Groups extends AbstractApiBean {
         }
     }
     
+    /**
+     * Creates or updates the {@link IpGroup} named {@code groupName}.
+     * @param groupName Name of the group.
+     * @param dto data of the group.
+     * @return Response describing the created group or the error that prevented
+     *         that group from being created.
+     */
+    @PUT
+    @Path("ip/{groupName}")
+    public Response putIpGroups( @PathParam("groupName") String groupName, JsonObject dto ){
+        try {
+            if ( groupName == null || groupName.trim().isEmpty() ) {
+                return badRequest("Group name cannot be empty");
+            }
+            if ( ! legalGroupName.matcher(groupName).matches() ) {
+                return badRequest("Group name can contain only letters, digits, and the chars '-' and '_'");
+            }
+            IpGroup grp = new JsonParser().parseIpGroup(dto);
+            grp.setGroupProvider( ipGroupPrv );
+            grp.setPersistedGroupAlias( groupName );
+            grp = ipGroupPrv.store(grp);
+            return createdResponse("/groups/ip/" + grp.getPersistedGroupAlias(), json(grp) );
+        
+        } catch ( Exception e ) {
+            logger.log( Level.WARNING, "Error while storing a new IP group: " + e.getMessage(), e);
+            return errorResponse(Response.Status.INTERNAL_SERVER_ERROR, "Error: " + e.getMessage() );
+            
+        }
+    }
     
     @GET
     @Path("ip")
@@ -99,8 +139,18 @@ public class Groups extends AbstractApiBean {
         try {
             ipGroupPrv.deleteGroup(grp);
             return okResponse("Group " + grp.getAlias() + " deleted.");
-        } catch ( IllegalArgumentException ex ) {
-            return errorResponse(Response.Status.BAD_REQUEST, ex.getMessage());
+        } catch ( Exception topExp ) {
+            // get to the cause (unwraps EJB exception wrappers).
+            Throwable e = topExp;
+            while ( e.getCause() != null ) {
+                e = e.getCause();
+            }
+            
+            if ( e instanceof IllegalArgumentException ) {
+                return errorResponse(Response.Status.BAD_REQUEST, e.getMessage());
+            } else {
+                throw topExp;
+            }
         }
     }
     

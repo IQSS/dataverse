@@ -10,6 +10,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -17,7 +18,6 @@ import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
-import org.jboss.logging.Logger;
 
 /**
  * A bean providing the {@link ExplicitGroupProvider}s with container services,
@@ -115,15 +115,74 @@ public class ExplicitGroupServiceBean {
     }
     
     /**
-     * Finds all the groups {@code ra} belongs to in the context of {@code o}. In effect,
+     * Finds all the explicit groups {@code ra} is a member of.
+     * @param ra the role assignee whose membership list we seek
+     * @return set of the explicit groups that contain {@code ra}.
+     */
+    public Set<ExplicitGroup> findGroups( RoleAssignee ra ) {
+        return findClosure(findDirectlyContainingGroups(ra));
+    }
+    
+    /**
+     * Finds all the explicit groups {@code ra} is <b>directly</b> a member of.
+     * To find all these groups and the groups the contain them (recursively upwards),
+     * consider using {@link #findGroups(edu.harvard.iq.dataverse.authorization.RoleAssignee)}
+     * @param ra the role assignee whose membership list we seek
+     * @return set of the explicit groups that contain {@code ra} directly.
+     * @see #findGroups(edu.harvard.iq.dataverse.authorization.RoleAssignee)
+     */
+    public Set<ExplicitGroup> findDirectlyContainingGroups( RoleAssignee ra ) {
+        if ( ra instanceof AuthenticatedUser ) {
+            return provider.updateProvider(
+                    new HashSet<>(
+                            em.createNamedQuery("ExplicitGroup.findByAuthenticatedUserIdentifier", ExplicitGroup.class)
+                              .setParameter("authenticatedUserIdentifier", ra.getIdentifier().substring(1))
+                              .getResultList()
+                  ));
+        } else if ( ra instanceof ExplicitGroup ) {
+            return provider.updateProvider(
+                    new HashSet<>(
+                            em.createNamedQuery("ExplicitGroup.findByContainedExplicitGroupId", ExplicitGroup.class)
+                              .setParameter("containedExplicitGroupId", ((ExplicitGroup) ra).getId())
+                              .getResultList()
+                  ));
+        } else {
+            return provider.updateProvider(
+                    new HashSet<>(
+                            em.createNamedQuery("ExplicitGroup.findByRoleAssgineeIdentifier", ExplicitGroup.class)
+                              .setParameter("roleAssigneeIdentifier", ra.getIdentifier())
+                              .getResultList()
+                  ));
+        }
+    }
+
+    /**
+     * Finds all the groups {@code ra} is a member of, in the context of {@code o}.
+     * This includes both direct and indirect memberships.
+     * @param ra The role assignee whose memberships we seek.
+     * @param o The {@link DvObject} whose context we search.
+     * @return All the groups in {@code o}'s context that {@code ra} is a member of.
+     */
+    public Set<ExplicitGroup> findGroups( RoleAssignee ra, DvObject o ) {
+        Set<ExplicitGroup> directGroups = findDirectGroups(ra, o);
+        Set<ExplicitGroup> closure = findClosure(directGroups);
+        return closure.stream()
+                .filter( g -> g.owner.isAncestorOf(o) )
+                .collect( Collectors.toSet() );
+    }
+    
+    /**
+     * Finds all the groups {@code ra} directly belongs to in the context of {@code o}. In effect,
      * collects all the groups {@code ra} belongs to and that are defined at {@code o}
-     * or one of its ancestors. Does not take group containment into account.
+     * or one of its ancestors.
+     * 
+     * <B>Does not take group containment into account.</B> Use
      * 
      * @param ra The role assignee that belongs to the groups
      * @param o the DvObject that defines the context of the search.
      * @return All the groups ra belongs to in the context of o.
      */
-    public Set<ExplicitGroup> findGroups( RoleAssignee ra, DvObject o ) {
+    public Set<ExplicitGroup> findDirectGroups( RoleAssignee ra, DvObject o ) {
         if ( o == null ) return Collections.emptySet();
         List<ExplicitGroup> groupList = new LinkedList<>();
         
@@ -153,6 +212,33 @@ public class ExplicitGroupServiceBean {
         }
         
         return provider.updateProvider( new HashSet<>(groupList) );
+    }
+    
+    /**
+     * 
+     * Finds all the groups that contain the groups in {@code seed} (including {@code seed}), and the
+     * groups that contain these groups, an so on.
+     * 
+     * @param seed the initial set of groups.
+     * @return Transitive closure (based on group  containment) of the groups in {@code seed}.
+     */
+    protected Set<ExplicitGroup> findClosure( Set<ExplicitGroup> seed ) {
+        Set result = new HashSet<>();
+        
+        // The set of groups whose parents were not visited yet.
+        Set<ExplicitGroup> fringe = new HashSet<>(seed);
+        while ( ! fringe.isEmpty() ) {
+           ExplicitGroup g = fringe.iterator().next();
+           fringe.remove(g);
+           result.add(g);
+           
+           // add all of g's parents to the fringe, unless already visited.
+           findDirectlyContainingGroups(g).stream()
+                   .filter( eg -> !(result.contains(eg)||fringe.contains(eg) ))
+                   .forEach( fringe::add );
+        }
+
+        return result;
     }
     
 }
