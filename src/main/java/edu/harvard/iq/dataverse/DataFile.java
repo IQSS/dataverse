@@ -65,6 +65,22 @@ public class DataFile extends DvObject {
     @Column( nullable = false )
     private String md5;
 
+    
+    /* start: FILE REPLACE ATTRIBUTES */
+    
+    // For the initial version of a file, this will be equivalent to the ID
+    // Default is -1 until the intial id is generated
+    @Column(nullable=false)
+    private Long rootDataFileId;
+    
+    // null for initial version; subsequent versions will point to the previous file
+    //
+    @Column(nullable=true)
+    private Long previousDataFileID;
+    /* endt: FILE REPLACE ATTRIBUTES */
+    
+    
+    
     @Column(nullable=true)
     private Long filesize;      // Number of bytes in file.  Allows 0 and null, negative numbers not permitted
 
@@ -108,11 +124,23 @@ public class DataFile extends DvObject {
 
     public DataFile() {
         this.fileMetadatas = new ArrayList<>();
+        initFileReplaceAttributes();
     }    
 
     public DataFile(String contentType) {
         this.contentType = contentType;
         this.fileMetadatas = new ArrayList<>();
+        initFileReplaceAttributes();
+    }
+    
+    
+    /**
+     * All constructors should use this method
+     * to intitialize this file replace attributes
+     */
+    private void initFileReplaceAttributes(){
+        this.rootDataFileId = new Long(-1);
+        this.previousDataFileID = null;
     }
     
     // The dvObject field "name" should not be used in
@@ -619,4 +647,38 @@ public class DataFile extends DvObject {
         }
         return false;
     }
+    
+    /**
+     *  Set rootDataFileId
+     *  @param rootDataFileId
+     */
+    public void setRootDataFileId(Long rootDataFileId){
+        this.rootDataFileId = rootDataFileId;
+    }
+
+    /**
+     *  Get for rootDataFileId
+     *  @return Long
+     */
+    public Long getRootDataFileId(){
+        return this.rootDataFileId;
+    }
+    
+
+    /**
+     *  Set previousDataFileID
+     *  @param previousDataFileID
+     */
+    public void setPreviousDataFileID(Long previousDataFileID){
+        this.previousDataFileID = previousDataFileID;
+    }
+
+    /**
+     *  Get for previousDataFileID
+     *  @return Long
+     */
+    public Long getPreviousDataFileID(){
+        return this.previousDataFileID;
+    }
+
 }
