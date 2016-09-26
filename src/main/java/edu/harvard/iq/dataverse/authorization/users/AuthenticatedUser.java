@@ -255,4 +255,13 @@ public class AuthenticatedUser implements User, Serializable {
         this.shibIdentityProvider = shibIdentityProvider;
     }
     
+    @Override
+    public String toString() {
+        return "[AuthenticatedUser identifier:" + getIdentifier() + "]";
+    }
+    
+    public String getSortByString() {
+        return this.getLastName() + " " + this.getFirstName() + " " + this.getUserIdentifier();
+    }
+    
 }

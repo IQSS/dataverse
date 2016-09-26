@@ -187,7 +187,7 @@ public abstract class AbstractApiBean {
 	protected EntityManager em;
     
     @Context
-    HttpServletRequest httpRequest;
+    protected HttpServletRequest httpRequest;
 	
     /**
      * For pretty printing (indenting) of JSON output.
