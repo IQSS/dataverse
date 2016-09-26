@@ -113,4 +113,10 @@ public class StringUtilTest {
         assertEquals(StringUtil.htmlArray2textArray(Arrays.asList("be <b>bold</b>!")), Arrays.asList("be bold!"));
         assertEquals(StringUtil.htmlArray2textArray(null), Collections.emptyList());
     }
+    
+    @Test
+    public void testNullToEmpty() {
+        assertEquals( "hello", StringUtil.nullToEmpty("hello") );
+        assertEquals( "", StringUtil.nullToEmpty(null) );
+    }
 }

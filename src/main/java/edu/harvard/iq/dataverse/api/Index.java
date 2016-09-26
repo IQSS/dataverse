@@ -572,7 +572,7 @@ public class Index extends AbstractApiBean {
         int numResultsPerPage = Integer.MAX_VALUE;
         SolrQueryResponse solrQueryResponse;
         try {
-            solrQueryResponse = searchService.search(user, subtreeScope, query, filterQueries, sortField, sortOrder, paginationStart, dataRelatedToMe, numResultsPerPage);
+            solrQueryResponse = searchService.search(createDataverseRequest(user), subtreeScope, query, filterQueries, sortField, sortOrder, paginationStart, dataRelatedToMe, numResultsPerPage);
         } catch (SearchException ex) {
             return errorResponse(Response.Status.INTERNAL_SERVER_ERROR, ex.getLocalizedMessage() + ": " + ex.getCause().getLocalizedMessage());
         }
