@@ -171,6 +171,17 @@ public class UtilIT {
         return createDatasetResponse;
     }
 
+    static Response createDatasetWithGlobalIdViaNativeApi(String dataverseAlias, String apiToken, String jsonIn,
+                                                          String importType) {
+        Response createDatasetResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(jsonIn)
+                .contentType("application/json")
+                .queryParam("importType", importType)
+                .post("/api/dataverses/" + dataverseAlias + "/datasets");
+        return createDatasetResponse;
+    }
+
     private static String getDatasetJson() {
         File datasetVersionJson = new File("scripts/search/tests/data/dataset-finch1.json");
         try {
@@ -610,6 +621,15 @@ public class UtilIT {
         assertEquals(Integer.class, fileId.getClass());
         String title = getTitleFromSwordStatement(swordStatementWithNoFiles);
         assertEquals("A Dataset with a File", title);
+    }
+
+    public static String getJson(String filename) {
+        File jsonFile = new File(filename);
+        try {
+            return new String(Files.readAllBytes(Paths.get(jsonFile.getAbsolutePath())));
+        } catch (IOException ex) {
+            return null;
+        }
     }
 
 }
