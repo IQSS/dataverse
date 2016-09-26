@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse.api;
 //import com.sun.jersey.core.header.FormDataContentDisposition;
 //import com.sun.jersey.multipart.FormDataParam;
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
@@ -48,6 +49,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolation;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 import org.mindrot.jbcrypt.BCrypt;
 
@@ -61,6 +63,8 @@ public class FileUpload extends AbstractApiBean {
     
     @EJB
     DatasetServiceBean datasetService;
+    @EJB
+    DataFileServiceBean fileService;
     @EJB
     DatasetVersionServiceBean datasetVersionService;
     @EJB
@@ -171,7 +175,7 @@ public class FileUpload extends AbstractApiBean {
     private InputStream getSampleFile(){
         
         InputStream is = null;
-        String testFileName = "/Users/rmp553/Documents/iqss-git/dataverse-helper-scripts/src/api_scripts/input/howdy2.txt";
+        String testFileName = "/Users/rmp553/Documents/iqss-git/dataverse-helper-scripts/src/api_scripts/input/howdy3.txt";
         //testFileName = "/Users/rmp553/NetBeansProjects/dataverse/src/main/java/edu/harvard/iq/dataverse/datasetutility/howdy.txt";
         try {
             is = new FileInputStream(testFileName);
@@ -236,6 +240,25 @@ public class FileUpload extends AbstractApiBean {
         }
     }
     
+    /**
+     *
+     * @param fileId
+     * @return
+     */
+    @GET
+    @Path("resave/{fileId}")
+    public Response hiReSave(@PathParam("fileId") Long fileId){
+        msgt("hiReSave: " + fileId);
+        DataFile df = fileService.find(fileId);
+        
+        if (df ==null){
+            return okResponse("file not found: " + fileId);
+        }
+        df = fileService.save(df);
+        
+        return okResponse("saved: " + df);
+    }    
+        
     @GET
     @Path("hi")
     public Response hi(){

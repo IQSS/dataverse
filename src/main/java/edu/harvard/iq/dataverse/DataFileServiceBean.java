@@ -724,15 +724,38 @@ public class DataFileServiceBean implements java.io.Serializable {
     public DataFile save(DataFile dataFile) {
         
         // datafile
-        
+        msgt("pre save");
+        msg("id : " + dataFile.getId());
+        msg("getRootDataFileId : " + dataFile.getRootDataFileId());
+        msg("getPreviousDataFileID : " + dataFile.getPreviousDataFileID());
+
         DataFile savedDataFile = em.merge(dataFile);
         
+        msgt("post save");
+        msg("id : " + savedDataFile.getId());
+        msg("getRootDataFileId : " + savedDataFile.getRootDataFileId());
+        msg("getPreviousDataFileID : " + savedDataFile.getPreviousDataFileID());
+
         // Set the initial value of the rootDataFileId
         savedDataFile = setAndCheckFileReplaceAttributes(savedDataFile);
-        
+        msgt("post post save");
+        msg("id : " + savedDataFile.getId());
+        msg("getRootDataFileId : " + savedDataFile.getRootDataFileId());
+        msg("getPreviousDataFileID : " + savedDataFile.getPreviousDataFileID());
+
+
         return savedDataFile;
     }
     
+       private void msg(String m){
+        System.out.println(m);
+    }
+    private void dashes(){
+        msg("----------------");
+    }
+    private void msgt(String m){
+        dashes(); msg(m); dashes();
+    }
     
     /*
         Make sure the file replace ids are set for a initial version 
@@ -742,24 +765,14 @@ public class DataFileServiceBean implements java.io.Serializable {
     private DataFile setAndCheckFileReplaceAttributes(DataFile savedDataFile){
             
         // Is this the initial version of a file?
-        if (savedDataFile.getPreviousDataFileID() == null){
-           
+        if (Objects.equals(savedDataFile.getRootDataFileId(), DataFile.ROOT_DATAFILE_ID_DEFAULT)){
+                   
            // YES!  Set the RootDataFileId to the Id
            savedDataFile.setRootDataFileId(savedDataFile.getId());
            
            // SAVE IT AGAIN!!!
-           savedDataFile = em.merge(savedDataFile);   
+           return em.merge(savedDataFile);   
            
-        }else{
-            // NO! This IS a previous version. Do a quick sanity check.
-            
-            // This IS a previous version, make the sure the root data file id is set
-            if (Objects.equals(savedDataFile.getRootDataFileId(), DataFile.ROOT_DATAFILE_ID_DEFAULT)){
-                String errorMessage = "The rootDataFileId should NEVER be -1 for a replacment file.  (The previousDataFileID is " + savedDataFile.getPreviousDataFileID();
-                logger.severe(errorMessage);
-                throw new IllegalStateException(errorMessage);
-            }
-            
         }
         
         // Looking Good Billy Ray! Feeling Good Louis!
@@ -928,7 +941,7 @@ public class DataFileServiceBean implements java.io.Serializable {
        if (ImageThumbConverter.isThumbnailAvailable(file)) {
            file = this.find(file.getId());
            file.setPreviewImageAvailable(true);
-           file = em.merge(file);
+           file = this.save(file); //em.merge(file);
            // (should this be done here? - TODO:)
            return true;
        }
