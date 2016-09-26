@@ -93,9 +93,6 @@ public class Datasets extends AbstractApiBean {
 
     @EJB
     DataverseServiceBean dataverseService;
-    
-    @EJB
-    DOIEZIdServiceBean doiEZIdServiceBean;
 
     @EJB
     DDIExportServiceBean ddiExportService;
