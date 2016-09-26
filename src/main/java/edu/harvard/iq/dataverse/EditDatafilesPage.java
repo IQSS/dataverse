@@ -522,7 +522,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 if (fileNames == null) {
                     fileNames = fmd.getLabel();
                 } else {
-                    fileNames = fileNames.concat(fmd.getLabel());
+                    fileNames = fileNames.concat(", " + fmd.getLabel());
                 }
             }
             fmd.setRestricted(restricted);
@@ -562,7 +562,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                     if (fileNames == null) {
                         fileNames = fmd.getLabel();
                     } else {
-                        fileNames = fileNames.concat(fmd.getLabel());
+                        fileNames = fileNames.concat(", " + fmd.getLabel());
                     }
                 }
                 if (fmd.getDataFile().equals(fmw.getDataFile())) {
@@ -600,7 +600,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             if (fileNames == null) {
                 fileNames = fmd.getLabel();
             } else {
-                fileNames = fileNames.concat(fmd.getLabel());
+                fileNames = fileNames.concat(", " + fmd.getLabel());
             }
         }
 

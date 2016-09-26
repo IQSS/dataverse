@@ -295,6 +295,10 @@ public class Shib implements java.io.Serializable {
         if (au != null) {
             logger.fine("created user " + au.getIdentifier());
             logInUserAndSetShibAttributes(au);
+            /**
+             * @todo Move this to
+             * AuthenticationServiceBean.createAuthenticatedUser
+             */
             userNotificationService.sendNotification(au,
                     new Timestamp(new Date().getTime()),
                     UserNotification.Type.CREATEACC, null);
