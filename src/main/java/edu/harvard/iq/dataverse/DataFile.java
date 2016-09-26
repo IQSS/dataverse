@@ -52,6 +52,8 @@ public class DataFile extends DvObject {
     public static final char INGEST_STATUS_INPROGRESS = 67;
     public static final char INGEST_STATUS_ERROR = 68; 
     
+    public static final Long ROOT_DATAFILE_ID_DEFAULT = new Long(-1);
+    
     private String name;
     
     @NotBlank
@@ -139,7 +141,7 @@ public class DataFile extends DvObject {
      * to intitialize this file replace attributes
      */
     private void initFileReplaceAttributes(){
-        this.rootDataFileId = new Long(-1);
+        this.rootDataFileId = ROOT_DATAFILE_ID_DEFAULT;
         this.previousDataFileID = null;
     }
     

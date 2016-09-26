@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -721,10 +722,51 @@ public class DataFileServiceBean implements java.io.Serializable {
     }
     
     public DataFile save(DataFile dataFile) {
-            
+        
+        // datafile
+        
         DataFile savedDataFile = em.merge(dataFile);
+        
+        // Set the initial value of the rootDataFileId
+        savedDataFile = setAndCheckFileReplaceAttributes(savedDataFile);
+        
         return savedDataFile;
     }
+    
+    
+    /*
+        Make sure the file replace ids are set for a initial version 
+        of a file
+    
+    */
+    private DataFile setAndCheckFileReplaceAttributes(DataFile savedDataFile){
+            
+        // Is this the initial version of a file?
+        if (savedDataFile.getPreviousDataFileID() == null){
+           
+           // YES!  Set the RootDataFileId to the Id
+           savedDataFile.setRootDataFileId(savedDataFile.getId());
+           
+           // SAVE IT AGAIN!!!
+           savedDataFile = em.merge(savedDataFile);   
+           
+        }else{
+            // NO! This IS a previous version. Do a quick sanity check.
+            
+            // This IS a previous version, make the sure the root data file id is set
+            if (Objects.equals(savedDataFile.getRootDataFileId(), DataFile.ROOT_DATAFILE_ID_DEFAULT)){
+                String errorMessage = "The rootDataFileId should NEVER be -1 for a replacment file.  (The previousDataFileID is " + savedDataFile.getPreviousDataFileID();
+                logger.severe(errorMessage);
+                throw new IllegalStateException(errorMessage);
+            }
+            
+        }
+        
+        // Looking Good Billy Ray! Feeling Good Louis!
+        
+        return savedDataFile;
+    }
+    
     
     public Boolean isPreviouslyPublished(Long fileId){
         Query query = em.createQuery("select object(o) from FileMetadata as o where o.dataFile.id =:fileId");
