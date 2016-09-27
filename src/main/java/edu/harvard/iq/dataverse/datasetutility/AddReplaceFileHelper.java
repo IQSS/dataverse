@@ -802,11 +802,79 @@ public class AddReplaceFileHelper{
     }
 
     
-    private boolean step_080_run_update_dataset_command_for_replace(){
-        
+    private boolean step_auto_085_delete_file_to_replace_from_working_version(){
+
+        msgt("step_auto_085_delete_file_to_replace_from_working_version 1");
+
+        if (!isFileReplaceOperation()){
+            // Shouldn't happen!
+            this.addErrorSevere("This should ONLY be called for file replace operations!! (step_auto_085_delete_file_to_replace_from_working_version");
+            return false;
+        }
+        msg("step_auto_085_delete_file_to_replace_from_working_version 1");
+
         if (this.hasError()){
             return false;
         }
+
+        msg("step_auto_085_delete_file_to_replace_from_working_version 2");
+        
+        // 2. delete the filemetadata from the version: 
+        //fmit = dataset.getEditVersion().getFileMetadatas().iterator();
+        Iterator fmit = workingVersion.getFileMetadatas().iterator();
+        msg("step_auto_085_delete_file_to_replace_from_working_version 3");
+        msg("-------------------------");
+        msg("File to replace getId: " + fileToReplace.getId());
+        msg("File to replace getCheckSum: " + fileToReplace.getCheckSum());
+        msg("File to replace getFileMetadata: " + fileToReplace.getFileMetadata());
+        msg("File to replace getLabel: " + fileToReplace.getFileMetadata().getLabel());
+        msg("-------------------------");
+        
+        
+        while (fmit.hasNext()) {
+            msg("-------------------------");
+            msg("step_auto_085_delete_file_to_replace_from_working_version 4");
+            FileMetadata fmd = (FileMetadata) fmit.next();
+            msg("   ....getLabel: " + fmd.getLabel());
+            msg("   ....getId: " + fmd.getId());
+            msg("   ....getDataFile: " + fmd.getDataFile().toString());
+            msg("   ....getDataFile id: " + fmd.getDataFile().getId());
+            if (fmd.getId() != null){
+                msg("step_auto_085_delete_file_to_replace_from_working_version 5");
+                msg("fileToReplace.getStorageIdentifier: " + fileToReplace.getStorageIdentifier());
+                msg("fmd.getDataFile().getStorageIdentifier(): " + fmd.getDataFile().getStorageIdentifier());
+                if (fileToReplace.getStorageIdentifier().equals(fmd.getDataFile().getStorageIdentifier())) {
+                    msg("step_auto_085_delete_file_to_replace_from_working_version 6");
+                    fmit.remove();
+                    return true;
+                }
+            }
+        }
+        return true;
+        //this.addErrorSevere("Could not find file to replace in the working DatasetVersion");
+        //return false;
+    }
+    
+    private boolean step_080_run_update_dataset_command_for_replace(){
+
+        if (!isFileReplaceOperation()){
+            // Shouldn't happen!
+            this.addErrorSevere("This should ONLY be called for file replace operations!! (step_080_run_update_dataset_command_for_replace");
+            return false;
+        }
+
+        if (this.hasError()){
+            return false;
+        }
+        msg("step_080_run_update_dataset_command_for_replace 1");
+        // -----------------------------------------------------------
+        // Remove the "fileToReplace" from the current working version
+        // -----------------------------------------------------------
+        if (!step_auto_085_delete_file_to_replace_from_working_version()){
+            return false;
+        }
+
+        msg("step_080_run_update_dataset_command_for_replace 2");
 
         // -----------------------------------------------------------
         // Make list of files to delete -- e.g. the single "fileToReplace"
@@ -814,6 +882,9 @@ public class AddReplaceFileHelper{
         List<FileMetadata> filesToBeDeleted = new ArrayList();
         filesToBeDeleted.add(fileToReplace.getFileMetadata());
 
+        msg("step_080_run_update_dataset_command_for_replace 3");
+
+        
         // -----------------------------------------------------------
         // Set the "root file ids" and "previous file ids"
         // -----------------------------------------------------------
@@ -821,12 +892,19 @@ public class AddReplaceFileHelper{
             df.setPreviousDataFileID(fileToReplace.getId());
             df.setRootDataFileId(fileToReplace.getRootDataFileId());
         }
-                
+        
+        msg("step_080_run_update_dataset_command_for_replace 4");
+
         
         Command<Dataset> update_cmd;
         update_cmd = new UpdateDatasetCommand(dataset, dvRequest, filesToBeDeleted);
+
+        msg("step_080_run_update_dataset_command_for_replace 5");
+
         ((UpdateDatasetCommand) update_cmd).setValidateLenient(true);
         
+        msg("step_080_run_update_dataset_command_for_replace 6");
+
         try {            
               commandEngine.submit(update_cmd);
           } catch (CommandException ex) {

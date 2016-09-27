@@ -297,7 +297,7 @@ public class FileUpload extends AbstractApiBean {
         //-------------------
         // ADD
         //-------------------
-        if (false){
+        if (true){
 
             
             DataverseRequest dvRequest2 = createDataverseRequest(authUser);
@@ -309,7 +309,10 @@ public class FileUpload extends AbstractApiBean {
                                                     this.commandEngine);
             
                             
-            addFileHelper.runAddFile(selectedDataset, "blackbox.txt",  "text/plain", testFileInputStream);
+            addFileHelper.runAddFile(selectedDataset,
+                                    "blackbox.txt",
+                                    "text/plain",
+                                    testFileInputStream);
             
             
             if (addFileHelper.hasError()){
@@ -324,7 +327,7 @@ public class FileUpload extends AbstractApiBean {
         // REPLACE
         //-------------------
 
-         if (true){
+         if (false){
 
             
             DataverseRequest dvRequest2 = createDataverseRequest(authUser);
@@ -335,7 +338,7 @@ public class FileUpload extends AbstractApiBean {
                                                     this.permissionSvc,
                                                     this.commandEngine);
             
-            Long oldFileId = new Long(141);
+            Long oldFileId = (long) 141;
             addFileHelper.runReplaceFile(selectedDataset,
                                     "blackbox.txt",
                                     "text/plain", 
