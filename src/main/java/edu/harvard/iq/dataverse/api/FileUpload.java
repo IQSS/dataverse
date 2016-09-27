@@ -22,6 +22,7 @@ import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
 import edu.harvard.iq.dataverse.datasetutility.DuplicateFileChecker;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -175,10 +176,10 @@ public class FileUpload extends AbstractApiBean {
     private InputStream getSampleFile(){
         
         InputStream is = null;
-        String testFileName = "/Users/rmp553/Documents/iqss-git/dataverse-helper-scripts/src/api_scripts/input/howdy3.txt";
-        //testFileName = "/Users/rmp553/NetBeansProjects/dataverse/src/main/java/edu/harvard/iq/dataverse/datasetutility/howdy.txt";
+        String testFileInputStreamName = "/Users/rmp553/Documents/iqss-git/dataverse-helper-scripts/src/api_scripts/input/howdy3.txt";
+        //testFileInputStreamName = "/Users/rmp553/NetBeansProjects/dataverse/src/main/java/edu/harvard/iq/dataverse/datasetutility/howdy.txt";
         try {
-            is = new FileInputStream(testFileName);
+            is = new FileInputStream(testFileInputStreamName);
             //is.close(); 
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -267,8 +268,8 @@ public class FileUpload extends AbstractApiBean {
         msgt("(1) getSampleFile()");
         // -------------------------------------
 
-        InputStream testFile = getSampleFile();
-        if (testFile == null){
+        InputStream testFileInputStream = getSampleFile();
+        if (testFileInputStream == null){
             return okResponse("Couldn't find the file!!");
         }
         
@@ -284,12 +285,40 @@ public class FileUpload extends AbstractApiBean {
         //authSvc.findByID(new Long(1));        
         msg("authUser: " + authUser);
         msg("getUserIdentifier: " + authUser.getIdentifier());
+
         
         // -------------------------------------
         msgt("(1b) Get the selected Dataset");
         // -------------------------------------        
         int dataset_id = 10;
         Dataset selectedDataset = datasetService.find(new Long(dataset_id));
+
+        
+        //-------------------
+        if (true){
+
+            
+            DataverseRequest dvRequest2 = createDataverseRequest(authUser);
+            AddReplaceFileHelper addFileHelper = new AddReplaceFileHelper(dvRequest2,
+                                                    this.ingestService,
+                                                    this.datasetService,
+                                                    this.fileService,
+                                                    this.permissionSvc,
+                                                    this.commandEngine);
+            
+                            
+            addFileHelper.runAddFile(selectedDataset, "blackbox.txt",  "text/plain", testFileInputStream);
+            
+            
+            if (addFileHelper.hasError()){
+                return okResponse(addFileHelper.getErrorMessagesAsString("\n"));
+            }else{
+                return okResponse("hey hey, it may have worked");
+            }
+            
+        }  
+        //-------------------
+        
         
         
         // -------------------------------------
@@ -321,14 +350,14 @@ public class FileUpload extends AbstractApiBean {
         try {
             msg("The starting bell rings....");
             dFileList = ingestService.createDataFiles(workingVersion,
-                    testFile,
+                    testFileInputStream,
                     "hullo.txt",
                     "text/plain");
             msg("Almost there....");
         } catch (IOException ex) {
             msg("Not happy...:" + ex.toString());
             logger.severe(ex.toString());
-            return okResponse("IOException when trying to ingest: " + testFile.toString());
+            return okResponse("IOException when trying to ingest: " + testFileInputStream.toString());
         }
         
              
@@ -381,7 +410,7 @@ public class FileUpload extends AbstractApiBean {
                 msg("has a dupe:");
                 // Shut things down!
                 try {
-                    testFile.close();
+                    testFileInputStream.close();
                 } catch (IOException ex) {
                     Logger.getLogger(FileUpload.class.getName()).log(Level.SEVERE, null, ex);
                 }

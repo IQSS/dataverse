@@ -400,6 +400,14 @@ public class DataFile extends DvObject implements Comparable {
         this.restricted = restricted;
     }
 
+    /**
+     * Fill in until sha1 branch checked in.
+     * 
+     * @return 
+     */
+    public String getCheckSum(){
+        return this.md5;
+    }
 
     public String getmd5() { 
         return this.md5; 

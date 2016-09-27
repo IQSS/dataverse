@@ -59,7 +59,7 @@ public class DuplicateFileChecker {
          if (fileMetadata == null){
              throw new NullPointerException("fileMetadata cannot be null");
          }
-         return this.isFileInSavedDatasetVersion(datasetVersion, fileMetadata.getDataFile().getmd5());
+         return this.isFileInSavedDatasetVersion(datasetVersion, fileMetadata.getDataFile().getCheckSum());
      }
     
     /**
@@ -84,7 +84,7 @@ public class DuplicateFileChecker {
     
     /**
      * From dataset version:
-     *  - Get the md5s of all the files 
+     *  - Get the checksum of all the files 
      *  - Load them into a hash
      * 
      * Loads checksums from unsaved datasetversion--checks more 
@@ -101,7 +101,7 @@ public class DuplicateFileChecker {
         List<FileMetadata> fileMetadatas = new ArrayList<>(datasetVersion.getFileMetadatas());
         
         for (FileMetadata fm : fileMetadatas){            
-            String checkSum = fm.getDataFile().getmd5();
+            String checkSum = fm.getDataFile().getCheckSum();
             if (checksumHashCounts.get(checkSum) != null){
                 checksumHashCounts.put(checkSum, checksumHashCounts.get(checkSum).intValue() + 1);
             }else{
@@ -127,12 +127,12 @@ public class DuplicateFileChecker {
             throw new NullPointerException("datasetVersion cannot be null");
         }
 
-        String thisMd5 = fileMetadata.getDataFile().getmd5();
-        if (thisMd5 == null) {
+        String selectedCheckSum = fileMetadata.getDataFile().getCheckSum();
+        if (selectedCheckSum == null) {
             return false;
         }        
         
-        Map<String, Integer> MD5Map = new HashMap<String, Integer>();
+        Map<String, Integer> checkSumMap = new HashMap<String, Integer>();
 
         // TODO: 
         // think of a way to do this that doesn't involve populating this 
@@ -149,16 +149,16 @@ public class DuplicateFileChecker {
 
         while (fmIt.hasNext()) {
             FileMetadata fm = fmIt.next();
-            String md5 = fm.getDataFile().getmd5();
-            if (md5 != null) {
-                if (MD5Map.get(md5) != null) {
-                    MD5Map.put(md5, MD5Map.get(md5).intValue() + 1);
+            String currentCheckSum = fm.getDataFile().getCheckSum();
+            if (currentCheckSum != null) {
+                if (checkSumMap.get(currentCheckSum) != null) {
+                    checkSumMap.put(currentCheckSum, checkSumMap.get(currentCheckSum).intValue() + 1);
                 } else {
-                    MD5Map.put(md5, 1);
+                    checkSumMap.put(currentCheckSum, 1);
                 }
             }
         }
-        return MD5Map.get(thisMd5) != null && MD5Map.get(thisMd5).intValue() > 1;
+        return checkSumMap.get(selectedCheckSum) != null && checkSumMap.get(selectedCheckSum).intValue() > 1;
             
     }
     

@@ -10,13 +10,10 @@ import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
-import edu.harvard.iq.dataverse.api.FileUpload;
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -25,17 +22,16 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
+import javax.ejb.Stateless;
 import javax.enterprise.context.SessionScoped;
-import javax.inject.Inject;
+import javax.inject.Named;
 import javax.validation.ConstraintViolation;
 
 /**
@@ -43,22 +39,26 @@ import javax.validation.ConstraintViolation;
  * 
  * @author rmp553
  */
-@SessionScoped
-public class AddReplaceFileHelper implements java.io.Serializable {
+public class AddReplaceFileHelper{
     
     private static final Logger logger = Logger.getLogger(AddReplaceFileHelper.class.getCanonicalName());
 
-    @EJB
-    IngestServiceBean ingestService;
-    @EJB
-    DatasetServiceBean datasetService;
-    @EJB
-    DataFileServiceBean fileService;        
-    @EJB
-    PermissionServiceBean permissionService;
-    @EJB
-    EjbDataverseEngine commandEngine;
-
+    
+    public static String FILE_ADD_OPERATION = "FILE_ADD_OPERATION";
+    public static String FILE_REPLACE_OPERATION = "FILE_REPLACE_OPERATION";
+    
+            
+    private String currentOperation;
+    
+    // -----------------------------------
+    // All the needed EJBs, passed to the constructor
+    // -----------------------------------
+    private IngestServiceBean ingestService;
+    private DatasetServiceBean datasetService;
+    private DataFileServiceBean fileService;        
+    private PermissionServiceBean permissionService;
+    private EjbDataverseEngine commandEngine;
+    
     // -----------------------------------
     // Instance variables directly added
     // -----------------------------------
@@ -83,9 +83,9 @@ public class AddReplaceFileHelper implements java.io.Serializable {
     private List<String> errorMessages;
     
     
-    public AddReplaceFileHelper(){
-        throw new IllegalStateException("Must be called with a dataset and or user");
-    }
+  //  public AddReplaceFileHelper(){
+  //      throw new IllegalStateException("Must be called with a dataset and or user");
+  //  }
     
     
     /** 
@@ -95,9 +95,16 @@ public class AddReplaceFileHelper implements java.io.Serializable {
      * @param dvRequest 
      */
 
-    public AddReplaceFileHelper(DataverseRequest dvRequest){
+    public AddReplaceFileHelper(DataverseRequest dvRequest, 
+                            IngestServiceBean ingestService,                            
+                            DatasetServiceBean datasetService,
+                            DataFileServiceBean fileService,
+                            PermissionServiceBean permissionService,
+                            EjbDataverseEngine commandEngine){
 
-
+        // ---------------------------------
+        // make sure DataverseRequest isn't null and has a user
+        // ---------------------------------
         if (dvRequest == null){
             throw new NullPointerException("dvRequest cannot be null");
         }
@@ -105,6 +112,35 @@ public class AddReplaceFileHelper implements java.io.Serializable {
             throw new NullPointerException("dvRequest cannot have a null user");
         }
 
+        // ---------------------------------
+        // make sure services aren't null
+        // ---------------------------------
+        if (ingestService == null){
+            throw new NullPointerException("ingestService cannot be null");
+        }
+        if (datasetService == null){
+            throw new NullPointerException("datasetService cannot be null");
+        }
+        if (fileService == null){
+            throw new NullPointerException("fileService cannot be null");
+        }
+        if (permissionService == null){
+            throw new NullPointerException("ingestService cannot be null");
+        }
+        if (commandEngine == null){
+            throw new NullPointerException("commandEngine cannot be null");
+        }
+
+        // ---------------------------------
+        
+        this.ingestService = ingestService;
+        this.datasetService = datasetService;
+        this.fileService = fileService;
+        this.permissionService = permissionService;
+        this.commandEngine = commandEngine;
+        
+        
+        
         initErrorHandling();
         
         // Initiate instance vars
@@ -114,7 +150,154 @@ public class AddReplaceFileHelper implements java.io.Serializable {
         
     }
     
-   
+    /**
+     * After the constructor, this method is called to add a file
+     * 
+     * @param dataset
+     * @param newFileName
+     * @param newFileContentType
+     * @param newFileInputStream
+     * @return 
+     */
+    public boolean runAddFile(Dataset dataset, String newFileName, String newFileContentType, InputStream newFileInputStream){
+        
+        this.currentOperation = FILE_ADD_OPERATION;
+        
+        return this.runAddReplaceFile(dataset, newFileName, newFileContentType, newFileInputStream, null);
+    }
+    
+
+    /**
+     * After the constructor, this method is called to replace a file
+     * 
+     * @param dataset
+     * @param newFileName
+     * @param newFileContentType
+     * @param newFileInputStream
+     * @return 
+     */
+    public boolean runReplaceFile(Dataset dataset, String newFileName, String newFileContentType, InputStream newFileInputStream, Long oldFileId){
+        
+        if (oldFileId==null){
+            throw new NullPointerException("For a replace operation, oldFileId cannot be null");
+        }
+        
+        this.currentOperation = FILE_REPLACE_OPERATION;
+        
+        return this.runAddReplaceFile(dataset, newFileName, newFileContentType, newFileInputStream, oldFileId);
+    }
+    
+    /**
+     * Here we're going to run through the steps to ADD or REPLACE a file
+     * 
+     * The difference between ADD and REPLACE (add/delete) is:
+     * 
+     *  oldFileId - For ADD, set to null
+     *  oldFileId - For REPLACE, set to id of file to replace 
+     * 
+     * 
+     * @return 
+     */
+    private boolean runAddReplaceFile(Dataset dataset,  
+            String newFileName, String newFileContentType, InputStream newFileInputStream,
+            Long oldFileId){
+        
+        initErrorHandling();
+
+        
+        if (this.hasError()){
+            return false;
+        }
+
+        msgt("step_001_loadDataset");
+        if (!this.step_001_loadDataset(dataset)){
+            return false;
+        }
+        
+        msgt("step_010_VerifyUserAndPermissions");
+        if (!this.step_010_VerifyUserAndPermissions()){
+            return false;
+            
+        }
+
+        msgt("step_020_loadNewFile");
+        if (!this.step_020_loadNewFile(newFileName, newFileContentType, newFileInputStream)){
+            return false;
+            
+        }
+
+        // Replace only step!
+        if (isFileReplaceOperation()){
+            
+            msgt("step_025_loadFileToReplaceById");
+            if (!this.step_025_loadFileToReplaceById(oldFileId)){
+                return false;
+            }
+        }
+        
+        msgt("step_030_createNewFilesViaIngest");
+        if (!this.step_030_createNewFilesViaIngest()){
+            return false;
+            
+        }
+
+        msgt("step_050_checkForConstraintViolations");
+        if (!this.step_050_checkForConstraintViolations()){
+            return false;
+            
+        }
+
+        msgt("step_060_addFilesViaIngestService");
+        if (!this.step_060_addFilesViaIngestService()){
+            return false;
+            
+        }
+
+        if (this.isFileReplaceOperation()){
+            msgt("step_080_run_update_dataset_command_for_replace");
+            if (!this.step_080_run_update_dataset_command_for_replace()){
+                return false;            
+            }
+            
+        }else{
+            msgt("step_070_run_update_dataset_command");
+            if (!this.step_070_run_update_dataset_command()){
+                return false;            
+            }
+        }
+        
+        msgt("step_090_notifyUser");
+        if (!this.step_090_notifyUser()){
+            return false;            
+        }
+
+        msgt("step_100_startIngestJobs");
+        if (!this.step_100_startIngestJobs()){
+            return false;            
+        }
+
+        
+        return true;
+    }
+
+    /**
+     *  Get for currentOperation
+     *  @return String
+     */
+    public String getCurrentOperation(){
+        return this.currentOperation;
+    }
+
+    public boolean isFileReplaceOperation(){
+    
+        return this.currentOperation == FILE_REPLACE_OPERATION;
+    }
+
+    public boolean isFileAddOperation(){
+    
+        return this.currentOperation == FILE_ADD_OPERATION;
+    }
+
     /**
      * Initialize error handling vars
      */
@@ -194,14 +377,15 @@ public class AddReplaceFileHelper implements java.io.Serializable {
      /**
      * 
      */
-    public boolean step_01_loadDataset(Dataset selectedDataset){
+    private boolean step_001_loadDataset(Dataset selectedDataset){
 
         if (this.hasError()){
             return false;
         }
 
         if (selectedDataset == null){
-            throw new NullPointerException("dataset cannot be null");
+            this.addErrorSevere("The dataset cannot be null");
+            return false;
         }
 
         dataset = selectedDataset;
@@ -213,23 +397,24 @@ public class AddReplaceFileHelper implements java.io.Serializable {
     /**
      * 
      */
-    public boolean step_01_loadDatasetById(Long datasetId){
+    private boolean step_001_loadDatasetById(Long datasetId){
         
         if (this.hasError()){
             return false;
         }
 
         if (datasetId == null){
-            throw new NullPointerException("datasetId cannot be null");
+            this.addErrorSevere("The datasetId cannot be null");
+            return false;
         }
         
-        dataset = datasetService.find(datasetId);
-        if (dataset == null){
+        Dataset yeDataset = datasetService.find(datasetId);
+        if (yeDataset == null){
             this.addError("There was no dataset found for id: " + datasetId);
             return false;
         }      
        
-        return true;
+        return step_001_loadDataset(yeDataset);
     }
     
     
@@ -242,11 +427,16 @@ public class AddReplaceFileHelper implements java.io.Serializable {
      * 
      * @return 
      */
-    public boolean step_10_VerifyUserAndPermissions(){
+    private boolean step_010_VerifyUserAndPermissions(){
         
         if (this.hasError()){
             return false;
         }
+        
+        msg("dataset:" + dataset.toString());
+        msg("Permission.EditDataset:" + Permission.EditDataset.toString());
+        msg("dvRequest:" + dvRequest.toString());
+        msg("permissionService:" + permissionService.toString());
         
         if (!permissionService.request(dvRequest).on(dataset).has(Permission.EditDataset)){
            String errMsg = "You do not have permission to this dataset.";
@@ -258,7 +448,7 @@ public class AddReplaceFileHelper implements java.io.Serializable {
     }
     
     
-    public boolean step_20_loadNewFile(String fileName, String fileContentType, InputStream fileInputStream){
+    private boolean step_020_loadNewFile(String fileName, String fileContentType, InputStream fileInputStream){
         
         if (this.hasError()){
             return false;
@@ -305,23 +495,24 @@ public class AddReplaceFileHelper implements java.io.Serializable {
      * @param oldFile
      * @return 
      */
-    public boolean step_25_loadFileToReplace(DataFile oldFile){
+    private boolean step_025_loadFileToReplace(DataFile existingFile){
 
         if (this.hasError()){
             return false;
         }
         
-        if (oldFile == null){
-            throw new NullPointerException("fileToReplace cannot be null");
+        if (existingFile == null){
+            this.addErrorSevere("The existingFile to replace cannot be null");
+            return false;
         }
         
-        if (oldFile.getOwner() != this.dataset){
+        if (existingFile.getOwner() != this.dataset){
             String errMsg = "This file does not belong to the datset";
             addError(errMsg);
             return false;
         }
         
-        fileToReplace = oldFile;
+        fileToReplace = existingFile;
         
         return true;
     }
@@ -333,27 +524,31 @@ public class AddReplaceFileHelper implements java.io.Serializable {
      * @param oldFile
      * @return 
      */
-    public boolean step_25_loadFileToReplaceById(Long dataFileId){
+    private boolean step_025_loadFileToReplaceById(Long dataFileId){
         
         if (this.hasError()){
             return false;
         }
         
+        // This shouldn't happen, the public replace method should through
+        //  a NullPointerException
+        //
         if (dataFileId == null){
-            throw new NullPointerException("dataFileId cannot be null");
+            this.addError("The dataFileId cannot be null");
+            return false;
         }
         
-        fileToReplace = fileService.find(dataFileId);
-        if (fileToReplace == null){
-            this.addError("There was no file found for id: " + dataFileId);
+        DataFile existingFile = fileService.find(dataFileId);
+        if (existingFile == null){
+            this.addError("Replacement file not found.  There was no file found for id: " + dataFileId);
             return false;
         }      
         
-        return true;
+        return step_025_loadFileToReplace(existingFile);
     }
     
     
-    public boolean step_30_createNewFilesViaIngest(){
+    private boolean step_030_createNewFilesViaIngest(){
         
         if (this.hasError()){
             return false;
@@ -385,8 +580,11 @@ public class AddReplaceFileHelper implements java.io.Serializable {
             return false;
         }
         
-        return this.run_auto_step_35_checkForDuplicates();
+        if (!this.run_auto_step_040_checkForDuplicates()){
+            return false;
+        }
                        
+        return this.run_auto_step_045_checkForFileReplaceDuplicate();
     }
     
     /**
@@ -394,8 +592,9 @@ public class AddReplaceFileHelper implements java.io.Serializable {
      * 
      * @return 
      */
-    public boolean run_auto_step_35_checkForDuplicates(){
+    private boolean run_auto_step_040_checkForDuplicates(){
         
+        msgt("run_auto_step_040_checkForDuplicates");
         if (this.hasError()){
             return false;
         }
@@ -438,6 +637,7 @@ public class AddReplaceFileHelper implements java.io.Serializable {
 
                 String dupeName = df.getFileMetadata().getLabel();
                 removeLinkedFileFromDataset(dataset, df);
+                //abandonOperationRemoveAllNewFilesFromDataset();
                 this.addErrorSevere("This file has a duplicate already in the dataset: " + dupeName);                
             }else{
                 filesToAdd.add(df);
@@ -450,10 +650,74 @@ public class AddReplaceFileHelper implements java.io.Serializable {
         }
         
         return true;
-    } // end run_auto_step_35_checkForDuplicates
+    } // end run_auto_step_040_checkForDuplicates
     
     
-    public boolean step_40_checkForConstraintViolations(){
+    /**
+     * This is always checked.   
+     * 
+     * For ADD: If there is not replacement file, then the check is considered a success
+     * For REPLACE: The checksum is examined against the "filesToAdd" list
+     * 
+     */
+    private boolean run_auto_step_045_checkForFileReplaceDuplicate(){
+        
+        if (this.hasError()){
+            return false;
+        }
+
+        // Not a FILE REPLACE operation -- skip this step!!
+        //
+        if (!isFileReplaceOperation()){
+            return true;
+        }
+
+        
+        if (filesToAdd.isEmpty()){
+            // This error shouldn't happen if steps called in sequence....
+            this.addErrorSevere("There are no files to add.  (This error shouldn't happen if steps called in sequence....checkForFileReplaceDuplicate)");                
+            return false;
+        }
+        
+        
+        if (this.fileToReplace == null){
+            // This error shouldn't happen if steps called correctly
+            this.addErrorSevere("The fileToReplace cannot be null. (This error shouldn't happen if steps called in sequence....checkForFileReplaceDuplicate)");                
+            return false;
+        }
+    
+        for (DataFile df : filesToAdd){
+            
+            if (df.getCheckSum() == fileToReplace.getCheckSum()){
+                this.addError("The new file,\"" + df.getFileMetadata().getLabel() 
+                        + "\" has the same content as the replacment file, \"" 
+                        + fileToReplace.getFileMetadata().getLabel() + "\" .");                
+                
+                removeLinkedFileFromDataset(dataset, df);   // Is this correct, if multiple files added in case of .shp or .zip, shouldn't they all be removed?             
+                //this.abandonOperationRemoveAllNewFilesFromDataset(); // Is this correct, if multiple files, shouldn't they all be removed?
+                return false;
+            }
+        }
+        
+        return true;
+        
+    } // end run_auto_step_045_checkForFileReplaceDuplicate
+    
+    
+    private boolean abandonOperationRemoveAllNewFilesFromDataset(){
+        
+        if (filesToAdd.isEmpty()){
+            return true;
+        }
+        
+        for (DataFile df : filesToAdd){
+            this.removeLinkedFileFromDataset(dataset, df); // Is this correct, if multiple files, shouldn't they all be removed?
+        }
+        return true;
+    }
+    
+    
+    private boolean step_050_checkForConstraintViolations(){
                 
         if (this.hasError()){
             return false;
@@ -468,8 +732,19 @@ public class AddReplaceFileHelper implements java.io.Serializable {
         // -----------------------------------------------------------
         // Iterate through checking for constraint violations
         //  Gather all error messages
-        // -----------------------------------------------------------                        
+        // -----------------------------------------------------------   
         Set<ConstraintViolation> constraintViolations = workingVersion.validate();    
+
+        // -----------------------------------------------------------   
+        // No violations found
+        // -----------------------------------------------------------   
+        if (constraintViolations.isEmpty()){
+            return true;
+        }
+        
+        // -----------------------------------------------------------   
+        // violations found: gather all error messages
+        // -----------------------------------------------------------   
         List<String> errMsgs = new ArrayList<>();
         for (ConstraintViolation violation : constraintViolations){
             this.addError(violation.getMessage());
@@ -479,7 +754,7 @@ public class AddReplaceFileHelper implements java.io.Serializable {
     }
     
     
-    public boolean step_50_addFilesViaIngestService(){
+    private boolean step_060_addFilesViaIngestService(){
                        
         if (this.hasError()){
             return false;
@@ -502,7 +777,7 @@ public class AddReplaceFileHelper implements java.io.Serializable {
      * 
      * @return 
      */
-    public boolean step_70_run_update_dataset_command(){
+    private boolean step_070_run_update_dataset_command(){
         
         if (this.hasError()){
             return false;
@@ -527,7 +802,47 @@ public class AddReplaceFileHelper implements java.io.Serializable {
     }
 
     
-    public boolean step_80_notifyUser(){
+    private boolean step_080_run_update_dataset_command_for_replace(){
+        
+        if (this.hasError()){
+            return false;
+        }
+
+        // -----------------------------------------------------------
+        // Make list of files to delete -- e.g. the single "fileToReplace"
+        // -----------------------------------------------------------
+        List<FileMetadata> filesToBeDeleted = new ArrayList();
+        filesToBeDeleted.add(fileToReplace.getFileMetadata());
+
+        // -----------------------------------------------------------
+        // Set the "root file ids" and "previous file ids"
+        // -----------------------------------------------------------
+        for (DataFile df : filesToAdd){           
+            df.setPreviousDataFileID(fileToReplace.getId());
+            df.setRootDataFileId(fileToReplace.getRootDataFileId());
+        }
+                
+        
+        Command<Dataset> update_cmd;
+        update_cmd = new UpdateDatasetCommand(dataset, dvRequest, filesToBeDeleted);
+        ((UpdateDatasetCommand) update_cmd).setValidateLenient(true);
+        
+        try {            
+              commandEngine.submit(update_cmd);
+          } catch (CommandException ex) {
+              this.addErrorSevere("Failed to update the dataset.  Please contact the administrator");
+              logger.severe(ex.getMessage());
+              return false;
+          }catch (EJBException ex) {
+              this.addErrorSevere("Failed to update the dataset.  Please contact the administrator");
+              logger.severe(ex.getMessage());
+              return false;
+          } 
+          return true;
+    }
+    
+    
+    private boolean step_090_notifyUser(){
         if (this.hasError()){
             return false;
         }
@@ -539,7 +854,7 @@ public class AddReplaceFileHelper implements java.io.Serializable {
     }
     
 
-    public boolean step_100_startIngestJobs(){
+    private boolean step_100_startIngestJobs(){
         if (this.hasError()){
             return false;
         }
@@ -568,7 +883,72 @@ public class AddReplaceFileHelper implements java.io.Serializable {
     }
     
     
-    /*
+  
+    /**
+     * When a duplicate file is found after the initial ingest,
+     * remove the file from the dataset because
+     * createDataFiles has already linked it to the dataset:
+     *  - first, through the filemetadata list
+     *  - then through tht datafiles list
+     * 
+     * 
+     * @param dataset
+     * @param dataFileToRemove 
+     */
+    private boolean removeLinkedFileFromDataset(Dataset dataset, DataFile dataFileToRemove){
+        
+        if (dataset==null){
+            this.addErrorSevere("dataset cannot be null in removeLinkedFileFromDataset");
+            return false;
+        }
+        
+        if (dataFileToRemove==null){
+            this.addErrorSevere("dataFileToRemove cannot be null in removeLinkedFileFromDataset");
+            return false;
+        }
+        
+        // -----------------------------------------------------------
+        // (1) Remove file from filemetadata list
+        // -----------------------------------------------------------                        
+        Iterator<FileMetadata> fmIt = dataset.getEditVersion().getFileMetadatas().iterator();
+        msgt("Clear FileMetadatas");
+        while (fmIt.hasNext()) {
+            FileMetadata fm = fmIt.next();
+            msg("Check: " + fm);
+            if (fm.getId() == null && dataFileToRemove.getStorageIdentifier().equals(fm.getDataFile().getStorageIdentifier())) {
+                msg("Got It! ");
+                fmIt.remove();
+                break;
+            }
+        }
+        
+        
+        // -----------------------------------------------------------
+        // (2) Remove file from datafiles list
+        // -----------------------------------------------------------                        
+        Iterator<DataFile> dfIt = dataset.getFiles().iterator();
+        msgt("Clear Files");
+        while (dfIt.hasNext()) {
+            DataFile dfn = dfIt.next();
+            msg("Check: " + dfn);
+            if (dfn.getId() == null && dataFileToRemove.getStorageIdentifier().equals(dfn.getStorageIdentifier())) {
+                msg("Got It! try to remove from iterator");
+                
+                dfIt.remove();
+                msg("it work");
+                
+                break;
+            }else{
+                msg("...ok");
+            }
+        }
+        return true;
+    }
+    
+    
+    
+}
+  /*
     DatasetPage sequence:
     
     (A) editFilesFragment.xhtml -> EditDataFilesPage.handleFileUpload
@@ -639,67 +1019,3 @@ public class AddReplaceFileHelper implements java.io.Serializable {
     // ....
     
     
-    /**
-     * When a duplicate file is found after the initial ingest,
-     * remove the file from the dataset because
-     * createDataFiles has already linked it to the dataset:
-     *  - first, through the filemetadata list
-     *  - then through tht datafiles list
-     * 
-     * 
-     * @param dataset
-     * @param dataFileToRemove 
-     */
-    private boolean removeLinkedFileFromDataset(Dataset dataset, DataFile dataFileToRemove){
-        
-        if (dataset==null){
-            this.addErrorSevere("dataset cannot be null in removeLinkedFileFromDataset");
-            return false;
-        }
-        
-        if (dataFileToRemove==null){
-            this.addErrorSevere("dataFileToRemove cannot be null in removeLinkedFileFromDataset");
-            return false;
-        }
-        
-        // -----------------------------------------------------------
-        // (1) Remove file from filemetadata list
-        // -----------------------------------------------------------                        
-        Iterator<FileMetadata> fmIt = dataset.getEditVersion().getFileMetadatas().iterator();
-        msgt("Clear FileMetadatas");
-        while (fmIt.hasNext()) {
-            FileMetadata fm = fmIt.next();
-            msg("Check: " + fm);
-            if (fm.getId() == null && dataFileToRemove.getStorageIdentifier().equals(fm.getDataFile().getStorageIdentifier())) {
-                msg("Got It! ");
-                fmIt.remove();
-                break;
-            }
-        }
-        
-        
-        // -----------------------------------------------------------
-        // (2) Remove file from datafiles list
-        // -----------------------------------------------------------                        
-        Iterator<DataFile> dfIt = dataset.getFiles().iterator();
-        msgt("Clear Files");
-        while (dfIt.hasNext()) {
-            DataFile dfn = dfIt.next();
-            msg("Check: " + dfn);
-            if (dfn.getId() == null && dataFileToRemove.getStorageIdentifier().equals(dfn.getStorageIdentifier())) {
-                msg("Got It! try to remove from iterator");
-                
-                dfIt.remove();
-                msg("it work");
-                
-                break;
-            }else{
-                msg("...ok");
-            }
-        }
-        return true;
-    }
-    
-    
-    
-}
