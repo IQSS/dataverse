@@ -202,7 +202,7 @@ public class ConfirmEmailServiceBean {
 
     /**
      * @param authenticatedUser
-     * @return True if token as deleted. False otherwise.
+     * @return True if token is deleted. False otherwise.
      */
     public boolean deleteTokenForUser(AuthenticatedUser authenticatedUser) {
         ConfirmEmailData confirmEmailData = findSingleConfirmEmailDataByUser(authenticatedUser);
