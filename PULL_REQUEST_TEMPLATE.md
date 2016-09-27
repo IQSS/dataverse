@@ -1,30 +1,20 @@
-# RFI Checklist
+fixes DDN-
 
-_**Before** submitting the pull request, fill out sections (1.) Related Issues and (2.) Pull Request Checklist._
+#### When applied it will
+* 
+* 
+* [ ] 
+* [ ] 
 
-### 1. Related Issues
+#### Where should the reviewer @DANS-KNAW/DataversNL start?
 
-_List and [link](https://guides.github.com/features/issues/#notifications) to the issues in this Pull Request._
+* Verify that the IQSS style pull request template isn't merged back into the dans-master branch
+*
+*
 
-- [#### + Title HERE]
+#### How should this be manually tested?
 
----
-### 2. Pull Request Checklist
-
-- [ ]  Functionality completed as described in FRD
-- [ ]  Dependencies, risks, assumptions in FRD addressed
-- [ ]  Unit tests completed
-- [ ]  Deployment requirements identified (e.g., SQL scripts, indexing)
-- [ ]  Documentation completed
-- [ ]  All code checkins completed
-
----
-### 3. Review Checklist
-
-_**After** the pull request has been submitted, fill out this section._
-
-- [ ]  Code review completed or waived
-- [ ]  Testing requirements completed
-- [ ]  Usability testing completed or waived
-- [ ]  Support testing completed or waived
-- [ ]  Merged with develop branch and resolved conflicts
+#### related pull requests on github
+repo                       | PR                | Note
+-------------------------- | ----------------- | ----
+easy-                      | [PR#](PRlink)     | 
