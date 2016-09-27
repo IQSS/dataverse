@@ -723,31 +723,17 @@ public class DataFileServiceBean implements java.io.Serializable {
     
     public DataFile save(DataFile dataFile) {
         
-        // datafile
-        msgt("pre save");
-        msg("id : " + dataFile.getId());
-        msg("getRootDataFileId : " + dataFile.getRootDataFileId());
-        msg("getPreviousDataFileID : " + dataFile.getPreviousDataFileID());
-
+        // save datafile
         DataFile savedDataFile = em.merge(dataFile);
-        
-/*        msgt("post save");
-        msg("id : " + savedDataFile.getId());
-        msg("getRootDataFileId : " + savedDataFile.getRootDataFileId());
-        msg("getPreviousDataFileID : " + savedDataFile.getPreviousDataFileID());
-*/
+
         // Set the initial value of the rootDataFileId
+        //    (does nothing if it's already set)
         savedDataFile = setAndCheckFileReplaceAttributes(savedDataFile);
-        msgt("post post save");
-        msg("id : " + savedDataFile.getId());
-        msg("getRootDataFileId : " + savedDataFile.getRootDataFileId());
-        msg("getPreviousDataFileID : " + savedDataFile.getPreviousDataFileID());
-
-
+        
         return savedDataFile;
     }
     
-       private void msg(String m){
+    private void msg(String m){
         System.out.println(m);
     }
     private void dashes(){
@@ -762,22 +748,32 @@ public class DataFileServiceBean implements java.io.Serializable {
         of a file
     
     */
-    private DataFile setAndCheckFileReplaceAttributes(DataFile savedDataFile){
-            
+    public DataFile setAndCheckFileReplaceAttributes(DataFile savedDataFile){
+        
+        msgt("setAndCheckFileReplaceAttributes: " + savedDataFile);
+        msgt("setAndCheckFileReplaceAttributes: getCheckSum()" + savedDataFile.getCheckSum());
+        
         // Is this the initial version of a file?
-        if (Objects.equals(savedDataFile.getRootDataFileId(), DataFile.ROOT_DATAFILE_ID_DEFAULT)){
-                   
+        msg("savedDataFile.getRootDataFileId(): " + savedDataFile.getRootDataFileId());
+        
+        if ((savedDataFile.getRootDataFileId() == null)||
+                (savedDataFile.getRootDataFileId().equals(DataFile.ROOT_DATAFILE_ID_DEFAULT))){
+            msg("yes, initial version");
+ 
            // YES!  Set the RootDataFileId to the Id
            savedDataFile.setRootDataFileId(savedDataFile.getId());
            
            // SAVE IT AGAIN!!!
-           return em.merge(savedDataFile);   
+           msg("yes, save again");
+        
+            return em.merge(savedDataFile);   
            
+        }else{       
+            // Looking Good Billy Ray! Feeling Good Louis!    
+            msg("nope, looks ok");
+
+            return savedDataFile;
         }
-        
-        // Looking Good Billy Ray! Feeling Good Louis!
-        
-        return savedDataFile;
     }
     
     
@@ -800,10 +796,20 @@ public class DataFileServiceBean implements java.io.Serializable {
     */
     
     public FileMetadata mergeFileMetadata(FileMetadata fileMetadata) {
-        return em.merge(fileMetadata);
+        
+        FileMetadata newFileMetadata = em.merge(fileMetadata);
+        em.flush();
+        
+
+        // Set the initial value of the rootDataFileId
+        //    (does nothing if it's already set)
+        DataFile updatedDataFile = setAndCheckFileReplaceAttributes(newFileMetadata.getDataFile());
+               
+        return newFileMetadata;
     }
     
     public void removeFileMetadata(FileMetadata fileMetadata) {
+        msgt("removeFileMetadata: fileMetadata");
         FileMetadata mergedFM = em.merge(fileMetadata);
         em.remove(mergedFM);
     }
@@ -941,6 +947,8 @@ public class DataFileServiceBean implements java.io.Serializable {
        if (ImageThumbConverter.isThumbnailAvailable(file)) {
            file = this.find(file.getId());
            file.setPreviewImageAvailable(true);
+           msgt("OVER HERE_----------");
+           msg("bleh.....");
            file = this.save(file); //em.merge(file);
            // (should this be done here? - TODO:)
            return true;
