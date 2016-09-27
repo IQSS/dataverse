@@ -459,3 +459,21 @@ This setting is experimental per :doc:`/installation/shibboleth`.
 ++++++++++++
 
 Set to false to disallow local accounts to be created if you are using :doc:`shibboleth` but not for production use until https://github.com/IQSS/dataverse/issues/2838 has been fixed.
+
+:PiwikAnalyticsId
+++++++++++++++++++++
+
+Site identifier created in your Piwik instance. Example:
+
+``curl -X PUT -d 42 http://localhost:8080/api/admin/settings/:PiwikAnalyticsId``
+
+:PiwikAnalyticsHost
+++++++++++++++++++++
+
+Host FQDN or URL of your Piwik instance before the ``/piwik.php``. Examples:
+
+``curl -X PUT -d stats.domain.tld http://localhost:8080/api/admin/settings/:PiwikAnalyticsHost``
+
+or
+
+``curl -X PUT -d hostname.domain.tld/stats http://localhost:8080/api/admin/settings/:PiwikAnalyticsHost``
