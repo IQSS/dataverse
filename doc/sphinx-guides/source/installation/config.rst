@@ -265,6 +265,13 @@ This is the email address that "system" emails are sent from such as password re
 
 ``curl -X PUT -d "Support <support@example.edu>" http://localhost:8080/api/admin/settings/:SystemEmail``
 
+:FooterCopyright
+++++++++++++++++
+
+By default the footer says "Copyright © [YYYY], The President & Fellows of Harvard College" but the text after the year can be customized.
+
+``curl -X PUT -d "The President &#38; Fellows of Harvard College" http://localhost:8080/api/admin/settings/:FooterCopyright``
+
 :DoiProvider
 ++++++++++++
 .. _:DoiProvider:

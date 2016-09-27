@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.time.Year;
+import java.util.Arrays;
 import java.util.MissingResourceException;
 import java.util.Properties;
 import java.util.ResourceBundle;
@@ -530,7 +532,8 @@ public class SystemConfig {
     }
 
     public String getFooterCopyright() {
-        String footerCopyright = settingsService.getValueForKey(SettingsServiceBean.Key.FooterCopyright, BundleUtil.getStringFromBundle("footer.copyright"));
-        return footerCopyright;
+        String copyrightYear = BundleUtil.getStringFromBundle("footer.copyright", Arrays.asList(Year.now().getValue() + ""));
+        String extraText = settingsService.getValueForKey(SettingsServiceBean.Key.FooterCopyright, "The President &#38; Fellows of Harvard College");
+        return copyrightYear + extraText;
     }
 }
