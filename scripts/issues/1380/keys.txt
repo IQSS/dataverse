@@ -1,0 +1,3 @@
+Keys for P e t e and U m a. Produced by running setup-all.sh from the /scripts/api folder.
+Pete:757a6493-456a-4bf0-943e-9b559d551a3f
+Uma:8797f19b-b8aa-4f96-a789-1b99506f2eab

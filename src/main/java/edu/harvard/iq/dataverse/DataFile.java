@@ -229,6 +229,11 @@ public class DataFile extends DvObject implements Comparable {
         return null;
     }
 
+    @Override
+    public boolean isAncestorOf( DvObject other ) {
+        return equals(other);
+    }
+    
     /*
      * A user-friendly version of the "original format":
      */

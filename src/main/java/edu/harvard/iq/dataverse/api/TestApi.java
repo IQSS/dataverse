@@ -2,6 +2,12 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
+import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup;
+import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupsServiceBean;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IPv4Address;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.PasswordEncryption;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import javax.ejb.Stateless;
@@ -10,8 +16,11 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
+import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.ejb.EJB;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 import javax.ws.rs.QueryParam;
@@ -32,6 +41,12 @@ import org.mindrot.jbcrypt.BCrypt;
 @Path("test")
 public class TestApi extends AbstractApiBean {
     private static final Logger logger = Logger.getLogger(TestApi.class.getName());
+    
+    @EJB
+    ExplicitGroupServiceBean explicitGroups;
+    
+    @EJB
+    IpGroupsServiceBean ipGroupsSvc;
     
     @Path("echo/{whatever}")
     @GET
@@ -97,4 +112,36 @@ public class TestApi extends AbstractApiBean {
             return ex.getResponse();
         }
     }
+    
+    @Path("explicitGroups/{identifier: .*}")
+    @GET
+    public Response explicitGroupMembership( @PathParam("identifier") String idtf) {
+        final RoleAssignee roleAssignee = roleAssigneeSvc.getRoleAssignee(idtf);
+        if (roleAssignee==null ) {
+            return notFound("Can't find a role assignee with identifier " + idtf);
+        }
+        Set<ExplicitGroup> groups = explicitGroups.findGroups(roleAssignee);
+        logger.log(Level.INFO, "Groups for {0}: {1}", new Object[]{roleAssignee, groups});
+        return okResponse( groups.stream().map( g->json(g).build()).collect(toJsonArray()) );
+    }
+    
+    @Path("ipGroups/containing/{address}")
+    @GET
+    public Response getIpGroupsContaining( @PathParam("address") String addrStr ) {
+        try {
+            IpAddress addr = IpAddress.valueOf(addrStr);
+            
+            JsonObjectBuilder r = NullSafeJsonBuilder.jsonObjectBuilder();
+            r.add( "address", addr.toString() );
+            r.add( "addressRaw", (addr instanceof IPv4Address) ? ((IPv4Address)addr).toBigInteger().toString(): null);
+            r.add("groups", ipGroupsSvc.findAllIncludingIp(addr).stream()
+                    .map( IpGroup::toString )
+                    .collect(stringsToJsonArray()));
+            return okResponse( r );
+            
+        } catch ( IllegalArgumentException iae ) {
+            return badRequest(addrStr + " is not a valid address: " + iae.getMessage());
+        }
+    }
+    
 }
