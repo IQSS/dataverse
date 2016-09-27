@@ -830,7 +830,7 @@ else
     
     my $psql_command =
 	$psql_exec
-	. "/createdb -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U dvnapp "
+	. "/createdb -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U $CONFIG_DEFAULTS{'POSTGRES_USER'} "
 	. $CONFIG_DEFAULTS{'POSTGRES_DATABASE'}
         . " --owner="
 	. $CONFIG_DEFAULTS{'POSTGRES_USER'};
