@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.api;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.response.Response;
 import java.util.logging.Logger;
+import javax.ws.rs.core.Response.Status;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -49,8 +50,8 @@ public class DataversesIT {
         logger.info("Attempting to creating dataverse with alias '" + dataverseAlias2 + "' (uppercase version of existing '" + dataverseAlias1 + "' dataverse, should fail)...");
         Response attemptToCreateDataverseWithDuplicateAlias = UtilIT.createDataverse(dataverseAlias2, apiToken1);
         attemptToCreateDataverseWithDuplicateAlias.prettyPrint();
-        assertEquals(400, attemptToCreateDataverseWithDuplicateAlias.getStatusCode());
-
+        assertEquals(403, attemptToCreateDataverseWithDuplicateAlias.getStatusCode());
+        
         logger.info("Deleting dataverse " + dataverseAlias1);
         Response deleteDataverse1Response = UtilIT.deleteDataverse(dataverseAlias1, apiToken1);
         deleteDataverse1Response.prettyPrint();
