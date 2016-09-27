@@ -495,6 +495,8 @@ public class JsonPrinter {
                 .add("originalFormatLabel", df.getOriginalFormatLabel())
                 .add("UNF", df.getUnf())
                 .add("md5", df.getmd5())
+                .add("rootDataFileId", df.getRootDataFileId())
+                .add("previousDataFileId", df.getPreviousDataFileID())
                 .add("description", df.getDescription());
     }
 

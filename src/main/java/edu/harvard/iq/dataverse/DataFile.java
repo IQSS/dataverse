@@ -75,7 +75,11 @@ public class DataFile extends DvObject implements Comparable {
     // Default is -1 until the intial id is generated
     @Column(nullable=false)
     private Long rootDataFileId;
-    
+
+    /**
+     * @todo We should have consistency between "Id" vs "ID" for rootDataFileId
+     * vs. previousDataFileID.
+     */
     // null for initial version; subsequent versions will point to the previous file
     //
     @Column(nullable=true)
