@@ -295,7 +295,9 @@ public class FileUpload extends AbstractApiBean {
 
         
         //-------------------
-        if (true){
+        // ADD
+        //-------------------
+        if (false){
 
             
             DataverseRequest dvRequest2 = createDataverseRequest(authUser);
@@ -316,201 +318,41 @@ public class FileUpload extends AbstractApiBean {
                 return okResponse("hey hey, it may have worked");
             }
             
-        }  
+        }     
+
         //-------------------
-        
-        
-        
-        // -------------------------------------
-        msgt("(1c) Get the edit version of the Dataset");
-        // -------------------------------------        
-        DatasetVersion workingVersion = selectedDataset.getEditVersion();
-        msg("new workingVersion: " + workingVersion + "\n   url:" +  selectedDataset.getPersistentURL());
-                
-        // -------------------------------------
-        msgt("(1d) List the dataset version files");
-        // -------------------------------------
-      
-        // List the current files
-        //
-        int cnt = 0;
-        for (FileMetadata fm : workingVersion.getFileMetadatas()){
-            cnt++;
-            msg("File " + cnt + ": " + fm.getLabel());
-        }
-        dashes();
-        
-          
-        // -------------------------------------
-        msgt("(2) ingestService.createDataFiles");
-        // -------------------------------------
+        // REPLACE
+        //-------------------
 
-        List<DataFile> dFileList = null; 
-        msg("state of the workingVersion: " + workingVersion.getVersionState());
-        try {
-            msg("The starting bell rings....");
-            dFileList = ingestService.createDataFiles(workingVersion,
-                    testFileInputStream,
-                    "hullo.txt",
-                    "text/plain");
-            msg("Almost there....");
-        } catch (IOException ex) {
-            msg("Not happy...:" + ex.toString());
-            logger.severe(ex.toString());
-            return okResponse("IOException when trying to ingest: " + testFileInputStream.toString());
-        }
-        
-             
-        // -------------------------------------
-        msgt("(2A) we should have an additional file");
-        // -------------------------------------
-        // List the current files
-        //
-        cnt = 0;
-        for (FileMetadata fm : workingVersion.getFileMetadatas()){
-            cnt++;
-            msg("File " + cnt + ": " + fm.getLabel());
-        }
-        dashes();
- 
-        
-        
-
-        // -------------------------------------
-        msgt("3 Duplicate check");
-        // -------------------------------------
-        List<DataFile> newFiles = new ArrayList();
-        msg("dFileList: " + dFileList.toString());
-        String warningMessage  = null;
-        for (DataFile df : dFileList){
-            
-            
-             // -----------------------------------------------------------
-            // Check for ingest warnings
-            // -----------------------------------------------------------
-            if (df.isIngestProblem()) {
-                if (df.getIngestReportMessage() != null) {
-                    if (warningMessage == null) {
-                        warningMessage = df.getIngestReportMessage();
-                    } else {
-                        warningMessage = warningMessage.concat("; " + df.getIngestReportMessage());
-                    }
-                }
-                df.setIngestDone();
-            }
-            if (warningMessage != null){
-                return okResponse(warningMessage);
-            }
+         if (true){
 
             
-            msg("Checking file: " + df.getFileMetadata().getLabel());
-            //if (dfc.isFileInSavedDatasetVersion(workingVersion, df.getmd5())){               
-            //    return okResponse("This file has a dupe md5! " + df.getFileMetadata().getLabel());
-            if (DuplicateFileChecker.isDuplicateOriginalWay(workingVersion, df.getFileMetadata())){
-                msg("has a dupe:");
-                // Shut things down!
-                try {
-                    testFileInputStream.close();
-                } catch (IOException ex) {
-                    Logger.getLogger(FileUpload.class.getName()).log(Level.SEVERE, null, ex);
-                }
-                
-                String dupeName = df.getFileMetadata().getLabel();
-                removeLinkedFileFromDataset(selectedDataset, df);
-                
-                return okResponse("This file has a dupe md5! " + dupeName + " checksum: " + df.getmd5());
+            DataverseRequest dvRequest2 = createDataverseRequest(authUser);
+            AddReplaceFileHelper addFileHelper = new AddReplaceFileHelper(dvRequest2,
+                                                    this.ingestService,
+                                                    this.datasetService,
+                                                    this.fileService,
+                                                    this.permissionSvc,
+                                                    this.commandEngine);
+            
+            Long oldFileId = new Long(141);
+            addFileHelper.runReplaceFile(selectedDataset,
+                                    "blackbox.txt",
+                                    "text/plain", 
+                                    testFileInputStream,
+                                    oldFileId
+                                    );
+            
+            
+            if (addFileHelper.hasError()){
+                return okResponse(addFileHelper.getErrorMessagesAsString("\n"));
             }else{
-                //df.save();
-                newFiles.add(df);
+                return okResponse("hey hey, it may have worked");
             }
-        }
-        
-        
-        // -------------------------------------
-        msgt("(3a) List the new files");
-        // -------------------------------------
-        // List the current files
-        //
-        cnt = 0;
-        for (DataFile df : newFiles){
-            cnt++;
-            msg("File " + cnt + ": " + df.getFileMetadata().getLabel());
-        }
-        dashes();
+            
+        }     
+        return okResponse("ain't done nuthin'");
 
         
-        // -------------------------------------
-        msgt("4 Check constraints");
-        // -------------------------------------
-        Set<ConstraintViolation> constraintViolations = workingVersion.validate();    
-        List<String> errMsgs = new ArrayList<>();
-        for (ConstraintViolation violation : constraintViolations){
-            msg("Violation found! :" + violation.getMessage());
-            errMsgs.add(violation.getMessage());
-        }
-        if (errMsgs.size() > 0){
-            return okResponse("Constraint violations found! " + String.join("<br />\n", errMsgs));
-        }
-        
-        // -------------------------------------
-        msgt("5 Add the files!");
-        // -------------------------------------
-        ingestService.addFiles(workingVersion, newFiles);
-
-
-        // -------------------------------------
-        msgt("6 Make the command!");
-        // -------------------------------------
-        /*
-        
-            execCommand(new SetDatasetCitationDateCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(id), dsfType));
-
-        */
-
-        DataverseRequest dvRequest = createDataverseRequest(authUser);
-        msg("dvRequest: " + dvRequest);
-
-        if (dvRequest == null){
-            return okResponse("Failed, dvRequest is null");
-        }
-        //CreateDatasetCommand cmd = new CreateDatasetCommand(workingVersion.getDataset(), 
-        //                      dvRequest);
-        Command<Dataset> update_cmd;
-        update_cmd = new UpdateDatasetCommand(selectedDataset, dvRequest);
-        ((UpdateDatasetCommand) update_cmd).setValidateLenient(true);  
-
-        // -------------------------------------
-        msgt("7 Run the command!");
-        // -------------------------------------
-        try {
-            commandEngine.submit(update_cmd);
-        } catch (CommandException ex) {
-            //ex.getMessage()
-            msgt("Bombed: " + ex.getMessage());
-            return okResponse("bombed....");
-            //Logger.getLogger(FileUpload.class.getName()).log(Level.SEVERE, null, ex);
-        }catch (EJBException ex) {
-            msgt("Bombed2: " + ex.getMessage());
-            return okResponse("bombed 2....");
-        } 
-        
-        // -------------------------------------
-        msgt("8 userNotificationService");
-        // -------------------------------------
-        
-        userNotificationService.sendNotification((AuthenticatedUser) authUser, selectedDataset.getCreateDate(), UserNotification.Type.CREATEDS, selectedDataset.getLatestVersion().getId());
-
-        // -------------------------------------
-        msgt("9 start Ingest jobs");
-        // -------------------------------------
-        newFiles.clear();
-        
-        
-        ingestService.startIngestJobs(selectedDataset, (AuthenticatedUser) authUser);
-
-        
-        return okResponse("hi. maybe it worked!");
-
-    }
-
+    } // end call to "hi"
 }
