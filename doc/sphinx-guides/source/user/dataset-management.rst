@@ -89,8 +89,8 @@ For example, if these files were included within a .zip, the “Map Data” butt
 * subway_line.dbf
 
 Once you publish your dataset with your shape files, you will be able to use the "Map Data" button using `GeoConnect <https://github.com/IQSS/geoconnect>`_ to visualize and manipulate these files
-for users to Explore this geospatial data using the `WorldMap <http://worldmap.harvard.edu/>`_ interface.
-Please note: In order to map your data file, a copy will be sent to Harvard's `WorldMap <http://worldmap.harvard.edu/>`_ platform. You have the ability to delete any maps, and associated data, from the Harvard WorldMap platform, at any time.
+for users to Explore this geospatial data using the `WorldMap <http://worldmap.harvard.edu/>`__ interface.
+Please note: In order to map your data file, a copy will be sent to Harvard's `WorldMap <http://worldmap.harvard.edu/>`__ platform. You have the ability to delete any maps, and associated data, from the Harvard WorldMap platform, at any time.
 
 Astronomy (FITS)
 --------------------
