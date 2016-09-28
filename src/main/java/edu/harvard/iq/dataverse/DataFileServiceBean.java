@@ -589,7 +589,7 @@ public class DataFileServiceBean implements java.io.Serializable {
             categoryMap.put(fileCategory.getId(), i++);
         }
         
-        logger.fine("Retreived "+i+" file categories attached to the dataset.");
+        logger.fine("Retrieved "+i+" file categories attached to the dataset.");
         
         if (requestedVersion != null) {
             requestedVersion.setFileMetadatas(retrieveFileMetadataForVersion(owner, requestedVersion, filesMap, categoryMap));

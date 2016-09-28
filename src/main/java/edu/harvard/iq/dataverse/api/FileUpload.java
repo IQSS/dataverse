@@ -261,8 +261,8 @@ public class FileUpload extends AbstractApiBean {
     }    
         
     @GET
-    @Path("add")
-    public Response hi_add(){
+    @Path("add/{newFilename}")
+    public Response hi_add(@PathParam("newFilename") String newFilename){
         
         // -------------------------------------
         msgt("(1) getSampleFile()");
@@ -309,7 +309,7 @@ public class FileUpload extends AbstractApiBean {
 
 
         addFileHelper.runAddFile(selectedDataset,
-                                "blackbox.txt",
+                                newFilename,
                                 "text/plain",
                                 testFileInputStream);
 
@@ -317,7 +317,7 @@ public class FileUpload extends AbstractApiBean {
         if (addFileHelper.hasError()){
             return okResponse(addFileHelper.getErrorMessagesAsString("\n"));
         }else{
-            return okResponse("hey hey, it may have worked");
+            return okResponse("Look at that!  You added a file! (hey hey, it may have worked)");
         }
             
 
@@ -385,10 +385,12 @@ public class FileUpload extends AbstractApiBean {
         if (addFileHelper.hasError()){
             return okResponse(addFileHelper.getErrorMessagesAsString("\n"));
         }else{
-            return okResponse("hey hey, it may have worked");
+            return okResponse("File was replaced! hey hey, it may have worked");
         }
            
         
     } // end call to "hi"
 
 }
+
+

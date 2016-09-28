@@ -18,8 +18,11 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+import edu.harvard.iq.dataverse.util.JsfHelper;
+import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -32,6 +35,7 @@ import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.application.FacesMessage;
 import javax.inject.Named;
 import javax.validation.ConstraintViolation;
 
@@ -509,9 +513,13 @@ public class AddReplaceFileHelper{
         }
         
         if (existingFile.getOwner() != this.dataset){
-            String errMsg = "This file does not belong to the datset";
-            addError(errMsg);
+            addError("This file does not belong to the datset");
             return false;
+        }
+        
+        if (!existingFile.isReleased()){
+            addError("You cannot replace an unpublished file.  Please delete it instead of replacing it.");
+            return false;            
         }
         
         fileToReplace = existingFile;
@@ -638,17 +646,22 @@ public class AddReplaceFileHelper{
             if (DuplicateFileChecker.isDuplicateOriginalWay(workingVersion, df.getFileMetadata())){
 
                 String dupeName = df.getFileMetadata().getLabel();
-                removeUnSavedFilesFromWorkingVersion();
+                //removeUnSavedFilesFromWorkingVersion();
                 //removeLinkedFileFromDataset(dataset, df);
                 //abandonOperationRemoveAllNewFilesFromDataset();
-                this.addErrorSevere("This file has a duplicate already in the dataset: " + dupeName);                
+                this.addErrorSevere("This file has a duplicate already in the dataset: " + dupeName);   
+                //return false;
             }else{
                 finalFileList.add(df);
             }
         }
         
         if (this.hasError()){
-            finalFileList.clear();
+            // We're recovering from the duplicate check.
+            msg("We're recovering from a duplicate check 1");
+            runMajorCleanup();
+            msg("We're recovering from a duplicate check 2");
+            finalFileList.clear();           
             return false;
         }
         
@@ -836,16 +849,46 @@ public class AddReplaceFileHelper{
         }
         msg("No matches found!");
         addErrorSevere("Unable to remove old file from new DatasetVersion");
-        removeUnSavedFilesFromWorkingVersion();
+        runMajorCleanup();
         return false;
     }
     
+
+    private boolean runMajorCleanup(){
+        
+        // (1) remove unsaved files from the working version
+        removeUnSavedFilesFromWorkingVersion();
+        
+        // ----------------------------------------------------
+        // (2) if the working version is brand new, delete it
+        //      It doesn't have an "id" so you can't use the DeleteDatasetVersionCommand
+        // ----------------------------------------------------
+        // Remove this working version from the dataset
+        Iterator<DatasetVersion> versionIterator = dataset.getVersions().iterator();
+        msgt("Clear Files");
+        while (versionIterator.hasNext()) {
+            DatasetVersion dsv = versionIterator.next();
+            if (dsv.getId() == null){
+                versionIterator.remove();
+            }
+        }
+        
+        return true;
+        
+    }
+    
+    /**
+     * We are outta here!  Remove everything unsaved from the edit version!
+     * 
+     * @return 
+     */
     private boolean removeUnSavedFilesFromWorkingVersion(){
         msgt("Clean up: removeUnSavedFilesFromWorkingVersion");
         
         // -----------------------------------------------------------
         // (1) Remove all new FileMetadata objects
         // -----------------------------------------------------------                        
+        //Iterator<FileMetadata> fmIt = dataset.getEditVersion().getFileMetadatas().iterator();//  
         Iterator<FileMetadata> fmIt = workingVersion.getFileMetadatas().iterator(); //dataset.getEditVersion().getFileMetadatas().iterator();//  
         while (fmIt.hasNext()) {
             FileMetadata fm = fmIt.next();
@@ -881,7 +924,7 @@ public class AddReplaceFileHelper{
         if (this.hasError()){
             return false;
         }
-        msg("step_080_run_update_dataset_command_for_replace 1");
+
         // -----------------------------------------------------------
         // Remove the "fileToReplace" from the current working version
         // -----------------------------------------------------------
@@ -889,15 +932,6 @@ public class AddReplaceFileHelper{
             return false;
         }
 
-        msg("step_080_run_update_dataset_command_for_replace 2");
-
-        // -----------------------------------------------------------
-        // Make list of files to delete -- e.g. the single "fileToReplace"
-        // -----------------------------------------------------------
-        //List<FileMetadata> filesToBeDeleted = new ArrayList();
-        //filesToBeDeleted.add(fileToReplace.getFileMetadata());
-
-        //msg("step_080_run_update_dataset_command_for_replace 3");
 
         
         // -----------------------------------------------------------
@@ -907,26 +941,29 @@ public class AddReplaceFileHelper{
         //  (2) New file: Set the previousFileId to the id of the original file
         //  (3) New file: Set the rootFileId to the rootFileId of the original file
         // -----------------------------------------------------------
-        if (fileToReplace.getRootDataFileId() == DataFile.ROOT_DATAFILE_ID_DEFAULT){
+        msgt("Root id check");
+        msg("file to replace 1: " + fileToReplace.getRootDataFileId());
+        
+        if (fileToReplace.getRootDataFileId().equals(DataFile.ROOT_DATAFILE_ID_DEFAULT)){
             fileToReplace.setRootDataFileId(fileToReplace.getId());
+            msg("file to replace 2: pre save " + fileToReplace.getRootDataFileId());
             fileToReplace = fileService.save(fileToReplace);
+            msg("file to replace 3 post save: " + fileToReplace.getRootDataFileId());
         }
-        for (DataFile df : finalFileList){           
+        for (DataFile df : finalFileList){            
             df.setPreviousDataFileId(fileToReplace.getId());
+            
+            msg("file to replace 4 - update new file: " + fileToReplace.getRootDataFileId());
             df.setRootDataFileId(fileToReplace.getRootDataFileId());
         }
         
-        msg("step_080_run_update_dataset_command_for_replace 4");
-
-        
+       
         Command<Dataset> update_cmd;
         update_cmd = new UpdateDatasetCommand(dataset, dvRequest);
 
-        msg("step_080_run_update_dataset_command_for_replace 5");
 
         ((UpdateDatasetCommand) update_cmd).setValidateLenient(true);
         
-        msg("step_080_run_update_dataset_command_for_replace 6");
 
         try {            
               commandEngine.submit(update_cmd);
@@ -1036,7 +1073,7 @@ public class AddReplaceFileHelper{
                 msg("Got It! try to remove from iterator");
                 
                 dfIt.remove();
-                msg("it work");
+                msg("it worked");
                 
                 break;
             }else{
@@ -1120,3 +1157,9 @@ public class AddReplaceFileHelper{
     // ....
     
     
+
+/*
+    1) Recovery from adding same file and duplicate being found
+        - draft ok
+        - published verion - nope
+*/
