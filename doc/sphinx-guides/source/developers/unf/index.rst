@@ -9,9 +9,9 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-  unf-v3
-  unf-v5
-  unf-v6
+   unf-v3
+   unf-v5
+   unf-v6
 
 .. figure:: ./img/unf-diagram.png
     :align: center

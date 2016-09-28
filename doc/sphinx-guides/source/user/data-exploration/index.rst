@@ -12,7 +12,5 @@ Contents:
    :titlesonly:
    :maxdepth: 2
 
-  tworavens
-  worldmap
-
-
+   tworavens
+   worldmap
