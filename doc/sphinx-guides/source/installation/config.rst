@@ -90,7 +90,7 @@ Persistent identifiers are a required and integral part of the Dataverse platfor
 
 JVM Options: :ref:`doi.baseurlstring`, :ref:`doi.username`, :ref:`doi.password`
 
-Database Settings: :ref:`:DoiProvider`, :ref:`:Protocol`, :ref:`:Authority`, :ref:`:DoiSeparator`
+Database Settings: :ref:`:DoiProvider <:DoiProvider>`, :ref:`:Protocol <:Protocol>`, :ref:`:Authority <:Authority>`, :ref:`:DoiSeparator <:DoiSeparator>`
 
 Please note that any datasets creating using the test configuration cannot be directly migrated and would need to be created again once a valid DOI namespace is configured.
 
@@ -189,9 +189,11 @@ dataverse.dataAccess.thumbnail.pdf.limit
 
 For limiting the size of thumbnail images generated from files.
 
+.. _doi.baseurlstring:
+
 doi.baseurlstring
 +++++++++++++++++
-.. _doi.baseurlstring:
+
 As of this writing "https://ezid.cdlib.org" and "https://mds.datacite.org" are the only valid values. See also these related database settings below:
 
 - :DoiProvider
@@ -199,14 +201,18 @@ As of this writing "https://ezid.cdlib.org" and "https://mds.datacite.org" are t
 - :Authority
 - :DoiSeparator
 
+.. _doi.username:
+
 doi.username
 ++++++++++++
-.. _doi.username:
+
 Used in conjuction with ``doi.baseurlstring``.
+
+.. _doi.password:
 
 doi.password
 ++++++++++++
-.. _doi.password:
+
 Used in conjuction with ``doi.baseurlstring``.
 
 dataverse.handlenet.admcredfile
@@ -266,30 +272,38 @@ This is the email address that "system" emails are sent from such as password re
 
 ``curl -X PUT -d "Support <support@example.edu>" http://localhost:8080/api/admin/settings/:SystemEmail``
 
+.. _:DoiProvider:
+
 :DoiProvider
 ++++++++++++
-.. _:DoiProvider:
+
 As of this writing "EZID" and "DataCite" are the only valid options.
 
 ``curl -X PUT -d EZID http://localhost:8080/api/admin/settings/:DoiProvider``
 
+.. _:Protocol:
+
 :Protocol
 +++++++++
-.. _:Protocol:
+
 As of this writing "doi" is the only valid option for the protocol for a persistent ID.
 
 ``curl -X PUT -d doi http://localhost:8080/api/admin/settings/:Protocol``
 
+.. _:Authority:
+
 :Authority
 ++++++++++
-.. _:Authority:
+
 Use the DOI authority assigned to you by your DoiProvider.
 
 ``curl -X PUT -d 10.xxxx http://localhost:8080/api/admin/settings/:Authority``
 
+.. _:DoiSeparator:
+
 :DoiSeparator
 +++++++++++++
-.. _:DoiSeparator:
+
 It is recommended that you keep this as a slash ("/").
 
 ``curl -X PUT -d "/" http://localhost:8080/api/admin/settings/:DoiSeparator``
