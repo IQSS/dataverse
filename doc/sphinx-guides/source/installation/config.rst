@@ -104,8 +104,9 @@ Once this configuration is complete, your Dataverse installation should be ready
 JVM Options
 -----------
 
-JVM stands Java Virtual Machine and as a Java application, Glassfish can read JVM options when it is started. A number of JVM options are configured by the installer below is a complete list of the Dataverse-specific JVM options. You can inspect the configured options by running ``asadmin list-jvm-options | egrep 'dataverse|doi'
-``.
+JVM stands Java Virtual Machine and as a Java application, Glassfish can read JVM options when it is started. A number of JVM options are configured by the installer below is a complete list of the Dataverse-specific JVM options. You can inspect the configured options by running:
+
+``asadmin list-jvm-options | egrep 'dataverse|doi'``
 
 When changing values these values with ``asadmin``, you'll need to delete the old value before adding a new one, like this:
 

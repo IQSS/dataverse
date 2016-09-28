@@ -89,7 +89,7 @@ Publish the Dataverse pointed by ``identifier``, which can either by the dataver
 Datasets
 ~~~~~~~~
 
-**Note** Creation of new datasets is done by ``POST``ing them onto dataverses. See dataverse section.
+**Note** Creation of new datasets is done with a ``POST`` onto dataverses. See dataverse section.
 
 **Note** In all commands below, dataset versions can be referred to as:
 
