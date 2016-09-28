@@ -392,7 +392,7 @@ The relative path URL to which users will be sent after signup. The default sett
 The location of your TwoRavens installation.  Activation of TwoRavens also requires the setting below, ``TwoRavensTabularView``
 
 :TwoRavensTabularView
-+++++++++++++++++++
++++++++++++++++++++++
 
 Set ``TwoRavensTabularView`` to true to allow a user to view tabular files via the TwoRavens application. This boolean affects whether a user will see the "Explore" button.
 
