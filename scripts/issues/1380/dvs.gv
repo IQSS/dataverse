@@ -1,0 +1,19 @@
+digraph {
+d1[label="Root"]
+d2[label="Top dataverse of Pete"]
+d3[label="Pete's public place"]
+d4[label="Pete's restricted data"]
+d5[label="Pete's secrets"]
+d6[label="Top dataverse of Uma"]
+d7[label="Uma's first"]
+d8[label="Uma's restricted"]
+
+d1 -> d2
+d2 -> d3
+d2 -> d4
+d2 -> d5
+d1 -> d6
+d6 -> d7
+d6 -> d8
+
+}

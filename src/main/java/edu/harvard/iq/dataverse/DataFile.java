@@ -16,6 +16,7 @@ import java.util.Objects;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.Files;
+import java.util.Comparator;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
@@ -44,7 +45,7 @@ import org.hibernate.validator.constraints.NotBlank;
 		, @Index(columnList="md5")
 		, @Index(columnList="contenttype")
 		, @Index(columnList="restricted")})
-public class DataFile extends DvObject {
+public class DataFile extends DvObject implements Comparable {
     private static final long serialVersionUID = 1L;
     
     public static final char INGEST_STATUS_NONE = 65;
@@ -228,6 +229,11 @@ public class DataFile extends DvObject {
         return null;
     }
 
+    @Override
+    public boolean isAncestorOf( DvObject other ) {
+        return equals(other);
+    }
+    
     /*
      * A user-friendly version of the "original format":
      */
@@ -602,6 +608,13 @@ public class DataFile extends DvObject {
         // @todo should we show the published version label instead?
         // currently this method is not being used
         return getLatestFileMetadata().getLabel();
+    }
+    
+    @Override
+    public int compareTo(Object o) {
+        DataFile other = (DataFile) o;
+        return this.getDisplayName().toUpperCase().compareTo(other.getDisplayName().toUpperCase());
+
     }
     
     /**

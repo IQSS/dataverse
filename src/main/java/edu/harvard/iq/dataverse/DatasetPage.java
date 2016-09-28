@@ -83,7 +83,6 @@ import javax.faces.component.UIInput;
 
 import javax.faces.event.AjaxBehaviorEvent;
 
-import javax.faces.context.ExternalContext;
 import org.apache.commons.lang.StringEscapeUtils;
 
 import org.primefaces.component.tabview.TabView;
@@ -187,7 +186,6 @@ public class DatasetPage implements java.io.Serializable {
     private List<Template> dataverseTemplates = new ArrayList();
     private Template defaultTemplate;
     private Template selectedTemplate;
-    private String globalId;
     private String persistentId;
     private String version;
     private String protocol = "";
@@ -322,11 +320,7 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public boolean isUnlimitedUploadFileSize(){
-        
-        if (this.maxFileUploadSizeInBytes == null){
-            return true;
-        }
-        return false;
+        return (this.maxFileUploadSizeInBytes == null);
     }
 
     public boolean isMetadataExportEnabled() {
@@ -455,9 +449,8 @@ public class DatasetPage implements java.io.Serializable {
      * Convenience method for "Download File" button display logic
      * 
      * Used by the dataset.xhtml render logic when listing files
-     *       > Assume user already has view access to the file list 
-     *         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!!!
-     * 
+     * <b>Assumes user already has view access to the file list.</b>
+     *         
      * @param fileMetadata
      * @return boolean
      */
@@ -498,29 +491,13 @@ public class DatasetPage implements java.io.Serializable {
         }
         
         // --------------------------------------------------------------------
-        // Conditions (2) through (4) are for Restricted files
+        // Conditions (2) through (3) are for Restricted files
         // --------------------------------------------------------------------
         
         // --------------------------------------------------------------------
-        // (2) In Dataverse 4.3 and earlier we required that users be authenticated
-        // to download files, but in developing the Private URL feature, we have
-        // added a new subclass of "User" called "PrivateUrlUser" that returns false
-        // for isAuthenticated but that should be able to download restricted files
-        // when given the Member role (which includes the DownloadFile permission).
-        // This is consistent with how Builtin and Shib users (both are
-        // AuthenticatedUsers) can download restricted files when they are granted
-        // the Member role. For this reason condition 2 has been changed. Previously,
-        // we required isSessionUserAuthenticated to return true. Now we require
-        // that the User is not an instance of GuestUser, which is similar in
-        // spirit to the previous check.
-        // --------------------------------------------------------------------
-        if (session.getUser() instanceof GuestUser){
-            this.fileDownloadPermissionMap.put(fid, false);
-            return false;
-        }
-        
-        // --------------------------------------------------------------------
-        // (3) Does the User have DownloadFile Permission at the **Dataset** level 
+        // (2) Does the User have DownloadFile Permission at the **Dataset** level 
+        // Michael: Leaving this in for now, but shouldn't this be alredy resolved
+        //          by the premission system, given that files are never permission roots?
         // --------------------------------------------------------------------
         if (this.doesSessionUserHaveDataSetPermission(Permission.DownloadFile)){
             // Yes, save answer and return true
@@ -529,7 +506,7 @@ public class DatasetPage implements java.io.Serializable {
         }
   
         // --------------------------------------------------------------------
-        // (4) Does the user has DownloadFile permission on the DataFile            
+        // (3) Does the user has DownloadFile permission on the DataFile            
         // --------------------------------------------------------------------
         if (this.permissionService.on(fileMetadata.getDataFile()).has(Permission.DownloadFile)){
             this.fileDownloadPermissionMap.put(fid, true);
@@ -537,7 +514,7 @@ public class DatasetPage implements java.io.Serializable {
         }
         
         // --------------------------------------------------------------------
-        // (6) No download....
+        // (4) No download for you! Come back with permissions!
         // --------------------------------------------------------------------
         this.fileDownloadPermissionMap.put(fid, false);
        
@@ -558,7 +535,7 @@ public class DatasetPage implements java.io.Serializable {
     
     // Another convenience method - to cache Update Permission on the dataset: 
     public boolean canUpdateDataset() {
-        return permissionsWrapper.canUpdateDataset(this.session.getUser(), this.dataset);
+        return permissionsWrapper.canUpdateDataset(dvRequestService.getDataverseRequest(), this.dataset);
     }
     
     public boolean canPublishDataverse() {
@@ -579,12 +556,8 @@ public class DatasetPage implements java.io.Serializable {
     //}
     
     public boolean canViewUnpublishedDataset() {
-        return permissionsWrapper.canViewUnpublishedDataset(this.session.getUser(), this.dataset);
-        //return doesSessionUserHaveDataSetPermission(Permission.ViewUnpublishedDataset);
+        return permissionsWrapper.canViewUnpublishedDataset( dvRequestService.getDataverseRequest(), dataset);
     }
-    
-    private Boolean sessionUserAuthenticated = null;
-    
     
     /* 
      * 4.2.1 optimization. 
@@ -593,28 +566,7 @@ public class DatasetPage implements java.io.Serializable {
      * every time; it doesn't do any new db lookups. 
     */
     public boolean isSessionUserAuthenticated() {
-        logger.fine("entering isSessionUserAuthenticated;");
-        if (sessionUserAuthenticated != null) {
-            logger.fine("using cached isSessionUserAuthenticated;");
-            
-            return sessionUserAuthenticated;
-        }
-        
-        if (session == null) {
-            return false;
-        }
-        
-        if (session.getUser() == null) {
-            return false;
-        }
-        
-        if (session.getUser().isAuthenticated()) {
-            sessionUserAuthenticated = true; 
-            return true;
-        }
-        
-        sessionUserAuthenticated = false;
-        return false;
+        return session.getUser().isAuthenticated();
     }
     
     /**
