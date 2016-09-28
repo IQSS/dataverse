@@ -594,6 +594,7 @@ public class AddReplaceFileHelper{
             return false;
         }
                        
+
         return this.step_045_auto_checkForFileReplaceDuplicate();
     }
     
@@ -704,15 +705,30 @@ public class AddReplaceFileHelper{
     
         for (DataFile df : finalFileList){
             
-            if (df.getCheckSum() == fileToReplace.getCheckSum()){
+            if (Objects.equals(df.getCheckSum(), fileToReplace.getCheckSum())){
                 this.addError("The new file,\"" + df.getFileMetadata().getLabel() 
                         + "\" has the same content as the replacment file, \"" 
                         + fileToReplace.getFileMetadata().getLabel() + "\" .");                
                 
-                removeLinkedFileFromDataset(dataset, df);   // Is this correct, if multiple files added in case of .shp or .zip, shouldn't they all be removed?             
+//                removeLinkedFileFromDataset(dataset, df);   // Is this correct, if multiple files added in case of .shp or .zip, shouldn't they all be removed?             
                 //this.abandonOperationRemoveAllNewFilesFromDataset(); // Is this correct, if multiple files, shouldn't they all be removed?
-                return false;
             }
+            
+            // This should be able to be overridden --force
+            if (!df.getContentType().equalsIgnoreCase(fileToReplace.getContentType())){
+                this.addError("Warning! Different content type. The new file,\"" + df.getFileMetadata().getLabel() 
+                        + "\" has content type [" + df.getContentType() + "] while the replacment file, \"" 
+                        + fileToReplace.getFileMetadata().getLabel() + "\" has content type: [" + fileToReplace.getContentType() + "]");                
+                
+  //              removeLinkedFileFromDataset(dataset, df);   // Is this correct, if multiple files added in case of .shp or .zip, shouldn't they all be removed?             
+                //this.abandonOperationRemoveAllNewFilesFromDataset(); // Is this correct, if multiple files, shouldn't they all be removed?
+            }
+            
+        }
+        
+        if (hasError()){
+            runMajorCleanup();
+            return false;
         }
         
         return true;
