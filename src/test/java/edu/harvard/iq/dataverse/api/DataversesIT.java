@@ -94,6 +94,16 @@ public class DataversesIT {
                 .statusCode(CREATED.getStatusCode());
         int datasetId1 = UtilIT.getDatasetIdFromResponse(createDataset1Response);
 
+        Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
+        publishDataverse.prettyPrint();
+        publishDataverse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response publishDatasetWithExistingGlobalId = UtilIT.publishDatasetViaNativeApi(datasetId1, "major", apiToken);
+        publishDatasetWithExistingGlobalId.prettyPrint();
+        publishDatasetWithExistingGlobalId.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
         // attempt to migrate dataset with duplicate global ID
         Response createDataset2Response = UtilIT.createDatasetWithGlobalIdViaNativeApi(dataverseAlias, apiToken,
                 UtilIT.getJson("scripts/search/tests/data/dataset-finch2.json"), "MIGRATION");
@@ -123,9 +133,21 @@ public class DataversesIT {
                 .statusCode(CREATED.getStatusCode());
         int datasetId3 = UtilIT.getDatasetIdFromResponse(createDataset5Response);
 
+        // revert to non-superuser to make sure a non-superuser can't delete a published dataset
+        UtilIT.makeSuperUser(username).then().assertThat().statusCode(OK.getStatusCode());
+
         Response deleteDataset1Response = UtilIT.deleteDatasetViaNativeApi(datasetId1, apiToken);
         deleteDataset1Response.prettyPrint();
-        deleteDataset1Response.then().assertThat().statusCode(OK.getStatusCode());
+        deleteDataset1Response.then().assertThat()
+                .body("message", equalTo("Failed to delete dataset " + datasetId1 + " User @" + username + " is not permitted to perform requested action."))
+                .statusCode(UNAUTHORIZED.getStatusCode());
+
+        // only a superuser can destroy a published dataset
+        UtilIT.makeSuperUser(username).then().assertThat().statusCode(OK.getStatusCode());
+
+        Response destroyDataset1WhichHasBeenPublished = UtilIT.destroyDataset(datasetId1, apiToken);
+        destroyDataset1WhichHasBeenPublished.prettyPrint();
+        destroyDataset1WhichHasBeenPublished.then().assertThat().statusCode(OK.getStatusCode());
 
         Response deleteDataset2Response = UtilIT.deleteDatasetViaNativeApi(datasetId2, apiToken);
         deleteDataset2Response.prettyPrint();

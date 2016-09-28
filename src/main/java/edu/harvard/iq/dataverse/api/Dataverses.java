@@ -84,6 +84,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
+import java.sql.Timestamp;
+import java.util.Date;
 
 /**
  * A REST API for dataverses.
@@ -235,6 +237,8 @@ public class Dataverses extends AbstractApiBean {
                         ds.setAuthority(datasetAuthority);
                         ds.setProtocol(datasetProtocol);
                         ds.setIdentifier(datasetIdentifier);
+                        // setGlobalIdCreateTime to anything ("now") avoid "This dataset may not be published because it has not been registered. Please contact Dataverse Support for assistance."
+                        ds.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
                     } else {
                         return errorResponse(Status.BAD_REQUEST,
                                 "A dataset with the identifier " + globalId + " already exists.");
