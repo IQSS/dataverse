@@ -261,8 +261,8 @@ public class FileUpload extends AbstractApiBean {
     }    
         
     @GET
-    @Path("hi")
-    public Response hi(){
+    @Path("add")
+    public Response hi_add(){
         
         // -------------------------------------
         msgt("(1) getSampleFile()");
@@ -297,65 +297,98 @@ public class FileUpload extends AbstractApiBean {
         //-------------------
         // ADD
         //-------------------
-        if (true){
+        msg("ADD!");
 
-            
-            DataverseRequest dvRequest2 = createDataverseRequest(authUser);
-            AddReplaceFileHelper addFileHelper = new AddReplaceFileHelper(dvRequest2,
-                                                    this.ingestService,
-                                                    this.datasetService,
-                                                    this.fileService,
-                                                    this.permissionSvc,
-                                                    this.commandEngine);
-            
-                            
-            addFileHelper.runAddFile(selectedDataset,
-                                    "blackbox.txt",
-                                    "text/plain",
-                                    testFileInputStream);
-            
-            
-            if (addFileHelper.hasError()){
-                return okResponse(addFileHelper.getErrorMessagesAsString("\n"));
-            }else{
-                return okResponse("hey hey, it may have worked");
-            }
-            
-        }     
+        DataverseRequest dvRequest2 = createDataverseRequest(authUser);
+        AddReplaceFileHelper addFileHelper = new AddReplaceFileHelper(dvRequest2,
+                                                this.ingestService,
+                                                this.datasetService,
+                                                this.fileService,
+                                                this.permissionSvc,
+                                                this.commandEngine);
 
+
+        addFileHelper.runAddFile(selectedDataset,
+                                "blackbox.txt",
+                                "text/plain",
+                                testFileInputStream);
+
+
+        if (addFileHelper.hasError()){
+            return okResponse(addFileHelper.getErrorMessagesAsString("\n"));
+        }else{
+            return okResponse("hey hey, it may have worked");
+        }
+            
+
+    } // end call to "hi"
+
+
+    @GET
+    @Path("replace/{oldFileId}")
+    public Response hi_replace(@PathParam("oldFileId") Long oldFileId){
+        
+        // -------------------------------------
+        msgt("(1) getSampleFile()");
+        // -------------------------------------
+
+        InputStream testFileInputStream = getSampleFile();
+        if (testFileInputStream == null){
+            return okResponse("Couldn't find the file!!");
+        }
+        
+        // -------------------------------------
+        msgt("(1a) Get User from API token");
+        // -------------------------------------
+        User authUser;
+        try {
+            authUser = this.findUserOrDie();
+        } catch (WrappedResponse ex) {
+            return okResponse("Couldn't find a user from the API key");
+        }
+        //authSvc.findByID(new Long(1));        
+        msg("authUser: " + authUser);
+        msg("getUserIdentifier: " + authUser.getIdentifier());
+
+        
+        // -------------------------------------
+        msgt("(1b) Get the selected Dataset");
+        // -------------------------------------        
+        int dataset_id = 10;
+        Dataset selectedDataset = datasetService.find(new Long(dataset_id));
+
+        
         //-------------------
         // REPLACE
         //-------------------
 
-         if (false){
+        msg("REPLACE!");
 
-            
-            DataverseRequest dvRequest2 = createDataverseRequest(authUser);
-            AddReplaceFileHelper addFileHelper = new AddReplaceFileHelper(dvRequest2,
-                                                    this.ingestService,
-                                                    this.datasetService,
-                                                    this.fileService,
-                                                    this.permissionSvc,
-                                                    this.commandEngine);
-            
-            Long oldFileId = (long) 141;
-            addFileHelper.runReplaceFile(selectedDataset,
-                                    "blackbox.txt",
-                                    "text/plain", 
-                                    testFileInputStream,
-                                    oldFileId
-                                    );
-            
-            
-            if (addFileHelper.hasError()){
-                return okResponse(addFileHelper.getErrorMessagesAsString("\n"));
-            }else{
-                return okResponse("hey hey, it may have worked");
-            }
-            
-        }     
-        return okResponse("ain't done nuthin'");
 
+        DataverseRequest dvRequest2 = createDataverseRequest(authUser);
+        AddReplaceFileHelper addFileHelper = new AddReplaceFileHelper(dvRequest2,
+                                                this.ingestService,
+                                                this.datasetService,
+                                                this.fileService,
+                                                this.permissionSvc,
+                                                this.commandEngine);
+
+        //Long oldFileId =  oldFileId;
+        addFileHelper.runReplaceFile(selectedDataset,
+                                "replace_" + oldFileId.toString() + ".txt",
+                                "text/plain", 
+                                testFileInputStream,
+                                oldFileId
+                                );
+
+
+        if (addFileHelper.hasError()){
+            return okResponse(addFileHelper.getErrorMessagesAsString("\n"));
+        }else{
+            return okResponse("hey hey, it may have worked");
+        }
+           
         
     } // end call to "hi"
+
 }

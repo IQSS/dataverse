@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -74,8 +75,8 @@ public class AddReplaceFileHelper{
     // Instance variables derived from other input
     private User user;
     private DatasetVersion workingVersion;
-    List<DataFile> newFileList;
-    List<DataFile> filesToAdd;
+    List<DataFile> initialFileList; 
+    List<DataFile> finalFileList;
    
     
     // For error handling
@@ -160,7 +161,8 @@ public class AddReplaceFileHelper{
      * @return 
      */
     public boolean runAddFile(Dataset dataset, String newFileName, String newFileContentType, InputStream newFileInputStream){
-        
+        msgt(">> runAddFile");
+
         this.currentOperation = FILE_ADD_OPERATION;
         
         return this.runAddReplaceFile(dataset, newFileName, newFileContentType, newFileInputStream, null);
@@ -181,7 +183,7 @@ public class AddReplaceFileHelper{
         if (oldFileId==null){
             throw new NullPointerException("For a replace operation, oldFileId cannot be null");
         }
-        
+        msgt(">> runReplaceFile");
         this.currentOperation = FILE_REPLACE_OPERATION;
         
         return this.runAddReplaceFile(dataset, newFileName, newFileContentType, newFileInputStream, oldFileId);
@@ -252,7 +254,7 @@ public class AddReplaceFileHelper{
             return false;
             
         }
-
+        
         if (this.isFileReplaceOperation()){
             msgt("step_080_run_update_dataset_command_for_replace");
             if (!this.step_080_run_update_dataset_command_for_replace()){
@@ -558,7 +560,7 @@ public class AddReplaceFileHelper{
         workingVersion = dataset.getEditVersion();
         
         try {
-            newFileList = ingestService.createDataFiles(workingVersion,
+            initialFileList = ingestService.createDataFiles(workingVersion,
                     this.newFileInputStream,
                     this.newFileName,
                     this.newFileContentType);
@@ -575,16 +577,16 @@ public class AddReplaceFileHelper{
          *  (1) the dataset was empty
          *  (2) the new file (or new file unzipped) did not ingest via "createDataFiles"
          */
-        if (newFileList.isEmpty()){
+        if (initialFileList.isEmpty()){
             this.addErrorSevere("Sorry! An error occurred and the new file was not added.");
             return false;
         }
         
-        if (!this.run_auto_step_040_checkForDuplicates()){
+        if (!this.step_040_auto_checkForDuplicates()){
             return false;
         }
                        
-        return this.run_auto_step_045_checkForFileReplaceDuplicate();
+        return this.step_045_auto_checkForFileReplaceDuplicate();
     }
     
     /**
@@ -592,22 +594,22 @@ public class AddReplaceFileHelper{
      * 
      * @return 
      */
-    private boolean run_auto_step_040_checkForDuplicates(){
+    private boolean step_040_auto_checkForDuplicates(){
         
-        msgt("run_auto_step_040_checkForDuplicates");
+        msgt("step_040_auto_checkForDuplicates");
         if (this.hasError()){
             return false;
         }
         
         // Double checked -- this check also happens in step 30
         //
-        if (newFileList.isEmpty()){
+        if (initialFileList.isEmpty()){
             this.addErrorSevere("Sorry! An error occurred and the new file was not added.");
             return false;
         }
 
         // Initialize new file list
-        this.filesToAdd = new ArrayList();
+        this.finalFileList = new ArrayList();
 
         String warningMessage  = null;
         
@@ -615,7 +617,7 @@ public class AddReplaceFileHelper{
         // -----------------------------------------------------------
         // Iterate through the recently ingest files
         // -----------------------------------------------------------
-        for (DataFile df : newFileList){
+        for (DataFile df : initialFileList){
              msg("Checking file: " + df.getFileMetadata().getLabel());
 
             // -----------------------------------------------------------
@@ -636,31 +638,32 @@ public class AddReplaceFileHelper{
             if (DuplicateFileChecker.isDuplicateOriginalWay(workingVersion, df.getFileMetadata())){
 
                 String dupeName = df.getFileMetadata().getLabel();
-                removeLinkedFileFromDataset(dataset, df);
+                removeUnSavedFilesFromWorkingVersion();
+                //removeLinkedFileFromDataset(dataset, df);
                 //abandonOperationRemoveAllNewFilesFromDataset();
                 this.addErrorSevere("This file has a duplicate already in the dataset: " + dupeName);                
             }else{
-                filesToAdd.add(df);
+                finalFileList.add(df);
             }
         }
         
         if (this.hasError()){
-            filesToAdd.clear();
+            finalFileList.clear();
             return false;
         }
         
         return true;
-    } // end run_auto_step_040_checkForDuplicates
+    } // end step_040_auto_checkForDuplicates
     
     
     /**
      * This is always checked.   
      * 
      * For ADD: If there is not replacement file, then the check is considered a success
-     * For REPLACE: The checksum is examined against the "filesToAdd" list
+     * For REPLACE: The checksum is examined against the "finalFileList" list
      * 
      */
-    private boolean run_auto_step_045_checkForFileReplaceDuplicate(){
+    private boolean step_045_auto_checkForFileReplaceDuplicate(){
         
         if (this.hasError()){
             return false;
@@ -673,7 +676,7 @@ public class AddReplaceFileHelper{
         }
 
         
-        if (filesToAdd.isEmpty()){
+        if (finalFileList.isEmpty()){
             // This error shouldn't happen if steps called in sequence....
             this.addErrorSevere("There are no files to add.  (This error shouldn't happen if steps called in sequence....checkForFileReplaceDuplicate)");                
             return false;
@@ -686,7 +689,7 @@ public class AddReplaceFileHelper{
             return false;
         }
     
-        for (DataFile df : filesToAdd){
+        for (DataFile df : finalFileList){
             
             if (df.getCheckSum() == fileToReplace.getCheckSum()){
                 this.addError("The new file,\"" + df.getFileMetadata().getLabel() 
@@ -701,20 +704,8 @@ public class AddReplaceFileHelper{
         
         return true;
         
-    } // end run_auto_step_045_checkForFileReplaceDuplicate
+    } // end step_045_auto_checkForFileReplaceDuplicate
     
-    
-    private boolean abandonOperationRemoveAllNewFilesFromDataset(){
-        
-        if (filesToAdd.isEmpty()){
-            return true;
-        }
-        
-        for (DataFile df : filesToAdd){
-            this.removeLinkedFileFromDataset(dataset, df); // Is this correct, if multiple files, shouldn't they all be removed?
-        }
-        return true;
-    }
     
     
     private boolean step_050_checkForConstraintViolations(){
@@ -723,7 +714,7 @@ public class AddReplaceFileHelper{
             return false;
         }
         
-        if (filesToAdd.isEmpty()){
+        if (finalFileList.isEmpty()){
             // This error shouldn't happen if steps called in sequence....
             this.addErrorSevere("There are no files to add.  (This error shouldn't happen if steps called in sequence....)");                
             return false;
@@ -760,13 +751,13 @@ public class AddReplaceFileHelper{
             return false;
         }
                 
-        if (filesToAdd.isEmpty()){
+        if (finalFileList.isEmpty()){
             // This error shouldn't happen if steps called in sequence....
             this.addErrorSevere("There are no files to add.  (This error shouldn't happen if steps called in sequence....)");                
             return false;
         }
         
-        ingestService.addFiles(workingVersion, filesToAdd);
+        ingestService.addFiles(workingVersion, finalFileList);
 
         return true;
     }
@@ -802,58 +793,82 @@ public class AddReplaceFileHelper{
     }
 
     
-    private boolean step_auto_085_delete_file_to_replace_from_working_version(){
+    /**
+     * Go through the working DatasetVersion and remove the
+     * FileMetadata of the file to replace
+     * 
+     * @return 
+     */
+    private boolean step_085_auto_remove_filemetadata_to_replace_from_working_version(){
 
-        msgt("step_auto_085_delete_file_to_replace_from_working_version 1");
+        msgt("step_085_auto_remove_filemetadata_to_replace_from_working_version 1");
 
         if (!isFileReplaceOperation()){
             // Shouldn't happen!
-            this.addErrorSevere("This should ONLY be called for file replace operations!! (step_auto_085_delete_file_to_replace_from_working_version");
+            this.addErrorSevere("This should ONLY be called for file replace operations!! (step_085_auto_remove_filemetadata_to_replace_from_working_version");
             return false;
         }
-        msg("step_auto_085_delete_file_to_replace_from_working_version 1");
+        msg("step_085_auto_remove_filemetadata_to_replace_from_working_version 1");
 
         if (this.hasError()){
             return false;
         }
 
-        msg("step_auto_085_delete_file_to_replace_from_working_version 2");
         
-        // 2. delete the filemetadata from the version: 
-        //fmit = dataset.getEditVersion().getFileMetadatas().iterator();
-        Iterator fmit = workingVersion.getFileMetadatas().iterator();
-        msg("step_auto_085_delete_file_to_replace_from_working_version 3");
-        msg("-------------------------");
-        msg("File to replace getId: " + fileToReplace.getId());
-        msg("File to replace getCheckSum: " + fileToReplace.getCheckSum());
-        msg("File to replace getFileMetadata: " + fileToReplace.getFileMetadata());
-        msg("File to replace getLabel: " + fileToReplace.getFileMetadata().getLabel());
-        msg("-------------------------");
+        msgt("File to replace getId: " + fileToReplace.getId());
+
+        Iterator<FileMetadata> fmIt = workingVersion.getFileMetadatas().iterator();
+        msgt("Clear file to replace");
+        int cnt = 0;
+        while (fmIt.hasNext()) {
+           cnt++;
+          
+           FileMetadata fm = fmIt.next();
+           msg(cnt + ") next file: " + fm);
+           msg("   getDataFile().getId(): " + fm.getDataFile().getId());
+           if (fm.getDataFile().getId() != null){
+               if (Objects.equals(fm.getDataFile().getId(), fileToReplace.getId())){
+                   msg("Let's remove it!");
+                   fmIt.remove();
+                   return true;
+               }
+           }
+        }
+        msg("No matches found!");
+        addErrorSevere("Unable to remove old file from new DatasetVersion");
+        removeUnSavedFilesFromWorkingVersion();
+        return false;
+    }
+    
+    private boolean removeUnSavedFilesFromWorkingVersion(){
+        msgt("Clean up: removeUnSavedFilesFromWorkingVersion");
         
+        // -----------------------------------------------------------
+        // (1) Remove all new FileMetadata objects
+        // -----------------------------------------------------------                        
+        Iterator<FileMetadata> fmIt = workingVersion.getFileMetadatas().iterator(); //dataset.getEditVersion().getFileMetadatas().iterator();//  
+        while (fmIt.hasNext()) {
+            FileMetadata fm = fmIt.next();
+            if (fm.getDataFile().getId() == null){
+                fmIt.remove();
+            }
+        }
         
-        while (fmit.hasNext()) {
-            msg("-------------------------");
-            msg("step_auto_085_delete_file_to_replace_from_working_version 4");
-            FileMetadata fmd = (FileMetadata) fmit.next();
-            msg("   ....getLabel: " + fmd.getLabel());
-            msg("   ....getId: " + fmd.getId());
-            msg("   ....getDataFile: " + fmd.getDataFile().toString());
-            msg("   ....getDataFile id: " + fmd.getDataFile().getId());
-            if (fmd.getId() != null){
-                msg("step_auto_085_delete_file_to_replace_from_working_version 5");
-                msg("fileToReplace.getStorageIdentifier: " + fileToReplace.getStorageIdentifier());
-                msg("fmd.getDataFile().getStorageIdentifier(): " + fmd.getDataFile().getStorageIdentifier());
-                if (fileToReplace.getStorageIdentifier().equals(fmd.getDataFile().getStorageIdentifier())) {
-                    msg("step_auto_085_delete_file_to_replace_from_working_version 6");
-                    fmit.remove();
-                    return true;
-                }
+        // -----------------------------------------------------------
+        // (2) Remove all new DataFile objects
+        // -----------------------------------------------------------                        
+        Iterator<DataFile> dfIt = dataset.getFiles().iterator();
+        msgt("Clear Files");
+        while (dfIt.hasNext()) {
+            DataFile df = dfIt.next();
+            if (df.getId() == null){
+                dfIt.remove();
             }
         }
         return true;
-        //this.addErrorSevere("Could not find file to replace in the working DatasetVersion");
-        //return false;
+        
     }
+    
     
     private boolean step_080_run_update_dataset_command_for_replace(){
 
@@ -870,7 +885,7 @@ public class AddReplaceFileHelper{
         // -----------------------------------------------------------
         // Remove the "fileToReplace" from the current working version
         // -----------------------------------------------------------
-        if (!step_auto_085_delete_file_to_replace_from_working_version()){
+        if (!step_085_auto_remove_filemetadata_to_replace_from_working_version()){
             return false;
         }
 
@@ -879,17 +894,25 @@ public class AddReplaceFileHelper{
         // -----------------------------------------------------------
         // Make list of files to delete -- e.g. the single "fileToReplace"
         // -----------------------------------------------------------
-        List<FileMetadata> filesToBeDeleted = new ArrayList();
-        filesToBeDeleted.add(fileToReplace.getFileMetadata());
+        //List<FileMetadata> filesToBeDeleted = new ArrayList();
+        //filesToBeDeleted.add(fileToReplace.getFileMetadata());
 
-        msg("step_080_run_update_dataset_command_for_replace 3");
+        //msg("step_080_run_update_dataset_command_for_replace 3");
 
         
         // -----------------------------------------------------------
         // Set the "root file ids" and "previous file ids"
+        // THIS IS A KEY STEP - SPLIT IT OUT
+        //  (1) Old file: Set the Root File Id on the original file and save it
+        //  (2) New file: Set the previousFileId to the id of the original file
+        //  (3) New file: Set the rootFileId to the rootFileId of the original file
         // -----------------------------------------------------------
-        for (DataFile df : filesToAdd){           
-            df.setPreviousDataFileID(fileToReplace.getId());
+        if (fileToReplace.getRootDataFileId() == DataFile.ROOT_DATAFILE_ID_DEFAULT){
+            fileToReplace.setRootDataFileId(fileToReplace.getId());
+            fileToReplace = fileService.save(fileToReplace);
+        }
+        for (DataFile df : finalFileList){           
+            df.setPreviousDataFileId(fileToReplace.getId());
             df.setRootDataFileId(fileToReplace.getRootDataFileId());
         }
         
@@ -897,7 +920,7 @@ public class AddReplaceFileHelper{
 
         
         Command<Dataset> update_cmd;
-        update_cmd = new UpdateDatasetCommand(dataset, dvRequest, filesToBeDeleted);
+        update_cmd = new UpdateDatasetCommand(dataset, dvRequest);
 
         msg("step_080_run_update_dataset_command_for_replace 5");
 
@@ -939,7 +962,7 @@ public class AddReplaceFileHelper{
         
         // clear old file list
         //
-        filesToAdd.clear();
+        finalFileList.clear();
 
         
         // start the ingest!
@@ -988,7 +1011,7 @@ public class AddReplaceFileHelper{
         // -----------------------------------------------------------
         // (1) Remove file from filemetadata list
         // -----------------------------------------------------------                        
-        Iterator<FileMetadata> fmIt = dataset.getEditVersion().getFileMetadatas().iterator();
+        Iterator<FileMetadata> fmIt = workingVersion.getFileMetadatas().iterator();
         msgt("Clear FileMetadatas");
         while (fmIt.hasNext()) {
             FileMetadata fm = fmIt.next();

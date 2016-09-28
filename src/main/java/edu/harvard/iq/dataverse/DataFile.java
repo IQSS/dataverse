@@ -78,12 +78,12 @@ public class DataFile extends DvObject implements Comparable {
 
     /**
      * @todo We should have consistency between "Id" vs "ID" for rootDataFileId
-     * vs. previousDataFileID.
+     * vs. previousDataFileId.
      */
     // null for initial version; subsequent versions will point to the previous file
     //
     @Column(nullable=true)
-    private Long previousDataFileID;
+    private Long previousDataFileId;
     /* endt: FILE REPLACE ATTRIBUTES */
     
     
@@ -147,7 +147,7 @@ public class DataFile extends DvObject implements Comparable {
      */
     private void initFileReplaceAttributes(){
         this.rootDataFileId = ROOT_DATAFILE_ID_DEFAULT;
-        this.previousDataFileID = null;
+        this.previousDataFileId = null;
     }
     
     // The dvObject field "name" should not be used in
@@ -693,19 +693,19 @@ public class DataFile extends DvObject implements Comparable {
     
 
     /**
-     *  Set previousDataFileID
-     *  @param previousDataFileID
+     *  Set previousDataFileId
+     *  @param previousDataFileId
      */
-    public void setPreviousDataFileID(Long previousDataFileID){
-        this.previousDataFileID = previousDataFileID;
+    public void setPreviousDataFileId(Long previousDataFileId){
+        this.previousDataFileId = previousDataFileId;
     }
 
     /**
-     *  Get for previousDataFileID
+     *  Get for previousDataFileId
      *  @return Long
      */
-    public Long getPreviousDataFileID(){
-        return this.previousDataFileID;
+    public Long getPreviousDataFileId(){
+        return this.previousDataFileId;
     }
 
 }

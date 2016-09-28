@@ -728,7 +728,7 @@ public class DataFileServiceBean implements java.io.Serializable {
 
         // Set the initial value of the rootDataFileId
         //    (does nothing if it's already set)
-        savedDataFile = setAndCheckFileReplaceAttributes(savedDataFile);
+        //savedDataFile = setAndCheckFileReplaceAttributes(savedDataFile);
         
         return savedDataFile;
     }
@@ -800,10 +800,9 @@ public class DataFileServiceBean implements java.io.Serializable {
         FileMetadata newFileMetadata = em.merge(fileMetadata);
         em.flush();
         
-
         // Set the initial value of the rootDataFileId
         //    (does nothing if it's already set)
-        DataFile updatedDataFile = setAndCheckFileReplaceAttributes(newFileMetadata.getDataFile());
+        //DataFile updatedDataFile = setAndCheckFileReplaceAttributes(newFileMetadata.getDataFile());
                
         return newFileMetadata;
     }

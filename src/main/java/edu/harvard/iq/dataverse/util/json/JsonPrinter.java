@@ -496,7 +496,7 @@ public class JsonPrinter {
                 .add("UNF", df.getUnf())
                 .add("md5", df.getmd5())
                 .add("rootDataFileId", df.getRootDataFileId())
-                .add("previousDataFileId", df.getPreviousDataFileID())
+                .add("previousDataFileId", df.getPreviousDataFileId())
                 .add("description", df.getDescription());
     }
 
