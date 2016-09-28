@@ -522,6 +522,7 @@ public class AddReplaceFileHelper{
             return false;            
         }
         
+              
         fileToReplace = existingFile;
         
         return true;
@@ -567,6 +568,10 @@ public class AddReplaceFileHelper{
         // Load the working version of the Dataset
         workingVersion = dataset.getEditVersion();
         
+        if (!step_035_auto_isReplacementInLatestVersion()){
+            return false;
+        }
+        
         try {
             initialFileList = ingestService.createDataFiles(workingVersion,
                     this.newFileInputStream,
@@ -596,6 +601,36 @@ public class AddReplaceFileHelper{
                        
 
         return this.step_045_auto_checkForFileReplaceDuplicate();
+    }
+    
+    /**
+     * Make sure the file to replace is in the workingVersion
+     *  -- e.g. that it wasn't deleted from a previous Version
+     * 
+     * @return 
+     */
+    private boolean step_035_auto_isReplacementInLatestVersion(){
+        
+        if (this.hasError()){
+            return false;
+        }
+        if (!this.isFileReplaceOperation()){
+            return true;
+        }
+        
+        boolean fileInLatestVersion = false;
+        for (FileMetadata fm : workingVersion.getFileMetadatas()){
+            if (fm.getDataFile().getId() != null){
+                if (Objects.equals(fileToReplace.getId(),fm.getDataFile().getId())){
+                    fileInLatestVersion = true;
+                }
+            }
+        }
+        if (!fileInLatestVersion){
+            addError("You cannot replace a file that is not in the most recently published Dataset.");
+            return false;                        
+        }
+        return true;
     }
     
     /**
