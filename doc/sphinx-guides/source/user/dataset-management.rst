@@ -334,6 +334,6 @@ If you deaccession the most recently published version of the dataset but not al
    :class: img-responsive
 .. |image2| image:: ./img/data-download.png
    :class: img-responsive
-.. |image3| image:: http://static.projects.iq.harvard.edu/files/styles/os_files_xxlarge/public/datascience/files/data_publishing_version_workflow.png?itok=8Z0PM-QC
+.. |image3| image:: ./img/data_publishing_version_workflow.png
    :class: img-responsive
 
