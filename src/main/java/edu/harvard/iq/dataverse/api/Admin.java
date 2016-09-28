@@ -31,7 +31,6 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
-
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import java.io.StringReader;
@@ -112,13 +111,8 @@ public class Admin extends AbstractApiBean {
     @Path("authenticationProviders")
     @GET
     public Response listAuthProviders() {
-        JsonArrayBuilder arb = Json.createArrayBuilder();
-        for ( AuthenticationProviderRow r :
-                em.createNamedQuery("AuthenticationProviderRow.findAll", AuthenticationProviderRow.class).getResultList() ){
-            arb.add( json(r) );
-        }
-        
-        return ok(arb);
+        return ok(em.createNamedQuery("AuthenticationProviderRow.findAll", AuthenticationProviderRow.class).getResultList()
+                    .stream().map( r->json(r) ).collect( toJsonArray() ));
     }
     
     @Path("authenticationProviders")
@@ -157,13 +151,13 @@ public class Admin extends AbstractApiBean {
     public Response enableAuthenticationProvider( @PathParam("id")String id, String body ) {
         
         if ( ! Util.isBoolean(body) ) {
-            return error(Response.Status.BAD_REQUEST, "Illegal value '" + body + "'. Try 'true' or 'false'");
+            return error(Response.Status.BAD_REQUEST, "Illegal value '" + body + "'. Use 'true' or 'false'");
         }
         boolean enable = Util.isTrue(body);
         
         AuthenticationProviderRow row = em.find(AuthenticationProviderRow.class, id);
         if ( row == null ) {
-            return error( Status.NOT_FOUND, "Can't find authentication provider with id '" + id + "'");
+            return notFound("Can't find authentication provider with id '" + id + "'");
         }
         
         row.setEnabled(enable);
@@ -179,11 +173,10 @@ public class Admin extends AbstractApiBean {
                 return ok(String.format("Authentication Provider %s enabled", row.getId()));
                 
             } catch (AuthenticationProviderFactoryNotFoundException ex) {
-                return error(Response.Status.BAD_REQUEST, 
-                                        String.format("Can't instantiate provider, as there's no factory with alias %s", row.getFactoryAlias()));
+                return notFound(String.format("Can't instantiate provider, as there's no factory with alias %s", row.getFactoryAlias()));
             } catch (AuthorizationSetupException ex) {
                 logger.log(Level.WARNING, "Error instantiating authentication provider: " + ex.getMessage(), ex);
-                return error(Response.Status.BAD_REQUEST, 
+                return error(Status.INTERNAL_SERVER_ERROR, 
                                         String.format("Can't instantiate provider: %s", ex.getMessage()));
             }
             
