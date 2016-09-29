@@ -14,6 +14,7 @@
 
 import sys
 import os
+from datetime import datetime
 sys.path.insert(0, os.path.abspath('../../'))
 import sphinx_bootstrap_theme
 
@@ -56,7 +57,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Dataverse'
-copyright = u'2016, The President & Fellows of Harvard College'
+copyright = u'%d, The President & Fellows of Harvard College' % datetime.now().year
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -358,7 +359,7 @@ texinfo_documents = [
 epub_title = u'Dataverse'
 epub_author = u'Dataverse Team'
 epub_publisher = u'Dataverse Team'
-epub_copyright = u'2014, Dataverse Team'
+epub_copyright = u'%d, The President & Fellows of Harvard College' % datetime.now().year
 
 # The basename for the epub file. It defaults to the project name.
 #epub_basename = u'Consilience Documentation'
