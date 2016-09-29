@@ -9,7 +9,6 @@ Developer Guide
 Contents:
 
 .. toctree::
-   :maxdepth: 2
 
    intro
    dev-environment

@@ -16,7 +16,6 @@ Rather than using a production installation of Dataverse, API users are welcome 
 Contents:
 
 .. toctree::
-   :maxdepth: 2
 
    sword
    search

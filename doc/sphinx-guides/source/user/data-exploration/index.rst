@@ -9,8 +9,6 @@ Data Exploration Guide
 Contents:
 
 .. toctree::
-   :titlesonly:
-   :maxdepth: 2
 
    tworavens
    worldmap
