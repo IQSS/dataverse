@@ -1050,6 +1050,21 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     /**
+     * Using a DataFile id, retrieve an associated MapLayerMetadata object
+     *
+     * The MapLayerMetadata objects have been fetched at page inception by
+     * "loadMapLayerMetadataLookup()"
+     */
+    public MapLayerMetadata getMapLayerMetadata(DataFile df) {
+        if (df == null) {
+            return null;
+        }
+        return this.worldMapPermissionHelper.getMapLayerMetadata(df);
+    }
+    
+ 
+    
+    /**
      * 
      *  WARNING: Check if the user has file download permission
      *  - This check is assumed when calling to the worldMapPermissionHelper
