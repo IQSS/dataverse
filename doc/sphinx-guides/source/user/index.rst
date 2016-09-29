@@ -9,7 +9,6 @@ User Guide
 Contents:
 
 .. toctree::
-   :maxdepth: 2
 
    account
    find-use-data
