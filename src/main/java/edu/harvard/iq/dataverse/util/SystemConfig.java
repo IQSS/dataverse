@@ -531,9 +531,7 @@ public class SystemConfig {
         return false;
     }
 
-    public String getFooterCopyright() {
-        String copyrightYear = BundleUtil.getStringFromBundle("footer.copyright", Arrays.asList(Year.now().getValue() + ""));
-        String extraText = settingsService.getValueForKey(SettingsServiceBean.Key.FooterCopyright, "The President &#38; Fellows of Harvard College");
-        return copyrightYear + extraText;
+    public String getFooterCopyrightAndYear() {
+        return BundleUtil.getStringFromBundle("footer.copyright", Arrays.asList(Year.now().getValue() + ""));
     }
 }

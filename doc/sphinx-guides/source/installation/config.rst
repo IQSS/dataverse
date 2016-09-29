@@ -268,9 +268,9 @@ This is the email address that "system" emails are sent from such as password re
 :FooterCopyright
 ++++++++++++++++
 
-By default the footer says "Copyright © [YYYY], The President & Fellows of Harvard College" but the text after the year can be customized.
+By default the footer says "Copyright © [YYYY]" but you can add text after the year, as in the example below.
 
-``curl -X PUT -d "The President &#38; Fellows of Harvard College" http://localhost:8080/api/admin/settings/:FooterCopyright``
+``curl -X PUT -d ", The President &#38; Fellows of Harvard College" http://localhost:8080/api/admin/settings/:FooterCopyright``
 
 :DoiProvider
 ++++++++++++
