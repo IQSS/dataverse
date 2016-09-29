@@ -222,7 +222,7 @@ The file permissions page has two sections: Users/Groups and Files.
 
 To give someone access to your restricted files, click on the Grant Access to Users/Groups button in the Users/Groups section. 
 
-.. _widgets:
+.. _dataset-widgets:
 
 Widgets
 =============================
@@ -310,7 +310,8 @@ a file, your dataset will automatically be bumped up to a major version (example
 
 |image3|
 
-**Dataset Versions Tab**
+Version Details
+-------------------------------------
 
 To view what has exactly changed starting from the originally published version to any subsequent published versions: click on the Versions tab on the dataset page to see all versions and changes made for that particular dataset. Once you have more than one version (can be version 1 and a draft), you can click the Show Details link in the Versions tab to learn more about the metadata fields and files that were either added or edited. 
 
