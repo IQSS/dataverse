@@ -33,6 +33,7 @@ public class SettingsServiceBean {
      * So there.
      */
     public enum Key {
+        FooterCopyright,
         MinutesUntilConfirmEmailTokenExpires,
         /**
          * Override Solr highlighting "fragsize"
