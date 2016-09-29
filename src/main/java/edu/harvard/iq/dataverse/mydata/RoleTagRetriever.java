@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.search.SolrQueryResponse;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.search.SearchConstants;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -69,7 +70,12 @@ public class RoleTagRetriever {
        this.dvObjectServiceBean = dvObjectServiceBean;
     }
     
-    public void loadRoles(AuthenticatedUser au , SolrQueryResponse solrQueryResponse){
+    public void loadRoles(DataverseRequest dataverseRequest , SolrQueryResponse solrQueryResponse){
+        if (dataverseRequest == null){
+            throw new NullPointerException("RoleTagRetriever.constructor. dataverseRequest cannot be null");
+        }
+        
+        AuthenticatedUser au = dataverseRequest.getAuthenticatedUser();
         
         if (au == null){
             throw new NullPointerException("RoleTagRetriever.constructor. au cannot be null");
@@ -94,7 +100,7 @@ public class RoleTagRetriever {
         findDataverseIdsForFiles();
         
         // (4) Retrieve the role ids
-        retrieveRoleIdsForDvObjects(au);
+        retrieveRoleIdsForDvObjects(dataverseRequest, au);
 
         // (5) Prepare final role lists
         prepareFinalRoleLists();
@@ -349,7 +355,7 @@ public class RoleTagRetriever {
     }
     
     
-    private boolean retrieveRoleIdsForDvObjects(AuthenticatedUser au ){
+    private boolean retrieveRoleIdsForDvObjects(DataverseRequest dataverseRequest, AuthenticatedUser au){
         
         String userIdentifier = au.getUserIdentifier();
         if (userIdentifier == null){
@@ -366,7 +372,7 @@ public class RoleTagRetriever {
         }
         //msg("dvObjectIdList: " + dvObjectIdList.toString());
 
-        List<Object[]> results = this.roleAssigneeService.getRoleIdsFor(au, dvObjectIdList);
+        List<Object[]> results = this.roleAssigneeService.getRoleIdsFor(dataverseRequest, dvObjectIdList);
         
         //msgt("runStep1RoleAssignments results: " + results.toString());
 

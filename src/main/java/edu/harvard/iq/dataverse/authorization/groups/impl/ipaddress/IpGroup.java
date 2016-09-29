@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress;
 
-import com.google.common.base.Objects;
 import edu.harvard.iq.dataverse.authorization.groups.GroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.PersistedGlobalGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IPv4Address;
@@ -9,7 +8,9 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IPv6Range
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddressRange;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -27,10 +28,10 @@ import javax.persistence.Transient;
 @Entity
 public class IpGroup extends PersistedGlobalGroup {
     
-    @OneToMany(mappedBy = "owner", cascade=CascadeType.ALL)
+    @OneToMany(mappedBy = "owner", cascade=CascadeType.ALL, orphanRemoval = true)
     private Set<IPv6Range> ipv6Ranges;
 
-    @OneToMany(mappedBy = "owner", cascade=CascadeType.ALL)
+    @OneToMany(mappedBy = "owner", cascade=CascadeType.ALL, orphanRemoval = true)
     private Set<IPv4Range> ipv4Ranges;
     
     @Transient
@@ -79,8 +80,13 @@ public class IpGroup extends PersistedGlobalGroup {
         return true;
     }
     
-    public void setProvider( IpGroupProvider prv ) {
+    public void setGroupProvider( IpGroupProvider prv ) {
         provider = prv;
+    }
+    
+    @Override
+    public GroupProvider getGroupProvider() {
+        return provider;
     }
 
     /**
@@ -93,11 +99,6 @@ public class IpGroup extends PersistedGlobalGroup {
         ranges.addAll( getIpv4Ranges() );
         ranges.addAll( getIpv6Ranges() );
         return ranges;
-    }
-    
-    @Override
-    public GroupProvider getGroupProvider() {
-        return provider;
     }
 
     /**
@@ -115,6 +116,7 @@ public class IpGroup extends PersistedGlobalGroup {
      */
     public void setIpv6Ranges(Set<IPv6Range> ipv6Ranges) {
         this.ipv6Ranges = ipv6Ranges;
+        updateRangeOwnership(ipv6Ranges);
     }
     /**
      * Low-level JPA accessor
@@ -127,6 +129,7 @@ public class IpGroup extends PersistedGlobalGroup {
 
     public void setIpv4Ranges(Set<IPv4Range> ipv4Ranges) {
         this.ipv4Ranges = ipv4Ranges;
+        updateRangeOwnership(ipv4Ranges);
     }
     
     @Override
@@ -137,10 +140,10 @@ public class IpGroup extends PersistedGlobalGroup {
         
         IpGroup other = (IpGroup) o;
         
-        if ( ! Objects.equal(getId(), other.getId()) ) return false;
-        if ( ! Objects.equal(getDescription(), other.getDescription()) ) return false;
-        if ( ! Objects.equal(getDisplayName(), other.getDisplayName()) ) return false;
-        if ( ! Objects.equal(getPersistedGroupAlias(), other.getPersistedGroupAlias()) ) return false;
+        if ( ! Objects.equals(getId(), other.getId()) ) return false;
+        if ( ! Objects.equals(getDescription(), other.getDescription()) ) return false;
+        if ( ! Objects.equals(getDisplayName(), other.getDisplayName()) ) return false;
+        if ( ! Objects.equals(getPersistedGroupAlias(), other.getPersistedGroupAlias()) ) return false;
         return getRanges().equals( other.getRanges() );
     }
 
@@ -154,4 +157,9 @@ public class IpGroup extends PersistedGlobalGroup {
         return "[IpGroup alias:" + getPersistedGroupAlias() +" id:" + getId() + " ranges:" + getIpv4Ranges() + "," + getIpv6Ranges() + "]";
     }
     
+    private void updateRangeOwnership( Collection<? extends IpAddressRange> ranges ) {
+        for ( IpAddressRange rng : ranges ) {
+            rng.setOwner(this);
+        }
+    }
 }

@@ -781,7 +781,7 @@ public class SearchServiceBean {
         // ----------------------------------------------------
         if (user instanceof GuestUser) {
             String groupsFromProviders = "";
-            Set<Group> groups = groupService.groupsFor(dataverseRequest);
+            Set<Group> groups = groupService.collectAncestors(groupService.groupsFor(dataverseRequest));
             StringBuilder sb = new StringBuilder();
             for (Group group : groups) {
                 logger.fine("found group " + group.getIdentifier() + " with alias " + group.getAlias());
@@ -871,7 +871,7 @@ public class SearchServiceBean {
          * a given "content document" (dataset version, etc) in Solr.
          */
         String groupsFromProviders = "";
-        Set<Group> groups = groupService.groupsFor(dataverseRequest);
+        Set<Group> groups = groupService.collectAncestors(groupService.groupsFor(dataverseRequest));
         StringBuilder sb = new StringBuilder();
         for (Group group : groups) {
             logger.fine("found group " + group.getIdentifier() + " with alias " + group.getAlias());

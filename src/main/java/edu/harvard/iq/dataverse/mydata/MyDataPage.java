@@ -16,15 +16,17 @@ import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.SolrQueryResponse;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
-import edu.harvard.iq.dataverse.authorization.MyDataQueryHelperServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.servlet.http.HttpServletRequest;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -52,8 +54,8 @@ public class MyDataPage implements java.io.Serializable {
     DvObjectServiceBean dvObjectServiceBean;
     @EJB
     SearchServiceBean searchService;
-    @EJB
-    MyDataQueryHelperServiceBean myDataQueryHelperServiceBean;
+//    @EJB
+//    MyDataQueryHelperServiceBean myDataQueryHelperServiceBean;
     @Inject
     PermissionsWrapper permissionsWrapper;
     
@@ -165,12 +167,15 @@ public class MyDataPage implements java.io.Serializable {
 
         // Initialize a filterParams object to buid the Publication Status checkboxes
         //
-        this.filterParams = new MyDataFilterParams(authUser,  MyDataFilterParams.defaultDvObjectTypes, null, null, null);
+        HttpServletRequest httpServletRequest = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
+
+        DataverseRequest dataverseRequest = new DataverseRequest(authUser, httpServletRequest);
+        this.filterParams = new MyDataFilterParams(dataverseRequest,  MyDataFilterParams.defaultDvObjectTypes, null, null, null);
         
         
         // Temp DataverseRolePermissionHelper -- not in its normal role but for creating initial checkboxes
         //
-        rolePermissionHelper = new DataverseRolePermissionHelper(getRolesUsedToCreateCheckboxes(authUser));
+        rolePermissionHelper = new DataverseRolePermissionHelper(getRolesUsedToCreateCheckboxes(dataverseRequest));
        
         //this.setUserCountTotals(authUser, rolePermissionHelper);
         return null;
@@ -183,10 +188,10 @@ public class MyDataPage implements java.io.Serializable {
         return MyDataUtil.formatUserIdentifierForMyDataForm(this.authUser.getIdentifier());
     }
     
-    private List<DataverseRole> getRolesUsedToCreateCheckboxes(AuthenticatedUser authUser){
+    private List<DataverseRole> getRolesUsedToCreateCheckboxes(DataverseRequest dataverseRequest){
 
-        if (authUser==null){
-            throw new NullPointerException("authUser cannot be null");
+        if (dataverseRequest==null){
+            throw new NullPointerException("dataverseRequest cannot be null");
         }
         // Initialize the role checboxes
         //
@@ -198,7 +203,7 @@ public class MyDataPage implements java.io.Serializable {
             roleList = dataverseRoleService.findAll();
         }else{
             // (2) For a regular users
-            roleList = roleAssigneeService.getAssigneeDataverseRoleFor(authUser);
+            roleList = roleAssigneeService.getAssigneeDataverseRoleFor(dataverseRequest);
         
             // If there are no assigned roles, show them all?
             // This may not make sense

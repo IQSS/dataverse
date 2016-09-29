@@ -30,6 +30,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.util.DatasetFieldWalker;
+import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import java.util.Set;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -38,7 +39,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.TreeSet;
 
-import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Deque;
@@ -98,6 +98,7 @@ public class JsonPrinter {
                 .add("affiliation", authenticatedUser.getAffiliation())
                 .add("position", authenticatedUser.getPosition())
                 .add("persistentUserId", authenticatedUser.getAuthenticatedUserLookup().getPersistentUserId())
+                .add("emailLastConfirmed", authenticatedUser.getEmailConfirmed())
                 .add("authenticationProviderId", authenticatedUser.getAuthenticatedUserLookup().getAuthenticationProviderId());
     }
     
@@ -125,19 +126,16 @@ public class JsonPrinter {
                 .add( "email", d.getEmailAddress() )
                 .add( "affiliation", d.getAffiliation() );
     }
-    
-	public static JsonObjectBuilder json( IpGroup grp ) {
-        // collect single addresses
+
+    public static JsonObjectBuilder json(IpGroup grp) {
+         // collect single addresses
         List<String> singles = grp.getRanges().stream().filter( IpAddressRange::isSingleAddress )
                                 .map( IpAddressRange::getBottom )
                                 .map( IpAddress::toString ).collect(toList());
+        // collect "real" ranges
         List<List<String>> ranges = grp.getRanges().stream().filter( rng -> !rng.isSingleAddress() )
                                 .map( rng -> Arrays.asList(rng.getBottom().toString(), rng.getTop().toString()) )
                                 .collect(toList());
-        for ( IpAddressRange r : grp.getRanges() ) {
-            JsonArrayBuilder rangeBld = Json.createArrayBuilder();
-            rangeBld.add( Json.createArrayBuilder().add(r.getBottom().toString()).add(r.getTop().toString()) );
-        }
 
         JsonObjectBuilder bld = jsonObjectBuilder()
                 .add("alias", grp.getPersistedGroupAlias() )
@@ -145,7 +143,7 @@ public class JsonPrinter {
                 .add("id", grp.getId() )
                 .add("name", grp.getDisplayName() )
                 .add("description", grp.getDescription() );
-        
+       
         if ( ! singles.isEmpty() ) {
             bld.add("addresses", asJsonArray(singles) );
         }
@@ -402,39 +400,61 @@ public class JsonPrinter {
 		
 		return fieldsBld;
 	}
+
+    public static JsonObjectBuilder json(FileMetadata fmd) {
+        return jsonObjectBuilder()
+                // deprecated: .add("category", fmd.getCategory())
+                // TODO: uh, figure out what to do here... it's deprecated 
+                // in a sense that there's no longer the category field in the 
+                // fileMetadata object; but there are now multiple, oneToMany file 
+                // categories - and we probably need to export them too!) -- L.A. 4.5
+                .add("description", fmd.getDescription())
+                .add("label", fmd.getLabel()) // "label" is the filename
+                .add("version", fmd.getVersion())
+                .add("datasetVersionId", fmd.getDatasetVersion().getId())
+                .add("dataFile", json(fmd.getDataFile(), fmd));
+    }
 	
-	public static JsonObjectBuilder json( FileMetadata fmd ) {
-		return jsonObjectBuilder()
-				// deprecated: .add("category", fmd.getCategory())
-				.add("description", fmd.getDescription())
-				.add("label", fmd.getLabel())
-				.add("version", fmd.getVersion())
-				.add("datasetVersionId", fmd.getDatasetVersion().getId())
-				.add("datafile", json(fmd.getDataFile()));
-	}
-	
-	public static JsonObjectBuilder json( DataFile df ) {
-                String fileName = "";
-                if (df.getFileMetadata() != null) {
-                    fileName = df.getFileMetadata().getLabel();
-                }
-		return jsonObjectBuilder()
-				.add("id", df.getId() )
-				.add("name", fileName)
-				.add("contentType", df.getContentType())
-				.add("filename", df.getStorageIdentifier())
-				.add("originalFileFormat", df.getOriginalFileFormat())
-				.add("originalFormatLabel", df.getOriginalFormatLabel())
-				.add("UNF", df.getUnf())
-				.add("md5", df.getmd5())
-				.add("description", df.getDescription())
-				;
-	}
-	
+    public static JsonObjectBuilder json(DataFile df) {
+        return json(df, null);
+    }
+    
+    public static JsonObjectBuilder json(DataFile df, FileMetadata fileMetadata) {
+        // File names are no longer stored in the DataFile entity; 
+        // (they are instead in the FileMetadata (as "labels") - this way 
+        // the filename can change between versions... 
+        // It does appear that for some historical purpose we still need the
+        // filename in the file DTO (?)... We rely on it to be there for the 
+        // DDI export, for example. So we need to make sure this is is the 
+        // *correct* file name - i.e., that it comes from the right version. 
+        // (TODO...? L.A. 4.5, Aug 7 2016)
+        String fileName = null;
+        
+        if (fileMetadata != null) {
+            fileName = fileMetadata.getLabel();
+        } else if (df.getFileMetadata() != null) {
+            // Note that this may not necessarily grab the file metadata from the 
+            // version *you want*! (L.A.)
+            fileName = df.getFileMetadata().getLabel();
+        }
+        
+        return jsonObjectBuilder()
+                .add("id", df.getId())
+                .add("filename", fileName)
+                .add("contentType", df.getContentType())
+                .add("storageIdentifier", df.getStorageIdentifier())
+                .add("originalFileFormat", df.getOriginalFileFormat())
+                .add("originalFormatLabel", df.getOriginalFormatLabel())
+                .add("UNF", df.getUnf())
+                .add("md5", df.getmd5())
+                .add("description", df.getDescription());
+    }
+
+    
 	public static String format( Date d ) {
 		return (d==null) ? null : Util.getDateTimeFormat().format(d);
 	}
-    
+
     private static class DatasetFieldsToJson implements DatasetFieldWalker.Listener {
 
         Deque<JsonObjectBuilder> objectStack = new LinkedList<>();
@@ -519,7 +539,9 @@ public class JsonPrinter {
                 .add("roleAssignment", json(privateUrl.getRoleAssignment()));
     }
 
-    public static JsonObjectBuilder json( ExplicitGroup eg ) {
+    public static <T> JsonObjectBuilder json(T j ) {
+        if (j instanceof ExplicitGroup) {
+            ExplicitGroup eg = (ExplicitGroup) j;
             JsonArrayBuilder ras = Json.createArrayBuilder();
             for ( String u : eg.getContainedRoleAssgineeIdentifiers() ) {
                 ras.add(u);
@@ -532,6 +554,12 @@ public class JsonPrinter {
                     .add("displayName", eg.getDisplayName())
                     .add("containedRoleAssignees", ras);
 
+        } else { // implication: (j instanceof DataverseFacet)
+            DataverseFacet f = (DataverseFacet) j;
+            return jsonObjectBuilder()
+                    .add("id", String.valueOf(f.getId())) // TODO should just be id I think
+                    .add("name", f.getDatasetFieldType().getDisplayName());
+        }
     }
     
     public static JsonObjectBuilder json(DataverseFacet f) {
@@ -539,27 +567,34 @@ public class JsonPrinter {
                 .add("id", String.valueOf(f.getId())) // TODO should just be id I think
                 .add("name", f.getDatasetFieldType().getDisplayName());
     }
-   
-    
+
+    public static <T> JsonArrayBuilder json(Collection<T> jc) {
+        JsonArrayBuilder bld = Json.createArrayBuilder();
+        for (T j : jc) {
+            bld.add(json(j));
+        }
+        return bld;
+    }
+
     public static Collector<String, JsonArrayBuilder, JsonArrayBuilder> stringsToJsonArray() {
         return new Collector<String, JsonArrayBuilder, JsonArrayBuilder>() {
-            
+
             @Override
             public Supplier<JsonArrayBuilder> supplier() {
-                return ()->Json.createArrayBuilder();
+                return () -> Json.createArrayBuilder();
             }
 
             @Override
             public BiConsumer<JsonArrayBuilder, String> accumulator() {
-                return (JsonArrayBuilder b, String s ) -> b.add(s);
+                return (JsonArrayBuilder b, String s) -> b.add(s);
             }
 
             @Override
             public BinaryOperator<JsonArrayBuilder> combiner() {
                 return (jab1, jab2) -> {
                     JsonArrayBuilder retVal = Json.createArrayBuilder();
-                    jab1.build().forEach( retVal::add );
-                    jab2.build().forEach( retVal::add );
+                    jab1.build().forEach(retVal::add);
+                    jab2.build().forEach(retVal::add);
                     return retVal;
                 };
             }
@@ -575,26 +610,26 @@ public class JsonPrinter {
             }
         };
     }
-    
+
     public static Collector<JsonValue, JsonArrayBuilder, JsonArrayBuilder> toJsonArray() {
         return new Collector<JsonValue, JsonArrayBuilder, JsonArrayBuilder>() {
-            
+
             @Override
             public Supplier<JsonArrayBuilder> supplier() {
-                return ()->Json.createArrayBuilder();
+                return () -> Json.createArrayBuilder();
             }
 
             @Override
             public BiConsumer<JsonArrayBuilder, JsonValue> accumulator() {
-                return (JsonArrayBuilder b, JsonValue s ) -> b.add(s);
+                return (JsonArrayBuilder b, JsonValue s) -> b.add(s);
             }
 
             @Override
             public BinaryOperator<JsonArrayBuilder> combiner() {
                 return (jab1, jab2) -> {
                     JsonArrayBuilder retVal = Json.createArrayBuilder();
-                    jab1.build().forEach( retVal::add );
-                    jab2.build().forEach( retVal::add );
+                    jab1.build().forEach(retVal::add);
+                    jab2.build().forEach(retVal::add);
                     return retVal;
                 };
             }
@@ -610,4 +645,5 @@ public class JsonPrinter {
             }
         };
     }
+
 }
