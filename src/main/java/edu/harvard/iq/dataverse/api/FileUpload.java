@@ -51,6 +51,7 @@ import javax.validation.ConstraintViolation;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import org.mindrot.jbcrypt.BCrypt;
 
@@ -324,6 +325,90 @@ public class FileUpload extends AbstractApiBean {
     } // end call to "hi"
 
 
+    /**
+     * Used for RestAssured testing until multipart form available 
+     * @param datasetId - dataset to add files
+     * @param existingFileName  test file in directory "scripts/search/data/binary/"
+     * @param fileContentType
+     * @param fileName
+     * @param fileToReplaceId
+     * @return 
+     */
+    @GET
+    @Path("addTest1")
+    public Response testAddReplace(@QueryParam("datasetId") Long datasetId,
+                    @QueryParam("loadById") Boolean loadById,
+                    @QueryParam("existingFileName") String existingFileName,
+                    @QueryParam("newFileContentType") String newFileContentType,
+                    @QueryParam("newFileName") String newFileName,
+                    @QueryParam("fileToReplaceId") Long fileToReplaceId){
+        
+        if (loadById==null){
+            loadById = false;
+        }
+        
+        // -------------------------------------
+        msgt("(1) Get User from API token");
+        // -------------------------------------
+        User authUser;
+        try {
+            authUser = this.findUserOrDie();
+        } catch (WrappedResponse ex) {
+            return okResponse("Couldn't find a user from the API key");
+        }
+        //authSvc.findByID(new Long(1));        
+        msg("authUser: " + authUser);
+        msg("getUserIdentifier: " + authUser.getIdentifier());
+        
+        // -------------------------------------
+        msgt("(2) createDataverseRequest");
+        // -------------------------------------
+        DataverseRequest dvRequest2 = createDataverseRequest(authUser);
+        AddReplaceFileHelper addFileHelper = new AddReplaceFileHelper(dvRequest2,
+                                                this.ingestService,
+                                                this.datasetService,
+                                                this.fileService,
+                                                this.permissionSvc,
+                                                this.commandEngine);
+        
+
+         // -------------------------------------
+        msgt("(3) send Params, including nulls");
+        // -------------------------------------
+        InputStream testFileInputStream = getSampleFile();
+        if (testFileInputStream == null){
+            return okResponse("Couldn't find the file!!");
+        }
+
+        if (loadById){
+            addFileHelper.runAddFileByDatasetId(datasetId,
+                                newFileName,
+                                newFileContentType,
+                                testFileInputStream);
+      
+        }else{
+            Dataset selectedDataset = null;
+            if (datasetId != null){
+                selectedDataset = datasetService.find(datasetId);
+            }
+            addFileHelper.runAddFile(selectedDataset,
+                                newFileName,
+                                newFileContentType,
+                                testFileInputStream);
+        }
+
+        if (addFileHelper.hasError()){
+            return okResponse(addFileHelper.getErrorMessagesAsString("\n"));
+        }else{
+            return okResponse("Look at that!  You added a file! (hey hey, it may have worked)");
+        }
+            
+        //return okResponse("in progress2");
+         
+    }
+    
+    
+    
     @GET
     @Path("replace/{oldFileId}")
     public Response hi_replace(@PathParam("oldFileId") Long oldFileId){

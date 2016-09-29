@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -155,6 +156,21 @@ public class AddReplaceFileHelper{
         
     }
     
+    public boolean runAddFileByDatasetId(Long datasetId, String newFileName, String newFileContentType, InputStream newFileInputStream){
+        
+        msgt(">> runAddFileByDatasetId");
+
+        initErrorHandling();
+        this.currentOperation = FILE_ADD_OPERATION;
+        
+        if (!this.step_001_loadDatasetById(datasetId)){
+            return false;
+        }
+        
+        return this.runAddFile(this.dataset, newFileName, newFileContentType, newFileInputStream);
+    }
+    
+    
     /**
      * After the constructor, this method is called to add a file
      * 
@@ -166,13 +182,16 @@ public class AddReplaceFileHelper{
      */
     public boolean runAddFile(Dataset dataset, String newFileName, String newFileContentType, InputStream newFileInputStream){
         msgt(">> runAddFile");
-
+        if (this.hasError()){
+            return false;
+        }
         this.currentOperation = FILE_ADD_OPERATION;
         
         return this.runAddReplaceFile(dataset, newFileName, newFileContentType, newFileInputStream, null);
     }
     
 
+    
     /**
      * After the constructor, this method is called to replace a file
      * 
@@ -379,8 +398,49 @@ public class AddReplaceFileHelper{
         return String.join(joinString, this.errorMessages);
     }   
 
+   
+
+    /**
+     * Convenience method for getting bundle properties
+     * 
+     * @param msgName
+     * @return 
+     */
+    private String getBundleMsg(String msgName, boolean isErr){
+        if (msgName == null){
+            throw new NullPointerException("msgName cannot be null");
+        }
+        if (isErr){        
+            return ResourceBundle.getBundle("Bundle").getString("file.addreplace.error." + msgName);
+        }else{
+            return ResourceBundle.getBundle("Bundle").getString("file.addreplace.success." + msgName);
+        }
+       
+    }
     
-     /**
+    /**
+     * Convenience method for getting bundle error message
+     * 
+     * @param msgName
+     * @return 
+     */
+    private String getBundleErr(String msgName){
+        return this.getBundleMsg(msgName, true);
+    }
+    
+    /**
+     * Convenience method for getting bundle success message
+     * 
+     * @param msgName
+     * @return 
+     */
+    private String getBundleSuccess(String msgName){
+        return this.getBundleMsg(msgName, false);
+    }
+    
+    
+     
+    /**
      * 
      */
     private boolean step_001_loadDataset(Dataset selectedDataset){
@@ -390,7 +450,7 @@ public class AddReplaceFileHelper{
         }
 
         if (selectedDataset == null){
-            this.addErrorSevere("The dataset cannot be null");
+            this.addErrorSevere(getBundleErr("dataset_is_null"));
             return false;
         }
 
@@ -398,7 +458,6 @@ public class AddReplaceFileHelper{
         
         return true;
     }
-
     
     /**
      * 
@@ -410,13 +469,13 @@ public class AddReplaceFileHelper{
         }
 
         if (datasetId == null){
-            this.addErrorSevere("The datasetId cannot be null");
+            this.addErrorSevere(getBundleErr("dataset_id_is_null"));
             return false;
         }
         
         Dataset yeDataset = datasetService.find(datasetId);
         if (yeDataset == null){
-            this.addError("There was no dataset found for id: " + datasetId);
+            this.addError(getBundleErr("dataset_id_not_found") + " " + datasetId);
             return false;
         }      
        
@@ -445,8 +504,7 @@ public class AddReplaceFileHelper{
         msg("permissionService:" + permissionService.toString());
         
         if (!permissionService.request(dvRequest).on(dataset).has(Permission.EditDataset)){
-           String errMsg = "You do not have permission to this dataset.";
-           addError(errMsg);
+           addError(getBundleErr("no_edit_dataset_permission"));
            return false;
         }
         return true;
@@ -461,30 +519,19 @@ public class AddReplaceFileHelper{
         }
         
         if (fileName == null){
-            String errMsg = "The fileName cannot be null.";
-            this.addErrorSevere(errMsg);
+            this.addErrorSevere(getBundleErr("filename_is_null"));
             return false;
             
         }
 
         if (fileContentType == null){
-            String errMsg = "The fileContentType cannot be null.";
-            this.addErrorSevere(errMsg);
-            return false;
-            
-        }
-
-        if (fileName == null){
-            String errMsg = "The fileName cannot be null.";
-            this.addErrorSevere(errMsg);
+            this.addErrorSevere(getBundleErr("file_content_type_is_null"));
             return false;
             
         }
         
-
         if (fileInputStream == null){
-            String errMsg = "The fileInputStream cannot be null.";
-            this.addErrorSevere(errMsg);
+            this.addErrorSevere(getBundleErr("file_input_stream_is_null"));
             return false;
         }
        
