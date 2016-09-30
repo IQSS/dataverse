@@ -98,7 +98,7 @@ The standard init script that ships RHEL 6 and similar should work fine. Enable 
 
 
 Configuring Database Access for the Dataverse Application (and the Dataverse Installer) 
-=====================================================================================
+=======================================================================================
 
 - The application and the installer script will be connecting to PostgreSQL over TCP/IP, using password authentication. In this section we explain how to configure PostgreSQL to accept these connections.
 

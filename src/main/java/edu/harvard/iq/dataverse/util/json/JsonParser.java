@@ -60,6 +60,10 @@ public class JsonParser {
         this.settingsService = settingsService;
     }
 
+    public JsonParser() {
+        this( null,null,null );
+    }
+    
     public boolean isLenient() {
         return lenient;
     }
@@ -186,20 +190,27 @@ public class JsonParser {
         IpGroup retVal = new IpGroup();
 
         if (obj.containsKey("id")) {
-            retVal.setId(Long.valueOf(obj.getString("id")));
+            retVal.setId(Long.valueOf(obj.getInt("id")));
         }
         retVal.setDisplayName(obj.getString("name", null));
         retVal.setDescription(obj.getString("description", null));
         retVal.setPersistedGroupAlias(obj.getString("alias", null));
 
-        JsonArray rangeArray = obj.getJsonArray("ranges");
-        for (JsonValue range : rangeArray) {
-            if (range.getValueType() == JsonValue.ValueType.ARRAY) {
-                JsonArray rr = (JsonArray) range;
-                retVal.add(IpAddressRange.make(IpAddress.valueOf(rr.getString(0)),
-                        IpAddress.valueOf(rr.getString(1))));
-
-            }
+        if ( obj.containsKey("ranges") ) {
+            obj.getJsonArray("ranges").stream()
+                    .filter( jv -> jv.getValueType()==JsonValue.ValueType.ARRAY )
+                    .map( jv -> (JsonArray)jv )
+                    .forEach( rr -> {
+                        retVal.add(
+                            IpAddressRange.make(IpAddress.valueOf(rr.getString(0)),
+                                                IpAddress.valueOf(rr.getString(1))));
+            });
+        }
+        if ( obj.containsKey("addresses") ) {
+            obj.getJsonArray("addresses").stream()
+                    .map( jsVal -> IpAddress.valueOf(((JsonString)jsVal).getString()) )
+                    .map( addr -> IpAddressRange.make(addr, addr) )
+                    .forEach( retVal::add );
         }
 
         return retVal;

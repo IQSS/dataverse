@@ -4,7 +4,7 @@
 
     <groupId>edu.harvard.iq</groupId>
     <artifactId>dataverse</artifactId>
-    <version>4.5</version>
+    <version>4.5.1</version>
     <packaging>war</packaging>
 
     <name>dataverse</name>
@@ -41,7 +41,7 @@
         </repository>
         <repository>
             <id>dataone.org</id>
-            <url>http://dev-testing.dataone.org/maven</url>
+            <url>http://maven.dataone.org</url>
             <releases>
                 <enabled>true</enabled>
             </releases>

@@ -60,11 +60,11 @@ Multiple File ("bundle") download
 Returns the files listed, zipped. 
 
 Parameters: 
-~~~~~~~~~~
+~~~~~~~~~~~
 none.
 
 "All Formats" bundled access for Tabular Files. 
-----------------------------------------------
+-----------------------------------------------
 
 ``/api/access/datafile/bundle/$id``
 
@@ -78,7 +78,7 @@ It returns a zipped bundle that contains the data in the following formats:
 * File citation, in Endnote and RIS formats. 
 
 Parameters: 
-~~~~~~~~~~
+~~~~~~~~~~~
 none.
 
 Data Variable Metadata Access
