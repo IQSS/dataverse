@@ -9,17 +9,14 @@ Developer Guide
 Contents:
 
 .. toctree::
-   :maxdepth: 2
 
-  intro
-  dev-environment
-  branching-strategy
-  testing
-  documentation
-  debugging
-  coding-style
-  making-releases
-  tools
-  unf/index
-
-
+   intro
+   dev-environment
+   branching-strategy
+   testing
+   documentation
+   debugging
+   coding-style
+   making-releases
+   tools
+   unf/index
