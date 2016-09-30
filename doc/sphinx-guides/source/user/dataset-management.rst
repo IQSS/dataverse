@@ -89,8 +89,8 @@ For example, if these files were included within a .zip, the “Map Data” butt
 * subway_line.dbf
 
 Once you publish your dataset with your shape files, you will be able to use the "Map Data" button using `GeoConnect <https://github.com/IQSS/geoconnect>`_ to visualize and manipulate these files
-for users to Explore this geospatial data using the `WorldMap <http://worldmap.harvard.edu/>`_ interface.
-Please note: In order to map your data file, a copy will be sent to Harvard's `WorldMap <http://worldmap.harvard.edu/>`_ platform. You have the ability to delete any maps, and associated data, from the Harvard WorldMap platform, at any time.
+for users to Explore this geospatial data using the `WorldMap <http://worldmap.harvard.edu/>`__ interface.
+Please note: In order to map your data file, a copy will be sent to Harvard's `WorldMap <http://worldmap.harvard.edu/>`__ platform. You have the ability to delete any maps, and associated data, from the Harvard WorldMap platform, at any time.
 
 Astronomy (FITS)
 --------------------
@@ -222,7 +222,7 @@ The file permissions page has two sections: Users/Groups and Files.
 
 To give someone access to your restricted files, click on the Grant Access to Users/Groups button in the Users/Groups section. 
 
-.. _widgets:
+.. _dataset-widgets:
 
 Widgets
 =============================
@@ -310,7 +310,8 @@ a file, your dataset will automatically be bumped up to a major version (example
 
 |image3|
 
-**Dataset Versions Tab**
+Version Details
+-------------------------------------
 
 To view what has exactly changed starting from the originally published version to any subsequent published versions: click on the Versions tab on the dataset page to see all versions and changes made for that particular dataset. Once you have more than one version (can be version 1 and a draft), you can click the Show Details link in the Versions tab to learn more about the metadata fields and files that were either added or edited. 
 
@@ -334,6 +335,6 @@ If you deaccession the most recently published version of the dataset but not al
    :class: img-responsive
 .. |image2| image:: ./img/data-download.png
    :class: img-responsive
-.. |image3| image:: http://static.projects.iq.harvard.edu/files/styles/os_files_xxlarge/public/datascience/files/data_publishing_version_workflow.png?itok=8Z0PM-QC
+.. |image3| image:: ./img/data_publishing_version_workflow.png
    :class: img-responsive
 
