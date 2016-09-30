@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.time.Year;
+import java.util.Arrays;
 import java.util.MissingResourceException;
 import java.util.Properties;
 import java.util.ResourceBundle;
@@ -527,5 +529,9 @@ public class SystemConfig {
             return true;
         }
         return false;
+    }
+
+    public String getFooterCopyrightAndYear() {
+        return BundleUtil.getStringFromBundle("footer.copyright", Arrays.asList(Year.now().getValue() + ""));
     }
 }

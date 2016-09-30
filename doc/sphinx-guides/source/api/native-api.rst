@@ -89,7 +89,7 @@ Publish the Dataverse pointed by ``identifier``, which can either by the dataver
 Datasets
 ~~~~~~~~
 
-**Note** Creation of new datasets is done by ``POST``ing them onto dataverses. See dataverse section.
+**Note** Creation of new datasets is done with a ``POST`` onto dataverses. See dataverse section.
 
 **Note** In all commands below, dataset versions can be referred to as:
 
@@ -185,7 +185,7 @@ Delete a Private URL from a dataset (if it exists)::
     DELETE http://$SERVER/api/datasets/$id/privateUrl?key=$apiKey
 
 Builtin Users
-~~~~~
+~~~~~~~~~~~~~
 
 This endopint deals with users of the built-in authentication provider. Note that users may come from other authentication services as well, such as Shibboleth.
 For this service to work, the setting ``BuiltinUsers.KEY`` has to be set, and its value passed as ``key`` to
