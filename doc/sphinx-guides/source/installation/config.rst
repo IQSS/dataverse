@@ -392,7 +392,9 @@ Limit the number of files in a zip that Dataverse will accept.
 :GoogleAnalyticsCode
 ++++++++++++++++++++
 
-For setting up Google Analytics for your Dataverse installation.
+Set your Google Analytics Tracking ID thusly:
+
+``curl -X PUT -d 'trackingID' http://localhost:8080/api/admin/settings/:GoogleAnalyticsCode``
 
 :SolrHostColonPort
 ++++++++++++++++++
