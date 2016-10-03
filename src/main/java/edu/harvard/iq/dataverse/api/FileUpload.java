@@ -336,15 +336,23 @@ public class FileUpload extends AbstractApiBean {
      */
     @GET
     @Path("addTest1")
-    public Response testAddReplace(@QueryParam("datasetId") Long datasetId,
+    public Response testAddReplace(@QueryParam("replaceOperation") Boolean replaceOperation,
+                    @QueryParam("datasetId") Long datasetId,
                     @QueryParam("loadById") Boolean loadById,
                     @QueryParam("existingFileName") String existingFileName,
                     @QueryParam("newFileContentType") String newFileContentType,
                     @QueryParam("newFileName") String newFileName,
-                    @QueryParam("fileToReplaceId") Long fileToReplaceId){
+                    @QueryParam("fileToReplaceId") Long fileToReplaceId,
+                    @QueryParam("badStreamTest") Boolean badStreamTest){
         
         if (loadById==null){
             loadById = false;
+        }
+        if (badStreamTest==null){
+            badStreamTest = false;
+        }
+        if (replaceOperation == null){
+            replaceOperation = false;
         }
         
         // -------------------------------------
@@ -374,10 +382,15 @@ public class FileUpload extends AbstractApiBean {
 
          // -------------------------------------
         msgt("(3) send Params, including nulls");
-        // -------------------------------------
-        InputStream testFileInputStream = getSampleFile();
-        if (testFileInputStream == null){
-            return okResponse("Couldn't find the file!!");
+        // -------------------------------------        
+        InputStream testFileInputStream;
+        if (badStreamTest){
+            testFileInputStream = null;
+        }else{
+            testFileInputStream = getSampleFile();
+            if (testFileInputStream == null){
+                return okResponse("Couldn't find the file!!");
+            }
         }
 
         if (loadById){
@@ -391,12 +404,26 @@ public class FileUpload extends AbstractApiBean {
             if (datasetId != null){
                 selectedDataset = datasetService.find(datasetId);
             }
-            addFileHelper.runAddFile(selectedDataset,
-                                newFileName,
-                                newFileContentType,
-                                testFileInputStream);
-        }
+            
+            if (replaceOperation){
+                msg("Test REPLACE operation");
+                // Replace operation
+                addFileHelper.runReplaceFile(selectedDataset,
+                                    newFileName,
+                                    newFileContentType,
+                                    testFileInputStream,
+                                    fileToReplaceId);
+                
+            }else{
+                msg("Test ADD operation");
+                // Add operation
+                addFileHelper.runAddFile(selectedDataset,
+                                    newFileName,
+                                    newFileContentType,
+                                    testFileInputStream);
 
+            }
+        }
         if (addFileHelper.hasError()){
             return okResponse(addFileHelper.getErrorMessagesAsString("\n"));
         }else{

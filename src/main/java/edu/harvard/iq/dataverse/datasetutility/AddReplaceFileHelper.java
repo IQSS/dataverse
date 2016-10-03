@@ -203,11 +203,13 @@ public class AddReplaceFileHelper{
      */
     public boolean runReplaceFile(Dataset dataset, String newFileName, String newFileContentType, InputStream newFileInputStream, Long oldFileId){
         
-        if (oldFileId==null){
-            throw new NullPointerException("For a replace operation, oldFileId cannot be null");
-        }
         msgt(">> runReplaceFile");
         this.currentOperation = FILE_REPLACE_OPERATION;
+
+        if (oldFileId==null){
+            this.addErrorSevere(getBundleErr("existing_file_to_replace_id_is_null"));
+            return false;
+        }
         
         return this.runAddReplaceFile(dataset, newFileName, newFileContentType, newFileInputStream, oldFileId);
     }
@@ -555,17 +557,17 @@ public class AddReplaceFileHelper{
         }
         
         if (existingFile == null){
-            this.addErrorSevere("The existingFile to replace cannot be null");
+            this.addErrorSevere(getBundleErr("existing_file_to_replace_is_null"));
             return false;
         }
         
         if (existingFile.getOwner() != this.dataset){
-            addError("This file does not belong to the datset");
+            addError(getBundleErr("existing_file_to_replace_not_in_dataset"));
             return false;
         }
         
         if (!existingFile.isReleased()){
-            addError("You cannot replace an unpublished file.  Please delete it instead of replacing it.");
+            addError(getBundleErr("unpublished_file_cannot_be_replaced"));
             return false;            
         }
         
@@ -592,13 +594,13 @@ public class AddReplaceFileHelper{
         //  a NullPointerException
         //
         if (dataFileId == null){
-            this.addError("The dataFileId cannot be null");
+            this.addErrorSevere(getBundleErr("existing_file_to_replace_id_is_null"));
             return false;
         }
         
         DataFile existingFile = fileService.find(dataFileId);
         if (existingFile == null){
-            this.addError("Replacement file not found.  There was no file found for id: " + dataFileId);
+            this.addError(getBundleErr("existing_file_to_replace_not_found_by_id") + " " + dataFileId);
             return false;
         }      
         
@@ -625,8 +627,7 @@ public class AddReplaceFileHelper{
                     this.newFileName,
                     this.newFileContentType);
         } catch (IOException ex) {
-            String errMsg = "There was an error when trying to add the new file.";
-            this.addErrorSevere(errMsg);
+            this.addErrorSevere(getBundleErr("ingest_create_file_err"));
             logger.severe(ex.toString());
             return false;
         }
@@ -638,7 +639,7 @@ public class AddReplaceFileHelper{
          *  (2) the new file (or new file unzipped) did not ingest via "createDataFiles"
          */
         if (initialFileList.isEmpty()){
-            this.addErrorSevere("Sorry! An error occurred and the new file was not added.");
+            this.addErrorSevere("initial_file_list_empty");
             return false;
         }
         
@@ -674,7 +675,7 @@ public class AddReplaceFileHelper{
             }
         }
         if (!fileInLatestVersion){
-            addError("You cannot replace a file that is not in the most recently published Dataset.");
+            addError(getBundleErr("existing_file_not_in_latest_published_version"));
             return false;                        
         }
         return true;
@@ -695,7 +696,7 @@ public class AddReplaceFileHelper{
         // Double checked -- this check also happens in step 30
         //
         if (initialFileList.isEmpty()){
-            this.addErrorSevere("Sorry! An error occurred and the new file was not added.");
+            this.addErrorSevere("initial_file_list_empty");
             return false;
         }
 
@@ -732,7 +733,7 @@ public class AddReplaceFileHelper{
                 //removeUnSavedFilesFromWorkingVersion();
                 //removeLinkedFileFromDataset(dataset, df);
                 //abandonOperationRemoveAllNewFilesFromDataset();
-                this.addErrorSevere("This file has a duplicate already in the dataset: " + dupeName);   
+                this.addErrorSevere(getBundleErr("duplicate_file") + " " + dupeName);   
                 //return false;
             }else{
                 finalFileList.add(df);
@@ -781,7 +782,7 @@ public class AddReplaceFileHelper{
         
         if (this.fileToReplace == null){
             // This error shouldn't happen if steps called correctly
-            this.addErrorSevere("The fileToReplace cannot be null. (This error shouldn't happen if steps called in sequence....checkForFileReplaceDuplicate)");                
+            this.addErrorSevere(getBundleErr("existing_file_to_replace_is_null") + " (This error shouldn't happen if steps called in sequence....checkForFileReplaceDuplicate)");
             return false;
         }
     
@@ -827,7 +828,7 @@ public class AddReplaceFileHelper{
         
         if (finalFileList.isEmpty()){
             // This error shouldn't happen if steps called in sequence....
-            this.addErrorSevere("There are no files to add.  (This error shouldn't happen if steps called in sequence....)");                
+            this.addErrorSevere(getBundleErr("final_file_list_empty"));
             return false;
         }
 
@@ -864,7 +865,7 @@ public class AddReplaceFileHelper{
                 
         if (finalFileList.isEmpty()){
             // This error shouldn't happen if steps called in sequence....
-            this.addErrorSevere("There are no files to add.  (This error shouldn't happen if steps called in sequence....)");                
+            this.addErrorSevere(getBundleErr("final_file_list_empty"));                
             return false;
         }
         
@@ -892,11 +893,11 @@ public class AddReplaceFileHelper{
         try {            
             commandEngine.submit(update_cmd);
         } catch (CommandException ex) {
-            this.addErrorSevere("Failed to update the dataset.  Please contact the administrator");
+            this.addErrorSevere(getBundleErr("add.command_engine_error"));
             logger.severe(ex.getMessage());
             return false;
         }catch (EJBException ex) {
-            this.addErrorSevere("Failed to update the dataset.  Please contact the administrator");
+            this.addErrorSevere("add.ejb_exception");
             logger.severe(ex.getMessage());
             return false;
         } 
@@ -916,7 +917,7 @@ public class AddReplaceFileHelper{
 
         if (!isFileReplaceOperation()){
             // Shouldn't happen!
-            this.addErrorSevere("This should ONLY be called for file replace operations!! (step_085_auto_remove_filemetadata_to_replace_from_working_version");
+            this.addErrorSevere(getBundleErr("only_replace_operation") + " (step_085_auto_remove_filemetadata_to_replace_from_working_version");
             return false;
         }
         msg("step_085_auto_remove_filemetadata_to_replace_from_working_version 1");
@@ -946,7 +947,7 @@ public class AddReplaceFileHelper{
            }
         }
         msg("No matches found!");
-        addErrorSevere("Unable to remove old file from new DatasetVersion");
+        addErrorSevere(getBundleErr("failed_to_remove_old_file_from_dataset"));
         runMajorCleanup();
         return false;
     }
@@ -1015,7 +1016,7 @@ public class AddReplaceFileHelper{
 
         if (!isFileReplaceOperation()){
             // Shouldn't happen!
-            this.addErrorSevere("This should ONLY be called for file replace operations!! (step_080_run_update_dataset_command_for_replace");
+            this.addErrorSevere(getBundleErr("only_replace_operation") + " (step_080_run_update_dataset_command_for_replace)");
             return false;
         }
 
@@ -1066,11 +1067,11 @@ public class AddReplaceFileHelper{
         try {            
               commandEngine.submit(update_cmd);
           } catch (CommandException ex) {
-              this.addErrorSevere("Failed to update the dataset.  Please contact the administrator");
+              this.addErrorSevere(getBundleErr("replace.command_engine_error"));
               logger.severe(ex.getMessage());
               return false;
           }catch (EJBException ex) {
-              this.addErrorSevere("Failed to update the dataset.  Please contact the administrator");
+              this.addErrorSevere(getBundleErr("replace.ejb_exception"));
               logger.severe(ex.getMessage());
               return false;
           } 
@@ -1134,12 +1135,12 @@ public class AddReplaceFileHelper{
     private boolean removeLinkedFileFromDataset(Dataset dataset, DataFile dataFileToRemove){
         
         if (dataset==null){
-            this.addErrorSevere("dataset cannot be null in removeLinkedFileFromDataset");
+            this.addErrorSevere(getBundleErr("remove_linked_file.dataset"));
             return false;
         }
         
         if (dataFileToRemove==null){
-            this.addErrorSevere("dataFileToRemove cannot be null in removeLinkedFileFromDataset");
+            this.addErrorSevere(getBundleErr("remove_linked_file.file"));       
             return false;
         }
         
