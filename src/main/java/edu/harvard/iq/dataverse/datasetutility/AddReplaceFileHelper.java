@@ -43,6 +43,45 @@ import javax.validation.ConstraintViolation;
 /**
  *  Methods to add or replace a single file.
  * 
+ *  Usage example:
+ *
+ * // (1) Instantiate the class
+ * 
+ *  AddReplaceFileHelper addFileHelper = new AddReplaceFileHelper(dvRequest2,
+ *                                               this.ingestService,
+ *                                               this.datasetService,
+ *                                               this.fileService,
+ *                                               this.permissionSvc,
+ *                                               this.commandEngine);
+ * 
+ * // (2) Run file "ADD"
+ *
+ *  addFileHelper.runAddFileByDatasetId(datasetId,
+ *                               newFileName,
+ *                               newFileContentType,
+ *                               newFileInputStream);
+ *  // (2a) Check for errors
+ *  if (addFileHelper.hasError()){
+ *      // get some errors
+ *      System.out.println(addFileHelper.getErrorMessagesAsString("\n"));
+ *  }
+ * 
+ *
+ * // OR (3) Run file "REPLACE"
+ *
+ *  addFileHelper.runReplaceFile(datasetId,
+ *                               newFileName,
+ *                               newFileContentType,
+ *                               newFileInputStream,
+ *                               fileToReplaceId);
+ *  // (2a) Check for errors
+ *  if (addFileHelper.hasError()){
+ *      // get some errors
+ *      System.out.println(addFileHelper.getErrorMessagesAsString("\n"));
+ *  }
+ *
+ * 
+ * 
  * @author rmp553
  */
 public class AddReplaceFileHelper{
@@ -52,6 +91,7 @@ public class AddReplaceFileHelper{
     
     public static String FILE_ADD_OPERATION = "FILE_ADD_OPERATION";
     public static String FILE_REPLACE_OPERATION = "FILE_REPLACE_OPERATION";
+    public static String FILE_REPLACE_FORCE_OPERATION = "FILE_REPLACE_FORCE_OPERATION";
     
             
     private String currentOperation;
@@ -191,6 +231,27 @@ public class AddReplaceFileHelper{
     }
     
 
+    /**
+     * After the constructor, this method is called to replace a file
+     * 
+     * @param dataset
+     * @param newFileName
+     * @param newFileContentType
+     * @param newFileInputStream
+     * @return 
+     */
+    public boolean runForceReplaceFile(Dataset dataset, String newFileName, String newFileContentType, InputStream newFileInputStream, Long oldFileId){
+        
+        msgt(">> runForceReplaceFile");
+        this.currentOperation = FILE_REPLACE_FORCE_OPERATION;
+
+        if (oldFileId==null){
+            this.addErrorSevere(getBundleErr("existing_file_to_replace_id_is_null"));
+            return false;
+        }
+        
+        return this.runAddReplaceFile(dataset, newFileName, newFileContentType, newFileInputStream, oldFileId);
+    }
     
     /**
      * After the constructor, this method is called to replace a file
@@ -315,14 +376,41 @@ public class AddReplaceFileHelper{
         return this.currentOperation;
     }
 
+    
+    /**
+     * Is this a file FORCE replace operation?
+     * 
+     * Only overrides warnings of content type change
+     * 
+     * @return 
+     */
+    public boolean isForceFileOperation(){
+        
+        return this.currentOperation.equals(FILE_REPLACE_FORCE_OPERATION);
+    }
+    
+    /**
+     * Is this a file replace operation?
+     * @return 
+     */
     public boolean isFileReplaceOperation(){
     
-        return this.currentOperation == FILE_REPLACE_OPERATION;
+        if (this.currentOperation.equals(FILE_REPLACE_OPERATION)){
+            return true;
+        }else if (this.currentOperation.equals(FILE_REPLACE_FORCE_OPERATION)){
+            return true;
+        }
+        return false;
     }
-
+    
+    /**
+     * Is this a file add operation?
+     * 
+     * @return 
+     */
     public boolean isFileAddOperation(){
     
-        return this.currentOperation == FILE_ADD_OPERATION;
+        return this.currentOperation.equals(FILE_ADD_OPERATION);
     }
 
     /**
@@ -793,13 +881,17 @@ public class AddReplaceFileHelper{
             }
             
             // This should be able to be overridden --force
-            if (!df.getContentType().equalsIgnoreCase(fileToReplace.getContentType())){
-                this.addError(getBundleErr("replace.new_file_has_different_content_type"));
-                //+ " The new file,\"" + df.getFileMetadata().getLabel() 
-                //        + "\" has content type [" + df.getContentType() + "] while the replacment file, \"" 
-                //        + fileToReplace.getFileMetadata().getLabel() + "\" has content type: [" + fileToReplace.getContentType() + "]");                               
+            if (isForceFileOperation()){
+                
+                // Warning that content type of the file has changed
+                //
+                if (!df.getContentType().equalsIgnoreCase(fileToReplace.getContentType())){
+                    this.addError(getBundleErr("replace.new_file_has_different_content_type"));
+                    //+ " The new file,\"" + df.getFileMetadata().getLabel() 
+                    //        + "\" has content type [" + df.getContentType() + "] while the replacment file, \"" 
+                    //        + fileToReplace.getFileMetadata().getLabel() + "\" has content type: [" + fileToReplace.getContentType() + "]");                               
+                }
             }
-            
         }
         
         if (hasError()){

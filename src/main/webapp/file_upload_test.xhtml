@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:jsf="http://xmlns.jcp.org/jsf"
+      xmlns:p="http://primefaces.org/ui">
+
+  <h:head>
+
+  </h:head>
+
+  <h:body>
+    <ui:composition template="/dataverse_template.xhtml">
+      <ui:param name="pageTitle" value="File Upload Test - #{dataverseServiceBean.findRootDataverse().name} #{bundle.dataverse}"/>
+      <ui:param name="showDataverseHeader" value="false"/>
+      <ui:define name="body">
+          <f:metadata>
+                <f:viewAction action="#{FileUploadTestPage.init}" />
+          </f:metadata>
+          <div>        
+              <h4>Test Add/Replace functions</h4>
+              <ui:fragment>
+                  <p>
+                    <h:outputText value="#{FileUploadTestPage.yesYes()}" escape="false" /> 
+                   </p>
+            
+                  <h3>Add New File</h3>
+                <h:form>
+                    <p:fileUpload fileUploadListener="#{FileUploadTestPage.handleFileUpload}" mode="advanced" dragDropSupport="false"
+                           update="messages" sizeLimit="100000" fileLimit="2" allowTypes="/(\.|\/)(gif|jpe?g|png|txt)$/" />
+
+                    <p:growl id="messages" showDetail="true" />
+                </h:form>
+
+                  <hr />
+
+              </ui:fragment>
+          </div>
+      </ui:define>
+    </ui:composition>
+  </h:body>
+</html>

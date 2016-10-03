@@ -34,6 +34,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -174,13 +176,25 @@ public class FileUpload extends AbstractApiBean {
     }
     */
     
-    private InputStream getSampleFile(){
+    /**
+     * get existing test file from this directory:
+     *  "scripts/search/data/replace_test/"
+     * 
+     * @param existingFileName
+     * @return 
+     */
+    
+    private InputStream getExistingFileInputStream(String existingFileName){
+        if (existingFileName == null){
+            return null;
+        }
+        InputStream inputStream = null;
+
+        //System.out.println("Current path: " + Paths.get(".").toAbsolutePath().normalize().toString());
+        String pathToFileName = "(some path)/scripts/search/data/replace_test/" + existingFileName;
         
-        InputStream is = null;
-        String testFileInputStreamName = "/Users/rmp553/Documents/iqss-git/dataverse-helper-scripts/src/api_scripts/input/howdy3.txt";
-        //testFileInputStreamName = "/Users/rmp553/NetBeansProjects/dataverse/src/main/java/edu/harvard/iq/dataverse/datasetutility/howdy.txt";
         try {
-            is = new FileInputStream(testFileInputStreamName);
+            inputStream = new FileInputStream(pathToFileName);
             //is.close(); 
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -191,7 +205,27 @@ public class FileUpload extends AbstractApiBean {
             return null;
         }
 
-        return is;
+        return inputStream;
+    }
+    
+    private InputStream getSampleFile(){
+        
+        InputStream inputStream = null;
+        String testFileInputStreamName = "/Users/rmp553/Documents/iqss-git/dataverse-helper-scripts/src/api_scripts/input/howdy3.txt";
+        //testFileInputStreamName = "/Users/rmp553/NetBeansProjects/dataverse/src/main/java/edu/harvard/iq/dataverse/datasetutility/howdy.txt";
+        try {
+            inputStream = new FileInputStream(testFileInputStreamName);
+            //is.close(); 
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            return null;
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            return null;
+        }
+
+        return inputStream;
 
     }
     
@@ -328,7 +362,7 @@ public class FileUpload extends AbstractApiBean {
     /**
      * Used for RestAssured testing until multipart form available 
      * @param datasetId - dataset to add files
-     * @param existingFileName  test file in directory "scripts/search/data/binary/"
+     * @param existingTestFileName  test file in directory "scripts/search/data/binary/"
      * @param fileContentType
      * @param fileName
      * @param fileToReplaceId
@@ -339,7 +373,7 @@ public class FileUpload extends AbstractApiBean {
     public Response testAddReplace(@QueryParam("replaceOperation") Boolean replaceOperation,
                     @QueryParam("datasetId") Long datasetId,
                     @QueryParam("loadById") Boolean loadById,
-                    @QueryParam("existingFileName") String existingFileName,
+                    @QueryParam("existingTestFileName") String existingTestFileName,
                     @QueryParam("newFileContentType") String newFileContentType,
                     @QueryParam("newFileName") String newFileName,
                     @QueryParam("fileToReplaceId") Long fileToReplaceId,
@@ -386,7 +420,12 @@ public class FileUpload extends AbstractApiBean {
         InputStream testFileInputStream;
         if (badStreamTest){
             testFileInputStream = null;
-        }else{
+        }else if (existingTestFileName != null){
+         
+            testFileInputStream = getExistingFileInputStream(existingTestFileName);
+            msgt("testFileInputStream: " + testFileInputStream);
+            
+        } else{
             testFileInputStream = getSampleFile();
             if (testFileInputStream == null){
                 return okResponse("Couldn't find the file!!");
