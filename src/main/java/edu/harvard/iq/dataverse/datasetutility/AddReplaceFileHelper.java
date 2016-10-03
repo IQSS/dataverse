@@ -789,22 +789,15 @@ public class AddReplaceFileHelper{
         for (DataFile df : finalFileList){
             
             if (Objects.equals(df.getCheckSum(), fileToReplace.getCheckSum())){
-                this.addError("The new file,\"" + df.getFileMetadata().getLabel() 
-                        + "\" has the same content as the replacment file, \"" 
-                        + fileToReplace.getFileMetadata().getLabel() + "\" .");                
-                
-//                removeLinkedFileFromDataset(dataset, df);   // Is this correct, if multiple files added in case of .shp or .zip, shouldn't they all be removed?             
-                //this.abandonOperationRemoveAllNewFilesFromDataset(); // Is this correct, if multiple files, shouldn't they all be removed?
+                this.addError(getBundleErr("replace.new_file_same_as_replacement"));                                
             }
             
             // This should be able to be overridden --force
             if (!df.getContentType().equalsIgnoreCase(fileToReplace.getContentType())){
-                this.addError("Warning! Different content type. The new file,\"" + df.getFileMetadata().getLabel() 
-                        + "\" has content type [" + df.getContentType() + "] while the replacment file, \"" 
-                        + fileToReplace.getFileMetadata().getLabel() + "\" has content type: [" + fileToReplace.getContentType() + "]");                
-                
-  //              removeLinkedFileFromDataset(dataset, df);   // Is this correct, if multiple files added in case of .shp or .zip, shouldn't they all be removed?             
-                //this.abandonOperationRemoveAllNewFilesFromDataset(); // Is this correct, if multiple files, shouldn't they all be removed?
+                this.addError(getBundleErr("replace.new_file_has_different_content_type"));
+                //+ " The new file,\"" + df.getFileMetadata().getLabel() 
+                //        + "\" has content type [" + df.getContentType() + "] while the replacment file, \"" 
+                //        + fileToReplace.getFileMetadata().getLabel() + "\" has content type: [" + fileToReplace.getContentType() + "]");                               
             }
             
         }
