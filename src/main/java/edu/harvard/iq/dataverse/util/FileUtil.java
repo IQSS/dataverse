@@ -21,10 +21,12 @@
 package edu.harvard.iq.dataverse.util;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFile.ChecksumType;
 import edu.harvard.iq.dataverse.ingest.IngestableDataChecker;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
@@ -33,6 +35,8 @@ import java.util.ResourceBundle;
 import java.util.MissingResourceException;
 import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -403,4 +407,52 @@ public class FileUtil implements java.io.Serializable  {
         return displaySize;
 
     }
+
+    // from MD5Checksum.java
+    public synchronized String CalculateCheckSum(String datafile, ChecksumType checksumType) {
+
+        FileInputStream fis = null;
+        try {
+            fis = new FileInputStream(datafile);
+        } catch (FileNotFoundException ex) {
+            throw new RuntimeException(ex);
+        }
+
+        return CalculateChecksum(fis, checksumType);
+    }
+
+    // from MD5Checksum.java
+    public synchronized String CalculateChecksum(InputStream in, ChecksumType checksumType) {
+        MessageDigest md = null;
+        try {
+            // Use "SHA-1" (toString) rather than "SHA1", for example.
+            md = MessageDigest.getInstance(checksumType.toString());
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+
+        byte[] dataBytes = new byte[1024];
+
+        int nread;
+        try {
+            while ((nread = in.read(dataBytes)) != -1) {
+                md.update(dataBytes, 0, nread);
+            }
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        } finally {
+            try {
+                in.close();
+            } catch (Exception e) {
+            }
+        }
+
+        byte[] mdbytes = md.digest();
+        StringBuilder sb = new StringBuilder("");
+        for (int i = 0; i < mdbytes.length; i++) {
+            sb.append(Integer.toString((mdbytes[i] & 0xff) + 0x100, 16).substring(1));
+        }
+        return sb.toString();
+    }
+
 }

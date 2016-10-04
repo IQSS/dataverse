@@ -13,9 +13,8 @@ These "superuser" tasks are managed via the new page called the Dashboard. A use
 Contents:
 
 .. toctree::
-   :maxdepth: 2
 
-  harvestclients
-  harvestserver
-  metadataexport
-  timers
+   harvestclients
+   harvestserver
+   metadataexport
+   timers
