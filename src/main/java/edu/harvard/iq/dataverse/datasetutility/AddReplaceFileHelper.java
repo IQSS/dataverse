@@ -647,9 +647,9 @@ public class AddReplaceFileHelper{
         if (existingFile == null){
             this.addErrorSevere(getBundleErr("existing_file_to_replace_is_null"));
             return false;
-        }
+        }       
         
-        if (existingFile.getOwner() != this.dataset){
+        if (!existingFile.getOwner().equals(this.dataset)){
             addError(getBundleErr("existing_file_to_replace_not_in_dataset"));
             return false;
         }
@@ -687,6 +687,7 @@ public class AddReplaceFileHelper{
         }
         
         DataFile existingFile = fileService.find(dataFileId);
+
         if (existingFile == null){
             this.addError(getBundleErr("existing_file_to_replace_not_found_by_id") + " " + dataFileId);
             return false;
