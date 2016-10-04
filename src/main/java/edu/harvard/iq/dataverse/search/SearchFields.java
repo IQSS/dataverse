@@ -147,6 +147,8 @@ public class SearchFields {
     public static final String FILE_TYPE = "fileTypeGroupFacet";
     public static final String FILE_SIZE_IN_BYTES = "fileSizeInBytes";
     public static final String FILE_MD5 = "fileMd5";
+    public static final String FILE_CHECKSUM_TYPE = "fileChecksumType";
+    public static final String FILE_CHECKSUM_VALUE = "fileChecksumValue";
     public static final String FILENAME_WITHOUT_EXTENSION = "fileNameWithoutExtension";
     /**
      * Indexed as a string so we can facet on it.

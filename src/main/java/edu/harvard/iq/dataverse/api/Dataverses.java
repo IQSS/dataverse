@@ -181,7 +181,10 @@ public class Dataverses extends AbstractApiBean {
             }
             try {
                 try {
-                    DatasetVersion version = jsonParser().parseDatasetVersion(jsonVersion);
+                    DatasetVersion version = new DatasetVersion();
+                    version.setDataset(ds);
+                    // Use the two argument version so that the version knows which dataset it's associated with.
+                    version = jsonParser().parseDatasetVersion(jsonVersion, version);
                     
                     // force "initial version" properties
                     version.setMinorVersionNumber(null);

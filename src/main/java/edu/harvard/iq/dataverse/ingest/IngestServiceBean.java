@@ -62,7 +62,6 @@ import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.sav.SAVFileReade
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.por.PORFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.por.PORFileReaderSpi;
 import edu.harvard.iq.dataverse.util.FileUtil;
-import edu.harvard.iq.dataverse.util.MD5Checksum;
 import edu.harvard.iq.dataverse.util.ShapefileHandler;
 import edu.harvard.iq.dataverse.util.SumStatCalculator;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -600,11 +599,12 @@ public class IngestServiceBean {
             if (!tempFile.toFile().renameTo(new File(getFilesTempDirectory() + "/" + datafile.getStorageIdentifier()))) {
                 return null; 
             }
-            
-            // MD5:
-            MD5Checksum md5Checksum = new MD5Checksum();
+
             try {
-                datafile.setmd5(md5Checksum.CalculateMD5(getFilesTempDirectory() + "/" + datafile.getStorageIdentifier()));
+                // We persist "SHA1" rather than "SHA-1".
+                datafile.setChecksumType(systemConfig.getFileFixityChecksumAlgorithm());
+                FileUtil fileUtil = new FileUtil();
+                datafile.setChecksumValue(fileUtil.CalculateCheckSum(getFilesTempDirectory() + "/" + datafile.getStorageIdentifier(), datafile.getChecksumType()));
             } catch (Exception md5ex) {
                 logger.warning("Could not calculate MD5 signature for new file " + fileName);
             }
@@ -853,12 +853,17 @@ public class IngestServiceBean {
                     outputStream.close();
                 } catch (IOException ioex) {}
             }
-            
-            // MD5:
+
+            /**
+             * @todo Can this block and the similar block above be refactored
+             * into a common code path?
+             */
             if (datafile != null) {
-                MD5Checksum md5Checksum = new MD5Checksum();
+                FileUtil fileUtil = new FileUtil();
                 try {
-                    datafile.setmd5(md5Checksum.CalculateMD5(getFilesTempDirectory() + "/" + datafile.getStorageIdentifier()));
+                    // We persist "SHA1" rather than "SHA-1".
+                    datafile.setChecksumType(systemConfig.getFileFixityChecksumAlgorithm());
+                    datafile.setChecksumValue(fileUtil.CalculateCheckSum(getFilesTempDirectory() + "/" + datafile.getStorageIdentifier(), datafile.getChecksumType()));
                 } catch (Exception md5ex) {
                     logger.warning("Could not calculate MD5 signature for new file " + fileName);
                 }
