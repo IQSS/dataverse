@@ -256,7 +256,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         Object[] result = null;
 
         try {
-            result = (Object[]) em.createNativeQuery("SELECT t0.ID, t0.CREATEDATE, t0.INDEXTIME, t0.MODIFICATIONTIME, t0.PERMISSIONINDEXTIME, t0.PERMISSIONMODIFICATIONTIME, t0.PUBLICATIONDATE, t0.CREATOR_ID, t0.RELEASEUSER_ID, t0.PREVIEWIMAGEAVAILABLE, t1.CONTENTTYPE, t1.FILESYSTEMNAME, t1.FILESIZE, t1.INGESTSTATUS, t1.MD5, t1.RESTRICTED, t3.ID, t3.AUTHORITY, t3.IDENTIFIER FROM DVOBJECT t0, DATAFILE t1, DVOBJECT t2, DATASET t3 WHERE ((t0.ID = " + id + ") AND (t0.OWNER_ID = t2.ID) AND (t2.ID = t3.ID) AND (t1.ID = t0.ID))").getSingleResult();
+            result = (Object[]) em.createNativeQuery("SELECT t0.ID, t0.CREATEDATE, t0.INDEXTIME, t0.MODIFICATIONTIME, t0.PERMISSIONINDEXTIME, t0.PERMISSIONMODIFICATIONTIME, t0.PUBLICATIONDATE, t0.CREATOR_ID, t0.RELEASEUSER_ID, t0.PREVIEWIMAGEAVAILABLE, t1.CONTENTTYPE, t1.FILESYSTEMNAME, t1.FILESIZE, t1.INGESTSTATUS, t1.CHECKSUMVALUE, t1.RESTRICTED, t3.ID, t3.AUTHORITY, t3.IDENTIFIER, t1.CHECKSUMTYPE FROM DVOBJECT t0, DATAFILE t1, DVOBJECT t2, DATASET t3 WHERE ((t0.ID = " + id + ") AND (t0.OWNER_ID = t2.ID) AND (t2.ID = t3.ID) AND (t1.ID = t0.ID))").getSingleResult();
         } catch (Exception ex) {
             return null;
         }
@@ -347,14 +347,14 @@ public class DataFileServiceBean implements java.io.Serializable {
         String md5 = (String) result[14];
 
         if (md5 != null) {
-            dataFile.setmd5(md5);
+            dataFile.setChecksumValue(md5);
         }
 
         Boolean restricted = (Boolean) result[15];
         if (restricted != null) {
             dataFile.setRestricted(restricted);
         }
-        
+
 
         Dataset owner = new Dataset();
 
@@ -363,6 +363,17 @@ public class DataFileServiceBean implements java.io.Serializable {
         owner.setId((Long)result[16]);
         owner.setAuthority((String)result[17]);
         owner.setIdentifier((String)result[18]);
+
+        String checksumType = (String) result[19];
+        if (checksumType != null) {
+            try {
+                // In the database we store "SHA1" rather than "SHA-1".
+                DataFile.ChecksumType typeFromStringInDatabase = DataFile.ChecksumType.valueOf(checksumType);
+                dataFile.setChecksumType(typeFromStringInDatabase);
+            } catch (IllegalArgumentException ex) {
+                logger.info("Exception trying to convert " + checksumType + " to enum: " + ex);
+            }
+        }
                 
         dataFile.setOwner(owner);
 
@@ -466,7 +477,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         
         i = 0; 
         
-        List<Object[]> fileResults = em.createNativeQuery("SELECT t0.ID, t0.CREATEDATE, t0.INDEXTIME, t0.MODIFICATIONTIME, t0.PERMISSIONINDEXTIME, t0.PERMISSIONMODIFICATIONTIME, t0.PUBLICATIONDATE, t0.CREATOR_ID, t0.RELEASEUSER_ID, t1.CONTENTTYPE, t1.FILESYSTEMNAME, t1.FILESIZE, t1.INGESTSTATUS, t1.MD5, t1.RESTRICTED FROM DVOBJECT t0, DATAFILE t1 WHERE ((t0.OWNER_ID = " + owner.getId() + ") AND ((t1.ID = t0.ID) AND (t0.DTYPE = 'DataFile')))").getResultList(); 
+        List<Object[]> fileResults = em.createNativeQuery("SELECT t0.ID, t0.CREATEDATE, t0.INDEXTIME, t0.MODIFICATIONTIME, t0.PERMISSIONINDEXTIME, t0.PERMISSIONMODIFICATIONTIME, t0.PUBLICATIONDATE, t0.CREATOR_ID, t0.RELEASEUSER_ID, t1.CONTENTTYPE, t1.FILESYSTEMNAME, t1.FILESIZE, t1.INGESTSTATUS, t1.CHECKSUMVALUE, t1.RESTRICTED, t1.CHECKSUMTYPE FROM DVOBJECT t0, DATAFILE t1 WHERE ((t0.OWNER_ID = " + owner.getId() + ") AND ((t1.ID = t0.ID) AND (t0.DTYPE = 'DataFile')))").getResultList(); 
     
         for (Object[] result : fileResults) {
             Integer file_id = (Integer) result[0];
@@ -545,12 +556,23 @@ public class DataFileServiceBean implements java.io.Serializable {
             String md5 = (String) result[13]; 
             
             if (md5 != null) {
-                dataFile.setmd5(md5);
+                dataFile.setChecksumValue(md5);
             }
             
             Boolean restricted = (Boolean) result[14];
             if (restricted != null) {
                 dataFile.setRestricted(restricted);
+            }
+
+            String checksumType = (String) result[15];
+            if (checksumType != null) {
+                try {
+                    // In the database we store "SHA1" rather than "SHA-1".
+                    DataFile.ChecksumType typeFromStringInDatabase = DataFile.ChecksumType.valueOf(checksumType);
+                    dataFile.setChecksumType(typeFromStringInDatabase);
+                } catch (IllegalArgumentException ex) {
+                    logger.info("Exception trying to convert " + checksumType + " to enum: " + ex);
+                }
             }
             
             // TODO: 
@@ -749,12 +771,8 @@ public class DataFileServiceBean implements java.io.Serializable {
     
     */
     public DataFile setAndCheckFileReplaceAttributes(DataFile savedDataFile){
-        
-        msgt("setAndCheckFileReplaceAttributes: " + savedDataFile);
-        msgt("setAndCheckFileReplaceAttributes: getCheckSum()" + savedDataFile.getCheckSum());
-        
+               
         // Is this the initial version of a file?
-        msg("savedDataFile.getRootDataFileId(): " + savedDataFile.getRootDataFileId());
         
         if ((savedDataFile.getRootDataFileId() == null)||
                 (savedDataFile.getRootDataFileId().equals(DataFile.ROOT_DATAFILE_ID_DEFAULT))){

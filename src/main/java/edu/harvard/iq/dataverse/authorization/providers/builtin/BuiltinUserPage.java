@@ -501,6 +501,8 @@ public class BuiltinUserPage implements java.io.Serializable {
                 String expTime = confirmEmailUtil.friendlyExpirationTime(systemConfig.getMinutesUntilConfirmEmailTokenExpires());
                 msg = msg + " Your email address has changed and must be re-verified. Please check your inbox at " + currentUser.getEmail() + " and follow the link we've sent. \n\nAlso, please note that the link will only work for the next " + expTime + " before it has expired.";
                 boolean sendEmail = true;
+                // delete unexpired token, if it exists (clean slate)
+                confirmEmailService.deleteTokenForUser(currentUser);
                 try {
                     ConfirmEmailInitResponse confirmEmailInitResponse = confirmEmailService.beginConfirm(currentUser);
                 } catch (ConfirmEmailException ex) {

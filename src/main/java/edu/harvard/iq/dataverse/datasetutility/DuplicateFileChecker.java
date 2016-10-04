@@ -59,7 +59,7 @@ public class DuplicateFileChecker {
          if (fileMetadata == null){
              throw new NullPointerException("fileMetadata cannot be null");
          }
-         return this.isFileInSavedDatasetVersion(datasetVersion, fileMetadata.getDataFile().getCheckSum());
+         return this.isFileInSavedDatasetVersion(datasetVersion, fileMetadata.getDataFile().getChecksumValue());
      }
     
     /**
@@ -101,7 +101,7 @@ public class DuplicateFileChecker {
         List<FileMetadata> fileMetadatas = new ArrayList<>(datasetVersion.getFileMetadatas());
         
         for (FileMetadata fm : fileMetadatas){            
-            String checkSum = fm.getDataFile().getCheckSum();
+            String checkSum = fm.getDataFile().getChecksumValue();
             if (checksumHashCounts.get(checkSum) != null){
                 checksumHashCounts.put(checkSum, checksumHashCounts.get(checkSum).intValue() + 1);
             }else{
@@ -127,7 +127,7 @@ public class DuplicateFileChecker {
             throw new NullPointerException("datasetVersion cannot be null");
         }
 
-        String selectedCheckSum = fileMetadata.getDataFile().getCheckSum();
+        String selectedCheckSum = fileMetadata.getDataFile().getChecksumValue();
         if (selectedCheckSum == null) {
             return false;
         }        
@@ -149,7 +149,7 @@ public class DuplicateFileChecker {
 
         while (fmIt.hasNext()) {
             FileMetadata fm = fmIt.next();
-            String currentCheckSum = fm.getDataFile().getCheckSum();
+            String currentCheckSum = fm.getDataFile().getChecksumValue();
             if (currentCheckSum != null) {
                 if (checkSumMap.get(currentCheckSum) != null) {
                     checkSumMap.put(currentCheckSum, checkSumMap.get(currentCheckSum).intValue() + 1);

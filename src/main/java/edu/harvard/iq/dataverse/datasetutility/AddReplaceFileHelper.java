@@ -877,7 +877,7 @@ public class AddReplaceFileHelper{
     
         for (DataFile df : finalFileList){
             
-            if (Objects.equals(df.getCheckSum(), fileToReplace.getCheckSum())){
+            if (Objects.equals(df.getChecksumValue(), fileToReplace.getChecksumValue())){
                 this.addError(getBundleErr("replace.new_file_same_as_replacement"));                                
             }
             

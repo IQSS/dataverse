@@ -825,7 +825,7 @@
                                 <p:column styleClass="versionValue">
                                     <h:outputText value="#{bundle['file.viewDiffDialog.fileID']} #{fileDiff.fileId}"/>
                                     <br></br>
-                                    <h:outputText value="#{bundle['file.viewDiffDialog.md5']} #{fileDiff.fileMD5}"/>
+                                    <h:outputText value="#{fileDiff.fileChecksumType} #{fileDiff.fileChecksumValue}"/>
                                 </p:column>
                                 <p:column styleClass="versionDetails" rendered="#{! fileDiff.file1Empty}">
                                     <h:outputText value="#{bundle['file.viewDiffDialog.fileName']}: #{fileDiff.fileName1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileName1 != null}"/>

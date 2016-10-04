@@ -200,6 +200,19 @@ public class ConfirmEmailServiceBean {
         return numDeleted;
     }
 
+    /**
+     * @param authenticatedUser
+     * @return True if token is deleted. False otherwise.
+     */
+    public boolean deleteTokenForUser(AuthenticatedUser authenticatedUser) {
+        ConfirmEmailData confirmEmailData = findSingleConfirmEmailDataByUser(authenticatedUser);
+        if (confirmEmailData != null) {
+            em.remove(confirmEmailData);
+            return true;
+        }
+        return false;
+    }
+
     public ConfirmEmailData createToken(AuthenticatedUser au) {
         ConfirmEmailData confirmEmailData = new ConfirmEmailData(au, systemConfig.getMinutesUntilConfirmEmailTokenExpires());
         em.persist(confirmEmailData);

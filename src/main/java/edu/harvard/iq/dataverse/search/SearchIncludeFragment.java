@@ -1048,13 +1048,15 @@ public class SearchIncludeFragment implements java.io.Serializable {
 
     }
 
-    public String dataFileMD5Display(DataFile datafile) {
+    public String dataFileChecksumDisplay(DataFile datafile) {
         if (datafile == null) {
             return "";
         }
 
-        if (datafile.getmd5() != null && datafile.getmd5() != "") {
-            return " MD5: " + datafile.getmd5() + " ";
+        if (datafile.getChecksumValue() != null && datafile.getChecksumValue() != "") {
+            if (datafile.getChecksumType() != null) {
+                return " " + datafile.getChecksumType() + ": " + datafile.getChecksumValue() + " ";
+            }
         }
 
         return "";

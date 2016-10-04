@@ -90,7 +90,7 @@ Persistent identifiers are a required and integral part of the Dataverse platfor
 
 JVM Options: :ref:`doi.baseurlstring`, :ref:`doi.username`, :ref:`doi.password`
 
-Database Settings: :ref:`:DoiProvider`, :ref:`:Protocol`, :ref:`:Authority`, :ref:`:DoiSeparator`
+Database Settings: :ref:`:DoiProvider <:DoiProvider>`, :ref:`:Protocol <:Protocol>`, :ref:`:Authority <:Authority>`, :ref:`:DoiSeparator <:DoiSeparator>`
 
 Please note that any datasets creating using the test configuration cannot be directly migrated and would need to be created again once a valid DOI namespace is configured.
 
@@ -104,8 +104,9 @@ Once this configuration is complete, your Dataverse installation should be ready
 JVM Options
 -----------
 
-JVM stands Java Virtual Machine and as a Java application, Glassfish can read JVM options when it is started. A number of JVM options are configured by the installer below is a complete list of the Dataverse-specific JVM options. You can inspect the configured options by running ``asadmin list-jvm-options | egrep 'dataverse|doi'
-``.
+JVM stands Java Virtual Machine and as a Java application, Glassfish can read JVM options when it is started. A number of JVM options are configured by the installer below is a complete list of the Dataverse-specific JVM options. You can inspect the configured options by running:
+
+``asadmin list-jvm-options | egrep 'dataverse|doi'``
 
 When changing values these values with ``asadmin``, you'll need to delete the old value before adding a new one, like this:
 
@@ -188,9 +189,11 @@ dataverse.dataAccess.thumbnail.pdf.limit
 
 For limiting the size of thumbnail images generated from files.
 
+.. _doi.baseurlstring:
+
 doi.baseurlstring
 +++++++++++++++++
-.. _doi.baseurlstring:
+
 As of this writing "https://ezid.cdlib.org" and "https://mds.datacite.org" are the only valid values. See also these related database settings below:
 
 - :DoiProvider
@@ -198,14 +201,18 @@ As of this writing "https://ezid.cdlib.org" and "https://mds.datacite.org" are t
 - :Authority
 - :DoiSeparator
 
+.. _doi.username:
+
 doi.username
 ++++++++++++
-.. _doi.username:
+
 Used in conjuction with ``doi.baseurlstring``.
+
+.. _doi.password:
 
 doi.password
 ++++++++++++
-.. _doi.password:
+
 Used in conjuction with ``doi.baseurlstring``.
 
 dataverse.handlenet.admcredfile
@@ -265,30 +272,45 @@ This is the email address that "system" emails are sent from such as password re
 
 ``curl -X PUT -d "Support <support@example.edu>" http://localhost:8080/api/admin/settings/:SystemEmail``
 
+:FooterCopyright
+++++++++++++++++
+
+By default the footer says "Copyright © [YYYY]" but you can add text after the year, as in the example below.
+
+``curl -X PUT -d ", The President &#38; Fellows of Harvard College" http://localhost:8080/api/admin/settings/:FooterCopyright``
+
+.. _:DoiProvider:
+
 :DoiProvider
 ++++++++++++
-.. _:DoiProvider:
+
 As of this writing "EZID" and "DataCite" are the only valid options.
 
 ``curl -X PUT -d EZID http://localhost:8080/api/admin/settings/:DoiProvider``
 
+.. _:Protocol:
+
 :Protocol
 +++++++++
-.. _:Protocol:
+
 As of this writing "doi" is the only valid option for the protocol for a persistent ID.
 
 ``curl -X PUT -d doi http://localhost:8080/api/admin/settings/:Protocol``
 
+.. _:Authority:
+
 :Authority
 ++++++++++
-.. _:Authority:
+
 Use the DOI authority assigned to you by your DoiProvider.
 
 ``curl -X PUT -d 10.xxxx http://localhost:8080/api/admin/settings/:Authority``
 
+.. _:DoiSeparator:
+
 :DoiSeparator
 +++++++++++++
-.. _:DoiSeparator:
+
 It is recommended that you keep this as a slash ("/").
 
 ``curl -X PUT -d "/" http://localhost:8080/api/admin/settings/:DoiSeparator``
@@ -370,7 +392,9 @@ Limit the number of files in a zip that Dataverse will accept.
 :GoogleAnalyticsCode
 ++++++++++++++++++++
 
-For setting up Google Analytics for your Dataverse installation.
+Set your Google Analytics Tracking ID thusly:
+
+``curl -X PUT -d 'trackingID' http://localhost:8080/api/admin/settings/:GoogleAnalyticsCode``
 
 :SolrHostColonPort
 ++++++++++++++++++
@@ -392,7 +416,7 @@ The relative path URL to which users will be sent after signup. The default sett
 The location of your TwoRavens installation.  Activation of TwoRavens also requires the setting below, ``TwoRavensTabularView``
 
 :TwoRavensTabularView
-+++++++++++++++++++
++++++++++++++++++++++
 
 Set ``TwoRavensTabularView`` to true to allow a user to view tabular files via the TwoRavens application. This boolean affects whether a user will see the "Explore" button.
 
@@ -459,3 +483,28 @@ This setting is experimental per :doc:`/installation/shibboleth`.
 ++++++++++++
 
 Set to false to disallow local accounts to be created if you are using :doc:`shibboleth` but not for production use until https://github.com/IQSS/dataverse/issues/2838 has been fixed.
+
+:PiwikAnalyticsId
+++++++++++++++++++++
+
+Site identifier created in your Piwik instance. Example:
+
+``curl -X PUT -d 42 http://localhost:8080/api/admin/settings/:PiwikAnalyticsId``
+
+:PiwikAnalyticsHost
+++++++++++++++++++++
+
+Host FQDN or URL of your Piwik instance before the ``/piwik.php``. Examples:
+
+``curl -X PUT -d stats.domain.tld http://localhost:8080/api/admin/settings/:PiwikAnalyticsHost``
+
+or
+
+``curl -X PUT -d hostname.domain.tld/stats http://localhost:8080/api/admin/settings/:PiwikAnalyticsHost``
+
+:FileFixityChecksumAlgorithm
+++++++++++++++++++++++++++++
+
+Dataverse calculates checksums for uploaded files so that users can determine if their file was corrupted via upload or download. This is sometimes called "file fixity": https://en.wikipedia.org/wiki/File_Fixity
+
+The default checksum algorithm used is MD5 and should be sufficient for establishing file fixity. "SHA-1" is an experimental alternate value for this setting.
