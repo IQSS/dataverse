@@ -1651,13 +1651,13 @@ public class DatasetPage implements java.io.Serializable {
         }
         
         if (type.equals("explore")) {
-            String retVal = getDataExploreURLComplete(this.selectedDownloadFile.getId());
+           /* String retVal = getDataExploreURLComplete(this.selectedDownloadFile.getId());
             try {
                 FacesContext.getCurrentInstance().getExternalContext().redirect(retVal);
                 return retVal;
             } catch (IOException ex) {
                 logger.info("Failed to issue a redirect to file download url.");
-            }
+            }*/
         }
         return "";
     }

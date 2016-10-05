@@ -13,7 +13,12 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+import edu.harvard.iq.dataverse.util.SystemConfig;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.net.URLDecoder;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -26,7 +31,7 @@ import javax.faces.event.AjaxBehaviorEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-
+import org.json.*;
 /**
  *
  * @author xyang
@@ -85,6 +90,9 @@ public class LoginPage implements java.io.Serializable {
     @EJB
     SettingsServiceBean settingsService;
     
+    @EJB
+    SystemConfig systemConfig;
+    
     @Inject
     DataverseRequestServiceBean dvRequestService;
     
@@ -132,7 +140,7 @@ public class LoginPage implements java.io.Serializable {
         return false;
     }
 
-    public String login() {
+    public String login() throws Exception {
         
         AuthenticationRequest authReq = new AuthenticationRequest();
         List<FilledCredential> filledCredentialsList = getFilledCredentials();
@@ -151,7 +159,29 @@ public class LoginPage implements java.io.Serializable {
             AuthenticatedUser r = authSvc.authenticate(credentialsAuthProviderId, authReq);
             logger.log(Level.FINE, "User authenticated: {0}", r.getEmail());
             session.setUser(r);
+            //allow the logged-in user to redirect to their institution
+            String affiliation= r.getAffiliation();
+            String alias="";
+            //
+            String json_url= systemConfig.getDataverseSiteUrl()+"/resources/js/affiliates.json";
+    		JSONObject json_obj;
+    		try {
+    			json_obj = new JSONObject(readUrl(json_url));
+    			JSONArray json_array = json_obj.getJSONArray("affiliates");
+    			for(int i = 0; i < json_array.length(); i++){
+    				String name = json_array.getJSONObject(i).getString("name");
+    				if(name.equals(affiliation)){
+    					alias=json_array.getJSONObject(i).getString("home");
+    				}
+    			}
+    		} catch (JSONException e) {
+    			// TODO Auto-generated catch block
+    			e.printStackTrace();
+    		}
             
+            
+            ///
+            redirectPage = "%2Fdataverse.xhtml%3Falias%3D"+alias;//works like a charm
             if ("dataverse.xhtml".equals(redirectPage)) {
                 redirectPage = redirectPage + "&alias=" + dataverseService.findRootDataverse().getAlias();
             }
@@ -192,7 +222,23 @@ public class LoginPage implements java.io.Serializable {
         }
         
     }
+    private static String readUrl(String urlString) throws Exception {
+        BufferedReader reader = null;
+        try {
+            URL url = new URL(urlString);
+            reader = new BufferedReader(new InputStreamReader(url.openStream()));
+            StringBuffer buffer = new StringBuffer();
+            int read;
+            char[] chars = new char[1024];
+            while ((read = reader.read(chars)) != -1)
+                buffer.append(chars, 0, read); 
 
+            return buffer.toString();
+        } finally {
+            if (reader != null)
+                reader.close();
+        }
+    }
     public String getCredentialsAuthProviderId() {
         return credentialsAuthProviderId;
     }

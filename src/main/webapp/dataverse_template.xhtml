@@ -26,6 +26,8 @@
         <link type="text/css" rel="stylesheet" href="#{resource['css/fontcustom.css']}?version=#{systemConfig.getVersion()}" />
         <link type="text/css" rel="stylesheet" href="#{resource['css/socicon.css']}?version=#{systemConfig.getVersion()}" />
         <link type="text/css" rel="stylesheet" href="#{resource['css/structure.css']}?version=#{systemConfig.getVersion()}" />
+        <link type="text/css" rel="stylesheet" href="#{resource['css/main.css']}?version=#{systemConfig.getVersion()}" />
+        <link type="text/css" rel="stylesheet" href="#{resource['css/selectize.default.css']}?version=#{systemConfig.getVersion()}" />
         <ui:fragment rendered="#{!widgetWrapper.widgetView}">
             <script>
                 // Break out of iframe
@@ -82,16 +84,27 @@
                         // Navbar Search Toggle
                         $(document).on('click', '#navbar-search-toggle', function (e) {
                             $(this).parent("li").hide();
-                            $("form.navbar-form[role='search']").show();
+                           // $("form.navbar-form[role='search']").show();
                         });
                         $('body').click(function (e) {
                             if (!$(e.target).closest("form.navbar-form[role='search']").length) {
-                                $("form.navbar-form[role='search']").hide();
+                              //  $("form.navbar-form[role='search']").hide();
                                 $("#navbar-search-toggle").parent("li").show();
                             }
-                            ;
                         });
-
+                        $( "#target" ).submit(function( event ) {
+                        	  alert( "Handler for .submit() called." );
+                        	  event.preventDefault();
+                        	});
+                        $('#navbarsearch').keypress(function(e) {
+                            if (e.which == '13') {
+                            	$('#navbarsearchbut').trigger( "click" );
+                            }
+                          });
+                        
+                        $( "#navbarsearchform" ).submit(function( event ) {
+                        	  event.preventDefault();
+                        	});
                         // Rebind bootstrap UI components
                         bind_bsui_components();
                     });
