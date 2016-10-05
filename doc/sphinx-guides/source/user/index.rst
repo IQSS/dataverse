@@ -9,12 +9,11 @@ User Guide
 Contents:
 
 .. toctree::
-   :maxdepth: 2
 
-  account
-  find-use-data
-  dataverse-management
-  dataset-management
-  tabulardataingest/index
-  data-exploration/index
-  appendix
+   account
+   find-use-data
+   dataverse-management
+   dataset-management
+   tabulardataingest/index
+   data-exploration/index
+   appendix

@@ -42,7 +42,12 @@ public class GuestUser implements User {
     public boolean equals( Object o ) {
         return (o instanceof GuestUser);
     }
-
+    
+    @Override
+    public String toString() {
+        return "[GuestUser :guest]";
+    }
+    
     @Override
     public int hashCode() {
         return 7;

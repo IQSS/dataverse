@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.SettingsWrapper;
 import edu.harvard.iq.dataverse.WidgetWrapper;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -26,9 +27,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang.StringUtils;
 
 @ViewScoped
@@ -307,10 +310,12 @@ public class SearchIncludeFragment implements java.io.Serializable {
              * https://github.com/IQSS/dataverse/issues/84
              */
             int numRows = 10;
-            solrQueryResponse = searchService.search(session.getUser(), dataverse, queryToPassToSolr, filterQueriesFinal, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows, false);
+            HttpServletRequest httpServletRequest = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
+            DataverseRequest dataverseRequest = new DataverseRequest(session.getUser(), httpServletRequest);
+            solrQueryResponse = searchService.search(dataverseRequest, dataverse, queryToPassToSolr, filterQueriesFinal, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows, false);
             // This 2nd search() is for populating the facets: -- L.A. 
             // TODO: ...
-            solrQueryResponseAllTypes = searchService.search(session.getUser(), dataverse, queryToPassToSolr, filterQueriesFinalAllTypes, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows, false);
+            solrQueryResponseAllTypes = searchService.search(dataverseRequest, dataverse, queryToPassToSolr, filterQueriesFinalAllTypes, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows, false);
         } catch (SearchException ex) {
             Throwable cause = ex;
             StringBuilder sb = new StringBuilder();

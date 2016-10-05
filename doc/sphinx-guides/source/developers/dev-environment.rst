@@ -7,7 +7,7 @@ Development Environment
 Assumptions
 -----------
 
-This guide assumes you are using a Mac but we do have pages for :doc:`/developers/windows` and :doc:`/developers/ubuntu`.
+This guide assumes you are using a Mac. If you are using Windows or Linux, please reach out to other developers at https://groups.google.com/forum/#!forum/dataverse-dev
 
 Requirements
 ------------

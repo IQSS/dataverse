@@ -6,8 +6,6 @@ FIXME: merge with what's in the Installation Guide: http://guides.dataverse.org/
 
 ## Set up a valid SSL cert
 
-See also notes on setting up the SSL cert for https://apitest.dataverse.org at https://github.com/IQSS/dataverse/tree/master/scripts/deploy/apitest.dataverse.org
-
 ### Create a private key
 
     [root@dvn-vm3 ~]# openssl genrsa -out /root/cert/shibtest.dataverse.org.key 2048

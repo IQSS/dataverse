@@ -716,9 +716,9 @@ div.manageTable.ui-datatable div.ui-datatable-tablewrapper, div.manageTable.ui-d
 .ui-blockui.ui-widget-overlay {background:#fff; opacity:.6;}
 div.ui-dialog.ui-widget-content {z-index:100001 !important;}
 
-/* POPUP DROPDOWN MENUS + BLOCK UI */
+/* POPUP DROPDOWN MENUS + TOOLTIPS + BLOCK UI */
 div.ui-selectcheckboxmenu-panel, div.ui-selectonemenu-panel, div.ui-autocomplete-panel,
-.ui-selectonemenu-list, .ui-selectcheckboxmenu-list {z-index:100002 !important;}
+.ui-selectonemenu-list, .ui-selectcheckboxmenu-list, div.tooltip {z-index:100002 !important;}
 
 /* Overwrite Primefaces */
 button.btn-default.ui-button-text-only .ui-button-text {padding:0; font-size:14px;}

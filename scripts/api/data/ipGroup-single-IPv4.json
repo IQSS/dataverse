@@ -1,0 +1,5 @@
+{
+  "alias":"singleIPv4",
+  "name":"Single IPv4",
+  "addresses" : ["128.0.0.7"]
+}

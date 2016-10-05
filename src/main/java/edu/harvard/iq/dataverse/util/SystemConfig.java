@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.time.Year;
+import java.util.Arrays;
 import java.util.MissingResourceException;
 import java.util.Properties;
 import java.util.ResourceBundle;
@@ -201,9 +203,28 @@ public class SystemConfig {
         String solrHostColonPort = settingsService.getValueForKey(SettingsServiceBean.Key.SolrHostColonPort, saneDefaultForSolrHostColonPort);
         return solrHostColonPort;
     }
-    
-    
-    
+
+    public int getMinutesUntilConfirmEmailTokenExpires() {
+        final int minutesInOneDay = 1440;
+        final int reasonableDefault = minutesInOneDay;
+        SettingsServiceBean.Key key = SettingsServiceBean.Key.MinutesUntilConfirmEmailTokenExpires;
+        String valueFromDatabase = settingsService.getValueForKey(key);
+        if (valueFromDatabase != null) {
+            try {
+                int intFromDatabase = Integer.parseInt(valueFromDatabase);
+                if (intFromDatabase > 0) {
+                    return intFromDatabase;
+                } else {
+                    logger.info("Returning " + reasonableDefault + " for " + key + " because value must be greater than zero, not \"" + intFromDatabase + "\".");
+                }
+            } catch (NumberFormatException ex) {
+                logger.info("Returning " + reasonableDefault + " for " + key + " because value must be an integer greater than zero, not \"" + valueFromDatabase + "\".");
+            }
+        }
+        logger.fine("Returning " + reasonableDefault + " for " + key);
+        return reasonableDefault;
+    }
+
     /**
      * The number of minutes for which a password reset token is valid. Can be
      * overridden by {@link #PASSWORD_RESET_TIMEOUT_IN_MINUTES}.
@@ -508,5 +529,9 @@ public class SystemConfig {
             return true;
         }
         return false;
+    }
+
+    public String getFooterCopyrightAndYear() {
+        return BundleUtil.getStringFromBundle("footer.copyright", Arrays.asList(Year.now().getValue() + ""));
     }
 }
