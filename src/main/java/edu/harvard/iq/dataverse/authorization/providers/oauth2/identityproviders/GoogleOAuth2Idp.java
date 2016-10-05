@@ -43,7 +43,9 @@ public class GoogleOAuth2Idp extends AbstractOAuth2Idp {
                     "",
                     ""
             );
-            return new ParsedUserResponse(displayInfo, response.getString("id"));
+            String immutableUserId = response.getString("id");
+            String username = null;
+            return new ParsedUserResponse(displayInfo, immutableUserId, username);
         }
     }
     
