@@ -223,13 +223,11 @@
                        update="@form"
                        disabled="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user)}">
             <span class="glyphicon glyphicon-bullhorn"/> #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}
-            Logged in
         </p:commandLink>
         <!-- 4.2.1 - TODO: retest this on a dataset with fileRequest enabled and with some files restricted to the user -->
         <p:commandLink type="button" styleClass="btn btn-default" rendered="#{!fileDownloadHelper.session.user.authenticated and fileMetadata.dataFile.owner.fileAccessRequest and !(fileDownloadHelper.canDownloadFile(fileMetadata))}"
                        onclick="PF('accessSignUpLogIn_popup').show()">
             <span class="glyphicon glyphicon-bullhorn"/> #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}
-            Not
         </p:commandLink>
 
 
