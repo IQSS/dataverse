@@ -206,31 +206,31 @@
                                             <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{!FilePage.fileMetadata.datasetVersion.dataset.released}" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.released']}"/>
                                             <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{FilePage.fileMetadata.datasetVersion.dataset.released and FilePage.fileMetadata.datasetVersion.draft}" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.draft']}"/>
                                         </div>
-                                        
-                                        <!-- Cite Data Button ++ DISABLED/STATIC -->
-                                        <div id="citation-download" class="col-xs-5 text-right">
+
+                                        <div id="citation-download" class="col-sm-5 col-md-4 text-right" jsf:rendered="#{!DatasetPage.workingVersion.deaccessioned}">
                                             <div class="dropdown">
-                                                <button type="button" id="downloadCitation" class="btn btn-default dropdown-toggle disabled" data-toggle="dropdown">
-                                                    <span class="glyphicon glyphicon-list"></span> Cite Data <span class="caret"></span>
+                                                <button type="button" id="downloadCitation" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                                    <span class="glyphicon glyphicon-list"/> #{bundle['dataset.cite.downloadBtn']} <span class="caret"></span>
                                                 </button>
                                                 <ul class="dropdown-menu pull-right text-left" role="menu">
-                                                    <li><a id="datasetForm:endNoteLink" href="#" onclick="mojarra.jsfcljs(document.getElementById('datasetForm'),{'datasetForm:endNoteLink':'datasetForm:endNoteLink'},'');return false">
-                                                            EndNote XML
+                                                    <li>
+                                                        <a jsf:id="endNoteLink" jsf:action="#{FilePage.fileDownloadService.downloadDatafileCitationXML(FilePage.fileMetadata)}" >
+                                    #{bundle['dataset.cite.downloadBtn.xml']}
                                                         </a>
                                                     </li>
-                                                    <li><a id="datasetForm:risLink" href="#" onclick="mojarra.jsfcljs(document.getElementById('datasetForm'),{'datasetForm:risLink':'datasetForm:risLink'},'');return false">
-                                                            RIS
+                                                    <li>
+                                                        <a jsf:id="risLink" jsf:actionListener="#{FilePage.fileDownloadService.downloadDatafileCitationRIS(FilePage.fileMetadata)}">
+                                    #{bundle['dataset.cite.downloadBtn.ris']}
                                                         </a>
                                                     </li>
-                                                    <li><a id="datasetForm:bibLink" href="#" onclick="mojarra.jsfcljs(document.getElementById('datasetForm'),{'datasetForm:bibLink':'datasetForm:bibLink'},'_blank');return false" target="_blank">
-                                                            BibTeX
+                                                    <li>
+                                                        <a jsf:id="bibLink" jsf:actionListener="#{FilePage.fileDownloadService.downloadDatafileCitationBibtex(FilePage.fileMetadata)}" target="_blank">
+                                    #{bundle['dataset.cite.downloadBtn.bib']}
                                                         </a>
                                                     </li>
                                                 </ul>
                                             </div>
-                                            <div id="citation-standards" class="small text-muted text-right">
-                                                <span class="glyphicon glyphicon-info-sign"></span> Learn about <a href="http://best-practices.dataverse.org/data-citation/" title="Get Recognition: Data Citation  - Dataverse Best Practices" target="_blank">Data Citation Standards</a>.
-                                            </div>
+                                            <div id="citation-standards" class="small text-muted text-right"><span class="glyphicon glyphicon-info-sign"></span> <h:outputText value=" #{bundle['dataset.cite.standards.tip']}" escape="false"/></div>
                                         </div>
                                         <!-- END: Cite Data Button -->
                                     </div>
