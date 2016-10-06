@@ -711,7 +711,8 @@ public class DatasetVersionDifference {
                 if (fileMetadataIsDifferent(fm1, fm2)) {
                     datasetFileDifferenceItem fdi = selectFileMetadataDiffs(fm1, fm2);
                     fdi.setFileId(fm1.getDataFile().getId().toString());
-                    fdi.setFileMD5(fm1.getDataFile().getmd5());
+                    fdi.setFileChecksumType(fm1.getDataFile().getChecksumType());
+                    fdi.setFileChecksumValue(fm1.getDataFile().getChecksumValue());
                     datasetFilesDiffList.add(fdi);
                 }
                 i++;
@@ -719,14 +720,16 @@ public class DatasetVersionDifference {
             } else if (fm2.getDataFile().getId() != null && fm1.getDataFile().getId().compareTo(fm2.getDataFile().getId()) > 0) {
                 datasetFileDifferenceItem fdi = selectFileMetadataDiffs(null, fm2);
                 fdi.setFileId(fm2.getDataFile().getId().toString());
-                fdi.setFileMD5(fm2.getDataFile().getmd5());
+                fdi.setFileChecksumType(fm2.getDataFile().getChecksumType());
+                fdi.setFileChecksumValue(fm2.getDataFile().getChecksumValue());
                 datasetFilesDiffList.add(fdi);
 
                 j++;
             } else if (fm2.getDataFile().getId() == null || fm1.getDataFile().getId().compareTo(fm2.getDataFile().getId()) < 0) {
                 datasetFileDifferenceItem fdi = selectFileMetadataDiffs(fm1, null);
                 fdi.setFileId(fm1.getDataFile().getId().toString());
-                fdi.setFileMD5(fm1.getDataFile().getmd5());
+                fdi.setFileChecksumType(fm1.getDataFile().getChecksumType());
+                fdi.setFileChecksumValue(fm1.getDataFile().getChecksumValue());
                 datasetFilesDiffList.add(fdi);
 
                 i++;
@@ -740,7 +743,8 @@ public class DatasetVersionDifference {
             fm1 = originalVersion.getFileMetadatas().get(i);
             datasetFileDifferenceItem fdi = selectFileMetadataDiffs(fm1, null);
             fdi.setFileId(fm1.getDataFile().getId().toString());
-            fdi.setFileMD5(fm1.getDataFile().getmd5());
+            fdi.setFileChecksumType(fm1.getDataFile().getChecksumType());
+            fdi.setFileChecksumValue(fm1.getDataFile().getChecksumValue());
             datasetFilesDiffList.add(fdi);
 
             i++;
@@ -754,10 +758,18 @@ public class DatasetVersionDifference {
             } else {
                 fdi.setFileId("[UNASSIGNED]");
             }
-            if (fm2.getDataFile().getmd5() != null) {
-                fdi.setFileMD5(fm2.getDataFile().getmd5());
+            if (fm2.getDataFile().getChecksumValue() != null) {
+                fdi.setFileChecksumType(fm2.getDataFile().getChecksumType());
+                fdi.setFileChecksumValue(fm2.getDataFile().getChecksumValue());
             } else {
-                fdi.setFileMD5("[UNASSIGNED]");
+                /**
+                 * @todo What should we do here? checksumValue is set to
+                 * "nullable = false" so it should never be non-null. Let's set
+                 * it to "null" and see if this code path is ever reached. If
+                 * not, the null check above can probably be safely removed.
+                 */
+                fdi.setFileChecksumType(null);
+                fdi.setFileChecksumValue("[UNASSIGNED]");
             }
             datasetFilesDiffList.add(fdi);
 
@@ -993,7 +1005,8 @@ public class DatasetVersionDifference {
         }
 
         private String fileId;
-        private String fileMD5;
+        private DataFile.ChecksumType fileChecksumType;
+        private String fileChecksumValue;
 
         private String fileName1;
         private String fileType1;
@@ -1131,13 +1144,21 @@ public class DatasetVersionDifference {
         public void setFile2Empty(boolean state) {
             file2Empty = state;
         }
-        
-        public String getFileMD5() {
-            return fileMD5;
+
+        public DataFile.ChecksumType getFileChecksumType() {
+            return fileChecksumType;
         }
 
-        public void setFileMD5(String fileMD5) {
-            this.fileMD5 = fileMD5;
+        public void setFileChecksumType(DataFile.ChecksumType fileChecksumType) {
+            this.fileChecksumType = fileChecksumType;
+        }
+
+        public String getFileChecksumValue() {
+            return fileChecksumValue;
+        }
+
+        public void setFileChecksumValue(String fileChecksumValue) {
+            this.fileChecksumValue = fileChecksumValue;
         }
 
     }

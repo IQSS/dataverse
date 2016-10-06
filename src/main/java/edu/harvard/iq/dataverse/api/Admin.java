@@ -3,7 +3,6 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.EMailValidator;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
-import static edu.harvard.iq.dataverse.api.AbstractApiBean.errorResponse;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
@@ -18,6 +17,9 @@ import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationP
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibUtil;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailData;
+import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailException;
+import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailInitResponse;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.settings.Setting;
 import javax.json.Json;
@@ -34,6 +36,7 @@ import javax.ws.rs.core.Response;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import java.io.StringReader;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -45,6 +48,7 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response.Status;
+import static edu.harvard.iq.dataverse.api.AbstractApiBean.errorResponse;
 /**
  * Where the secure, setup API calls live.
  * @author michael
@@ -64,9 +68,8 @@ public class Admin extends AbstractApiBean {
     @GET
     public Response listAllSettings() {
         JsonObjectBuilder bld = jsonObjectBuilder();
-        for ( Setting s : settingsSvc.listAll() ) {
-            bld.add(s.getName(), s.getContent());
-        }
+        settingsSvc.listAll().forEach(
+            s -> bld.add(s.getName(), s.getContent())); 
         return okResponse(bld);
     }
     
@@ -529,6 +532,50 @@ public class Admin extends AbstractApiBean {
     }
 
     /**
+     * This method is used in integration tests.
+     *
+     * @param userId The database id of an AuthenticatedUser.
+     * @return The confirm email token.
+     */
+    @Path("confirmEmail/{userId}")
+    @GET
+    public Response getConfirmEmailToken(@PathParam("userId") long userId) {
+        AuthenticatedUser user = authSvc.findByID(userId);
+        if (user != null) {
+            ConfirmEmailData confirmEmailData = confirmEmailSvc.findSingleConfirmEmailDataByUser(user);
+            if (confirmEmailData != null) {
+                return okResponse(Json.createObjectBuilder().add("token", confirmEmailData.getToken()));
+            }
+        }
+        return errorResponse(Status.BAD_REQUEST, "Could not find confirm email token for user " + userId);
+    }
+
+    /**
+     * This method is used in integration tests.
+     *
+     * @param userId The database id of an AuthenticatedUser.
+     */
+    @Path("confirmEmail/{userId}")
+    @POST
+    public Response startConfirmEmailProcess(@PathParam("userId") long userId) {
+        AuthenticatedUser user = authSvc.findByID(userId);
+        if (user != null) {
+            try {
+                ConfirmEmailInitResponse confirmEmailInitResponse = confirmEmailSvc.beginConfirm(user);
+                ConfirmEmailData confirmEmailData = confirmEmailInitResponse.getConfirmEmailData();
+                return okResponse(
+                        Json.createObjectBuilder()
+                        .add("tokenCreated", confirmEmailData.getCreated().toString())
+                        .add("identifier", user.getUserIdentifier()
+                        ));
+            } catch (ConfirmEmailException ex) {
+                return errorResponse(Status.BAD_REQUEST, "Could not start confirm email process for user " + userId + ": " + ex.getLocalizedMessage());
+            }
+        }
+        return errorResponse(Status.BAD_REQUEST, "Could not find user based on " + userId);
+    }
+
+    /**
      * This method is used by an integration test in UsersIT.java to exercise
      * bug https://github.com/IQSS/dataverse/issues/3287 . Not for use by users!
      */
@@ -538,10 +585,22 @@ public class Admin extends AbstractApiBean {
         JsonReader jsonReader = Json.createReader(new StringReader(json));
         JsonObject object = jsonReader.readObject();
         jsonReader.close();
-        BuiltinUser builtinUser  = builtinUserService.find(new Long(object.getInt("builtinUserId")));
+        BuiltinUser builtinUser = builtinUserService.find(new Long(object.getInt("builtinUserId")));
         builtinUser.updateEncryptedPassword("4G7xxL9z11/JKN4jHPn4g9iIQck=", 0); // password is "sha-1Pass", 0 means SHA-1
         BuiltinUser savedUser = builtinUserService.save(builtinUser);
         return okResponse("foo: " + savedUser);
+
     }
 
+    
+    
+    @Path("assignments/assignees/{raIdtf: .*}")
+    @GET
+    public Response getAssignmentsFor( @PathParam("raIdtf") String raIdtf ) {
+        
+        JsonArrayBuilder arr = Json.createArrayBuilder();
+        roleAssigneeSvc.getAssignmentsFor(raIdtf).forEach( a -> arr.add(json(a)));
+        
+        return okResponse(arr);
+    }
 }

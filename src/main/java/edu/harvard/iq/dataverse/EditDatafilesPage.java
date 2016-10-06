@@ -550,7 +550,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 if (fileNames == null) {
                     fileNames = fmd.getLabel();
                 } else {
-                    fileNames = fileNames.concat(fmd.getLabel());
+                    fileNames = fileNames.concat(", " + fmd.getLabel());
                 }
             }
             fmd.setRestricted(restricted);
@@ -590,7 +590,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                     if (fileNames == null) {
                         fileNames = fmd.getLabel();
                     } else {
-                        fileNames = fileNames.concat(fmd.getLabel());
+                        fileNames = fileNames.concat(", " + fmd.getLabel());
                     }
                 }
                 if (fmd.getDataFile().equals(fmw.getDataFile())) {
@@ -628,7 +628,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             if (fileNames == null) {
                 fileNames = fmd.getLabel();
             } else {
-                fileNames = fileNames.concat(fmd.getLabel());
+                fileNames = fileNames.concat(", " + fmd.getLabel());
             }
         }
 
@@ -1030,7 +1030,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
 
     public boolean isDuplicate(FileMetadata fileMetadata) {
-        String thisMd5 = fileMetadata.getDataFile().getmd5();
+        String thisMd5 = fileMetadata.getDataFile().getChecksumValue();
         if (thisMd5 == null) {
             return false;
         }
@@ -1052,7 +1052,7 @@ public class EditDatafilesPage implements java.io.Serializable {
 
         while (fmIt.hasNext()) {
             FileMetadata fm = fmIt.next();
-            String md5 = fm.getDataFile().getmd5();
+            String md5 = fm.getDataFile().getChecksumValue();
             if (md5 != null) {
                 if (MD5Map.get(md5) != null) {
                     MD5Map.put(md5, MD5Map.get(md5).intValue() + 1);

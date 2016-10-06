@@ -71,7 +71,7 @@ public class BibtexCitation {
     public String toString() {
         StringBuilder citation = new StringBuilder("@data{");
         citation.append(persistentId.getIdentifier() + "_" + year + "," + "\r\n");
-        citation.append("author = {").append(String.join("; ", authors)).append("},\r\n");
+        citation.append("author = {").append(String.join(" and ", authors)).append("},\r\n");
         citation.append("publisher = {").append(publisher).append("},\r\n");
         citation.append("title = {").append(title).append("},\r\n");        
         citation.append("year = {").append(year).append("},\r\n");        

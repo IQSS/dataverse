@@ -35,6 +35,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
@@ -49,6 +50,8 @@ import javax.json.JsonValue;
  */
 public class JsonParser {
 
+    private static final Logger logger = Logger.getLogger(JsonParser.class.getCanonicalName());
+
     DatasetFieldServiceBean datasetFieldSvc;
     MetadataBlockServiceBean blockService;
     SettingsServiceBean settingsService;
@@ -60,6 +63,10 @@ public class JsonParser {
         this.settingsService = settingsService;
     }
 
+    public JsonParser() {
+        this( null,null,null );
+    }
+    
     public boolean isLenient() {
         return lenient;
     }
@@ -186,20 +193,27 @@ public class JsonParser {
         IpGroup retVal = new IpGroup();
 
         if (obj.containsKey("id")) {
-            retVal.setId(Long.valueOf(obj.getString("id")));
+            retVal.setId(Long.valueOf(obj.getInt("id")));
         }
         retVal.setDisplayName(obj.getString("name", null));
         retVal.setDescription(obj.getString("description", null));
         retVal.setPersistedGroupAlias(obj.getString("alias", null));
 
-        JsonArray rangeArray = obj.getJsonArray("ranges");
-        for (JsonValue range : rangeArray) {
-            if (range.getValueType() == JsonValue.ValueType.ARRAY) {
-                JsonArray rr = (JsonArray) range;
-                retVal.add(IpAddressRange.make(IpAddress.valueOf(rr.getString(0)),
-                        IpAddress.valueOf(rr.getString(1))));
-
-            }
+        if ( obj.containsKey("ranges") ) {
+            obj.getJsonArray("ranges").stream()
+                    .filter( jv -> jv.getValueType()==JsonValue.ValueType.ARRAY )
+                    .map( jv -> (JsonArray)jv )
+                    .forEach( rr -> {
+                        retVal.add(
+                            IpAddressRange.make(IpAddress.valueOf(rr.getString(0)),
+                                                IpAddress.valueOf(rr.getString(1))));
+            });
+        }
+        if ( obj.containsKey("addresses") ) {
+            obj.getJsonArray("addresses").stream()
+                    .map( jsVal -> IpAddress.valueOf(((JsonString)jsVal).getString()) )
+                    .map( addr -> IpAddressRange.make(addr, addr) )
+                    .forEach( retVal::add );
         }
 
         return retVal;
@@ -373,18 +387,44 @@ public class JsonParser {
             contentType = "application/octet-stream";
         }
         String storageIdentifier = datafileJson.getString("storageIdentifier");
-        String md5 = datafileJson.getString("md5", null);
-        
-        if (md5 == null) {
-            md5 = "unknown";
+        JsonObject checksum = datafileJson.getJsonObject("checksum");
+        if (checksum != null) {
+            // newer style that allows for SHA-1 rather than MD5
+            /**
+             * @todo Add more error checking. Do we really expect people to set
+             * file metadata without uploading files? Some day we'd like to work
+             * on a "native" API that allows for multipart upload of the JSON
+             * describing the files (this "parseDataFile" method) and the bits
+             * of the files themselves. See
+             * https://github.com/IQSS/dataverse/issues/1612
+             */
+            String type = checksum.getString("type");
+            if (type != null) {
+                String value = checksum.getString("value");
+                if (value != null) {
+                    try {
+                        dataFile.setChecksumType(DataFile.ChecksumType.fromString(type));
+                        dataFile.setChecksumValue(value);
+                    } catch (IllegalArgumentException ex) {
+                        logger.info("Invalid");
+                    }
+                }
+            }
+        } else {
+            // older, MD5 logic, still her for backward compatibility
+            String md5 = datafileJson.getString("md5", null);
+            if (md5 == null) {
+                md5 = "unknown";
+            }
+            dataFile.setChecksumType(DataFile.ChecksumType.MD5);
+            dataFile.setChecksumValue(md5);
         }
-        
+
         // TODO: 
         // unf (if available)... etc.?
         
         dataFile.setContentType(contentType);
         dataFile.setStorageIdentifier(storageIdentifier);
-        dataFile.setmd5(md5);
         
         return dataFile;
     }

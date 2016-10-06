@@ -79,6 +79,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
 
 /**
  * A REST API for dataverses.
@@ -180,7 +181,10 @@ public class Dataverses extends AbstractApiBean {
             }
             try {
                 try {
-                    DatasetVersion version = jsonParser().parseDatasetVersion(jsonVersion);
+                    DatasetVersion version = new DatasetVersion();
+                    version.setDataset(ds);
+                    // Use the two argument version so that the version knows which dataset it's associated with.
+                    version = jsonParser().parseDatasetVersion(jsonVersion, version);
                     
                     // force "initial version" properties
                     version.setMinorVersionNumber(null);
@@ -322,7 +326,9 @@ public class Dataverses extends AbstractApiBean {
     @Path("{identifier}/facets/")
     public Response listFacets( @PathParam("identifier") String dvIdtf ) {
         try {
-            return okResponse( json(execCommand(new ListFacetsCommand(createDataverseRequest(findUserOrDie()), findDataverseOrDie(dvIdtf)) )));
+            return okResponse(
+                        execCommand(new ListFacetsCommand(createDataverseRequest(findUserOrDie()), findDataverseOrDie(dvIdtf)) )
+                            .stream().map(f->json(f).build()).collect(toJsonArray()));
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
@@ -538,7 +544,12 @@ public class Dataverses extends AbstractApiBean {
     @Path("{identifier}/groups/") 
     public Response listGroups( @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey ) {
         try {
-            return okResponse( json(execCommand(new ListExplicitGroupsCommand(createDataverseRequest(findUserOrDie()), findDataverseOrDie(dvIdtf)) )));
+            JsonArrayBuilder arr = Json.createArrayBuilder();
+            execCommand(new ListExplicitGroupsCommand(createDataverseRequest(findUserOrDie()), findDataverseOrDie(dvIdtf)))
+                        .stream().map( eg->json(eg))
+                    .forEach( arr::add );
+            return okResponse( arr );
+            
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
@@ -599,6 +610,7 @@ public class Dataverses extends AbstractApiBean {
     
     @POST
     @Path("{identifier}/groups/{aliasInOwner}/roleAssignees") 
+    @Consumes("application/json")
     public Response addRoleAssingees(List<String> roleAssingeeIdentifiers, 
                                 @PathParam("identifier") String dvIdtf,
                                 @PathParam("aliasInOwner") String grpAliasInOwner)

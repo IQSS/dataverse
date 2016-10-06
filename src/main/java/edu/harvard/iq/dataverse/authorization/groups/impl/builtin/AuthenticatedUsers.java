@@ -59,4 +59,6 @@ public class AuthenticatedUsers implements Group {
     public String toString() {
         return "[AuthenticatedUsers " + getIdentifier() + "]";
     }
+
+
 }

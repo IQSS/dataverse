@@ -89,7 +89,7 @@ Publish the Dataverse pointed by ``identifier``, which can either by the dataver
 Datasets
 ~~~~~~~~
 
-**Note** Creation of new datasets is done by ``POST``ing them onto dataverses. See dataverse section.
+**Note** Creation of new datasets is done with a ``POST`` onto dataverses. See dataverse section.
 
 **Note** In all commands below, dataset versions can be referred to as:
 
@@ -125,12 +125,12 @@ List versions of the dataset::
 Show a version of the dataset. The Dataset also include any metadata blocks the data might have::
 
   GET http://$SERVER/api/datasets/$id/versions/$versionNumber?key=$apiKey
-  
-      
+
+
 Export the metadata of the current published version of a dataset in various formats see Note below::
 
     GET http://$SERVER/api/datasets/export?exporter=ddi&persistentId=$persistentId
-  
+
     Note: Supported exporters (export formats) are ddi, oai_ddi, dcterms, oai_dc, and dataverse_json.
 
 
@@ -163,9 +163,9 @@ To revert to the default logic, use ``:publicationDate`` as the ``$datasetFieldT
 Note that the dataset field used has to be a date field::
 
     PUT http://$SERVER/api/datasets/$id/citationdate?key=$apiKey
-    
+
 Restores the default logic of the field type to be used as the citation date. Same as ``PUT`` with ``:publicationDate`` body::
-    
+
     DELETE http://$SERVER/api/datasets/$id/citationdate?key=$apiKey
 
 List all the role assignments at the given dataset::
@@ -185,7 +185,7 @@ Delete a Private URL from a dataset (if it exists)::
     DELETE http://$SERVER/api/datasets/$id/privateUrl?key=$apiKey
 
 Builtin Users
-~~~~~
+~~~~~~~~~~~~~
 
 This endopint deals with users of the built-in authentication provider. Note that users may come from other authentication services as well, such as Shibboleth.
 For this service to work, the setting ``BuiltinUsers.KEY`` has to be set, and its value passed as ``key`` to
@@ -368,18 +368,29 @@ Toggles superuser mode on the ``AuthenticatedUser`` whose ``identifier`` (withou
 
     POST http://$SERVER/api/admin/superuser/$identifier
 
+List all role assignments of a role assignee (i.e. a user or a group)::
+
+    GET http://$SERVER/api/admin/assignments/assignees/$identifier
+
+Note that ``identifier`` can contain slashes (e.g. ``&ip/localhost-users``).
+
 IpGroups
 ^^^^^^^^
 
-List all the ip groups::
+Lists all the ip groups::
 
   GET http://$SERVER/api/admin/groups/ip
 
-Adds a new ip group. POST data should specify the group in JSON format. Examples are available at ``data/ipGroup1.json``. ::
+Adds a new ip group. POST data should specify the group in JSON format. Examples are available at the ``data`` folder. Using this method, an IP Group is always created, but its ``alias`` might be different than the one appearing in the
+JSON file, to ensure it is unique. ::
 
   POST http://$SERVER/api/admin/groups/ip
 
-Returns a the group in a JSON format. ``groupIdtf`` can either be the group id in the database (in case it is numeric), or the group alias. ::
+Creates or updates the ip group ``$groupAlias``. ::
+
+    POST http://$SERVER/api/admin/groups/ip/$groupAlias
+
+Returns a the group in a JSON format. ``$groupIdtf`` can either be the group id in the database (in case it is numeric), or the group alias. ::
 
   GET http://$SERVER/api/admin/groups/ip/$groupIdtf
 

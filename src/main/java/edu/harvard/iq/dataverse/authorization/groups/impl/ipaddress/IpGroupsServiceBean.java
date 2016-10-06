@@ -38,6 +38,11 @@ public class IpGroupsServiceBean {
     @EJB
     RoleAssigneeServiceBean roleAssigneeSvc;
     
+    /**
+     * Stores (inserts/updates) the passed IP group.
+     * @param grp The group to store.
+     * @return Managed version of the group. The provider might be un-set.
+     */
     public IpGroup store( IpGroup grp ) {
         ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.GlobalGroups, "ipCreate");
         if ( grp.getGroupProvider() != null ) {
@@ -57,13 +62,12 @@ public class IpGroupsServiceBean {
                     return grp;
                     
                 } else {
-                    logger.log(Level.INFO, "Updating ip group {0}", grp.getPersistedGroupAlias());
                     existing.setDescription(grp.getDescription());
-                    existing.setDisplayName( grp.getDisplayName() );
-                    existing.setIpv4Ranges( grp.getIpv4Ranges() );
-                    existing.setIpv6Ranges( grp.getIpv6Ranges() );
+                    existing.setDisplayName(grp.getDisplayName());
+                    existing.setIpv4Ranges(grp.getIpv4Ranges());
+                    existing.setIpv6Ranges(grp.getIpv6Ranges());
                     actionLogSvc.log( alr.setActionSubType("ipUpdate") );
-                    return em.merge(existing);
+                    return existing;
                 }
             } else {
                 actionLogSvc.log( alr );
@@ -71,7 +75,7 @@ public class IpGroupsServiceBean {
                 return grp;
             }
         } else {
-             actionLogSvc.log( alr.setActionSubType("ipUpdate") );
+            actionLogSvc.log( alr.setActionSubType("ipUpdate") );
             return em.merge(grp);
         }
     }
@@ -98,7 +102,7 @@ public class IpGroupsServiceBean {
         if ( ipa instanceof IPv4Address ) {
             IPv4Address ip4 = (IPv4Address) ipa;
             List<IpGroup> groupList = em.createNamedQuery("IPv4Range.findGroupsContainingAddressAsLong", IpGroup.class)
-                    .setParameter("addressAsLong", ip4.toLong()).getResultList();
+                    .setParameter("addressAsLong", ip4.toBigInteger()).getResultList();
             return new HashSet<>(groupList);
             
         } else if ( ipa instanceof IPv6Address ) {

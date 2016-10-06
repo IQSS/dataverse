@@ -14,8 +14,13 @@ import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseTheme;
 import edu.harvard.iq.dataverse.DataverseTheme.Alignment;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupProvider;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddressRange;
+import edu.harvard.iq.dataverse.authorization.users.GuestUser;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.IOException;
 import java.io.InputStream;
@@ -425,7 +430,92 @@ public class JsonParserTest {
             DatasetVersion actual = sut.parseDatasetVersion(dsJson);
         }
     }
-
+    
+    @Test
+    public void testIpGroupRoundTrip() {
+        
+        IpGroup original = new IpGroup();
+        original.setDescription("Ip group description");
+        original.setDisplayName("Test-ip-group");
+        original.setId(42l);
+        original.setPersistedGroupAlias("test-ip-group");
+        original.setGroupProvider( new IpGroupProvider(null) );
+        
+        original.add( IpAddressRange.make(IpAddress.valueOf("1.2.1.1"), IpAddress.valueOf("1.2.1.10")) );
+        original.add( IpAddressRange.make(IpAddress.valueOf("1.1.1.1"), IpAddress.valueOf("1.1.1.1")) );
+        original.add( IpAddressRange.make(IpAddress.valueOf("1:2:3::4:5"), IpAddress.valueOf("1:2:3::4:5")) );
+        original.add( IpAddressRange.make(IpAddress.valueOf("1:2:3::3:ff"), IpAddress.valueOf("1:2:3::3:5")) );
+        
+        JsonObject serialized = JsonPrinter.json(original).build();
+        
+        System.out.println( serialized.toString() );
+        
+        IpGroup parsed = new JsonParser().parseIpGroup(serialized);
+        
+        assertEquals( original, parsed );
+        
+    }
+    
+    @Test
+    public void testIpGroupRoundTrip_singleIpv4Address() {
+        
+        IpGroup original = new IpGroup();
+        original.setDescription("Ip group description");
+        original.setDisplayName("Test-ip-group");
+        original.setId(42l);
+        original.setPersistedGroupAlias("test-ip-group");
+        original.setGroupProvider( new IpGroupProvider(null) );
+        
+        original.add( IpAddressRange.make(IpAddress.valueOf("1.1.1.1"), IpAddress.valueOf("1.1.1.1")) );
+        
+        JsonObject serialized = JsonPrinter.json(original).build();
+        
+        System.out.println( serialized.toString() );
+        
+        IpGroup parsed = new JsonParser().parseIpGroup(serialized);
+        
+        assertEquals( original, parsed );
+        assertTrue( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("1.1.1.1")) ));
+        assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("1.1.1.2")) ));
+        assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("1.1.2.1")) ));
+        assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("1.1.1.0")) ));
+        assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("1.1.1.250")) ));
+        assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("1.2.1.1")) ));
+        assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("2.1.1.1")) ));
+        assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("fe80::22c9:d0ff:fe48:ce61")) ));
+        
+    }
+    
+    @Test
+    public void testIpGroupRoundTrip_singleIpv6Address() {
+        
+        IpGroup original = new IpGroup();
+        original.setDescription("Ip group description");
+        original.setDisplayName("Test-ip-group");
+        original.setId(42l);
+        original.setPersistedGroupAlias("test-ip-group");
+        original.setGroupProvider( new IpGroupProvider(null) );
+        
+        original.add( IpAddressRange.make(IpAddress.valueOf("fe80::22c9:d0ff:fe48:ce61"),
+                                          IpAddress.valueOf("fe80::22c9:d0ff:fe48:ce61")) );
+        
+        JsonObject serialized = JsonPrinter.json(original).build();
+        
+        System.out.println( serialized.toString() );
+        
+        IpGroup parsed = new JsonParser().parseIpGroup(serialized);
+        
+        assertEquals( original, parsed );
+        assertTrue( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("fe80::22c9:d0ff:fe48:ce61")) ));
+        assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("fe80::22c9:d0ff:fe48:ce60")) ));
+        assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("fe80::22c9:d0ff:fe48:ce62")) ));
+        assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("fe80::22c9:d0ff:fe47:ce61")) ));
+        assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("fe80::22c9:d0af:fe48:ce61")) ));
+        assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("fe79::22c9:d0ff:fe48:ce61")) ));
+        assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("2.1.1.1")) ));
+        
+    }
+    
     JsonObject json( String s ) {
         return Json.createReader( new StringReader(s) ).readObject();
     }

@@ -4,7 +4,9 @@
 
 package edu.harvard.iq.dataverse.util;
 
+import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.List;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -53,7 +55,19 @@ public class BitSetTest {
 			assertTrue( sut.isSet(i) );
 		}
 	}
-
+    
+    @Test
+    public void testSetByParameter() {
+        BitSet tSut = BitSet.emptySet();
+        List<Integer> indices = Arrays.asList(0,1,4,6,7,8,20,31);
+        indices.forEach( i -> assertFalse(tSut.isSet(i)) );
+        indices.forEach( i -> tSut.set(i,true) );
+        indices.forEach( i -> assertTrue(tSut.isSet(i)) );
+        indices.forEach( i -> tSut.set(i,false) );
+        indices.forEach( i -> assertFalse(tSut.isSet(i)) );
+        assertTrue( tSut.isEmpty() );
+    }
+    
 	/**
 	 * Test of unset method, of class BitSet.
 	 */
