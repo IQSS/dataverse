@@ -68,7 +68,6 @@
                             <!-- END: Edit Button -->
                             <!-- END: Edit Button Group -->
                             
-                            <!-- Download Button ++ DISABLED/STATIC -->
 
                             <ui:include src="file-download-button-fragment.xhtml" class="pull-right">
                             <ui:param name="fileMetadata" value="#{FilePage.fileMetadata}"/>
@@ -280,10 +279,11 @@
                             <p:tab id="metadataMapTab" title="#{bundle['file.dataFilesTab.metadata.header']}">
                                 
                                 <!-- Add + Edit Metadata Button ++ DISABLED/STATIC -->
-                                <div class="button-block tab-header margin-bottom text-right" jsf:rendered="#{true}">
-                                    <a href="#" class="ui-commandlink ui-widget btn btn-default disabled" type="button">
-                                        <span class="glyphicon glyphicon-pencil"></span> Add + Edit Metadata
-                                    </a>
+                                <div class="button-block tab-header margin-bottom text-right" jsf:rendered="#{dataverseSession.user.authenticated
+                                                     and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset)}">
+                                    <h:outputLink class="btn btn-default" value="/editdatafiles.xhtml?selectedFileIds=#{FilePage.fileMetadata.dataFile.id}&#38;datasetId=#{FilePage.fileMetadata.datasetVersion.dataset.id}&#38;mode=SINGLE">
+                                            <h:outputText id="editFile-Multi-Link" value="Add + Edit Metadata"/>
+                                    </h:outputLink>
                                 </div>
                                 <!-- END: Add + Edit Metadata Button -->
                                 
