@@ -729,7 +729,15 @@ public class AddReplaceFileHelper{
          */
         if (initialFileList.isEmpty()){
             this.addErrorSevere("initial_file_list_empty");
+            this.runMajorCleanup();
             return false;
+        }
+        
+        if (initialFileList.size() > 1){
+            this.addError("initial_file_list_more_than_one");
+            this.runMajorCleanup();
+            return false;
+            
         }
         
         if (!this.step_040_auto_checkForDuplicates()){
@@ -771,7 +779,9 @@ public class AddReplaceFileHelper{
     }
     
     /**
-     * This is always run after step 30
+     * Create a "final file list" 
+     * 
+     * This is always run after step 30 -- the ingest
      * 
      * @return 
      */
@@ -837,6 +847,18 @@ public class AddReplaceFileHelper{
             finalFileList.clear();           
             return false;
         }
+        
+        if (finalFileList.size() > 1){            
+            this.addErrorSevere("There is more than 1 file to add.  (This error shouldn't happen b/c the initial file list should always have 1 item");
+            return false;
+        }
+        
+        
+        if (finalFileList.isEmpty()){
+            this.addErrorSevere("There are no files to add.  (This error shouldn't happen if steps called in sequence....step_040_auto_checkForDuplicates)");                
+            return false;
+        }
+        
         
         return true;
     } // end step_040_auto_checkForDuplicates
