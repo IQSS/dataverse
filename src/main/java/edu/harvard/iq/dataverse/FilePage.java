@@ -191,7 +191,6 @@ public class FilePage implements java.io.Serializable {
     }
     
     public String restrictFile(boolean restricted){     
-
             String fileNames = null;   
             
         editDataset = this.file.getOwner();
@@ -200,6 +199,7 @@ public class FilePage implements java.io.Serializable {
                 for (FileMetadata fmw: editDataset.getEditVersion().getFileMetadatas()){
                     if (fmw.getDataFile().equals(this.fileMetadata.getDataFile())){
                         
+                        fileNames += fmw.getLabel();
                         fmw.setRestricted(restricted);
                     }
                 }
@@ -275,6 +275,7 @@ public class FilePage implements java.io.Serializable {
         Command<Dataset> cmd;
         try {
             System.out.print(filesToBeDeleted.size());
+            System.out.print("in save ");
             cmd = new UpdateDatasetCommand(editDataset, dvRequestService.getDataverseRequest(), filesToBeDeleted);
              commandEngine.submit(cmd);
 

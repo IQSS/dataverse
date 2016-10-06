@@ -298,6 +298,8 @@
    <field name="unf" type="string" stored="true" indexed="true" multiValued="false"/>
    <field name="fileSizeInBytes" type="long" stored="true" indexed="true" multiValued="false"/>
    <field name="fileMd5" type="string" stored="true" indexed="true" multiValued="false"/>
+   <field name="fileChecksumType" type="string" stored="true" indexed="true" multiValued="false"/>
+   <field name="fileChecksumValue" type="string" stored="true" indexed="true" multiValued="false"/>
    <field name="fileContentType" type="string" stored="true" indexed="true" multiValued="false"/>
    <field name="deaccessionReason" type="string" stored="true" indexed="false" multiValued="false"/>
 

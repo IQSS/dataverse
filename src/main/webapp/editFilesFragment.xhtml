@@ -74,7 +74,7 @@
 
                 <p:dataTable id="filesTable" value="#{datasetPage ? DatasetPage.workingVersion.fileMetadatas : EditDatafilesPage.fileMetadatas}"
                              rendered="#{datasetPage or (dataverseSession.user.authenticated and permissionsWrapper.canIssueUpdateDatasetCommand(EditDatafilesPage.dataset) 
-                                         and !EditDatafilesPage.showReplacedFileComponent())}"
+                                         )}"
                              rowIndexVar="rowNum" rowKey="#{fileMetadata.dataFile.storageIdentifier}"
                              selection="#{EditDatafilesPage.selectedFiles}" var="fileMetadata" widgetVar="filesTable"
                              emptyMessage="#{datasetPage || EditDatafilesPage.showFileUploadFileComponent() ? bundle['file.noUploadedFiles.tip'] : bundle['file.noSelectedFiles.tip']}">
