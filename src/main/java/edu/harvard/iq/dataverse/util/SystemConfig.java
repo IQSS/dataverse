@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.util;
 
 import com.ocpsoft.pretty.PrettyContext;
+import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -533,5 +534,17 @@ public class SystemConfig {
 
     public String getFooterCopyrightAndYear() {
         return BundleUtil.getStringFromBundle("footer.copyright", Arrays.asList(Year.now().getValue() + ""));
+    }
+
+    public DataFile.ChecksumType getFileFixityChecksumAlgorithm() {
+        DataFile.ChecksumType saneDefault = DataFile.ChecksumType.MD5;
+        String checksumStringFromDatabase = settingsService.getValueForKey(SettingsServiceBean.Key.FileFixityChecksumAlgorithm, saneDefault.toString());
+        try {
+            DataFile.ChecksumType checksumTypeFromDatabase = DataFile.ChecksumType.fromString(checksumStringFromDatabase);
+            return checksumTypeFromDatabase;
+        } catch (IllegalArgumentException ex) {
+            logger.info("The setting " + SettingsServiceBean.Key.FileFixityChecksumAlgorithm + " is misconfigured. " + ex.getMessage() + " Returning sane default: " + saneDefault + ".");
+            return saneDefault;
+        }
     }
 }

@@ -494,7 +494,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
         jsonData.add("datafile_id", dfile.getId());
         jsonData.add("datafile_label", dfile_meta.getLabel());
         //jsonData.add("filename", dfile_meta.getLabel());
-        jsonData.add("datafile_expected_md5_checksum", dfile.getmd5());
+        jsonData.add("datafile_expected_md5_checksum", dfile.getChecksumValue());
         Long fsize = dfile.getFilesize();
         if (fsize == null){
             fsize= new Long(-1);

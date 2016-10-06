@@ -30,6 +30,7 @@ import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderRo
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
+import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.util.DatasetFieldWalker;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
@@ -494,7 +495,12 @@ public class JsonPrinter {
                 .add("originalFileFormat", df.getOriginalFileFormat())
                 .add("originalFormatLabel", df.getOriginalFormatLabel())
                 .add("UNF", df.getUnf())
-                .add("md5", df.getmd5())
+                /**
+                 * @todo Should we deprecate "md5" now that it's under
+                 * "checksum" (which may also be a SHA-1 rather than an MD5)?
+                 */
+                .add("md5", getMd5IfItExists(df.getChecksumType(), df.getChecksumValue()))
+                .add("checksum", getChecksumTypeAndValue(df.getChecksumType(), df.getChecksumValue()))
                 .add("description", df.getDescription());
     }
 
@@ -684,6 +690,24 @@ public class JsonPrinter {
                 return EnumSet.of(Collector.Characteristics.IDENTITY_FINISH);
             }
         };
+    }
+
+    public static String getMd5IfItExists(DataFile.ChecksumType checksumType, String checksumValue) {
+        if (DataFile.ChecksumType.MD5.equals(checksumType)) {
+            return checksumValue;
+        } else {
+            return null;
+        }
+    }
+
+    public static JsonObjectBuilder getChecksumTypeAndValue(DataFile.ChecksumType checksumType, String checksumValue) {
+        if (checksumType != null) {
+            return Json.createObjectBuilder()
+                    .add("type", checksumType.toString())
+                    .add("value", checksumValue);
+        } else {
+            return null;
+        }
     }
 
 }
