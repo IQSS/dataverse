@@ -51,6 +51,7 @@ public class FileUploadTestPage implements java.io.Serializable {
     private Long datasetId;
     private Dataset dataset;
     private DataFile fileToReplace;
+    private DataFile newlyAddedFile;
     
     @EJB
     IngestServiceBean ingestService;
@@ -214,8 +215,15 @@ public class FileUploadTestPage implements java.io.Serializable {
             msgt("upload error");
             msg(addFileHelper.getErrorMessagesAsString("\n"));
         }else{
+            newlyAddedFile = addFileHelper.getNewlyAddedFile();
             msg("Look at that!  You added a file! (hey hey, it may have worked)");
         }
+    }
+    
+    
+    public DataFile getNewlyAddedFile(){
+        
+        return newlyAddedFile;
     }
     
 } // end class FileUploadTestPage

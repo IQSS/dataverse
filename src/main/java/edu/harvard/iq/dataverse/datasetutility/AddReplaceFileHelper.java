@@ -122,6 +122,9 @@ public class AddReplaceFileHelper{
     private DatasetVersion workingVersion;
     List<DataFile> initialFileList; 
     List<DataFile> finalFileList;
+    
+    // Ingested file 
+    private DataFile newlyAddedFile;
    
     
     // For error handling
@@ -1183,9 +1186,20 @@ public class AddReplaceFileHelper{
               logger.severe(ex.getMessage());
               return false;
           } 
-          return true;
+
+        // Save newly added file to object
+        if (!finalFileList.isEmpty()){
+            newlyAddedFile = finalFileList.get(0);
+        }
+        
+        return true;
     }
     
+        
+    public DataFile getNewlyAddedFile(){
+        
+        return newlyAddedFile;
+    }
     
     private boolean step_090_notifyUser(){
         if (this.hasError()){
@@ -1203,6 +1217,7 @@ public class AddReplaceFileHelper{
         if (this.hasError()){
             return false;
         }
+                
         
         // clear old file list
         //

@@ -24,7 +24,16 @@
                   <p>
                     <h:outputText value="#{FileUploadTestPage.yesYes()}" escape="false" /> 
                    </p>
-            
+
+                <ui:fragment rendered="#{FileUploadTestPage.newlyAddedFile != null}">
+    
+                    <h4>Added!: #{FileUploadTestPage.newlyAddedFile.displayName }</h4>
+
+                    <hr />
+                   
+                </ui:fragment>
+
+                  
                 <ui:fragment rendered="#{FileUploadTestPage.fileToReplace == null}">
                   <h3>Add New File</h3>
                 </ui:fragment>
