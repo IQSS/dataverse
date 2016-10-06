@@ -69,10 +69,8 @@
                             <!-- END: Edit Button Group -->
                             
                             <!-- Download Button ++ DISABLED/STATIC -->
-                            <a href="#" class="ui-commandlink ui-widget btn btn-default pull-right disabled" type="button">
-                                <span class="glyphicon glyphicon-download-alt"></span> Download
-                            </a>
-                            <ui:include src="file-download-button-fragment.xhtml">
+
+                            <ui:include src="file-download-button-fragment.xhtml" class="pull-right">
                             <ui:param name="fileMetadata" value="#{FilePage.fileMetadata}"/>
                             <ui:param name="canUpdateDataset" value="#{FilePage.canUpdateDataset()}"/>
                             <ui:param name="downloadPopupRequired" value="#{FilePage.downloadPopupRequired}"/>
@@ -83,19 +81,6 @@
                             <ui:param name="worldMapPermissionHelper" value="#{FilePage.worldMapPermissionHelper}"/>
                             <ui:param name="twoRavensHelper" value="#{FilePage.twoRavensHelper}"/>
                             </ui:include>
-                            <!-- END: Download Button -->
-                            
-                            <!-- Request Access Button ++ DISABLED/STATIC -->
-                            <a href="#" class="ui-commandlink ui-widget btn btn-default pull-right disabled" type="button">
-                                <span class="glyphicon glyphicon-bullhorn"></span> Request Access
-                            </a>
-                            <!-- END: Request Access Button -->
-                            
-                            <!-- Explore Button ++ DISABLED/STATIC -->
-                            <a href="#" class="ui-commandlink ui-widget btn btn-default pull-right disabled" type="button">
-                                <span class="glyphicon glyphicon-equalizer"></span> Explore
-                            </a>
-                            <!-- END: Explore Button -->
 
                             <!-- TO-DO: Tooltips for these buttons say "dataset" -->
                             <!-- Email/Share Button Group -->
