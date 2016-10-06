@@ -78,11 +78,14 @@ import java.util.Arrays;
 import java.util.HashSet;
 import javax.faces.model.SelectItem;
 import java.util.logging.Level;
+import edu.harvard.iq.dataverse.datasetutility.TwoRavensHelper;
+import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
 
 import javax.faces.event.AjaxBehaviorEvent;
 
+import javax.faces.context.ExternalContext;
 import org.apache.commons.lang.StringEscapeUtils;
 
 import org.primefaces.component.tabview.TabView;
@@ -148,6 +151,8 @@ public class DatasetPage implements java.io.Serializable {
     @EJB
     GuestbookResponseServiceBean guestbookResponseService;
     @EJB
+    FileDownloadServiceBean fileDownloadService;
+    @EJB
     DataverseLinkingServiceBean dvLinkingService;
     @EJB
     DatasetLinkingServiceBean dsLinkingService;
@@ -186,6 +191,7 @@ public class DatasetPage implements java.io.Serializable {
     private List<Template> dataverseTemplates = new ArrayList();
     private Template defaultTemplate;
     private Template selectedTemplate;
+    private String globalId;
     private String persistentId;
     private String version;
     private String protocol = "";
@@ -214,6 +220,14 @@ public class DatasetPage implements java.io.Serializable {
 
     private final Map<Long, Boolean> fileMetadataTwoRavensExploreMap = new HashMap<>(); // { FileMetadata.id : Boolean } 
     private final Map<Long, Boolean> fileMetadataWorldMapExplore = new HashMap<>(); // { FileMetadata.id : Boolean } 
+    
+    private FileDownloadHelper fileDownloadHelper;
+    // Used to help with displaying buttons related to the WorldMap
+    private WorldMapPermissionHelper worldMapPermissionHelper;
+
+    
+    // Used to help with displaying buttons related to TwoRavens
+    private TwoRavensHelper twoRavensHelper;
     
     private DataFile selectedDownloadFile;
 
@@ -320,7 +334,11 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public boolean isUnlimitedUploadFileSize(){
-        return (this.maxFileUploadSizeInBytes == null);
+        
+        if (this.maxFileUploadSizeInBytes == null){
+            return true;
+        }
+        return false;
     }
 
     public boolean isMetadataExportEnabled() {
@@ -445,88 +463,15 @@ public class DatasetPage implements java.io.Serializable {
         return noDVsRemaining;
     }
     
-    /**
-     * Convenience method for "Download File" button display logic
-     * 
-     * Used by the dataset.xhtml render logic when listing files
-     * <b>Assumes user already has view access to the file list.</b>
-     *         
-     * @param fileMetadata
-     * @return boolean
-     */
-    public boolean canDownloadFile(FileMetadata fileMetadata){
-         
-        if (fileMetadata == null){
-            return false;
-        }
-       
-        if ((fileMetadata.getId() == null) || (fileMetadata.getDataFile().getId() == null)){
-            return false;
-        } 
-        
-        // --------------------------------------------------------------------        
-        // Grab the fileMetadata.id and restriction flag                
-        // --------------------------------------------------------------------
-        Long fid = fileMetadata.getId();
-        //logger.info("calling candownloadfile on filemetadata "+fid);
-        boolean isRestrictedFile = fileMetadata.isRestricted();
-        
-        
-        // --------------------------------------------------------------------
-        // Has this file been checked? Look at the DatasetPage hash
-        // --------------------------------------------------------------------
-        if (this.fileDownloadPermissionMap.containsKey(fid)){
-            // Yes, return previous answer
-            //logger.info("using cached result for candownloadfile on filemetadata "+fid);
-            return this.fileDownloadPermissionMap.get(fid);
-        }
 
-        // --------------------------------------------------------------------
-        // (1) Is the file Unrestricted ?        
-        // --------------------------------------------------------------------
-        if (!isRestrictedFile){
-            // Yes, save answer and return true
-            this.fileDownloadPermissionMap.put(fid, true);
-            return true;
-        }
-        
-        // --------------------------------------------------------------------
-        // Conditions (2) through (3) are for Restricted files
-        // --------------------------------------------------------------------
-        
-        // --------------------------------------------------------------------
-        // (2) Does the User have DownloadFile Permission at the **Dataset** level 
-        // Michael: Leaving this in for now, but shouldn't this be alredy resolved
-        //          by the premission system, given that files are never permission roots?
-        // --------------------------------------------------------------------
-        if (this.doesSessionUserHaveDataSetPermission(Permission.DownloadFile)){
-            // Yes, save answer and return true
-            this.fileDownloadPermissionMap.put(fid, true);
-            return true;
-        }
-  
-        // --------------------------------------------------------------------
-        // (3) Does the user has DownloadFile permission on the DataFile            
-        // --------------------------------------------------------------------
-        if (this.permissionService.on(fileMetadata.getDataFile()).has(Permission.DownloadFile)){
-            this.fileDownloadPermissionMap.put(fid, true);
-            return true;
-        }
-        
-        // --------------------------------------------------------------------
-        // (4) No download for you! Come back with permissions!
-        // --------------------------------------------------------------------
-        this.fileDownloadPermissionMap.put(fid, false);
-       
-        return false;
-    }
 
     public boolean isThumbnailAvailable(FileMetadata fileMetadata) {
         // new and optimized logic: 
         // - check download permission here (should be cached - so it's free!)
         // - only then ask the file service if the thumbnail is available/exists.
         // the service itself no longer checks download permissions.  
-        if (!this.canDownloadFile(fileMetadata)) {
+        
+        if (!this.fileDownloadHelper.canDownloadFile(fileMetadata)) {
             return false;
         }
      
@@ -537,28 +482,14 @@ public class DatasetPage implements java.io.Serializable {
     public boolean canUpdateDataset() {
         return permissionsWrapper.canUpdateDataset(dvRequestService.getDataverseRequest(), this.dataset);
     }
-    
     public boolean canPublishDataverse() {
         return permissionsWrapper.canIssuePublishDataverseCommand(dataset.getOwner());
     }
-    
-    //public boolean canIssuePublishDatasetCommand() {
-        // replacing permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset) on the page
-    //    return true; 
-    //}
-    
-    //public boolean canIssueDeleteCommand() {
-    //    return true;
-    //}
-    
-    //public boolean canManagePermissions() {
-    //    return true;
-    //}
-    
+
     public boolean canViewUnpublishedDataset() {
         return permissionsWrapper.canViewUnpublishedDataset( dvRequestService.getDataverseRequest(), dataset);
     }
-    
+        
     /* 
      * 4.2.1 optimization. 
      * HOWEVER, this doesn't appear to be saving us anything! 
@@ -657,15 +588,7 @@ public class DatasetPage implements java.io.Serializable {
         dataset.setGuestbook(null);
     }
     
-    public void guestbookResponseValidator(FacesContext context, UIComponent toValidate, Object value) {
-        String response = (String) value;
 
-        if (response != null && response.length() > 255) {
-            ((UIInput) toValidate).setValid(false);
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, JH.localize("dataset.guestbookResponse.guestbook.responseTooLong"), null);
-            context.addMessage(toValidate.getClientId(context), message);
-        }
-    }
 
     public String getGlobalId() {
         return persistentId;
@@ -1025,212 +948,28 @@ public class DatasetPage implements java.io.Serializable {
         // System.out.println(s);
     }
     
-    /**
-     *  See table in: https://github.com/IQSS/dataverse/issues/1618
-     * 
-     *  Can the user see a reminder to publish button?
-     *   (0) The application has to be set to Create Edit Maps - true
-     *   (1) Logged in user
-     *   (2) Is geospatial file?
-     *   (3) File has NOT been released
-     *   (4) No existing Map
-     *   (5) Can Edit Dataset
-     *   
-     * @param FileMetadata fm
-     * @return boolean
+       /**
+     * This object wraps methods used for hiding/displaying WorldMap related messages
+     *
      */
-    public boolean canSeeMapButtonReminderToPublish(FileMetadata fm){
-        if (fm==null){
-
-            return false;
-        } 
-        
-        //  (0) Is the view GeoconnectViewMaps 
-        if (!settingsService.isTrueForKey(SettingsServiceBean.Key.GeoconnectCreateEditMaps, false)){
-            return false;
-        }
-        
-        
-        // (1) Is there an authenticated user?
-        //
-        if (!(isSessionUserAuthenticated())){
-            return false;
-        }
-
-
-        // Is this file a Shapefile or a Tabular file tagged as Geospatial?
-        //
-        if (!(this.isPotentiallyMappableFileType(fm))){
-            return false;
-        }
-
-        // (3) Is this DataFile released?  Yes, don't need reminder
-        //
-        if (fm.getDataFile().isReleased()){
-            return false;
-        }
-        
-        // (4) Does a map already exist?  Yes, don't need reminder
-        //
-        if (this.hasMapLayerMetadata(fm)){
-            return false;
-        }
-
-        // (5) If so, can the logged in user edit the Dataset to which this FileMetadata belongs?
-        if (!this.doesSessionUserHaveDataSetPermission(Permission.EditDataset)){
-            return false;
-        }
-
-        // Looks good
-        //
-        return true;
-    }
-    
-     /**
-     * Should there be a Map Data Button for this file?
-     *  see table in: https://github.com/IQSS/dataverse/issues/1618
-     *  (1) Is the user logged in?
-     *  (2) Is this file a Shapefile or a Tabular file tagged as Geospatial?
-     *  (3) Does the logged in user have permission to edit the Dataset to which this FileMetadata belongs?
-     *  (4) Is the create Edit Maps flag set to true?
-     *  (5) Any of these conditions:
-     *        9a) File Published 
-     *        (b) Draft: File Previously published  
-     * @param fm FileMetadata
-     * @return boolean
-     */
-    public boolean canUserSeeMapDataButton(FileMetadata fm){
-
-        if (fm==null){
-            return false;
-        }  
-        
-        
-        // (1) Is there an authenticated user?
-        if (!(isSessionUserAuthenticated())){
-            return false;
-        }
-
-        //  (2) Is this file a Shapefile or a Tabular file tagged as Geospatial?
-        //  TO DO:  EXPAND FOR TABULAR FILES TAGGED AS GEOSPATIAL!
-        //
-        if (!(this.isPotentiallyMappableFileType(fm))){
-            return false;
-        }
-
-        //  (3) Does the user have Edit Dataset permissions?
-        //
-        if (!this.doesSessionUserHaveDataSetPermission(Permission.EditDataset)){
-            return false;
-        }
-        
-        //  (4) Is the view GeoconnectViewMaps 
-        if (!settingsService.isTrueForKey(SettingsServiceBean.Key.GeoconnectCreateEditMaps, false)){
-            return false;
-        }
-                     
-        //  (5) Is File released?
-        //
-        if (fm.getDataFile().isReleased()){
-            return true;
-        }
-        
-        // Nope
-        return false;
-    }
-    
-    
-    /**
-     * Used in the .xhtml file to check whether a tabular file 
-     * may be viewed via TwoRavens
-     * 
-     * @param fm
-     * @return 
-     */
-    public boolean canSeeTwoRavensExploreButton(FileMetadata fm){
+    private void loadTwoRavensHelper() {
        
-        if (fm == null){
-            return false;
-        }
+        twoRavensHelper = new TwoRavensHelper(settingsService, permissionService, session, authService);
         
-        // Has this already been checked?
-        if (this.fileMetadataTwoRavensExploreMap.containsKey(fm.getId())){
-            // Yes, return previous answer
-            //logger.info("using cached result for candownloadfile on filemetadata "+fid);
-            return this.fileMetadataTwoRavensExploreMap.get(fm.getId());
-        }
-        
-        
-        // (1) Is TwoRavens active via the "setting" table?
-        //      Nope: get out
-        //
-        if (!settingsService.isTrueForKey(SettingsServiceBean.Key.TwoRavensTabularView, false)){
-            this.fileMetadataTwoRavensExploreMap.put(fm.getId(), false);
-            return false;
-        }
-        
-        // (2) Does the user have download permission?
-        //      Nope: get out
-        //
-        if (!(this.canDownloadFile(fm))){
-            this.fileMetadataTwoRavensExploreMap.put(fm.getId(), false);
-            return false;
-        } 
-        // (3) Is the DataFile object there and persisted?
-        //      Nope: scat
-        //
-        if ((fm.getDataFile() == null)||(fm.getDataFile().getId()==null)){
-            this.fileMetadataTwoRavensExploreMap.put(fm.getId(), false);
-            return false;
-        }
-        
-        // (4) Is there tabular data or is the ingest in progress?
-        //      Yes: great
-        //
-        if ((fm.getDataFile().isTabularData())||(fm.getDataFile().isIngestInProgress())){
-            this.fileMetadataTwoRavensExploreMap.put(fm.getId(), true);
-            return true;
-        }
-        
-        // Nope
-        this.fileMetadataTwoRavensExploreMap.put(fm.getId(), false);            
-        return false;
-        
-        //       (empty fileMetadata.dataFile.id) and (fileMetadata.dataFile.tabularData or fileMetadata.dataFile.ingestInProgress)
-        //                                        and DatasetPage.canDownloadFile(fileMetadata) 
     }
     
     /**
-     * Check if this is a mappable file type.
-     * 
-     * Currently (2/2016)
-     * - Shapefile (zipped shapefile)
-     * - Tabular file with Geospatial Data tag
-     * 
-     * @param fm
-     * @return 
+     * This object wraps methods used for hiding/displaying WorldMap related messages
+     *
      */
-    private boolean isPotentiallyMappableFileType(FileMetadata fm){
-        if (fm==null){
-            return false;
-        }
+    private void loadWorldMapPermissionHelper() {
+       
+        worldMapPermissionHelper = WorldMapPermissionHelper.getPermissionHelperForDatasetPage(settingsService, mapLayerMetadataService, dataset, session);
         
-        // Yes, it's a shapefile
-        //
-        if (this.isShapefileType(fm)){
-            return true;
-        }
-        
-        // Yes, it's tabular with a geospatial tag
-        //
-        if (fm.getDataFile().isTabularData()){
-            if (fm.getDataFile().hasGeospatialTag()){
-                return true;
-            } 
-        }
-        return false;
     }
+
     
+
    
     /**
      * For development
@@ -1253,61 +992,6 @@ public class DatasetPage implements java.io.Serializable {
         return false;
       
     }
-    
-    
-    /**
-     * Should there be a Explore WorldMap Button for this file?
-     *   See table in: https://github.com/IQSS/dataverse/issues/1618
-     * 
-     *  (1) Does the file have MapLayerMetadata?
-     *  (2) Is there DownloadFile permission for this file?
-     * 
-     * @param fm FileMetadata
-     * @return boolean
-     */
-    public boolean canUserSeeExploreWorldMapButton(FileMetadata fm){
-        if (fm==null){
-            return false;
-        }
-        
-        if (this.fileMetadataWorldMapExplore.containsKey(fm.getId())){
-            // Yes, return previous answer
-            //logger.info("using cached result for candownloadfile on filemetadata "+fid);
-            return this.fileMetadataWorldMapExplore.get(fm.getId());
-        }
-        
-        /* -----------------------------------------------------
-           Does a Map Exist?
-         ----------------------------------------------------- */
-        if (!(this.hasMapLayerMetadata(fm))){
-            // Nope: no button
-            this.fileMetadataWorldMapExplore.put(fm.getId(), false);
-            return false;
-        }
-              
-        /*
-            Is setting for GeoconnectViewMaps true?
-            Nope? no button
-        */
-        if (!settingsService.isTrueForKey(SettingsServiceBean.Key.GeoconnectViewMaps, false)){
-            this.fileMetadataWorldMapExplore.put(fm.getId(), false);
-            return false;
-        }        
-        
-        /* -----------------------------------------------------
-            Does user have DownloadFile permission for this file?
-             Yes: User can view button!
-         ----------------------------------------------------- */                    
-        if (this.canDownloadFile(fm)){
-            this.fileMetadataWorldMapExplore.put(fm.getId(), true);
-            return true;
-        }
-                      
-        // Nope: Can't see button
-        //
-        this.fileMetadataWorldMapExplore.put(fm.getId(), false);
-        return false;
-    }
 
     /**
      * Create a hashmap consisting of { DataFile.id : MapLayerMetadata object}
@@ -1317,7 +1001,6 @@ public class DatasetPage implements java.io.Serializable {
      */
     private void loadMapLayerMetadataLookup() {
         if (this.dataset == null) {
-            return;
         }
         if (this.dataset.getId() == null) {
             return;
@@ -1501,6 +1184,11 @@ public class DatasetPage implements java.io.Serializable {
                 // lazyModel = new LazyFileMetadataDataModel(workingVersion.getId(), datafileService );
                 // populate MapLayerMetadata
                 this.loadMapLayerMetadataLookup();  // A DataFile may have a related MapLayerMetadata object
+                this.loadFileDownloadHelper();
+                this.loadWorldMapPermissionHelper();  // A DataFile may have a related MapLayerMetadata object
+                this.loadTwoRavensHelper();
+                this.guestbookResponse = guestbookResponseService.initGuestbookResponseForFragment(dataset, null, session);
+                
             }
         } else if (ownerId != null) {
             // create mode for a new child dataset
@@ -1563,181 +1251,6 @@ public class DatasetPage implements java.io.Serializable {
     
     public boolean isReadOnly() {
         return readOnly; 
-    }
-
-    public String saveGuestbookResponse(String type) {
-        boolean valid = true;
-        if (dataset.getGuestbook() != null) {
-            if (dataset.getGuestbook().isNameRequired()) {
-                if (this.guestbookResponse.getName() == null) {
-                    valid = false;
-                } else {
-                    valid &= !this.guestbookResponse.getName().isEmpty();
-                }
-            }
-            if (dataset.getGuestbook().isEmailRequired()) {
-                if (this.guestbookResponse.getEmail() == null) {
-                    valid = false;
-                } else {
-                    valid &= !this.guestbookResponse.getEmail().isEmpty();
-                }
-            }
-            if (dataset.getGuestbook().isInstitutionRequired()) {
-                if (this.guestbookResponse.getInstitution() == null) {
-                    valid = false;
-                } else {
-                    valid &= !this.guestbookResponse.getInstitution().isEmpty();
-                }
-            }
-            if (dataset.getGuestbook().isPositionRequired()) {
-                if (this.guestbookResponse.getPosition() == null) {
-                    valid = false;
-                } else {
-                    valid &= !this.guestbookResponse.getPosition().isEmpty();
-                }
-            }
-        }
-
-        if (dataset.getGuestbook() != null && !dataset.getGuestbook().getCustomQuestions().isEmpty()) {
-            for (CustomQuestion cq : dataset.getGuestbook().getCustomQuestions()) {
-                if (cq.isRequired()) {
-                    for (CustomQuestionResponse cqr : this.guestbookResponse.getCustomQuestionResponses()) {
-                        if (cqr.getCustomQuestion().equals(cq)) {
-                            valid &= (cqr.getResponse() != null && !cqr.getResponse().isEmpty());
-                        }
-                    }
-                }
-            }
-        }
-
-        if (!valid) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", "Please complete required fields for download and re-try."));
-            return "";
-        }
-            
-        Command cmd;
-        try {
-            if (this.guestbookResponse != null) {
-                if (!type.equals("multiple")) {
-                    cmd = new CreateGuestbookResponseCommand(dvRequestService.getDataverseRequest(), this.guestbookResponse, dataset);
-                    commandEngine.submit(cmd);
-                } else {
-                    for (FileMetadata fmd : this.selectedDownloadableFiles) {
-                        DataFile df = fmd.getDataFile();
-                        if (df != null) {
-                            this.guestbookResponse.setDataFile(df);
-                            cmd = new CreateGuestbookResponseCommand(dvRequestService.getDataverseRequest(), this.guestbookResponse, dataset);
-                            commandEngine.submit(cmd);
-                        }
-                    }
-                }
-            }
-        } catch (CommandException ex) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Guestbook Response Save Failed", " - " + ex.toString()));
-            logger.severe(ex.getMessage());
-        }
-        
-        if (type.equals("multiple")){
-            //return callDownloadServlet(getSelectedFilesIdsString());
-            callDownloadServlet(getDownloadableFilesIdsString());
-        }
-       
-        if ((type.equals("download") || type.isEmpty())) {
-            //return callDownloadServlet(downloadFormat, this.selectedDownloadFile.getId());
-            if(type.isEmpty()){
-                downloadFormat = "download";
-            }
-            callDownloadServlet(downloadFormat, this.selectedDownloadFile.getId());
-        }
-        
-        if (type.equals("explore")) {
-            String retVal = getDataExploreURLComplete(this.selectedDownloadFile.getId());
-            try {
-                FacesContext.getCurrentInstance().getExternalContext().redirect(retVal);
-                return retVal;
-            } catch (IOException ex) {
-                logger.info("Failed to issue a redirect to file download url.");
-            }
-        }
-        return "";
-    }
-    
-    public String exploreOutputLink(FileMetadata fm, String type){
-        createSilentGuestbookEntry(fm, type);
-        String retVal = getDataExploreURLComplete(fm.getDataFile().getId());
-        try {
-            FacesContext.getCurrentInstance().getExternalContext().redirect(retVal);
-        } catch (IOException ex) {
-            logger.info("Failed to issue a redirect to file download url.");
-        }
-        return "";
-    }
-    
-    //private String callDownloadServlet(String multiFileString){
-    private void callDownloadServlet(String multiFileString){
-
-        String fileDownloadUrl = "/api/access/datafiles/" + multiFileString;
-        try {
-            FacesContext.getCurrentInstance().getExternalContext().redirect(fileDownloadUrl);
-        } catch (IOException ex) {
-            logger.info("Failed to issue a redirect to file download url.");
-        }
-
-        //return fileDownloadUrl;
-    }
-    
-    //private String callDownloadServlet( String downloadType, Long fileId){
-    private void callDownloadServlet( String downloadType, Long fileId){
-        
-        String fileDownloadUrl = "/api/access/datafile/" + fileId;
-                    
-        if (downloadType != null && downloadType.equals("bundle")){
-            fileDownloadUrl = "/api/access/datafile/bundle/" + this.selectedDownloadFile.getId();
-        }
-        if (downloadType != null && downloadType.equals("original")){
-            fileDownloadUrl = "/api/access/datafile/" + this.selectedDownloadFile.getId() + "?format=original";
-        }
-        if (downloadType != null && downloadType.equals("RData")){
-            fileDownloadUrl = "/api/access/datafile/" + this.selectedDownloadFile.getId() + "?format=RData";
-        }
-        if (downloadType != null && downloadType.equals("var")){
-            fileDownloadUrl = "/api/meta/datafile/" + this.selectedDownloadFile.getId();
-        }
-        if (downloadType != null && downloadType.equals("tab")){
-            fileDownloadUrl = "/api/access/datafile/" + this.selectedDownloadFile.getId()+ "?format=tab";
-        }
-        logger.fine("Returning file download url: " + fileDownloadUrl);
-        try {
-            FacesContext.getCurrentInstance().getExternalContext().redirect(fileDownloadUrl);
-        } catch (IOException ex) {
-            logger.info("Failed to issue a redirect to file download url.");
-        }
-        //return fileDownloadUrl;       
-    }
-
-    public String getApiTokenKey() {
-        ApiToken apiToken;
-
-        if (session.getUser() == null) {
-            // ?
-            return null;
-        }
-        if (isSessionUserAuthenticated()) {
-            AuthenticatedUser au = (AuthenticatedUser) session.getUser();
-            apiToken = authService.findApiTokenByUser(au);
-            if (apiToken != null) {
-                return "key=" + apiToken.getTokenString();
-            }
-            // Generate if not available?
-            // Or should it just be generated inside the authService
-            // automatically? 
-            apiToken = authService.generateApiTokenForUser(au);
-            if (apiToken != null) {
-                return "key=" + apiToken.getTokenString();
-            }
-        }
-        return "";
-
     }
 
     private void resetVersionUI() {
@@ -2241,7 +1754,6 @@ public class DatasetPage implements java.io.Serializable {
         this.selectedNonDownloadableFiles = selectedNonDownloadableFiles;
     }
     
-
             
     public void validateFilesForDownload(boolean guestbookRequired){
         setSelectedDownloadableFiles(new ArrayList<>());
@@ -2255,7 +1767,7 @@ public class DatasetPage implements java.io.Serializable {
         
         
         for (FileMetadata fmd : this.selectedFiles){
-            if(canDownloadFile(fmd)){
+            if(this.fileDownloadHelper.canDownloadFile(fmd)){
                 getSelectedDownloadableFiles().add(fmd);
             } else {
                 getSelectedNonDownloadableFiles().add(fmd);
@@ -2264,9 +1776,9 @@ public class DatasetPage implements java.io.Serializable {
         
         if(!getSelectedDownloadableFiles().isEmpty() && getSelectedNonDownloadableFiles().isEmpty()){
             if (guestbookRequired){
-                initGuestbookMultipleResponse();
+                modifyGuestbookMultipleResponse();
             } else{
-                startMultipleFileDownload();
+                startMultipleFileDownload(false);
             }        
         }
 
@@ -2323,6 +1835,18 @@ public class DatasetPage implements java.io.Serializable {
     public String getSelectedFilesIdsString() {        
         String downloadIdString = "";
         for (FileMetadata fmd : this.selectedFiles){
+            if (!StringUtil.isEmpty(downloadIdString)) {
+                downloadIdString += ",";
+            }
+            downloadIdString += fmd.getDataFile().getId();
+        }
+        return downloadIdString;     
+    }
+    
+        // helper Method
+    public String getSelectedDownloadableFilesIdsString() {        
+        String downloadIdString = "";
+        for (FileMetadata fmd : this.selectedDownloadableFiles){
             if (!StringUtil.isEmpty(downloadIdString)) {
                 downloadIdString += ",";
             }
@@ -2789,7 +2313,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public boolean isDuplicate(FileMetadata fileMetadata) {
-        String thisMd5 = fileMetadata.getDataFile().getmd5();
+        String thisMd5 = fileMetadata.getDataFile().getChecksumValue();
         if (thisMd5 == null) {
             return false;
         }
@@ -2806,7 +2330,7 @@ public class DatasetPage implements java.io.Serializable {
         Iterator<FileMetadata> fmIt = workingVersion.getFileMetadatas().iterator();
         while (fmIt.hasNext()) {
             FileMetadata fm = fmIt.next();
-            String md5 = fm.getDataFile().getmd5();
+            String md5 = fm.getDataFile().getChecksumValue();
             if (md5 != null) {
                 if (MD5Map.get(md5) != null) {
                     MD5Map.put(md5, MD5Map.get(md5).intValue() + 1);
@@ -2979,60 +2503,13 @@ public class DatasetPage implements java.io.Serializable {
     public void setDatasetVersionDifference(DatasetVersionDifference datasetVersionDifference) {
         this.datasetVersionDifference = datasetVersionDifference;
     }
-    
-   private void createSilentGuestbookEntry(FileMetadata fileMetadata, String format){
-        initGuestbookResponse(fileMetadata, format, null);
-        Command cmd;
-        try {
-            if (this.guestbookResponse != null) {
-                    cmd = new CreateGuestbookResponseCommand(dvRequestService.getDataverseRequest(), guestbookResponse, dataset);
-                    commandEngine.submit(cmd);
-            } else {
-                logger.severe("No Silent/Default Guestbook response made. No response to save - probably because version is DRAFT - not certain ");
-            }
-        } catch (CommandException ex) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Guestbook Response Save Failed", " - " + ex.toString()));
-            logger.severe(ex.getMessage());
-        }
         
-    }
-    
-    //public String startMultipleFileDownload (){
-    public void startMultipleFileDownload (){
+    public void startMultipleFileDownload (Boolean writeGuestbook){
 
-        
-        for (FileMetadata fmd : this.selectedDownloadableFiles) {
-            if (canDownloadFile(fmd)) {
-            // todo: cleanup this: "create" method doesn't necessarily
-                // mean a response wikk be created (e.g. when dataset in draft)
-                createSilentGuestbookEntry(fmd, "");
-            }
-        }
-
-        //return 
-        callDownloadServlet(getDownloadableFilesIdsString());
+        fileDownloadService.callDownloadServlet(getDownloadableFilesIdsString(), writeGuestbook);
 
     }
-    
-    //public String startFileDownload(FileMetadata fileMetadata, String format) {
-    public void startFileDownload(FileMetadata fileMetadata, String format) {
-        logger.fine("starting file download for filemetadata "+fileMetadata.getId()+", datafile "+fileMetadata.getDataFile().getId());
-        createSilentGuestbookEntry(fileMetadata, format);
-        logger.fine("created guestbook entry for filemetadata "+fileMetadata.getId()+", datafile "+fileMetadata.getDataFile().getId());
-        callDownloadServlet(format, fileMetadata.getDataFile().getId());
-        logger.fine("issued file download redirect for filemetadata "+fileMetadata.getId()+", datafile "+fileMetadata.getDataFile().getId());
-    }
-    
-    private String downloadFormat;
-
-    public String getDownloadFormat() {
-        return downloadFormat;
-    }
-
-    public void setDownloadFormat(String downloadFormat) {
-        this.downloadFormat = downloadFormat;
-    }
-    
+ 
     private String downloadType = "";
 
     public String getDownloadType() {
@@ -3043,23 +2520,17 @@ public class DatasetPage implements java.io.Serializable {
         this.downloadType = downloadType;
     }
     
-  
-   public void initGuestbookResponse(FileMetadata fileMetadata){
-         initGuestbookResponse(fileMetadata, "", null);
-    }
-   
-    public void initGuestbookResponse(FileMetadata fileMetadata, String downloadType){
-         initGuestbookResponse(fileMetadata, downloadType, null);
-    }
     
-    public void initGuestbookMultipleResponse(){
+    public void modifyGuestbookMultipleResponse(){
         if (this.selectedFiles.isEmpty()) {
             RequestContext requestContext = RequestContext.getCurrentInstance();
             requestContext.execute("PF('selectFilesForDownload').show()");
             return;
         }
         
-         initGuestbookResponse(null, "download", null);
+         this.guestbookResponse = this.guestbookResponseService.modifySelectedFileIds(guestbookResponse, getSelectedDownloadableFilesIdsString());
+         this.guestbookResponse.setDownloadtype("Download");
+         this.guestbookResponse.setFileFormat("Download");
         RequestContext requestContext = RequestContext.getCurrentInstance();
         requestContext.execute("PF('downloadPopup').show();handleResizeDialog('downloadPopup');");
     }
@@ -3069,84 +2540,11 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public void initGuestbookResponse(FileMetadata fileMetadata, String downloadFormat, String selectedFileIds) {
-        if (fileMetadata != null){
-           this.setSelectedDownloadFile(fileMetadata.getDataFile());
-        }
-        setDownloadFormat(downloadFormat);
-        if (fileMetadata == null){
-            setDownloadType("multiple");
-        } else {
-            setDownloadType("download");
-        }
-        if(this.workingVersion != null && this.workingVersion.isDraft()){
-            this.guestbookResponse = null;
-            return;
-        }
-        this.guestbookResponse = new GuestbookResponse();
         
-        User user = session.getUser();
-        if (this.dataset.getGuestbook() != null) {
-            this.guestbookResponse.setGuestbook(this.dataset.getGuestbook());
-            this.guestbookResponse.setName("");
-            this.guestbookResponse.setEmail("");
-            this.guestbookResponse.setInstitution("");
-            this.guestbookResponse.setPosition("");
-            this.guestbookResponse.setSessionId(session.toString());
-            if (user.isAuthenticated()) {
-                AuthenticatedUser aUser = (AuthenticatedUser) user;
-                this.guestbookResponse.setName(aUser.getName());
-                this.guestbookResponse.setAuthenticatedUser(aUser);
-                this.guestbookResponse.setEmail(aUser.getEmail());
-                this.guestbookResponse.setInstitution(aUser.getAffiliation());
-                this.guestbookResponse.setPosition(aUser.getPosition());
-                this.guestbookResponse.setSessionId(session.toString());
-            }
-            if (fileMetadata != null){
-                this.guestbookResponse.setDataFile(fileMetadata.getDataFile());
-            }            
-        } else {
-            if (fileMetadata != null){
-                 this.guestbookResponse = guestbookResponseService.initDefaultGuestbookResponse(dataset, fileMetadata.getDataFile(), user, session);
-            } else {
-                 this.guestbookResponse = guestbookResponseService.initDefaultGuestbookResponse(dataset, null, user, session);
-            }          
-        }
-        if (this.dataset.getGuestbook() != null && !this.dataset.getGuestbook().getCustomQuestions().isEmpty()) {
-            this.guestbookResponse.setCustomQuestionResponses(new ArrayList());
-            for (CustomQuestion cq : this.dataset.getGuestbook().getCustomQuestions()) {
-                CustomQuestionResponse cqr = new CustomQuestionResponse();
-                cqr.setGuestbookResponse(guestbookResponse);
-                cqr.setCustomQuestion(cq);
-                cqr.setResponse("");
-                if (cq.getQuestionType().equals("options")) {
-                    //response select Items
-                    cqr.setResponseSelectItems(setResponseUISelectItems(cq));
-                }
-                this.guestbookResponse.getCustomQuestionResponses().add(cqr);
-            }
-        }
-        this.guestbookResponse.setDownloadtype("Download");
-        if(downloadFormat.toLowerCase().equals("subset")){
-            this.guestbookResponse.setDownloadtype("Subset");
-            setDownloadFormat("subset");
-            setDownloadType("subset");
-        }
-        if(downloadFormat.toLowerCase().equals("explore")){
-            setDownloadFormat("explore");
-            setDownloadType("explore");
-            this.guestbookResponse.setDownloadtype("Explore");
-        }
-        this.guestbookResponse.setDataset(dataset);
+        this.guestbookResponse = guestbookResponseService.initGuestbookResponse(fileMetadata, downloadFormat, selectedFileIds, session);
     }
 
-    private List<SelectItem> setResponseUISelectItems(CustomQuestion cq) {
-        List<SelectItem> retList = new ArrayList();
-        for (CustomQuestionValue cqv : cq.getCustomQuestionValues()) {
-            SelectItem si = new SelectItem(cqv.getValueString(), cqv.getValueString());
-            retList.add(si);
-        }
-        return retList;
-    }
+
 
     public void compareVersionDifferences() {
         RequestContext requestContext = RequestContext.getCurrentInstance();
@@ -3241,118 +2639,6 @@ public class DatasetPage implements java.io.Serializable {
         return retList;
     }
 
-    public void downloadDatasetCitationXML() {
-        downloadCitationXML(null);
-    }
-
-    public void downloadDatafileCitationXML(FileMetadata fileMetadata) {
-        downloadCitationXML(fileMetadata);
-    }
-
-    public void downloadCitationXML(FileMetadata fileMetadata) {
-
-        String xml = datasetService.createCitationXML(workingVersion, fileMetadata);
-        FacesContext ctx = FacesContext.getCurrentInstance();
-        HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
-        response.setContentType("text/xml");
-        String fileNameString = "";
-        if (fileMetadata == null || fileMetadata.getLabel() == null) {
-            // Dataset-level citation: 
-            fileNameString = "attachment;filename=" + getFileNameDOI() + ".xml";
-        } else {
-            // Datafile-level citation:
-            fileNameString = "attachment;filename=" + getFileNameDOI() + "-" + fileMetadata.getLabel().replaceAll("\\.tab$", "-endnote.xml");
-        }
-        response.setHeader("Content-Disposition", fileNameString);
-        try {
-            ServletOutputStream out = response.getOutputStream();
-            out.write(xml.getBytes());
-            out.flush();
-            ctx.responseComplete();
-        } catch (Exception e) {
-
-        }
-    }
-
-    private String getFileNameDOI() {
-        Dataset ds = workingVersion.getDataset();
-        return "DOI:" + ds.getAuthority() + "_" + ds.getIdentifier().toString();
-    }
-
-    public void downloadDatasetCitationRIS() {
-
-        downloadCitationRIS(null);
-
-    }
-
-    public void downloadDatafileCitationRIS(FileMetadata fileMetadata) {
-        downloadCitationRIS(fileMetadata);
-    }
-
-    public void downloadCitationRIS(FileMetadata fileMetadata) {
-
-        String risFormatDowload = datasetService.createCitationRIS(workingVersion, fileMetadata);
-        FacesContext ctx = FacesContext.getCurrentInstance();
-        HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
-        response.setContentType("application/download");
-
-        String fileNameString = "";
-        if (fileMetadata == null || fileMetadata.getLabel() == null) {
-            // Dataset-level citation: 
-            fileNameString = "attachment;filename=" + getFileNameDOI() + ".ris";
-        } else {
-            // Datafile-level citation:
-            fileNameString = "attachment;filename=" + getFileNameDOI() + "-" + fileMetadata.getLabel().replaceAll("\\.tab$", ".ris");
-        }
-        response.setHeader("Content-Disposition", fileNameString);
-
-        try {
-            ServletOutputStream out = response.getOutputStream();
-            out.write(risFormatDowload.getBytes());
-            out.flush();
-            ctx.responseComplete();
-        } catch (Exception e) {
-
-        }
-    }
-
-    public void downloadDatasetCitationBibtex() {
-
-        downloadCitationBibtex(null);
-
-    }
-
-    public void downloadDatafileCitationBibtex(FileMetadata fileMetadata) {
-        downloadCitationBibtex(fileMetadata);
-    }
-
-    public void downloadCitationBibtex(FileMetadata fileMetadata) {
-
-        String bibFormatDowload = new BibtexCitation(workingVersion).toString();
-        FacesContext ctx = FacesContext.getCurrentInstance();
-        HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
-        response.setContentType("application/download");
-
-        String fileNameString = "";
-        if (fileMetadata == null || fileMetadata.getLabel() == null) {
-            // Dataset-level citation:
-            fileNameString = "attachment;filename=" + getFileNameDOI() + ".bib";
-        } else {
-            // Datafile-level citation:
-            fileNameString = "attachment;filename=" + getFileNameDOI() + "-" + fileMetadata.getLabel().replaceAll("\\.tab$", ".bib");
-        }
-        response.setHeader("Content-Disposition", fileNameString);
-
-        try {
-            ServletOutputStream out = response.getOutputStream();
-            out.write(bibFormatDowload.getBytes());
-            out.flush();
-            ctx.responseComplete();
-        } catch (Exception e) {
-
-        }
-    }
-
     public String getDatasetPublishCustomText(){
         String datasetPublishCustomText = settingsService.getValueForKey(SettingsServiceBean.Key.DatasetPublishPopupCustomText);
         if( datasetPublishCustomText!= null && !datasetPublishCustomText.isEmpty()){
@@ -3364,41 +2650,6 @@ public class DatasetPage implements java.io.Serializable {
     
     public Boolean isDatasetPublishPopupCustomTextOnAllVersions(){
         return  settingsService.isTrueForKey(SettingsServiceBean.Key.DatasetPublishPopupCustomTextOnAllVersions, false);
-    }
-
-    public String getDataExploreURL() {
-        String TwoRavensUrl = settingsService.getValueForKey(SettingsServiceBean.Key.TwoRavensUrl);
-
-        if (TwoRavensUrl != null && !TwoRavensUrl.equals("")) {
-            return TwoRavensUrl;
-        }
-
-        return "";
-    }
-
-    public String getDataExploreURLComplete(Long fileid) {
-        String TwoRavensUrl = settingsService.getValueForKey(SettingsServiceBean.Key.TwoRavensUrl);
-        String TwoRavensDefaultLocal = "/dataexplore/gui.html?dfId=";
-
-        if (TwoRavensUrl != null && !TwoRavensUrl.equals("")) {
-            // If we have TwoRavensUrl set up as, as an optional 
-            // configuration service, it must mean that TwoRavens is sitting 
-            // on some remote server. And that in turn means that we must use 
-            // full URLs to pass data and metadata to it. 
-            // update: actually, no we don't want to use this "dataurl" notation.
-            // switching back to the dfId=:
-            // -- L.A. 4.1
-            /*
-            String tabularDataURL = getTabularDataFileURL(fileid);
-            String tabularMetaURL = getVariableMetadataURL(fileid);
-            return TwoRavensUrl + "?ddiurl=" + tabularMetaURL + "&dataurl=" + tabularDataURL + "&" + getApiTokenKey();
-            */
-            return TwoRavensUrl + "?dfId=" + fileid + "&" + getApiTokenKey();
-        }
-
-        // For a local TwoRavens setup it's enough to call it with just 
-        // the file id:
-        return TwoRavensDefaultLocal + fileid + "&" + getApiTokenKey();
     }
 
     public String getVariableMetadataURL(Long fileid) {
@@ -3463,7 +2714,15 @@ public class DatasetPage implements java.io.Serializable {
     public void setFileMetadataSelected(FileMetadata fm, String guestbook) {
         if (guestbook != null) {
             if (guestbook.equals("create")) {
-                createSilentGuestbookEntry(fm, "Subset");
+                //
+                /*
+                FIX ME guestbook entry for subsetting
+                */
+                
+                
+                
+                
+               // guestbookResponseService.createSilentGuestbookEntry(fm, "Subset");
             } else {
                 initGuestbookResponse(fm, "Subset", null);
             }
@@ -4049,7 +3308,7 @@ public class DatasetPage implements java.io.Serializable {
     
     public boolean isDownloadButtonAvailable(){
         for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
-            if (canDownloadFile(fmd)) {
+            if (this.fileDownloadHelper.canDownloadFile(fmd)) {
                 return true;
             }
         }
@@ -4067,7 +3326,7 @@ public class DatasetPage implements java.io.Serializable {
            // return false;
         }
         for (FileMetadata fmd : workingVersion.getFileMetadatas()){
-            if (!canDownloadFile(fmd)){
+            if (!this.fileDownloadHelper.canDownloadFile(fmd)){
                 return true;               
             }
         }
@@ -4082,7 +3341,7 @@ public class DatasetPage implements java.io.Serializable {
             return false;
         }
         for (FileMetadata fmd : this.selectedRestrictedFiles){
-            if (!canDownloadFile(fmd)){
+            if (!this.fileDownloadHelper.canDownloadFile(fmd)){
                 return true;               
             }
         }
@@ -4095,7 +3354,7 @@ public class DatasetPage implements java.io.Serializable {
 
         if (downloadButtonAllEnabled == null) {
             for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
-                if (!canDownloadFile(fmd)) {
+                if (!this.fileDownloadHelper.canDownloadFile(fmd)) {
                     downloadButtonAllEnabled = false;
                     break;
                 }
@@ -4111,7 +3370,7 @@ public class DatasetPage implements java.io.Serializable {
             return false;
         }
         for (FileMetadata fmd : this.selectedFiles){
-            if (canDownloadFile(fmd)){
+            if (this.fileDownloadHelper.canDownloadFile(fmd)){
                 return true;               
             }
         }
@@ -4127,7 +3386,7 @@ public class DatasetPage implements java.io.Serializable {
             return false;
         }
         for (FileMetadata fmd : workingVersion.getFileMetadatas()){
-            if (!canDownloadFile(fmd)){
+            if (!this.fileDownloadHelper.canDownloadFile(fmd)){
                 return true;               
             }
         }
@@ -4146,41 +3405,15 @@ public class DatasetPage implements java.io.Serializable {
             return false;
         }
         for (FileMetadata fmd : this.selectedRestrictedFiles){
-            if (!canDownloadFile(fmd)){
+            if (!this.fileDownloadHelper.canDownloadFile(fmd)){
                 return true;               
             }
         }
         return false;
     }
 
-    public boolean isDownloadPopupRequired() {
-        // Each of these conditions is sufficient reason to have to 
-        // present the user with the popup: 
-        
-        //0. if version is draft then Popup "not required"    
-        if (!workingVersion.isReleased()){
-            return false;
-        }
-        // 1. License and Terms of Use:
-        if (workingVersion.getTermsOfUseAndAccess() != null) {
-            if (!TermsOfUseAndAccess.License.CC0.equals(workingVersion.getTermsOfUseAndAccess().getLicense())
-                    && !(workingVersion.getTermsOfUseAndAccess().getTermsOfUse() == null
-                    || workingVersion.getTermsOfUseAndAccess().getTermsOfUse().equals(""))) {
-                return true;
-            }
-
-            // 2. Terms of Access:
-            if (!(workingVersion.getTermsOfUseAndAccess().getTermsOfAccess() == null) && !workingVersion.getTermsOfUseAndAccess().getTermsOfAccess().equals("")) {
-                return true;
-            }
-        }
-
-        // 3. Guest Book: 
-        if (dataset.getGuestbook() != null && dataset.getGuestbook().isEnabled() && dataset.getGuestbook().getDataverse() != null ) {
-            return true;
-        }
-
-        return false;
+    public boolean isDownloadPopupRequired() {      
+        return fileDownloadService.isDownloadPopupRequired(dataset);
     }
     
    public String requestAccessMultipleFiles(String fileIdString) {
@@ -4368,6 +3601,56 @@ public class DatasetPage implements java.io.Serializable {
 
     public String getPrivateUrlLink(PrivateUrl privateUrl) {
         return privateUrl.getLink();
+    }
+    
+    private void loadFileDownloadHelper() {
+       
+        fileDownloadHelper = new FileDownloadHelper( dataset, permissionService, session);
+        
+    }
+    
+    
+    public FileDownloadHelper getFileDownloadHelper() {
+        return fileDownloadHelper;
+    }
+
+    public void setFileDownloadHelper(FileDownloadHelper fileDownloadHelper) {
+        this.fileDownloadHelper = fileDownloadHelper;
+    }
+    
+    
+    public FileDownloadServiceBean getFileDownloadService() {
+        return fileDownloadService;
+    }
+
+    public void setFileDownloadService(FileDownloadServiceBean fileDownloadService) {
+        this.fileDownloadService = fileDownloadService;
+    }
+    
+    
+    public GuestbookResponseServiceBean getGuestbookResponseService() {
+        return guestbookResponseService;
+    }
+
+    public void setGuestbookResponseService(GuestbookResponseServiceBean guestbookResponseService) {
+        this.guestbookResponseService = guestbookResponseService;
+    }
+    
+    
+    public WorldMapPermissionHelper getWorldMapPermissionHelper() {
+        return worldMapPermissionHelper;
+    }
+
+    public void setWorldMapPermissionHelper(WorldMapPermissionHelper worldMapPermissionHelper) {
+        this.worldMapPermissionHelper = worldMapPermissionHelper;
+    }
+
+    public TwoRavensHelper getTwoRavensHelper() {
+        return twoRavensHelper;
+    }
+
+    public void setTwoRavensHelper(TwoRavensHelper twoRavensHelper) {
+        this.twoRavensHelper = twoRavensHelper;
     }
 
 }

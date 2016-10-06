@@ -22,8 +22,13 @@ import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.dataaccess.*;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
+import edu.harvard.iq.dataverse.engine.command.Command;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.CreateGuestbookResponseCommand;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -243,6 +248,17 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                     if (useChunkedTransfer) {
                         String chunkClosing = "0\r\n\r\n";
                         outstream.write(chunkClosing.getBytes());
+                    }
+                    
+                    
+                    if (di.getGbr() != null && ( di.getConversionParam() == null 
+                            || !di.getConversionParam().equals("imageThumb"))) {
+                        try {
+                            Command cmd = new CreateGuestbookResponseCommand(di.getDataverseRequestService().getDataverseRequest(), di.getGbr(), di.getGbr().getDataFile().getOwner());
+                            di.getCommand().submit(cmd);
+                        } catch (CommandException e) {
+                            //if an error occurs here then download won't happen no need for response recs...
+                        }
                     }
                     
                     instream.close();

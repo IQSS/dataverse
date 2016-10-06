@@ -5,18 +5,17 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.GuestUser;
+import edu.harvard.iq.dataverse.datasetutility.TwoRavensHelper;
+import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -45,6 +44,15 @@ public class FilePage implements java.io.Serializable {
     private Long fileId;  
     private Long datasetVersionId;
     private DataFile file;
+    
+    private FileDownloadHelper fileDownloadHelper;
+    private GuestbookResponse guestbookResponse;
+        // Used to help with displaying buttons related to the WorldMap
+    private WorldMapPermissionHelper worldMapPermissionHelper;
+
+    
+    // Used to help with displaying buttons related to TwoRavens
+    private TwoRavensHelper twoRavensHelper;
 
     private Dataset editDataset;
     
@@ -53,6 +61,18 @@ public class FilePage implements java.io.Serializable {
 
     @EJB
     PermissionServiceBean permissionService;
+    
+    @EJB
+    MapLayerMetadataServiceBean mapLayerMetadataService;
+    @EJB
+    SettingsServiceBean settingsService;
+    @EJB
+    FileDownloadServiceBean fileDownloadService;
+    @EJB
+    GuestbookResponseServiceBean guestbookResponseService;
+    @EJB
+    AuthenticationServiceBean authService;
+
 
     @Inject
     DataverseSession session;
@@ -65,7 +85,7 @@ public class FilePage implements java.io.Serializable {
     PermissionsWrapper permissionsWrapper;
 
     public String init() {
-       
+     
         
         if ( fileId != null ) { 
            
@@ -90,16 +110,21 @@ public class FilePage implements java.io.Serializable {
             }
             
             
-
+            System.out.print("File metadata id: " + fileMetadata.getId());
            // If this DatasetVersion is unpublished and permission is doesn't have permissions:
            //  > Go to the Login page
            //
-            
+          /*
            if ( !permissionService.on(file).has(Permission.DownloadFile)) {
                return permissionsWrapper.notAuthorized();            
            }
-         
-
+          */
+           
+           this.guestbookResponse = this.guestbookResponseService.initGuestbookResponseForFragment(fileMetadata, session);
+           this.loadFileDownloadHelper();
+           this.loadMapLayerMetadata();
+           this.loadTwoRavensHelper();
+           this.loadWorldMapPermissionHelper();
         } else {
 
             return permissionsWrapper.notFound();
@@ -107,11 +132,35 @@ public class FilePage implements java.io.Serializable {
 
         return null;
     }
-  
+    
+    private MapLayerMetadata mapLayerMetadata = null;
+    
+    private void loadMapLayerMetadata() {
+        if (this.fileMetadata.getDatasetVersion().getDataset() == null) {
+            return;
+        }
+        if (this.fileMetadata.getDatasetVersion().getDataset().getId() == null) {
+            return;
+        }
+        mapLayerMetadata = mapLayerMetadataService.findMetadataByDatafile(file);
+    }
+
+
+ 
+    
+    public boolean hasMapLayerMetadata() {
+        return mapLayerMetadata != null;
+    }
 
     public FileMetadata getFileMetadata() {
         return fileMetadata;
     }
+    
+
+    public boolean isDownloadPopupRequired() {      
+        return fileDownloadService.isDownloadPopupRequired(this.file.getOwner());
+    }
+
 
     public void setFileMetadata(FileMetadata fileMetadata) {
         this.fileMetadata = fileMetadata;
@@ -263,6 +312,90 @@ public class FilePage implements java.io.Serializable {
     private String returnToDraftVersion(){ 
 
          return "/file.xhtml?fileId=" + fileId + "&datasetVersionId=" + editDataset.getEditVersion().getId() + "&faces-redirect=true";    
+    }
+    
+    public FileDownloadHelper getFileDownloadHelper() {
+        return fileDownloadHelper;
+    }
+
+    public void setFileDownloadHelper(FileDownloadHelper fileDownloadHelper) {
+        this.fileDownloadHelper = fileDownloadHelper;
+    }
+    
+    
+    public FileDownloadServiceBean getFileDownloadService() {
+        return fileDownloadService;
+    }
+
+    public void setFileDownloadService(FileDownloadServiceBean fileDownloadService) {
+        this.fileDownloadService = fileDownloadService;
+    }
+    
+    
+    public GuestbookResponseServiceBean getGuestbookResponseService() {
+        return guestbookResponseService;
+    }
+
+    public void setGuestbookResponseService(GuestbookResponseServiceBean guestbookResponseService) {
+        this.guestbookResponseService = guestbookResponseService;
+    }
+    
+    
+    public GuestbookResponse getGuestbookResponse() {
+        return guestbookResponse;
+    }
+
+    public void setGuestbookResponse(GuestbookResponse guestbookResponse) {
+        this.guestbookResponse = guestbookResponse;
+    }
+    
+    private void loadFileDownloadHelper() {
+       
+        fileDownloadHelper = new FileDownloadHelper( this.file.getOwner(), permissionService, session);
+        
+    }
+    
+    
+    public boolean canUpdateDataset() {
+        return permissionsWrapper.canUpdateDataset(dvRequestService.getDataverseRequest(), this.file.getOwner());
+    }
+    
+    public WorldMapPermissionHelper getWorldMapPermissionHelper() {
+        return worldMapPermissionHelper;
+    }
+
+    public void setWorldMapPermissionHelper(WorldMapPermissionHelper worldMapPermissionHelper) {
+        this.worldMapPermissionHelper = worldMapPermissionHelper;
+    }
+
+    public TwoRavensHelper getTwoRavensHelper() {
+        return twoRavensHelper;
+    }
+
+    public void setTwoRavensHelper(TwoRavensHelper twoRavensHelper) {
+        this.twoRavensHelper = twoRavensHelper;
+    }
+    
+    /**
+     * This object wraps methods used for hiding/displaying WorldMap related messages
+     *
+     */
+    private void loadTwoRavensHelper() {
+       
+        twoRavensHelper = new TwoRavensHelper(settingsService, permissionService, session, authService);
+        
+    }
+    
+
+    
+    /**
+     * This object wraps methods used for hiding/displaying WorldMap related messages
+     *
+     */
+    private void loadWorldMapPermissionHelper() {
+       
+        worldMapPermissionHelper = WorldMapPermissionHelper.getPermissionHelperForDatasetPage(settingsService, mapLayerMetadataService, fileMetadata.getDataFile().getOwner(), session);
+        
     }
     
 }

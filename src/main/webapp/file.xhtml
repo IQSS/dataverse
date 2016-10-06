@@ -72,6 +72,17 @@
                             <a href="#" class="ui-commandlink ui-widget btn btn-default pull-right disabled" type="button">
                                 <span class="glyphicon glyphicon-download-alt"></span> Download
                             </a>
+                            <ui:include src="file-download-button-fragment.xhtml">
+                            <ui:param name="fileMetadata" value="#{FilePage.fileMetadata}"/>
+                            <ui:param name="canUpdateDataset" value="#{FilePage.canUpdateDataset()}"/>
+                            <ui:param name="downloadPopupRequired" value="#{FilePage.downloadPopupRequired}"/>
+                            <ui:param name="guestbookResponse" value="#{FilePage.guestbookResponse}"/>
+                            <ui:param name="guestbookResponseService" value="#{FilePage.guestbookResponseService}"/>
+                            <ui:param name="fileDownloadHelper" value="#{FilePage.fileDownloadHelper}"/>
+                            <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
+                            <ui:param name="worldMapPermissionHelper" value="#{FilePage.worldMapPermissionHelper}"/>
+                            <ui:param name="twoRavensHelper" value="#{FilePage.twoRavensHelper}"/>
+                            </ui:include>
                             <!-- END: Download Button -->
                             
                             <!-- Request Access Button ++ DISABLED/STATIC -->
@@ -180,7 +191,8 @@
                             <ui:remove>
                             <!-- Removing broken dataFileServiceBean.isThumbnailAvailable render logic -->
                             <!-- Image -->
-                            <p:graphicImage style="vertical-align: middle;max-height:210px;max-width:210px;margin:0;border:0;" styleClass="img-responsive img-thumbnail" value="/api/access/datafile/#{FilePage.fileId}?imageThumb=400" rendered="#{dataFileServiceBean.isThumbnailAvailable(FilePage.fileMetadata.dataFile, dataverseSession.user)}"/>
+                            <p:graphicImage style="vertical-align: middle;max-height:210px;max-width:210px;margin:0;border:0;" styleClass="img-responsive img-thumbnail" value="/api/access/datafile/#{FilePage.fileId}?imageThumb=400" 
+                                            rendered="#{dataFileServiceBean.isThumbnailAvailable(FilePage.fileMetadata.dataFile, dataverseSession.user)}"/>
                             <!-- Icon -->
                             <span class="icon-#{dataFileServiceBean.getFileClass(FilePage.fileMetadata.dataFile)} text-muted h1"
                                   jsf:rendered="#{(!dataFileServiceBean.isThumbnailAvailable(FilePage.fileMetadata.dataFile, dataverseSession.user))
@@ -191,8 +203,8 @@
                         <div class="col-xs-9">
                             <div class="" style="margin-top:0;padding:6px 0;">
                                 <!-- Restricted File Icon -->
-                                <span style="font-size:1.5em;" class="glyphicon glyphicon-lock text-danger" jsf:rendered="#{FilePage.fileMetadata.restricted and ((empty FilePage.fileMetadata.dataFile.id)  )}" />
-                                <spans style="font-size:1.5em;" class="icon-unlock text-success" jsf:rendered="#{!(empty FilePage.fileMetadata.dataFile.id) and FilePage.fileMetadata.restricted  }" />
+                                <span style="font-size:1.5em;" class="glyphicon glyphicon-lock text-danger" jsf:rendered="#{FilePage.fileMetadata.restricted and !(FilePage.fileDownloadHelper.canDownloadFile(FilePage.fileMetadata))}" />
+                                <spans style="font-size:1.5em;" class="icon-unlock text-success" jsf:rendered="#{FilePage.fileMetadata.restricted  and FilePage.fileDownloadHelper.canDownloadFile(FilePage.fileMetadata) }" />
 
                                 <!-- Title/Label -->
                                 <h:outputText value="#{FilePage.fileMetadata.label}" styleClass="" style="font-size:1.5em;font-weight:bold;margin-right:.5em;"/>
@@ -253,9 +265,10 @@
                                         <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDataFileId(FilePage.fileMetadata.dataFile.id)}"/>
                                     </h:outputFormat>
 
-                                    <div class="mD5-block" jsf:rendered="#{!FilePage.file.tabularData}">
-                                        <h:outputText id="fileMD5" value="#{FilePage.file.tabularData ? bundle['file.MD5.origal'] : bundle['file.MD5']}: #{FilePage.file.md5};"
-                                                      rendered="#{!(empty FilePage.file.md5)}"/>
+                                   <div class="mD5-block" jsf:rendered="#{!FilePage.file.tabularData}">
+                                        <!-- FIXME: When this page is fixed (no more "Method isThumbnailAvailable not found") also replace "file.MD5" with FilePage.file.checksumType and "file.MD5.origal" with "file.originalChecksumType" -->
+                                        <h:outputText id="fileMD5" value="#{FilePage.file.tabularData ? bundle['file.MD5.origal'] : bundle['file.MD5']}: #{FilePage.file.checksumValue};"
+                                                      rendered="#{!(empty FilePage.file.checksumValue)}"/>
                                     </div>
 
                                     <div class="text-muted" jsf:rendered="#{FilePage.file.tabularData}">
@@ -305,12 +318,12 @@
                                                     </div>
                                                 </div>
                                             </ui:remove>
-                                            <div class="form-group" jsf:rendered="#{!(empty FilePage.file.md5)}">
+                                            <div class="form-group" jsf:rendered="#{!(empty FilePage.file.checksumValue)}">
                                                 <label class="col-sm-3 control-label" for="metadata_md5">
                                                    #{FilePage.file.tabularData ? bundle['file.MD5.origal'] : bundle['file.MD5']}
                                                 </label>
                                                 <div class="col-sm-9">
-                                                    <h:outputText value="#{FilePage.file.md5}"/>
+                                                    <h:outputText value="#{FilePage.file.checksumValue}"/>
                                                 </div>
                                             </div>
                                             <div class="form-group" jsf:rendered="#{!(empty FilePage.file.unf)}">
@@ -373,8 +386,9 @@
                                                     FITS stuff....
                                                 </li>
                                                 <li>
+                                                    <!-- FIXME: When this page is fixed (no more "Method isThumbnailAvailable not found") use FilePage.file.checksumType rather than "file.metadataTab.fileMetadata.md5.label" -->
                                                     #{bundle['file.metadataTab.fileMetadata.md5.label']}
-                                                    <h:outputText  value="#{FilePage.file.md5};"  rendered="#{!(empty FilePage.file.md5)}"/>
+                                                    <h:outputText  value="#{FilePage.file.checksumValue};"  rendered="#{!(empty FilePage.file.checksumValue)}"/>
                                                 </li>
                                             </div>
                                         </div>
@@ -411,6 +425,39 @@
                             <p:commandButton value="#{bundle['file.delete']}" onclick="PF('deleteFileConfirmation').hide()" 
                                              action="#{FilePage.deleteFile()}" />
                             <p:commandButton value="#{bundle.cancel}" onclick="PF('deleteFileConfirmation').hide()" type="button" />
+                        </div>
+                    </p:dialog>
+                    
+                    <p:dialog id="downloadPopup" styleClass="largePopUp" header="#{bundle['file.downloadDialog.header']}" widgetVar="downloadPopup" modal="true">
+                         <ui:include src="file-download-popup-fragment.xhtml">
+                            <ui:param name="workingVersion" value="#{FilePage.fileMetadata.datasetVersion}"/>
+                            <ui:param name="downloadPopupRequired" value="#{FilePage.downloadPopupRequired}"/>
+                            <ui:param name="guestbookResponse" value="#{FilePage.guestbookResponse}"/>
+                            <ui:param name="guestbookResponseService" value="#{FilePage.guestbookResponseService}"/>
+                            <ui:param name="fileDownloadHelper" value="#{FilePage.fileDownloadHelper}"/>
+                            <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
+                            <ui:param name="twoRavensHelper" value="#{FilePage.twoRavensHelper}"/>
+                        </ui:include>
+                    </p:dialog>
+                    <p:dialog id="downloadDataSubsetPopup" styleClass="smallPopUp" header="Download Data Subset" widgetVar="downloadDataSubsetPopup"
+                               modal="true">
+                        <div class="form-inline clearfix" jsf:rendered="#{!(empty FilePage.fileMetadata)}">
+                            <ui:include src="/subset/gui_subset.xhtml">
+                                <ui:param name="dataFile" value="#{FilePage.fileMetadata.dataFile}"/>
+                             </ui:include>
+                        </div>
+                    </p:dialog>
+                                        <!-- Request Access Sign Up/Log In Button -->
+                    <p:dialog header="#{bundle['file.requestAccess']}" widgetVar="accessSignUpLogIn_popup" modal="true">
+                        <p class="help-block">
+                            <span class="glyphicon glyphicon-warning-sign text-danger"/>&#160;
+                            <h:outputFormat styleClass="text-danger" value="#{dataverseHeaderFragment.signupAllowed ? bundle['file.requestAccess.dialog.msg.signup'] : bundle['file.requestAccess.dialog.msg']}" escape="false">
+                                <f:param value="#{navigationWrapper.redirectPage}"/>
+                                <f:param value="#{widgetWrapper.widgetView ? '_blank' : '_self'}"/>
+                            </h:outputFormat>
+                        </p>
+                        <div class="button-block">
+                            <p:commandButton value="#{bundle.close}" onclick="PF('accessSignUpLogIn_popup').hide();PF('blockDatasetForm').hide();"/>
                         </div>
                     </p:dialog>
                 </h:form>
