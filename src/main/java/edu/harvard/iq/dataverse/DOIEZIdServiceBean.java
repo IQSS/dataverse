@@ -112,7 +112,7 @@ public class DOIEZIdServiceBean extends AbstractPersistentIdRegistrationServiceB
 
     /**
      * Looks up the metadata for a Global Identifier
-     * @param protocol the identifier system, e.g. "doi"
+     * @param protocol the identifier system, e.g. "doi" or "hdl"
      * @param authority the namespace that the authority manages in the identifier system
      * @param separator the string that separates authority from local identifier part
      * @param identifier the local identifier part

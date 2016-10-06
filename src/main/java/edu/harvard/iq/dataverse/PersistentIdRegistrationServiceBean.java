@@ -3,13 +3,44 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
-import java.util.*;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+
 public interface PersistentIdRegistrationServiceBean {
 
-    static final Logger logger = Logger.getLogger(PersistentIdRegistrationServiceBean.class.getCanonicalName());
+    Logger logger = Logger.getLogger(PersistentIdRegistrationServiceBean.class.getCanonicalName());
+
+    enum Provider {
+        EZID {
+            public PersistentIdRegistrationServiceBean getBean(CommandContext ctxt) {
+                return ctxt.doiEZId();
+            }
+        }, DataCite {
+            public PersistentIdRegistrationServiceBean getBean(CommandContext ctxt) {
+                return ctxt.doiDataCite();
+            }
+        };
+
+        public abstract PersistentIdRegistrationServiceBean getBean(CommandContext ctxt);
+    }
+
+    enum Protocol {
+        hdl {
+            public PersistentIdRegistrationServiceBean getBean(Provider provider, CommandContext ctxt) {
+                return ctxt.handleNet();
+            }
+
+        }, doi {
+            public PersistentIdRegistrationServiceBean getBean(Provider provider, CommandContext ctxt) {
+                return provider.getBean(ctxt);
+            }
+
+        };
+
+        public abstract PersistentIdRegistrationServiceBean getBean(Provider provider, CommandContext ctxt);
+    }
 
     boolean alreadyExists(Dataset dataset) throws Exception;
 
@@ -43,21 +74,18 @@ public interface PersistentIdRegistrationServiceBean {
 
     boolean publicizeIdentifier(Dataset studyIn);
 
-    static PersistentIdRegistrationServiceBean getBean(String protocol, CommandContext ctxt) {
-        logger.log(Level.FINE,"getting bean, protocol=" + protocol);
+    void postDeleteCleanup(final Dataset doomed);
+
+    static PersistentIdRegistrationServiceBean getBean(String protocolString, CommandContext ctxt) {
+        logger.log(Level.FINE,"getting bean, protocol=" + protocolString);
         String nonNullDefaultIfKeyNotFound = "";
         String doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
-
-        if ("hdl".equals(protocol))
-            return (ctxt.handleNet());
-        else if (protocol.equals("doi"))
-            if (doiProvider.equals("EZID"))
-                return ctxt.doiEZId();
-            else if (doiProvider.equals("DataCite"))
-                return ctxt.doiDataCite();
-            else logger.log(Level.SEVERE,"Unknown doiProvider: " + doiProvider);
-        else logger.log(Level.SEVERE,"Unknown protocol: " + protocol);
-        return null;
+        try {
+            return Protocol.valueOf(protocolString).getBean(Provider.valueOf(doiProvider), ctxt);
+        } catch (Exception e) {
+            logger.log(Level.SEVERE,"Unknown doiProvider and/or protocol: " + doiProvider + "  " + protocolString);
+            return null;
+        }
     }
 
     static PersistentIdRegistrationServiceBean getBean(CommandContext ctxt) {
@@ -67,8 +95,4 @@ public interface PersistentIdRegistrationServiceBean {
         String    protocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
         return getBean(protocol, ctxt);
     }
-
-    String generateYear();
-
-    String generateTimeString();
 }

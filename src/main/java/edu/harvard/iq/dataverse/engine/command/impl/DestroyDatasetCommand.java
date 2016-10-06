@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.PersistentIdRegistrationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.RoleAssignment;
@@ -79,13 +80,10 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
         // ROLES
         for (DataverseRole ra : ctxt.roles().findByOwnerId(doomed.getId())) {
             ctxt.em().remove(ra);
-        }   
-        
-        //Register Cache
-        if(ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, "").equals("DataCite")){
-            // TODO make ignorant of configured bean
-            ctxt.doiDataCite().deleteRecordFromCache(doomed);
         }
+
+        //Register Cache
+        PersistentIdRegistrationServiceBean.getBean(ctxt).postDeleteCleanup(doomed);
 
         Dataverse toReIndex = managedDoomed.getOwner();
 

@@ -5,7 +5,7 @@
  */
 package edu.harvard.iq.dataverse;
 
-import java.util.HashMap;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -85,7 +85,7 @@ public class DOIDataCiteServiceBean extends AbstractPersistentIdRegistrationServ
 
     /**
      * Looks up the metadata for a Global Identifier
-     * @param protocol the identifier system, e.g. "doi"
+     * @param protocol the identifier system, e.g. "doi" or "hdl"
      * @param authority the namespace that the authority manages in the identifier system
      * @param separator the string that separates authority from local identifier part
      * @param identifier the local identifier part
@@ -130,8 +130,9 @@ public class DOIDataCiteServiceBean extends AbstractPersistentIdRegistrationServ
         }
         return identifier;
     }
-    
-    public void deleteRecordFromCache(Dataset datasetIn){
+
+    @Override
+    public void postDeleteCleanup(final Dataset datasetIn){
         logger.log(Level.FINE,"deleteRecordFromCache");
         String identifier = getIdentifierFromDataset(datasetIn);
         HashMap doiMetadata = new HashMap();
@@ -237,5 +238,22 @@ public class DOIDataCiteServiceBean extends AbstractPersistentIdRegistrationServ
             logger.log(Level.WARNING, "message {0}", e.getMessage());
             return false;
         }
+    }
+
+    private String generateYear()
+    {
+        StringBuilder guid = new StringBuilder();
+
+        // Create a calendar to get the date formatted properly
+        String[] ids = TimeZone.getAvailableIDs(-8 * 60 * 60 * 1000);
+        SimpleTimeZone pdt = new SimpleTimeZone(-8 * 60 * 60 * 1000, ids[0]);
+        pdt.setStartRule(Calendar.APRIL, 1, Calendar.SUNDAY, 2 * 60 * 60 * 1000);
+        pdt.setEndRule(Calendar.OCTOBER, -1, Calendar.SUNDAY, 2 * 60 * 60 * 1000);
+        Calendar calendar = new GregorianCalendar(pdt);
+        Date trialTime = new Date();
+        calendar.setTime(trialTime);
+        guid.append(calendar.get(Calendar.YEAR));
+
+        return guid.toString();
     }
 }

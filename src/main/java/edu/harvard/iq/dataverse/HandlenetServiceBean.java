@@ -68,8 +68,6 @@ public class HandlenetServiceBean extends AbstractPersistentIdRegistrationServic
     SettingsServiceBean settingsService;    
     private static final Logger logger = Logger.getLogger(HandlenetServiceBean.class.getCanonicalName());
     
-    private static final String HANDLE_PROTOCOL_TAG = "hdl";
-    
     public HandlenetServiceBean() {
         logger.log(Level.FINE,"Constructor");
     }
@@ -79,9 +77,9 @@ public class HandlenetServiceBean extends AbstractPersistentIdRegistrationServic
         return true; // TODO current value plays safe, can we loosen up?
     }
 
-    public void reRegisterHandle(Dataset dataset) {
+    private void reRegisterHandle(Dataset dataset) {
         logger.log(Level.FINE,"reRegisterHandle");
-        if (!HANDLE_PROTOCOL_TAG.equals(dataset.getProtocol())) {
+        if (!Protocol.hdl.toString().equals(dataset.getProtocol())) {
             logger.warning("reRegisterHandle called on a dataset with the non-handle global id: "+dataset.getId());
         }
         
@@ -139,7 +137,7 @@ public class HandlenetServiceBean extends AbstractPersistentIdRegistrationServic
         }
     }
     
-    public Throwable registerNewHandle(Dataset dataset) {
+    private Throwable registerNewHandle(Dataset dataset) {
         logger.log(Level.FINE,"registerNewHandle");
         String handlePrefix = dataset.getAuthority();
         String handle = getDatasetHandle(dataset);
@@ -191,7 +189,7 @@ public class HandlenetServiceBean extends AbstractPersistentIdRegistrationServic
         }
     }
     
-    public boolean isHandleRegistered(String handle){
+    private boolean isHandleRegistered(String handle){
         logger.log(Level.FINE,"isHandleRegistered");
         boolean handleRegistered = false;
         ResolutionRequest req = buildResolutionRequest(handle);
@@ -252,7 +250,7 @@ public class HandlenetServiceBean extends AbstractPersistentIdRegistrationServic
         return targetUrl;
     }
     
-    public String getSiteUrl() {
+    private String getSiteUrl() {
         logger.log(Level.FINE,"getSiteUrl");
         String hostUrl = System.getProperty("dataverse.siteUrl");
         if (hostUrl != null && !"".equals(hostUrl)) {
