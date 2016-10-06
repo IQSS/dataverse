@@ -60,7 +60,7 @@ import org.apache.commons.lang.NotImplementedException;
  * the modifyRegistration datasets API sub-command.
  */
 @Stateless
-public class HandlenetServiceBean extends AbstractIdServiceBean {
+public class HandlenetServiceBean extends AbstractPersistentIdRegistrationServiceBean {
 
     @EJB
     DataverseServiceBean dataverseService;

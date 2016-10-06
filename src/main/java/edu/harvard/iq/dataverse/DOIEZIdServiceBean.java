@@ -11,7 +11,6 @@ import edu.ucsb.nceas.ezid.EZIDService;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
 import javax.ejb.Stateless;
 
 /**
@@ -19,7 +18,7 @@ import javax.ejb.Stateless;
  * @author skraffmiller
  */
 @Stateless
-public class DOIEZIdServiceBean extends AbstractIdServiceBean {
+public class DOIEZIdServiceBean extends AbstractPersistentIdRegistrationServiceBean {
 
     private static final Logger logger = Logger.getLogger(DOIEZIdServiceBean.class.getCanonicalName());
 

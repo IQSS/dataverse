@@ -1,16 +1,15 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
-import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public interface IdServiceBean {
+public interface PersistentIdRegistrationServiceBean {
 
-    static final Logger logger = Logger.getLogger(IdServiceBean.class.getCanonicalName());
+    static final Logger logger = Logger.getLogger(PersistentIdRegistrationServiceBean.class.getCanonicalName());
 
     boolean alreadyExists(Dataset dataset) throws Exception;
 
@@ -44,7 +43,7 @@ public interface IdServiceBean {
 
     boolean publicizeIdentifier(Dataset studyIn);
 
-    static IdServiceBean getBean(String protocol, CommandContext ctxt) {
+    static PersistentIdRegistrationServiceBean getBean(String protocol, CommandContext ctxt) {
         logger.log(Level.FINE,"getting bean, protocol=" + protocol);
         String nonNullDefaultIfKeyNotFound = "";
         String doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
@@ -61,7 +60,7 @@ public interface IdServiceBean {
         return null;
     }
 
-    static IdServiceBean getBean(CommandContext ctxt) {
+    static PersistentIdRegistrationServiceBean getBean(CommandContext ctxt) {
         logger.log(Level.FINE,"getting bean with protocol from context");
 
         String nonNullDefaultIfKeyNotFound = "";

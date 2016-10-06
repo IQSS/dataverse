@@ -176,14 +176,14 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
         String nonNullDefaultIfKeyNotFound = "";
         String doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
 
-        IdServiceBean idServiceBean = IdServiceBean.getBean(ctxt);
-        boolean registerWhenPublished = idServiceBean.registerWhenPublished();
+        PersistentIdRegistrationServiceBean persistentIdRegistrationServiceBean = PersistentIdRegistrationServiceBean.getBean(ctxt);
+        boolean registerWhenPublished = persistentIdRegistrationServiceBean.registerWhenPublished();
         logger.log(Level.FINE,"doiProvider={0} protocol={1} GlobalIdCreateTime=={2}", new Object[]{doiProvider, theDataset.getProtocol(), theDataset.getGlobalIdCreateTime()});
         if ( !registerWhenPublished && theDataset.getGlobalIdCreateTime() == null) {
             String doiRetString = null;
             try {
                 logger.fine("creating identifier");
-                doiRetString = idServiceBean.createIdentifier(theDataset);
+                doiRetString = persistentIdRegistrationServiceBean.createIdentifier(theDataset);
                 if (doiRetString.contains(theDataset.getIdentifier())) {
                     logger.fine("created: "+doiRetString);
                     theDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
@@ -192,7 +192,7 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
                     if (doiRetString.contains("identifier already exists")) {
                         theDataset.setIdentifier(ctxt.datasets().generateIdentifierSequence(theDataset.getProtocol(), theDataset.getAuthority(), theDataset.getDoiSeparator()));
                         logger.fine("creating identifier again because it exists: "+doiRetString);
-                        doiRetString = idServiceBean.createIdentifier(theDataset);
+                        doiRetString = persistentIdRegistrationServiceBean.createIdentifier(theDataset);
                         logger.fine("new value: "+doiRetString);
                         if (!doiRetString.contains(theDataset.getIdentifier())) {
                             // didn't register new identifier

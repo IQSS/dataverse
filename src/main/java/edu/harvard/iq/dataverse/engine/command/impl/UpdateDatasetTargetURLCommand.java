@@ -6,7 +6,7 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.IdServiceBean;
+import edu.harvard.iq.dataverse.PersistentIdRegistrationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
@@ -15,7 +15,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+
 import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.Date;
@@ -43,10 +43,10 @@ public class UpdateDatasetTargetURLCommand extends AbstractVoidCommand  {
                     this, Collections.singleton(Permission.EditDataset), target);
         }
 
-        IdServiceBean idServiceBean = IdServiceBean.getBean(target.getProtocol(), ctxt);
-        HashMap<String, String> metadata = idServiceBean.getMetadataFromDatasetForTargetURL(target);
+        PersistentIdRegistrationServiceBean persistentIdRegistrationServiceBean = PersistentIdRegistrationServiceBean.getBean(target.getProtocol(), ctxt);
+        HashMap<String, String> metadata = persistentIdRegistrationServiceBean.getMetadataFromDatasetForTargetURL(target);
         try {
-            String doiRetString = idServiceBean.modifyIdentifier(target, metadata);
+            String doiRetString = persistentIdRegistrationServiceBean.modifyIdentifier(target, metadata);
             if (doiRetString != null && doiRetString.contains(target.getIdentifier())) {
                 target.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
                 ctxt.em().merge(target);

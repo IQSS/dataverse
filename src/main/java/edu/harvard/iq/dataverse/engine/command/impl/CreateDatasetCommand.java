@@ -135,16 +135,16 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         if ((importType == null || importType.equals(ImportType.NEW))
                 && theDataset.getGlobalIdCreateTime() == null) {
                 String doiRetString = "";
-                IdServiceBean idServiceBean = IdServiceBean.getBean(ctxt);
+                PersistentIdRegistrationServiceBean persistentIdRegistrationServiceBean = PersistentIdRegistrationServiceBean.getBean(ctxt);
                 try{
                     logger.log(Level.FINE,"creating identifier");
-                    doiRetString = idServiceBean.createIdentifier(theDataset);
+                    doiRetString = persistentIdRegistrationServiceBean.createIdentifier(theDataset);
                 } catch (Throwable e){
                     logger.log(Level.WARNING, "Exception while creating Identifier: " + e.getMessage(), e);
                 }
 
                 // Check return value to make sure registration succeeded
-                if (!idServiceBean.registerWhenPublished() && doiRetString.contains(theDataset.getIdentifier())) {
+                if (!persistentIdRegistrationServiceBean.registerWhenPublished() && doiRetString.contains(theDataset.getIdentifier())) {
                     theDataset.setGlobalIdCreateTime(createDate);
                 }
         } else // If harvest or migrate, and this is a released dataset, we don't need to register,

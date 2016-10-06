@@ -19,20 +19,13 @@ import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.search.IndexResponse;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.jsonAsDatasetDto;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.json.JsonObjectBuilder;
 
 /**
  *
@@ -79,18 +72,18 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
         String protocol = theDataset.getProtocol();
         String doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
         String authority = theDataset.getAuthority();
-        IdServiceBean idServiceBean = IdServiceBean.getBean(protocol, ctxt);
+        PersistentIdRegistrationServiceBean persistentIdRegistrationServiceBean = PersistentIdRegistrationServiceBean.getBean(protocol, ctxt);
         logger.log(Level.FINE,"doiProvider={0} protocol={1} GlobalIdCreateTime=={2}", new Object[]{doiProvider, protocol, theDataset.getGlobalIdCreateTime()});
         if (theDataset.getGlobalIdCreateTime() == null) {
-            if (idServiceBean!=null) {
+            if (persistentIdRegistrationServiceBean !=null) {
                 try {
-                    if (!idServiceBean.alreadyExists(theDataset)) {
-                        idServiceBean.createIdentifier(theDataset);
+                    if (!persistentIdRegistrationServiceBean.alreadyExists(theDataset)) {
+                        persistentIdRegistrationServiceBean.createIdentifier(theDataset);
                         theDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
                     } else {
                         theDataset.setIdentifier(ctxt.datasets().generateIdentifierSequence(protocol, authority, theDataset.getDoiSeparator()));
-                        if (!idServiceBean.alreadyExists(theDataset)) {
-                            idServiceBean.createIdentifier(theDataset);
+                        if (!persistentIdRegistrationServiceBean.alreadyExists(theDataset)) {
+                            persistentIdRegistrationServiceBean.createIdentifier(theDataset);
                             theDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
                         } else {
                             throw new IllegalCommandException("This dataset may not be published because its identifier is already in use by another dataset.", this);
@@ -219,8 +212,8 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
             ctxt.em().merge(datasetDataverseUser);
         }
 
-        if (idServiceBean!= null && !idServiceBean.registerWhenPublished())
-            if (!idServiceBean.publicizeIdentifier(savedDataset))
+        if (persistentIdRegistrationServiceBean != null && !persistentIdRegistrationServiceBean.registerWhenPublished())
+            if (!persistentIdRegistrationServiceBean.publicizeIdentifier(savedDataset))
                 throw new CommandException(ResourceBundle.getBundle("Bundle").getString("dataset.publish.error.datacite"), this);
 
         PrivateUrl privateUrl = ctxt.engine().submit(new GetPrivateUrlCommand(getRequest(), savedDataset));
