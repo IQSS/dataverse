@@ -10,6 +10,7 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetFieldValidator;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
@@ -34,6 +35,7 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -41,8 +43,10 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.omnifaces.util.Faces;
 
 /**
  *
@@ -236,19 +240,33 @@ public class FileUpload extends AbstractApiBean {
         return okResponse("saved: " + df);
     }    
         
-    @GET
-    @Path("add/{newFilename}")
-    public Response hi_add(@PathParam("newFilename") String newFilename){
+    
+    @POST
+    //@Path("add/{newFilename}")
+    @Path("add")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    public Response hi_add(@FormDataParam("datasetId") Long datasetId,
+                    @FormDataParam("file") InputStream testFileInputStream,
+                    @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
+                    @FormDataParam("file") final FormDataBodyPart formDataBodyPart
+                    ){
         
         // -------------------------------------
         msgt("(1) getSampleFile()");
         // -------------------------------------
 
+        String newFilename = contentDispositionHeader.getFileName();
+        String newFileContentType = formDataBodyPart.getMediaType().toString();
+        //Faces.getServletContext().getMimeType(newFilename);
+        //contentDispositionHeader.getParameters().toString();
+        msgt("newFileContentType:" + newFileContentType);
+        
+        /*
         InputStream testFileInputStream = getSampleFile();
         if (testFileInputStream == null){
             return okResponse("Couldn't find the file!!");
         }
-        
+        */
         // -------------------------------------
         msgt("(1a) Get User from API token");
         // -------------------------------------
@@ -266,8 +284,8 @@ public class FileUpload extends AbstractApiBean {
         // -------------------------------------
         msgt("(1b) Get the selected Dataset");
         // -------------------------------------        
-        int dataset_id = 10;
-        Dataset selectedDataset = datasetService.find(new Long(dataset_id));
+        //int dataset_id = 10;
+        Dataset selectedDataset = datasetService.find(datasetId);//new Long(dataset_id));
 
         
         //-------------------
@@ -286,7 +304,7 @@ public class FileUpload extends AbstractApiBean {
 
         addFileHelper.runAddFile(selectedDataset,
                                 newFilename,
-                                "text/plain",
+                                newFileContentType,
                                 testFileInputStream);
 
 
