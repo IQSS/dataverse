@@ -13,16 +13,20 @@ public class OAuth2UserRecord {
     
     private final String serviceId;
     
-    /** Probably the username. */
+    /** An immutable value, probably a number. Not a username that may change. */
     private final String idInService;
+
+    /** A potentially mutable String that is easier on the eye than a number. */
+    private final String username;
     
     private final String accessToken;
     
     private final AuthenticatedUserDisplayInfo displayInfo;
 
-    public OAuth2UserRecord(String aServiceId, String anIdInService, String anAccessToken,  AuthenticatedUserDisplayInfo aDisplayInfo) {
+    public OAuth2UserRecord(String aServiceId, String anIdInService, String aUsername, String anAccessToken,  AuthenticatedUserDisplayInfo aDisplayInfo) {
         serviceId = aServiceId;
         idInService = anIdInService;
+        username = aUsername;
         accessToken = anAccessToken;
         displayInfo = aDisplayInfo;
     }
@@ -33,6 +37,10 @@ public class OAuth2UserRecord {
 
     public String getIdInService() {
         return idInService;
+    }
+
+    public String getUsername() {
+        return username;
     }
 
     public String getAccessToken() {

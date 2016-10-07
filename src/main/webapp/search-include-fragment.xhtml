@@ -608,7 +608,7 @@
 
                             <h:outputText styleClass="text-muted" value=" - #{SearchIncludeFragment.dataFileSizeDisplay(result.entity)}" rendered="#{!result.harvested}" />
 
-                            <h:outputText styleClass="text-muted" value=" - #{SearchIncludeFragment.dataFileMD5Display(result.entity)}" rendered="#{!result.harvested and !SearchIncludeFragment.isTabular(result.entity)}"/>
+                            <h:outputText styleClass="text-muted" value=" - #{SearchIncludeFragment.dataFileChecksumDisplay(result.entity)}" rendered="#{!result.harvested and !SearchIncludeFragment.isTabular(result.entity)}"/>
 
                             <!-- if this is a tabular data file, extra information, such as the numbers of variables and observations and the unf, is displayed: -->
                             <h:outputText styleClass="text-muted" value=" - #{SearchIncludeFragment.tabularDataDisplayInfo(result.entity)}"

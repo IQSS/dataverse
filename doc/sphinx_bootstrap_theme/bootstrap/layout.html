@@ -133,7 +133,7 @@
       {%- if hasdoc('copyright') %}
         {% trans path=pathto('copyright'), copyright=copyright|e %}&copy; <a href="{{ path }}">Copyright</a> {{ copyright }}.{% endtrans %}<br/>
       {%- else %}
-        {% trans copyright=copyright|e %}<a href="http://datascience.iq.harvard.edu/" target="_blank">Data Science</a> at <a href="http://www.iq.harvard.edu/" target="_blank">The Institute for Quantitative Social Science</a>  &nbsp;|&nbsp;  Code available at <a href="https://github.com/IQSS/dataverse" title="Dataverse on GitHub" target="_blank"><img src="_static/images/githubicon.png" width="20" alt="Dataverse on GitHub"/></a> &nbsp;|&nbsp; Created using <a href="http://sphinx.pocoo.org/" target="_blank">Sphinx</a> {{ sphinx_version }}<br/>Version {{ version }} &nbsp;|&nbsp; Last updated on {{ last_updated }}<br/>&copy; Copyright {{ copyright }} {% endtrans %}<br/>
+        {% trans copyright=copyright|e %}<a href="http://datascience.iq.harvard.edu/" target="_blank">Data Science</a> at <a href="http://www.iq.harvard.edu/" target="_blank">The Institute for Quantitative Social Science</a>  &nbsp;|&nbsp;  Code available at <a href="https://github.com/IQSS/dataverse" title="Dataverse on GitHub" target="_blank"><img src="/en/latest/_static/images/githubicon.png" width="20" alt="Dataverse on GitHub"/></a> &nbsp;|&nbsp; Created using <a href="http://sphinx.pocoo.org/" target="_blank">Sphinx</a> {{ sphinx_version }}<br/>Version {{ version }} &nbsp;|&nbsp; Last updated on {{ last_updated }}<br/>&copy; Copyright {{ copyright }} {% endtrans %}<br/>
       {%- endif %}
     {%- endif %}
     </p>

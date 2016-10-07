@@ -63,12 +63,13 @@ public class GitHubOAuth2IdpTest extends GitHubOAuth2Idp {
     public void testParseUserResponse() {
         AbstractOAuth2Idp.ParsedUserResponse expResult = new AbstractOAuth2Idp.ParsedUserResponse(
                 new AuthenticatedUserDisplayInfo("Jane", "", "jane@janedoe.com", "ACME Sprokets, Inc.", ""),
+                "1938468",
                 "jane_doe"
         );
         AbstractOAuth2Idp.ParsedUserResponse result = parseUserResponse(GITHUB_RESPONSE);
         
         assertEquals(expResult.displayInfo, result.displayInfo);
-        assertEquals(expResult.userIdInProvider, result.userIdInProvider);
+        assertEquals("1938468", result.userIdInProvider);
         
         
     }

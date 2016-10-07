@@ -45,7 +45,9 @@ public class GitHubOAuth2Idp extends AbstractOAuth2Idp {
                     response.getString("company",""),
                     ""
             );
-            return new ParsedUserResponse(displayInfo, response.getString("login"));
+            Integer immutableUserId = response.getInt("id");
+            String username = response.getString("login");
+            return new ParsedUserResponse(displayInfo, immutableUserId.toString(), username);
         }
         
     }

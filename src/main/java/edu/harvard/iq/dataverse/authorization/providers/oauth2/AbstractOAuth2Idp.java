@@ -22,10 +22,12 @@ public abstract class AbstractOAuth2Idp {
     protected static class ParsedUserResponse {
         public final AuthenticatedUserDisplayInfo displayInfo;
         public final String userIdInProvider;
+        public final String username;
 
-        public ParsedUserResponse(AuthenticatedUserDisplayInfo displayInfo, String userIdInProvider) {
+        public ParsedUserResponse(AuthenticatedUserDisplayInfo displayInfo, String userIdInProvider, String username) {
             this.displayInfo = displayInfo;
             this.userIdInProvider = userIdInProvider;
+            this.username = username;
         }
         
     }
@@ -69,7 +71,7 @@ public abstract class AbstractOAuth2Idp {
         final String body = response.getBody();
         if ( responseCode == 200 ) {
             ParsedUserResponse parsed = parseUserResponse(body);
-            return new OAuth2UserRecord(getId(), parsed.userIdInProvider, accessToken.getAccessToken(), parsed.displayInfo);
+            return new OAuth2UserRecord(getId(), parsed.userIdInProvider, parsed.username, accessToken.getAccessToken(), parsed.displayInfo);
         } else {
             throw new OAuth2Exception(responseCode, body, "Error getting the user info record.");
         }

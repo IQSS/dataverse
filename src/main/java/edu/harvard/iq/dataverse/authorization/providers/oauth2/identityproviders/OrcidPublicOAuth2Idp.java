@@ -37,7 +37,8 @@ public class OrcidPublicOAuth2Idp extends AbstractOAuth2Idp {
     protected ParsedUserResponse parseUserResponse(String responseBody) {
         Logger.getAnonymousLogger().info("ORCiD Response:");
         Logger.getAnonymousLogger().info(responseBody);
-        return new ParsedUserResponse(new AuthenticatedUserDisplayInfo("fn", "ln", "email", "aff", "pos"), "id in ORCiD");
+        String username = null;
+        return new ParsedUserResponse(new AuthenticatedUserDisplayInfo("fn", "ln", "email", "aff", "pos"), "id in ORCiD", username);
     }
     
 }

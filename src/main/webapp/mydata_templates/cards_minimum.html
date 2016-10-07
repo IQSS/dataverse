@@ -83,7 +83,7 @@
             </span>
             <br /><span class="text-muted">{{ card_info.file_type }}</span>
             <span class="text-muted"> - {{ card_info.size_in_bytes }} KB - </span>
-            <span class="text-muted"> MD5: {{ card_info.md5 }} </span>
+            <span class="text-muted"> {{ card_info.checksum.type }}: {{ card_info.checksum.value }} </span>
             
 {% endif %}
     <hr style="margin:.5em;border:0;"/>

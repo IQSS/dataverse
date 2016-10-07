@@ -6,7 +6,7 @@ Eventually, this document may be split into several parts, dedicated to individu
 such as R, rApache and the TwoRavens applications. Particularly, if the TwoRavens team creates an "official" distribution with their own installation manual. 
 
 0. PREREQUISITES
-+++++++++++++++
+++++++++++++++++
 
 a. httpd (Apache): 
 ------------------
@@ -194,7 +194,7 @@ Note that some of these packages have their own dependencies, and additional ins
 install.pl script:
 ++++++++++++++++++
 
-I. Configure the TwoRavens web (Javascript) application.
+I. Configure the TwoRavens web (Javascript) application
 -------------------------------------------------------
 
 Edit the file ``/var/www/html/dataexplore/app_ddi.js``.

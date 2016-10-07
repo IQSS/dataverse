@@ -92,10 +92,10 @@ the latter reserved for longer, descriptive text.
 With variables ingested from R data frames the variable name will be
 used for both the "name" and the "label".
 
-| *Optional R packages exist for providing descriptive variable labels;
- in one of the future versions support may be added for such a
- mechanism. It would of course work only for R files that were
- created with such optional packages*.
+*Optional R packages exist for providing descriptive variable labels;
+in one of the future versions support may be added for such a
+mechanism. It would of course work only for R files that were
+created with such optional packages*.
 
 Similarly, R categorical values (factors) lack descriptive labels too.
 **Note:** This is potentially confusing, since R factors do
@@ -132,7 +132,7 @@ value: unless the time zone was explicitly defined, R will adjust the
 value to the current time zone. The resulting behavior is often
 counter-intuitive: if you create a time value, for example:
 
-		   timevalue<-as.POSIXct("03/19/2013 12:57:00", format = "%m/%d/%Y %H:%M:%OS");
+``timevalue<-as.POSIXct("03/19/2013 12:57:00", format = "%m/%d/%Y %H:%M:%OS");``
 
 on a computer configured for the San Francisco time zone, the value
 will be differently displayed on computers in different time zones;
@@ -143,9 +143,11 @@ If it is important that the values are always displayed the same way,
 regardless of the current time zones, it is recommended that the time
 zone is explicitly defined. For example: 
 
-     attr(timevalue,"tzone")<-"PST"
+``attr(timevalue,"tzone")<-"PST"``
+
 or 
-   timevalue<-as.POSIXct("03/19/2013 12:57:00", format = "%m/%d/%Y %H:%M:%OS", tz="PST");
+
+``timevalue<-as.POSIXct("03/19/2013 12:57:00", format = "%m/%d/%Y %H:%M:%OS", tz="PST");``
 
 Now the value will always be displayed as "15:57 PST", regardless of
 the time zone that is current for the OS ... **BUT ONLY** if the OS
@@ -189,7 +191,7 @@ wasn't defined explicitly, it implicitly becomes a time value in the
 "UTC" zone!), this means that it is **impossible** to have 2 time
 value vectors, in Stata/SPSS and R, that produce the same UNF.
 
-| **A pro tip:** if it is important to produce SPSS/Stata and R versions of
+**A pro tip:** if it is important to produce SPSS/Stata and R versions of
 the same data set that result in the same UNF when ingested, you may
 define the time variables as **strings** in the R data frame, and use
 the "YYYY-MM-DD HH:mm:ss" formatting notation. This is the formatting used by the UNF

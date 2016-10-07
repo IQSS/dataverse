@@ -83,7 +83,8 @@ public class OAuth2Page implements Serializable {
             
             if ( dvUser == null ) {
                 // need to create the user
-                dvUser = authenticationSvc.createAuthenticatedUser(idtf, oauthUser.getIdInService(), oauthUser.getDisplayInfo(), true);
+                String proposedAuthenticatedUserIdentifier = oauthUser.getUsername();
+                dvUser = authenticationSvc.createAuthenticatedUser(idtf, proposedAuthenticatedUserIdentifier, oauthUser.getDisplayInfo(), true);
                 
             } else {
                 // update profile
