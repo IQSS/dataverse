@@ -1279,4 +1279,74 @@ public class DataFileServiceBean implements java.io.Serializable {
         solrSearchResult.setEntity(this.findCheapAndEasy(solrSearchResult.getEntityId()));
     }
         
+    
+    /**
+     * Does this file have a replacement.  
+     * Any file should have AT MOST 1 replacement
+     * 
+     * @param df
+     * @return 
+     */
+    public boolean hasReplacement(DataFile df) throws Exception{
+        
+        if (df.getId() == null){
+            // An unsaved file cannot have a replacment
+            return false;
+        }
+       
+        
+        TypedQuery query = em.createQuery("select o from DataFile o" +
+                    " WHERE o.previousVersionId = :dataFileId;", DataFile.class);
+        query.setParameter("dataFileId", df.getId());
+        //query.setMaxResults(maxResults);
+        
+        List<DataFile> dataFiles = query.getResultList();
+        
+        if (dataFiles.size() == 0){
+            return false;
+        }
+        
+         if (!df.isReleased()){
+            // An unpublished SHOULD NOT have a replacment
+            String errMsg = "DataFile with id: [" + df.getId() + "] is UNPUBLISHED with a REPLACEMENT.  This should NOT happen.";
+            logger.severe(errMsg);
+            
+            throw new Exception(errMsg);
+        }
+
+        
+        
+        else if (dataFiles.size() == 1){
+            return true;
+        }else{
+        
+            String errMsg = "DataFile with id: [" + df.getId() + "] has more than one replacment!";
+            logger.severe(errMsg);
+
+            throw new Exception(errMsg);
+        }
+        
+    }
+    
+    /**
+     * Is this a replacement file??
+     * 
+     * The indication of a previousDataFileId says that it is
+     * 
+     * @param df
+     * @return
+     * @throws Exception 
+     */
+    public boolean isReplacementFile(DataFile df) throws Exception{
+        if (df.getPreviousDataFileId() == null){
+            return false;
+        }else if (df.getPreviousDataFileId() < 1){
+            logger.severe("Stop! previousDataFileId should either be null or a number greater than 0");
+            //return false;
+            // blow up -- this shouldn't happen!
+            throw new Exception("previousDataFileId should either be null or a number greater than 0");
+        }else{
+            return true;
+        }
+    }
 }

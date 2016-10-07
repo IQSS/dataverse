@@ -220,7 +220,46 @@ public class FileUploadTestPage implements java.io.Serializable {
         }
     }
     
+    /*
+    public String getPebbleTest() throws PebbleException, IOException{
+        
+        ClasspathLoader loader = new ClasspathLoader();
+  
+        //String pagePath = getServletContext().getRealPath("WEB-INF/home.html");
+        ////msgt("pagePath: " + pagePath);
+
+        //loader.setPrefix(getServletContext().getRealPath("WEB-INF/templates"));
+        loader.setPrefix("WEB-INF/templates");
+        loader.setSuffix(".html");
+        
+        Builder yeBuilder = new PebbleEngine.Builder();
+        yeBuilder.loader(loader);// = loader;//(loader)
     
+        PebbleEngine engine = yeBuilder.build();
+        //PebbleEngine.Builder().
+                
+        PebbleTemplate compiledTemplate = engine.getTemplate("home");
+                
+        
+        
+        //PebbleTemplate compiledTemplate = engine.getTemplate(pagePath);
+
+        //PebbleTemplate compiledTemplate = engine.getTemplate(getServletContext().getRealPath("WEB-INF/home.html"));
+        
+        Map<String, Object> context = new HashMap<>();
+        context.put("name", "Mitchell");
+
+        Writer writer = new StringWriter();
+        compiledTemplate.evaluate(writer, context);
+
+        String output = writer.toString();
+        
+        msgt("getPebbleTest: " + output);
+        
+        return output;
+        
+    }
+    */
     public DataFile getNewlyAddedFile(){
         
         return newlyAddedFile;

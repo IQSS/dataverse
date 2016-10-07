@@ -241,55 +241,46 @@ public class FileUpload extends AbstractApiBean {
     }    
         
     
+    /**
+     * Add a File to an existing Dataset
+     * 
+     * @param datasetId
+     * @param testFileInputStream
+     * @param contentDispositionHeader
+     * @param formDataBodyPart
+     * @return 
+     */
     @POST
-    //@Path("add/{newFilename}")
     @Path("add")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public Response hi_add(@FormDataParam("datasetId") Long datasetId,
+    public Response addFileToDataset(@FormDataParam("datasetId") Long datasetId,
                     @FormDataParam("file") InputStream testFileInputStream,
                     @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
                     @FormDataParam("file") final FormDataBodyPart formDataBodyPart
                     ){
         
         // -------------------------------------
-        msgt("(1) getSampleFile()");
+        // (1) Get the file name and content type
         // -------------------------------------
 
         String newFilename = contentDispositionHeader.getFileName();
         String newFileContentType = formDataBodyPart.getMediaType().toString();
-        //Faces.getServletContext().getMimeType(newFilename);
-        //contentDispositionHeader.getParameters().toString();
-        msgt("newFileContentType:" + newFileContentType);
         
-        /*
-        InputStream testFileInputStream = getSampleFile();
-        if (testFileInputStream == null){
-            return okResponse("Couldn't find the file!!");
-        }
-        */
         // -------------------------------------
-        msgt("(1a) Get User from API token");
+        // (2) Get the user from the API key
         // -------------------------------------
         User authUser;
         try {
             authUser = this.findUserOrDie();
         } catch (WrappedResponse ex) {
-            return okResponse("Couldn't find a user from the API key");
+            return errorResponse(Response.Status.FORBIDDEN, "Couldn't find a user from the API key");
         }
         //authSvc.findByID(new Long(1));        
-        msg("authUser: " + authUser);
-        msg("getUserIdentifier: " + authUser.getIdentifier());
-
-        
-        // -------------------------------------
-        msgt("(1b) Get the selected Dataset");
-        // -------------------------------------        
-        //int dataset_id = 10;
-        Dataset selectedDataset = datasetService.find(datasetId);//new Long(dataset_id));
-
+        //msg("authUser: " + authUser);
+        //msg("getUserIdentifier: " + authUser.getIdentifier());  
         
         //-------------------
-        // ADD
+        // (3) Create the AddReplaceFileHelper object
         //-------------------
         msg("ADD!");
 
@@ -302,20 +293,23 @@ public class FileUpload extends AbstractApiBean {
                                                 this.commandEngine);
 
 
-        addFileHelper.runAddFile(selectedDataset,
+        //-------------------
+        // (4) Run "runAddFileByDatasetId"
+        //-------------------
+        addFileHelper.runAddFileByDatasetId(datasetId,
                                 newFilename,
                                 newFileContentType,
                                 testFileInputStream);
 
 
         if (addFileHelper.hasError()){
-            return okResponse(addFileHelper.getErrorMessagesAsString("\n"));
+            return errorResponse(Response.Status.BAD_REQUEST, addFileHelper.getErrorMessagesAsString("\n"));
         }else{
             return okResponse("Look at that!  You added a file! (hey hey, it may have worked)");
         }
             
 
-    } // end call to "hi"
+    } // end: addFileToDataset
 
 
     /**
