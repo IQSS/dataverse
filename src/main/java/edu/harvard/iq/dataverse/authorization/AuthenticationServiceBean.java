@@ -15,6 +15,8 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthentic
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.echo.EchoAuthenticationProviderFactory;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2AuthenticationProviderFactory;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -22,7 +24,6 @@ import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailData;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.passwordreset.PasswordResetData;
 import edu.harvard.iq.dataverse.passwordreset.PasswordResetServiceBean;
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Date;
@@ -36,6 +37,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
+import javax.ejb.EJBException;
 import javax.ejb.Singleton;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -61,6 +63,11 @@ public class AuthenticationServiceBean {
      * Where all registered authentication providers live.
      */
     final Map<String, AuthenticationProvider> authenticationProviders = new HashMap<>();
+    
+    /**
+     * Index of all OAuth2 providers. They also live in {@link #authenticationProviders}.
+     */
+    final Map<String, AbstractOAuth2AuthenticationProvider> oAuth2authenticationProviders = new HashMap<>();
     
     final Map<String, AuthenticationProviderFactory> providerFactories = new HashMap<>();
     
@@ -92,8 +99,10 @@ public class AuthenticationServiceBean {
         try {
             registerProviderFactory( new BuiltinAuthenticationProviderFactory(builtinUserServiceBean) );
             registerProviderFactory( new EchoAuthenticationProviderFactory() );
+            registerProviderFactory( new OAuth2AuthenticationProviderFactory() );
             /**
              * Register shib provider factory here. Test enable/disable via Admin API, etc.
+             * // FIXME MBS remove?
              */
             new ShibAuthenticationProvider();
         } catch (AuthorizationSetupException ex) {
@@ -101,20 +110,18 @@ public class AuthenticationServiceBean {
         }
         
         // Now, load the providers.
-        for ( AuthenticationProviderRow row : 
-                em.createNamedQuery("AuthenticationProviderRow.findAllEnabled", AuthenticationProviderRow.class)
-                    .getResultList() 
-        ) {
-            try {
-                registerProvider( loadProvider(row) );
-                
-            } catch ( AuthenticationProviderFactoryNotFoundException e ) {
-                logger.log(Level.SEVERE, "Cannot find authentication provider factory with alias '" + e.getFactoryAlias() + "'",e);
-                
-            } catch (AuthorizationSetupException ex) {
-                logger.log(Level.SEVERE, "Exception setting up the authentication provider '" + row.getId() + "': " + ex.getMessage(), ex);
-            }
-        }
+        em.createNamedQuery("AuthenticationProviderRow.findAllEnabled", AuthenticationProviderRow.class)
+                .getResultList().forEach((row) -> {
+                    try {
+                        registerProvider( loadProvider(row) );
+                        
+                    } catch ( AuthenticationProviderFactoryNotFoundException e ) {
+                        logger.log(Level.SEVERE, "Cannot find authentication provider factory with alias '" + e.getFactoryAlias() + "'",e);
+                        
+                    } catch (AuthorizationSetupException ex) {
+                        logger.log(Level.SEVERE, "Exception setting up the authentication provider '" + row.getId() + "': " + ex.getMessage(), ex);
+                    }
+        });
     }
     
     public void registerProviderFactory(AuthenticationProviderFactory aFactory) 
@@ -153,9 +160,20 @@ public class AuthenticationServiceBean {
         authenticationProviders.put( aProvider.getId(), aProvider);
         actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Auth, "registerProvider")
             .setInfo(aProvider.getId() + ":" + aProvider.getInfo().getTitle()));
+        if ( aProvider instanceof AbstractOAuth2AuthenticationProvider ) {
+            oAuth2authenticationProviders.put(aProvider.getId(), (AbstractOAuth2AuthenticationProvider) aProvider);
+        }
         
     }
-
+    
+    public AbstractOAuth2AuthenticationProvider getOAuth2Provider( String id ) {
+        return oAuth2authenticationProviders.get(id);
+    }
+    
+    public Set<AbstractOAuth2AuthenticationProvider> getOAuth2Providers() {
+        return new HashSet<>(oAuth2authenticationProviders.values());
+    }
+    
     public void deregisterProvider( String id ) {
         authenticationProviders.remove( id );
         actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Auth, "deregisterProvider")

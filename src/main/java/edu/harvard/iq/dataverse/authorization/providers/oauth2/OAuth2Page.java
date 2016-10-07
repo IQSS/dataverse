@@ -8,10 +8,11 @@ import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import static java.util.stream.Collectors.toList;
 import javax.ejb.EJB;
 import javax.faces.context.FacesContext;
 import javax.inject.Named;
@@ -20,8 +21,9 @@ import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 
 /**
+ * Backing bean of the oauth2 callback page. Normally the page should not be shown, as the
+ * user is logged in and then redirected. The page is shown in case there's an error.
  * 
- * FIXME MBS State should reflect the IDP to use for the token exchange and user data, and some timeout. Then encrypt and BASE64.
  * @author michael
  */
 @Named(value = "OAuth2Page")
@@ -36,7 +38,6 @@ public class OAuth2Page implements Serializable {
     private String responseBody;
     private OAuth2Exception error;
     private OAuth2UserRecord oauthUser;
-    private final OAuth2AuthenticationProvider oauthPrv = new OAuth2AuthenticationProvider();
     
     @EJB
     AuthenticationServiceBean authenticationSvc;
@@ -49,7 +50,7 @@ public class OAuth2Page implements Serializable {
     }
     
     public String linkFor( String idpId ) {
-        AbstractOAuth2Idp idp = oauthPrv.getProvider(idpId);
+        AbstractOAuth2AuthenticationProvider idp = authenticationSvc.getOAuth2Provider(idpId);
         return idp.getService(createState(idp)).getAuthorizationUrl();
     }
 
@@ -57,7 +58,6 @@ public class OAuth2Page implements Serializable {
         HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
         
         final String code = req.getParameter("code");
-        logger.info("Code: '" + code + "'"); // TODO remove
         if ( code == null || code.trim().isEmpty() ) {
             try( BufferedReader rdr = req.getReader() ) {
                 StringBuilder sb = new StringBuilder();
@@ -73,7 +73,7 @@ public class OAuth2Page implements Serializable {
         final String state = req.getParameter("state");
         
         try {
-            AbstractOAuth2Idp idp = getIdpFromState(state);
+            AbstractOAuth2AuthenticationProvider idp = getIdpFromState(state);
             if ( idp == null ) {
                 throw new OAuth2Exception(-1, "", "Invalid 'state' parameter");
             }
@@ -102,13 +102,13 @@ public class OAuth2Page implements Serializable {
         
     }
     
-    private AbstractOAuth2Idp getIdpFromState( String state ) {
+    private AbstractOAuth2AuthenticationProvider getIdpFromState( String state ) {
         String[] topFields = state.split("~",2);
         if ( topFields.length != 2 ) {
             logger.log(Level.INFO, "Wrong number of fields in state string", state);
             return null;
         }
-        AbstractOAuth2Idp idp = oauthPrv.getProvider( topFields[0] );
+        AbstractOAuth2AuthenticationProvider idp = authenticationSvc.getOAuth2Provider( topFields[0] );
         if ( idp == null ) { 
             logger.log(Level.INFO, "Can''t find IDP ''{0}''", topFields[0]);
             return null;
@@ -130,7 +130,7 @@ public class OAuth2Page implements Serializable {
         }
     }
     
-    private String createState( AbstractOAuth2Idp idp ) {
+    private String createState( AbstractOAuth2AuthenticationProvider idp ) {
         if ( idp == null ) {
             throw new IllegalArgumentException("idp cannot be null");
         }
@@ -161,10 +161,10 @@ public class OAuth2Page implements Serializable {
         return error!=null;
     }
     
-    public List<AbstractOAuth2Idp> getProviders() {
-        List<AbstractOAuth2Idp> providerList = new ArrayList<>();
-        oauthPrv.providers().forEach( providerList::add );
-        return providerList;
+    public List<AbstractOAuth2AuthenticationProvider> getProviders() {
+        return authenticationSvc.getOAuth2Providers().stream()
+                                .sorted( Comparator.comparing(AbstractOAuth2AuthenticationProvider::getTitle) )
+                                .collect(toList());
     }
     
 }

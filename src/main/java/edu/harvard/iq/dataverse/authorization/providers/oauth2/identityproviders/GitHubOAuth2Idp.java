@@ -3,7 +3,7 @@ package edu.harvard.iq.dataverse.authorization.providers.oauth2.identityprovider
 import com.github.scribejava.apis.GitHubApi;
 import com.github.scribejava.core.builder.api.BaseApi;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
-import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2Idp;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
 import java.io.StringReader;
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -13,17 +13,14 @@ import javax.json.JsonReader;
  * IDP adaptor for GitHub.com
  * @author michael
  */
-public class GitHubOAuth2Idp extends AbstractOAuth2Idp {
+public class GitHubOAuth2Idp extends AbstractOAuth2AuthenticationProvider {
     
-    public GitHubOAuth2Idp() {
+    public GitHubOAuth2Idp(String aClientId, String aClientSecret) {
         id = "github";
         title = "GitHub";
-        clientId = "de1bf3127f3201d3e3a2"; // TODO load from config
-        clientSecret = "WITHELD"; // TODO load from config
+        clientId = aClientId;
+        clientSecret = aClientSecret;
         userEndpoint = "https://api.github.com/user";
-        redirectUrl = "http://localhost:8080/oauth2/callback.xhtml"; // TODO load from config
-        imageUrl = null;
-//        scope = "user";
     }
     
     @Override
@@ -45,9 +42,9 @@ public class GitHubOAuth2Idp extends AbstractOAuth2Idp {
                     response.getString("company",""),
                     ""
             );
-            Integer immutableUserId = response.getInt("id");
+            Integer persistentUserId = response.getInt("id");
             String username = response.getString("login");
-            return new ParsedUserResponse(displayInfo, immutableUserId.toString(), username);
+            return new ParsedUserResponse(displayInfo, persistentUserId.toString(), username);
         }
         
     }

@@ -8,16 +8,20 @@ import com.github.scribejava.core.model.Response;
 import com.github.scribejava.core.model.Verb;
 import com.github.scribejava.core.oauth.OAuth20Service;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
+import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
+import edu.harvard.iq.dataverse.authorization.AuthenticationProviderDisplayInfo;
+import edu.harvard.iq.dataverse.authorization.AuthenticationRequest;
+import edu.harvard.iq.dataverse.authorization.AuthenticationResponse;
 import java.io.IOException;
 import java.util.Objects;
-import java.util.logging.Logger;
+import java.util.Optional;
 
 /**
  * Base class for OAuth2 identity providers, such as GitHub and ORCiD.
  * 
  * @author michael
  */
-public abstract class AbstractOAuth2Idp {
+public abstract class AbstractOAuth2AuthenticationProvider implements AuthenticationProvider {
     
     protected static class ParsedUserResponse {
         public final AuthenticatedUserDisplayInfo displayInfo;
@@ -29,19 +33,18 @@ public abstract class AbstractOAuth2Idp {
             this.userIdInProvider = userIdInProvider;
             this.username = username;
         }
-        
     }
     
     protected String id;
     protected String title;
+    protected String subTitle;
     protected String clientId;
     protected String clientSecret;
     protected String userEndpoint;
     protected String redirectUrl;
-    protected String imageUrl;
     protected String scope;
     
-    public AbstractOAuth2Idp(){}
+    public AbstractOAuth2AuthenticationProvider(){}
     
     public abstract BaseApi getApiInstance();
     
@@ -62,7 +65,6 @@ public abstract class AbstractOAuth2Idp {
     public OAuth2UserRecord getUserRecord(String code, String state) throws IOException, OAuth2Exception {
         OAuth20Service service = getService(state);
         OAuth2AccessToken accessToken = service.getAccessToken(code);
-        Logger.getAnonymousLogger().info("Token: " + accessToken.getAccessToken()); // TODO remove.
         
         final OAuthRequest request = new OAuthRequest(Verb.GET, getUserEndpoint(), service);
         service.signRequest(accessToken, request);
@@ -76,7 +78,13 @@ public abstract class AbstractOAuth2Idp {
             throw new OAuth2Exception(responseCode, body, "Error getting the user info record.");
         }
     }
+
+    @Override
+    public AuthenticationProviderDisplayInfo getInfo() {
+        return new AuthenticationProviderDisplayInfo(getId(), getTitle(), getSubTitle());
+    }
     
+    @Override
     public String getId() {
         return id;
     }
@@ -96,13 +104,29 @@ public abstract class AbstractOAuth2Idp {
     public String getUserEndpoint() {
         return userEndpoint;
     }
-
-    public String getImageUrl() {
-        return imageUrl;
-    }
-
+    
     public String getRedirectUrl() {
         return redirectUrl;
+    }
+
+    public Optional<String> getIconHtml() {
+        return Optional.empty();
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public void setSubTitle(String subtitle) {
+        this.subTitle = subtitle;
+    }
+
+    public String getSubTitle() {
+        return subTitle;
     }
 
     @Override
@@ -121,21 +145,24 @@ public abstract class AbstractOAuth2Idp {
         if (obj == null) {
             return false;
         }
-        if ( ! (obj instanceof AbstractOAuth2Idp)) {
+        if ( ! (obj instanceof AbstractOAuth2AuthenticationProvider)) {
             return false;
         }
-        final AbstractOAuth2Idp other = (AbstractOAuth2Idp) obj;
+        final AbstractOAuth2AuthenticationProvider other = (AbstractOAuth2AuthenticationProvider) obj;
         if (!Objects.equals(this.id, other.id)) {
             return false;
         }
         if (!Objects.equals(this.clientId, other.clientId)) {
             return false;
         }
-        if (!Objects.equals(this.clientSecret, other.clientSecret)) {
-            return false;
-        }
-        return true;
+        return Objects.equals(this.clientSecret, other.clientSecret);
     }
 
+    @Override
+    public AuthenticationResponse authenticate(AuthenticationRequest request) {
+        throw new UnsupportedOperationException("OAuth2 providers do not authenticate via an authentication request.");
+    }
+
+    
     
 }
