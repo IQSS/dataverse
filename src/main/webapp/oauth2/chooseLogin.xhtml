@@ -8,12 +8,28 @@
     </h:head>
     <h:body>
         <h1>Choose a login provider</h1>
-        <kbd>Counter: #{OAuth2Page.counter()}</kbd>
-        <ul>
-            <ui:repeat value="#{OAuth2Page.providers}" var="p">
-                <li><a href="#{OAuth2Page.linkFor(p.id)}"><h:outputText value="#{p.title}" /></a></li>
-            </ui:repeat>
-        </ul>
+        <ui:fragment rendered="#{OAuth2Page.isOAuth2CallbackNotSet()}">
+            <div class="warning">
+                OAuth2 protocol requires a callback URL. Normally, this URL should go to page
+                <code>/oauth2/callback.xhtml</code> in this installation of Dataverse.<br />
+                This parameter is read from the <em>settings table</em>, with key <code>OAuth2CallbackUrl</code>.<br/>
+                The table contains no such entry, so the system defaults to <code>#{OAuth2Page.callbackUrl}</code>. 
+                While this is suitable for development, it will need to be changed in production.
+            </div>
+        </ui:fragment>
+        <ui:fragment rendered="#{OAuth2Page.isOAuth2ProvidersDefined()}">
+            <h3>Authenticate using:</h3>
+            <ul>
+                <ui:repeat value="#{OAuth2Page.providers}" var="p">
+                    <li><a href="#{OAuth2Page.linkFor(p.id)}"><h:outputText value="#{p.title}" /></a></li>
+                </ui:repeat>
+            </ul>
+        </ui:fragment>
+        <ui:fragment rendered="#{not OAuth2Page.isOAuth2ProvidersDefined()}">
+            <hr />
+            <strong>No OAuth2 authentication providers defined.</strong>
+            <hr />
+        </ui:fragment>
     </h:body>
 </html>
 

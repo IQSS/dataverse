@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -42,6 +43,9 @@ public class OAuth2Page implements Serializable {
     @EJB
     AuthenticationServiceBean authenticationSvc;
     
+    @EJB
+    SettingsServiceBean settingsSvc;
+    
     @Inject
     DataverseSession session;
     
@@ -51,7 +55,11 @@ public class OAuth2Page implements Serializable {
     
     public String linkFor( String idpId ) {
         AbstractOAuth2AuthenticationProvider idp = authenticationSvc.getOAuth2Provider(idpId);
-        return idp.getService(createState(idp)).getAuthorizationUrl();
+        return idp.getService(createState(idp), getCallbackUrl()).getAuthorizationUrl();
+    }
+
+    public String getCallbackUrl() {
+        return settingsSvc.get("OAuth2CallbackUrl", "http://localhost:8080/oauth2/callback.xhtml");
     }
 
     public void exchangeCodeForToken() throws IOException {
@@ -77,7 +85,7 @@ public class OAuth2Page implements Serializable {
             if ( idp == null ) {
                 throw new OAuth2Exception(-1, "", "Invalid 'state' parameter");
             }
-            oauthUser = idp.getUserRecord(code, state);
+            oauthUser = idp.getUserRecord(code, state, getCallbackUrl());
             UserRecordIdentifier idtf = oauthUser.getUserRecordIdentifier();
             AuthenticatedUser dvUser = authenticationSvc.lookupUser(idtf);
             
@@ -167,4 +175,11 @@ public class OAuth2Page implements Serializable {
                                 .collect(toList());
     }
     
+    public boolean isOAuth2CallbackNotSet() {
+        return settingsSvc.get("OAuth2CallbackUrl") == null;
+    }
+    
+    public boolean isOAuth2ProvidersDefined() {
+        return ! authenticationSvc.getOAuth2Providers().isEmpty();
+    }
 }

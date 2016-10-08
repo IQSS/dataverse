@@ -139,7 +139,7 @@ public class Admin extends AbstractApiBean {
                 authSvc.deregisterProvider(provider.getId());
                 authSvc.registerProvider(provider);
             }
-            return createdResponse("/s/authenticationProviders/"+managed.getId(), json(managed));
+            return createdResponse("/admin/authenticationProviders/"+managed.getId(), json(managed));
         } catch ( AuthorizationSetupException e ) {
             return errorResponse(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage() );
         }

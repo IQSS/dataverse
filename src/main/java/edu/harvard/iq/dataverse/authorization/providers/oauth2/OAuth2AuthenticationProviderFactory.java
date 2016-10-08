@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Creates
+ * Creates OAuth2 authentication providers based on rows from the database.
  *
  * @author michael
  */

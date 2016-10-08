@@ -50,20 +50,20 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
     
     protected abstract ParsedUserResponse parseUserResponse( String responseBody );
     
-    public OAuth20Service getService(String state) {
+    public OAuth20Service getService(String state, String redirectUrl) {
         ServiceBuilder svcBuilder = new ServiceBuilder()
                 .apiKey(getClientId())
                 .apiSecret(getClientSecret())
                 .state(state)
-                .callback(getRedirectUrl());
+                .callback(redirectUrl);
         if ( scope != null ) {        
             svcBuilder.scope(scope);
         }
         return (OAuth20Service) svcBuilder.build( getApiInstance() );
     }
     
-    public OAuth2UserRecord getUserRecord(String code, String state) throws IOException, OAuth2Exception {
-        OAuth20Service service = getService(state);
+    public OAuth2UserRecord getUserRecord(String code, String state, String redirectUrl) throws IOException, OAuth2Exception {
+        OAuth20Service service = getService(state, redirectUrl);
         OAuth2AccessToken accessToken = service.getAccessToken(code);
         
         final OAuthRequest request = new OAuthRequest(Verb.GET, getUserEndpoint(), service);

@@ -176,6 +176,7 @@ public class AuthenticationServiceBean {
     
     public void deregisterProvider( String id ) {
         authenticationProviders.remove( id );
+        oAuth2authenticationProviders.remove( id );
         actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Auth, "deregisterProvider")
             .setInfo(id));
 
