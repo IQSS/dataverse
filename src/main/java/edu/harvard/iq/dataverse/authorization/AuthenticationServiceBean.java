@@ -486,10 +486,8 @@ public class AuthenticationServiceBean {
             authenticatedUser.setEmailConfirmed(emailConfirmedNow);
             authenticatedUser = save(authenticatedUser);
         } else {
-            /**
-             * @todo Rather than creating a token directly here it might be
-             * better to do something like "startConfirmEmailProcessForNewUser".
-             */
+            /* @todo Rather than creating a token directly here it might be
+             * better to do something like "startConfirmEmailProcessForNewUser". */
             confirmEmailService.createToken(authenticatedUser);
         }
 

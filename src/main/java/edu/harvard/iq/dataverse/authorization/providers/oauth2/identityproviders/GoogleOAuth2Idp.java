@@ -5,6 +5,7 @@ import com.github.scribejava.core.builder.api.BaseApi;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
 import java.io.StringReader;
+import java.util.UUID;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
@@ -42,9 +43,22 @@ public class GoogleOAuth2Idp extends AbstractOAuth2AuthenticationProvider {
                     "",
                     ""
             );
-            String immutableUserId = response.getString("id");
-            String username = null;
-            return new ParsedUserResponse(displayInfo, immutableUserId, username);
+            String persistentUserId = response.getString("id");
+            String username = response.getString("email");
+            if ( username != null ) {
+                username = username.split("@")[0].trim();
+            } else {
+                // compose a username from given and family names
+                username = response.getString("given_name","") + "."
+                           + response.getString("family_name","");
+                username = username.trim();
+                if ( username.isEmpty() ) {
+                    username = UUID.randomUUID().toString();
+                } else {
+                    username = username.replaceAll(" ", "-");
+                }
+            }
+            return new ParsedUserResponse(displayInfo, persistentUserId, username);
         }
     }
     

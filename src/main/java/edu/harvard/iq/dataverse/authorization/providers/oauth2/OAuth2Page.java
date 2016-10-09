@@ -89,6 +89,11 @@ public class OAuth2Page implements Serializable {
             UserRecordIdentifier idtf = oauthUser.getUserRecordIdentifier();
             AuthenticatedUser dvUser = authenticationSvc.lookupUser(idtf);
             
+            logger.info("OAuth user:" + oauthUser); // FIXME MBS remove.
+            logger.info("OAuth disp:" + oauthUser.getDisplayInfo()); // FIXME MBS remove.
+            logger.info("OAuth usnm:" + oauthUser.getUsername()); // FIXME MBS remove.
+            logger.info("AuthenticatedUser: " + dvUser); // FIXME MBS remove.
+            
             if ( dvUser == null ) {
                 // need to create the user
                 String proposedAuthenticatedUserIdentifier = oauthUser.getUsername();
