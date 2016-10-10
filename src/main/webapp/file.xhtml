@@ -25,13 +25,20 @@
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(FilePage.file)}"/>
                 </f:metadata>
                 <h:form id="fileForm">
-                    <div id="topDatasetBlock" class="row">
-                        <div id="actionButtonBlock" class="button-block clearfix">
+                    
+                    
+                    
+                    <div id="XXtopDatasetBlockXX" class="row" style="border:0px solid orange;">
+                        
+                        
+                        
+                        <div id="XXactionButtonBlockXX" class="button-block clearfix" style="border:0px solid red;">
+                            
+                            <div id="XXright-wrapperXX" class="pull-right" style="border:0px solid chartreuse;">
+                            
                             <!-- Edit Button Group -->
-                            <!-- Edit Button -->
-                            <ui:fragment rendered="#{dataverseSession.user.authenticated
+                            <div class="btn-group pull-right" jsf:rendered="#{dataverseSession.user.authenticated
                                                      and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset)}">
-                            <div class="btn-group pull-right" jsf:rendered="#{true}">
                                 <button type="button" id="editFile" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                                     <span class="glyphicon glyphicon-pencil"/> #{bundle['dataset.editBtn']} <span class="caret"></span>
                                 </button>
@@ -64,26 +71,28 @@
                                     </li>
                                 </ul>
                             </div>
-                            </ui:fragment>
-                            <!-- END: Edit Button -->
                             <!-- END: Edit Button Group -->
-                            
 
-                            <ui:include src="file-download-button-fragment.xhtml" class="pull-right">
-                            <ui:param name="fileMetadata" value="#{FilePage.fileMetadata}"/>
-                            <ui:param name="canUpdateDataset" value="#{FilePage.canUpdateDataset()}"/>
-                            <ui:param name="downloadPopupRequired" value="#{FilePage.downloadPopupRequired}"/>
-                            <ui:param name="guestbookResponse" value="#{FilePage.guestbookResponse}"/>
-                            <ui:param name="guestbookResponseService" value="#{FilePage.guestbookResponseService}"/>
-                            <ui:param name="fileDownloadHelper" value="#{FilePage.fileDownloadHelper}"/>
-                            <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
-                            <ui:param name="worldMapPermissionHelper" value="#{FilePage.worldMapPermissionHelper}"/>
-                            <ui:param name="twoRavensHelper" value="#{FilePage.twoRavensHelper}"/>
+                            <div class="pull-right" style="margin-right:1em;">
+                            <ui:include src="file-download-button-fragment.xhtml">
+                                <ui:param name="fileMetadata" value="#{FilePage.fileMetadata}"/>
+                                <ui:param name="canUpdateDataset" value="#{FilePage.canUpdateDataset()}"/>
+                                <ui:param name="downloadPopupRequired" value="#{FilePage.downloadPopupRequired}"/>
+                                <ui:param name="guestbookResponse" value="#{FilePage.guestbookResponse}"/>
+                                <ui:param name="guestbookResponseService" value="#{FilePage.guestbookResponseService}"/>
+                                <ui:param name="fileDownloadHelper" value="#{FilePage.fileDownloadHelper}"/>
+                                <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
+                                <ui:param name="worldMapPermissionHelper" value="#{FilePage.worldMapPermissionHelper}"/>
+                                <ui:param name="twoRavensHelper" value="#{FilePage.twoRavensHelper}"/>
                             </ui:include>
+                            </div>
 
-                            <!-- TO-DO: Tooltips for these buttons say "dataset" -->
+                            <!-- 
+                            ********** TO-DO: Tooltips for these buttons say "dataset" **********
+                            -->
+                            
                             <!-- Email/Share Button Group -->
-                            <div class="btn-group pull-right" id="datasetButtonBar" role="group">
+                            <div class="btn-group pull-right" id="datasetButtonBar" role="group" style="border:0px solid purple;">
                                 <p:commandLink class="btn btn-default bootstrap-button-tooltip" title="#{bundle['dataset.email.datasetContactBtn']}"
                                                update=":contactDialog" oncomplete="PF('contactForm').show()" actionListener="#{sendFeedbackDialog.initUserInput}">
                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
@@ -101,7 +110,7 @@
                             <p:dialog id="shareDialog" header="#{bundle['dataset.share.datasetShare']}" widgetVar="shareDialog" modal="true">
                                 <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataset.share.datasetShare.tip']}</p>
 
-                                    <div id="sharrre-widget" data-url="#{systemConfig.dataverseSiteUrl}/dataset.xhtml?persistentId=#{FilePage.fileMetadata.datasetVersion.dataset.globalId}" data-text="#{bundle['dataset.share.datasetShare.shareText']}"></div>
+                                <div id="sharrre-widget" data-url="#{systemConfig.dataverseSiteUrl}/dataset.xhtml?persistentId=#{FilePage.fileMetadata.datasetVersion.dataset.globalId}" data-text="#{bundle['dataset.share.datasetShare.shareText']}"></div>
 
                                 <div class="button-block">
                                     <button type="button" onclick="PF('shareDialog').hide()" class="btn btn-default" value="#{bundle.close}">
@@ -110,6 +119,10 @@
                                 </div>
                             </p:dialog>
                             <!-- END: Email/Share Button Group -->
+                            
+                            
+                            </div>
+                            
 
                             <!-- Metrics -->
                             <div id="metrics-block" class="pull-left" jsf:rendered="#{!DatasetPage.workingVersion.deaccessioned}">
@@ -155,8 +168,11 @@
                             <!-- END: Metrics -->
                         </div>
                     </div>
-                    <!-- END View editMode -->
+                    <!-- END topDatasetBlock -->
 
+                    
+                    
+                    
                     <div id="fileImageTitle" class="row" style="margin-bottom:12px;">
 
                         <div id="file-preview-icon-block" class="col-xs-3 text-center"
