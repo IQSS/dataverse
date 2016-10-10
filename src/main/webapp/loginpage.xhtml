@@ -147,8 +147,42 @@
                             </div>
 
                         </div>
+                        
                     </div>
                 </div>
+                <!-- OAuth2 login controls -->
+                <ui:fragment rendered="#{OAuth2Page.isOAuth2ProvidersDefined()}">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h4>Or choose one of the following login services:</h4>
+                            <ul>
+                                <ui:repeat value="#{OAuth2Page.providers}" var="p">
+                                    <li><a href="#{OAuth2Page.linkFor(p.id)}"><h:outputText value="#{p.title}" /></a></li>
+                                </ui:repeat>
+                            </ul>
+                        </div>
+                        <ui:fragment rendered="#{OAuth2Page.isOAuth2CallbackNotSet()}">
+                            <div class="col-md-6">
+                                <div class="panel panel-warning">
+                                    <div class="panel-heading">
+                                        <div class="panel-title">
+                                            <h3><i class="glyphicon glyphicon-alert"></i> 
+                                                OAuth2 configuration warning</h3>
+                                        </div>
+                                    </div>
+                                    <div class="panel-body">
+                                        OAuth2 protocol requires a callback URL. Normally, this URL should go to page
+                                        <code>/oauth2/callback.xhtml</code> in this installation of Dataverse.<br />
+                                        This parameter is read from the <em>settings table</em>, with key <code>OAuth2CallbackUrl</code>.<br/>
+                                        The table contains no such entry, so the system defaults to <code>#{OAuth2Page.callbackUrl}</code>. 
+                                        This setup is suitable for development, but cannot work in production.
+                                    </div>
+                                </div>
+                            </div>
+                        </ui:fragment>
+                    </div>
+                </ui:fragment>
+                <!-- / OAuth2 login controls -->
 
             </ui:define>
         </ui:composition>
