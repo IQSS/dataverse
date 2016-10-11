@@ -266,7 +266,6 @@ public class FileUpload extends AbstractApiBean {
         // -------------------------------------
         // (1) Get the file name and content type
         // -------------------------------------
-
         String newFilename = contentDispositionHeader.getFileName();
         String newFileContentType = formDataBodyPart.getMediaType().toString();
         
@@ -279,9 +278,6 @@ public class FileUpload extends AbstractApiBean {
         } catch (WrappedResponse ex) {
             return errorResponse(Response.Status.FORBIDDEN, "Couldn't find a user from the API key");
         }
-        //authSvc.findByID(new Long(1));        
-        //msg("authUser: " + authUser);
-        //msg("getUserIdentifier: " + authUser.getIdentifier());  
         
         //-------------------
         // (3) Create the AddReplaceFileHelper object
@@ -315,10 +311,82 @@ public class FileUpload extends AbstractApiBean {
             //"Look at that!  You added a file! (hey hey, it may have worked)");
         }
             
-        //return okR
     } // end: addFileToDataset
 
 
+    
+    /**
+     * Add a File to an existing Dataset
+     * 
+     * @param datasetId
+     * @param testFileInputStream
+     * @param contentDispositionHeader
+     * @param formDataBodyPart
+     * @return 
+     */
+    @POST
+    @Path("replace")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    public Response replaceFileInDataset(@FormDataParam("datasetId") Long datasetId,
+                    @FormDataParam("file") InputStream testFileInputStream,
+                    @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
+                    @FormDataParam("file") final FormDataBodyPart formDataBodyPart,
+                    @FormDataParam("fileToReplaceId") Long fileToReplaceId
+                    ){
+        
+        // -------------------------------------
+        // (1) Get the file name and content type
+        // -------------------------------------
+        String newFilename = contentDispositionHeader.getFileName();
+        String newFileContentType = formDataBodyPart.getMediaType().toString();
+        
+        // -------------------------------------
+        // (2) Get the user from the API key
+        // -------------------------------------
+        User authUser;
+        try {
+            authUser = this.findUserOrDie();
+        } catch (WrappedResponse ex) {
+            return errorResponse(Response.Status.FORBIDDEN, "Couldn't find a user from the API key");
+        }
+        
+        //-------------------
+        // (3) Create the AddReplaceFileHelper object
+        //-------------------
+        msg("ADD!");
+
+        DataverseRequest dvRequest2 = createDataverseRequest(authUser);
+        AddReplaceFileHelper addFileHelper = new AddReplaceFileHelper(dvRequest2,
+                                                this.ingestService,
+                                                this.datasetService,
+                                                this.fileService,
+                                                this.permissionSvc,
+                                                this.commandEngine);
+
+
+        //-------------------
+        // (4) Run "runReplaceFileByDatasetId"
+        //-------------------
+        addFileHelper.runReplaceFileByDatasetId(datasetId,
+                                newFilename,
+                                newFileContentType,
+                                testFileInputStream,
+                                fileToReplaceId);
+
+
+        if (addFileHelper.hasError()){
+            return errorResponse(Response.Status.BAD_REQUEST, addFileHelper.getErrorMessagesAsString("\n"));
+        }else{
+         
+            return okResponseGsonObject("File successfully replaced!",
+                    addFileHelper.getSuccessResultAsGsonObject());
+            //"Look at that!  You added a file! (hey hey, it may have worked)");
+        }
+            
+    } // end: replaceFileInDataset
+
+
+    
     /**
      * Used for RestAssured testing until multipart form available 
      * @param datasetId - dataset to add files

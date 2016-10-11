@@ -256,6 +256,44 @@ public class AddReplaceFileHelper{
         return this.runAddReplaceFile(dataset, newFileName, newFileContentType, newFileInputStream, oldFileId);
     }
     
+
+    public boolean runForceReplaceFileByDatasetId(Long datasetId, String newFileName, String newFileContentType, InputStream newFileInputStream, Long oldFileId){
+        
+        msgt(">> runAddFileByDatasetId");
+
+        initErrorHandling();
+        this.currentOperation = FILE_REPLACE_FORCE_OPERATION;
+        
+        if (!this.step_001_loadDatasetById(datasetId)){
+            return false;
+        }
+        if (oldFileId==null){
+            this.addErrorSevere(getBundleErr("existing_file_to_replace_id_is_null"));
+            return false;
+        }
+        
+        return this.runAddReplaceFile(this.dataset, newFileName, newFileContentType, newFileInputStream, oldFileId);
+    }
+
+    
+    public boolean runReplaceFileByDatasetId(Long datasetId, String newFileName, String newFileContentType, InputStream newFileInputStream, Long oldFileId){
+        
+        msgt(">> runAddFileByDatasetId");
+
+        initErrorHandling();
+        this.currentOperation = FILE_REPLACE_OPERATION;
+        
+        if (!this.step_001_loadDatasetById(datasetId)){
+            return false;
+        }
+        if (oldFileId==null){
+            this.addErrorSevere(getBundleErr("existing_file_to_replace_id_is_null"));
+            return false;
+        }
+        
+        return this.runReplaceFile(this.dataset, newFileName, newFileContentType, newFileInputStream, oldFileId);
+    }
+    
     /**
      * After the constructor, this method is called to replace a file
      * 
@@ -1203,7 +1241,8 @@ public class AddReplaceFileHelper{
      *          (1) latest dataset version in draft
      *          (2) pick off files that are NOT released
      *          (3) iterate through only those files
-     *  
+     *      - or an alternate/better version
+     * 
      * @param df 
      */
     private void setNewlyAddedFile(DataFile df){
