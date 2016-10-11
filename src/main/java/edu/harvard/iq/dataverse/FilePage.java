@@ -86,7 +86,6 @@ public class FilePage implements java.io.Serializable {
 
     public String init() {
      
-        System.out.print("in init");
         
         if ( fileId != null ) { 
            
@@ -103,15 +102,18 @@ public class FilePage implements java.io.Serializable {
             if (file == null){
                return permissionsWrapper.notFound();
             }
-            
+
+            //if an edit creates a new version we need to get the new version id/
+            if (datasetVersionId == null){
+                datasetVersionId = file.getOwner().getEditVersion().getId();
+            }
+
             fileMetadata = datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(datasetVersionId, fileId);
 
             if (fileMetadata == null){
                return permissionsWrapper.notFound();
             }
-            
-            
-            System.out.print("File metadata id: " + fileMetadata.getId());
+
            // If this DatasetVersion is unpublished and permission is doesn't have permissions:
            //  > Go to the Login page
            //
@@ -212,7 +214,7 @@ public class FilePage implements java.io.Serializable {
         }        
         save();
         init();
-        return "";
+        return returnToDraftVersion();
     }
     
     private List<FileMetadata> filesToBeDeleted = new ArrayList();
@@ -276,10 +278,8 @@ public class FilePage implements java.io.Serializable {
 
         Command<Dataset> cmd;
         try {
-            System.out.print(filesToBeDeleted.size());
-            System.out.print("in save ");
             cmd = new UpdateDatasetCommand(editDataset, dvRequestService.getDataverseRequest(), filesToBeDeleted);
-             commandEngine.submit(cmd);
+            commandEngine.submit(cmd);
 
         } catch (EJBException ex) {
             
