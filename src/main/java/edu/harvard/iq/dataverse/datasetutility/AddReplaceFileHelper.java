@@ -324,6 +324,13 @@ public class AddReplaceFileHelper{
      *  oldFileId - For ADD, set to null
      *  oldFileId - For REPLACE, set to id of file to replace 
      * 
+     * This has now been broken into Phase 1 and Phase 2
+     * 
+     * The APIs will use this method and call Phase 1 & Phase 2 consecutively
+     * 
+     * The UI will call Phase 1 on initial upload and 
+     *   then run Phase 2 if the user chooses to save the changes.
+     * 
      * 
      * @return 
      */
@@ -331,12 +338,42 @@ public class AddReplaceFileHelper{
             String newFileName, String newFileContentType, InputStream newFileInputStream,
             Long oldFileId){
         
-        initErrorHandling();
-
+        // Run "Phase 1" - Initial ingest of file + error check
+        // But don't save the dataset version yet
+        //
+        boolean phase1Success = runAddReplacePhase1(dataset,  
+                                        newFileName,  
+                                        newFileContentType,  
+                                        newFileInputStream,
+                                        oldFileId);
         
-        if (this.hasError()){
+        if (!phase1Success){
             return false;
         }
+        
+       
+        return runAddReplacePhase2();
+        
+    }
+
+    /**
+     * For the UI: File add/replace has been broken into 2 steps
+     * 
+     * Phase 1 (here): Add/replace the file and make sure there are no errors
+     *          But don't update the Dataset (yet)
+     * 
+     * @return 
+     */
+    public boolean runAddReplacePhase1(Dataset dataset,  
+            String newFileName, String newFileContentType, InputStream newFileInputStream,
+            Long oldFileId){
+        
+        if (this.hasError()){
+            return false;   // possible to have errors already...
+        }
+
+        initErrorHandling();
+        
 
         msgt("step_001_loadDataset");
         if (!this.step_001_loadDataset(dataset)){
@@ -375,8 +412,29 @@ public class AddReplaceFileHelper{
             return false;
             
         }
+        return true;
+    }
+    
+    
+    /**
+     * For the UI: File add/replace has been broken into 2 steps
+     * 
+     * Phase 2 (here): Phase 1 has run ok, Update the Dataset -- issue the commands!
+     * 
+     * @return 
+     */
+    public boolean runAddReplacePhase2(){
+        
+        if (this.hasError()){
+            return false;   // possible to have errors already...
+        }
 
-        msgt("step_060_addFilesViaIngestService");
+        if ((finalFileList ==  null)||(finalFileList.isEmpty())){
+            addError(getBundleErr("phase2_called_early_no_new_files"));
+            return false;
+        }
+        
+         msgt("step_060_addFilesViaIngestService");
         if (!this.step_060_addFilesViaIngestService()){
             return false;
             
@@ -405,10 +463,10 @@ public class AddReplaceFileHelper{
             return false;            
         }
 
-        
         return true;
     }
-
+    
+    
     /**
      *  Get for currentOperation
      *  @return String
@@ -464,8 +522,6 @@ public class AddReplaceFileHelper{
         
     }
          
- 
-    
     
 
     /**
