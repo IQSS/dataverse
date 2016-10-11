@@ -86,6 +86,7 @@ public class FilePage implements java.io.Serializable {
 
     public String init() {
      
+        System.out.print("in init");
         
         if ( fileId != null ) { 
            
@@ -210,7 +211,8 @@ public class FilePage implements java.io.Serializable {
             JsfHelper.addFlashMessage(successMessage);    
         }        
         save();
-        return returnToDraftVersion();
+        init();
+        return "";
     }
     
     private List<FileMetadata> filesToBeDeleted = new ArrayList();

@@ -988,7 +988,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             // the individual File Landing page, we want to redirect back to 
             // the landing page. BUT ONLY if the file still exists - i.e., if 
             // the user hasn't just deleted it!
-            return returnToFileLandingPage(fileMetadatas.get(0).getId());
+            return returnToFileLandingPage(fileMetadatas.get(0).getDataFile().getId());
         }
         
         //if (newDraftVersion) {
