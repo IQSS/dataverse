@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse.datasetutility;
 
+import com.google.gson.JsonObject;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
@@ -124,8 +125,7 @@ public class AddReplaceFileHelper{
     List<DataFile> finalFileList;
     
     // Ingested file 
-    private DataFile newlyAddedFile;
-   
+    private DataFile newlyAddedFile; 
     
     // For error handling
     private boolean errorFound;
@@ -1151,20 +1151,25 @@ public class AddReplaceFileHelper{
         //  (2) New file: Set the previousFileId to the id of the original file
         //  (3) New file: Set the rootFileId to the rootFileId of the original file
         // -----------------------------------------------------------
-        msgt("Root id check");
-        msg("file to replace 1: " + fileToReplace.getRootDataFileId());
+ 
         
+        /*
+            Check the root file id on fileToReplace, updating it if necessary
+        */
         if (fileToReplace.getRootDataFileId().equals(DataFile.ROOT_DATAFILE_ID_DEFAULT)){
+
             fileToReplace.setRootDataFileId(fileToReplace.getId());
-            msg("file to replace 2: pre save " + fileToReplace.getRootDataFileId());
             fileToReplace = fileService.save(fileToReplace);
-            msg("file to replace 3 post save: " + fileToReplace.getRootDataFileId());
         }
+        
+        /*
+            Go through the final file list, settting the rootFileId and previousFileId
+        */
         for (DataFile df : finalFileList){            
             df.setPreviousDataFileId(fileToReplace.getId());
             
-            msg("file to replace 4 - update new file: " + fileToReplace.getRootDataFileId());
             df.setRootDataFileId(fileToReplace.getRootDataFileId());
+            
         }
         
        
@@ -1187,19 +1192,60 @@ public class AddReplaceFileHelper{
               return false;
           } 
 
-        // Save newly added file to object
-        if (!finalFileList.isEmpty()){
-            newlyAddedFile = finalFileList.get(0);
-        }
-        
         return true;
     }
-    
+            
+    /**
+     * We want the version of the newly added file that has an id set
+     * 
+     * TODO: This is inefficient/expensive.  Need to redo it in a sane way
+     *      - e.g. Query to find 
+     *          (1) latest dataset version in draft
+     *          (2) pick off files that are NOT released
+     *          (3) iterate through only those files
+     *  
+     * @param df 
+     */
+    private void setNewlyAddedFile(DataFile df){
+        
+        newlyAddedFile = df;
+        
+        for (FileMetadata fm : dataset.getEditVersion().getFileMetadatas()){
+            
+            // Find a file where the checksum value and identifiers are the same..
+            //
+            if (newlyAddedFile.getChecksumValue().equals(fm.getDataFile().getChecksumValue())){
+                if (newlyAddedFile.getStorageIdentifier().equals(fm.getDataFile().getStorageIdentifier())){
+                    newlyAddedFile = fm.getDataFile();
+                    break;
+                }
+            }
+        }
+        
+    }
+
         
     public DataFile getNewlyAddedFile(){
         
         return newlyAddedFile;
     }
+    
+    public String getSuccessResult(){
+        if (newlyAddedFile == null){
+            return "Bad ERROR: Newly created file not found";
+        }
+        return newlyAddedFile.asJSON();
+        
+    }
+    
+    public JsonObject getSuccessResultAsGsonObject(){
+        if (newlyAddedFile == null){
+            throw new NullPointerException("Bad error: newlyAddedFile is null!");
+        }
+        return newlyAddedFile.asGsonObject(false);
+        
+    }
+    
     
     private boolean step_090_notifyUser(){
         if (this.hasError()){
@@ -1218,6 +1264,12 @@ public class AddReplaceFileHelper{
             return false;
         }
                 
+        // Should only be one file in the list
+        for (DataFile df : finalFileList){
+            setNewlyAddedFile(df);
+            //df.getFileMetadata();
+            break;
+        }
         
         // clear old file list
         //

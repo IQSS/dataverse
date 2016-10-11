@@ -29,11 +29,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.StringReader;
 import java.util.Iterator;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
@@ -305,10 +309,13 @@ public class FileUpload extends AbstractApiBean {
         if (addFileHelper.hasError()){
             return errorResponse(Response.Status.BAD_REQUEST, addFileHelper.getErrorMessagesAsString("\n"));
         }else{
-            return okResponse("Look at that!  You added a file! (hey hey, it may have worked)");
+         
+            return okResponseGsonObject("File successfully added!",
+                    addFileHelper.getSuccessResultAsGsonObject());
+            //"Look at that!  You added a file! (hey hey, it may have worked)");
         }
             
-
+        //return okR
     } // end: addFileToDataset
 
 
@@ -491,7 +498,7 @@ public class FileUpload extends AbstractApiBean {
         }else{
             return okResponse("File was replaced! hey hey, it may have worked");
         }
-           
+            
         
     } // end call to "hi"
 

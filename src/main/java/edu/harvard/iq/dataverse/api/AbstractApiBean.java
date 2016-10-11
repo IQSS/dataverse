@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import com.google.gson.JsonElement;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
@@ -358,8 +359,9 @@ public abstract class AbstractApiBean {
             throw new WrappedResponse(ex, errorResponse(Status.INTERNAL_SERVER_ERROR, ex.getMessage()));
         }
     }
-    
     protected Response okResponse( JsonArrayBuilder bld ) {
+            Response.ok();
+
         return Response.ok(Json.createObjectBuilder()
             .add("status", "OK")
             .add("data", bld).build()).build();
@@ -388,6 +390,25 @@ public abstract class AbstractApiBean {
             .add("data", Json.createObjectBuilder().add("message",msg)).build() )
             .type(MediaType.APPLICATION_JSON)
             .build();
+    }
+    
+    
+    /** 
+     * Added to accommodate a JSON String generated from gson
+     * 
+     * @param gsonObject
+     * @return 
+     */
+    protected Response okResponseGsonObject(String msg, com.google.gson.JsonObject gsonObject){
+        
+        if (gsonObject == null){
+            throw new NullPointerException("gsonObject cannot be null");
+        }
+
+        gsonObject.addProperty("status", "OK");
+        gsonObject.addProperty("message", msg);
+        
+        return Response.ok(gsonObject.toString(), MediaType.APPLICATION_JSON).build();
     }
     
     /**

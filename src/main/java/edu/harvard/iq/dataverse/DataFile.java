@@ -1,5 +1,10 @@
 package edu.harvard.iq.dataverse;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.annotations.Expose;
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.api.WorldMapRelatedData;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -58,13 +63,17 @@ public class DataFile extends DvObject implements Comparable {
     
     public static final Long ROOT_DATAFILE_ID_DEFAULT = new Long(-1);
     
+    @Expose
     private String name;
     
+    @Expose
     @NotBlank
     @Column( nullable = false )
     @Pattern(regexp = "^.*/.*$", message = "Content-Type must contain a slash")
     private String contentType;
     
+
+    @Expose    
     @Column( nullable = false )
     private String fileSystemName;
 
@@ -107,6 +116,7 @@ public class DataFile extends DvObject implements Comparable {
         }
     }
 
+    @Expose
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private ChecksumType checksumType;
@@ -115,6 +125,7 @@ public class DataFile extends DvObject implements Comparable {
      * Examples include "f622da34d54bdc8ee541d6916ac1c16f" as an MD5 value or
      * "3a484dfdb1b429c2e15eb2a735f1f5e4d5b04ec6" as a SHA-1 value"
      */
+    @Expose
     @Column(nullable = false)
     private String checksumValue;
 
@@ -123,6 +134,7 @@ public class DataFile extends DvObject implements Comparable {
     
     // For the initial version of a file, this will be equivalent to the ID
     // Default is -1 until the intial id is generated
+    @Expose
     @Column(nullable=false)
     private Long rootDataFileId;
 
@@ -132,15 +144,18 @@ public class DataFile extends DvObject implements Comparable {
      */
     // null for initial version; subsequent versions will point to the previous file
     //
+    @Expose
     @Column(nullable=true)
     private Long previousDataFileId;
     /* endt: FILE REPLACE ATTRIBUTES */
     
     
     
+    @Expose
     @Column(nullable=true)
     private Long filesize;      // Number of bytes in file.  Allows 0 and null, negative numbers not permitted
 
+    @Expose
     private boolean restricted;
     
     /*
@@ -771,6 +786,59 @@ public class DataFile extends DvObject implements Comparable {
         return this.previousDataFileId;
     }
 
+    public String asPrettyJSON(){
+        
+        return serializeAsJSON(true);
+    }
 
+    public String asJSON(){
+        
+        return serializeAsJSON(false);
+    }
+    
+    
+    
+    public JsonObject asGsonObject(boolean prettyPrint){
+        
+        String overarchingKey = "data";
+        
+        GsonBuilder builder;
+        if (prettyPrint){  // Add pretty printing
+            builder = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().setPrettyPrinting();
+        }else{
+            builder = new GsonBuilder().excludeFieldsWithoutExposeAnnotation();                        
+        }
+        
+        builder.serializeNulls();   // correctly capture nulls
+        Gson gson = builder.create();
 
-}
+        // serialize this object
+        JsonElement jsonObj = gson.toJsonTree(this);
+        jsonObj.getAsJsonObject().addProperty("id", this.getId());
+
+        JsonObject fileMetadataGson = this.getFileMetadata().asGsonObject(prettyPrint);
+        
+        jsonObj.getAsJsonObject().add("fileMetadata", fileMetadataGson);
+        
+        //JsonObject fileMetadataJSON = new JsonObject();
+        JsonObject fullFileJSON = new JsonObject(); 
+        fullFileJSON.add(overarchingKey, jsonObj);
+        
+        return fullFileJSON;
+    }
+    
+    /**
+     * 
+     * @param prettyPrint
+     * @return 
+     */
+    private String serializeAsJSON(boolean prettyPrint){
+        
+        JsonObject fullFileJSON = asGsonObject(prettyPrint);
+              
+        //return fullFileJSON.
+        return fullFileJSON.toString();
+        
+    }
+
+} // end of class
