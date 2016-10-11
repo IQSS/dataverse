@@ -719,7 +719,7 @@ public class AddReplaceFileHelper{
             return false;
         }
         
-        // This shouldn't happen, the public replace method should through
+        // This shouldn't happen, the public replace method should throw
         //  a NullPointerException
         //
         if (dataFileId == null){
@@ -756,9 +756,11 @@ public class AddReplaceFileHelper{
                     this.newFileInputStream,
                     this.newFileName,
                     this.newFileContentType);
+
         } catch (IOException ex) {
             this.addErrorSevere(getBundleErr("ingest_create_file_err"));
             logger.severe(ex.toString());
+            this.runMajorCleanup(); 
             return false;
         }
         
@@ -814,6 +816,7 @@ public class AddReplaceFileHelper{
         }
         if (!fileInLatestVersion){
             addError(getBundleErr("existing_file_not_in_latest_published_version"));
+            this.runMajorCleanup(); 
             return false;                        
         }
         return true;
