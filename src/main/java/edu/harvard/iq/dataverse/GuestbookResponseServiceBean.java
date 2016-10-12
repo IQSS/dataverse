@@ -520,9 +520,7 @@ public class GuestbookResponseServiceBean {
     }
     
     public GuestbookResponse initGuestbookResponse(FileMetadata fileMetadata, String downloadFormat, String selectedFileIds, DataverseSession session) {
-        System.out.print("in init GBR service bean...");
-        Dataset dataset;       
-        
+        Dataset dataset;              
         DatasetVersion workingVersion = null;
         if (fileMetadata != null){
             workingVersion = fileMetadata.getDatasetVersion();
@@ -541,7 +539,6 @@ public class GuestbookResponseServiceBean {
         if (fileMetadata != null){
            guestbookResponse.setDataFile(fileMetadata.getDataFile());
         }
-          System.out.print("after set datafile...");
         
         User user = session.getUser();
         if (dataset.getGuestbook() != null) {
@@ -651,12 +648,10 @@ public class GuestbookResponseServiceBean {
     }
 
     public GuestbookResponse modifyDatafileAndFormat(GuestbookResponse in, FileMetadata fm, String format) {
-        System.out.print("in Modify Datafile and format");
         if (in != null && fm.getDataFile() != null) {
             in.setFileFormat(format);
             in.setDataFile(fm.getDataFile());
         }
-
         return in;
     }
 

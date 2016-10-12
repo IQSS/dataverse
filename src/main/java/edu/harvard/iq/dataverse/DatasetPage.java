@@ -280,7 +280,7 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public void updateFileSearch(){  
-        logger.info("updading file search list");
+        logger.info("updating file search list");
         if (readOnly) {
             this.fileMetadatasSearch = selectFileMetadatasForDisplay(this.fileLabelSearchTerm); 
         } else {
