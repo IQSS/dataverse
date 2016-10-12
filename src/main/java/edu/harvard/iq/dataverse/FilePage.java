@@ -160,8 +160,11 @@ public class FilePage implements java.io.Serializable {
     }
     
 
-    public boolean isDownloadPopupRequired() {      
-        return fileDownloadService.isDownloadPopupRequired(this.file.getOwner());
+    public boolean isDownloadPopupRequired() {  
+        if(fileMetadata.getId() == null || fileMetadata.getDatasetVersion().getId() == null ){
+            return false;
+        }
+        return fileDownloadService.isDownloadPopupRequired(fileMetadata.getDatasetVersion());
     }
 
 

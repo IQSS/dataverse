@@ -184,33 +184,32 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     
     
     
-    public boolean isDownloadPopupRequired(Dataset dataset) {
+    public boolean isDownloadPopupRequired(DatasetVersion datasetVersion) {
         // Each of these conditions is sufficient reason to have to 
         // present the user with the popup: 
-        if (dataset == null){
+        if (datasetVersion == null){
             return false;
         }
-        DatasetVersion workingVersion = dataset.getLatestVersion();
         //0. if version is draft then Popup "not required"    
-        if (!workingVersion.isReleased()){
+        if (!datasetVersion.isReleased()){
             return false;
         }
         // 1. License and Terms of Use:
-        if (workingVersion.getTermsOfUseAndAccess() != null) {
-            if (!TermsOfUseAndAccess.License.CC0.equals(workingVersion.getTermsOfUseAndAccess().getLicense())
-                    && !(workingVersion.getTermsOfUseAndAccess().getTermsOfUse() == null
-                    || workingVersion.getTermsOfUseAndAccess().getTermsOfUse().equals(""))) {
+        if (datasetVersion.getTermsOfUseAndAccess() != null) {
+            if (!TermsOfUseAndAccess.License.CC0.equals(datasetVersion.getTermsOfUseAndAccess().getLicense())
+                    && !(datasetVersion.getTermsOfUseAndAccess().getTermsOfUse() == null
+                    || datasetVersion.getTermsOfUseAndAccess().getTermsOfUse().equals(""))) {
                 return true;
             }
 
             // 2. Terms of Access:
-            if (!(workingVersion.getTermsOfUseAndAccess().getTermsOfAccess() == null) && !workingVersion.getTermsOfUseAndAccess().getTermsOfAccess().equals("")) {
+            if (!(datasetVersion.getTermsOfUseAndAccess().getTermsOfAccess() == null) && !datasetVersion.getTermsOfUseAndAccess().getTermsOfAccess().equals("")) {
                 return true;
             }
         }
 
         // 3. Guest Book: 
-        if (dataset.getGuestbook() != null && dataset.getGuestbook().isEnabled() && dataset.getGuestbook().getDataverse() != null ) {
+        if (datasetVersion.getDataset().getGuestbook() != null && datasetVersion.getDataset().getGuestbook().isEnabled() && datasetVersion.getDataset().getGuestbook().getDataverse() != null ) {
             return true;
         }
 

@@ -24,7 +24,7 @@
             </span>
         </ui:fragment>
         <!-- Explore Dropdown: When TwoRavens **AND** WorldMap Explore options are available -->
-        <div class="btn-group" jsf:rendered="#{twoRavensHelper.canSeeTwoRavensExploreButtonFromPage(fileMetadata) and worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata)}">
+        <div class="btn-group" jsf:rendered="#{twoRavensHelper.canSeeTwoRavensExploreButtonFromPage(fileMetadata) and worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata)}">           
             <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                 <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore} <span class="caret"/>
             </button>
@@ -63,7 +63,7 @@
             </h:commandLink>
             <p:commandLink rendered="#{downloadPopupRequired}"
                            type="button" styleClass="btn btn-default"
-                           action="#{DatasetPage.initGuestbookResponse(fileMetadata, 'explore')}"
+                           action="#{guestbookResponseService.initGuestbookResponse(fileMetadata, 'explore')}"
                            update="@form"
                            oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
                 <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore}

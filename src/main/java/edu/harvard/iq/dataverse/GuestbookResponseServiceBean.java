@@ -448,10 +448,8 @@ public class GuestbookResponseServiceBean {
        
         GuestbookResponse guestbookResponse = new GuestbookResponse();
         
-        if(workingVersion != null && workingVersion.isDraft()){
-            
+        if(workingVersion != null && workingVersion.isDraft()){           
             guestbookResponse.setWriteResponse(false);
-            System.out.print("setting write response to false");
         } 
         
         if (fileMetadata != null){
@@ -653,6 +651,7 @@ public class GuestbookResponseServiceBean {
     }
 
     public GuestbookResponse modifyDatafileAndFormat(GuestbookResponse in, FileMetadata fm, String format) {
+        System.out.print("in Modify Datafile and format");
         if (in != null && fm.getDataFile() != null) {
             in.setFileFormat(format);
             in.setDataFile(fm.getDataFile());
