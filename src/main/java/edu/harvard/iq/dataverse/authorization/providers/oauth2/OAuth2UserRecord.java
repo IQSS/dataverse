@@ -9,7 +9,7 @@ import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
  * 
  * @author michael
  */
-public class OAuth2UserRecord {
+public class OAuth2UserRecord implements java.io.Serializable {
     
     private final String serviceId;
     

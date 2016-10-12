@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.util;
 
-import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2Page;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2LoginBackingBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
@@ -113,7 +113,7 @@ public class StringUtil {
             
         } catch (  InvalidKeyException | NoSuchAlgorithmException | BadPaddingException
                   | IllegalBlockSizeException | NoSuchPaddingException | UnsupportedEncodingException ex) {
-            Logger.getLogger(OAuth2Page.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(OAuth2LoginBackingBean.class.getName()).log(Level.SEVERE, null, ex);
             throw new RuntimeException(ex);
         }
     }
@@ -132,7 +132,7 @@ public class StringUtil {
             
         } catch ( InvalidKeyException | NoSuchAlgorithmException | BadPaddingException
                   | IllegalBlockSizeException | NoSuchPaddingException | UnsupportedEncodingException ex) {
-            Logger.getLogger(OAuth2Page.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(OAuth2LoginBackingBean.class.getName()).log(Level.SEVERE, null, ex);
             throw new RuntimeException(ex);
         }
     }

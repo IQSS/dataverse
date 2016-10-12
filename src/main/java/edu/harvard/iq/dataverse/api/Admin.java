@@ -48,6 +48,7 @@ import javax.validation.ConstraintViolationException;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response.Status;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.errorResponse;
+import java.util.List;
 /**
  * Where the secure, setup API calls live.
  * @author michael
@@ -155,9 +156,15 @@ public class Admin extends AbstractApiBean {
     
     @POST
     @Path("authenticationProviders/{id}/:enabled")
+    public Response enableAuthenticationProvider_deprecated( @PathParam("id")String id, String body ) {
+        return enableAuthenticationProvider(id, body);
+    }
+    
+    @PUT
+    @Path("authenticationProviders/{id}/enabled")
     @Produces("application/json")
     public Response enableAuthenticationProvider( @PathParam("id")String id, String body ) {
-        
+        body = body.trim();
         if ( ! Util.isBoolean(body) ) {
             return errorResponse(Response.Status.BAD_REQUEST, "Illegal value '" + body + "'. Try 'true' or 'false'");
         }
@@ -195,6 +202,19 @@ public class Admin extends AbstractApiBean {
             return okResponse("Authentication Provider '" + id + "' disabled. " 
                     + ( authSvc.getAuthenticationProviderIds().isEmpty() 
                             ? "WARNING: no enabled authentication providers left." : "") );
+        }
+    }
+    
+    @GET
+    @Path("authenticationProviders/{id}/enabled")
+    public Response checkAuthenticationProviderEnabled(@PathParam("id")String id){
+        List<AuthenticationProviderRow> prvs = em.createNamedQuery("AuthenticationProviderRow.findById", AuthenticationProviderRow.class)
+                .setParameter("id", id)
+                .getResultList();
+        if ( prvs.isEmpty() ) { 
+            return notFound( "Can't find a provider with id '" + id + "'.");
+        } else {
+            return okResponse(Boolean.toString(prvs.get(0).isEnabled()));
         }
     }
     

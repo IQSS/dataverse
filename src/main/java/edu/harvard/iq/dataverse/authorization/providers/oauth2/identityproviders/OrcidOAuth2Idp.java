@@ -13,7 +13,7 @@ import java.util.logging.Logger;
 public class OrcidOAuth2Idp extends AbstractOAuth2AuthenticationProvider {
     
     public OrcidOAuth2Idp(String clientId, String clientSecret, String userEndpoint) {
-        scope = "/read-public"; 
+        scope = "/read-limited"; 
         this.clientId = clientId;
         this.clientSecret = clientSecret;
         this.userEndpoint = userEndpoint;
@@ -21,7 +21,7 @@ public class OrcidOAuth2Idp extends AbstractOAuth2AuthenticationProvider {
     
     @Override
     public BaseApi getApiInstance() {
-        return OrcidApi.instance();
+        return OrcidApi.instance( ! userEndpoint.contains("sandbox") );
     }
 
     @Override

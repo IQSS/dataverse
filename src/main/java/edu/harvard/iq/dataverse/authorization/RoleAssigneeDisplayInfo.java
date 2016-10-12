@@ -7,7 +7,7 @@ import java.util.Objects;
  * @author michael
  */
 
-public class RoleAssigneeDisplayInfo {
+public class RoleAssigneeDisplayInfo implements java.io.Serializable {
     
     private String title;
     private String emailAddress;

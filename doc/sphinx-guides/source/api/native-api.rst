@@ -322,7 +322,13 @@ Show data about an authentication provider::
 
 Enable or disable an authentication provider (denoted by ``id``)::
 
-  POST http://$SERVER/api/admin/authenticationProviders/$id/:enabled
+  PUT http://$SERVER/api/admin/authenticationProviders/$id/enabled
+
+.. note:: The former endpoint, ending with ``:enabled`` (that is, with a colon), is still supported, but deprecated.
+
+Check whether an authentication proider is enabled::
+
+  GET http://$SERVER/api/admin/authenticationProviders/$id/enabled
 
 The body of the request should be either ``true`` or ``false``. Content type has to be ``application/json``, like so::
 

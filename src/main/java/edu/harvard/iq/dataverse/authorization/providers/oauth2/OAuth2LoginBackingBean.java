@@ -22,18 +22,15 @@ import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 
 /**
- * Backing bean of the oauth2 callback page. Normally the page should not be shown, as the
- * user is logged in and then redirected. The page is shown in case there's an error.
+ * Backing bean of the oauth2 login process. Used from the login page and the callback page.
  * 
  * @author michael
  */
 @Named(value = "OAuth2Page")
 @ViewScoped
-public class OAuth2Page implements Serializable {
+public class OAuth2LoginBackingBean implements Serializable {
     
-    static int counter = 0;
-    
-    private static final Logger logger = Logger.getLogger(OAuth2Page.class.getName());
+    private static final Logger logger = Logger.getLogger(OAuth2LoginBackingBean.class.getName());
     private static final long STATE_TIMEOUT = 1000*60*15; // 15 minutes in msec
     private int responseCode;
     private String responseBody;
@@ -49,9 +46,8 @@ public class OAuth2Page implements Serializable {
     @Inject
     DataverseSession session;
     
-    public String counter() { 
-        return "number " + (++counter);
-    }
+    @Inject
+    OAuth2NewAccountPage newAccountPage;
     
     public String linkFor( String idpId ) {
         AbstractOAuth2AuthenticationProvider idp = authenticationSvc.getOAuth2Provider(idpId);
@@ -89,28 +85,23 @@ public class OAuth2Page implements Serializable {
             UserRecordIdentifier idtf = oauthUser.getUserRecordIdentifier();
             AuthenticatedUser dvUser = authenticationSvc.lookupUser(idtf);
             
-            logger.info("OAuth user:" + oauthUser); // FIXME MBS remove.
-            logger.info("OAuth disp:" + oauthUser.getDisplayInfo()); // FIXME MBS remove.
-            logger.info("OAuth usnm:" + oauthUser.getUsername()); // FIXME MBS remove.
-            logger.info("AuthenticatedUser: " + dvUser); // FIXME MBS remove.
-            
             if ( dvUser == null ) {
                 // need to create the user
                 String proposedAuthenticatedUserIdentifier = oauthUser.getUsername();
-                dvUser = authenticationSvc.createAuthenticatedUser(idtf, proposedAuthenticatedUserIdentifier, oauthUser.getDisplayInfo(), true);
                 
+                FacesContext.getCurrentInstance().getExternalContext().redirect("/oauth2/newAccount.xhtml");
             } else {
                 // update profile
                 dvUser = authenticationSvc.updateAuthenticatedUser(dvUser, oauthUser.getDisplayInfo());
+                // login the user and redirect to HOME.
+                session.setUser(dvUser);
+                FacesContext.getCurrentInstance().getExternalContext().redirect("/");
             }
             
-            // login the user and redirect to HOME.
-            session.setUser(dvUser);
-            FacesContext.getCurrentInstance().getExternalContext().redirect("/");
             
         } catch (OAuth2Exception ex) {
             error = ex;
-            Logger.getLogger(OAuth2Page.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(OAuth2LoginBackingBean.class.getName()).log(Level.SEVERE, null, ex);
         }
         
     }
@@ -176,7 +167,7 @@ public class OAuth2Page implements Serializable {
     
     public List<AbstractOAuth2AuthenticationProvider> getProviders() {
         return authenticationSvc.getOAuth2Providers().stream()
-                                .sorted( Comparator.comparing(AbstractOAuth2AuthenticationProvider::getTitle) )
+                                .sorted(Comparator.comparing(AbstractOAuth2AuthenticationProvider::getTitle))
                                 .collect(toList());
     }
     
