@@ -475,6 +475,8 @@ public class DatasetsIT {
         String username = UtilIT.getUsernameFromResponse(createUser);
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
 
+        UtilIT.makeSuperUser(username);
+
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
 //        createDataverseResponse.prettyPrint();
         createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
@@ -512,6 +514,8 @@ public class DatasetsIT {
 
     }
 
+    
+    
     @Test
     public void testFileReplaceNativeAdd() {
 
@@ -520,8 +524,12 @@ public class DatasetsIT {
 //        createUser.prettyPrint();
         String username = UtilIT.getUsernameFromResponse(createUser);
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
-
+ 
+        
+        UtilIT.makeSuperUser(username);
+        
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+
 //        createDataverseResponse.prettyPrint();
         createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
@@ -533,7 +541,7 @@ public class DatasetsIT {
 
         String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
         Response add = UtilIT.uploadFileViaNative(datasetId, pathToFile, apiToken);
-
+        
         add.prettyPrint();
         add.then().assertThat().statusCode(OK.getStatusCode());
     }
