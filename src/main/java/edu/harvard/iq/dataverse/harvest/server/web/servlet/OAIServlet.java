@@ -226,21 +226,27 @@ public class OAIServlet extends HttpServlet {
             for (Object p : request.getParameterMap().keySet()) {
                 String parameterName = (String)p; 
                 String parameterValue = request.getParameter(parameterName);
-                
                 parametersBuilder = parametersBuilder.with(parameterName, parameterValue);
+                logger.info("added paraemeter "+parameterName);
+
             }
-            logger.fine("executing dataProvider.handle():");
+            logger.info("executing dataProvider.handle():");
             
             OAIPMH handle = dataProvider.handle(parametersBuilder);
-            logger.fine("executed dataProvider.handle().");
+            logger.info("executed dataProvider.handle().");
             response.setContentType("text/xml;charset=UTF-8");
-           
-            if (isGetRecord(request)) {
+            
+            if (isGetRecord(request) && !handle.hasErrors()) {
                 String formatName = parametersBuilder.build().get(MetadataPrefix);
                 writeGetRecord(response, handle, formatName);
-            } else {
+            } /*else if (isListRecords(request)) {
+                String formatName = parametersBuilder.build().get(MetadataPrefix);
+                writeListRecords(response, handle, formatName);
+            } */ else {
                 XmlWriter xmlWriter = new XmlWriter(response.getOutputStream());
+                logger.info("preparing to write...");
                 xmlWriter.write(handle);
+                logger.info("written xml...");
                 xmlWriter.flush();
                 xmlWriter.close();
             }
@@ -263,11 +269,20 @@ public class OAIServlet extends HttpServlet {
         }
         
     }
+    
+    private void writeListRecords(HttpServletResponse response, OAIPMH handle, String formatName) throws IOException, XmlWriteException, XMLStreamException {
+        
+    }
 
     private void writeGetRecord(HttpServletResponse response, OAIPMH handle, String formatName) throws IOException, XmlWriteException, XMLStreamException {
         // TODO: 
         // produce clean failure records when proper record cannot be 
         // produced for some reason. 
+        // Done: handled via standard XOAI mechanisms now; this custom 
+        // writeGetRecord() method is only being called if the OAIPMH object 
+        // returned by the DataProvider.handle() !hasErrors(). Otherwise 
+        // the standard xmlWriter.write(OAIPMH) produces a proper error
+        // record. 
         
         String responseBody = XmlWriter.toString(handle);
 
@@ -349,6 +364,10 @@ public class OAIServlet extends HttpServlet {
         return "GetRecord".equals(request.getParameter("verb"));
         
     }
+    
+    private boolean isListRecords(HttpServletRequest request) {
+        return "ListRecords".equals(request.getParameter("verb"));
+    }
 
 
     private boolean isExtendedDataverseMetadataMode(String formatName) {
@@ -409,9 +428,9 @@ public class OAIServlet extends HttpServlet {
         return new OAIRequestParametersBuilder();
     }
     
-    protected OAICompiledRequest compileXoaiRequest (OAIRequestParametersBuilder builder) throws BadArgumentException, InvalidResumptionTokenException, UnknownParameterException, IllegalVerbException, DuplicateDefinitionException {
-        return OAICompiledRequest.compile(builder);
-    }
+    //protected OAICompiledRequest compileXoaiRequest (OAIRequestParametersBuilder builder) throws BadArgumentException, InvalidResumptionTokenException, UnknownParameterException, IllegalVerbException, DuplicateDefinitionException {
+    //    return OAICompiledRequest.compile(builder);
+    //}
     
     public boolean isHarvestingServerEnabled() {
         return systemConfig.isOAIServerEnabled();

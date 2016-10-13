@@ -303,8 +303,8 @@ public class OAIRecordServiceBean implements java.io.Serializable {
     
     public List<OAIRecord> findOaiRecordsBySetName(String setName, Date from, Date until) {
                 
-        String queryString ="SELECT object(h) from OAIRecord as h";
-        queryString += setName != null ? " where h.setName = :setName" : ""; // where h.setName is null";
+        String queryString ="SELECT object(h) from OAIRecord as h where h.id is not null";
+        queryString += setName != null ? " and h.setName = :setName" : ""; // where h.setName is null";
         queryString += from != null ? " and h.lastUpdateTime >= :from" : "";
         queryString += until != null ? " and h.lastUpdateTime <= :until" : "";
 
