@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.api.Util;
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.util.ArrayList;
 import java.util.Date;
@@ -15,6 +16,8 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
+import java.math.BigDecimal;
+import javax.json.JsonValue;
 
 public class SolrSearchResult {
 
@@ -67,7 +70,12 @@ public class SolrSearchResult {
     private String filetype;
     private String fileContentType;
     private Long fileSizeInBytes;
+    /**
+     * fileMD5 is here for legacy and backward-compatibility reasons. It might be deprecated some day in favor of "fileChecksumType" and "fileChecksumValue"
+     */
     private String fileMd5;
+    private DataFile.ChecksumType fileChecksumType;
+    private String fileChecksumValue;
     private String dataverseAlias;
     private String dataverseParentAlias;
 //    private boolean statePublished;
@@ -494,7 +502,13 @@ public class SolrSearchResult {
                 .add("file_type", this.filetype)
                 .add("file_content_type", this.fileContentType)
                 .add("size_in_bytes", getFileSizeInBytes())
+                /**
+                 * "md5" was the only possible value so it's hard-coded here but
+                 * we might want to deprecate it someday since we now put the
+                 * MD5 or SHA-1 in "checksum".
+                 */
                 .add("md5", getFileMd5())
+                .add("checksum", JsonPrinter.getChecksumTypeAndValue(getFileChecksumType(), getFileChecksumValue()))
                 .add("unf", getUnf())
                 .add("dataset_citation", datasetCitation)
                 .add("deaccession_reason", this.deaccessionReason)
@@ -807,11 +821,31 @@ public class SolrSearchResult {
     }
 
     public String getFileMd5() {
-        return fileMd5;
+        if (DataFile.ChecksumType.MD5.equals(getFileChecksumType())) {
+            return fileMd5;
+        } else {
+            return null;
+        }
     }
 
     public void setFileMd5(String fileMd5) {
         this.fileMd5 = fileMd5;
+    }
+
+    public DataFile.ChecksumType getFileChecksumType() {
+        return fileChecksumType;
+    }
+
+    public void setFileChecksumType(DataFile.ChecksumType fileChecksumType) {
+        this.fileChecksumType = fileChecksumType;
+    }
+
+    public String getFileChecksumValue() {
+        return fileChecksumValue;
+    }
+
+    public void setFileChecksumValue(String fileChecksumValue) {
+        this.fileChecksumValue = fileChecksumValue;
     }
 
     public String getNameSort() {
@@ -1019,5 +1053,6 @@ public class SolrSearchResult {
     public void setUserRole(List<String> userRole) {
         this.userRole = userRole;
     }
+
 
 }

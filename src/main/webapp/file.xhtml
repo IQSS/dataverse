@@ -291,6 +291,7 @@
                                             </ui:remove>
                                             <div class="form-group" jsf:rendered="#{!(empty FilePage.file.checksumValue)}">
                                                 <label class="col-sm-3 control-label" for="metadata_md5">
+                                                    <!-- FIXME: When this page is fixed (no more "Method isThumbnailAvailable not found") also replace "file.MD5" with FilePage.file.checksumType and "file.MD5.origal" with "file.originalChecksumType" -->
                                                    #{FilePage.file.tabularData ? bundle['file.MD5.origal'] : bundle['file.MD5']}
                                                 </label>
                                                 <div class="col-sm-9">
