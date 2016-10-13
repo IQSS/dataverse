@@ -314,6 +314,9 @@ public class FileUpload extends AbstractApiBean {
     } // end: addFileToDataset
 
 
+
+    
+    
     
     /**
      * Add a File to an existing Dataset
@@ -331,8 +334,13 @@ public class FileUpload extends AbstractApiBean {
                     @FormDataParam("file") InputStream testFileInputStream,
                     @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
                     @FormDataParam("file") final FormDataBodyPart formDataBodyPart,
-                    @FormDataParam("fileToReplaceId") Long fileToReplaceId
+                    @FormDataParam("fileToReplaceId") Long fileToReplaceId,
+                    @FormDataParam("forceReplace") Boolean forceReplace            
                     ){
+        
+        if (forceReplace==null){
+            forceReplace = false;
+        }
         
         // -------------------------------------
         // (1) Get the file name and content type
@@ -353,7 +361,7 @@ public class FileUpload extends AbstractApiBean {
         //-------------------
         // (3) Create the AddReplaceFileHelper object
         //-------------------
-        msg("ADD!");
+        msg("REPLACE!");
 
         DataverseRequest dvRequest2 = createDataverseRequest(authUser);
         AddReplaceFileHelper addFileHelper = new AddReplaceFileHelper(dvRequest2,
@@ -367,16 +375,26 @@ public class FileUpload extends AbstractApiBean {
         //-------------------
         // (4) Run "runReplaceFileByDatasetId"
         //-------------------
-        addFileHelper.runReplaceFileByDatasetId(datasetId,
-                                newFilename,
-                                newFileContentType,
-                                testFileInputStream,
-                                fileToReplaceId);
-
-
+        if (forceReplace){
+            addFileHelper.runForceReplaceFileByDatasetId(datasetId,
+                                    newFilename,
+                                    newFileContentType,
+                                    testFileInputStream,
+                                    fileToReplaceId);
+        }else{
+            addFileHelper.runReplaceFileByDatasetId(datasetId,
+                                    newFilename,
+                                    newFileContentType,
+                                    testFileInputStream,
+                                    fileToReplaceId);            
+        }    
+            
+        msg("we're back.....");
         if (addFileHelper.hasError()){
+            msg("yes, has error");
             return errorResponse(Response.Status.BAD_REQUEST, addFileHelper.getErrorMessagesAsString("\n"));
         }else{
+            msg("no error");
          
             return okResponseGsonObject("File successfully replaced!",
                     addFileHelper.getSuccessResultAsGsonObject());

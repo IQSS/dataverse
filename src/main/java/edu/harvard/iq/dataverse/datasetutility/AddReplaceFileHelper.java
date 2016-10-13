@@ -1001,10 +1001,11 @@ public class AddReplaceFileHelper{
             
             if (Objects.equals(df.getChecksumValue(), fileToReplace.getChecksumValue())){
                 this.addError(getBundleErr("replace.new_file_same_as_replacement"));                                
+                break;
             }
             
             // This should be able to be overridden --force
-            if (isForceFileOperation()){
+            if (!isForceFileOperation()){
                 
                 // Warning that content type of the file has changed
                 //
@@ -1128,7 +1129,7 @@ public class AddReplaceFileHelper{
             this.addErrorSevere(getBundleErr("only_replace_operation") + " (step_085_auto_remove_filemetadata_to_replace_from_working_version");
             return false;
         }
-        msg("step_085_auto_remove_filemetadata_to_replace_from_working_version 1");
+        msg("step_085_auto_remove_filemetadata_to_replace_from_working_version 2");
 
         if (this.hasError()){
             return false;
@@ -1373,11 +1374,17 @@ public class AddReplaceFileHelper{
         //
         finalFileList.clear();
 
+        // TODO: Need to run ingest async......
+        if (true){
+            return true;
+        }
         
+        msg("pre ingest start");
         // start the ingest!
         //
         ingestService.startIngestJobs(dataset, dvRequest.getAuthenticatedUser());
         
+        msg("post ingest start");
         return true;
     }
 
