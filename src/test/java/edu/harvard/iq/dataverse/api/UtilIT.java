@@ -259,6 +259,23 @@ public class UtilIT {
 
     }
 
+    static Response uploadFileViaNative(Integer datasetId, String pathToFile, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .multiPart("datasetId", datasetId)
+                .multiPart("file", new File("src/main/webapp/resources/images/dataverseproject.png"))
+                .post("/api/upload/add");
+    }
+
+    static Response replaceFile(Integer datasetId, int fileId, String pathToFile, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .multiPart("datasetId", datasetId)
+                .multiPart("fileToReplaceId", fileId)
+                .multiPart("file", new File(pathToFile))
+                .post("/api/upload/replace");
+    }
+
     static Response downloadFile(Integer fileId) {
         return given()
                 //                .header(API_TOKEN_HTTP_HEADER, apiToken)

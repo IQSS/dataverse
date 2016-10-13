@@ -465,4 +465,77 @@ public class DatasetsIT {
                 .statusCode(OK.getStatusCode());
 
     }
+
+    @Test
+    public void testFileReplace() {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+//        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+//        createDataverseResponse.prettyPrint();
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        Response getDatasetJsonBeforeFiles = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetJsonBeforeFiles.prettyPrint();
+        getDatasetJsonBeforeFiles.then().assertThat().statusCode(OK.getStatusCode());
+        String protocol1 = JsonPath.from(getDatasetJsonBeforeFiles.getBody().asString()).getString("data.protocol");
+        String authority1 = JsonPath.from(getDatasetJsonBeforeFiles.getBody().asString()).getString("data.authority");
+        String identifier1 = JsonPath.from(getDatasetJsonBeforeFiles.getBody().asString()).getString("data.identifier");
+        String dataset1PersistentId = protocol1 + ":" + authority1 + "/" + identifier1;
+
+        Response uploadFileResponse = UtilIT.uploadRandomFile(dataset1PersistentId, apiToken);
+        uploadFileResponse.prettyPrint();
+        getDatasetJsonBeforeFiles.then().assertThat().statusCode(OK.getStatusCode());
+        assertEquals(CREATED.getStatusCode(), uploadFileResponse.getStatusCode());
+
+        Response getDatasetJsonWithFiles = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetJsonWithFiles.prettyPrint();
+        getDatasetJsonWithFiles.then().assertThat().statusCode(OK.getStatusCode());
+        int fileId = JsonPath.from(getDatasetJsonWithFiles.getBody().asString()).getInt("data.latestVersion.files[0].dataFile.id");
+        UtilIT.publishDataverseViaSword(dataverseAlias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
+        UtilIT.publishDatasetViaSword(dataset1PersistentId, apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
+        Response replace = UtilIT.replaceFile(datasetId, fileId, pathToFile, apiToken);
+        replace.prettyPrint();
+        replace.then().assertThat().statusCode(OK.getStatusCode());
+
+    }
+
+    @Test
+    public void testFileReplaceNativeAdd() {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+//        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+//        createDataverseResponse.prettyPrint();
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
+        Response add = UtilIT.uploadFileViaNative(datasetId, pathToFile, apiToken);
+
+        add.prettyPrint();
+        add.then().assertThat().statusCode(OK.getStatusCode());
+    }
+
 }
