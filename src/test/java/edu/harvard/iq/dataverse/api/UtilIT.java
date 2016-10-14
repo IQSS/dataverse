@@ -154,6 +154,13 @@ public class UtilIT {
         return createDataverseResponse;
     }
 
+    static Response createDataverse(JsonObject dvData, String apiToken) {
+        Response createDataverseResponse = given()
+                .body(dvData.toString()).contentType(ContentType.JSON)
+                .when().post("/api/dataverses/:root?key=" + apiToken);
+        return createDataverseResponse;
+    }
+
     static Response createRandomDataverse(String apiToken) {
         String alias = getRandomIdentifier();
         String category = null;

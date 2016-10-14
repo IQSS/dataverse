@@ -75,6 +75,13 @@ public class JsonParser {
     public Dataverse parseDataverse(JsonObject jobj) throws JsonParseException {
         Dataverse dv = new Dataverse();
 
+        /**
+         * @todo Instead of this getMandatoryString method we should run the
+         * String through ConstraintValidator. See EMailValidatorTest and
+         * EMailValidator for examples. That way we can check not only if it's
+         * required or not but other bean validation rules such as "must match
+         * this regex".
+         */
         dv.setAlias(getMandatoryString(jobj, "alias"));
         dv.setName(getMandatoryString(jobj, "name"));
         dv.setDescription(jobj.getString("description", null));
