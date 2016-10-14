@@ -34,6 +34,7 @@ public class SettingsServiceBean {
      */
     public enum Key {
         FooterCopyright,
+        FileFixityChecksumAlgorithm,
         MinutesUntilConfirmEmailTokenExpires,
         /**
          * Override Solr highlighting "fragsize"

@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
 import edu.harvard.iq.dataverse.ingest.IngestReport;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.ShapefileHandler;
 import java.io.IOException;
@@ -16,12 +17,14 @@ import java.util.Objects;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.Files;
-import java.util.Comparator;
+import java.util.Arrays;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
@@ -62,9 +65,56 @@ public class DataFile extends DvObject implements Comparable {
     
     @Column( nullable = false )
     private String fileSystemName;
-    
-    @Column( nullable = false )
-    private String md5;
+
+    /**
+     * End users will see "SHA-1" (with a hyphen) rather than "SHA1" in the GUI
+     * and API but in the "datafile" table we persist "SHA1" (no hyphen) for
+     * type safety (using keys of the enum). In the "setting" table, we persist
+     * "SHA-1" (with a hyphen) to match the GUI and the "Algorithm Name" list at
+     * https://docs.oracle.com/javase/8/docs/technotes/guides/security/StandardNames.html#MessageDigest
+     *
+     * The list of types should be limited to the list above in the technote
+     * because the string gets passed into MessageDigest.getInstance() and you
+     * can't just pass in any old string.
+     */
+    public enum ChecksumType {
+
+        MD5("MD5"),
+        SHA1("SHA-1");
+
+        private final String text;
+
+        private ChecksumType(final String text) {
+            this.text = text;
+        }
+
+        public static ChecksumType fromString(String text) {
+            if (text != null) {
+                for (ChecksumType checksumType : ChecksumType.values()) {
+                    if (text.equals(checksumType.text)) {
+                        return checksumType;
+                    }
+                }
+            }
+            throw new IllegalArgumentException("ChecksumType must be one of these values: " + Arrays.asList(ChecksumType.values()) + ".");
+        }
+
+        @Override
+        public String toString() {
+            return text;
+        }
+    }
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private ChecksumType checksumType;
+
+    /**
+     * Examples include "f622da34d54bdc8ee541d6916ac1c16f" as an MD5 value or
+     * "3a484dfdb1b429c2e15eb2a735f1f5e4d5b04ec6" as a SHA-1 value"
+     */
+    @Column(nullable = false)
+    private String checksumValue;
 
     @Column(nullable=true)
     private Long filesize;      // Number of bytes in file.  Allows 0 and null, negative numbers not permitted
@@ -370,15 +420,26 @@ public class DataFile extends DvObject implements Comparable {
         this.restricted = restricted;
     }
 
+    public ChecksumType getChecksumType() {
+        return checksumType;
+    }
 
-    public String getmd5() { 
-        return this.md5; 
+    public void setChecksumType(ChecksumType checksumType) {
+        this.checksumType = checksumType;
     }
-    
-    public void setmd5(String md5) { 
-        this.md5 = md5; 
+
+    public String getChecksumValue() {
+        return this.checksumValue;
     }
-    
+
+    public void setChecksumValue(String checksumValue) {
+        this.checksumValue = checksumValue;
+    }
+
+    public String getOriginalChecksumType() {
+        return BundleUtil.getStringFromBundle("file.originalChecksumType", Arrays.asList(this.checksumType.toString()) );
+    }
+
     public DataFileIO getAccessObject() throws IOException {
         DataFileIO dataAccess =  DataAccess.createDataAccessObject(this);
         

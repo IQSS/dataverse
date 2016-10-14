@@ -12,10 +12,23 @@ Endpoints
 
 Dataverses
 ~~~~~~~~~~~
-Generates a new dataverse under ``$id``. Expects a json content describing the dataverse.
+Generates a new dataverse under ``$id``. Expects a JSON content describing the dataverse, as in the example below.
 If ``$id`` is omitted, a root dataverse is created. ``$id`` can either be a dataverse id (long) or a dataverse alias (more robust). ::
 
     POST http://$SERVER/api/dataverses/$id?key=$apiKey
+
+The following JSON example can be `downloaded <../_static/api/dataverse-complete.json>`_ and modified to create dataverses to suit your needs. The fields ``name``, ``alias``, and ``dataverseContacts`` are required. The controlled vocabulary for ``dataverseType`` is
+
+- ``JOURNALS``
+- ``LABORATORY``
+- ``ORGANIZATIONS_INSTITUTIONS``
+- ``RESEARCHERS``
+- ``RESEARCH_GROUP``
+- ``RESEARCH_PROJECTS``
+- ``TEACHING_COURSES``
+- ``UNCATEGORIZED``
+
+.. literalinclude:: ../_static/api/dataverse-complete.json
 
 View data about the dataverse identified by ``$id``. ``$id`` can be the id number of the dataverse, its alias, or the special value ``:root``. ::
 

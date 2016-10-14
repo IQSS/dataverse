@@ -1,0 +1,3 @@
+#!/bin/sh
+# FIXME: Make this into a REST Assured test.
+curl -s "http://localhost:8080/api/mydata/retrieve?key=$API_TOKEN&role_ids=1&dvobject_types=DataFile&published_states=Published&published_states=Unpublished&published_states=Draft&published_states=In+Review&published_states=Deaccessioned" | jq .data.items

@@ -1,7 +1,5 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * @todo Shouldn't this be in the "edu.harvard.iq.dataverse.api" package? Is the only one that isn't.
  */
 package edu.harvard.iq.dataverse.mydata;
 
@@ -268,7 +266,11 @@ public class DataRetrieverAPI extends AbstractApiBean {
         
     }
     
-    
+
+    /**
+     * @todo This should support the "X-Dataverse-key" header like the other
+     * APIs.
+     */
     @Path(retrieveDataPartialAPIPath)
     @GET
     @Produces({"application/json"})
