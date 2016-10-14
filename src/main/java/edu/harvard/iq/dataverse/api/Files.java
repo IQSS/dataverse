@@ -7,51 +7,36 @@ package edu.harvard.iq.dataverse.api;
 
 //import com.sun.jersey.core.header.FormDataContentDisposition;
 //import com.sun.jersey.multipart.FormDataParam;
-import edu.harvard.iq.dataverse.DataFile;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetFieldValidator;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
-import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.errorResponse;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.StringReader;
-import java.util.Iterator;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
-import javax.ejb.Stateless;
 import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.FormParam;
-import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
-import org.omnifaces.util.Faces;
 
 /**
  *
@@ -147,7 +132,6 @@ public class Files extends AbstractApiBean {
         dashes(); msg(m); dashes();
     }
         
-    
         
     
     /**
@@ -163,17 +147,56 @@ public class Files extends AbstractApiBean {
     @Path("{id}/replace")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     public Response replaceFileInDataset(
-                    @PathParam("id") Long fileToReplaceId,
+                    @FormDataParam("jsonData") String jsonData,
+                    //@PathParam("id") Long fileToReplaceId,
                     @FormDataParam("file") InputStream testFileInputStream,
                     @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
-                    @FormDataParam("file") final FormDataBodyPart formDataBodyPart,
-                    @FormDataParam("forceReplace") Boolean forceReplace            
+                    @FormDataParam("file") final FormDataBodyPart formDataBodyPart
+                    //@FormDataParam("forceReplace") Boolean forceReplace            
                     ){
         
-        if (forceReplace==null){
-            forceReplace = false;
+        // -------------------------------------
+        // (1) Check/Parse the JSON
+        // -------------------------------------        
+        if (jsonData == null){
+            logger.log(Level.SEVERE, "jsonData is null");
+            return errorResponse( Response.Status.BAD_REQUEST, "No JSON data");
+        }
+
+        // Convert string to GSON
+        // -------------------------------------        
+        JsonObject jsonObj = new Gson().fromJson(jsonData, JsonObject.class);
+        
+        // Check for required "fileToReplaceId"
+        // -------------------------------------        
+        if ((!jsonObj.has("fileToReplaceId")) || jsonObj.get("fileToReplaceId").isJsonNull()){
+            return errorResponse( Response.Status.BAD_REQUEST, "'fileToReplaceId' NOT found in the JSON Request");
         }
         
+        Long fileToReplaceId;
+        
+        try {
+            fileToReplaceId = Long.parseLong(jsonObj.get("fileToReplaceId").toString());        
+        } catch (Exception e) {
+            return errorResponse( Response.Status.BAD_REQUEST, "'fileToReplaceId' in the JSON Request must be a number.");            
+        }
+        
+        
+        // Check for optional "forceReplace"
+        // -------------------------------------        
+        Boolean forceReplace = false;
+        if ((jsonObj.has("forceReplace")) && (!jsonObj.get("forceReplace").isJsonNull())){
+            forceReplace = jsonObj.get("forceReplace").getAsBoolean();
+            if (forceReplace == null){
+                forceReplace = false;
+            }
+        }
+        msgt("forceReplace: " + forceReplace);
+        /*
+        if (forceReplace == null){
+            forceReplace = false;
+        }
+        */
         // -------------------------------------
         // (1) Get the file name and content type
         // -------------------------------------
