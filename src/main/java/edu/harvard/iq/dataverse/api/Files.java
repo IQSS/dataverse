@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
+import static edu.harvard.iq.dataverse.api.AbstractApiBean.errorResponse;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -56,8 +57,8 @@ import org.omnifaces.util.Faces;
  *
  * @author rmp553
  */
-@Path("upload")
-public class FileUpload extends AbstractApiBean {
+@Path("files")
+public class Files extends AbstractApiBean {
     
     @EJB
     DatasetServiceBean datasetService;
@@ -76,52 +77,11 @@ public class FileUpload extends AbstractApiBean {
     @EJB
     UserNotificationServiceBean userNotificationService;
     
-    private static final Logger logger = Logger.getLogger(FileUpload.class.getName());
+    private static final Logger logger = Logger.getLogger(Files.class.getName());
     
     // for testing
     private static final String SERVER_UPLOAD_LOCATION_FOLDER = "/Users/rmp553/Documents/iqss-git/dataverse-helper-scripts/src/api_scripts/output/";
 
-    
-    @POST
-    @Path("hello")
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public Response uploadFile(
-                    @FormDataParam("file") InputStream fileInputStream,
-                    @FormDataParam("file") FormDataContentDisposition contentDispositionHeader) {
-
-            String filePath = SERVER_UPLOAD_LOCATION_FOLDER + contentDispositionHeader.getFileName();
-
-            // save the file to the server
-            saveFile(fileInputStream, filePath);
-
-            String output = "File saved to server location : " + filePath;
-
-            return okResponse(output);
-            //return Response.status(200).entity(output).build();
-
-    }
-    
-    // save uploaded file to a defined location on the server
-    private void saveFile(InputStream uploadedInputStream,
-                    String serverLocation) {
-
-            try {
-                    OutputStream outpuStream = new FileOutputStream(new File(serverLocation));
-                    int read = 0;
-                    byte[] bytes = new byte[1024];
-
-                    outpuStream = new FileOutputStream(new File(serverLocation));
-                    while ((read = uploadedInputStream.read(bytes)) != -1) {
-                            outpuStream.write(bytes, 0, read);
-                    }
-                    outpuStream.flush();
-                    outpuStream.close();
-            } catch (IOException e) {
-
-                    e.printStackTrace();
-            }
-
-    }
     
     
     /**
@@ -186,66 +146,12 @@ public class FileUpload extends AbstractApiBean {
     private void msgt(String m){
         dashes(); msg(m); dashes();
     }
+        
     
-    
-    private void removeLinkedFileFromDataset(Dataset dataset, DataFile dataFileToRemove){
-        
-         // remove the file from the dataset (since createDataFiles has already linked
-        // it to the dataset!
-        // first, through the filemetadata list, then through tht datafiles list:
-        Iterator<FileMetadata> fmIt = dataset.getEditVersion().getFileMetadatas().iterator();
-        msgt("Clear FileMetadatas");
-        while (fmIt.hasNext()) {
-        FileMetadata fm = fmIt.next();
-            msg("Check: " + fm);
-            if (fm.getId() == null && dataFileToRemove.getStorageIdentifier().equals(fm.getDataFile().getStorageIdentifier())) {
-                msg("Got It! ");
-                fmIt.remove();
-                break;
-            }
-        }
-        
-        
-        Iterator<DataFile> dfIt = dataset.getFiles().iterator();
-        msgt("Clear Files");
-        while (dfIt.hasNext()) {
-            DataFile dfn = dfIt.next();
-            msg("Check: " + dfn);
-            if (dfn.getId() == null && dataFileToRemove.getStorageIdentifier().equals(dfn.getStorageIdentifier())) {
-                msg("Got It! try to remove from iterator");
-                
-                dfIt.remove();
-                msg("...didn't work");
-                
-                break;
-            }else{
-                msg("...ok");
-            }
-        }
-    }
-    
-    /**
-     *
-     * @param fileId
-     * @return
-     */
-    @GET
-    @Path("resave/{fileId}")
-    public Response hiReSave(@PathParam("fileId") Long fileId){
-        msgt("hiReSave: " + fileId);
-        DataFile df = fileService.find(fileId);
-        
-        if (df ==null){
-            return okResponse("file not found: " + fileId);
-        }
-        df = fileService.save(df);
-        
-        return okResponse("saved: " + df);
-    }    
         
     
     /**
-     * Add a File to an existing Dataset
+     * Replace an Existing File 
      * 
      * @param datasetId
      * @param testFileInputStream
@@ -254,86 +160,13 @@ public class FileUpload extends AbstractApiBean {
      * @return 
      */
     @POST
-    @Path("add")
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public Response addFileToDataset(@FormDataParam("datasetId") Long datasetId,
-                    @FormDataParam("file") InputStream testFileInputStream,
-                    @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
-                    @FormDataParam("file") final FormDataBodyPart formDataBodyPart
-                    ){
-        
-        // -------------------------------------
-        // (1) Get the file name and content type
-        // -------------------------------------
-        String newFilename = contentDispositionHeader.getFileName();
-        String newFileContentType = formDataBodyPart.getMediaType().toString();
-        
-        // -------------------------------------
-        // (2) Get the user from the API key
-        // -------------------------------------
-        User authUser;
-        try {
-            authUser = this.findUserOrDie();
-        } catch (WrappedResponse ex) {
-            return errorResponse(Response.Status.FORBIDDEN, "Couldn't find a user from the API key");
-        }
-        
-        //-------------------
-        // (3) Create the AddReplaceFileHelper object
-        //-------------------
-        msg("ADD!");
-
-        DataverseRequest dvRequest2 = createDataverseRequest(authUser);
-        AddReplaceFileHelper addFileHelper = new AddReplaceFileHelper(dvRequest2,
-                                                this.ingestService,
-                                                this.datasetService,
-                                                this.fileService,
-                                                this.permissionSvc,
-                                                this.commandEngine);
-
-
-        //-------------------
-        // (4) Run "runAddFileByDatasetId"
-        //-------------------
-        addFileHelper.runAddFileByDatasetId(datasetId,
-                                newFilename,
-                                newFileContentType,
-                                testFileInputStream);
-
-
-        if (addFileHelper.hasError()){
-            return errorResponse(Response.Status.BAD_REQUEST, addFileHelper.getErrorMessagesAsString("\n"));
-        }else{
-         
-            return okResponseGsonObject("File successfully added!",
-                    addFileHelper.getSuccessResultAsGsonObject());
-            //"Look at that!  You added a file! (hey hey, it may have worked)");
-        }
-            
-    } // end: addFileToDataset
-
-
-
-    
-    
-    
-    /**
-     * Add a File to an existing Dataset
-     * 
-     * @param datasetId
-     * @param testFileInputStream
-     * @param contentDispositionHeader
-     * @param formDataBodyPart
-     * @return 
-     */
-    @POST
-    @Path("replace")
+    @Path("{id}/replace")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     public Response replaceFileInDataset(
+                    @PathParam("id") Long fileToReplaceId,
                     @FormDataParam("file") InputStream testFileInputStream,
                     @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
                     @FormDataParam("file") final FormDataBodyPart formDataBodyPart,
-                    @FormDataParam("fileToReplaceId") Long fileToReplaceId,
                     @FormDataParam("forceReplace") Boolean forceReplace            
                     ){
         
@@ -353,7 +186,7 @@ public class FileUpload extends AbstractApiBean {
         User authUser;
         try {
             authUser = this.findUserOrDie();
-        } catch (WrappedResponse ex) {
+        } catch (AbstractApiBean.WrappedResponse ex) {
             return errorResponse(Response.Status.FORBIDDEN, "Couldn't find a user from the API key");
         }
         
@@ -374,18 +207,18 @@ public class FileUpload extends AbstractApiBean {
         //-------------------
         // (4) Run "runReplaceFileByDatasetId"
         //-------------------
+        
+        
         if (forceReplace){
             addFileHelper.runForceReplaceFile(fileToReplaceId,
                                     newFilename,
                                     newFileContentType,
-                                    testFileInputStream
-                                );
+                                    testFileInputStream);
         }else{
-            addFileHelper.runForceReplaceFile(fileToReplaceId,
+            addFileHelper.runReplaceFile(fileToReplaceId,
                                     newFilename,
                                     newFileContentType,
-                                    testFileInputStream
-                                );            
+                                    testFileInputStream);            
         }    
             
         msg("we're back.....");
@@ -401,6 +234,7 @@ public class FileUpload extends AbstractApiBean {
         }
             
     } // end: replaceFileInDataset
+
 
 
 }
