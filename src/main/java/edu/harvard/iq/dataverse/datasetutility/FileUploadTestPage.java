@@ -199,11 +199,11 @@ public class FileUploadTestPage implements java.io.Serializable {
         
         
         if (this.replaceOperation){
-            addFileHelper.runReplaceFile(dataset,
+            addFileHelper.runReplaceFile( fileToReplace.getId(),
                                 laFile.getFileName(),
                                 laFile.getContentType(),
-                                inputStream,
-                                fileToReplace.getId());
+                                inputStream
+                               );
         }else{
             addFileHelper.runAddFile(dataset,
                                 laFile.getFileName(),
