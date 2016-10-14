@@ -264,7 +264,7 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .multiPart("datasetId", datasetId)
                 .multiPart("file", new File("src/main/webapp/resources/images/dataverseproject.png"))
-                .post("/api/upload/add");
+                .post("/api/datasets/" + datasetId + "/add");
     }
 
     static Response replaceFile(Integer datasetId, int fileId, String pathToFile, String apiToken) {
@@ -273,7 +273,8 @@ public class UtilIT {
                 .multiPart("datasetId", datasetId)
                 .multiPart("fileToReplaceId", fileId)
                 .multiPart("file", new File(pathToFile))
-                .post("/api/upload/replace");
+                .multiPart("jsonData", Json.createObjectBuilder().add("fileToReplaceId", fileId).build().toString())
+                .post("/api/files/" + fileId + "/replace");
     }
 
     static Response downloadFile(Integer fileId) {

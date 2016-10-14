@@ -28,6 +28,7 @@ import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static junit.framework.Assert.assertEquals;
 import org.hamcrest.CoreMatchers;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
 
 public class DatasetsIT {
@@ -475,8 +476,6 @@ public class DatasetsIT {
         String username = UtilIT.getUsernameFromResponse(createUser);
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
 
-        UtilIT.makeSuperUser(username);
-
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
 //        createDataverseResponse.prettyPrint();
         createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
@@ -510,12 +509,21 @@ public class DatasetsIT {
         String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
         Response replace = UtilIT.replaceFile(datasetId, fileId, pathToFile, apiToken);
         replace.prettyPrint();
-        replace.then().assertThat().statusCode(OK.getStatusCode());
+        replace.then().assertThat()
+                .body("message", equalTo("File successfully replaced!"))
+                .statusCode(OK.getStatusCode());
+
+        Response getDatasetJson = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetJson.prettyPrint();
+        getDatasetJson.then().assertThat()
+                .body("data.latestVersion.files[0].dataFile.filename", equalTo("dataverseproject.png"))
+                .body("data.latestVersion.files[0].dataFile.contentType", equalTo("image/png"))
+                .body("data.latestVersion.files[0].dataFile.rootDataFileId", not(-1))
+                .body("data.latestVersion.files[0].dataFile.previousDataFileId", equalTo(fileId))
+                .statusCode(OK.getStatusCode());
 
     }
 
-    
-    
     @Test
     public void testFileReplaceNativeAdd() {
 
@@ -524,10 +532,7 @@ public class DatasetsIT {
 //        createUser.prettyPrint();
         String username = UtilIT.getUsernameFromResponse(createUser);
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
- 
-        
-        UtilIT.makeSuperUser(username);
-        
+
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
 
 //        createDataverseResponse.prettyPrint();
@@ -541,9 +546,20 @@ public class DatasetsIT {
 
         String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
         Response add = UtilIT.uploadFileViaNative(datasetId, pathToFile, apiToken);
-        
+
         add.prettyPrint();
-        add.then().assertThat().statusCode(OK.getStatusCode());
+        add.then().assertThat()
+                .body("message", equalTo("File successfully added!"))
+                .statusCode(OK.getStatusCode());
+
+        Response getDatasetJson = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetJson.prettyPrint();
+        getDatasetJson.then().assertThat()
+                .body("data.latestVersion.files[0].dataFile.filename", equalTo("dataverseproject.png"))
+                .body("data.latestVersion.files[0].dataFile.contentType", equalTo("image/png"))
+                .body("data.latestVersion.files[0].dataFile.rootDataFileId", equalTo(-1))
+                .body("data.latestVersion.files[0].dataFile.previousDataFileId", nullValue())
+                .statusCode(OK.getStatusCode());
     }
 
 }
