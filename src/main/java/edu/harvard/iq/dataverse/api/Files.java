@@ -148,26 +148,31 @@ public class Files extends AbstractApiBean {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     public Response replaceFileInDataset(
                     @FormDataParam("jsonData") String jsonData,
-                    //@PathParam("id") Long fileToReplaceId,
                     @FormDataParam("file") InputStream testFileInputStream,
                     @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
                     @FormDataParam("file") final FormDataBodyPart formDataBodyPart
-                    //@FormDataParam("forceReplace") Boolean forceReplace            
                     ){
         
         // -------------------------------------
-        // (1) Check/Parse the JSON
+        // (1) Get the user from the API key
+        // -------------------------------------
+        User authUser;
+        try {
+            authUser = this.findUserOrDie();
+        } catch (AbstractApiBean.WrappedResponse ex) {
+            return errorResponse(Response.Status.FORBIDDEN, "Couldn't find a user from the API key");
+        }
+
+        // -------------------------------------
+        // (2) Check/Parse the JSON
         // -------------------------------------        
         if (jsonData == null){
             logger.log(Level.SEVERE, "jsonData is null");
             return errorResponse( Response.Status.BAD_REQUEST, "No JSON data");
         }
-
-        // Convert string to GSON
-        // -------------------------------------        
         JsonObject jsonObj = new Gson().fromJson(jsonData, JsonObject.class);
         
-        // Check for required "fileToReplaceId"
+        // (2a) Check for required "fileToReplaceId"
         // -------------------------------------        
         if ((!jsonObj.has("fileToReplaceId")) || jsonObj.get("fileToReplaceId").isJsonNull()){
             return errorResponse( Response.Status.BAD_REQUEST, "'fileToReplaceId' NOT found in the JSON Request");
@@ -182,7 +187,7 @@ public class Files extends AbstractApiBean {
         }
         
         
-        // Check for optional "forceReplace"
+        // (2b) Check for optional "forceReplace"
         // -------------------------------------        
         Boolean forceReplace = false;
         if ((jsonObj.has("forceReplace")) && (!jsonObj.get("forceReplace").isJsonNull())){
@@ -191,30 +196,17 @@ public class Files extends AbstractApiBean {
                 forceReplace = false;
             }
         }
-        msgt("forceReplace: " + forceReplace);
-        /*
-        if (forceReplace == null){
-            forceReplace = false;
-        }
-        */
+      
+        
         // -------------------------------------
-        // (1) Get the file name and content type
+        // (3) Get the file name and content type
         // -------------------------------------
         String newFilename = contentDispositionHeader.getFileName();
         String newFileContentType = formDataBodyPart.getMediaType().toString();
         
-        // -------------------------------------
-        // (2) Get the user from the API key
-        // -------------------------------------
-        User authUser;
-        try {
-            authUser = this.findUserOrDie();
-        } catch (AbstractApiBean.WrappedResponse ex) {
-            return errorResponse(Response.Status.FORBIDDEN, "Couldn't find a user from the API key");
-        }
         
         //-------------------
-        // (3) Create the AddReplaceFileHelper object
+        // (4) Create the AddReplaceFileHelper object
         //-------------------
         msg("REPLACE!");
 
@@ -226,9 +218,8 @@ public class Files extends AbstractApiBean {
                                                 this.permissionSvc,
                                                 this.commandEngine);
 
-
         //-------------------
-        // (4) Run "runReplaceFileByDatasetId"
+        // (5) Run "runReplaceFileByDatasetId"
         //-------------------
         
         
