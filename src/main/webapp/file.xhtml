@@ -194,8 +194,9 @@
                                     </h:outputFormat>
 
                                     <div class="mD5-block" jsf:rendered="#{!FilePage.file.tabularData}">
-                                        <h:outputText id="fileMD5" value="#{FilePage.file.tabularData ? bundle['file.MD5.origal'] : bundle['file.MD5']}: #{FilePage.file.md5};"
-                                                      rendered="#{!(empty FilePage.file.md5)}"/>
+                                        <!-- FIXME: When this page is fixed (no more "Method isThumbnailAvailable not found") also replace "file.MD5" with FilePage.file.checksumType and "file.MD5.origal" with "file.originalChecksumType" -->
+                                        <h:outputText id="fileMD5" value="#{FilePage.file.tabularData ? bundle['file.MD5.origal'] : bundle['file.MD5']}: #{FilePage.file.checksumValue};"
+                                                      rendered="#{!(empty FilePage.file.checksumValue)}"/>
                                     </div>
 
                                     <div class="text-muted" jsf:rendered="#{FilePage.file.tabularData}">
@@ -236,12 +237,13 @@
                                                     </div>
                                                 </div>
                                             </ui:remove>
-                                            <div class="form-group" jsf:rendered="#{!(empty FilePage.file.md5)}">
+                                            <div class="form-group" jsf:rendered="#{!(empty FilePage.file.checksumValue)}">
                                                 <label class="col-sm-3 control-label" for="metadata_md5">
+                                                    <!-- FIXME: When this page is fixed (no more "Method isThumbnailAvailable not found") also replace "file.MD5" with FilePage.file.checksumType and "file.MD5.origal" with "file.originalChecksumType" -->
                                                    #{FilePage.file.tabularData ? bundle['file.MD5.origal'] : bundle['file.MD5']}
                                                 </label>
                                                 <div class="col-sm-9">
-                                                    <h:outputText value="#{FilePage.file.md5}"/>
+                                                    <h:outputText value="#{FilePage.file.checksumValue}"/>
                                                 </div>
                                             </div>
                                             <div class="form-group" jsf:rendered="#{!(empty FilePage.file.unf)}">
@@ -304,8 +306,9 @@
                                                     FITS stuff....
                                                 </li>
                                                 <li>
+                                                    <!-- FIXME: When this page is fixed (no more "Method isThumbnailAvailable not found") use FilePage.file.checksumType rather than "file.metadataTab.fileMetadata.md5.label" -->
                                                     #{bundle['file.metadataTab.fileMetadata.md5.label']}
-                                                    <h:outputText  value="#{FilePage.file.md5};"  rendered="#{!(empty FilePage.file.md5)}"/>
+                                                    <h:outputText  value="#{FilePage.file.checksumValue};"  rendered="#{!(empty FilePage.file.checksumValue)}"/>
                                                 </li>
                                             </div>
                                         </div>

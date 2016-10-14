@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.search;
 
+import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
@@ -527,6 +528,12 @@ public class SearchServiceBean {
                     }
                 }
                 solrSearchResult.setFileMd5((String) solrDocument.getFieldValue(SearchFields.FILE_MD5));
+                try {
+                    solrSearchResult.setFileChecksumType((DataFile.ChecksumType) DataFile.ChecksumType.fromString((String) solrDocument.getFieldValue(SearchFields.FILE_CHECKSUM_TYPE)));
+                } catch (IllegalArgumentException ex) {
+                    logger.info("Exception setting setFileChecksumType: " + ex);
+                }
+                solrSearchResult.setFileChecksumValue((String) solrDocument.getFieldValue(SearchFields.FILE_CHECKSUM_VALUE));
                 solrSearchResult.setUnf((String) solrDocument.getFieldValue(SearchFields.UNF));
                 solrSearchResult.setDatasetVersionId(datasetVersionId);
                 List<String> fileCategories = (ArrayList) solrDocument.getFieldValues(SearchFields.FILE_TAG);

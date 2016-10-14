@@ -501,3 +501,10 @@ Host FQDN or URL of your Piwik instance before the ``/piwik.php``. Examples:
 or
 
 ``curl -X PUT -d hostname.domain.tld/stats http://localhost:8080/api/admin/settings/:PiwikAnalyticsHost``
+
+:FileFixityChecksumAlgorithm
+++++++++++++++++++++++++++++
+
+Dataverse calculates checksums for uploaded files so that users can determine if their file was corrupted via upload or download. This is sometimes called "file fixity": https://en.wikipedia.org/wiki/File_Fixity
+
+The default checksum algorithm used is MD5 and should be sufficient for establishing file fixity. "SHA-1" is an experimental alternate value for this setting.
