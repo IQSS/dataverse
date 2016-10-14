@@ -329,7 +329,7 @@ public class FileUpload extends AbstractApiBean {
     @POST
     @Path("replace")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public Response replaceFileInDataset(@FormDataParam("datasetId") Long datasetId,
+    public Response replaceFileInDataset(
                     @FormDataParam("file") InputStream testFileInputStream,
                     @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
                     @FormDataParam("file") final FormDataBodyPart formDataBodyPart,
@@ -375,17 +375,17 @@ public class FileUpload extends AbstractApiBean {
         // (4) Run "runReplaceFileByDatasetId"
         //-------------------
         if (forceReplace){
-            addFileHelper.runForceReplaceFileByDatasetId(datasetId,
+            addFileHelper.runForceReplaceFile(fileToReplaceId,
                                     newFilename,
                                     newFileContentType,
-                                    testFileInputStream,
-                                    fileToReplaceId);
+                                    testFileInputStream
+                                );
         }else{
-            addFileHelper.runReplaceFileByDatasetId(datasetId,
+            addFileHelper.runForceReplaceFile(fileToReplaceId,
                                     newFilename,
                                     newFileContentType,
-                                    testFileInputStream,
-                                    fileToReplaceId);            
+                                    testFileInputStream
+                                );            
         }    
             
         msg("we're back.....");
@@ -402,190 +402,6 @@ public class FileUpload extends AbstractApiBean {
             
     } // end: replaceFileInDataset
 
-
-    
-    /**
-     * Used for RestAssured testing until multipart form available 
-     * @param datasetId - dataset to add files
-     * @param existingTestFileName  test file in directory "scripts/search/data/binary/"
-     * @param fileContentType
-     * @param fileName
-     * @param fileToReplaceId
-     * @return 
-     */
-    @GET
-    @Path("addTest1")
-    public Response testAddReplace(@QueryParam("replaceOperation") Boolean replaceOperation,
-                    @QueryParam("datasetId") Long datasetId,
-                    @QueryParam("loadById") Boolean loadById,
-                    @QueryParam("existingTestFileName") String existingTestFileName,
-                    @QueryParam("newFileContentType") String newFileContentType,
-                    @QueryParam("newFileName") String newFileName,
-                    @QueryParam("fileToReplaceId") Long fileToReplaceId,
-                    @QueryParam("badStreamTest") Boolean badStreamTest){
-        
-        if (loadById==null){
-            loadById = false;
-        }
-        if (badStreamTest==null){
-            badStreamTest = false;
-        }
-        if (replaceOperation == null){
-            replaceOperation = false;
-        }
-        
-        // -------------------------------------
-        msgt("(1) Get User from API token");
-        // -------------------------------------
-        User authUser;
-        try {
-            authUser = this.findUserOrDie();
-        } catch (WrappedResponse ex) {
-            return okResponse("Couldn't find a user from the API key");
-        }
-        //authSvc.findByID(new Long(1));        
-        msg("authUser: " + authUser);
-        msg("getUserIdentifier: " + authUser.getIdentifier());
-        
-        // -------------------------------------
-        msgt("(2) createDataverseRequest");
-        // -------------------------------------
-        DataverseRequest dvRequest2 = createDataverseRequest(authUser);
-        AddReplaceFileHelper addFileHelper = new AddReplaceFileHelper(dvRequest2,
-                                                this.ingestService,
-                                                this.datasetService,
-                                                this.fileService,
-                                                this.permissionSvc,
-                                                this.commandEngine);
-        
-
-         // -------------------------------------
-        msgt("(3) send Params, including nulls");
-        // -------------------------------------        
-        InputStream testFileInputStream;
-        if (badStreamTest){
-            testFileInputStream = null;
-        }else if (existingTestFileName != null){
-         
-            testFileInputStream = getExistingFileInputStream(existingTestFileName);
-            msgt("testFileInputStream: " + testFileInputStream);
-            
-        } else{
-            testFileInputStream = getSampleFile();
-            if (testFileInputStream == null){
-                return okResponse("Couldn't find the file!!");
-            }
-        }
-
-        if (loadById){
-            addFileHelper.runAddFileByDatasetId(datasetId,
-                                newFileName,
-                                newFileContentType,
-                                testFileInputStream);
-      
-        }else{
-            Dataset selectedDataset = null;
-            if (datasetId != null){
-                selectedDataset = datasetService.find(datasetId);
-            }
-            
-            if (replaceOperation){
-                msg("Test REPLACE operation");
-                // Replace operation
-                addFileHelper.runReplaceFile(selectedDataset,
-                                    newFileName,
-                                    newFileContentType,
-                                    testFileInputStream,
-                                    fileToReplaceId);
-                
-            }else{
-                msg("Test ADD operation");
-                // Add operation
-                addFileHelper.runAddFile(selectedDataset,
-                                    newFileName,
-                                    newFileContentType,
-                                    testFileInputStream);
-
-            }
-        }
-        if (addFileHelper.hasError()){
-            return okResponse(addFileHelper.getErrorMessagesAsString("\n"));
-        }else{
-            return okResponse("Look at that!  You added a file! (hey hey, it may have worked)");
-        }
-            
-        //return okResponse("in progress2");
-         
-    }
-    
-    
-    
-    @GET
-    @Path("replace/{oldFileId}")
-    public Response hi_replace(@PathParam("oldFileId") Long oldFileId){
-        
-        // -------------------------------------
-        msgt("(1) getSampleFile()");
-        // -------------------------------------
-
-        InputStream testFileInputStream = getSampleFile();
-        if (testFileInputStream == null){
-            return okResponse("Couldn't find the file!!");
-        }
-        
-        // -------------------------------------
-        msgt("(1a) Get User from API token");
-        // -------------------------------------
-        User authUser;
-        try {
-            authUser = this.findUserOrDie();
-        } catch (WrappedResponse ex) {
-            return okResponse("Couldn't find a user from the API key");
-        }
-        //authSvc.findByID(new Long(1));        
-        msg("authUser: " + authUser);
-        msg("getUserIdentifier: " + authUser.getIdentifier());
-
-        
-        // -------------------------------------
-        msgt("(1b) Get the selected Dataset");
-        // -------------------------------------        
-        int dataset_id = 10;
-        Dataset selectedDataset = datasetService.find(new Long(dataset_id));
-
-        
-        //-------------------
-        // REPLACE
-        //-------------------
-
-        msg("REPLACE!");
-
-
-        DataverseRequest dvRequest2 = createDataverseRequest(authUser);
-        AddReplaceFileHelper addFileHelper = new AddReplaceFileHelper(dvRequest2,
-                                                this.ingestService,
-                                                this.datasetService,
-                                                this.fileService,
-                                                this.permissionSvc,
-                                                this.commandEngine);
-
-        //Long oldFileId =  oldFileId;
-        addFileHelper.runReplaceFile(selectedDataset,
-                                "replace_" + oldFileId.toString() + ".txt",
-                                "text/plain", 
-                                testFileInputStream,
-                                oldFileId
-                                );
-
-
-        if (addFileHelper.hasError()){
-            return okResponse(addFileHelper.getErrorMessagesAsString("\n"));
-        }else{
-            return okResponse("File was replaced! hey hey, it may have worked");
-        }
-            
-        
-    } // end call to "hi"
 
 }
 

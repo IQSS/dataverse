@@ -196,6 +196,7 @@ public class AddReplaceFileHelper{
         msgt(">> runAddFileByDatasetId");
 
         initErrorHandling();
+        
         this.currentOperation = FILE_ADD_OPERATION;
         
         if (!this.step_001_loadDatasetById(datasetId)){
@@ -217,12 +218,15 @@ public class AddReplaceFileHelper{
      */
     public boolean runAddFile(Dataset dataset, String newFileName, String newFileContentType, InputStream newFileInputStream){
         msgt(">> runAddFile");
+        
+        initErrorHandling();
+        
         if (this.hasError()){
             return false;
         }
         this.currentOperation = FILE_ADD_OPERATION;
         
-        return this.runAddReplaceFile(dataset, newFileName, newFileContentType, newFileInputStream, null);
+        return this.runAddReplaceFile(dataset, newFileName, newFileContentType, newFileInputStream);
     }
     
 
@@ -235,78 +239,55 @@ public class AddReplaceFileHelper{
      * @param newFileInputStream
      * @return 
      */
-    public boolean runForceReplaceFile(Dataset dataset, String newFileName, String newFileContentType, InputStream newFileInputStream, Long oldFileId){
+    public boolean runForceReplaceFile(Long oldFileId, String newFileName, String newFileContentType, InputStream newFileInputStream){
         
         msgt(">> runForceReplaceFile");
+        initErrorHandling();
+
         this.currentOperation = FILE_REPLACE_FORCE_OPERATION;
 
+               
         if (oldFileId==null){
             this.addErrorSevere(getBundleErr("existing_file_to_replace_id_is_null"));
             return false;
         }
+       
+        // Loads local variable "fileToReplace"
+        //
+        if (!this.step_005_loadFileToReplaceById(oldFileId)){
+            return false;
+        }
+
         
-        return this.runAddReplaceFile(dataset, newFileName, newFileContentType, newFileInputStream, oldFileId);
+        return this.runAddReplaceFile(fileToReplace.getOwner(), newFileName, newFileContentType, newFileInputStream);
     }
     
 
-    public boolean runForceReplaceFileByDatasetId(Long datasetId, String newFileName, String newFileContentType, InputStream newFileInputStream, Long oldFileId){
-        
-        msgt(">> runAddFileByDatasetId");
-
-        initErrorHandling();
-        this.currentOperation = FILE_REPLACE_FORCE_OPERATION;
-        
-        if (!this.step_001_loadDatasetById(datasetId)){
-            return false;
-        }
-        if (oldFileId==null){
-            this.addErrorSevere(getBundleErr("existing_file_to_replace_id_is_null"));
-            return false;
-        }
-        
-        return this.runAddReplaceFile(this.dataset, newFileName, newFileContentType, newFileInputStream, oldFileId);
-    }
 
     
-    public boolean runReplaceFileByDatasetId(Long datasetId, String newFileName, String newFileContentType, InputStream newFileInputStream, Long oldFileId){
-        
-        msgt(">> runAddFileByDatasetId");
-
-        initErrorHandling();
-        this.currentOperation = FILE_REPLACE_OPERATION;
-        
-        if (!this.step_001_loadDatasetById(datasetId)){
-            return false;
-        }
-        if (oldFileId==null){
-            this.addErrorSevere(getBundleErr("existing_file_to_replace_id_is_null"));
-            return false;
-        }
-        
-        return this.runReplaceFile(this.dataset, newFileName, newFileContentType, newFileInputStream, oldFileId);
-    }
-    
-    /**
-     * After the constructor, this method is called to replace a file
-     * 
-     * @param dataset
-     * @param newFileName
-     * @param newFileContentType
-     * @param newFileInputStream
-     * @return 
-     */
-    public boolean runReplaceFile(Dataset dataset, String newFileName, String newFileContentType, InputStream newFileInputStream, Long oldFileId){
+    public boolean runReplaceFile(Long oldFileId, String newFileName, String newFileContentType, InputStream newFileInputStream){
         
         msgt(">> runReplaceFile");
-        this.currentOperation = FILE_REPLACE_OPERATION;
 
+        initErrorHandling();
+        this.currentOperation = FILE_REPLACE_OPERATION;
+        
         if (oldFileId==null){
             this.addErrorSevere(getBundleErr("existing_file_to_replace_id_is_null"));
             return false;
         }
         
-        return this.runAddReplaceFile(dataset, newFileName, newFileContentType, newFileInputStream, oldFileId);
+         
+        // Loads local variable "fileToReplace"
+        //
+        if (!this.step_005_loadFileToReplaceById(oldFileId)){
+            return false;
+        }
+
+        return this.runAddReplaceFile(fileToReplace.getOwner(), newFileName, newFileContentType, newFileInputStream);
     }
+    
+    
     
     /**
      * Here we're going to run through the steps to ADD or REPLACE a file
@@ -327,8 +308,9 @@ public class AddReplaceFileHelper{
      * @return 
      */
     private boolean runAddReplaceFile(Dataset dataset,  
-            String newFileName, String newFileContentType, InputStream newFileInputStream,
-            Long oldFileId){
+            String newFileName, String newFileContentType, 
+            InputStream newFileInputStream
+            ){
         
         // Run "Phase 1" - Initial ingest of file + error check
         // But don't save the dataset version yet
@@ -336,8 +318,7 @@ public class AddReplaceFileHelper{
         boolean phase1Success = runAddReplacePhase1(dataset,  
                                         newFileName,  
                                         newFileContentType,  
-                                        newFileInputStream,
-                                        oldFileId);
+                                        newFileInputStream);
         
         if (!phase1Success){
             return false;
@@ -357,15 +338,13 @@ public class AddReplaceFileHelper{
      * @return 
      */
     public boolean runAddReplacePhase1(Dataset dataset,  
-            String newFileName, String newFileContentType, InputStream newFileInputStream,
-            Long oldFileId){
+            String newFileName, 
+            String newFileContentType,
+            InputStream newFileInputStream){
         
         if (this.hasError()){
             return false;   // possible to have errors already...
         }
-
-        initErrorHandling();
-        
 
         msgt("step_001_loadDataset");
         if (!this.step_001_loadDataset(dataset)){
@@ -382,15 +361,6 @@ public class AddReplaceFileHelper{
         if (!this.step_020_loadNewFile(newFileName, newFileContentType, newFileInputStream)){
             return false;
             
-        }
-
-        // Replace only step!
-        if (isFileReplaceOperation()){
-            
-            msgt("step_025_loadFileToReplaceById");
-            if (!this.step_025_loadFileToReplaceById(oldFileId)){
-                return false;
-            }
         }
         
         msgt("step_030_createNewFilesViaIngest");
@@ -721,39 +691,6 @@ public class AddReplaceFileHelper{
         return true;
     }
     
-    /**
-     * Optional: old file to replace
-     * 
-     * @param oldFile
-     * @return 
-     */
-    private boolean step_025_loadFileToReplace(DataFile existingFile){
-
-        if (this.hasError()){
-            return false;
-        }
-        
-        if (existingFile == null){
-            this.addErrorSevere(getBundleErr("existing_file_to_replace_is_null"));
-            return false;
-        }       
-        
-        if (!existingFile.getOwner().equals(this.dataset)){
-            addError(getBundleErr("existing_file_to_replace_not_in_dataset"));
-            return false;
-        }
-        
-        if (!existingFile.isReleased()){
-            addError(getBundleErr("unpublished_file_cannot_be_replaced"));
-            return false;            
-        }
-        
-              
-        fileToReplace = existingFile;
-        
-        return true;
-    }
-
     
     /**
      * Optional: old file to replace
@@ -761,28 +698,88 @@ public class AddReplaceFileHelper{
      * @param oldFile
      * @return 
      */
-    private boolean step_025_loadFileToReplaceById(Long dataFileId){
+    private boolean step_005_loadFileToReplaceById(Long dataFileId){
         
         if (this.hasError()){
             return false;
         }
         
-        // This shouldn't happen, the public replace method should throw
-        //  a NullPointerException
+        //  Check for Null
         //
         if (dataFileId == null){
             this.addErrorSevere(getBundleErr("existing_file_to_replace_id_is_null"));
             return false;
         }
         
+        // Does the file exist?
+        //
         DataFile existingFile = fileService.find(dataFileId);
 
         if (existingFile == null){
             this.addError(getBundleErr("existing_file_to_replace_not_found_by_id") + " " + dataFileId);
             return false;
-        }      
+        } 
         
-        return step_025_loadFileToReplace(existingFile);
+
+        // Do we have permission to replace this file? e.g. Edit the file's dataset
+        //
+        if (!permissionService.request(dvRequest).on(existingFile.getOwner()).has(Permission.EditDataset)){
+           addError(getBundleErr("no_edit_dataset_permission"));
+           return false;
+        }
+        
+        
+        // Is the file published?
+        //
+        if (!existingFile.isReleased()){
+            addError(getBundleErr("unpublished_file_cannot_be_replaced"));
+            return false;            
+        }
+        
+        // Is the file in the latest dataset version?
+        //
+        if (!step_007_auto_isReplacementInLatestVersion(existingFile)){
+            return false;
+        }
+        
+        fileToReplace = existingFile;
+        
+        return true;        
+
+    }
+    
+    /**
+     * Make sure the file to replace is in the workingVersion
+     *  -- e.g. that it wasn't deleted from a previous Version
+     * 
+     * @return 
+     */
+    private boolean step_007_auto_isReplacementInLatestVersion(DataFile existingFile){
+        
+        if (existingFile == null){
+            throw new NullPointerException("existingFile cannot be null!");
+        }
+
+        if (this.hasError()){
+            return false;
+        }
+        
+        
+        DatasetVersion latestVersion = existingFile.getOwner().getLatestVersion();
+        
+        boolean fileInLatestVersion = false;
+        for (FileMetadata fm : latestVersion.getFileMetadatas()){
+            if (fm.getDataFile().getId() != null){
+                if (Objects.equals(existingFile.getId(),fm.getDataFile().getId())){
+                    fileInLatestVersion = true;
+                }
+            }
+        }
+        if (!fileInLatestVersion){
+            addError(getBundleErr("existing_file_not_in_latest_published_version"));
+            return false;                        
+        }
+        return true;
     }
     
     
@@ -794,11 +791,7 @@ public class AddReplaceFileHelper{
 
         // Load the working version of the Dataset
         workingVersion = dataset.getEditVersion();
-        
-        if (!step_035_auto_isReplacementInLatestVersion()){
-            return false;
-        }
-        
+                
         try {
             initialFileList = ingestService.createDataFiles(workingVersion,
                     this.newFileInputStream,
@@ -839,36 +832,6 @@ public class AddReplaceFileHelper{
         return this.step_045_auto_checkForFileReplaceDuplicate();
     }
     
-    /**
-     * Make sure the file to replace is in the workingVersion
-     *  -- e.g. that it wasn't deleted from a previous Version
-     * 
-     * @return 
-     */
-    private boolean step_035_auto_isReplacementInLatestVersion(){
-        
-        if (this.hasError()){
-            return false;
-        }
-        if (!this.isFileReplaceOperation()){
-            return true;
-        }
-        
-        boolean fileInLatestVersion = false;
-        for (FileMetadata fm : workingVersion.getFileMetadatas()){
-            if (fm.getDataFile().getId() != null){
-                if (Objects.equals(fileToReplace.getId(),fm.getDataFile().getId())){
-                    fileInLatestVersion = true;
-                }
-            }
-        }
-        if (!fileInLatestVersion){
-            addError(getBundleErr("existing_file_not_in_latest_published_version"));
-            this.runMajorCleanup(); 
-            return false;                        
-        }
-        return true;
-    }
     
     /**
      * Create a "final file list" 
