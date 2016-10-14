@@ -78,6 +78,13 @@ public class JsonParser {
     public Dataverse parseDataverse(JsonObject jobj) throws JsonParseException {
         Dataverse dv = new Dataverse();
 
+        /**
+         * @todo Instead of this getMandatoryString method we should run the
+         * String through ConstraintValidator. See EMailValidatorTest and
+         * EMailValidator for examples. That way we can check not only if it's
+         * required or not but other bean validation rules such as "must match
+         * this regex".
+         */
         dv.setAlias(getMandatoryString(jobj, "alias"));
         dv.setName(getMandatoryString(jobj, "name"));
         dv.setDescription(jobj.getString("description", null));
@@ -102,7 +109,16 @@ public class JsonParser {
             dv.setDataverseTheme(theme);
             theme.setDataverse(dv);
         }
-        
+
+        dv.setDataverseType(Dataverse.DataverseType.UNCATEGORIZED); // default
+        if (jobj.containsKey("dataverseType")) {
+            for (Dataverse.DataverseType dvtype : Dataverse.DataverseType.values()) {
+                if (dvtype.name().equals(jobj.getString("dataverseType"))) {
+                    dv.setDataverseType(dvtype);
+                }
+            }
+        }
+
         /*  We decided that subject is not user set, but gotten from the subject of the dataverse's
             datasets - leavig this code in for now, in case we need to go back to it at some point
         
