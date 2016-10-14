@@ -19,11 +19,8 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
-import edu.harvard.iq.dataverse.util.JsfHelper;
-import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -33,12 +30,7 @@ import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
 import javax.ejb.EJBException;
-import javax.ejb.Stateless;
-import javax.enterprise.context.SessionScoped;
-import javax.faces.application.FacesMessage;
-import javax.inject.Named;
 import javax.validation.ConstraintViolation;
 
 /**
@@ -1100,7 +1092,10 @@ public class AddReplaceFileHelper{
         ((UpdateDatasetCommand) update_cmd).setValidateLenient(true);  
         
         try {            
-            commandEngine.submit(update_cmd);
+            // Submit the update dataset command 
+            // and update the local dataset object
+            //
+            dataset = commandEngine.submit(update_cmd);
         } catch (CommandException ex) {
             this.addErrorSevere(getBundleErr("add.command_engine_error"));
             logger.severe(ex.getMessage());
@@ -1278,8 +1273,11 @@ public class AddReplaceFileHelper{
         ((UpdateDatasetCommand) update_cmd).setValidateLenient(true);
         
 
-        try {            
-              commandEngine.submit(update_cmd);
+        try {        
+            // Submit the update dataset command 
+            // and update the local dataset object
+            //
+              dataset = commandEngine.submit(update_cmd);
           } catch (CommandException ex) {
               this.addErrorSevere(getBundleErr("replace.command_engine_error"));
               logger.severe(ex.getMessage());
@@ -1346,6 +1344,11 @@ public class AddReplaceFileHelper{
     }
     
     
+    /**
+     * Currently this is a placeholder if we decide to send
+     * user notifications.
+     * 
+     */
     private boolean step_090_notifyUser(){
         if (this.hasError()){
             return false;
@@ -1374,14 +1377,15 @@ public class AddReplaceFileHelper{
         //
         finalFileList.clear();
 
-        // TODO: Need to run ingest async......
-        if (true){
-            return true;
-        }
+        // TODO: Need to run ingwest async......
+        //if (true){
+            //return true;
+        //}
         
         msg("pre ingest start");
         // start the ingest!
         //
+               
         ingestService.startIngestJobs(dataset, dvRequest.getAuthenticatedUser());
         
         msg("post ingest start");

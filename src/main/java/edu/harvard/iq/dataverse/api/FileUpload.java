@@ -56,7 +56,6 @@ import org.omnifaces.util.Faces;
  *
  * @author rmp553
  */
-@Stateless
 @Path("upload")
 public class FileUpload extends AbstractApiBean {
     
