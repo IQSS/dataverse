@@ -47,7 +47,7 @@ public class OAuth2LoginBackingBean implements Serializable {
     DataverseSession session;
     
     @Inject
-    OAuth2NewAccountPage newAccountPage;
+    OAuth2FirstLoginPage newAccountPage;
     
     public String linkFor( String idpId ) {
         AbstractOAuth2AuthenticationProvider idp = authenticationSvc.getOAuth2Provider(idpId);
@@ -89,7 +89,7 @@ public class OAuth2LoginBackingBean implements Serializable {
                 // need to create the user
                 String proposedAuthenticatedUserIdentifier = oauthUser.getUsername();
                 
-                FacesContext.getCurrentInstance().getExternalContext().redirect("/oauth2/newAccount.xhtml");
+                FacesContext.getCurrentInstance().getExternalContext().redirect("/oauth2/firstLogin.xhtml");
             } else {
                 // update profile
                 dvUser = authenticationSvc.updateAuthenticatedUser(dvUser, oauthUser.getDisplayInfo());

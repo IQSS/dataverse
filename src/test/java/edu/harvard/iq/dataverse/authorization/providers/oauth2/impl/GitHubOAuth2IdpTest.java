@@ -1,6 +1,6 @@
-package edu.harvard.iq.dataverse.authorization.oauth2.identityproviders;
+package edu.harvard.iq.dataverse.authorization.providers.oauth2.impl;
 
-import edu.harvard.iq.dataverse.authorization.providers.oauth2.identityproviders.GitHubOAuth2Idp;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.GitHubOAuth2AP;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
 import org.junit.Test;
@@ -10,7 +10,7 @@ import static org.junit.Assert.*;
  *
  * @author michael
  */
-public class GitHubOAuth2IdpTest extends GitHubOAuth2Idp {
+public class GitHubOAuth2IdpTest extends GitHubOAuth2AP {
     
     private static final String GITHUB_RESPONSE = "{\n" +
 "    \"avatar_url\": \"https://avatars.githubusercontent.com/u/9999999?v=3\",\n" +

@@ -1,10 +1,9 @@
-package edu.harvard.iq.dataverse.authorization.providers.oauth2.identityproviders;
+package edu.harvard.iq.dataverse.authorization.providers.oauth2.impl;
 
 import com.github.scribejava.core.builder.api.DefaultApi20;
 import com.github.scribejava.core.extractors.OAuth2AccessTokenJsonExtractor;
 import com.github.scribejava.core.extractors.TokenExtractor;
 import com.github.scribejava.core.model.OAuth2AccessToken;
-import java.util.logging.Logger;
 
 /**
  * Adaptor for ORCiD OAuth identity Provider.
@@ -51,19 +50,7 @@ public class OrcidApi extends DefaultApi20 {
 
     @Override
     public TokenExtractor<OAuth2AccessToken> getAccessTokenExtractor() {
-        return new TE();
-    }
-    
-    static class TE extends OAuth2AccessTokenJsonExtractor {
-
-        @Override
-        public OAuth2AccessToken extract(String response) {
-            Logger.getAnonymousLogger().info("Response:");
-            Logger.getAnonymousLogger().info(response);
-            Logger.getAnonymousLogger().info("/Response");
-            return super.extract(response);
-        }
-    
+        return OAuth2AccessTokenJsonExtractor.instance();
     }
     
 }

@@ -16,7 +16,7 @@ import javax.inject.Inject;
  */
 @Named
 @SessionScoped
-public class OAuth2NewAccountPage implements java.io.Serializable {
+public class OAuth2FirstLoginPage implements java.io.Serializable {
 
     
     @EJB
@@ -26,6 +26,10 @@ public class OAuth2NewAccountPage implements java.io.Serializable {
     DataverseSession session;
     
     OAuth2UserRecord newUser;
+    
+    String username;
+    
+    int selectedTabIndex=0;
     
     /**
      * @return A textual reference to the user.
@@ -41,10 +45,28 @@ public class OAuth2NewAccountPage implements java.io.Serializable {
 
     public void setNewUser(OAuth2UserRecord newUser) {
         this.newUser = newUser;
+        setUsername( newUser.getUsername() );
     }
     
     public void setupMockData() {
-        newUser = new OAuth2UserRecord("github", "1928379173561510", "mich.barsinai", "qwe-addssd-iiiiie",
-                                        new AuthenticatedUserDisplayInfo("Michael", "Bar-Sinai", "m@mbarsinai.com", "aff", "pos"));
+        setNewUser( new OAuth2UserRecord("github", "1928379173561510", "mich.barsinai", "qwe-addssd-iiiiie",
+                                        new AuthenticatedUserDisplayInfo("Michael", "Bar-Sinai", "m@mbarsinai.com", "aff", "pos")));
     }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public int getSelectedTabIndex() {
+        return selectedTabIndex;
+    }
+
+    public void setSelectedTabIndex(int selectedTabIndex) {
+        this.selectedTabIndex = selectedTabIndex;
+    }
+    
 }

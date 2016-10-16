@@ -1,4 +1,4 @@
-package edu.harvard.iq.dataverse.authorization.providers.oauth2.identityproviders;
+package edu.harvard.iq.dataverse.authorization.providers.oauth2.impl;
 
 import com.github.scribejava.apis.GitHubApi;
 import com.github.scribejava.core.builder.api.BaseApi;
@@ -13,14 +13,14 @@ import javax.json.JsonReader;
  * IDP adaptor for GitHub.com
  * @author michael
  */
-public class GitHubOAuth2Idp extends AbstractOAuth2AuthenticationProvider {
+public class GitHubOAuth2AP extends AbstractOAuth2AuthenticationProvider {
     
-    public GitHubOAuth2Idp(String aClientId, String aClientSecret) {
+    public GitHubOAuth2AP(String aClientId, String aClientSecret) {
         id = "github";
         title = "GitHub";
         clientId = aClientId;
         clientSecret = aClientSecret;
-        userEndpoint = "https://api.github.com/user";
+        baseUserEndpoint = "https://api.github.com/user";
     }
     
     @Override

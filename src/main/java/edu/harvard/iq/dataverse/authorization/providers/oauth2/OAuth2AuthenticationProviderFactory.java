@@ -4,9 +4,9 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationSetupException;
 import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderFactory;
 import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderRow;
-import edu.harvard.iq.dataverse.authorization.providers.oauth2.identityproviders.GitHubOAuth2Idp;
-import edu.harvard.iq.dataverse.authorization.providers.oauth2.identityproviders.GoogleOAuth2Idp;
-import edu.harvard.iq.dataverse.authorization.providers.oauth2.identityproviders.OrcidOAuth2Idp;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.GitHubOAuth2AP;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.GoogleOAuth2AP;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,9 +28,9 @@ public class OAuth2AuthenticationProviderFactory implements AuthenticationProvid
     private final Map<String, ProviderBuilder> builders = new HashMap<>();
 
     public OAuth2AuthenticationProviderFactory() {
-        builders.put("github", (row, data) -> readRow(row, new GitHubOAuth2Idp(data.get("clientId"), data.get("clientSecret"))));
-        builders.put("google", (row, data) -> readRow(row, new GoogleOAuth2Idp(data.get("clientId"), data.get("clientSecret"))));
-        builders.put("orcid", (row, data)  -> readRow(row, new OrcidOAuth2Idp(data.get("clientId"), data.get("clientSecret"), data.get("userEndpoint"))));
+        builders.put("github", (row, data) -> readRow(row, new GitHubOAuth2AP(data.get("clientId"), data.get("clientSecret"))));
+        builders.put("google", (row, data) -> readRow(row, new GoogleOAuth2AP(data.get("clientId"), data.get("clientSecret"))));
+        builders.put("orcid", (row, data)  -> readRow(row, new OrcidOAuth2AP(data.get("clientId"), data.get("clientSecret"), data.get("userEndpoint"))));
     }
 
     @Override

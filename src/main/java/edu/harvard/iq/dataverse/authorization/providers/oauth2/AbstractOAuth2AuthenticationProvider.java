@@ -13,8 +13,12 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationProviderDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationRequest;
 import edu.harvard.iq.dataverse.authorization.AuthenticationResponse;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Base class for OAuth2 identity providers, such as GitHub and ORCiD.
@@ -23,16 +27,57 @@ import java.util.Optional;
  */
 public abstract class AbstractOAuth2AuthenticationProvider implements AuthenticationProvider {
     
+    private static final Logger logger = Logger.getLogger(AbstractOAuth2AuthenticationProvider.class.getName());
+    
     protected static class ParsedUserResponse {
         public final AuthenticatedUserDisplayInfo displayInfo;
         public final String userIdInProvider;
         public final String username;
+        public final List<String> emails = new ArrayList<>();
 
         public ParsedUserResponse(AuthenticatedUserDisplayInfo displayInfo, String userIdInProvider, String username) {
             this.displayInfo = displayInfo;
             this.userIdInProvider = userIdInProvider;
             this.username = username;
         }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 47 * hash + Objects.hashCode(this.userIdInProvider);
+            hash = 47 * hash + Objects.hashCode(this.username);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final ParsedUserResponse other = (ParsedUserResponse) obj;
+            if (!Objects.equals(this.userIdInProvider, other.userIdInProvider)) {
+                return false;
+            }
+            if (!Objects.equals(this.username, other.username)) {
+                return false;
+            }
+            if (!Objects.equals(this.displayInfo, other.displayInfo)) {
+                return false;
+            }
+            return Objects.equals(this.emails, other.emails);
+        }
+
+        @Override
+        public String toString() {
+            return "ParsedUserResponse{" + "displayInfo=" + displayInfo + ", userIdInProvider=" + userIdInProvider + ", username=" + username + ", emails=" + emails + '}';
+        }
+        
     }
     
     protected String id;
@@ -40,7 +85,7 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
     protected String subTitle;
     protected String clientId;
     protected String clientSecret;
-    protected String userEndpoint;
+    protected String baseUserEndpoint;
     protected String redirectUrl;
     protected String scope;
     
@@ -65,14 +110,23 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
     public OAuth2UserRecord getUserRecord(String code, String state, String redirectUrl) throws IOException, OAuth2Exception {
         OAuth20Service service = getService(state, redirectUrl);
         OAuth2AccessToken accessToken = service.getAccessToken(code);
+        final String userEndpoint = getUserEndpoint(accessToken);
         
-        final OAuthRequest request = new OAuthRequest(Verb.GET, getUserEndpoint(), service);
-        service.signRequest(accessToken, request);
+        final OAuthRequest request = new OAuthRequest(Verb.GET, userEndpoint, service);
+        request.addHeader("Authorization", "Bearer " + accessToken.getAccessToken());
+        request.setCharset("UTF-8");
+        
+        logger.log(Level.INFO, "Sending request to: ''{0}''", request.getCompleteUrl()); // TODO MBS remove
+        logger.log(Level.INFO, "Token: ''{0}''", accessToken.getAccessToken()); // TODO MBS remove
+        request.getHeaders().forEach((k,v)->logger.log(Level.INFO, "Param: " + k + "->" + v)); // TODO MBS remove
+        request.setFollowRedirects(false);
+        
         final Response response = request.send();
         int responseCode = response.getCode();
-        final String body = response.getBody();
+        final String body = response.getBody();        
+        
         if ( responseCode == 200 ) {
-            ParsedUserResponse parsed = parseUserResponse(body);
+            final ParsedUserResponse parsed = parseUserResponse(body);
             return new OAuth2UserRecord(getId(), parsed.userIdInProvider, parsed.username, accessToken.getAccessToken(), parsed.displayInfo);
         } else {
             throw new OAuth2Exception(responseCode, body, "Error getting the user info record.");
@@ -101,8 +155,8 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
         return clientSecret;
     }
 
-    public String getUserEndpoint() {
-        return userEndpoint;
+    public String getUserEndpoint( OAuth2AccessToken token ) {
+        return baseUserEndpoint;
     }
     
     public String getRedirectUrl() {
