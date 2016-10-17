@@ -270,8 +270,6 @@ public class UtilIT {
     static Response replaceFile(Integer datasetId, int fileId, String pathToFile, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .multiPart("datasetId", datasetId)
-                .multiPart("fileToReplaceId", fileId)
                 .multiPart("file", new File(pathToFile))
                 .multiPart("jsonData", Json.createObjectBuilder().add("fileToReplaceId", fileId).build().toString())
                 .post("/api/files/" + fileId + "/replace");
