@@ -413,9 +413,9 @@ public class FileMetadata implements Serializable {
     }
     
     
-    
     public JsonObject asGsonObject(boolean prettyPrint){
-             
+
+        
         GsonBuilder builder;
         if (prettyPrint){  // Add pretty printing
             builder = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().setPrettyPrinting();

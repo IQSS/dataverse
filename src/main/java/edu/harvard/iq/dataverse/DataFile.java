@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.api.WorldMapRelatedData;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -23,6 +24,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.Files;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
@@ -63,7 +66,6 @@ public class DataFile extends DvObject implements Comparable {
     
     public static final Long ROOT_DATAFILE_ID_DEFAULT = new Long(-1);
     
-    @Expose
     private String name;
     
     @Expose
@@ -74,6 +76,7 @@ public class DataFile extends DvObject implements Comparable {
     
 
     @Expose    
+    @SerializedName("storageIdentifier")
     @Column( nullable = false )
     private String fileSystemName;
 
@@ -116,7 +119,7 @@ public class DataFile extends DvObject implements Comparable {
         }
     }
 
-    @Expose
+    //@Expose
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private ChecksumType checksumType;
@@ -125,7 +128,7 @@ public class DataFile extends DvObject implements Comparable {
      * Examples include "f622da34d54bdc8ee541d6916ac1c16f" as an MD5 value or
      * "3a484dfdb1b429c2e15eb2a735f1f5e4d5b04ec6" as a SHA-1 value"
      */
-    @Expose
+    //@Expose
     @Column(nullable = false)
     private String checksumValue;
 
@@ -812,13 +815,38 @@ public class DataFile extends DvObject implements Comparable {
         builder.serializeNulls();   // correctly capture nulls
         Gson gson = builder.create();
 
-        // serialize this object
+        // ----------------------------------
+        // serialize this object + add the id
+        // ----------------------------------
         JsonElement jsonObj = gson.toJsonTree(this);
         jsonObj.getAsJsonObject().addProperty("id", this.getId());
 
-        JsonObject fileMetadataGson = this.getFileMetadata().asGsonObject(prettyPrint);
+        // ----------------------------------
+        //  Add label (filename), description, and categories from the FileMetadata object
+        // ----------------------------------
+        FileMetadata thisFileMetadata = this.getFileMetadata();
         
-        jsonObj.getAsJsonObject().add("fileMetadata", fileMetadataGson);
+        jsonObj.getAsJsonObject().addProperty("filename", thisFileMetadata.getLabel());
+        jsonObj.getAsJsonObject().addProperty("description", thisFileMetadata.getDescription());
+        jsonObj.getAsJsonObject().add("categories", 
+                            gson.toJsonTree(thisFileMetadata.getCategoriesByName())
+                    );
+
+        // ----------------------------------        
+        // Checksum map
+        // ----------------------------------
+        Map<String, String> checkSumMap = new HashMap<String, String>();
+        checkSumMap.put("type", getChecksumType().toString());
+        checkSumMap.put("value", getChecksumValue());
+        
+        JsonElement checkSumJSONMap = gson.toJsonTree(checkSumMap);
+        
+        jsonObj.getAsJsonObject().add("checksum", checkSumJSONMap);
+        
+        
+        //JsonObject fileMetadataGson = this.getFileMetadata().asGsonObject(prettyPrint);
+        
+        //jsonObj.getAsJsonObject().add("fileMetadata", fileMetadataGson);
         
         //JsonObject fileMetadataJSON = new JsonObject();
         JsonObject fullFileJSON = new JsonObject(); 
