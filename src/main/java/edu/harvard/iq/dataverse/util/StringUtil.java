@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.util;
 
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2LoginBackingBean;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
@@ -18,7 +17,6 @@ import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
-import static org.apache.maven.wagon.PathUtils.password;
 import org.apache.xerces.impl.dv.util.Base64;
 import org.jsoup.Jsoup;
 
@@ -28,6 +26,10 @@ import org.jsoup.Jsoup;
  */
 public class StringUtil {
        
+    public static final boolean nonEmpty( String str ) {
+        return ! isEmpty(str);
+    }
+    
     public static final boolean isEmpty(String str) {
         return str==null || str.trim().equals("");        
     }
@@ -141,7 +143,7 @@ public class StringUtil {
         byte[] key = (secKey).getBytes("UTF-8");
         MessageDigest sha = MessageDigest.getInstance("SHA-1");
         key = sha.digest(key);
-        key = Arrays.copyOf(key, 16); // use only first 128 bit
+        key = Arrays.copyOf(key, 16); // use only first 128 bits
 
         SecretKeySpec secretKeySpec = new SecretKeySpec(key, "AES");
         return secretKeySpec;

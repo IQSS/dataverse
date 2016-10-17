@@ -22,7 +22,7 @@
                 <div class="row">
                     <div class="col-md-12">
                         <h1>
-                            <h:outputFormat value="#{bundle['oauth2.newAccount.title']}">
+                            <h:outputFormat value="#{bundle['oauth2.newAccount.pageTitle']}">
                                 <f:param value="#{OAuth2FirstLoginPage.userReference}" />
                             </h:outputFormat>
                         </h1>
@@ -38,24 +38,47 @@
                 
                 <p:tabView id="tabView" activeIndex="#{OAuth2FirstLoginPage.selectedTabIndex}">
                     <p:tab id="newAccountTab" title="#{bundle['oauth2.newAccount.tabs.newAccount']}">
-                        <ui:include src="../termsofuse.xhtml"/>
-                        <div class="form-group">
-                            <label for="position" class="col-sm-3 control-label">
-                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['oauth2.newAccount.username.tip']}">
-                                    #{bundle['oauth2.newAccount.username']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
-                                </span>
-                            </label>
-                            <div class="col-sm-9">
-                                <h:inputText value="#{OAuth2FirstLoginPage.username}"/>
+                        <h:form id="newAccountForm" styleClass="form-horizontal">
+                            <div class="form-group">
+                                <label for="position" class="col-sm-3 control-label">
+                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['oauth2.newAccount.username.tip']}">
+                                        #{bundle['oauth2.newAccount.username']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
+                                    </span>
+                                </label>
+                                <div class="col-sm-9">
+                                    <h:inputText value="#{OAuth2FirstLoginPage.username}"/>
+                                </div>
                             </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-12">
-                                <h:commandButton action="#{OAuth2FirstLoginPage.newAccount()}">
-                                    #{bundle['oauth2.newAccount.buttons.createNewAccount']}
-                                </h:commandButton>
+                            <div class="form-group">
+                                <label for="position" class="col-sm-3 control-label">
+                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['oauth2.newAccount.email.tip']}">
+                                        #{bundle['oauth2.newAccount.email']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
+                                    </span>
+                                </label>
+                                <div class="col-sm-3">
+                                    <h:inputText id="selectedEmail" value="#{OAuth2FirstLoginPage.selectedEmail}"/>
+                                </div>
+                                <div class="col-sm-3">
+                                    #{bundle['oauth2.newAccount.suggestedEmails']}:
+                                    <h:selectOneListbox value="#{OAuth2FirstLoginPage.selectedEmail}" 
+                                                        rendered="#{OAuth2FirstLoginPage.areExtraEmailsAvailable()}" size="1"
+                                                        valueChangeListener="#{OAuth2FirstLoginPage.suggestedEmailChanged}">
+                                        <f:selectItems value="#{OAuth2FirstLoginPage.extraEmails}" var="s" itemLabel="#{s}" itemValue="#{s}" />
+                                        <f:ajax event="change" execute="@this" render="@form"/>
+                                    </h:selectOneListbox>
+                                </div>
+                                <div class="col-sm-3">
+                                    --EMAIL VALIDATION--
+                                </div>
                             </div>
-                        </div>
+                            
+                            <ui:include src="../termsofuse.xhtml"/>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <p:commandButton action="#{OAuth2FirstLoginPage.createNewAccount}" value="#{bundle['oauth2.newAccount.buttons.createNewAccount']}"/>
+                                </div>
+                            </div>
+                        </h:form>
                     </p:tab>
                     <p:tab id="convertAccountTab" title="#{bundle['oauth2.newAccount.tabs.convertAccount']}">
                         test test test test <br/>

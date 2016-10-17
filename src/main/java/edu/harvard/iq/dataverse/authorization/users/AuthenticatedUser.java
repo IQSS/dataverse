@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserLookup;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
+import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.List;
@@ -121,9 +122,15 @@ public class AuthenticatedUser implements User, Serializable {
     public void applyDisplayInfo( AuthenticatedUserDisplayInfo inf ) {
         setFirstName(inf.getFirstName());
         setLastName(inf.getLastName());
-        setEmail(inf.getEmailAddress());
-        setAffiliation( inf.getAffiliation() );
-        setPosition( inf.getPosition());
+        if ( nonEmpty(inf.getEmailAddress()) ) {
+            setEmail(inf.getEmailAddress());
+        }
+        if ( nonEmpty(inf.getAffiliation()) ) {
+            setAffiliation( inf.getAffiliation() );
+        }
+        if ( nonEmpty(inf.getPosition()) ) {
+            setPosition( inf.getPosition());
+        }
     }
     
     @Override

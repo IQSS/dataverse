@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.authorization.providers.oauth2;
 
 import edu.harvard.iq.dataverse.DataverseSession;
+import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -87,12 +88,15 @@ public class OAuth2LoginBackingBean implements Serializable {
             
             if ( dvUser == null ) {
                 // need to create the user
-                String proposedAuthenticatedUserIdentifier = oauthUser.getUsername();
+                
                 
                 FacesContext.getCurrentInstance().getExternalContext().redirect("/oauth2/firstLogin.xhtml");
             } else {
-                // update profile
-                dvUser = authenticationSvc.updateAuthenticatedUser(dvUser, oauthUser.getDisplayInfo());
+                // update profile - override fields user fills on first login
+                final AuthenticatedUserDisplayInfo updateInfo = new AuthenticatedUserDisplayInfo(oauthUser.getDisplayInfo());
+                updateInfo.setEmailAddress(null);
+                
+                dvUser = authenticationSvc.updateAuthenticatedUser(dvUser, updateInfo);
                 // login the user and redirect to HOME.
                 session.setUser(dvUser);
                 FacesContext.getCurrentInstance().getExternalContext().redirect("/");

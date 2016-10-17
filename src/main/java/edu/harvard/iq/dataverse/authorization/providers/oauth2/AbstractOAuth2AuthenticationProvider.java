@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationRequest;
 import edu.harvard.iq.dataverse.authorization.AuthenticationResponse;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -35,10 +36,14 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
         public final String username;
         public final List<String> emails = new ArrayList<>();
 
+        public ParsedUserResponse(AuthenticatedUserDisplayInfo aDisplayInfo, String aUserIdInProvider, String aUsername, List<String> someEmails) {
+            displayInfo = aDisplayInfo;
+            userIdInProvider = aUserIdInProvider;
+            username = aUsername;
+            emails.addAll(emails);
+        }
         public ParsedUserResponse(AuthenticatedUserDisplayInfo displayInfo, String userIdInProvider, String username) {
-            this.displayInfo = displayInfo;
-            this.userIdInProvider = userIdInProvider;
-            this.username = username;
+            this(displayInfo, userIdInProvider, username, Collections.emptyList());
         }
 
         @Override
@@ -77,7 +82,6 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
         public String toString() {
             return "ParsedUserResponse{" + "displayInfo=" + displayInfo + ", userIdInProvider=" + userIdInProvider + ", username=" + username + ", emails=" + emails + '}';
         }
-        
     }
     
     protected String id;
@@ -116,18 +120,17 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
         request.addHeader("Authorization", "Bearer " + accessToken.getAccessToken());
         request.setCharset("UTF-8");
         
-        logger.log(Level.INFO, "Sending request to: ''{0}''", request.getCompleteUrl()); // TODO MBS remove
-        logger.log(Level.INFO, "Token: ''{0}''", accessToken.getAccessToken()); // TODO MBS remove
-        request.getHeaders().forEach((k,v)->logger.log(Level.INFO, "Param: " + k + "->" + v)); // TODO MBS remove
-        request.setFollowRedirects(false);
-        
         final Response response = request.send();
         int responseCode = response.getCode();
         final String body = response.getBody();        
         
         if ( responseCode == 200 ) {
             final ParsedUserResponse parsed = parseUserResponse(body);
-            return new OAuth2UserRecord(getId(), parsed.userIdInProvider, parsed.username, accessToken.getAccessToken(), parsed.displayInfo);
+            return new OAuth2UserRecord(getId(), parsed.userIdInProvider,
+                                        parsed.username, 
+                                        accessToken.getAccessToken(),
+                                        parsed.displayInfo,
+                                        parsed.emails);
         } else {
             throw new OAuth2Exception(responseCode, body, "Error getting the user info record.");
         }

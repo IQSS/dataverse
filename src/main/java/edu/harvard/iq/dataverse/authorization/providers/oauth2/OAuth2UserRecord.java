@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.authorization.providers.oauth2;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
+import java.util.List;
 
 /**
  * Describes a single user on a remote IDP that uses OAuth2.
@@ -22,13 +23,18 @@ public class OAuth2UserRecord implements java.io.Serializable {
     private final String accessToken;
     
     private final AuthenticatedUserDisplayInfo displayInfo;
-
-    public OAuth2UserRecord(String aServiceId, String anIdInService, String aUsername, String anAccessToken,  AuthenticatedUserDisplayInfo aDisplayInfo) {
+    
+    private final List<String> availableEmailAddresses;
+    
+    public OAuth2UserRecord(String aServiceId, String anIdInService, String aUsername,
+                            String anAccessToken,  AuthenticatedUserDisplayInfo aDisplayInfo,
+                            List<String> someAvailableEmailAddresses) {
         serviceId = aServiceId;
         idInService = anIdInService;
         username = aUsername;
         accessToken = anAccessToken;
         displayInfo = aDisplayInfo;
+        availableEmailAddresses = someAvailableEmailAddresses;
     }
 
     public String getServiceId() {
@@ -47,6 +53,10 @@ public class OAuth2UserRecord implements java.io.Serializable {
         return accessToken;
     }
 
+    public List<String> getAvailableEmailAddresses() {
+        return availableEmailAddresses;
+    }
+    
     public AuthenticatedUserDisplayInfo getDisplayInfo() {
         return displayInfo;
     }

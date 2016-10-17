@@ -22,7 +22,15 @@ public class AuthenticatedUserDisplayInfo extends RoleAssigneeDisplayInfo {
         this.lastName = lastName;
         this.position = position;        
     }
-
+    
+    /**
+     * Copy constructor (old school!)
+     * @param src the display info {@code this} will be a copy of.
+     */
+    public AuthenticatedUserDisplayInfo( AuthenticatedUserDisplayInfo src ) {
+        this( src.getFirstName(), src.getLastName(), src.getEmailAddress(), src.getAffiliation(), src.getPosition());
+    }
+    
     public String getLastName() {
         return lastName;
     }
@@ -79,8 +87,6 @@ public class AuthenticatedUserDisplayInfo extends RoleAssigneeDisplayInfo {
         }
         return Objects.equals(this.position, other.position) && super.equals(obj);
     }
-    
-    
     
 }
 

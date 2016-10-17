@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.authorization.providers.oauth2.impl;
 
 import com.github.scribejava.apis.GitHubApi;
 import com.github.scribejava.core.builder.api.BaseApi;
+import edu.emory.mathcs.backport.java.util.Collections;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
 import java.io.StringReader;
@@ -44,7 +45,12 @@ public class GitHubOAuth2AP extends AbstractOAuth2AuthenticationProvider {
             );
             Integer persistentUserId = response.getInt("id");
             String username = response.getString("login");
-            return new ParsedUserResponse(displayInfo, persistentUserId.toString(), username);
+            return new ParsedUserResponse(
+                    displayInfo, 
+                    persistentUserId.toString(), 
+                    username,
+                    displayInfo.getEmailAddress().length()>0 ? Collections.singletonList(displayInfo.getEmailAddress())
+                                                             : Collections.emptyList() );
         }
         
     }
