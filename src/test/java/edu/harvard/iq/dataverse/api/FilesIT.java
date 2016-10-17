@@ -209,6 +209,7 @@ public class FilesIT {
         // -------------------------
         // Add initial file
         // -------------------------
+        msg("Add initial file");
         String pathToFile = "src/main/webapp/resources/images/favicondataverse.png";
         Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
 
@@ -229,6 +230,7 @@ public class FilesIT {
         // -------------------------
         // Publish dataverse and dataset
         // -------------------------
+        msg("Publish dataverse and dataset");
         Response publishDataversetResp = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
         publishDataversetResp.then().assertThat()
                 .statusCode(OK.getStatusCode());
@@ -239,8 +241,28 @@ public class FilesIT {
         
          
         // -------------------------
+        // Replace file - BAD/warning b/c different content-type
+        // -------------------------
+        msg("Replace file - BAD/warning b/c different content-type");
+
+        String pathToFileWrongCtype = "src/main/webapp/resources/images/ajax-loading.gif";
+        Response replaceRespWrongCtype  = UtilIT.replaceFile(origFileId, pathToFileWrongCtype, apiToken);
+        
+        msgt(replaceRespWrongCtype.prettyPrint());
+        
+        String errMsgCtype = ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.replace.new_file_has_different_content_type");        
+
+        
+        replaceRespWrongCtype.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("status", equalTo(AbstractApiBean.STATUS_ERROR))
+                .body("message", equalTo(errMsgCtype));
+                //.body("data.rootDataFileId", equalTo(origFileId))    
+        
+        // -------------------------
         // Replace file
         // -------------------------
+        msg("Replace file - 1st time");
         String pathToFile2 = "src/main/webapp/resources/images/cc0.png";
         Response replaceResp = UtilIT.replaceFile(origFileId, pathToFile2, apiToken);
         
@@ -266,6 +288,7 @@ public class FilesIT {
         // -------------------------
         // Publish dataset (again)
         // -------------------------
+        msg("Publish dataset (again)");
         publishDatasetResp = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
         publishDatasetResp.then().assertThat()
                 .statusCode(OK.getStatusCode());
@@ -274,6 +297,7 @@ public class FilesIT {
         // -------------------------
         // Replace file (again)
         // -------------------------
+        msg("Replace file (again)");
         String pathToFile3 = "src/main/webapp/resources/images/favicondataverse.png";
         Response replaceResp2 = UtilIT.replaceFile(newDataFileId, pathToFile3, apiToken);
         
