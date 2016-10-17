@@ -9,10 +9,14 @@ import static com.lyncode.xoai.xml.XmlWriter.defaultContext;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
+import static edu.harvard.iq.dataverse.util.SystemConfig.FQDN;
+import static edu.harvard.iq.dataverse.util.SystemConfig.SITE_URL;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 /**
  *
@@ -25,14 +29,16 @@ import java.io.OutputStream;
  */
 
 public class Xrecord extends Record {
-    private static String METADATA_FIELD = "metadata";
-    private static String METADATA_START_ELEMENT = "<"+METADATA_FIELD+">";
-    private static String METADATA_END_ELEMENT = "</"+METADATA_FIELD+">";
-    private static String HEADER_FIELD = "header";
-    private static String STATUS_ATTRIBUTE = "status";
-    private static String IDENTIFIER_FIELD = "identifier";
-    private static String DATESTAMP_FIELD = "datestamp";
-    private static String SETSPEC_FIELD = "setSpec";
+    private static final String METADATA_FIELD = "metadata";
+    private static final String METADATA_START_ELEMENT = "<"+METADATA_FIELD+">";
+    private static final String METADATA_END_ELEMENT = "</"+METADATA_FIELD+">";
+    private static final String HEADER_FIELD = "header";
+    private static final String STATUS_ATTRIBUTE = "status";
+    private static final String IDENTIFIER_FIELD = "identifier";
+    private static final String DATESTAMP_FIELD = "datestamp";
+    private static final String SETSPEC_FIELD = "setSpec";
+    private static final String DATAVERSE_EXTENDED_METADATA_FORMAT = "dataverse_json";
+    private static final String DATAVERSE_EXTENDED_METADATA_API = "/api/datasets/export";
     
     protected Dataset dataset; 
     protected String formatName;
@@ -68,24 +74,29 @@ public class Xrecord extends Record {
         }
         
         outputStream.write(headerString.getBytes());
-        outputStream.write(METADATA_START_ELEMENT.getBytes());
-                
-        outputStream.flush();
+        
+        if (!isExtendedDataverseMetadataMode(formatName)) {
+            outputStream.write(METADATA_START_ELEMENT.getBytes());
 
-        if (dataset != null && formatName != null) {
-            InputStream inputStream = null;
-            try {
-                inputStream = ExportService.getInstance().getExport(dataset, formatName);
-            } catch (ExportException ex) {
-                inputStream = null;
-            }
+            outputStream.flush();
 
-            if (inputStream == null) {
-                throw new IOException("Xrecord: failed to open metadata stream.");
+            if (dataset != null && formatName != null) {
+                InputStream inputStream = null;
+                try {
+                    inputStream = ExportService.getInstance().getExport(dataset, formatName);
+                } catch (ExportException ex) {
+                    inputStream = null;
+                }
+
+                if (inputStream == null) {
+                    throw new IOException("Xrecord: failed to open metadata stream.");
+                }
+                writeMetadataStream(inputStream, outputStream);
             }
-            writeMetadataStream(inputStream, outputStream);
+            outputStream.write(METADATA_END_ELEMENT.getBytes());
+        } else {
+            outputStream.write(customMetadataExtensionRef(this.dataset.getGlobalId()).getBytes());
         }
-        outputStream.write(METADATA_END_ELEMENT.getBytes());
         outputStream.flush();
 
     }
@@ -129,4 +140,39 @@ public class Xrecord extends Record {
         inputStream.close();
     }
     
+    private String customMetadataExtensionRef(String identifier) {
+        String ret = "<" + METADATA_FIELD 
+                + " directApiCall=\"" 
+                + getDataverseSiteUrl()
+                + DATAVERSE_EXTENDED_METADATA_API 
+                + "?exporter=" 
+                + DATAVERSE_EXTENDED_METADATA_FORMAT 
+                + "&amp;persistentId="
+                + identifier
+                + "\""
+                + "/>";
+        
+        return ret;
+    }
+    
+    private boolean isExtendedDataverseMetadataMode(String formatName) {
+        return DATAVERSE_EXTENDED_METADATA_FORMAT.equals(formatName);
+    }
+    
+    private String getDataverseSiteUrl() {
+        String hostUrl = System.getProperty(SITE_URL);
+        if (hostUrl != null && !"".equals(hostUrl)) {
+            return hostUrl;
+        }
+        String hostName = System.getProperty(FQDN);
+        if (hostName == null) {
+            try {
+                hostName = InetAddress.getLocalHost().getCanonicalHostName();
+            } catch (UnknownHostException e) {
+                return null;
+            }
+        }
+        hostUrl = "https://" + hostName;
+        return hostUrl;
+    }
 }

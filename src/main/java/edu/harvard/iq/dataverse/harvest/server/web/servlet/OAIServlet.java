@@ -42,7 +42,6 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.ByteArrayOutputStream;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
@@ -84,14 +83,12 @@ public class OAIServlet extends HttpServlet {
     
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.server.web.servlet.OAIServlet");
     protected HashMap attributesMap = new HashMap();
-    private static boolean debug = false;
     private static final String OAI_PMH = "OAI-PMH";
     private static final String RESPONSEDATE_FIELD = "responseDate";
     private static final String REQUEST_FIELD = "request";
     private static final String DATAVERSE_EXTENDED_METADATA_FORMAT = "dataverse_json";
     private static final String DATAVERSE_EXTENDED_METADATA_INFO = "Custom Dataverse metadata in JSON format (Dataverse4 to Dataverse4 harvesting only)";
     private static final String DATAVERSE_EXTENDED_METADATA_SCHEMA = "JSON schema pending";
-    private static final String DATAVERSE_EXTENDED_METADATA_API = "/api/datasets/export";
      
     
     private Context xoaiContext;
@@ -372,31 +369,6 @@ public class OAIServlet extends HttpServlet {
         }
     }
     
-    private String customMetadataExtensionAttribute(String identifier) {
-        String ret = " directApiCall=\"" 
-                + systemConfig.getDataverseSiteUrl() 
-                + DATAVERSE_EXTENDED_METADATA_API 
-                + "?exporter=" 
-                + DATAVERSE_EXTENDED_METADATA_FORMAT 
-                + "&amp;persistentId="
-                + identifier
-                + "\"";
-        
-        return ret;
-    }
-    
-    private void writeMetadataStream(InputStream inputStream, OutputStream outputStream) throws IOException {
-        int bufsize;
-        byte[] buffer = new byte[4 * 8192];
-
-        while ((bufsize = inputStream.read(buffer)) != -1) {
-            outputStream.write(buffer, 0, bufsize);
-            outputStream.flush();
-        }
-
-        inputStream.close();
-    }
-    
     private boolean isGetRecord(HttpServletRequest request) {
         return "GetRecord".equals(request.getParameter("verb"));
         
@@ -405,41 +377,6 @@ public class OAIServlet extends HttpServlet {
     private boolean isListRecords(HttpServletRequest request) {
         return "ListRecords".equals(request.getParameter("verb"));
     }
-
-
-    private boolean isExtendedDataverseMetadataMode(String formatName) {
-        return DATAVERSE_EXTENDED_METADATA_FORMAT.equals(formatName);
-    }
-    /**                                                                                                                                      
-     * Get a response Writer depending on acceptable encodings                                                                               
-     * @param request the servlet's request information                                                                                      
-     * @param response the servlet's response information                                                                                    
-     * @exception IOException an I/O error occurred                                                                                          
-     */
-    public static Writer getWriter(HttpServletRequest request, HttpServletResponse response)
-    throws IOException {
-        Writer out;
-        String encodings = request.getHeader("Accept-Encoding");
-        if (debug) {
-            System.out.println("encodings=" + encodings);
-        }
-        if (encodings != null && encodings.indexOf("gzip") != -1) {
-            response.setHeader("Content-Encoding", "gzip");
-            out = new OutputStreamWriter(new GZIPOutputStream(response.getOutputStream()),
-            "UTF-8");
-                                                                                 
-        } else if (encodings != null && encodings.indexOf("deflate") != -1) {
-                                                                                            
-            response.setHeader("Content-Encoding", "deflate");
-            out = new OutputStreamWriter(new DeflaterOutputStream(response.getOutputStream()),
-            "UTF-8");
-        } else {
-            out = response.getWriter();
-        }
-        return out;
-    }
-
-    
 
     protected Context getXoaiContext () {
         return xoaiContext;
@@ -453,9 +390,6 @@ public class OAIServlet extends HttpServlet {
         return new OAIRequestParametersBuilder();
     }
     
-    //protected OAICompiledRequest compileXoaiRequest (OAIRequestParametersBuilder builder) throws BadArgumentException, InvalidResumptionTokenException, UnknownParameterException, IllegalVerbException, DuplicateDefinitionException {
-    //    return OAICompiledRequest.compile(builder);
-    //}
     
     public boolean isHarvestingServerEnabled() {
         return systemConfig.isOAIServerEnabled();
