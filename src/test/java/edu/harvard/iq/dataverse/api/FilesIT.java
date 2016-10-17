@@ -71,7 +71,7 @@ public class FilesIT {
         
     }
     
-    @Test
+    //@Test
     public void test_001_AddFileGood() {
         msgt("test_001_AddFileGood");
          // Create user
@@ -102,7 +102,7 @@ public class FilesIT {
     }
 
     
-    @Test
+    //@Test
     public void test_002_AddFileBadDatasetId() {
         msgt("test_002_AddFileNullFileId");
          // Create user
@@ -122,7 +122,7 @@ public class FilesIT {
     }
     
     
-    @Test
+    //@Test
     public void test_003_AddFileNonExistentDatasetId() {
         msgt("test_003_AddFileNonExistentDatasetId");
 
@@ -147,7 +147,7 @@ public class FilesIT {
                 .statusCode(BAD_REQUEST.getStatusCode());
     }
     
-    @Test
+    //@Test
     public void test_004_AddFileBadToken() {
         msgt("test_004_AddFileBadToken");
 
@@ -172,14 +172,14 @@ public class FilesIT {
     }
     
     
-    @Test
+    //@Test
     public void test_005_AddFileBadPermissions() {
         msgt("test_005_AddFileBadPerms");
 
         // To do!!!
     }
 
-    @Test
+    //@Test
     public void test_006_ReplaceFileGood() {
         msgt("test_006_ReplaceFileGood");
 
@@ -284,8 +284,10 @@ public class FilesIT {
         
     }
     
-    //@Test
-    public void xtest_006_ReplaceFileGood() {
+    
+    @Test
+    public void test_007_ReplaceFileUnpublishedAndBadIds() {
+        msgt("test_007_ReplaceFileBadIds");
 
         // Create user
         String apiToken = createUserGetToken();
@@ -295,56 +297,75 @@ public class FilesIT {
 
         // Create Dataset
         Integer datasetId = createDatasetGetId(dataverseAlias, apiToken);
+
+        // -------------------------
+        // Add initial file
+        // -------------------------
+        String pathToFile = "src/main/webapp/resources/images/favicondataverse.png";
+        Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
+
+        String successMsgAdd = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");        
+      
+        addResponse.then().assertThat()
+                .body("message", equalTo(successMsgAdd))
+                .body("data.contentType", equalTo("image/png"))
+                .body("data.filename", equalTo("dataverseproject.png"))
+                .statusCode(OK.getStatusCode());
         
-        // ---------------------
-        // Add file
-        // ---------------------
-        Response getDatasetJsonBeforeFiles = UtilIT.nativeGet(datasetId, apiToken);
-        getDatasetJsonBeforeFiles.prettyPrint();
-        getDatasetJsonBeforeFiles.then().assertThat().statusCode(OK.getStatusCode());
-        String protocol1 = JsonPath.from(getDatasetJsonBeforeFiles.getBody().asString()).getString("data.protocol");
-        String authority1 = JsonPath.from(getDatasetJsonBeforeFiles.getBody().asString()).getString("data.authority");
-        String identifier1 = JsonPath.from(getDatasetJsonBeforeFiles.getBody().asString()).getString("data.identifier");
-        String dataset1PersistentId = protocol1 + ":" + authority1 + "/" + identifier1;
-
-        Response uploadFileResponse = UtilIT.uploadRandomFile(dataset1PersistentId, apiToken);
-        uploadFileResponse.prettyPrint();
-        getDatasetJsonBeforeFiles.then().assertThat().statusCode(OK.getStatusCode());
-        assertEquals(CREATED.getStatusCode(), uploadFileResponse.getStatusCode());
-
-        Response getDatasetJsonWithFiles = UtilIT.nativeGet(datasetId, apiToken);
-        getDatasetJsonWithFiles.prettyPrint();
-        getDatasetJsonWithFiles.then().assertThat().statusCode(OK.getStatusCode());
-        int fileId = JsonPath.from(getDatasetJsonWithFiles.getBody().asString()).getInt("data.latestVersion.files[0].dataFile.id");
-        UtilIT.publishDataverseViaSword(dataverseAlias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
-        UtilIT.publishDatasetViaSword(dataset1PersistentId, apiToken).then().assertThat().statusCode(OK.getStatusCode());
-
-        // ---------------------
-        // Replace file
-        // ---------------------
-        String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
-        Response replace = UtilIT.replaceFile(fileId, pathToFile, apiToken);
-        replace.prettyPrint();
         
-        String successMsg = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");        
+        long origFileId = JsonPath.from(addResponse.body().asString()).getLong("data.id");
 
+        msg("Orig file id: " + origFileId);
+        assertNotNull(origFileId);    // If checkOut fails, display message
         
-        replace.then().assertThat()
-                .body("message", equalTo("File successfully replaced!"))
+        // -------------------------
+        // Publish dataverse
+        // -------------------------
+        Response publishDataversetResp = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
+        publishDataversetResp.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        Response getDatasetJson = UtilIT.nativeGet(datasetId, apiToken);
-        getDatasetJson.prettyPrint();
-        getDatasetJson.then().assertThat()
-                .body("data.latestVersion.files[0].dataFile.filename", equalTo("dataverseproject.png"))
-                .body("data.latestVersion.files[0].dataFile.contentType", equalTo("image/png"))
-                .body("data.latestVersion.files[0].dataFile.rootDataFileId", not(-1))
-                .body("data.latestVersion.files[0].dataFile.previousDataFileId", equalTo(fileId))
-                .statusCode(OK.getStatusCode());
+        
+        // -------------------------
+        // Replace file in unpublished dataset -- e.g. file not published
+        // -------------------------
+        String pathToFile2 = "src/main/webapp/resources/images/cc0.png";
+        Response replaceResp = UtilIT.replaceFile(origFileId, pathToFile2, apiToken);
 
+        String errMsgUnpublished = ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.unpublished_file_cannot_be_replaced");
+        
+        replaceResp.then().assertThat()
+               .statusCode(BAD_REQUEST.getStatusCode())
+               .body("status", equalTo(AbstractApiBean.STATUS_ERROR))
+               .body("message", Matchers.startsWith(errMsgUnpublished))
+               ;
+       
+        // -------------------------
+        // Publish dataset
+        // -------------------------
+        Response publishDatasetResp = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        publishDatasetResp.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+         
+        // -------------------------
+        // Replace file with non-existent Id
+        // -------------------------
+        pathToFile2 = "src/main/webapp/resources/images/cc0.png";
+        Response replaceResp2 = UtilIT.replaceFile(origFileId+10, pathToFile2, apiToken);
+
+        msgt("non-existent id: " + replaceResp.prettyPrint());
+
+        String errMsg1 = ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.existing_file_to_replace_not_found_by_id");        
+
+        replaceResp2.then().assertThat()
+               .statusCode(BAD_REQUEST.getStatusCode())
+               .body("status", equalTo(AbstractApiBean.STATUS_ERROR))
+               .body("message", Matchers.startsWith(errMsg1))
+               ;
+
+        
     }
-
-   
     
     private void msg(String m){
         System.out.println(m);
