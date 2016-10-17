@@ -20,7 +20,9 @@ import org.junit.Test;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.path.xml.XmlPath.from;
+import java.math.BigDecimal;
 import java.util.List;
+import javax.json.JsonValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -85,7 +87,7 @@ public class UtilIT {
         return "user" + getRandomIdentifier().substring(0, 8);
     }
 
-    private static String getRandomIdentifier() {
+    public static String getRandomIdentifier() {
         return UUID.randomUUID().toString().substring(0, 8);
     }
 
@@ -133,7 +135,7 @@ public class UtilIT {
         return response;
     }
 
-    static Response createDataverse(String alias, String apiToken) {
+    static Response createDataverse(String alias, String category, String apiToken) {
         JsonArrayBuilder contactArrayBuilder = Json.createArrayBuilder();
         contactArrayBuilder.add(Json.createObjectBuilder().add("contactEmail", getEmailFromUserName(getRandomIdentifier())));
         JsonArrayBuilder subjectArrayBuilder = Json.createArrayBuilder();
@@ -143,7 +145,16 @@ public class UtilIT {
                 .add("name", alias)
                 .add("dataverseContacts", contactArrayBuilder)
                 .add("dataverseSubjects", subjectArrayBuilder)
+                // don't send "dataverseType" if category is null, must be a better way
+                .add(category != null ? "dataverseType" : "notTheKeyDataverseType", category != null ? category : "whatever")
                 .build();
+        Response createDataverseResponse = given()
+                .body(dvData.toString()).contentType(ContentType.JSON)
+                .when().post("/api/dataverses/:root?key=" + apiToken);
+        return createDataverseResponse;
+    }
+
+    static Response createDataverse(JsonObject dvData, String apiToken) {
         Response createDataverseResponse = given()
                 .body(dvData.toString()).contentType(ContentType.JSON)
                 .when().post("/api/dataverses/:root?key=" + apiToken);
@@ -152,7 +163,8 @@ public class UtilIT {
 
     static Response createRandomDataverse(String apiToken) {
         String alias = getRandomIdentifier();
-        return createDataverse(alias, apiToken);
+        String category = null;
+        return createDataverse(alias, category, apiToken);
     }
 
     static Response showDataverseContents(String alias, String apiToken) {
