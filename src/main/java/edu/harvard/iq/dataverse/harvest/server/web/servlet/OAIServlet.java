@@ -6,26 +6,16 @@
 package edu.harvard.iq.dataverse.harvest.server.web.servlet;
 
 import com.lyncode.xml.exceptions.XmlWriteException;
-//import com.lyncode.xoai.dataprovider.DataProvider;
 import com.lyncode.xoai.dataprovider.builder.OAIRequestParametersBuilder;
-import com.lyncode.xoai.dataprovider.exceptions.BadArgumentException;
-import com.lyncode.xoai.dataprovider.exceptions.DuplicateDefinitionException;
-import com.lyncode.xoai.dataprovider.exceptions.IllegalVerbException;
 import com.lyncode.xoai.dataprovider.exceptions.OAIException;
-import com.lyncode.xoai.dataprovider.exceptions.UnknownParameterException;
 import com.lyncode.xoai.dataprovider.repository.Repository;
 import com.lyncode.xoai.dataprovider.repository.RepositoryConfiguration;
 import com.lyncode.xoai.dataprovider.model.Context;
 import com.lyncode.xoai.dataprovider.model.MetadataFormat;
 import com.lyncode.xoai.services.impl.SimpleResumptionTokenFormat;
-import static com.lyncode.xoai.dataprovider.model.MetadataFormat.identity;
-import com.lyncode.xoai.dataprovider.parameters.OAICompiledRequest;
-import static com.lyncode.xoai.dataprovider.parameters.OAIRequest.Parameter.MetadataPrefix;
 import com.lyncode.xoai.dataprovider.repository.ItemRepository;
 import com.lyncode.xoai.dataprovider.repository.SetRepository;
-import com.lyncode.xoai.exceptions.InvalidResumptionTokenException;
 import com.lyncode.xoai.model.oaipmh.DeletedRecord;
-import com.lyncode.xoai.model.oaipmh.GetRecord;
 import com.lyncode.xoai.model.oaipmh.Granularity;
 import com.lyncode.xoai.model.oaipmh.OAIPMH;
 import static com.lyncode.xoai.model.oaipmh.OAIPMH.NAMESPACE_URI;
@@ -35,7 +25,6 @@ import com.lyncode.xoai.xml.XSISchema;
 
 import com.lyncode.xoai.xml.XmlWriter;
 import static com.lyncode.xoai.xml.XmlWriter.defaultContext;
-import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.export.ExportException;
@@ -51,8 +40,6 @@ import edu.harvard.iq.dataverse.harvest.server.xoai.XlistRecords;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
 
 import java.io.IOException;
 import java.io.InputStream;
