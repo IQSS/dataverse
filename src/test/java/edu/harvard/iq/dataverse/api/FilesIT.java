@@ -71,7 +71,7 @@ public class FilesIT {
         
     }
     
-    //@Test
+    @Test
     public void test_001_AddFileGood() {
         msgt("test_001_AddFileGood");
          // Create user
@@ -102,7 +102,7 @@ public class FilesIT {
     }
 
     
-    //@Test
+    @Test
     public void test_002_AddFileBadDatasetId() {
         msgt("test_002_AddFileNullFileId");
          // Create user
@@ -122,7 +122,7 @@ public class FilesIT {
     }
     
     
-    //@Test
+    @Test
     public void test_003_AddFileNonExistentDatasetId() {
         msgt("test_003_AddFileNonExistentDatasetId");
 
@@ -147,7 +147,7 @@ public class FilesIT {
                 .statusCode(BAD_REQUEST.getStatusCode());
     }
     
-    //@Test
+    @Test
     public void test_004_AddFileBadToken() {
         msgt("test_004_AddFileBadToken");
 
@@ -172,14 +172,14 @@ public class FilesIT {
     }
     
     
-    //@Test
+    @Test
     public void test_005_AddFileBadPermissions() {
         msgt("test_005_AddFileBadPerms");
 
         // To do!!!
     }
 
-    //@Test
+    @Test
     public void test_006_ReplaceFileGood() {
         msgt("test_006_ReplaceFileGood");
 
@@ -366,6 +366,87 @@ public class FilesIT {
 
         
     }
+    
+    
+    @Test
+    public void test_008_ReplaceFileAlreadyDeleted() {
+        msgt("test_008_ReplaceFileAlreadyDeleted");
+
+        // Create user
+        String apiToken = createUserGetToken();
+
+        // Create Dataverse
+        String dataverseAlias = createDataverseGetAlias(apiToken);
+
+        // Create Dataset
+        Integer datasetId = createDatasetGetId(dataverseAlias, apiToken);
+
+        // -------------------------
+        // Add initial file
+        // -------------------------
+        String pathToFile = "src/main/webapp/resources/images/favicondataverse.png";
+        Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
+
+        String successMsgAdd = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");        
+      
+        addResponse.then().assertThat()
+                .body("message", equalTo(successMsgAdd))
+                .body("data.contentType", equalTo("image/png"))
+                .body("data.filename", equalTo("dataverseproject.png"))
+                .statusCode(OK.getStatusCode());
+        
+        
+        long origFileId = JsonPath.from(addResponse.body().asString()).getLong("data.id");
+
+        msg("Orig file id: " + origFileId);
+        assertNotNull(origFileId);    // If checkOut fails, display message
+        
+        // -------------------------
+        // Publish dataverse
+        // -------------------------
+        Response publishDataversetResp = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
+        publishDataversetResp.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+                
+        // -------------------------
+        // Publish dataset
+        // -------------------------
+        Response publishDatasetResp = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        publishDatasetResp.then().assertThat()
+                .statusCode(OK.getStatusCode());
+                
+        // -------------------------
+        // Delete file
+        // -------------------------
+        UtilIT.deleteFile((int)origFileId, apiToken);
+        
+        // -------------------------
+        // Re-Publish dataset
+        // -------------------------
+        publishDatasetResp = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        publishDatasetResp.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        
+        // -------------------------
+        // Replace file in unpublished dataset -- e.g. file not published
+        // -------------------------
+        String pathToFile2 = "src/main/webapp/resources/images/cc0.png";
+        Response replaceResp = UtilIT.replaceFile(origFileId, pathToFile2, apiToken);
+
+        String errMsgDeleted = ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.existing_file_not_in_latest_published_version");
+        
+        msgt("replace resp: " + replaceResp.prettyPrint());
+        
+        replaceResp.then().assertThat()
+               .statusCode(BAD_REQUEST.getStatusCode())
+               .body("status", equalTo(AbstractApiBean.STATUS_ERROR))
+               .body("message", Matchers.startsWith(errMsgDeleted))
+               ;       
+        
+    }
+    
     
     private void msg(String m){
         System.out.println(m);
