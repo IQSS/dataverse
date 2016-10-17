@@ -175,13 +175,13 @@ public class AuthenticationServiceBean {
     }
     
     public void deregisterProvider( String id ) {
-        authenticationProviders.remove( id );
         oAuth2authenticationProviders.remove( id );
-        actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Auth, "deregisterProvider")
-            .setInfo(id));
-
-        logger.log(Level.INFO,"Deregistered provider {0}", new Object[]{id});
-        logger.log(Level.INFO,"Providers left {0}", new Object[]{getAuthenticationProviderIds()});
+        if ( authenticationProviders.remove(id) != null ) {
+            actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Auth, "deregisterProvider")
+                .setInfo(id));
+            logger.log(Level.INFO,"Deregistered provider {0}", new Object[]{id});
+            logger.log(Level.INFO,"Providers left {0}", new Object[]{getAuthenticationProviderIds()});
+        }
     }
     
     public Set<String> getAuthenticationProviderIds() {
