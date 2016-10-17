@@ -32,7 +32,7 @@ public class XdataProvider {
     private DateProvider dateProvider;
 
     private final IdentifyHandler identifyHandler;
-    private final GetRecordHandler getRecordHandler;
+    private final XgetRecordHandler getRecordHandler;
     private final ListSetsHandler listSetsHandler;
     private final XlistRecordsHandler listRecordsHandler;
     private final ListIdentifiersHandler listIdentifiersHandler;
@@ -48,7 +48,8 @@ public class XdataProvider {
         this.listMetadataFormatsHandler = new ListMetadataFormatsHandler(context, repository);
         this.listRecordsHandler = new XlistRecordsHandler(context, repository);
         this.listIdentifiersHandler = new ListIdentifiersHandler(context, repository);
-        this.getRecordHandler = new GetRecordHandler(context, repository);
+        //this.getRecordHandler = new GetRecordHandler(context, repository);
+        this.getRecordHandler = new XgetRecordHandler(context, repository);
         this.errorsHandler = new ErrorHandler();
     }
 

@@ -44,6 +44,7 @@ import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.xoai.XdataProvider;
+import edu.harvard.iq.dataverse.harvest.server.xoai.XgetRecord;
 import edu.harvard.iq.dataverse.harvest.server.xoai.XitemRepository;
 import edu.harvard.iq.dataverse.harvest.server.xoai.XsetRepository;
 import edu.harvard.iq.dataverse.harvest.server.xoai.XlistRecords;
@@ -209,7 +210,21 @@ public class OAIServlet extends HttpServlet {
         return repositoryConfiguration; 
     }
     
-        
+    /**
+     * Handles the HTTP <code>POST</code> method.
+     *
+     * @param request servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException if an I/O error occurs
+     */
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        processRequest(request, response);
+    }
+    
+    
     /**
      * Handles the HTTP <code>GET</code> method.
      *
@@ -221,7 +236,12 @@ public class OAIServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+        processRequest(request, response);
+    }
+     
+    
+    private void processRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
         
         try {
             if (!isHarvestingServerEnabled()) {
@@ -244,8 +264,7 @@ public class OAIServlet extends HttpServlet {
             response.setContentType("text/xml;charset=UTF-8");
             
             if (isGetRecord(request) && !handle.hasErrors()) {
-                String formatName = parametersBuilder.build().get(MetadataPrefix);
-                writeGetRecord(response, handle, formatName);
+                writeGetRecord(response, handle);
             } else if (isListRecords(request) && !handle.hasErrors()) {
                 writeListRecords(response, handle);
             } else {
@@ -273,6 +292,8 @@ public class OAIServlet extends HttpServlet {
         }
         
     }
+    
+    // Custom methods for the potentially expensive GetRecord and ListRecords requests:
     
     private void writeListRecords(HttpServletResponse response, OAIPMH handle) throws IOException {
         OutputStream outputStream = response.getOutputStream();
@@ -302,67 +323,35 @@ public class OAIServlet extends HttpServlet {
         outputStream.close();
 
     }
-
-    private void writeGetRecord(HttpServletResponse response, OAIPMH handle, String formatName) throws IOException, XmlWriteException, XMLStreamException {
-        // TODO: 
-        // produce clean failure records when proper record cannot be 
-        // produced for some reason. 
-        // Done: handled via standard XOAI mechanisms now; this custom 
-        // writeGetRecord() method is only being called if the OAIPMH object 
-        // returned by the DataProvider.handle() !hasErrors(). Otherwise 
-        // the standard xmlWriter.write(OAIPMH) produces a proper error
-        // record. 
-        
-        String responseBody = XmlWriter.toString(handle);
-
-        responseBody = responseBody.replaceFirst("<metadata/></record></GetRecord></OAI-PMH>", "<metadata");
+    
+    private void writeGetRecord(HttpServletResponse response, OAIPMH handle) throws IOException, XmlWriteException, XMLStreamException {
         OutputStream outputStream = response.getOutputStream();
 
-        GetRecord getRecord = (GetRecord) handle.getVerb();
-        String identifier = getRecord.getRecord().getHeader().getIdentifier();
-        logger.fine("identifier from GetRecord: " + identifier);
-        
-        Dataset dataset = datasetService.findByGlobalId(identifier);
-        if (dataset == null) {
-            throw new IOException("No dataset found for the OAI record");
-        }
-        
-        if (!isExtendedDataverseMetadataMode(formatName)) {
-            InputStream inputStream = null; 
-            try {
-                inputStream = ExportService.getInstance().getExport(dataset, formatName);
-            } catch (ExportException ex) {
-                inputStream = null; 
-            }
+        outputStream.write(oaiPmhResponseToString(handle).getBytes());
 
-            if (inputStream == null) {
-                throw new IOException("Failed to open InputStream for the OAI item metadata");
-            }
-        
-            responseBody = responseBody.concat(">");
-            outputStream.write(responseBody.getBytes());
-            outputStream.flush();
-            
-            writeMetadataStream(inputStream, outputStream);
-        } else {
-            // Custom Dataverse metadata extension: 
-            // (check again if the client has explicitly requested/advertised support
-            // of the extensions?)
-            
-            responseBody = responseBody.concat(customMetadataExtensionAttribute(identifier)+">");
-            outputStream.write(responseBody.getBytes());
-            outputStream.flush();
+        Verb verb = handle.getVerb();
+
+        if (verb == null) {
+            throw new IOException("An error or a valid response must be set");
         }
 
-        
+        if (!verb.getType().equals(Verb.Type.GetRecord)) {
+            throw new IOException("writeListRecords() called on a non-GetRecord verb");
+        }
 
-        String responseFooter = "</metadata></record></GetRecord></OAI-PMH>";
-        outputStream.write(responseFooter.getBytes());
+        outputStream.write(("<" + verb.getType().displayName() + ">").getBytes());
+
+        outputStream.flush();
+
+        ((XgetRecord) verb).writeToStream(outputStream);
+
+        outputStream.write(("</" + verb.getType().displayName() + ">").getBytes());
+        outputStream.write(("</" + OAI_PMH + ">\n").getBytes());
+
         outputStream.flush();
         outputStream.close();
-        
-        
-    }
+
+     }
     
     // This function produces the string representation of the top level,
     // "service" record of an OAIPMH response (i.e., the header that precedes
@@ -463,19 +452,7 @@ public class OAIServlet extends HttpServlet {
         return out;
     }
 
-    /**
-     * Handles the HTTP <code>POST</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     *//*
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        processRequest(request, response);
-    }*/
+    
 
     protected Context getXoaiContext () {
         return xoaiContext;

@@ -53,12 +53,15 @@ public class XitemRepository implements ItemRepository {
 
     @Override
     public Item getItem(String identifier) throws IdDoesNotExistException, OAIException {
-        logger.fine("getItem; calling findOAIRecordBySetNameandGlobalId, identifier "+identifier);
+        logger.fine("getItem; calling findOAIRecordBySetNameandGlobalId, identifier " + identifier);
         OAIRecord oaiRecord = recordService.findOAIRecordBySetNameandGlobalId(null, identifier);
         if (oaiRecord != null) {
-            return new Xitem(oaiRecord);
+            Dataset dataset = datasetService.findByGlobalId(oaiRecord.getGlobalId());
+            if (dataset != null) {
+                return new Xitem(oaiRecord).withDataset(dataset);
+            }
         }
-        
+
         throw new IdDoesNotExistException();
     }
 

@@ -132,7 +132,6 @@ public class XlistRecordsHandler extends VerbHandler<ListRecords> {
         Header header = new Header();
         
         Dataset dataset = ((Xitem)item).getDataset();
-        String datasetId = dataset == null ? "null" : dataset.getGlobalId();
         Xrecord xrecord = new Xrecord().withFormatName(parameters.getMetadataPrefix()).withDataset(dataset);
         header.withIdentifier(item.getIdentifier());
 
