@@ -56,6 +56,7 @@ import java.io.OutputStream;
 import java.io.StringReader;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -825,7 +826,9 @@ public class Datasets extends AbstractApiBean {
         try {
             authUser = this.findUserOrDie();
         } catch (WrappedResponse ex) {
-            return errorResponse(Response.Status.FORBIDDEN, "Couldn't find a user from the API key");
+            return errorResponse(Response.Status.FORBIDDEN,
+                    ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.auth")
+                    );
         }
         
         //-------------------
@@ -854,8 +857,8 @@ public class Datasets extends AbstractApiBean {
         if (addFileHelper.hasError()){
             return errorResponse(Response.Status.BAD_REQUEST, addFileHelper.getErrorMessagesAsString("\n"));
         }else{
-         
-            return okResponseGsonObject("File successfully added!",
+            String successMsg = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");        
+            return okResponseGsonObject(successMsg,
                     addFileHelper.getSuccessResultAsGsonObject());
             //"Look at that!  You added a file! (hey hey, it may have worked)");
         }

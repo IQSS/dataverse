@@ -259,7 +259,17 @@ public class UtilIT {
 
     }
 
-    static Response uploadFileViaNative(Integer datasetId, String pathToFile, String apiToken) {
+    /**
+     * For test purposes, datasetId can be non-numeric
+     * 
+     * @param datasetId
+     * @param pathToFile
+     * @param apiToken
+     * @return 
+     */
+    static Response uploadFileViaNative(String datasetId, String pathToFile, String apiToken) {
+        
+        
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .multiPart("datasetId", datasetId)
@@ -267,7 +277,7 @@ public class UtilIT {
                 .post("/api/datasets/" + datasetId + "/add");
     }
 
-    static Response replaceFile(Integer datasetId, int fileId, String pathToFile, String apiToken) {
+    static Response replaceFile(long fileId, String pathToFile, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .multiPart("file", new File(pathToFile))

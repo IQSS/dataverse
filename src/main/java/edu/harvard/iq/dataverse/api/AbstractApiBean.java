@@ -67,6 +67,10 @@ public abstract class AbstractApiBean {
     private static final Logger logger = Logger.getLogger(AbstractApiBean.class.getName());
     private static final String DATAVERSE_KEY_HEADER_NAME = "X-Dataverse-key";
     
+    public static final String STATUS_ERROR = "ERROR";
+    public static final String STATUS_OK = "OK";
+    
+    
     /**
      * Utility class to convey a proper error response using Java's exceptions.
      */
@@ -363,14 +367,14 @@ public abstract class AbstractApiBean {
             Response.ok();
 
         return Response.ok(Json.createObjectBuilder()
-            .add("status", "OK")
+            .add("status", STATUS_OK)
             .add("data", bld).build()).build();
     }
     
     protected Response createdResponse( String uri, JsonObjectBuilder bld ) {
         return Response.created( URI.create(uri) )
                 .entity( Json.createObjectBuilder()
-                .add("status", "OK")
+                .add("status", STATUS_OK)
                 .add("data", bld).build())
                 .type(MediaType.APPLICATION_JSON)
                 .build();
@@ -378,7 +382,7 @@ public abstract class AbstractApiBean {
     
     protected Response okResponse( JsonObjectBuilder bld ) {
         return Response.ok( Json.createObjectBuilder()
-            .add("status", "OK")
+            .add("status", STATUS_OK)
             .add("data", bld).build() )
             .type(MediaType.APPLICATION_JSON)
             .build();
@@ -386,7 +390,7 @@ public abstract class AbstractApiBean {
     
     protected Response okResponse( String msg ) {
         return Response.ok().entity(Json.createObjectBuilder()
-            .add("status", "OK")
+            .add("status", STATUS_OK)
             .add("data", Json.createObjectBuilder().add("message",msg)).build() )
             .type(MediaType.APPLICATION_JSON)
             .build();
@@ -419,20 +423,20 @@ public abstract class AbstractApiBean {
      */
     protected Response okResponseWithValue( String value ) {
         return Response.ok(Json.createObjectBuilder()
-            .add("status", "OK")
+            .add("status", STATUS_OK)
             .add("data", value).build(), MediaType.APPLICATION_JSON_TYPE ).build();
     }
 
     protected Response okResponseWithValue( boolean value ) {
         return Response.ok().entity(Json.createObjectBuilder()
-            .add("status", "OK")
+            .add("status", STATUS_OK)
             .add("data", value).build() ).build();
     }
     
     protected Response accepted() {
         return Response.accepted()
                 .entity(Json.createObjectBuilder()
-                        .add("status", "OK").build()
+                        .add("status", STATUS_OK).build()
                 ).build();
     }
     
@@ -463,7 +467,7 @@ public abstract class AbstractApiBean {
     protected static Response errorResponse( Status sts, String msg ) {
         return Response.status(sts)
                 .entity( NullSafeJsonBuilder.jsonObjectBuilder()
-                        .add("status", "ERROR")
+                        .add("status", STATUS_ERROR)
                         .add( "message", msg ).build()
                 ).type(MediaType.APPLICATION_JSON_TYPE).build();
     }

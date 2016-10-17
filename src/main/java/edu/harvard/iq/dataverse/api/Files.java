@@ -25,6 +25,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -160,7 +161,9 @@ public class Files extends AbstractApiBean {
         try {
             authUser = this.findUserOrDie();
         } catch (AbstractApiBean.WrappedResponse ex) {
-            return errorResponse(Response.Status.FORBIDDEN, "Couldn't find a user from the API key");
+            return errorResponse(Response.Status.FORBIDDEN, 
+                    ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.auth")
+                    );
         }
 
         // -------------------------------------
@@ -241,8 +244,9 @@ public class Files extends AbstractApiBean {
             return errorResponse(Response.Status.BAD_REQUEST, addFileHelper.getErrorMessagesAsString("\n"));
         }else{
             msg("no error");
-         
-            return okResponseGsonObject("File successfully replaced!",
+            String successMsg = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.replace");        
+
+            return okResponseGsonObject(successMsg,
                     addFileHelper.getSuccessResultAsGsonObject());
             //"Look at that!  You added a file! (hey hey, it may have worked)");
         }
