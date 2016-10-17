@@ -12,7 +12,7 @@
 
     <h:body>
         <f:metadata>
-            <f:viewAction action="#{OAuth2FirstLoginPage.setupMockData()}"/>
+            <!--<f:viewAction action="#{OAuth2FirstLoginPage.setupMockData()}"/>-->
         </f:metadata>
         <ui:composition template="/dataverse_template.xhtml">
             <ui:param name="pageTitle" value="#{bundle['oauth2.newAccount.title']}"/>
@@ -29,7 +29,7 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-md-12">
                         <div id="greeting">
                             #{bundle['oauth2.newAccount.explanation']}
                         </div>
@@ -45,8 +45,16 @@
                                         #{bundle['oauth2.newAccount.username']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
                                     </span>
                                 </label>
-                                <div class="col-sm-9">
-                                    <h:inputText value="#{OAuth2FirstLoginPage.username}"/>
+                                <div class="col-sm-6">
+                                    <h:inputText value="#{OAuth2FirstLoginPage.username}">
+                                        <f:ajax event="keyup" execute="@this" render="usernameLabels createNewAccountButton"></f:ajax>
+                                    </h:inputText>
+                                </div>
+                                <div class="col-sm-3">
+                                    <p:fragment id="usernameLabels">
+                                        <div class="alert alert-success" jsf:rendered="#{OAuth2FirstLoginPage.usernameAvailable}">#{bundle['oauth2.newAccount.usernameOk']}</div>
+                                        <div class="alert alert-danger" jsf:rendered="#{! OAuth2FirstLoginPage.usernameAvailable}">#{bundle['oauth2.newAccount.usernameTaken']}</div>
+                                    </p:fragment>
                                 </div>
                             </div>
                             <div class="form-group">
@@ -56,7 +64,9 @@
                                     </span>
                                 </label>
                                 <div class="col-sm-3">
-                                    <h:inputText id="selectedEmail" value="#{OAuth2FirstLoginPage.selectedEmail}"/>
+                                    <h:inputText id="selectedEmail" value="#{OAuth2FirstLoginPage.selectedEmail}">
+                                        <f:ajax event="keyup" execute="@this" render="emailLabels createNewAccountButton"></f:ajax>
+                                    </h:inputText>
                                 </div>
                                 <div class="col-sm-3">
                                     #{bundle['oauth2.newAccount.suggestedEmails']}:
@@ -68,14 +78,22 @@
                                     </h:selectOneListbox>
                                 </div>
                                 <div class="col-sm-3">
-                                    --EMAIL VALIDATION--
+                                    <p:fragment id="emailLabels">
+                                        <div class="alert alert-success" jsf:rendered="#{OAuth2FirstLoginPage.emailAvailable}">#{bundle['oauth2.newAccount.emailOk']}</div>
+                                        <div class="alert alert-danger" jsf:rendered="#{! OAuth2FirstLoginPage.emailAvailable}">#{bundle['oauth2.newAccount.emailTaken']}</div>
+                                    </p:fragment>
                                 </div>
                             </div>
                             
                             <ui:include src="../termsofuse.xhtml"/>
                             <div class="row">
                                 <div class="col-md-12">
-                                    <p:commandButton action="#{OAuth2FirstLoginPage.createNewAccount}" value="#{bundle['oauth2.newAccount.buttons.createNewAccount']}"/>
+                                    <p:commandButton id="createNewAccountButton"
+                                                     disabled="#{! OAuth2FirstLoginPage.newAccountCreationEnabled}" 
+                                                     action="#{OAuth2FirstLoginPage.createNewAccount}"
+                                                     ajax="false"
+                                                     update="@all"
+                                                     value="#{bundle['oauth2.newAccount.buttons.createNewAccount']}"/>
                                 </div>
                             </div>
                         </h:form>

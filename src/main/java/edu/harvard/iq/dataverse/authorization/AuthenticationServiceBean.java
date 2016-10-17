@@ -329,6 +329,12 @@ public class AuthenticationServiceBean {
         }
     }
     
+    public boolean isEmailAvailable(String email) {
+        return em.createNamedQuery("AuthenticatedUser.findByEmail", AuthenticatedUser.class)
+                 .setParameter("email", email)
+                 .getResultList().isEmpty();
+    }
+    
     public AuthenticatedUser lookupUser(UserRecordIdentifier id) {
         return lookupUser(id.repoId, id.userIdInRepo);
     }

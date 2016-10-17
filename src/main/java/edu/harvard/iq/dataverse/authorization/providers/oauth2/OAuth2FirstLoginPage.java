@@ -4,7 +4,6 @@ import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -49,14 +48,28 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
         final AuthenticatedUser user = authenticationSvc.createAuthenticatedUser(newUser.getUserRecordIdentifier(), getUsername(), newAud, true);
         session.setUser(user);
         
-        // TODO MBS Remove
-        Logger.getLogger(OAuth2FirstLoginPage.class.getName()).log(Level.INFO, "Added new user:" + user);
-        
-        return "/";
+        return "/dataverse.xhtml?faces-redirect=true";
+    }
+    
+    public String testAction() {
+        Logger.getLogger(OAuth2FirstLoginPage.class.getName()).log(Level.INFO, "testAction");
+        return "dataverse.xhtml";
+    }
+    
+    public boolean isEmailAvailable() {
+        return authenticationSvc.isEmailAvailable(getSelectedEmail());
+    }
+    
+    public boolean isUsernameAvailable() {
+        return ! authenticationSvc.identifierExists(getUsername());
     }
     
     public void suggestedEmailChanged( ValueChangeEvent evt )  {
         setSelectedEmail(evt.getNewValue().toString());
+    }
+    
+    public boolean isNewAccountCreationEnabled() {
+        return isUsernameAvailable() && isEmailAvailable();
     }
     
     /**
@@ -77,12 +90,6 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
         setSelectedEmail( newUser.getDisplayInfo().getEmailAddress() );
     }
     
-    public void setupMockData() {
-        setNewUser( new OAuth2UserRecord("github", "1928379173561510", "mich.barsinai", "qwe-addssd-iiiiie",
-                                        new AuthenticatedUserDisplayInfo("Michael", "Bar-Sinai", "m@mbarsinai.com", "aff", "pos"),
-                                        Arrays.asList("m@mbarsinai.com","hello@world.com","another@email.com")));
-    }
-
     public String getUsername() {
         return username;
     }
@@ -101,11 +108,9 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
 
     public void setSelectedEmail(String selectedEmail) {
         this.selectedEmail = selectedEmail;
-        Logger.getLogger(OAuth2FirstLoginPage.class.getName()).log(Level.INFO, "Selected email changed to:" + this.selectedEmail); // TODO MBS remove
     }
 
     public String getSelectedEmail() {
-        Logger.getLogger(OAuth2FirstLoginPage.class.getName()).log(Level.INFO, "Getting Selected email:" + selectedEmail); // TODO MBS remove
         return selectedEmail;
     }
     

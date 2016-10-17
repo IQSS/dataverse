@@ -88,9 +88,9 @@ public class OAuth2LoginBackingBean implements Serializable {
             
             if ( dvUser == null ) {
                 // need to create the user
-                
-                
+                newAccountPage.setNewUser(oauthUser);
                 FacesContext.getCurrentInstance().getExternalContext().redirect("/oauth2/firstLogin.xhtml");
+                
             } else {
                 // update profile - override fields user fills on first login
                 final AuthenticatedUserDisplayInfo updateInfo = new AuthenticatedUserDisplayInfo(oauthUser.getDisplayInfo());
