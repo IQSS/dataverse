@@ -2,7 +2,12 @@ package edu.harvard.iq.dataverse.authorization.providers.oauth2;
 
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
+import edu.harvard.iq.dataverse.authorization.AuthenticationRequest;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.authorization.CredentialsAuthenticationProvider;
+import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationFailedException;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.util.List;
 import java.util.logging.Level;
@@ -23,9 +28,11 @@ import javax.inject.Inject;
 @SessionScoped
 public class OAuth2FirstLoginPage implements java.io.Serializable {
 
-    
     @EJB
     AuthenticationServiceBean authenticationSvc;
+    
+    @EJB
+    BuiltinUserServiceBean builtinUserSvc;
     
     @Inject
     DataverseSession session;
@@ -36,10 +43,15 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
     
     String selectedEmail;
     
+    String password;
+    
+    boolean authenticationFailed = false;
+    
     int selectedTabIndex=0;
     
     public String createNewAccount() {
         
+        selectedTabIndex=0;
         AuthenticatedUserDisplayInfo newAud = new AuthenticatedUserDisplayInfo(newUser.getDisplayInfo().getFirstName(),
                 newUser.getDisplayInfo().getLastName(),
                 getSelectedEmail(),
@@ -49,6 +61,24 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
         session.setUser(user);
         
         return "/dataverse.xhtml?faces-redirect=true";
+    }
+    
+    public String convertExistingAccount() {
+        selectedTabIndex=1;
+        BuiltinAuthenticationProvider biap = new BuiltinAuthenticationProvider(builtinUserSvc);
+        AuthenticationRequest auReq = new AuthenticationRequest();
+        final List<CredentialsAuthenticationProvider.Credential> creds = biap.getRequiredCredentials();
+        auReq.putCredential(creds.get(0).getTitle(), getUsername());
+        auReq.putCredential(creds.get(1).getTitle(), getPassword());
+        try {
+            AuthenticatedUser existingUser = authenticationSvc.authenticate(BuiltinAuthenticationProvider.PROVIDER_ID, auReq);
+            Logger.getLogger(OAuth2FirstLoginPage.class.getName()).log(Level.INFO, "Found existing user: " + existingUser);
+            return null;
+            
+        } catch (AuthenticationFailedException ex) {
+            setAuthenticationFailed(true);
+            return null;
+        }
     }
     
     public String testAction() {
@@ -121,6 +151,21 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
     public List<String> getExtraEmails() {
         return newUser.getAvailableEmailAddresses();
     }
-    
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public boolean isAuthenticationFailed() {
+        return authenticationFailed;
+    }
+
+    public void setAuthenticationFailed(boolean authenticationFailed) {
+        this.authenticationFailed = authenticationFailed;
+    }
     
 }
