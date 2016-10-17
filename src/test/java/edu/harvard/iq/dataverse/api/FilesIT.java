@@ -99,6 +99,20 @@ public class FilesIT {
                 .body("data.filename", equalTo("dataverseproject.png"))
                 .statusCode(OK.getStatusCode());
         
+        
+        //------------------------------------------------
+        // Try to add the same file again -- and fail
+        //------------------------------------------------
+        Response addTwiceResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
+
+        msgt("2nd requests: " + addTwiceResponse.prettyPrint());    //addResponse.prettyPrint();
+        
+        String errMsg = ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.duplicate_file");
+                
+        addTwiceResponse.then().assertThat()
+                .body("message", Matchers.startsWith(errMsg))
+                .body("status", equalTo(AbstractApiBean.STATUS_ERROR))
+                .statusCode(BAD_REQUEST.getStatusCode());
     }
 
     
