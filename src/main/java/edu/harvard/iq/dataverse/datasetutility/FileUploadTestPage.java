@@ -202,13 +202,15 @@ public class FileUploadTestPage implements java.io.Serializable {
             addFileHelper.runReplaceFile( fileToReplace.getId(),
                                 laFile.getFileName(),
                                 laFile.getContentType(),
-                                inputStream
+                                inputStream,
+                                null
                                );
         }else{
-            addFileHelper.runAddFile(dataset,
+            addFileHelper.runAddFileByDatasetId(dataset.getId(),
                                 laFile.getFileName(),
                                 laFile.getContentType(),
-                                inputStream);
+                                inputStream,
+                                null);
         }
         
         if (addFileHelper.hasError()){

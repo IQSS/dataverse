@@ -191,7 +191,22 @@ public class AddReplaceFileHelper{
         
     }
     
-    public boolean runAddFileByDatasetId(Long datasetId, String newFileName, String newFileContentType, InputStream newFileInputStream){
+    /**
+     * 
+     * @param datasetId
+     * @param newFileName
+     * @param newFileContentType
+     * @param newFileInputStream
+     * @param optionalFileParams
+     * @param description  optional
+     * @param 
+     * @return 
+     */
+    public boolean runAddFileByDatasetId(Long datasetId, 
+            String newFileName, 
+            String newFileContentType, 
+            InputStream newFileInputStream,
+            OptionalFileParams optionalFileParams){
         
         msgt(">> runAddFileByDatasetId");
 
@@ -203,7 +218,7 @@ public class AddReplaceFileHelper{
             return false;
         }
         
-        return this.runAddFile(this.dataset, newFileName, newFileContentType, newFileInputStream);
+        return this.runAddFile(this.dataset, newFileName, newFileContentType, newFileInputStream, optionalFileParams);
     }
     
     
@@ -216,7 +231,11 @@ public class AddReplaceFileHelper{
      * @param newFileInputStream
      * @return 
      */
-    public boolean runAddFile(Dataset dataset, String newFileName, String newFileContentType, InputStream newFileInputStream){
+    public boolean runAddFile(Dataset dataset,
+                            String newFileName, 
+                            String newFileContentType, 
+                            InputStream newFileInputStream, 
+                            OptionalFileParams optionalFileParams){
         msgt(">> runAddFile");
         
         initErrorHandling();
@@ -226,7 +245,7 @@ public class AddReplaceFileHelper{
         }
         this.currentOperation = FILE_ADD_OPERATION;
         
-        return this.runAddReplaceFile(dataset, newFileName, newFileContentType, newFileInputStream);
+        return this.runAddReplaceFile(dataset, newFileName, newFileContentType, newFileInputStream, optionalFileParams);
     }
     
 
@@ -239,7 +258,11 @@ public class AddReplaceFileHelper{
      * @param newFileInputStream
      * @return 
      */
-    public boolean runForceReplaceFile(Long oldFileId, String newFileName, String newFileContentType, InputStream newFileInputStream){
+    public boolean runForceReplaceFile(Long oldFileId,
+                        String newFileName, 
+                        String newFileContentType, 
+                        InputStream newFileInputStream,
+                        OptionalFileParams optionalFileParams){
         
         msgt(">> runForceReplaceFile");
         initErrorHandling();
@@ -259,14 +282,18 @@ public class AddReplaceFileHelper{
         }
 
         
-        return this.runAddReplaceFile(fileToReplace.getOwner(), newFileName, newFileContentType, newFileInputStream);
+        return this.runAddReplaceFile(fileToReplace.getOwner(), newFileName, newFileContentType, newFileInputStream, optionalFileParams);
     }
     
 
 
     
-    public boolean runReplaceFile(Long oldFileId, String newFileName, String newFileContentType, InputStream newFileInputStream){
-        
+    public boolean runReplaceFile(Long oldFileId,
+                            String newFileName, 
+                            String newFileContentType, 
+                            InputStream newFileInputStream,
+                            OptionalFileParams optionalFileParams){
+    
         msgt(">> runReplaceFile");
 
         initErrorHandling();
@@ -284,7 +311,7 @@ public class AddReplaceFileHelper{
             return false;
         }
 
-        return this.runAddReplaceFile(fileToReplace.getOwner(), newFileName, newFileContentType, newFileInputStream);
+        return this.runAddReplaceFile(fileToReplace.getOwner(), newFileName, newFileContentType, newFileInputStream, optionalFileParams);
     }
     
     
@@ -309,8 +336,8 @@ public class AddReplaceFileHelper{
      */
     private boolean runAddReplaceFile(Dataset dataset,  
             String newFileName, String newFileContentType, 
-            InputStream newFileInputStream
-            ){
+            InputStream newFileInputStream,
+            OptionalFileParams optionalFileParams){
         
         // Run "Phase 1" - Initial ingest of file + error check
         // But don't save the dataset version yet
@@ -318,7 +345,9 @@ public class AddReplaceFileHelper{
         boolean phase1Success = runAddReplacePhase1(dataset,  
                                         newFileName,  
                                         newFileContentType,  
-                                        newFileInputStream);
+                                        newFileInputStream,
+                                        optionalFileParams
+                                        );
         
         if (!phase1Success){
             return false;
@@ -340,7 +369,8 @@ public class AddReplaceFileHelper{
     public boolean runAddReplacePhase1(Dataset dataset,  
             String newFileName, 
             String newFileContentType,
-            InputStream newFileInputStream){
+            InputStream newFileInputStream,
+            OptionalFileParams optionalFileParams){
         
         if (this.hasError()){
             return false;   // possible to have errors already...

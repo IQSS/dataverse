@@ -851,7 +851,8 @@ public class Datasets extends AbstractApiBean {
         addFileHelper.runAddFileByDatasetId(datasetId,
                                 newFilename,
                                 newFileContentType,
-                                testFileInputStream);
+                                testFileInputStream,
+                                null);
 
 
         if (addFileHelper.hasError()){

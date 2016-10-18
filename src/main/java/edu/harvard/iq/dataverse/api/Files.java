@@ -230,12 +230,14 @@ public class Files extends AbstractApiBean {
             addFileHelper.runForceReplaceFile(fileToReplaceId,
                                     newFilename,
                                     newFileContentType,
-                                    testFileInputStream);
+                                    testFileInputStream,
+                                    null);
         }else{
             addFileHelper.runReplaceFile(fileToReplaceId,
                                     newFilename,
                                     newFileContentType,
-                                    testFileInputStream);            
+                                    testFileInputStream,
+                                    null);            
         }    
             
         msg("we're back.....");
