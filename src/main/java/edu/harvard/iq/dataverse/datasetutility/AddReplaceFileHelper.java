@@ -218,7 +218,9 @@ public class AddReplaceFileHelper{
             return false;
         }
         
-        return this.runAddFile(this.dataset, newFileName, newFileContentType, newFileInputStream, optionalFileParams);
+        //return this.runAddFile(this.dataset, newFileName, newFileContentType, newFileInputStream, optionalFileParams);
+        return this.runAddReplaceFile(dataset, newFileName, newFileContentType, newFileInputStream, optionalFileParams);
+
     }
     
     
@@ -231,6 +233,7 @@ public class AddReplaceFileHelper{
      * @param newFileInputStream
      * @return 
      */
+    /*
     public boolean runAddFile(Dataset dataset,
                             String newFileName, 
                             String newFileContentType, 
@@ -246,7 +249,7 @@ public class AddReplaceFileHelper{
         this.currentOperation = FILE_ADD_OPERATION;
         
         return this.runAddReplaceFile(dataset, newFileName, newFileContentType, newFileInputStream, optionalFileParams);
-    }
+    }*/
     
 
     /**
