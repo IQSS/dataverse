@@ -130,6 +130,25 @@ public class Dataverses extends AbstractApiBean {
             d = execCommand( new CreateDataverseCommand(d, createDataverseRequest(u), null, null) );
 			return createdResponse( "/dataverses/"+d.getAlias(), json(d) );
         } catch ( WrappedResponse ww ) {
+                    Throwable cause = ww.getCause();
+                    StringBuilder sb = new StringBuilder();
+                    while (cause.getCause() != null) {
+                        cause = cause.getCause();
+                        if (cause instanceof ConstraintViolationException) {
+                            ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
+                            for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
+                                sb.append(" Invalid value: <<<").append(violation.getInvalidValue()).append(">>> for ")
+                                        .append(violation.getPropertyPath()).append(" at ")
+                                        .append(violation.getLeafBean()).append(" - ")
+                                        .append(violation.getMessage());
+                            }
+                        }
+                    }
+                    String error = sb.toString();
+                    if (!error.isEmpty()) {
+                        LOGGER.log(Level.INFO, error);
+                        return ww.refineResponse(error);
+                    }
             return ww.getResponse();
             
         } catch (EJBException ex) {
