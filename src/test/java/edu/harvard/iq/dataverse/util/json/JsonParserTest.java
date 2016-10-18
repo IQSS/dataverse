@@ -22,6 +22,7 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -236,19 +237,25 @@ public class JsonParserTest {
     public void testParseCompleteDataverse() throws JsonParseException {
         
         JsonObject dvJson;
-        try (InputStream jsonFile = ClassLoader.getSystemResourceAsStream("json/complete-dataverse.json")) {
-            InputStreamReader reader = new InputStreamReader(jsonFile, "UTF-8");
+        try (FileReader reader = new FileReader("doc/sphinx-guides/source/_static/api/dataverse-complete.json")) {
             dvJson = Json.createReader(reader).readObject();
             Dataverse actual = sut.parseDataverse(dvJson);
-            assertEquals("testDv", actual.getName());
-            assertEquals("testAlias", actual.getAlias());
-            assertEquals("Test-Driven University", actual.getAffiliation());
-            assertEquals("test Description.", actual.getDescription());
+            assertEquals("Scientific Research", actual.getName());
+            assertEquals("science", actual.getAlias());
+            assertEquals("Scientific Research University", actual.getAffiliation());
+            assertEquals("We do all the science.", actual.getDescription());
+            assertEquals("LABORATORY", actual.getDataverseType().toString());
             assertEquals(2, actual.getDataverseContacts().size());
-            assertEquals("test@example.com,test@example.org", actual.getContactEmails());
+            assertEquals("pi@example.edu,student@example.edu", actual.getContactEmails());
             assertEquals(0, actual.getDataverseContacts().get(0).getDisplayOrder());
             assertEquals(1, actual.getDataverseContacts().get(1).getDisplayOrder());
-            assertTrue(actual.isPermissionRoot());
+            /**
+             * The JSON does not specify "permissionRoot" because it's a no-op
+             * so we don't want to document it in the API Guide. It's a no-op
+             * because as of fb7e65f (4.0) all dataverses have permissionRoot
+             * hard coded to true.
+             */
+            assertFalse(actual.isPermissionRoot());
         } catch (IOException ioe) {
             throw new JsonParseException("Couldn't read test file", ioe);
         }
@@ -266,6 +273,7 @@ public class JsonParserTest {
             assertEquals("testAlias", actual.getAlias());
             assertEquals("Test-Driven University", actual.getAffiliation());
             assertEquals("test Description.", actual.getDescription());
+            assertEquals("UNCATEGORIZED", actual.getDataverseType().toString());
             assertEquals("gray", actual.getDataverseTheme().getBackgroundColor());
             assertEquals("red", actual.getDataverseTheme().getLinkColor());
             assertEquals("http://www.cnn.com", actual.getDataverseTheme().getLinkUrl());
@@ -297,6 +305,7 @@ public class JsonParserTest {
             Dataverse actual = sut.parseDataverse(dvJson);
             assertEquals("testDv", actual.getName());
             assertEquals("testAlias", actual.getAlias());
+            assertEquals("UNCATEGORIZED", actual.getDataverseType().toString());
             assertTrue(actual.getDataverseContacts().isEmpty());
             assertEquals("", actual.getContactEmails());
             assertFalse(actual.isPermissionRoot());
