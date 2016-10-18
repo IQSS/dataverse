@@ -15,14 +15,5 @@ public interface AuthenticationProvider {
     String getId();
     
     AuthenticationProviderDisplayInfo getInfo();
-    
-    /**
-     * The main method of this interface - provide a consistent user id, within
-     * the scope of this provider, for a user based on the request content.
-     * @param request All information needed to decide whether the user can be authenticated.
-     * @return response with the result of the authentication process.
-     * TODO BACKLOG push this method down to CredentialsAuthenticationProvider.
-     */
-    AuthenticationResponse authenticate( AuthenticationRequest request );
 
 }

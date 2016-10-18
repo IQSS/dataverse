@@ -306,8 +306,10 @@ public class AuthenticationServiceBean {
     public AuthenticatedUser authenticate( String authenticationProviderId, AuthenticationRequest req ) throws AuthenticationFailedException {
         AuthenticationProvider prv = getAuthenticationProvider(authenticationProviderId);
         if ( prv == null ) throw new IllegalArgumentException("No authentication provider listed under id " + authenticationProviderId );
-        
-        AuthenticationResponse resp = prv.authenticate(req);
+        if ( ! (prv instanceof CredentialsAuthenticationProvider) ) {
+            throw new IllegalArgumentException( authenticationProviderId + " does not support credentials-based authentication." );
+        }
+        AuthenticationResponse resp = ((CredentialsAuthenticationProvider)prv).authenticate(req);
         
         if ( resp.getStatus() == AuthenticationResponse.Status.SUCCESS ) {
             // yay! see if we already have this user.
