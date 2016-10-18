@@ -160,13 +160,12 @@
                         </div>
                     </div>
                     <!-- END topDatasetBlock -->
-
                     <div id="fileImageTitle" class="row">
                         <div id="file-preview-icon-block" class="col-xs-4">
                             <div id="border-block">
                                 <div id="preview-square">
-                                    <span class="icon-#{dataFileServiceBean.getFileClass(FilePage.fileMetadata.dataFile)} text-muted" jsf:rendered="#{true}"/>
-                                    <p:graphicImage styleClass="img-responsive" value="/api/access/datafile/#{FilePage.fileId}?imageThumb=400" rendered="#{false}"/>
+                                    <span class="icon-#{dataFileServiceBean.getFileClass(FilePage.fileMetadata.dataFile)} text-muted" jsf:rendered="#{!FilePage.isThumbnailAvailable(FilePage.fileMetadata)}"/>
+                                    <p:graphicImage styleClass="img-responsive" value="/api/access/datafile/#{FilePage.fileId}?imageThumb=400" rendered="#{FilePage.isThumbnailAvailable(FilePage.fileMetadata)}"/>
                                 </div>
                             </div>
                         </div>
@@ -239,7 +238,6 @@
                                     </h:outputFormat>
 
                                    <div class="mD5-block" jsf:rendered="#{!FilePage.file.tabularData}">
-                                        <!-- FIXME: When this page is fixed (no more "Method isThumbnailAvailable not found")  -->
                                         <h:outputText id="fileMD5" value="#{FilePage.file.tabularData ? FilePage.file.originalChecksumType : FilePage.file.checksumType}: #{FilePage.file.checksumValue}"
                                                       rendered="#{!(empty FilePage.file.checksumValue)}"/>
                                     </div>
@@ -293,8 +291,7 @@
                                                 </div>
                                             </ui:remove>
                                             <div class="form-group" jsf:rendered="#{!(empty FilePage.file.checksumValue)}">
-                                                <label class="col-sm-3 control-label" for="metadata_md5">
-                                                    <!-- FIXME: When this page is fixed (no more "Method isThumbnailAvailable not found") also replace "file.MD5" with FilePage.file.checksumType and "file.MD5.origal" with "file.originalChecksumType" -->
+                                                <label class="col-sm-3 control-label" for="metadata_md5">                                                   
                                                    #{FilePage.file.tabularData ? FilePage.file.originalChecksumType : FilePage.file.checksumType}
                                                 </label>
                                                 <div class="col-sm-9">
@@ -361,9 +358,7 @@
                                                     FITS stuff....
                                                 </li>
                                                 <li>
-                                                    <!-- FIXME: When this page is fixed (no more "Method isThumbnailAvailable not found") use FilePage.file.checksumType rather than "file.metadataTab.fileMetadata.md5.label" -->
-                                                    #{bundle['file.metadataTab.fileMetadata.md5.label']}
-                                                    <h:outputText  value="#{FilePage.file.checksumValue};"  rendered="#{!(empty FilePage.file.checksumValue)}"/>
+                                                    <h:outputText  value="#{FilePage.file.checksumType}: #{FilePage.file.checksumValue};"  rendered="#{!(empty FilePage.file.checksumValue)}"/>
                                                 </li>
                                             </div>
                                         </div>
