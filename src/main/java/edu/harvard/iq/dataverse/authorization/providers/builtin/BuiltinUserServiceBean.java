@@ -81,13 +81,16 @@ public class BuiltinUserServiceBean {
         }
     }
     
-    public User findByIdentifier( String idtf ) {
-        return null; // TODO implement
-    }
-	
     public BuiltinUser find(Long pk) {
         return em.find(BuiltinUser.class, pk);
     }    
+    
+    public void removeUser( String userName ) {
+        final BuiltinUser user = findByUserName(userName);
+        if ( user != null ) {
+            em.remove(user);
+        }
+    }
     
     public BuiltinUser findByUserName(String userName) {
         try {

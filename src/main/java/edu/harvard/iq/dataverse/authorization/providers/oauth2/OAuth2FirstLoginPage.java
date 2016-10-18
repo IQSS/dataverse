@@ -72,8 +72,12 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
         auReq.putCredential(creds.get(1).getTitle(), getPassword());
         try {
             AuthenticatedUser existingUser = authenticationSvc.authenticate(BuiltinAuthenticationProvider.PROVIDER_ID, auReq);
-            Logger.getLogger(OAuth2FirstLoginPage.class.getName()).log(Level.INFO, "Found existing user: " + existingUser);
-            return null;
+            authenticationSvc.updateProvider(existingUser, newUser.getServiceId(), newUser.getIdInService());
+            builtinUserSvc.removeUser(existingUser.getUserIdentifier());
+
+            session.setUser(existingUser);
+            
+            return "/dataverse.xhtml?faces-redirect=true";
             
         } catch (AuthenticationFailedException ex) {
             setAuthenticationFailed(true);

@@ -102,7 +102,6 @@ public class AuthenticationServiceBean {
             registerProviderFactory( new OAuth2AuthenticationProviderFactory() );
             /**
              * Register shib provider factory here. Test enable/disable via Admin API, etc.
-             * // FIXME MBS remove?
              */
             new ShibAuthenticationProvider();
         } catch (AuthorizationSetupException ex) {
@@ -436,6 +435,30 @@ public class AuthenticationServiceBean {
         } else { 
             return em.merge( aToken );
             
+        }
+    }
+    
+    /**
+     * Associates the passed {@link AuthenticatedUser} with a new provider.
+     * @param authenticatedUser the authenticated being re-associated
+     * @param authenticationProviderId Id of the new provider
+     * @param persistentIdInProvider Id of the user in the new provider
+     * @return {@code true} iff the change was successful.
+     */
+    public boolean updateProvider( AuthenticatedUser authenticatedUser, String authenticationProviderId, String persistentIdInProvider ) {
+        try {
+            AuthenticatedUserLookup aul = em.createNamedQuery("AuthenticatedUserLookup.findByAuthUser", AuthenticatedUserLookup.class)
+                    .setParameter("authUser", authenticatedUser)
+                    .getSingleResult();
+            aul.setAuthenticationProviderId(authenticationProviderId);
+            aul.setPersistentUserId(persistentIdInProvider);
+            actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Auth,
+                    authenticatedUser.getIdentifier() + " now associated with provider " + authenticationProviderId + " id: " + persistentIdInProvider) );
+            return true;
+            
+        } catch ( NoResultException | NonUniqueResultException ex ) {
+            logger.log(Level.WARNING, "Error converting user " + authenticatedUser.getUserIdentifier() + ": " + ex.getMessage(), ex);
+            return false;
         }
     }
 
