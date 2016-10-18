@@ -46,9 +46,10 @@
                                     </span>
                                 </label>
                                 <div class="col-sm-6">
-                                    <h:inputText value="#{OAuth2FirstLoginPage.username}">
+                                    <p:inputText id="username" value="#{OAuth2FirstLoginPage.username}" required="true">
                                         <f:ajax event="keyup" execute="@this" render="usernameLabels createNewAccountButton"></f:ajax>
-                                    </h:inputText>
+                                    </p:inputText>
+                                    <p:message for="username"/>
                                 </div>
                                 <div class="col-sm-3">
                                     <p:fragment id="usernameLabels">
@@ -64,23 +65,31 @@
                                     </span>
                                 </label>
                                 <div class="col-sm-3">
-                                    <h:inputText id="selectedEmail" value="#{OAuth2FirstLoginPage.selectedEmail}">
+                                    <p:inputText id="selectedEmail" value="#{OAuth2FirstLoginPage.selectedEmail}"
+                                                 validatorMessage="#{bundle['oauth2.newAccount.emailInvalid']}"
+                                                 required="true">
                                         <f:ajax event="keyup" execute="@this" render="emailLabels createNewAccountButton"></f:ajax>
-                                    </h:inputText>
+                                    </p:inputText>
+                                    <p:message for="selectedEmail" />
                                 </div>
                                 <div class="col-sm-3">
-                                    #{bundle['oauth2.newAccount.suggestedEmails']}:
-                                    <h:selectOneListbox value="#{OAuth2FirstLoginPage.selectedEmail}" 
-                                                        rendered="#{OAuth2FirstLoginPage.areExtraEmailsAvailable()}" size="1"
-                                                        valueChangeListener="#{OAuth2FirstLoginPage.suggestedEmailChanged}">
-                                        <f:selectItems value="#{OAuth2FirstLoginPage.extraEmails}" var="s" itemLabel="#{s}" itemValue="#{s}" />
-                                        <f:ajax event="change" execute="@this" render="@form"/>
-                                    </h:selectOneListbox>
+                                    <div jsf:rendered="#{OAuth2FirstLoginPage.areExtraEmailsAvailable()}">
+                                        #{bundle['oauth2.newAccount.suggestedEmails']}
+                                        <h:selectOneListbox value="#{OAuth2FirstLoginPage.selectedEmail}" 
+                                                            size="1"
+                                                            valueChangeListener="#{OAuth2FirstLoginPage.suggestedEmailChanged}">
+                                            <f:selectItems value="#{OAuth2FirstLoginPage.extraEmails}" var="s" itemLabel="#{s}" itemValue="#{s}" />
+                                            <f:ajax event="change" execute="@this" render="@form"/>
+                                        </h:selectOneListbox>
+                                    </div>
                                 </div>
                                 <div class="col-sm-3">
                                     <p:fragment id="emailLabels">
-                                        <div class="alert alert-success" jsf:rendered="#{OAuth2FirstLoginPage.emailAvailable}">#{bundle['oauth2.newAccount.emailOk']}</div>
-                                        <div class="alert alert-danger" jsf:rendered="#{! OAuth2FirstLoginPage.emailAvailable}">#{bundle['oauth2.newAccount.emailTaken']}</div>
+                                        <div class="alert alert-success" 
+                                             jsf:rendered="#{OAuth2FirstLoginPage.emailValid and OAuth2FirstLoginPage.emailAvailable}">#{bundle['oauth2.newAccount.emailOk']}</div>
+                                        <div class="alert alert-danger" 
+                                             jsf:rendered="#{OAuth2FirstLoginPage.emailValid and (!OAuth2FirstLoginPage.emailAvailable)}">#{bundle['oauth2.newAccount.emailTaken']}</div>
+                                        <div class="alert alert-danger" jsf:rendered="#{! OAuth2FirstLoginPage.emailValid}">#{bundle['oauth2.newAccount.emailInvalid']}</div>
                                     </p:fragment>
                                 </div>
                             </div>

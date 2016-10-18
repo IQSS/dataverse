@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationFailedExc
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -94,6 +95,10 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
         return authenticationSvc.isEmailAvailable(getSelectedEmail());
     }
     
+    public boolean isEmailValid() {
+        return StringUtil.isValidEmail(getSelectedEmail());
+    }
+    
     public boolean isUsernameAvailable() {
         return ! authenticationSvc.identifierExists(getUsername());
     }
@@ -103,7 +108,7 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
     }
     
     public boolean isNewAccountCreationEnabled() {
-        return isUsernameAvailable() && isEmailAvailable();
+        return isEmailValid() && isUsernameAvailable() && isEmailAvailable();
     }
     
     /**

@@ -26,6 +26,8 @@ import org.jsoup.Jsoup;
  */
 public class StringUtil {
        
+    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$");
+    
     public static final boolean nonEmpty( String str ) {
         return ! isEmpty(str);
     }
@@ -47,13 +49,18 @@ public class StringUtil {
         }
       }  
       return true;
-}
+    }
+    
+    public static boolean isValidEmail( String s ) {
+        return EMAIL_PATTERN.matcher(s).matches();
+    }
+    
     public static final boolean isAlphaNumericChar(char c) {
         // TODO: consider using Character.isLetterOrDigit(c)
         return ( (c >= 'a') && (c <= 'z') ||
                  (c >= 'A') && (c <= 'Z') ||
                  (c >= '0') && (c <= '9') );
-}
+    }
 
     public static String truncateString(String originalString, int maxLength) {
         maxLength = Math.max( 0, maxLength);
