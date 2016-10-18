@@ -42,6 +42,8 @@ public class FileMetadata implements Serializable {
     @NotBlank(message = "Please specify a file name.")
     @Column( nullable=false )
     private String label = "";
+    @Column ( nullable=true )
+    private String directoryLabel = "";
     @Column(columnDefinition = "TEXT")
     private String description = "";
     
@@ -80,6 +82,13 @@ public class FileMetadata implements Serializable {
         this.label = label;
     }
 
+    public String getDirectoryLabel() {
+        return directoryLabel;
+    }
+
+    public void setDirectoryLabel(String directoryLabel) {
+        this.directoryLabel = directoryLabel;
+    }
 
     public String getDescription() {
         return description;
@@ -342,6 +351,14 @@ public class FileMetadata implements Serializable {
                 return false;
             }
         } else if (other.getLabel() != null) {
+            return false;
+        }
+
+        if (this.getDirectoryLabel() != null) {
+            if (!this.getDirectoryLabel().equals(other.getDirectoryLabel())) {
+                return false;
+            }
+        } else if (other.getDirectoryLabel() != null) {
             return false;
         }
         

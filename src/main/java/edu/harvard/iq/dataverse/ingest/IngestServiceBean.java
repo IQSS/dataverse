@@ -683,6 +683,7 @@ public class IngestServiceBean {
             }
         }
 
+        // TODO: add directoryLabel to logic so files with identical names but different directories aren't flagged?
         Iterator<DataFile> dfIt = newFiles.iterator();
         while (dfIt.hasNext()) {
             FileMetadata fm = dfIt.next().getFileMetadata();
@@ -803,6 +804,7 @@ public class IngestServiceBean {
         datafile.setPermissionModificationTime(new Timestamp(new Date().getTime()));
         FileMetadata fmd = new FileMetadata();
         
+        // TODO: add directoryLabel?
         fmd.setLabel(checkForDuplicateFileNames(version,fileName));
 
         if (addToDataset) {
