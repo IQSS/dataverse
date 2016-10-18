@@ -73,7 +73,6 @@ public class SearchIT {
     private static TestUser homer;
     private static TestUser ned;
     private static TestUser clancy;
-    private static final String categoryTestDataverse = "categoryTestDataverse";
     private static final String dvForPermsTesting = "dvForPermsTesting";
     private static String dataset1;
     private static String dataset2;
@@ -89,7 +88,6 @@ public class SearchIT {
     private static final boolean disableTestPermsonRootDv = false;
     private static final boolean disableTestPermsOnNewDv = false;
     private static final boolean homerPublishesVersion2AfterDeletingFile = false;
-    private static final boolean disableTestCategory = false;
     private Stopwatch timer;
     private boolean haveToUseCurlForUpload = false;
 
@@ -731,40 +729,6 @@ public class SearchIT {
 
     }
 
-    @Ignore
-    @Test
-    public void dataverseCategory() {
-
-        if (disableTestCategory) {
-            return;
-        }
-
-        Response enableNonPublicSearch = enableSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed);
-        assertEquals(200, enableNonPublicSearch.getStatusCode());
-
-        /**
-         * Unfortunately, it appears that the ability to specify the category of
-         * a dataverse when creating it is a GUI-only feature. It can't
-         * currently be done via the API, to our knowledge. You also can't tell
-         * from the API which category was persisted but it always seems to be
-         * "UNCATEGORIZED"
-         */
-        TestDataverse dataverseToCreate = new TestDataverse(categoryTestDataverse, categoryTestDataverse, Dataverse.DataverseType.ORGANIZATIONS_INSTITUTIONS);
-        Response createDvResponse = createDataverse(dataverseToCreate, homer);
-        assertEquals(201, createDvResponse.getStatusCode());
-
-        TestSearchQuery query = new TestSearchQuery(categoryTestDataverse);
-        Response searchResponse = search(query, homer);
-//        searchResponse.prettyPrint();
-        JsonPath jsonPath = JsonPath.from(searchResponse.body().asString());
-        String category = jsonPath.get("data.facets." + SearchFields.DATAVERSE_CATEGORY).toString();
-        String msg = "category: " + category;
-        assertEquals("category: [null]", msg);
-
-        Response disableNonPublicSearch = deleteSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed);
-        assertEquals(200, disableNonPublicSearch.getStatusCode());
-    }
-
     @AfterClass
     public static void cleanup() {
 
@@ -803,11 +767,6 @@ public class SearchIT {
         if (!homerPublishesVersion2AfterDeletingFile) {
             Response destroyDataset = destroyDataset(dataset3Id, homer.getApiToken());
             assertEquals(200, destroyDataset.getStatusCode());
-        }
-
-        if (!disableTestCategory) {
-            Response deleteCategoryDataverseResponse = deleteDataverse(categoryTestDataverse, homer);
-            assertEquals(200, deleteCategoryDataverseResponse.getStatusCode());
         }
 
         if (!disableTestPermsOnNewDv) {

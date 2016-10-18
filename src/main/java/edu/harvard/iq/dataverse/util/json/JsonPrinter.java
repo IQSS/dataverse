@@ -173,40 +173,42 @@ public class JsonPrinter {
         }
         return bld;
     }
-    
-	public static JsonObjectBuilder json( DataverseRole role ) {
-		JsonObjectBuilder bld = jsonObjectBuilder()
-				.add("alias", role.getAlias()) 
-				.add("name", role.getName())
-				.add("permissions", json(role.permissions()))
-				.add("description", role.getDescription());
-		if ( role.getId() != null ) bld.add("id", role.getId() );
-		if ( role.getOwner()!=null && role.getOwner().getId()!=null ) bld.add("ownerId", role.getOwner().getId());
-		
-		return bld;
-	}
-	
-	public static JsonObjectBuilder json( Dataverse dv ) {
-		JsonObjectBuilder bld = jsonObjectBuilder()
-						.add("id", dv.getId() )
-						.add("alias", dv.getAlias()) 
-						.add("name", dv.getName())
-                                                .add("affiliation", dv.getAffiliation())
-                                                .add("dataverseContacts", json(dv.getDataverseContacts()))
-						.add("permissionRoot", dv.isPermissionRoot())
-						.add("description", dv.getDescription());
-		if ( dv.getOwner() != null ) {
-			bld.add("ownerId", dv.getOwner().getId());
-		}
-		if ( dv.getCreateDate() != null ) {
-			bld.add("creationDate", Util.getDateTimeFormat().format(dv.getCreateDate()));
-		}
-                if ( dv.getCreator() != null ) {
-                    bld.add("creator",json(dv.getCreator()));
-                }
-		
-		return bld;
-	}
+
+    public static JsonObjectBuilder json(DataverseRole role) {
+        JsonObjectBuilder bld = jsonObjectBuilder()
+                .add("alias", role.getAlias())
+                .add("name", role.getName())
+                .add("permissions", json(role.permissions()))
+                .add("description", role.getDescription());
+        if (role.getId() != null) {
+            bld.add("id", role.getId());
+        }
+        if (role.getOwner() != null && role.getOwner().getId() != null) {
+            bld.add("ownerId", role.getOwner().getId());
+        }
+        return bld;
+    }
+
+    public static JsonObjectBuilder json(Dataverse dv) {
+        JsonObjectBuilder bld = jsonObjectBuilder()
+                .add("id", dv.getId())
+                .add("alias", dv.getAlias())
+                .add("name", dv.getName())
+                .add("affiliation", dv.getAffiliation())
+                .add("dataverseContacts", json(dv.getDataverseContacts()))
+                .add("permissionRoot", dv.isPermissionRoot())
+                .add("description", dv.getDescription());
+        if (dv.getOwner() != null) {
+            bld.add("ownerId", dv.getOwner().getId());
+        }
+        if (dv.getCreateDate() != null) {
+            bld.add("creationDate", Util.getDateTimeFormat().format(dv.getCreateDate()));
+        }
+        if (dv.getCreator() != null) {
+            bld.add("creator", json(dv.getCreator()));
+        }
+        return bld;
+    }
 
     public static JsonArrayBuilder json(List<DataverseContact> dataverseContacts) {
         JsonArrayBuilder bld = Json.createArrayBuilder();
