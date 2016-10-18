@@ -11,7 +11,9 @@ import com.google.gson.reflect.TypeToken;
 import edu.harvard.iq.dataverse.DataFileTag;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.ResourceBundle;
 
 /**
  * This is used in conjunction with the AddReplaceFileHelper
@@ -35,8 +37,8 @@ public class OptionalFileParams {
     private List<String> tags;
     public static final String TAGS_ATTR_NAME = "tags";
     
-    private List<String> tabularTags;
-    public static final String TABULAR_TAGS_ATTR_NAME = "tabularTags";
+    private List<String> fileDataTags;
+    public static final String FILE_DATA_TAGS_ATTR_NAME = "fileDataTags";
 
 
     
@@ -51,11 +53,11 @@ public class OptionalFileParams {
     
     public OptionalFileParams(String description,
                     List<String> tags, 
-                    List<String> tabularTags){
+                    List<String> potentialFileDataTags)  throws DataFileTagException{
         
         this.description = description;
         this.tags = tags;
-        this.tabularTags = tabularTags;
+        this.addFileDataTags(potentialFileDataTags);
     }
 
     /**
@@ -74,6 +76,26 @@ public class OptionalFileParams {
         return this.description;
     }
     
+    public boolean hasTags(){
+        if ((tags == null)||(this.tags.isEmpty())){
+            return false;
+        }
+        return true;
+    }
+ 
+    public boolean hasFileDataTags(){
+        if ((fileDataTags == null)||(this.fileDataTags.isEmpty())){
+            return false;
+        }
+        return true;
+    }
+ 
+    public boolean hasDescription(){
+        if ((description == null)||(this.description.isEmpty())){
+            return false;
+        }
+        return true;
+    }
 
     /**
      *  Set tags
@@ -93,19 +115,19 @@ public class OptionalFileParams {
     
 
     /**
-     *  Set tabularTags
-     *  @param tabularTags
+     *  Set fileDataTags
+     *  @param fileDataTags
      */
-    public void setTabularTags(List<String> tabularTags){
-        this.tabularTags = tabularTags;
+    public void setFileDataTags(List<String> fileDataTags){
+        this.fileDataTags = fileDataTags;
     }
 
     /**
-     *  Get for tabularTags
+     *  Get for dataFileTags
      *  @return List<String>
      */
-    public List<String> getTabularTags(){
-        return this.tabularTags;
+    public List<String> getFileDataTags(){
+        return this.fileDataTags;
     }
 
     private void loadParamsFromJson(String jsonData) throws DataFileTagException{
@@ -140,30 +162,51 @@ public class OptionalFileParams {
         }
 
         // Load tabular tags
-        if ((jsonObj.has(TABULAR_TAGS_ATTR_NAME)) && (!jsonObj.get(TABULAR_TAGS_ATTR_NAME).isJsonNull())){
+        if ((jsonObj.has(FILE_DATA_TAGS_ATTR_NAME)) && (!jsonObj.get(FILE_DATA_TAGS_ATTR_NAME).isJsonNull())){
             
-            // Make a new list
-            this.tabularTags = new ArrayList<>();
             
             // Get potential tags from JSON
-            List<String> potentialTags = gson.fromJson(jsonObj.get(TABULAR_TAGS_ATTR_NAME), listType); 
+            List<String> potentialTags = gson.fromJson(jsonObj.get(FILE_DATA_TAGS_ATTR_NAME), listType); 
 
             // Add valid potential tags to the list
-            for (String tagToCheck : potentialTags){
-                if (DataFileTag.isDataFileTag(tagToCheck)){
-                    this.tabularTags.add(tagToCheck);
-                }else{                    
-                    throw new DataFileTagException("Not a valid Tabular Tag: [" + tagToCheck + "]. Please use one of the following: " + DataFileTag.getListofLabelsAsString());
-                }
-            }
-            
-            // Shouldn't happen....
-            if (tabularTags.isEmpty()){
-                tabularTags = null;
-            }
+            addFileDataTags(potentialTags);            
+           
         }
        
     }
+    
+    
+    private void addFileDataTags(List<String> potentialTags) throws DataFileTagException{
+        
+        if (potentialTags == null){
+            return;
+        }
+        
+        potentialTags.removeAll(Collections.singleton(""));
+        potentialTags.removeAll(Collections.singleton(null));
+        
+        if (potentialTags.isEmpty()){
+            return;
+        }
+        
+         // Make a new list
+        this.fileDataTags = new ArrayList<>();
+           
+        // Add valid potential tags to the list
+        for (String tagToCheck : potentialTags){
+            if (DataFileTag.isDataFileTag(tagToCheck)){
+                this.fileDataTags.add(tagToCheck);
+            }else{                    
+                String errMsg = ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.invalid_datafile_tag");
+                throw new DataFileTagException(errMsg + " [" + tagToCheck + "]. Please use one of the following: " + DataFileTag.getListofLabelsAsString());
+            }
+        }
+         // Shouldn't happen....
+         if (fileDataTags.isEmpty()){
+            fileDataTags = null;
+        }
+    }
+    
     
     private void msg(String s){
             System.out.println(s);
