@@ -20,6 +20,8 @@ import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
+import edu.harvard.iq.dataverse.datasetutility.DataFileTagException;
+import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
@@ -831,6 +833,18 @@ public class Datasets extends AbstractApiBean {
                     );
         }
         
+        // (2a) Load up optional params via JSON
+        //---------------------------------------
+        OptionalFileParams optionalFileParams = null;
+        msgt("(api) jsonData: " +  jsonData);
+
+        try {
+            optionalFileParams = new OptionalFileParams(jsonData);
+        } catch (DataFileTagException ex) {
+            return errorResponse( Response.Status.BAD_REQUEST, ex.getMessage());            
+        }
+
+        
         //-------------------
         // (3) Create the AddReplaceFileHelper object
         //-------------------
@@ -852,7 +866,7 @@ public class Datasets extends AbstractApiBean {
                                 newFilename,
                                 newFileContentType,
                                 testFileInputStream,
-                                null);
+                                optionalFileParams);
 
 
         if (addFileHelper.hasError()){

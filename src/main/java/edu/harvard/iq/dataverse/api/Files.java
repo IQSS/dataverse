@@ -19,6 +19,8 @@ import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.errorResponse;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
+import edu.harvard.iq.dataverse.datasetutility.DataFileTagException;
+import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import java.io.FileInputStream;
@@ -65,63 +67,7 @@ public class Files extends AbstractApiBean {
     
     private static final Logger logger = Logger.getLogger(Files.class.getName());
     
-    // for testing
-    private static final String SERVER_UPLOAD_LOCATION_FOLDER = "/Users/rmp553/Documents/iqss-git/dataverse-helper-scripts/src/api_scripts/output/";
-
     
-    
-    /**
-     * get existing test file from this directory:
-     *  "scripts/search/data/replace_test/"
-     * 
-     * @param existingFileName
-     * @return 
-     */
-    
-    private InputStream getExistingFileInputStream(String existingFileName){
-        if (existingFileName == null){
-            return null;
-        }
-        InputStream inputStream = null;
-
-        //System.out.println("Current path: " + Paths.get(".").toAbsolutePath().normalize().toString());
-        String pathToFileName = "(some path)/scripts/search/data/replace_test/" + existingFileName;
-        
-        try {
-            inputStream = new FileInputStream(pathToFileName);
-            //is.close(); 
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            return null;
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            return null;
-        }
-
-        return inputStream;
-    }
-    
-    private InputStream getSampleFile(){
-        
-        InputStream inputStream = null;
-        String testFileInputStreamName = "/Users/rmp553/Documents/iqss-git/dataverse-helper-scripts/src/api_scripts/input/howdy3.txt";
-        //testFileInputStreamName = "/Users/rmp553/NetBeansProjects/dataverse/src/main/java/edu/harvard/iq/dataverse/datasetutility/howdy.txt";
-        try {
-            inputStream = new FileInputStream(testFileInputStreamName);
-            //is.close(); 
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            return null;
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            return null;
-        }
-
-        return inputStream;
-
-    }
     
     private void msg(String m){
         System.out.println(m);
@@ -174,7 +120,7 @@ public class Files extends AbstractApiBean {
             return errorResponse( Response.Status.BAD_REQUEST, "No JSON data");
         }
         JsonObject jsonObj = new Gson().fromJson(jsonData, JsonObject.class);
-        
+
         // (2a) Check for required "fileToReplaceId"
         // -------------------------------------        
         if ((!jsonObj.has("fileToReplaceId")) || jsonObj.get("fileToReplaceId").isJsonNull()){
@@ -198,6 +144,17 @@ public class Files extends AbstractApiBean {
             if (forceReplace == null){
                 forceReplace = false;
             }
+        }
+        
+        
+        // (2d) Load up optional params via JSON
+        //  - Will skip extra attributes which includes fileToReplaceId and forceReplace
+        //---------------------------------------
+        OptionalFileParams optionalFileParams = null;
+        try {
+            optionalFileParams = new OptionalFileParams(jsonData);
+        } catch (DataFileTagException ex) {
+            return errorResponse( Response.Status.BAD_REQUEST, ex.getMessage());            
         }
       
         
@@ -231,13 +188,13 @@ public class Files extends AbstractApiBean {
                                     newFilename,
                                     newFileContentType,
                                     testFileInputStream,
-                                    null);
+                                    optionalFileParams);
         }else{
             addFileHelper.runReplaceFile(fileToReplaceId,
                                     newFilename,
                                     newFileContentType,
                                     testFileInputStream,
-                                    null);            
+                                    optionalFileParams);            
         }    
             
         msg("we're back.....");

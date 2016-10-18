@@ -177,18 +177,28 @@ public class DataFileTag implements Serializable {
      * @param tagString
      * @return 
      */
-    public static boolean isDataFileTag(String tagString){
+    public static boolean isDataFileTag(String label){
         
-        if (tagString == null){
-            throw new NullPointerException("tagString cannot be null");
+        if (label == null){
+            throw new NullPointerException("label cannot be null");
         }
        
-        if (TagLabelToTypes.containsKey(tagString)){
+        if (TagLabelToTypes.containsKey(label)){
             return true;
         }
     
         return false;
     }
+    
+    public TagType getDataFileTagFromLabel(String label){
+        
+        if (!TagLabelToTypes.containsKey(label)){
+            return null;
+        }
+        
+        return TagLabelToTypes.get(label);
+    }
+    
     
     public static List<String> getListofLabels(){
     

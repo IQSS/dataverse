@@ -73,7 +73,7 @@ public class OptionalFileParamsTest {
         
         OptionalFileParams instance = new OptionalFileParams(jsonParams);
 
-        assertEquals(instance.getDescription(), null);
+        assertNull(instance.getDescription());
     
     }
 
@@ -181,22 +181,23 @@ public class OptionalFileParamsTest {
     }
     
     @Test
-    public void test_08_regularInstanceBadTabularTag() throws DataFileTagException {
+    public void test_09_unusedParamsGood() throws DataFileTagException {
 
         msgt("test_08_regularInstanceGoodWithNulls");
-
-        String val = null;
-        List<String> tags = null;//Arrays.asList("dog", "cat", "mouse");
-        List<String> fileDataTags = Arrays.asList("Survey", "Event", "Panel");
+      
+        String jsonParams = "{\"forceReplace\": \"unused within OptionalFileParams\", \"oldFileId\": \"unused within OptionalFileParams\", \"description\": null, \"unusedParam1\": \"haha\", \"tags\": []}";
         
-        OptionalFileParams instance = new OptionalFileParams(val,   
-                                tags,
-                                fileDataTags);
+        OptionalFileParams instance = new OptionalFileParams(jsonParams);
+        
+        assertNull(instance.getDescription());
+        assertFalse(instance.hasDescription());
 
-         assertEquals(val, instance.getDescription());
-         assertEquals(tags, instance.getTags());
-         assertEquals(fileDataTags, instance.getFileDataTags());
-         
+        assertNull(instance.getTags());
+        assertFalse(instance.hasTags());
+
+        assertNull(instance.getFileDataTags());
+        assertFalse(instance.hasFileDataTags());
+
     }
     
     
@@ -214,7 +215,10 @@ public class OptionalFileParamsTest {
 /*
 Python for creating escaped JSON objects
 
-import json; d = dict(description="A new file",tags=["dog", "cat",  "mouse"]); print json.dumps(json.dumps(d))
+import json
+d = dict(description="A new file"
+        ,tags=["dog", "cat",  "mouse"])
+print json.dumps(json.dumps(d))
 
 # result:
 # "{\"description\": \"A new file\", \"tags\": [\"dog\", \"cat\", \"mouse\"]}"
@@ -229,5 +233,16 @@ print json.dumps(json.dumps(d))
 
 
 #import json; d = dict(tags=["dog", "cat",  "mouse"]); print json.dumps(json.dumps(d))
+
+
+import json
+d = dict(description="A new file",
+    tags=["dog", "cat",  "mouse"],
+    unusedParam1="haha",
+    forceReplace="unused within OptionalFileParams", 
+    oldFileId="unused within OptionalFileParams"
+)
+print json.dumps(json.dumps(d))
+
 
 */

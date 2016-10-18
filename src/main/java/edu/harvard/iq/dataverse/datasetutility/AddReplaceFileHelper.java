@@ -404,9 +404,14 @@ public class AddReplaceFileHelper{
 
         msgt("step_050_checkForConstraintViolations");
         if (!this.step_050_checkForConstraintViolations()){
-            return false;
-            
+            return false;            
         }
+        
+        msgt("step_055_loadOptionalFileParams");
+        if (!this.step_055_loadOptionalFileParams(optionalFileParams)){
+            return false;            
+        }
+        
         return true;
     }
     
@@ -1050,6 +1055,38 @@ public class AddReplaceFileHelper{
         return this.hasError();
     }
     
+    
+    /**
+     * Load optional file params such as description, tags, fileDataTags, etc..
+     * 
+     * @param optionalFileParams
+     * @return 
+     */
+    private boolean step_055_loadOptionalFileParams(OptionalFileParams optionalFileParams){
+        
+        if (hasError()){
+            return false;
+        }
+
+        // --------------------------------------------
+        // OK, the object may be null
+        // --------------------------------------------
+        if (optionalFileParams == null){
+            return true;
+        }
+        
+            
+        // --------------------------------------------
+        // Iterate through files (should only be 1 for now)
+        // Add tags, description, etc
+        // --------------------------------------------
+        for (DataFile df : finalFileList){
+            optionalFileParams.addOptionalParams(df);
+        }
+        
+        
+        return true;
+    }
     
     private boolean step_060_addFilesViaIngestService(){
                        

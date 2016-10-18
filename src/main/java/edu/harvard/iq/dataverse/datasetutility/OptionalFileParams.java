@@ -8,7 +8,9 @@ package edu.harvard.iq.dataverse.datasetutility;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
+import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileTag;
+import edu.harvard.iq.dataverse.FileMetadata;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -132,7 +134,9 @@ public class OptionalFileParams {
 
     private void loadParamsFromJson(String jsonData) throws DataFileTagException{
         
+        msgt("jsonData: " +  jsonData);
         if (jsonData == null){
+            return;
 //            logger.log(Level.SEVERE, "jsonData is null");
         }
         JsonObject jsonObj = new Gson().fromJson(jsonData, JsonObject.class);
@@ -159,6 +163,10 @@ public class OptionalFileParams {
         if ((jsonObj.has(TAGS_ATTR_NAME)) && (!jsonObj.get(TAGS_ATTR_NAME).isJsonNull())){
 
             this.tags = gson.fromJson(jsonObj.get(TAGS_ATTR_NAME), listType);    
+            
+            if (this.tags.isEmpty()){
+                this.tags = null;
+            }
         }
 
         // Load tabular tags
@@ -216,6 +224,40 @@ public class OptionalFileParams {
         msg("-------------------------------");
         msg(s);
         msg("-------------------------------");
+    }
+
+    /** 
+     * Add parameters to the new DataFile file
+     * 
+     */
+    public void addOptionalParams(DataFile df) {
+        if (df == null){            
+            throw new NullPointerException("The datafile cannot be null!");
+        }
+        
+        FileMetadata fm = df.getFileMetadata();
+        
+        // Add description
+        //
+        if (hasDescription()){
+            fm.setDescription(this.getDescription());
+        }
+        
+        // Add tags
+        //
+        if (hasTags()){
+            for (String tagText : this.getTags()){               
+                fm.addCategoryByName(tagText);
+            }
+        }
+
+        // file data tags: TO DO!!!
+        //
+        if (hasFileDataTags()){
+            for (String tagLabel : this.getFileDataTags()){    
+            }
+        }
+        
     }
         
 }
