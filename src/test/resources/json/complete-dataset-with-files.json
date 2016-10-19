@@ -179,7 +179,10 @@
             "contentType": "application/octet-stream",
             "storageIdentifier": "data/subdir/yn152_4_001.img",
             "originalFormatLabel": "UNKNOWN",
-            "md5": "fc4ac06da6fd84785ed1b79cab9b714a73621ac7",
+            "checksum": {
+              "type": "MD5",
+              "value": "fc4ac06da6fd84785ed1b79cab9b714a73621ac7"
+            },
             "description": ""
           }
         },
@@ -195,7 +198,6 @@
             "contentType": "application/octet-stream",
             "storageIdentifier": "data/subdir/yn152_4_002.img",
             "originalFormatLabel": "UNKNOWN",
-            "md5": "756c1963e34eb6dd8bb5b48333c4f20ce64a0307",
             "checksum": {
               "type": "MD5",
               "value": "756c1963e34eb6dd8bb5b48333c4f20ce64a0307"
