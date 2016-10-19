@@ -1,29 +1,30 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DOIEZIdServiceBean;
-import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
-import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.RoleAssignment;
-import edu.harvard.iq.dataverse.api.imports.ImportException;
-import edu.harvard.iq.dataverse.api.imports.ImportUtil;
+import static edu.harvard.iq.dataverse.api.AbstractApiBean.errorResponse;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
+import edu.harvard.iq.dataverse.datasetutility.DataFileTagException;
+import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreatePrivateUrlCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetCommand;
@@ -45,11 +46,11 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.export.ddi.DdiExportUtil;
+import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
-import edu.harvard.iq.dataverse.util.json.JsonParser;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -57,7 +58,7 @@ import java.io.OutputStream;
 import java.io.StringReader;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -65,11 +66,7 @@ import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
-import javax.json.JsonReader;
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -80,6 +77,9 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.glassfish.jersey.media.multipart.FormDataBodyPart;
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 
 @Path("datasets")
 public class Datasets extends AbstractApiBean {
@@ -112,7 +112,18 @@ public class Datasets extends AbstractApiBean {
     @EJB
     SettingsServiceBean settingsService;
     
+    @EJB
+    DataFileServiceBean fileService;
+    
+    @EJB
+    DatasetVersionServiceBean datasetVersionService;
 
+    @EJB
+    IngestServiceBean ingestService;
+
+    @EJB
+    EjbDataverseEngine commandEngine;
+     
     /**
      * Used to consolidate the way we parse and handle dataset versions.
      * @param <T> 
@@ -376,7 +387,7 @@ public class Datasets extends AbstractApiBean {
     }
     
     @GET
-	@Path("{id}/versions/{versionId}/metadata")
+    @Path("{id}/versions/{versionId}/metadata")
     public Response getVersionMetadata( @PathParam("id") String datasetId, @PathParam("versionId") String versionId) {
 		
         try {
@@ -778,5 +789,118 @@ public class Datasets extends AbstractApiBean {
             return wr.getResponse();
         }
     }
+
+    
+    
+    /**
+     * Add a File to an existing Dataset
+     * 
+     * @param datasetId
+     * @param testFileInputStream
+     * @param contentDispositionHeader
+     * @param formDataBodyPart
+     * @return 
+     */
+    @POST
+    @Path("{id}/add")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    public Response addFileToDataset(@PathParam("id") String idSupplied,
+                    @FormDataParam("jsonData") String jsonData,
+                    @FormDataParam("file") InputStream testFileInputStream,
+                    @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
+                    @FormDataParam("file") final FormDataBodyPart formDataBodyPart
+                    ){
+
+        
+        // TODO: Handle jsonData: description, tags, etc 
+        
+        Dataset dataset;
+        
+        try{
+            dataset = findDatasetOrDie(idSupplied);
+        }catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        
+        Long datasetId = dataset.getId();
+
+        
+        // -------------------------------------
+        // (1) Get the file name and content type
+        // -------------------------------------
+        String newFilename = contentDispositionHeader.getFileName();
+        String newFileContentType = formDataBodyPart.getMediaType().toString();
+        
+        // -------------------------------------
+        // (2) Get the user from the API key
+        // -------------------------------------
+        User authUser;
+        try {
+            authUser = this.findUserOrDie();
+        } catch (WrappedResponse ex) {
+            return errorResponse(Response.Status.FORBIDDEN,
+                    ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.auth")
+                    );
+        }
+        
+        // (2a) Load up optional params via JSON
+        //---------------------------------------
+        OptionalFileParams optionalFileParams = null;
+        msgt("(api) jsonData: " +  jsonData);
+
+        try {
+            optionalFileParams = new OptionalFileParams(jsonData);
+        } catch (DataFileTagException ex) {
+            return errorResponse( Response.Status.BAD_REQUEST, ex.getMessage());            
+        }
+
+        
+        //-------------------
+        // (3) Create the AddReplaceFileHelper object
+        //-------------------
+        msg("ADD!");
+
+        DataverseRequest dvRequest2 = createDataverseRequest(authUser);
+        AddReplaceFileHelper addFileHelper = new AddReplaceFileHelper(dvRequest2,
+                                                this.ingestService,
+                                                this.datasetService,
+                                                this.fileService,
+                                                this.permissionSvc,
+                                                this.commandEngine);
+
+
+        //-------------------
+        // (4) Run "runAddFileByDatasetId"
+        //-------------------
+        addFileHelper.runAddFileByDatasetId(datasetId,
+                                newFilename,
+                                newFileContentType,
+                                testFileInputStream,
+                                optionalFileParams);
+
+
+        if (addFileHelper.hasError()){
+            return errorResponse(Response.Status.BAD_REQUEST, addFileHelper.getErrorMessagesAsString("\n"));
+        }else{
+            String successMsg = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");        
+            return okResponseGsonObject(successMsg,
+                    addFileHelper.getSuccessResultAsGsonObject());
+            //"Look at that!  You added a file! (hey hey, it may have worked)");
+        }
+            
+    } // end: addFileToDataset
+
+
+    
+    private void msg(String m){
+        System.out.println(m);
+    }
+    private void dashes(){
+        msg("----------------");
+    }
+    private void msgt(String m){
+        dashes(); msg(m); dashes();
+    }
+
 
 }

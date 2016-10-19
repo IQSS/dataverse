@@ -496,6 +496,8 @@ public class JsonPrinter {
                 .add("originalFileFormat", df.getOriginalFileFormat())
                 .add("originalFormatLabel", df.getOriginalFormatLabel())
                 .add("UNF", df.getUnf())
+                .add("rootDataFileId", df.getRootDataFileId())
+                .add("previousDataFileId", df.getPreviousDataFileId())
                 /**
                  * @todo Should we deprecate "md5" now that it's under
                  * "checksum" (which may also be a SHA-1 rather than an MD5)?
