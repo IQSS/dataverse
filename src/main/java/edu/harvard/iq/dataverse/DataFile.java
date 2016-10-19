@@ -25,7 +25,9 @@ import java.nio.file.Paths;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.stream.Collectors;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
@@ -262,6 +264,45 @@ public class DataFile extends DvObject implements Comparable {
     public List<DataFileTag> getTags() {
         return dataFileTags;
     }
+    
+    public List<String> getTagLabels(){
+        
+        List<DataFileTag> currentDataTags = this.getTags();
+        List<String> tagStrings = new ArrayList<>();
+        
+        if (( currentDataTags != null)||(!currentDataTags.isEmpty())){
+                       
+            Iterator itr = currentDataTags.iterator();
+            while (itr.hasNext()){
+                DataFileTag element = (DataFileTag)itr.next();
+                tagStrings.add(element.getTypeLabel());
+             }
+        }
+        return tagStrings;
+    }
+    
+    /**
+     * Return a list of Tag labels
+     * 
+     * If there are none, return an empty list
+     * 
+     * @return 
+     */
+    /*
+    public List<String> getTagsLabelsOnly() {
+        
+        List<DataFileTag> tags = this.getTags();
+        
+        if (tags == null){
+            return new ArrayList<String>();
+        }
+        
+        return tags.stream()
+                        .map(x -> x.getTypeLabel())
+                        .collect(Collectors.toList())
+                    ;
+    }
+    */
     
     public void setTags(List<DataFileTag> dataFileTags) {
         this.dataFileTags = dataFileTags;
@@ -833,7 +874,12 @@ public class DataFile extends DvObject implements Comparable {
                     );
 
         // ----------------------------------        
-        // Checksum map
+        // Tags
+        // ----------------------------------               
+        jsonObj.getAsJsonObject().add("tags", gson.toJsonTree(getTagLabels()));
+
+        // ----------------------------------        
+        // Checksum
         // ----------------------------------
         Map<String, String> checkSumMap = new HashMap<String, String>();
         checkSumMap.put("type", getChecksumType().toString());
@@ -844,11 +890,9 @@ public class DataFile extends DvObject implements Comparable {
         jsonObj.getAsJsonObject().add("checksum", checkSumJSONMap);
         
         
-        //JsonObject fileMetadataGson = this.getFileMetadata().asGsonObject(prettyPrint);
-        
-        //jsonObj.getAsJsonObject().add("fileMetadata", fileMetadataGson);
-        
-        //JsonObject fileMetadataJSON = new JsonObject();
+        // ----------------------------------        
+        // Overarching data key
+        // ----------------------------------
         JsonObject fullFileJSON = new JsonObject(); 
         fullFileJSON.add(overarchingKey, jsonObj);
         

@@ -194,8 +194,7 @@ public class OptionalFileParams {
         if (tagsToCheck == null){
             throw new NullPointerException("tagsToCheck cannot be null");
         }
-        
-     
+             
         return tagsToCheck.stream()
                         .filter(p -> p != null)         // no nulls
                         .map(String :: trim)            // strip strings
@@ -268,22 +267,88 @@ public class OptionalFileParams {
         // ---------------------------
         // Add tags
         // ---------------------------
-        if (hasTags()){
-            List<String> currentCategories = fm.getCategoriesByName();
-            for (String tagText : this.getTags()){               
-                if (!currentCategories.contains(tagText)){
-                    fm.addCategoryByName(tagText);
-                }
-            }
-        }
+        addTagsToDataFile(fm);
+       
 
         // ---------------------------
-        // file data tags: TO DO!!!
+        // Add DataFileTags
         // ---------------------------
-        if (hasFileDataTags()){
-            for (String tagLabel : this.getFileDataTags()){    
+        addFileDataTagsToFile(df);
+       
+    }
+    
+
+    /**
+     *  Add Tags to the DataFile
+     * 
+     */
+    private void addTagsToDataFile(FileMetadata fileMetadata){
+        
+        if (fileMetadata == null){            
+            throw new NullPointerException("The fileMetadata cannot be null!");
+        }
+        
+        // Is there anything to add?
+        //
+        if (!hasTags()){
+            return;
+        }
+        
+        List<String> currentCategories = fileMetadata.getCategoriesByName();
+        for (String tagText : this.getTags()){               
+            if (!currentCategories.contains(tagText)){
+                fileMetadata.addCategoryByName(tagText);
             }
         }
+    }
+    
+    
+    private void addFileDataTagsToFile(DataFile df){
+        if (df == null){
+            throw new NullPointerException("The DataFile (df) cannot be null!");
+        }
+        msgt("addFileDataTagsToFile");
+        
+        // Is there anything to add?
+        if (!hasFileDataTags()){
+            return;
+        }
+        msgt("addFileDataTagsToFile 2");
+        
+        // Get existing tag list and convert it to list of strings
+        List<DataFileTag> existingDataFileTags = df.getTags();
+        List<String> currentLabels;
+
+        if (existingDataFileTags == null){
+            // nothing, just make an empty list
+            currentLabels = new ArrayList<>();
+        }else{            
+            // Yes, get the labels in a list
+            currentLabels = df.getTags().stream()
+                                        .map(x -> x.getTypeLabel())
+                                        .collect(Collectors.toList())
+                                       ;
+        }
+
+        // Iterate through and add any new labels
+        //
+        DataFileTag newTagObj;
+        for (String tagLabel : this.getFileDataTags()){    
+
+            if (!currentLabels.contains(tagLabel)){     // not  already there!
+
+                // redundant "if" check here.  Also done in constructor
+                //
+                if (DataFileTag.isDataFileTag(tagLabel)){
+
+                    newTagObj = new DataFileTag();
+                    newTagObj.setDataFile(df);
+                    newTagObj.setTypeByLabel(tagLabel);
+                    df.addTag(newTagObj);
+
+                }
+            }
+        }                
         
     }
         
