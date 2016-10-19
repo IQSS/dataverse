@@ -38,7 +38,7 @@ import org.mindrot.jbcrypt.BCrypt;
  * @author michael
  */
 @Stateless
-@Path("test")
+@Path("admin/test")
 public class TestApi extends AbstractApiBean {
     private static final Logger logger = Logger.getLogger(TestApi.class.getName());
     
