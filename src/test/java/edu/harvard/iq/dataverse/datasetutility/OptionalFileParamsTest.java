@@ -148,7 +148,7 @@ public class OptionalFileParamsTest {
         msgt("test_07_regularInstanceGood");
 
         String val = "A new file";
-        List<String> tags = Arrays.asList("dog", "cat", "mouse");
+        List<String> tags = Arrays.asList("dog", " dog ", "cat", "mouse", "dog ");
         List<String> fileDataTags = Arrays.asList("Survey", "Event", "Panel");
         
         OptionalFileParams instance = new OptionalFileParams(val,   
@@ -156,7 +156,7 @@ public class OptionalFileParamsTest {
                                 fileDataTags);
 
          assertEquals(val, instance.getDescription());
-         assertEquals(tags, instance.getTags());
+         assertEquals( Arrays.asList("dog", "cat", "mouse"),instance.getTags());
          assertEquals(fileDataTags, instance.getFileDataTags());
          
     }
@@ -168,7 +168,7 @@ public class OptionalFileParamsTest {
 
         String val = null;
         List<String> tags = null;//Arrays.asList("dog", "cat", "mouse");
-        List<String> fileDataTags = Arrays.asList("Survey", "Event", "Panel");
+        List<String> fileDataTags = Arrays.asList("Survey", "Survey", "Event", "Panel", "Survey", " ");
         
         OptionalFileParams instance = new OptionalFileParams(val,   
                                 tags,
@@ -176,7 +176,7 @@ public class OptionalFileParamsTest {
 
          assertEquals(val, instance.getDescription());
          assertEquals(tags, instance.getTags());
-         assertEquals(fileDataTags, instance.getFileDataTags());
+         assertEquals(Arrays.asList("Survey", "Event", "Panel"), instance.getFileDataTags());
          
     }
     
