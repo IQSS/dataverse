@@ -27,7 +27,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.stream.Collectors;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
@@ -500,6 +499,7 @@ public class DataFile extends DvObject implements Comparable {
     /**
      * Converts the stored size of the file in bytes to 
      * a user-friendly value in KB, MB or GB.
+     * @return 
      */
     public String getFriendlySize() {
         return FileUtil.getFriendlySize(filesize);
@@ -863,10 +863,43 @@ public class DataFile extends DvObject implements Comparable {
         jsonObj.getAsJsonObject().addProperty("id", this.getId());
 
         // ----------------------------------
-        //  Add label (filename), description, and categories from the FileMetadata object
+        //  get the FileMetadata object
         // ----------------------------------
         FileMetadata thisFileMetadata = this.getFileMetadata();
+
+        // ----------------------------------
+        //  Add dataset info
+        // ----------------------------------
+
+        Map<String, Object> datasetMap = new HashMap<>();
+        // expensive call.......bleh!!! 
+        // https://github.com/IQSS/dataverse/issues/761, https://github.com/IQSS/dataverse/issues/2110, https://github.com/IQSS/dataverse/issues/3191
+        //
+        datasetMap.put("title", thisFileMetadata.getDatasetVersion().getTitle());
+        datasetMap.put("persistentId", getOwner().getGlobalId());
+        datasetMap.put("url", getOwner().getPersistentURL());
+        datasetMap.put("version", thisFileMetadata.getDatasetVersion().getSemanticVersion());
+        datasetMap.put("id", getOwner().getId());
+        datasetMap.put("isPublished", thisFileMetadata.getDatasetVersion().isReleased());
         
+        jsonObj.getAsJsonObject().add("dataset",  gson.toJsonTree(datasetMap));
+       
+        // ----------------------------------
+        //  Add dataverse info
+        // ----------------------------------
+        Map<String, Object> dataverseMap = new HashMap<>();
+        Dataverse dv = this.getOwner().getOwner();
+        
+        dataverseMap.put("name", dv.getName());
+        dataverseMap.put("alias", dv.getAlias());
+        dataverseMap.put("id", dv.getId()); 
+
+        jsonObj.getAsJsonObject().add("dataverse",  gson.toJsonTree(dataverseMap));
+        
+        // ----------------------------------
+        //  Add label (filename), description, and categories from the FileMetadata object
+        // ----------------------------------
+
         jsonObj.getAsJsonObject().addProperty("filename", thisFileMetadata.getLabel());
         jsonObj.getAsJsonObject().addProperty("description", thisFileMetadata.getDescription());
         jsonObj.getAsJsonObject().add("categories", 
