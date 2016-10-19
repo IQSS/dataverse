@@ -648,7 +648,7 @@ public class IngestServiceBean {
                 fileNamesExisting.add(existingName);
             }
         }
-
+        
         while (fileNamesExisting.contains(fileName)) {
             fileName = generateNewFileName(fileName);
         }
@@ -657,15 +657,17 @@ public class IngestServiceBean {
     }
     
     private void checkForDuplicateFileNamesFinal(DatasetVersion version, List<DataFile> newFiles) {
-        Set<String> fileNamesExisting = new HashSet<String>();
+        Set<String> pathNamesExisting = new HashSet<String>();
 
         Iterator<FileMetadata> fmIt = version.getFileMetadatas().iterator();
         while (fmIt.hasNext()) {
             FileMetadata fm = fmIt.next();
             if (fm.getId() != null) {
-                String existingName = fm.getLabel();
+                String existingName = fm.getLabel() != null ? fm.getLabel() : "" ;
+                String existingDir = fm.getDirectoryLabel() != null ? fm.getDirectoryLabel() : "";
+                String existingPath = existingDir + existingName;
             
-                if (existingName != null) {
+                if (!existingPath.isEmpty()) {
                     // if it's a tabular file, we need to restore the original file name; 
                     // otherwise, we may miss a match. e.g. stata file foobar.dta becomes
                     // foobar.tab once ingested! 
@@ -673,27 +675,29 @@ public class IngestServiceBean {
                         String originalMimeType = fm.getDataFile().getDataTable().getOriginalFileFormat();
                         if ( originalMimeType != null) {
                             String origFileExtension = generateOriginalExtension(originalMimeType);
-                            existingName = existingName.replaceAll(".tab$", origFileExtension);
+                            existingPath = existingPath.replaceAll(".tab$", origFileExtension);
                         } else {
-                            existingName = existingName.replaceAll(".tab$", "");
+                            existingPath = existingPath.replaceAll(".tab$", "");
                         }
                     }
-                    fileNamesExisting.add(existingName);
+                    pathNamesExisting.add(existingPath);
                 }
             }
         }
 
-        // TODO: add directoryLabel to logic so files with identical names but different directories aren't flagged?
         Iterator<DataFile> dfIt = newFiles.iterator();
         while (dfIt.hasNext()) {
             FileMetadata fm = dfIt.next().getFileMetadata();
-            String fileName = fm.getLabel(); 
-            while (fileNamesExisting.contains(fileName)) {
+            String fileName = fm.getLabel() != null ? fm.getLabel() : "" ;
+            String dirName =  fm.getDirectoryLabel() != null ? fm.getDirectoryLabel() : "";
+            String pathName = dirName + fileName;
+            while (pathNamesExisting.contains(pathName)) {
                 fileName = generateNewFileName(fileName);
+                pathName = dirName + fileName;
             }
             if (!fm.getLabel().equals(fileName)) {
                 fm.setLabel(fileName);
-                fileNamesExisting.add(fileName);
+                pathNamesExisting.add(pathName);
             }
         }
     }
