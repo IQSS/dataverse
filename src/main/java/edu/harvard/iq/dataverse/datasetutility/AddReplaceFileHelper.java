@@ -1424,7 +1424,8 @@ public class AddReplaceFileHelper{
 
     
     private void msg(String m){
-        System.out.println(m);
+        logger.fine(m);
+        //System.out.println(m);
     }
     private void dashes(){
         msg("----------------");
