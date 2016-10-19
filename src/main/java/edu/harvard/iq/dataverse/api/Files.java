@@ -35,6 +35,7 @@ import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
@@ -94,6 +95,7 @@ public class Files extends AbstractApiBean {
     @Path("{id}/replace")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     public Response replaceFileInDataset(
+                    @PathParam("id") Long fileToReplaceId,
                     @FormDataParam("jsonData") String jsonData,
                     @FormDataParam("file") InputStream testFileInputStream,
                     @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
@@ -123,7 +125,7 @@ public class Files extends AbstractApiBean {
 
         // (2a) Check for required "fileToReplaceId"
         // -------------------------------------        
-        if ((!jsonObj.has("fileToReplaceId")) || jsonObj.get("fileToReplaceId").isJsonNull()){
+        /*if ((!jsonObj.has("fileToReplaceId")) || jsonObj.get("fileToReplaceId").isJsonNull()){
             return errorResponse( Response.Status.BAD_REQUEST, "'fileToReplaceId' NOT found in the JSON Request");
         }
         
@@ -134,7 +136,7 @@ public class Files extends AbstractApiBean {
         } catch (Exception e) {
             return errorResponse( Response.Status.BAD_REQUEST, "'fileToReplaceId' in the JSON Request must be a number.");            
         }
-        
+        */
         
         // (2b) Check for optional "forceReplace"
         // -------------------------------------        

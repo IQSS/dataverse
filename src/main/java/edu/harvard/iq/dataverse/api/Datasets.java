@@ -77,6 +77,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -811,28 +812,9 @@ public class Datasets extends AbstractApiBean {
                     @FormDataParam("file") final FormDataBodyPart formDataBodyPart
                     ){
 
-        
-        // TODO: Handle jsonData: description, tags, etc 
-        
-        Dataset dataset;
-        
-        try{
-            dataset = findDatasetOrDie(idSupplied);
-        }catch (WrappedResponse wr) {
-            return wr.getResponse();
-        }
-        
-        Long datasetId = dataset.getId();
-
-        
+          
         // -------------------------------------
-        // (1) Get the file name and content type
-        // -------------------------------------
-        String newFilename = contentDispositionHeader.getFileName();
-        String newFileContentType = formDataBodyPart.getMediaType().toString();
-        
-        // -------------------------------------
-        // (2) Get the user from the API key
+        // (1) Get the user from the API key
         // -------------------------------------
         User authUser;
         try {
@@ -842,6 +824,38 @@ public class Datasets extends AbstractApiBean {
                     ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.auth")
                     );
         }
+        
+        // -------------------------------------
+        // (2) Get the Dataset Id
+        //  
+        // -------------------------------------
+        Dataset dataset;
+        
+        try{
+            dataset = findDatasetOrDie(idSupplied);
+        }catch (WrappedResponse wr) {
+            String errMsg;
+            if (idSupplied==null){
+                errMsg = ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.dataset_id_is_null");
+               return errorResponse(Response.Status.BAD_REQUEST, errMsg);
+
+            }else if (idSupplied.equals(Datasets.PERSISTENT_ID_KEY)){
+              return wr.getResponse();
+            }else{
+               errMsg = ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.dataset_id_not_found") + " " + idSupplied;
+               return errorResponse(Response.Status.BAD_REQUEST, errMsg);
+            }
+        }
+        
+        Long datasetId = dataset.getId();
+
+        
+        // -------------------------------------
+        // (3) Get the file name and content type
+        // -------------------------------------
+        String newFilename = contentDispositionHeader.getFileName();
+        String newFileContentType = formDataBodyPart.getMediaType().toString();
+      
         
         // (2a) Load up optional params via JSON
         //---------------------------------------

@@ -117,7 +117,7 @@ public class FilesIT {
     public void test_002_AddFileBadDatasetId() {
         msgt("test_002_AddFileNullFileId");
          // Create user
-        String apiToken = "someToken";
+        String apiToken =createUserGetToken();
 
         // Create Dataset
         String datasetId = "cat"; //createDatasetGetId(dataverseAlias, apiToken);
@@ -129,7 +129,7 @@ public class FilesIT {
 
         // Adding a non-numeric id should result in a 404
         addResponse.then().assertThat()
-                .statusCode(NOT_FOUND.getStatusCode());
+                .statusCode(BAD_REQUEST.getStatusCode());
     }
     
     

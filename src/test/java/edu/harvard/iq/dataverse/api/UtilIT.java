@@ -278,10 +278,11 @@ public class UtilIT {
     }
 
     static Response replaceFile(long fileId, String pathToFile, String apiToken) {
+        //.add("fileToReplaceId", fileId)
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .multiPart("file", new File(pathToFile))
-                .multiPart("jsonData", Json.createObjectBuilder().add("fileToReplaceId", fileId).build().toString())
+                .multiPart("jsonData", Json.createObjectBuilder().build().toString())
                 .post("/api/files/" + fileId + "/replace");
     }
 
