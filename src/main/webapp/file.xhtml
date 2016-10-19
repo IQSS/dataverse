@@ -15,7 +15,7 @@
 
     <h:body>
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="#{FilePage.fileMetadata.dataFile.displayName} - #{FilePage.file.owner.owner.displayName} #{bundle.dataverse}"/>
+            <ui:param name="pageTitle" value="#{FilePage.fileMetadata.dataFile.displayName} - #{FilePage.file.owner.owner.displayName}"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:define name="body">
                 <f:metadata>
@@ -25,8 +25,8 @@
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(FilePage.file)}"/>
                 </f:metadata>
                 <h:form id="fileForm">
-                    <div id="topDatasetBlock" class="row" style="border:0px solid orange;">
-                        <div id="actionButtonBlock" class="col-xs-12 " style="border:0px solid red;">
+                    <div id="topDatasetBlock" class="row">
+                        <div id="actionButtonBlock" class="col-xs-12">
                             
                             <!-- Metrics -->
                             <div id="metrics-block" class="pull-left" jsf:rendered="#{!DatasetPage.workingVersion.deaccessioned}">
@@ -71,7 +71,7 @@
                             </div>
                             <!-- END: Metrics -->
                             
-                            <div class="button-block pull-right" style="border:0px solid chartreuse; margin:0;">
+                            <div class="button-block pull-right">
                                 <!-- Edit Button Group -->
                                 <div class="btn-group pull-right" jsf:rendered="#{dataverseSession.user.authenticated
                                                          and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset)}">
@@ -122,13 +122,9 @@
                                         <ui:param name="twoRavensHelper" value="#{FilePage.twoRavensHelper}"/>
                                     </ui:include>
                                 </div>
-
-                                <!-- 
-                                ********** TO-DO: Tooltips for these buttons say "dataset" **********
-                                -->
-
+                                
                                 <!-- Email/Share Button Group -->
-                                <div class="btn-group pull-right" role="group" style="border:0px solid purple;">
+                                <div class="btn-group pull-right" role="group">
                                     <p:commandLink class="btn btn-default bootstrap-button-tooltip" title="#{bundle['dataset.email.datasetContactBtn']}"
                                                    update=":contactDialog" oncomplete="PF('contactForm').show()" actionListener="#{sendFeedbackDialog.initUserInput}">
                                         <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
@@ -138,15 +134,15 @@
                                         <span class="glyphicon glyphicon-envelope no-text"/>
                                     </p:commandLink>
                                     <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip"
-                                                   title="#{bundle['dataset.share.datasetShare']}"
+                                                   title="#{bundle['file.share.fileShare']}"
                                                    oncomplete="PF('shareDialog').show();sharrre();">
                                         <span class="glyphicon glyphicon-share no-text"/>
                                     </p:commandLink>
                                 </div>
-                                <p:dialog id="shareDialog" header="#{bundle['dataset.share.datasetShare']}" widgetVar="shareDialog" modal="true">
-                                    <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataset.share.datasetShare.tip']}</p>
+                                <p:dialog id="shareDialog" header="#{bundle['file.share.fileShare']}" widgetVar="shareDialog" modal="true">
+                                    <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['file.share.fileShare.tip']}</p>
 
-                                    <div id="sharrre-widget" data-url="#{systemConfig.dataverseSiteUrl}/dataset.xhtml?persistentId=#{FilePage.fileMetadata.datasetVersion.dataset.globalId}" data-text="#{bundle['dataset.share.datasetShare.shareText']}"></div>
+                                    <div id="sharrre-widget" data-url="#{systemConfig.dataverseSiteUrl}/dataset.xhtml?persistentId=#{FilePage.fileMetadata.datasetVersion.dataset.globalId}" data-text="#{bundle['file.share.fileShare.shareText']}"></div>
 
                                     <div class="button-block">
                                         <button type="button" onclick="PF('shareDialog').hide()" class="btn btn-default" value="#{bundle.close}">
@@ -170,16 +166,16 @@
                             </div>
                         </div>
                         <div class="col-xs-8 padding-none">
-                            <div class="col-xs-12">
+                            <div id="file-title-block" class="col-xs-12">
                                 <!-- Restricted File Icon -->
-                                <span style="font-size:1.5em;" class="glyphicon glyphicon-lock text-danger" jsf:rendered="#{FilePage.fileMetadata.restricted and !(FilePage.fileDownloadHelper.canDownloadFile(FilePage.fileMetadata))}" />
-                                <spans style="font-size:1.5em;" class="icon-unlock text-success" jsf:rendered="#{FilePage.fileMetadata.restricted  and FilePage.fileDownloadHelper.canDownloadFile(FilePage.fileMetadata) }" />
+                                <span class="glyphicon glyphicon-lock text-danger" jsf:rendered="#{FilePage.fileMetadata.restricted and !(FilePage.fileDownloadHelper.canDownloadFile(FilePage.fileMetadata))}" />
+                                <span class="icon-unlock text-success" jsf:rendered="#{FilePage.fileMetadata.restricted  and FilePage.fileDownloadHelper.canDownloadFile(FilePage.fileMetadata) }" />
 
                                 <!-- Title/Label -->
-                                <h:outputText value="#{FilePage.fileMetadata.label}" styleClass="" style="font-size:1.5em;font-weight:bold;margin-right:.5em;"/>
-                                <h:outputText style="margin-right:.5em;vertical-align: text-top;" value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-primary" rendered="#{FilePage.fileMetadata.datasetVersion.draft}"/>
-                                <h:outputText style="margin-right:.5em;vertical-align: text-top;" value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-success" rendered="#{FilePage.fileMetadata.datasetVersion.inReview}"/>
-                                <h:outputText style="margin-right:.5em;vertical-align: text-top;" value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{!FilePage.fileMetadata.datasetVersion.dataset.released}"/>                         
+                                <h:outputText value="#{FilePage.fileMetadata.label}" styleClass="file-title-label"/>
+                                <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-primary" rendered="#{FilePage.fileMetadata.datasetVersion.draft}"/>
+                                <h:outputText value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-success" rendered="#{FilePage.fileMetadata.datasetVersion.inReview}"/>
+                                <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{!FilePage.fileMetadata.datasetVersion.dataset.released}"/>                         
                             </div>
                             <div id="citation-block" class="col-xs-12">
                                  <div class="col-xs-12 alert alert-info bg-citation">
@@ -232,17 +228,11 @@
                                     <h:outputText id="fileTypeOutputTabular" value="#{bundle['file.type.tabularData']}" rendered="#{FilePage.fileMetadata.dataFile.tabularData}"/>
                                     <h:outputText id="fileSize" value=" - #{FilePage.fileMetadata.dataFile.friendlySize}" />
                                     <h:outputText id="fileCreatePublishDate" value=" - #{FilePage.fileMetadata.fileDateToDisplay}" rendered="#{!(empty FilePage.fileMetadata.id)}"/>
-                                    <!-- TODO: Not needed if included in the Metrics block? -->
-                                    <h:outputFormat id="fileDownloadCount" value=" - {0} #{bundle['metrics.downloads']}">
-                                        <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDataFileId(FilePage.fileMetadata.dataFile.id)}"/>
-                                    </h:outputFormat>
-
-                                   <div class="mD5-block" jsf:rendered="#{!FilePage.file.tabularData}">
-                                        <h:outputText id="fileMD5" value="#{FilePage.file.tabularData ? FilePage.file.originalChecksumType : FilePage.file.checksumType}: #{FilePage.file.checksumValue}"
+                                    <div class="checksum-block" jsf:rendered="#{!FilePage.file.tabularData}">
+                                        <h:outputText id="file-checksum" value="#{FilePage.file.tabularData ? FilePage.file.originalChecksumType : FilePage.file.checksumType}: #{FilePage.file.checksumValue}"
                                                       rendered="#{!(empty FilePage.file.checksumValue)}"/>
                                     </div>
-
-                                    <div class="text-muted" jsf:rendered="#{FilePage.file.tabularData}">
+                                    <div id="unf-block" class="text-muted" jsf:rendered="#{FilePage.file.tabularData}">
                                         <h:outputText id="fileNumVars" value="#{FilePage.file.dataTable.varQuantity} #{bundle['file.metaData.dataFile.dataTab.variables']}, " rendered="#{FilePage.file.tabularData}"/>
                                         <h:outputText id="fileNumObs" value="#{FilePage.file.dataTable.caseQuantity} #{bundle['file.metaData.dataFile.dataTab.observations']} #{!empty FilePage.file.unf ? ' - ' : ''}" rendered="#{FilePage.file.tabularData}"/>
                                         <h:outputText id="fileUNF" value="#{FilePage.file.unf}" rendered="#{!empty FilePage.file.unf}"/>
@@ -254,7 +244,7 @@
                             </div>
                             <div id="fileCategoriesBlock" class="col-xs-12" jsf:rendered="#{!(empty FilePage.fileMetadata.categoriesByName)}">
                                 <ui:repeat value="#{FilePage.fileMetadata.categoriesByName}" var="tag" rendered="#{!(empty FilePage.fileMetadata.categoriesByName)}">
-                                    <h:outputText value="#{tag}" styleClass="label label-default" style="margin-right: 0.5em;"/>
+                                    <h:outputText value="#{tag}" styleClass="label label-default"/>
                                 </ui:repeat>
                             </div>
                         </div>
@@ -265,7 +255,7 @@
                         <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}">
                             <p:tab id="metadataMapTab" class="padding-none" title="#{bundle['file.dataFilesTab.metadata.header']}">
                                 
-                                <!-- Add + Edit Metadata Button ++ DISABLED/STATIC -->
+                                <!-- Add + Edit Metadata Button -->
                                 <div class="button-block tab-header margin-bottom text-right" jsf:rendered="#{dataverseSession.user.authenticated
                                                      and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset)}">
                                     <h:outputLink class="btn btn-default" value="/editdatafiles.xhtml?selectedFileIds=#{FilePage.fileMetadata.dataFile.id}&#38;datasetId=#{FilePage.fileMetadata.datasetVersion.dataset.id}&#38;mode=SINGLE">
@@ -280,18 +270,8 @@
                                     </div>
                                     <div id="panelCollapseFMD" class="collapse in">
                                         <div class="panel-body">
-                                            <ui:remove>
-                                                <div class="form-group" jsf:rendered="#{false}">
-                                                    <label class="col-sm-3 control-label" for="metadata_persistentid">
-                                                        #{bundle['file.metadataTab.fileMetadata.persistentid.label']}
-                                                    </label>
-                                                    <div class="col-sm-9">
-                                                        <h:outputText value="#{FilePage.file.persistentid}"/>
-                                                    </div>
-                                                </div>
-                                            </ui:remove>
                                             <div class="form-group" jsf:rendered="#{!(empty FilePage.file.checksumValue)}">
-                                                <label class="col-sm-3 control-label" for="metadata_md5">                                                   
+                                                <label class="col-sm-3 control-label">                                                   
                                                    #{FilePage.file.tabularData ? FilePage.file.originalChecksumType : FilePage.file.checksumType}
                                                 </label>
                                                 <div class="col-sm-9">
@@ -299,7 +279,7 @@
                                                 </div>
                                             </div>
                                             <div class="form-group" jsf:rendered="#{!(empty FilePage.file.unf)}">
-                                                <label class="col-sm-3 control-label" for="metadata_unf">
+                                                <label class="col-sm-3 control-label">
                                                    #{bundle['file.metadataTab.fileMetadata.unf.label']}
                                                 </label>
                                                 <div class="col-sm-9">
@@ -307,7 +287,7 @@
                                                 </div>
                                             </div>
                                             <div class="form-group" jsf:rendered="#{!(empty FilePage.file.friendlySize)}">
-                                                <label class="col-sm-3 control-label" for="metadata_friendlySize">
+                                                <label class="col-sm-3 control-label">
                                                    #{bundle['file.metadataTab.fileMetadata.size.label']}
                                                 </label>
                                                 <div class="col-sm-9">
@@ -315,7 +295,7 @@
                                                 </div>
                                             </div>
                                             <div class="form-group" jsf:rendered="#{!(empty FilePage.file.friendlyType)}">
-                                                <label class="col-sm-3 control-label" for="metadata_friendlyType">
+                                                <label class="col-sm-3 control-label">
                                                    #{bundle['file.metadataTab.fileMetadata.type.label']}
                                                 </label>
                                                 <div class="col-sm-9">
@@ -323,7 +303,7 @@
                                                 </div>
                                             </div>
                                             <div class="form-group" jsf:rendered="#{!(empty FilePage.file.dataTable.varQuantity)}">
-                                                <label class="col-sm-3 control-label" for="metadata_variables">
+                                                <label class="col-sm-3 control-label">
                                                    #{bundle['file.metaData.dataFile.dataTab.variables']}
                                                 </label>
                                                 <div class="col-sm-9">
@@ -331,7 +311,7 @@
                                                 </div>
                                             </div>
                                             <div class="form-group" jsf:rendered="#{!(empty FilePage.file.dataTable.caseQuantity)}">
-                                                <label class="col-sm-3 control-label" for="metadata_observations">
+                                                <label class="col-sm-3 control-label">
                                                    #{bundle['file.metaData.dataFile.dataTab.observations']}
                                                 </label>
                                                 <div class="col-sm-9">
@@ -339,7 +319,7 @@
                                                 </div>
                                             </div>
                                             <div class="form-group" jsf:rendered="#{!(empty FilePage.file.description)}">
-                                                <label class="col-sm-3 control-label" for="metadata_description">
+                                                <label class="col-sm-3 control-label">
                                                    #{bundle['file.metadataTab.fileMetadata.description.label']}
                                                 </label>
                                                 <div class="col-sm-9">
@@ -348,41 +328,18 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <ui:remove>
-                                        <div data-toggle="collapse" data-target="#panelCollapseFits" class="panel-heading text-info">
-                                            #{bundle['file.metadataTab.fitsMetadata.header']} &#160;<span class="glyphicon glyphicon-chevron-up"/>
-                                        </div>
-                                        <div id="panelCollapseFits" class="collapse in">
-                                            <div class="panel-body">
-                                                <li>
-                                                    FITS stuff....
-                                                </li>
-                                                <li>
-                                                    <h:outputText  value="#{FilePage.file.checksumType}: #{FilePage.file.checksumValue};"  rendered="#{!(empty FilePage.file.checksumValue)}"/>
-                                                </li>
-                                            </div>
-                                        </div>
-                                        <div data-toggle="collapse" data-target="#panelCollapseProvenance" class="panel-heading text-info">
-                                            #{bundle['file.metadataTab.provenance.header']} &#160;<span class="glyphicon glyphicon-chevron-up"/>
-                                        </div>
-                                        <div id="panelCollapseProvenance" class="collapse in">
-                                            <div class="panel-body">
-                                                <li>
-                                                    #{bundle['file.metadataTab.provenance.body']}
-                                                </li>
-                                            </div>
-                                        </div>
-                                    </ui:remove>
                                 </div>
                             </p:tab>
-                            <p:tab id="provenanceTab" title="Provenance">
-                                <!-- Placeholder -->
-                                <em>Coming soon...</em>
-                            </p:tab>
-                            <p:tab id="verionsTab" title="#{bundle['file.dataFilesTab.versions']}">
-                                <!-- Placeholder -->
-                                <em>Coming soon...</em>
-                            </p:tab>
+                            <ui:remove>
+                                <p:tab id="provenanceTab" title="Provenance">
+                                    <!-- Placeholder -->
+                                    <em>Coming soon...</em>
+                                </p:tab>
+                                <p:tab id="verionsTab" title="#{bundle['file.dataFilesTab.versions']}">
+                                    <!-- Placeholder -->
+                                    <em>Coming soon...</em>
+                                </p:tab>
+                            </ui:remove>
                         </p:tabView>
                     </div>
 

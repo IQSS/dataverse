@@ -10,12 +10,7 @@
     xmlns:cc="http://java.sun.com/jsf/composite"
     xmlns:o="http://omnifaces.org/ui"
     xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
-    
-    
 
-        
-        
-        
         <!-- Ingest Problem - this is the infamous "red triangle" error. As of 4.2, we only want to show it to the owner of the dataset: -->
         <ui:fragment rendered="#{fileMetadata.dataFile.ingestProblem 
                                  and canUpdateDataset}">
@@ -34,13 +29,13 @@
                                    styleClass="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}"
                                    disabled="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}"
                                    actionListener="#{fileDownloadService.startExploreDownloadLink(twoRavensHelper, guestbookResponse, fileMetadata )}" target="_blank">
-                        TwoRavens
+                        #{bundle['file.explore.twoRavens']}
                     </h:commandLink>
                     <p:commandLink rendered="#{downloadPopupRequired}"                                            
                                    action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'explore' )}"
                                    update="@form"
                                    oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
-                        TwoRavens
+                        #{bundle['file.explore.twoRavens']}
                     </p:commandLink>                          
                 </li>
                 <li><!-- WorldMap Explore -->
@@ -234,7 +229,4 @@
                        onclick="PF('accessSignUpLogIn_popup').show()">
             <span class="glyphicon glyphicon-bullhorn"/> #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}
         </p:commandLink>
-
-
-
 </ui:composition>
