@@ -28,9 +28,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
 import java.util.UUID;
 
 import static com.jayway.restassured.RestAssured.given;
@@ -47,39 +44,19 @@ public class FileMetadataIT {
     // test properties
     private static String testName;
     private static String token;
+    private static final String builtinUserKey = "burrito";
+    private static final String keyString = "X-Dataverse-key";
 
     // dataset properties
     private static int dsId;
-
-    private static Properties props = new Properties();
-
+    
     @BeforeClass
-    public static void setUpClass() throws Exception {
-
-        InputStream input = null;
-
-        try {
-            input = classLoader.getResourceAsStream("FileMetadataIT.properties");
-            props.load(input);
-            RestAssured.baseURI = props.getProperty("baseuri");
-            String port = props.getProperty("port");
-            RestAssured.port = Integer.valueOf(port);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        } finally {
-            if (input != null) {
-                try {
-                    input.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
+    public static void setUpClass() {
+        RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }
 
     @Before
     public void setUpDataverse() {
-
         try {
             // create random test name
             testName = UUID.randomUUID().toString().substring(0, 8);
@@ -93,7 +70,7 @@ public class FileMetadataIT {
                             "}")
                     .contentType(ContentType.JSON)
                     .request()
-                    .post("/api/builtin-users/secret/" + props.getProperty("builtin.user.key"))
+                    .post("/api/builtin-users/secret/" + builtinUserKey)
                     .then().assertThat().statusCode(200)
                     .extract().jsonPath().getString("data.apiToken");
             System.out.println("TOKEN: " + token);
@@ -116,7 +93,7 @@ public class FileMetadataIT {
                     .contentType(ContentType.JSON).request()
                     .post("/api/dataverses/:root?key=" + token)
                     .then().assertThat().statusCode(201);
-            System.out.println("DATAVERSE: http://localhost:8080/dataverse/" + testName);
+            System.out.println("DATAVERSE: " + RestAssured.baseURI + "/dataverse/" + testName);
         } catch (Exception e) {
             System.out.println("Error setting up test dataverse: " + e.getMessage());
             fail();
@@ -132,15 +109,15 @@ public class FileMetadataIT {
     public void tearDownDataverse() {
         try {
             // delete dataset
-            given().header(props.getProperty("api.token.http.header"), token)
+            given().header(keyString, token)
                     .delete("/api/datasets/" + dsId)
                     .then().assertThat().statusCode(200);
             // delete dataverse
-            given().header(props.getProperty("api.token.http.header"), token)
+            given().header(keyString, token)
                     .delete("/api/dataverses/" + testName)
                     .then().assertThat().statusCode(200);
             // delete user
-            given().header(props.getProperty("api.token.http.header"), token)
+            given().header(keyString, token)
                     .delete("/api/admin/authenticatedUsers/"+testName+"/")
                     .then().assertThat().statusCode(200);
         } catch (Exception e) {
@@ -155,11 +132,10 @@ public class FileMetadataIT {
      */
     @Test
     public void testJsonParserWithDirectoryLabels() {
-
         try {
             // create dataset and set id
             dsId = given()
-                    .header(props.getProperty("api.token.http.header"), token)
+                    .header(keyString, token)
                     .body(IOUtils.toString(classLoader.getResourceAsStream("json/complete-dataset-with-files.json")))
                     .contentType("application/json")
                     .post("/api/dataverses/" + testName + "/datasets")
@@ -167,14 +143,14 @@ public class FileMetadataIT {
                     .extract().jsonPath().getInt("data.id");
             // check that both directory labels were persisted
             String dirLabel1 = given()
-                    .header(props.getProperty("api.token.http.header"), token)
+                    .header(keyString, token)
                     .get("/api/datasets/" + dsId)
                     .then().assertThat().statusCode(200)
                     .extract().jsonPath().getString("data.latestVersion.files[0].directoryLabel");
             System.out.println("directoryLabel 1: " + dirLabel1);
             assertEquals("data/subdir1/", dirLabel1);
             String dirLabel2 = given()
-                    .header(props.getProperty("api.token.http.header"), token)
+                    .header(keyString, token)
                     .get("/api/datasets/" + dsId)
                     .then().assertThat().statusCode(200)
                     .extract().jsonPath().getString("data.latestVersion.files[1].directoryLabel");
@@ -186,7 +162,6 @@ public class FileMetadataIT {
             e.printStackTrace();
             fail();
         }
-
     }
 
 }
