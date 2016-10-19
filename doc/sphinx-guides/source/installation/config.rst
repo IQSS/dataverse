@@ -86,9 +86,9 @@ Non-superusers who are not "Admin" on the root dataverse will not be able to to 
 Persistent Identifiers and Publishing Datasets
 ++++++++++++++++++++++++++++++++++++++++++++++
 
-Persistent identifiers are a required and integral part of the Dataverse platform. They provide a URL that is guaranteed to resolve to the datasets they represent. Dataverse currently supports creating identifiers using DOI and additionally displaying identifiers created using HDL. By default and for testing convenience, the installer configures a temporary DOI test namespace through EZID. This is sufficient to create and publish datasets but they are not citable nor guaranteed to be preserved. To properly configure persistent identifiers for a production installation, an account and associated namespace must be acquired for a fee from one of two DOI providers: EZID (http://ezid.cdlib.org)  or DataCite (https://www.datacite.org). Once account credentials and DOI namespace have been acquired, please complete the following identifier configuration parameters:
+Persistent identifiers are a required and integral part of the Dataverse platform. They provide a URL that is guaranteed to resolve to the datasets they represent. Dataverse currently supports creating identifiers using DOI and HDL. By default and for testing convenience, the installer configures a temporary DOI test namespace through EZID. This is sufficient to create and publish datasets but they are not citable nor guaranteed to be preserved. To properly configure persistent identifiers for a production installation, an account and associated namespace must be acquired for a fee from a DOI or HDL provider: EZID (http://ezid.cdlib.org), DataCite (https://www.datacite.org) (https://www.handle.net). Once account credentials and namespace have been acquired, please complete the following identifier configuration parameters:
 
-JVM Options: :ref:`doi.baseurlstring`, :ref:`doi.username`, :ref:`doi.password`
+JVM Options: :ref:`doi.baseurlstring`, :ref:`doi.username`, :ref:`doi.password`, :ref:`dataverse.handlenet.admcredfile`, :ref:`dataverse.handlenet.admprivphrase`
 
 Database Settings: :ref:`:DoiProvider <:DoiProvider>`, :ref:`:Protocol <:Protocol>`, :ref:`:Authority <:Authority>`, :ref:`:DoiSeparator <:DoiSeparator>`
 
@@ -218,11 +218,11 @@ Used in conjuction with ``doi.baseurlstring``.
 dataverse.handlenet.admcredfile
 +++++++++++++++++++++++++++++++
 
-For Handle support (not fully developed).
+For Handle support, typically the full path to handle/svr_1/admpriv.bin
 
 dataverse.handlenet.admprivphrase
 +++++++++++++++++++++++++++++++++
-For Handle support (not fully developed).
+For Handle support.
 
 Database Settings
 -----------------
@@ -416,7 +416,7 @@ The relative path URL to which users will be sent after signup. The default sett
 The location of your TwoRavens installation.  Activation of TwoRavens also requires the setting below, ``TwoRavensTabularView``
 
 :TwoRavensTabularView
-+++++++++++++++++++++
++++++++++++++++++++
 
 Set ``TwoRavensTabularView`` to true to allow a user to view tabular files via the TwoRavens application. This boolean affects whether a user will see the "Explore" button.
 

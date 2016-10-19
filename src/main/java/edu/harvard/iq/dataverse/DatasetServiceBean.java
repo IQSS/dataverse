@@ -10,7 +10,6 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
-import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -44,6 +43,9 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import org.apache.commons.lang.RandomStringUtils;
 import org.ocpsoft.common.util.Strings;
+
+import static edu.harvard.iq.dataverse.PersistentIdRegistrationServiceBean.Provider.EZID;
+import static edu.harvard.iq.dataverse.PersistentIdRegistrationServiceBean.Protocol.doi;
 
 /**
  *
@@ -176,7 +178,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         } else {
             authority = globalId.substring(index1 + 1, index2);
         }
-        if (protocol.equals("doi")) {
+        if (protocol.equals(doi.toString())) {
 
             index3 = globalId.indexOf(separator, index2 + 1);
             if (index3 == -1 ) {
@@ -236,7 +238,8 @@ public class DatasetServiceBean implements java.io.Serializable {
         boolean u = em.createQuery(query).getResultList().size() == 0;
         String nonNullDefaultIfKeyNotFound = "";
         String doiProvider = settingsService.getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
-        if (doiProvider.equals("EZID")) {
+        if (protocol.equals(doi.toString()) && doiProvider.equals(EZID.toString())) {
+            // TODO would need CommandContext to use PersistentIdRegistrationServiceBean.getBean, then replace condition above with something like idServiceBean.registerWhenPublished
             if (!doiEZIdServiceBean.lookupMetadataFromIdentifier(protocol, authority, separator, userIdentifier).isEmpty()) {
                 u = false;
             }
