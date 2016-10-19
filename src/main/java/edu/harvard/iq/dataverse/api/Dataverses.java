@@ -293,6 +293,12 @@ public class Dataverses extends AbstractApiBean {
  
     @GET
     @Path("{identifier}/metadatablocks/:isRoot")
+    public Response getMetadataRoot_legacy( @PathParam("identifier")String dvIdtf ) {
+        return getMetadataRoot(dvIdtf);
+    }
+    
+    @GET
+    @Path("{identifier}/metadatablocks/isRoot")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getMetadataRoot( @PathParam("identifier")String dvIdtf ) {
         return response( req -> {
@@ -309,6 +315,14 @@ public class Dataverses extends AbstractApiBean {
     
     @POST
     @Path("{identifier}/metadatablocks/:isRoot")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.WILDCARD)
+    public Response setMetadataRoot_legacy( @PathParam("identifier")String dvIdtf, String body  ) {
+        return setMetadataRoot(dvIdtf, body);
+    }
+    
+    @PUT
+    @Path("{identifier}/metadatablocks/isRoot")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.WILDCARD)
     public Response setMetadataRoot( @PathParam("identifier")String dvIdtf, String body  ) {

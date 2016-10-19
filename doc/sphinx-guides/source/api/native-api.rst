@@ -83,12 +83,15 @@ Sets the metadata blocks of the dataverse. Makes the dataverse a metadatablock r
 
 Get whether the dataverse is a metadata block root, or does it uses its parent blocks::
 
-  GET http://$SERVER/api/dataverses/$id/metadatablocks/:isRoot?key=$apiKey
+  GET http://$SERVER/api/dataverses/$id/metadatablocks/isRoot?key=$apiKey
 
 Set whether the dataverse is a metadata block root, or does it uses its parent blocks. Possible
 values are ``true`` and ``false`` (both are valid JSON expressions). ::
 
-  POST http://$SERVER/api/dataverses/$id/metadatablocks/:isRoot?key=$apiKey
+  PUT http://$SERVER/api/dataverses/$id/metadatablocks/isRoot?key=$apiKey
+
+.. note:: Previous endpoints ``GET http://$SERVER/api/dataverses/$id/metadatablocks/:isRoot?key=$apiKey`` and ``POST http://$SERVER/api/dataverses/$id/metadatablocks/:isRoot?key=$apiKey`` are deprecated, but supported.
+
 
 Create a new dataset in dataverse ``id``. The post data is a Json object, containing the dataset fields and an initial dataset version, under the field of ``"datasetVersion"``. The initial versions version number will be set to ``1.0``, and its state will be set to ``DRAFT`` regardless of the content of the json object. Example json can be found at ``data/dataset-create-new.json``. ::
 
@@ -144,8 +147,7 @@ Export the metadata of the current published version of a dataset in various for
 
     GET http://$SERVER/api/datasets/export?exporter=ddi&persistentId=$persistentId
 
-    Note: Supported exporters (export formats) are ddi, oai_ddi, dcterms, oai_dc, and dataverse_json.
-
+.. note:: Supported exporters (export formats) are ``ddi``, ``oai_ddi``, ``dcterms``, ``oai_dc``, and ``dataverse_json``.
 
 Lists all the file metadata, for the given dataset and version::
 
