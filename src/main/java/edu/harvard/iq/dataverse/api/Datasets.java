@@ -790,8 +790,8 @@ public class Datasets extends AbstractApiBean {
         }
     }
 
-
-
+    
+    
     /**
      * Add a File to an existing Dataset
      * 
@@ -804,7 +804,7 @@ public class Datasets extends AbstractApiBean {
     @POST
     @Path("{id}/add")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public Response addFileToDataset(@PathParam("id") Long datasetId,
+    public Response addFileToDataset(@PathParam("id") String idSupplied,
                     @FormDataParam("jsonData") String jsonData,
                     @FormDataParam("file") InputStream testFileInputStream,
                     @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
@@ -814,6 +814,16 @@ public class Datasets extends AbstractApiBean {
         
         // TODO: Handle jsonData: description, tags, etc 
         
+        Dataset dataset;
+        
+        try{
+            dataset = findDatasetOrDie(idSupplied);
+        }catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        
+        Long datasetId = dataset.getId();
+
         
         // -------------------------------------
         // (1) Get the file name and content type
