@@ -11,15 +11,17 @@
     xmlns:o="http://omnifaces.org/ui"
     xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
 
-        <!-- Ingest Problem - this is the infamous "red triangle" error. As of 4.2, we only want to show it to the owner of the dataset: -->
+        
         <ui:fragment rendered="#{fileMetadata.dataFile.ingestProblem 
                                  and canUpdateDataset}">
+            <!-- Ingest Problem - this is the infamous "red triangle" error. As of 4.2, we only want to show it to the owner of the dataset: -->
             <span class="ingest-warning" data-toggle="popover" data-container="body" data-trigger="hover" data-placement="left" data-html="true" data-title="&lt;span class='text-danger h5'&gt;#{bundle['file.ingestFailed']}&lt;/span&gt;" data-content="&lt;span class='text-danger'&gt;#{fileMetadata.dataFile.ingestReportMessage}&lt;/span&gt;">
                 <span class="glyphicon glyphicon-warning-sign text-danger"/>
             </span>
         </ui:fragment>
-        <!-- Explore Dropdown: When TwoRavens **AND** WorldMap Explore options are available -->
+        
         <div class="btn-group" jsf:rendered="#{twoRavensHelper.canSeeTwoRavensExploreButtonFromPage(fileMetadata) and worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata)}">           
+            <!-- Explore Dropdown: When TwoRavens **AND** WorldMap Explore options are available -->
             <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                 <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore} <span class="caret"/>
             </button>
@@ -48,8 +50,9 @@
             </ul>
         </div>
 
-        <!-- TwoRavens Explore button ONLY ... not WorldMap -->
+        
         <ui:fragment rendered="#{ twoRavensHelper.canSeeTwoRavensExploreButtonFromPage(fileMetadata) and !worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata)}">
+            <!-- TwoRavens Explore button ONLY ... not WorldMap -->
             <h:commandLink rendered="#{!downloadPopupRequired}"
                            type="button" styleClass="btn btn-default #{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}"
                            disabled="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}"
@@ -65,8 +68,9 @@
             </p:commandLink>
         </ui:fragment>
 
-        <!-- WorldMap Explore button ONLY ... not TwoRavens -->
+        
         <ui:fragment rendered="#{worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata) and !(twoRavensHelper.canSeeTwoRavensExploreButtonFromPage(fileMetadata))}">
+            <!-- WorldMap Explore button ONLY ... not TwoRavens -->
             <h:outputLink pt:role="button" rendered="#{worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata)}"
                           type="button" styleClass="btn btn-default #{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" disabled="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" 
                           title="Explore" value="#{ worldMapPermissionHelper.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }" target="_blank">
@@ -74,9 +78,10 @@
             </h:outputLink>
         </ui:fragment>
 
-        <!-- WorldMap Map Data button group -->
-        <!-- 4.2.1: VERIFIED: none of these checks add any queries, if there are no map layers. -->
+        
         <div class="btn-group" role="group" jsf:rendered="#{worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata)}">
+            <!-- WorldMap Map Data button group -->
+            <!-- 4.2.1: VERIFIED: none of these checks add any queries, if there are no map layers. -->
             <!-- WorldMap Map Data -->
             <h:outputLink pt:role="button" rendered="#{worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata)}"
                           type="button" styleClass="btn btn-default" value="#{fileMetadata.dataFile.getMapItURL(dataverseSession.user.id)}" role="button">
@@ -90,23 +95,26 @@
             </ui:fragment>
         </div>
 
-        <!-- non-tabular data file: -->
-        <!-- no guest book/terms of use/etc. - straight to the download API url: -->
+        
         <p:commandLink rendered="#{ fileDownloadHelper.canDownloadFile(fileMetadata) and !(fileMetadata.dataFile.tabularData) and !(downloadPopupRequired) }"
                        type="button" styleClass="btn btn-default"
                        actionListener="#{fileDownloadService.startFileDownload(fileMetadata, 'Download')}">
+            <!-- non-tabular data file: -->
+            <!-- no guest book/terms of use/etc. - straight to the download API url: -->
             <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
         </p:commandLink>
-        <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
+        
         <p:commandLink rendered="#{ fileDownloadHelper.canDownloadFile(fileMetadata) and !(fileMetadata.dataFile.tabularData) and downloadPopupRequired }"
                        type="button" styleClass="btn btn-default"
                        action="#{guestbookResponseService.modifyDatafile(guestbookResponse, fileMetadata)}"
                        update="@form" oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
+            <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
             <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
         </p:commandLink>
         
-        <!-- Download Dropdown -->
+        
         <div class="btn-group" jsf:rendered="#{ fileDownloadHelper.canDownloadFile(fileMetadata) and fileMetadata.dataFile.tabularData }">
+            <!-- Download Dropdown -->
             <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                 <span class="glyphicon glyphicon-download-alt"/> #{bundle.download} <span class="caret"/>
             </button>
@@ -217,18 +225,20 @@
                 </li>
             </ul>
         </div>
-        <!-- Request Access -->
-        <!-- 4.2.1 - TODO: retest this on a dataset with fileRequest enabled and with some files restricted to the user -->
-        <!-- 4.2.1 - TODO: make sure dataFile.fileAccessRequesters gets populated -->
+        
         <p:commandLink type="button" styleClass="btn btn-default" rendered="#{fileDownloadHelper.session.user.authenticated and fileMetadata.dataFile.owner.fileAccessRequest and !(fileDownloadHelper.canDownloadFile(fileMetadata))}"
                        actionListener="#{fileDownloadService.requestAccess(fileMetadata.dataFile, true)}"
                        update="@form"
                        disabled="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user)}">
+            <!-- Request Access -->
+            <!-- 4.2.1 - TODO: retest this on a dataset with fileRequest enabled and with some files restricted to the user -->
+            <!-- 4.2.1 - TODO: make sure dataFile.fileAccessRequesters gets populated -->
             <span class="glyphicon glyphicon-bullhorn"/> #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}
         </p:commandLink>
-        <!-- 4.2.1 - TODO: retest this on a dataset with fileRequest enabled and with some files restricted to the user -->
+        
         <p:commandLink type="button" styleClass="btn btn-default" rendered="#{!fileDownloadHelper.session.user.authenticated and fileMetadata.dataFile.owner.fileAccessRequest and !(fileDownloadHelper.canDownloadFile(fileMetadata))}"
                        onclick="PF('accessSignUpLogIn_popup').show()">
+            <!-- 4.2.1 - TODO: retest this on a dataset with fileRequest enabled and with some files restricted to the user -->
             <span class="glyphicon glyphicon-bullhorn"/> #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}
         </p:commandLink>
 </ui:composition>
