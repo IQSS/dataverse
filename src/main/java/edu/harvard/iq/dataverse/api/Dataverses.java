@@ -185,40 +185,11 @@ public class Dataverses extends AbstractApiBean {
     @POST
     @Path("{identifier}/datasets")
     public Response createDataset( String jsonBody, @PathParam("identifier") String parentIdtf,
-                                   @DefaultValue("new") @QueryParam("importType") String datasetImportType,
+                                   @QueryParam("importType") String datasetImportType,
                                    @DefaultValue("/") @QueryParam("separator") String datasetSeparator) {
         try {
             User u = findUserOrDie();
             Dataverse owner = findDataverseOrDie(parentIdtf);
-
-            // set the import type, default to NEW
-            ImportUtil.ImportType it = null;
-            if (StringUtils.isNotBlank(datasetImportType)) {
-                if (datasetImportType.equalsIgnoreCase("migration")) {
-                    it = ImportUtil.ImportType.MIGRATION;
-                }
-                if (datasetImportType.equalsIgnoreCase("harvest")) {
-                    it = ImportUtil.ImportType.HARVEST;
-                }
-                if (datasetImportType.equalsIgnoreCase("new")) {
-                    it = ImportUtil.ImportType.NEW;
-                }
-            }
-
-            if (!ImportUtil.ImportType.NEW.equals(it)) {
-                if (!u.isSuperuser()) {
-                    /**
-                     * @todo Once we are prepare to support migration via JSON
-                     * (versions and files are supported, etc.), update the API
-                     * Guide (or some other guide) to explain how to do a
-                     * migration with JSON. For the https://data.sbgrid.org
-                     * migration, the migrated datasets only have a single
-                     * version and files will be recorded in the database with
-                     * an importer that crawls the filesystem.
-                     */
-                    return errorResponse(Status.UNAUTHORIZED, "Attempting to migrate or harvest datasets via this API endpoint is experimental and requires a superuser's API token. Migrating datasets using DDI (XML) is better supported (versions are handled, files are handled, etc.).");
-                }
-            }
 
             JsonObject json;
             try ( StringReader rdr = new StringReader(jsonBody) ) {
@@ -236,36 +207,62 @@ public class Dataverses extends AbstractApiBean {
             String datasetProtocol = json.getString("protocol", null);
             String datasetAuthority = json.getString("authority", null);
 
-            if (StringUtils.isNotBlank(datasetIdentifier) ||
-                    StringUtils.isNotBlank(datasetProtocol) ||
-                    StringUtils.isNotBlank(datasetAuthority)) {
+            // set the import type, default to NEW
+            ImportUtil.ImportType it = ImportUtil.ImportType.NEW;
+            if (StringUtils.isNotBlank(datasetImportType)) {
+                if (datasetImportType.equalsIgnoreCase("migration")) {
+                    it = ImportUtil.ImportType.MIGRATION;
+                }
+            }
 
-                // we need all of these parameters to construct a global ID
-                if (StringUtils.isNotBlank(datasetIdentifier) &&
-                        StringUtils.isNotBlank(datasetProtocol) &&
-                        StringUtils.isNotBlank(datasetAuthority)) {
+            if (!ImportUtil.ImportType.NEW.equals(it)) {
+                if (u.isSuperuser()) {
 
-                    // reset import type to MIGRATION when we are sent all of the global id params but no import type
-                    if (it != ImportUtil.ImportType.MIGRATION && it != ImportUtil.ImportType.HARVEST) {
-                        it = ImportUtil.ImportType.MIGRATION;
+                    if (StringUtils.isNotBlank(datasetIdentifier)
+                            || StringUtils.isNotBlank(datasetProtocol)
+                            || StringUtils.isNotBlank(datasetAuthority)) {
+
+                        // we need all of these parameters to construct a global ID
+                        if (StringUtils.isNotBlank(datasetIdentifier)
+                                && StringUtils.isNotBlank(datasetProtocol)
+                                && StringUtils.isNotBlank(datasetAuthority)) {
+
+                            // reset import type to MIGRATION when we are sent all of the global id params but no import type
+                            if (it != ImportUtil.ImportType.MIGRATION) {
+                                it = ImportUtil.ImportType.MIGRATION;
+                            }
+
+                            // make sure it doesn't already exist
+                            String globalId = datasetProtocol + ":" + datasetAuthority + datasetSeparator + datasetIdentifier;
+                            if (findDvo(globalId) == null) {
+                                ds.setAuthority(datasetAuthority);
+                                ds.setProtocol(datasetProtocol);
+                                ds.setIdentifier(datasetIdentifier);
+                                // setGlobalIdCreateTime to anything ("now") avoid "This dataset may not be published because it has not been registered. Please contact Dataverse Support for assistance."
+                                ds.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
+                            } else {
+                                return errorResponse(Status.BAD_REQUEST,
+                                        "A dataset with the identifier " + globalId + " already exists.");
+                            }
+                        } else {
+                            return errorResponse(Status.BAD_REQUEST,
+                                    "Protocol, authority and identifier must all be specified when migrating a dataset "
+                                    + "with an existing global identifier.");
+                        }
                     }
 
-                    // make sure it doesn't already exist
-                    String globalId = datasetProtocol + ":" + datasetAuthority + datasetSeparator + datasetIdentifier;
-                    if (findDvo(globalId) == null) {
-                        ds.setAuthority(datasetAuthority);
-                        ds.setProtocol(datasetProtocol);
-                        ds.setIdentifier(datasetIdentifier);
-                        // setGlobalIdCreateTime to anything ("now") avoid "This dataset may not be published because it has not been registered. Please contact Dataverse Support for assistance."
-                        ds.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
-                    } else {
-                        return errorResponse(Status.BAD_REQUEST,
-                                "A dataset with the identifier " + globalId + " already exists.");
-                    }
                 } else {
-                    return errorResponse(Status.BAD_REQUEST,
-                            "Protocol, authority and identifier must all be specified when migrating a dataset " +
-                                    "with an existing global identifier.");
+                    /**
+                     * @todo Once we are prepare to support migration via JSON
+                     * (versions are supported, etc.), update the API Guide (or
+                     * some other guide) to explain how to do a migration with
+                     * JSON. For the https://data.sbgrid.org migration, the
+                     * migrated datasets only have a single version and files
+                     * will be recorded in the database with an importer that
+                     * crawls the filesystem.
+                     */
+                    return errorResponse(Status.UNAUTHORIZED, "Attempting to migrate or harvest datasets via this API endpoint is experimental and requires a superuser's API token. Migrating datasets using DDI (XML) is better supported (versions are handled, files are handled, etc.).");
+
                 }
             }
 

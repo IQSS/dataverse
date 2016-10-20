@@ -588,15 +588,23 @@ public class UtilIT {
                 .delete("api/dataverses/" + definitionPoint + "/assignments/" + doomed);
     }
 
-    static Response createDatasetWithGlobalIdViaNativeApi(String dataverseAlias, String apiToken, String jsonIn,
-                                                          String importType) {
-        Response createDatasetResponse = given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .body(jsonIn)
-                .contentType("application/json")
-                .queryParam("importType", importType)
-                .post("/api/dataverses/" + dataverseAlias + "/datasets");
-        return createDatasetResponse;
+    static Response createDatasetWithGlobalIdViaNativeApi(String dataverseAlias, String apiToken, String jsonIn, String importType) {
+        if (importType != null && !importType.isEmpty()) {
+            Response createDatasetResponse = given()
+                    .header(API_TOKEN_HTTP_HEADER, apiToken)
+                    .body(jsonIn)
+                    .contentType("application/json")
+                    .queryParam("importType", importType)
+                    .post("/api/dataverses/" + dataverseAlias + "/datasets");
+            return createDatasetResponse;
+        } else {
+            Response createDatasetResponse = given()
+                    .header(API_TOKEN_HTTP_HEADER, apiToken)
+                    .body(jsonIn)
+                    .contentType("application/json")
+                    .post("/api/dataverses/" + dataverseAlias + "/datasets");
+            return createDatasetResponse;
+        }
     }
     
     @Test

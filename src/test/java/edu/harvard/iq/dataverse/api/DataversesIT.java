@@ -21,7 +21,9 @@ import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
+import org.hamcrest.CoreMatchers;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -147,6 +149,38 @@ public class DataversesIT {
         Response createDataverse1Response = UtilIT.createRandomDataverse(apiToken);
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse1Response);
 
+        /**
+         * @todo test this: 1. creating a dataset as non super user does not
+         * grant dv defined access perms to creator, ie they have no direct
+         * perms on the dataset the just created, does not see draft card. This
+         * is most obvious in root dv where the user is likely not an admin.
+         */
+        // this test is for the following bug reports:
+        // 2. non super users can specify a doi when creating a dataset, this should be super user only.
+        // 3. importType modes, including default, appear to do nothing: can specify doi in all, sets globalidcreatetime in all, not just migration.
+//        Response attemptSetDoiAsAsNonSuperuserUsingNew = UtilIT.createDatasetWithGlobalIdViaNativeApi(dataverseAlias, apiToken,
+//                UtilIT.getJson("scripts/search/tests/data/dataset-finch2.json"), "NEW");
+//        attemptSetDoiAsAsNonSuperuserUsingNew.prettyPrint();
+//        attemptSetDoiAsAsNonSuperuserUsingNew.then().assertThat()
+//                .body("message", equalTo("Attempting to migrate or harvest datasets via this API endpoint is experimental "
+//                        + "and requires a superuser's API token. Migrating datasets using DDI (XML) is better supported "
+//                        + "(versions are handled, files are handled, etc.)."))
+//                .statusCode(UNAUTHORIZED.getStatusCode());
+        // bug 3. importType modes, including default, appear to do nothing: can specify doi in all, sets globalidcreatetime in all, not just migration.
+        Response attemptSetDoiAsAsNonSuperuserWithoutSpecifyingImportType = UtilIT.createDatasetWithGlobalIdViaNativeApi(dataverseAlias, apiToken,
+                UtilIT.getJson("scripts/search/tests/data/dataset-finch2.json"), "");
+        attemptSetDoiAsAsNonSuperuserWithoutSpecifyingImportType.prettyPrint();
+        attemptSetDoiAsAsNonSuperuserWithoutSpecifyingImportType.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        int datasetId0 = UtilIT.getDatasetIdFromResponse(attemptSetDoiAsAsNonSuperuserWithoutSpecifyingImportType);
+        Response datasetShouldHaveRandomIdentifierRatherThan8888 = UtilIT.nativeGet(datasetId0, apiToken);
+        datasetShouldHaveRandomIdentifierRatherThan8888.prettyPrint();
+        datasetShouldHaveRandomIdentifierRatherThan8888.then().assertThat()
+                .body("data.identifier", not(equalTo("8888")))
+                .statusCode(OK.getStatusCode());
+        System.out.println("dataverse alias: " + dataverseAlias);
+
         Response attemptJsonMigrationAsNonSuperuser = UtilIT.createDatasetWithGlobalIdViaNativeApi(dataverseAlias, apiToken,
                 UtilIT.getJson("scripts/search/tests/data/dataset-finch2.json"), "MIGRATION");
         attemptJsonMigrationAsNonSuperuser.prettyPrint();
@@ -202,6 +236,7 @@ public class DataversesIT {
                 .statusCode(CREATED.getStatusCode());
         int datasetId3 = UtilIT.getDatasetIdFromResponse(createDataset5Response);
 
+        // TODO: test this:  5. the separator query parameter does not seem to set the doiseparator value in the dataset table.
         // revert to non-superuser to make sure a non-superuser can't delete a published dataset
         UtilIT.makeSuperUser(username).then().assertThat().statusCode(OK.getStatusCode());
 
@@ -213,6 +248,10 @@ public class DataversesIT {
 
         // only a superuser can destroy a published dataset
         UtilIT.makeSuperUser(username).then().assertThat().statusCode(OK.getStatusCode());
+
+        Response deleteDataset0Response = UtilIT.deleteDatasetViaNativeApi(datasetId0, apiToken);
+        deleteDataset0Response.prettyPrint();
+        deleteDataset0Response.then().assertThat().statusCode(OK.getStatusCode());
 
         Response destroyDataset1WhichHasBeenPublished = UtilIT.destroyDataset(datasetId1, apiToken);
         destroyDataset1WhichHasBeenPublished.prettyPrint();
