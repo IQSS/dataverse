@@ -304,6 +304,12 @@
 
         </p:column>
         <p:column class="col-file-action text-right" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
+            <!-- Ingest in progress... -->
+            <div id="txtInprogess" class="bg-info text-info text-center margin-bottom-half" jsf:rendered="#{fileMetadata.dataFile.ingestInProgress}">
+                #{bundle['file.ingestInProgress']}
+            </div>
+
+            <div class="button-block">
                         <ui:include src="file-download-button-fragment.xhtml">
                             <ui:param name="fileMetadata" value="#{fileMetadata}"/>
                             <ui:param name="canUpdateDataset" value="#{DatasetPage.canUpdateDataset()}"/>
@@ -315,6 +321,8 @@
                             <ui:param name="worldMapPermissionHelper" value="#{DatasetPage.worldMapPermissionHelper}"/>
                             <ui:param name="twoRavensHelper" value="#{DatasetPage.twoRavensHelper}"/>
                         </ui:include>
+            </div>
+            <!-- END: button-block -->
         </p:column>
     </p:dataTable>
     

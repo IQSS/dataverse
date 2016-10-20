@@ -104,6 +104,8 @@
                        update="@form" oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
             <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
         </p:commandLink>
+        
+        <!-- Download Dropdown -->
         <div class="btn-group" jsf:rendered="#{ fileDownloadHelper.canDownloadFile(fileMetadata) and fileMetadata.dataFile.tabularData }">
             <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                 <span class="glyphicon glyphicon-download-alt"/> #{bundle.download} <span class="caret"/>
