@@ -588,6 +588,25 @@ public class UtilIT {
                 .delete("api/dataverses/" + definitionPoint + "/assignments/" + doomed);
     }
 
+    static Response createDatasetWithGlobalIdViaNativeApi(String dataverseAlias, String apiToken, String jsonIn, String importType) {
+        if (importType != null && !importType.isEmpty()) {
+            Response createDatasetResponse = given()
+                    .header(API_TOKEN_HTTP_HEADER, apiToken)
+                    .body(jsonIn)
+                    .contentType("application/json")
+                    .queryParam("importType", importType)
+                    .post("/api/dataverses/" + dataverseAlias + "/datasets");
+            return createDatasetResponse;
+        } else {
+            Response createDatasetResponse = given()
+                    .header(API_TOKEN_HTTP_HEADER, apiToken)
+                    .body(jsonIn)
+                    .contentType("application/json")
+                    .post("/api/dataverses/" + dataverseAlias + "/datasets");
+            return createDatasetResponse;
+        }
+    }
+    
     @Test
     public void testGetFileIdFromSwordStatementWithNoFiles() {
         String swordStatementWithNoFiles = "<feed xmlns=\"http://www.w3.org/2005/Atom\">\n"
@@ -634,4 +653,12 @@ public class UtilIT {
         assertEquals("A Dataset with a File", title);
     }
 
+    public static String getJson(String filename) {
+        File jsonFile = new File(filename);
+        try {
+            return new String(Files.readAllBytes(Paths.get(jsonFile.getAbsolutePath())));
+        } catch (IOException ex) {
+            return null;
+        }
+    }
 }
