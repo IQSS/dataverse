@@ -249,6 +249,19 @@ public class FileMetadata implements Serializable {
         }
         return "";
     }
+     
+     public String getFileCitation(){
+         String citation = this.getDatasetVersion().getCitation();
+         /*
+         ", #{FilePage.fileMetadata.label} [fileName]"
+         <h:outputText value=", #{FilePage.file.unf}" rendered="#{FilePage.file.tabularData and !(empty FilePage.file.unf)}"/>
+         */
+         citation += ", " + this.getLabel() + " [fileName]" ;
+         if (this.dataFile.isTabularData() && this.dataFile.getUnf() != null && !this.dataFile.getUnf().isEmpty()){
+             citation += ", " + this.dataFile.getUnf();                    
+         }
+         return citation;
+     }
         
     public DatasetVersion getDatasetVersion() {
         return datasetVersion;

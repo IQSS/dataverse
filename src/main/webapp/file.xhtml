@@ -182,13 +182,7 @@
                                     <div class="row">
                                         <div id="citation" class="#{DatasetPage.workingVersion.deaccessioned ? 'col-xs-12' : 'col-xs-7 col-md-8'}">
                                             <div id="citation-select" onclick="if (event.target) { selectText(event.target); } else{ selectText(this); }">
-                                                <h:outputText value="#{FilePage.file.owner.citation}" escape="false"/>
-                                                <!-- TODO: ADD THIS SECTION TO THE DYNAMIC CITATION MANAGE BEAN -->
-                                                <!-- TODO: 'fileName' needs to be dynamic {file.name.label} -->
-                                                <h:outputText value=", #{FilePage.fileMetadata.label} [fileName]" />
-
-                                                <h:outputText value=", #{FilePage.file.unf}" rendered="#{FilePage.file.tabularData and !(empty FilePage.file.unf)}"/>
-                                                <!-- END: TODO -->
+                                                <h:outputText value="#{FilePage.fileMetadata.fileCitation}" escape="false"/>
                                             </div>
                                             <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{!FilePage.fileMetadata.datasetVersion.dataset.released}" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.released']}"/>
                                             <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{FilePage.fileMetadata.datasetVersion.dataset.released and FilePage.fileMetadata.datasetVersion.draft}" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.draft']}"/>
