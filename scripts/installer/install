@@ -807,7 +807,7 @@ else
 	print TMPCMD $sql_command;
 	close TMPCMD;
 	    
-	my $psql_commandline = $psql_exec . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U postgres -d postgres -f /tmp/pgcmd.$$.tmp >/dev/null 2>&1";
+	my $psql_commandline = $psql_admin_exec . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U postgres -d postgres -f /tmp/pgcmd.$$.tmp >/dev/null 2>&1";
 
 	my $out      = qx($psql_commandline 2>&1);
 	my $exitcode = $?;
@@ -829,8 +829,8 @@ else
     print "\nCreating Postgres database:\n";
     
     my $psql_command =
-	$psql_admin_exec
-	. "/createdb -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U postgres "
+	$psql_exec
+	. "/createdb -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U $CONFIG_DEFAULTS{'POSTGRES_USER'} "
 	. $CONFIG_DEFAULTS{'POSTGRES_DATABASE'}
         . " --owner="
 	. $CONFIG_DEFAULTS{'POSTGRES_USER'};
