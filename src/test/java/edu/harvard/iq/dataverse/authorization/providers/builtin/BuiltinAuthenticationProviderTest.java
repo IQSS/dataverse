@@ -1,6 +1,9 @@
 package edu.harvard.iq.dataverse.authorization.providers.builtin;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
+import edu.harvard.iq.dataverse.authorization.AuthenticationRequest;
+import edu.harvard.iq.dataverse.authorization.AuthenticationResponse;
+import static edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AllUsers.instance;
 import edu.harvard.iq.dataverse.mocks.MockBuiltinUserServiceBean;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -103,13 +106,69 @@ public class BuiltinAuthenticationProviderTest {
 
     private BuiltinUser makeBuiltInUser() {
         BuiltinUser user = new BuiltinUser();
+        user.setUserName("username");
         user.setFirstName("Firsty");
         user.setLastName("Last");
         user.setEmail("email@host.com");
         user.setAffiliation("an institute");
         user.setPosition("a position");
-        user.updateEncryptedPassword("password", PasswordEncryption.getLatestVersionNumber());
+        user.updateEncryptedPassword(PasswordEncryption.get().encrypt("password"), PasswordEncryption.getLatestVersionNumber());
         return user;
+    }
+
+    /**
+     * Test of verifyPassword method, of class BuiltinAuthenticationProvider.
+     */
+    @Test
+    public void testVerifyPassword() {
+        bean.save(makeBuiltInUser());
+        assertEquals( Boolean.TRUE,  sut.verifyPassword("username", "password"));
+        assertEquals( Boolean.FALSE, sut.verifyPassword("username", "xxxxxxxx"));
+        assertEquals( null,          sut.verifyPassword("xxxxxxxx", "xxxxxxxx"));
+    }
+
+    /**
+     * Test of authenticate method, of class BuiltinAuthenticationProvider.
+     */
+    @Test
+    public void testAuthenticate() {
+        bean.save(makeBuiltInUser());
+        String crdUsername = sut.getRequiredCredentials().get(0).getTitle();
+        String crdPassword = sut.getRequiredCredentials().get(1).getTitle();
+        AuthenticationRequest req = new AuthenticationRequest();
+        req.putCredential(crdUsername, "username");
+        req.putCredential(crdPassword, "password");
+        AuthenticationResponse result = sut.authenticate(req);
+        assertEquals(AuthenticationResponse.Status.SUCCESS, result.getStatus());
+        
+        req = new AuthenticationRequest();
+        req.putCredential(crdUsername, "xxxxxxxx");
+        req.putCredential(crdPassword, "password");
+        result = sut.authenticate(req);
+        assertEquals(AuthenticationResponse.Status.FAIL, result.getStatus());
+        
+        req = new AuthenticationRequest();
+        req.putCredential(crdUsername, "username");
+        req.putCredential(crdPassword, "xxxxxxxx");
+        result = sut.authenticate(req);
+        assertEquals(AuthenticationResponse.Status.FAIL, result.getStatus());
+        
+        BuiltinUser u2 = makeBuiltInUser();
+        u2.setUserName("u2");
+        u2.updateEncryptedPassword(PasswordEncryption.getVersion(0).encrypt("password"), 0);
+        bean.save(u2);
+        
+        req = new AuthenticationRequest();
+        req.putCredential(crdUsername, "u2");
+        req.putCredential(crdPassword, "xxxxxxxx");
+        result = sut.authenticate(req);
+        assertEquals(AuthenticationResponse.Status.FAIL, result.getStatus());
+        
+        req = new AuthenticationRequest();
+        req.putCredential(crdUsername, "u2");
+        req.putCredential(crdPassword, "password");
+        result = sut.authenticate(req);
+        assertEquals(AuthenticationResponse.Status.BREAKOUT, result.getStatus());
     }
     
 }

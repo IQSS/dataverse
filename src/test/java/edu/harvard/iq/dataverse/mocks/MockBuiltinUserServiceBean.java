@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.mocks;
 
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
+import edu.harvard.iq.dataverse.passwordreset.PasswordResetException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,6 +17,22 @@ public class MockBuiltinUserServiceBean extends BuiltinUserServiceBean {
     @Override
     public BuiltinUser findByUserName(String userName) {
         return users.get(userName);
+    }
+
+    @Override
+    public String requestPasswordUpgradeLink(BuiltinUser aUser) throws PasswordResetException {
+        return "http://upgrade/" + aUser.getUserName();
+    }
+
+    
+    
+    @Override
+    public BuiltinUser findByUsernameOrEmail(String usernameOrEmail) {
+        BuiltinUser u = findByUserName(usernameOrEmail);
+        if ( u != null ) return u;
+        return users.values().stream()
+                .filter( usr -> usr.getEmail().equals(usernameOrEmail))
+                .findFirst().orElse(null);
     }
 
     @Override
