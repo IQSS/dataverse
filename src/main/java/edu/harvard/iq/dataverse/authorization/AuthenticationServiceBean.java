@@ -100,9 +100,8 @@ public class AuthenticationServiceBean {
             registerProviderFactory( new BuiltinAuthenticationProviderFactory(builtinUserServiceBean) );
             registerProviderFactory( new EchoAuthenticationProviderFactory() );
             registerProviderFactory( new OAuth2AuthenticationProviderFactory() );
-            /**
-             * Register shib provider factory here. Test enable/disable via Admin API, etc.
-             */
+
+            // Register shib provider factory here. Test enable/disable via Admin API, etc.
             new ShibAuthenticationProvider();
         } catch (AuthorizationSetupException ex) {
             logger.log(Level.SEVERE, "Exception setting up the authentication provider factories: " + ex.getMessage(), ex);
@@ -254,13 +253,13 @@ public class AuthenticationServiceBean {
                  */
                 em.remove(confirmEmailData);
             }
-            for (UserNotification notification : userNotificationService.findByUser(user.getId())) {
-                userNotificationService.delete(notification);
+            userNotificationService.findByUser(user.getId()).forEach(userNotificationService::delete);
+            
+            AuthenticationProvider prv = lookupProvider(user);
+            if ( prv != null && prv.isUserDeletionAllowed() ) {
+                prv.deleteUser(user.getAuthenticatedUserLookup().getPersistentUserId());
             }
-            if (user.isBuiltInUser()) {
-                BuiltinUser builtin = builtinUserServiceBean.findByUserName(user.getUserIdentifier());
-                em.remove(builtin);
-            }
+            
             actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Auth, "deleteUser")
                 .setInfo(user.getUserIdentifier()));
             em.remove(user.getAuthenticatedUserLookup());         
@@ -330,7 +329,11 @@ public class AuthenticationServiceBean {
         }
     }
     
-    public boolean isEmailAvailable(String email) {
+    /**
+     * @param email
+     * @return {@code true} iff the none of the authenticated users has the passed email address.
+     */
+    public boolean isEmailAddressAvailable(String email) {
         return em.createNamedQuery("AuthenticatedUser.findByEmail", AuthenticatedUser.class)
                  .setParameter("email", email)
                  .getResultList().isEmpty();
@@ -352,6 +355,10 @@ public class AuthenticationServiceBean {
         }
     }
     
+    public AuthenticationProvider lookupProvider( AuthenticatedUser user )  {
+        return authenticationProviders.get(user.getAuthenticatedUserLookup().getAuthenticationProviderId());
+    }
+    
     public ApiToken findApiToken(String token) {
         try {
             return em.createNamedQuery("ApiToken.findByTokenString", ApiToken.class)
@@ -361,8 +368,6 @@ public class AuthenticationServiceBean {
             return null;
         }
     }
-    
-   
     
     public ApiToken findApiTokenByUser(AuthenticatedUser au) {
         if (au == null) {
@@ -525,10 +530,14 @@ public class AuthenticationServiceBean {
         actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Auth, "createUser")
             .setInfo(authenticatedUser.getIdentifier()));
 
-        
         return authenticatedUser;
     }
     
+    /**
+     * Checks whether the {@code idtf} is already taken by another {@link AuthenticatedUser}.
+     * @param idtf
+     * @return {@code true} iff there's already a user by that username.
+     */
     public boolean identifierExists( String idtf ) {
         return em.createNamedQuery("AuthenticatedUser.countOfIdentifier", Number.class)
                 .setParameter("identifier", idtf)

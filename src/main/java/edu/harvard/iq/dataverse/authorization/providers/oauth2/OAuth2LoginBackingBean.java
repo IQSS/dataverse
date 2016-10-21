@@ -92,11 +92,6 @@ public class OAuth2LoginBackingBean implements Serializable {
                 FacesContext.getCurrentInstance().getExternalContext().redirect("/oauth2/firstLogin.xhtml");
                 
             } else {
-                // update profile - override fields user fills on first login
-                final AuthenticatedUserDisplayInfo updateInfo = new AuthenticatedUserDisplayInfo(oauthUser.getDisplayInfo());
-                updateInfo.setEmailAddress(null);
-                
-                dvUser = authenticationSvc.updateAuthenticatedUser(dvUser, updateInfo);
                 // login the user and redirect to HOME.
                 session.setUser(dvUser);
                 FacesContext.getCurrentInstance().getExternalContext().redirect("/");

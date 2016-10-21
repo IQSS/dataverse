@@ -22,6 +22,14 @@ public class AuthenticatedUserDisplayInfo extends RoleAssigneeDisplayInfo {
         this.lastName = lastName;
         this.position = position;        
     }
+
+    public AuthenticatedUserDisplayInfo() {
+        super("","","");
+        firstName="";
+        lastName="";
+        position="";
+    }
+
     
     /**
      * Copy constructor (old school!)

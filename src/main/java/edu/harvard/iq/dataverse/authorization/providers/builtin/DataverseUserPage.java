@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse.authorization.providers.builtin;
 
 import edu.harvard.iq.dataverse.DataFile;
@@ -11,7 +6,6 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseHeaderFragment;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObject;
@@ -22,6 +16,8 @@ import edu.harvard.iq.dataverse.SettingsWrapper;
 import edu.harvard.iq.dataverse.UserNotification;
 import static edu.harvard.iq.dataverse.UserNotification.Type.CREATEDV;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
+import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
+import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
@@ -29,7 +25,6 @@ import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailData;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailException;
-import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailInitResponse;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailUtil;
 import edu.harvard.iq.dataverse.mydata.MyDataPage;
@@ -46,6 +41,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -64,16 +60,14 @@ import org.primefaces.event.TabChangeEvent;
 
 /**
  *
- * @author xyang
  */
 @ViewScoped
 @Named("DataverseUserPage")
-public class BuiltinUserPage implements java.io.Serializable {
+public class DataverseUserPage implements java.io.Serializable {
 
-    private static final Logger logger = Logger.getLogger(BuiltinUserPage.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(DataverseUserPage.class.getCanonicalName());
 
     public enum EditMode {
-
         CREATE, EDIT, CHANGE_PASSWORD, FORGOT
     };
 
@@ -108,11 +102,9 @@ public class BuiltinUserPage implements java.io.Serializable {
     @Inject
     PermissionsWrapper permissionsWrapper;
     
-    @EJB
-    AuthenticationServiceBean authSvc;
-
+    private AuthenticatedUserDisplayInfo userDisplayInfo;
     private AuthenticatedUser currentUser;
-    private BuiltinUser builtinUser;    
+    private transient AuthenticationProvider userAuthProvider;
     private EditMode editMode;
     private String redirectPage = "dataverse.xhtml";    
 
@@ -126,132 +118,34 @@ public class BuiltinUserPage implements java.io.Serializable {
     private int activeIndex;
     private String selectTab = "somedata";
     UIInput usernameField;
+    private String username;
     
-    public EditMode getChangePasswordMode () {
-        return EditMode.CHANGE_PASSWORD;
-    }
-
-    public AuthenticatedUser getCurrentUser() {
-        return currentUser;
-    }
-
-    public void setCurrentUser(AuthenticatedUser currentUser) {
-        this.currentUser = currentUser;
-    }
-
-    public BuiltinUser getBuiltinUser() {
-        return builtinUser;
-    }
-
-    public void setBuiltinUser(BuiltinUser builtinUser) {
-        this.builtinUser = builtinUser;
-    }
-     
-    public EditMode getEditMode() {
-        return editMode;
-    }
-
-    public void setEditMode(EditMode editMode) {
-        this.editMode = editMode;
-    }
-
-    public String getRedirectPage() {
-        return redirectPage;
-    }
-
-    public void setRedirectPage(String redirectPage) {
-        this.redirectPage = redirectPage;
-    } 
-
-    public String getInputPassword() {
-        return inputPassword;
-    }
-
-    public void setInputPassword(String inputPassword) {
-        this.inputPassword = inputPassword;
-    }
-
-    public String getCurrentPassword() {
-        return currentPassword;
-    }
-
-    public void setCurrentPassword(String currentPassword) {
-        this.currentPassword = currentPassword;
-    }
-
-    public Long getDataverseId() {
-
-        if (dataverseId == null) {
-            dataverseId = dataverseService.findRootDataverse().getId();
-        }
-        return dataverseId;
-    }
-
-    public void setDataverseId(Long dataverseId) {
-        this.dataverseId = dataverseId;
-    }
-
-
-
-    public List getNotificationsList() {
-        return notificationsList;
-    }
-
-    public void setNotificationsList(List notificationsList) {
-        this.notificationsList = notificationsList;
-    }
-
-    public int getActiveIndex() {
-        return activeIndex;
-    }
-
-    public void setActiveIndex(int activeIndex) {
-        this.activeIndex = activeIndex;
-    }
-
-    public String getSelectTab() {
-        return selectTab;
-    }
-
-    public void setSelectTab(String selectTab) {
-        this.selectTab = selectTab;
-    }
-
-    public UIInput getUsernameField() {
-        return usernameField;
-    }
-
-    public void setUsernameField(UIInput usernameField) {
-        this.usernameField = usernameField;
-    }
-
     public String init() {
 
         // prevent creating a user if signup not allowed.
         boolean safeDefaultIfKeyNotFound = true;
         boolean signupAllowed = settingsWrapper.isTrueForKey(SettingsServiceBean.Key.AllowSignUp.toString(), safeDefaultIfKeyNotFound);
-        logger.fine("signup is allowed: " + signupAllowed);
 
         if (editMode == EditMode.CREATE && !signupAllowed) {
             return "/403.xhtml";
         }
 
         if (editMode == EditMode.CREATE) {
-            if (!session.getUser().isAuthenticated()) { // in create mode for new user
-                JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("user.signup.tip"));
-                builtinUser = new BuiltinUser();
-                return "";
-            } else {
+            if (session.getUser().isAuthenticated()) {
                 editMode = null; // we can't be in create mode for an existing user
+                
+            } else {
+                 // in create mode for new user
+                JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("user.signup.tip"));
+                userDisplayInfo = new AuthenticatedUserDisplayInfo();
+                return "";
             }
         }
         
         if ( session.getUser().isAuthenticated() ) {
-            currentUser = (AuthenticatedUser) session.getUser();
-            notificationsList = userNotificationService.findByUser(((AuthenticatedUser)currentUser).getId());
-            if (currentUser.isBuiltInUser()) {
-                builtinUser =  builtinUserService.findByUserName(currentUser.getUserIdentifier());
-            }
+            setCurrentUser((AuthenticatedUser) session.getUser());
+            notificationsList = userNotificationService.findByUser(currentUser.getId());
+            
             switch (selectTab) {
                 case "notifications":
                     activeIndex = 1;
@@ -296,20 +190,11 @@ public class BuiltinUserPage implements java.io.Serializable {
 
     public void validateUserName(FacesContext context, UIComponent toValidate, Object value) {
         String userName = (String) value;
-        boolean userNameFound = false;
-        BuiltinUser user = builtinUserService.findByUserName(userName);
-        if (editMode == EditMode.CREATE) {
-            if (user != null) {
-                userNameFound = true;
-            }
-        } else {
-            if (user != null && !user.getId().equals(builtinUser.getId())) {
-                userNameFound = true;
-            }
-        }
-        if (userNameFound) {
+        boolean userNameFound = authenticationService.identifierExists(userName);
+        
+        if (editMode == EditMode.CREATE && userNameFound) {
             ((UIInput) toValidate).setValid(false);
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, JH.localize("user.username.taken"), null);
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("user.username.taken"), null);
             context.addMessage(toValidate.getClientId(context), message);
         }
     }
@@ -317,72 +202,22 @@ public class BuiltinUserPage implements java.io.Serializable {
     public void validateUserEmail(FacesContext context, UIComponent toValidate, Object value) {
         String userEmail = (String) value;
         boolean userEmailFound = false;
-        BuiltinUser user = builtinUserService.findByEmail(userEmail);
         AuthenticatedUser aUser = authenticationService.getAuthenticatedUserByEmail(userEmail);
         if (editMode == EditMode.CREATE) {
-            if (user != null || aUser != null) {
+            if (aUser != null) {
                 userEmailFound = true;
             }
         } else {
-            //In edit mode...
-            if (user != null || aUser != null){
-                 userEmailFound = true;               
-            }
-            //if there's a match on edit make sure that the email belongs to the 
+            // In edit mode...
+            // if there's a match on edit make sure that the email belongs to the 
             // user doing the editing by checking ids
-            if ((user != null && user.getId().equals(builtinUser.getId())) || (aUser!=null && aUser.getId().equals(builtinUser.getId()))){
-                userEmailFound = false;
+            if ( aUser!=null && ! aUser.getId().equals(currentUser.getId()) ){
+                userEmailFound = true;
             }
         }
         if (userEmailFound) {
             ((UIInput) toValidate).setValid(false);
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, JH.localize("user.email.taken"), null);
-            context.addMessage(toValidate.getClientId(context), message);
-        }
-    }
-    
-
-    public void validateUserNameEmail(FacesContext context, UIComponent toValidate, Object value) {
-        String userName = (String) value;
-        boolean userNameFound = false;
-        BuiltinUser user = builtinUserService.findByUserName(userName);
-        if (user != null) {
-            userNameFound = true;
-        } else {
-            BuiltinUser user2 = builtinUserService.findByEmail(userName);
-            if (user2 != null) {
-                userNameFound = true;
-            }
-        }
-        if (!userNameFound) {
-            ((UIInput) toValidate).setValid(false);
-            FacesMessage message = new FacesMessage("Username or Email is incorrect.");
-            context.addMessage(toValidate.getClientId(context), message);
-        }
-    }
-
-    public void validateCurrentPassword(FacesContext context, UIComponent toValidate, Object value) {
-        
-        String password = (String) value;
-        
-        if (StringUtils.isBlank(password)){
-            logger.log(Level.WARNING, "current password is blank");
-            
-            ((UIInput) toValidate).setValid(false);
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, 
-                "Password Error", "Password is blank: re-type it again.");
-            context.addMessage(toValidate.getClientId(context), message);
-            return;
-            
-        } else {
-            logger.log(Level.INFO, "current paswword is not blank");
-        }
-        
-        
-        
-        if ( ! PasswordEncryption.getVersion(builtinUser.getPasswordEncryptionVersion()).check(password, builtinUser.getEncryptedPassword()) ) {
-            ((UIInput) toValidate).setValid(false);
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Password Error", "Password is incorrect.");
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("user.email.taken"), null);
             context.addMessage(toValidate.getClientId(context), message);
         }
     }
@@ -398,10 +233,7 @@ public class BuiltinUserPage implements java.io.Serializable {
                 "Password Error", "The new password is blank: re-type it again");
             context.addMessage(toValidate.getClientId(context), message);
             return;
-            
-        } else {
-            logger.log(Level.INFO, "new paswword is not blank");
-        }
+        } 
 
         int minPasswordLength = 6;
         boolean forceNumber = true;
@@ -419,49 +251,49 @@ public class BuiltinUserPage implements java.io.Serializable {
         }
     }
     
-    
-
-    public void updatePassword(String userName) {
-        String plainTextPassword = PasswordEncryption.generateRandomPassword();
-        BuiltinUser user = builtinUserService.findByUserName(userName);
-        if (user == null) {
-            user = builtinUserService.findByEmail(userName);
-        }
-        user.updateEncryptedPassword(PasswordEncryption.get().encrypt(plainTextPassword), PasswordEncryption.getLatestVersionNumber());
-        builtinUserService.save(user);
-    }
-
     public String save() {
         boolean passwordChanged = false;
-        boolean emailChanged = false;
-        if (editMode == EditMode.CREATE || editMode == EditMode.CHANGE_PASSWORD) {
-            if (inputPassword != null) {
-                builtinUser.updateEncryptedPassword(PasswordEncryption.get().encrypt(inputPassword), PasswordEncryption.getLatestVersionNumber());
+        final AuthenticationProvider prv = getUserAuthProvider();
+        if ( editMode == EditMode.CHANGE_PASSWORD ) {
+            if ( prv.isPasswordUpdateAllowed() ) {
+                if ( ! prv.verifyPassword(currentUser.getAuthenticatedUserLookup().getPersistentUserId(), currentPassword) ) {
+                    FacesContext.getCurrentInstance().addMessage("currentPassword", 
+                            new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("user.error.wrongPassword"),null));
+                    return null;
+                }
+                prv.updatePassword(currentUser.getAuthenticatedUserLookup().getPersistentUserId(), inputPassword);
                 passwordChanged = true;
+                
             } else {
-                // just defensive coding: for in case when the validator is not
-                // working
-                logger.log(Level.WARNING, "inputPassword is still null");
-                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, JH.localize("user.noPasswd"), null);
-                FacesContext context = FacesContext.getCurrentInstance();
-                context.addMessage(null, message);
+                // erroneous state - we can't change the password for this user, so should not have gotten here. Log and bail out.
+                logger.log(Level.WARNING, "Attempt to change a password on {0}, whose provider ({1}) does not support password change", new Object[]{currentUser.getIdentifier(), prv});
+                JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("user.error.cannotChangePassword"));
                 return null;
             }
         }
-        builtinUser = builtinUserService.save(builtinUser);
-
+        
         if (editMode == EditMode.CREATE) {
-            AuthenticatedUser au = authSvc.createAuthenticatedUser(
+            // Create a new built-in user.
+            BuiltinUser builtinUser = new BuiltinUser();
+            builtinUser.setUserName( getUsername() );
+            builtinUser.applyDisplayInfo(userDisplayInfo);
+            builtinUser.updateEncryptedPassword(PasswordEncryption.get().encrypt(inputPassword),
+                                                PasswordEncryption.getLatestVersionNumber());
+            
+            AuthenticatedUser au = authenticationService.createAuthenticatedUser(
                     new UserRecordIdentifier(BuiltinAuthenticationProvider.PROVIDER_ID, builtinUser.getUserName()),
                     builtinUser.getUserName(), builtinUser.getDisplayInfo(), false);
             if ( au == null ) {
                 // username exists
                 getUsernameField().setValid(false);
-                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, JH.localize("user.username.taken"), null);
+                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("user.username.taken"), null);
                 FacesContext context = FacesContext.getCurrentInstance();
                 context.addMessage(getUsernameField().getClientId(context), message);
                 return null;
             }
+            
+            // Authenticated user registered. Save the new bulitin, and log in.
+            builtinUserService.save(builtinUser);
             session.setUser(au);
             userNotificationService.sendNotification(au,
                                                      new Timestamp(new Date().getTime()), 
@@ -475,7 +307,7 @@ public class BuiltinUserPage implements java.io.Serializable {
             try {            
                 redirectPage = URLDecoder.decode(redirectPage, "UTF-8");
             } catch (UnsupportedEncodingException ex) {
-                Logger.getLogger(BuiltinUserPage.class.getName()).log(Level.SEVERE, null, ex);
+                logger.log(Level.SEVERE, "Server does not support 'UTF-8' encoding.", ex);
                 redirectPage = "dataverse.xhtml&alias=" + dataverseService.findRootDataverse().getAlias();
             }
 
@@ -483,35 +315,31 @@ public class BuiltinUserPage implements java.io.Serializable {
 
             return redirectPage + (!redirectPage.contains("?") ? "?" : "&") + "faces-redirect=true";            
             
-            
         } else {
             String emailBeforeUpdate = currentUser.getEmail();
-            AuthenticatedUser savedUser = authSvc.updateAuthenticatedUser(currentUser, builtinUser.getDisplayInfo());
+            AuthenticatedUser savedUser = authenticationService.updateAuthenticatedUser(currentUser, userDisplayInfo);
             String emailAfterUpdate = savedUser.getEmail();
-            if (!emailBeforeUpdate.equals(emailAfterUpdate)) {
-                emailChanged = true;
-            }
             editMode = null;
-            String msg = "Your account information has been successfully updated.";
-            if (passwordChanged) {
-                msg = "Your account password has been successfully changed.";
-            }
-            if (emailChanged) {
-                ConfirmEmailUtil confirmEmailUtil = new ConfirmEmailUtil();
-                String expTime = confirmEmailUtil.friendlyExpirationTime(systemConfig.getMinutesUntilConfirmEmailTokenExpires());
-                msg = msg + " Your email address has changed and must be re-verified. Please check your inbox at " + currentUser.getEmail() + " and follow the link we've sent. \n\nAlso, please note that the link will only work for the next " + expTime + " before it has expired.";
-                boolean sendEmail = true;
+            StringBuilder msg = new StringBuilder( passwordChanged ? "Your account password has been successfully changed." 
+                                                                   : "Your account information has been successfully updated.");
+            if (!emailBeforeUpdate.equals(emailAfterUpdate)) {
+                String expTime = ConfirmEmailUtil.friendlyExpirationTime(systemConfig.getMinutesUntilConfirmEmailTokenExpires());
+                msg.append(" Your email address has changed and must be re-verified. Please check your inbox at ")
+                        .append(currentUser.getEmail())
+                        .append(" and follow the link we've sent. \n\nAlso, please note that the link will only work for the next ")
+                        .append(expTime)
+                        .append(" before it has expired.");
                 // delete unexpired token, if it exists (clean slate)
                 confirmEmailService.deleteTokenForUser(currentUser);
                 try {
-                    ConfirmEmailInitResponse confirmEmailInitResponse = confirmEmailService.beginConfirm(currentUser);
+                    confirmEmailService.beginConfirm(currentUser);
                 } catch (ConfirmEmailException ex) {
-                    logger.info("Unable to send email confirmation link to user id " + savedUser.getId());
+                    logger.log(Level.INFO, "Unable to send email confirmation link to user id {0}", savedUser.getId());
                 }
                 session.setUser(currentUser);
-                JsfHelper.addSuccessMessage(msg);
+                JsfHelper.addSuccessMessage(msg.toString());
             } else {
-                JsfHelper.addFlashMessage(msg);
+                JsfHelper.addFlashMessage(msg.toString());
             }
             return null;            
         }
@@ -526,16 +354,11 @@ public class BuiltinUserPage implements java.io.Serializable {
         return null;
     }
 
-    public void submit(ActionEvent e) {
-        updatePassword(builtinUser.getUserName());
-        editMode = null;
-    }
-
     public String remove(Long notificationId) {
         UserNotification userNotification = userNotificationService.find(notificationId);
         userNotificationService.delete(userNotification);
         for (UserNotification uNotification : notificationsList) {
-            if (uNotification.getId() == userNotification.getId()) {
+            if (Objects.equals(uNotification.getId(), userNotification.getId())) {
                 notificationsList.remove(uNotification);
                 break;
             }
@@ -630,47 +453,161 @@ public class BuiltinUserPage implements java.io.Serializable {
     public void sendConfirmEmail() {
         logger.fine("called sendConfirmEmail()");
         String userEmail = currentUser.getEmail();
-        ConfirmEmailUtil confirmEmailUtil = new ConfirmEmailUtil();
         
         try {
             confirmEmailService.beginConfirm(currentUser);
             List<String> args = Arrays.asList(
                     userEmail,
-                    confirmEmailUtil.friendlyExpirationTime(systemConfig.getMinutesUntilConfirmEmailTokenExpires()));
+                    ConfirmEmailUtil.friendlyExpirationTime(systemConfig.getMinutesUntilConfirmEmailTokenExpires()));
             JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("confirmEmail.submitRequest.success", args));
         } catch (ConfirmEmailException ex) {
-            Logger.getLogger(BuiltinUserPage.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DataverseUserPage.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     
+    /**
+     * Determines whether the button to send a verification email appears on user page
+     * @return 
+     */ 
     public boolean showVerifyEmailButton() {
-        /**
-         * Determines whether the button to send a verification email appears on user page
-         */
-        if (confirmEmailService.findSingleConfirmEmailDataByUser(currentUser) == null
-                && currentUser.getEmailConfirmed() == null) {
-            return true;
-        }
-        return false;
+        final Timestamp emailConfirmed = currentUser.getEmailConfirmed();
+        final ConfirmEmailData confirmedDate = confirmEmailService.findSingleConfirmEmailDataByUser(currentUser);
+        return (!getUserAuthProvider().isEmailVerified())
+                && confirmedDate == null
+                && emailConfirmed == null;
     }
 
     public boolean isEmailIsVerified() {
-        if (currentUser.getEmailConfirmed() != null && confirmEmailService.findSingleConfirmEmailDataByUser(currentUser) == null) {
-            return true;
-         } else return false;
+        return currentUser.getEmailConfirmed() != null && confirmEmailService.findSingleConfirmEmailDataByUser(currentUser) == null;
     }
     
     public boolean isEmailNotVerified() {
-        if (currentUser.getEmailConfirmed() == null || confirmEmailService.findSingleConfirmEmailDataByUser(currentUser) != null) {
-            return true;
-        } else return false;
+        return currentUser.getEmailConfirmed() == null || confirmEmailService.findSingleConfirmEmailDataByUser(currentUser) != null;
     }
     
     public boolean isEmailGrandfathered() {
-        ConfirmEmailUtil confirmEmailUtil = new ConfirmEmailUtil();
-        if (currentUser.getEmailConfirmed() == confirmEmailUtil.getGrandfatheredTime()) {
-            return true;
-        } else return false;
+        return currentUser.getEmailConfirmed().equals(ConfirmEmailUtil.getGrandfatheredTime());
+    }
+    
+    AuthenticationProvider getUserAuthProvider() {
+        if ( userAuthProvider == null  ) {
+            userAuthProvider = authenticationService.lookupProvider(currentUser);
+        }
+        return userAuthProvider;
+    }
+    
+    public boolean isPasswordEditable() {
+        return getUserAuthProvider().isPasswordUpdateAllowed();
+    }
+    
+    public boolean isAccountDetailsEditable() {
+        return getUserAuthProvider().isUserInfoUpdateAllowed();
+    }
+
+    public AuthenticatedUserDisplayInfo getUserDisplayInfo() {
+        return userDisplayInfo;
+    }
+
+    public void setUserDisplayInfo(AuthenticatedUserDisplayInfo userDisplayInfo) {
+        this.userDisplayInfo = userDisplayInfo;
+    }
+    
+    public EditMode getChangePasswordMode () {
+        return EditMode.CHANGE_PASSWORD;
+    }
+
+    public AuthenticatedUser getCurrentUser() {
+        return currentUser;
+    }
+
+    public void setCurrentUser(AuthenticatedUser currentUser) {
+        this.currentUser = currentUser;
+        userDisplayInfo = currentUser.getDisplayInfo();
+        username = currentUser.getUserIdentifier();
+    }
+
+    public EditMode getEditMode() {
+        return editMode;
+    }
+
+    public void setEditMode(EditMode editMode) {
+        this.editMode = editMode;
+    }
+
+    public String getRedirectPage() {
+        return redirectPage;
+    }
+
+    public void setRedirectPage(String redirectPage) {
+        this.redirectPage = redirectPage;
+    } 
+
+    public String getInputPassword() {
+        return inputPassword;
+    }
+
+    public void setInputPassword(String inputPassword) {
+        this.inputPassword = inputPassword;
+    }
+
+    public String getCurrentPassword() {
+        return currentPassword;
+    }
+
+    public void setCurrentPassword(String currentPassword) {
+        this.currentPassword = currentPassword;
+    }
+
+    public Long getDataverseId() {
+
+        if (dataverseId == null) {
+            dataverseId = dataverseService.findRootDataverse().getId();
+        }
+        return dataverseId;
+    }
+
+    public void setDataverseId(Long dataverseId) {
+        this.dataverseId = dataverseId;
+    }
+
+    public List getNotificationsList() {
+        return notificationsList;
+    }
+
+    public void setNotificationsList(List notificationsList) {
+        this.notificationsList = notificationsList;
+    }
+
+    public int getActiveIndex() {
+        return activeIndex;
+    }
+
+    public void setActiveIndex(int activeIndex) {
+        this.activeIndex = activeIndex;
+    }
+
+    public String getSelectTab() {
+        return selectTab;
+    }
+
+    public void setSelectTab(String selectTab) {
+        this.selectTab = selectTab;
+    }
+
+    public UIInput getUsernameField() {
+        return usernameField;
+    }
+
+    public void setUsernameField(UIInput usernameField) {
+        this.usernameField = usernameField;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 
 }

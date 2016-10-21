@@ -92,7 +92,7 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
     }
     
     public boolean isEmailAvailable() {
-        return authenticationSvc.isEmailAvailable(getSelectedEmail());
+        return authenticationSvc.isEmailAddressAvailable(getSelectedEmail());
     }
     
     public boolean isEmailValid() {

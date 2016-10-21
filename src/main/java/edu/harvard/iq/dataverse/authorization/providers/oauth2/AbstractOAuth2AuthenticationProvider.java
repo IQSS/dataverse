@@ -10,8 +10,6 @@ import com.github.scribejava.core.oauth.OAuth20Service;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProviderDisplayInfo;
-import edu.harvard.iq.dataverse.authorization.AuthenticationRequest;
-import edu.harvard.iq.dataverse.authorization.AuthenticationResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -130,6 +128,18 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
         } else {
             throw new OAuth2Exception(responseCode, body, "Error getting the user info record.");
         }
+    }
+
+    @Override
+    public boolean isUserInfoUpdateAllowed() {
+        return true;
+    }
+
+    @Override
+    public void updateUserInfo(String userIdInProvider, AuthenticatedUserDisplayInfo updatedUserData) {
+        // ignore - no account info is stored locally.
+        // We override this to prevent the UnsupportedOperationException thrown by
+        // the default implementation.
     }
 
     @Override

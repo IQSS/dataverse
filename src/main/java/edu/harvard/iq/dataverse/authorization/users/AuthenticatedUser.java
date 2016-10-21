@@ -4,7 +4,6 @@ import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.ValidateEmail;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserLookup;
-import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 import java.io.Serializable;
@@ -97,8 +96,6 @@ public class AuthenticatedUser implements User, Serializable {
         return IDENTIFIER_PREFIX + userIdentifier;
     }
     
-    
-    
     @OneToMany(mappedBy = "user", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<DatasetLock> datasetLocks;
 	
@@ -111,7 +108,7 @@ public class AuthenticatedUser implements User, Serializable {
     }
     
     @Override
-    public RoleAssigneeDisplayInfo getDisplayInfo() {
+    public AuthenticatedUserDisplayInfo getDisplayInfo() {
         return new AuthenticatedUserDisplayInfo(firstName, lastName, email, affiliation, position);
     }
     
@@ -215,15 +212,6 @@ public class AuthenticatedUser implements User, Serializable {
 
     public void setModificationTime(Timestamp modificationTime) {
         this.modificationTime = modificationTime;
-    }
-
-    public boolean isBuiltInUser() {
-        String authProviderString = authenticatedUserLookup.getAuthenticationProviderId();
-        if (authProviderString != null && authProviderString.equals(BuiltinAuthenticationProvider.PROVIDER_ID)) {
-            return true;
-        }
-        
-        return false;
     }
 
     @OneToOne(mappedBy = "authenticatedUser")

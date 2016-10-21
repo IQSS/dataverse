@@ -35,19 +35,16 @@ public class RoleAssigneeDisplayInfo implements java.io.Serializable {
         return affiliation;
     }
 
-    public RoleAssigneeDisplayInfo setTitle(String title) {
+    public void setTitle(String title) {
         this.title = title;
-        return this;
     }
 
-    public RoleAssigneeDisplayInfo setEmailAddress(String emailAddress) {
+    public void setEmailAddress(String emailAddress) {
         this.emailAddress = emailAddress;
-        return this;
     }
 
-    public RoleAssigneeDisplayInfo setAffiliation(String affiliation) {
+    public void setAffiliation(String affiliation) {
         this.affiliation = affiliation;
-        return this;
     }
 
     @Override

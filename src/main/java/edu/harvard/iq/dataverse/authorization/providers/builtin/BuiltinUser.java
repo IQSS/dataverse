@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.authorization.providers.builtin;
 
 import edu.harvard.iq.dataverse.ValidateEmail;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
+import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -141,6 +142,20 @@ public class BuiltinUser implements Serializable {
     
     public String getDisplayName(){
         return this.getFirstName() + " " + this.getLastName(); 
+    }
+    
+    public void applyDisplayInfo( AuthenticatedUserDisplayInfo inf ) {
+        setFirstName(inf.getFirstName());
+        setLastName(inf.getLastName());
+        if ( nonEmpty(inf.getEmailAddress()) ) {
+            setEmail(inf.getEmailAddress());
+        }
+        if ( nonEmpty(inf.getAffiliation()) ) {
+            setAffiliation( inf.getAffiliation() );
+        }
+        if ( nonEmpty(inf.getPosition()) ) {
+            setPosition( inf.getPosition());
+        }
     }
     
     public AuthenticatedUserDisplayInfo getDisplayInfo() {
