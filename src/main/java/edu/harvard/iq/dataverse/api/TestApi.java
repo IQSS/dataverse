@@ -23,6 +23,7 @@ import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.QueryParam;
 import org.mindrot.jbcrypt.BCrypt;
 
@@ -144,4 +145,10 @@ public class TestApi extends AbstractApiBean {
         }
     }
     
+    
+    @Path("/notFound/{thing}")
+    @GET
+    public Response throwNotFound( @PathParam("thing") String thing ) {
+        throw new NotFoundException("Can't find the " + thing);
+    }
 }
