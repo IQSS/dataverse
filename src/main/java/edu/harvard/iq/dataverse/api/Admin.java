@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.EMailValidator;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
@@ -46,6 +47,8 @@ import javax.validation.ConstraintViolationException;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response.Status;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
+import edu.harvard.iq.dataverse.authorization.RoleAssignee;
+import edu.harvard.iq.dataverse.authorization.users.User;
 /**
  * Where the secure, setup API calls live.
  * @author michael
@@ -593,4 +596,37 @@ public class Admin extends AbstractApiBean {
         
         return ok(arr);
     }
+
+    @Path("permissions/{dvo}")
+    @GET
+    public Response findPermissonsOn(@PathParam("dvo") String dvo) {
+        try {
+            DvObject dvObj = findDvo(dvo);
+            if (dvObj == null) {
+                return notFound("DvObject " + dvo + " not found");
+            }
+            try {
+                User aUser = findUserOrDie();
+                JsonObjectBuilder bld = Json.createObjectBuilder();
+                bld.add("user", aUser.getIdentifier());
+                bld.add("permissions", json(permissionSvc.permissionsFor(createDataverseRequest(aUser), dvObj)));
+                return ok(bld);
+
+            } catch (WrappedResponse wr) {
+                return wr.getResponse();
+            }
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error while testing permissions", e);
+            return error(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    @Path("assignee/{idtf}")
+    @GET
+    public Response findRoleAssignee(@PathParam("idtf") String idtf) {
+        RoleAssignee ra = roleAssigneeSvc.getRoleAssignee(idtf);
+        return (ra == null) ? notFound("Role Assignee '" + idtf + "' not found.")
+                : ok(json(ra.getDisplayInfo()));
+    }
+
 }

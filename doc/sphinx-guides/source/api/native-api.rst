@@ -301,7 +301,7 @@ Return data about the block whose ``identifier`` is passed. ``identifier`` can e
 
 Admin
 ~~~~~~~~~~~~~~~~
-This is the administrative part of the API. It is probably a good idea to block it before allowing public access to a Dataverse installation. Blocking can be done using settings. See the ``post-install-api-block.sh`` script in the ``scripts/api`` folder for details.
+This is the administrative part of the API. For security reasons, it is absolutely essential that you block it before allowing public access to a Dataverse installation. Blocking can be done using settings. See the ``post-install-api-block.sh`` script in the ``scripts/api`` folder for details. See also "Blocking API Endpoints" under "Securing Your Installation" in the :doc:`/installation/config` section of the Installation Guide.
 
 List all settings::
 
@@ -388,6 +388,18 @@ List all role assignments of a role assignee (i.e. a user or a group)::
     GET http://$SERVER/api/admin/assignments/assignees/$identifier
 
 Note that ``identifier`` can contain slashes (e.g. ``&ip/localhost-users``).
+
+List permissions a user (based on API Token used) has on a dataverse or dataset::
+
+    GET http://$SERVER/api/admin/permissions/$identifier
+
+The ``$identifier`` can be a dataverse alias or database id or a dataset persistent ID or database id.
+
+List a role assignee (i.e. a user or a group)::
+
+    GET http://$SERVER/api/admin/assignee/$identifier
+
+The ``$identifier`` should start with an ``@`` if it's a user. Groups start with ``&``. "Built in" users and groups start with ``:``. Private URL users start with ``#``.
 
 IpGroups
 ^^^^^^^^
