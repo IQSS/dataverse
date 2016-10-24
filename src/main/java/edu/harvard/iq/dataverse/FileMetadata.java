@@ -38,10 +38,13 @@ public class FileMetadata implements Serializable {
     
     private static final Logger logger = Logger.getLogger(FileMetadata.class.getCanonicalName());
 
-    @Pattern(regexp="^[^:<>;#/\"\\*\\|\\?\\\\]*$", message = "File Name cannot contain any of the following characters: \\ / : * ? \" < > | ; # .")    
+    @Pattern(regexp="^[^:<>;#/\"\\*\\|\\?\\\\]*$", 
+            message = "File Name cannot contain any of the following characters: \\ / : * ? \" < > | ; # .")    
     @NotBlank(message = "Please specify a file name.")
     @Column( nullable=false )
     private String label = "";
+    @Pattern(regexp="^[^/\\\\]+.*[^/\\\\]+$", 
+            message = "Directory Name cannot contain leading or trailing file separators.")
     @Column ( nullable=true )
     private String directoryLabel = "";
     @Column(columnDefinition = "TEXT")
