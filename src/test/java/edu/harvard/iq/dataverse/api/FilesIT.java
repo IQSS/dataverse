@@ -11,7 +11,6 @@ import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -62,7 +61,7 @@ public class FilesIT {
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
         //createDatasetResponse.prettyPrint();
         createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
-        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("files[0].id");
         
         return datasetId;
         
@@ -92,8 +91,8 @@ public class FilesIT {
         addResponse.then().assertThat()
                 .body("message", equalTo(successMsg))
                 .body("status", equalTo(AbstractApiBean.STATUS_OK))
-                .body("data.contentType", equalTo("image/png"))
-                .body("data.filename", equalTo("dataverseproject.png"))
+                .body("files[0].contentType", equalTo("image/png"))
+                .body("files[0].filename", equalTo("dataverseproject.png"))
                 .statusCode(OK.getStatusCode());
         
         
@@ -214,12 +213,12 @@ public class FilesIT {
       
         addResponse.then().assertThat()
                 .body("message", equalTo(successMsgAdd))
-                .body("data.contentType", equalTo("image/png"))
-                .body("data.filename", equalTo("dataverseproject.png"))
+                .body("files[0].contentType", equalTo("image/png"))
+                .body("files[0].filename", equalTo("dataverseproject.png"))
                 .statusCode(OK.getStatusCode());
         
         
-        long origFileId = JsonPath.from(addResponse.body().asString()).getLong("data.id");
+        long origFileId = JsonPath.from(addResponse.body().asString()).getLong("files[0].id");
 
         msg("Orig file id: " + origFileId);
         assertNotNull(origFileId);    // If checkOut fails, display message
@@ -270,13 +269,13 @@ public class FilesIT {
         replaceResp.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("message", equalTo(successMsg2))
-                .body("data.filename", equalTo("cc0.png"))
+                .body("files[0].filename", equalTo("cc0.png"))
                 //.body("data.rootDataFileId", equalTo(origFileId))              
                 ;
 
-        long rootDataFileId = JsonPath.from(replaceResp.body().asString()).getLong("data.rootDataFileId");
-        long previousDataFileId = JsonPath.from(replaceResp.body().asString()).getLong("data.previousDataFileId");
-        long newDataFileId = JsonPath.from(replaceResp.body().asString()).getLong("data.id");
+        long rootDataFileId = JsonPath.from(replaceResp.body().asString()).getLong("files[0].rootDataFileId");
+        long previousDataFileId = JsonPath.from(replaceResp.body().asString()).getLong("files[0].previousDataFileId");
+        long newDataFileId = JsonPath.from(replaceResp.body().asString()).getLong("files[0].id");
         
         assertEquals(origFileId, previousDataFileId);
         assertEquals(rootDataFileId, previousDataFileId);
@@ -304,11 +303,11 @@ public class FilesIT {
                 .statusCode(OK.getStatusCode())
                 .body("status", equalTo(AbstractApiBean.STATUS_OK))
                 .body("message", equalTo(successMsg2))
-                .body("data.filename", equalTo("favicondataverse.png"))
+                .body("files[0].filename", equalTo("favicondataverse.png"))
                 ;
 
-        long rootDataFileId2 = JsonPath.from(replaceResp2.body().asString()).getLong("data.rootDataFileId");
-        long previousDataFileId2 = JsonPath.from(replaceResp2.body().asString()).getLong("data.previousDataFileId");
+        long rootDataFileId2 = JsonPath.from(replaceResp2.body().asString()).getLong("files[0].rootDataFileId");
+        long previousDataFileId2 = JsonPath.from(replaceResp2.body().asString()).getLong("files[0].previousDataFileId");
         
         msgt("newDataFileId: " + newDataFileId);
         msgt("previousDataFileId2: " + previousDataFileId2);
@@ -343,12 +342,12 @@ public class FilesIT {
       
         addResponse.then().assertThat()
                 .body("message", equalTo(successMsgAdd))
-                .body("data.contentType", equalTo("image/png"))
-                .body("data.filename", equalTo("dataverseproject.png"))
+                .body("files[0].contentType", equalTo("image/png"))
+                .body("files[0].filename", equalTo("dataverseproject.png"))
                 .statusCode(OK.getStatusCode());
         
         
-        long origFileId = JsonPath.from(addResponse.body().asString()).getLong("data.id");
+        long origFileId = JsonPath.from(addResponse.body().asString()).getLong("files[0].id");
 
         msg("Orig file id: " + origFileId);
         assertNotNull(origFileId);    // If checkOut fails, display message
@@ -426,12 +425,12 @@ public class FilesIT {
       
         addResponse.then().assertThat()
                 .body("message", equalTo(successMsgAdd))
-                .body("data.contentType", equalTo("image/png"))
-                .body("data.filename", equalTo("dataverseproject.png"))
+                .body("files[0].contentType", equalTo("image/png"))
+                .body("files[0].filename", equalTo("dataverseproject.png"))
                 .statusCode(OK.getStatusCode());
         
         
-        long origFileId = JsonPath.from(addResponse.body().asString()).getLong("data.id");
+        long origFileId = JsonPath.from(addResponse.body().asString()).getLong("files[0].id");
 
         msg("Orig file id: " + origFileId);
         assertNotNull(origFileId);    // If checkOut fails, display message

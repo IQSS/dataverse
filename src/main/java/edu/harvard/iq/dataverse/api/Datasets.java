@@ -21,6 +21,7 @@ import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
 import edu.harvard.iq.dataverse.datasetutility.DataFileTagException;
+import edu.harvard.iq.dataverse.datasetutility.NoFilesException;
 import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -897,9 +898,17 @@ public class Datasets extends AbstractApiBean {
             return errorResponse(Response.Status.BAD_REQUEST, addFileHelper.getErrorMessagesAsString("\n"));
         }else{
             String successMsg = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");        
-            return okResponseGsonObject(successMsg,
-                    addFileHelper.getSuccessResultAsGsonObject());
-            //"Look at that!  You added a file! (hey hey, it may have worked)");
+            try {
+                msgt("as String: " + addFileHelper.getSuccessResult());
+
+                return okResponseGsonObject(successMsg,
+                        addFileHelper.getSuccessResultAsGsonObject());
+                //"Look at that!  You added a file! (hey hey, it may have worked)");
+            } catch (NoFilesException ex) {
+                Logger.getLogger(Files.class.getName()).log(Level.SEVERE, null, ex);
+                return errorResponse(Response.Status.BAD_REQUEST, "NoFileException!  Serious Error! See administrator!");
+
+            }
         }
             
     } // end: addFileToDataset

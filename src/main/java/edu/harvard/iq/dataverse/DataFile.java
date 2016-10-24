@@ -922,14 +922,8 @@ public class DataFile extends DvObject implements Comparable {
         
         jsonObj.getAsJsonObject().add("checksum", checkSumJSONMap);
         
+        return jsonObj.getAsJsonObject();
         
-        // ----------------------------------        
-        // Overarching data key
-        // ----------------------------------
-        JsonObject fullFileJSON = new JsonObject(); 
-        fullFileJSON.add(overarchingKey, jsonObj);
-        
-        return fullFileJSON;
     }
     
     /**

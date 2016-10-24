@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse.datasetutility;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
@@ -117,7 +118,8 @@ public class AddReplaceFileHelper{
     List<DataFile> finalFileList;
     
     // Ingested file 
-    private DataFile newlyAddedFile; 
+    //private DataFile newlyAddedFile; 
+    private List<DataFile> newlyAddedFiles; 
     
     // For error handling
     private boolean errorFound;
@@ -847,16 +849,24 @@ public class AddReplaceFileHelper{
          *  (2) the new file (or new file unzipped) did not ingest via "createDataFiles"
          */
         if (initialFileList.isEmpty()){
-            this.addErrorSevere("initial_file_list_empty");
+            this.addErrorSevere(getBundleErr("initial_file_list_empty"));
             this.runMajorCleanup();
             return false;
         }
         
-        if (initialFileList.size() > 1){
-            this.addError("initial_file_list_more_than_one");
-            this.runMajorCleanup();
-            return false;
-            
+        /**
+         * REPLACE: File replacement is limited to a single file!!
+         * 
+         * ADD: When adding files, some types of individual files
+         * are broken into several files--which is OK
+         */
+        if (isFileReplaceOperation()){
+            if (initialFileList.size() > 1){
+                this.addError(getBundleErr("initial_file_list_more_than_one"));
+                this.runMajorCleanup();
+                return false;
+
+            }
         }
         
         if (!this.step_040_auto_checkForDuplicates()){
@@ -885,7 +895,7 @@ public class AddReplaceFileHelper{
         // Double checked -- this check also happens in step 30
         //
         if (initialFileList.isEmpty()){
-            this.addErrorSevere("initial_file_list_empty");
+            this.addErrorSevere(getBundleErr("initial_file_list_empty"));
             return false;
         }
 
@@ -938,11 +948,21 @@ public class AddReplaceFileHelper{
             return false;
         }
         
-        if (finalFileList.size() > 1){            
-            this.addErrorSevere("There is more than 1 file to add.  (This error shouldn't happen b/c the initial file list should always have 1 item");
-            return false;
-        }
+       /**
+         * REPLACE: File replacement is limited to a single file!!
+         * 
+         * ADD: When adding files, some types of individual files
+         * are broken into several files--which is OK
+         */
+            
+        if (isFileReplaceOperation()){
         
+            if (finalFileList.size() > 1){     
+                String errMsg = "(This shouldn't happen -- error should have been detected in 030_createNewFilesViaIngest)";
+                this.addErrorSevere(getBundleErr("initial_file_list_more_than_one") + " " + errMsg);            
+                return false;
+            }
+        }
         
         if (finalFileList.isEmpty()){
             this.addErrorSevere("There are no files to add.  (This error shouldn't happen if steps called in sequence....step_040_auto_checkForDuplicates)");                
@@ -1131,7 +1151,7 @@ public class AddReplaceFileHelper{
             logger.severe(ex.getMessage());
             return false;
         }catch (EJBException ex) {
-            this.addErrorSevere("add.ejb_exception");
+            this.addErrorSevere("add.ejb_exception (see logs)");
             logger.severe(ex.getMessage());
             return false;
         } 
@@ -1333,8 +1353,31 @@ public class AddReplaceFileHelper{
      * 
      * @param df 
      */
-    private void setNewlyAddedFile(DataFile df){
+    private void setNewlyAddedFiles(List<DataFile> datafiles){
         
+        if (hasError()){
+            return;
+        }
+            
+        // Init. newly added file list
+        newlyAddedFiles = new ArrayList<>();
+        
+        // Loop of uglinesss...but expect 1 to 4 files in final file list
+        List<FileMetadata> latestFileMetadatas = dataset.getEditVersion().getFileMetadatas();
+        
+        
+        for (DataFile newlyAddedFile : finalFileList){
+            
+             for (FileMetadata fm : latestFileMetadatas){
+                 if (newlyAddedFile.getChecksumValue().equals(fm.getDataFile().getChecksumValue())){
+                    if (newlyAddedFile.getStorageIdentifier().equals(fm.getDataFile().getStorageIdentifier())){
+                        newlyAddedFiles.add(fm.getDataFile());
+                    }
+                }
+             }
+        }
+        /*
+       
         newlyAddedFile = df;
         
         for (FileMetadata fm : dataset.getEditVersion().getFileMetadatas()){
@@ -1348,28 +1391,55 @@ public class AddReplaceFileHelper{
                 }
             }
         }
+        */
         
     }
 
         
-    public DataFile getNewlyAddedFile(){
+    public List<DataFile> getNewlyAddedFiles(){
         
-        return newlyAddedFile;
+        return newlyAddedFiles;
     }
     
-    public String getSuccessResult(){
-        if (newlyAddedFile == null){
-            return "Bad ERROR: Newly created file not found";
+    public String getSuccessResult() throws NoFilesException{
+        if (hasError()){
+            throw new NoFilesException("Don't call this method if an error exists!! First check 'hasError()'");
         }
-        return newlyAddedFile.asJSON();
+
+        if (newlyAddedFiles == null){
+            throw new NullPointerException("newlyAddedFiles is null!");
+        }
+        
+        return getSuccessResultAsGsonObject().toString();
         
     }
     
-    public JsonObject getSuccessResultAsGsonObject(){
-        if (newlyAddedFile == null){
-            throw new NullPointerException("Bad error: newlyAddedFile is null!");
+    public JsonObject getSuccessResultAsGsonObject() throws NoFilesException{
+        
+        if (hasError()){
+            throw new NoFilesException("Don't call this method if an error exists!! First check 'hasError()'");
         }
-        return newlyAddedFile.asGsonObject(false);
+        
+        if (newlyAddedFiles == null){
+            throw new NullPointerException("newlyAddedFiles is null!");
+        }
+        
+        if (newlyAddedFiles.isEmpty()){
+            throw new NoFilesException("newlyAddedFiles is empty!");
+        }
+        
+
+        JsonArray jsonList = new JsonArray();
+        
+        for (DataFile df : newlyAddedFiles){
+            jsonList.add(df.asGsonObject(false));
+        }
+        
+        JsonObject fullFilesJSON = new JsonObject(); 
+        fullFilesJSON.add("files", jsonList);
+        
+        return fullFilesJSON;
+        //return newlyAddedFile.asGsonObject(false);
         
     }
     
@@ -1397,11 +1467,7 @@ public class AddReplaceFileHelper{
         }
                 
         // Should only be one file in the list
-        for (DataFile df : finalFileList){
-            setNewlyAddedFile(df);
-            //df.getFileMetadata();
-            break;
-        }
+        setNewlyAddedFiles(finalFileList);
         
         // clear old file list
         //
