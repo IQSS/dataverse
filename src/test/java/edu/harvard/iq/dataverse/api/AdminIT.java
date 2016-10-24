@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
 import com.jayway.restassured.RestAssured;
+import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.OK;
@@ -8,6 +9,7 @@ import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import org.junit.Test;
 import org.junit.BeforeClass;
 import java.util.UUID;
+import static javax.ws.rs.core.Response.Status.CREATED;
 import static org.hamcrest.CoreMatchers.equalTo;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
@@ -112,6 +114,34 @@ public class AdminIT {
         Response shouldWork = UtilIT.migrateShibToBuiltin(idOfUserToConvert, newEmailAddress, superuserApiToken);
         shouldWork.prettyPrint();
         shouldWork.then().assertThat().statusCode(OK.getStatusCode());
+
+    }
+
+    @Test
+    public void testFindPermissonsOn() {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverse = UtilIT.createRandomDataverse(apiToken);
+        createDataverse.prettyPrint();
+        createDataverse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        String dataverseAlias = JsonPath.from(createDataverse.body().asString()).getString("data.alias");
+
+        Response findPerms = UtilIT.findPermissionsOn(dataverseAlias, apiToken);
+        findPerms.prettyPrint();
+        findPerms.then().assertThat()
+                .body("data.user", equalTo("@" + username))
+                .statusCode(OK.getStatusCode());
+
+        Response findRoleAssignee = UtilIT.findRoleAssignee("@" + username, apiToken);
+        findRoleAssignee.prettyPrint();
+        findRoleAssignee.then().assertThat()
+                .body("data.title", equalTo(username + " " + username))
+                .statusCode(OK.getStatusCode());
 
     }
 
