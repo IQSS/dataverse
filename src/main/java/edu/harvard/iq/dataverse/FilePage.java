@@ -50,6 +50,7 @@ public class FilePage implements java.io.Serializable {
         // Used to help with displaying buttons related to the WorldMap
     private WorldMapPermissionHelper worldMapPermissionHelper;
 
+    private int selectedTabIndex;
     
     // Used to help with displaying buttons related to TwoRavens
     private TwoRavensHelper twoRavensHelper;
@@ -393,6 +394,14 @@ public class FilePage implements java.io.Serializable {
 
     public void setTwoRavensHelper(TwoRavensHelper twoRavensHelper) {
         this.twoRavensHelper = twoRavensHelper;
+    }
+    
+    public int getSelectedTabIndex() {
+        return selectedTabIndex;
+    }
+
+    public void setSelectedTabIndex(int selectedTabIndex) {
+        this.selectedTabIndex = selectedTabIndex;
     }
     
     /**
