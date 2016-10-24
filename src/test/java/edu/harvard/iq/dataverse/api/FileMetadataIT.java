@@ -32,8 +32,10 @@ import org.junit.Test;
 import java.util.UUID;
 
 import static com.jayway.restassured.RestAssured.given;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.fail;
+import static org.hamcrest.CoreMatchers.equalTo;
 
 /**
  * FileMetadata Integration Tests
@@ -138,15 +140,18 @@ public class FileMetadataIT {
         try {
 
             // try to create a dataset with directory labels that contain both leading and trailing file separators
-            Response resp = given()
+            Response shouldFailDueToLeadingAndTrailingSeparators = given()
                     .header(keyString, token)
                     .body(IOUtils.toString(classLoader.getResourceAsStream(
                             "json/complete-dataset-with-files-invalid-directory-labels.json")))
                     .contentType("application/json")
                     .post("/api/dataverses/" + testName + "/datasets");
-            // this request should fail since a @Pattern constraint exists in FileMetadata to prevent this 
-            assertEquals(resp.getStatusCode(), 500);
-            
+            shouldFailDueToLeadingAndTrailingSeparators.prettyPrint();
+            shouldFailDueToLeadingAndTrailingSeparators.then().assertThat()
+                    // Note that the JSON under test actually exercises leading too but only the first (trailing) is exercised here.
+                    .body("message", equalTo("Validation failed: Directory Name cannot contain leading or trailing file separators. Invalid value: 'data/subdir1/'."))
+                    .statusCode(BAD_REQUEST.getStatusCode());
+
             // create dataset and set id
             dsId = given()
                     .header(keyString, token)

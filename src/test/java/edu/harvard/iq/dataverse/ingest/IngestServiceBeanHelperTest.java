@@ -20,6 +20,8 @@ import java.util.Date;
 import java.util.List;
 
 import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeDataset;
+import java.util.Set;
+import javax.validation.ConstraintViolation;
 
 /**
  * Tests against IngestServiceBean helper methods.
@@ -365,6 +367,42 @@ public class IngestServiceBeanHelperTest {
 
         // check filename is altered since tabular and will change to .tab after ingest
         assertEquals(file2NameAltered, true);
+    }
+
+    @Test
+    public void testDirectoryLabels() {
+
+        DatasetVersion datasetVersion = new DatasetVersion();
+        FileMetadata fileMetadata = new FileMetadata();
+        fileMetadata.setLabel("foo.png");
+        fileMetadata.setDirectoryLabel("/has/leading/slash");
+        datasetVersion.getFileMetadatas().add(fileMetadata);
+
+        Set<ConstraintViolation> violations1 = datasetVersion.validate();
+        assertEquals(1, violations1.size());
+        ConstraintViolation violation1 = violations1.iterator().next();
+        assertEquals("Directory Name cannot contain leading or trailing file separators.", violation1.getMessage());
+
+        // reset
+        datasetVersion.setFileMetadatas(new ArrayList<>());
+        Set<ConstraintViolation> violations2 = datasetVersion.validate();
+        assertEquals(0, violations2.size());
+
+        fileMetadata.setDirectoryLabel("has/trailing/slash/");
+        datasetVersion.getFileMetadatas().add(fileMetadata);
+        Set<ConstraintViolation> violations3 = datasetVersion.validate();
+        assertEquals(1, violations3.size());
+        assertEquals("Directory Name cannot contain leading or trailing file separators.", violations3.iterator().next().getMessage());
+
+        // reset
+        datasetVersion.setFileMetadatas(new ArrayList<>());
+        Set<ConstraintViolation> violations4 = datasetVersion.validate();
+        assertEquals(0, violations4.size());
+
+        fileMetadata.setDirectoryLabel("just/right");
+        datasetVersion.getFileMetadatas().add(fileMetadata);
+        Set<ConstraintViolation> violations5 = datasetVersion.validate();
+        assertEquals(0, violations5.size());
     }
 
 }
