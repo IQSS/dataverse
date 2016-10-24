@@ -21,6 +21,7 @@ package edu.harvard.iq.dataverse.api;
 
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.http.ContentType;
+import com.jayway.restassured.response.Response;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -36,6 +37,8 @@ import static junit.framework.Assert.fail;
 
 /**
  * FileMetadata Integration Tests
+ * 
+ * @author bmckinney 
  */
 public class FileMetadataIT {
 
@@ -133,6 +136,17 @@ public class FileMetadataIT {
     @Test
     public void testJsonParserWithDirectoryLabels() {
         try {
+
+            // try to create a dataset with directory labels that contain both leading and trailing file separators
+            Response resp = given()
+                    .header(keyString, token)
+                    .body(IOUtils.toString(classLoader.getResourceAsStream(
+                            "json/complete-dataset-with-files-invalid-directory-labels.json")))
+                    .contentType("application/json")
+                    .post("/api/dataverses/" + testName + "/datasets");
+            // this request should fail since a @Pattern constraint exists in FileMetadata to prevent this 
+            assertEquals(resp.getStatusCode(), 500);
+            
             // create dataset and set id
             dsId = given()
                     .header(keyString, token)
@@ -148,14 +162,14 @@ public class FileMetadataIT {
                     .then().assertThat().statusCode(200)
                     .extract().jsonPath().getString("data.latestVersion.files[0].directoryLabel");
             System.out.println("directoryLabel 1: " + dirLabel1);
-            assertEquals("data/subdir1/", dirLabel1);
+            assertEquals("data/subdir1", dirLabel1);
             String dirLabel2 = given()
                     .header(keyString, token)
                     .get("/api/datasets/" + dsId)
                     .then().assertThat().statusCode(200)
                     .extract().jsonPath().getString("data.latestVersion.files[1].directoryLabel");
             System.out.println("directoryLabel 2: " + dirLabel2);
-            assertEquals("data/subdir2/", dirLabel2);
+            assertEquals("data/subdir2", dirLabel2);
 
         } catch (Exception e) {
             System.out.println("Error testJsonParserWithDirectoryLabels: " + e.getMessage());
@@ -163,5 +177,5 @@ public class FileMetadataIT {
             fail();
         }
     }
-
+    
 }

@@ -170,7 +170,7 @@
         {
           "description": "",
           "label": "yn152_4_001.img",
-          "directoryLabel": "data/subdir1/",
+          "directoryLabel": "data/subdir1",
           "version": 1,
           "datasetVersionId": 2,
           "dataFile": {
@@ -189,7 +189,7 @@
         {
           "description": "",
           "label": "yn152_4_002.img",
-          "directoryLabel": "data/subdir2/",
+          "directoryLabel": "data/subdir2",
           "version": 1,
           "datasetVersionId": 2,
           "dataFile": {
