@@ -33,11 +33,14 @@ public class FilesIT {
      * @return 
      */
     private String createUserGetToken(){
-        
         Response createUser = UtilIT.createRandomUser();
+        msg(createUser.toString());
+        msg(createUser.prettyPrint());
         createUser.then().assertThat().statusCode(OK.getStatusCode());
-        //createUser.prettyPrint();
 
+        msg(createUser.prettyPrint());
+
+        
         String username = UtilIT.getUsernameFromResponse(createUser);
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
         
@@ -57,11 +60,11 @@ public class FilesIT {
     
     
     private Integer createDatasetGetId(String dataverseAlias, String apiToken){
-        
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
-        //createDatasetResponse.prettyPrint();
+        
+
         createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
-        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("files[0].id");
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
         
         return datasetId;
         
