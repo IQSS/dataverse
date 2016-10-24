@@ -202,8 +202,9 @@ public class Files extends AbstractApiBean {
             
         msg("we're back.....");
         if (addFileHelper.hasError()){
-            msg("yes, has error");
-            return errorResponse(Response.Status.BAD_REQUEST, addFileHelper.getErrorMessagesAsString("\n"));
+            msg("yes, has error");          
+            return errorResponse(addFileHelper.getHttpErrorCode(), addFileHelper.getErrorMessagesAsString("\n"));
+        
         }else{
             msg("no error");
             String successMsg = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.replace");        

@@ -895,7 +895,7 @@ public class Datasets extends AbstractApiBean {
 
 
         if (addFileHelper.hasError()){
-            return errorResponse(Response.Status.BAD_REQUEST, addFileHelper.getErrorMessagesAsString("\n"));
+            return errorResponse(addFileHelper.getHttpErrorCode(), addFileHelper.getErrorMessagesAsString("\n"));
         }else{
             String successMsg = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");        
             try {

@@ -33,6 +33,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 import javax.ejb.EJBException;
 import javax.validation.ConstraintViolation;
+import javax.ws.rs.core.Response;
 
 /**
  *  Methods to add or replace a single file.
@@ -111,20 +112,26 @@ public class AddReplaceFileHelper{
     private DataFile fileToReplace;             // step 25
     
     
+    // -----------------------------------
     // Instance variables derived from other input
+    // -----------------------------------
     private User user;
     private DatasetVersion workingVersion;
     List<DataFile> initialFileList; 
     List<DataFile> finalFileList;
     
-    // Ingested file 
-    //private DataFile newlyAddedFile; 
+    // -----------------------------------
+    // Ingested files
+    // -----------------------------------
     private List<DataFile> newlyAddedFiles; 
     
+    // -----------------------------------
     // For error handling
+    // -----------------------------------
+    
     private boolean errorFound;
     private List<String> errorMessages;
-    
+    private Response.Status httpErrorCode; // optional
     
   //  public AddReplaceFileHelper(){
   //      throw new IllegalStateException("Must be called with a dataset and or user");
@@ -542,7 +549,29 @@ public class AddReplaceFileHelper{
         this.errorMessages.add(errMsg);
     }
     
-
+    /**
+     * Add Error mesage and, if it's known, the HTTP response code
+     * 
+     * @param badHttpResponse, e.g. Response.Status.FORBIDDEN
+     * @param errMsg 
+     */
+    private void addError(Response.Status badHttpResponse, String errMsg){
+        
+        if (badHttpResponse == null){
+            throw new NullPointerException("badHttpResponse cannot be null");
+        }
+        if (errMsg == null){
+            throw new NullPointerException("errMsg cannot be null");
+        }
+      
+        this.httpErrorCode = badHttpResponse;
+        
+        this.addError(errMsg);
+                
+        
+    }
+    
+    
     private void addErrorSevere(String errMsg){
         
         if (errMsg == null){
@@ -588,7 +617,27 @@ public class AddReplaceFileHelper{
     }   
 
    
-
+    /**
+     * For API use, return the HTTP error code
+     * 
+     * Default is BAD_REQUEST
+     * 
+     * @return 
+     */
+    public Response.Status getHttpErrorCode(){
+       
+        if (!hasError()){
+            logger.severe("Do not call this method unless there is an error!  check '.hasError()'");
+        }
+        
+        if (httpErrorCode == null){
+            return Response.Status.BAD_REQUEST;
+        }else{
+            return httpErrorCode;
+        }
+    }
+    
+    
     /**
      * Convenience method for getting bundle properties
      * 
@@ -690,7 +739,7 @@ public class AddReplaceFileHelper{
         msg("permissionService:" + permissionService.toString());
         
         if (!permissionService.request(dvRequest).on(dataset).has(Permission.EditDataset)){
-           addError(getBundleErr("no_edit_dataset_permission"));
+           addError(Response.Status.FORBIDDEN,getBundleErr("no_edit_dataset_permission"));
            return false;
         }
         return true;
@@ -761,7 +810,7 @@ public class AddReplaceFileHelper{
         // Do we have permission to replace this file? e.g. Edit the file's dataset
         //
         if (!permissionService.request(dvRequest).on(existingFile.getOwner()).has(Permission.EditDataset)){
-           addError(getBundleErr("no_edit_dataset_permission"));
+           addError(Response.Status.FORBIDDEN, getBundleErr("no_edit_dataset_permission"));
            return false;
         }
         
