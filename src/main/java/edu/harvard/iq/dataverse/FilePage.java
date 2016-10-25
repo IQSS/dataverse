@@ -118,11 +118,11 @@ public class FilePage implements java.io.Serializable {
            // If this DatasetVersion is unpublished and permission is doesn't have permissions:
            //  > Go to the Login page
            //
-          /*
-           if ( !permissionService.on(file).has(Permission.DownloadFile)) {
-               return permissionsWrapper.notAuthorized();            
-           }
-          */
+            // Check permisisons           
+            if (!(fileMetadata.getDatasetVersion().isReleased()) && !this.canViewUnpublishedDataset()) {
+                return permissionsWrapper.notAuthorized();
+            }
+          
            
            this.guestbookResponse = this.guestbookResponseService.initGuestbookResponseForFragment(fileMetadata, session);
            this.loadFileDownloadHelper();
@@ -135,6 +135,10 @@ public class FilePage implements java.io.Serializable {
         }
 
         return null;
+    }
+    
+    private boolean canViewUnpublishedDataset() {
+        return permissionsWrapper.canViewUnpublishedDataset( dvRequestService.getDataverseRequest(), fileMetadata.getDatasetVersion().getDataset());
     }
     
     private MapLayerMetadata mapLayerMetadata = null;
