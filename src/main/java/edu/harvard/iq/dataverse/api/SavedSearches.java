@@ -42,7 +42,7 @@ public class SavedSearches extends AbstractApiBean {
         endpoints.add("GET /id");
         endpoints.add("POST");
         endpoints.add("DELETE /id");
-        return okResponse(endpoints);
+        return ok(endpoints);
     }
 
     @GET
@@ -56,7 +56,7 @@ public class SavedSearches extends AbstractApiBean {
         }
         JsonObjectBuilder response = Json.createObjectBuilder();
         response.add("saved searches", savedSearchesBuilder);
-        return okResponse(response);
+        return ok(response);
     }
 
     @GET
@@ -65,9 +65,9 @@ public class SavedSearches extends AbstractApiBean {
         SavedSearch savedSearch = savedSearchSvc.find(id);
         if (savedSearch != null) {
             JsonObjectBuilder response = toJson(savedSearch);
-            return okResponse(response);
+            return ok(response);
         } else {
-            return errorResponse(NOT_FOUND, "Could not find saved search id " + id);
+            return error(NOT_FOUND, "Could not find saved search id " + id);
         }
     }
 
@@ -92,7 +92,7 @@ public class SavedSearches extends AbstractApiBean {
     public Response add(JsonObject body) {
 
         if (body == null) {
-            return errorResponse(BAD_REQUEST, "JSON is expected.");
+            return error(BAD_REQUEST, "JSON is expected.");
         }
 
         String keyForAuthenticatedUserId = "creatorId";
@@ -100,16 +100,16 @@ public class SavedSearches extends AbstractApiBean {
         try {
             creatorIdToLookUp = body.getInt(keyForAuthenticatedUserId);
         } catch (NullPointerException ex) {
-            return errorResponse(BAD_REQUEST, "Required field missing: " + keyForAuthenticatedUserId);
+            return error(BAD_REQUEST, "Required field missing: " + keyForAuthenticatedUserId);
         } catch (ClassCastException ex) {
-            return errorResponse(BAD_REQUEST, "A number is required for " + keyForAuthenticatedUserId);
+            return error(BAD_REQUEST, "A number is required for " + keyForAuthenticatedUserId);
         } catch (Exception ex) {
-            return errorResponse(BAD_REQUEST, "Problem with " + keyForAuthenticatedUserId + ": " + ex);
+            return error(BAD_REQUEST, "Problem with " + keyForAuthenticatedUserId + ": " + ex);
         }
 
         AuthenticatedUser creator = authSvc.findByID(creatorIdToLookUp);
         if (creator == null) {
-            return errorResponse(Response.Status.NOT_FOUND, "Could not find user based on " + keyForAuthenticatedUserId + ": " + creatorIdToLookUp);
+            return error(Response.Status.NOT_FOUND, "Could not find user based on " + keyForAuthenticatedUserId + ": " + creatorIdToLookUp);
         }
 
         String keyForQuery = "query";
@@ -117,7 +117,7 @@ public class SavedSearches extends AbstractApiBean {
         try {
             query = body.getString(keyForQuery);
         } catch (NullPointerException ex) {
-            return errorResponse(BAD_REQUEST, "Required field missing: " + keyForQuery);
+            return error(BAD_REQUEST, "Required field missing: " + keyForQuery);
         }
 
         String keyForDefinitionPointId = "definitionPointId";
@@ -125,15 +125,15 @@ public class SavedSearches extends AbstractApiBean {
         try {
             dataverseIdToLookup = body.getInt(keyForDefinitionPointId);
         } catch (NullPointerException ex) {
-            return errorResponse(BAD_REQUEST, "Required field missing: " + keyForDefinitionPointId);
+            return error(BAD_REQUEST, "Required field missing: " + keyForDefinitionPointId);
         } catch (ClassCastException ex) {
-            return errorResponse(BAD_REQUEST, "A number is required for " + keyForDefinitionPointId);
+            return error(BAD_REQUEST, "A number is required for " + keyForDefinitionPointId);
         } catch (Exception ex) {
-            return errorResponse(BAD_REQUEST, "Problem with " + keyForDefinitionPointId + ": " + ex);
+            return error(BAD_REQUEST, "Problem with " + keyForDefinitionPointId + ": " + ex);
         }
         Dataverse definitionPoint = dataverseSvc.find(dataverseIdToLookup);
         if (definitionPoint == null) {
-            return errorResponse(NOT_FOUND, "Could not find a dataverse based on id " + dataverseIdToLookup);
+            return error(NOT_FOUND, "Could not find a dataverse based on id " + dataverseIdToLookup);
         }
 
         SavedSearch toPersist = new SavedSearch(query, definitionPoint, creator);
@@ -150,7 +150,7 @@ public class SavedSearches extends AbstractApiBean {
         } catch (NullPointerException ex) {
             // filter queries are not required, keep going
         } catch (Exception ex) {
-            return errorResponse(BAD_REQUEST, "Problem getting filter queries: " + ex);
+            return error(BAD_REQUEST, "Problem getting filter queries: " + ex);
         }
 
         if (!savedSearchFilterQuerys.isEmpty()) {
@@ -159,7 +159,7 @@ public class SavedSearches extends AbstractApiBean {
 
         try {
             SavedSearch persistedSavedSearch = savedSearchSvc.add(toPersist);
-            return okResponse("Added: " + persistedSavedSearch);
+            return ok("Added: " + persistedSavedSearch);
         } catch (EJBException ex) {
             StringBuilder errors = new StringBuilder();
             Throwable throwable = ex.getCause();
@@ -167,7 +167,7 @@ public class SavedSearches extends AbstractApiBean {
                 errors.append(throwable).append(" ");
                 throwable = throwable.getCause();
             }
-            return errorResponse(BAD_REQUEST, "Problem adding saved search: " + errors);
+            return error(BAD_REQUEST, "Problem adding saved search: " + errors);
         }
     }
 
@@ -176,17 +176,17 @@ public class SavedSearches extends AbstractApiBean {
     public Response delete(@PathParam("id") long doomedId) {
         boolean disabled = true;
         if (disabled) {
-            return errorResponse(BAD_REQUEST, "Saved Searches can not safely be deleted because links can not safely be deleted. See https://github.com/IQSS/dataverse/issues/1364 for details.");
+            return error(BAD_REQUEST, "Saved Searches can not safely be deleted because links can not safely be deleted. See https://github.com/IQSS/dataverse/issues/1364 for details.");
         }
         SavedSearch doomed = savedSearchSvc.find(doomedId);
         if (doomed == null) {
-            return errorResponse(NOT_FOUND, "Could not find saved search id " + doomedId);
+            return error(NOT_FOUND, "Could not find saved search id " + doomedId);
         }
         boolean wasDeleted = savedSearchSvc.delete(doomedId);
         if (wasDeleted) {
-            return okResponse(Json.createObjectBuilder().add("Deleted", doomedId));
+            return ok(Json.createObjectBuilder().add("Deleted", doomedId));
         } else {
-            return errorResponse(INTERNAL_SERVER_ERROR, "Problem deleting id " + doomedId);
+            return error(INTERNAL_SERVER_ERROR, "Problem deleting id " + doomedId);
         }
     }
 
@@ -196,11 +196,11 @@ public class SavedSearches extends AbstractApiBean {
         JsonObjectBuilder makeLinksResponse;
         try {
             makeLinksResponse = savedSearchSvc.makeLinksForAllSavedSearches(debug);
-            return okResponse(makeLinksResponse);
+            return ok(makeLinksResponse);
         } catch (CommandException ex) {
-            return errorResponse(BAD_REQUEST, ex.getLocalizedMessage());
+            return error(BAD_REQUEST, ex.getLocalizedMessage());
         } catch (SearchException ex) {
-            return errorResponse(INTERNAL_SERVER_ERROR, ex.getLocalizedMessage());
+            return error(INTERNAL_SERVER_ERROR, ex.getLocalizedMessage());
         }
     }
 
@@ -209,16 +209,16 @@ public class SavedSearches extends AbstractApiBean {
     public Response makeLinksForSingleSavedSearch(@PathParam("id") long savedSearchIdToLookUp, @QueryParam("debug") boolean debug) {
         SavedSearch savedSearchToMakeLinksFor = savedSearchSvc.find(savedSearchIdToLookUp);
         if (savedSearchToMakeLinksFor == null) {
-            return errorResponse(BAD_REQUEST, "Count not find saved search id " + savedSearchIdToLookUp);
+            return error(BAD_REQUEST, "Count not find saved search id " + savedSearchIdToLookUp);
         }
         try {
             DataverseRequest dataverseRequest = new DataverseRequest(savedSearchToMakeLinksFor.getCreator(), SavedSearchServiceBean.getHttpServletRequest());
             JsonObjectBuilder response = savedSearchSvc.makeLinksForSingleSavedSearch(dataverseRequest, savedSearchToMakeLinksFor, debug);
-            return okResponse(response);
+            return ok(response);
         } catch (CommandException ex) {
-            return errorResponse(BAD_REQUEST, ex.getLocalizedMessage());
+            return error(BAD_REQUEST, ex.getLocalizedMessage());
         } catch (SearchException ex) {
-            return errorResponse(INTERNAL_SERVER_ERROR, ex.getLocalizedMessage());
+            return error(INTERNAL_SERVER_ERROR, ex.getLocalizedMessage());
         }
     }
 

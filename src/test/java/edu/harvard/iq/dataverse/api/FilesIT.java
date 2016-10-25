@@ -87,7 +87,7 @@ public class FilesIT {
         Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
 
         //addResponse.prettyPrint();
-        //msgt("Here it is: " + addResponse.prettyPrint());
+        msgt("Here it is: " + addResponse.prettyPrint());
         String successMsg = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");        
 
       
@@ -115,7 +115,7 @@ public class FilesIT {
     }
 
     
-    @Test
+    //@Test
     public void test_002_AddFileBadDatasetId() {
         msgt("test_002_AddFileNullFileId");
          // Create user
@@ -135,7 +135,7 @@ public class FilesIT {
     }
     
     
-    @Test
+    //@Test
     public void test_003_AddFileNonExistentDatasetId() {
         msgt("test_003_AddFileNonExistentDatasetId");
 
@@ -160,7 +160,7 @@ public class FilesIT {
                 .statusCode(BAD_REQUEST.getStatusCode());
     }
     
-    @Test
+    //@Test
     public void test_004_AddFileBadToken() {
         msgt("test_004_AddFileBadToken");
 
@@ -185,14 +185,14 @@ public class FilesIT {
     }
     
     
-    @Test
+    //@Test
     public void test_005_AddFileBadPermissions() {
         msgt("test_005_AddFileBadPerms");
 
         // To do!!!
     }
 
-    @Test
+    //@Test
     public void test_006_ReplaceFileGood() {
         msgt("test_006_ReplaceFileGood");
 
@@ -322,7 +322,7 @@ public class FilesIT {
     }
     
     
-    @Test
+    //@Test
     public void test_007_ReplaceFileUnpublishedAndBadIds() {
         msgt("test_007_ReplaceFileBadIds");
 
@@ -405,7 +405,7 @@ public class FilesIT {
     }
     
     
-    @Test
+    //@Test
     public void test_008_ReplaceFileAlreadyDeleted() {
         msgt("test_008_ReplaceFileAlreadyDeleted");
 

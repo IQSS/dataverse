@@ -16,7 +16,6 @@ import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
-import static edu.harvard.iq.dataverse.api.AbstractApiBean.errorResponse;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
 import edu.harvard.iq.dataverse.datasetutility.DataFileTagException;
@@ -24,9 +23,6 @@ import edu.harvard.iq.dataverse.datasetutility.NoFilesException;
 import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
@@ -110,7 +106,7 @@ public class Files extends AbstractApiBean {
         try {
             authUser = this.findUserOrDie();
         } catch (AbstractApiBean.WrappedResponse ex) {
-            return errorResponse(Response.Status.FORBIDDEN, 
+            return error(Response.Status.FORBIDDEN, 
                     ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.auth")
                     );
         }
@@ -120,14 +116,14 @@ public class Files extends AbstractApiBean {
         // -------------------------------------        
         if (jsonData == null){
             logger.log(Level.SEVERE, "jsonData is null");
-            return errorResponse( Response.Status.BAD_REQUEST, "No JSON data");
+            return error( Response.Status.BAD_REQUEST, "No JSON data");
         }
         JsonObject jsonObj = new Gson().fromJson(jsonData, JsonObject.class);
 
         // (2a) Check for required "fileToReplaceId"
         // -------------------------------------        
         /*if ((!jsonObj.has("fileToReplaceId")) || jsonObj.get("fileToReplaceId").isJsonNull()){
-            return errorResponse( Response.Status.BAD_REQUEST, "'fileToReplaceId' NOT found in the JSON Request");
+            return error( Response.Status.BAD_REQUEST, "'fileToReplaceId' NOT found in the JSON Request");
         }
         
         Long fileToReplaceId;
@@ -135,7 +131,7 @@ public class Files extends AbstractApiBean {
         try {
             fileToReplaceId = Long.parseLong(jsonObj.get("fileToReplaceId").toString());        
         } catch (Exception e) {
-            return errorResponse( Response.Status.BAD_REQUEST, "'fileToReplaceId' in the JSON Request must be a number.");            
+            return error( Response.Status.BAD_REQUEST, "'fileToReplaceId' in the JSON Request must be a number.");            
         }
         */
         
@@ -157,7 +153,7 @@ public class Files extends AbstractApiBean {
         try {
             optionalFileParams = new OptionalFileParams(jsonData);
         } catch (DataFileTagException ex) {
-            return errorResponse( Response.Status.BAD_REQUEST, ex.getMessage());            
+            return error( Response.Status.BAD_REQUEST, ex.getMessage());            
         }
       
         
@@ -203,7 +199,7 @@ public class Files extends AbstractApiBean {
         msg("we're back.....");
         if (addFileHelper.hasError()){
             msg("yes, has error");          
-            return errorResponse(addFileHelper.getHttpErrorCode(), addFileHelper.getErrorMessagesAsString("\n"));
+            return error(addFileHelper.getHttpErrorCode(), addFileHelper.getErrorMessagesAsString("\n"));
         
         }else{
             msg("no error");
@@ -216,7 +212,7 @@ public class Files extends AbstractApiBean {
                 //"Look at that!  You added a file! (hey hey, it may have worked)");
             } catch (NoFilesException ex) {
                 Logger.getLogger(Files.class.getName()).log(Level.SEVERE, null, ex);
-                return errorResponse(Response.Status.BAD_REQUEST, "NoFileException!  Serious Error! See administrator!");
+                return error(Response.Status.BAD_REQUEST, "NoFileException!  Serious Error! See administrator!");
 
             }
         }
