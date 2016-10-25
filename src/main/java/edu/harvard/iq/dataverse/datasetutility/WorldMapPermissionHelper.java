@@ -239,7 +239,22 @@ public class WorldMapPermissionHelper {
         if (!settingsService.isTrueForKey(SettingsServiceBean.Key.GeoconnectViewMaps, false)){
             this.fileMetadataWorldMapExplore.put(fm.getId(), false);
             return false;
-        }        
+        } 
+        //----------------------------------------------------------------------
+        //(0) Before we give it to you - if version is deaccessioned and user
+        // does not have edit dataset permission then may download
+        //----------------------------------------------------------------------
+        
+       if (fm.getDatasetVersion().isDeaccessioned()) {
+           if (this.doesSessionUserHaveDataSetPermission( Permission.EditDataset)) {
+               // Yes, save answer and return true
+               this.fileMetadataWorldMapExplore.put(fm.getId(), true);
+               return true;
+           } else {
+               this.fileMetadataWorldMapExplore.put(fm.getId(), false);
+               return false;
+           }
+       }
         
         /* -----------------------------------------------------
              Yes: User can view button!

@@ -87,6 +87,21 @@ public class FileDownloadHelper {
             //logger.info("using cached result for candownloadfile on filemetadata "+fid);
             return this.fileDownloadPermissionMap.get(fid);
         }
+        //----------------------------------------------------------------------
+        //(0) Before we do any testing - if version is deaccessioned and user
+        // does not have edit dataset permission then may download
+        //----------------------------------------------------------------------
+        
+       if (fileMetadata.getDatasetVersion().isDeaccessioned()) {
+           if (this.doesSessionUserHaveDataSetPermission(Permission.EditDataset)) {
+               // Yes, save answer and return true
+               this.fileDownloadPermissionMap.put(fid, true);
+               return true;
+           } else {
+               this.fileDownloadPermissionMap.put(fid, false);
+               return false;
+           }
+       }
 
         // --------------------------------------------------------------------
         // (1) Is the file Unrestricted ?        

@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse.datasetutility;
 
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
@@ -117,6 +118,22 @@ public class TwoRavensHelper {
             //logger.info("using cached result for candownloadfile on filemetadata "+fid);
             return this.fileMetadataTwoRavensExploreMap.get(fm.getId());
         }
+        
+        //----------------------------------------------------------------------
+        //(0) Before we do any testing - if version is deaccessioned and user
+        // does not have edit dataset permission then may download
+        //----------------------------------------------------------------------
+        
+       if (fm.getDatasetVersion().isDeaccessioned()) {
+           if (this.doesSessionUserHaveDataSetPermission(fm.getDatasetVersion().getDataset(), Permission.EditDataset)) {
+               // Yes, save answer and return true
+               this.fileMetadataTwoRavensExploreMap.put(fm.getId(), true);
+               return true;
+           } else {
+               this.fileMetadataTwoRavensExploreMap.put(fm.getId(), false);
+               return false;
+           }
+       }
         
         
         // (1) Is TwoRavens active via the "setting" table?
@@ -249,5 +266,21 @@ public class TwoRavensHelper {
         
         return session.getUser().isAuthenticated();
 
+    }
+    
+    public boolean doesSessionUserHaveDataSetPermission(Dataset dataset, Permission permissionToCheck){
+        if (permissionToCheck == null){
+            return false;
+        }
+               
+
+        
+        // Check the permission
+        //
+        boolean hasPermission = this.permissionService.userOn(this.session.getUser(), dataset).has(permissionToCheck);
+
+        
+        // return true/false
+        return hasPermission;
     }
 }
