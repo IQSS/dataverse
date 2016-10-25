@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.datasetutility.FileReplaceException;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.search.SortBy;
@@ -1337,14 +1338,16 @@ public class DataFileServiceBean implements java.io.Serializable {
      * @return
      * @throws Exception 
      */
-    public boolean isReplacementFile(DataFile df) throws Exception{
+    public boolean isReplacementFile(DataFile df) throws FileReplaceException{
+        
         if (df.getPreviousDataFileId() == null){
             return false;
         }else if (df.getPreviousDataFileId() < 1){
-            logger.severe("Stop! previousDataFileId should either be null or a number greater than 0");
+            String errMSg = "Stop! previousDataFileId should either be null or a number greater than 0";
+            logger.severe(errMSg);
             //return false;
             // blow up -- this shouldn't happen!
-            throw new Exception("previousDataFileId should either be null or a number greater than 0");
+            throw new FileReplaceException(errMSg);
         }else{
             return true;
         }
