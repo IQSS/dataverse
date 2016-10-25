@@ -24,7 +24,7 @@ public class Mail extends AbstractApiBean {
         ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.Admin, "sendMail");
        // mailService.bulkSendNotifications();
         actionLogSvc.log(alr);
-        return okResponse("bulk send notification is deprecated");
+        return ok("bulk send notification is deprecated");
     }
     
 }

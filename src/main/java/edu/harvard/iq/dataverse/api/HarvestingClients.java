@@ -62,12 +62,12 @@ public class HarvestingClients extends AbstractApiBean {
         try {
             harvestingClients = harvestingClientService.getAllHarvestingClients();
         } catch (Exception ex) {
-            return errorResponse( Response.Status.INTERNAL_SERVER_ERROR, "Caught an exception looking up configured harvesting clients; " + ex.getMessage() );
+            return error( Response.Status.INTERNAL_SERVER_ERROR, "Caught an exception looking up configured harvesting clients; " + ex.getMessage() );
         }
         
         if (harvestingClients == null) {
             // returning an empty list:
-            return okResponse(jsonObjectBuilder().add("harvestingClients",""));
+            return ok(jsonObjectBuilder().add("harvestingClients",""));
         }
         
         JsonArrayBuilder hcArr = Json.createArrayBuilder();
@@ -93,7 +93,7 @@ public class HarvestingClients extends AbstractApiBean {
             }
         }
         
-        return okResponse(jsonObjectBuilder().add("harvestingClients", hcArr));
+        return ok(jsonObjectBuilder().add("harvestingClients", hcArr));
     } 
     
     @GET
@@ -105,11 +105,11 @@ public class HarvestingClients extends AbstractApiBean {
             harvestingClient = harvestingClientService.findByNickname(nickName);
         } catch (Exception ex) {
             logger.warning("Exception caught looking up harvesting client " + nickName + ": " + ex.getMessage());
-            return errorResponse( Response.Status.BAD_REQUEST, "Internal error: failed to look up harvesting client " + nickName + ".");
+            return error( Response.Status.BAD_REQUEST, "Internal error: failed to look up harvesting client " + nickName + ".");
         }
         
         if (harvestingClient == null) {
-            return errorResponse(Response.Status.NOT_FOUND, "Harvesting client " + nickName + " not found.");
+            return error(Response.Status.NOT_FOUND, "Harvesting client " + nickName + " not found.");
         }
         
         HarvestingClient retrievedHarvestingClient = null; 
@@ -128,15 +128,15 @@ public class HarvestingClients extends AbstractApiBean {
         }
         
         if (retrievedHarvestingClient == null) {
-            return errorResponse( Response.Status.BAD_REQUEST, 
+            return error( Response.Status.BAD_REQUEST, 
                     "Internal error: failed to retrieve harvesting client " + nickName + ".");
         }
         
         try {
-            return okResponse(harvestingConfigAsJson(retrievedHarvestingClient));  
+            return ok(harvestingConfigAsJson(retrievedHarvestingClient));  
         } catch (Exception ex) {
             logger.warning("Unknown exception caught while trying to format harvesting client config as json: "+ex.getMessage());
-            return errorResponse( Response.Status.BAD_REQUEST, 
+            return error( Response.Status.BAD_REQUEST, 
                     "Internal error: failed to produce output for harvesting client " + nickName + ".");
         }
     }
@@ -155,7 +155,7 @@ public class HarvestingClients extends AbstractApiBean {
             Dataverse ownerDataverse = dataverseService.findByAlias(dataverseAlias);
             
             if (ownerDataverse == null) {
-                return errorResponse(Response.Status.BAD_REQUEST, "No such dataverse: " + dataverseAlias);
+                return error(Response.Status.BAD_REQUEST, "No such dataverse: " + dataverseAlias);
             }
             
             harvestingClient.setDataverse(ownerDataverse);
@@ -166,10 +166,10 @@ public class HarvestingClients extends AbstractApiBean {
             
             DataverseRequest req = createDataverseRequest(findUserOrDie());
             HarvestingClient managedHarvestingClient = execCommand( new CreateHarvestingClientCommand(req, harvestingClient));
-            return createdResponse( "/harvest/clients/" + nickName, harvestingConfigAsJson(managedHarvestingClient));
+            return created( "/harvest/clients/" + nickName, harvestingConfigAsJson(managedHarvestingClient));
                     
         } catch (JsonParseException ex) {
-            return errorResponse( Response.Status.BAD_REQUEST, "Error parsing harvesting client: " + ex.getMessage() );
+            return error( Response.Status.BAD_REQUEST, "Error parsing harvesting client: " + ex.getMessage() );
             
         } catch (WrappedResponse ex) {
             return ex.getResponse();
@@ -190,7 +190,7 @@ public class HarvestingClients extends AbstractApiBean {
         }
         
         if (harvestingClient == null) {
-            return errorResponse( Response.Status.NOT_FOUND, "Harvesting client " + nickName + " not found.");
+            return error( Response.Status.NOT_FOUND, "Harvesting client " + nickName + " not found.");
         }
         
         String ownerDataverseAlias = harvestingClient.getDataverse().getAlias();
@@ -204,13 +204,13 @@ public class HarvestingClients extends AbstractApiBean {
             if (newDataverseAlias != null 
                     && !newDataverseAlias.equals("")
                     && !newDataverseAlias.equals(ownerDataverseAlias)) {
-                return errorResponse(Response.Status.BAD_REQUEST, "Bad \"dataverseAlias\" supplied. Harvesting client "+nickName+" belongs to the dataverse "+ownerDataverseAlias);
+                return error(Response.Status.BAD_REQUEST, "Bad \"dataverseAlias\" supplied. Harvesting client "+nickName+" belongs to the dataverse "+ownerDataverseAlias);
             }
             HarvestingClient managedHarvestingClient = execCommand( new UpdateHarvestingClientCommand(req, harvestingClient));
-            return createdResponse( "/datasets/" + nickName, harvestingConfigAsJson(managedHarvestingClient));
+            return created( "/datasets/" + nickName, harvestingConfigAsJson(managedHarvestingClient));
                     
         } catch (JsonParseException ex) {
-            return errorResponse( Response.Status.BAD_REQUEST, "Error parsing harvesting client: " + ex.getMessage() );
+            return error( Response.Status.BAD_REQUEST, "Error parsing harvesting client: " + ex.getMessage() );
             
         } catch (WrappedResponse ex) {
             return ex.getResponse();
@@ -237,24 +237,24 @@ public class HarvestingClients extends AbstractApiBean {
             try {
                 authenticatedUser = findAuthenticatedUserOrDie();
             } catch (WrappedResponse wr) {
-                return errorResponse(Response.Status.UNAUTHORIZED, "Authentication required to use this API method");
+                return error(Response.Status.UNAUTHORIZED, "Authentication required to use this API method");
             }
             
             if (authenticatedUser == null || !authenticatedUser.isSuperuser()) {
-                return errorResponse(Response.Status.FORBIDDEN, "Only the Dataverse Admin user can run harvesting jobs");
+                return error(Response.Status.FORBIDDEN, "Only the Dataverse Admin user can run harvesting jobs");
             }
             
             HarvestingClient harvestingClient = harvestingClientService.findByNickname(clientNickname);
             
             if (harvestingClient == null) {
-                return errorResponse(Response.Status.NOT_FOUND, "No such dataverse: "+clientNickname);
+                return error(Response.Status.NOT_FOUND, "No such dataverse: "+clientNickname);
             }
             
             DataverseRequest dataverseRequest = createDataverseRequest(authenticatedUser);
             harvesterService.doAsyncHarvest(dataverseRequest, harvestingClient);
 
         } catch (Exception e) {
-            return this.errorResponse(Response.Status.BAD_REQUEST, "Exception thrown when running harvesting client\""+clientNickname+"\" via REST API; " + e.getMessage());
+            return this.error(Response.Status.BAD_REQUEST, "Exception thrown when running harvesting client\""+clientNickname+"\" via REST API; " + e.getMessage());
         }
         return this.accepted();
     }

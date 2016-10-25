@@ -18,7 +18,7 @@ public class Info extends AbstractApiBean {
     public Response getDatasetPublishPopupCustomText() {
         String setting = settingsService.getValueForKey(SettingsServiceBean.Key.DatasetPublishPopupCustomText);
         if (setting != null) {
-            return okResponse(Json.createObjectBuilder().add("message", setting));
+            return ok(Json.createObjectBuilder().add("message", setting));
         } else {
             return notFound("Setting " + SettingsServiceBean.Key.DatasetPublishPopupCustomText + " not found");
         }
