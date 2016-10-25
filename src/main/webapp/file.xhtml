@@ -249,6 +249,11 @@
                                     <h:outputText value="#{tag}" styleClass="label label-default"/>
                                 </ui:repeat>
                             </div>
+                            <div id="fileDatatagsBlock" class="col-xs-12" jsf:rendered="#{!(empty FilePage.fileMetadata.dataFile.tags)}">
+                                <ui:repeat value="#{FilePage.fileMetadata.dataFile.tags}" var="tag">
+                                    <h:outputText value="#{tag.typeLabel}" styleClass="label label-info"/>
+                                </ui:repeat>
+                            </div>
                         </div>
                     </div>
 
