@@ -5,6 +5,9 @@
  */
 package edu.harvard.iq.dataverse.datasetutility;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
@@ -24,6 +27,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -93,6 +97,7 @@ public class FileUploadTestPage implements java.io.Serializable {
             String ds_id = params.get("ds_id");
             if ((!ds_id.isEmpty()) && (StringUtils.isNumeric(ds_id))){
                 dataset = datasetService.find(Long.parseLong(ds_id));
+                checkRetrievalTest();
             }
         }
         
@@ -112,6 +117,38 @@ public class FileUploadTestPage implements java.io.Serializable {
         return null;
     }
     
+    
+    private void checkRetrievalTest(){
+        msgt("checkRetrievalTest");
+        if (dataset == null){
+            msg("Dataset is null!!!");
+        }
+        boolean prettyPrint = true;
+
+       List<HashMap> hashList = datasetVersionService.getBasicDatasetVersionInfo(dataset);
+                
+       msgt("hashed! : " + hashList.size());
+       
+       
+        msg(hashList.toString());
+       
+        GsonBuilder builder;
+        if (prettyPrint){  // Add pretty printing
+            builder = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().setPrettyPrinting();
+        }else{
+            builder = new GsonBuilder().excludeFieldsWithoutExposeAnnotation();                        
+        }
+        
+        Gson gson = builder.create();
+
+        // ----------------------------------
+        // serialize this object + add the id
+        // ----------------------------------
+        JsonElement jsonObj = gson.toJsonTree(hashList);
+        msgt("Really?");
+        msg(jsonObj.toString());
+        
+    }
     
 
     public List<FileMetadata> getDatasetFileMetadatas(){

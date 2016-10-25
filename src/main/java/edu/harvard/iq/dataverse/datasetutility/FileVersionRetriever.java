@@ -39,6 +39,11 @@ public class FileVersionRetriever {
         }
         dataFileService = fileService;
         chosenFile = dataFileService.find(chosenFileId);
+        
+        /*
+        if (chosenFile == null){
+            throw new NullPointerException("No DataFile found for id: "  + chosenFileId);
+        }*/
     }
 
     /**
@@ -57,4 +62,20 @@ public class FileVersionRetriever {
         dataFileService = fileService;
         chosenFile = selectedFile;
     }
+    
+    /**
+     * (1) Get all of the Dataset Versions
+     * 
+     * 
+     */
+    private void buildFileVersionHistory(){
+        
+        
+        //dataFileService.
+        
+        
+    }
+    
+    
+   
 }
