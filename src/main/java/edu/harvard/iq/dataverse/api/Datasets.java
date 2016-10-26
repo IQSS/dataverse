@@ -51,6 +51,7 @@ import edu.harvard.iq.dataverse.export.ddi.DdiExportUtil;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
@@ -58,6 +59,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -593,21 +595,19 @@ public class Datasets extends AbstractApiBean {
         Dataset dataset;
         
         Long datasetId;
-        try{
+        try {
             dataset = findDatasetOrDie(idSupplied);
             datasetId = dataset.getId();
-        }catch (WrappedResponse wr) {
-            
+        } catch (WrappedResponse wr) {
             String errMsg;
-            if (idSupplied==null){
+            if (idSupplied == null) {
                 errMsg = ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.dataset_id_is_null");
-               return error(Response.Status.BAD_REQUEST, errMsg);
-
-            }else if (idSupplied.equals(Datasets.PERSISTENT_ID_KEY)){
-              return wr.getResponse();
-            }else{
-               errMsg = ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.dataset_id_not_found") + " " + idSupplied;
-               return error(Response.Status.BAD_REQUEST, errMsg);
+                return error(Response.Status.BAD_REQUEST, errMsg);
+            } else if (idSupplied.equals(Datasets.PERSISTENT_ID_KEY)) {
+                return wr.getResponse();
+            } else {
+                errMsg = ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.dataset_id_not_found") + " " + idSupplied;
+                return error(Response.Status.BAD_REQUEST, errMsg);
             }
         }
         
@@ -685,38 +685,35 @@ public class Datasets extends AbstractApiBean {
     private void msgt(String m){
         dashes(); msg(m); dashes();
     }
-
-
     
-    private Dataset findDatasetOrDie( String id ) throws WrappedResponse {
+
+   
+    private Dataset findDatasetOrDie(String id) throws WrappedResponse {
         Dataset dataset;
-        if ( id.equals(PERSISTENT_ID_KEY) ) {
+        if (id.equals(PERSISTENT_ID_KEY)) {
             String persistentId = getRequestParameter(PERSISTENT_ID_KEY.substring(1));
-            if ( persistentId == null ) {
-                throw new WrappedResponse( 
-                        badRequest("When accessing a dataset based on persistent id, "
-                                + "a " + PERSISTENT_ID_KEY.substring(1) + " query parameter "
-                                + "must be present"));
+            if (persistentId == null) {
+                throw new WrappedResponse(
+                        badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset_id_is_null", Collections.singletonList(PERSISTENT_ID_KEY.substring(1)))));
             }
             dataset = datasetService.findByGlobalId(persistentId);
             if (dataset == null) {
-                throw new WrappedResponse( notFound("dataset " + persistentId + " not found") );
-            }   
+                throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.persistentId", Collections.singletonList(persistentId))));
+            }
             return dataset;
-            
+
         } else {
             try {
-                dataset = datasetService.find( Long.parseLong(id) );
+                dataset = datasetService.find(Long.parseLong(id));
                 if (dataset == null) {
-                    throw new WrappedResponse( notFound("dataset " + id + " not found") );
-                }   
+                    throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.id", Collections.singletonList(id))));
+                }
                 return dataset;
-            } catch ( NumberFormatException nfe ) {
-                throw new WrappedResponse( 
-                        badRequest("Bad dataset id number: '" + id + "'"));
+            } catch (NumberFormatException nfe) {
+                throw new WrappedResponse(
+                        badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.bad.id", Collections.singletonList(id))));
             }
         }
-        
     }
     
     
