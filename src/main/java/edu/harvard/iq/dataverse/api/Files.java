@@ -207,8 +207,10 @@ public class Files extends AbstractApiBean {
 
             try {
                 msgt("as String: " + addFileHelper.getSuccessResult());
-                return okResponseGsonObject(successMsg,
-                        addFileHelper.getSuccessResultAsGsonObject());
+                return ok(successMsg,
+                        addFileHelper.getSuccessResultAsJsonObjectBuilder());
+                //return okResponseGsonObject(successMsg,
+                //        addFileHelper.getSuccessResultAsGsonObject());
                 //"Look at that!  You added a file! (hey hey, it may have worked)");
             } catch (NoFilesException ex) {
                 Logger.getLogger(Files.class.getName()).log(Level.SEVERE, null, ex);

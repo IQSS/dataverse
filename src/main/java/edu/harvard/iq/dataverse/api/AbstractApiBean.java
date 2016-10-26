@@ -38,6 +38,7 @@ import edu.harvard.iq.dataverse.util.json.JsonParser;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.validation.BeanValidationServiceBean;
 import java.io.StringReader;
+import java.math.BigDecimal;
 import java.net.URI;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
@@ -491,7 +492,8 @@ public abstract class AbstractApiBean {
             .type(MediaType.APPLICATION_JSON)
             .build();
     }
-    
+
+  
     protected Response ok( String msg ) {
         return Response.ok().entity(Json.createObjectBuilder()
             .add("status", STATUS_OK)
@@ -501,6 +503,28 @@ public abstract class AbstractApiBean {
     }
     
     
+    protected Response ok(String message, JsonObjectBuilder jsonObjectBuilder ) {
+
+        if (message == null){
+            throw new NullPointerException("message cannot be null");
+        }
+        if (jsonObjectBuilder == null){
+            throw new NullPointerException("jsonObjectBuilder cannot be null");
+        }
+
+        jsonObjectBuilder.add("message", message);
+        
+        //JsonObjectBuilder foo = Json.createObjectBuilder();
+        //foo.add("message", message);
+        
+        
+        return Response.ok( Json.createObjectBuilder()
+            .add("status", STATUS_OK)
+            .add("data", jsonObjectBuilder).build())
+            .type(MediaType.APPLICATION_JSON)
+            .build();
+    }
+
     /** 
      * Added to accommodate a JSON String generated from gson
      * 

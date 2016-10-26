@@ -58,6 +58,7 @@ import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import static java.util.stream.Collectors.toList;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
@@ -310,6 +311,26 @@ public class JsonPrinter {
         return bld;
     }
     
+    
+    public static JsonObjectBuilder jsonDataFileList(List<DataFile> dataFiles){
+    
+        if (dataFiles==null){
+            throw new NullPointerException("dataFiles cannot be null");
+        }
+        
+        JsonObjectBuilder bld = jsonObjectBuilder();
+        
+        
+        List<FileMetadata> dataFileList = dataFiles.stream()
+                                    .map(x -> x.getFileMetadata())
+                                    .collect(Collectors.toList());
+
+        
+        bld.add("files", jsonFileMetadatas(dataFileList));
+
+        return bld;
+    }
+    
     private static String getRootDataverseNameforCitation(Dataset dataset) {
         Dataverse root = dataset.getOwner();
         while (root.getOwner() != null) {
@@ -367,6 +388,7 @@ public class JsonPrinter {
         for (FileMetadata fmd : fmds) {
             filesArr.add(json(fmd));
         }
+
         return filesArr;
     }
 
@@ -511,8 +533,8 @@ public class JsonPrinter {
                 .add("contentType", df.getContentType())            
                 .add("filesize", df.getFilesize())            
                 .add("description", df.getDescription())    
-                .add("released", df.isReleased())
-                .add("restricted", df.isRestricted())
+                //.add("released", df.isReleased())
+                //.add("restricted", df.isRestricted())
                 .add("storageIdentifier", df.getStorageIdentifier())
                 .add("originalFileFormat", df.getOriginalFileFormat())
                 .add("originalFormatLabel", df.getOriginalFormatLabel())

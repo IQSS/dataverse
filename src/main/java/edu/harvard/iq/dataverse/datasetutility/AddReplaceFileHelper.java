@@ -23,6 +23,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -34,6 +35,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJBException;
+import javax.json.JsonObjectBuilder;
 import javax.validation.ConstraintViolation;
 import javax.ws.rs.core.Response;
 
@@ -1436,11 +1438,11 @@ public class AddReplaceFileHelper{
             throw new NullPointerException("newlyAddedFiles is null!");
         }
         
-        return getSuccessResultAsGsonObject().toString();
+        return getSuccessResultAsJsonObjectBuilder().toString();
         
     }
     
-    public JsonObject getSuccessResultAsGsonObject() throws NoFilesException{
+    public JsonObjectBuilder getSuccessResultAsJsonObjectBuilder() throws NoFilesException{
         
         if (hasError()){
             throw new NoFilesException("Don't call this method if an error exists!! First check 'hasError()'");
@@ -1454,19 +1456,7 @@ public class AddReplaceFileHelper{
             throw new NoFilesException("newlyAddedFiles is empty!");
         }
         
-
-        JsonArray jsonList = new JsonArray();
-        
-        for (DataFile df : newlyAddedFiles){
-            jsonList.add(df.asGsonObject(false));
-        }
-        
-        JsonObject fullFilesJSON = new JsonObject(); 
-        fullFilesJSON.add("files", jsonList);
-        
-        return fullFilesJSON;
-        //return newlyAddedFile.asGsonObject(false);
-        
+        return JsonPrinter.jsonDataFileList(newlyAddedFiles);
     }
     
     

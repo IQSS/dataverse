@@ -599,6 +599,8 @@ public class Datasets extends AbstractApiBean {
             dataset = findDatasetOrDie(idSupplied);
             datasetId = dataset.getId();
         } catch (WrappedResponse wr) {
+            return wr.getResponse();
+            /*
             String errMsg;
             if (idSupplied == null) {
                 errMsg = ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.dataset_id_is_null");
@@ -608,7 +610,7 @@ public class Datasets extends AbstractApiBean {
             } else {
                 errMsg = ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.dataset_id_not_found") + " " + idSupplied;
                 return error(Response.Status.BAD_REQUEST, errMsg);
-            }
+            }*/
         }
         
         
@@ -662,8 +664,8 @@ public class Datasets extends AbstractApiBean {
             try {
                 //msgt("as String: " + addFileHelper.getSuccessResult());
 
-                return okResponseGsonObject(successMsg,
-                        addFileHelper.getSuccessResultAsGsonObject());
+                return ok(successMsg,
+                        addFileHelper.getSuccessResultAsJsonObjectBuilder());
                 //"Look at that!  You added a file! (hey hey, it may have worked)");
             } catch (NoFilesException ex) {
                 Logger.getLogger(Files.class.getName()).log(Level.SEVERE, null, ex);
