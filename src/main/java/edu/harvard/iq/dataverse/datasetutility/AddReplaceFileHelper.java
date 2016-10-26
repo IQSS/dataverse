@@ -138,6 +138,8 @@ public class AddReplaceFileHelper{
      * MAIN CONSTRUCTOR -- minimal requirements
      * 
      * @param dataset
+     * @param ingestService
+     * @param datasetService
      * @param dvRequest 
      */
     public AddReplaceFileHelper(DataverseRequest dvRequest, 
