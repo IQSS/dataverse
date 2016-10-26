@@ -62,7 +62,6 @@ public class FilesIT {
     private Integer createDatasetGetId(String dataverseAlias, String apiToken){
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
         
-
         createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
         Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
         

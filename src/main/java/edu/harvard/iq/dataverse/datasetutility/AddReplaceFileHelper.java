@@ -197,16 +197,14 @@ public class AddReplaceFileHelper{
     
     /**
      * 
-     * @param datasetId
+     * @param chosenDataset
      * @param newFileName
      * @param newFileContentType
      * @param newFileInputStream
      * @param optionalFileParams
-     * @param description  optional
-     * @param 
      * @return 
      */
-    public boolean runAddFileByDatasetId(Long datasetId, 
+    public boolean runAddFileByDataset(Dataset chosenDataset, 
             String newFileName, 
             String newFileContentType, 
             InputStream newFileInputStream,
@@ -218,7 +216,7 @@ public class AddReplaceFileHelper{
         
         this.currentOperation = FILE_ADD_OPERATION;
         
-        if (!this.step_001_loadDatasetById(datasetId)){
+        if (!this.step_001_loadDataset(chosenDataset)){
             return false;
         }
         
@@ -692,28 +690,6 @@ public class AddReplaceFileHelper{
         return true;
     }
     
-    /**
-     * 
-     */
-    private boolean step_001_loadDatasetById(Long datasetId){
-        
-        if (this.hasError()){
-            return false;
-        }
-
-        if (datasetId == null){
-            this.addErrorSevere(getBundleErr("dataset_id_is_null"));
-            return false;
-        }
-        
-        Dataset yeDataset = datasetService.find(datasetId);
-        if (yeDataset == null){
-            this.addError(getBundleErr("dataset_id_not_found") + " " + datasetId);
-            return false;
-        }      
-       
-        return step_001_loadDataset(yeDataset);
-    }
     
     
     /**
