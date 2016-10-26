@@ -1341,31 +1341,12 @@ public class AddReplaceFileHelper{
             df.setRootDataFileId(fileToReplace.getRootDataFileId());
             
         }
+
+        // Call the update dataset command
+        //
+        return step_070_run_update_dataset_command();
         
        
-        Command<Dataset> update_cmd;
-        update_cmd = new UpdateDatasetCommand(dataset, dvRequest);
-
-
-        ((UpdateDatasetCommand) update_cmd).setValidateLenient(true);
-        
-
-        try {        
-            // Submit the update dataset command 
-            // and update the local dataset object
-            //
-              dataset = commandEngine.submit(update_cmd);
-          } catch (CommandException ex) {
-              this.addErrorSevere(getBundleErr("replace.command_engine_error"));
-              logger.severe(ex.getMessage());
-              return false;
-          }catch (EJBException ex) {
-              this.addErrorSevere(getBundleErr("replace.ejb_exception"));
-              logger.severe(ex.getMessage());
-              return false;
-          } 
-
-        return true;
     }
             
     /**
