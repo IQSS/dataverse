@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJBException;
 import javax.validation.ConstraintViolation;
@@ -1123,7 +1124,13 @@ public class AddReplaceFileHelper{
         // Add tags, description, etc
         // --------------------------------------------
         for (DataFile df : finalFileList){
-            optionalFileParams.addOptionalParams(df);
+            try {
+                optionalFileParams.addOptionalParams(df);
+            } catch (DataFileTagException ex) {
+                Logger.getLogger(AddReplaceFileHelper.class.getName()).log(Level.SEVERE, null, ex);
+                addError(ex.getMessage());
+                return false;
+            }
         }
         
         

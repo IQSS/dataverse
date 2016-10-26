@@ -40,7 +40,7 @@ public class OptionalFileParamsTest {
 
         assertEquals(instance.getDescription(), val);
         assertNull(instance.getCategories());
-        assertNull(instance.getFileDataTags());
+        assertNull(instance.getDataFileTags());
 
     }
     
@@ -95,7 +95,7 @@ public class OptionalFileParamsTest {
         List<String> expectedCategories = Arrays.asList("dog", "cat", "mouse");
         assertEquals(expectedCategories, instance.getCategories());
 
-        assertNull(instance.getFileDataTags());
+        assertNull(instance.getDataFileTags());
         assertTrue(instance.hasCategories());
         assertTrue(instance.hasDescription());
         assertFalse(instance.hasFileDataTags());
@@ -108,14 +108,14 @@ public class OptionalFileParamsTest {
         msgt("test_05_jsonTabularTagsGood");
 
         String val = "A new file";
-        String jsonParams = "{\"fileDataTags\": [\"Survey\", \"Event\", \"Panel\"], \"description\": \"A new file\"}";
+        String jsonParams = "{\"dataFileTags\": [\"Survey\", \"Event\", \"Panel\"], \"description\": \"A new file\"}";
         
         OptionalFileParams instance = new OptionalFileParams(jsonParams);
 
         assertEquals(instance.getDescription(), val);
     
         List<String> expectedTags = Arrays.asList("Survey", "Event", "Panel");
-        assertEquals(expectedTags, instance.getFileDataTags());
+        assertEquals(expectedTags, instance.getDataFileTags());
 
         assertNull(instance.getCategories());
         assertFalse(instance.hasCategories());
@@ -129,7 +129,7 @@ public class OptionalFileParamsTest {
         msgt("test_06_jsonTabularTagsBad");
 
         String val = "A new file";
-        String jsonParams = "{\"fileDataTags\": [\"Survey\", \"Event\", \"xPanel\"], \"description\": \"A new file\"}";
+        String jsonParams = "{\"dataFileTags\": [\"Survey\", \"Event\", \"xPanel\"], \"description\": \"A new file\"}";
         
         try{
             OptionalFileParams instance = new OptionalFileParams(jsonParams);
@@ -149,15 +149,15 @@ public class OptionalFileParamsTest {
 
         String val = "A new file";
         List<String> categories = Arrays.asList("dog", " dog ", "cat", "mouse", "dog ");
-        List<String> fileDataTags = Arrays.asList("Survey", "Event", "Panel");
+        List<String> dataFileTags = Arrays.asList("Survey", "Event", "Panel");
         
         OptionalFileParams instance = new OptionalFileParams(val,   
                                 categories,
-                                fileDataTags);
+                                dataFileTags);
 
          assertEquals(val, instance.getDescription());
          assertEquals( Arrays.asList("dog", "cat", "mouse"), instance.getCategories());
-         assertEquals(fileDataTags, instance.getFileDataTags());
+         assertEquals(dataFileTags, instance.getDataFileTags());
          
     }
     
@@ -168,15 +168,15 @@ public class OptionalFileParamsTest {
 
         String val = null;
         List<String> categories = null;//Arrays.asList("dog", "cat", "mouse");
-        List<String> fileDataTags = Arrays.asList("Survey", "Survey", "Event", "Panel", "Survey", " ");
+        List<String> dataFileTags = Arrays.asList("Survey", "Survey", "Event", "Panel", "Survey", " ");
         
         OptionalFileParams instance = new OptionalFileParams(val,   
                                 categories,
-                                fileDataTags);
+                                dataFileTags);
 
          assertEquals(val, instance.getDescription());
          assertEquals(categories, instance.getCategories());
-         assertEquals(Arrays.asList("Survey", "Event", "Panel"), instance.getFileDataTags());
+         assertEquals(Arrays.asList("Survey", "Event", "Panel"), instance.getDataFileTags());
          
     }
     
@@ -195,7 +195,7 @@ public class OptionalFileParamsTest {
         assertNull(instance.getCategories());
         assertFalse(instance.hasCategories());
 
-        assertNull(instance.getFileDataTags());
+        assertNull(instance.getDataFileTags());
         assertFalse(instance.hasFileDataTags());
 
     }

@@ -40,8 +40,8 @@ public class OptionalFileParams {
     private List<String> categories;
     public static final String CATEGORIES_ATTR_NAME = "categories";
     
-    private List<String> fileDataTags;
-    public static final String FILE_DATA_TAGS_ATTR_NAME = "fileDataTags";
+    private List<String> dataFileTags;
+    public static final String FILE_DATA_TAGS_ATTR_NAME = "dataFileTags";
 
 
     
@@ -87,7 +87,7 @@ public class OptionalFileParams {
     }
  
     public boolean hasFileDataTags(){
-        if ((fileDataTags == null)||(this.fileDataTags.isEmpty())){
+        if ((dataFileTags == null)||(this.dataFileTags.isEmpty())){
             return false;
         }
         return true;
@@ -126,19 +126,19 @@ public class OptionalFileParams {
     
 
     /**
-     *  Set fileDataTags
-     *  @param fileDataTags
+     *  Set dataFileTags
+     *  @param dataFileTags
      */
-    public void setFileDataTags(List<String> fileDataTags){
-        this.fileDataTags = fileDataTags;
+    public void setDataFileTags(List<String> dataFileTags){
+        this.dataFileTags = dataFileTags;
     }
 
     /**
      *  Get for dataFileTags
      *  @return List<String>
      */
-    public List<String> getFileDataTags(){
-        return this.fileDataTags;
+    public List<String> getDataFileTags(){
+        return this.dataFileTags;
     }
 
     private void loadParamsFromJson(String jsonData) throws DataFileTagException{
@@ -221,20 +221,20 @@ public class OptionalFileParams {
         }
         
          // Make a new list
-        this.fileDataTags = new ArrayList<>();
+        this.dataFileTags = new ArrayList<>();
            
         // Add valid potential tags to the list
         for (String tagToCheck : potentialTags){
             if (DataFileTag.isDataFileTag(tagToCheck)){
-                this.fileDataTags.add(tagToCheck);
+                this.dataFileTags.add(tagToCheck);
             }else{                    
                 String errMsg = ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.invalid_datafile_tag");
                 throw new DataFileTagException(errMsg + " [" + tagToCheck + "]. Please use one of the following: " + DataFileTag.getListofLabelsAsString());
             }
         }
          // Shouldn't happen....
-         if (fileDataTags.isEmpty()){
-            fileDataTags = null;
+         if (dataFileTags.isEmpty()){
+            dataFileTags = null;
         }
     }
     
@@ -253,7 +253,7 @@ public class OptionalFileParams {
      * Add parameters to a DataFile object
      * 
      */
-    public void addOptionalParams(DataFile df) {
+    public void addOptionalParams(DataFile df) throws DataFileTagException{
         if (df == null){            
             throw new NullPointerException("The datafile cannot be null!");
         }
@@ -268,9 +268,9 @@ public class OptionalFileParams {
         }
         
         // ---------------------------
-        // Add tags
+        // Add categories
         // ---------------------------
-        addTagsToDataFile(fm);
+        addCategoriesToDataFile(fm);
        
 
         // ---------------------------
@@ -285,7 +285,7 @@ public class OptionalFileParams {
      *  Add Tags to the DataFile
      * 
      */
-    private void addTagsToDataFile(FileMetadata fileMetadata){
+    private void addCategoriesToDataFile(FileMetadata fileMetadata){
         
         if (fileMetadata == null){            
             throw new NullPointerException("The fileMetadata cannot be null!");
@@ -305,19 +305,38 @@ public class OptionalFileParams {
             fileMetadata.addCategoryByName(catText);  // fyi: "addCategoryByName" checks for dupes
         });
     }
+
     
-    
-    private void addFileDataTagsToFile(DataFile df){
+    /**
+     * NOTE: DataFile tags can only be added to tabular files
+     * 
+     *      - e.g. The file must already be ingested.
+     * 
+     * Because of this, these tags cannot be used when "Adding" a file via 
+     * the API--e.g. b/c the file will note yet be ingested
+     * 
+     * @param df 
+     */
+    private void addFileDataTagsToFile(DataFile df) throws DataFileTagException{
         if (df == null){
             throw new NullPointerException("The DataFile (df) cannot be null!");
         }
-        msgt("addFileDataTagsToFile");
         
+        // --------------------------------------------------
         // Is there anything to add?
+        // --------------------------------------------------
         if (!hasFileDataTags()){
             return;
         }
-        msgt("addFileDataTagsToFile 2");
+        
+        // --------------------------------------------------
+        // Is this a tabular file?
+        // --------------------------------------------------
+        if (!df.isTabularData()){
+            String errMsg = ResourceBundle.getBundle("Bundle").getString("file.metadata.datafiletag.not_tabular");
+
+            throw new DataFileTagException(errMsg);
+        }
         
         // --------------------------------------------------
         // Get existing tag list and convert it to list of strings (labels)
@@ -340,7 +359,7 @@ public class OptionalFileParams {
         // Iterate through and add any new labels
         // --------------------------------------------------
         DataFileTag newTagObj;
-        for (String tagLabel : this.getFileDataTags()){    
+        for (String tagLabel : this.getDataFileTags()){    
 
             if (!currentLabels.contains(tagLabel)){     // not  already there!
 
