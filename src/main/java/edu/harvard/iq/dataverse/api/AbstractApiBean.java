@@ -499,26 +499,7 @@ public abstract class AbstractApiBean {
             .type(MediaType.APPLICATION_JSON)
             .build();
     }
-    
-    
-    /** 
-     * Added to accommodate a JSON String generated from gson
-     * 
-     * @param gsonObject
-     * @return 
-     */
-    protected Response okResponseGsonObject(String msg, com.google.gson.JsonObject gsonObject){
-        
-        if (gsonObject == null){
-            throw new NullPointerException("gsonObject cannot be null");
-        }
 
-        gsonObject.addProperty("status", "OK");
-        gsonObject.addProperty("message", msg);
-        
-        return Response.ok(gsonObject.toString(), MediaType.APPLICATION_JSON).build();
-    }
-    
     /**
      * Returns an OK response (HTTP 200, status:OK) with the passed value
      * in the data field.

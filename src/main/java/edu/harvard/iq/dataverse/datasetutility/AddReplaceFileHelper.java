@@ -25,6 +25,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -34,6 +35,9 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJBException;
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonReader;
 import javax.validation.ConstraintViolation;
 import javax.ws.rs.core.Response;
 
@@ -1468,8 +1472,16 @@ public class AddReplaceFileHelper{
         //return newlyAddedFile.asGsonObject(false);
         
     }
-    
-    
+
+    public static JsonObjectBuilder convertGsonObjectToJsonObjectBuilder(String successMsg, JsonObject gsonObject) {
+        JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        jsonObjectBuilder.add("message", successMsg);
+        JsonReader jsonReader = Json.createReader(new StringReader(gsonObject.toString()));
+        javax.json.JsonObject object = jsonReader.readObject();
+        jsonObjectBuilder.add("files", object.get("files"));
+        return jsonObjectBuilder;
+    }
+
     /**
      * Currently this is a placeholder if we decide to send
      * user notifications.
