@@ -11,9 +11,9 @@ import com.google.gson.reflect.TypeToken;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileTag;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.api.Util;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
@@ -104,15 +104,15 @@ public class OptionalFileParams {
      *  Set tags
      *  @param tags
      */
-    public void setCategories(List<String> newCategories){
-        
-        if (newCategories != null){
-            newCategories = removeDuplicatesNullsEmptyStrings(newCategories);
-            if (newCategories.isEmpty()){
+    public void setCategories(List<String> newCategories) {
+
+        if (newCategories != null) {
+            newCategories = Util.removeDuplicatesNullsEmptyStrings(newCategories);
+            if (newCategories.isEmpty()) {
                 newCategories = null;
             }
         }
-                
+
         this.categories = newCategories;
     }
 
@@ -191,30 +191,14 @@ public class OptionalFileParams {
         }
        
     }
-    
-    private List<String> removeDuplicatesNullsEmptyStrings(List<String> tagsToCheck){
-        
-        if (tagsToCheck == null){
-            throw new NullPointerException("tagsToCheck cannot be null");
-        }
-             
-        return tagsToCheck.stream()
-                        .filter(p -> p != null)         // no nulls
-                        .map(String :: trim)            // strip strings
-                        .filter(p -> p.length() > 0 )   // no empty strings
-                        .distinct()                     // distinct
-                        .collect(Collectors.toList());
-      
-    }
-    
-    
+  
     private void addFileDataTags(List<String> potentialTags) throws DataFileTagException{
         
         if (potentialTags == null){
             return;
         }
-                
-        potentialTags = removeDuplicatesNullsEmptyStrings(potentialTags);
+
+        potentialTags = Util.removeDuplicatesNullsEmptyStrings(potentialTags);
                 
         if (potentialTags.isEmpty()){
             return;
