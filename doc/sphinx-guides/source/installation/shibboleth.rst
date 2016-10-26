@@ -201,10 +201,56 @@ attribute-map.xml
 
 By default, some attributes ``/etc/shibboleth/attribute-map.xml`` are commented out. Edit the file to enable them so that all the require attributes come through. You can download a `sample attribute-map.xml file <../_static/installation/files/etc/shibboleth/attribute-map.xml>`_.
 
-Disable SELinux
-~~~~~~~~~~~~~~~
+Disable or Reconfigure SELinux
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You must set ``SELINUX=permisive`` in ``/etc/selinux/config`` and run ``setenforce permissive`` or otherwise disable SELinux for Shibboleth to work. "At the present time, we do not support the SP in conjunction with SELinux, and at minimum we know that communication between the mod_shib and shibd components will fail if it's enabled. Other problems may also occur." -- https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPSELinux
+SELinux is set to "enforcing" by default on RHEL/CentOS, but unfortunately Shibboleth does not "just work" with SELinux. You have two options. You can disable SELinux or you can reconfigure SELinux to accommodate Shibboleth.
+
+Disable SELinux
+^^^^^^^^^^^^^^^
+
+The first and easiest option is to set ``SELINUX=permisive`` in ``/etc/selinux/config`` and run ``setenforce permissive`` or otherwise disable SELinux to get Shibboleth to work. This is apparently what the Shibboleth project expects because their wiki page at https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPSELinux says, "At the present time, we do not support the SP in conjunction with SELinux, and at minimum we know that communication between the mod_shib and shibd components will fail if it's enabled. Other problems may also occur."
+
+Reconfigure SELinux to Accommodate Shibboleth
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The second (more involved) option is to use the ``checkmodule``, ``semodule_package``, and ``semodule`` tools to apply a local policy to make Shibboleth work with SELinux. Let's get started.
+
+Put Type Enforcement (TE) File in misc directory
+````````````````````````````````````````````````
+
+Copy and paste or download the `shibboleth.te <../_static/installation/files/etc/selinux/targeted/src/policy/domains/misc/shibboleth.te>`_ Type Enforcement (TE) file below and put it at ``/etc/selinux/targeted/src/policy/domains/misc/shibboleth.te``.
+
+.. literalinclude:: ../_static/installation/files/etc/selinux/targeted/src/policy/domains/misc/shibboleth.te
+   :language: text
+
+(If you would like to know where the ``shibboleth.te`` came from and how to hack on it, please see the :doc:`/developers/selinux` section of the Developer Guide. Pull requests are welcome!)
+
+Navigate to misc directory
+``````````````````````````
+
+``cd /etc/selinux/targeted/src/policy/domains/misc``
+
+Run checkmodule
+```````````````
+
+``checkmodule -M -m -o shibboleth.mod shibboleth.te``
+
+Run semodule_package
+````````````````````
+
+``semodule_package -o shibboleth.pp -m shibboleth.mod``
+
+Silent is golden. No output is expected.
+
+Run semodule
+````````````
+
+``semodule -i shibboleth.pp``
+
+Silent is golden. No output is expected. This will place a file in ``/etc/selinux/targeted/modules/active/modules/shibboleth.pp`` and include "shibboleth" in the output of ``semodule -l``. See the ``semodule`` man page if you ever want to remove or disable the module you just added.
+
+Congrats! You've made the creator of http://stopdisablingselinux.com proud. :)
 
 Restart Apache and Shibboleth
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
