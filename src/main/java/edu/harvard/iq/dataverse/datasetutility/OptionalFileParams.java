@@ -296,9 +296,7 @@ public class OptionalFileParams {
         
         List<String> currentCategories = fileMetadata.getCategoriesByName();
         for (String tagText : this.getTags()){               
-            if (!currentCategories.contains(tagText)){
-                fileMetadata.addCategoryByName(tagText);
-            }
+            fileMetadata.addCategoryByName(tagText);
         }
     }
     

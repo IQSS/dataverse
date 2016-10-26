@@ -103,7 +103,7 @@ public class AddReplaceFileHelper{
     // -----------------------------------
     // Instance variables directly added
     // -----------------------------------
-    private Dataset dataset;                    // constructor
+    private Dataset dataset;                    // constructor (for add, not replace)
     private DataverseRequest dvRequest;         // constructor
     private InputStream newFileInputStream;     // step 20
     private String newFileName;                 // step 20
@@ -133,10 +133,6 @@ public class AddReplaceFileHelper{
     private List<String> errorMessages;
     private Response.Status httpErrorCode; // optional
     
-  //  public AddReplaceFileHelper(){
-  //      throw new IllegalStateException("Must be called with a dataset and or user");
-  //  }
-    
     
     /** 
      * MAIN CONSTRUCTOR -- minimal requirements
@@ -144,7 +140,6 @@ public class AddReplaceFileHelper{
      * @param dataset
      * @param dvRequest 
      */
-
     public AddReplaceFileHelper(DataverseRequest dvRequest, 
                             IngestServiceBean ingestService,                            
                             DatasetServiceBean datasetService,
@@ -1168,7 +1163,7 @@ public class AddReplaceFileHelper{
             this.addErrorSevere(getBundleErr("final_file_list_empty"));                
             return false;
         }
-        
+
         ingestService.addFiles(workingVersion, finalFileList);
 
         return true;
@@ -1333,8 +1328,6 @@ public class AddReplaceFileHelper{
         if (!step_085_auto_remove_filemetadata_to_replace_from_working_version()){
             return false;
         }
-
-
         
         // -----------------------------------------------------------
         // Set the "root file ids" and "previous file ids"
@@ -1505,7 +1498,8 @@ public class AddReplaceFileHelper{
        
         // Create a notification!
        
-        // skip for now 
+        // skip for now, may be part of dataset update listening
+        //
         return true;
     }
     

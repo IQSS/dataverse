@@ -555,7 +555,9 @@ public class Datasets extends AbstractApiBean {
     /**
      * Add a File to an existing Dataset
      * 
+     * @param idSupplied
      * @param datasetId
+     * @param jsonData
      * @param testFileInputStream
      * @param contentDispositionHeader
      * @param formDataBodyPart
@@ -566,7 +568,7 @@ public class Datasets extends AbstractApiBean {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     public Response addFileToDataset(@PathParam("id") String idSupplied,
                     @FormDataParam("jsonData") String jsonData,
-                    @FormDataParam("file") InputStream testFileInputStream,
+                    @FormDataParam("file") InputStream fileInputStream,
                     @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
                     @FormDataParam("file") final FormDataBodyPart formDataBodyPart
                     ){
@@ -590,9 +592,12 @@ public class Datasets extends AbstractApiBean {
         // -------------------------------------
         Dataset dataset;
         
+        Long datasetId;
         try{
             dataset = findDatasetOrDie(idSupplied);
+            datasetId = dataset.getId();
         }catch (WrappedResponse wr) {
+            
             String errMsg;
             if (idSupplied==null){
                 errMsg = ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.dataset_id_is_null");
@@ -606,8 +611,6 @@ public class Datasets extends AbstractApiBean {
             }
         }
         
-        Long datasetId = dataset.getId();
-
         
         // -------------------------------------
         // (3) Get the file name and content type
@@ -648,7 +651,7 @@ public class Datasets extends AbstractApiBean {
         addFileHelper.runAddFileByDatasetId(datasetId,
                                 newFilename,
                                 newFileContentType,
-                                testFileInputStream,
+                                fileInputStream,
                                 optionalFileParams);
 
 
@@ -657,7 +660,7 @@ public class Datasets extends AbstractApiBean {
         }else{
             String successMsg = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");        
             try {
-                msgt("as String: " + addFileHelper.getSuccessResult());
+                //msgt("as String: " + addFileHelper.getSuccessResult());
 
                 return okResponseGsonObject(successMsg,
                         addFileHelper.getSuccessResultAsGsonObject());
