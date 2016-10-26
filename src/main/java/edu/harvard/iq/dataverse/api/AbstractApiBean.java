@@ -531,7 +531,8 @@ public abstract class AbstractApiBean {
      * @param gsonObject
      * @return 
      */
-    protected Response okResponseGsonObject(String msg, com.google.gson.JsonObject gsonObject){
+    /*
+    protected Response ok(String msg, com.google.gson.JsonObject gsonObject){
         
         if (gsonObject == null){
             throw new NullPointerException("gsonObject cannot be null");
@@ -542,6 +543,8 @@ public abstract class AbstractApiBean {
         
         return Response.ok(gsonObject.toString(), MediaType.APPLICATION_JSON).build();
     }
+    */
+    
     
     /**
      * Returns an OK response (HTTP 200, status:OK) with the passed value
