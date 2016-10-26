@@ -188,7 +188,33 @@ public class FilesIT {
     public void test_005_AddFileBadPermissions() {
         msgt("test_005_AddFileBadPerms");
 
-        // To do!!!
+         // Create user
+        String apiToken = createUserGetToken();
+
+        // Create Dataverse
+        String dataverseAlias = createDataverseGetAlias(apiToken);
+
+        // Create Dataset
+        Integer datasetId = createDatasetGetId(dataverseAlias, apiToken);
+       
+        // Create another user
+        String apiTokenUnauthorizedUser = createUserGetToken();
+
+        
+        String pathToFile = "src/main/webapp/resources/images/favicondataverse.png";
+        Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiTokenUnauthorizedUser);
+
+        //addResponse.prettyPrint();
+        msgt("Here it is: " + addResponse.prettyPrint());
+        
+        
+        String errMsg = ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.no_edit_dataset_permission");        
+
+      
+        addResponse.then().assertThat()
+                .body("message", equalTo(errMsg))
+                .body("status", equalTo(AbstractApiBean.STATUS_ERROR))
+                .statusCode(FORBIDDEN.getStatusCode());
     }
 
     @Test

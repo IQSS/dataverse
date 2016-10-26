@@ -20,6 +20,7 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import java.io.IOException;
@@ -706,18 +707,35 @@ public class AddReplaceFileHelper{
         if (this.hasError()){
             return false;
         }
+                
+        return step_015_auto_check_permissions(dataset);
+
+    }
+    
+    private boolean step_015_auto_check_permissions(Dataset datasetToCheck){
         
-        msg("dataset:" + dataset.toString());
-        msg("Permission.EditDataset:" + Permission.EditDataset.toString());
-        msg("dvRequest:" + dvRequest.toString());
-        msg("permissionService:" + permissionService.toString());
+        if (this.hasError()){
+            return false;
+        }
         
-        if (!permissionService.request(dvRequest).on(dataset).has(Permission.EditDataset)){
-           addError(Response.Status.FORBIDDEN,getBundleErr("no_edit_dataset_permission"));
+        if (datasetToCheck == null){
+            addError(getBundleErr("dataset_is_null"));
+            return false;
+        }
+        
+        // Make a temp. command
+        //
+        CreateDatasetCommand createDatasetCommand = new CreateDatasetCommand(datasetToCheck, dvRequest, false);
+        
+        // Can this user run the command?
+        //
+        if (!permissionService.isUserAllowedOn(dvRequest.getUser(), createDatasetCommand, datasetToCheck)) {
+            addError(Response.Status.FORBIDDEN,getBundleErr("no_edit_dataset_permission"));
            return false;
         }
+        
         return true;
-
+        
     }
     
     
@@ -783,10 +801,10 @@ public class AddReplaceFileHelper{
 
         // Do we have permission to replace this file? e.g. Edit the file's dataset
         //
-        if (!permissionService.request(dvRequest).on(existingFile.getOwner()).has(Permission.EditDataset)){
-           addError(Response.Status.FORBIDDEN, getBundleErr("no_edit_dataset_permission"));
-           return false;
-        }
+        if (!step_015_auto_check_permissions(existingFile.getOwner())){
+            return false;
+        };
+
         
         
         // Is the file published?
