@@ -27,6 +27,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
@@ -279,7 +281,26 @@ public class DataFile extends DvObject implements Comparable {
         }
         return tagStrings;
     }
-    
+
+    public JsonArrayBuilder getTagLabelsAsJsonArrayBuilder(){
+        
+        List<DataFileTag> currentDataTags = this.getTags();
+
+        JsonArrayBuilder builder = Json.createArrayBuilder();
+        
+        if ( (currentDataTags == null)||(currentDataTags.isEmpty())){
+            return builder;
+        }
+        
+        
+        Iterator itr = currentDataTags.iterator();
+        while (itr.hasNext()){
+            DataFileTag element = (DataFileTag)itr.next();
+            builder.add(element.getTypeLabel());            
+        }
+        return builder;
+    }
+
     /**
      * Return a list of Tag labels
      * 

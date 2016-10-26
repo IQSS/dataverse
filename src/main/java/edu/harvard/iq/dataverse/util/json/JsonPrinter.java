@@ -36,6 +36,7 @@ import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.util.DatasetFieldWalker;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Set;
 import javax.json.Json;
@@ -503,25 +504,39 @@ public class JsonPrinter {
             fileName = df.getFileMetadata().getLabel();
         }
         
+        
         return jsonObjectBuilder()
                 .add("id", df.getId())
                 .add("filename", fileName)
-                .add("contentType", df.getContentType())
+                .add("contentType", df.getContentType())            
+                .add("filesize", df.getFilesize())            
+                .add("description", df.getDescription())    
+                .add("released", df.isReleased())
+                .add("restricted", df.isRestricted())
                 .add("storageIdentifier", df.getStorageIdentifier())
                 .add("originalFileFormat", df.getOriginalFileFormat())
                 .add("originalFormatLabel", df.getOriginalFormatLabel())
                 .add("UNF", df.getUnf())
+                //---------------------------------------------
+                // For file replace: rootDataFileId, previousDataFileId
+                //---------------------------------------------
                 .add("rootDataFileId", df.getRootDataFileId())
                 .add("previousDataFileId", df.getPreviousDataFileId())
-                /**
-                 * @todo Should we deprecate "md5" now that it's under
-                 * "checksum" (which may also be a SHA-1 rather than an MD5)?
-                 */
+                //---------------------------------------------
+                // Add categories + tags
+                //---------------------------------------------
+                .add("categories", fileMetadata.getCategoryNamesAsJsonArrayBuilder())
+                .add("tags", df.getTagLabelsAsJsonArrayBuilder())
+                //---------------------------------------------
+                // Checksum
+                // * @todo Should we deprecate "md5" now that it's under
+                // * "checksum" (which may also be a SHA-1 rather than an MD5)?
+                //---------------------------------------------
                 .add("md5", getMd5IfItExists(df.getChecksumType(), df.getChecksumValue()))
                 .add("checksum", getChecksumTypeAndValue(df.getChecksumType(), df.getChecksumValue()))
-                .add("description", df.getDescription());
+                ;
     }
-
+    
     public static String format(Date d) {
         return (d == null) ? null : Util.getDateTimeFormat().format(d);
     }
