@@ -496,6 +496,8 @@ public abstract class AbstractApiBean {
     protected Response ok( String msg ) {
         return Response.ok().entity(Json.createObjectBuilder()
             .add("status", STATUS_OK)
+            .add("message", msg)
+            // leaving it in "data" for now for backward compat. -- need to check with partners who are using it
             .add("data", Json.createObjectBuilder().add("message",msg)).build() )
             .type(MediaType.APPLICATION_JSON)
             .build();
