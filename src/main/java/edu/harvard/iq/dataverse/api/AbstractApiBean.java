@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.api;
 
-import com.google.gson.JsonElement;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
@@ -512,14 +511,10 @@ public abstract class AbstractApiBean {
             throw new NullPointerException("jsonObjectBuilder cannot be null");
         }
 
-        jsonObjectBuilder.add("message", message);
-        
-        //JsonObjectBuilder foo = Json.createObjectBuilder();
-        //foo.add("message", message);
-        
-        
+
         return Response.ok( Json.createObjectBuilder()
             .add("status", STATUS_OK)
+            .add("message", message)
             .add("data", jsonObjectBuilder).build())
             .type(MediaType.APPLICATION_JSON)
             .build();
