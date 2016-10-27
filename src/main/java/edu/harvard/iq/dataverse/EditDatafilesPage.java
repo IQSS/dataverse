@@ -1019,7 +1019,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
     
     private String returnToFileLandingPage(Long fileId) {
-        return "/file.xhtml?fileId=" + fileId  + "&datasetVersionId=" + workingVersion.getId() + "&faces-redirect=true";
+        return "/file.xhtml?fileId=" + fileId  + "&version=DRAFT&faces-redirect=true";
     }
     
     public String cancel() {

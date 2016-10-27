@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.DatasetVersionServiceBean.RetrieveDatasetVersionResponse;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
@@ -42,7 +43,9 @@ public class FilePage implements java.io.Serializable {
     
     private FileMetadata fileMetadata;
     private Long fileId;  
+    private String version;
     private Long datasetVersionId;
+
     private DataFile file;
     
     private FileDownloadHelper fileDownloadHelper;
@@ -59,6 +62,9 @@ public class FilePage implements java.io.Serializable {
     
     @EJB
     DataFileServiceBean datafileService;
+    
+    @EJB
+    DatasetVersionServiceBean datasetVersionService;
 
     @EJB
     PermissionServiceBean permissionService;
@@ -104,13 +110,12 @@ public class FilePage implements java.io.Serializable {
                return permissionsWrapper.notFound();
             }
 
-            //if an edit creates a new version we need to get the new version id/
-            if (datasetVersionId == null){
-                datasetVersionId = file.getOwner().getEditVersion().getId();
-            }
+                RetrieveDatasetVersionResponse retrieveDatasetVersionResponse;
+                retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(file.getOwner().getVersions(), version);
+                Long getDatasetVersionID = retrieveDatasetVersionResponse.getDatasetVersion().getId();
+                fileMetadata = datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(getDatasetVersionID, fileId);
 
-            fileMetadata = datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(datasetVersionId, fileId);
-
+          
             if (fileMetadata == null){
                return permissionsWrapper.notFound();
             }
@@ -192,15 +197,15 @@ public class FilePage implements java.io.Serializable {
     public void setFileId(Long fileId) {
         this.fileId = fileId;
     }
-
-    public Long getDatasetVersionId() {
-        return datasetVersionId;
+     
+    public String getVersion() {
+        return version;
     }
 
-    public void setDatasetVersionId(Long datasetVersionId) {
-        this.datasetVersionId = datasetVersionId;
+    public void setVersion(String version) {
+        this.version = version;
     }
-    
+  
     public String restrictFile(boolean restricted){     
             String fileNames = null;   
             
@@ -309,9 +314,8 @@ public class FilePage implements java.io.Serializable {
         }
 
 
-            JsfHelper.addSuccessMessage(JH.localize("dataset.message.filesSuccess"));
-
-           setDatasetVersionId(editDataset.getEditVersion().getId());
+        JsfHelper.addSuccessMessage(JH.localize("dataset.message.filesSuccess"));
+        setVersion("DRAFT");
         return "";
     }
     
@@ -334,8 +338,8 @@ public class FilePage implements java.io.Serializable {
     }
     
     private String returnToDraftVersion(){ 
-
-         return "/file.xhtml?fileId=" + fileId + "&datasetVersionId=" + editDataset.getEditVersion().getId() + "&faces-redirect=true";    
+        
+         return "/file.xhtml?fileId=" + fileId + "&version=DRAFT&faces-redirect=true";    
     }
     
     public FileDownloadHelper getFileDownloadHelper() {
