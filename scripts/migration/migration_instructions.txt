@@ -110,7 +110,7 @@ datafile_pub_date.sql
 
 12. (when ready for users to log in) add user passwords
 
-[how?]
+migrate_passwords.sql
 
 __________________________________________________
 
