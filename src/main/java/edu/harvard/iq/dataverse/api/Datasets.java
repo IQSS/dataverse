@@ -10,11 +10,7 @@ import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
-import edu.harvard.iq.dataverse.MetadataBlock;
-import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
-import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
@@ -81,7 +77,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -597,23 +592,11 @@ public class Datasets extends AbstractApiBean {
         Long datasetId;
         try {
             dataset = findDatasetOrDie(idSupplied);
-            datasetId = dataset.getId();
         } catch (WrappedResponse wr) {
-            return wr.getResponse();
-            /*
-            String errMsg;
-            if (idSupplied == null) {
-                errMsg = ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.dataset_id_is_null");
-                return error(Response.Status.BAD_REQUEST, errMsg);
-            } else if (idSupplied.equals(Datasets.PERSISTENT_ID_KEY)) {
-                return wr.getResponse();
-            } else {
-                errMsg = ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.dataset_id_not_found") + " " + idSupplied;
-                return error(Response.Status.BAD_REQUEST, errMsg);
-            }*/
+            return wr.getResponse();           
         }
         
-        
+               
         // -------------------------------------
         // (3) Get the file name and content type
         // -------------------------------------
@@ -679,7 +662,7 @@ public class Datasets extends AbstractApiBean {
 
     
     private void msg(String m){
-        //System.out.println(m);
+        System.out.println(m);
     }
     private void dashes(){
         msg("----------------");

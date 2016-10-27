@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.datasetutility.DuplicateFileChecker;
+import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataFileCommand;
@@ -1132,6 +1133,9 @@ public class EditDatafilesPage implements java.io.Serializable {
             } catch (IOException ex) {
                 this.logger.log(Level.SEVERE, "Error during ingest of DropBox file {0} from link {1}", new Object[]{fileName, fileLink});
                 continue;
+            }catch (FileExceedsMaxSizeException ex){
+                this.logger.log(Level.SEVERE, "Error during ingest of DropBox file {0} from link {1}: {2}", new Object[]{fileName, fileLink, ex.getMessage()});
+                continue;
             }finally {
                 // -----------------------------------------------------------
                 // release connection for dropBoxMethod
@@ -1180,6 +1184,9 @@ public class EditDatafilesPage implements java.io.Serializable {
             dFileList = ingestService.createDataFiles(workingVersion, uFile.getInputstream(), uFile.getFileName(), uFile.getContentType());
         } catch (IOException ioex) {
             logger.warning("Failed to process and/or save the file " + uFile.getFileName() + "; " + ioex.getMessage());
+            return;
+        } catch (FileExceedsMaxSizeException ex) {
+            logger.warning("Failed to process and/or save the file " + uFile.getFileName() + "; " + ex.getMessage());
             return;
         }
 

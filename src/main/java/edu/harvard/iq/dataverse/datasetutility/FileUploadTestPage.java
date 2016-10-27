@@ -126,6 +126,11 @@ public class FileUploadTestPage implements java.io.Serializable {
         boolean prettyPrint = true;
 
        List<HashMap> hashList = datasetVersionService.getBasicDatasetVersionInfo(dataset);
+        if (hashList==null){
+            msg("hashList is null!!!");
+            return;
+            
+        }
                 
        msgt("hashed! : " + hashList.size());
        

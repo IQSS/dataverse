@@ -883,7 +883,11 @@ public class AddReplaceFileHelper{
             logger.severe(ex.toString());
             this.runMajorCleanup(); 
             return false;
-        }
+        } catch (FileExceedsMaxSizeException ex) {
+            this.addErrorSevere(ex.getMessage());
+            this.runMajorCleanup(); 
+            return false;    
+        } 
         
         
         /**

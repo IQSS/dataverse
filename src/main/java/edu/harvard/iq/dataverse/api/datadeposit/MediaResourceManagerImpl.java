@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
@@ -19,6 +20,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -277,6 +279,9 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                     } else {
                         throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Exception caught calling ingestService.createDataFiles. No cause: " + ex.getMessage());
                     }
+                } catch (FileExceedsMaxSizeException ex) {
+                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Exception caught calling ingestService.createDataFiles: " + ex.getMessage());
+                    //Logger.getLogger(MediaResourceManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
                 }
             } catch (IOException ex) {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to add file(s) to dataset: " + ex.getMessage());

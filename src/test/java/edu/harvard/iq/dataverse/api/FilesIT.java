@@ -94,7 +94,7 @@ public class FilesIT {
 
       
         addResponse.then().assertThat()
-                .body("data.message", equalTo(successMsg))
+                .body("message", equalTo(successMsg))
                 .body("status", equalTo(AbstractApiBean.STATUS_OK))
                 .body("data.files[0].dataFile.contentType", equalTo("image/png"))
                 .body("data.files[0].label", equalTo("dataverseproject.png"))
@@ -244,7 +244,7 @@ public class FilesIT {
         String successMsgAdd = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");        
       
         addResponse.then().assertThat()
-                .body("data.message", equalTo(successMsgAdd))
+                .body("message", equalTo(successMsgAdd))
                 .body("data.files[0].dataFile.contentType", equalTo("image/png"))
                 .body("data.files[0].label", equalTo("dataverseproject.png"))
                 .statusCode(OK.getStatusCode());
@@ -300,7 +300,7 @@ public class FilesIT {
 
         replaceResp.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.message", equalTo(successMsg2))
+                .body("message", equalTo(successMsg2))
                 .body("data.files[0].label", equalTo("cc0.png"))
                 //.body("data.rootDataFileId", equalTo(origFileId))              
                 ;
@@ -334,7 +334,7 @@ public class FilesIT {
         replaceResp2.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("status", equalTo(AbstractApiBean.STATUS_OK))
-                .body("data.message", equalTo(successMsg2))
+                .body("message", equalTo(successMsg2))
                 .body("data.files[0].label", equalTo("favicondataverse.png"))
                 ;
 
@@ -373,7 +373,7 @@ public class FilesIT {
         String successMsgAdd = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");        
       
         addResponse.then().assertThat()
-                .body("data.message", equalTo(successMsgAdd))
+                .body("message", equalTo(successMsgAdd))
                 .body("data.files[0].dataFile.contentType", equalTo("image/png"))
                 .body("data.files[0].label", equalTo("dataverseproject.png"))
                 .statusCode(OK.getStatusCode());
@@ -456,7 +456,7 @@ public class FilesIT {
         String successMsgAdd = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");        
       
         addResponse.then().assertThat()
-                .body("data.message", equalTo(successMsgAdd))
+                .body("message", equalTo(successMsgAdd))
                 .body("data.files[0].dataFile.contentType", equalTo("image/png"))
                 .body("data.files[0].label", equalTo("dataverseproject.png"))
                 .statusCode(OK.getStatusCode());

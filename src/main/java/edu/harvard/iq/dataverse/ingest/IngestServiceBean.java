@@ -37,10 +37,11 @@ import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
-import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
 import edu.harvard.iq.dataverse.dataaccess.FileAccessIO;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.TabularSubsetGenerator;
+import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
+import edu.harvard.iq.dataverse.datasetutility.FileSizeChecker;
 import edu.harvard.iq.dataverse.datavariable.SummaryStatistic;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.ingest.metadataextraction.FileMetadataExtractor;
@@ -75,9 +76,7 @@ import java.io.IOException;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
-import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -98,7 +97,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -115,15 +113,7 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.application.FacesMessage;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipException;
 import java.util.zip.ZipInputStream;
-import javax.annotation.PostConstruct;
-import javax.ejb.EJBException;
-import javax.ejb.Singleton;
-import javax.ejb.Startup;
-import org.apache.commons.io.FileUtils;
-import org.primefaces.push.EventBus;
-import org.primefaces.push.EventBusFactory;
 
 /**
  *
@@ -228,7 +218,8 @@ public class IngestServiceBean {
     @Deprecated
     // All the parts of the app should use the createDataFiles() method instead, 
     // that returns a list of DataFiles. 
-    public DataFile createDataFile(DatasetVersion version, InputStream inputStream, String fileName, String contentType) throws IOException {
+    public DataFile createDataFile(DatasetVersion version, InputStream inputStream, String fileName, String contentType) throws IOException, FileExceedsMaxSizeException {
+        
         List<DataFile> fileList = createDataFiles(version, inputStream, fileName, contentType);
         
         if (fileList == null) {
@@ -238,7 +229,7 @@ public class IngestServiceBean {
         return fileList.get(0);
     }
     
-    public List<DataFile> createDataFiles(DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType) throws IOException {
+    public List<DataFile> createDataFiles(DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType) throws IOException, FileExceedsMaxSizeException {
         List<DataFile> datafiles = new ArrayList<DataFile>(); 
         
         String warningMessage = null; 
@@ -255,6 +246,21 @@ public class IngestServiceBean {
             //          -- L.A. Jul. 2014
             logger.fine("Will attempt to save the file as: " + tempFile.toString());
             Files.copy(inputStream, tempFile, StandardCopyOption.REPLACE_EXISTING);
+            
+            // --------------------------------------
+            // Check the file size!
+            // --------------------------------------
+            FileSizeChecker.FileSizeResponse fsr = new FileSizeChecker(systemConfig).isAllowedFileSize(Files.size(tempFile) );
+            if (!fsr.isFileSizeOK()){
+                try {
+                    tempFile.toFile().delete();
+                } catch (SecurityException ex) {
+                    // (this is very non-fatal)
+                    logger.warning("Failed to delete temporary file "+tempFile.toString());
+                }
+                throw new FileExceedsMaxSizeException(fsr.getUserMessage());
+            }
+
         } else {
             throw new IOException ("Temp directory is not configured.");
         }
