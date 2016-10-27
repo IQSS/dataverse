@@ -474,7 +474,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         }
         dataTagsResults = null;
         
-        logger.fine("Retrieved "+i+" data tags.");
+        logger.fine("Retrieved "+i+" data tags.");
         
         i = 0; 
         
@@ -1161,7 +1161,7 @@ public class DataFileServiceBean implements java.io.Serializable {
             return false;
         }
         
-        // "Documents": PDF, assorted MS docs, etc. 
+        // "Documents": PDF, assorted MS docs, etc. 
         
         String contentType = file.getContentType();
         int scIndex = 0;

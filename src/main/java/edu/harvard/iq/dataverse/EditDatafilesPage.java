@@ -960,7 +960,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             // the individual File Landing page, we want to redirect back to 
             // the landing page. BUT ONLY if the file still exists - i.e., if 
             // the user hasn't just deleted it!
-            return returnToFileLandingPage(fileMetadatas.get(0).getId());
+            return returnToFileLandingPage(fileMetadatas.get(0).getDataFile().getId());
         }
         
         //if (newDraftVersion) {
@@ -1799,30 +1799,6 @@ public class EditDatafilesPage implements java.io.Serializable {
         savedLabelsTempFile = null;
 
         fileMetadataSelectedForIngestOptionsPopup = null;
-    }
-
-    public String getFileDateToDisplay(FileMetadata fileMetadata) {
-        Date fileDate = null;
-        DataFile datafile = fileMetadata.getDataFile();
-        if (datafile != null) {
-            boolean fileHasBeenReleased = datafile.isReleased();
-            if (fileHasBeenReleased) {
-                Timestamp filePublicationTimestamp = datafile.getPublicationDate();
-                if (filePublicationTimestamp != null) {
-                    fileDate = filePublicationTimestamp;
-                }
-            } else {
-                Timestamp fileCreateTimestamp = datafile.getCreateDate();
-                if (fileCreateTimestamp != null) {
-                    fileDate = fileCreateTimestamp;
-                }
-            }
-        }
-        if (fileDate != null) {
-            return displayDateFormat.format(fileDate);
-        }
-
-        return "";
     }
 
     private void populateFileMetadatas() {

@@ -5,9 +5,14 @@
  */
 package edu.harvard.iq.dataverse.datasetutility;
 
+import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.users.ApiToken;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.HashMap;
@@ -20,11 +25,15 @@ import java.util.Map;
 public class TwoRavensHelper {
     
     private final SettingsServiceBean settingsService;
-    private PermissionServiceBean permissionService;
+    private final PermissionServiceBean permissionService;
+    private final AuthenticationServiceBean authService;
+    
+    private final DataverseSession session;
             
     private final Map<Long, Boolean> fileMetadataTwoRavensExploreMap = new HashMap<>(); // { FileMetadata.id : Boolean } 
 
-    public TwoRavensHelper(SettingsServiceBean settingsService, PermissionServiceBean permissionService){
+    public TwoRavensHelper(SettingsServiceBean settingsService, PermissionServiceBean permissionService, DataverseSession session,
+                        AuthenticationServiceBean authService){
         if (settingsService == null){
             throw new NullPointerException("settingsService cannot be null");
         }
@@ -33,7 +42,8 @@ public class TwoRavensHelper {
         }
         this.permissionService = permissionService;
         this.settingsService = settingsService;
-        
+        this.session = session;
+        this.authService = authService;
         
     }
    
@@ -109,6 +119,22 @@ public class TwoRavensHelper {
             return this.fileMetadataTwoRavensExploreMap.get(fm.getId());
         }
         
+        //----------------------------------------------------------------------
+        //(0) Before we do any testing - if version is deaccessioned and user
+        // does not have edit dataset permission then may download
+        //----------------------------------------------------------------------
+        
+       if (fm.getDatasetVersion().isDeaccessioned()) {
+           if (this.doesSessionUserHaveDataSetPermission(fm.getDatasetVersion().getDataset(), Permission.EditDataset)) {
+               // Yes, save answer and return true
+               this.fileMetadataTwoRavensExploreMap.put(fm.getId(), true);
+               return true;
+           } else {
+               this.fileMetadataTwoRavensExploreMap.put(fm.getId(), false);
+               return false;
+           }
+       }
+        
         
         // (1) Is TwoRavens active via the "setting" table?
         //      Nope: get out
@@ -167,13 +193,10 @@ public class TwoRavensHelper {
      * @param apiTokenKey
      * @return 
      */
-    public String getDataExploreURLComplete(Long fileid, String apiTokenKey) {
-        
+    public String getDataExploreURLComplete(Long fileid) {
+        System.out.print("in Two ravens helper...");
         if (fileid == null){
             throw new NullPointerException("fileid cannot be null");
-        }
-        if (apiTokenKey == null){
-            throw new NullPointerException("apiTokenKey cannot be null (at least adding this check)");
         }
             
         
@@ -193,11 +216,71 @@ public class TwoRavensHelper {
             String tabularMetaURL = getVariableMetadataURL(fileid);
             return TwoRavensUrl + "?ddiurl=" + tabularMetaURL + "&dataurl=" + tabularDataURL + "&" + getApiTokenKey();
             */
-            return TwoRavensUrl + "?dfId=" + fileid + "&" + apiTokenKey;
+            System.out.print("TwoRavensUrl Set up " + TwoRavensUrl + "?dfId=" + fileid + "&" + getApiTokenKey());
+            
+            return TwoRavensUrl + "?dfId=" + fileid + "&" + getApiTokenKey();
         }
 
         // For a local TwoRavens setup it's enough to call it with just 
         // the file id:
-        return TwoRavensDefaultLocal + fileid + "&" + apiTokenKey;
+                    System.out.print("TwoRavensUrl " + TwoRavensUrl);
+           System.out.print("TwoRavensUrlDefault " + TwoRavensDefaultLocal + fileid + "&" + getApiTokenKey());         
+        return TwoRavensDefaultLocal + fileid + "&" + getApiTokenKey();
+    }
+    
+    private String getApiTokenKey() {
+        ApiToken apiToken;
+            System.out.print("In getApiTokenKey ");
+        if (session.getUser() == null) {
+            System.out.print("Session User null ");
+            return null;
+        }
+        if (isSessionUserAuthenticated()) {
+            AuthenticatedUser au = (AuthenticatedUser) session.getUser();
+            apiToken = authService.findApiTokenByUser(au);
+            System.out.print("apiToken " + apiToken);
+            if (apiToken != null) {
+                return "key=" + apiToken.getTokenString();
+            }
+            // Generate if not available?
+            // Or should it just be generated inside the authService
+            // automatically? 
+            apiToken = authService.generateApiTokenForUser(au);
+            if (apiToken != null) {
+                return "key=" + apiToken.getTokenString();
+            }
+        }
+        return "";
+
+    }
+    
+    public boolean isSessionUserAuthenticated() {
+
+        if (session == null) {
+            return false;
+        }
+        
+        if (session.getUser() == null) {
+            return false;
+        }
+        
+        return session.getUser().isAuthenticated();
+
+    }
+    
+    public boolean doesSessionUserHaveDataSetPermission(Dataset dataset, Permission permissionToCheck){
+        if (permissionToCheck == null){
+            return false;
+        }
+               
+
+        
+        // Check the permission
+        //
+        boolean hasPermission = this.permissionService.userOn(this.session.getUser(), dataset).has(permissionToCheck);
+
+        
+        // return true/false
+        return hasPermission;
     }
 }

@@ -8,24 +8,26 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.faces.application.FacesMessage;
+import javax.faces.component.UIComponent;
+import javax.faces.component.UIInput;
 import javax.faces.context.FacesContext;
+import javax.faces.model.SelectItem;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponse;
 
 /**
  *
@@ -432,17 +434,179 @@ public class GuestbookResponseServiceBean {
         }
         return null;
     }
+    
+    
+    public GuestbookResponse initGuestbookResponseForFragment(Dataset dataset, FileMetadata fileMetadata, DataverseSession session){   
+        
+        DatasetVersion workingVersion = null;
+        if (fileMetadata != null){
+            workingVersion = fileMetadata.getDatasetVersion();
+        } else {
+            workingVersion = dataset.getLatestVersion();
+        }
 
-    public GuestbookResponse initDefaultGuestbookResponse(Dataset dataset, DataFile dataFile, User user, DataverseSession session) {
+       
+        GuestbookResponse guestbookResponse = new GuestbookResponse();
+        
+        if(workingVersion != null && workingVersion.isDraft()){           
+            guestbookResponse.setWriteResponse(false);
+        } 
+        
+        if (fileMetadata != null){
+           guestbookResponse.setDataFile(fileMetadata.getDataFile());
+        }
+        
+        
+        User user = session.getUser();
+        if (dataset.getGuestbook() != null) {
+            guestbookResponse.setGuestbook(workingVersion.getDataset().getGuestbook());
+            guestbookResponse.setName("");
+            guestbookResponse.setEmail("");
+            guestbookResponse.setInstitution("");
+            guestbookResponse.setPosition("");
+            guestbookResponse.setSessionId(session.toString());
+            if (user.isAuthenticated()) {
+                AuthenticatedUser aUser = (AuthenticatedUser) user;
+                guestbookResponse.setName(aUser.getName());
+                guestbookResponse.setAuthenticatedUser(aUser);
+                guestbookResponse.setEmail(aUser.getEmail());
+                guestbookResponse.setInstitution(aUser.getAffiliation());
+                guestbookResponse.setPosition(aUser.getPosition());
+                guestbookResponse.setSessionId(session.toString());
+            }
+            if (fileMetadata != null){
+                guestbookResponse.setDataFile(fileMetadata.getDataFile());
+            }            
+        } else {
+            if (fileMetadata != null){
+                 guestbookResponse = initDefaultGuestbookResponse(dataset, fileMetadata.getDataFile(),  session);
+            } else {
+                 guestbookResponse = initDefaultGuestbookResponse(dataset, null, session);
+            }          
+        }
+        if (dataset.getGuestbook() != null && !dataset.getGuestbook().getCustomQuestions().isEmpty()) {
+            guestbookResponse.setCustomQuestionResponses(new ArrayList());
+            for (CustomQuestion cq : dataset.getGuestbook().getCustomQuestions()) {
+                CustomQuestionResponse cqr = new CustomQuestionResponse();
+                cqr.setGuestbookResponse(guestbookResponse);
+                cqr.setCustomQuestion(cq);
+                cqr.setResponse("");
+                if (cq.getQuestionType().equals("options")) {
+                    //response select Items
+                    cqr.setResponseSelectItems(setResponseUISelectItems(cq));
+                }
+                guestbookResponse.getCustomQuestionResponses().add(cqr);
+            }
+        }
+        guestbookResponse.setDownloadtype("Download");
+
+        guestbookResponse.setDataset(dataset);
+        
+        return guestbookResponse;
+    }
+    
+    public GuestbookResponse initGuestbookResponseForFragment(FileMetadata fileMetadata, DataverseSession session){    
+        
+        DatasetVersion workingVersion = null;
+        if (fileMetadata != null){
+            workingVersion = fileMetadata.getDatasetVersion();
+        }
+        
+        return initGuestbookResponseForFragment(workingVersion.getDataset(), fileMetadata, session);
+    }
+    
+    public void initGuestbookResponse(FileMetadata fileMetadata, String downloadType, DataverseSession session){
+         initGuestbookResponse(fileMetadata, downloadType, null, session);
+    }
+    
+    public GuestbookResponse initGuestbookResponse(FileMetadata fileMetadata, String downloadFormat, String selectedFileIds, DataverseSession session) {
+        Dataset dataset;              
+        DatasetVersion workingVersion = null;
+        if (fileMetadata != null){
+            workingVersion = fileMetadata.getDatasetVersion();
+        }
+
+
+        
+        GuestbookResponse guestbookResponse = new GuestbookResponse();
+        
+        if(workingVersion != null && workingVersion.isDraft()){
+            guestbookResponse.setWriteResponse(false);
+        }
+        
+        dataset = workingVersion.getDataset();
+        
+        if (fileMetadata != null){
+           guestbookResponse.setDataFile(fileMetadata.getDataFile());
+        }
+        
+        User user = session.getUser();
+        if (dataset.getGuestbook() != null) {
+            guestbookResponse.setGuestbook(workingVersion.getDataset().getGuestbook());
+            guestbookResponse.setName("");
+            guestbookResponse.setEmail("");
+            guestbookResponse.setInstitution("");
+            guestbookResponse.setPosition("");
+            guestbookResponse.setSessionId(session.toString());
+            if (user.isAuthenticated()) {
+                AuthenticatedUser aUser = (AuthenticatedUser) user;
+                guestbookResponse.setName(aUser.getName());
+                guestbookResponse.setAuthenticatedUser(aUser);
+                guestbookResponse.setEmail(aUser.getEmail());
+                guestbookResponse.setInstitution(aUser.getAffiliation());
+                guestbookResponse.setPosition(aUser.getPosition());
+                guestbookResponse.setSessionId(session.toString());
+            }
+            if (fileMetadata != null){
+                guestbookResponse.setDataFile(fileMetadata.getDataFile());
+            }            
+        } else {
+            if (fileMetadata != null){
+                 guestbookResponse = initDefaultGuestbookResponse(dataset, fileMetadata.getDataFile(),  session);
+            } else {
+                 guestbookResponse = initDefaultGuestbookResponse(dataset, null, session);
+            }          
+        }
+        if (dataset.getGuestbook() != null && !dataset.getGuestbook().getCustomQuestions().isEmpty()) {
+            guestbookResponse.setCustomQuestionResponses(new ArrayList());
+            for (CustomQuestion cq : dataset.getGuestbook().getCustomQuestions()) {
+                CustomQuestionResponse cqr = new CustomQuestionResponse();
+                cqr.setGuestbookResponse(guestbookResponse);
+                cqr.setCustomQuestion(cq);
+                cqr.setResponse("");
+                if (cq.getQuestionType().equals("options")) {
+                    //response select Items
+                    cqr.setResponseSelectItems(setResponseUISelectItems(cq));
+                }
+                guestbookResponse.getCustomQuestionResponses().add(cqr);
+            }
+        }
+        guestbookResponse.setDownloadtype("Download");
+        if(downloadFormat.toLowerCase().equals("subset")){
+            guestbookResponse.setDownloadtype("Subset");
+        }
+        if(downloadFormat.toLowerCase().equals("explore")){
+            guestbookResponse.setDownloadtype("Explore");
+        }
+        guestbookResponse.setDataset(dataset);
+        
+        return guestbookResponse;
+    }
+
+    public GuestbookResponse initDefaultGuestbookResponse(Dataset dataset, DataFile dataFile, DataverseSession session) {
         GuestbookResponse guestbookResponse = new GuestbookResponse();
         guestbookResponse.setGuestbook(findDefaultGuestbook());
+       if(dataset.getLatestVersion() != null && dataset.getLatestVersion().isDraft()){
+            guestbookResponse.setWriteResponse(false);
+        }
         if (dataFile != null){
             guestbookResponse.setDataFile(dataFile);
         }        
         guestbookResponse.setDataset(dataset);
         guestbookResponse.setResponseTime(new Date());
         guestbookResponse.setSessionId(session.toString());
-
+        guestbookResponse.setDownloadtype("Download");
+        User user = session.getUser();
         if (user != null) {
             guestbookResponse.setEmail(getUserEMail(user));
             guestbookResponse.setName(getUserName(user));
@@ -458,6 +622,99 @@ public class GuestbookResponseServiceBean {
         }
         return guestbookResponse;
     }
+    
+    public void guestbookResponseValidator(FacesContext context, UIComponent toValidate, Object value) {
+        String response = (String) value;
+
+        if (response != null && response.length() > 255) {
+            ((UIInput) toValidate).setValid(false);
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, JH.localize("dataset.guestbookResponse.guestbook.responseTooLong"), null);
+            context.addMessage(toValidate.getClientId(context), message);
+        }
+    }
+    
+    public GuestbookResponse modifyDatafile(GuestbookResponse in, FileMetadata fm) {
+        if (in != null && fm.getDataFile() != null) {
+            in.setDataFile(fm.getDataFile());
+        }
+        return in;
+    }
+    
+    public GuestbookResponse modifySelectedFileIds(GuestbookResponse in, String fileIds) {
+        if (in != null && fileIds != null) {
+            in.setSelectedFileIds(fileIds);
+        }
+        return in;
+    }
+
+    public GuestbookResponse modifyDatafileAndFormat(GuestbookResponse in, FileMetadata fm, String format) {
+        if (in != null && fm.getDataFile() != null) {
+            in.setFileFormat(format);
+            in.setDataFile(fm.getDataFile());
+        }
+        return in;
+    }
+
+    public Boolean validateGuestbookResponse(GuestbookResponse guestbookResponse, String type) {
+        boolean valid = true;
+        Dataset dataset = guestbookResponse.getDataset();
+        if (dataset.getGuestbook() != null) {
+            if (dataset.getGuestbook().isNameRequired()) {
+                if (guestbookResponse.getName() == null) {
+                    valid = false;
+                } else {
+                    valid &= !guestbookResponse.getName().isEmpty();
+                }
+            }
+            if (dataset.getGuestbook().isEmailRequired()) {
+                if (guestbookResponse.getEmail() == null) {
+                    valid = false;
+                } else {
+                    valid &= !guestbookResponse.getEmail().isEmpty();
+                }
+            }
+            if (dataset.getGuestbook().isInstitutionRequired()) {
+                if (guestbookResponse.getInstitution() == null) {
+                    valid = false;
+                } else {
+                    valid &= !guestbookResponse.getInstitution().isEmpty();
+                }
+            }
+            if (dataset.getGuestbook().isPositionRequired()) {
+                if (guestbookResponse.getPosition() == null) {
+                    valid = false;
+                } else {
+                    valid &= !guestbookResponse.getPosition().isEmpty();
+                }
+            }
+        }
+
+        if (dataset.getGuestbook() != null && !dataset.getGuestbook().getCustomQuestions().isEmpty()) {
+            for (CustomQuestion cq : dataset.getGuestbook().getCustomQuestions()) {
+                if (cq.isRequired()) {
+                    for (CustomQuestionResponse cqr : guestbookResponse.getCustomQuestionResponses()) {
+                        if (cqr.getCustomQuestion().equals(cq)) {
+                            valid &= (cqr.getResponse() != null && !cqr.getResponse().isEmpty());
+                        }
+                    }
+                }
+            }
+        }
+            
+        return valid;
+    }
+    
+    private List<SelectItem> setResponseUISelectItems(CustomQuestion cq) {
+        List<SelectItem> retList = new ArrayList();
+        for (CustomQuestionValue cqv : cq.getCustomQuestionValues()) {
+            SelectItem si = new SelectItem(cqv.getValueString(), cqv.getValueString());
+            retList.add(si);
+        }
+        return retList;
+    }
+    
+  
+
 
     public GuestbookResponse findById(Long id) {
         return em.find(GuestbookResponse.class, id);

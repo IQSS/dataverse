@@ -7,6 +7,7 @@ package edu.harvard.iq.dataverse.datasetutility;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.MapLayerMetadata;
 import edu.harvard.iq.dataverse.MapLayerMetadataServiceBean;
@@ -43,15 +44,17 @@ public class WorldMapPermissionHelper {
     private SettingsServiceBean settingsService;
     private MapLayerMetadataServiceBean mapLayerMetadataService;
     private PermissionServiceBean permissionService;
+    private DataverseSession session;
 
     private Dataset dataset;
     
     private final Map<Long, Boolean> fileMetadataWorldMapExplore = new HashMap<>(); // { FileMetadata.id : Boolean } 
     private final Map<Long, MapLayerMetadata> mapLayerMetadataLookup = new HashMap<>();
+    private final Map<String, Boolean> datasetPermissionMap = new HashMap<>(); // { Permission human_name : Boolean }
 
     
     public WorldMapPermissionHelper(SettingsServiceBean settingsService, MapLayerMetadataServiceBean mapLayerMetadataService,
-                Dataset dataset, PermissionServiceBean permissionService){
+                Dataset dataset, PermissionServiceBean permissionService, DataverseSession session ){
 
         if (dataset == null){
             throw new NullPointerException("dataset cannot be null");
@@ -72,6 +75,7 @@ public class WorldMapPermissionHelper {
         this.settingsService = settingsService;
         this.mapLayerMetadataService = mapLayerMetadataService;
         this.permissionService = permissionService;
+        this.session = session;
         
         loadMapLayerMetadataLookup();
     }
@@ -85,13 +89,14 @@ public class WorldMapPermissionHelper {
      * @param settingsService
      * @param mapLayerMetadataService
      * @param dataset
+     * @param session
      * @return 
      */
     public static WorldMapPermissionHelper getPermissionHelperForDatasetPage(
                 SettingsServiceBean settingsService, MapLayerMetadataServiceBean mapLayerMetadataService,
-                Dataset dataset){
+                Dataset dataset, DataverseSession session){
 
-       return new WorldMapPermissionHelper(settingsService, mapLayerMetadataService, dataset, null);        
+       return new WorldMapPermissionHelper(settingsService, mapLayerMetadataService, dataset, null, session);        
     }
     
     /**
@@ -109,13 +114,14 @@ public class WorldMapPermissionHelper {
                 SettingsServiceBean settingsService, 
                 MapLayerMetadataServiceBean mapLayerMetadataService,
                 Dataset dataset,
-                PermissionServiceBean permissionService){
+                PermissionServiceBean permissionService,
+                DataverseSession session){
 
        if (permissionService == null){
            throw new NullPointerException("permissionService is required for API checks");
        }
        
-       return new WorldMapPermissionHelper(settingsService, mapLayerMetadataService, dataset, permissionService);        
+       return new WorldMapPermissionHelper(settingsService, mapLayerMetadataService, dataset, permissionService, session);        
     }
     
     
@@ -187,7 +193,6 @@ public class WorldMapPermissionHelper {
         if (fm==null){
             return false;
         }
-        
         return this.canUserSeeExploreWorldMapButton(fm, true);
     }
     
@@ -205,16 +210,13 @@ public class WorldMapPermissionHelper {
      * @return boolean
      */
     private boolean canUserSeeExploreWorldMapButton(FileMetadata fm, boolean permissionsChecked){
-
         if (fm==null){
             return false;
         }
-        
         // This is only here to make the public method users think...
         if (!permissionsChecked){
             return false;
         }
-        
         if (this.fileMetadataWorldMapExplore.containsKey(fm.getId())){
             // Yes, return previous answer
             //logger.info("using cached result for candownloadfile on filemetadata "+fid);
@@ -237,11 +239,26 @@ public class WorldMapPermissionHelper {
         if (!settingsService.isTrueForKey(SettingsServiceBean.Key.GeoconnectViewMaps, false)){
             this.fileMetadataWorldMapExplore.put(fm.getId(), false);
             return false;
-        }        
+        } 
+        //----------------------------------------------------------------------
+        //(0) Before we give it to you - if version is deaccessioned and user
+        // does not have edit dataset permission then may download
+        //----------------------------------------------------------------------
+        
+       if (fm.getDatasetVersion().isDeaccessioned()) {
+           if (this.doesSessionUserHaveDataSetPermission( Permission.EditDataset)) {
+               // Yes, save answer and return true
+               this.fileMetadataWorldMapExplore.put(fm.getId(), true);
+               return true;
+           } else {
+               this.fileMetadataWorldMapExplore.put(fm.getId(), false);
+               return false;
+           }
+       }
         
         /* -----------------------------------------------------
              Yes: User can view button!
-         ----------------------------------------------------- */                    
+         ----------------------------------------------------- */    
         this.fileMetadataWorldMapExplore.put(fm.getId(), true);
         return true;
     }
@@ -388,6 +405,12 @@ public class WorldMapPermissionHelper {
             return false;
         } 
         
+        // Is this user authenticated with EditDataset permission?
+        //
+        if (!(isUserAuthenticatedWithEditDatasetPermission())){
+            return false;
+        }
+        
         // This is only here as a reminder to the public method users 
         if (!permissionsChecked){
             return false;
@@ -432,7 +455,14 @@ public class WorldMapPermissionHelper {
 
         if (fm==null){
             return false;
-        }         
+        }  
+        
+        // Is this user authenticated with EditDataset permission?
+        //
+        if (!(isUserAuthenticatedWithEditDatasetPermission())){
+            return false;
+        }
+        
         return this.canUserSeeMapDataButton(fm, true);
     }
             
@@ -511,6 +541,72 @@ public class WorldMapPermissionHelper {
         
         // Nope
         return false;
+    }
+    
+    private boolean isUserAuthenticatedWithEditDatasetPermission(){
+        
+        // Is the user authenticated?
+        //
+        if (!(isSessionUserAuthenticated())){
+            return false;
+        }
+        
+        //  If so, can the logged in user edit the Dataset to which this FileMetadata belongs?
+        //
+        if (!this.doesSessionUserHaveDataSetPermission(Permission.EditDataset)){
+            return false;
+        }
+        
+        return true;
+    }
+    
+    public boolean isSessionUserAuthenticated() {
+
+        
+        if (session == null) {
+            return false;
+        }
+        
+        if (session.getUser() == null) {
+            return false;
+        }
+        
+        return session.getUser().isAuthenticated();
+
+    }
+    
+    public boolean doesSessionUserHaveDataSetPermission(Permission permissionToCheck){
+        if (permissionToCheck == null){
+            return false;
+        }
+        
+        if (this.session.getUser() == null){
+            return false;
+        }
+        
+        if (this.permissionService == null){
+             return false;
+        }
+               
+        String permName = permissionToCheck.getHumanName();
+       
+        // Has this check already been done? 
+        // 
+        if (this.datasetPermissionMap.containsKey(permName)){
+            // Yes, return previous answer
+            return this.datasetPermissionMap.get(permName);
+        }
+        
+        // Check the permission
+        //
+        
+        boolean hasPermission = this.permissionService.userOn(this.session.getUser(), this.dataset).has(permissionToCheck);
+
+        // Save the permission
+        this.datasetPermissionMap.put(permName, hasPermission);
+        
+        // return true/false
+        return hasPermission;
     }
     
     
