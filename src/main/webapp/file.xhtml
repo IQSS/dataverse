@@ -191,7 +191,7 @@
                                         <div id="citation-download" class="col-sm-5 col-md-4 text-right" jsf:rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}">
                                             <div class="dropdown">
                                                 <button type="button" id="downloadCitation" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                                    <span class="glyphicon glyphicon-list"/> #{bundle['dataset.cite.downloadBtn']} <span class="caret"></span>
+                                                    <span class="glyphicon glyphicon-list"/> #{bundle['file.cite.downloadBtn']} <span class="caret"></span>
                                                 </button>
                                                 <ul class="dropdown-menu pull-right text-left" role="menu">
                                                     <li>
@@ -231,7 +231,11 @@
                                     <h:outputText id="fileTypeOutputRegular" value="#{FilePage.fileMetadata.dataFile.friendlyType}" rendered="#{!(FilePage.fileMetadata.dataFile.tabularData)}"/>
                                     <h:outputText id="fileTypeOutputTabular" value="#{bundle['file.type.tabularData']}" rendered="#{FilePage.fileMetadata.dataFile.tabularData}"/>
                                     <h:outputText id="fileSize" value=" - #{FilePage.fileMetadata.dataFile.friendlySize}" />
-                                    <h:outputText id="fileCreatePublishDate" value=" - #{FilePage.fileMetadata.fileDateToDisplay}" rendered="#{!(empty FilePage.fileMetadata.id)}"/>
+                                    
+                                    
+                                    <h:outputText id="fileCreatePublishDate" value=" - #{bundle['file.lastupdated.label']}: #{FilePage.fileMetadata.fileDateToDisplay}" rendered="#{!(empty FilePage.fileMetadata.id)}"/>
+                                    
+                                    
                                     <div class="checksum-block" jsf:rendered="#{!FilePage.file.tabularData}">
                                         <h:outputText id="file-checksum" value="#{FilePage.file.tabularData ? FilePage.file.originalChecksumType : FilePage.file.checksumType}: #{FilePage.file.checksumValue}"
                                                       rendered="#{!(empty FilePage.file.checksumValue)}"/>
@@ -295,6 +299,18 @@
                                                     <h:outputText value="#{FilePage.file.unf}"/>
                                                 </div>
                                             </div>
+                                            
+                                            
+                                            <div class="form-group" jsf:rendered="#{!(false)}">
+                                                <label class="col-sm-3 control-label">
+                                                   #{bundle['file.metadataTab.fileMetadata.publicationDate.label']}
+                                                </label>
+                                                <div class="col-sm-9">
+                                                    <h:outputText value="#{FilePage.file.publicationDate}"/>
+                                                </div>
+                                            </div>
+                                            
+                                            
                                             <div class="form-group" jsf:rendered="#{!(empty FilePage.file.friendlySize)}">
                                                 <label class="col-sm-3 control-label">
                                                    #{bundle['file.metadataTab.fileMetadata.size.label']}
@@ -335,6 +351,18 @@
                                                     <h:outputText value="#{FilePage.file.description}"/>
                                                 </div>
                                             </div>
+                                            
+                                            
+                                            <div class="form-group" jsf:rendered="#{!(false)}">
+                                                <label class="col-sm-3 control-label">
+                                                   #{bundle['file.metadataTab.fileMetadata.depositDate.label']}
+                                                </label>
+                                                <div class="col-sm-9">
+                                                    <h:outputText value="#{FilePage.file.createDate}"/>
+                                                </div>
+                                            </div>
+                                            
+                                            
                                         </div>
                                     </div>
                                 </div>
