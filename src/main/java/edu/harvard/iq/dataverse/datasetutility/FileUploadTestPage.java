@@ -243,7 +243,7 @@ public class FileUploadTestPage implements java.io.Serializable {
                                 null
                                );
         }else{
-            addFileHelper.runAddFileByDatasetId(dataset.getId(),
+            addFileHelper.runAddFileByDataset(dataset,
                                 laFile.getFileName(),
                                 laFile.getContentType(),
                                 inputStream,

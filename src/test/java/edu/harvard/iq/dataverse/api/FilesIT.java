@@ -6,11 +6,14 @@ import java.util.logging.Logger;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import com.jayway.restassured.path.json.JsonPath;
+import edu.harvard.iq.dataverse.util.BundleUtil;
+import java.util.Collections;
 import java.util.ResourceBundle;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -62,7 +65,6 @@ public class FilesIT {
     private Integer createDatasetGetId(String dataverseAlias, String apiToken){
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
         
-
         createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
         Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
         
@@ -92,10 +94,10 @@ public class FilesIT {
 
       
         addResponse.then().assertThat()
-                .body("message", equalTo(successMsg))
+                .body("data.message", equalTo(successMsg))
                 .body("status", equalTo(AbstractApiBean.STATUS_OK))
-                .body("files[0].contentType", equalTo("image/png"))
-                .body("files[0].filename", equalTo("dataverseproject.png"))
+                .body("data.files[0].dataFile.contentType", equalTo("image/png"))
+                .body("data.files[0].label", equalTo("dataverseproject.png"))
                 .statusCode(OK.getStatusCode());
         
         
@@ -150,14 +152,15 @@ public class FilesIT {
         Response addResponse = UtilIT.uploadFileViaNative(datasetId, pathToFile, apiToken);
 
 
-        //msgt("Here it is: " + addResponse.prettyPrint());
+        msgt("Here it is: " + addResponse.prettyPrint());
 
-        String errMsgStart = ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.dataset_id_not_found");
-        
+        //String errMsg Start = ResourceBundle.getBundle("Bundle").getString("find.dataset.error.dataset.not.found.id");
+        String errMsg = BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.id", Collections.singletonList(datasetId));
+                
          addResponse.then().assertThat()
                 .body("status", equalTo(AbstractApiBean.STATUS_ERROR))
-                .body("message", Matchers.startsWith(errMsgStart))
-                .statusCode(BAD_REQUEST.getStatusCode());
+                .body("message", equalTo(errMsg))
+                .statusCode(NOT_FOUND.getStatusCode());
     }
     
     @Test
@@ -189,7 +192,33 @@ public class FilesIT {
     public void test_005_AddFileBadPermissions() {
         msgt("test_005_AddFileBadPerms");
 
-        // To do!!!
+         // Create user
+        String apiToken = createUserGetToken();
+
+        // Create Dataverse
+        String dataverseAlias = createDataverseGetAlias(apiToken);
+
+        // Create Dataset
+        Integer datasetId = createDatasetGetId(dataverseAlias, apiToken);
+       
+        // Create another user
+        String apiTokenUnauthorizedUser = createUserGetToken();
+
+        
+        String pathToFile = "src/main/webapp/resources/images/favicondataverse.png";
+        Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiTokenUnauthorizedUser);
+
+        //addResponse.prettyPrint();
+        msgt("Here it is: " + addResponse.prettyPrint());
+        
+        
+        String errMsg = ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.no_edit_dataset_permission");        
+
+      
+        addResponse.then().assertThat()
+                .body("message", equalTo(errMsg))
+                .body("status", equalTo(AbstractApiBean.STATUS_ERROR))
+                .statusCode(FORBIDDEN.getStatusCode());
     }
 
     @Test
@@ -215,13 +244,13 @@ public class FilesIT {
         String successMsgAdd = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");        
       
         addResponse.then().assertThat()
-                .body("message", equalTo(successMsgAdd))
-                .body("files[0].contentType", equalTo("image/png"))
-                .body("files[0].filename", equalTo("dataverseproject.png"))
+                .body("data.message", equalTo(successMsgAdd))
+                .body("data.files[0].dataFile.contentType", equalTo("image/png"))
+                .body("data.files[0].label", equalTo("dataverseproject.png"))
                 .statusCode(OK.getStatusCode());
         
         
-        long origFileId = JsonPath.from(addResponse.body().asString()).getLong("files[0].id");
+        long origFileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
 
         msg("Orig file id: " + origFileId);
         assertNotNull(origFileId);    // If checkOut fails, display message
@@ -271,14 +300,14 @@ public class FilesIT {
 
         replaceResp.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("message", equalTo(successMsg2))
-                .body("files[0].filename", equalTo("cc0.png"))
+                .body("data.message", equalTo(successMsg2))
+                .body("data.files[0].label", equalTo("cc0.png"))
                 //.body("data.rootDataFileId", equalTo(origFileId))              
                 ;
 
-        long rootDataFileId = JsonPath.from(replaceResp.body().asString()).getLong("files[0].rootDataFileId");
-        long previousDataFileId = JsonPath.from(replaceResp.body().asString()).getLong("files[0].previousDataFileId");
-        long newDataFileId = JsonPath.from(replaceResp.body().asString()).getLong("files[0].id");
+        long rootDataFileId = JsonPath.from(replaceResp.body().asString()).getLong("data.files[0].dataFile.rootDataFileId");
+        long previousDataFileId = JsonPath.from(replaceResp.body().asString()).getLong("data.files[0].dataFile.previousDataFileId");
+        long newDataFileId = JsonPath.from(replaceResp.body().asString()).getLong("data.files[0].dataFile.id");
         
         assertEquals(origFileId, previousDataFileId);
         assertEquals(rootDataFileId, previousDataFileId);
@@ -305,12 +334,12 @@ public class FilesIT {
         replaceResp2.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("status", equalTo(AbstractApiBean.STATUS_OK))
-                .body("message", equalTo(successMsg2))
-                .body("files[0].filename", equalTo("favicondataverse.png"))
+                .body("data.message", equalTo(successMsg2))
+                .body("data.files[0].label", equalTo("favicondataverse.png"))
                 ;
 
-        long rootDataFileId2 = JsonPath.from(replaceResp2.body().asString()).getLong("files[0].rootDataFileId");
-        long previousDataFileId2 = JsonPath.from(replaceResp2.body().asString()).getLong("files[0].previousDataFileId");
+        long rootDataFileId2 = JsonPath.from(replaceResp2.body().asString()).getLong("data.files[0].dataFile.rootDataFileId");
+        long previousDataFileId2 = JsonPath.from(replaceResp2.body().asString()).getLong("data.files[0].dataFile.previousDataFileId");
         
         msgt("newDataFileId: " + newDataFileId);
         msgt("previousDataFileId2: " + previousDataFileId2);
@@ -344,13 +373,13 @@ public class FilesIT {
         String successMsgAdd = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");        
       
         addResponse.then().assertThat()
-                .body("message", equalTo(successMsgAdd))
-                .body("files[0].contentType", equalTo("image/png"))
-                .body("files[0].filename", equalTo("dataverseproject.png"))
+                .body("data.message", equalTo(successMsgAdd))
+                .body("data.files[0].dataFile.contentType", equalTo("image/png"))
+                .body("data.files[0].label", equalTo("dataverseproject.png"))
                 .statusCode(OK.getStatusCode());
         
         
-        long origFileId = JsonPath.from(addResponse.body().asString()).getLong("files[0].id");
+        long origFileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
 
         msg("Orig file id: " + origFileId);
         assertNotNull(origFileId);    // If checkOut fails, display message
@@ -427,13 +456,13 @@ public class FilesIT {
         String successMsgAdd = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");        
       
         addResponse.then().assertThat()
-                .body("message", equalTo(successMsgAdd))
-                .body("files[0].contentType", equalTo("image/png"))
-                .body("files[0].filename", equalTo("dataverseproject.png"))
+                .body("data.message", equalTo(successMsgAdd))
+                .body("data.files[0].dataFile.contentType", equalTo("image/png"))
+                .body("data.files[0].label", equalTo("dataverseproject.png"))
                 .statusCode(OK.getStatusCode());
         
         
-        long origFileId = JsonPath.from(addResponse.body().asString()).getLong("files[0].id");
+        long origFileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
 
         msg("Orig file id: " + origFileId);
         assertNotNull(origFileId);    // If checkOut fails, display message

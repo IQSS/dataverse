@@ -20,8 +20,10 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -30,8 +32,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJBException;
+import javax.json.JsonObjectBuilder;
 import javax.validation.ConstraintViolation;
 import javax.ws.rs.core.Response;
 
@@ -103,7 +107,7 @@ public class AddReplaceFileHelper{
     // -----------------------------------
     // Instance variables directly added
     // -----------------------------------
-    private Dataset dataset;                    // constructor
+    private Dataset dataset;                    // constructor (for add, not replace)
     private DataverseRequest dvRequest;         // constructor
     private InputStream newFileInputStream;     // step 20
     private String newFileName;                 // step 20
@@ -133,18 +137,15 @@ public class AddReplaceFileHelper{
     private List<String> errorMessages;
     private Response.Status httpErrorCode; // optional
     
-  //  public AddReplaceFileHelper(){
-  //      throw new IllegalStateException("Must be called with a dataset and or user");
-  //  }
-    
     
     /** 
      * MAIN CONSTRUCTOR -- minimal requirements
      * 
      * @param dataset
+     * @param ingestService
+     * @param datasetService
      * @param dvRequest 
      */
-
     public AddReplaceFileHelper(DataverseRequest dvRequest, 
                             IngestServiceBean ingestService,                            
                             DatasetServiceBean datasetService,
@@ -202,16 +203,14 @@ public class AddReplaceFileHelper{
     
     /**
      * 
-     * @param datasetId
+     * @param chosenDataset
      * @param newFileName
      * @param newFileContentType
      * @param newFileInputStream
      * @param optionalFileParams
-     * @param description  optional
-     * @param 
      * @return 
      */
-    public boolean runAddFileByDatasetId(Long datasetId, 
+    public boolean runAddFileByDataset(Dataset chosenDataset, 
             String newFileName, 
             String newFileContentType, 
             InputStream newFileInputStream,
@@ -223,7 +222,7 @@ public class AddReplaceFileHelper{
         
         this.currentOperation = FILE_ADD_OPERATION;
         
-        if (!this.step_001_loadDatasetById(datasetId)){
+        if (!this.step_001_loadDataset(chosenDataset)){
             return false;
         }
         
@@ -697,28 +696,6 @@ public class AddReplaceFileHelper{
         return true;
     }
     
-    /**
-     * 
-     */
-    private boolean step_001_loadDatasetById(Long datasetId){
-        
-        if (this.hasError()){
-            return false;
-        }
-
-        if (datasetId == null){
-            this.addErrorSevere(getBundleErr("dataset_id_is_null"));
-            return false;
-        }
-        
-        Dataset yeDataset = datasetService.find(datasetId);
-        if (yeDataset == null){
-            this.addError(getBundleErr("dataset_id_not_found") + " " + datasetId);
-            return false;
-        }      
-       
-        return step_001_loadDataset(yeDataset);
-    }
     
     
     /**
@@ -732,18 +709,35 @@ public class AddReplaceFileHelper{
         if (this.hasError()){
             return false;
         }
+                
+        return step_015_auto_check_permissions(dataset);
+
+    }
+    
+    private boolean step_015_auto_check_permissions(Dataset datasetToCheck){
         
-        msg("dataset:" + dataset.toString());
-        msg("Permission.EditDataset:" + Permission.EditDataset.toString());
-        msg("dvRequest:" + dvRequest.toString());
-        msg("permissionService:" + permissionService.toString());
+        if (this.hasError()){
+            return false;
+        }
         
-        if (!permissionService.request(dvRequest).on(dataset).has(Permission.EditDataset)){
-           addError(Response.Status.FORBIDDEN,getBundleErr("no_edit_dataset_permission"));
+        if (datasetToCheck == null){
+            addError(getBundleErr("dataset_is_null"));
+            return false;
+        }
+        
+        // Make a temp. command
+        //
+        CreateDatasetCommand createDatasetCommand = new CreateDatasetCommand(datasetToCheck, dvRequest, false);
+        
+        // Can this user run the command?
+        //
+        if (!permissionService.isUserAllowedOn(dvRequest.getUser(), createDatasetCommand, datasetToCheck)) {
+            addError(Response.Status.FORBIDDEN,getBundleErr("no_edit_dataset_permission"));
            return false;
         }
+        
         return true;
-
+        
     }
     
     
@@ -809,10 +803,10 @@ public class AddReplaceFileHelper{
 
         // Do we have permission to replace this file? e.g. Edit the file's dataset
         //
-        if (!permissionService.request(dvRequest).on(existingFile.getOwner()).has(Permission.EditDataset)){
-           addError(Response.Status.FORBIDDEN, getBundleErr("no_edit_dataset_permission"));
-           return false;
-        }
+        if (!step_015_auto_check_permissions(existingFile.getOwner())){
+            return false;
+        };
+
         
         
         // Is the file published?
@@ -1150,7 +1144,13 @@ public class AddReplaceFileHelper{
         // Add tags, description, etc
         // --------------------------------------------
         for (DataFile df : finalFileList){
-            optionalFileParams.addOptionalParams(df);
+            try {
+                optionalFileParams.addOptionalParams(df);
+            } catch (DataFileTagException ex) {
+                Logger.getLogger(AddReplaceFileHelper.class.getName()).log(Level.SEVERE, null, ex);
+                addError(ex.getMessage());
+                return false;
+            }
         }
         
         
@@ -1168,7 +1168,7 @@ public class AddReplaceFileHelper{
             this.addErrorSevere(getBundleErr("final_file_list_empty"));                
             return false;
         }
-        
+
         ingestService.addFiles(workingVersion, finalFileList);
 
         return true;
@@ -1333,8 +1333,6 @@ public class AddReplaceFileHelper{
         if (!step_085_auto_remove_filemetadata_to_replace_from_working_version()){
             return false;
         }
-
-
         
         // -----------------------------------------------------------
         // Set the "root file ids" and "previous file ids"
@@ -1363,31 +1361,12 @@ public class AddReplaceFileHelper{
             df.setRootDataFileId(fileToReplace.getRootDataFileId());
             
         }
+
+        // Call the update dataset command
+        //
+        return step_070_run_update_dataset_command();
         
        
-        Command<Dataset> update_cmd;
-        update_cmd = new UpdateDatasetCommand(dataset, dvRequest);
-
-
-        ((UpdateDatasetCommand) update_cmd).setValidateLenient(true);
-        
-
-        try {        
-            // Submit the update dataset command 
-            // and update the local dataset object
-            //
-              dataset = commandEngine.submit(update_cmd);
-          } catch (CommandException ex) {
-              this.addErrorSevere(getBundleErr("replace.command_engine_error"));
-              logger.severe(ex.getMessage());
-              return false;
-          }catch (EJBException ex) {
-              this.addErrorSevere(getBundleErr("replace.ejb_exception"));
-              logger.severe(ex.getMessage());
-              return false;
-          } 
-
-        return true;
     }
             
     /**
@@ -1459,11 +1438,11 @@ public class AddReplaceFileHelper{
             throw new NullPointerException("newlyAddedFiles is null!");
         }
         
-        return getSuccessResultAsGsonObject().toString();
+        return getSuccessResultAsJsonObjectBuilder().toString();
         
     }
     
-    public JsonObject getSuccessResultAsGsonObject() throws NoFilesException{
+    public JsonObjectBuilder getSuccessResultAsJsonObjectBuilder() throws NoFilesException{
         
         if (hasError()){
             throw new NoFilesException("Don't call this method if an error exists!! First check 'hasError()'");
@@ -1477,19 +1456,7 @@ public class AddReplaceFileHelper{
             throw new NoFilesException("newlyAddedFiles is empty!");
         }
         
-
-        JsonArray jsonList = new JsonArray();
-        
-        for (DataFile df : newlyAddedFiles){
-            jsonList.add(df.asGsonObject(false));
-        }
-        
-        JsonObject fullFilesJSON = new JsonObject(); 
-        fullFilesJSON.add("files", jsonList);
-        
-        return fullFilesJSON;
-        //return newlyAddedFile.asGsonObject(false);
-        
+        return JsonPrinter.jsonDataFileList(newlyAddedFiles);
     }
     
     
@@ -1505,7 +1472,8 @@ public class AddReplaceFileHelper{
        
         // Create a notification!
        
-        // skip for now 
+        // skip for now, may be part of dataset update listening
+        //
         return true;
     }
     

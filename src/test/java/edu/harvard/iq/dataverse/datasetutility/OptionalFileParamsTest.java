@@ -39,8 +39,8 @@ public class OptionalFileParamsTest {
         OptionalFileParams instance = new OptionalFileParams(jsonParams);
 
         assertEquals(instance.getDescription(), val);
-        assertNull(instance.getTags());
-        assertNull(instance.getFileDataTags());
+        assertNull(instance.getCategories());
+        assertNull(instance.getDataFileTags());
 
     }
     
@@ -86,17 +86,17 @@ public class OptionalFileParamsTest {
         msgt("test_04_jsonTagsGood");
 
         String val = "A new file";
-        String jsonParams = "{\"description\": \"A new file\", \"tags\": [\"dog\", \"cat\", \"mouse\"]}";
+        String jsonParams = "{\"description\": \"A new file\", \"categories\": [\"dog\", \"cat\", \"mouse\"]}";
         
         OptionalFileParams instance = new OptionalFileParams(jsonParams);
 
         assertEquals(instance.getDescription(), val);
     
-        List<String> expectedTags = Arrays.asList("dog", "cat", "mouse");
-        assertEquals(expectedTags, instance.getTags());
+        List<String> expectedCategories = Arrays.asList("dog", "cat", "mouse");
+        assertEquals(expectedCategories, instance.getCategories());
 
-        assertNull(instance.getFileDataTags());
-        assertTrue(instance.hasTags());
+        assertNull(instance.getDataFileTags());
+        assertTrue(instance.hasCategories());
         assertTrue(instance.hasDescription());
         assertFalse(instance.hasFileDataTags());
     
@@ -108,17 +108,17 @@ public class OptionalFileParamsTest {
         msgt("test_05_jsonTabularTagsGood");
 
         String val = "A new file";
-        String jsonParams = "{\"fileDataTags\": [\"Survey\", \"Event\", \"Panel\"], \"description\": \"A new file\"}";
+        String jsonParams = "{\"dataFileTags\": [\"Survey\", \"Event\", \"Panel\"], \"description\": \"A new file\"}";
         
         OptionalFileParams instance = new OptionalFileParams(jsonParams);
 
         assertEquals(instance.getDescription(), val);
     
         List<String> expectedTags = Arrays.asList("Survey", "Event", "Panel");
-        assertEquals(expectedTags, instance.getFileDataTags());
+        assertEquals(expectedTags, instance.getDataFileTags());
 
-        assertNull(instance.getTags());
-        assertFalse(instance.hasTags());
+        assertNull(instance.getCategories());
+        assertFalse(instance.hasCategories());
         assertTrue(instance.hasDescription());
         assertTrue(instance.hasFileDataTags());
     }
@@ -129,7 +129,7 @@ public class OptionalFileParamsTest {
         msgt("test_06_jsonTabularTagsBad");
 
         String val = "A new file";
-        String jsonParams = "{\"fileDataTags\": [\"Survey\", \"Event\", \"xPanel\"], \"description\": \"A new file\"}";
+        String jsonParams = "{\"dataFileTags\": [\"Survey\", \"Event\", \"xPanel\"], \"description\": \"A new file\"}";
         
         try{
             OptionalFileParams instance = new OptionalFileParams(jsonParams);
@@ -148,16 +148,16 @@ public class OptionalFileParamsTest {
         msgt("test_07_regularInstanceGood");
 
         String val = "A new file";
-        List<String> tags = Arrays.asList("dog", " dog ", "cat", "mouse", "dog ");
-        List<String> fileDataTags = Arrays.asList("Survey", "Event", "Panel");
+        List<String> categories = Arrays.asList("dog", " dog ", "cat", "mouse", "dog ");
+        List<String> dataFileTags = Arrays.asList("Survey", "Event", "Panel");
         
         OptionalFileParams instance = new OptionalFileParams(val,   
-                                tags,
-                                fileDataTags);
+                                categories,
+                                dataFileTags);
 
          assertEquals(val, instance.getDescription());
-         assertEquals( Arrays.asList("dog", "cat", "mouse"),instance.getTags());
-         assertEquals(fileDataTags, instance.getFileDataTags());
+         assertEquals( Arrays.asList("dog", "cat", "mouse"), instance.getCategories());
+         assertEquals(dataFileTags, instance.getDataFileTags());
          
     }
     
@@ -167,16 +167,16 @@ public class OptionalFileParamsTest {
         msgt("test_08_regularInstanceGoodWithNulls");
 
         String val = null;
-        List<String> tags = null;//Arrays.asList("dog", "cat", "mouse");
-        List<String> fileDataTags = Arrays.asList("Survey", "Survey", "Event", "Panel", "Survey", " ");
+        List<String> categories = null;//Arrays.asList("dog", "cat", "mouse");
+        List<String> dataFileTags = Arrays.asList("Survey", "Survey", "Event", "Panel", "Survey", " ");
         
         OptionalFileParams instance = new OptionalFileParams(val,   
-                                tags,
-                                fileDataTags);
+                                categories,
+                                dataFileTags);
 
          assertEquals(val, instance.getDescription());
-         assertEquals(tags, instance.getTags());
-         assertEquals(Arrays.asList("Survey", "Event", "Panel"), instance.getFileDataTags());
+         assertEquals(categories, instance.getCategories());
+         assertEquals(Arrays.asList("Survey", "Event", "Panel"), instance.getDataFileTags());
          
     }
     
@@ -185,17 +185,17 @@ public class OptionalFileParamsTest {
 
         msgt("test_08_regularInstanceGoodWithNulls");
       
-        String jsonParams = "{\"forceReplace\": \"unused within OptionalFileParams\", \"oldFileId\": \"unused within OptionalFileParams\", \"description\": null, \"unusedParam1\": \"haha\", \"tags\": []}";
+        String jsonParams = "{\"forceReplace\": \"unused within OptionalFileParams\", \"oldFileId\": \"unused within OptionalFileParams\", \"description\": null, \"unusedParam1\": \"haha\", \"categories\": []}";
         
         OptionalFileParams instance = new OptionalFileParams(jsonParams);
         
         assertNull(instance.getDescription());
         assertFalse(instance.hasDescription());
 
-        assertNull(instance.getTags());
-        assertFalse(instance.hasTags());
+        assertNull(instance.getCategories());
+        assertFalse(instance.hasCategories());
 
-        assertNull(instance.getFileDataTags());
+        assertNull(instance.getDataFileTags());
         assertFalse(instance.hasFileDataTags());
 
     }
@@ -217,11 +217,11 @@ Python for creating escaped JSON objects
 
 import json
 d = dict(description="A new file"
-        ,tags=["dog", "cat",  "mouse"])
+        ,categories=["dog", "cat",  "mouse"])
 print json.dumps(json.dumps(d))
 
 # result:
-# "{\"description\": \"A new file\", \"tags\": [\"dog\", \"cat\", \"mouse\"]}"
+# "{\"description\": \"A new file\", \"categories\": [\"dog\", \"cat\", \"mouse\"]}"
 
 
 
@@ -237,7 +237,7 @@ print json.dumps(json.dumps(d))
 
 import json
 d = dict(description="A new file",
-    tags=["dog", "cat",  "mouse"],
+    categories=["dog", "cat",  "mouse"],
     unusedParam1="haha",
     forceReplace="unused within OptionalFileParams", 
     oldFileId="unused within OptionalFileParams"
