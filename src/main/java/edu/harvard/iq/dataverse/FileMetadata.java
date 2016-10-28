@@ -256,9 +256,9 @@ public class FileMetadata implements Serializable {
          ", #{FilePage.fileMetadata.label} [fileName]"
          <h:outputText value=", #{FilePage.file.unf}" rendered="#{FilePage.file.tabularData and !(empty FilePage.file.unf)}"/>
          */
-         citation += ", " + this.getLabel() + " [fileName]" ;
+         citation += "; " + this.getLabel() + " [fileName]" ;
          if (this.dataFile.isTabularData() && this.dataFile.getUnf() != null && !this.dataFile.getUnf().isEmpty()){
-             citation += ", " + this.dataFile.getUnf();                    
+             citation += ", " + this.dataFile.getUnf() + " [fileUNF]";                    
          }
          return citation;
      }
