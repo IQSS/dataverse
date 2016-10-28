@@ -3,40 +3,29 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.harvard.iq.dataverse.harvest.server.web;
+package edu.harvard.iq.dataverse.harvest.server.xoai;
 
-import com.google.common.base.Function;
-import com.lyncode.builder.ListBuilder;
 import com.lyncode.xoai.dataprovider.model.Item;
 import com.lyncode.xoai.dataprovider.model.Set;
 import com.lyncode.xoai.model.oaipmh.About;
-import com.lyncode.xoai.model.oaipmh.Metadata;
-import com.lyncode.xoai.model.xoai.Element;
-import com.lyncode.xoai.model.xoai.XOAIMetadata;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecord;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
-import static org.apache.commons.lang3.RandomStringUtils.randomNumeric;
+
 
 /**
  *
  * @author Leonid Andreev
+ * 
  * This is an implemention of an Lyncode XOAI Item; 
  * You can think of it as an XOAI Item wrapper around the
  * Dataverse OAIRecord entity.
  */
-public class XOAIItem implements Item {
+public class Xitem implements Item {
     
-    public XOAIItem(OAIRecord oaiRecord) {
+    public Xitem(OAIRecord oaiRecord) {
         super();
         this.oaiRecord = oaiRecord;  
     }
@@ -51,14 +40,25 @@ public class XOAIItem implements Item {
         this.oaiRecord = oaiRecord;
     }
 
+    private Dataset dataset; 
+    
+    public Dataset getDataset() {
+        return dataset;
+    }
+    
+    public Xitem withDataset(Dataset dataset) {
+        this.dataset = dataset; 
+        return this; 
+    }
+    
     @Override
     public List<About> getAbout() {
         return null;
     }
 
     @Override
-    public xMetadata getMetadata() {
-        return new xMetadata((String)null);
+    public Xmetadata getMetadata() {
+        return new Xmetadata((String)null);
     }
 
     @Override
