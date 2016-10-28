@@ -10,7 +10,7 @@ Python
 
 https://github.com/IQSS/dataverse-client-python is the offical Python package for Dataverse APIs.
 
-`Robert Liebowitz <https://github.com/rliebz>`_ created this library while at the `Center for Open Science (COS) <http://centerforopenscience.org>`_ and the COS uses it to integrate the `Open Science Framework (OSF) <http://osf.io>`_ with Dataverse via an add-on which itself is open source and listed on the :doc:`/api/apps` page.
+`Robert Liebowitz <https://github.com/rliebz>`_ created this library while at the `Center for Open Science (COS) <https://centerforopenscience.org>`_ and the COS uses it to integrate the `Open Science Framework (OSF) <https://osf.io>`_ with Dataverse via an add-on which itself is open source and listed on the :doc:`/api/apps` page.
 
 R
 -
