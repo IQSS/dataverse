@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:jsf="http://xmlns.jcp.org/jsf"
+      xmlns:p="http://primefaces.org/ui">
+
+  <h:head>
+
+  </h:head>
+
+  <h:body>
+    <ui:composition template="/dataverse_template.xhtml">
+      <ui:param name="pageTitle" value="File Upload Test - #{dataverseServiceBean.findRootDataverse().name} #{bundle.dataverse}"/>
+      <ui:param name="showDataverseHeader" value="false"/>
+      <ui:define name="body">
+          <f:metadata>
+                <f:viewAction action="#{FileUploadTestPage.init}" />
+          </f:metadata>
+          <div>        
+              <h4>Test Add/Replace functions</h4>
+              <ui:fragment>
+                  <p>
+                    <h:outputText value="#{FileUploadTestPage.yesYes()}" escape="false" /> 
+                   </p>
+
+                <ui:fragment rendered="#{FileUploadTestPage.newlyAddedFile != null}">
+    
+                    <h4>Added!: #{FileUploadTestPage.newlyAddedFile.displayName }</h4>
+
+                    <hr />
+                   
+                </ui:fragment>
+
+                  
+                <ui:fragment rendered="#{FileUploadTestPage.fileToReplace == null}">
+                  <h3>Add New File</h3>
+                </ui:fragment>
+                <ui:fragment rendered="#{(FileUploadTestPage.fileToReplace != null) and (FileUploadTestPage.fileToReplace.released)}">
+                    <h3>Replace File: <span style="color:#006699;">#{FileUploadTestPage.fileToReplace.displayName }</span></h3>
+                </ui:fragment>
+                  
+                <h:form>
+                    <p:fileUpload fileUploadListener="#{FileUploadTestPage.handleFileUpload}" mode="advanced" dragDropSupport="false"
+                           sizeLimit="100000" fileLimit="2" allowTypes="/(\.|\/)(gif|jpe?g|png|txt)$/"
+                           update="@all"  />
+
+                    <p:growl id="messages" showDetail="true" />
+                </h:form>
+
+                    
+                  <hr />
+              </ui:fragment>
+
+
+                <ui:fragment rendered="#{FileUploadTestPage.fileToReplace != null}">
+    
+                    <!--<h4>file to replace: #{FileUploadTestPage.fileToReplace.displayName }</h4>
+
+                    <hr />
+                    -->
+                </ui:fragment>
+              <!-- start: DATASET + file listing -->
+                <ui:fragment rendered="#{FileUploadTestPage.dataset == null}">
+                    No dataset chosen.
+                </ui:fragment>    
+                <ui:fragment rendered="#{FileUploadTestPage.dataset != null}">
+                    <h4>#{FileUploadTestPage.dataset.displayName } v#{FileUploadTestPage.dataset.versionNumber }</h4>
+                    
+                    <table class="table table-bordered table-hover">
+                        <tr>
+                            <th>Name</th>
+                            <th>Content type</th>
+                            <th>Hash</th>
+                            <th>Is Released</th>
+                        </tr>
+                    <ui:repeat value="#{FileUploadTestPage.getDatasetFileMetadatas()}" var="fm"> 
+                        <tr>
+                            <td>
+                                <ui:fragment rendered="#{fm.dataFile.released}">
+                                    <a href="file_upload_test.xhtml?ds_id=#{FileUploadTestPage.dataset.id}&amp;fid=#{fm.dataFile.id}">#{fm.label}</a>
+                                </ui:fragment>  
+                                <ui:fragment rendered="#{!fm.dataFile.released}">
+                                    #{fm.label}
+                                </ui:fragment>  
+                            </td>
+                            <td><h:outputText value="#{fm.dataFile.contentType}"/></td>
+                            <td><h:outputText value="#{fm.dataFile.checksumValue}"/></td>
+                            <td>
+                                <ui:fragment rendered="#{fm.dataFile.released}">
+                                    <span class="label label-success">replacable</span>
+                                </ui:fragment>  
+                                <ui:fragment rendered="#{!fm.dataFile.released}">
+                                    <span class="label label-warning">nope</span>
+                                </ui:fragment>  
+                                
+                            </td>
+                        </tr>
+                    </ui:repeat>
+                    </table>
+                </ui:fragment>
+              <!-- end DATASET + file listing -->
+
+          </div>
+      </ui:define>
+    </ui:composition>
+  </h:body>
+</html>

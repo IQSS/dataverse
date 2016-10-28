@@ -6,34 +6,16 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
-import edu.harvard.iq.dataverse.authorization.users.ApiToken;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
+import edu.harvard.iq.dataverse.datasetutility.DuplicateFileChecker;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.CreateGuestbookResponseCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.DeaccessionDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataFileCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetVersionCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.LinkDatasetCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
-import edu.harvard.iq.dataverse.metadataimport.ForeignMetadataImportServiceBean;
-import edu.harvard.iq.dataverse.search.FacetCategory;
 import edu.harvard.iq.dataverse.search.FileView;
-import edu.harvard.iq.dataverse.search.SearchFilesServiceBean;
-import edu.harvard.iq.dataverse.search.SolrSearchResult;
-import edu.harvard.iq.dataverse.search.SortBy;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.BundleUtil;
-import edu.harvard.iq.dataverse.util.FileSortFieldAndOrder;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.StringUtil;
@@ -44,24 +26,20 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
-import javax.faces.event.ValueChangeEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -71,16 +49,10 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonArray;
 import javax.json.JsonReader;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponse;
-import javax.validation.ConstraintViolation;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
-import org.primefaces.context.RequestContext;
 import java.text.DateFormat;
 import java.util.Arrays;
-import java.util.HashSet;
-import javax.faces.model.SelectItem;
 import java.util.logging.Level;
 import javax.faces.event.AjaxBehaviorEvent;
 
@@ -1029,42 +1001,17 @@ public class EditDatafilesPage implements java.io.Serializable {
         return  returnToDatasetOnly();
     }
 
+    /**
+     * Just moved to another class for now
+     * 
+     * @param fileMetadata
+     * @return 
+     */
     public boolean isDuplicate(FileMetadata fileMetadata) {
-        String thisMd5 = fileMetadata.getDataFile().getChecksumValue();
-        if (thisMd5 == null) {
-            return false;
-        }
 
-        Map<String, Integer> MD5Map = new HashMap<String, Integer>();
-
-        // TODO: 
-        // think of a way to do this that doesn't involve populating this 
-        // map for every file on the page? 
-        // man not be that much of a problem, if we paginate and never display 
-        // more than a certain number of files... Still, needs to be revisited
-        // before the final 4.0. 
-        // -- L.A. 4.0
-
-        // make a "defensive copy" to avoid java.util.ConcurrentModificationException from being thrown
-        // when uploading 100+ files
-        List<FileMetadata> wvCopy = new ArrayList<>(workingVersion.getFileMetadatas());
-        Iterator<FileMetadata> fmIt = wvCopy.iterator();
-
-        while (fmIt.hasNext()) {
-            FileMetadata fm = fmIt.next();
-            String md5 = fm.getDataFile().getChecksumValue();
-            if (md5 != null) {
-                if (MD5Map.get(md5) != null) {
-                    MD5Map.put(md5, MD5Map.get(md5).intValue() + 1);
-                } else {
-                    MD5Map.put(md5, 1);
-                }
-            }
-        }
-
-        return MD5Map.get(thisMd5) != null && MD5Map.get(thisMd5).intValue() > 1;
+        return DuplicateFileChecker.isDuplicateOriginalWay(workingVersion, fileMetadata);
     }
-
+        
     private HttpClient getClient() {
         // TODO: 
         // cache the http client? -- L.A. 4.0 alpha
@@ -1225,9 +1172,9 @@ public class EditDatafilesPage implements java.io.Serializable {
     
     public void handleFileUpload(FileUploadEvent event) {
         UploadedFile uFile = event.getFile();
+
         List<DataFile> dFileList = null;
 
-        
         try {
             // Note: A single file may be unzipped into multiple files
             dFileList = ingestService.createDataFiles(workingVersion, uFile.getInputstream(), uFile.getFileName(), uFile.getContentType());
@@ -1259,6 +1206,9 @@ public class EditDatafilesPage implements java.io.Serializable {
         boolean multipleDupes = false;
         String warningMessage = null;
 
+        // NOTE: for native file uploads, the dFileList will only 
+        // contain 1 file--method is called for every file even if the UI shows "simultaneous uploads"
+        
         // -----------------------------------------------------------
         // Iterate through list of DataFile objects
         // -----------------------------------------------------------
@@ -1285,9 +1235,11 @@ public class EditDatafilesPage implements java.io.Serializable {
                 // -----------------------------------------------------------
                 // Check for duplicates -- e.g. file is already in the dataset
                 // -----------------------------------------------------------
+
                 if (!isDuplicate(dataFile.getFileMetadata())) {
                     newFiles.add(dataFile);        // looks good
                     fileMetadatas.add(dataFile.getFileMetadata());
+                    
                 } else {
                     if (duplicateFileNames == null) {
                         duplicateFileNames = dataFile.getFileMetadata().getLabel();
@@ -1319,7 +1271,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 }
             }
         }
-
+        
         // -----------------------------------------------------------
         // Formate error message for duplicate files
         // -----------------------------------------------------------

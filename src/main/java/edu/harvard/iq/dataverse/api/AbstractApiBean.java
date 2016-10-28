@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import com.google.gson.JsonElement;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
@@ -29,6 +30,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -36,6 +38,7 @@ import edu.harvard.iq.dataverse.util.json.JsonParser;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.validation.BeanValidationServiceBean;
 import java.io.StringReader;
+import java.math.BigDecimal;
 import java.net.URI;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
@@ -66,6 +69,10 @@ public abstract class AbstractApiBean {
     
     private static final Logger logger = Logger.getLogger(AbstractApiBean.class.getName());
     private static final String DATAVERSE_KEY_HEADER_NAME = "X-Dataverse-key";
+    
+    public static final String STATUS_ERROR = "ERROR";
+    public static final String STATUS_OK = "OK";
+    
     
     /**
      * Utility class to convey a proper error response using Java's exceptions.
@@ -130,29 +137,32 @@ public abstract class AbstractApiBean {
         }
     }
     
-	@EJB
-	protected EjbDataverseEngine engineSvc;
-	
-    @EJB
-    protected DatasetServiceBean datasetSvc;
-    
-	@EJB
-	protected DataverseServiceBean dataverseSvc;
-    
     @EJB 
     protected AuthenticationServiceBean authSvc;
     
     @EJB
-    protected DatasetFieldServiceBean datasetFieldSvc;
+    protected EjbDataverseEngine engineSvc;
 	
+    @EJB
+    protected DatasetServiceBean datasetSvc;
+    
+    @EJB
+    protected DataverseServiceBean dataverseSvc;
+        
+    @EJB
+    protected DatasetFieldServiceBean datasetFieldSvc;
+
+    @EJB
+    IngestServiceBean ingestService;
+    
     @EJB
     protected MetadataBlockServiceBean metadataBlockSvc;
     
     @EJB
     protected UserServiceBean userSvc;
     
-	@EJB
-	protected DataverseRoleServiceBean rolesSvc;
+    @EJB
+    protected DataverseRoleServiceBean rolesSvc;
     
     @EJB
     protected SettingsServiceBean settingsSvc;
@@ -184,8 +194,10 @@ public abstract class AbstractApiBean {
     @EJB
     protected UserNotificationServiceBean userNotificationSvc;
 
-	@PersistenceContext(unitName = "VDCNet-ejbPU")
-	protected EntityManager em;
+    // ----------------------------
+    
+    @PersistenceContext(unitName = "VDCNet-ejbPU")
+    protected EntityManager em;
     
     @Context
     protected HttpServletRequest httpRequest;
@@ -460,29 +472,95 @@ public abstract class AbstractApiBean {
     
     protected Response ok( JsonArrayBuilder bld ) {
         return Response.ok(Json.createObjectBuilder()
-            .add("status", "OK")
+            .add("status", STATUS_OK)
             .add("data", bld).build()).build();
+    }
+    
+    protected Response createdResponse( String uri, JsonObjectBuilder bld ) {
+        return Response.created( URI.create(uri) )
+                .entity( Json.createObjectBuilder()
+                .add("status", STATUS_OK)
+                .add("data", bld).build())
+                .type(MediaType.APPLICATION_JSON)
+                .build();
     }
     
     protected Response ok( JsonObjectBuilder bld ) {
         return Response.ok( Json.createObjectBuilder()
-            .add("status", "OK")
+            .add("status", STATUS_OK)
             .add("data", bld).build() )
             .type(MediaType.APPLICATION_JSON)
             .build();
     }
-    
+
+  
     protected Response ok( String msg ) {
         return Response.ok().entity(Json.createObjectBuilder()
-            .add("status", "OK")
+            .add("status", STATUS_OK)
             .add("data", Json.createObjectBuilder().add("message",msg)).build() )
             .type(MediaType.APPLICATION_JSON)
             .build();
     }
     
+    
+    protected Response ok(String message, JsonObjectBuilder jsonObjectBuilder ) {
+
+        if (message == null){
+            throw new NullPointerException("message cannot be null");
+        }
+        if (jsonObjectBuilder == null){
+            throw new NullPointerException("jsonObjectBuilder cannot be null");
+        }
+
+        jsonObjectBuilder.add("message", message);
+        
+        //JsonObjectBuilder foo = Json.createObjectBuilder();
+        //foo.add("message", message);
+        
+        
+        return Response.ok( Json.createObjectBuilder()
+            .add("status", STATUS_OK)
+            .add("data", jsonObjectBuilder).build())
+            .type(MediaType.APPLICATION_JSON)
+            .build();
+    }
+
+    /** 
+     * Added to accommodate a JSON String generated from gson
+     * 
+     * @param gsonObject
+     * @return 
+     */
+    /*
+    protected Response ok(String msg, com.google.gson.JsonObject gsonObject){
+        
+        if (gsonObject == null){
+            throw new NullPointerException("gsonObject cannot be null");
+        }
+
+        gsonObject.addProperty("status", "OK");
+        gsonObject.addProperty("message", msg);
+        
+        return Response.ok(gsonObject.toString(), MediaType.APPLICATION_JSON).build();
+    }
+    */
+    
+    
+    /**
+     * Returns an OK response (HTTP 200, status:OK) with the passed value
+     * in the data field.
+     * @param value the value for the data field
+     * @return a HTTP OK response with the passed value as data.
+     */
+    protected Response okResponseWithValue( String value ) {
+        return Response.ok(Json.createObjectBuilder()
+            .add("status", STATUS_OK)
+            .add("data", value).build(), MediaType.APPLICATION_JSON_TYPE ).build();
+    }
+
     protected Response ok( boolean value ) {
         return Response.ok().entity(Json.createObjectBuilder()
-            .add("status", "OK")
+            .add("status", STATUS_OK)
             .add("data", value).build() ).build();
     }
     
@@ -498,7 +576,7 @@ public abstract class AbstractApiBean {
     protected Response accepted() {
         return Response.accepted()
                 .entity(Json.createObjectBuilder()
-                        .add("status", "OK").build()
+                        .add("status", STATUS_OK).build()
                 ).build();
     }
     
@@ -525,7 +603,7 @@ public abstract class AbstractApiBean {
     protected static Response error( Status sts, String msg ) {
         return Response.status(sts)
                 .entity( NullSafeJsonBuilder.jsonObjectBuilder()
-                        .add("status", "ERROR")
+                        .add("status", STATUS_ERROR)
                         .add( "message", msg ).build()
                 ).type(MediaType.APPLICATION_JSON_TYPE).build();
     }

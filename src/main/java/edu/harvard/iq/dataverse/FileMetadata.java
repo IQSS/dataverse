@@ -1,5 +1,10 @@
 package edu.harvard.iq.dataverse;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.annotations.Expose;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -8,6 +13,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -38,18 +45,23 @@ public class FileMetadata implements Serializable {
     
     private static final Logger logger = Logger.getLogger(FileMetadata.class.getCanonicalName());
 
+    @Expose
     @Pattern(regexp="^[^:<>;#/\"\\*\\|\\?\\\\]*$", message = "File Name cannot contain any of the following characters: \\ / : * ? \" < > | ; # .")    
     @NotBlank(message = "Please specify a file name.")
     @Column( nullable=false )
     private String label = "";
+
+    @Expose
     @Column(columnDefinition = "TEXT")
     private String description = "";
     
+    @Expose
     private boolean restricted;
 
     @ManyToOne
     @JoinColumn(nullable=false)
     private DatasetVersion datasetVersion;
+    
     @ManyToOne
     @JoinColumn(nullable=false)
     private DataFile dataFile;
@@ -121,15 +133,46 @@ public class FileMetadata implements Serializable {
         fileCategories.add(category);
     }
 
+    /**
+     * Retrieve categories 
+     * @return 
+     */
     public List<String> getCategoriesByName() {
         ArrayList<String> ret = new ArrayList<>();
-        if (fileCategories != null) {
-            for (int i = 0; i < fileCategories.size(); i++) {
-                ret.add(fileCategories.get(i).getName());
-            }
+             
+        if (fileCategories == null) {
+            return ret;
         }
+        
+        for (int idx=0; idx < fileCategories.size(); idx++){
+            ret.add(fileCategories.get(idx).getName());
+        }
+        // fileCategories.stream()
+        //              .map(x -> ret.add(x.getName()));
+       
         return ret;
     }
+    
+    
+    public JsonArrayBuilder getCategoryNamesAsJsonArrayBuilder() {
+
+        JsonArrayBuilder builder = Json.createArrayBuilder();
+
+        if (fileCategories == null) {
+            return builder;
+        }
+        
+        for (int idx=0; idx < fileCategories.size(); idx++){
+            builder.add(fileCategories.get(idx).getName());
+        }
+
+        //fileCategories.stream()
+        //              .map(x -> builder.add(x.getName()));
+        
+        return builder;
+        
+    }
+    
     
     // alternative, experimental method: 
 
@@ -376,4 +419,51 @@ public class FileMetadata implements Serializable {
             return o1.getLabel().toUpperCase().compareTo(o2.getLabel().toUpperCase());
         }
     };    
+    
+    
+    
+    public String asPrettyJSON(){
+        
+        return serializeAsJSON(true);
+    }
+
+    public String asJSON(){
+        
+        return serializeAsJSON(false);
+    }
+    
+     /**
+     * 
+     * @param prettyPrint
+     * @return 
+     */
+    private String serializeAsJSON(boolean prettyPrint){
+        
+        JsonObject jsonObj = asGsonObject(prettyPrint);
+                
+        return jsonObj.toString();
+       
+    }
+    
+    
+    public JsonObject asGsonObject(boolean prettyPrint){
+
+        
+        GsonBuilder builder;
+        if (prettyPrint){  // Add pretty printing
+            builder = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().setPrettyPrinting();
+        }else{
+            builder = new GsonBuilder().excludeFieldsWithoutExposeAnnotation();                        
+        }
+        
+        builder.serializeNulls();   // correctly capture nulls
+        Gson gson = builder.create();
+
+        // serialize this object
+        JsonElement jsonObj = gson.toJsonTree(this);
+        jsonObj.getAsJsonObject().addProperty("id", this.getId());
+        
+        return jsonObj.getAsJsonObject();
+    }
+    
 }

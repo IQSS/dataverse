@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -610,7 +611,7 @@ public class DataFileServiceBean implements java.io.Serializable {
             categoryMap.put(fileCategory.getId(), i++);
         }
         
-        logger.fine("Retreived "+i+" file categories attached to the dataset.");
+        logger.fine("Retrieved "+i+" file categories attached to the dataset.");
         
         if (requestedVersion != null) {
             requestedVersion.setFileMetadatas(retrieveFileMetadataForVersion(owner, requestedVersion, filesMap, categoryMap));
@@ -743,10 +744,56 @@ public class DataFileServiceBean implements java.io.Serializable {
     }
     
     public DataFile save(DataFile dataFile) {
-            
+        
+        // save datafile
         DataFile savedDataFile = em.merge(dataFile);
+
+        // Set the initial value of the rootDataFileId
+        //    (does nothing if it's already set)
+        //savedDataFile = setAndCheckFileReplaceAttributes(savedDataFile);
+        
         return savedDataFile;
     }
+    
+    private void msg(String m){
+        System.out.println(m);
+    }
+    private void dashes(){
+        msg("----------------");
+    }
+    private void msgt(String m){
+        dashes(); msg(m); dashes();
+    }
+    
+    /*
+        Make sure the file replace ids are set for a initial version 
+        of a file
+    
+    */
+    public DataFile setAndCheckFileReplaceAttributes(DataFile savedDataFile){
+               
+        // Is this the initial version of a file?
+        
+        if ((savedDataFile.getRootDataFileId() == null)||
+                (savedDataFile.getRootDataFileId().equals(DataFile.ROOT_DATAFILE_ID_DEFAULT))){
+            msg("yes, initial version");
+ 
+           // YES!  Set the RootDataFileId to the Id
+           savedDataFile.setRootDataFileId(savedDataFile.getId());
+           
+           // SAVE IT AGAIN!!!
+           msg("yes, save again");
+        
+            return em.merge(savedDataFile);   
+           
+        }else{       
+            // Looking Good Billy Ray! Feeling Good Louis!    
+            msg("nope, looks ok");
+
+            return savedDataFile;
+        }
+    }
+    
     
     public Boolean isPreviouslyPublished(Long fileId){
         Query query = em.createQuery("select object(o) from FileMetadata as o where o.dataFile.id =:fileId");
@@ -767,10 +814,19 @@ public class DataFileServiceBean implements java.io.Serializable {
     */
     
     public FileMetadata mergeFileMetadata(FileMetadata fileMetadata) {
-        return em.merge(fileMetadata);
+        
+        FileMetadata newFileMetadata = em.merge(fileMetadata);
+        em.flush();
+        
+        // Set the initial value of the rootDataFileId
+        //    (does nothing if it's already set)
+        //DataFile updatedDataFile = setAndCheckFileReplaceAttributes(newFileMetadata.getDataFile());
+               
+        return newFileMetadata;
     }
     
     public void removeFileMetadata(FileMetadata fileMetadata) {
+        msgt("removeFileMetadata: fileMetadata");
         FileMetadata mergedFM = em.merge(fileMetadata);
         em.remove(mergedFM);
     }
@@ -908,7 +964,9 @@ public class DataFileServiceBean implements java.io.Serializable {
        if (ImageThumbConverter.isThumbnailAvailable(file)) {
            file = this.find(file.getId());
            file.setPreviewImageAvailable(true);
-           file = em.merge(file);
+           msgt("OVER HERE_----------");
+           msg("bleh.....");
+           file = this.save(file); //em.merge(file);
            // (should this be done here? - TODO:)
            return true;
        }
@@ -1221,4 +1279,74 @@ public class DataFileServiceBean implements java.io.Serializable {
         solrSearchResult.setEntity(this.findCheapAndEasy(solrSearchResult.getEntityId()));
     }
         
+    
+    /**
+     * Does this file have a replacement.  
+     * Any file should have AT MOST 1 replacement
+     * 
+     * @param df
+     * @return 
+     */
+    public boolean hasReplacement(DataFile df) throws Exception{
+        
+        if (df.getId() == null){
+            // An unsaved file cannot have a replacment
+            return false;
+        }
+       
+        
+        TypedQuery query = em.createQuery("select o from DataFile o" +
+                    " WHERE o.previousVersionId = :dataFileId;", DataFile.class);
+        query.setParameter("dataFileId", df.getId());
+        //query.setMaxResults(maxResults);
+        
+        List<DataFile> dataFiles = query.getResultList();
+        
+        if (dataFiles.size() == 0){
+            return false;
+        }
+        
+         if (!df.isReleased()){
+            // An unpublished SHOULD NOT have a replacment
+            String errMsg = "DataFile with id: [" + df.getId() + "] is UNPUBLISHED with a REPLACEMENT.  This should NOT happen.";
+            logger.severe(errMsg);
+            
+            throw new Exception(errMsg);
+        }
+
+        
+        
+        else if (dataFiles.size() == 1){
+            return true;
+        }else{
+        
+            String errMsg = "DataFile with id: [" + df.getId() + "] has more than one replacment!";
+            logger.severe(errMsg);
+
+            throw new Exception(errMsg);
+        }
+        
+    }
+    
+    /**
+     * Is this a replacement file??
+     * 
+     * The indication of a previousDataFileId says that it is
+     * 
+     * @param df
+     * @return
+     * @throws Exception 
+     */
+    public boolean isReplacementFile(DataFile df) throws Exception{
+        if (df.getPreviousDataFileId() == null){
+            return false;
+        }else if (df.getPreviousDataFileId() < 1){
+            logger.severe("Stop! previousDataFileId should either be null or a number greater than 0");
+            //return false;
+            // blow up -- this shouldn't happen!
+            throw new Exception("previousDataFileId should either be null or a number greater than 0");
+        }else{
+            return true;
+        }
+    }
 }

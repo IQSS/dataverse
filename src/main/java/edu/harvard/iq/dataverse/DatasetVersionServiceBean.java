@@ -819,4 +819,54 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         }
     }
     
+    /**
+     * Return a list of the checksum Strings for files in the specified DatasetVersion
+     * 
+     * This is used to help check for duplicate files within a DatasetVersion
+     * 
+     * @param datasetVersion
+     * @return a list of checksum Strings for files in the specified DatasetVersion
+     */
+    public List<String> getChecksumListForDatasetVersion(DatasetVersion datasetVersion) {
+
+        if (datasetVersion == null){
+            throw new NullPointerException("datasetVersion cannot be null");
+        }
+
+        String query = "SELECT df.md5 FROM datafile df, filemetadata fm WHERE fm.datasetversion_id = " + datasetVersion.getId() + " AND fm.datafile_id = df.id;";
+
+        logger.log(Level.FINE, "query: {0}", query);
+        Query nativeQuery = em.createNativeQuery(query);
+        List<String> checksumList = nativeQuery.getResultList();
+
+        return checksumList;
+    }
+    
+        
+    /**
+     * Check for the existence of a single checksum value within a DatasetVersion's files
+     * 
+     * @param datasetVersion
+     * @param selectedChecksum
+     * @return 
+     */
+    public boolean doesChecksumExistInDatasetVersion(DatasetVersion datasetVersion, String selectedChecksum) {
+        if (datasetVersion == null){
+            throw new NullPointerException("datasetVersion cannot be null");
+        }
+        
+        String query = "SELECT df.md5 FROM datafile df, filemetadata fm" 
+                + " WHERE fm.datasetversion_id = " + datasetVersion.getId() 
+                + " AND fm.datafile_id = df.id"
+                + " AND df.md5 = '" + selectedChecksum + "';";
+        
+        Query nativeQuery = em.createNativeQuery(query);
+        List<String> checksumList = nativeQuery.getResultList();
+
+        if (checksumList.size() > 0){
+            return true;
+        }
+        return false;
+    }
+        
 } // end class

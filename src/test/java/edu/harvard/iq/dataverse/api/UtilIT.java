@@ -271,6 +271,33 @@ public class UtilIT {
 
     }
 
+    /**
+     * For test purposes, datasetId can be non-numeric
+     * 
+     * @param datasetId
+     * @param pathToFile
+     * @param apiToken
+     * @return 
+     */
+    static Response uploadFileViaNative(String datasetId, String pathToFile, String apiToken) {
+        
+        
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .multiPart("datasetId", datasetId)
+                .multiPart("file", new File("src/main/webapp/resources/images/dataverseproject.png"))
+                .post("/api/datasets/" + datasetId + "/add");
+    }
+
+    static Response replaceFile(long fileId, String pathToFile, String apiToken) {
+        //.add("fileToReplaceId", fileId)
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .multiPart("file", new File(pathToFile))
+                .multiPart("jsonData", Json.createObjectBuilder().build().toString())
+                .post("/api/files/" + fileId + "/replace");
+    }
+
     static Response downloadFile(Integer fileId) {
         return given()
                 //                .header(API_TOKEN_HTTP_HEADER, apiToken)
