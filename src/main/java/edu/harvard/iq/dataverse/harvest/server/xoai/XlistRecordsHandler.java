@@ -109,7 +109,7 @@ public class XlistRecordsHandler extends VerbHandler<ListRecords> {
             currentResumptionToken = parameters.extractResumptionToken();
         }
 
-        ResumptionTokenHelper resumptionTokenHelper = new ResumptionTokenHelper(currentResumptionToken,
+        XresumptionTokenHelper resumptionTokenHelper = new XresumptionTokenHelper(currentResumptionToken,
                 getRepository().getConfiguration().getMaxListRecords());
         res.withResumptionToken(resumptionTokenHelper.resolve(result.hasMore()));
 
