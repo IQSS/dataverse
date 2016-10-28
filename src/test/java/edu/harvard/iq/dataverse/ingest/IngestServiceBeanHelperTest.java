@@ -529,6 +529,27 @@ public class IngestServiceBeanHelperTest {
         Set<ConstraintViolation> violations9 = datasetVersion.validate();
         assertEquals(0, violations9.size());
 
+        // reset
+        datasetVersion.setFileMetadatas(new ArrayList<>());
+        Set<ConstraintViolation> violations10 = datasetVersion.validate();
+        assertEquals(0, violations10.size());
+
+        String singleCharacter = "a";
+        fileMetadata.setDirectoryLabel(singleCharacter);
+        datasetVersion.getFileMetadatas().add(fileMetadata);
+        Set<ConstraintViolation> violations11 = datasetVersion.validate();
+        assertEquals(0, violations11.size());
+
+        // reset
+        datasetVersion.setFileMetadatas(new ArrayList<>());
+        Set<ConstraintViolation> violations12 = datasetVersion.validate();
+        assertEquals(0, violations12.size());
+
+        fileMetadata.setDirectoryLabel("/leadingAndTrailing/");
+        datasetVersion.getFileMetadatas().add(fileMetadata);
+        Set<ConstraintViolation> violations13 = datasetVersion.validate();
+        assertEquals(1, violations13.size());
+        
     }
 
 }
