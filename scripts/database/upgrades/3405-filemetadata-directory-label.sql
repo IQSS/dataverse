@@ -1,0 +1,1 @@
+ALTER TABLE filemetadata ADD COLUMN directorylabel character varying(255);

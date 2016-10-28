@@ -1,0 +1,210 @@
+{
+    "datasetVersion": {
+      "metadataBlocks": {
+        "citation": {
+          "displayName": "Citation Metadata",
+          "fields": [
+            {
+              "typeName": "title",
+              "multiple": false,
+              "typeClass": "primitive",
+              "value": "X-Ray Diffraction data from Lin28/let-7d microRNA complex, source of 3TRZ structure"
+            },
+            {
+              "typeName": "author",
+              "multiple": true,
+              "typeClass": "compound",
+              "value": [
+                {
+                  "authorName": {
+                    "typeName": "authorName",
+                    "multiple": false,
+                    "typeClass": "primitive",
+                    "value": "Sliz, Piotr"
+                  },
+                  "authorAffiliation": {
+                    "typeName": "authorAffiliation",
+                    "multiple": false,
+                    "typeClass": "primitive",
+                    "value": "Harvard Medical School"
+                  },
+                  "authorIdentifierScheme": {
+                    "typeName": "authorIdentifierScheme",
+                    "multiple": false,
+                    "typeClass": "controlledVocabulary",
+                    "value": "ORCID"
+                  },
+                  "authorIdentifier": {
+                    "typeName": "authorIdentifier",
+                    "multiple": false,
+                    "typeClass": "primitive",
+                    "value": "0000-0002-6522-0835"
+                  }
+                }
+              ]
+            },
+            {
+              "typeName": "datasetContact",
+              "multiple": true,
+              "typeClass": "compound",
+              "value": [
+                {
+                  "datasetContactName": {
+                    "typeName": "datasetContactName",
+                    "multiple": false,
+                    "typeClass": "primitive",
+                    "value": "Admin, Dataverse"
+                  },
+                  "datasetContactAffiliation": {
+                    "typeName": "datasetContactAffiliation",
+                    "multiple": false,
+                    "typeClass": "primitive",
+                    "value": "sbgrid.org / SBDG"
+                  },
+                  "datasetContactEmail": {
+                    "typeName": "datasetContactEmail",
+                    "multiple": false,
+                    "typeClass": "primitive",
+                    "value": "generic@mailinator.com"
+                  }
+                }
+              ]
+            },
+            {
+              "typeName": "dsDescription",
+              "multiple": true,
+              "typeClass": "compound",
+              "value": [
+                {
+                  "dsDescriptionValue": {
+                    "typeName": "dsDescriptionValue",
+                    "multiple": false,
+                    "typeClass": "primitive",
+                    "value": "Native dataset"
+                  }
+                }
+              ]
+            },
+            {
+              "typeName": "subject",
+              "multiple": true,
+              "typeClass": "controlledVocabulary",
+              "value": [
+                "Medicine, Health and Life Sciences",
+                "Other"
+              ]
+            },
+            {
+              "typeName": "publication",
+              "multiple": true,
+              "typeClass": "compound",
+              "value": [
+                {
+                  "publicationIDType": {
+                    "typeName": "publicationIDType",
+                    "multiple": false,
+                    "typeClass": "controlledVocabulary",
+                    "value": "doi"
+                  },
+                  "publicationIDNumber": {
+                    "typeName": "publicationIDNumber",
+                    "multiple": false,
+                    "typeClass": "primitive",
+                    "value": "10.1016/ j.cell.2011.10.020"
+                  },
+                  "publicationURL": {
+                    "typeName": "publicationURL",
+                    "multiple": false,
+                    "typeClass": "primitive",
+                    "value": "http://dx.doi.org/10.1016/j.cell.2011.10.020"
+                  }
+                }
+              ]
+            },
+            {
+              "typeName": "contributor",
+              "multiple": true,
+              "typeClass": "compound",
+              "value": [
+                {
+                  "contributorType": {
+                    "typeName": "contributorType",
+                    "multiple": false,
+                    "typeClass": "controlledVocabulary",
+                    "value": "Data Collector"
+                  },
+                  "contributorName": {
+                    "typeName": "contributorName",
+                    "multiple": false,
+                    "typeClass": "primitive",
+                    "value": "Nam, Yunsun"
+                  }
+                }
+              ]
+            },
+            {
+              "typeName": "depositor",
+              "multiple": false,
+              "typeClass": "primitive",
+              "value": "Sliz, Piotr"
+            },
+            {
+              "typeName": "dateOfDeposit",
+              "multiple": false,
+              "typeClass": "primitive",
+              "value": "2015-04-13T18:14:17Z"
+            },
+            {
+              "typeName": "relatedDatasets",
+              "multiple": true,
+              "typeClass": "primitive",
+              "value": [
+                "<a href=\"https://dv.sbgrid.org/dataset.xhtml?persistentId=doi:10.15785/SBGRID/3\" target=\"_blank\">doi:10.15785/SBGRID/3</a>"
+              ]
+            }
+          ]
+        }
+      },
+
+      "files": [
+        {
+          "description": "",
+          "label": "yn152_4_001.img",
+          "directoryLabel": "data/subdir1",
+          "version": 1,
+          "datasetVersionId": 2,
+          "dataFile": {
+            "id": 424,
+            "filename": "yn152_4_001.img",
+            "contentType": "application/octet-stream",
+            "storageIdentifier": "data/subdir/yn152_4_001.img",
+            "originalFormatLabel": "UNKNOWN",
+            "checksum": {
+              "type": "MD5",
+              "value": "fc4ac06da6fd84785ed1b79cab9b714a73621ac7"
+            },
+            "description": ""
+          }
+        },
+        {
+          "description": "",
+          "label": "yn152_4_002.img",
+          "directoryLabel": "data/subdir2",
+          "version": 1,
+          "datasetVersionId": 2,
+          "dataFile": {
+            "id": 425,
+            "filename": "yn152_4_002.img",
+            "contentType": "application/octet-stream",
+            "storageIdentifier": "data/subdir/yn152_4_002.img",
+            "originalFormatLabel": "UNKNOWN",
+            "checksum": {
+              "type": "MD5",
+              "value": "756c1963e34eb6dd8bb5b48333c4f20ce64a0307"
+            },
+            "description": ""
+          }
+        }
+      ]
+    }
+}
