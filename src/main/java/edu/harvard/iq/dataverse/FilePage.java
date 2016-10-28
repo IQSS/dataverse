@@ -14,9 +14,13 @@ import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
+import edu.harvard.iq.dataverse.export.ExportException;
+import edu.harvard.iq.dataverse.export.ExportService;
+import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -79,6 +83,9 @@ public class FilePage implements java.io.Serializable {
     GuestbookResponseServiceBean guestbookResponseService;
     @EJB
     AuthenticationServiceBean authService;
+    
+    @EJB
+    SystemConfig systemConfig;
 
 
     @Inject
@@ -204,6 +211,32 @@ public class FilePage implements java.io.Serializable {
 
     public void setVersion(String version) {
         this.version = version;
+    }
+    
+    public List< String[]> getExporters(){
+        List<String[]> retList = new ArrayList();
+        String myHostURL = systemConfig.getDataverseSiteUrl();
+        for (String [] provider : ExportService.getInstance().getExportersLabels() ){
+            String formatName = provider[1];
+            String formatDisplayName = provider[0];
+            
+            Exporter exporter = null; 
+            try {
+                exporter = ExportService.getInstance().getExporter(formatName);
+            } catch (ExportException ex) {
+                exporter = null;
+            }
+            if (exporter != null && exporter.isAvailableToUsers()) {
+                // Not all metadata exports should be presented to the web users!
+                // Some are only for harvesting clients.
+                
+                String[] temp = new String[2];            
+                temp[0] = formatDisplayName;
+                temp[1] = myHostURL + "/api/datasets/export?exporter=" + formatName + "&persistentId=" + fileMetadata.getDatasetVersion().getDataset().getGlobalId();
+                retList.add(temp);
+            }
+        }
+        return retList;  
     }
   
     public String restrictFile(boolean restricted){     
