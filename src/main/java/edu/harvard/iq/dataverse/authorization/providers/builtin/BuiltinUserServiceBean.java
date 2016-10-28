@@ -46,16 +46,14 @@ public class BuiltinUserServiceBean {
     }
        
     public BuiltinUser save(BuiltinUser dataverseUser) {
-        /**
-         * Trim the email address no matter what the user entered or is entered
+        /* Trim the email address no matter what the user entered or is entered
          * on their behalf in the case of Shibboleth assertions.
          *
          * @todo Why doesn't Bean Validation report that leading and trailing
          * whitespace in an email address is a problem?
          */
         dataverseUser.setEmail(dataverseUser.getEmail().trim());
-        /**
-         * We throw a proper IllegalArgumentException here because otherwise
+        /* We throw a proper IllegalArgumentException here because otherwise
          * from the API you get a 500 response and "Can't save user: null".
          */
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();

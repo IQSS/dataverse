@@ -20,3 +20,4 @@ Contents:
    making-releases
    tools
    unf/index
+   selinux

@@ -19,6 +19,9 @@ Disable SELinux on httpd:
 
 ``getenforce``
 
+(Note: a pull request to get rApache working with SELinux is welcome! Please see the :doc:`/developers/selinux` section of the Developer Guide to get started.)
+
+
 https strongly recommended; signed certificate (as opposed to self-signed) is recommended. 
 
 Directory listing needs to be disabled on the web documents folder served by Apache: 

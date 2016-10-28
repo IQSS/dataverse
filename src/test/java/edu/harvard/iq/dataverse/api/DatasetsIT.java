@@ -307,7 +307,7 @@ public class DatasetsIT {
 
         Response tryToCreatePrivateUrlWhenExisting = UtilIT.privateUrlCreate(datasetId, apiToken);
         tryToCreatePrivateUrlWhenExisting.prettyPrint();
-        assertEquals(BAD_REQUEST.getStatusCode(), tryToCreatePrivateUrlWhenExisting.getStatusCode());
+        assertEquals(FORBIDDEN.getStatusCode(), tryToCreatePrivateUrlWhenExisting.getStatusCode());
 
         Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
         assertEquals(OK.getStatusCode(), publishDataverse.getStatusCode());
@@ -326,7 +326,7 @@ public class DatasetsIT {
 
         Response tryToCreatePrivateUrlToPublishedVersion = UtilIT.privateUrlCreate(datasetId, apiToken);
         tryToCreatePrivateUrlToPublishedVersion.prettyPrint();
-        assertEquals(BAD_REQUEST.getStatusCode(), tryToCreatePrivateUrlToPublishedVersion.getStatusCode());
+        assertEquals(FORBIDDEN.getStatusCode(), tryToCreatePrivateUrlToPublishedVersion.getStatusCode());
 
         String newTitle = "I am changing the title";
         Response updatedMetadataResponse = UtilIT.updateDatasetTitleViaSword(dataset1PersistentId, newTitle, apiToken);

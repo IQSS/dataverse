@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.EMailValidator;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
@@ -9,7 +10,6 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.UserIdentifier;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationProviderFactoryNotFoundException;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationSetupException;
-import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderFactory;
 import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderRow;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
@@ -32,11 +32,9 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
-
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import java.io.StringReader;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -48,7 +46,9 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response.Status;
-import static edu.harvard.iq.dataverse.api.AbstractApiBean.errorResponse;
+import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
+import edu.harvard.iq.dataverse.authorization.RoleAssignee;
+import edu.harvard.iq.dataverse.authorization.users.User;
 /**
  * Where the secure, setup API calls live.
  * @author michael
@@ -70,14 +70,14 @@ public class Admin extends AbstractApiBean {
         JsonObjectBuilder bld = jsonObjectBuilder();
         settingsSvc.listAll().forEach(
             s -> bld.add(s.getName(), s.getContent())); 
-        return okResponse(bld);
+        return ok(bld);
     }
     
     @Path("settings/{name}")
     @PUT
     public Response putSetting( @PathParam("name") String name, String content ) {
         Setting s = settingsSvc.set(name, content);
-        return okResponse( jsonObjectBuilder().add(s.getName(), s.getContent()) );
+        return ok( jsonObjectBuilder().add(s.getName(), s.getContent()) );
     }
     
     @Path("settings/{name}")
@@ -86,7 +86,7 @@ public class Admin extends AbstractApiBean {
         String s = settingsSvc.get(name);
         
         return ( s != null ) 
-                ? okResponse( s ) 
+                ? ok( s ) 
                 : notFound("Setting " + name + " not found");
     }
     
@@ -95,33 +95,27 @@ public class Admin extends AbstractApiBean {
     public Response deleteSetting( @PathParam("name") String name ) {
         settingsSvc.delete(name);
         
-        return okResponse("Setting " + name +  " deleted.");
+        return ok("Setting " + name +  " deleted.");
     }
     
     @Path("authenticationProviderFactories")
     @GET
     public Response listAuthProviderFactories() {
-        JsonArrayBuilder arb = Json.createArrayBuilder();
-        for ( AuthenticationProviderFactory f : authSvc.listProviderFactories() ){
-            arb.add( jsonObjectBuilder()
+        return ok(authSvc.listProviderFactories()
+                .stream()
+                .map( f -> jsonObjectBuilder()
                         .add("alias", f.getAlias() )
-                        .add("info", f.getInfo() ));
-        }
-        
-        return okResponse(arb);
+                        .add("info", f.getInfo() ) )
+                .collect( toJsonArray() )
+        );
     }
 
     
     @Path("authenticationProviders")
     @GET
     public Response listAuthProviders() {
-        JsonArrayBuilder arb = Json.createArrayBuilder();
-        for ( AuthenticationProviderRow r :
-                em.createNamedQuery("AuthenticationProviderRow.findAll", AuthenticationProviderRow.class).getResultList() ){
-            arb.add( json(r) );
-        }
-        
-        return okResponse(arb);
+        return ok(em.createNamedQuery("AuthenticationProviderRow.findAll", AuthenticationProviderRow.class).getResultList()
+                    .stream().map( r->json(r) ).collect( toJsonArray() ));
     }
     
     @Path("authenticationProviders")
@@ -140,9 +134,9 @@ public class Admin extends AbstractApiBean {
                 authSvc.deregisterProvider(provider.getId());
                 authSvc.registerProvider(provider);
             }
-            return createdResponse("/s/authenticationProviders/"+managed.getId(), json(managed));
+            return created("/s/authenticationProviders/"+managed.getId(), json(managed));
         } catch ( AuthorizationSetupException e ) {
-            return errorResponse(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage() );
+            return error(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage() );
         }
     }
     
@@ -150,8 +144,8 @@ public class Admin extends AbstractApiBean {
     @GET
     public Response showProvider( @PathParam("id") String id ) {
         AuthenticationProviderRow row = em.find(AuthenticationProviderRow.class, id);
-        return (row != null ) ? okResponse( json(row) )
-                                : errorResponse(Status.NOT_FOUND,"Can't find authetication provider with id '" + id + "'");
+        return (row != null ) ? ok( json(row) )
+                                : error(Status.NOT_FOUND,"Can't find authetication provider with id '" + id + "'");
     }
     
     @POST
@@ -160,13 +154,13 @@ public class Admin extends AbstractApiBean {
     public Response enableAuthenticationProvider( @PathParam("id")String id, String body ) {
         
         if ( ! Util.isBoolean(body) ) {
-            return errorResponse(Response.Status.BAD_REQUEST, "Illegal value '" + body + "'. Try 'true' or 'false'");
+            return error(Response.Status.BAD_REQUEST, "Illegal value '" + body + "'. Use 'true' or 'false'");
         }
         boolean enable = Util.isTrue(body);
         
         AuthenticationProviderRow row = em.find(AuthenticationProviderRow.class, id);
         if ( row == null ) {
-            return errorResponse( Status.NOT_FOUND, "Can't find authentication provider with id '" + id + "'");
+            return notFound("Can't find authentication provider with id '" + id + "'");
         }
         
         row.setEnabled(enable);
@@ -175,25 +169,24 @@ public class Admin extends AbstractApiBean {
         if ( enable ) {
             // enable a provider
             if ( authSvc.getAuthenticationProvider(id) != null ) {
-                return okResponse( String.format("Authentication provider '%s' already enabled", id));
+                return ok( String.format("Authentication provider '%s' already enabled", id));
             }
             try {
                 authSvc.registerProvider( authSvc.loadProvider(row) );
-                return okResponse(String.format("Authentication Provider %s enabled", row.getId()));
+                return ok(String.format("Authentication Provider %s enabled", row.getId()));
                 
             } catch (AuthenticationProviderFactoryNotFoundException ex) {
-                return errorResponse(Response.Status.BAD_REQUEST, 
-                                        String.format("Can't instantiate provider, as there's no factory with alias %s", row.getFactoryAlias()));
+                return notFound(String.format("Can't instantiate provider, as there's no factory with alias %s", row.getFactoryAlias()));
             } catch (AuthorizationSetupException ex) {
                 logger.log(Level.WARNING, "Error instantiating authentication provider: " + ex.getMessage(), ex);
-                return errorResponse(Response.Status.BAD_REQUEST, 
+                return error(Status.INTERNAL_SERVER_ERROR, 
                                         String.format("Can't instantiate provider: %s", ex.getMessage()));
             }
             
         } else {
             // disable a provider
             authSvc.deregisterProvider(id);
-            return okResponse("Authentication Provider '" + id + "' disabled. " 
+            return ok("Authentication Provider '" + id + "' disabled. " 
                     + ( authSvc.getAuthenticationProviderIds().isEmpty() 
                             ? "WARNING: no enabled authentication providers left." : "") );
         }
@@ -208,7 +201,7 @@ public class Admin extends AbstractApiBean {
             em.remove( row );
         }
         
-        return okResponse("AuthenticationProvider " + id + " deleted. "
+        return ok("AuthenticationProvider " + id + " deleted. "
             + ( authSvc.getAuthenticationProviderIds().isEmpty() 
                             ? "WARNING: no enabled authentication providers left." : ""));
     }
@@ -218,9 +211,9 @@ public class Admin extends AbstractApiBean {
     public Response getAuthenticatedUser(@PathParam("identifier") String identifier) {
         AuthenticatedUser authenticatedUser = authSvc.getAuthenticatedUser(identifier);
         if (authenticatedUser != null) {
-            return okResponse(jsonForAuthUser(authenticatedUser));
+            return ok(jsonForAuthUser(authenticatedUser));
         }
-        return errorResponse(Response.Status.BAD_REQUEST, "User " + identifier + " not found.");
+        return error(Response.Status.BAD_REQUEST, "User " + identifier + " not found.");
     }
 
     @DELETE
@@ -229,9 +222,9 @@ public class Admin extends AbstractApiBean {
         AuthenticatedUser user = authSvc.getAuthenticatedUser(identifier);
         if (user!=null) {
             authSvc.deleteAuthenticatedUser(user.getId());
-            return okResponse("AuthenticatedUser " +identifier + " deleted. ");
+            return ok("AuthenticatedUser " +identifier + " deleted. ");
         }
-        return errorResponse(Response.Status.BAD_REQUEST, "User "+ identifier+" not found.");
+        return error(Response.Status.BAD_REQUEST, "User "+ identifier+" not found.");
     }
 
     @POST
@@ -241,9 +234,9 @@ public class Admin extends AbstractApiBean {
             Dataverse dataverse = dataverseSvc.find(id);
             if (dataverse != null) {
                 AuthenticatedUser authenticatedUser = dataverse.getCreator();
-                return okResponse(json(execCommand(new PublishDataverseCommand(createDataverseRequest(authenticatedUser), dataverse))));
+                return ok(json(execCommand(new PublishDataverseCommand(createDataverseRequest(authenticatedUser), dataverse))));
             } else {
-                return errorResponse(Status.BAD_REQUEST, "Could not find dataverse with id " + id);
+                return error(Status.BAD_REQUEST, "Could not find dataverse with id " + id);
             }
         } catch (WrappedResponse wr) {
             return wr.getResponse();
@@ -256,16 +249,16 @@ public class Admin extends AbstractApiBean {
         try {
             AuthenticatedUser user = findAuthenticatedUserOrDie();
             if (!user.isSuperuser()) {
-                return errorResponse(Response.Status.FORBIDDEN, "Superusers only.");
+                return error(Response.Status.FORBIDDEN, "Superusers only.");
             }
         } catch (WrappedResponse ex) {
-            return errorResponse(Response.Status.FORBIDDEN, "Superusers only.");
+            return error(Response.Status.FORBIDDEN, "Superusers only.");
         }
         JsonArrayBuilder userArray = Json.createArrayBuilder();
         authSvc.findAllAuthenticatedUsers().stream().forEach((user) -> {
             userArray.add(jsonForAuthUser(user));
         });
-        return okResponse(userArray);
+        return ok(userArray);
     }
 
     /**
@@ -278,20 +271,20 @@ public class Admin extends AbstractApiBean {
         try {
             AuthenticatedUser user = findAuthenticatedUserOrDie();
             if (!user.isSuperuser()) {
-                return errorResponse(Response.Status.FORBIDDEN, "Superusers only.");
+                return error(Response.Status.FORBIDDEN, "Superusers only.");
             }
         } catch (WrappedResponse ex) {
-            return errorResponse(Response.Status.FORBIDDEN, "Superusers only.");
+            return error(Response.Status.FORBIDDEN, "Superusers only.");
         }
         try {
             BuiltinUser builtinUser = authSvc.convertShibToBuiltIn(id, newEmailAddress);
             if (builtinUser == null) {
-                return errorResponse(Response.Status.BAD_REQUEST, "User id " + id + " could not be converted from Shibboleth to BuiltIn. An Exception was not thrown.");
+                return error(Response.Status.BAD_REQUEST, "User id " + id + " could not be converted from Shibboleth to BuiltIn. An Exception was not thrown.");
             }
             JsonObjectBuilder output = Json.createObjectBuilder();
             output.add("email", builtinUser.getEmail());
             output.add("username", builtinUser.getUserName());
-            return okResponse(output);
+            return ok(output);
         } catch (Throwable ex) {
             StringBuilder sb = new StringBuilder();
             sb.append(ex + " ");
@@ -301,7 +294,7 @@ public class Admin extends AbstractApiBean {
             }
             String msg = "User id " + id + " could not be converted from Shibboleth to BuiltIn. Details from Exception: " + sb;
             logger.info(msg);
-            return errorResponse(Response.Status.BAD_REQUEST, msg);
+            return error(Response.Status.BAD_REQUEST, msg);
         }
     }
 
@@ -316,14 +309,14 @@ public class Admin extends AbstractApiBean {
         try {
             AuthenticatedUser userToRunThisMethod = findAuthenticatedUserOrDie();
             if (!userToRunThisMethod.isSuperuser()) {
-                return errorResponse(Response.Status.FORBIDDEN, "Superusers only.");
+                return error(Response.Status.FORBIDDEN, "Superusers only.");
             }
         } catch (WrappedResponse ex) {
-            return errorResponse(Response.Status.FORBIDDEN, "Superusers only.");
+            return error(Response.Status.FORBIDDEN, "Superusers only.");
         }
         boolean disabled = false;
         if (disabled) {
-            return errorResponse(Response.Status.BAD_REQUEST, "API endpoint disabled.");
+            return error(Response.Status.BAD_REQUEST, "API endpoint disabled.");
         }
         AuthenticatedUser builtInUserToConvert = null;
         String emailToFind;
@@ -337,7 +330,7 @@ public class Admin extends AbstractApiBean {
             newEmailAddressToUse = args[2];
 //            authuserId = args[666];
         } catch (ArrayIndexOutOfBoundsException ex) {
-            return errorResponse(Response.Status.BAD_REQUEST, "Problem with content <<<" + content + ">>>: " + ex.toString());
+            return error(Response.Status.BAD_REQUEST, "Problem with content <<<" + content + ">>>: " + ex.toString());
         }
         AuthenticatedUser existingAuthUserFoundByEmail = shibService.findAuthUserByEmail(emailToFind);
         String existing = "NOT FOUND";
@@ -350,7 +343,7 @@ public class Admin extends AbstractApiBean {
             if (specifiedUserToConvert != null) {
                 builtInUserToConvert = specifiedUserToConvert;
             } else {
-                return errorResponse(Response.Status.BAD_REQUEST, "No user to convert. We couldn't find a *single* existing user account based on " + emailToFind + " and no user was found using specified id " + longToLookup);
+                return error(Response.Status.BAD_REQUEST, "No user to convert. We couldn't find a *single* existing user account based on " + emailToFind + " and no user was found using specified id " + longToLookup);
             }
         }
         String shibProviderId = ShibAuthenticationProvider.PROVIDER_ID;
@@ -369,7 +362,7 @@ public class Admin extends AbstractApiBean {
         boolean validEmail = EMailValidator.isEmailValid(overwriteEmail, null);
         if (!validEmail) {
             // See https://github.com/IQSS/dataverse/issues/2998
-            return errorResponse(Response.Status.BAD_REQUEST, "invalid email: " + overwriteEmail);
+            return error(Response.Status.BAD_REQUEST, "invalid email: " + overwriteEmail);
         }
         /**
          * @todo If affiliation is not null, put it in RoleAssigneeDisplayInfo
@@ -426,7 +419,7 @@ public class Admin extends AbstractApiBean {
                  * @todo Someday we should make a errorResponse method that
                  * takes JSON arrays and objects.
                  */
-                return errorResponse(Status.BAD_REQUEST, problems.build().toString());
+                return error(Status.BAD_REQUEST, problems.build().toString());
             }
 //            response.add("knows existing password", knowsExistingPassword);
         }
@@ -441,7 +434,7 @@ public class Admin extends AbstractApiBean {
             response.add("affiliation", overwriteAffiliation);
         }
         response.add("problems", problems);
-        return okResponse(response);
+        return ok(response);
     }
 
     @DELETE
@@ -450,9 +443,9 @@ public class Admin extends AbstractApiBean {
         AuthenticatedUser user = authSvc.findByID(id);
         if (user != null) {
             authSvc.deleteAuthenticatedUser(user.getId());
-            return okResponse("AuthenticatedUser " + id + " deleted. ");
+            return ok("AuthenticatedUser " + id + " deleted. ");
         }
-        return errorResponse(Response.Status.BAD_REQUEST, "User " + id + " not found.");
+        return error(Response.Status.BAD_REQUEST, "User " + id + " not found.");
     }
 
     @Path("roles")
@@ -461,11 +454,11 @@ public class Admin extends AbstractApiBean {
         ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.Admin, "createBuiltInRole")
                 .setInfo(roleDto.getAlias() + ":" + roleDto.getDescription() );
         try {
-            return okResponse(json(rolesSvc.save(roleDto.asRole())));
+            return ok(json(rolesSvc.save(roleDto.asRole())));
         } catch (Exception e) {
             alr.setActionResult(ActionLogRecord.Result.InternalError);
             alr.setInfo( alr.getInfo() + "// " + e.getMessage() );
-            return errorResponse(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
+            return error(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
         } finally {
             actionLogSvc.log(alr);
         }
@@ -475,9 +468,9 @@ public class Admin extends AbstractApiBean {
     @GET
     public Response listBuiltinRoles() {
         try {
-            return okResponse( rolesToJson(rolesSvc.findBuiltinRoles()) );
+            return ok( rolesToJson(rolesSvc.findBuiltinRoles()) );
         } catch (Exception e) {
-            return errorResponse(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
+            return error(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
     
@@ -492,11 +485,11 @@ public class Admin extends AbstractApiBean {
           
             user.setSuperuser(!user.isSuperuser());
             
-            return okResponse("User " + user.getIdentifier() + " " + (user.isSuperuser() ? "set": "removed") + " as a superuser.");
+            return ok("User " + user.getIdentifier() + " " + (user.isSuperuser() ? "set": "removed") + " as a superuser.");
         } catch (Exception e) {
             alr.setActionResult(ActionLogRecord.Result.InternalError);
             alr.setInfo( alr.getInfo() + "// " + e.getMessage() );
-            return errorResponse(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
+            return error(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
         } finally {
            actionLogSvc.log(alr);
        }
@@ -522,13 +515,13 @@ public class Admin extends AbstractApiBean {
                             violation.add("entityClassDatabaseTableRowId", databaseRow);
                             violation.add("field", field);
                             violation.add("invalidValue", invalidValue);
-                            return okResponse(violation);
+                            return ok(violation);
                     }
                 }
                 cause = cause.getCause();
             }
         }
-        return okResponse(msg);
+        return ok(msg);
     }
 
     /**
@@ -544,10 +537,10 @@ public class Admin extends AbstractApiBean {
         if (user != null) {
             ConfirmEmailData confirmEmailData = confirmEmailSvc.findSingleConfirmEmailDataByUser(user);
             if (confirmEmailData != null) {
-                return okResponse(Json.createObjectBuilder().add("token", confirmEmailData.getToken()));
+                return ok(Json.createObjectBuilder().add("token", confirmEmailData.getToken()));
             }
         }
-        return errorResponse(Status.BAD_REQUEST, "Could not find confirm email token for user " + userId);
+        return error(Status.BAD_REQUEST, "Could not find confirm email token for user " + userId);
     }
 
     /**
@@ -563,16 +556,16 @@ public class Admin extends AbstractApiBean {
             try {
                 ConfirmEmailInitResponse confirmEmailInitResponse = confirmEmailSvc.beginConfirm(user);
                 ConfirmEmailData confirmEmailData = confirmEmailInitResponse.getConfirmEmailData();
-                return okResponse(
+                return ok(
                         Json.createObjectBuilder()
                         .add("tokenCreated", confirmEmailData.getCreated().toString())
                         .add("identifier", user.getUserIdentifier()
                         ));
             } catch (ConfirmEmailException ex) {
-                return errorResponse(Status.BAD_REQUEST, "Could not start confirm email process for user " + userId + ": " + ex.getLocalizedMessage());
+                return error(Status.BAD_REQUEST, "Could not start confirm email process for user " + userId + ": " + ex.getLocalizedMessage());
             }
         }
-        return errorResponse(Status.BAD_REQUEST, "Could not find user based on " + userId);
+        return error(Status.BAD_REQUEST, "Could not find user based on " + userId);
     }
 
     /**
@@ -588,7 +581,7 @@ public class Admin extends AbstractApiBean {
         BuiltinUser builtinUser = builtinUserService.find(new Long(object.getInt("builtinUserId")));
         builtinUser.updateEncryptedPassword("4G7xxL9z11/JKN4jHPn4g9iIQck=", 0); // password is "sha-1Pass", 0 means SHA-1
         BuiltinUser savedUser = builtinUserService.save(builtinUser);
-        return okResponse("foo: " + savedUser);
+        return ok("foo: " + savedUser);
 
     }
 
@@ -601,6 +594,39 @@ public class Admin extends AbstractApiBean {
         JsonArrayBuilder arr = Json.createArrayBuilder();
         roleAssigneeSvc.getAssignmentsFor(raIdtf).forEach( a -> arr.add(json(a)));
         
-        return okResponse(arr);
+        return ok(arr);
     }
+
+    @Path("permissions/{dvo}")
+    @GET
+    public Response findPermissonsOn(@PathParam("dvo") String dvo) {
+        try {
+            DvObject dvObj = findDvo(dvo);
+            if (dvObj == null) {
+                return notFound("DvObject " + dvo + " not found");
+            }
+            try {
+                User aUser = findUserOrDie();
+                JsonObjectBuilder bld = Json.createObjectBuilder();
+                bld.add("user", aUser.getIdentifier());
+                bld.add("permissions", json(permissionSvc.permissionsFor(createDataverseRequest(aUser), dvObj)));
+                return ok(bld);
+
+            } catch (WrappedResponse wr) {
+                return wr.getResponse();
+            }
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error while testing permissions", e);
+            return error(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    @Path("assignee/{idtf}")
+    @GET
+    public Response findRoleAssignee(@PathParam("idtf") String idtf) {
+        RoleAssignee ra = roleAssigneeSvc.getRoleAssignee(idtf);
+        return (ra == null) ? notFound("Role Assignee '" + idtf + "' not found.")
+                : ok(json(ra.getDisplayInfo()));
+    }
+
 }
