@@ -269,15 +269,15 @@
                                                               (FilePage.fileMetadata.datasetVersion.deaccessioned and FilePage.canUpdateDataset()))}">
                                 
                                 <!-- Add + Edit Metadata Button -->
-                                <div class="button-block tab-header margin-bottom text-right" jsf:rendered="#{dataverseSession.user.authenticated
+                                <div class="button-block tab-header margin-bottom text-right">
+                                    <h:outputLink class="btn btn-default" value="/editdatafiles.xhtml?selectedFileIds=#{FilePage.fileMetadata.dataFile.id}&#38;datasetId=#{FilePage.fileMetadata.datasetVersion.dataset.id}&#38;mode=SINGLE"
+                                                  rendered="#{dataverseSession.user.authenticated
                                                      and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset)}">
-                                    <h:outputLink class="btn btn-default" value="/editdatafiles.xhtml?selectedFileIds=#{FilePage.fileMetadata.dataFile.id}&#38;datasetId=#{FilePage.fileMetadata.datasetVersion.dataset.id}&#38;mode=SINGLE">
                                             <span class="glyphicon glyphicon-pencil"/> #{bundle['file.dataFilesTab.metadata.addBtn']}
                                     </h:outputLink>
-                                </div>
-                                <!-- END: Add + Edit Metadata Button -->
-                                <!-- Download Button -->
-                                    <div class="btn-group" jsf:rendered="#{FilePage.fileMetadata.datasetVersion.dataset.released}" >
+
+                                    <!-- Export Button -->
+                                    <div class="btn-group" jsf:rendered="#{FilePage.fileMetadata.datasetVersion.dataset.released}">
                                         <button class="btn btn-default dropdown-toggle" type="button" styleClass="btn btn-default" data-toggle="dropdown">
                                             <span class="glyphicon glyphicon-export"/> #{bundle['dataset.exportBtn']} <span class="caret"/></button>
                                         <ul class="dropdown-menu" role="menu">
@@ -290,6 +290,7 @@
                                             </ui:repeat>
                                         </ul>
                                     </div>
+                                </div>
                                 <!-- END: Add + Edit Metadata Button -->
                                 
                                 <div class="panel panel-default">
