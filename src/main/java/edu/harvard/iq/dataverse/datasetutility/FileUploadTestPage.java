@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetPage;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.DataverseLinkingServiceBean;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
@@ -51,12 +52,7 @@ public class FileUploadTestPage implements java.io.Serializable {
     
     private static final Logger logger = Logger.getLogger(DatasetPage.class.getCanonicalName());
 
-    private boolean replaceOperation = false;
-    private Long datasetId;
-    private Dataset dataset;
-    private DataFile fileToReplace;
-    private List<DataFile> newlyAddedFiles;
-    
+
     @EJB
     IngestServiceBean ingestService;
     @Inject 
@@ -84,6 +80,13 @@ public class FileUploadTestPage implements java.io.Serializable {
     @EJB
     EjbDataverseEngine commandEngine;
     
+    private boolean replaceOperation = false;
+    private Long datasetId;
+    private Dataset dataset;
+    private DatasetVersion datasetVersion;
+    private DataFile fileToReplace;
+    private List<DataFile> newlyAddedFiles;
+    
     
     public String init() {
         
@@ -97,6 +100,7 @@ public class FileUploadTestPage implements java.io.Serializable {
             String ds_id = params.get("ds_id");
             if ((!ds_id.isEmpty()) && (StringUtils.isNumeric(ds_id))){
                 dataset = datasetService.find(Long.parseLong(ds_id));
+                datasetVersion = dataset.getLatestVersion();
                 checkRetrievalTest();
             }
         }
@@ -180,6 +184,10 @@ public class FileUploadTestPage implements java.io.Serializable {
     
     public Dataset getDataset(){
         return dataset;
+    }
+
+    public DatasetVersion getDatasetVersion(){
+        return datasetVersion;
     }
 
     public void setDataset(Dataset ds){

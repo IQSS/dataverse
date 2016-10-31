@@ -10,11 +10,13 @@ import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
 import edu.harvard.iq.dataverse.datasetutility.DataFileTagException;
@@ -62,6 +64,7 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -88,6 +91,8 @@ public class Datasets extends AbstractApiBean {
     
     private static final String PERSISTENT_ID_KEY=":persistentId";
     
+    @Inject DataverseSession session;    
+
     @EJB
     DatasetServiceBean datasetService;
 
@@ -394,9 +399,17 @@ public class Datasets extends AbstractApiBean {
             
             Dataset ds = datasetService.find(dsId);
             
+            User theUser; 
+            if ((session.getUser() != null)&&(session.getUser().isAuthenticated())){
+                theUser = session.getUser();
+            }else{
+                theUser = findAuthenticatedUserOrDie();
+            }
+            
+            
             return ( ds == null ) ? notFound("Can't find dataset with id '" + id + "'")
                                   : ok( json(execCommand(new PublishDatasetCommand(ds, 
-                                                                            createDataverseRequest(findAuthenticatedUserOrDie()),
+                                                                            createDataverseRequest(theUser),
                                                                             isMinor))) );
         
         }  catch (WrappedResponse ex) {
@@ -662,7 +675,8 @@ public class Datasets extends AbstractApiBean {
 
     
     private void msg(String m){
-        System.out.println(m);
+        //System.out.println(m);
+        LOGGER.fine(m);
     }
     private void dashes(){
         msg("----------------");

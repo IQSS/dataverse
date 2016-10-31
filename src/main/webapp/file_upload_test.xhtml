@@ -7,7 +7,7 @@
       xmlns:p="http://primefaces.org/ui">
 
   <h:head>
-
+   
   </h:head>
 
   <h:body>
@@ -35,21 +35,30 @@
 
                   
                 <ui:fragment rendered="#{FileUploadTestPage.fileToReplace == null}">
-                  <h3>Add New File</h3>
+                <h3>Add New File</h3>
                 </ui:fragment>
                 <ui:fragment rendered="#{(FileUploadTestPage.fileToReplace != null) and (FileUploadTestPage.fileToReplace.released)}">
                     <h3>Replace File: <span style="color:#006699;">#{FileUploadTestPage.fileToReplace.displayName }</span></h3>
                 </ui:fragment>
-                  
+                
+                <!-- start: BASIC FORM 1 -->
                 <h:form>
+                   
                     <p:fileUpload fileUploadListener="#{FileUploadTestPage.handleFileUpload}" mode="advanced" dragDropSupport="false"
                            sizeLimit="100000" fileLimit="2" allowTypes="/(\.|\/)(gif|jpe?g|png|txt)$/"
                            update="@all"  />
-
+                   
                     <p:growl id="messages" showDetail="true" />
-                </h:form>
 
-                    
+                  <ui:remove>
+                  <p:fileUpload id="fileUpload" styleClass="margin-bottom" dragDropSupport="true" auto="true" multiple="true" rendered="#{datasetPage || EditDatafilesPage.showFileUploadFileComponent()}"
+                                  fileUploadListener="#{EditDatafilesPage.handleFileUpload}" process="filesTable" update="filesTable,uploadMessage" label="#{bundle['file.selectToAddBtn']}"
+                                  oncomplete="javascript:dataset_fileupload_rebind();uploadWidgetDropMsg();" onstart="javascript:uploadWidgetDropRemoveMsg();"
+                                  sizeLimit="#{EditDatafilesPage.getMaxFileUploadSizeInBytes()}" invalidSizeMessage="File exceeds our limits. Please contact support. " />
+                  
+                  </ui:remove>
+                </h:form>
+                <!-- end BASIC FORM 1 -->
                   <hr />
               </ui:fragment>
 
@@ -66,6 +75,11 @@
                     No dataset chosen.
                 </ui:fragment>    
                 <ui:fragment rendered="#{FileUploadTestPage.dataset != null}">
+                    <ui:fragment rendered="#{!FileUploadTestPage.datasetVersion.released}">
+                        <script src="#{resource['js/test_replace.js']}?time=#{now};"></script>
+                        <a id="idPublishDataset" href="#" class="btn btn-success">Publish Dataset</a>
+                    </ui:fragment>
+                    
                     <h4>#{FileUploadTestPage.dataset.displayName } v#{FileUploadTestPage.dataset.versionNumber }</h4>
                     
                     <table class="table table-bordered table-hover">
