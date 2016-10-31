@@ -19,6 +19,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -282,7 +283,13 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to add file(s) to dataset: " + ex.getMessage());
             }
             if (!dataFiles.isEmpty()) {
-                ingestService.addFiles(editVersion, dataFiles);
+                Set<ConstraintViolation> constraintViolations = editVersion.validate();
+                if (constraintViolations.size() > 0) {
+                    ConstraintViolation violation = constraintViolations.iterator().next();
+                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to add file(s) to dataset: " + violation.getMessage() + " The invalid value was \"" + violation.getInvalidValue() + "\".");
+                } else {
+                    ingestService.addFiles(editVersion, dataFiles);
+                }
             } else {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "No files to add to dataset. Perhaps the zip file was empty.");
             }

@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.util.json;
 
+import edu.emory.mathcs.backport.java.util.Collections;
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
@@ -12,11 +13,13 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseContact;
 import edu.harvard.iq.dataverse.DataverseFacet;
+import edu.harvard.iq.dataverse.DataverseTheme;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.RoleAssignment;
+import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.api.Util;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
@@ -31,7 +34,9 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.util.DatasetFieldWalker;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
+import java.util.ArrayList;
 import java.util.Set;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -46,6 +51,7 @@ import java.util.Deque;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -54,32 +60,31 @@ import java.util.stream.Collector;
 import static java.util.stream.Collectors.toList;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
-import javax.json.JsonValue;
 
 /**
  * Convert objects to Json.
+ *
  * @author michael
  */
 public class JsonPrinter {
-	
-    	
-	public static final BriefJsonPrinter brief = new BriefJsonPrinter();
-	
-    public static JsonArrayBuilder asJsonArray( Collection<String> strings ) {
+
+    public static final BriefJsonPrinter brief = new BriefJsonPrinter();
+
+    public static JsonArrayBuilder asJsonArray(Collection<String> strings) {
         JsonArrayBuilder arr = Json.createArrayBuilder();
-        for ( String s : strings ) {
+        for (String s : strings) {
             arr.add(s);
         }
         return arr;
     }
-    
-	public static JsonObjectBuilder json( User u ) {
+
+    public static JsonObjectBuilder json(User u) {
         RoleAssigneeDisplayInfo displayInfo = u.getDisplayInfo();
         return jsonObjectBuilder()
-                .add("identifier", u.getIdentifier() )
+                .add("identifier", u.getIdentifier())
                 .add("displayInfo", jsonObjectBuilder()
-                           .add("Title", displayInfo.getTitle())
-                           .add("email", displayInfo.getEmailAddress()));
+                        .add("Title", displayInfo.getTitle())
+                        .add("email", displayInfo.getEmailAddress()));
     }
 
     /**
@@ -123,9 +128,9 @@ public class JsonPrinter {
     
     public static JsonObjectBuilder json( RoleAssigneeDisplayInfo d ) {
         return jsonObjectBuilder()
-                .add( "title", d.getTitle() )
-                .add( "email", d.getEmailAddress() )
-                .add( "affiliation", d.getAffiliation() );
+                .add("title", d.getTitle())
+                .add("email", d.getEmailAddress())
+                .add("affiliation", d.getAffiliation());
     }
 
     public static JsonObjectBuilder json(IpGroup grp) {
@@ -158,18 +163,18 @@ public class JsonPrinter {
         return bld;
     }
 
-        public static JsonObjectBuilder json(ShibGroup grp) {
+    public static JsonObjectBuilder json(ShibGroup grp) {
         return jsonObjectBuilder()
                 .add("name", grp.getName())
                 .add("attribute", grp.getAttribute())
                 .add("pattern", grp.getPattern())
                 .add("id", grp.getId());
     }
-    
-	public static JsonArrayBuilder rolesToJson( List<DataverseRole> role ) {
+
+    public static JsonArrayBuilder rolesToJson(List<DataverseRole> role) {
         JsonArrayBuilder bld = Json.createArrayBuilder();
-        for ( DataverseRole r : role ) {
-            bld.add( json(r) );
+        for (DataverseRole r : role) {
+            bld.add(json(r));
         }
         return bld;
     }
@@ -186,6 +191,7 @@ public class JsonPrinter {
         if (role.getOwner() != null && role.getOwner().getId() != null) {
             bld.add("ownerId", role.getOwner().getId());
         }
+
         return bld;
     }
 
@@ -197,7 +203,8 @@ public class JsonPrinter {
                 .add("affiliation", dv.getAffiliation())
                 .add("dataverseContacts", json(dv.getDataverseContacts()))
                 .add("permissionRoot", dv.isPermissionRoot())
-                .add("description", dv.getDescription());
+                .add("description", dv.getDescription())
+                .add("dataverseType", dv.getDataverseType().name());
         if (dv.getOwner() != null) {
             bld.add("ownerId", dv.getOwner().getId());
         }
@@ -207,67 +214,120 @@ public class JsonPrinter {
         if (dv.getCreator() != null) {
             bld.add("creator", json(dv.getCreator()));
         }
+        if (dv.getDataverseTheme() != null) {
+            bld.add("theme", json(dv.getDataverseTheme()));
+        }
+
         return bld;
     }
 
     public static JsonArrayBuilder json(List<DataverseContact> dataverseContacts) {
-        JsonArrayBuilder bld = Json.createArrayBuilder();
-        for (DataverseContact dc : dataverseContacts) {
-            bld.add( jsonObjectBuilder()
-                .add( "displayOrder",dc.getDisplayOrder())
-                .add( "contactEmail",dc.getContactEmail())
-            );
+        return dataverseContacts.stream()
+                .map( dc -> jsonObjectBuilder()
+                        .add("displayOrder", dc.getDisplayOrder())
+                        .add("contactEmail", dc.getContactEmail())
+                ).collect( toJsonArray() );
+    }
+    
+    public static JsonObjectBuilder json( DataverseTheme theme ) {
+        final NullSafeJsonBuilder baseObject = jsonObjectBuilder()
+                .add("id", theme.getId() )
+                .add("logo", theme.getLogo())
+                .add("tagline", theme.getTagline())
+                .add("linkUrl", theme.getLinkUrl())
+                .add("linkColor", theme.getLinkColor())
+                .add("textColor", theme.getTextColor())
+                .add("backgroundColor", theme.getBackgroundColor());
+        if ( theme.getLogoAlignment() != null ) {
+            baseObject.add("logoBackgroundColor", theme.getLogoBackgroundColor());
         }
+        return baseObject;
+    }
+
+    public static JsonObjectBuilder json(BuiltinUser user) {
+        return (user == null)
+                ? null
+                : jsonObjectBuilder()
+                .add("id", user.getId())
+                .add("firstName", user.getFirstName())
+                .add("lastName", user.getLastName())
+                .add("userName", user.getUserName())
+                .add("affiliation", user.getAffiliation())
+                .add("position", user.getPosition())
+                .add("email", user.getEmail());
+    }
+
+    public static JsonObjectBuilder json(Dataset ds) {
+        return jsonObjectBuilder()
+                .add("id", ds.getId())
+                .add("identifier", ds.getIdentifier())
+                .add("persistentUrl", ds.getPersistentURL())
+                .add("protocol", ds.getProtocol())
+                .add("authority", ds.getAuthority())
+                .add("publisher", getRootDataverseNameforCitation(ds))
+                .add("publicationDate", ds.getPublicationDateFormattedYYYYMMDD());
+    }
+
+    public static JsonObjectBuilder json(DatasetVersion dsv) {
+        JsonObjectBuilder bld = jsonObjectBuilder()
+                .add("id", dsv.getId())
+                .add("versionNumber", dsv.getVersionNumber())
+                .add("versionMinorNumber", dsv.getMinorVersionNumber())
+                .add("versionState", dsv.getVersionState().name())
+                .add("versionNote", dsv.getVersionNote())
+                .add("archiveNote", dsv.getArchiveNote())
+                .add("deaccessionLink", dsv.getDeaccessionLink())
+                .add("distributionDate", dsv.getDistributionDate())
+                .add("productionDate", dsv.getProductionDate())
+                .add("UNF", dsv.getUNF())
+                .add("archiveTime", format(dsv.getArchiveTime()))
+                .add("lastUpdateTime", format(dsv.getLastUpdateTime()))
+                .add("releaseTime", format(dsv.getReleaseTime()))
+                .add("createTime", format(dsv.getCreateTime()))
+                .add("license", dsv.getTermsOfUseAndAccess().getLicense() != null ? dsv.getTermsOfUseAndAccess().getLicense().toString() : null)
+                .add("termsOfUse", getLicenseInfo(dsv))
+                .add("confidentialityDeclaration", dsv.getTermsOfUseAndAccess().getConfidentialityDeclaration() != null ? dsv.getTermsOfUseAndAccess().getConfidentialityDeclaration() : null)
+                .add("availabilityStatus", dsv.getTermsOfUseAndAccess().getAvailabilityStatus() != null ? dsv.getTermsOfUseAndAccess().getAvailabilityStatus() : null)
+                .add("specialPermissions", dsv.getTermsOfUseAndAccess().getSpecialPermissions() != null ? dsv.getTermsOfUseAndAccess().getSpecialPermissions() : null)
+                .add("restrictions", dsv.getTermsOfUseAndAccess().getRestrictions() != null ? dsv.getTermsOfUseAndAccess().getRestrictions() : null)
+                .add("citationRequirements", dsv.getTermsOfUseAndAccess().getCitationRequirements() != null ? dsv.getTermsOfUseAndAccess().getCitationRequirements() : null)
+                .add("depositorRequirements", dsv.getTermsOfUseAndAccess().getDepositorRequirements() != null ? dsv.getTermsOfUseAndAccess().getDepositorRequirements() : null)
+                .add("conditions", dsv.getTermsOfUseAndAccess().getConditions() != null ? dsv.getTermsOfUseAndAccess().getConditions() : null)
+                .add("disclaimer", dsv.getTermsOfUseAndAccess().getDisclaimer() != null ? dsv.getTermsOfUseAndAccess().getDisclaimer() : null)
+                .add("termsOfAccess", dsv.getTermsOfUseAndAccess().getTermsOfAccess() != null ? dsv.getTermsOfUseAndAccess().getTermsOfAccess() : null)
+                .add("dataAccessPlace", dsv.getTermsOfUseAndAccess().getDataAccessPlace() != null ? dsv.getTermsOfUseAndAccess().getDataAccessPlace() : null)
+                .add("originalArchive", dsv.getTermsOfUseAndAccess().getOriginalArchive() != null ? dsv.getTermsOfUseAndAccess().getOriginalArchive() : null)
+                .add("availabilityStatus", dsv.getTermsOfUseAndAccess().getAvailabilityStatus() != null ? dsv.getTermsOfUseAndAccess().getAvailabilityStatus() : null)
+                .add("contactForAccess", dsv.getTermsOfUseAndAccess().getContactForAccess() != null ? dsv.getTermsOfUseAndAccess().getContactForAccess() : null)
+                .add("sizeOfCollection", dsv.getTermsOfUseAndAccess().getSizeOfCollection() != null ? dsv.getTermsOfUseAndAccess().getSizeOfCollection() : null)
+                .add("studyCompletion", dsv.getTermsOfUseAndAccess().getStudyCompletion() != null ? dsv.getTermsOfUseAndAccess().getStudyCompletion() : null);
+
+        bld.add("metadataBlocks", jsonByBlocks(dsv.getDatasetFields()));
+
+        bld.add("files", jsonFileMetadatas(dsv.getFileMetadatas()));
+
         return bld;
-    }       
-      
-	
-	public static JsonObjectBuilder json( BuiltinUser user ) {
-		return (user == null ) 
-				? null 
-				: jsonObjectBuilder()
-					.add( "id", user.getId() )
-					.add( "firstName", user.getFirstName())
-					.add( "lastName",  user.getLastName())
-					.add( "userName",  user.getUserName())
-					.add( "affiliation", user.getAffiliation())
-					.add( "position",  user.getPosition())
-					.add( "email",     user.getEmail());
-	}
-	
-	public static JsonObjectBuilder json( Dataset ds ) {
-		return jsonObjectBuilder()
-				.add( "id", ds.getId() )
-				.add( "identifier", ds.getIdentifier() )
-				.add( "persistentUrl", ds.getPersistentURL() )
-				.add( "protocol", ds.getProtocol() )
-				.add( "authority", ds.getAuthority() );
-	}
-	
-	public static JsonObjectBuilder json( DatasetVersion dsv ) {
-		JsonObjectBuilder bld = jsonObjectBuilder()
-				.add("id", dsv.getId())
-				.add("versionNumber", dsv.getVersionNumber())
-				.add("versionMinorNumber", dsv.getMinorVersionNumber())
-				.add("versionState", dsv.getVersionState().name() )
-				.add("versionNote", dsv.getVersionNote())
-				.add("archiveNote", dsv.getArchiveNote())
-				.add("deaccessionLink", dsv.getDeaccessionLink())
-				.add("distributionDate", dsv.getDistributionDate())
-				.add("productionDate", dsv.getProductionDate())
-				.add("UNF", dsv.getUNF())
-				.add("archiveTime", format(dsv.getArchiveTime()) )
-				.add("lastUpdateTime", format(dsv.getLastUpdateTime()) )
-				.add("releaseTime", format(dsv.getReleaseTime()) )
-				.add("createTime", format(dsv.getCreateTime()) )
-				;
-                
-		bld.add("metadataBlocks", jsonByBlocks(dsv.getDatasetFields()));
-        
-        bld.add( "files", jsonFileMetadatas(dsv.getFileMetadatas()) );
-		
-		return bld;
-	}
+    }
+    
+    private static String getRootDataverseNameforCitation(Dataset dataset) {
+        Dataverse root = dataset.getOwner();
+        while (root.getOwner() != null) {
+            root = root.getOwner();
+        }
+        String rootDataverseName = root.getName();
+        if (!StringUtil.isEmpty(rootDataverseName)) {
+            return rootDataverseName + " Dataverse";
+        } else {
+            return "";
+        }
+    }
+    
+    private static String getLicenseInfo(DatasetVersion dsv) {
+        if (dsv.getTermsOfUseAndAccess().getLicense() != null && dsv.getTermsOfUseAndAccess().getLicense().equals(TermsOfUseAndAccess.License.CC0)) {
+            return "CC0 Waiver";
+        }
+        return dsv.getTermsOfUseAndAccess().getTermsOfUse();
+    }
 
     /**
      * Export formats such as DDI require the citation to be included. See
@@ -301,48 +361,46 @@ public class JsonPrinter {
         return datasetDtoAsJson;
     }
 
-    public static JsonArrayBuilder jsonFileMetadatas( Collection<FileMetadata> fmds ) {
+    public static JsonArrayBuilder jsonFileMetadatas(Collection<FileMetadata> fmds) {
         JsonArrayBuilder filesArr = Json.createArrayBuilder();
-        for ( FileMetadata fmd : fmds ) {
+        for (FileMetadata fmd : fmds) {
             filesArr.add(json(fmd));
         }
         return filesArr;
     }
-    
-    public static JsonObjectBuilder json( DatasetDistributor dist ) {
+
+    public static JsonObjectBuilder json(DatasetDistributor dist) {
         return jsonObjectBuilder()
-                .add( "displayOrder",dist.getDisplayOrder())
-                .add( "version",dist.getVersion())
-                .add( "abbreviation", json(dist.getAbbreviation()) )
-                .add( "affiliation", json(dist.getAffiliation()) )
-                .add( "logo", json(dist.getLogo()) )
-                .add( "name", json(dist.getName()) )
-                .add( "url", json(dist.getUrl()) )
-                ;
+                .add("displayOrder", dist.getDisplayOrder())
+                .add("version", dist.getVersion())
+                .add("abbreviation", json(dist.getAbbreviation()))
+                .add("affiliation", json(dist.getAffiliation()))
+                .add("logo", json(dist.getLogo()))
+                .add("name", json(dist.getName()))
+                .add("url", json(dist.getUrl()));
     }
-    
-    public static JsonObjectBuilder jsonByBlocks( List<DatasetField> fields ) {
+
+    public static JsonObjectBuilder jsonByBlocks(List<DatasetField> fields) {
         JsonObjectBuilder blocksBld = jsonObjectBuilder();
-		
-		for ( Map.Entry<MetadataBlock, List<DatasetField>> blockAndFields : DatasetField.groupByBlock(fields).entrySet() ) {
+
+        for (Map.Entry<MetadataBlock, List<DatasetField>> blockAndFields : DatasetField.groupByBlock(fields).entrySet()) {
             MetadataBlock block = blockAndFields.getKey();
-            blocksBld.add( block.getName(), json( block, blockAndFields.getValue()) );
-		}
+            blocksBld.add(block.getName(), json(block, blockAndFields.getValue()));
+        }
         return blocksBld;
     }
-    
+
     /**
-     * Create a JSON object for the block and its fields. The fields are
-     * assumed to belong to the block - there's no checking of that in the
-     * method.
-     * 
+     * Create a JSON object for the block and its fields. The fields are assumed
+     * to belong to the block - there's no checking of that in the method.
+     *
      * @param block
      * @param fields
      * @return JSON Object builder with the block and fields information.
      */
-    public static JsonObjectBuilder json( MetadataBlock block, List<DatasetField> fields ) {
+    public static JsonObjectBuilder json(MetadataBlock block, List<DatasetField> fields) {
         JsonObjectBuilder blockBld = jsonObjectBuilder();
-			
+
         blockBld.add("displayName", block.getDisplayName());
         final JsonArrayBuilder fieldsArray = Json.createArrayBuilder();
 
@@ -351,58 +409,62 @@ public class JsonPrinter {
         blockBld.add("fields", fieldsArray);
         return blockBld;
     }
-	
-    public static String typeClassString( DatasetFieldType typ ) {
-        if ( typ.isControlledVocabulary()) return "controlledVocabulary";
-        if ( typ.isCompound()) return "compound";
+
+    public static String typeClassString(DatasetFieldType typ) {
+        if (typ.isControlledVocabulary()) {
+            return "controlledVocabulary";
+        }
+        if (typ.isCompound()) {
+            return "compound";
+        }
         return "primitive";
     }
-    
-    public static JsonObject json( DatasetField dfv ) {
-		if ( dfv.isEmpty() ) {
-			return null;
+
+    public static JsonObject json(DatasetField dfv) {
+        if (dfv.isEmpty()) {
+            return null;
         } else {
             JsonArrayBuilder fieldArray = Json.createArrayBuilder();
             DatasetFieldWalker.walk(dfv, new DatasetFieldsToJson(fieldArray));
             JsonArray out = fieldArray.build();
             return out.getJsonObject(0);
-		}
-	}
-	
-	public static JsonObjectBuilder json( MetadataBlock blk ) {
-		JsonObjectBuilder bld = jsonObjectBuilder();
-		bld.add("id", blk.getId());
-		bld.add("name", blk.getName());
-		bld.add("displayName", blk.getDisplayName());
-		
-		JsonObjectBuilder fieldsBld = jsonObjectBuilder();
-		for ( DatasetFieldType df : new TreeSet<>(blk.getDatasetFieldTypes()) ) {
-			fieldsBld.add( df.getName(), json(df) );
-		}
-		
-		bld.add("fields", fieldsBld );
-		
-		return bld;
-	}
-	
-	public static JsonObjectBuilder json( DatasetFieldType fld ) {
-		JsonObjectBuilder fieldsBld = jsonObjectBuilder();
-		fieldsBld.add( "name", fld.getName() );
-		fieldsBld.add( "displayName", fld.getDisplayName());
-		fieldsBld.add( "title", fld.getTitle());
-		fieldsBld.add( "type", fld.getFieldType().toString());
-		fieldsBld.add( "watermark", fld.getWatermark());
-		fieldsBld.add( "description", fld.getDescription());
-		if ( ! fld.getChildDatasetFieldTypes().isEmpty() ) {
-			JsonObjectBuilder subFieldsBld = jsonObjectBuilder();
-			for ( DatasetFieldType subFld : fld.getChildDatasetFieldTypes() ) {
-				subFieldsBld.add( subFld.getName(), json(subFld) );
-			}
-			fieldsBld.add("childFields", subFieldsBld);
-		}
-		
-		return fieldsBld;
-	}
+        }
+    }
+
+    public static JsonObjectBuilder json(MetadataBlock blk) {
+        JsonObjectBuilder bld = jsonObjectBuilder();
+        bld.add("id", blk.getId());
+        bld.add("name", blk.getName());
+        bld.add("displayName", blk.getDisplayName());
+
+        JsonObjectBuilder fieldsBld = jsonObjectBuilder();
+        for (DatasetFieldType df : new TreeSet<>(blk.getDatasetFieldTypes())) {
+            fieldsBld.add(df.getName(), json(df));
+        }
+
+        bld.add("fields", fieldsBld);
+
+        return bld;
+    }
+
+    public static JsonObjectBuilder json(DatasetFieldType fld) {
+        JsonObjectBuilder fieldsBld = jsonObjectBuilder();
+        fieldsBld.add("name", fld.getName());
+        fieldsBld.add("displayName", fld.getDisplayName());
+        fieldsBld.add("title", fld.getTitle());
+        fieldsBld.add("type", fld.getFieldType().toString());
+        fieldsBld.add("watermark", fld.getWatermark());
+        fieldsBld.add("description", fld.getDescription());
+        if (!fld.getChildDatasetFieldTypes().isEmpty()) {
+            JsonObjectBuilder subFieldsBld = jsonObjectBuilder();
+            for (DatasetFieldType subFld : fld.getChildDatasetFieldTypes()) {
+                subFieldsBld.add(subFld.getName(), json(subFld));
+            }
+            fieldsBld.add("childFields", subFieldsBld);
+        }
+
+        return fieldsBld;
+    }
 
     public static JsonObjectBuilder json(FileMetadata fmd) {
         return jsonObjectBuilder()
@@ -413,11 +475,12 @@ public class JsonPrinter {
                 // categories - and we probably need to export them too!) -- L.A. 4.5
                 .add("description", fmd.getDescription())
                 .add("label", fmd.getLabel()) // "label" is the filename
+                .add("directoryLabel", fmd.getDirectoryLabel())
                 .add("version", fmd.getVersion())
                 .add("datasetVersionId", fmd.getDatasetVersion().getId())
                 .add("dataFile", json(fmd.getDataFile(), fmd));
     }
-	
+
     public static JsonObjectBuilder json(DataFile df) {
         return json(df, null);
     }
@@ -458,42 +521,40 @@ public class JsonPrinter {
                 .add("description", df.getDescription());
     }
 
-    
-	public static String format( Date d ) {
-		return (d==null) ? null : Util.getDateTimeFormat().format(d);
-	}
+    public static String format(Date d) {
+        return (d == null) ? null : Util.getDateTimeFormat().format(d);
+    }
 
     private static class DatasetFieldsToJson implements DatasetFieldWalker.Listener {
 
         Deque<JsonObjectBuilder> objectStack = new LinkedList<>();
-        Deque<JsonArrayBuilder>  valueArrStack = new LinkedList<>();
+        Deque<JsonArrayBuilder> valueArrStack = new LinkedList<>();
         JsonObjectBuilder result = null;
-        
-        
-        DatasetFieldsToJson( JsonArrayBuilder result ) {
+
+        DatasetFieldsToJson(JsonArrayBuilder result) {
             valueArrStack.push(result);
         }
-        
+
         @Override
         public void startField(DatasetField f) {
-            objectStack.push( jsonObjectBuilder() );
+            objectStack.push(jsonObjectBuilder());
             // Invariant: all values are multiple. Diffrentiation between multiple and single is done at endField.
             valueArrStack.push(Json.createArrayBuilder());
-            
+
             DatasetFieldType typ = f.getDatasetFieldType();
-            objectStack.peek().add("typeName", typ.getName() );
+            objectStack.peek().add("typeName", typ.getName());
             objectStack.peek().add("multiple", typ.isAllowMultiples());
-            objectStack.peek().add("typeClass", typeClassString(typ) );
+            objectStack.peek().add("typeClass", typeClassString(typ));
         }
 
         @Override
         public void endField(DatasetField f) {
             JsonObjectBuilder jsonField = objectStack.pop();
             JsonArray jsonValues = valueArrStack.pop().build();
-            if ( ! jsonValues.isEmpty() ) {
+            if (!jsonValues.isEmpty()) {
                 jsonField.add("value",
-                    f.getDatasetFieldType().isAllowMultiples() ? jsonValues
-                                                               : jsonValues.get(0) );
+                        f.getDatasetFieldType().isAllowMultiples() ? jsonValues
+                                : jsonValues.get(0));
                 valueArrStack.peek().add(jsonField);
             }
         }
@@ -501,34 +562,34 @@ public class JsonPrinter {
         @Override
         public void primitiveValue(DatasetFieldValue dsfv) {
             if (dsfv.getValue() != null) {
-                valueArrStack.peek().add( dsfv.getValue() );
+                valueArrStack.peek().add(dsfv.getValue());
             }
         }
 
         @Override
         public void controledVocabularyValue(ControlledVocabularyValue cvv) {
-            valueArrStack.peek().add( cvv.getStrValue() );
+            valueArrStack.peek().add(cvv.getStrValue());
         }
 
         @Override
         public void startCompoundValue(DatasetFieldCompoundValue dsfcv) {
-            valueArrStack.push( Json.createArrayBuilder() );
+            valueArrStack.push(Json.createArrayBuilder());
         }
 
         @Override
         public void endCompoundValue(DatasetFieldCompoundValue dsfcv) {
             JsonArray jsonValues = valueArrStack.pop().build();
-            if ( ! jsonValues.isEmpty() ) {
+            if (!jsonValues.isEmpty()) {
                 JsonObjectBuilder jsonField = jsonObjectBuilder();
-                for ( JsonObject jobj : jsonValues.getValuesAs(JsonObject.class) ) {
-                    jsonField.add( jobj.getString("typeName"), jobj );
+                for (JsonObject jobj : jsonValues.getValuesAs(JsonObject.class)) {
+                    jsonField.add(jobj.getString("typeName"), jobj);
                 }
-                valueArrStack.peek().add( jsonField );
+                valueArrStack.peek().add(jsonField);
             }
         }
     }
-    
-    public static JsonObjectBuilder json( AuthenticationProviderRow aRow ) {
+
+    public static JsonObjectBuilder json(AuthenticationProviderRow aRow) {
         return jsonObjectBuilder()
                         .add("id", aRow.getId())
                         .add("factoryAlias", aRow.getFactoryAlias() )
@@ -547,43 +608,26 @@ public class JsonPrinter {
                 .add("roleAssignment", json(privateUrl.getRoleAssignment()));
     }
 
-    public static <T> JsonObjectBuilder json(T j ) {
-        if (j instanceof ExplicitGroup) {
-            ExplicitGroup eg = (ExplicitGroup) j;
-            JsonArrayBuilder ras = Json.createArrayBuilder();
-            for ( String u : eg.getContainedRoleAssgineeIdentifiers() ) {
+    public static JsonObjectBuilder json( ExplicitGroup eg ) {
+        JsonArrayBuilder ras = Json.createArrayBuilder();
+            for (String u : eg.getContainedRoleAssgineeIdentifiers()) {
                 ras.add(u);
             }
             return jsonObjectBuilder()
-                    .add("identifier", eg.getIdentifier() )
-                    .add("groupAliasInOwner", eg.getGroupAliasInOwner() )
-                    .add("owner",eg.getOwner().getId())
+                    .add("identifier", eg.getIdentifier())
+                    .add("groupAliasInOwner", eg.getGroupAliasInOwner())
+                    .add("owner", eg.getOwner().getId())
                     .add("description", eg.getDescription())
                     .add("displayName", eg.getDisplayName())
                     .add("containedRoleAssignees", ras);
-
-        } else { // implication: (j instanceof DataverseFacet)
-            DataverseFacet f = (DataverseFacet) j;
-            return jsonObjectBuilder()
-                    .add("id", String.valueOf(f.getId())) // TODO should just be id I think
-                    .add("name", f.getDatasetFieldType().getDisplayName());
-        }
     }
     
-    public static JsonObjectBuilder json(DataverseFacet f) {
+    public static JsonObjectBuilder json( DataverseFacet aFacet ) {
         return jsonObjectBuilder()
-                .add("id", String.valueOf(f.getId())) // TODO should just be id I think
-                .add("name", f.getDatasetFieldType().getDisplayName());
+                    .add("id", String.valueOf(aFacet.getId())) // TODO should just be id I think
+                    .add("name", aFacet.getDatasetFieldType().getDisplayName());
     }
-
-    public static <T> JsonArrayBuilder json(Collection<T> jc) {
-        JsonArrayBuilder bld = Json.createArrayBuilder();
-        for (T j : jc) {
-            bld.add(json(j));
-        }
-        return bld;
-    }
-
+        
     public static Collector<String, JsonArrayBuilder, JsonArrayBuilder> stringsToJsonArray() {
         return new Collector<String, JsonArrayBuilder, JsonArrayBuilder>() {
 
@@ -619,37 +663,39 @@ public class JsonPrinter {
         };
     }
 
-    public static Collector<JsonValue, JsonArrayBuilder, JsonArrayBuilder> toJsonArray() {
-        return new Collector<JsonValue, JsonArrayBuilder, JsonArrayBuilder>() {
+    public static Collector<JsonObjectBuilder, ArrayList<JsonObjectBuilder>, JsonArrayBuilder> toJsonArray() {
+        return new Collector<JsonObjectBuilder, ArrayList<JsonObjectBuilder>, JsonArrayBuilder>() {
 
             @Override
-            public Supplier<JsonArrayBuilder> supplier() {
-                return () -> Json.createArrayBuilder();
+            public Supplier<ArrayList<JsonObjectBuilder>> supplier() {
+                return () -> new ArrayList<>();
             }
 
             @Override
-            public BiConsumer<JsonArrayBuilder, JsonValue> accumulator() {
-                return (JsonArrayBuilder b, JsonValue s) -> b.add(s);
+            public BiConsumer<ArrayList<JsonObjectBuilder>, JsonObjectBuilder> accumulator() {
+                return (t, u) ->t.add(u);
             }
 
             @Override
-            public BinaryOperator<JsonArrayBuilder> combiner() {
+            public BinaryOperator<ArrayList<JsonObjectBuilder>> combiner() {
                 return (jab1, jab2) -> {
-                    JsonArrayBuilder retVal = Json.createArrayBuilder();
-                    jab1.build().forEach(retVal::add);
-                    jab2.build().forEach(retVal::add);
-                    return retVal;
+                    jab1.addAll(jab2);
+                    return jab1;
                 };
             }
 
             @Override
-            public Function<JsonArrayBuilder, JsonArrayBuilder> finisher() {
-                return Function.identity();
+            public Function<ArrayList<JsonObjectBuilder>, JsonArrayBuilder> finisher() {
+                return (l) -> {
+                  JsonArrayBuilder bld = Json.createArrayBuilder();
+                  l.forEach( bld::add );
+                  return bld;
+                };
             }
 
             @Override
             public Set<Collector.Characteristics> characteristics() {
-                return EnumSet.of(Collector.Characteristics.IDENTITY_FINISH);
+                return Collections.emptySet();
             }
         };
     }

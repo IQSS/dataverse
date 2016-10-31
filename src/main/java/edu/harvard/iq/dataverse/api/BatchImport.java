@@ -92,15 +92,15 @@ public class BatchImport extends AbstractApiBean {
         }
         Dataverse owner = findDataverse(parentIdtf);
         if (owner == null) {
-            return errorResponse(Response.Status.NOT_FOUND, "Can't find dataverse with identifier='" + parentIdtf + "'");
+            return error(Response.Status.NOT_FOUND, "Can't find dataverse with identifier='" + parentIdtf + "'");
         }
         try {
             PrintWriter cleanupLog = null; // Cleanup log isn't needed for ImportType == NEW. We don't do any data cleanup in this mode.
             String filename = null;  // Since this is a single input from a POST, there is no file that we are reading from.
             JsonObjectBuilder status = importService.doImport(dataverseRequest, owner, body, filename, ImportType.NEW, cleanupLog);
-            return this.okResponse(status);
+            return this.ok(status);
         } catch (ImportException | IOException e) {
-            return this.errorResponse(Response.Status.BAD_REQUEST, e.getMessage());
+            return this.error(Response.Status.BAD_REQUEST, e.getMessage());
         }
     }
 
@@ -140,13 +140,13 @@ public class BatchImport extends AbstractApiBean {
                 if (createDV) {
                     owner = importService.createDataverse(parentIdtf, dataverseRequest);
                 } else {
-                    return errorResponse(Response.Status.NOT_FOUND, "Can't find dataverse with identifier='" + parentIdtf + "'");
+                    return error(Response.Status.NOT_FOUND, "Can't find dataverse with identifier='" + parentIdtf + "'");
                 }
             }
             batchService.processFilePath(fileDir, parentIdtf, dataverseRequest, owner, importType, createDV);
 
         } catch (ImportException e) {
-            return this.errorResponse(Response.Status.BAD_REQUEST, "Import Exception, " + e.getMessage());
+            return this.error(Response.Status.BAD_REQUEST, "Import Exception, " + e.getMessage());
         }
         return this.accepted();
     }

@@ -365,10 +365,12 @@ public class JsonParser {
         if (metadatasJson != null) {
             for (JsonObject filemetadataJson : metadatasJson.getValuesAs(JsonObject.class)) {
                 String label = filemetadataJson.getString("label");
+                String directoryLabel = filemetadataJson.getString("directoryLabel", null);
                 String description = filemetadataJson.getString("description", null);
 
                 FileMetadata fileMetadata = new FileMetadata();
                 fileMetadata.setLabel(label);
+                fileMetadata.setDirectoryLabel(directoryLabel);
                 fileMetadata.setDescription(description);
                 fileMetadata.setDatasetVersion(dsv);
 

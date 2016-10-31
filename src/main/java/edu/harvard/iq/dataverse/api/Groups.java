@@ -61,11 +61,11 @@ public class Groups extends AbstractApiBean {
                             grp.getPersistedGroupAlias()==null ? "ipGroup" : grp.getPersistedGroupAlias()));
             
             grp = ipGroupPrv.store(grp);
-            return createdResponse("/groups/ip/" + grp.getPersistedGroupAlias(), json(grp) );
+            return created("/groups/ip/" + grp.getPersistedGroupAlias(), json(grp) );
         
         } catch ( Exception e ) {
             logger.log( Level.WARNING, "Error while storing a new IP group: " + e.getMessage(), e);
-            return errorResponse(Response.Status.INTERNAL_SERVER_ERROR, "Error: " + e.getMessage() );
+            return error(Response.Status.INTERNAL_SERVER_ERROR, "Error: " + e.getMessage() );
             
         }
     }
@@ -91,11 +91,11 @@ public class Groups extends AbstractApiBean {
             grp.setGroupProvider( ipGroupPrv );
             grp.setPersistedGroupAlias( groupName );
             grp = ipGroupPrv.store(grp);
-            return createdResponse("/groups/ip/" + grp.getPersistedGroupAlias(), json(grp) );
+            return created("/groups/ip/" + grp.getPersistedGroupAlias(), json(grp) );
         
         } catch ( Exception e ) {
             logger.log( Level.WARNING, "Error while storing a new IP group: " + e.getMessage(), e);
-            return errorResponse(Response.Status.INTERNAL_SERVER_ERROR, "Error: " + e.getMessage() );
+            return error(Response.Status.INTERNAL_SERVER_ERROR, "Error: " + e.getMessage() );
             
         }
     }
@@ -103,12 +103,8 @@ public class Groups extends AbstractApiBean {
     @GET
     @Path("ip")
     public Response listIpGroups() {
-         
-        JsonArrayBuilder arrBld = Json.createArrayBuilder();
-        for ( IpGroup g : ipGroupPrv.findGlobalGroups() ) {
-            arrBld.add( json(g) );
-        }
-        return okResponse( arrBld );
+        return ok( ipGroupPrv.findGlobalGroups()
+                             .stream().map(g->json(g)).collect(toJsonArray()) );
     }
     
     @GET
@@ -121,7 +117,7 @@ public class Groups extends AbstractApiBean {
             grp = ipGroupPrv.get(groupIdtf);
         }
         
-        return (grp == null) ? notFound( "Group " + groupIdtf + " not found") : okResponse(json(grp));
+        return (grp == null) ? notFound( "Group " + groupIdtf + " not found") : ok(json(grp));
     }
     
     @DELETE
@@ -138,7 +134,7 @@ public class Groups extends AbstractApiBean {
         
         try {
             ipGroupPrv.deleteGroup(grp);
-            return okResponse("Group " + grp.getAlias() + " deleted.");
+            return ok("Group " + grp.getAlias() + " deleted.");
         } catch ( Exception topExp ) {
             // get to the cause (unwraps EJB exception wrappers).
             Throwable e = topExp;
@@ -147,7 +143,7 @@ public class Groups extends AbstractApiBean {
             }
             
             if ( e instanceof IllegalArgumentException ) {
-                return errorResponse(Response.Status.BAD_REQUEST, e.getMessage());
+                return error(Response.Status.BAD_REQUEST, e.getMessage());
             } else {
                 throw topExp;
             }
@@ -161,7 +157,7 @@ public class Groups extends AbstractApiBean {
         for (ShibGroup g : shibGroupPrv.findGlobalGroups()) {
             arrBld.add(json(g));
         }
-        return okResponse(arrBld);
+        return ok(arrBld);
     }
 
     @POST
@@ -170,24 +166,24 @@ public class Groups extends AbstractApiBean {
         String expectedNameKey = "name";
         JsonString name = shibGroupInput.getJsonString(expectedNameKey);
         if (name == null) {
-            return errorResponse(Response.Status.BAD_REQUEST, "required field missing: " + expectedNameKey);
+            return error(Response.Status.BAD_REQUEST, "required field missing: " + expectedNameKey);
         }
         String expectedAttributeKey = "attribute";
         JsonString attribute = shibGroupInput.getJsonString(expectedAttributeKey);
         if (attribute == null) {
-            return errorResponse(Response.Status.BAD_REQUEST, "required field missing: " + expectedAttributeKey);
+            return error(Response.Status.BAD_REQUEST, "required field missing: " + expectedAttributeKey);
         }
         String expectedPatternKey = "pattern";
         JsonString pattern = shibGroupInput.getJsonString(expectedPatternKey);
         if (pattern == null) {
-            return errorResponse(Response.Status.BAD_REQUEST, "required field missing: " + expectedPatternKey);
+            return error(Response.Status.BAD_REQUEST, "required field missing: " + expectedPatternKey);
         }
         ShibGroup shibGroupToPersist = new ShibGroup(name.getString(), attribute.getString(), pattern.getString(), shibGroupPrv);
         ShibGroup persitedShibGroup = shibGroupPrv.persist(shibGroupToPersist);
         if (persitedShibGroup != null) {
-            return okResponse("Shibboleth group persisted: " + persitedShibGroup);
+            return ok("Shibboleth group persisted: " + persitedShibGroup);
         } else {
-            return errorResponse(Response.Status.BAD_REQUEST, "Could not persist Shibboleth group");
+            return error(Response.Status.BAD_REQUEST, "Could not persist Shibboleth group");
         }
     }
 
@@ -200,15 +196,15 @@ public class Groups extends AbstractApiBean {
             try {
                 deleted = shibGroupPrv.delete(doomed);
             } catch (Exception ex) {
-                return errorResponse(Response.Status.BAD_REQUEST, ex.getMessage());
+                return error(Response.Status.BAD_REQUEST, ex.getMessage());
             }
             if (deleted) {
-                return okResponse("Shibboleth group " + id + " deleted");
+                return ok("Shibboleth group " + id + " deleted");
             } else {
-                return errorResponse(Response.Status.BAD_REQUEST, "Could not delete Shibboleth group with an id of " + id);
+                return error(Response.Status.BAD_REQUEST, "Could not delete Shibboleth group with an id of " + id);
             }
         } else {
-            return errorResponse(Response.Status.BAD_REQUEST, "Could not find Shibboleth group with an id of " + id);
+            return error(Response.Status.BAD_REQUEST, "Could not find Shibboleth group with an id of " + id);
         }
     }
     

@@ -588,6 +588,18 @@ public class UtilIT {
                 .delete("api/dataverses/" + definitionPoint + "/assignments/" + doomed);
     }
 
+    static Response findPermissionsOn(String dvObject, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("api/admin/permissions/" + dvObject);
+    }
+
+    static Response findRoleAssignee(String roleAssignee, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("api/admin/assignee/" + roleAssignee);
+    }
+
     @Test
     public void testGetFileIdFromSwordStatementWithNoFiles() {
         String swordStatementWithNoFiles = "<feed xmlns=\"http://www.w3.org/2005/Atom\">\n"

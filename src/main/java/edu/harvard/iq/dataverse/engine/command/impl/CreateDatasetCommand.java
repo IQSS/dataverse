@@ -100,6 +100,7 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
             String validationFailedString = "Validation failed:";
             for (ConstraintViolation constraintViolation : constraintViolations) {
                 validationFailedString += " " + constraintViolation.getMessage();
+                validationFailedString += " Invalid value: '" + constraintViolation.getInvalidValue() + "'.";
             }
             throw new IllegalCommandException(validationFailedString, this);
         }
