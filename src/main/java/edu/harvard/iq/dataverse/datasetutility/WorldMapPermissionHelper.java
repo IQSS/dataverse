@@ -84,19 +84,22 @@ public class WorldMapPermissionHelper {
     /**
      * Convenience method for instantiating from dataset page or File page
      * 
-     * Does NOT use PermissionServiceBean
      * 
      * @param settingsService
      * @param mapLayerMetadataService
      * @param dataset
+     * @param permissionService
      * @param session
      * @return 
      */
     public static WorldMapPermissionHelper getPermissionHelperForDatasetPage(
-                SettingsServiceBean settingsService, MapLayerMetadataServiceBean mapLayerMetadataService,
-                Dataset dataset, DataverseSession session){
+                    SettingsServiceBean settingsService, 
+                    MapLayerMetadataServiceBean mapLayerMetadataService,
+                    Dataset dataset,
+                    PermissionServiceBean permissionService,
+                    DataverseSession session){
 
-       return new WorldMapPermissionHelper(settingsService, mapLayerMetadataService, dataset, null, session);        
+       return new WorldMapPermissionHelper(settingsService, mapLayerMetadataService, dataset, permissionService, session);        
     }
     
     /**
@@ -517,6 +520,7 @@ public class WorldMapPermissionHelper {
                  
         // This is only here as a reminder to the public method users 
         if (!permissionsChecked){
+
             return false;
         }
         
@@ -524,18 +528,21 @@ public class WorldMapPermissionHelper {
         //  TO DO:  EXPAND FOR TABULAR FILES TAGGED AS GEOSPATIAL!
         //
         if (!(this.isPotentiallyMappableFileType(fm))){
+
             return false;
         }
 
 
         //  (2) Is the view GeoconnectViewMaps 
         if (!settingsService.isTrueForKey(SettingsServiceBean.Key.GeoconnectCreateEditMaps, false)){
+             
             return false;
         }
                      
         //  (3) Is File released?
         //
         if (fm.getDataFile().isReleased()){
+            
             return true;
         }
         

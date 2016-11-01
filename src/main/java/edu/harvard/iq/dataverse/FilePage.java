@@ -426,8 +426,11 @@ public class FilePage implements java.io.Serializable {
      */
     private void loadWorldMapPermissionHelper() {
        
-        worldMapPermissionHelper = WorldMapPermissionHelper.getPermissionHelperForDatasetPage(settingsService, mapLayerMetadataService, fileMetadata.getDataFile().getOwner(), session);
-        
+        worldMapPermissionHelper = WorldMapPermissionHelper.getPermissionHelperForDatasetPage(settingsService, 
+                        mapLayerMetadataService, 
+                        fileMetadata.getDataFile().getOwner(), 
+                        permissionService,
+                        session);   
     }
     
 }
