@@ -51,7 +51,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(DataRetrieverAPI.class.getCanonicalName());
 
-    public static final String retrieveDataFullAPIPath = "/api/mydata/retrieve";
+    public static final String retrieveDataFullAPIPath = "/api/v1/mydata/retrieve";
     private static final String retrieveDataPartialAPIPath = "retrieve";
 
     @Inject
