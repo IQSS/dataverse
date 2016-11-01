@@ -964,9 +964,13 @@ public class DatasetPage implements java.io.Serializable {
      */
     private void loadWorldMapPermissionHelper() {
        
-        worldMapPermissionHelper = WorldMapPermissionHelper.getPermissionHelperForDatasetPage(settingsService, mapLayerMetadataService, dataset, session);
+        worldMapPermissionHelper = WorldMapPermissionHelper.getPermissionHelperForDatasetPage(settingsService, 
+                        mapLayerMetadataService, 
+                        dataset, 
+                        permissionService,
+                        session);
         
-    }
+}
 
     
 

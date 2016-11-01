@@ -88,7 +88,7 @@
                 <span class="glyphicon glyphicon-map-marker"/> #{bundle['file.mapData']}
             </h:outputLink>
             <!-- Unpublished Map Data -->
-            <ui:fragment rendered="#{worldMapPermissionHelper.canSeeMapButtonReminderToPublish(fileMetadata)}">
+            <ui:fragment rendered="#{worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata)}">
                 <button type="button" class="btn btn-default" onclick="PF('mapData_popup').show()">
                     <span class="glyphicon glyphicon-map-marker"/> #{bundle['file.mapData']}
                 </button>
