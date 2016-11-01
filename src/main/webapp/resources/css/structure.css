@@ -710,17 +710,9 @@ div.manageTable.ui-datatable div.ui-datatable-tablewrapper, div.manageTable.ui-d
 /* FILE */
 #fileImageTitle {margin-bottom: 12px;}
 #file-preview-icon-block > #border-block {border:1px solid #DDD;border-radius:4px; padding: 10px;}
-/** RESPONSIVE SQUARE **/
-/** https://spin.atomicobject.com/2015/07/14/css-responsive-square/ **/
-#file-preview-icon-block > #border-block > #preview-square {position: relative; width: 100%;}
-#file-preview-icon-block > #border-block > #preview-square:after {content: ""; display: block; padding-bottom: 100%;}
-
+#file-preview-icon-block > #border-block > #preview-square {position: relative; overflow:hidden; padding-bottom:100%;}
 #file-preview-icon-block > #border-block > #preview-square > span.text-muted {position: absolute; width: 100%; height: 100%; text-align: center; font-size:6.5em; margin:0;}
-#file-preview-icon-block > #border-block > #preview-square > img.img-responsive {position: absolute; width: 100%; height: 100%;}
-
-/** BOOTSTRAP 3 MEDIA SELECTORS **/
-/** http://stackoverflow.com/questions/18424798/twitter-bootstrap-3-how-to-use-media-queries **/
-
+#file-preview-icon-block > #border-block > #preview-square > img.img-responsive {position: absolute; max-width: 100%; max-height: 100%; top: 50%; left: 50%; transform: translateX(-50%) translateY(-50%);}
 @media(min-width:768px){
     #file-preview-icon-block > #border-block > #preview-square > span.text-muted {
         font-size: 9.5em;
