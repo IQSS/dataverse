@@ -267,8 +267,8 @@
                         </p:tab>
                         <p:tab id="accountInfo" title="#{bundle['header.user.selectTab.accountInfo']}">
                             <div class="form-horizontal" jsf:rendered="#{!empty DataverseUserPage.currentUser}">
-                                <div class="form-group" jsf:rendered="#{DataverseUserPage.accountDetailsEditable}">
-                                    <div class="col-sm-12" jsf:rendered="#{not DataverseUserPage.accountDetailsEditable}">
+                                <div class="form-group" jsf:rendered="#{not DataverseUserPage.accountDetailsEditable}">
+                                    <div class="col-sm-12">
                                         <p class="help-block">
                                             <span class="glyphicon glyphicon-info-sign"/>
                                             <h:outputText value=" #{bundle['user.isShibUser']}" />
