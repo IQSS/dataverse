@@ -253,8 +253,8 @@ public class DataverseUserPage implements java.io.Serializable {
     
     public String save() {
         boolean passwordChanged = false;
-        final AuthenticationProvider prv = getUserAuthProvider();
         if ( editMode == EditMode.CHANGE_PASSWORD ) {
+            final AuthenticationProvider prv = getUserAuthProvider();
             if ( prv.isPasswordUpdateAllowed() ) {
                 if ( ! prv.verifyPassword(currentUser.getAuthenticatedUserLookup().getPersistentUserId(), currentPassword) ) {
                     FacesContext.getCurrentInstance().addMessage("currentPassword", 
