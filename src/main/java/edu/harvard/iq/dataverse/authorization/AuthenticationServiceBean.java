@@ -100,9 +100,6 @@ public class AuthenticationServiceBean {
             registerProviderFactory( new BuiltinAuthenticationProviderFactory(builtinUserServiceBean) );
             registerProviderFactory( new EchoAuthenticationProviderFactory() );
             registerProviderFactory( new OAuth2AuthenticationProviderFactory() );
-
-            // Register shib provider factory here. Test enable/disable via Admin API, etc.
-            new ShibAuthenticationProvider();
         } catch (AuthorizationSetupException ex) {
             logger.log(Level.SEVERE, "Exception setting up the authentication provider factories: " + ex.getMessage(), ex);
         }
@@ -120,6 +117,21 @@ public class AuthenticationServiceBean {
                         logger.log(Level.SEVERE, "Exception setting up the authentication provider '" + row.getId() + "': " + ex.getMessage(), ex);
                     }
         });
+        /**
+         * Out of the box, the weird "echo-simple" and "echo-dignified"
+         * providers are rows in the "authenticationproviderrow" table but we
+         * don't have a row for Shibboleth in there. We add it here virtually
+         * because at the moment there is nothing we care to persist about
+         * Shibboleth in the "authenticationproviderrow" table. This may change
+         * as we work on the scalable login GUI (up to 5 login options and
+         * counting), especially the "enabled" boolean. Maybe we'll switch away
+         * from the "ShibEnabled" key in SettingsServiceBean some day.
+         */
+        try {
+            registerProvider(new ShibAuthenticationProvider());
+        } catch (AuthorizationSetupException ex) {
+            logger.info("Couldn't register Shibboleth provider: " + ex);
+        }
     }
     
     public void registerProviderFactory(AuthenticationProviderFactory aFactory) 
