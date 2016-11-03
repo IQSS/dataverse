@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.harvard.iq.dataverse.harvest.server.web;
+package edu.harvard.iq.dataverse.harvest.server.xoai;
 
 import com.lyncode.xoai.model.xoai.Element;
 import com.lyncode.xoai.dataprovider.repository.SetRepository;
@@ -16,19 +16,17 @@ import edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  *
  * @author Leonid Andreev
  */
-public class XOAISetRepository implements SetRepository {
-    private static Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.server.web.XOAISetRepository");
+public class XsetRepository implements SetRepository {
+    private static Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.server.xoai.XsetRepository");
     
     private OAISetServiceBean setService;
 
-    public XOAISetRepository (OAISetServiceBean setService) {
+    public XsetRepository (OAISetServiceBean setService) {
         super();
         this.setService = setService;
     }
@@ -44,7 +42,7 @@ public class XOAISetRepository implements SetRepository {
 
     @Override
     public boolean supportSets() {
-        logger.info("calling supportSets()");
+        logger.fine("calling supportSets()");
         List<OAISet> dataverseOAISets = setService.findAll();
         
         if (dataverseOAISets == null || dataverseOAISets.isEmpty()) {
@@ -55,7 +53,7 @@ public class XOAISetRepository implements SetRepository {
 
     @Override
     public ListSetsResult retrieveSets(int offset, int length) {
-        logger.info("calling retrieveSets()");
+        logger.fine("calling retrieveSets()");
         List<OAISet> dataverseOAISets = setService.findAll();
         List<Set> XOAISets = new ArrayList<Set>();
         

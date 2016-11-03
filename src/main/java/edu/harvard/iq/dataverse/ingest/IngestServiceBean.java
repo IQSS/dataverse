@@ -645,7 +645,7 @@ public class IngestServiceBean {
                 if (fm.getDataFile().isTabularData()) {
                     String originalMimeType = fm.getDataFile().getDataTable().getOriginalFileFormat();
                     if ( originalMimeType != null) {
-                        String origFileExtension = generateOriginalExtension(originalMimeType);
+                        String origFileExtension = FileUtil.generateOriginalExtension(originalMimeType);
                         fileNamesExisting.add(existingName.replaceAll(".tab$", origFileExtension));
                     } else {
                         fileNamesExisting.add(existingName.replaceAll(".tab$", ""));
@@ -654,110 +654,12 @@ public class IngestServiceBean {
                 fileNamesExisting.add(existingName);
             }
         }
-
+        
         while (fileNamesExisting.contains(fileName)) {
-            fileName = generateNewFileName(fileName);
+            fileName = IngestServiceBeanHelper.generateNewFileName(fileName);
         }
 
         return fileName;
-    }
-    
-    private void checkForDuplicateFileNamesFinal(DatasetVersion version, List<DataFile> newFiles) {
-        Set<String> fileNamesExisting = new HashSet<String>();
-
-        Iterator<FileMetadata> fmIt = version.getFileMetadatas().iterator();
-        while (fmIt.hasNext()) {
-            FileMetadata fm = fmIt.next();
-            if (fm.getId() != null) {
-                String existingName = fm.getLabel();
-            
-                if (existingName != null) {
-                    // if it's a tabular file, we need to restore the original file name; 
-                    // otherwise, we may miss a match. e.g. stata file foobar.dta becomes
-                    // foobar.tab once ingested! 
-                    if (fm.getDataFile().isTabularData()) {
-                        String originalMimeType = fm.getDataFile().getDataTable().getOriginalFileFormat();
-                        if ( originalMimeType != null) {
-                            String origFileExtension = generateOriginalExtension(originalMimeType);
-                            existingName = existingName.replaceAll(".tab$", origFileExtension);
-                        } else {
-                            existingName = existingName.replaceAll(".tab$", "");
-                        }
-                    }
-                    fileNamesExisting.add(existingName);
-                }
-            }
-        }
-
-        Iterator<DataFile> dfIt = newFiles.iterator();
-        while (dfIt.hasNext()) {
-            FileMetadata fm = dfIt.next().getFileMetadata();
-            String fileName = fm.getLabel(); 
-            while (fileNamesExisting.contains(fileName)) {
-                fileName = generateNewFileName(fileName);
-            }
-            if (!fm.getLabel().equals(fileName)) {
-                fm.setLabel(fileName);
-                fileNamesExisting.add(fileName);
-            }
-        }
-    }
-    
-    // TODO: 
-    // Move this method (duplicated in StoredOriginalFile.java) to 
-    // FileUtil.java. 
-    // -- L.A. 4.0 beta
-    
-    private static String generateOriginalExtension(String fileType) {
-
-        if (fileType.equalsIgnoreCase("application/x-spss-sav")) {
-            return ".sav";
-        } else if (fileType.equalsIgnoreCase("application/x-spss-por")) {
-            return ".por";
-        } else if (fileType.equalsIgnoreCase("application/x-stata")) {
-            return ".dta";
-        } else if (fileType.equalsIgnoreCase( "application/x-rlang-transport")) {
-            return ".RData";
-        } else if (fileType.equalsIgnoreCase("text/csv")) {
-            return ".csv";
-        } else if (fileType.equalsIgnoreCase( "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")) {
-            return ".xlsx";
-        }
-
-       return "";
-    }
-
-    
-    private String generateNewFileName(String fileName) {
-        String newName = null;
-        String baseName = null; 
-        String extension = null; 
-        
-        int extensionIndex = fileName.lastIndexOf(".");
-        if (extensionIndex != -1 ) {
-            extension = fileName.substring(extensionIndex+1);
-            baseName = fileName.substring(0, extensionIndex);
-        } else {
-            baseName = fileName; 
-        }
-        
-        if (baseName.matches(".*-[0-9][0-9]*$")) {
-            int dashIndex = baseName.lastIndexOf("-");
-            String numSuffix = baseName.substring(dashIndex+1);
-            String basePrefix = baseName.substring(0,dashIndex);
-            int numSuffixValue = new Integer(numSuffix).intValue();
-            numSuffixValue++; 
-            baseName = basePrefix + "-" + numSuffixValue;
-        } else {
-            baseName = baseName + "-1"; 
-        }
-        
-        newName = baseName; 
-        if (extension != null) {
-            newName = newName + "." + extension; 
-        }
-        
-        return newName;
     }
     
     /**
@@ -809,6 +711,7 @@ public class IngestServiceBean {
         datafile.setPermissionModificationTime(new Timestamp(new Date().getTime()));
         FileMetadata fmd = new FileMetadata();
         
+        // TODO: add directoryLabel?
         fmd.setLabel(checkForDuplicateFileNames(version,fileName));
 
         if (addToDataset) {
@@ -886,7 +789,7 @@ public class IngestServiceBean {
             // the user may have edited them on the "add files" page, and 
             // renamed FOOBAR-1.txt back to FOOBAR.txt...
             
-            checkForDuplicateFileNamesFinal(version, newFiles);
+            IngestServiceBeanHelper.checkForDuplicateFileNamesFinal(version, newFiles);
             
             Dataset dataset = version.getDataset();
             

@@ -48,11 +48,19 @@ public class FileMetadata implements Serializable {
     private static final DateFormat displayDateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);    
     private static final Logger logger = Logger.getLogger(FileMetadata.class.getCanonicalName());
 
+
     @Expose
-    @Pattern(regexp="^[^:<>;#/\"\\*\\|\\?\\\\]*$", message = "File Name cannot contain any of the following characters: \\ / : * ? \" < > | ; # .")    
+    @Pattern(regexp="^[^:<>;#/\"\\*\\|\\?\\\\]*$", 
+            message = "File Name cannot contain any of the following characters: \\ / : * ? \" < > | ; # .")    
     @NotBlank(message = "Please specify a file name.")
     @Column( nullable=false )
     private String label = "";
+    
+    @Pattern(regexp="|[^/\\\\]|^[^/\\\\]+.*[^/\\\\]+$",
+            message = "Directory Name cannot contain leading or trailing file separators.")    
+    @Expose
+    @Column ( nullable=true )
+    private String directoryLabel = "";
 
     @Expose
     @Column(columnDefinition = "TEXT")
@@ -95,6 +103,13 @@ public class FileMetadata implements Serializable {
         this.label = label;
     }
 
+    public String getDirectoryLabel() {
+        return directoryLabel;
+    }
+
+    public void setDirectoryLabel(String directoryLabel) {
+        this.directoryLabel = directoryLabel;
+    }
 
     public String getDescription() {
         return description;
@@ -422,6 +437,14 @@ public class FileMetadata implements Serializable {
                 return false;
             }
         } else if (other.getLabel() != null) {
+            return false;
+        }
+
+        if (this.getDirectoryLabel() != null) {
+            if (!this.getDirectoryLabel().equals(other.getDirectoryLabel())) {
+                return false;
+            }
+        } else if (other.getDirectoryLabel() != null) {
             return false;
         }
         

@@ -455,4 +455,23 @@ public class FileUtil implements java.io.Serializable  {
         return sb.toString();
     }
 
+    public static String generateOriginalExtension(String fileType) {
+
+        if (fileType.equalsIgnoreCase("application/x-spss-sav")) {
+            return ".sav";
+        } else if (fileType.equalsIgnoreCase("application/x-spss-por")) {
+            return ".por";
+        } else if (fileType.equalsIgnoreCase("application/x-stata")) {
+            return ".dta";
+        } else if (fileType.equalsIgnoreCase( "application/x-rlang-transport")) {
+            return ".RData";
+        } else if (fileType.equalsIgnoreCase("text/csv")) {
+            return ".csv";
+        } else if (fileType.equalsIgnoreCase( "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")) {
+            return ".xlsx";
+        }
+
+        return "";
+    }
+    
 }
