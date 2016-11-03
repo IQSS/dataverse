@@ -167,6 +167,9 @@ public class DatasetPage implements java.io.Serializable {
     @Inject
     DatasetVersionUI datasetVersionUI;
     @Inject PermissionsWrapper permissionsWrapper;
+    @Inject FileDownloadHelper fileDownloadHelper;
+    @Inject TwoRavensHelper twoRavensHelper;
+    @Inject WorldMapPermissionHelper worldMapPermissionHelper;
 
 
 
@@ -216,18 +219,8 @@ public class DatasetPage implements java.io.Serializable {
     
     // Used to store results of permissions checks
     private final Map<String, Boolean> datasetPermissionMap = new HashMap<>(); // { Permission human_name : Boolean }
-    private final Map<Long, Boolean> fileDownloadPermissionMap = new HashMap<>(); // { FileMetadata.id : Boolean }
-
-    private final Map<Long, Boolean> fileMetadataTwoRavensExploreMap = new HashMap<>(); // { FileMetadata.id : Boolean } 
-    private final Map<Long, Boolean> fileMetadataWorldMapExplore = new HashMap<>(); // { FileMetadata.id : Boolean } 
     
-    private FileDownloadHelper fileDownloadHelper;
-    // Used to help with displaying buttons related to the WorldMap
-    private WorldMapPermissionHelper worldMapPermissionHelper;
 
-    
-    // Used to help with displaying buttons related to TwoRavens
-    private TwoRavensHelper twoRavensHelper;
     
     private DataFile selectedDownloadFile;
 
@@ -948,33 +941,6 @@ public class DatasetPage implements java.io.Serializable {
         // System.out.println(s);
     }
     
-       /**
-     * This object wraps methods used for hiding/displaying WorldMap related messages
-     *
-     */
-    private void loadTwoRavensHelper() {
-       
-        twoRavensHelper = new TwoRavensHelper(settingsService, permissionService, session, authService);
-        
-    }
-    
-    /**
-     * This object wraps methods used for hiding/displaying WorldMap related messages
-     *
-     */
-    private void loadWorldMapPermissionHelper() {
-       
-        worldMapPermissionHelper = WorldMapPermissionHelper.getPermissionHelperForDatasetPage(settingsService, 
-                        mapLayerMetadataService, 
-                        dataset, 
-                        permissionService,
-                        session);
-        
-}
-
-    
-
-   
     /**
      * For development
      * 
@@ -1188,9 +1154,6 @@ public class DatasetPage implements java.io.Serializable {
                 // lazyModel = new LazyFileMetadataDataModel(workingVersion.getId(), datafileService );
                 // populate MapLayerMetadata
                 this.loadMapLayerMetadataLookup();  // A DataFile may have a related MapLayerMetadata object
-                this.loadFileDownloadHelper();
-                this.loadWorldMapPermissionHelper();  // A DataFile may have a related MapLayerMetadata object
-                this.loadTwoRavensHelper();
                 this.guestbookResponse = guestbookResponseService.initGuestbookResponseForFragment(dataset, null, session);
                 
             }
@@ -3585,12 +3548,6 @@ public class DatasetPage implements java.io.Serializable {
 
     public String getPrivateUrlLink(PrivateUrl privateUrl) {
         return privateUrl.getLink();
-    }
-    
-    private void loadFileDownloadHelper() {
-       
-        fileDownloadHelper = new FileDownloadHelper( dataset, permissionService, session);
-        
     }
     
     

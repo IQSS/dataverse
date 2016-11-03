@@ -9,45 +9,31 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import java.util.HashMap;
 import java.util.Map;
+import javax.ejb.EJB;
+import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
  * @author skraffmi
+ * 
+ *
  */
-public class FileDownloadHelper {
+ @ViewScoped
+ @Named
+public class FileDownloadHelper implements java.io.Serializable {
     
-    
-    private DataverseSession session;
+    @Inject
+    DataverseSession session;
 
-    private PermissionServiceBean  permissionService;
+    @EJB
+    PermissionServiceBean  permissionService;
 
-    private Dataset dataset;
     
     private final Map<Long, Boolean> fileDownloadPermissionMap = new HashMap<>(); // { FileMetadata.id : Boolean } 
     private final Map<String, Boolean> datasetPermissionMap = new HashMap<>(); // { Permission human_name : Boolean }
 
-    
-    public FileDownloadHelper(
-                Dataset dataset, PermissionServiceBean  permissionService, DataverseSession session){
-        if (dataset == null){
-            throw new NullPointerException("dataset cannot be null");
-        }
-        if (dataset.getId() == null){
-            throw new NullPointerException("dataset must be saved! (have an id)");
-        }
-        
-        if (session == null){
-            throw new NullPointerException("session cannot be null");
-        }
-        
-        this.session = session;
-
-        this.dataset = dataset;
-        
-        this.permissionService = permissionService;
-
-    }
- 
     
     
     /**
@@ -93,7 +79,7 @@ public class FileDownloadHelper {
         //----------------------------------------------------------------------
         
        if (fileMetadata.getDatasetVersion().isDeaccessioned()) {
-           if (this.doesSessionUserHaveDataSetPermission(Permission.EditDataset)) {
+           if (this.doesSessionUserHaveDataSetPermission(Permission.EditDataset, fileMetadata)) {
                // Yes, save answer and return true
                this.fileDownloadPermissionMap.put(fid, true);
                return true;
@@ -141,7 +127,7 @@ public class FileDownloadHelper {
         // --------------------------------------------------------------------
         
 
-        if (this.doesSessionUserHaveDataSetPermission(Permission.DownloadFile)){
+        if (this.doesSessionUserHaveDataSetPermission(Permission.DownloadFile, fileMetadata)){
             // Yes, save answer and return true
             this.fileDownloadPermissionMap.put(fid, true);
             return true;
@@ -166,7 +152,7 @@ public class FileDownloadHelper {
         return false;
     }
    
-    public boolean doesSessionUserHaveDataSetPermission(Permission permissionToCheck){
+    public boolean doesSessionUserHaveDataSetPermission(Permission permissionToCheck, FileMetadata fileMetadata){
         if (permissionToCheck == null){
             return false;
         }
@@ -182,7 +168,7 @@ public class FileDownloadHelper {
         
         // Check the permission
         //
-        boolean hasPermission = this.permissionService.userOn(this.session.getUser(), this.dataset).has(permissionToCheck);
+        boolean hasPermission = this.permissionService.userOn(this.session.getUser(), fileMetadata.getDatasetVersion().getDataset()).has(permissionToCheck);
 
         // Save the permission
         this.datasetPermissionMap.put(permName, hasPermission);

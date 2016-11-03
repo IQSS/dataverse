@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.datasetutility.TwoRavensHelper;
+import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateGuestbookResponseCommand;
@@ -51,7 +52,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     PermissionServiceBean permissionService;
     @EJB
     DataverseServiceBean dataverseService;
-        @EJB
+    @EJB
     UserNotificationServiceBean userNotificationService;
     
     @Inject
@@ -62,18 +63,27 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     
     @Inject
     DataverseRequestServiceBean dvRequestService;
+    
+    @Inject TwoRavensHelper twoRavensHelper;
+    @Inject WorldMapPermissionHelper worldMapPermissionHelper;
 
     private static final Logger logger = Logger.getLogger(FileDownloadServiceBean.class.getCanonicalName());
     
     
     public void writeGuestbookAndStartDownload(GuestbookResponse guestbookResponse){
+        System.out.print("writeGuestbookAndStartDownload - start");
         
+        System.out.print("guestbookResponse? " + guestbookResponse);
+        System.out.print("guestbookResponse.getDataFile()? " + guestbookResponse.getDataFile());
         if (guestbookResponse != null && guestbookResponse.getDataFile() != null     ){
+             System.out.print("writing guestbook response");
             writeGuestbookResponseRecord(guestbookResponse);
+            System.out.print("call download servlet");
             callDownloadServlet(guestbookResponse.getFileFormat(), guestbookResponse.getDataFile().getId(), guestbookResponse.isWriteResponse());
         }
         
         if (guestbookResponse != null && guestbookResponse.getSelectedFileIds() != null     ){
+             System.out.print("multiple files?");
             List<String> list = new ArrayList<>(Arrays.asList(guestbookResponse.getSelectedFileIds().split(",")));
 
             for (String idAsString : list) {
@@ -164,9 +174,12 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         logger.fine("issued file download redirect for filemetadata "+fileMetadata.getId()+", datafile "+fileMetadata.getDataFile().getId());
     }
     
-    public String startExploreDownloadLink(TwoRavensHelper trHelper, GuestbookResponse guestbookResponse, FileMetadata fmd){
-        if (guestbookResponse != null && guestbookResponse.isWriteResponse() && (fmd.getDataFile() != null || guestbookResponse.getDataFile() != null)){
-            if(guestbookResponse.getDataFile() == null){
+    public String startExploreDownloadLink(GuestbookResponse guestbookResponse, FileMetadata fmd){
+        System.out.print("in start explore");
+        
+        if (guestbookResponse != null && guestbookResponse.isWriteResponse() 
+                && (( fmd != null && fmd.getDataFile() != null) || guestbookResponse.getDataFile() != null)){
+            if(guestbookResponse.getDataFile() == null  && fmd != null){
                 guestbookResponse.setDataFile(fmd.getDataFile());
             }
             writeGuestbookResponseRecord(guestbookResponse);
@@ -179,11 +192,21 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         } else {
             datafileId = fmd.getDataFile().getId();
         }
-        return trHelper.getDataExploreURLComplete(datafileId);
+        System.out.print("datafileId " + datafileId);
+        return twoRavensHelper.getDataExploreURLComplete(datafileId);
     }
     
+    public String startWorldMapDownloadLink(GuestbookResponse guestbookResponse, FileMetadata fmd){
+        if (guestbookResponse != null && guestbookResponse.isWriteResponse() && (fmd.getDataFile() != null || guestbookResponse.getDataFile() != null)){
+            if(guestbookResponse.getDataFile() == null){
+                guestbookResponse.setDataFile(fmd.getDataFile());
+            }
+            writeGuestbookResponseRecord(guestbookResponse);
+        }
+        return worldMapPermissionHelper.getMapLayerMetadata(fmd.getDataFile()).getLayerLink();  //.getDataExploreURLComplete(datafileId);       
+    }
     
-    
+       
     public boolean isDownloadPopupRequired(DatasetVersion datasetVersion) {
         // Each of these conditions is sufficient reason to have to 
         // present the user with the popup: 

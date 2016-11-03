@@ -30,22 +30,30 @@
                     <h:commandLink rendered="#{!downloadPopupRequired}"
                                    styleClass="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}"
                                    disabled="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}"
-                                   actionListener="#{fileDownloadService.startExploreDownloadLink(twoRavensHelper, guestbookResponse, fileMetadata )}" target="_blank">
-                        #{bundle['file.explore.twoRavens']}
+                                   actionListener="#{fileDownloadService.startExploreDownloadLink(guestbookResponse, fileMetadata )}" target="_blank">
+                        #{bundle['file.explore.twoRavens']} 
                     </h:commandLink>
                     <p:commandLink rendered="#{downloadPopupRequired}"                                            
                                    action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'explore' )}"
                                    update="@form"
                                    oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
-                        #{bundle['file.explore.twoRavens']}
+                        #{bundle['file.explore.twoRavens']} 
                     </p:commandLink>                          
                 </li>
                 <li><!-- WorldMap Explore -->
-                    <h:outputLink rendered="#{worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata)}"
-                                  styleClass="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}"  
-                                  value="#{ worldMapPermissionHelper.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }" target="_blank">
+                    <h:outputLink rendered="#{!downloadPopupRequired}"
+                                   styleClass="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}"
+                                   disabled="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}"
+                                   value="#{fileDownloadService.startWorldMapDownloadLink(guestbookResponse, fileMetadata )}" target="_blank">
                         #{bundle['file.mapData.viewMap']}
                     </h:outputLink>
+                    <p:commandLink rendered="#{downloadPopupRequired}"
+                                  styleClass="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}"  
+                                   action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'worldMap' )}"
+                                   update="@form"
+                                   oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
+                        #{bundle['file.mapData.viewMap']}
+                    </p:commandLink>
                 </li>                       
             </ul>
         </div>

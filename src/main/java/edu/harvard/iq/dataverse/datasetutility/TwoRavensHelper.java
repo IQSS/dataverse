@@ -17,33 +17,29 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.HashMap;
 import java.util.Map;
+import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
  * @author rmp553
+
  */
-public class TwoRavensHelper {
+@ViewScoped
+@Named
+public class TwoRavensHelper implements java.io.Serializable {
     
-    private final SettingsServiceBean settingsService;
-    private final PermissionServiceBean permissionService;
-    private final AuthenticationServiceBean authService;
+    @Inject SettingsServiceBean settingsService;
+    @Inject PermissionServiceBean permissionService;
+    @Inject AuthenticationServiceBean authService;
     
-    private final DataverseSession session;
+    @Inject
+    DataverseSession session;
             
     private final Map<Long, Boolean> fileMetadataTwoRavensExploreMap = new HashMap<>(); // { FileMetadata.id : Boolean } 
 
-    public TwoRavensHelper(SettingsServiceBean settingsService, PermissionServiceBean permissionService, DataverseSession session,
-                        AuthenticationServiceBean authService){
-        if (settingsService == null){
-            throw new NullPointerException("settingsService cannot be null");
-        }
-        if (permissionService == null){
-            throw new NullPointerException("permissionService cannot be null");
-        }
-        this.permissionService = permissionService;
-        this.settingsService = settingsService;
-        this.session = session;
-        this.authService = authService;
+    public TwoRavensHelper(){
         
     }
    
@@ -231,11 +227,13 @@ public class TwoRavensHelper {
     private String getApiTokenKey() {
         ApiToken apiToken;
             System.out.print("In getApiTokenKey ");
+            System.out.print("session " + session);
         if (session.getUser() == null) {
             System.out.print("Session User null ");
             return null;
         }
         if (isSessionUserAuthenticated()) {
+            System.out.print("User Authenticated");
             AuthenticatedUser au = (AuthenticatedUser) session.getUser();
             apiToken = authService.findApiTokenByUser(au);
             System.out.print("apiToken " + apiToken);
