@@ -150,8 +150,8 @@
                            update="@([id$=Messages]) @form" oncomplete="if (args &amp;&amp; !args.validationFailed) {PF('downloadPopup').hide(); PF('downloadDataSubsetPopup').show();}">                                    
                 <f:param name="DO_GB_VALIDATION" value="true"/>
             </p:commandLink>
-            <p:commandLink type="button" styleClass="btn btn-default" value="#{bundle.acceptTerms} WM" rendered="#{guestbookResponse.fileFormat == 'worldMap'}"
-                           
+            <p:commandLink type="button" styleClass="btn btn-default" value="#{bundle.acceptTerms}" rendered="#{guestbookResponse.fileFormat == 'worldMap'}"
+                           actionListener="#{fileDownloadService.startWorlMapDownloadLink(guestbookResponse, null)}"
                             oncomplete="if (args &amp;&amp; !args.validationFailed) PF('downloadPopup').hide();">
                 <f:param name="DO_GB_VALIDATION" value="true"/>
             </p:commandLink>
