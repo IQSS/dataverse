@@ -128,7 +128,7 @@ public class AddReplaceFileHelper{
     // Ingested files
     // -----------------------------------
     private List<DataFile> newlyAddedFiles; 
-    
+    private List<FileMetadata> newlyAddedFileMetadatas;
     // -----------------------------------
     // For error handling
     // -----------------------------------
@@ -369,6 +369,38 @@ public class AddReplaceFileHelper{
         
     }
 
+    public boolean runReplaceFromUI_Phase1(Long oldFileId,  
+            String newFileName, 
+            String newFileContentType,
+            InputStream newFileInputStream,
+            OptionalFileParams optionalFileParams){
+        
+        
+        initErrorHandling();
+        this.currentOperation = FILE_REPLACE_OPERATION;
+        
+        if (oldFileId==null){
+            this.addErrorSevere(getBundleErr("existing_file_to_replace_id_is_null"));
+            return false;
+        }
+        
+         
+        // Loads local variable "fileToReplace"
+        //
+        if (!this.step_005_loadFileToReplaceById(oldFileId)){
+            return false;
+        }
+
+        return this.runAddReplacePhase1(fileToReplace.getOwner(), 
+                newFileName, 
+                newFileContentType, 
+                newFileInputStream, 
+                optionalFileParams);
+
+       
+    }
+    
+    
     /**
      * For the UI: File add/replace has been broken into 2 steps
      * 
@@ -377,7 +409,7 @@ public class AddReplaceFileHelper{
      * 
      * @return 
      */
-    public boolean runAddReplacePhase1(Dataset dataset,  
+    private boolean runAddReplacePhase1(Dataset dataset,  
             String newFileName, 
             String newFileContentType,
             InputStream newFileInputStream,
@@ -424,6 +456,10 @@ public class AddReplaceFileHelper{
     }
     
     
+    public boolean runReplaceFromUI_Phase2(){
+        return runAddReplacePhase2();
+    }
+    
     /**
      * For the UI: File add/replace has been broken into 2 steps
      * 
@@ -431,7 +467,7 @@ public class AddReplaceFileHelper{
      * 
      * @return 
      */
-    public boolean runAddReplacePhase2(){
+    private boolean runAddReplacePhase2(){
         
         if (this.hasError()){
             return false;   // possible to have errors already...
@@ -1393,6 +1429,7 @@ public class AddReplaceFileHelper{
             
         // Init. newly added file list
         newlyAddedFiles = new ArrayList<>();
+        newlyAddedFileMetadatas = new ArrayList<>();
         
         // Loop of uglinesss...but expect 1 to 4 files in final file list
         List<FileMetadata> latestFileMetadatas = dataset.getEditVersion().getFileMetadatas();
@@ -1404,6 +1441,7 @@ public class AddReplaceFileHelper{
                  if (newlyAddedFile.getChecksumValue().equals(fm.getDataFile().getChecksumValue())){
                     if (newlyAddedFile.getStorageIdentifier().equals(fm.getDataFile().getStorageIdentifier())){
                         newlyAddedFiles.add(fm.getDataFile());
+                        newlyAddedFileMetadatas.add(fm);
                     }
                 }
              }
@@ -1432,6 +1470,12 @@ public class AddReplaceFileHelper{
         
         return newlyAddedFiles;
     }
+    
+    public List<FileMetadata> getNewlyAddedFileMetadatas(){
+        
+        return newlyAddedFileMetadatas;
+    }
+    
     
     public String getSuccessResult() throws NoFilesException{
         if (hasError()){

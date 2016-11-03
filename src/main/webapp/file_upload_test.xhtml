@@ -43,21 +43,45 @@
                 
                 <!-- start: BASIC FORM 1 -->
                 <h:form>
-                   
+                    <ui:remove>
                     <p:fileUpload fileUploadListener="#{FileUploadTestPage.handleFileUpload}" mode="advanced" dragDropSupport="false"
                            sizeLimit="100000" fileLimit="2" allowTypes="/(\.|\/)(gif|jpe?g|png|txt)$/"
                            update="@all"  />
                    
                     <p:growl id="messages" showDetail="true" />
-
-                  <ui:remove>
-                  <p:fileUpload id="fileUpload" styleClass="margin-bottom" dragDropSupport="true" auto="true" multiple="true" rendered="#{datasetPage || EditDatafilesPage.showFileUploadFileComponent()}"
-                                  fileUploadListener="#{EditDatafilesPage.handleFileUpload}" process="filesTable" update="filesTable,uploadMessage" label="#{bundle['file.selectToAddBtn']}"
-                                  oncomplete="javascript:dataset_fileupload_rebind();uploadWidgetDropMsg();" onstart="javascript:uploadWidgetDropRemoveMsg();"
-                                  sizeLimit="#{EditDatafilesPage.getMaxFileUploadSizeInBytes()}" invalidSizeMessage="File exceeds our limits. Please contact support. " />
-                  
-                  </ui:remove>
+</ui:remove>
+                 
+                  <p:fileUpload id="fileUpload" styleClass="margin-bottom" 
+                                dragDropSupport="true" auto="true" 
+                                multiple="false" 
+                                rendered="#{!FileUploadTestPage.didPhase1Succeed()}"
+                                  fileUploadListener="#{FileUploadTestPage.handleFileUpload}"                                   
+                                  label="#{bundle['file.selectToAddBtn']}"
+                                  widgetVar="fileUploadWidget"
+                                  update="timeArea,dtFileList,idUploadError,fileUpload,phaseMsg"
+                                  onstart="javascript:console.log('starting...');"
+                                  sizeLimit="#{FileUploadTestPage.getMaxFileUploadSizeInBytes()}" 
+                                  invalidSizeMessage="File exceeds our limits. Please contact support. " />
+                  <!--
+                  oncomplete="javascript:console.log('complete!');handlePostFileUploadRequest(PF('fileUploadWidget'), validateFiles);" 
+                                  
+                  -->
+                  <!--  idFileListing,idPublishDatasetArea, -->
+                    <p:remoteCommand name="validateFiles" update="timeArea" />
                 </h:form>
+                    
+                    <script type="text/javascript">
+                        function handlePostFileUploadRequest(fileupload, remoteButton) {
+                            console.log("start: handlePostFileUploadRequest..");
+                            console.log("num files: " + fileupload.files.length);
+                            if (fileupload.files.length === 0) {
+                                if (remoteButton) {
+                                    console.log('call button');
+                                    remoteButton();
+                                }
+                            }
+                        }
+                    </script>
                 <!-- end BASIC FORM 1 -->
                   <hr />
               </ui:fragment>
@@ -74,48 +98,130 @@
                 <ui:fragment rendered="#{FileUploadTestPage.dataset == null}">
                     No dataset chosen.
                 </ui:fragment>    
-                <ui:fragment rendered="#{FileUploadTestPage.dataset != null}">
-                    <ui:fragment rendered="#{!FileUploadTestPage.datasetVersion.released}">
+
+              
+              <h4>
+               <h:panelGroup id="timeArea" layout="block">
+                 <h:outputText id="currentTime" value="#{FileUploadTestPage.getNewTimeTest()}"/>
+              </h:panelGroup>    
+              </h4>  
+
+             <h:panelGroup id="phaseMsg" layout="block" rendered="#{FileUploadTestPage.didPhase1Succeed()}">
+                <h:outputText id="p1Success"  value="Phase 1 Worked!!!" />
+                <p:commandButton actionListener="#{FileUploadTestPage.runFileSave()}" id="runFileSave" icon="ui-icon-disk" />
+                <!--update="timeArea,dtFileList,idUploadError,fileUpload,phaseMsg"-->
+             </h:panelGroup>    
+
+              
+                <!-- START: UPLOAD ERROR -->
+               <h:panelGroup id="idUploadError" layout="block" >
+                <!--ui:fragment id="idUploadError" rendered="#{FileUploadTestPage.hasAddReplaceError()}"-->
+                    <div jsf:id="errAlert" class="alert alert-warning" rendered="#{FileUploadTestPage.hasAddReplaceError()}" >
+                      <h:outputText id="errMsgString" value="#{FileUploadTestPage.getErrorMessageString()}"  />
+                        <script>
+                            console.log("error!");
+                        </script>
+                    </div>
+              </h:panelGroup>    
+                <!-- END: UPLOAD ERROR -->
+
+                <ui:fragment id="fileArea" rendered="#{FileUploadTestPage.dataset != null}">
+                 
+                 
+                    <!-- START: SHOW PUBLISH BUTTON -->
+                    <ui:fragment id="idPublishDatasetArea" rendered="#{!FileUploadTestPage.datasetVersion.released}">
                         <script src="#{resource['js/test_replace.js']}?time=#{now};"></script>
-                        <a id="idPublishDataset" href="#" class="btn btn-success">Publish Dataset</a>
+                        <span id="idPublishDataset" class="btn btn-success">Publish Dataset</span>
                     </ui:fragment>
+                    <!-- END: SHOW PUBLISH BUTTON -->
                     
                     <h4>#{FileUploadTestPage.dataset.displayName } v#{FileUploadTestPage.dataset.versionNumber }</h4>
-                    
-                    <table class="table table-bordered table-hover">
-                        <tr>
-                            <th>Name</th>
-                            <th>Content type</th>
-                            <th>Hash</th>
-                            <th>Is Released</th>
-                        </tr>
-                    <ui:repeat value="#{FileUploadTestPage.getDatasetFileMetadatas()}" var="fm"> 
-                        <tr>
-                            <td>
-                                <ui:fragment rendered="#{fm.dataFile.released}">
-                                    <a href="file_upload_test.xhtml?ds_id=#{FileUploadTestPage.dataset.id}&amp;fid=#{fm.dataFile.id}">#{fm.label}</a>
-                                </ui:fragment>  
-                                <ui:fragment rendered="#{!fm.dataFile.released}">
-                                    #{fm.label}
-                                </ui:fragment>  
-                            </td>
-                            <td><h:outputText value="#{fm.dataFile.contentType}"/></td>
-                            <td><h:outputText value="#{fm.dataFile.checksumValue}"/></td>
-                            <td>
-                                <ui:fragment rendered="#{fm.dataFile.released}">
-                                    <span class="label label-success">replacable</span>
-                                </ui:fragment>  
-                                <ui:fragment rendered="#{!fm.dataFile.released}">
-                                    <span class="label label-warning">nope</span>
-                                </ui:fragment>  
-                                
-                            </td>
-                        </tr>
-                    </ui:repeat>
-                    </table>
+
+                    <!-- START: DATA TABLE -->
+                    <hr />
+                    <p:dataTable id="dtFileList" var="fm2" value="#{FileUploadTestPage.getDatasetFileMetadatas()}">
+                        <p:column headerText="Name">
+                            <h:outputText value="#{fm2.label}" />
+                        </p:column>
+                        <p:column headerText="Content type">
+                            <h:outputText value="#{fm2.dataFile.contentType}" />
+                        </p:column>
+                        <p:column headerText="Checksum">
+                            <h:outputText value="#{fm2.dataFile.checksumValue}" />
+                        </p:column>
+                        <p:column headerText="Released">
+                            <ui:fragment rendered="#{fm2.dataFile.released}">
+                                <span class="label label-success">replaceable</span>
+                            </ui:fragment>  
+                            <ui:fragment rendered="#{!fm2.dataFile.released}">
+                                <span class="label label-warning">nope</span>
+                            </ui:fragment>  
+                       </p:column>                    
+                    </p:dataTable>
+                    <hr />
+
+                    <!-- END: DATA TABLE -->
+
+                    <!-- START: SHOW FILE LISTING -->
+                    <ui:fragment id="xidFileListing">
+                     <table class="table table-bordered table-hover">
+                         <tr>
+                             <th>Name</th>
+                             <th>Content type</th>
+                             <th>Hash</th>
+                             <th>Is Released</th>
+                         </tr>
+                     <ui:repeat value="#{FileUploadTestPage.getDatasetFileMetadatas()}" var="fm"> 
+                         <tr>
+                             <td>
+                                 <ui:fragment rendered="#{fm.dataFile.released}">
+                                     <a href="file_upload_test.xhtml?ds_id=#{FileUploadTestPage.dataset.id}&amp;fid=#{fm.dataFile.id}">#{fm.label}</a>
+                                 </ui:fragment>  
+                                 <ui:fragment rendered="#{!fm.dataFile.released}">
+                                     #{fm.label}
+                                 </ui:fragment>  
+                             </td>
+                             <td><h:outputText value="#{fm.dataFile.contentType}"/></td>
+                             <td><h:outputText value="#{fm.dataFile.checksumValue}"/></td>
+                             <td>
+                                 <ui:fragment rendered="#{fm.dataFile.released}">
+                                     <span class="label label-success">replaceable</span>
+                                 </ui:fragment>  
+                                 <ui:fragment rendered="#{!fm.dataFile.released}">
+                                     <span class="label label-warning">nope</span>
+                                 </ui:fragment>  
+
+                             </td>
+                         </tr>
+                     </ui:repeat>
+
+                     </table>
+                    </ui:fragment>
+                    <!-- END: SHOW FILE LISTING -->
                 </ui:fragment>
               <!-- end DATASET + file listing -->
 
+            <!-- START: REACT TEST -->
+              <ui:fragment>
+                <script src="https://unpkg.com/react@latest/dist/react.min.js"></script>
+                <script src="https://unpkg.com/react-dom@latest/dist/react-dom.js"></script>
+                <script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
+                <div id="react-container"></div>
+                <script type="text/babel">
+              
+                  ReactDOM.render(
+                     <ul>
+                        <li>item 1</li>
+                        <li>item 2</li>
+                        <li>item 3</li>
+                     </ul>,
+                      document.getElementById('react-container')
+                  )
+
+                </script>
+                  
+              </ui:fragment>
+            <!-- END REACT TEST -->
           </div>
       </ui:define>
     </ui:composition>

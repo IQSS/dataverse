@@ -28,6 +28,8 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -80,13 +82,15 @@ public class FileUploadTestPage implements java.io.Serializable {
     @EJB
     EjbDataverseEngine commandEngine;
     
+    
+    private AddReplaceFileHelper addReplaceFileHelper;
     private boolean replaceOperation = false;
     private Long datasetId;
     private Dataset dataset;
     private DatasetVersion datasetVersion;
     private DataFile fileToReplace;
     private List<DataFile> newlyAddedFiles;
-    
+    private boolean phase1Success;
     
     public String init() {
         
@@ -99,7 +103,8 @@ public class FileUploadTestPage implements java.io.Serializable {
         if (params.containsKey("ds_id")){
             String ds_id = params.get("ds_id");
             if ((!ds_id.isEmpty()) && (StringUtils.isNumeric(ds_id))){
-                dataset = datasetService.find(Long.parseLong(ds_id));
+                datasetId = Long.parseLong(ds_id);
+                dataset = datasetService.find(datasetId);
                 datasetVersion = dataset.getLatestVersion();
                 checkRetrievalTest();
             }
@@ -159,13 +164,38 @@ public class FileUploadTestPage implements java.io.Serializable {
         
     }
     
+    
+    /**
+     * Get new timestamp
+     * 
+     * @return 
+     */
+    public String getNewTimeTest(){
+        msgt("getNewTimeTest");
+        String timeStr = new SimpleDateFormat("yyyy:MM:dd:HH:mm:ss").format(new Date());
+        msg("timeStr: " + timeStr);
+        return timeStr;
+    }
 
     public List<FileMetadata> getDatasetFileMetadatas(){
 
+        dataset = datasetService.find(datasetId);
         if (dataset == null){            
             return null;
         }
+        
         return dataset.getLatestVersion().getFileMetadatasSorted();
+        /*
+        if ((addReplaceFileHelper != null)&&(!addReplaceFileHelper.hasError())){
+            return addReplaceFileHelper.getNewlyAddedFileMetadatas();
+        }else{
+        }
+        */
+    }
+    
+    public Long getMaxFileUploadSizeInBytes(){
+        
+        return systemConfig.getMaxFileUploadSize();
     }
             
     public String yesYes(){
@@ -174,6 +204,14 @@ public class FileUploadTestPage implements java.io.Serializable {
     
     private void msg(String s){
         System.out.println(s);
+    }
+    
+    public boolean showUploadComponent(){
+        
+        if ((datasetVersion==null)||(datasetVersion.getId()==null)){
+            return false;
+        }
+        return true;
     }
     
     private void msgt(String s){
@@ -223,13 +261,74 @@ public class FileUploadTestPage implements java.io.Serializable {
       
     }
     
+    /**
+     * Check whether the addReplaceFileHelper encountered an error
+     * 
+     * @return 
+     */
+    public boolean hasAddReplaceError(){
+        
+        if (addReplaceFileHelper == null){
+            msgt("hasAddReplaceError: addReplaceFileHelper is null ");
+            return false;
+        }
+        return addReplaceFileHelper.hasError();
+    }
     
+    public List<String> getErrorMessageList(){
+        
+        List<String> errorMessages = addReplaceFileHelper.getErrorMessages();
+        msgt("errorMessages: " + errorMessages);
+        return errorMessages;
+    }
+
+    public String getErrorMessageString(){
+ 
+        if (addReplaceFileHelper==null){
+            throw new NullPointerException("addReplaceFileHelper cannot be null.  First check \"hasAddReplaceError()\"");
+        }
+        
+        if (!hasAddReplaceError()){
+            return null;
+        }
+        return addReplaceFileHelper.getErrorMessagesAsString("<br />");
+    }
+
+    public boolean runPhase2FileSave(){
+        
+        if (addReplaceFileHelper == null){
+            throw new NullPointerException("addReplaceHelper cannot be null!");
+        }
+        if (!didPhase1Succeed()){
+            msgt("ERROR: runFileSave. Phase1 did not succeed!");
+            return false;
+        }
+        
+        addReplaceFileHelper.runReplaceFromUI_Phase2();
+                
+         if (addReplaceFileHelper.hasError()){
+            msgt("save error");
+            msg(addReplaceFileHelper.getErrorMessagesAsString("\n"));
+            return false;
+        }else{
+            phase1Success = false;
+
+            //newlyAddedFiles = addReplaceFileHelper.getNewlyAddedFiles();
+            msg("Look at that!  You replaced a file!");
+            return true;
+        }                
+    }
+    
+    public boolean didPhase1Succeed(){
+        return phase1Success;
+    }
     
     public void addReplaceFile(UploadedFile laFile){
         
+        phase1Success = false;
         
         //DataverseRequest dvRequest2 = createDataverseRequest(authUser);
-        AddReplaceFileHelper addFileHelper = new AddReplaceFileHelper(dvRequestService.getDataverseRequest(),
+        addReplaceFileHelper = new AddReplaceFileHelper(dvRequestService.getDataverseRequest(),
                                                 ingestService,
                                                 datasetService,
                                                 datafileService,
@@ -249,69 +348,32 @@ public class FileUploadTestPage implements java.io.Serializable {
         
         
         if (this.replaceOperation){
-            addFileHelper.runReplaceFile( fileToReplace.getId(),
+            addReplaceFileHelper.runReplaceFromUI_Phase1( fileToReplace.getId(),
                                 laFile.getFileName(),
                                 laFile.getContentType(),
                                 inputStream,
                                 null
                                );
-        }else{
-            addFileHelper.runAddFileByDataset(dataset,
+        }
+        /*else{
+            addReplaceFileHelper.runAddFileByDataset(dataset,
                                 laFile.getFileName(),
                                 laFile.getContentType(),
                                 inputStream,
                                 null);
-        }
+        }*/
         
-        if (addFileHelper.hasError()){
+        if (addReplaceFileHelper.hasError()){
             msgt("upload error");
-            msg(addFileHelper.getErrorMessagesAsString("\n"));
+            msg(addReplaceFileHelper.getErrorMessagesAsString("\n"));
         }else{
-            newlyAddedFiles = addFileHelper.getNewlyAddedFiles();
-            msg("Look at that!  You added a file! (hey hey, it may have worked)");
+            phase1Success = true;
+
+            //newlyAddedFiles = addReplaceFileHelper.getNewlyAddedFiles();
+            msg("Look at that!  Phase 1 worked");
         }
     }
     
-    /*
-    public String getPebbleTest() throws PebbleException, IOException{
-        
-        ClasspathLoader loader = new ClasspathLoader();
-  
-        //String pagePath = getServletContext().getRealPath("WEB-INF/home.html");
-        ////msgt("pagePath: " + pagePath);
-
-        //loader.setPrefix(getServletContext().getRealPath("WEB-INF/templates"));
-        loader.setPrefix("WEB-INF/templates");
-        loader.setSuffix(".html");
-        
-        Builder yeBuilder = new PebbleEngine.Builder();
-        yeBuilder.loader(loader);// = loader;//(loader)
-    
-        PebbleEngine engine = yeBuilder.build();
-        //PebbleEngine.Builder().
-                
-        PebbleTemplate compiledTemplate = engine.getTemplate("home");
-                
-        
-        
-        //PebbleTemplate compiledTemplate = engine.getTemplate(pagePath);
-
-        //PebbleTemplate compiledTemplate = engine.getTemplate(getServletContext().getRealPath("WEB-INF/home.html"));
-        
-        Map<String, Object> context = new HashMap<>();
-        context.put("name", "Mitchell");
-
-        Writer writer = new StringWriter();
-        compiledTemplate.evaluate(writer, context);
-
-        String output = writer.toString();
-        
-        msgt("getPebbleTest: " + output);
-        
-        return output;
-        
-    }
-    */
     public List<DataFile> getNewlyAddedFile(){
         
         return newlyAddedFiles;
