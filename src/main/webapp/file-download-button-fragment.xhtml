@@ -79,11 +79,18 @@
         
         <ui:fragment rendered="#{worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata) and !(twoRavensHelper.canSeeTwoRavensExploreButtonFromPage(fileMetadata))}">
             <!-- WorldMap Explore button ONLY ... not TwoRavens -->
-            <h:outputLink pt:role="button" rendered="#{worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata)}"
+            <h:outputLink pt:role="button" rendered="#{!downloadPopupRequired}"
                           type="button" styleClass="btn btn-default #{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" disabled="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" 
                           title="Explore" value="#{ worldMapPermissionHelper.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }" target="_blank">
                 <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore}
             </h:outputLink>
+            <p:commandLink rendered="#{downloadPopupRequired}"
+                           type="button" styleClass="btn btn-default"
+                           action="#{guestbookResponseService.initGuestbookResponse(fileMetadata, 'worldMap')}"
+                           update="@form"
+                           oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
+                <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore}
+            </p:commandLink>
         </ui:fragment>
 
         
