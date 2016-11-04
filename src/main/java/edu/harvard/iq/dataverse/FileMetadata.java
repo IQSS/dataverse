@@ -46,7 +46,7 @@ public class FileMetadata implements Serializable {
     @Pattern(regexp="|[^/\\\\]|^[^/\\\\]+.*[^/\\\\]+$",
             message = "Directory Name cannot contain leading or trailing file separators.")
     @Column ( nullable=true )
-    private String directoryLabel = "";
+    private String directoryLabel;
     @Column(columnDefinition = "TEXT")
     private String description = "";
     
