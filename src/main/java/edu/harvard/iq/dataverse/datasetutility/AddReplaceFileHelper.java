@@ -5,8 +5,6 @@
  */
 package edu.harvard.iq.dataverse.datasetutility;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
@@ -15,7 +13,6 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
-import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -1628,6 +1625,34 @@ public class AddReplaceFileHelper{
         return true;
     }
     
+    /**
+     * Return file list before saving
+     * 
+     * Used for UI display
+     * 
+     * @return 
+     */
+    public List<DataFile> getFileListBeforeSave(){
+        
+        return this.finalFileList;
+    }
+    
+    
+    /**
+     * Return file list before saving
+     * 
+     * Used for UI display
+     * 
+     * @return 
+     */
+    public FileMetadata getNewFileMetadataBeforeReplace(){
+        
+        if (this.finalFileList.size() > 0){
+            return this.finalFileList.get(0).getFileMetadata();
+        }else{
+            return null;
+        }
+    }
     
     
 }

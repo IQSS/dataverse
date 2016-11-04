@@ -199,6 +199,7 @@ public class FileUploadTestPage implements java.io.Serializable {
     }
             
     public String yesYes(){
+        
         return "yes yes";
     }
     
@@ -241,6 +242,28 @@ public class FileUploadTestPage implements java.io.Serializable {
     }
 
 
+    /**
+     * Call if first step of replace has worked
+     * 
+     * Return the pending FileMetadata -- e.g. it can still be edited
+     */
+    public FileMetadata getReplacementFileMetadata(){
+        if (addReplaceFileHelper == null){
+            return null;
+        }
+        if (!didPhase1Succeed()){
+            return null;
+        }
+        
+        
+        FileMetadata fm = addReplaceFileHelper.getNewFileMetadataBeforeReplace();
+        
+        if (fm==null){
+            throw new NullPointerException("Replacement file couldn not be found.");
+        }
+        return fm;
+    }
+    
     public void handleFileUpload(FileUploadEvent event) {
         
         
@@ -296,27 +319,39 @@ public class FileUploadTestPage implements java.io.Serializable {
 
     public boolean runPhase2FileSave(){
         
+        msgt("runPhase2FileSave");
+        
         if (addReplaceFileHelper == null){
             throw new NullPointerException("addReplaceHelper cannot be null!");
         }
+        
+        msg("runPhase2FileSave 1");
         if (!didPhase1Succeed()){
             msgt("ERROR: runFileSave. Phase1 did not succeed!");
             return false;
         }
         
+        msg("runPhase2FileSave 2");
         addReplaceFileHelper.runReplaceFromUI_Phase2();
                 
-         if (addReplaceFileHelper.hasError()){
+        if (addReplaceFileHelper.hasError()){
+            msg("runPhase2FileSave 2a");
             msgt("save error");
             msg(addReplaceFileHelper.getErrorMessagesAsString("\n"));
             return false;
         }else{
-            phase1Success = false;
+             msg("runPhase2FileSave 2b");
 
+            phase1Success = false;
+            
+            
+            fileToReplace = addReplaceFileHelper.getNewlyAddedFiles().get(0);
+                    
             //newlyAddedFiles = addReplaceFileHelper.getNewlyAddedFiles();
             msg("Look at that!  You replaced a file!");
             return true;
         }                
+
     }
     
     public boolean didPhase1Succeed(){

@@ -37,20 +37,16 @@
                 <ui:fragment rendered="#{FileUploadTestPage.fileToReplace == null}">
                 <h3>Add New File</h3>
                 </ui:fragment>
-                <ui:fragment rendered="#{(FileUploadTestPage.fileToReplace != null) and (FileUploadTestPage.fileToReplace.released)}">
-                    <h3>Replace File: <span style="color:#006699;">#{FileUploadTestPage.fileToReplace.displayName }</span></h3>
+                <ui:fragment id="idFileName" rendered="#{(FileUploadTestPage.fileToReplace != null) and (FileUploadTestPage.fileToReplace.released)}">
+                    <h3>Replace File: 
+                        <span style="color:#006699;">                            
+                        <h:outputText id="fileLabel" value="#{FileUploadTestPage.fileToReplace.displayName}"  />
+                        </span>
+                    </h3>
                 </ui:fragment>
                 
                 <!-- start: BASIC FORM 1 -->
                 <h:form>
-                    <ui:remove>
-                    <p:fileUpload fileUploadListener="#{FileUploadTestPage.handleFileUpload}" mode="advanced" dragDropSupport="false"
-                           sizeLimit="100000" fileLimit="2" allowTypes="/(\.|\/)(gif|jpe?g|png|txt)$/"
-                           update="@all"  />
-                   
-                    <p:growl id="messages" showDetail="true" />
-</ui:remove>
-                 
                   <p:fileUpload id="fileUpload" styleClass="margin-bottom" 
                                 dragDropSupport="true" auto="true" 
                                 multiple="false" 
@@ -62,38 +58,42 @@
                                   onstart="javascript:console.log('starting...');"
                                   sizeLimit="#{FileUploadTestPage.getMaxFileUploadSizeInBytes()}" 
                                   invalidSizeMessage="File exceeds our limits. Please contact support. " />
-                  <!--
-                  oncomplete="javascript:console.log('complete!');handlePostFileUploadRequest(PF('fileUploadWidget'), validateFiles);" 
-                                  
-                  -->
-                  <!--  idFileListing,idPublishDatasetArea, -->
-                    <p:remoteCommand name="validateFiles" update="timeArea" />
                 </h:form>
                     
-                    <script type="text/javascript">
-                        function handlePostFileUploadRequest(fileupload, remoteButton) {
-                            console.log("start: handlePostFileUploadRequest..");
-                            console.log("num files: " + fileupload.files.length);
-                            if (fileupload.files.length === 0) {
-                                if (remoteButton) {
-                                    console.log('call button');
-                                    remoteButton();
-                                }
-                            }
-                        }
-                    </script>
                 <!-- end BASIC FORM 1 -->
                   <hr />
               </ui:fragment>
-
-
-                <ui:fragment rendered="#{FileUploadTestPage.fileToReplace != null}">
-    
-                    <!--<h4>file to replace: #{FileUploadTestPage.fileToReplace.displayName }</h4>
-
-                    <hr />
-                    -->
+              
+             <!-- START: Show replacement file -->
+            <h3>Phase Messages</h3>
+            <h:panelGroup id="phaseMsg" layout="block">
+                <ui:fragment rendered="#{FileUploadTestPage.didPhase1Succeed()}">
+                    <h:outputText id="p1Success"  value="Phase 1 Worked!!!" />
+                    <h:form>
+                        <h:commandLink id="idSaveLink"  action="#{FileUploadTestPage.runPhase2FileSave}">
+                            <h:outputText id="p1Success"  value="Save file" />            
+                        </h:commandLink>
+                    </h:form>
+                    <br />New file: <h:outputText id="fm1" value="#{FileUploadTestPage.replacementFileMetadata.label}" />
                 </ui:fragment>
+                
+             </h:panelGroup>    
+             <!-- END Show replacement file -->
+             <!-- START: UPLOAD ERROR -->
+               <h:panelGroup id="idUploadError" layout="block" >
+                <!--ui:fragment id="idUploadError" rendered="#{FileUploadTestPage.hasAddReplaceError()}"-->
+                    <div jsf:id="errAlert" class="alert alert-warning" rendered="#{FileUploadTestPage.hasAddReplaceError()}" >
+                      <h:outputText id="errMsgString" value="#{FileUploadTestPage.getErrorMessageString()}"  />
+                        <script>
+                            console.log("error!");
+                        </script>
+                    </div>
+              </h:panelGroup>    
+            <!-- END UPLOAD ERROR -->
+            <hr />
+
+              
+            
               <!-- start: DATASET + file listing -->
                 <ui:fragment rendered="#{FileUploadTestPage.dataset == null}">
                     No dataset chosen.
@@ -106,23 +106,8 @@
               </h:panelGroup>    
               </h4>  
 
-             <h:panelGroup id="phaseMsg" layout="block" rendered="#{FileUploadTestPage.didPhase1Succeed()}">
-                <h:outputText id="p1Success"  value="Phase 1 Worked!!!" />
-                <p:commandButton actionListener="#{FileUploadTestPage.runFileSave()}" id="runFileSave" icon="ui-icon-disk" />
-                <!--update="timeArea,dtFileList,idUploadError,fileUpload,phaseMsg"-->
-             </h:panelGroup>    
-
-              
-                <!-- START: UPLOAD ERROR -->
-               <h:panelGroup id="idUploadError" layout="block" >
-                <!--ui:fragment id="idUploadError" rendered="#{FileUploadTestPage.hasAddReplaceError()}"-->
-                    <div jsf:id="errAlert" class="alert alert-warning" rendered="#{FileUploadTestPage.hasAddReplaceError()}" >
-                      <h:outputText id="errMsgString" value="#{FileUploadTestPage.getErrorMessageString()}"  />
-                        <script>
-                            console.log("error!");
-                        </script>
-                    </div>
-              </h:panelGroup>    
+          
+             
                 <!-- END: UPLOAD ERROR -->
 
                 <ui:fragment id="fileArea" rendered="#{FileUploadTestPage.dataset != null}">
@@ -137,67 +122,9 @@
                     
                     <h4>#{FileUploadTestPage.dataset.displayName } v#{FileUploadTestPage.dataset.versionNumber }</h4>
 
-                    <!-- START: DATA TABLE -->
-                    <hr />
-                    <p:dataTable id="dtFileList" var="fm2" value="#{FileUploadTestPage.getDatasetFileMetadatas()}">
-                        <p:column headerText="Name">
-                            <h:outputText value="#{fm2.label}" />
-                        </p:column>
-                        <p:column headerText="Content type">
-                            <h:outputText value="#{fm2.dataFile.contentType}" />
-                        </p:column>
-                        <p:column headerText="Checksum">
-                            <h:outputText value="#{fm2.dataFile.checksumValue}" />
-                        </p:column>
-                        <p:column headerText="Released">
-                            <ui:fragment rendered="#{fm2.dataFile.released}">
-                                <span class="label label-success">replaceable</span>
-                            </ui:fragment>  
-                            <ui:fragment rendered="#{!fm2.dataFile.released}">
-                                <span class="label label-warning">nope</span>
-                            </ui:fragment>  
-                       </p:column>                    
-                    </p:dataTable>
-                    <hr />
+                    <ui:include src="file_replace/dataset_file_list.xhtml"></ui:include>
 
-                    <!-- END: DATA TABLE -->
-
-                    <!-- START: SHOW FILE LISTING -->
-                    <ui:fragment id="xidFileListing">
-                     <table class="table table-bordered table-hover">
-                         <tr>
-                             <th>Name</th>
-                             <th>Content type</th>
-                             <th>Hash</th>
-                             <th>Is Released</th>
-                         </tr>
-                     <ui:repeat value="#{FileUploadTestPage.getDatasetFileMetadatas()}" var="fm"> 
-                         <tr>
-                             <td>
-                                 <ui:fragment rendered="#{fm.dataFile.released}">
-                                     <a href="file_upload_test.xhtml?ds_id=#{FileUploadTestPage.dataset.id}&amp;fid=#{fm.dataFile.id}">#{fm.label}</a>
-                                 </ui:fragment>  
-                                 <ui:fragment rendered="#{!fm.dataFile.released}">
-                                     #{fm.label}
-                                 </ui:fragment>  
-                             </td>
-                             <td><h:outputText value="#{fm.dataFile.contentType}"/></td>
-                             <td><h:outputText value="#{fm.dataFile.checksumValue}"/></td>
-                             <td>
-                                 <ui:fragment rendered="#{fm.dataFile.released}">
-                                     <span class="label label-success">replaceable</span>
-                                 </ui:fragment>  
-                                 <ui:fragment rendered="#{!fm.dataFile.released}">
-                                     <span class="label label-warning">nope</span>
-                                 </ui:fragment>  
-
-                             </td>
-                         </tr>
-                     </ui:repeat>
-
-                     </table>
-                    </ui:fragment>
-                    <!-- END: SHOW FILE LISTING -->
+                  
                 </ui:fragment>
               <!-- end DATASET + file listing -->
 
