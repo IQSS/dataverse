@@ -31,6 +31,13 @@
                                 $(fileUpload).prepend('<div id="dragdropMsg">#{bundle['file.fromDropbox.description']}</div>');
                             }
                         }
+                        function showUploadMessages() {
+                            $('button[id$="uploadMessagesButton"]').trigger('click');
+                        }
+                        function uploadStarted() {
+                            $('button[id$="uploadStarted"]').trigger('click');
+                        }
+                        
                         function uploadWidgetDropRemoveMsg() {
                             $('div[id$="fileUpload"] div.ui-fileupload-content div.dropMsg').remove();
                         }
@@ -54,8 +61,8 @@
                     </p>
                     <p:fileUpload id="fileUpload" styleClass="margin-bottom" dragDropSupport="true" auto="true" multiple="true" rendered="#{datasetPage || EditDatafilesPage.showFileUploadFileComponent()}"
                                   fileUploadListener="#{EditDatafilesPage.handleFileUpload}" process="filesTable" update="filesTable,uploadMessage" label="#{bundle['file.selectToAddBtn']}"
-                                  oncomplete="javascript:dataset_fileupload_rebind();uploadWidgetDropMsg();" onstart="javascript:uploadWidgetDropRemoveMsg();"
-                                  sizeLimit="#{EditDatafilesPage.getMaxFileUploadSizeInBytes()}" invalidSizeMessage="File exceeds our limits. Please contact support. " />
+                                  oncomplete="javascript:dataset_fileupload_rebind();uploadWidgetDropMsg();" onstart="javascript:uploadWidgetDropRemoveMsg();uploadStarted();"
+                                  sizeLimit="#{EditDatafilesPage.getMaxFileUploadSizeInBytes()}" fileLimit="#{EditDatafilesPage.getMaxNumberOfFiles()}" invalidSizeMessage="File exceeds our limits. Please contact support. " sequential="true"/>
                     <!-- Dropbox Upload -->
                     <div id="dropboxUploadBlock" class="panel panel-default margin-bottom" jsf:rendered="#{!empty EditDatafilesPage.dropBoxKey}">
                         <div class="panel-body">
@@ -67,6 +74,8 @@
                         <p:message for="dropBoxButton" id="dropBoxUploadMessage" display="text" />
                     </div>
                     <p:message for="fileUpload" id="uploadMessage" display="text" />
+                    <p:commandButton id="uploadMessagesButton" action="#{EditDatafilesPage.showUploadMessages()}" update="uploadMessage" style="display:none"/>
+                    <p:commandButton id="uploadStarted" action="#{EditDatafilesPage.uploadStarted()}" style="display:none"/>
                 </ui:fragment>
 
                 <!-- Files Table -->

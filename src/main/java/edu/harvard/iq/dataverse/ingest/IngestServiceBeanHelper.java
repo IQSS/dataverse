@@ -109,7 +109,7 @@ public class IngestServiceBeanHelper {
      * @param fileName original filename
      * @return a new unique filename
      */
-     static String generateNewFileName(final String fileName) {
+     public static String generateNewFileName(final String fileName) {
         String newName;
         String baseName;
         String extension = null;

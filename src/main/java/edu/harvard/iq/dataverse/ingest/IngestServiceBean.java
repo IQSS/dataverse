@@ -155,7 +155,7 @@ public class IngestServiceBean {
     
     // TODO: [in process!]
     // move all the type-related lookups into the file service (L.A.)
-    
+    /*moving to file util */
     private static final String MIME_TYPE_STATA = "application/x-stata";
     private static final String MIME_TYPE_STATA13 = "application/x-stata-13";
     private static final String MIME_TYPE_RDATA = "application/x-rlang-transport";
@@ -175,6 +175,7 @@ public class IngestServiceBean {
     
     private static final String MIME_TYPE_UNDETERMINED_DEFAULT = "application/octet-stream";
     private static final String MIME_TYPE_UNDETERMINED_BINARY = "application/binary";
+    /**/
     
     private static final String SAVED_ORIGINAL_FILENAME_EXTENSION = "orig";
     
@@ -624,6 +625,7 @@ public class IngestServiceBean {
     // TODO: 
     // add comments explaining what's going on in the 2 methods below. 
     // -- L.A. 4.0 beta
+    /* ?? moving to fileutil/datasetpage?? */
     private String checkForDuplicateFileNames(DatasetVersion version, String fileName) {
         Set<String> fileNamesExisting = new HashSet<String>();
 
@@ -679,6 +681,7 @@ public class IngestServiceBean {
         
     }
     /* 
+     * moving to fileutil
      * This method creates a DataFile, and also saves the bytes from the suppplied 
      * InputStream in the temporary location. 
      * This method should only be called by the upper-level methods that handle 
@@ -692,6 +695,7 @@ public class IngestServiceBean {
         return createSingleDataFile(version, inputStream, fileName, contentType, true);
     }
     
+    /* moving to fileutil */
     private DataFile createSingleDataFile(DatasetVersion version, InputStream inputStream, String fileName, String contentType, boolean addToDataset) {
 
         DataFile datafile = new DataFile(contentType);
@@ -797,7 +801,7 @@ public class IngestServiceBean {
                     Files.createDirectories(dataset.getFileSystemDirectory());
                 }
             } catch (IOException dirEx) {
-                logger.severe("Failed to create study directory " + dataset.getFileSystemDirectory().toString());
+                logger.severe("Failed to create dataset directory " + dataset.getFileSystemDirectory().toString());
                 return; 
                 // TODO:
                 // Decide how we are communicating failure information back to 
@@ -818,6 +822,16 @@ public class IngestServiceBean {
                     
                     // These are all brand new files, so they should all have 
                     // one filemetadata total. -- L.A. 
+                    
+                    // Attach the file to the dataset and to the version: 
+                    dataFile.setOwner(dataset);
+                    //if (version.getFileMetadatas() == null) { // should never be null - ?
+                    //    version.setFileMetadatas(new ArrayList());
+                    //}
+                    version.getFileMetadatas().add(dataFile.getFileMetadata());
+                    dataFile.getFileMetadata().setDatasetVersion(version);
+                    dataset.getFiles().add(dataFile);
+                    
                     boolean metadataExtracted = false;
                     
                     if (ingestableAsTabular(dataFile)) {
@@ -958,6 +972,7 @@ public class IngestServiceBean {
         return datestampedFolder;        
     }
     
+    /* moving to the file util */ 
     public String getFilesTempDirectory() {
         String filesRootDirectory = System.getProperty("dataverse.files.directory");
         if (filesRootDirectory == null || filesRootDirectory.equals("")) {
@@ -1480,10 +1495,12 @@ public class IngestServiceBean {
         return ingestSuccessful;
     }
 
+    /* moving to fileutil */
     private void createIngestFailureReport(DataFile dataFile, String message) {
         createIngestReport(dataFile, IngestReport.INGEST_STATUS_FAILURE, message);
     }
     
+    /* not needed anymore */
     private void sendStatusNotification(Long datasetId, FacesMessage message) {
         /*
         logger.fine("attempting to send push notification to channel /ingest/dataset/"+datasetId+"; "+message.getDetail());
@@ -1498,6 +1515,7 @@ public class IngestServiceBean {
         */
     }
     
+   /* moving to fileutil */
     private void createIngestReport (DataFile dataFile, int status, String message) {
         IngestReport errorReport = new IngestReport();
         if (status == IngestReport.INGEST_STATUS_FAILURE) {
@@ -1507,12 +1525,14 @@ public class IngestServiceBean {
                 dataFile.setIngestReport(errorReport);
         }
     }
+    /*moving to fileutil */
     public boolean ingestableAsTabular(DataFile dataFile) {
         String mimeType = dataFile.getContentType();
         
         return ingestableAsTabular(mimeType);
     } 
     
+    /* moving to fileutil */
     public boolean ingestableAsTabular(String mimeType) {
         /* 
          * In the final 4.0 we'll be doing real-time checks, going through the 
