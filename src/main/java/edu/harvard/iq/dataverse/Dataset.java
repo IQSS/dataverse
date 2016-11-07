@@ -214,6 +214,10 @@ public class Dataset extends DvObjectContainer {
             if (testDsv.isReleased()) {
                 return false;
             }
+            //Also check for draft version
+            if (testDsv.isDraft()) {
+                return false;
+            }
             if (testDsv.isDeaccessioned()) {
                 hasDeaccessionedVersions = true;
             }
