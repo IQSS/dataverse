@@ -208,13 +208,13 @@
                                                update="linkDatasetForm">
                                     <span class="glyphicon glyphicon-link no-text"/>
                                 </p:commandLink>
-                                <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip"
+                                <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip" rendered="#{!DatasetPage.workingVersion.deaccessioned}"
                                                title="#{bundle['dataset.share.datasetShare']}"
                                                oncomplete="PF('shareDialog').show();sharrre();">
                                     <span class="glyphicon glyphicon-share no-text"/>
                                 </p:commandLink>
                             </div>
-                            <p:dialog id="shareDialog" header="#{bundle['dataset.share.datasetShare']}" widgetVar="shareDialog" modal="true">
+                            <p:dialog id="shareDialog" header="#{bundle['dataset.share.datasetShare']}" widgetVar="shareDialog" modal="true" rendered="#{!DatasetPage.workingVersion.deaccessioned}">
                                 <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataset.share.datasetShare.tip']}</p>
 
                                 <div id="sharrre-widget" data-url="#{DatasetPage.dataverseSiteUrl}/dataset.xhtml?persistentId=#{dataset.globalId}" data-text="#{bundle['dataset.share.datasetShare.shareText']}"></div>
