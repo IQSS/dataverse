@@ -20,6 +20,70 @@
           </f:metadata>
           <div>        
               <h4>Test Add/Replace functions</h4>
+            <script src="#{resource['js/nunjucks.js']}?version=#{systemConfig.getVersion()}"></script>
+
+              <ui:fragment>
+                  <div style="border:1px solid #006699; padding:10px;">
+                    <h:panelGroup id="updateReplaceFile">
+                        <script>
+                            console.log('going back here: updateReplaceFile');
+                        </script>
+                        <h:inputHidden value="#{FileUploadTestPage.getReplacementFileMetadataAsJSON()}" id="idHiddenReplaceFile" rendered="#{FileUploadTestPage.getReplacementFileMetadataAsJSON() != null}" />
+                    </h:panelGroup>
+                      
+                    <h:panelGroup id="updateTimeVal">
+                        <script>
+                            console.log('going back here');
+                        </script>
+                        <h:inputHidden value="#{FileUploadTestPage.getNewTimeTestJSON()}" id="idHiddenTime"/>
+                    </h:panelGroup>
+                      
+                      <script>
+                         
+                        function loadTime(){
+                             console.log('ok');
+                             var timeJSON = JSON.parse($('#idHiddenTime').val());
+                             console.log('timeJSON: ' + timeJSON);
+                             $('#inputTimeStr').val(timeJSON.timeStr);
+                         }
+                         
+                        function loadFileInfoTime(){
+                             console.log('raw file info: ' + $('#idHiddenReplaceFile').val());
+                             var replaceFileInfo = JSON.parse($('#idHiddenReplaceFile').val());
+                             console.log('replaceFileInfo ' + replaceFileInfo);
+
+                            var editFilesHTML =  nunjucks.render('file_replace/replacement_file_form.html', replaceFileInfo);
+                            var editFilesDiv = $('<div></div>', { css: { 'display': 'block' }});
+                            editFilesDiv.html(editFilesHTML);
+                
+                            $("#phaseMsg").append(editFilesDiv);
+                        }
+                         
+                         
+                         function callBack(data){
+                             console.log(data);
+                         }
+                         
+                         $(function() {
+                             //console.log( "ready! " + testJSON.timeStr  );                         
+                             loadTime();
+                             
+                             $('#idBtnReload').click(function() {
+                                $('#inputTimeStr').val('blah');
+                                testCommand();
+                             });
+                         });
+                      </script>
+                      <input type="text" id="inputTimeStr" value="" />
+                      <h:form>  
+                      <p:remoteCommand name="testCommand" 
+                                      action="#{FileUploadTestPage.getNewTimeTestJSON()}" 
+                                      oncomplete="loadTime();"
+                                      update="updateTimeVal" />
+                      </h:form>
+                      <a id="idBtnReload" class="btn btn-info">Reload time</a>
+                  </div>                    
+              </ui:fragment>
               <ui:fragment>
                   <p>
                     <h:outputText value="#{FileUploadTestPage.yesYes()}" escape="false" /> 
@@ -39,7 +103,8 @@
                 </ui:fragment>
                 <ui:fragment id="idFileName" rendered="#{(FileUploadTestPage.fileToReplace != null) and (FileUploadTestPage.fileToReplace.released)}">
                     <h3>Replace File: 
-                        <span style="color:#006699;">                            
+                        <span style="color:#006699;">  
+                            
                         <h:outputText id="fileLabel" value="#{FileUploadTestPage.fileToReplace.displayName}"  />
                         </span>
                     </h3>
@@ -51,13 +116,15 @@
                                 dragDropSupport="true" auto="true" 
                                 multiple="false" 
                                 rendered="#{!FileUploadTestPage.didPhase1Succeed()}"
-                                  fileUploadListener="#{FileUploadTestPage.handleFileUpload}"                                   
-                                  label="#{bundle['file.selectToAddBtn']}"
-                                  widgetVar="fileUploadWidget"
-                                  update="timeArea,dtFileList,idUploadError,fileUpload,phaseMsg"
-                                  onstart="javascript:console.log('starting...');"
-                                  sizeLimit="#{FileUploadTestPage.getMaxFileUploadSizeInBytes()}" 
-                                  invalidSizeMessage="File exceeds our limits. Please contact support. " />
+                                fileUploadListener="#{FileUploadTestPage.handleFileUpload}"                                   
+                                label="#{bundle['file.selectToAddBtn']}"
+                                widgetVar="fileUploadWidget"
+                                update="timeArea,dtFileList,idUploadError,fileUpload,phaseMsg,updateReplaceFile"
+                                onstart="javascript:console.log('starting...');"
+                                sizeLimit="#{FileUploadTestPage.getMaxFileUploadSizeInBytes()}" 
+                                invalidSizeMessage="File exceeds our limits. Please contact support. " 
+                                oncomplete="loadFileInfoTime()"
+                                  />
                 </h:form>
                     
                 <!-- end BASIC FORM 1 -->
@@ -69,12 +136,31 @@
             <h:panelGroup id="phaseMsg" layout="block">
                 <ui:fragment rendered="#{FileUploadTestPage.didPhase1Succeed()}">
                     <h:outputText id="p1Success"  value="Phase 1 Worked!!!" />
-                    <h:form>
-                        <h:commandLink id="idSaveLink"  action="#{FileUploadTestPage.runPhase2FileSave}">
-                            <h:outputText id="p1Success"  value="Save file" />            
-                        </h:commandLink>
+                    <h:form id="newFileForm">
+                        <div class="form-group">
+                            <label for="idNewLabel">Label</label>
+                            <p:inputText id="idNewLabel" class="form-control" value="#{FileUploadTestPage.replacementFileMetadata.label}" />
+                        </div>
+                        <div class="form-group">
+                            <label for="idNewDescription">Description</label>
+                            <p:inputTextarea id="idNewDescription" class="form-control" value="#{FileUploadTestPage.replacementFileMetadata.description}"></p:inputTextarea>                        
+                        </div>
+                        <div class="form-group">
+                            <label for="idNewCategories">Categories</label>
+                            <p:inputTextarea id="idNewCategories" class="form-control"></p:inputTextarea>
+                        </div>
+                        <div class="checkbox">
+                           <label>
+                             <p:selectBooleanCheckbox id="idNewRestricted" value="#{FileUploadTestPage.replacementFileMetadata.restricted}"  /> Restricted
+                           </label>
+                         </div>                        
+                           <h:commandLink id="idSaveLink"  action="#{FileUploadTestPage.runPhase2FileSave}">
+                                <h:outputText id="p1Success"  value="Save file" class="btn btn-success" />            
+                            </h:commandLink>
                     </h:form>
+                    <div style="font-size:150%">
                     <br />New file: <h:outputText id="fm1" value="#{FileUploadTestPage.replacementFileMetadata.label}" />
+                    </div>
                 </ui:fragment>
                 
              </h:panelGroup>    
@@ -128,27 +214,7 @@
                 </ui:fragment>
               <!-- end DATASET + file listing -->
 
-            <!-- START: REACT TEST -->
-              <ui:fragment>
-                <script src="https://unpkg.com/react@latest/dist/react.min.js"></script>
-                <script src="https://unpkg.com/react-dom@latest/dist/react-dom.js"></script>
-                <script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
-                <div id="react-container"></div>
-                <script type="text/babel">
-              
-                  ReactDOM.render(
-                     <ul>
-                        <li>item 1</li>
-                        <li>item 2</li>
-                        <li>item 3</li>
-                     </ul>,
-                      document.getElementById('react-container')
-                  )
-
-                </script>
-                  
-              </ui:fragment>
-            <!-- END REACT TEST -->
+           
           </div>
       </ui:define>
     </ui:composition>

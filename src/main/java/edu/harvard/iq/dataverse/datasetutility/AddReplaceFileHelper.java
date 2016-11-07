@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
+import edu.harvard.iq.dataverse.api.Util;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -455,6 +456,87 @@ public class AddReplaceFileHelper{
     
     public boolean runReplaceFromUI_Phase2(){
         return runAddReplacePhase2();
+    }
+    
+
+    /**
+     * Called from the UI backing bean
+     * 
+     * @param categoriesList
+     * @return 
+     */
+    public boolean updateCategoriesFromUI(List<String> categoriesList){
+        if (hasError()){
+            logger.severe("Should not be calling this method");
+            return false;
+        }
+        
+        if ((finalFileList==null)||(finalFileList.size()==0)){
+            throw new NullPointerException("finalFileList needs at least 1 file!!");
+        }
+        
+        // don't need to make updates
+        //
+        if (categoriesList ==null){
+            return true;           
+        }
+        
+        // remove nulls, dupes, etc.
+        //
+        categoriesList = Util.removeDuplicatesNullsEmptyStrings(categoriesList);
+        if (categoriesList.isEmpty()){
+            return true;
+        }
+        
+        for (DataFile df : finalFileList){
+            
+            df.getFileMetadata().setCategoriesByName(categoriesList);
+        }
+        
+        return true;
+    }
+    
+    /**
+     * Called from the UI backing bean
+
+     * @param label
+     * @param description
+     * @param restricted
+     * @return 
+     */
+    public boolean updateLabelDescriptionRestrictedFromUI(String label, String description, Boolean restricted){
+                
+        if (hasError()){
+            logger.severe("Should not be calling this method");
+            return false;
+        }
+        
+        if ((finalFileList==null)||(finalFileList.size()==0)){
+            throw new NullPointerException("finalFileList needs at least 1 file!!");
+        }
+        
+        
+        for (DataFile df : finalFileList){
+            
+            // update description
+            if (description != null){
+                df.getFileMetadata().setDescription(description.trim());
+            }        
+
+            // update label
+            if (label != null){
+                df.getFileMetadata().setLabel(label.trim());
+            }               
+            
+            // update restriction
+            if (restricted == null){
+                restricted = false;
+            }
+            
+            df.getFileMetadata().setRestricted(restricted);
+        }
+        
+        return true;
     }
     
     /**

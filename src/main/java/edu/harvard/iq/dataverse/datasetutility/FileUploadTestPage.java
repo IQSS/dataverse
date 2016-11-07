@@ -26,6 +26,7 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
@@ -36,10 +37,13 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.faces.component.UIComponent;
+import javax.faces.component.UIViewRoot;
 import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.json.JsonObjectBuilder;
 import org.apache.commons.lang.StringUtils;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.UploadedFile;
@@ -177,6 +181,21 @@ public class FileUploadTestPage implements java.io.Serializable {
         return timeStr;
     }
 
+     /**
+     * Get new timestamp
+     * 
+     * @return 
+     */
+    public String getNewTimeTestJSON(){
+        msgt("getNewTimeTest");
+        String timeStr = new SimpleDateFormat("yyyy:MM:dd:HH:mm:ss").format(new Date());
+        msg("timeStr: " + timeStr);
+        
+        return "{\"timeStr\": \"" + timeStr + "\", \"dog\": \"blue\"}";
+        //return timeStr;
+    }
+    
+    
     public List<FileMetadata> getDatasetFileMetadatas(){
 
         dataset = datasetService.find(datasetId);
@@ -242,6 +261,24 @@ public class FileUploadTestPage implements java.io.Serializable {
     }
 
 
+    public String getReplacementFileMetadataAsJSON(){
+        
+        FileMetadata fm = getReplacementFileMetadata();
+        if (fm==null){
+            msgt("Something is wrong here!!! Write error response 1");
+            return null;
+        }
+        
+        JsonObjectBuilder jobj = json(fm.getDataFile(), fm);
+        
+        if (jobj == null){
+            msgt("Something is wrong here!!! Write error response 2");
+            return null;
+        }
+        
+        return jobj.build().toString();
+    }
+    
     /**
      * Call if first step of replace has worked
      * 
@@ -254,8 +291,7 @@ public class FileUploadTestPage implements java.io.Serializable {
         if (!didPhase1Succeed()){
             return null;
         }
-        
-        
+                
         FileMetadata fm = addReplaceFileHelper.getNewFileMetadataBeforeReplace();
         
         if (fm==null){
@@ -330,6 +366,28 @@ public class FileUploadTestPage implements java.io.Serializable {
             msgt("ERROR: runFileSave. Phase1 did not succeed!");
             return false;
         }
+        
+        UIViewRoot viewRoot = FacesContext.getCurrentInstance().getViewRoot();
+        UIComponent component = viewRoot.findComponent("newFileForm:idNewDescription");
+        String newDescription = (String)component.getAttributes().get("value");
+        if (newDescription==null){
+            newDescription = "";
+        }
+        
+        component = viewRoot.findComponent("newFileForm:idNewLabel");
+        String newLabel = (String)component.getAttributes().get("value");
+        if (newLabel==null){
+            newLabel = "";
+        }
+        
+        component = viewRoot.findComponent("newFileForm:idNewRestricted");
+        Boolean newRestricted = (Boolean)component.getAttributes().get("value");
+        if (newRestricted==null){
+            newRestricted = false;
+        }
+        
+        
+        addReplaceFileHelper.updateLabelDescriptionRestrictedFromUI(newLabel, newDescription, newRestricted);
         
         msg("runPhase2FileSave 2");
         addReplaceFileHelper.runReplaceFromUI_Phase2();
