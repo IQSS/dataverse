@@ -49,6 +49,7 @@ import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -101,6 +102,8 @@ public class FileUtil implements java.io.Serializable  {
         STATISTICAL_FILE_EXTENSION.put("csv", "text/csv");
     }
     
+    private static MimetypesFileTypeMap MIME_TYPE_MAP = new MimetypesFileTypeMap();
+    
     public static final String MIME_TYPE_STATA = "application/x-stata";
     public static final String MIME_TYPE_STATA13 = "application/x-stata-13";
     public static final String MIME_TYPE_RDATA = "application/x-rlang-transport";
@@ -121,8 +124,8 @@ public class FileUtil implements java.io.Serializable  {
     public static final String MIME_TYPE_UNDETERMINED_DEFAULT = "application/octet-stream";
     public static final String MIME_TYPE_UNDETERMINED_BINARY = "application/binary";
     
-    private static MimetypesFileTypeMap MIME_TYPE_MAP = new MimetypesFileTypeMap();
-
+    public static final String SAVED_ORIGINAL_FILENAME_EXTENSION = "orig";
+    
     public FileUtil() {
     }
     
@@ -228,6 +231,29 @@ public class FileUtil implements java.io.Serializable  {
         } 
         
         return "UNKNOWN";
+    }
+    
+    /**
+     *  Returns a content type string for a FileObject
+     * 
+     */
+    private static String determineContentType(File fileObject) {
+        if (fileObject==null){
+            return null;
+        }
+        String contentType;
+        try {
+            contentType = determineFileType(fileObject, fileObject.getName());
+        } catch (Exception ex) {
+            logger.warning("FileUtil.determineFileType failed for file with name: " + fileObject.getName());
+            contentType = null;
+        }
+
+       if ((contentType==null)||(contentType.equals(""))){
+            contentType = MIME_TYPE_UNDETERMINED_DEFAULT;
+       }
+       return contentType;
+        
     }
     
     public static String determineFileType(File f, String fileName) throws IOException{
@@ -781,7 +807,8 @@ public class FileUtil implements java.io.Serializable  {
             }
             if (datafiles.size() > 0) {
                 // link the data files to the dataset/version: 
-                Iterator<DataFile> itf = datafiles.iterator();
+                // (except we no longer want to do this! -- 4.6)
+                /*Iterator<DataFile> itf = datafiles.iterator();
                 while (itf.hasNext()) {
                     DataFile datafile = itf.next();
                     datafile.setOwner(version.getDataset());
@@ -792,7 +819,7 @@ public class FileUtil implements java.io.Serializable  {
                     datafile.getFileMetadata().setDatasetVersion(version);
                     
                     version.getDataset().getFiles().add(datafile);
-                }
+                } */
                 // remove the uploaded zip file: 
                 try {
                     Files.delete(tempFile);
@@ -804,12 +831,12 @@ public class FileUtil implements java.io.Serializable  {
                 return datafiles;
             }
             
-        } /* shapefile - temporary else if (finalType.equalsIgnoreCase(ShapefileHandler.SHAPEFILE_FILE_TYPE)) {
+        } else if (finalType.equalsIgnoreCase(ShapefileHandler.SHAPEFILE_FILE_TYPE)) {
             // Shape files may have to be split into multiple files, 
             // one zip archive per each complete set of shape files:
                        
             //File rezipFolder = new File(this.getFilesTempDirectory());
-            File rezipFolder = this.getShapefileUnzipTempDirectory();
+            File rezipFolder = getShapefileUnzipTempDirectory();
             
             IngestServiceShapefileHelper shpIngestHelper;
             shpIngestHelper = new IngestServiceShapefileHelper(tempFile.toFile(), rezipFolder);
@@ -821,12 +848,12 @@ public class FileUtil implements java.io.Serializable  {
             }
             for (File finalFile : shpIngestHelper.getFinalRezippedFiles()){
                 FileInputStream finalFileInputStream = new FileInputStream(finalFile);
-                finalType = this.getContentType(finalFile);
+                finalType = determineContentType(finalFile);
                 if (finalType==null){
                     logger.warning("Content type is null; but should default to 'MIME_TYPE_UNDETERMINED_DEFAULT'");
                     continue; 
                 }               
-                DataFile new_datafile = createSingleDataFile(version, finalFileInputStream, finalFile.getName(), finalType);
+                DataFile new_datafile = createSingleDataFile(version, finalFileInputStream, finalFile.getName(), finalType, systemConfig.getFileFixityChecksumAlgorithm());
                 if (new_datafile != null) {
                   datafiles.add(new_datafile);
                 }else{
@@ -855,7 +882,7 @@ public class FileUtil implements java.io.Serializable  {
             }
             return null;
            
-        } */
+        } 
         // Finally, if none of the special cases above were applicable (or 
         // if we were unable to unpack an uploaded file, etc.), we'll just 
         // create and return a single DataFile:
@@ -870,6 +897,9 @@ public class FileUtil implements java.io.Serializable  {
                 return null; 
             }
 
+            /* We need to calculate the checksum here. createSingleDataFile() method
+               calculates checksums when called with a non-null inputstream; for example, 
+               on unzipped or un-gzipped files. */
             try {
                 // We persist "SHA1" rather than "SHA-1".
                 datafile.setChecksumType(systemConfig.getFileFixityChecksumAlgorithm());
@@ -973,7 +1003,7 @@ public class FileUtil implements java.io.Serializable  {
 
             /**
              * @todo Can this block and the similar block above be refactored
-             * into a common code path?
+             * into a common code path? - yeah, sure. 
              */
             if (datafile != null) {
                 try {
@@ -987,6 +1017,39 @@ public class FileUtil implements java.io.Serializable  {
         }
         
         return datafile;
+    }
+    
+    
+    /**
+        For the restructuring of zipped shapefiles, create a timestamped directory.
+        This directory is deleted after successful restructuring.
+    
+        Naming convention: getFilesTempDirectory() + "shp_" + "yyyy-MM-dd-hh-mm-ss-SSS"
+    */
+    private static File getShapefileUnzipTempDirectory(){
+        
+        String tempDirectory = getFilesTempDirectory();
+        if (tempDirectory == null){
+            logger.severe("Failed to retrieve tempDirectory, null was returned" );
+            return null;
+        }
+        String datestampedFileName =  "shp_" + new SimpleDateFormat("yyyy-MM-dd-hh-mm-ss-SSS").format(new Date());
+        String datestampedFolderName = tempDirectory + "/" + datestampedFileName;
+        
+        File datestampedFolder = new File(datestampedFolderName);
+        if (!datestampedFolder.isDirectory()) {
+            /* Note that "createDirectories()" must be used - not 
+             * "createDirectory()", to make sure all the parent 
+             * directories that may not yet exist are created as well. 
+             */
+            try {
+                Files.createDirectories(Paths.get(datestampedFolderName));
+            } catch (IOException ex) {
+                logger.severe("Failed to create temp. directory to unzip shapefile: " + datestampedFolderName );
+                return null;
+            }
+        }
+        return datestampedFolder;        
     }
     
     public static boolean ingestableAsTabular(DataFile dataFile) {
@@ -1077,7 +1140,7 @@ public class FileUtil implements java.io.Serializable  {
         return storageIdentifier; 
     }
     
-    private static void createIngestFailureReport(DataFile dataFile, String message) {
+    public static void createIngestFailureReport(DataFile dataFile, String message) {
         createIngestReport(dataFile, IngestReport.INGEST_STATUS_FAILURE, message);
     }
     

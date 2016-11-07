@@ -1224,10 +1224,15 @@ public class EditDatafilesPage implements java.io.Serializable {
         
         logger.info("upload started");
         
+        // We clear the following duplicate warning labels, because we want to 
+        // only inform the user of the duplicates dropped in the current upload 
+        // attempt - for ex., one batch of drag-and-dropped files, or a single 
+        // file uploaded through the file chooser. 
         dupeFileNamesExisting = null; 
         dupeFileNamesNew = null;
         multipleDupesExisting = false;
         multipleDupesNew = false; 
+        
     }
     
     //notused private String uploadComponentId = null; 
@@ -1340,6 +1345,8 @@ public class EditDatafilesPage implements java.io.Serializable {
             }
             
             /*
+             preserved old, pre 4.6 code - mainly as an illustration of how we used to do this. 
+            
             if (!isDuplicate(dataFile.getFileMetadata())) {
                 newFiles.add(dataFile);        // looks good
                 fileMetadatas.add(dataFile.getFileMetadata());
@@ -1422,74 +1429,19 @@ public class EditDatafilesPage implements java.io.Serializable {
    
     private Set<String> fileLabelsExisting = null; 
     
-    private void populateExistingFileLabels() {
-        fileLabelsExisting = new HashSet<>();
-
-        Iterator<FileMetadata> fmIt = workingVersion.getFileMetadatas().iterator();
-        while (fmIt.hasNext()) {
-            FileMetadata fm = fmIt.next();
-            String existingName = fm.getLabel();
-            String existingDirectory = fm.getDirectoryLabel();
-
-            if (existingName != null) {
-                // if it's a tabular file, we need to restore the original file name; 
-                // otherwise, we may miss a match. e.g. stata file foobar.dta becomes
-                // foobar.tab once ingested! 
-                if (fm.getDataFile().isTabularData()) {
-                    String originalMimeType = fm.getDataFile().getDataTable().getOriginalFileFormat();
-                    if (originalMimeType != null) {
-                        String origFileExtension = FileUtil.generateOriginalExtension(originalMimeType);
-                        existingName = existingName.replaceAll(".tab$", origFileExtension);
-                        //fileLabelsExisting.add(existingName.replaceAll(".tab$", origFileExtension));
-                    } else {
-                        //fileLabelsExisting.add(existingName.replaceAll(".tab$", ""));
-                        existingName = existingName.replaceAll(".tab$", "");
-                    }
-                }
-                String existingPath;
-                if (existingDirectory != null && !existingDirectory.isEmpty()) {
-                    existingPath = existingDirectory + "/" + existingName;
-                } else {
-                    existingPath = existingName;
-                }
-
-                fileLabelsExisting.add(existingPath);
-            }
-        }
-    }
-    
     private String duplicateFilenameCheck(FileMetadata fileMetadata) {
         if (fileLabelsExisting == null) {
-            populateExistingFileLabels();
+            fileLabelsExisting = IngestServiceBeanHelper.existingPathNamesAsSet(workingVersion);
         }
         
-        String fileName = fileMetadata.getLabel();
-        String directoryName = fileMetadata.getDirectoryLabel();
-        String pathName = makePathName(directoryName, fileName);
-        
-        while (fileLabelsExisting.contains(pathName)) {
-            fileName = IngestServiceBeanHelper.generateNewFileName(fileName);
-            pathName = makePathName(directoryName, fileName);
-        }
-
-        fileLabelsExisting.add(pathName);
-        return fileName;
-    }
-    
-    private String makePathName(String directoryName, String fileName) {
-        String pathName;
-        if (directoryName != null && !directoryName.isEmpty()) {
-            pathName = directoryName + "/" + fileName;
-        } else {
-            pathName = fileName;
-        }
-        return pathName;
+        return IngestServiceBeanHelper.duplicateFilenameCheck(fileMetadata, fileLabelsExisting);
     }
 
-    private  Map<String, Integer> checksumMap = null; 
+    private  Map<String, Integer> checksumMapOld = null; // checksums of the files already in the dataset
+    private  Map<String, Integer> checksumMapNew = null; // checksums of the new files already uploaded
     
     private void initChecksumMap() {
-        checksumMap = new HashMap<>();
+        checksumMapOld = new HashMap<>();
 
         Iterator<FileMetadata> fmIt = workingVersion.getFileMetadatas().iterator();
 
@@ -1497,7 +1449,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             FileMetadata fm = fmIt.next();
             String chksum = fm.getDataFile().getChecksumValue();
             if (chksum != null) {
-                checksumMap.put(chksum, 1);
+                checksumMapOld.put(chksum, 1);
 
             }
         }
@@ -1505,18 +1457,18 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
     
     private boolean isFileAlreadyInDataset(DataFile dataFile) {
-        if (checksumMap == null) {
+        if (checksumMapOld == null) {
             initChecksumMap();
         }
         
         String chksum = dataFile.getChecksumValue();
         
-        return chksum == null ? false : checksumMap.get(chksum) != null;
+        return chksum == null ? false : checksumMapOld.get(chksum) != null;
     }
     
     private boolean isFileAlreadyUploaded(DataFile dataFile) {
-        if (checksumMap == null) {
-            initChecksumMap();
+        if (checksumMapNew == null) {
+            checksumMapNew = new HashMap<>();
         }
         
         String chksum = dataFile.getChecksumValue();
@@ -1525,11 +1477,11 @@ public class EditDatafilesPage implements java.io.Serializable {
             return false;
         }
         
-        if (checksumMap.get(chksum) != null) {
+        if (checksumMapNew.get(chksum) != null) {
             return true;
         }
         
-        checksumMap.put(chksum, 1);
+        checksumMapNew.put(chksum, 1);
         return false;
     }
     

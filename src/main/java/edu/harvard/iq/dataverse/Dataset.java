@@ -47,6 +47,7 @@ public class Dataset extends DvObjectContainer {
     private static final long serialVersionUID = 1L;
 
     @OneToMany(mappedBy = "owner", cascade = CascadeType.MERGE)
+    @OrderBy("id")
     private List<DataFile> files = new ArrayList();
 
     private String protocol;
