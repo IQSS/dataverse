@@ -103,6 +103,23 @@ public class FileReplacePageHelper {
    
     } // handleFileUpload
 
+    public boolean runSaveReplacementFile_Phase2() throws FileReplaceException{
+                
+        if (!wasPhase1Successful()){
+            throw new FileReplaceException("Do not call if Phase 1 unsuccessful!");
+        }
+        if (replaceFileHelper == null){
+            throw new NullPointerException("replaceFileHelper cannot be null!");
+        }
+        
+        if (replaceFileHelper.runReplaceFromUI_Phase2()){
+            msg("Look at that!  Phase 2 worked");
+            return true;
+        }else{
+            msg(replaceFileHelper.getErrorMessagesAsString("\n"));
+            return false;
+        }
+    }
     
     public String getErrorMessages(){
         if (!replaceFileHelper.hasError()){
@@ -110,6 +127,27 @@ public class FileReplacePageHelper {
         }
         return replaceFileHelper.getErrorMessagesAsString("\n");
     }
+    
+    
+    /**
+     * For a successful replace operation, return a the first newly added file
+     * @return 
+     */
+    public DataFile getFirstNewlyAddedFile() throws FileReplaceException{
+    
+        if (!wasPhase1Successful()){
+            throw new FileReplaceException("Do not call if Phase 1 unsuccessful!");
+        }
+        if (replaceFileHelper == null){
+            throw new NullPointerException("replaceFileHelper cannot be null!");
+        }
+        if (replaceFileHelper.hasError()){
+            throw new FileReplaceException("Do not call if errors exist! " + replaceFileHelper.getErrorMessagesAsString("\n"));            
+        }
+        
+        return replaceFileHelper.getFirstNewlyAddedFile();
+    }
+        
     
     
     public List<FileMetadata> getNewFileMetadatasBeforeSave(){

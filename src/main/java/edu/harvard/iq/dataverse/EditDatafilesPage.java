@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
 import edu.harvard.iq.dataverse.datasetutility.DuplicateFileChecker;
 import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
+import edu.harvard.iq.dataverse.datasetutility.FileReplaceException;
 import edu.harvard.iq.dataverse.datasetutility.FileReplacePageHelper;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -59,6 +60,7 @@ import java.util.Arrays;
 import java.util.logging.Level;
 import javax.faces.event.AjaxBehaviorEvent;
 import org.apache.commons.lang.StringUtils;
+import org.primefaces.context.RequestContext;
 
 /**
  *
@@ -406,7 +408,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             fileReplacePageHelper = new FileReplacePageHelper(addReplaceFileHelper,
                                                 dataset, 
                                                 fileToReplace);
-            
+
         }else if (mode == FileEditMode.EDIT || mode == FileEditMode.SINGLE) {
 
             if (selectedFileIdsString != null) {
@@ -844,8 +846,59 @@ public class EditDatafilesPage implements java.io.Serializable {
         return save();
     }
     
+    
+    /**
+     * Save for File Replace operations
+     * @return
+     * @throws FileReplaceException 
+     */
+    public String saveReplacementFile() throws FileReplaceException{
+        
+        // Ahh, make sure it's a file replace operation
+        //
+        if (!isFileReplaceOperation()){
+            throw new FileReplaceException("Only use this for File Replace Operations");
+        }
+
+        // Can we do a save?  
+        //  (redundant but ok, also called in main "save" event before forking here)      
+        //
+        if (!saveEnabled) {
+            return "";
+        }
+        // Sanity check 1
+        //
+        if (fileReplacePageHelper == null){
+            throw new NullPointerException("fileReplacePageHelper cannot be null");
+        }
+        
+        // Make sure phase 1 ran -- button shouldn't be visible if it did not
+        //
+        if (!fileReplacePageHelper.wasPhase1Successful()){
+            throw new FileReplaceException("Save should only be called when a replacement file has been chosen.  (Phase 1 has to have completed)");
+            
+        }
+
+        // Run save!!
+        //
+        if (fileReplacePageHelper.runSaveReplacementFile_Phase2()){
+            
+            // It worked!!!  Go to page of new file!!
+            return returnToFileLandingPageAfterReplace(fileReplacePageHelper.getFirstNewlyAddedFile());
+        }else{
+            // Uh oh.
+            String errMsg = fileReplacePageHelper.getErrorMessages();
+            
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Save Failed", errMsg));
+            logger.severe("Dataset save failed for replace operation: " + errMsg);
+            return null;
+        }
+        
+    }
+    
     public String save() {
         
+      
         /*
         // Validate
         Set<ConstraintViolation> constraintViolations = workingVersion.validate();
@@ -868,7 +921,17 @@ public class EditDatafilesPage implements java.io.Serializable {
         if (!saveEnabled) {
             return "";
         }
-        
+        if (isFileReplaceOperation()){
+            try {
+                return saveReplacementFile();
+            } catch (FileReplaceException ex) {
+                String errMsg = ex.getMessage();
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Save Failed", errMsg));
+                logger.log(Level.SEVERE, "Dataset save failed for replace operation: {0}", errMsg);
+                return null;
+            }            
+        }
+                
         // Save the NEW files permanently: 
         ingestService.addFiles(workingVersion, newFiles);
         //boolean newDraftVersion = false; 
@@ -1082,6 +1145,16 @@ public class EditDatafilesPage implements java.io.Serializable {
     private String returnToFileLandingPage(Long fileId) {
         return "/file.xhtml?fileId=" + fileId  + "&datasetVersionId=" + workingVersion.getId() + "&faces-redirect=true";
     }
+
+    private String returnToFileLandingPageAfterReplace(DataFile newFile) {
+        
+        if (newFile == null){
+            throw new NullPointerException("newFile cannot be null!");
+        }
+        Long datasetVersionId = newFile.getOwner().getLatestVersion().getId();
+        return "/file.xhtml?fileId=" + newFile.getId()  + "&datasetVersionId=" + datasetVersionId + "&faces-redirect=true";
+    }
+
     
     public String cancel() {
         if (workingVersion.getId() != null) {
@@ -1129,12 +1202,13 @@ public class EditDatafilesPage implements java.io.Serializable {
     
     
     public boolean showFileUploadFileComponent(){
-        
+
         if (mode == FileEditMode.UPLOAD || mode == FileEditMode.CREATE) {
            return true;
         }
         
         if (isFileReplaceOperation()){
+            //msg("fileReplacePageHelper.showFileUploadComponent(): "+ fileReplacePageHelper.showFileUploadComponent());
             return fileReplacePageHelper.showFileUploadComponent();
         }
        
@@ -1299,17 +1373,22 @@ public class EditDatafilesPage implements java.io.Serializable {
          * For File Replace, take a different code path
          */
         if (isFileReplaceOperation()){
-            if (!fileReplacePageHelper.handleNativeFileUpload(event)){
+            saveEnabled = false;
+
+            if (fileReplacePageHelper.handleNativeFileUpload(event)){
+                saveEnabled = true;
+                
+                msgt("upload worked message");
+                FacesContext.getCurrentInstance().addMessage(
+                        event.getComponent().getClientId(), 
+                        new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload worked", "upload worked"));
+
+            }else{
                 msgt("upload failed");
                 String errMsg = fileReplacePageHelper.getErrorMessages();
                 FacesContext.getCurrentInstance().addMessage(
                         event.getComponent().getClientId(), 
                         new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload failure", errMsg));
-            }else{
-                msgt("upload worked message");
-                FacesContext.getCurrentInstance().addMessage(
-                        event.getComponent().getClientId(), 
-                        new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload worked", "upload worked"));
             };
             return;
         }
@@ -1913,7 +1992,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
 
     public void saveAdvancedOptions() {
-        
+
         // Language encoding for SPSS SAV (and, possibly, other tabular ingests:) 
         if (ingestLanguageEncoding != null) {
             if (fileMetadataSelectedForIngestOptionsPopup != null && fileMetadataSelectedForIngestOptionsPopup.getDataFile() != null) {

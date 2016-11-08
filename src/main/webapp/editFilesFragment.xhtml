@@ -84,10 +84,12 @@
                 <!-- _{dataverseSession.user.authenticated and ( ? permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset) : permissionsWrapper.canIssueUpdateDatasetCommand(EditDatafilesPage.dataset))}" -->
 
                 <p:dataTable id="filesTable" value="#{datasetPage ? DatasetPage.workingVersion.fileMetadatas : EditDatafilesPage.fileMetadatas}"
-                             rendered="#{datasetPage or (dataverseSession.user.authenticated and permissionsWrapper.canIssueUpdateDatasetCommand(EditDatafilesPage.dataset) 
-                                         )}"
-                             rowIndexVar="rowNum" rowKey="#{fileMetadata.dataFile.storageIdentifier}"
-                             selection="#{EditDatafilesPage.selectedFiles}" var="fileMetadata" widgetVar="filesTable"
+                             rendered="#{datasetPage or (dataverseSession.user.authenticated and permissionsWrapper.canIssueUpdateDatasetCommand(EditDatafilesPage.dataset))}"
+                             rowIndexVar="rowNum" 
+                             rowKey="#{fileMetadata.dataFile.storageIdentifier}"
+                             selection="#{EditDatafilesPage.selectedFiles}" 
+                             var="fileMetadata" 
+                             widgetVar="filesTable"
                              emptyMessage="#{datasetPage || EditDatafilesPage.showFileUploadFileComponent() ? bundle['file.noUploadedFiles.tip'] : bundle['file.noSelectedFiles.tip']}">
                     <f:facet name="header">
                         <div jsf:id="filesHeaderBlock" class="row">

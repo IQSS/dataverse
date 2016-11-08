@@ -1544,6 +1544,17 @@ public class AddReplaceFileHelper{
         
     }
 
+    /**
+     * For a successful replace operation, return a the first newly added file
+     * @return 
+     */
+    public DataFile getFirstNewlyAddedFile(){
+        
+        if ((newlyAddedFiles == null)||(newlyAddedFiles.size() == 0)){
+            return null;
+        }
+        return newlyAddedFiles.get(0);
+    }
         
     public List<DataFile> getNewlyAddedFiles(){
         
