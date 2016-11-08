@@ -96,9 +96,16 @@
                                                     </p:commandLink>
                                             </ui:fragment>     
                                         </li>
+                                        <ui:fragment rendered="#{FilePage.fileMetadata.dataFile.released}">                                        
+                                        <li><!-- start: replace file link -->
+                                            <h:outputLink value="/editdatafiles.xhtml?mode=SINGLE_REPLACE&#38;datasetId=#{FilePage.fileMetadata.datasetVersion.dataset.id}&#38;fid=#{FilePage.fileMetadata.dataFile.id}">
+                                                 <h:outputText value="#{bundle['file.replace']}"/>
+                                            </h:outputLink>
+                                        <!-- end replace file link --></li>
+                                        </ui:fragment>
                                         <li>
                                             <p:commandLink title="#{bundle['file.delete']}" onclick="PF('deleteFileConfirmation').show();">
-                                                <h:outputText value= "#{bundle['file.delete']}"/>
+                                                <h:outputText value="#{bundle['file.delete']}"/>
                                             </p:commandLink>
                                         </li>
                                     </ul>
