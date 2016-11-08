@@ -208,13 +208,13 @@
                                                update="linkDatasetForm">
                                     <span class="glyphicon glyphicon-link no-text"/>
                                 </p:commandLink>
-                                <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip"
+                                <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip" rendered="#{!DatasetPage.workingVersion.deaccessioned}"
                                                title="#{bundle['dataset.share.datasetShare']}"
                                                oncomplete="PF('shareDialog').show();sharrre();">
                                     <span class="glyphicon glyphicon-share no-text"/>
                                 </p:commandLink>
                             </div>
-                            <p:dialog id="shareDialog" header="#{bundle['dataset.share.datasetShare']}" widgetVar="shareDialog" modal="true">
+                            <p:dialog id="shareDialog" header="#{bundle['dataset.share.datasetShare']}" widgetVar="shareDialog" modal="true" rendered="#{!DatasetPage.workingVersion.deaccessioned}">
                                 <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataset.share.datasetShare.tip']}</p>
 
                                 <div id="sharrre-widget" data-url="#{DatasetPage.dataverseSiteUrl}/dataset.xhtml?persistentId=#{dataset.globalId}" data-text="#{bundle['dataset.share.datasetShare.shareText']}"></div>
@@ -519,15 +519,17 @@
                             <!-- 4.2.1: the 3 tabs below - metadata, terms and versions: these account for ~100 queries total -->
                             <!-- a lot of these however, are repeated queries on AuthenticatedUser and RoleAssignment; once these are optimized, the tabs will become very cheap. -->
                             <p:tab id="metadataMapTab" title="#{bundle['file.dataFilesTab.metadata.header']}"
-                                   rendered="#{!DatasetPage.workingVersion.deaccessioned and (empty DatasetPage.editMode or DatasetPage.editMode == 'METADATA')}">
+                                        rendered="#{(!DatasetPage.workingVersion.deaccessioned or (DatasetPage.workingVersion.deaccessioned and DatasetPage.canUpdateDataset())) 
+                                             and (empty DatasetPage.editMode or DatasetPage.editMode == 'METADATA')}">
+
                                 <div class="button-block tab-header margin-bottom text-right" jsf:rendered="#{empty DatasetPage.editMode and !widgetWrapper.widgetView}">
                                     <p:commandLink type="button" styleClass="btn btn-default" actionListener="#{DatasetPage.edit('METADATA')}" update="@form,:messagePanel" oncomplete="javascript:post_edit_metadata()" 
                                                    disabled="#{DatasetPage.locked}" rendered="#{DatasetPage.sessionUserAuthenticated and empty DatasetPage.editMode and !widgetWrapper.widgetView
-                                                               and DatasetPage.canUpdateDataset()}">
+                                                               and DatasetPage.canUpdateDataset() and !DatasetPage.dataset.deaccessioned }">
                                         <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                         <span class="glyphicon glyphicon-pencil"/> #{bundle['file.dataFilesTab.metadata.addBtn']}
                                     </p:commandLink>                                   
-                                    <div class="btn-group" jsf:rendered="#{DatasetPage.dataset.released}" >
+                                    <div class="btn-group" jsf:rendered="#{DatasetPage.dataset.released and !DatasetPage.dataset.deaccessioned}" >
                                         <button class="btn btn-default dropdown-toggle" type="button" styleClass="btn btn-default" data-toggle="dropdown">
                                             <span class="glyphicon glyphicon-export"/> #{bundle['dataset.exportBtn']} <span class="caret"/></button>
                                         <ul class="dropdown-menu" role="menu">
