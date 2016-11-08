@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
+import edu.harvard.iq.dataverse.datasetutility.FileReplaceException;
 import edu.harvard.iq.dataverse.datasetutility.TwoRavensHelper;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
 import edu.harvard.iq.dataverse.engine.command.Command;
@@ -21,6 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.faces.application.FacesMessage;
@@ -418,7 +420,20 @@ public class FilePage implements java.io.Serializable {
         
     }
     
-
+    /**
+     * To help with replace development 
+     * @return 
+     */
+    public boolean isReplacementFile(){
+   
+        try {
+            return this.datafileService.isReplacementFile(this.getFile());
+        } catch (FileReplaceException ex) {            
+            Logger.getLogger(FilePage.class.getName()).log(Level.SEVERE, null, ex);
+            return false;
+        }
+        
+    }
     
     /**
      * This object wraps methods used for hiding/displaying WorldMap related messages

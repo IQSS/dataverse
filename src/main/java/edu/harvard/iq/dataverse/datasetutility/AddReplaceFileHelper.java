@@ -21,10 +21,13 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -135,6 +138,10 @@ public class AddReplaceFileHelper{
     private List<String> errorMessages;
     private Response.Status httpErrorCode; // optional
     
+    // For Force Replace, this becomes a warning rather than an error
+    //
+    private boolean contentTypeWarningFound;
+    private String contentTypeWarningString;
     
     public void resetFileHelper(){
         
@@ -394,6 +401,17 @@ public class AddReplaceFileHelper{
         
     }
 
+    /**
+     * Note: UI replace is always a "force replace" which means
+     *  the replacement file can have a different content type
+     * 
+     * @param oldFileId
+     * @param newFileName
+     * @param newFileContentType
+     * @param newFileInputStream
+     * @param optionalFileParams
+     * @return 
+     */
     public boolean runReplaceFromUI_Phase1(Long oldFileId,  
             String newFileName, 
             String newFileContentType,
@@ -402,7 +420,7 @@ public class AddReplaceFileHelper{
         
         
         initErrorHandling();
-        this.currentOperation = FILE_REPLACE_OPERATION;
+        this.currentOperation = FILE_REPLACE_FORCE_OPERATION;
         
         if (oldFileId==null){
             this.addErrorSevere(getBundleErr("existing_file_to_replace_id_is_null"));
@@ -670,6 +688,10 @@ public class AddReplaceFileHelper{
         this.errorFound = false;
         this.errorMessages = new ArrayList<>();
         this.httpErrorCode = null;
+        
+        
+        contentTypeWarningFound = false;
+        contentTypeWarningString = null;
     }
          
     
@@ -1202,19 +1224,26 @@ public class AddReplaceFileHelper{
                 this.addError(getBundleErr("replace.new_file_same_as_replacement"));                                
                 break;
             }
+
+            // Has the content type of the file changed?
+            //
+            if (!df.getContentType().equalsIgnoreCase(fileToReplace.getContentType())){
             
-            // This should be able to be overridden --force
-            if (!isForceFileOperation()){
+                List<String> errParams = Arrays.asList(fileToReplace.getFriendlyType(),
+                                                df.getFriendlyType());
                 
-                // Warning that content type of the file has changed
-                //
-                if (!df.getContentType().equalsIgnoreCase(fileToReplace.getContentType())){
-                    this.addError(getBundleErr("replace.new_file_has_different_content_type"));
-                    //+ " The new file,\"" + df.getFileMetadata().getLabel() 
-                    //        + "\" has content type [" + df.getContentType() + "] while the replacment file, \"" 
-                    //        + fileToReplace.getFileMetadata().getLabel() + "\" has content type: [" + fileToReplace.getContentType() + "]");                               
+                String contentTypeErr = BundleUtil.getStringFromBundle("file.addreplace.error.replace.new_file_has_different_content_type", 
+                                errParams);
+                                        
+                if (isForceFileOperation()){
+                    // for force replace, just give a warning
+                    this.setContentTypeWarning(contentTypeErr);
+                }else{
+                    // not a force replace? it's an error
+                    this.addError(contentTypeErr);
                 }
             }
+
         }
         
         if (hasError()){
@@ -1781,8 +1810,30 @@ public class AddReplaceFileHelper{
         
     }
     
+    public void setContentTypeWarning(String warningString){
+        
+        if ((warningString == null)||(warningString.isEmpty())){
+            throw new NullPointerException("warningString cannot be null");
+        }
+        
+        contentTypeWarningFound = true;
+        contentTypeWarningString = warningString;
+    }
     
-}
+    public boolean hasContentTypeWarning(){
+        return this.contentTypeWarningFound;
+    }
+    
+    public String getContentTypeWarningString(){
+        if (!hasContentTypeWarning()){
+            // not really a NullPointerException but want to blow up here without adding try/catch everywhere
+            //
+            throw new NullPointerException("Don't call this method without checking 'hasContentTypeWarning()'");
+        }
+        return contentTypeWarningString;
+    }
+    
+} // end class
   /*
     DatasetPage sequence:
     

@@ -62,6 +62,26 @@ public class FileReplacePageHelper {
         return fileToReplace;
     }
     
+    public boolean hasContentTypeWarning(){
+        if (!wasPhase1Successful()){
+            // not really a NullPointerException but want to blow up here without adding try/catch everywhere
+            //
+            throw new NullPointerException("Do not call if Phase 1 unsuccessful!");
+        }
+      
+        return replaceFileHelper.hasContentTypeWarning();
+    }
+    
+    public String getContentTypeWarning(){
+        if (!hasContentTypeWarning()){
+            // not really a NullPointerException but want to blow up here without adding try/catch everywhere
+            //
+            throw new NullPointerException("Do not call if content type warning doesn't exist!");
+        }
+      
+        return replaceFileHelper.getContentTypeWarningString();
+    }
+    
     
     public boolean resetReplaceFileHelper(){
         
@@ -103,6 +123,7 @@ public class FileReplacePageHelper {
             return false;
         }else{
             phase1Success = true;
+            
             msg("Look at that!  Phase 1 worked");
             return true;
         }

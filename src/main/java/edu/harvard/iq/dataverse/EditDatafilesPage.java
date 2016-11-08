@@ -388,7 +388,9 @@ public class EditDatafilesPage implements java.io.Serializable {
             return permissionsWrapper.notAuthorized();
         }
         
+        // -------------------------------------------
         //  Is this a file replacement operation?
+        // -------------------------------------------
         if (mode == FileEditMode.SINGLE_REPLACE){
             /*
             http://localhost:8080/editdatafiles.xhtml?mode=SINGLE_REPLACE&datasetId=26&fid=726
@@ -683,6 +685,7 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     private List<FileMetadata> filesToBeDeleted = new ArrayList();
 
+    
     public void deleteReplacementFile() throws FileReplaceException{
 
         if (!isFileReplaceOperation()){
@@ -1401,7 +1404,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         }
     }
 
-    
+   
     /**
      * Handle native file replace
      * @param event 
@@ -1421,10 +1424,15 @@ public class EditDatafilesPage implements java.io.Serializable {
                 saveEnabled = true;
                 
                 msgt("upload worked message");
-                FacesContext.getCurrentInstance().addMessage(
-                        event.getComponent().getClientId(), 
-                        new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload worked", "upload worked"));
-
+                /**
+                 * If the file content type changed, let the user know
+                 */
+                if (fileReplacePageHelper.hasContentTypeWarning()){
+                    String warningMessage = fileReplacePageHelper.getContentTypeWarning();
+                    msg("but content type warning! " + warningMessage);
+                    JsfHelper.addWarningMessage(warningMessage);
+                }
+                
             }else{
                 msgt("upload failed");
                 String errMsg = fileReplacePageHelper.getErrorMessages();
