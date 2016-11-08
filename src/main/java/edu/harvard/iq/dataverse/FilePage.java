@@ -426,12 +426,8 @@ public class FilePage implements java.io.Serializable {
      */
     public boolean isReplacementFile(){
    
-        try {
-            return this.datafileService.isReplacementFile(this.getFile());
-        } catch (FileReplaceException ex) {            
-            Logger.getLogger(FilePage.class.getName()).log(Level.SEVERE, null, ex);
-            return false;
-        }
+        System.out.println("isReplacementFile: " + this.datafileService.isReplacementFile(this.getFile()));
+        return this.datafileService.isReplacementFile(this.getFile());
         
     }
     

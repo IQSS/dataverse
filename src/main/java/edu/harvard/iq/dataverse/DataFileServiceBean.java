@@ -1349,18 +1349,19 @@ public class DataFileServiceBean implements java.io.Serializable {
      * @return
      * @throws Exception 
      */
-    public boolean isReplacementFile(DataFile df) throws FileReplaceException{
-        
+    public boolean isReplacementFile(DataFile df) {
+
         if (df.getPreviousDataFileId() == null){
             return false;
         }else if (df.getPreviousDataFileId() < 1){
             String errMSg = "Stop! previousDataFileId should either be null or a number greater than 0";
             logger.severe(errMSg);
-            //return false;
+            return false;
             // blow up -- this shouldn't happen!
-            throw new FileReplaceException(errMSg);
-        }else{
+            //throw new FileReplaceException(errMSg);
+        }else if (df.getPreviousDataFileId() > 0){
             return true;
         }
-    }
+        return false;
+    }  // end: isReplacementFile
 }
