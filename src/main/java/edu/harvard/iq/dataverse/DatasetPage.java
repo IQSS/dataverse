@@ -308,7 +308,7 @@ public class DatasetPage implements java.io.Serializable {
         
         List<FileMetadata> retList = new ArrayList<>(); 
         
-        for (FileMetadata fileMetadata : workingVersion.getFileMetadatas()) {
+        for (FileMetadata fileMetadata : workingVersion.getFileMetadatasSorted()) {
             if (searchResultsIdSet == null || searchResultsIdSet.contains(fileMetadata.getId())) {
                 retList.add(fileMetadata);
             }
@@ -1124,22 +1124,19 @@ public class DatasetPage implements java.io.Serializable {
             
             // init the citation
             displayCitation = dataset.getCitation(true, workingVersion);
-
+            
 
             if (initFull) {
-                // init the files
-                //fileMetadatas = populateFileMetadatas();
+                // init the list of FileMetadatas
                 if (workingVersion.isDraft() && canUpdateDataset()) {
                     readOnly = false;
-                    fileMetadatasSearch = workingVersion.getFileMetadatasSorted();
                 } else {
                     // an attempt to retreive both the filemetadatas and datafiles early on, so that 
                     // we don't have to do so later (possibly, many more times than necessary):
-
                     datafileService.findFileMetadataOptimizedExperimental(dataset);
-                    fileMetadatasSearch = workingVersion.getFileMetadatas();
                 }
-            
+                fileMetadatasSearch = workingVersion.getFileMetadatasSorted();
+
                 ownerId = dataset.getOwner().getId();
                 datasetNextMajorVersion = this.dataset.getNextMajorVersionString();
                 datasetNextMinorVersion = this.dataset.getNextMinorVersionString();
@@ -1613,13 +1610,10 @@ public class DatasetPage implements java.io.Serializable {
 
         
 
-
         if (readOnly) {
             datafileService.findFileMetadataOptimizedExperimental(dataset);
-            fileMetadatasSearch = workingVersion.getFileMetadatas();
-        } else {
-            fileMetadatasSearch = workingVersion.getFileMetadatasSorted();
-        }
+        } 
+        fileMetadatasSearch = workingVersion.getFileMetadatasSorted();
 
         displayCitation = dataset.getCitation(true, workingVersion);
         stateChanged = false;
@@ -2277,37 +2271,6 @@ public class DatasetPage implements java.io.Serializable {
 
     public String cancel() {
         return  returnToLatestVersion();
-    }
-
-    public boolean isDuplicate(FileMetadata fileMetadata) {
-        String thisMd5 = fileMetadata.getDataFile().getChecksumValue();
-        if (thisMd5 == null) {
-            return false;
-        }
-
-        Map<String, Integer> MD5Map = new HashMap<String, Integer>();
-
-        // TODO: 
-        // think of a way to do this that doesn't involve populating this 
-        // map for every file on the page? 
-        // man not be that much of a problem, if we paginate and never display 
-        // more than a certain number of files... Still, needs to be revisited
-        // before the final 4.0. 
-        // -- L.A. 4.0
-        Iterator<FileMetadata> fmIt = workingVersion.getFileMetadatas().iterator();
-        while (fmIt.hasNext()) {
-            FileMetadata fm = fmIt.next();
-            String md5 = fm.getDataFile().getChecksumValue();
-            if (md5 != null) {
-                if (MD5Map.get(md5) != null) {
-                    MD5Map.put(md5, MD5Map.get(md5).intValue() + 1);
-                } else {
-                    MD5Map.put(md5, 1);
-                }
-            }
-        }
-
-        return MD5Map.get(thisMd5) != null && MD5Map.get(thisMd5).intValue() > 1;
     }
 
     private HttpClient getClient() {
@@ -3359,7 +3322,7 @@ public class DatasetPage implements java.io.Serializable {
         return false;
     }
 
-    public boolean isDownloadPopupRequired() {      
+    public boolean isDownloadPopupRequired() {
         return fileDownloadService.isDownloadPopupRequired(workingVersion);
     }
     
