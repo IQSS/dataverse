@@ -86,18 +86,14 @@
                                         </li>
                                         <li>
                                             <ui:fragment rendered="#{!FilePage.fileMetadata.restricted}">
-                                                <li>
                                                     <p:commandLink update="@form" actionListener="#{FilePage.restrictFile(true)}">
                                                         <h:outputText value="#{bundle['file.restrict']}"/>
                                                     </p:commandLink>
-                                                </li>
                                             </ui:fragment>
                                             <ui:fragment rendered="#{FilePage.fileMetadata.restricted}">
-                                                <li>
                                                     <p:commandLink update="@form" actionListener="#{FilePage.restrictFile(false)}">
                                                         <h:outputText value="#{bundle['file.unrestrict']}"/>
                                                     </p:commandLink>
-                                                </li>
                                             </ui:fragment>     
                                         </li>
                                         <li>
