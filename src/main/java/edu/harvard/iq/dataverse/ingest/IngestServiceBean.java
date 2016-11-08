@@ -163,7 +163,7 @@ public class IngestServiceBean {
     
     private static final String MIME_TYPE_ZIP   = "application/zip";
     
-    private static final String MIME_TYPE_UNDETERMINED_DEFAULT = "application/octet-stream";
+    public static final String MIME_TYPE_UNDETERMINED_DEFAULT = "application/octet-stream";
     private static final String MIME_TYPE_UNDETERMINED_BINARY = "application/binary";
     
     private static final String SAVED_ORIGINAL_FILENAME_EXTENSION = "orig";

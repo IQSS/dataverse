@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.FileMetadata;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -95,28 +96,33 @@ public class FileReplacePageHelper {
      * Handle native file replace
      * @param event 
      */
-    public boolean handleNativeFileUpload(FileUploadEvent fileUploadEvent) {
-        
+    public boolean handleNativeFileUpload(InputStream inputStream, String fileName, String fileContentType) {
+                
         phase1Success = false;
         
-        if (fileUploadEvent == null){
-            throw new NullPointerException("fileUploadEvent cannot be null");
+        // Preliminary sanity check
+        //
+        if (inputStream == null){
+            throw new NullPointerException("inputStream cannot be null");
         }
-        
-        UploadedFile uFile = fileUploadEvent.getFile();
-
-        
-        try {
-            replaceFileHelper.runReplaceFromUI_Phase1(fileToReplace.getId(),
-                    uFile.getFileName(),
-                    uFile.getContentType(),
-                    uFile.getInputstream(),
-                    null
-            );
-        } catch (IOException ex) {
-            Logger.getLogger(FileReplacePageHelper.class.getName()).log(Level.SEVERE, null, ex);
+        if (fileName == null){
+            throw new NullPointerException("fileName cannot be null");
         }
+        if (fileContentType == null){
+            throw new NullPointerException("fileContentType cannot be null");
+        }
+          
+        // Run 1st phase of replace
+        //
+        replaceFileHelper.runReplaceFromUI_Phase1(fileToReplace.getId(),
+                fileName,
+                fileContentType,
+                inputStream,
+                null
+        );
         
+        // Did it work?
+        //
         if (replaceFileHelper.hasError()){
             msgt("upload error");
             msg(replaceFileHelper.getErrorMessagesAsString("\n"));

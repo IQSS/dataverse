@@ -1353,6 +1353,16 @@ public class EditDatafilesPage implements java.io.Serializable {
                 continue;  // Error skip this file
             }
             
+            // -----------------------------------------------------------
+            // Is this a FileReplaceOperation?  If so, then diverge!
+            // -----------------------------------------------------------
+            if (this.isFileReplaceOperation()){            
+              this.handleReplaceFileUpload(dropBoxStream, fileName, IngestServiceBean.MIME_TYPE_UNDETERMINED_DEFAULT, null, event);
+              return;
+             }
+            // -----------------------------------------------------------
+
+            
             List<DataFile> datafiles = new ArrayList<DataFile>(); 
             
             // -----------------------------------------------------------
@@ -1360,7 +1370,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             // -----------------------------------------------------------
             try {
                 // Note: A single file may be unzipped into multiple files
-                datafiles = ingestService.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream");     
+                datafiles = ingestService.createDataFiles(workingVersion, dropBoxStream, fileName, IngestServiceBean.MIME_TYPE_UNDETERMINED_DEFAULT);     
                 
             } catch (IOException ex) {
                 this.logger.log(Level.SEVERE, "Error during ingest of DropBox file {0} from link {1}", new Object[]{fileName, fileLink});
@@ -1404,46 +1414,80 @@ public class EditDatafilesPage implements java.io.Serializable {
         }
     }
 
-   
+
+    private void handleReplaceFileUpload(InputStream inputStream, 
+                        String fileName, 
+                        String contentType,
+                        FileUploadEvent nativeUploadEvent,
+                        ActionEvent dropboxUploadEvent
+    ){
+        
+        fileReplacePageHelper.resetReplaceFileHelper();
+
+        saveEnabled = false;
+        
+        if (fileReplacePageHelper.handleNativeFileUpload(inputStream,
+                                    fileName,
+                                    contentType
+                                )){
+            saveEnabled = true;
+
+            msgt("upload worked message");
+            /**
+             * If the file content type changed, let the user know
+             */
+            if (fileReplacePageHelper.hasContentTypeWarning()){
+                String warningMessage = fileReplacePageHelper.getContentTypeWarning();
+                msg("but content type warning! " + warningMessage);
+                JsfHelper.addWarningMessage(warningMessage);
+            }
+                
+        }else{
+            msgt("upload failed");
+            String errMsg = fileReplacePageHelper.getErrorMessages();
+            if (nativeUploadEvent != null){
+                FacesContext.getCurrentInstance().addMessage(
+                    nativeUploadEvent.getComponent().getClientId(), 
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload failure", errMsg));
+            }
+            if (dropboxUploadEvent != null){
+                 FacesContext.getCurrentInstance().addMessage(
+                    dropboxUploadEvent.getComponent().getClientId(), 
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload failure", errMsg));
+            }
+        }
+    }
+
+    
     /**
      * Handle native file replace
      * @param event 
      */
-    public void handleFileUpload(FileUploadEvent event) {
+    public void handleFileUpload(FileUploadEvent event) throws IOException {
+
+        if (event == null){
+            throw new NullPointerException("event cannot be null");
+        }
         
+        UploadedFile uFile = event.getFile();
+        if (uFile == null){
+            throw new NullPointerException("uFile cannot be null");
+        }
+
 
         /**
          * For File Replace, take a different code path
          */
         if (isFileReplaceOperation()){
-            fileReplacePageHelper.resetReplaceFileHelper();
-
-            saveEnabled = false;
-
-            if (fileReplacePageHelper.handleNativeFileUpload(event)){
-                saveEnabled = true;
-                
-                msgt("upload worked message");
-                /**
-                 * If the file content type changed, let the user know
-                 */
-                if (fileReplacePageHelper.hasContentTypeWarning()){
-                    String warningMessage = fileReplacePageHelper.getContentTypeWarning();
-                    msg("but content type warning! " + warningMessage);
-                    JsfHelper.addWarningMessage(warningMessage);
-                }
-                
-            }else{
-                msgt("upload failed");
-                String errMsg = fileReplacePageHelper.getErrorMessages();
-                FacesContext.getCurrentInstance().addMessage(
-                        event.getComponent().getClientId(), 
-                        new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload failure", errMsg));
-            };
+           
+            handleReplaceFileUpload(uFile.getInputstream(),
+                                    uFile.getFileName(),
+                                    uFile.getContentType(),
+                                    event,
+                                    null);
             return;
+               
         }
-
-        UploadedFile uFile = event.getFile();
 
         
         List<DataFile> dFileList = null;
