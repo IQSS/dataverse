@@ -31,6 +31,34 @@
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(EditDatafilesPage.dataset, (datasetPage || EditDatafilesPage.showFileUploadFileComponent() ? bundle['file.uploadFiles'] : bundle['file.editFiles']))}"/>
                 </f:metadata>
                 <h:form id="datasetForm">
+                    
+                    <ui:remove>
+                    <!-- BEGIN: file replace original -->
+                    <div id="file-replace-original-block" class="col-sm-12">
+                        <label class="col-sm-2 control-label">
+                            <span>Original File</span>
+                        </label>
+                        <div class="col-sm-10" style="border:1px solid #ddd;">
+                            <div style="width: 64px !important;" class="pull-left col-file-thumb">
+                                <div class="thumbnail-block text-center">
+                                    <span class="icon-document text-muted h1"></span>
+                                </div>
+                            </div>
+                            <div class="col-sm-10">
+                                <div class="col-file-metadata">
+                                    <span style="display:block;font-weight:bold;">hepplersilverado.jpg</span>
+                                </div>
+                                <div class="text-muted small">
+                                    <span id="static:fileTypeOutputRegular">JPEG Image</span>
+                                    <span id="static:fileSize"> - 74.6 KB</span>
+                                    <span id="static:fileCreatePublishDate"> - Oct 19, 2016</span>
+                                    <div class="checksum-block"><span id="static:file-checksum">MD5: adffbd6664ca443337bb16fc6666eb26</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- END: file replace original -->
+                    </ui:remove>
 
                     <div id="contentTabs">
 
