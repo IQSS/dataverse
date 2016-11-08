@@ -33,6 +33,7 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
@@ -742,7 +743,14 @@ public class DataFileServiceBean implements java.io.Serializable {
     public DataTable findDataTableByFileId(Long fileId) {
         Query query = em.createQuery("select object(o) from DataTable as o where o.dataFile.id =:fileId order by o.id");
         query.setParameter("fileId", fileId);
-        return (DataTable)query.getSingleResult();
+        
+        Object singleResult;
+        
+        try{
+            return (DataTable)query.getSingleResult();
+        }catch(NoResultException ex){
+            return null;
+        }
     }
     
     public List<DataFile> findAll() {
