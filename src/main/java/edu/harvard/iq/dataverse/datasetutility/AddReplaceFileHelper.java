@@ -1727,13 +1727,20 @@ public class AddReplaceFileHelper{
      * 
      * @return 
      */
-    public FileMetadata getNewFileMetadataBeforeReplace(){
+    public List<FileMetadata> getNewFileMetadatasBeforeSave(){
         
-        if (this.finalFileList.size() > 0){
-            return this.finalFileList.get(0).getFileMetadata();
-        }else{
+        if (this.finalFileList.size() == 0){
             return null;
         }
+        
+        List<FileMetadata> fileMetadatas = new ArrayList<>();
+        for (DataFile df : finalFileList){
+            
+            fileMetadatas.add(df.getFileMetadata());
+        }
+        
+        return fileMetadatas;
+        
     }
     
     

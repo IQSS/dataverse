@@ -292,12 +292,17 @@ public class FileUploadTestPage implements java.io.Serializable {
             return null;
         }
                 
-        FileMetadata fm = addReplaceFileHelper.getNewFileMetadataBeforeReplace();
+        List<FileMetadata> fms = addReplaceFileHelper.getNewFileMetadatasBeforeSave();
         
-        if (fm==null){
+        if (fms==null){
             throw new NullPointerException("Replacement file couldn not be found.");
         }
-        return fm;
+        
+        if (fms.size() > 0){
+            return fms.get(0);
+        }
+        
+        return null;
     }
     
     public void handleFileUpload(FileUploadEvent event) {

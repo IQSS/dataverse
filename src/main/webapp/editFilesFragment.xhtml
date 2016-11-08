@@ -52,10 +52,21 @@
                         </h:outputFormat>                      
                         </ui:fragment> 
                     </p>
-                    <p:fileUpload id="fileUpload" styleClass="margin-bottom" dragDropSupport="true" auto="true" multiple="true" rendered="#{datasetPage || EditDatafilesPage.showFileUploadFileComponent()}"
-                                  fileUploadListener="#{EditDatafilesPage.handleFileUpload}" process="filesTable" update="filesTable,uploadMessage" label="#{bundle['file.selectToAddBtn']}"
-                                  oncomplete="javascript:dataset_fileupload_rebind();uploadWidgetDropMsg();" onstart="javascript:uploadWidgetDropRemoveMsg();"
-                                  sizeLimit="#{EditDatafilesPage.getMaxFileUploadSizeInBytes()}" invalidSizeMessage="File exceeds our limits. Please contact support. " />
+                    <p:fileUpload id="fileUpload" 
+                                  styleClass="margin-bottom" 
+                                  dragDropSupport="true"
+                                  auto="true" 
+                                  multiple="#{datasetPage || EditDatafilesPage.allowMultipleFileUpload()}" 
+                                  rendered="#{datasetPage || EditDatafilesPage.showFileUploadFileComponent()}"
+                                  fileUploadListener="#{EditDatafilesPage.handleFileUpload}" 
+                                  process="filesTable" 
+                                  update="filesTable,uploadMessage,fileUpload" 
+                                  label="#{bundle['file.selectToAddBtn']}"
+                                  oncomplete="javascript:dataset_fileupload_rebind();uploadWidgetDropMsg();"
+                                  onstart="javascript:uploadWidgetDropRemoveMsg();"
+                                  sizeLimit="#{EditDatafilesPage.getMaxFileUploadSizeInBytes()}" 
+                                  invalidSizeMessage="File exceeds our limits. Please contact support. ">
+                    </p:fileUpload>    
                     <!-- Dropbox Upload -->
                     <div id="dropboxUploadBlock" class="panel panel-default margin-bottom" jsf:rendered="#{!empty EditDatafilesPage.dropBoxKey}">
                         <div class="panel-body">
@@ -596,7 +607,7 @@
 
                 },
                 linkType: "direct",
-                multiselect: true,
+                multiselect: "#{datasetPage || EditDatafilesPage.allowMultipleFileUpload()}",
             };
             Dropbox.choose(options);
         }

@@ -7,8 +7,10 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
 import edu.harvard.iq.dataverse.datasetutility.DuplicateFileChecker;
 import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
+import edu.harvard.iq.dataverse.datasetutility.FileReplacePageHelper;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataFileCommand;
@@ -56,6 +58,7 @@ import java.text.DateFormat;
 import java.util.Arrays;
 import java.util.logging.Level;
 import javax.faces.event.AjaxBehaviorEvent;
+import org.apache.commons.lang.StringUtils;
 
 /**
  *
@@ -70,7 +73,7 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     public enum FileEditMode {
 
-        EDIT, UPLOAD, CREATE, SINGLE
+        EDIT, UPLOAD, CREATE, SINGLE, SINGLE_REPLACE
     };
     
     @EJB
@@ -105,6 +108,9 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     private Dataset dataset = new Dataset();
     
+    private FileReplacePageHelper fileReplacePageHelper;
+    
+    
     private String selectedFileIdsString = null; 
     private FileEditMode mode = FileEditMode.EDIT; 
     private List<Long> selectedFileIdsList = new ArrayList<>(); 
@@ -133,6 +139,16 @@ public class EditDatafilesPage implements java.io.Serializable {
         return selectedFileIdsString;
     }
     
+    public DataFile getFileToReplace(){
+        if (!this.isFileReplaceOperation()){
+            return null;
+        }
+        if (this.fileReplacePageHelper == null){
+            return null;
+        }
+        return this.fileReplacePageHelper.getFileToReplace();
+    }
+    
     public void setSelectedFileIds(String selectedFileIds) {
         selectedFileIdsString = selectedFileIds;
     }
@@ -146,6 +162,21 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
     
     public List<FileMetadata> getFileMetadatas() {
+        
+        // -------------------------------------
+        // Handle a Replace operation
+        //  - The List<FileMetadata> comes from a different source
+        // -------------------------------------
+        if (isFileReplaceOperation()){
+            if (fileReplacePageHelper.wasPhase1Successful()){
+                logger.fine("Replace: File metadatas 'list' of 1 from the fileReplacePageHelper.");
+                return fileReplacePageHelper.getNewFileMetadatasBeforeSave();
+            }else{
+                logger.fine("Replace: replacement file not yet uploaded.");
+                return null;
+            }            
+        }
+        
         if (fileMetadatas != null) {
             logger.fine("Returning a list of "+fileMetadatas.size()+" file metadatas.");
         } else {
@@ -313,6 +344,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         return null; 
     }
     
+    
     public String init() {
         //String nonNullDefaultIfKeyNotFound = "";
         this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSize();
@@ -338,6 +370,8 @@ public class EditDatafilesPage implements java.io.Serializable {
             return permissionsWrapper.notFound();
         }
         
+        
+        
         workingVersion = dataset.getEditVersion();
 
         if (workingVersion == null || !workingVersion.isDraft()) {
@@ -351,7 +385,29 @@ public class EditDatafilesPage implements java.io.Serializable {
             return permissionsWrapper.notAuthorized();
         }
         
-        if (mode == FileEditMode.EDIT || mode == FileEditMode.SINGLE) {
+        //  Is this a file replacement operation?
+        if (mode == FileEditMode.SINGLE_REPLACE){
+            /*
+            http://localhost:8080/editdatafiles.xhtml?mode=SINGLE_REPLACE&datasetId=26&fid=726
+            */        
+            DataFile fileToReplace = loadFileToReplace();
+            if (fileToReplace == null){
+                return permissionsWrapper.notFound();
+            }
+            
+            //DataverseRequest dvRequest2 = createDataverseRequest(authUser);
+            AddReplaceFileHelper addReplaceFileHelper = new AddReplaceFileHelper(dvRequestService.getDataverseRequest(),
+                                                ingestService,
+                                                datasetService,
+                                                datafileService,
+                                                permissionService,
+                                                commandEngine);
+            
+            fileReplacePageHelper = new FileReplacePageHelper(addReplaceFileHelper,
+                                                dataset, 
+                                                fileToReplace);
+            
+        }else if (mode == FileEditMode.EDIT || mode == FileEditMode.SINGLE) {
 
             if (selectedFileIdsString != null) {
                 String[] ids = selectedFileIdsString.split(",");
@@ -399,7 +455,39 @@ public class EditDatafilesPage implements java.io.Serializable {
         return null;
     }
     
-
+    
+    
+    private void msg(String s){
+        System.out.println(s);
+    }
+    
+   
+    private void msgt(String s){
+        msg("-------------------------------");
+        msg(s);
+        msg("-------------------------------");
+    }
+    
+    /**
+     * For single file replacement, load the file to replace
+     * 
+     * @return 
+     */
+    private DataFile loadFileToReplace(){
+        
+        Map<String, String> params =FacesContext.getCurrentInstance().
+                                getExternalContext().getRequestParameterMap();
+        
+        if (params.containsKey("fid")){
+            String fid = params.get("fid");
+            if ((!fid.isEmpty()) && (StringUtils.isNumeric(fid))){
+                return datafileService.find(Long.parseLong(fid));
+            }
+        }
+        return null;
+        
+    } // loadFileToReplace
+    
     private List<FileMetadata> selectedFiles; // = new ArrayList<>();
 
     public List<FileMetadata> getSelectedFiles() {
@@ -1019,12 +1107,39 @@ public class EditDatafilesPage implements java.io.Serializable {
         return new HttpClient();
     }
 
+    /**
+     * Is this page in File Replace mode
+     * 
+     * @return 
+     */
+    public boolean isFileReplaceOperation(){
+        if ((mode == FileEditMode.SINGLE_REPLACE)&&(fileReplacePageHelper!= null)){
+            return true;
+        }
+        return false;
+    }
+    
+    public boolean allowMultipleFileUpload(){
+        
+        if (isFileReplaceOperation()){
+            return false;
+        }
+        return true;
+    }
+    
+    
     public boolean showFileUploadFileComponent(){
         
         if (mode == FileEditMode.UPLOAD || mode == FileEditMode.CREATE) {
            return true;
         }
+        
+        if (isFileReplaceOperation()){
+            return fileReplacePageHelper.showFileUploadComponent();
+        }
+       
         return false;
+        //return false;
     }
     
     
@@ -1173,10 +1288,35 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
 
     
-    
+    /**
+     * Handle native file replace
+     * @param event 
+     */
     public void handleFileUpload(FileUploadEvent event) {
+        
+
+        /**
+         * For File Replace, take a different code path
+         */
+        if (isFileReplaceOperation()){
+            if (!fileReplacePageHelper.handleNativeFileUpload(event)){
+                msgt("upload failed");
+                String errMsg = fileReplacePageHelper.getErrorMessages();
+                FacesContext.getCurrentInstance().addMessage(
+                        event.getComponent().getClientId(), 
+                        new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload failure", errMsg));
+            }else{
+                msgt("upload worked message");
+                FacesContext.getCurrentInstance().addMessage(
+                        event.getComponent().getClientId(), 
+                        new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload worked", "upload worked"));
+            };
+            return;
+        }
+
         UploadedFile uFile = event.getFile();
 
+        
         List<DataFile> dFileList = null;
 
         try {
