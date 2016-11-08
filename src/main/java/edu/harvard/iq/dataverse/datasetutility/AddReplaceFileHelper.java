@@ -136,6 +136,33 @@ public class AddReplaceFileHelper{
     private Response.Status httpErrorCode; // optional
     
     
+    public void resetFileHelper(){
+        
+        initErrorHandling();
+        
+        // operation
+        currentOperation = null;
+        
+        // dataset level
+        dataset = null;
+        
+        // file to replace
+        fileToReplace = null;
+        
+        newFileInputStream = null;    
+        newFileName = null;    
+        newFileContentType = null;    
+    
+        // file lists
+        initialFileList = null;
+        finalFileList = null;
+        
+        // final files
+        newlyAddedFiles = null;
+        newlyAddedFileMetadatas = null;
+        
+    }
+    
     /** 
      * MAIN CONSTRUCTOR -- minimal requirements
      * 
@@ -642,7 +669,7 @@ public class AddReplaceFileHelper{
 
         this.errorFound = false;
         this.errorMessages = new ArrayList<>();
-        
+        this.httpErrorCode = null;
     }
          
     

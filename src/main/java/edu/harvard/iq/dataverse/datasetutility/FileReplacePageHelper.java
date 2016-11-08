@@ -33,7 +33,6 @@ public class FileReplacePageHelper {
     Dataset dataset;
     DataFile fileToReplace;
     
-    private List<DataFile> newlyAddedFiles;
     private boolean phase1Success;
     
     /** 
@@ -63,6 +62,15 @@ public class FileReplacePageHelper {
         return fileToReplace;
     }
     
+    
+    public boolean resetReplaceFileHelper(){
+        
+        phase1Success = false;
+        this.replaceFileHelper.resetFileHelper();
+        return true;
+    }
+    
+    
     /**
      * Handle native file replace
      * @param event 
@@ -70,7 +78,6 @@ public class FileReplacePageHelper {
     public boolean handleNativeFileUpload(FileUploadEvent fileUploadEvent) {
         
         phase1Success = false;
-        newlyAddedFiles = null;
         
         if (fileUploadEvent == null){
             throw new NullPointerException("fileUploadEvent cannot be null");
@@ -96,7 +103,6 @@ public class FileReplacePageHelper {
             return false;
         }else{
             phase1Success = true;
-            //newlyAddedFiles = addReplaceFileHelper.getNewlyAddedFiles();
             msg("Look at that!  Phase 1 worked");
             return true;
         }
@@ -148,8 +154,7 @@ public class FileReplacePageHelper {
         return replaceFileHelper.getFirstNewlyAddedFile();
     }
         
-    
-    
+   
     public List<FileMetadata> getNewFileMetadatasBeforeSave(){
         
         if (wasPhase1Successful()){

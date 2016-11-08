@@ -978,8 +978,6 @@ public class DataFileServiceBean implements java.io.Serializable {
        if (ImageThumbConverter.isThumbnailAvailable(file)) {
            file = this.find(file.getId());
            file.setPreviewImageAvailable(true);
-           msgt("OVER HERE_----------");
-           msg("bleh.....");
            file = this.save(file); //em.merge(file);
            // (should this be done here? - TODO:)
            return true;

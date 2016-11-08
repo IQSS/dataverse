@@ -57,6 +57,7 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import java.text.DateFormat;
 import java.util.Arrays;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import javax.faces.event.AjaxBehaviorEvent;
 import org.apache.commons.lang.StringUtils;
@@ -452,7 +453,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         saveEnabled = true; 
 
         if (mode == FileEditMode.UPLOAD) {
-            JH.addMessage(FacesMessage.SEVERITY_INFO, JH.localize("dataset.message.uploadFiles"));
+            JH.addMessage(FacesMessage.SEVERITY_INFO, getBundleString("dataset.message.uploadFiles"));
         }
         return null;
     }
@@ -625,7 +626,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             }
         }
         if (fileNames != null) {
-            String successMessage = JH.localize("file.restricted.success");
+            String successMessage = getBundleString("file.restricted.success");
             logger.fine(successMessage);
             successMessage = successMessage.replace("{0}", fileNames);
             JsfHelper.addFlashMessage(successMessage);    
@@ -662,7 +663,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             }
         }
         if (fileNames != null) {
-            String successMessage = JH.localize("file.restricted.success");
+            String successMessage = getBundleString("file.restricted.success");
             logger.fine(successMessage);
             successMessage = successMessage.replace("{0}", fileNames);
             JsfHelper.addFlashMessage(successMessage);    
@@ -682,8 +683,47 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     private List<FileMetadata> filesToBeDeleted = new ArrayList();
 
-    public void deleteFiles() {
+    public void deleteReplacementFile() throws FileReplaceException{
 
+        if (!isFileReplaceOperation()){
+            throw new FileReplaceException("Only use this for File Replace Operations");            
+        }
+
+        if (!fileReplacePageHelper.wasPhase1Successful()){
+            throw new FileReplaceException("Should only be called if Phase 1 was successful");                        
+        }
+        
+        fileReplacePageHelper.resetReplaceFileHelper();
+
+        
+        String successMessage = getBundleString("file.deleted.replacement.success");
+        logger.fine(successMessage);
+        JsfHelper.addFlashMessage(successMessage);
+        
+    }
+    
+    
+    /**
+     * 
+     * @param msgName - from the bundle e.g. "file.deleted.success"
+     * @return 
+     */
+    private String getBundleString(String msgName){
+        
+       return ResourceBundle.getBundle("Bundle").getString(msgName);
+    }
+    
+    
+    public void deleteFiles() {
+        if (isFileReplaceOperation()){
+            try {
+                deleteReplacementFile();
+            } catch (FileReplaceException ex) {
+                Logger.getLogger(EditDatafilesPage.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            return;
+        }
+        
         String fileNames = null;
         for (FileMetadata fmd : this.getSelectedFiles()) {
                 // collect the names of the newly-restrticted files, 
@@ -833,7 +873,7 @@ public class EditDatafilesPage implements java.io.Serializable {
 
      
         if (fileNames != null) {
-            String successMessage = JH.localize("file.deleted.success");
+            String successMessage = getBundleString("file.deleted.success");
             logger.fine(successMessage);
             successMessage = successMessage.replace("{0}", fileNames);
             JsfHelper.addFlashMessage(successMessage);
@@ -903,9 +943,9 @@ public class EditDatafilesPage implements java.io.Serializable {
         // Validate
         Set<ConstraintViolation> constraintViolations = workingVersion.validate();
         if (!constraintViolations.isEmpty()) {
-             //JsfHelper.addFlashMessage(JH.localize("dataset.message.validationError"));
+             //JsfHelper.addFlashMessage(getBundleString("dataset.message.validationError"));
             logger.fine("Constraint violation detected on SAVE: "+constraintViolations.toString());
-             JH.addMessage(FacesMessage.SEVERITY_ERROR, JH.localize("dataset.message.validationError"));
+             JH.addMessage(FacesMessage.SEVERITY_ERROR, getBundleString("dataset.message.validationError"));
              
             //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", "See below for details."));
             return "";
@@ -1098,7 +1138,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         workingVersion = dataset.getEditVersion();
         logger.fine("working version id: "+workingVersion.getId());
         
-        JsfHelper.addSuccessMessage(JH.localize("dataset.message.filesSuccess"));
+        JsfHelper.addSuccessMessage(getBundleString("dataset.message.filesSuccess"));
         
 
         // Call Ingest Service one more time, to 
@@ -1124,7 +1164,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     
     private void populateDatasetUpdateFailureMessage(){
             
-        JH.addMessage(FacesMessage.SEVERITY_FATAL, JH.localize("dataset.message.filesFailure"));
+        JH.addMessage(FacesMessage.SEVERITY_FATAL, getBundleString("dataset.message.filesFailure"));
     }
     
     
@@ -1373,6 +1413,8 @@ public class EditDatafilesPage implements java.io.Serializable {
          * For File Replace, take a different code path
          */
         if (isFileReplaceOperation()){
+            fileReplacePageHelper.resetReplaceFileHelper();
+
             saveEnabled = false;
 
             if (fileReplacePageHelper.handleNativeFileUpload(event)){
@@ -1639,7 +1681,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         // However, once the "save" button is pressed, we want to show a success message, if this is 
         // a new image has been designated as such:
         if (getUseAsDatasetThumbnail() && !alreadyDesignatedAsDatasetThumbnail) {
-            String successMessage = JH.localize("file.assignedDataverseImage.success");
+            String successMessage = getBundleString("file.assignedDataverseImage.success");
             logger.fine(successMessage);
             successMessage = successMessage.replace("{0}", fileMetadataSelectedForThumbnailPopup.getLabel());
             JsfHelper.addFlashMessage(successMessage);
@@ -1871,7 +1913,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 datasetUpdateRequired = true;
                 
                 // success message: 
-                String successMessage = JH.localize("file.assignedTabFileTags.success");
+                String successMessage = getBundleString("file.assignedTabFileTags.success");
                 logger.fine(successMessage);
                 successMessage = successMessage.replace("{0}", fileMetadataSelectedForTagsPopup.getLabel());
                 JsfHelper.addFlashMessage(successMessage);
