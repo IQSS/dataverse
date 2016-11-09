@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.authorization;
 
-import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
@@ -26,6 +25,7 @@ import edu.harvard.iq.dataverse.passwordreset.PasswordResetData;
 import edu.harvard.iq.dataverse.passwordreset.PasswordResetServiceBean;
 import java.sql.Timestamp;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -196,6 +196,10 @@ public class AuthenticationServiceBean {
     
     public Set<String> getAuthenticationProviderIds() {
         return authenticationProviders.keySet();
+    }
+
+    public Collection<AuthenticationProvider> getAuthenticationProviders() {
+        return authenticationProviders.values();
     }
     
     public <T extends AuthenticationProvider> Set<String> getAuthenticationProviderIdsOfType( Class<T> aClass ) {

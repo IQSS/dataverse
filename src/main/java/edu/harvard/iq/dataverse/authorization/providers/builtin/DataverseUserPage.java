@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.SettingsWrapper;
 import edu.harvard.iq.dataverse.UserNotification;
 import static edu.harvard.iq.dataverse.UserNotification.Type.CREATEDV;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
+import edu.harvard.iq.dataverse.authorization.AuthUtil;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
@@ -119,6 +120,7 @@ public class DataverseUserPage implements java.io.Serializable {
     private String selectTab = "somedata";
     UIInput usernameField;
     private String username;
+    boolean nonLocalLoginEnabled;
     
     public String init() {
 
@@ -608,6 +610,10 @@ public class DataverseUserPage implements java.io.Serializable {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public boolean isNonLocalLoginEnabled() {
+        return AuthUtil.isNonLocalLoginEnabled(systemConfig.isShibEnabled(), authenticationService.getAuthenticationProviders());
     }
 
 }
