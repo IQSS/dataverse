@@ -140,21 +140,21 @@
                            update="@([id$=Messages])" oncomplete="if (args &amp;&amp; !args.validationFailed) PF('downloadPopup').hide();">
                 <f:param name="DO_GB_VALIDATION" value="true"/>
             </p:commandLink>
-             <p:commandLink type="button" styleClass="btn btn-default" value="#{bundle.acceptTerms}" rendered="#{guestbookResponse.fileFormat == 'explore'}"
-                           actionListener="#{fileDownloadService.startExploreDownloadLink(guestbookResponse, null)}"
-                           update="@([id$=Messages])" oncomplete="if (args &amp;&amp; !args.validationFailed) PF('downloadPopup').hide();">
-                <f:param name="DO_GB_VALIDATION" value="true"/>
-            </p:commandLink>
             <p:commandLink type="button" styleClass="btn btn-default" value="#{bundle.acceptTerms}" rendered="#{guestbookResponse.fileFormat == 'subset'}"
                            actionListener="#{fileDownloadService.writeGuestbookResponseRecord(guestbookResponse)}"
                            update="@([id$=Messages]) @form" oncomplete="if (args &amp;&amp; !args.validationFailed) {PF('downloadPopup').hide(); PF('downloadDataSubsetPopup').show();}">                                    
-                <f:param name="DO_GB_VALIDATION" value="true"/>
+                <f:param name="DO_GB_VALIDATION" value="true"/>               
             </p:commandLink>
-            <p:commandLink type="button" styleClass="btn btn-default" value="#{bundle.acceptTerms}" rendered="#{guestbookResponse.fileFormat == 'worldMap'}"
-                           actionListener="#{fileDownloadService.startWorldMapDownloadLink(guestbookResponse, null)}"
-                            oncomplete="if (args &amp;&amp; !args.validationFailed) PF('downloadPopup').hide();">
-                <f:param name="DO_GB_VALIDATION" value="true"/>
-            </p:commandLink>
+            <h:outputLink type="button" styleClass="btn btn-default" rendered="#{guestbookResponse.fileFormat == 'worldMap'}"
+                           value="#{fileDownloadService.startWorldMapDownloadLink(guestbookResponse, null)}" target="_blank"
+                            > 
+                #{bundle['acceptTerms']} 
+            </h:outputLink>
+            <h:outputLink type="button" styleClass="btn btn-default"  rendered="#{guestbookResponse.fileFormat == 'explore'}"
+                           value="#{fileDownloadService.startExploreDownloadLink(guestbookResponse, null)}" target="_blank"
+                           >
+                #{bundle['acceptTerms']} 
+            </h:outputLink>
             <button type="button" class="btn btn-default" onclick="PF('downloadPopup').hide();PF('blockDatasetForm').hide();" value="#{bundle.cancel}">#{bundle.cancel}</button>
         </div>
 </ui:composition>

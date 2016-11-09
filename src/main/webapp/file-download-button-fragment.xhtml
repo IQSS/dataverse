@@ -27,12 +27,12 @@
             </button>
             <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
                 <li><!-- Two Ravens -->
-                    <h:commandLink rendered="#{!downloadPopupRequired}"
+                    <h:outputLink rendered="#{!downloadPopupRequired}"
                                    styleClass="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}"
                                    disabled="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}"
-                                   actionListener="#{fileDownloadService.startExploreDownloadLink(guestbookResponse, fileMetadata )}" target="_blank">
+                                   value="#{fileDownloadService.startExploreDownloadLink(guestbookResponse, fileMetadata )}" target="_blank">
                         #{bundle['file.explore.twoRavens']} 
-                    </h:commandLink>
+                    </h:outputLink>
                     <p:commandLink rendered="#{downloadPopupRequired}"                                            
                                    action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'explore' )}"
                                    update="@widgetVar(downloadPopup)"
@@ -61,12 +61,12 @@
         
         <ui:fragment rendered="#{ twoRavensHelper.canSeeTwoRavensExploreButtonFromPage(fileMetadata) and !worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata)}">
             <!-- TwoRavens Explore button ONLY ... not WorldMap -->
-            <h:commandLink rendered="#{!downloadPopupRequired}"
+            <h:outputLink rendered="#{!downloadPopupRequired}"
                            type="button" styleClass="btn btn-default #{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}"
                            disabled="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}"
-                           actionListener="#{fileDownloadService.startExploreDownloadLink(twoRavensHelper, guestbookResponse, fileMetadata )}" target="_blank">
+                           value="#{fileDownloadService.startExploreDownloadLink(twoRavensHelper, guestbookResponse, fileMetadata )}" target="_blank">
                 <span class="glyphicon glyphicon-equalizer"/> <span class="ladda-label">#{bundle.explore}</span>
-            </h:commandLink>
+            </h:outputLink>
             <p:commandLink rendered="#{downloadPopupRequired}"
                            type="button" styleClass="btn btn-default"
                            action="#{guestbookResponseService.initGuestbookResponse(fileMetadata, 'explore')}"

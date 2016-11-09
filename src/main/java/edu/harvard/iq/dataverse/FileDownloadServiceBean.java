@@ -2,7 +2,6 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.datasetutility.TwoRavensHelper;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
 import edu.harvard.iq.dataverse.engine.command.Command;
@@ -17,15 +16,14 @@ import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
-import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
-import javax.faces.model.SelectItem;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
+import org.primefaces.context.RequestContext;
 
 /**
  *
@@ -168,7 +166,8 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     }
     
     public String startExploreDownloadLink(GuestbookResponse guestbookResponse, FileMetadata fmd){
-        
+        RequestContext context = RequestContext.getCurrentInstance();
+        context.execute("PF('downloadPopup').hide();");
         if (guestbookResponse != null && guestbookResponse.isWriteResponse() 
                 && (( fmd != null && fmd.getDataFile() != null) || guestbookResponse.getDataFile() != null)){
             if(guestbookResponse.getDataFile() == null  && fmd != null){
@@ -188,16 +187,30 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     }
     
     public String startWorldMapDownloadLink(GuestbookResponse guestbookResponse, FileMetadata fmd){
-        if (guestbookResponse != null && guestbookResponse.isWriteResponse() && (fmd.getDataFile() != null || guestbookResponse.getDataFile() != null)){
+        RequestContext context = RequestContext.getCurrentInstance();
+        context.execute("PF('downloadPopup').hide();");
+        
+        if (guestbookResponse != null && guestbookResponse.isWriteResponse() && ((fmd != null && fmd.getDataFile() != null) || guestbookResponse.getDataFile() != null)){
             if(guestbookResponse.getDataFile() == null){
                 guestbookResponse.setDataFile(fmd.getDataFile());
             }
             writeGuestbookResponseRecord(guestbookResponse);
         }
-        return worldMapPermissionHelper.getMapLayerMetadata(fmd.getDataFile()).getLayerLink();  //.getDataExploreURLComplete(datafileId);       
+        DataFile file = null;
+        if (fmd != null){
+            file  = fmd.getDataFile();
+        }
+        if (guestbookResponse != null && guestbookResponse.getDataFile() != null){
+            file  = guestbookResponse.getDataFile();
+        }
+              
+        if (file != null){
+            return  worldMapPermissionHelper.getMapLayerMetadata(file).getLayerLink();
+        } else {
+            return "";
+        }     
     }
-    
-       
+          
     public boolean isDownloadPopupRequired(DatasetVersion datasetVersion) {
         // Each of these conditions is sufficient reason to have to 
         // present the user with the popup: 
