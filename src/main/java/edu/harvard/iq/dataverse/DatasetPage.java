@@ -2928,7 +2928,13 @@ public class DatasetPage implements java.io.Serializable {
     */
     public void postLoadSetVersionTabList(){
         
+        if (this.getVersionTabList().isEmpty()){
+            setVersionTabList(resetVersionTabList());
+        }
+        
         this.setVersionTabListForPostLoad(this.getVersionTabList());
+        
+
         //this.versionTabList = this.resetVersionTabList();        
     }
 

@@ -310,7 +310,11 @@ to user apache:
 g. restart httpd
 ****************
 
-
 ``service httpd restart``
 
+III. Enable TwoRavens' Explore Button in Dataverse
+--------------------------------------------------
 
+The final step of TwoRavens' installation is to tell Dataverse to display its Explore button alongside tabular datafiles by executing the following command on the Glassfish host:
+
+``curl -X PUT -d true http://localhost:8080/api/admin/settings/:TwoRavensTabularView``
