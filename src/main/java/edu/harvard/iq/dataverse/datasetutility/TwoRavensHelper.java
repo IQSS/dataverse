@@ -7,12 +7,14 @@ package edu.harvard.iq.dataverse.datasetutility;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DataverseSession;
+import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.HashMap;
@@ -98,7 +100,6 @@ public class TwoRavensHelper implements java.io.Serializable {
      * @return 
      */
     public boolean canSeeTwoRavensExploreButton(FileMetadata fm, boolean permissionsChecked){
-       
         if (fm == null){
             return false;
         }
@@ -121,7 +122,7 @@ public class TwoRavensHelper implements java.io.Serializable {
         //----------------------------------------------------------------------
         
        if (fm.getDatasetVersion().isDeaccessioned()) {
-           if (this.doesSessionUserHaveDataSetPermission(fm.getDatasetVersion().getDataset(), Permission.EditDataset)) {
+           if (this.doesSessionUserHaveDataSetPermission( Permission.EditDataset, fm)) {
                // Yes, save answer and return true
                this.fileMetadataTwoRavensExploreMap.put(fm.getId(), true);
                return true;
@@ -145,6 +146,41 @@ public class TwoRavensHelper implements java.io.Serializable {
         //      Nope: scat
         //
         if ((fm.getDataFile() == null)||(fm.getDataFile().getId()==null)){
+            this.fileMetadataTwoRavensExploreMap.put(fm.getId(), false);
+            return false;
+        }
+        
+        //Check for restrictions
+        
+        boolean isRestrictedFile = fm.isRestricted();
+        
+        // --------------------------------------------------------------------
+        //  Is the file Unrestricted ?        
+        // --------------------------------------------------------------------
+        if (!isRestrictedFile){
+            // Yes, save answer and return true
+            this.fileMetadataTwoRavensExploreMap.put(fm.getId(), true);
+            return true;
+        }
+        
+        // --------------------------------------------------------------------
+        // Conditions (2) through (4) are for Restricted files
+        // --------------------------------------------------------------------
+
+
+        if (session.getUser() instanceof GuestUser){
+            this.fileMetadataTwoRavensExploreMap.put(fm.getId(), false);
+            return false;
+        }
+
+        
+        // --------------------------------------------------------------------
+        // (3) Does the User have DownloadFile Permission at the **Dataset** level 
+        // --------------------------------------------------------------------
+        
+
+        if (!this.doesSessionUserHaveDataSetPermission(Permission.DownloadFile, fm)){
+            // Yes, save answer and return true
             this.fileMetadataTwoRavensExploreMap.put(fm.getId(), false);
             return false;
         }
@@ -190,7 +226,6 @@ public class TwoRavensHelper implements java.io.Serializable {
      * @return 
      */
     public String getDataExploreURLComplete(Long fileid) {
-        System.out.print("in Two ravens helper...");
         if (fileid == null){
             throw new NullPointerException("fileid cannot be null");
         }
@@ -218,25 +253,18 @@ public class TwoRavensHelper implements java.io.Serializable {
         }
 
         // For a local TwoRavens setup it's enough to call it with just 
-        // the file id:
-                    System.out.print("TwoRavensUrl " + TwoRavensUrl);
-           System.out.print("TwoRavensUrlDefault " + TwoRavensDefaultLocal + fileid + "&" + getApiTokenKey());         
+        // the file id:     
         return TwoRavensDefaultLocal + fileid + "&" + getApiTokenKey();
     }
     
     private String getApiTokenKey() {
         ApiToken apiToken;
-            System.out.print("In getApiTokenKey ");
-            System.out.print("session " + session);
         if (session.getUser() == null) {
-            System.out.print("Session User null ");
             return null;
         }
         if (isSessionUserAuthenticated()) {
-            System.out.print("User Authenticated");
             AuthenticatedUser au = (AuthenticatedUser) session.getUser();
             apiToken = authService.findApiTokenByUser(au);
-            System.out.print("apiToken " + apiToken);
             if (apiToken != null) {
                 return "key=" + apiToken.getTokenString();
             }
@@ -266,16 +294,15 @@ public class TwoRavensHelper implements java.io.Serializable {
 
     }
     
-    public boolean doesSessionUserHaveDataSetPermission(Dataset dataset, Permission permissionToCheck){
+    public boolean doesSessionUserHaveDataSetPermission(Permission permissionToCheck, FileMetadata fileMetadata){
         if (permissionToCheck == null){
             return false;
         }
-               
-
+              
         
         // Check the permission
         //
-        boolean hasPermission = this.permissionService.userOn(this.session.getUser(), dataset).has(permissionToCheck);
+        boolean hasPermission = this.permissionService.userOn(this.session.getUser(), fileMetadata.getDatasetVersion().getDataset()).has(permissionToCheck);
 
         
         // return true/false

@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.MapLayerMetadata;
 import edu.harvard.iq.dataverse.MapLayerMetadataServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.HashMap;
@@ -170,7 +171,7 @@ public class WorldMapPermissionHelper implements java.io.Serializable {
         //----------------------------------------------------------------------
         
        if (fm.getDatasetVersion().isDeaccessioned()) {
-           if (this.doesSessionUserHaveDataSetPermission( Permission.EditDataset, fm.getDataFile().getOwner())) {
+           if (this.doesSessionUserHaveDataSetPermission( Permission.EditDataset, fm)) {
                // Yes, save answer and return true
                this.fileMetadataWorldMapExplore.put(fm.getId(), true);
                return true;
@@ -179,6 +180,40 @@ public class WorldMapPermissionHelper implements java.io.Serializable {
                return false;
            }
        }
+               //Check for restrictions
+        
+        boolean isRestrictedFile = fm.isRestricted();
+        
+        // --------------------------------------------------------------------
+        //  Is the file Unrestricted ?        
+        // --------------------------------------------------------------------
+        if (!isRestrictedFile){
+            // Yes, save answer and return true
+            this.fileMetadataWorldMapExplore.put(fm.getId(), true);
+            return true;
+        }
+        
+        // --------------------------------------------------------------------
+        // Conditions (2) through (4) are for Restricted files
+        // --------------------------------------------------------------------
+
+
+        if (session.getUser() instanceof GuestUser){
+            this.fileMetadataWorldMapExplore.put(fm.getId(), false);
+            return false;
+        }
+
+        
+        // --------------------------------------------------------------------
+        // (3) Does the User have DownloadFile Permission at the **Dataset** level 
+        // --------------------------------------------------------------------
+        
+
+        if (!this.doesSessionUserHaveDataSetPermission(Permission.DownloadFile, fm)){
+            // Yes, save answer and return true
+            this.fileMetadataWorldMapExplore.put(fm.getId(), false);
+            return false;
+        }
         
         /* -----------------------------------------------------
              Yes: User can view button!
@@ -331,7 +366,7 @@ public class WorldMapPermissionHelper implements java.io.Serializable {
         
         // Is this user authenticated with EditDataset permission?
         //
-        if (!(isUserAuthenticatedWithEditDatasetPermission(fm.getDataFile().getOwner()))){
+        if (!(isUserAuthenticatedWithEditDatasetPermission(fm))){
             return false;
         }
         
@@ -383,7 +418,7 @@ public class WorldMapPermissionHelper implements java.io.Serializable {
         
         // Is this user authenticated with EditDataset permission?
         //
-        if (!(isUserAuthenticatedWithEditDatasetPermission(fm.getDataFile().getOwner()))){
+        if (!(isUserAuthenticatedWithEditDatasetPermission(fm))){
             return false;
         }
         
@@ -471,7 +506,7 @@ public class WorldMapPermissionHelper implements java.io.Serializable {
         return false;
     }
     
-    private boolean isUserAuthenticatedWithEditDatasetPermission( Dataset dataset){
+    private boolean isUserAuthenticatedWithEditDatasetPermission( FileMetadata fm){
         
         // Is the user authenticated?
         //
@@ -481,7 +516,7 @@ public class WorldMapPermissionHelper implements java.io.Serializable {
         
         //  If so, can the logged in user edit the Dataset to which this FileMetadata belongs?
         //
-        if (!this.doesSessionUserHaveDataSetPermission(Permission.EditDataset, dataset)){
+        if (!this.doesSessionUserHaveDataSetPermission(Permission.EditDataset, fm)){
             return false;
         }
         
@@ -503,7 +538,7 @@ public class WorldMapPermissionHelper implements java.io.Serializable {
 
     }
     
-    private boolean doesSessionUserHaveDataSetPermission(Permission permissionToCheck, Dataset dataset){
+    private boolean doesSessionUserHaveDataSetPermission(Permission permissionToCheck, FileMetadata fm){
         if (permissionToCheck == null){
             return false;
         }
@@ -528,7 +563,7 @@ public class WorldMapPermissionHelper implements java.io.Serializable {
         // Check the permission
         //
         
-        boolean hasPermission = this.permissionService.userOn(this.session.getUser(), dataset).has(permissionToCheck);
+        boolean hasPermission = this.permissionService.userOn(this.session.getUser(), fm.getDatasetVersion().getDataset()).has(permissionToCheck);
 
         // Save the permission
         this.datasetPermissionMap.put(permName, hasPermission);

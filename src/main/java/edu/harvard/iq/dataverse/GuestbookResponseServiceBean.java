@@ -612,7 +612,6 @@ public class GuestbookResponseServiceBean {
     }
 
     public GuestbookResponse modifyDatafileAndFormat(GuestbookResponse in, FileMetadata fm, String format) {
-        System.out.print (" in modifyDatafileAndFormat ");
         if (in != null && fm.getDataFile() != null) {
             in.setFileFormat(format);
             in.setDataFile(fm.getDataFile());

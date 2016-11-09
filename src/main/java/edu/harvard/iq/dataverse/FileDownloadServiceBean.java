@@ -71,19 +71,12 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     
     
     public void writeGuestbookAndStartDownload(GuestbookResponse guestbookResponse){
-        System.out.print("writeGuestbookAndStartDownload - start");
-        
-        System.out.print("guestbookResponse? " + guestbookResponse);
-        System.out.print("guestbookResponse.getDataFile()? " + guestbookResponse.getDataFile());
         if (guestbookResponse != null && guestbookResponse.getDataFile() != null     ){
-             System.out.print("writing guestbook response");
             writeGuestbookResponseRecord(guestbookResponse);
-            System.out.print("call download servlet");
             callDownloadServlet(guestbookResponse.getFileFormat(), guestbookResponse.getDataFile().getId(), guestbookResponse.isWriteResponse());
         }
         
         if (guestbookResponse != null && guestbookResponse.getSelectedFileIds() != null     ){
-             System.out.print("multiple files?");
             List<String> list = new ArrayList<>(Arrays.asList(guestbookResponse.getSelectedFileIds().split(",")));
 
             for (String idAsString : list) {
@@ -175,7 +168,6 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     }
     
     public String startExploreDownloadLink(GuestbookResponse guestbookResponse, FileMetadata fmd){
-        System.out.print("in start explore");
         
         if (guestbookResponse != null && guestbookResponse.isWriteResponse() 
                 && (( fmd != null && fmd.getDataFile() != null) || guestbookResponse.getDataFile() != null)){
@@ -192,7 +184,6 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         } else {
             datafileId = fmd.getDataFile().getId();
         }
-        System.out.print("datafileId " + datafileId);
         return twoRavensHelper.getDataExploreURLComplete(datafileId);
     }
     
