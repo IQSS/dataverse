@@ -34,6 +34,93 @@
                     </div>
                 </ui:fragment>
                 <div id="login-container" class="row">
+                    
+                    <ui:remove>
+                    <!-- LOG IN STATIC WIREFRAMES -->
+                    <div class="col-md-12">
+                        <div class="col-md-6 col-md-offset-3">
+                            <h2><span class="glyphicon glyphicon-log-in" /> Log In</h2>
+                            <div class="tab-content">
+                                
+                            
+                                <div id="login-local-dataverse" class="form-horizontal tab-pane active" role="tabpanel">
+                                    <div class="form-group">
+                                        <label for="inputEmail" class="col-sm-4 control-label">Username/Email</label>
+                                        <div class="col-sm-8">
+                                            <input type="email" class="form-control"/>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="inputPassword" class="col-sm-4 control-label">Password</label>
+                                        <div class="col-sm-8">
+                                            <input type="password" class="form-control"/>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="col-sm-offset-4 col-sm-8">
+                                            <button type="submit" class="btn btn-default">Log In</button>
+                                            <button type="submit" class="btn btn-default">Cancel</button>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="col-sm-offset-4 col-sm-8">
+                                            <p class="help-block">
+                                                <a href="passwordreset.xhtml">
+                                                    Forgot your password?
+                                                </a>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="login-institution" class="form-horizontal tab-pane" role="tabpanel">
+                                    <div class="form-group">
+                                        <div class="col-sm-12">
+                                            <p class="help-block">
+                                                Use Root Dataverse with your institutional log in instead of creating an account. Learn More. Leaving your institution? Please contact Root Dataverse Support for assistance.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="login-orcid" class="form-horizontal tab-pane" role="tabpanel">
+                                    <div class="form-group">
+                                        <div class="col-sm-12">
+                                            <p class="help-block">
+                                                Log in to the Root Dataverse with your ORCID credentials. Having trouble? Please contact <a href="#">Root Dataverse Support</a>.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="login-google" class="form-horizontal tab-pane" role="tabpanel">
+                                    <div class="form-group">
+                                        <div class="col-sm-12">
+                                            <p class="help-block">
+                                                Log in to the Root Dataverse with your Google credentials. Having trouble? Please contact <a href="#">Root Dataverse Support</a>.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="login-github" class="form-horizontal tab-pane" role="tabpanel">
+                                    <div class="form-group">
+                                        <div class="col-sm-12">
+                                            <p class="help-block">
+                                                Log in to the Root Dataverse with your GitHub credentials. Having trouble? Please contact <a href="#">Root Dataverse Support</a>.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <h4>Other Log In Options</h4>
+                            <div>
+                                <a href="#login-local-dataverse" class="btn btn-default" aria-controls="login-local-dataverse" role="tab" data-toggle="tab">Root Dataverse</a>
+                                <a href="#login-institution" class="btn btn-default" aria-controls="login-institution" role="tab" data-toggle="tab">Your Institution</a>
+                                <a href="#login-orcid" class="btn btn-default" aria-controls="login-orcid" role="tab" data-toggle="tab">ORCID</a>
+                                <a href="#login-google" class="btn btn-default" aria-controls="login-google" role="tab" data-toggle="tab">Google</a>
+                                <a href="#login-github" class="btn btn-default" aria-controls="login-github" role="tab" data-toggle="tab">GitHub</a>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- END LOG IN STATIC WIREFRAMES -->
+                    </ui:remove>
 
                     <div class="panel panel-default highlight #{systemConfig.shibEnabled ? 'col-md-12' : 'col-md-6'}">
                         <div class="panel-body row">
