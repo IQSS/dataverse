@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<job id="FileSystemImportJob" xmlns="http://xmlns.jcp.org/xml/ns/javaee" version="1.0">
+
+    <properties>
+        <property name="job-dataDir" value="/usr/local/glassfish4/glassfish/domains/domain1/files/"/>
+        <property name="job-logDir" value="/usr/local/glassfish4/glassfish/domains/domain1/logs/batch-jobs/"/>
+    </properties>
+
+    <listeners>
+        <listener ref="fileRecordJobListener">
+            <properties>
+                <property name="logDir" value="#{jobProperties['job-logDir']}"/>
+            </properties>
+        </listener>
+    </listeners>
+
+    <step id="import-files" next="import-checksums">
+        <listeners>
+            <listener ref="fileRecordJobListener"/>
+        </listeners>
+        <chunk>
+            <reader ref="fileRecordReader">
+                <properties>
+                    <property name="dataDir" value="#{jobProperties['job-dataDir']}"/>
+                    <property name="excludes" value="*.DS_Store, *.sha, *.cached"/>
+                </properties>
+            </reader>
+            <processor ref="fileRecordProcessor"/>
+            <writer ref="fileRecordWriter"/>
+        </chunk>
+    </step>
+
+    <step id="import-checksums">
+        <chunk>
+            <reader ref="checksumReader">
+                <properties>
+                    <property name="dataDir" value="#{jobProperties['job-dataDir']}"/>
+                    <property name="checksumManifest" value="files.sha"/>
+                    <property name="checksumType" value="SHA1"/>
+                </properties>
+            </reader>
+            <processor ref="checksumProcessor"/>
+            <writer ref="checksumWriter"/>
+        </chunk>
+    </step>
+
+</job>

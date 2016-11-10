@@ -1,0 +1,15 @@
+<beanio xmlns="http://www.beanio.org/2012/03"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.beanio.org/2012/03 http://www.beanio.org/2012/03/mapping.xsd">
+
+    <stream name="checksumRecord" format="delimited">
+        <parser class="edu.harvard.iq.dataverse.batch.jobs.importer.checksum.ChecksumManifestParser">
+            <property name="delimiter" value=" " />
+        </parser>
+        <record name="checksum" class="edu.harvard.iq.dataverse.batch.jobs.importer.checksum.ChecksumRecord">
+            <field name="value" />
+            <field name="path" />
+        </record>
+    </stream>
+
+</beanio>

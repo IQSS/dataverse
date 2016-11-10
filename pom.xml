@@ -403,6 +403,18 @@
             <optional>true</optional>
             <type>jar</type>
         </dependency>
+        <!-- beanio [required for sbgrid - batch filesystem import -->
+        <dependency>
+            <groupId>org.beanio</groupId>
+            <artifactId>beanio</artifactId>
+            <version>2.1.0</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm</artifactId>
+            <version>4.0</version>
+        </dependency>
     </dependencies>
 
     <build>
