@@ -1150,11 +1150,11 @@ public class FileRecordJobIT {
 
     /**
      * Poll the import job, pending completion
-     * @param jobId
-     * @param apiToken
-     * @param retry
-     * @param sleep
-     * @return json
+     * @param jobId job execution id
+     * @param apiToken user token
+     * @param retry max number of retry attempts
+     * @param sleep milliseconds to wait between attempts
+     * @return json job status
      */
     public static String pollJobStatus(String jobId, String apiToken, int retry, long sleep) {
         int maxTries = 0;
@@ -1170,8 +1170,10 @@ public class FileRecordJobIT {
                             .get(props.getProperty("job.status.api") + jobId);
                     json = jobResponse.body().asString();
                     status = JsonPath.from(json).getString("status");
-                    System.out.println("JOB STATUS: " + status);
+                    System.out.println("JOB STATUS RETRY ATTEMPT: " + Integer.toString(retry));
                 } else {
+                    System.out.println("JOB STATUS ERROR: Failed to get job status after " + Integer.toString(retry)
+                            + " attempts.");
                     break;
                 }
             }
@@ -1181,7 +1183,7 @@ public class FileRecordJobIT {
         }
         return json;
     }
-
+    
     /**
      * Kick off a job with default mode (MERGE)
      * @return a job execution entity
