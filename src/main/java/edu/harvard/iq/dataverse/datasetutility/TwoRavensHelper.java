@@ -154,21 +154,13 @@ public class TwoRavensHelper implements java.io.Serializable {
         
         boolean isRestrictedFile = fm.isRestricted();
         
-        // --------------------------------------------------------------------
-        //  Is the file Unrestricted ?        
-        // --------------------------------------------------------------------
-        if (!isRestrictedFile){
-            // Yes, save answer and return true
-            this.fileMetadataTwoRavensExploreMap.put(fm.getId(), true);
-            return true;
-        }
         
         // --------------------------------------------------------------------
         // Conditions (2) through (4) are for Restricted files
         // --------------------------------------------------------------------
 
 
-        if (session.getUser() instanceof GuestUser){
+        if (isRestrictedFile && session.getUser() instanceof GuestUser){
             this.fileMetadataTwoRavensExploreMap.put(fm.getId(), false);
             return false;
         }
@@ -179,7 +171,7 @@ public class TwoRavensHelper implements java.io.Serializable {
         // --------------------------------------------------------------------
         
 
-        if (!this.doesSessionUserHaveDataSetPermission(Permission.DownloadFile, fm)){
+        if (isRestrictedFile && !this.doesSessionUserHaveDataSetPermission(Permission.DownloadFile, fm)){
             // Yes, save answer and return true
             this.fileMetadataTwoRavensExploreMap.put(fm.getId(), false);
             return false;

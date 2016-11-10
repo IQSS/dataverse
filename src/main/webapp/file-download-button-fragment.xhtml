@@ -64,7 +64,7 @@
             <h:outputLink rendered="#{!downloadPopupRequired}"
                            type="button" styleClass="btn btn-default #{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}"
                            disabled="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}"
-                           value="#{fileDownloadService.startExploreDownloadLink(twoRavensHelper, guestbookResponse, fileMetadata )}" target="_blank">
+                           value="#{fileDownloadService.startExploreDownloadLink( guestbookResponse, fileMetadata )}" target="_blank">
                 <span class="glyphicon glyphicon-equalizer"/> <span class="ladda-label">#{bundle.explore}</span>
             </h:outputLink>
             <p:commandLink rendered="#{downloadPopupRequired}"
