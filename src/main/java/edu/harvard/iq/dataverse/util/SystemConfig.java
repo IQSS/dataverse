@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.util;
 
 import com.ocpsoft.pretty.PrettyContext;
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -547,4 +548,17 @@ public class SystemConfig {
             return saneDefault;
         }
     }
+
+    public String getDefaultAuthProvider() {
+        String saneDefault = BuiltinAuthenticationProvider.PROVIDER_ID;
+        String settingInDatabase = settingsService.getValueForKey(SettingsServiceBean.Key.DefaultAuthProvider, saneDefault);
+        if (settingInDatabase != null && !settingInDatabase.isEmpty()) {
+            /**
+             * @todo Add more sanity checking.
+             */
+            return settingInDatabase;
+        }
+        return saneDefault;
+    }
+
 }

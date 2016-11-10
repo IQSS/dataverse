@@ -5,6 +5,7 @@ import com.github.scribejava.core.builder.api.BaseApi;
 import edu.emory.mathcs.backport.java.util.Collections;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.StringReader;
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -18,7 +19,7 @@ public class GitHubOAuth2AP extends AbstractOAuth2AuthenticationProvider {
     
     public GitHubOAuth2AP(String aClientId, String aClientSecret) {
         id = "github";
-        title = "GitHub";
+        title = BundleUtil.getStringFromBundle("auth.providers.title.github");
         clientId = aClientId;
         clientSecret = aClientSecret;
         baseUserEndpoint = "https://api.github.com/user";

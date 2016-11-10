@@ -4,6 +4,7 @@ import com.github.scribejava.apis.GoogleApi20;
 import com.github.scribejava.core.builder.api.BaseApi;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.StringReader;
 import java.util.UUID;
 import javax.json.Json;
@@ -18,7 +19,7 @@ public class GoogleOAuth2AP extends AbstractOAuth2AuthenticationProvider {
     
     public GoogleOAuth2AP(String aClientId, String aClientSecret) {
         id = "google";
-        title = "Google";
+        title = BundleUtil.getStringFromBundle("auth.providers.title.google");
         clientId = aClientId;
         clientSecret = aClientSecret;
         scope =  "https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email";

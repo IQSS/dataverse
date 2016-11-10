@@ -12,6 +12,7 @@
     <h:body>
         <f:metadata>
             <f:viewParam name="redirectPage" value="#{LoginPage.redirectPage}"/>
+            <f:viewParam name="provider" value="#{LoginPage.provider}"/>
             <f:viewAction action="#{LoginPage.init}"/>
         </f:metadata>
         <ui:composition template="/dataverse_template.xhtml">
@@ -33,244 +34,177 @@
                         </div>
                     </div>
                 </ui:fragment>
-                <div id="login-container" class="row">
-                    
-                    <ui:remove>
-                    <!-- LOG IN STATIC WIREFRAMES -->
+                <div id="login-container" class="row" jsf:rendered="#{true}">
+
                     <div class="col-md-12">
                         <div class="col-md-6 col-md-offset-3">
                             <h2><span class="glyphicon glyphicon-log-in" /> Log In</h2>
-                            <div class="tab-content">
-                                
-                            
-                                <div id="login-local-dataverse" class="form-horizontal tab-pane active" role="tabpanel">
-                                    <div class="form-group">
-                                        <label for="inputEmail" class="col-sm-4 control-label">Username/Email</label>
-                                        <div class="col-sm-8">
-                                            <input type="email" class="form-control"/>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="inputPassword" class="col-sm-4 control-label">Password</label>
-                                        <div class="col-sm-8">
-                                            <input type="password" class="form-control"/>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <div class="col-sm-offset-4 col-sm-8">
-                                            <button type="submit" class="btn btn-default">Log In</button>
-                                            <button type="submit" class="btn btn-default">Cancel</button>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <div class="col-sm-offset-4 col-sm-8">
-                                            <p class="help-block">
-                                                <a href="passwordreset.xhtml">
-                                                    Forgot your password?
-                                                </a>
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div id="login-institution" class="form-horizontal tab-pane" role="tabpanel">
-                                    <div class="form-group">
-                                        <div class="col-sm-12">
-                                            <p class="help-block">
-                                                Use Root Dataverse with your institutional log in instead of creating an account. Learn More. Leaving your institution? Please contact Root Dataverse Support for assistance.
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div id="login-orcid" class="form-horizontal tab-pane" role="tabpanel">
-                                    <div class="form-group">
-                                        <div class="col-sm-12">
-                                            <p class="help-block">
-                                                Log in to the Root Dataverse with your ORCID credentials. Having trouble? Please contact <a href="#">Root Dataverse Support</a>.
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div id="login-google" class="form-horizontal tab-pane" role="tabpanel">
-                                    <div class="form-group">
-                                        <div class="col-sm-12">
-                                            <p class="help-block">
-                                                Log in to the Root Dataverse with your Google credentials. Having trouble? Please contact <a href="#">Root Dataverse Support</a>.
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div id="login-github" class="form-horizontal tab-pane" role="tabpanel">
-                                    <div class="form-group">
-                                        <div class="col-sm-12">
-                                            <p class="help-block">
-                                                Log in to the Root Dataverse with your GitHub credentials. Having trouble? Please contact <a href="#">Root Dataverse Support</a>.
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <h4>Other Log In Options</h4>
-                            <div>
-                                <a href="#login-local-dataverse" class="btn btn-default" aria-controls="login-local-dataverse" role="tab" data-toggle="tab">Root Dataverse</a>
-                                <a href="#login-institution" class="btn btn-default" aria-controls="login-institution" role="tab" data-toggle="tab">Your Institution</a>
-                                <a href="#login-orcid" class="btn btn-default" aria-controls="login-orcid" role="tab" data-toggle="tab">ORCID</a>
-                                <a href="#login-google" class="btn btn-default" aria-controls="login-google" role="tab" data-toggle="tab">Google</a>
-                                <a href="#login-github" class="btn btn-default" aria-controls="login-github" role="tab" data-toggle="tab">GitHub</a>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- END LOG IN STATIC WIREFRAMES -->
-                    </ui:remove>
-
-                    <div class="panel panel-default highlight #{systemConfig.shibEnabled ? 'col-md-12' : 'col-md-6'}">
-                        <div class="panel-body row">
-
-                            <div id="builtinColumn" class="#{systemConfig.shibEnabled ? 'col-md-5' : 'col-md-12'}" jsf:rendered="#{LoginPage.authenticationProvidersAvailable}">
-                                <h2 class="no-margin-top" jsf:rendered="#{systemConfig.shibEnabled == true}">#{bundle['login.builtin']}</h2>
-                                <h:form id="loginForm" styleClass="form-horizontal">
-                                    <p:focus context="loginForm"/>
-                                    <ui:remove>
-                                        <ui:fragment rendered="#{LoginPage.multipleProvidersAvailable}">
+                            <div id="authProviderAtTop" jsf:rendered="#{true}">
+                                <div id="builtinProvider" jsf:rendered="#{LoginPage.provider == 'builtin'}">
+                                    <h:form id="loginForm" styleClass="form-horizontal">
+                                        <p:focus context="loginForm"/>
+                                        <ui:remove>
+                                            <ui:fragment rendered="#{LoginPage.multipleProvidersAvailable}">
+                                                <div class="form-group text-left">
+                                                    <label class="col-sm-4 control-label" for="loginSystemSelect">
+                                                        #{bundle['login.System']}
+                                                    </label>
+                                                    <div class="col-sm-8">
+                                                        <h:selectOneMenu id="loginSystemSelect" styleClass="form-control" value="#{LoginPage.credentialsAuthProviderId}">
+                                                            <f:selectItems value="#{LoginPage.listCredentialsAuthenticationProviders()}" var="ap"
+                                                                           itemLabel="#{ap.title}" itemValue="#{ap.id}" />
+                                                            <f:ajax render="@all" listener="#{LoginPage.resetFilledCredentials}"/>
+                                                        </h:selectOneMenu>
+                                                    </div>
+                                                </div>
+                                            </ui:fragment>
+                                        </ui:remove>
+                                        <ui:repeat id="credentialsContainer" value="#{LoginPage.filledCredentials}" var="fc">
                                             <div class="form-group text-left">
-                                                <label class="col-sm-4 control-label" for="loginSystemSelect">
-                                                    #{bundle['login.System']}
+                                                <label class="col-sm-4 control-label" for="credValue">
+                                                    #{fc.credential.title}
                                                 </label>
                                                 <div class="col-sm-8">
-                                                    <h:selectOneMenu id="loginSystemSelect" styleClass="form-control" value="#{LoginPage.credentialsAuthProviderId}">
-                                                        <f:selectItems value="#{LoginPage.listCredentialsAuthenticationProviders()}" var="ap"
-                                                                       itemLabel="#{ap.title}" itemValue="#{ap.id}" />
-                                                        <f:ajax render="@all" listener="#{LoginPage.resetFilledCredentials}"/>
-                                                    </h:selectOneMenu>
+                                                    <h:inputText rendered="#{not fc.credential.secret}" value="#{fc.value}" id="credValue" styleClass="form-control"/>
+                                                    <p:message rendered="#{not fc.credential.secret}" for="credValue" display="text"/>
+                                                    <h:inputSecret rendered="#{fc.credential.secret}" value="#{fc.value}" id="sCredValue" styleClass="form-control"/>
+                                                    <p:message rendered="#{not fc.credential.secret}" for="sCredValue" display="text"/>
                                                 </div>
                                             </div>
-                                        </ui:fragment>
-                                    </ui:remove>
-                                    <ui:repeat id="credentialsContainer2" value="#{LoginPage.filledCredentials}" var="fc">
-                                        <div class="form-group text-left">
-                                            <label class="col-sm-4 control-label" for="credValue">
-                                                #{fc.credential.title}
-                                            </label>
-                                            <div class="col-sm-8">
-                                                <h:inputText rendered="#{not fc.credential.secret}" value="#{fc.value}" id="credValue" styleClass="form-control"/>
-                                                <p:message rendered="#{not fc.credential.secret}" for="credValue" display="text"/>
-                                                <h:inputSecret rendered="#{fc.credential.secret}" value="#{fc.value}" id="sCredValue" styleClass="form-control"/>
-                                                <p:message rendered="#{not fc.credential.secret}" for="sCredValue" display="text"/>
+                                        </ui:repeat>
+                                        <div class="form-group">
+                                            <div class="col-sm-offset-4 col-sm-9 button-block">
+                                                <p:commandButton id="login" value="#{bundle.login}" update="@all" action="#{LoginPage.login}"/>
+                                                <p:button value="#{bundle.cancel}" outcome="/dataverse.xhtml?alias=#{dataverseServiceBean.findRootDataverse().alias}"/>
                                             </div>
                                         </div>
-                                    </ui:repeat>
-                                    <div class="form-group">
-                                        <div class="col-sm-offset-4 col-sm-9 button-block">
-                                            <p:commandButton id="login" value="#{bundle.login}" update="@all" action="#{LoginPage.login}"/>
-                                            <p:button value="#{bundle.cancel}" outcome="/dataverse.xhtml?alias=#{dataverseServiceBean.findRootDataverse().alias}"/>
+                                        <div class="form-group">
+                                            <div class="col-sm-offset-4 col-sm-9">
+                                                <a href="passwordreset.xhtml">
+                                                    #{bundle['login.forgot.text']}
+                                                </a>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <div class="col-sm-offset-4 col-sm-9">
-                                            <a href="passwordreset.xhtml">
-                                                #{bundle['login.forgot.text']}
-                                            </a>
-                                        </div>
-                                    </div>
-                                </h:form>
-                            </div>
+                                    </h:form>
+                                </div>
+                                <div id="shibProvider" jsf:rendered="#{LoginPage.provider == 'shib'}">
 
-                            <div class="col-md-1" jsf:rendered="#{systemConfig.shibEnabled == true}">&#160;</div>
+                                    <div jsf:rendered="#{systemConfig.shibEnabled == true}">
+                                        <h2 class="no-margin-top">#{bundle['login.institution']}</h2>
 
-                            <div class="col-md-6" jsf:rendered="#{systemConfig.shibEnabled == true}">
-                                <h2 class="no-margin-top">#{bundle['login.institution']}</h2>
-                                
-                                <div id="idpSelect" class="margin-bottom"></div>
-                                
-                                <h:form>
-                                    <p class="help-block">
-                                        <span class="glyphicon glyphicon-info-sign"/>
-                                        <h:outputFormat value=" #{bundle['login.institution.blurb']} " escape="false">
-                                            <f:param value="#{settingsWrapper.guidesBaseUrl}"/>
-                                            <f:param value="#{systemConfig.version}"/>
-                                        </h:outputFormat>
-                                        <h:outputText value="#{bundle['login.institution.support.beforeLink']} " />
-                                        <p:commandLink value="#{bundle['contact.support']}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
-                                            <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
-                                            <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
-                                            <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
-                                            <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
-                                        </p:commandLink>
-                                        <h:outputText value=" #{bundle['login.institution.support.afterLink']}" escape="false"/>
-                                    </p>
-                                </h:form>
-                                
-                                
-                                <script type="text/javascript">
-                                    // TODO: get this working for https://github.com/IQSS/dataverse/issues/1551
-                                    //shibRedirectPage = '?redirectPage=' + '#{LoginPage.redirectPage}';
-                                    shibRedirectPage = '';
-                                </script>
+                                        <div id="idpSelect" class="margin-bottom"></div>
 
-                                <script src="/resources/js/shib/idpselect_config.js" type="text/javascript" language="javascript"></script>
+                                        <h:form>
+                                            <p class="help-block">
+                                                <span class="glyphicon glyphicon-info-sign"/>
+                                                <h:outputFormat value=" #{bundle['login.institution.blurb']} " escape="false">
+                                                    <f:param value="#{settingsWrapper.guidesBaseUrl}"/>
+                                                    <f:param value="#{systemConfig.version}"/>
+                                                </h:outputFormat>
+                                                <h:outputText value="#{bundle['login.institution.support.beforeLink']} " />
+                                                <p:commandLink value="#{bundle['contact.support']}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
+                                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
+                                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
+                                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
+                                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
+                                                </p:commandLink>
+                                                <h:outputText value=" #{bundle['login.institution.support.afterLink']}" escape="false"/>
+                                            </p>
+                                        </h:form>
 
-                                <script src="/resources/js/shib/idpselect.js" type="text/javascript" language="javascript"></script>
 
-                                <script src="/resources/js/shib/idpselect_style.js" type="text/javascript" language="javascript"></script>
+                                        <script type="text/javascript">
+                                            // TODO: get this working for https://github.com/IQSS/dataverse/issues/1551
+                                            //shibRedirectPage = '?redirectPage=' + '#{LoginPage.redirectPage}';
+                                            shibRedirectPage = '';
+                                        </script>
 
-                                <noscript>
-                                    <!-- If you need to care about non javascript browsers you will need to
-                                         generate a hyperlink to a non-js DS.
+                                        <script src="/resources/js/shib/idpselect_config.js" type="text/javascript" language="javascript"></script>
 
-                                         To build you will need:
-                                             - URL:  The base URL of the DS you use
-                                             - EI: Your entityId, URLencoded.  You can get this from the line that
-                                               this page is called with.
-                                             - RET: Your return address dlib-adidp.ucs.ed.ac.uk. Again you can get
-                                               this from the page this is called with, but beware of the
-                                               target%3Dcookie%253A5269905f bit..
+                                        <script src="/resources/js/shib/idpselect.js" type="text/javascript" language="javascript"></script>
 
-                                        < href=${URL}?entityID=${EI}&return=${RET}
-                                    -->
+                                        <script src="/resources/js/shib/idpselect_style.js" type="text/javascript" language="javascript"></script>
 
-                                    Your Browser does not support javascript. Please use
-                                    <!--FIXME not valid xhtml?-->
-                                    <!--<a href="http://federation.org/DS/DS?entityID=https%3A%2F%2FyourentityId.edu.edu%2Fshibboleth&return=https%3A%2F%2Fyourreturn.edu%2FShibboleth.sso%2FDS%3FSAMLDS%3D1%26target%3Dhttps%3A%2F%2Fyourreturn.edu%2F">this link</a>.-->
-                                </noscript>
-                            </div>
+                                        <noscript>
+                                            <!-- If you need to care about non javascript browsers you will need to
+                                                 generate a hyperlink to a non-js DS.
+            
+                                                 To build you will need:
+                                                     - URL:  The base URL of the DS you use
+                                                     - EI: Your entityId, URLencoded.  You can get this from the line that
+                                                       this page is called with.
+                                                     - RET: Your return address dlib-adidp.ucs.ed.ac.uk. Again you can get
+                                                       this from the page this is called with, but beware of the
+                                                       target%3Dcookie%253A5269905f bit..
+            
+                                                < href=${URL}?entityID=${EI}&return=${RET}
+                                            -->
 
-                        </div>
-                        
-                    </div>
-                </div>
-                <!-- OAuth2 login controls -->
-                <ui:fragment rendered="#{OAuth2Page.isOAuth2ProvidersDefined()}">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h4>Or choose one of the following login services:</h4>
-                            <ul>
-                                <ui:repeat value="#{OAuth2Page.providers}" var="p">
-                                    <li><a href="#{OAuth2Page.linkFor(p.id)}"><h:outputText value="#{p.title}" /></a></li>
-                                </ui:repeat>
-                            </ul>
-                        </div>
-                        <ui:fragment rendered="#{OAuth2Page.isOAuth2CallbackNotSet()}">
-                            <div class="col-md-6">
-                                <div class="panel panel-warning">
-                                    <div class="panel-heading">
-                                        <div class="panel-title">
-                                            <h3><i class="glyphicon glyphicon-alert"></i> 
-                                                OAuth2 configuration warning</h3>
-                                        </div>
-                                    </div>
-                                    <div class="panel-body">
-                                        OAuth2 protocol requires a callback URL. Normally, this URL should go to page
-                                        <code>/oauth2/callback.xhtml</code> in this installation of Dataverse.<br />
-                                        This parameter is read from the <em>settings table</em>, with key <code>OAuth2CallbackUrl</code>.<br/>
-                                        The table contains no such entry, so the system defaults to <code>#{OAuth2Page.callbackUrl}</code>. 
-                                        This setup is suitable for development, but cannot work in production.
+                                            Your Browser does not support javascript. Please use
+                                            <!--FIXME not valid xhtml?-->
+                                            <!--<a href="http://federation.org/DS/DS?entityID=https%3A%2F%2FyourentityId.edu.edu%2Fshibboleth&return=https%3A%2F%2Fyourreturn.edu%2FShibboleth.sso%2FDS%3FSAMLDS%3D1%26target%3Dhttps%3A%2F%2Fyourreturn.edu%2F">this link</a>.-->
+                                        </noscript>
                                     </div>
                                 </div>
+                                <div id="orcidProvider" jsf:rendered="#{LoginPage.provider == 'orcid'}">
+                                    <h2 class="no-margin-top">#{bundle['auth.providers.title.orcid']}</h2>
+                                    <p class="help-block">
+                                        <span class="glyphicon glyphicon-info-sign"/>
+                                        <h:outputText value=" #{bundle['auth.providers.title.blurb.orcid']}"/>
+                                    </p>
+                                    <!--FIXME: Yes, these repeats and filters are technical debt.-->
+                                    <ui:repeat value="#{OAuth2Page.providers}" var="p">
+                                        <div jsf:rendered="#{p.id== 'orcid'}">
+                                            <a href="#{OAuth2Page.linkFor(p.id)}"><p:button value="Log In with #{p.title}"/></a>
+                                        </div>
+                                    </ui:repeat>
+                                </div>
+                                <div id="orcidSandboxProvider" jsf:rendered="#{LoginPage.provider == 'orcid-sandbox'}">
+                                    <h2 class="no-margin-top">#{bundle['auth.providers.title.orcid-sandbox']}</h2>
+                                    <p class="help-block">
+                                        <span class="glyphicon glyphicon-info-sign"/>
+                                        <h:outputText value=" #{bundle['auth.providers.title.blurb.orcid-sandbox']}"/>
+                                    </p>
+                                    <ui:repeat value="#{OAuth2Page.providers}" var="p">
+                                        <div jsf:rendered="#{p.id== 'orcid-sandbox'}">
+                                            <a href="#{OAuth2Page.linkFor(p.id)}"><p:button value="Log In with #{p.title}"/></a>
+                                        </div>
+                                    </ui:repeat>
+                                </div>
+                                <div id="googleProvider" jsf:rendered="#{LoginPage.provider == 'google'}">
+                                    <h2 class="no-margin-top">#{bundle['auth.providers.title.google']}</h2>
+                                    <p class="help-block">
+                                        <span class="glyphicon glyphicon-info-sign"/>
+                                        <h:outputText value=" #{bundle['auth.providers.title.blurb.google']}"/>
+                                    </p>
+                                    <ui:repeat value="#{OAuth2Page.providers}" var="p">
+                                        <div jsf:rendered="#{p.id== 'google'}">
+                                            <a href="#{OAuth2Page.linkFor(p.id)}"><p:button value="Log In with #{p.title}"/></a>
+                                        </div>
+                                    </ui:repeat>
+                                </div>
+                                <div id="githubProvider" jsf:rendered="#{LoginPage.provider == 'github'}">
+                                    <h2 class="no-margin-top">#{bundle['auth.providers.title.github']}</h2>
+                                    <p class="help-block">
+                                        <span class="glyphicon glyphicon-info-sign"/>
+                                        <h:outputText value=" #{bundle['auth.providers.title.blurb.github']}"/>
+                                    </p>
+                                    <ui:repeat value="#{OAuth2Page.providers}" var="p">
+                                        <div jsf:rendered="#{p.id== 'github'}">
+                                            <a href="#{OAuth2Page.linkFor(p.id)}"><p:button value="Log In with #{p.title}"/></a>
+                                        </div>
+                                    </ui:repeat>
+                                </div>
                             </div>
-                        </ui:fragment>
+                            <div id="otherProviders" jsf:rendered="#{LoginPage.authenticationProvidersAvailable}">
+                                <h4>Other Log In Options</h4>
+                                <ui:repeat value="#{LoginPage.listAuthenticationProviders()}" var="provider">
+                                    <a href="/loginpage.xhtml?redirectPage=dataverseuser.xhtml&amp;provider=#{provider.id}" class="btn btn-default"><h:outputText value="#{provider.title}" /></a>
+                                </ui:repeat>
+                            </div>
+                        </div>
                     </div>
-                </ui:fragment>
-                <!-- / OAuth2 login controls -->
-
+                </div>
             </ui:define>
         </ui:composition>
     </h:body>

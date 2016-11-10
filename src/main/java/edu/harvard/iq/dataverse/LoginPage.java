@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.Iterator;
@@ -84,6 +85,9 @@ public class LoginPage implements java.io.Serializable {
 
     @EJB
     SettingsServiceBean settingsService;
+
+    @EJB
+    SystemConfig systemConfig;
     
     @Inject
     DataverseRequestServiceBean dvRequestService;
@@ -93,13 +97,17 @@ public class LoginPage implements java.io.Serializable {
     private List<FilledCredential> filledCredentials;
     
     private String redirectPage = "dataverse.xhtml";
-    
+    private String provider;
+
     public void init() {
         Iterator<String> credentialsIterator = authSvc.getAuthenticationProviderIdsOfType( CredentialsAuthenticationProvider.class ).iterator();
         if ( credentialsIterator.hasNext() ) {
             setCredentialsAuthProviderId(credentialsIterator.next());
         }
         resetFilledCredentials(null);
+        if (provider == null) {
+            provider = systemConfig.getDefaultAuthProvider();
+        }
     }
     
     public boolean isAuthenticationProvidersAvailable() {
@@ -229,5 +237,13 @@ public class LoginPage implements java.io.Serializable {
     public void setRedirectPage(String redirectPage) {
         this.redirectPage = redirectPage;
     }
-    
+
+    public String getProvider() {
+        return provider;
+    }
+
+    public void setProvider(String provider) {
+        this.provider = provider;
+    }
+
 }
