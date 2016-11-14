@@ -29,7 +29,7 @@
                     <div id="topDatasetBlock" class="row">
                         <div id="actionButtonBlock" class="col-xs-12">
                             <!-- Metrics -->
-                            <div id="metrics-block" class="pull-left" jsf:rendered="#{!DatasetPage.workingVersion.deaccessioned}">
+                            <div id="metrics-block" class="pull-left" jsf:rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}">
                                 <div class="pull-left text-center" id="metrics-label">
                                     <span class="metrics-label-text small"><span class="glyphicon glyphicon-stats"/> #{bundle['metrics.title']}</span>
                                 </div>
@@ -129,7 +129,7 @@
                                         <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
                                         <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
                                         <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
-                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{DatasetPage.dataset}"/>
+                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{FilePage.fileMetadata.datasetVersion.dataset}"/>
                                         <span class="glyphicon glyphicon-envelope no-text"/>
                                     </p:commandLink>
                                     <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip" rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}"
