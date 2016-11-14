@@ -2455,11 +2455,14 @@ public class DatasetPage implements java.io.Serializable {
      * See: dataset-versions.xhtml, remoteCommand 'postLoadVersionTablList'
     */
     public void postLoadSetVersionTabList(){
-
+        
         if (this.getVersionTabList().isEmpty()){
             setVersionTabList(resetVersionTabList());
         }
+        
         this.setVersionTabListForPostLoad(this.getVersionTabList());
+        
+
         //this.versionTabList = this.resetVersionTabList();        
     }
 

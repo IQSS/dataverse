@@ -26,8 +26,94 @@
                 </f:metadata>
                 <h:form id="fileForm">
                     <div id="topDatasetBlock" class="row">
-                        <div id="actionButtonBlock" class="col-xs-12">
-                            
+                        <div class="button-block pull-right">
+                                <!-- Edit Button Group -->
+                                <div class="btn-group pull-right" jsf:rendered="#{dataverseSession.user.authenticated
+                                                         and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset)}">
+                                    <button type="button" id="editFile" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                        <span class="glyphicon glyphicon-pencil"/> #{bundle['dataset.editBtn']} <span class="caret"></span>
+                                    </button>
+                                    <ul class="dropdown-menu pull-right text-left" role="menu">
+                                        <li>
+                                            <h:outputLink value="/editdatafiles.xhtml?selectedFileIds=#{FilePage.fileMetadata.dataFile.id}&#38;datasetId=#{FilePage.fileMetadata.datasetVersion.dataset.id}&#38;mode=SINGLE">
+                                                <h:outputText id="editFile-Multi-Link" value="Metadata"/>
+                                            </h:outputLink>
+                                        </li>
+                                        <li>
+                                            <ui:fragment rendered="#{!FilePage.fileMetadata.restricted}">
+                                                <li>
+                                                    <p:commandLink update="@form" actionListener="#{FilePage.restrictFile(true)}">
+                                                        <h:outputText value="#{bundle['file.restrict']}"/>
+                                                    </p:commandLink>
+                                                </li>
+                                            </ui:fragment>
+                                            <ui:fragment rendered="#{FilePage.fileMetadata.restricted}">
+                                                <li>
+                                                    <p:commandLink update="@form" actionListener="#{FilePage.restrictFile(false)}">
+                                                        <h:outputText value="#{bundle['file.unrestrict']}"/>
+                                                    </p:commandLink>
+                                                </li>
+                                            </ui:fragment>     
+                                        </li>
+                                        <ui:fragment rendered="#{FilePage.fileMetadata.dataFile.released}">                                        
+                                        <li><!-- start: replace file link -->
+                                            <h:outputLink value="/editdatafiles.xhtml?mode=SINGLE_REPLACE&#38;datasetId=#{FilePage.fileMetadata.datasetVersion.dataset.id}&#38;fid=#{FilePage.fileMetadata.dataFile.id}">
+                                                 <h:outputText value="#{bundle['file.replace']}"/>
+                                            </h:outputLink>
+                                        <!-- end replace file link --></li>
+                                        </ui:fragment>
+                                        <li>
+                                            <p:commandLink title="#{bundle['file.delete']}" onclick="PF('deleteFileConfirmation').show();">
+                                                <h:outputText value= "#{bundle['file.delete']}"/>
+                                            </p:commandLink>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <!-- END: Edit Button Group -->
+
+                                <!-- Explore/Map Data/Download/Request Button Block -->
+                                <div class="button-container pull-right">
+                                    <ui:include src="file-download-button-fragment.xhtml">
+                                        <ui:param name="fileMetadata" value="#{FilePage.fileMetadata}"/>
+                                        <ui:param name="canUpdateDataset" value="#{FilePage.canUpdateDataset()}"/>
+                                        <ui:param name="downloadPopupRequired" value="#{FilePage.downloadPopupRequired}"/>
+                                        <ui:param name="guestbookResponse" value="#{FilePage.guestbookResponse}"/>
+                                        <ui:param name="guestbookResponseService" value="#{FilePage.guestbookResponseService}"/>
+                                        <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
+                                    </ui:include>
+                                </div>
+                                <!-- END: Explore/Map Data/Download/Request Button Block -->
+
+                                <!-- Email/Share Button Group -->
+                                <div class="btn-group pull-right" id="datasetButtonBar" role="group">
+                                    <p:commandLink class="btn btn-default bootstrap-button-tooltip" title="#{bundle['dataset.email.datasetContactBtn']}"
+                                                   update=":contactDialog" oncomplete="PF('contactForm').show()" actionListener="#{sendFeedbackDialog.initUserInput}">
+                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
+                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
+                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
+                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{DatasetPage.dataset}"/>
+                                        <span class="glyphicon glyphicon-envelope no-text"/>
+                                    </p:commandLink>
+                                    <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip" rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}"
+                                                   title="#{bundle['dataset.share.datasetShare']}"
+                                                   oncomplete="PF('shareDialog').show();sharrre();">
+                                        <span class="glyphicon glyphicon-share no-text"/>
+                                    </p:commandLink>
+                                </div>
+                                <p:dialog id="shareDialog" header="#{bundle['dataset.share.datasetShare']}" widgetVar="shareDialog" modal="true"  rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}">
+                                    <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataset.share.datasetShare.tip']}</p>
+
+                                        <div id="sharrre-widget" data-url="#{systemConfig.dataverseSiteUrl}/dataset.xhtml?persistentId=#{FilePage.fileMetadata.datasetVersion.dataset.globalId}" data-text="#{bundle['dataset.share.datasetShare.shareText']}"></div>
+
+                                    <div class="button-block">
+                                        <button type="button" onclick="PF('shareDialog').hide()" class="btn btn-default" value="#{bundle.close}">
+                                            #{bundle.close}
+                                        </button>
+                                    </div>
+                                </p:dialog>
+                                <!-- END: Email/Share Button Group -->
+                            </div>
+
                             <!-- Metrics -->
                             <div id="metrics-block" class="pull-left" jsf:rendered="#{!DatasetPage.workingVersion.deaccessioned}">
                                 <div class="pull-left text-center" id="metrics-label">
@@ -71,93 +157,8 @@
                             </div>
                             <!-- END: Metrics -->
                             
-                            <div class="button-block pull-right">
-                                <!-- Edit Button Group -->
-                                <div class="btn-group pull-right" jsf:rendered="#{dataverseSession.user.authenticated
-                                                         and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset)}">
-                                    <button type="button" id="editFile" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                        <span class="glyphicon glyphicon-pencil"/> #{bundle['dataset.editBtn']} <span class="caret"></span>
-                                    </button>
-                                    <ul class="dropdown-menu pull-right text-left" role="menu">
-                                        <li>
-                                            <h:outputLink value="/editdatafiles.xhtml?selectedFileIds=#{FilePage.fileMetadata.dataFile.id}&#38;datasetId=#{FilePage.fileMetadata.datasetVersion.dataset.id}&#38;mode=SINGLE">
-                                                <h:outputText id="editFile-Multi-Link" value="Metadata"/>
-                                            </h:outputLink>
-                                        </li>
-                                        <li>
-                                            <ui:fragment rendered="#{!FilePage.fileMetadata.restricted}">
-                                                    <p:commandLink update="@form" actionListener="#{FilePage.restrictFile(true)}">
-                                                        <h:outputText value="#{bundle['file.restrict']}"/>
-                                                    </p:commandLink>
-                                            </ui:fragment>
-                                            <ui:fragment rendered="#{FilePage.fileMetadata.restricted}">
-                                                    <p:commandLink update="@form" actionListener="#{FilePage.restrictFile(false)}">
-                                                        <h:outputText value="#{bundle['file.unrestrict']}"/>
-                                                    </p:commandLink>
-                                            </ui:fragment>     
-                                        </li>
-                                        <ui:fragment rendered="#{FilePage.fileMetadata.dataFile.released}">                                        
-                                        <li><!-- start: replace file link -->
-                                            <h:outputLink value="/editdatafiles.xhtml?mode=SINGLE_REPLACE&#38;datasetId=#{FilePage.fileMetadata.datasetVersion.dataset.id}&#38;fid=#{FilePage.fileMetadata.dataFile.id}">
-                                                 <h:outputText value="#{bundle['file.replace']}"/>
-                                            </h:outputLink>
-                                        <!-- end replace file link --></li>
-                                        </ui:fragment>
-                                        <li>
-                                            <p:commandLink title="#{bundle['file.delete']}" onclick="PF('deleteFileConfirmation').show();">
-                                                <h:outputText value="#{bundle['file.delete']}"/>
-                                            </p:commandLink>
-                                        </li>
-                                    </ul>
-                                </div>
-                                <!-- END: Edit Button Group -->
-
-                                <div class="button-container pull-right">
-                                    <ui:include src="file-download-button-fragment.xhtml">
-                                        <ui:param name="fileMetadata" value="#{FilePage.fileMetadata}"/>
-                                        <ui:param name="canUpdateDataset" value="#{FilePage.canUpdateDataset()}"/>
-                                        <ui:param name="downloadPopupRequired" value="#{FilePage.downloadPopupRequired}"/>
-                                        <ui:param name="guestbookResponse" value="#{FilePage.guestbookResponse}"/>
-                                        <ui:param name="guestbookResponseService" value="#{FilePage.guestbookResponseService}"/>
-                                        <ui:param name="fileDownloadHelper" value="#{FilePage.fileDownloadHelper}"/>
-                                        <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
-                                        <ui:param name="worldMapPermissionHelper" value="#{FilePage.worldMapPermissionHelper}"/>
-                                        <ui:param name="twoRavensHelper" value="#{FilePage.twoRavensHelper}"/>
-                                    </ui:include>
-                                </div>
-                                
-                                <!-- Email/Share Button Group -->
-                                <div class="btn-group pull-right" role="group">
-                                    <p:commandLink class="btn btn-default bootstrap-button-tooltip" title="#{bundle['dataset.email.datasetContactBtn']}"
-                                                   update=":contactDialog" oncomplete="PF('contactForm').show()" actionListener="#{sendFeedbackDialog.initUserInput}">
-                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
-                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
-                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
-                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{DatasetPage.dataset}"/>
-                                        <span class="glyphicon glyphicon-envelope no-text"/>
-                                    </p:commandLink>
-                                    <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip"
-                                                   title="#{bundle['file.share.fileShare']}"
-                                                   oncomplete="PF('shareDialog').show();sharrre();">
-                                        <span class="glyphicon glyphicon-share no-text"/>
-                                    </p:commandLink>
-                                </div>
-                                <p:dialog id="shareDialog" header="#{bundle['file.share.fileShare']}" widgetVar="shareDialog" modal="true">
-                                    <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['file.share.fileShare.tip']}</p>
-
-                                    <div id="sharrre-widget" data-url="#{systemConfig.dataverseSiteUrl}/dataset.xhtml?persistentId=#{FilePage.fileMetadata.datasetVersion.dataset.globalId}" data-text="#{bundle['file.share.fileShare.shareText']}"></div>
-
-                                    <div class="button-block">
-                                        <button type="button" onclick="PF('shareDialog').hide()" class="btn btn-default" value="#{bundle.close}">
-                                            #{bundle.close}
-                                        </button>
-                                    </div>
-                                </p:dialog>
-                                <!-- END: Email/Share Button Group -->
-                            </div>
 
                         </div>
-                    </div>
                     <!-- END topDatasetBlock -->
                     <div id="fileImageTitle" class="row">
                         <div id="file-preview-icon-block" class="col-xs-4">

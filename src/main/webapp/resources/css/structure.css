@@ -349,7 +349,7 @@ form.btn-form {display:inline-block;}
 .button-block div.btn-group div.btn-group, 
 .button-block button.pull-right:first-child, .button-block a.btn.pull-right:first-child, .button-block div.btn-group.pull-right:first-child, 
 .button-block div.btn-group button, .button-block div.btn-group a.btn, 
-.button-block .btn:last-child, .button-block div.btn-group:last-child, 
+.button-block .btn:last-child, .button-block div.btn-group:last-child:not(.pull-right), 
 .button-block form.btn-form:last-child .btn-group, 
 .button-block span.ui-state-disabled:last-child, .button-block.pull-right .btn:last-child, 
 .button-block .btn:only-child, .button-block div.btn-group:only-child {margin-right:0;}
