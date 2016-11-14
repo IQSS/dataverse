@@ -1214,6 +1214,18 @@ public class EditDatafilesPage implements java.io.Serializable {
         // (either through drag-and-drop or select menu). 
         // Note that this is different from the behavior of <p:upload onComplete=...
         // - which is triggered when each one of the multiple upload events completes. 
+        // So when you drag-and-drop a bunch of files, you CANNOT rely on onComplete=...
+        // to notify the page when the batch finishes uploading! There IS a way 
+        // to detect ALL the current uploads completing: the p:upload widget has 
+        // the property "files", that contains the list of all the files currently 
+        // uploading; so checking on the size of the list tells you if any uploads
+        // are still in progress. Once it's zero, you know it's all done. 
+        // This is super important - because if the user is uploading 1000 files 
+        // via drag-and-drop, you don't want to re-render the entire page each 
+        // time every single of the 1000 uploads finishes!
+        // (check editFilesFragment.xhtml for the exact code handling this; and 
+        // http://stackoverflow.com/questions/20747201/when-multiple-upload-is-finished-in-pfileupload
+        // for more info). -- 4.6
         
         logger.fine("upload started");
         
@@ -1221,6 +1233,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         // only inform the user of the duplicates dropped in the current upload 
         // attempt - for ex., one batch of drag-and-dropped files, or a single 
         // file uploaded through the file chooser. 
+        
         dupeFileNamesExisting = null; 
         dupeFileNamesNew = null;
         multipleDupesExisting = false;
