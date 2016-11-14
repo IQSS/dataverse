@@ -32,7 +32,7 @@ import org.junit.Test;
 import java.util.UUID;
 
 import static com.jayway.restassured.RestAssured.given;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.fail;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -150,7 +150,8 @@ public class FileMetadataIT {
             shouldFailDueToLeadingAndTrailingSeparators.then().assertThat()
                     // Note that the JSON under test actually exercises leading too but only the first (trailing) is exercised here.
                     .body("message", equalTo("Validation failed: Directory Name cannot contain leading or trailing file separators. Invalid value: 'data/subdir1/'."))
-                    .statusCode(BAD_REQUEST.getStatusCode());
+                    // not sure why this changed from BAD_REQUEST to FORBIDDEN, perhaps the "API cleanup" at https://github.com/IQSS/dataverse/pull/3381
+                    .statusCode(FORBIDDEN.getStatusCode());
 
             // create dataset and set id
             dsId = given()

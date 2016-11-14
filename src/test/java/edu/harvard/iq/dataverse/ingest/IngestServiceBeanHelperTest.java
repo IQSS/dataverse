@@ -114,7 +114,7 @@ public class IngestServiceBeanHelperTest {
 
         dataFileList.add(datafile2);
         
-        IngestServiceBeanHelper.checkForDuplicateFileNamesFinal(datasetVersion, dataFileList);
+        IngestUtil.checkForDuplicateFileNamesFinal(datasetVersion, dataFileList);
         
         boolean file1NameAltered = false;
         boolean file2NameAltered = false;
@@ -132,7 +132,7 @@ public class IngestServiceBeanHelperTest {
         assertEquals(file2NameAltered, true);
         
         // try to add data files with "-1" duplicates and see if it gets incremented to "-2"
-        IngestServiceBeanHelper.checkForDuplicateFileNamesFinal(datasetVersion, dataFileList);
+        IngestUtil.checkForDuplicateFileNamesFinal(datasetVersion, dataFileList);
 
         for (DataFile df : dataFileList) {
             if (df.getFileMetadata().getLabel().equals("datafile1-2.txt")) {
@@ -219,7 +219,7 @@ public class IngestServiceBeanHelperTest {
 
         dataFileList.add(datafile2);
 
-        IngestServiceBeanHelper.checkForDuplicateFileNamesFinal(datasetVersion, dataFileList);
+        IngestUtil.checkForDuplicateFileNamesFinal(datasetVersion, dataFileList);
 
         boolean file1NameAltered = false;
         boolean file2NameAltered = false;
@@ -237,7 +237,7 @@ public class IngestServiceBeanHelperTest {
         assertEquals(file2NameAltered, true);
 
         // try to add data files with "-1" duplicates and see if it gets incremented to "-2"
-        IngestServiceBeanHelper.checkForDuplicateFileNamesFinal(datasetVersion, dataFileList);
+        IngestUtil.checkForDuplicateFileNamesFinal(datasetVersion, dataFileList);
 
         for (DataFile df : dataFileList) {
             if (df.getFileMetadata().getLabel().equals("datafile1-2.txt")) {
@@ -344,7 +344,7 @@ public class IngestServiceBeanHelperTest {
 
         dataFileList.add(datafile3);
 
-        IngestServiceBeanHelper.checkForDuplicateFileNamesFinal(datasetVersion, dataFileList);
+        IngestUtil.checkForDuplicateFileNamesFinal(datasetVersion, dataFileList);
 
         boolean file1NameAltered = false;
         boolean file2NameAltered = false;
@@ -371,7 +371,7 @@ public class IngestServiceBeanHelperTest {
         fmd3.setDatasetVersion(datasetVersion);
         
         // try to add data files with "-1" duplicates and see if it gets incremented to "-2"
-        IngestServiceBeanHelper.checkForDuplicateFileNamesFinal(datasetVersion, dataFileList);
+        IngestUtil.checkForDuplicateFileNamesFinal(datasetVersion, dataFileList);
 
         for (DataFile df : dataFileList) {
             if (df.getFileMetadata().getLabel().equals("datafile1-2.txt")) {
@@ -461,7 +461,7 @@ public class IngestServiceBeanHelperTest {
 
         dataFileList.add(datafile2);
 
-        IngestServiceBeanHelper.checkForDuplicateFileNamesFinal(datasetVersion, dataFileList);
+        IngestUtil.checkForDuplicateFileNamesFinal(datasetVersion, dataFileList);
         
         boolean file2NameAltered = false;
         for (DataFile df : dataFileList) {

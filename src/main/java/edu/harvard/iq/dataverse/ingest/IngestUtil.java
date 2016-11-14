@@ -37,9 +37,9 @@ import java.util.logging.Logger;
  *
  * @author bmckinney
  */
-public class IngestServiceBeanHelper {
+public class IngestUtil {
 
-    private static final Logger logger = Logger.getLogger(IngestServiceBeanHelper.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(IngestUtil.class.getCanonicalName());
 
     /**
      * Checks a list of new data files for duplicate names, renaming any
@@ -83,8 +83,8 @@ public class IngestServiceBeanHelper {
         String pathName = makePathName(directoryName, fileName);
 
         while (existingFileNames.contains(pathName)) {
-            fileName = IngestServiceBeanHelper.generateNewFileName(fileName);
-            pathName = IngestServiceBeanHelper.makePathName(directoryName, fileName);
+            fileName = IngestUtil.generateNewFileName(fileName);
+            pathName = IngestUtil.makePathName(directoryName, fileName);
         }
 
         existingFileNames.add(pathName);

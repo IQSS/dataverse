@@ -146,7 +146,7 @@ public class IngestServiceBean {
             // the user may have edited them on the "add files" page, and 
             // renamed FOOBAR-1.txt back to FOOBAR.txt...
             
-            IngestServiceBeanHelper.checkForDuplicateFileNamesFinal(version, newFiles);
+            IngestUtil.checkForDuplicateFileNamesFinal(version, newFiles);
             
             Dataset dataset = version.getDataset();
             
@@ -714,7 +714,7 @@ public class IngestServiceBean {
                     // and change the mime type to "tabular" on the final datafile, 
                     // and replace (or add) the extension ".tab" to the filename: 
                     dataFile.setContentType(FileUtil.MIME_TYPE_TAB);
-                    IngestServiceBeanHelper.modifyExistingFilename(dataFile.getOwner().getLatestVersion(), dataFile.getFileMetadata(), FileUtil.replaceExtension(fileName, "tab"));
+                    IngestUtil.modifyExistingFilename(dataFile.getOwner().getLatestVersion(), dataFile.getFileMetadata(), FileUtil.replaceExtension(fileName, "tab"));
 
                     dataFile.setDataTable(tabDataIngest.getDataTable());
                     tabDataIngest.getDataTable().setDataFile(dataFile);
