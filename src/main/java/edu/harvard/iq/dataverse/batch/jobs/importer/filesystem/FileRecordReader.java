@@ -42,13 +42,9 @@ public class FileRecordReader extends AbstractItemReader {
 
     @Inject
     JobContext jobContext;
-    
-    @Inject
-    StepContext stepContext;
 
     @Inject
-    @BatchProperty
-    String dataDir;
+    StepContext stepContext;
 
     @Inject
     @BatchProperty
@@ -95,7 +91,8 @@ public class FileRecordReader extends AbstractItemReader {
 
     @Override
     public void open(Serializable checkpoint) throws Exception {
-        directory = new File(dataDir + dataset.getAuthority() + File.separator + dataset.getIdentifier());
+        directory = new File(System.getProperty("dataverse.files.directory")
+                + File.separator + dataset.getAuthority() + File.separator + dataset.getIdentifier());
         if (isValidDirectory()) {
             files = getFiles(directory);
             iterator = files.listIterator();
@@ -133,7 +130,7 @@ public class FileRecordReader extends AbstractItemReader {
         }
         return null;
     }
-    
+
     /**
      * Get the list of files in the directory, minus any in the skip list.
      * @param directory
@@ -182,5 +179,5 @@ public class FileRecordReader extends AbstractItemReader {
         }
         return true;
     }
-    
+
 }

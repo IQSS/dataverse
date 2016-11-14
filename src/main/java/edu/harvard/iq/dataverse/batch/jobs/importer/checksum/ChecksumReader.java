@@ -43,10 +43,6 @@ public class ChecksumReader extends AbstractItemReader {
 
     @Inject
     @BatchProperty
-    String dataDir;
-
-    @Inject
-    @BatchProperty
     String checksumManifest;
 
     @Inject
@@ -90,7 +86,8 @@ public class ChecksumReader extends AbstractItemReader {
     @Override
     public void open(Serializable checkpoint) throws Exception {
 
-        directory = new File(dataDir + dataset.getAuthority() + "/" + dataset.getIdentifier());
+        directory = new File(System.getProperty("dataverse.files.directory")
+                + File.separator + dataset.getAuthority() + File.separator + dataset.getIdentifier());
 
         if (preflight()) {
             StreamFactory factory = StreamFactory.newInstance();
