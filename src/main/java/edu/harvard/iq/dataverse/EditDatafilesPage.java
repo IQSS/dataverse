@@ -183,8 +183,13 @@ public class EditDatafilesPage implements java.io.Serializable {
         return false;
     }
     
+    /*
+        The number of files the GUI user is allowed to upload in one batch, 
+        via drag-and-drop, or through the file select dialog. Now configurable 
+        in the Settings table. 
+    */
     public Integer getMaxNumberOfFiles() {
-        return systemConfig.getZipUploadFilesLimit();
+        return systemConfig.getMultipleUploadFilesLimit();
     }
     /**
      * Check Dataset related permissions
