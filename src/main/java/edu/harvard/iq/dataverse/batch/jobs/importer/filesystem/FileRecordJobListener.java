@@ -70,7 +70,7 @@ public class FileRecordJobListener implements StepListener, JobListener {
 
     @EJB
     DataFileServiceBean dataFileServiceBean;
-
+    
     @Override
     public void afterStep() throws Exception {
         // no-op
@@ -160,6 +160,11 @@ public class FileRecordJobListener implements StepListener, JobListener {
                 LoggingUtil.saveJsonLog(jobJson, logDir, jobId);
                 // [2] send user notifications
                 notificationServiceBean.sendNotification(user, timestamp, notifyType, datasetVersionId);
+                // also send admin notification
+                AuthenticatedUser adminUser = authenticationServiceBean.getAdminUser();
+                if (adminUser != null) {
+                    notificationServiceBean.sendNotification(adminUser, timestamp, notifyType, datasetVersionId);
+                }
                 // [3] action log it
                 // truncate the log message or risk: 
                 // Internal Exception: org.postgresql.util.PSQLException: ERROR: value too long for type character varying(1024)

@@ -617,6 +617,18 @@ public class BuiltinUserPage implements java.io.Serializable {
 
                 case CREATEACC:
                     userNotification.setTheObject(userNotification.getUser());
+                    
+                case CHECKSUMFAIL:
+                    userNotification.setTheObject(datasetService.find(userNotification.getObjectId()));
+                    break;
+
+                case FILESYSTEMIMPORT:
+                    userNotification.setTheObject(datasetVersionService.find(userNotification.getObjectId()));
+                    break;
+
+                case CHECKSUMIMPORT:
+                    userNotification.setTheObject(datasetVersionService.find(userNotification.getObjectId()));
+                    break;            
             }
 
             userNotification.setDisplayAsRead(userNotification.isReadNotification());
