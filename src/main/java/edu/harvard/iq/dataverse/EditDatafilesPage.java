@@ -110,12 +110,13 @@ public class EditDatafilesPage implements java.io.Serializable {
     private String selectedFileIdsString = null; 
     private FileEditMode mode = FileEditMode.EDIT; 
     private List<Long> selectedFileIdsList = new ArrayList<>(); 
-    private List<FileMetadata> fileMetadatas = new ArrayList<>();
+    private List<FileMetadata> fileMetadatas = new ArrayList<>();;
 
     
     private Long ownerId;
     private Long versionId;
-    private List<DataFile> newFiles = new ArrayList();
+    private List<DataFile> newFiles = new ArrayList<>();;
+    private List<DataFile> uploadedFiles = new ArrayList<>();; 
     private DatasetVersion workingVersion;
     private String dropBoxSelection = "";
     private String displayCitation;
@@ -130,6 +131,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     private final Map<String, Boolean> datasetPermissionMap = new HashMap<>(); // { Permission human_name : Boolean }
 
     private Long maxFileUploadSizeInBytes = null;
+    private Integer multipleUploadFilesLimit = null; 
 
     public String getSelectedFileIds() {
         return selectedFileIdsString;
@@ -189,7 +191,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         in the Settings table. 
     */
     public Integer getMaxNumberOfFiles() {
-        return systemConfig.getMultipleUploadFilesLimit();
+        return this.multipleUploadFilesLimit;
     }
     /**
      * Check Dataset related permissions
@@ -312,10 +314,14 @@ public class EditDatafilesPage implements java.io.Serializable {
             return permissionsWrapper.notFound();
         }
         
+        this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSize();
+        this.multipleUploadFilesLimit = systemConfig.getMultipleUploadFilesLimit();
+        
         workingVersion = version; 
         dataset = version.getDataset();
         mode = FileEditMode.CREATE;
         newFiles = newFilesList;
+        uploadedFiles = new ArrayList();
         selectedFiles = selectedFileMetadatasList;
         
         logger.fine("done");
@@ -326,14 +332,13 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
     
     public String init() {
-        //String nonNullDefaultIfKeyNotFound = "";
-        this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSize();
+        fileMetadatas = new ArrayList<>();
         
-        /*
-        protocol = settingsService.getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
-        authority = settingsService.getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
-        separator = settingsService.getValueForKey(SettingsServiceBean.Key.DoiSeparator, nonNullDefaultIfKeyNotFound);
-        */
+        newFiles = new ArrayList();
+        uploadedFiles = new ArrayList(); 
+        
+        this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSize();
+        this.multipleUploadFilesLimit = systemConfig.getMultipleUploadFilesLimit();
         
         if (dataset.getId() != null){
             // Set Working Version and Dataset by Datasaet Id and Version
@@ -1060,14 +1065,13 @@ public class EditDatafilesPage implements java.io.Serializable {
         return new HttpClient();
     }
 
-    public boolean showFileUploadFileComponent(){
+    public boolean showFileUploadFileComponent() {
         
         if (mode == FileEditMode.UPLOAD || mode == FileEditMode.CREATE) {
            return true;
         }
         return false;
     }
-    
     
 
     /**
@@ -1234,6 +1238,45 @@ public class EditDatafilesPage implements java.io.Serializable {
         
         logger.fine("upload started");
         
+        /*uploadedFiles = new ArrayList(); 
+
+        
+        // We clear the following duplicate warning labels, because we want to 
+        // only inform the user of the duplicates dropped in the current upload 
+        // attempt - for ex., one batch of drag-and-dropped files, or a single 
+        // file uploaded through the file chooser. 
+        
+        dupeFileNamesExisting = null; 
+        dupeFileNamesNew = null;
+        multipleDupesExisting = false;
+        multipleDupesNew = false;*/
+        uploadInProgress = true;
+        /*uploadWarningMessage = null; */
+        
+    }
+    
+    public void uploadFinished() {
+        logger.fine("upload finished");
+
+        // Add the file(s) added during this last upload event, single or multiple, 
+        // to the full list of new files, and the list of filemetadatas 
+        // used to render the page:
+        
+        ingestService.addFilesToDataset(workingVersion, uploadedFiles);
+        
+        for (DataFile dataFile : uploadedFiles) {
+            fileMetadatas.add(dataFile.getFileMetadata());
+            newFiles.add(dataFile);
+        }
+
+        uploadedFiles = new ArrayList<>();
+        uploadInProgress = false;
+
+        // refresh the warning message below the upload component, if exists:
+        if (uploadWarningMessage != null && uploadComponentId != null) {
+            FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload warning", uploadWarningMessage));
+        }
+        
         // We clear the following duplicate warning labels, because we want to 
         // only inform the user of the duplicates dropped in the current upload 
         // attempt - for ex., one batch of drag-and-dropped files, or a single 
@@ -1243,49 +1286,14 @@ public class EditDatafilesPage implements java.io.Serializable {
         dupeFileNamesNew = null;
         multipleDupesExisting = false;
         multipleDupesNew = false; 
-        uploadInProgress = true;
         uploadWarningMessage = null; 
-        
-    }
-    
-    public void uploadFinished() {
-        logger.fine("upload finished");
-        uploadInProgress = false; 
-        
-        // Add the file(s) added during this last upload event, single or multiple, 
-        // to the list of filemetadatas used to render the page:
-        
-        String lastNewStorageId = null; 
-        
-        if (fileMetadatas.size() > 0) {
-            lastNewStorageId = fileMetadatas.get(fileMetadatas.size() - 1).getDataFile().getStorageIdentifier();
-        }
-        
-        int i = 0;
-        for (DataFile dataFile : newFiles) {
-            if (lastNewStorageId == null) {
-                fileMetadatas.add(dataFile.getFileMetadata());
-                i++;
-            } else if (lastNewStorageId.equals(dataFile.getStorageIdentifier())) {
-                // we've reached the last file on the new files list already on the 
-                // filemetadatas list.
-                lastNewStorageId = null;
-            }
-        }
-        
-        // refresh the warning message below the upload component, if exists:
-        
-        if (uploadWarningMessage != null && uploadComponentId != null) {
-            FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload warning", uploadWarningMessage));
-        }
-        
+
     }
     
     private String uploadWarningMessage = null; 
     private String uploadComponentId = null; 
     
     public void handleFileUpload(FileUploadEvent event) {
-        //notneeded uploadComponentId = event.getComponent().getClientId();
         UploadedFile uFile = event.getFile();
         List<DataFile> dFileList = null;
         
@@ -1293,7 +1301,6 @@ public class EditDatafilesPage implements java.io.Serializable {
             // Note: A single uploaded file may produce multiple datafiles - 
             // for example, multiple files can be extracted from an uncompressed
             // zip file. 
-            //dFileList = ingestService.createDataFiles(workingVersion, uFile.getInputstream(), uFile.getFileName(), uFile.getContentType());
             dFileList = FileUtil.createDataFiles(workingVersion, uFile.getInputstream(), uFile.getFileName(), uFile.getContentType(), systemConfig);
             
         } catch (IOException ioex) {
@@ -1302,16 +1309,18 @@ public class EditDatafilesPage implements java.io.Serializable {
         }
 
         // -----------------------------------------------------------
-        // Check if there are duplicate files or ingest warnings
+        // These raw datafiles are then post-processed, in order to drop any files 
+        // already in the dataset/already uploaded, and to correct duplicate file names, etc. 
         // -----------------------------------------------------------
         String warningMessage = processUploadedFileList(dFileList);
         
         if (warningMessage != null){
             uploadWarningMessage = warningMessage;
-            FacesContext.getCurrentInstance().addMessage(event.getComponent().getClientId(), new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload failure", warningMessage));
+            FacesContext.getCurrentInstance().addMessage(event.getComponent().getClientId(), new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload warning", warningMessage));
+            // save the component id of the p:upload widget, so that we could 
+            // send an info message there, from elsewhere in the code:
             uploadComponentId = event.getComponent().getClientId();
         }
-        
     }
 
     /**
@@ -1319,8 +1328,6 @@ public class EditDatafilesPage implements java.io.Serializable {
      *  check the list of DataFile objects
      * @param dFileList 
      */
-    //private String duplicateFileNames = null;
-    //private boolean multipleDupes = false;
     
     private String dupeFileNamesExisting = null; 
     private String dupeFileNamesNew = null;
@@ -1334,7 +1341,6 @@ public class EditDatafilesPage implements java.io.Serializable {
         }
 
         DataFile dataFile;
-        boolean multipleFiles = dFileList.size() > 1;
         String warningMessage = null;
 
         // -----------------------------------------------------------
@@ -1383,10 +1389,13 @@ public class EditDatafilesPage implements java.io.Serializable {
                 // But let's check if its filename is a duplicate of another 
                 // file already uploaded, or already in the dataset:
                 dataFile.getFileMetadata().setLabel(duplicateFilenameCheck(dataFile.getFileMetadata()));
-                newFiles.add(dataFile);
+                uploadedFiles.add(dataFile);
+                // We are NOT adding the fileMetadata to the list that is being used
+                // to render the page; we'll do that once we know that all the individual uploads
+                // in this batch (as in, a bunch of drag-and-dropped files) have finished. 
                 //fileMetadatas.add(dataFile.getFileMetadata());
             }
-            
+
             /*
              preserved old, pre 4.6 code - mainly as an illustration of how we used to do this. 
             
@@ -1433,11 +1442,8 @@ public class EditDatafilesPage implements java.io.Serializable {
             String duplicateFilesErrorMessage = null;
             if (multipleDupesExisting) {
                 duplicateFilesErrorMessage = "The following files already exist in the dataset: " + dupeFileNamesExisting + " (skipping)";
-                //duplicateFilesErrorMessage = "The following files are duplicates of an already uploaded file: " + duplicateFileNames + " (skipping)";
-            } else if (multipleFiles) {
-                duplicateFilesErrorMessage = "The following file already exists in the dataset: " + dupeFileNamesExisting;
             } else {
-                duplicateFilesErrorMessage = "File already exists in this dataset (skipped)";
+                duplicateFilesErrorMessage = "The following file already exists in the dataset: " + dupeFileNamesExisting;
             }
             if (warningMessage == null) {
                 warningMessage = duplicateFilesErrorMessage;
@@ -1450,26 +1456,25 @@ public class EditDatafilesPage implements java.io.Serializable {
             String duplicateFilesErrorMessage = null;
             if (multipleDupesNew) {
                 duplicateFilesErrorMessage = "The following files are duplicates of (an) already uploaded file(s): " + dupeFileNamesNew + " (skipping)";
-            } else if (multipleFiles) {
-                duplicateFilesErrorMessage = "The following file is a duplicate of an already uploaded file: " + dupeFileNamesNew + " (skipping)";
             } else {
-                duplicateFilesErrorMessage = "File is a duplicate of an already uploaded file (skipped)";
+                duplicateFilesErrorMessage = "The following file is a duplicate of an already uploaded file: " + dupeFileNamesNew + " (skipping)";
             }
+
             if (warningMessage == null) {
                 warningMessage = duplicateFilesErrorMessage;
             } else {
                 warningMessage = warningMessage.concat("; " + duplicateFilesErrorMessage);
             }
         }
-        
+
         if (warningMessage != null) {
             logger.severe(warningMessage);
-            return warningMessage;     // there's an issue return error message
-        } else {
-            return null;    // looks good, return null
+            return warningMessage;
         }
+
+        return null;
     }
-   
+
     private Set<String> fileLabelsExisting = null; 
     
     private String duplicateFilenameCheck(FileMetadata fileMetadata) {
@@ -1490,10 +1495,12 @@ public class EditDatafilesPage implements java.io.Serializable {
 
         while (fmIt.hasNext()) {
             FileMetadata fm = fmIt.next();
-            String chksum = fm.getDataFile().getChecksumValue();
-            if (chksum != null) {
-                checksumMapOld.put(chksum, 1);
+            if (fm.getId() != null && fm.getDataFile() != null) {
+                String chksum = fm.getDataFile().getChecksumValue();
+                if (chksum != null) {
+                    checksumMapOld.put(chksum, 1);
 
+                }
             }
         }
 

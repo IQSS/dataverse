@@ -64,7 +64,6 @@
                                   fileUploadListener="#{EditDatafilesPage.handleFileUpload}" process="filesTable" update="" label="#{bundle['file.selectToAddBtn']}"
                                   oncomplete="javascript:dataset_fileupload_rebind();uploadWidgetDropMsg();uploadFinished(PF('fileUploadWidget'));" onstart="javascript:uploadWidgetDropRemoveMsg();uploadStarted();"
                                   sizeLimit="#{EditDatafilesPage.getMaxFileUploadSizeInBytes()}" fileLimit="#{EditDatafilesPage.getMaxNumberOfFiles()}" invalidSizeMessage="File exceeds our limits. Please contact support. " sequential="true"/>
-                    <!-- oncomplete="javascript:dataset_fileupload_rebind();uploadWidgetDropMsg();" onstart="javascript:uploadWidgetDropRemoveMsg();uploadStarted();" -->
                     <!-- Dropbox Upload -->
                     <div id="dropboxUploadBlock" class="panel panel-default margin-bottom" jsf:rendered="#{!empty EditDatafilesPage.dropBoxKey}">
                         <div class="panel-body">
@@ -84,7 +83,7 @@
                 <!-- Files Table -->
                 <!-- _{dataverseSession.user.authenticated and ( ? permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset) : permissionsWrapper.canIssueUpdateDatasetCommand(EditDatafilesPage.dataset))}" -->
 
-                <p:dataTable id="filesTable" value="#{datasetPage ? DatasetPage.workingVersion.fileMetadatas : EditDatafilesPage.fileMetadatas}"
+                <p:dataTable id="filesTable" value="#{EditDatafilesPage.fileMetadatas}"
                              rendered="#{datasetPage or (dataverseSession.user.authenticated and permissionsWrapper.canIssueUpdateDatasetCommand(EditDatafilesPage.dataset))}"
                              rowIndexVar="rowNum" rowKey="#{fileMetadata.dataFile.storageIdentifier}"
                              selection="#{EditDatafilesPage.selectedFiles}" var="fileMetadata" widgetVar="filesTable"

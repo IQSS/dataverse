@@ -136,9 +136,35 @@ public class IngestServiceBean {
     private static String dateTimeFormat_ymdhmsS = "yyyy-MM-dd HH:mm:ss.SSS";
     private static String dateFormat_ymd = "yyyy-MM-dd";
     
-    // addFiles() takes a list of new DataFiles and attaches them to the parent 
+    // addFilesToDataset() takes a list of new DataFiles and attaches them to the parent 
     // Dataset (the files are attached to the dataset, and the fileMetadatas to the
     // supplied version). 
+    public void addFilesToDataset(DatasetVersion version, List<DataFile> newFiles) {
+        if (newFiles != null && newFiles.size() > 0) {
+
+            Dataset dataset = version.getDataset();
+
+            for (DataFile dataFile : newFiles) {
+
+                // These are all brand new files, so they should all have 
+                // one filemetadata total. -- L.A. 
+                FileMetadata fileMetadata = dataFile.getFileMetadatas().get(0);
+                String fileName = fileMetadata.getLabel();
+
+                // Attach the file to the dataset and to the version: 
+                dataFile.setOwner(dataset);
+
+                version.getFileMetadatas().add(dataFile.getFileMetadata());
+                dataFile.getFileMetadata().setDatasetVersion(version);
+                dataset.getFiles().add(dataFile);
+            }
+        }
+    }
+    
+    // This method tries to permanently store the files on the filesystem. 
+    // It should be called before we attempt to permanently save the files in 
+    // the database by calling the Save command on the dataset and/or version. 
+    // TODO: rename the method finalizeFiles()? or something like that?
     public void addFiles (DatasetVersion version, List<DataFile> newFiles) {
         if (newFiles != null && newFiles.size() > 0) {
             // final check for duplicate file names; 
@@ -173,23 +199,23 @@ public class IngestServiceBean {
                 for (DataFile dataFile : newFiles) {
                     String tempFileLocation = FileUtil.getFilesTempDirectory() + "/" + dataFile.getStorageIdentifier();
 
+                    // These are all brand new files, so they should all have 
+                    // one filemetadata total. -- L.A. 
                     FileMetadata fileMetadata = dataFile.getFileMetadatas().get(0);
                     String fileName = fileMetadata.getLabel();
                     
                     // temp dbug line
                     System.out.println("ADDING FILE: " + fileName + "; for dataset: " + dataset.getGlobalId());                    
                     
-                    // These are all brand new files, so they should all have 
-                    // one filemetadata total. -- L.A. 
+                    // Make sure the file is attached to the dataset and to the version, if this 
+                    // hasn't been done yet:
+                    if (dataFile.getOwner() == null) {
+                        dataFile.setOwner(dataset);
                     
-                    // Attach the file to the dataset and to the version: 
-                    dataFile.setOwner(dataset);
-                    //if (version.getFileMetadatas() == null) { // should never be null - ?
-                    //    version.setFileMetadatas(new ArrayList());
-                    //}
-                    version.getFileMetadatas().add(dataFile.getFileMetadata());
-                    dataFile.getFileMetadata().setDatasetVersion(version);
-                    dataset.getFiles().add(dataFile);
+                        version.getFileMetadatas().add(dataFile.getFileMetadata());
+                        dataFile.getFileMetadata().setDatasetVersion(version);
+                        dataset.getFiles().add(dataFile);
+                    }
                     
                     boolean metadataExtracted = false;
                     
