@@ -79,7 +79,7 @@ public class FileDownloadHelper implements java.io.Serializable {
         //----------------------------------------------------------------------
         
        if (fileMetadata.getDatasetVersion().isDeaccessioned()) {
-           if (this.doesSessionUserHaveDataSetPermission(Permission.EditDataset, fileMetadata)) {
+           if (this.doesSessionUserHavePermission(Permission.EditDataset, fileMetadata)) {
                // Yes, save answer and return true
                this.fileDownloadPermissionMap.put(fid, true);
                return true;
@@ -127,7 +127,7 @@ public class FileDownloadHelper implements java.io.Serializable {
         // --------------------------------------------------------------------
         
 
-        if (this.doesSessionUserHaveDataSetPermission(Permission.DownloadFile, fileMetadata)){
+        if (this.doesSessionUserHavePermission(Permission.DownloadFile, fileMetadata)){
             // Yes, save answer and return true
             this.fileDownloadPermissionMap.put(fid, true);
             return true;
@@ -152,10 +152,24 @@ public class FileDownloadHelper implements java.io.Serializable {
         return false;
     }
    
-    public boolean doesSessionUserHaveDataSetPermission(Permission permissionToCheck, FileMetadata fileMetadata){
+    public boolean doesSessionUserHavePermission(Permission permissionToCheck, FileMetadata fileMetadata){
         if (permissionToCheck == null){
             return false;
         }
+        
+        DvObject objectToCheck = null;
+        
+        if (permissionToCheck.equals(Permission.EditDataset)){
+            objectToCheck = fileMetadata.getDatasetVersion().getDataset();
+        } else if (permissionToCheck.equals(Permission.DownloadFile)){
+            objectToCheck = fileMetadata.getDataFile();
+        }
+        
+        if (objectToCheck == null){
+            return false;
+        }
+        
+        
                
         String permName = permissionToCheck.getHumanName();
        
@@ -168,7 +182,7 @@ public class FileDownloadHelper implements java.io.Serializable {
         
         // Check the permission
         //
-        boolean hasPermission = this.permissionService.userOn(this.session.getUser(), fileMetadata.getDatasetVersion().getDataset()).has(permissionToCheck);
+        boolean hasPermission = this.permissionService.userOn(this.session.getUser(), objectToCheck).has(permissionToCheck);
 
         // Save the permission
         this.datasetPermissionMap.put(permName, hasPermission);

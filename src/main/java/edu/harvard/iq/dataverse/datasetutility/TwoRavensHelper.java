@@ -122,7 +122,7 @@ public class TwoRavensHelper implements java.io.Serializable {
         //----------------------------------------------------------------------
         
        if (fm.getDatasetVersion().isDeaccessioned()) {
-           if (this.doesSessionUserHaveDataSetPermission( Permission.EditDataset, fm)) {
+           if (this.doesSessionUserHavePermission( Permission.EditDataset, fm)) {
                // Yes, save answer and return true
                this.fileMetadataTwoRavensExploreMap.put(fm.getId(), true);
                return true;
@@ -171,7 +171,7 @@ public class TwoRavensHelper implements java.io.Serializable {
         // --------------------------------------------------------------------
         
 
-        if (isRestrictedFile && !this.doesSessionUserHaveDataSetPermission(Permission.DownloadFile, fm)){
+        if (isRestrictedFile && !this.doesSessionUserHavePermission(Permission.DownloadFile, fm)){
             // Yes, save answer and return true
             this.fileMetadataTwoRavensExploreMap.put(fm.getId(), false);
             return false;
@@ -286,15 +286,27 @@ public class TwoRavensHelper implements java.io.Serializable {
 
     }
     
-    public boolean doesSessionUserHaveDataSetPermission(Permission permissionToCheck, FileMetadata fileMetadata){
+    public boolean doesSessionUserHavePermission(Permission permissionToCheck, FileMetadata fileMetadata){
         if (permissionToCheck == null){
+            return false;
+        }
+        
+        DvObject objectToCheck = null;
+        
+        if (permissionToCheck.equals(Permission.EditDataset)){
+            objectToCheck = fileMetadata.getDatasetVersion().getDataset();
+        } else if (permissionToCheck.equals(Permission.DownloadFile)){
+            objectToCheck = fileMetadata.getDataFile();
+        }
+        
+        if (objectToCheck == null){
             return false;
         }
               
         
         // Check the permission
         //
-        boolean hasPermission = this.permissionService.userOn(this.session.getUser(), fileMetadata.getDatasetVersion().getDataset()).has(permissionToCheck);
+        boolean hasPermission = this.permissionService.userOn(this.session.getUser(), objectToCheck).has(permissionToCheck);
 
         
         // return true/false
