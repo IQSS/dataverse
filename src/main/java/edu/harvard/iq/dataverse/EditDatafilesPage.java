@@ -988,7 +988,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             // the individual File Landing page, we want to redirect back to 
             // the landing page. BUT ONLY if the file still exists - i.e., if 
             // the user hasn't just deleted it!
-            return returnToFileLandingPage(fileMetadatas.get(0).getDataFile().getId());
+            return returnToFileLandingPage();
         }
         
         //if (newDraftVersion) {
@@ -1009,20 +1009,23 @@ public class EditDatafilesPage implements java.io.Serializable {
          return "/dataset.xhtml?persistentId=" + dataset.getGlobalId() + "&version=DRAFT&faces-redirect=true";    
     }
     
-    private String returnToDraftVersionById() {
-          return "/dataset.xhtml?versionId=" + workingVersion.getId() + "&faces-redirect=true";
-    }
-    
     private String returnToDatasetOnly(){
          dataset = datasetService.find(dataset.getId());
          return "/dataset.xhtml?persistentId=" + dataset.getGlobalId()  +  "&faces-redirect=true";       
     }
     
-    private String returnToFileLandingPage(Long fileId) {
-        return "/file.xhtml?fileId=" + fileId  + "&version=DRAFT&faces-redirect=true";
+    private String returnToFileLandingPage() {
+        
+        Long fileId = fileMetadatas.get(0).getDataFile().getId();       
+
+        return  "/file.xhtml?fileId=" + fileId  +  "&faces-redirect=true";
+
     }
     
     public String cancel() {
+        if (mode == FileEditMode.SINGLE){
+            return returnToFileLandingPage();
+        }
         if (workingVersion.getId() != null) {
             return returnToDraftVersion();
         }
