@@ -121,8 +121,14 @@ public class FilePage implements java.io.Serializable {
            // If this DatasetVersion is unpublished and permission is doesn't have permissions:
            //  > Go to the Login page
            //
-            // Check permisisons           
-            if (!(fileMetadata.getDatasetVersion().isReleased()) && !this.canViewUnpublishedDataset()) {
+            // Check permisisons       
+
+            
+            Boolean authorized = (fileMetadata.getDatasetVersion().isReleased()) ||
+                    (!fileMetadata.getDatasetVersion().isReleased() && this.canViewUnpublishedDataset()) 
+                    || fileMetadata.getDatasetVersion().isDeaccessioned();
+            
+            if (!authorized ) {
                 return permissionsWrapper.notAuthorized();
             }         
            

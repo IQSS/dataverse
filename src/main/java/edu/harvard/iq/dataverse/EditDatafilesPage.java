@@ -1036,13 +1036,13 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
     
     public String cancel() {
-        if (mode == FileEditMode.SINGLE){
-             return returnToFileLandingPage();
+        if (mode == FileEditMode.SINGLE) {
+            return returnToFileLandingPage();
         }
         if (workingVersion.getId() != null) {
             return returnToDraftVersion();
         }
-        return  returnToDatasetOnly();
+        return returnToDatasetOnly();
     }
 
     public boolean isDuplicate(FileMetadata fileMetadata) {
