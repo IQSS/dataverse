@@ -173,11 +173,12 @@ public class SwiftAccessIO extends DataFileIO {
         try {
             inputFile = fileSystemPath.toFile();
             
+            //@author Anuj Thakur 
             swiftFileObject.uploadObject(inputFile);
             
             //After the files object is uploaded the identifier is changed.
-            this.getDataFile().setStorageIdentifier(swiftFileObject.getPublicURL());
-                
+            this.getDataFile().setStorageIdentifier(swiftFileObject.getURL());
+                 
             newFileSize = inputFile.length();
 
         } catch (Exception ioex) {
@@ -315,7 +316,7 @@ public class SwiftAccessIO extends DataFileIO {
         if (storageIdentifier.startsWith(DataAccess.DEFAULT_SWIFT_ENDPOINT_START_CHARACTERS)) {
             dataContainer = account.getContainer(swiftContainer); 
         } else {
-            dataContainer = account.getContainer(swiftEndPoint + "" +swiftContainer);
+            dataContainer = account.getContainer(swiftEndPoint);
         }
         
         if (!dataContainer.exists()) {

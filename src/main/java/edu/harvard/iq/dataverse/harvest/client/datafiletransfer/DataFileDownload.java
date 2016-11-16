@@ -11,6 +11,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -19,7 +22,7 @@ import java.util.logging.Logger;
  * @author Anuj Thakur
  * @version 4.5 
  */
-public class DataFileDownload extends Thread {
+public class DataFileDownload {
     
     private static final Logger logger = Logger.getLogger("edu.harvard.iq."
             + "dataverse.harvest.client.datafiletransfer.DataFileDownload");
@@ -66,6 +69,11 @@ public class DataFileDownload extends Thread {
             MalformedURLException, FileNotFoundException, IOException {
         BufferedInputStream in = null;
         FileOutputStream fout = null;
+        //logger.log(Level.INFO, "Downloading file: "+fileURL);
+        /*Path p = Paths.get(fileAbsolutePath.substring(0, fileAbsolutePath.lastIndexOf("/")));
+        if(!Files.exists(p)) {
+            Files.createDirectories(p);
+        }*/
         try {
             //logger.log( Level.INFO , "Downloading file at URL: "+fileURL);
             in = new BufferedInputStream(new URL(fileURL).openStream());

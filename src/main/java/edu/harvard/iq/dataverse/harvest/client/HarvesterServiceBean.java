@@ -57,8 +57,11 @@ import edu.harvard.iq.dataverse.harvest.client.datafiletransfer.DataFileDownload
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.LinkedList;
+import java.util.concurrent.Semaphore;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceContextType;
 
 /**
  *
@@ -92,6 +95,8 @@ public class HarvesterServiceBean {
     private static final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
     private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
     
+    private static final int MAX_AVAILABLE = 10;
+    private final Semaphore available = new Semaphore(MAX_AVAILABLE, true);
     public static final String HARVEST_RESULT_SUCCESS="success";
     public static final String HARVEST_RESULT_FAILED="failed";
     private static final Long  INDEXING_CONTENT_BATCH_SIZE = 10000000L;
@@ -147,6 +152,8 @@ public class HarvesterServiceBean {
      * @throws IOException
      */
     public void doHarvest(DataverseRequest dataverseRequest, Long harvestingClientId) throws IOException {
+       
+        double metadataHarvestingStart = System.currentTimeMillis();
         HarvestingClient harvestingClientConfig = harvestingClientService.find(harvestingClientId);
         
         if (harvestingClientConfig == null) {
@@ -209,15 +216,33 @@ public class HarvesterServiceBean {
                 * After completion of this process the Harvesting is marked successful.
                 *
                 */
+                
+                //Checking time
+               double metadataHarvestingStop = System.currentTimeMillis();
+               double datafileHarvestingStart = System.currentTimeMillis();
+               //This above section should be removed.
+                       
                String dirName = "/tmp";
                
                hdLogger.log(Level.INFO, "Downloading data files to Swift");
                
-                for (Long datasetId : harvestedDatasetIds) {
+               
+               LinkedList<Object> cacheDataFileList = new LinkedList<Object>();
+               
+               for (Long datasetId : harvestedDatasetIds) {
                     Dataset harvestedDataset = datasetService.find(datasetId);
 
                     for (DataFile harvestedFile : harvestedDataset.getFiles()) {
-
+                        
+                        
+                        //hdLogger.log(Level.INFO, "Before: "+harvestedFile.getStorageIdentifier());
+                        cacheDataFileList.add(new CacheDataFile(harvestedDataset, harvestedFile, fileService, available));
+                        ((CacheDataFile)cacheDataFileList.getLast()).start();
+                        //hdLogger.log(Level.INFO, "After: "+harvestedFile.getStorageIdentifier());
+                        //em.merge(harvestedFile);
+                        //hdLogger.log(Level.INFO, available.getQueueLength() + " " +available.availablePermits());
+                        
+                        /*
                         String fileUrl = harvestedFile.getStorageIdentifier();
                         String fileName = harvestedFile.getFileMetadata().getLabel();
 
@@ -235,7 +260,7 @@ public class HarvesterServiceBean {
                                 /* Note that "createDirectories()" must be used - not 
                                  * "createDirectory()", to make sure all the parent 
                                  * directories that may not yet exist are created as well. 
-                                 */
+                                 */ /*
                                 Files.createDirectories(harvestedDataset.getFileSystemDirectory());
                             }
                         } catch (IOException dirEx) {
@@ -255,13 +280,25 @@ public class HarvesterServiceBean {
                         em.merge(harvestedFile);
                         
                         // Deleting the Data File from the /tmp directory.
-                        if(harvestedFile.getStorageIdentifier().startsWith(DataAccess.DEFAULT_SWIFT_ENDPOINT_START_CHARACTERS))
-                        Files.delete(tempFilePath);
+                        //if(harvestedFile.getStorageIdentifier().startsWith(DataAccess.DEFAULT_SWIFT_ENDPOINT_START_CHARACTERS))
+                        //Files.delete(tempFilePath);
                   
-
+                        */
                     }
                 }
-           
+               
+               for(Object cachedDatafile : cacheDataFileList) {
+                    ((CacheDataFile)cachedDatafile).join();
+               }
+               
+               for(Object cachedDatafile : cacheDataFileList) {
+                   //hdLogger.log(Level.INFO, "After: "+((CacheDataFile)cachedDatafile).harvestedFile.getStorageIdentifier());
+                   em.merge(((CacheDataFile)cachedDatafile).harvestedFile);
+                }
+               double datafileHarvestingStop = System.currentTimeMillis();
+               
+               hdLogger.log(Level.INFO,"Time for metadata harvesting: "+(metadataHarvestingStop - metadataHarvestingStart)/60000);
+               hdLogger.log(Level.INFO,"Time for metadata harvesting: "+(datafileHarvestingStop - datafileHarvestingStart)/60000);        
                harvestingClientService.setHarvestSuccess(harvestingClientId, new Date(), harvestedDatasetIds.size(), failedIdentifiers.size(), deletedIdentifiers.size());
                hdLogger.log(Level.INFO, "COMPLETED HARVEST, server=" + harvestingClientConfig.getArchiveUrl() + ", metadataPrefix=" + harvestingClientConfig.getMetadataPrefix());
                hdLogger.log(Level.INFO, "Datasets created/updated: " + harvestedDatasetIds.size() + ", datasets deleted: " + deletedIdentifiers.size() + ", datasets failed: " + failedIdentifiers.size());
