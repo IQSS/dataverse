@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.batch.jobs.importer.ImportMode;
 
 import javax.annotation.PostConstruct;
 import javax.batch.api.chunk.ItemProcessor;
@@ -52,7 +53,7 @@ public class FileRecordProcessor implements ItemProcessor {
 
     Dataset dataset;
     AuthenticatedUser user;
-    String mode = "MERGE";
+    String mode = ImportMode.MERGE.name();
     
     @PostConstruct
     public void init() {

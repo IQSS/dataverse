@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.batch.entities.JobExecutionEntity;
+import edu.harvard.iq.dataverse.batch.jobs.importer.ImportMode;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import org.apache.commons.lang.StringUtils;
 
@@ -99,7 +100,7 @@ public class FileRecordJobListener implements StepListener, JobListener {
 
         // if mode = UPDATE or REPLACE, remove all filemetadata from the dataset version and start fresh
         // if mode = MERGE (default), do nothing since only new files will be added
-        if (mode.equalsIgnoreCase("UPDATE") || mode.equalsIgnoreCase("REPLACE")) {
+        if (mode.equalsIgnoreCase(ImportMode.UPDATE.name()) || mode.equalsIgnoreCase(ImportMode.REPLACE.name())) {
             try {
                 List <FileMetadata> fileMetadataList = workingVersion.getFileMetadatas();
                 for (FileMetadata fmd : fileMetadataList) {
@@ -229,7 +230,7 @@ public class FileRecordJobListener implements StepListener, JobListener {
         if (jobParams.containsKey("mode")) {
             mode = jobParams.getProperty("mode").toUpperCase();
         } else {
-            mode = "MERGE";
+            mode = ImportMode.MERGE.name();
         }
         return mode;
     }

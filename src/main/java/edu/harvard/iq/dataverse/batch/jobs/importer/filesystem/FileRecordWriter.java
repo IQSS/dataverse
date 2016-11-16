@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.batch.jobs.importer.ImportMode;
 
 import javax.batch.api.chunk.AbstractItemWriter;
 import javax.batch.operations.JobOperator;
@@ -59,7 +60,7 @@ public class FileRecordWriter extends AbstractItemWriter {
 
     Dataset dataset;
     AuthenticatedUser user;
-    String mode = "MERGE";
+    String mode = ImportMode.MERGE.name();
     
     @Override
     public void open(Serializable checkpoint) throws Exception {
@@ -99,7 +100,7 @@ public class FileRecordWriter extends AbstractItemWriter {
         List<DataFile> datafiles = dataset.getFiles();
         List<DataFile> removeList = new ArrayList<>();
 
-        if (mode.equalsIgnoreCase("REPLACE")) {
+        if (mode.equalsIgnoreCase(ImportMode.REPLACE.name())) {
             for (DataFile dataFile : datafiles) {
                 boolean found = false;
                 for (Object item : list) {

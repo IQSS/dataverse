@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.batch.jobs.importer.ImportMode;
 import org.apache.commons.io.filefilter.NotFileFilter;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 
@@ -78,7 +79,7 @@ public class FileRecordReader extends AbstractItemReader {
 
     Dataset dataset;
     AuthenticatedUser user;
-    String mode = "MERGE";
+    String mode = ImportMode.MERGE.name();
 
     @PostConstruct
     public void init() {
