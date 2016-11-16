@@ -64,7 +64,7 @@ public class FileRecordJobResource extends AbstractApiBean {
 
                         try {
 
-                            System.out.println("Authenticated User: " + req.getUser().getIdentifier());
+                            //System.out.println("Authenticated User: " + req.getUser().getIdentifier());
                             Properties props = new Properties();
                             props.setProperty("datasetId", doi);
                             props.setProperty("userId", req.getUser().getIdentifier().replace("@",""));
