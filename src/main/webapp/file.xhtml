@@ -315,7 +315,7 @@
                                             </div>
                                             
                                             
-                                            <div class="form-group" jsf:rendered="#{!(false)}">
+                                            <div class="form-group" jsf:rendered="#{FilePage.file.released}">
                                                 <label class="col-sm-3 control-label">
                                                    #{bundle['file.metadataTab.fileMetadata.publicationDate.label']}
                                                 </label>
@@ -357,17 +357,17 @@
                                                     <h:outputText value="#{FilePage.file.dataTable.caseQuantity}"/>
                                                 </div>
                                             </div>
-                                            <div class="form-group" jsf:rendered="#{!(empty FilePage.file.description)}">
+                                            <div class="form-group" jsf:rendered="#{!(empty FilePage.fileMetadata.description)}">
                                                 <label class="col-sm-3 control-label">
                                                    #{bundle['file.metadataTab.fileMetadata.description.label']}
                                                 </label>
                                                 <div class="col-sm-9">
-                                                    <h:outputText value="#{FilePage.file.description}"/>
+                                                    <h:outputText value="#{FilePage.fileMetadata.description}"/>
                                                 </div>
                                             </div>
                                             
                                             
-                                            <div class="form-group" jsf:rendered="#{!(false)}">
+                                            <div class="form-group">
                                                 <label class="col-sm-3 control-label">
                                                    #{bundle['file.metadataTab.fileMetadata.depositDate.label']}
                                                 </label>
