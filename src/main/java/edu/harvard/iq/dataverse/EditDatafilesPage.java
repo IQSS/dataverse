@@ -149,7 +149,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     
     private String persistentId;
     
-    private String versionString;
+    private String versionString = "";
             
     
     private boolean saveEnabled = false; 
@@ -1037,7 +1037,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     
     public String cancel() {
         if (mode == FileEditMode.SINGLE){
-            return returnToFileLandingPage();
+             return returnToFileLandingPage();
         }
         if (workingVersion.getId() != null) {
             return returnToDraftVersion();
