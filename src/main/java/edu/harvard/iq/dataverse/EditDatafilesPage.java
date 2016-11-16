@@ -149,6 +149,9 @@ public class EditDatafilesPage implements java.io.Serializable {
     
     private String persistentId;
     
+    private String versionString;
+            
+    
     private boolean saveEnabled = false; 
 
     // Used to store results of permissions checks
@@ -416,6 +419,13 @@ public class EditDatafilesPage implements java.io.Serializable {
             if (fileMetadatas.size() < 1) {
                 return permissionsWrapper.notFound();
             }
+            
+            if (FileEditMode.SINGLE == mode){
+                if (fileMetadatas.get(0).getDatasetVersion().getId() != null){
+                    versionString = "DRAFT";
+                }
+            }
+            
         }
         
         saveEnabled = true; 
@@ -988,6 +998,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             // the individual File Landing page, we want to redirect back to 
             // the landing page. BUT ONLY if the file still exists - i.e., if 
             // the user hasn't just deleted it!
+            versionString = "DRAFT";
             return returnToFileLandingPage();
         }
         
@@ -1017,7 +1028,9 @@ public class EditDatafilesPage implements java.io.Serializable {
     private String returnToFileLandingPage() {
         
         Long fileId = fileMetadatas.get(0).getDataFile().getId();       
-
+        if (versionString.equals("DRAFT")){
+            return  "/file.xhtml?fileId=" + fileId  +  "&version=DRAFT&faces-redirect=true";
+        }
         return  "/file.xhtml?fileId=" + fileId  +  "&faces-redirect=true";
 
     }
