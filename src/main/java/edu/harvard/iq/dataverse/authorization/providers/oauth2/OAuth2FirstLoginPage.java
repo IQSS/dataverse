@@ -20,9 +20,9 @@ import javax.inject.Named;
 import javax.inject.Inject;
 
 /**
- * Backing bean for {@code oauth/welcome.xhtml}, the page that greets new
- * users when they first login through OAuth2.
- * 
+ * Backing bean for {@code oauth/welcome.xhtml}, the page that greets new users
+ * when they first login through OAuth2.
+ *
  * @author michael
  */
 @Named
@@ -31,28 +31,28 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
 
     @EJB
     AuthenticationServiceBean authenticationSvc;
-    
+
     @EJB
     BuiltinUserServiceBean builtinUserSvc;
-    
+
     @Inject
     DataverseSession session;
-    
+
     OAuth2UserRecord newUser;
-    
+
     String username;
-    
+
     String selectedEmail;
-    
+
     String password;
-    
+
     boolean authenticationFailed = false;
-    
-    int selectedTabIndex=0;
-    
+
+    int selectedTabIndex = 0;
+
     public String createNewAccount() {
-        
-        selectedTabIndex=0;
+
+        selectedTabIndex = 0;
         AuthenticatedUserDisplayInfo newAud = new AuthenticatedUserDisplayInfo(newUser.getDisplayInfo().getFirstName(),
                 newUser.getDisplayInfo().getLastName(),
                 getSelectedEmail(),
@@ -60,12 +60,12 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
                 newUser.getDisplayInfo().getPosition());
         final AuthenticatedUser user = authenticationSvc.createAuthenticatedUser(newUser.getUserRecordIdentifier(), getUsername(), newAud, true);
         session.setUser(user);
-        
+
         return "/dataverse.xhtml?faces-redirect=true";
     }
-    
+
     public String convertExistingAccount() {
-        selectedTabIndex=1;
+        selectedTabIndex = 1;
         BuiltinAuthenticationProvider biap = new BuiltinAuthenticationProvider(builtinUserSvc);
         AuthenticationRequest auReq = new AuthenticationRequest();
         final List<CredentialsAuthenticationProvider.Credential> creds = biap.getRequiredCredentials();
@@ -77,40 +77,40 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
             builtinUserSvc.removeUser(existingUser.getUserIdentifier());
 
             session.setUser(existingUser);
-            
+
             return "/dataverse.xhtml?faces-redirect=true";
-            
+
         } catch (AuthenticationFailedException ex) {
             setAuthenticationFailed(true);
             return null;
         }
     }
-    
+
     public String testAction() {
         Logger.getLogger(OAuth2FirstLoginPage.class.getName()).log(Level.INFO, "testAction");
         return "dataverse.xhtml";
     }
-    
+
     public boolean isEmailAvailable() {
         return authenticationSvc.isEmailAddressAvailable(getSelectedEmail());
     }
-    
+
     public boolean isEmailValid() {
         return StringUtil.isValidEmail(getSelectedEmail());
     }
-    
+
     public boolean isUsernameAvailable() {
-        return ! authenticationSvc.identifierExists(getUsername());
+        return !authenticationSvc.identifierExists(getUsername());
     }
-    
-    public void suggestedEmailChanged( ValueChangeEvent evt )  {
+
+    public void suggestedEmailChanged(ValueChangeEvent evt) {
         setSelectedEmail(evt.getNewValue().toString());
     }
-    
+
     public boolean isNewAccountCreationEnabled() {
         return isEmailValid() && isUsernameAvailable() && isEmailAvailable();
     }
-    
+
     /**
      * @return A textual reference to the user.
      */
@@ -118,17 +118,17 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
         AuthenticatedUserDisplayInfo udi = newUser.getDisplayInfo();
         return (udi.getFirstName() + " " + udi.getLastName()).trim();
     }
-    
+
     public OAuth2UserRecord getNewUser() {
         return newUser;
     }
 
     public void setNewUser(OAuth2UserRecord newUser) {
         this.newUser = newUser;
-        setUsername( newUser.getUsername() );
-        setSelectedEmail( newUser.getDisplayInfo().getEmailAddress() );
+        setUsername(newUser.getUsername());
+        setSelectedEmail(newUser.getDisplayInfo().getEmailAddress());
     }
-    
+
     public String getUsername() {
         return username;
     }
@@ -152,11 +152,11 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
     public String getSelectedEmail() {
         return selectedEmail;
     }
-    
+
     public boolean areExtraEmailsAvailable() {
         return newUser.getAvailableEmailAddresses().size() > 1;
     }
-    
+
     public List<String> getExtraEmails() {
         return newUser.getAvailableEmailAddresses();
     }
@@ -176,5 +176,5 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
     public void setAuthenticationFailed(boolean authenticationFailed) {
         this.authenticationFailed = authenticationFailed;
     }
-    
+
 }
