@@ -283,6 +283,10 @@ Management of Shibboleth groups via API is documented in the :doc:`/installation
 Info
 ~~~~
 
+Get the server's version. The response contains the version, build, and a URL to the API guides::
+
+  GET http://$SERVER/api/version
+
 For now, only the value for the ``:DatasetPublishPopupCustomText`` setting from the :doc:`/installation/config` section of the Installation Guide is exposed::
 
   GET http://$SERVER/api/info/settings/:DatasetPublishPopupCustomText

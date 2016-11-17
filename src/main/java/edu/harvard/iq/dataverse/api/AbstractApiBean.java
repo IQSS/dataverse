@@ -38,7 +38,6 @@ import edu.harvard.iq.dataverse.validation.BeanValidationServiceBean;
 import java.io.StringReader;
 import java.net.URI;
 import java.util.concurrent.Callable;
-import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -266,7 +265,7 @@ public abstract class AbstractApiBean {
             while (cause.getCause() != null) {
                 cause = cause.getCause();
             }
-            logger.info("Exception caught looking up RoleAssignee based on identifier '" + identifier + "': " + cause.getMessage());
+            logger.log(Level.INFO, "Exception caught looking up RoleAssignee based on identifier ''{0}'': {1}", new Object[]{identifier, cause.getMessage()});
             return null;
         }
     }
