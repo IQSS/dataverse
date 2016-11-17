@@ -5,6 +5,8 @@ import com.github.scribejava.core.builder.api.BaseApi;
 import edu.emory.mathcs.backport.java.util.Collections;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
+import edu.harvard.iq.dataverse.authorization.providers.shib.ShibUserNameFields;
+import edu.harvard.iq.dataverse.authorization.providers.shib.ShibUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.StringReader;
 import javax.json.Json;
@@ -36,10 +38,11 @@ public class GitHubOAuth2AP extends AbstractOAuth2AuthenticationProvider {
         try ( StringReader rdr = new StringReader(responseBody);
               JsonReader jrdr = Json.createReader(rdr) )  {
             JsonObject response = jrdr.readObject();
-            
+            // Github has no concept of a family name
+            ShibUserNameFields shibUserNameFields = ShibUtil.findBestFirstAndLastName(null, null, response.getString("name",""));
             AuthenticatedUserDisplayInfo displayInfo = new AuthenticatedUserDisplayInfo(
-                    response.getString("name",""),
-                    "", // Github has no concept of a family name
+                    shibUserNameFields.getFirstName(),
+                    shibUserNameFields.getLastName(),
                     response.getString("email",""),
                     response.getString("company",""),
                     ""

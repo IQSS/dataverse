@@ -33,7 +33,7 @@ public class GitHubOAuth2IdpTest extends GitHubOAuth2AP {
 "    \"id\": 1938468,\n" +
 "    \"location\": \"Sea of Holes\",\n" +
 "    \"login\": \"jane_doe\",\n" +
-"    \"name\": \"Jane\",\n" +
+"    \"name\": \"Jane Doe\",\n" +
 "    \"organizations_url\": \"https://api.github.com/users/jane_doe/orgs\",\n" +
 "    \"owned_private_repos\": 4,\n" +
 "    \"plan\": {\n" +
@@ -66,7 +66,7 @@ public class GitHubOAuth2IdpTest extends GitHubOAuth2AP {
     @Test
     public void testParseUserResponse() {
         AbstractOAuth2AuthenticationProvider.ParsedUserResponse expResult = new AbstractOAuth2AuthenticationProvider.ParsedUserResponse(
-                new AuthenticatedUserDisplayInfo("Jane", "", "jane@janedoe.com", "ACME Sprokets, Inc.", ""),
+                new AuthenticatedUserDisplayInfo("Jane", "Doe", "jane@janedoe.com", "ACME Sprokets, Inc.", ""),
                 "1938468",
                 "jane_doe"
         );
