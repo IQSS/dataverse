@@ -360,7 +360,7 @@ public class FileUtil implements java.io.Serializable  {
     }
     
     public static String determineFileTypeByExtension(String fileName) {
-        logger.info("Type by extension, for "+fileName+": "+MIME_TYPE_MAP.getContentType(fileName));
+        logger.fine("Type by extension, for "+fileName+": "+MIME_TYPE_MAP.getContentType(fileName));
         return MIME_TYPE_MAP.getContentType(fileName);
     }
     

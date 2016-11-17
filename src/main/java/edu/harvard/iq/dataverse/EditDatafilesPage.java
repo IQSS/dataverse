@@ -1221,20 +1221,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         // uploadStarted() is triggered by PrimeFaces <p:upload onStart=... when an upload is 
         // started. It will be called *once*, even if it is a multiple file upload 
         // (either through drag-and-drop or select menu). 
-        // Note that this is different from the behavior of <p:upload onComplete=...
-        // - which is triggered when each one of the multiple upload events completes. 
-        // So when you drag-and-drop a bunch of files, you CANNOT rely on onComplete=...
-        // to notify the page when the batch finishes uploading! There IS a way 
-        // to detect ALL the current uploads completing: the p:upload widget has 
-        // the property "files", that contains the list of all the files currently 
-        // uploading; so checking on the size of the list tells you if any uploads
-        // are still in progress. Once it's zero, you know it's all done. 
-        // This is super important - because if the user is uploading 1000 files 
-        // via drag-and-drop, you don't want to re-render the entire page each 
-        // time every single of the 1000 uploads finishes!
-        // (check editFilesFragment.xhtml for the exact code handling this; and 
-        // http://stackoverflow.com/questions/20747201/when-multiple-upload-is-finished-in-pfileupload
-        // for more info). -- 4.6
+       
         
         logger.fine("upload started");
         
@@ -1256,13 +1243,32 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
     
     public void uploadFinished() {
+        // This method is triggered from the page, by the <p:upload ... onComplete=...
+        // attribute. 
+        // Note that its behavior is different from that of of <p:upload ... onStart=...
+        // that's triggered only once, even for a multiple file upload. In contrast, 
+        // onComplete=... gets executed for each of the completed multiple upload events. 
+        // So when you drag-and-drop a bunch of files, you CANNOT rely on onComplete=...
+        // to notify the page when the batch finishes uploading! There IS a way 
+        // to detect ALL the current uploads completing: the p:upload widget has 
+        // the property "files", that contains the list of all the files currently 
+        // uploading; so checking on the size of the list tells you if any uploads
+        // are still in progress. Once it's zero, you know it's all done. 
+        // This is super important - because if the user is uploading 1000 files 
+        // via drag-and-drop, you don't want to re-render the entire page each 
+        // time every single of the 1000 uploads finishes!
+        // (check editFilesFragment.xhtml for the exact code handling this; and 
+        // http://stackoverflow.com/questions/20747201/when-multiple-upload-is-finished-in-pfileupload
+        // for more info). -- 4.6
         logger.fine("upload finished");
 
         // Add the file(s) added during this last upload event, single or multiple, 
         // to the full list of new files, and the list of filemetadatas 
         // used to render the page:
         
-        ingestService.addFilesToDataset(workingVersion, uploadedFiles);
+        if (mode == FileEditMode.CREATE) {
+            ingestService.addFilesToDataset(workingVersion, uploadedFiles);
+        }
         
         for (DataFile dataFile : uploadedFiles) {
             fileMetadatas.add(dataFile.getFileMetadata());
