@@ -22,34 +22,35 @@ import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 
 /**
- * Backing bean of the oauth2 login process. Used from the login page and the callback page.
- * 
+ * Backing bean of the oauth2 login process. Used from the login page and the
+ * callback page.
+ *
  * @author michael
  */
 @Named(value = "OAuth2Page")
 @ViewScoped
 public class OAuth2LoginBackingBean implements Serializable {
-    
+
     private static final Logger logger = Logger.getLogger(OAuth2LoginBackingBean.class.getName());
-    private static final long STATE_TIMEOUT = 1000*60*15; // 15 minutes in msec
+    private static final long STATE_TIMEOUT = 1000 * 60 * 15; // 15 minutes in msec
     private int responseCode;
     private String responseBody;
     private OAuth2Exception error;
     private OAuth2UserRecord oauthUser;
-    
+
     @EJB
     AuthenticationServiceBean authenticationSvc;
-    
+
     @EJB
     SettingsServiceBean settingsSvc;
-    
+
     @Inject
     DataverseSession session;
-    
+
     @Inject
     OAuth2FirstLoginPage newAccountPage;
-    
-    public String linkFor( String idpId ) {
+
+    public String linkFor(String idpId) {
         AbstractOAuth2AuthenticationProvider idp = authenticationSvc.getOAuth2Provider(idpId);
         return idp.getService(createState(idp), getCallbackUrl()).getAuthorizationUrl();
     }
@@ -60,67 +61,66 @@ public class OAuth2LoginBackingBean implements Serializable {
 
     public void exchangeCodeForToken() throws IOException {
         HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-        
+
         final String code = req.getParameter("code");
-        if ( code == null || code.trim().isEmpty() ) {
-            try( BufferedReader rdr = req.getReader() ) {
+        if (code == null || code.trim().isEmpty()) {
+            try (BufferedReader rdr = req.getReader()) {
                 StringBuilder sb = new StringBuilder();
                 String line;
-                while ( (line=rdr.readLine())!=null ) {
+                while ((line = rdr.readLine()) != null) {
                     sb.append(line).append("\n");
                 }
                 error = new OAuth2Exception(-1, sb.toString(), "Remote system did not return an authorization code.");
                 return;
             }
         }
-        
+
         final String state = req.getParameter("state");
-        
+
         try {
             AbstractOAuth2AuthenticationProvider idp = getIdpFromState(state);
-            if ( idp == null ) {
+            if (idp == null) {
                 throw new OAuth2Exception(-1, "", "Invalid 'state' parameter");
             }
             oauthUser = idp.getUserRecord(code, state, getCallbackUrl());
             UserRecordIdentifier idtf = oauthUser.getUserRecordIdentifier();
             AuthenticatedUser dvUser = authenticationSvc.lookupUser(idtf);
-            
-            if ( dvUser == null ) {
+
+            if (dvUser == null) {
                 // need to create the user
                 newAccountPage.setNewUser(oauthUser);
                 FacesContext.getCurrentInstance().getExternalContext().redirect("/oauth2/firstLogin.xhtml");
-                
+
             } else {
                 // login the user and redirect to HOME.
                 session.setUser(dvUser);
                 FacesContext.getCurrentInstance().getExternalContext().redirect("/");
             }
-            
-            
+
         } catch (OAuth2Exception ex) {
             error = ex;
             Logger.getLogger(OAuth2LoginBackingBean.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
     }
-    
-    private AbstractOAuth2AuthenticationProvider getIdpFromState( String state ) {
-        String[] topFields = state.split("~",2);
-        if ( topFields.length != 2 ) {
+
+    private AbstractOAuth2AuthenticationProvider getIdpFromState(String state) {
+        String[] topFields = state.split("~", 2);
+        if (topFields.length != 2) {
             logger.log(Level.INFO, "Wrong number of fields in state string", state);
             return null;
         }
-        AbstractOAuth2AuthenticationProvider idp = authenticationSvc.getOAuth2Provider( topFields[0] );
-        if ( idp == null ) { 
+        AbstractOAuth2AuthenticationProvider idp = authenticationSvc.getOAuth2Provider(topFields[0]);
+        if (idp == null) {
             logger.log(Level.INFO, "Can''t find IDP ''{0}''", topFields[0]);
             return null;
         }
         String raw = StringUtil.decrypt(topFields[1], idp.clientSecret);
         String[] stateFields = raw.split("~", -1);
-        if ( idp.getId().equals(stateFields[0]) ) {
+        if (idp.getId().equals(stateFields[0])) {
             long timeOrigin = Long.parseLong(stateFields[1]);
             long timeDifference = System.currentTimeMillis() - timeOrigin;
-            if ( timeDifference > 0 && timeDifference < STATE_TIMEOUT ) {
+            if (timeDifference > 0 && timeDifference < STATE_TIMEOUT) {
                 return idp;
             } else {
                 logger.info("State timeout");
@@ -131,18 +131,18 @@ public class OAuth2LoginBackingBean implements Serializable {
             return null;
         }
     }
-    
-    private String createState( AbstractOAuth2AuthenticationProvider idp ) {
-        if ( idp == null ) {
+
+    private String createState(AbstractOAuth2AuthenticationProvider idp) {
+        if (idp == null) {
             throw new IllegalArgumentException("idp cannot be null");
         }
-        String base = idp.getId() + "~" + System.currentTimeMillis() + "~" + (int)java.lang.Math.round( java.lang.Math.random()*1000 );
-        
+        String base = idp.getId() + "~" + System.currentTimeMillis() + "~" + (int) java.lang.Math.round(java.lang.Math.random() * 1000);
+
         String encrypted = StringUtil.encrypt(base, idp.clientSecret);
         final String state = idp.getId() + "~" + encrypted;
         return state;
     }
-    
+
     public String getResponseBody() {
         return responseBody;
     }
@@ -158,22 +158,22 @@ public class OAuth2LoginBackingBean implements Serializable {
     public OAuth2Exception getError() {
         return error;
     }
-    
+
     public boolean isInError() {
-        return error!=null;
+        return error != null;
     }
-    
+
     public List<AbstractOAuth2AuthenticationProvider> getProviders() {
         return authenticationSvc.getOAuth2Providers().stream()
-                                .sorted(Comparator.comparing(AbstractOAuth2AuthenticationProvider::getTitle))
-                                .collect(toList());
+                .sorted(Comparator.comparing(AbstractOAuth2AuthenticationProvider::getTitle))
+                .collect(toList());
     }
-    
+
     public boolean isOAuth2CallbackNotSet() {
         return settingsSvc.get("OAuth2CallbackUrl") == null;
     }
-    
+
     public boolean isOAuth2ProvidersDefined() {
-        return ! authenticationSvc.getOAuth2Providers().isEmpty();
+        return !authenticationSvc.getOAuth2Providers().isEmpty();
     }
 }
