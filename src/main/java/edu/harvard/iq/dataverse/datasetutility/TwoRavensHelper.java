@@ -116,10 +116,19 @@ public class TwoRavensHelper implements java.io.Serializable {
             return this.fileMetadataTwoRavensExploreMap.get(fm.getId());
         }
         
+        
+        // (1) Is TwoRavens active via the "setting" table?
+        //      Nope: get out
+        //      
+        if (!settingsService.isTrueForKey(SettingsServiceBean.Key.TwoRavensTabularView, false)){
+            this.fileMetadataTwoRavensExploreMap.put(fm.getId(), false);
+            return false;
+        }
+        
         //----------------------------------------------------------------------
-        //(0) Before we do any testing - if version is deaccessioned and user
+        //(1a) Before we do any testing - if version is deaccessioned and user
         // does not have edit dataset permission then may download
-        //----------------------------------------------------------------------
+        //---  
         
        if (fm.getDatasetVersion().isDeaccessioned()) {
            if (this.doesSessionUserHavePermission( Permission.EditDataset, fm)) {
@@ -133,15 +142,6 @@ public class TwoRavensHelper implements java.io.Serializable {
        }
         
         
-        // (1) Is TwoRavens active via the "setting" table?
-        //      Nope: get out
-        //      
-        if (!settingsService.isTrueForKey(SettingsServiceBean.Key.TwoRavensTabularView, false)){
-            this.fileMetadataTwoRavensExploreMap.put(fm.getId(), false);
-            return false;
-        }
-        
-
         // (2) Is the DataFile object there and persisted?
         //      Nope: scat
         //
