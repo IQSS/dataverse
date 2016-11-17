@@ -1,4 +1,4 @@
-package edu.harvard.iq.dataverse.api;
+package edu.harvard.iq.dataverse.api.errorhandlers;
 
 import javax.json.Json;
 import javax.servlet.http.HttpServletRequest;
