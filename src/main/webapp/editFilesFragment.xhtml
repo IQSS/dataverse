@@ -84,6 +84,7 @@
                 <!-- _{dataverseSession.user.authenticated and ( ? permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset) : permissionsWrapper.canIssueUpdateDatasetCommand(EditDatafilesPage.dataset))}" -->
 
                 <p:dataTable id="filesTable" value="#{EditDatafilesPage.fileMetadatas}"
+                             scrollRows="25" scrollable="true" liveScroll="true" scrollHeight="92%" scrollWidth="100%"
                              rendered="#{datasetPage or (dataverseSession.user.authenticated and permissionsWrapper.canIssueUpdateDatasetCommand(EditDatafilesPage.dataset))}"
                              rowIndexVar="rowNum" rowKey="#{fileMetadata.dataFile.storageIdentifier}"
                              selection="#{EditDatafilesPage.selectedFiles}" var="fileMetadata" widgetVar="filesTable"
@@ -127,7 +128,7 @@
                     </f:facet>
                     <!-- TODO: do we still need the selection at all?? or is it all going to be handled on the "view" page?? -->
                     <p:column selectionMode="multiple" class="col-select-width text-center" style="width:40px !important;"/>
-                    <p:column class="col-file-thumb text-center" style="width:73px !important;padding:4px 10px;" rendered="false">
+                    <p:column class="col-file-thumb text-center" style="width:73px !important;padding:4px 10px;">
                         <div class="thumbnail-block">
                             <!-- Thumbnail Preview -->
                             <span class="file-thumbnail-preview-img" jsf:rendered="#{!empty fileMetadata.dataFile.id and dataFileServiceBean.isThumbnailAvailable(fileMetadata.dataFile)}"
@@ -135,8 +136,8 @@
                                 <p:graphicImage value="/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=true"/>
                             </span>
                             <!-- Default Icon -->
-                            <span class="icon-#{dataFileServiceBean.getFileClass(fileMetadata.dataFile)} file-thumbnail-icon text-muted" jsf:rendered="#{false and (!empty fileMetadata.dataFile.id and !dataFileServiceBean.isThumbnailAvailable(fileMetadata.dataFile)) or (empty fileMetadata.dataFile.id and !dataFileServiceBean.isTemporaryPreviewAvailable(fileMetadata.dataFile.storageIdentifier, fileMetadata.dataFile.contentType))}"/>
-                            <ui:fragment rendered="#{false and empty fileMetadata.dataFile.id and !empty fileMetadata.dataFile.storageIdentifier and dataFileServiceBean.isTemporaryPreviewAvailable(fileMetadata.dataFile.storageIdentifier, fileMetadata.dataFile.contentType)}">
+                            <span class="icon-#{dataFileServiceBean.getFileClass(fileMetadata.dataFile)} file-thumbnail-icon text-muted" jsf:rendered="#{(!empty fileMetadata.dataFile.id and !dataFileServiceBean.isThumbnailAvailable(fileMetadata.dataFile)) or (empty fileMetadata.dataFile.id and !dataFileServiceBean.isTemporaryPreviewAvailable(fileMetadata.dataFile.storageIdentifier, fileMetadata.dataFile.contentType))}"/>
+                            <ui:fragment rendered="#{empty fileMetadata.dataFile.id and !empty fileMetadata.dataFile.storageIdentifier and dataFileServiceBean.isTemporaryPreviewAvailable(fileMetadata.dataFile.storageIdentifier, fileMetadata.dataFile.contentType)}">
                                 <p:graphicImage value="/api/access/tempPreview/#{fileMetadata.dataFile.storageIdentifier}?mimetype=#{fileMetadata.dataFile.contentType}"/>
                                 <h:outputText id="imgPreview" value="Preview" styleClass="bg-info text-info text-center show"/>
                             </ui:fragment>
@@ -146,7 +147,7 @@
                             </div>
                             <!-- Dataset Thumbnail -->
                             <span id="datasetThumbnail" class="bg-info text-info text-center small show"
-                                  jsf:rendered="#{false and EditDatafilesPage.isDesignatedDatasetThumbnail(fileMetadata)}"
+                                  jsf:rendered="#{EditDatafilesPage.isDesignatedDatasetThumbnail(fileMetadata)}"
                                   data-toggle="tooltip" data-placement="bottom" title="#{bundle['file.selectedThumbnail.tip']}">
                                 #{bundle['file.selectedThumbnail']}
                             </span>
@@ -162,7 +163,7 @@
                         </ui:fragment>
                         <!-- TYPE + SIZE + DATE + CHECKSUM -->
                         <div class="text-muted small">
-                            <!-- h:outputText id="fileTypeOutputRegular" value="#{fileMetadata.dataFile.friendlyType}" rendered="#{!(fileMetadata.dataFile.tabularData)}"/ -->
+                            <h:outputText id="fileTypeOutputRegular" value="#{fileMetadata.dataFile.friendlyType}" rendered="#{!(fileMetadata.dataFile.tabularData)}"/>
                             <h:outputText id="fileTypeOutputTabular" value="#{bundle['file.type.tabularData']}" rendered="#{fileMetadata.dataFile.tabularData}"/>
                             <h:outputText id="fileCreatePublishDate" value=" - #{EditDatafilesPage.getFileDateToDisplay(fileMetadata)}" rendered="#{!(empty fileMetadata.id)}"/>
                             <div class="checksum-block">
@@ -216,7 +217,7 @@
                                 <span class="glyphicon glyphicon-file"/> #{bundle['file.setThumbnail']}
                             </p:commandLink>
                             <p:commandLink id="advancedIngestOptionsButton"
-                                           rendered="#{false and ((empty fileMetadata.dataFile.id) and dataFileServiceBean.isSpssPorFile(fileMetadata.dataFile))
+                                           rendered="#{((empty fileMetadata.dataFile.id) and dataFileServiceBean.isSpssPorFile(fileMetadata.dataFile))
                                                        or ((empty fileMetadata.dataFile.id) and dataFileServiceBean.isSpssSavFile(fileMetadata.dataFile))}"
                                            type="button" styleClass="btn btn-default"
                                            actionListener="#{EditDatafilesPage.setFileMetadataSelectedForIngestOptionsPopup(fileMetadata)}"
