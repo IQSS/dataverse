@@ -110,7 +110,7 @@
                                 <!-- END: Edit Button Group -->
 
                                 <!-- Explore/Map Data/Download/Request Button Block -->
-                                <div class="button-container pull-right">
+                                <div class="button-container pull-right" jsf:rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}">
                                     <ui:include src="file-download-button-fragment.xhtml">
                                         <ui:param name="fileMetadata" value="#{FilePage.fileMetadata}"/>
                                         <ui:param name="canUpdateDataset" value="#{FilePage.canUpdateDataset()}"/>
