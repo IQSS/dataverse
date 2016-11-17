@@ -55,12 +55,12 @@ public class WorldMapPermissionHelper implements java.io.Serializable {
 
     
     private final Map<Long, Boolean> fileMetadataWorldMapExplore = new HashMap<>(); // { FileMetadata.id : Boolean } 
-    private final Map<Long, MapLayerMetadata> mapLayerMetadataLookup = new HashMap<>();
+    private  Map<Long, MapLayerMetadata> mapLayerMetadataLookup = null;
     private final Map<String, Boolean> datasetPermissionMap = new HashMap<>(); // { Permission human_name : Boolean }
 
     
     public WorldMapPermissionHelper( ){
-
+        
     }
 
     
@@ -73,6 +73,9 @@ public class WorldMapPermissionHelper implements java.io.Serializable {
     public MapLayerMetadata getMapLayerMetadata(DataFile df) {
         if (df == null) {
             return null;
+        }
+        if (mapLayerMetadataLookup == null){
+            loadMapLayerMetadataLookup(df.getOwner());
         }
         return this.mapLayerMetadataLookup.get(df.getId());
     }
@@ -149,6 +152,9 @@ public class WorldMapPermissionHelper implements java.io.Serializable {
             //See if it does
             MapLayerMetadata layer_metadata = mapLayerMetadataService.findMetadataByDatafile(fm.getDataFile());
             if (layer_metadata != null) {
+                if (mapLayerMetadataLookup == null) {
+                    loadMapLayerMetadataLookup(fm.getDataFile().getOwner());
+                }
                 // yes: keep going...
                 mapLayerMetadataLookup.put(layer_metadata.getDataFile().getId(), layer_metadata);
             } else {
@@ -236,6 +242,9 @@ public class WorldMapPermissionHelper implements java.io.Serializable {
         if (fm.getDataFile() == null) {
             return false;
         }
+        if (mapLayerMetadataLookup == null) {
+            loadMapLayerMetadataLookup(fm.getDataFile().getOwner());
+        }
         return doesDataFileHaveMapLayerMetadata(fm.getDataFile());
     }
 
@@ -254,7 +263,30 @@ public class WorldMapPermissionHelper implements java.io.Serializable {
         }
         return this.mapLayerMetadataLookup.containsKey(df.getId());
     }
+    
+    
+    /**
+     * Create a hashmap consisting of { DataFile.id : MapLayerMetadata object}
+     *
+     * Very few DataFiles will have associated MapLayerMetadata objects so only
+     * use 1 query to get them
+     */
+    private void loadMapLayerMetadataLookup(Dataset dataset) {
+        mapLayerMetadataLookup = new HashMap<>();
+        if (dataset == null) {
+        }
+        if (dataset.getId() == null) {
+            return;
+        }
+        List<MapLayerMetadata> mapLayerMetadataList = mapLayerMetadataService.getMapLayerMetadataForDataset(dataset);
+        if (mapLayerMetadataList == null) {
+            return;
+        }
+        for (MapLayerMetadata layer_metadata : mapLayerMetadataList) {
+            mapLayerMetadataLookup.put(layer_metadata.getDataFile().getId(), layer_metadata);
+        }
 
+    }// A DataFile may have a related MapLayerMetadata object
     
     
     /**
@@ -316,6 +348,10 @@ public class WorldMapPermissionHelper implements java.io.Serializable {
     public boolean canSeeMapButtonReminderToPublishFromPage(FileMetadata fm){
         if (fm == null){
             return false;
+        }
+        
+        if (mapLayerMetadataLookup == null){
+            loadMapLayerMetadataLookup(fm.getDatasetVersion().getDataset());
         }
         
         return this.canSeeMapButtonReminderToPublish(fm, true);

@@ -241,7 +241,9 @@
             </ul>
         </div>
         
-        <p:commandLink type="button" styleClass="btn btn-default" rendered="#{fileDownloadHelper.session.user.authenticated and fileMetadata.dataFile.owner.fileAccessRequest and !(fileDownloadHelper.canDownloadFile(fileMetadata))}"
+        <p:commandLink type="button" styleClass="btn btn-default" rendered="#{fileDownloadHelper.session.user.authenticated 
+                                                                              and !fileMetadata.datasetVersion.deaccessioned
+                                                                              and fileMetadata.dataFile.owner.fileAccessRequest and !(fileDownloadHelper.canDownloadFile(fileMetadata))}"
                        actionListener="#{fileDownloadService.requestAccess(fileMetadata.dataFile, true)}"
                        update="@this"
                        disabled="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user)}">
@@ -251,7 +253,9 @@
             <span class="glyphicon glyphicon-bullhorn"/> #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}
         </p:commandLink>
         
-        <p:commandLink type="button" styleClass="btn btn-default" rendered="#{!fileDownloadHelper.session.user.authenticated and fileMetadata.dataFile.owner.fileAccessRequest and !(fileDownloadHelper.canDownloadFile(fileMetadata))}"
+        <p:commandLink type="button" styleClass="btn btn-default" rendered="#{!fileDownloadHelper.session.user.authenticated 
+                                                                              and !fileMetadata.datasetVersion.deaccessioned
+                                                                              and fileMetadata.dataFile.owner.fileAccessRequest and !(fileDownloadHelper.canDownloadFile(fileMetadata))}"
                        onclick="PF('accessSignUpLogIn_popup').show()">
             <!-- 4.2.1 - TODO: retest this on a dataset with fileRequest enabled and with some files restricted to the user -->
             <span class="glyphicon glyphicon-bullhorn"/> #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}
