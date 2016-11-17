@@ -283,9 +283,13 @@ Management of Shibboleth groups via API is documented in the :doc:`/installation
 Info
 ~~~~
 
-Get the server's version. The response contains the version, build, and a URL to the API guides::
+Get the Dataverse version. The response contains the version and build numbers::
 
   GET http://$SERVER/api/version
+
+Get the server name. This is useful when a Dataverse system is composed of multiple Java EE servers behind a load balancer::
+
+  GET http://$SERVER/api/server
 
 For now, only the value for the ``:DatasetPublishPopupCustomText`` setting from the :doc:`/installation/config` section of the Installation Guide is exposed::
 

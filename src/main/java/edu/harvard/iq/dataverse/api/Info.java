@@ -38,7 +38,12 @@ public class Info extends AbstractApiBean {
         JsonValue build = comps.length > 1 ? Json.createArrayBuilder().add(comps[1].trim()).build().get(0) : JsonValue.NULL;
         
         return response( req -> ok( Json.createObjectBuilder().add("version", version)
-                                                              .add("build", build)
-                                                              .add( "guides", systemConfig.getGuidesBaseUrl())));
+                                                              .add("build", build)));
+    }
+    
+    @GET
+    @Path("server")
+    public Response getServer() {
+        return response( req -> ok(systemConfig.getDataverseServer()));
     }
 }
