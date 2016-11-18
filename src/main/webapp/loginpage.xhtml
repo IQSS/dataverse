@@ -186,7 +186,10 @@
                                     <div class="form-group text-left">
                                         <div class="col-sm-12">
                                             <ui:repeat value="#{OAuth2Page.providers}" var="p">
-                                                <h:outputLink styleClass="btn btn-default" value="#{OAuth2Page.linkFor(p.id)}">Log In with #{p.title}</h:outputLink>
+                                                <h:outputLink styleClass="btn btn-default" value="#{OAuth2Page.linkFor(p.id)}">
+                                                    <h:graphicImage rendered="#{p.id == 'orcid' or p.id == 'orcid-sandbox'}" value="/resources/images/orcid_16x16.png" height="16" width="16"/> 
+                                                    Log In with #{p.title}
+                                                </h:outputLink>
                                             </ui:repeat>
                                         </div>
                                     </div>
