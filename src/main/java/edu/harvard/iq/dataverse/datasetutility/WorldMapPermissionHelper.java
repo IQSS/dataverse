@@ -431,7 +431,7 @@ public class WorldMapPermissionHelper implements java.io.Serializable {
         }
         
         // (4) Does a map already exist?  Yes, don't need reminder
-        //
+        //       
         if (this.hasMapLayerMetadata(fm)){
             return false;
         }
@@ -458,7 +458,12 @@ public class WorldMapPermissionHelper implements java.io.Serializable {
         if (!(isUserAuthenticatedWithEditDatasetPermission(fm))){
             return false;
         }
-        
+        if (mapLayerMetadataLookup == null){
+            loadMapLayerMetadataLookup(fm.getDatasetVersion().getDataset());
+        }
+        if (this.hasMapLayerMetadata(fm)){
+            return false;
+        }
         return this.canUserSeeMapDataButton(fm, true);
     }
             
@@ -506,7 +511,6 @@ public class WorldMapPermissionHelper implements java.io.Serializable {
      * @return boolean
      */
     private boolean canUserSeeMapDataButton(FileMetadata fm, boolean permissionsChecked){
-
         if (fm==null){
             return false;
         }         
