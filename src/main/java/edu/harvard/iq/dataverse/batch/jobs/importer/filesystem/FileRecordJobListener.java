@@ -169,8 +169,12 @@ public class FileRecordJobListener implements StepListener, JobListener {
                 // [3] action log it
                 // truncate the log message or risk: 
                 // Internal Exception: org.postgresql.util.PSQLException: ERROR: value too long for type character varying(1024)
+                //actionLogServiceBean.log(LoggingUtil.getActionLogRecord(user.getIdentifier(), jobExecution,
+                //        StringUtils.substring(jobJson, 0, 1024), jobId));
+               
+                // simply store location of the full json log to avoid truncation issues
                 actionLogServiceBean.log(LoggingUtil.getActionLogRecord(user.getIdentifier(), jobExecution,
-                        StringUtils.substring(jobJson, 0, 1024), jobId));
+                        logDir + "/job-" + jobId + ".json", jobId));
 
             } else {
                 logger.log(Level.SEVERE, "Job execution is null");
