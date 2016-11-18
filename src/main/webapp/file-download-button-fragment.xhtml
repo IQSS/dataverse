@@ -69,7 +69,7 @@
             </h:outputLink>
             <p:commandLink rendered="#{downloadPopupRequired}"
                            type="button" styleClass="btn btn-default"
-                           action="#{guestbookResponseService.initGuestbookResponse(fileMetadata, 'explore')}"
+                           action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'explore' )}"
                            update="@widgetVar(downloadPopup)"
                            oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
                 <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore}
@@ -86,7 +86,7 @@
             </h:outputLink>
             <p:commandLink rendered="#{downloadPopupRequired}"
                            type="button" styleClass="btn btn-default"
-                           action="#{guestbookResponseService.initGuestbookResponse(fileMetadata, 'worldMap')}"
+                           action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'worldMap' )}"
                            update="@widgetVar(downloadPopup)"
                            oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
                 <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore}
