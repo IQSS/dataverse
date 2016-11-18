@@ -109,6 +109,11 @@ public class TwoRavensHelper implements java.io.Serializable {
             return false;
         }
         
+        if (!fm.getDataFile().isTabularData()){
+            this.fileMetadataTwoRavensExploreMap.put(fm.getId(), false);
+            return false;
+        }
+        
         // Has this already been checked?
         if (this.fileMetadataTwoRavensExploreMap.containsKey(fm.getId())){
             // Yes, return previous answer
