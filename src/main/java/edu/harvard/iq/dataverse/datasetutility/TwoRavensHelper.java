@@ -128,7 +128,15 @@ public class TwoRavensHelper implements java.io.Serializable {
         //----------------------------------------------------------------------
         //(1a) Before we do any testing - if version is deaccessioned and user
         // does not have edit dataset permission then may download
-        //---  
+        //--- 
+        
+        // (2) Is the DataFile object there and persisted?
+        //      Nope: scat
+        //
+        if ((fm.getDataFile() == null)||(fm.getDataFile().getId()==null)){
+            this.fileMetadataTwoRavensExploreMap.put(fm.getId(), false);
+            return false;
+        }
         
        if (fm.getDatasetVersion().isDeaccessioned()) {
            if (this.doesSessionUserHavePermission( Permission.EditDataset, fm)) {
@@ -142,13 +150,7 @@ public class TwoRavensHelper implements java.io.Serializable {
        }
         
         
-        // (2) Is the DataFile object there and persisted?
-        //      Nope: scat
-        //
-        if ((fm.getDataFile() == null)||(fm.getDataFile().getId()==null)){
-            this.fileMetadataTwoRavensExploreMap.put(fm.getId(), false);
-            return false;
-        }
+
         
         //Check for restrictions
         
