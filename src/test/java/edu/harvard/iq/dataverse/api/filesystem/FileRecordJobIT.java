@@ -289,7 +289,7 @@ public class FileRecordJobIT {
                     .body("status", equalTo("COMPLETED"));
             List<Integer> ids =  given()
                     .header(API_TOKEN_HTTP_HEADER, token)
-                    .get("/api/batch/jobs/")
+                    .get(props.getProperty("job.status.api"))
                     .then().extract().jsonPath()
                     .getList("jobs.id");
             assertTrue(ids.contains((int)job.getId()));
@@ -370,7 +370,7 @@ public class FileRecordJobIT {
                     .body("status", equalTo("COMPLETED"));
             List<Integer> ids =  given()
                     .header(API_TOKEN_HTTP_HEADER, token)
-                    .get("/api/batch/jobs/")
+                    .get(props.getProperty("job.status.api"))
                     .then().extract().jsonPath()
                     .getList("jobs.id");
             assertTrue(ids.contains((int)job.getId()));
@@ -424,7 +424,7 @@ public class FileRecordJobIT {
                     .body("status", equalTo("COMPLETED"));
             List<Integer> newIds =  given()
                     .header(API_TOKEN_HTTP_HEADER, token)
-                    .get("/api/batch/jobs/")
+                    .get(props.getProperty("job.status.api"))
                     .then().extract().jsonPath()
                     .getList("jobs.id");
             assertTrue(newIds.contains((int)job.getId()));
@@ -505,7 +505,7 @@ public class FileRecordJobIT {
                     .body("status", equalTo("COMPLETED"));
             List<Integer> ids =  given()
                     .header(API_TOKEN_HTTP_HEADER, token)
-                    .get("/api/batch/jobs/")
+                    .get(props.getProperty("job.status.api"))
                     .then().extract().jsonPath()
                     .getList("jobs.id");
             assertTrue(ids.contains((int)job.getId()));
@@ -568,7 +568,7 @@ public class FileRecordJobIT {
                     .body("status", equalTo("COMPLETED"));
             List<Integer> newIds =  given()
                     .header(API_TOKEN_HTTP_HEADER, token)
-                    .get("/api/batch/jobs/")
+                    .get(props.getProperty("job.status.api"))
                     .then().extract().jsonPath()
                     .getList("jobs.id");
             assertTrue(newIds.contains((int)job.getId()));
@@ -1004,7 +1004,7 @@ public class FileRecordJobIT {
             // run batch job
             String dsNotFound  = given()
                     .header(API_TOKEN_HTTP_HEADER, token)
-                    .get(props.getProperty("filesystem.api") + "/" + fakeDoi)
+                    .post(props.getProperty("filesystem.api") + "/" + fakeDoi)
                     .then().assertThat().statusCode(400)
                     .extract().jsonPath().getString("message");
             assertEquals("Can't find dataset with ID: doi:" + fakeDoi, dsNotFound);
@@ -1040,7 +1040,7 @@ public class FileRecordJobIT {
             // attempt to run batch job as unauthorized user
             String message  = given()
                     .header(API_TOKEN_HTTP_HEADER, unauthToken)
-                    .get(props.getProperty("filesystem.api") + "/" + dsDoi)
+                    .post(props.getProperty("filesystem.api") + "/" + dsDoi)
                     .then().assertThat().statusCode(403)
                     .extract().jsonPath().getString("message");
             assertEquals("User is not authorized.", message);
@@ -1194,7 +1194,7 @@ public class FileRecordJobIT {
             // run batch job and wait for result
             String jobId = given()
                     .header(API_TOKEN_HTTP_HEADER, token)
-                    .get(props.getProperty("filesystem.api") + "/" + dsDoi)
+                    .post(props.getProperty("filesystem.api") + "/" + dsDoi)
                     .then().assertThat().statusCode(200)
                     .extract().jsonPath().getString("data.executionId");
             String jobResult = pollJobStatus(jobId, token, Integer.valueOf(props.getProperty("polling.retries")),
@@ -1218,7 +1218,7 @@ public class FileRecordJobIT {
             // run batch job and wait for result
             String jobId = given()
                     .header(API_TOKEN_HTTP_HEADER, token)
-                    .get(props.getProperty("filesystem.api") + "/" + dsDoi + "?mode=" + mode.toUpperCase())
+                    .post(props.getProperty("filesystem.api") + "/" + dsDoi + "?mode=" + mode.toUpperCase())
                     .then().assertThat().statusCode(200)
                     .extract().jsonPath().getString("data.executionId");
             String jobResult = pollJobStatus(jobId, token, Integer.valueOf(props.getProperty("polling.retries")),

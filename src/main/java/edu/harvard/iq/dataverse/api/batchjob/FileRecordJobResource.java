@@ -1,4 +1,4 @@
-package edu.harvard.iq.dataverse.batch.api;
+package edu.harvard.iq.dataverse.api.batchjob;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
@@ -17,6 +17,7 @@ import javax.ejb.Stateless;
 import javax.json.JsonObjectBuilder;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -30,7 +31,7 @@ import java.util.logging.Logger;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
 @Stateless
-@Path("import")
+@Path("batch/jobs")
 @Produces(MediaType.APPLICATION_JSON)
 public class FileRecordJobResource extends AbstractApiBean {
 
@@ -42,8 +43,8 @@ public class FileRecordJobResource extends AbstractApiBean {
     @EJB
     DatasetServiceBean datasetService;
 
-    @GET
-    @Path("/datasets/files/{doi1}/{doi2}/{doi3}")
+    @POST
+    @Path("import/datasets/files/{doi1}/{doi2}/{doi3}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getFilesystemImport(@PathParam("doi1") String doi1, 
                                         @PathParam("doi2") String doi2,
@@ -63,8 +64,6 @@ public class FileRecordJobResource extends AbstractApiBean {
                         long jid = 0;
 
                         try {
-
-                            //System.out.println("Authenticated User: " + req.getUser().getIdentifier());
                             Properties props = new Properties();
                             props.setProperty("datasetId", doi);
                             props.setProperty("userId", req.getUser().getIdentifier().replace("@",""));
@@ -80,7 +79,6 @@ public class FileRecordJobResource extends AbstractApiBean {
                         if (jid > 0) {
 
                             // success json
-                            // use 202 Accepted response?
                             JsonObjectBuilder bld = jsonObjectBuilder();
                             return this.ok(bld
                                     .add("executionId", jid)
@@ -114,7 +112,7 @@ public class FileRecordJobResource extends AbstractApiBean {
      * @return
      */
     private boolean isAuthorized(DataverseRequest dvReq, Dataverse dv) {
-        if (permissionService.requestOn(dvReq, dv).has(Permission.EditDataverse))
+        if (permissionService.requestOn(dvReq, dv).has(Permission.EditDataset))
             return true;
         else
             return false;

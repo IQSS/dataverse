@@ -1,4 +1,4 @@
-package edu.harvard.iq.dataverse.batch.api;
+package edu.harvard.iq.dataverse.api.batchjob;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
@@ -21,8 +21,8 @@ import java.util.Set;
 
 
 @Stateless
-@Path("batch")
-public class BatchResource extends AbstractApiBean {
+@Path("admin/batch")
+public class BatchJobResource extends AbstractApiBean {
 
     private static String EMPTY_JSON_LIST = "[]";
     private static String EMPTY_JSON_OBJ = "{}";
@@ -53,7 +53,7 @@ public class BatchResource extends AbstractApiBean {
     }
 
     @GET
-    @Path("/jobs/{jobName}")
+    @Path("/jobs/name/{jobName}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response listBatchJobsByName( @PathParam("jobName") String jobName) {
         try {
@@ -73,30 +73,9 @@ public class BatchResource extends AbstractApiBean {
         }
     }
 
-    @GET
-    @Path("/jobs/{jobName}/{jobId}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response listBatchJobsByNameAndId( @PathParam("jobName") String jobName, @PathParam("jobId") String jobId) {
-        try {
-            final JobOperator jobOperator = BatchRuntime.getJobOperator();
-            final int end = jobOperator.getJobInstanceCount(jobName);
-            final List<JobInstance> jobInstances = jobOperator.getJobInstances(jobName, 0, end);
-            for (JobInstance jobInstance : jobInstances) {
-                final List<JobExecution> executions = jobOperator.getJobExecutions(jobInstance);
-                for (JobExecution execution : executions) {
-                    if (execution.getExecutionId() == Long.valueOf(jobId)) {
-                        return Response.ok(mapper.writeValueAsString(JobExecutionEntity.create(execution))).build();
-                    }
-                }
-            }
-        } catch (Exception e) {
-            return Response.ok(EMPTY_JSON_LIST).build();
-        }
-        return Response.ok(EMPTY_JSON_LIST).build();
-    }
 
     @GET
-    @Path("/job/{jobId}")
+    @Path("/jobs/{jobId}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response listBatchJobById(@PathParam("jobId") String jobId) {
         try {
