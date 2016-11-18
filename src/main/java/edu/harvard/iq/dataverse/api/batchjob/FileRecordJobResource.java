@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.api.batchjob;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
@@ -60,34 +61,49 @@ public class FileRecordJobResource extends AbstractApiBean {
                     DataverseRequest req = createDataverseRequest(findAuthenticatedUserOrDie());
 
                     if (isAuthorized(req, ds.getOwner())) {
+                        
+                        if (ds.getVersions().size() == 1) {
+                            
+                            if (ds.getLatestVersion().getVersionState() == DatasetVersion.VersionState.DRAFT) {
 
-                        long jid = 0;
+                                long jid = 0;
 
-                        try {
-                            Properties props = new Properties();
-                            props.setProperty("datasetId", doi);
-                            props.setProperty("userId", req.getUser().getIdentifier().replace("@",""));
-                            props.setProperty("mode", mode);
-                            JobOperator jo = BatchRuntime.getJobOperator();
-                            jid = jo.start("FileSystemImportJob", props);
+                                try {
+                                    Properties props = new Properties();
+                                    props.setProperty("datasetId", doi);
+                                    props.setProperty("userId", req.getUser().getIdentifier().replace("@", ""));
+                                    props.setProperty("mode", mode);
+                                    JobOperator jo = BatchRuntime.getJobOperator();
+                                    jid = jo.start("FileSystemImportJob", props);
 
-                        } catch (JobStartException | JobSecurityException ex) {
-                            logger.log(Level.SEVERE, "Job Error: " + ex.getMessage());
-                            ex.printStackTrace();
-                        }
+                                } catch (JobStartException | JobSecurityException ex) {
+                                    logger.log(Level.SEVERE, "Job Error: " + ex.getMessage());
+                                    ex.printStackTrace();
+                                }
 
-                        if (jid > 0) {
+                                if (jid > 0) {
 
-                            // success json
-                            JsonObjectBuilder bld = jsonObjectBuilder();
-                            return this.ok(bld
-                                    .add("executionId", jid)
-                                    .add("message", "FileSystemImportJob in progress")
-                            );
+                                    // success json
+                                    JsonObjectBuilder bld = jsonObjectBuilder();
+                                    return this.ok(bld
+                                            .add("executionId", jid)
+                                            .add("message", "FileSystemImportJob in progress")
+                                    );
 
+                                } else {
+                                    return this.error(Response.Status.BAD_REQUEST,
+                                            "Error creating FilesystemImportJob with dataset with ID: " + doi);
+                                }
+                            } else {
+                                return this.error(Response.Status.BAD_REQUEST,
+                                        "Error creating FilesystemImportJob with dataset with ID: " + doi
+                                                + " - Dataset isn't in DRAFT mode.");
+                            }
+                            
                         } else {
                             return this.error(Response.Status.BAD_REQUEST,
-                                    "Error creating FilesystemImportJob with dataset with ID: " + doi);
+                                    "Error creating FilesystemImportJob with dataset with ID: " + doi
+                                    + " - Dataset has more than one version.");                        
                         }
 
                     } else {

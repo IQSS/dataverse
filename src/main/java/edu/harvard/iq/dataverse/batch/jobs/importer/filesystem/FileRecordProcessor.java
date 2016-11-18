@@ -90,7 +90,9 @@ public class FileRecordProcessor implements ItemProcessor {
      */
     private DataFile createDataFile(File file) {
 
-        if (permissionServiceBean.userOn(user, dataset.getOwner()).has(Permission.AddDataset) &&
+        // enforce constraints
+        if (permissionServiceBean.userOn(user, dataset.getOwner()).has(Permission.EditDataset) &&
+                dataset.getVersions().size() == 1 &&
                 dataset.getLatestVersion().getVersionState() == DatasetVersion.VersionState.DRAFT) {
             
             DatasetVersion version = dataset.getLatestVersion();

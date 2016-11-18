@@ -73,18 +73,25 @@ public class FileRecordWriter extends AbstractItemWriter {
 
     @Override
     public void writeItems(List list) {
-        if (permissionServiceBean.userOn(user, dataset.getOwner()).has(Permission.AddDataset) &&
+        if (permissionServiceBean.userOn(user, dataset.getOwner()).has(Permission.EditDataset)) {
+            
+            if (dataset.getVersions().size() == 1 &&
                 dataset.getLatestVersion().getVersionState() == DatasetVersion.VersionState.DRAFT) {
-            List<DataFile> datafiles = dataset.getFiles();
-            
-            // todo: decide if we want to remove datafiles in REPLACE mode
-            //removeDataFilesThatNoLongerExist(list);
-            
-            // add files
-            for (Object dataFile : list) {
-                datafiles.add((DataFile) dataFile);
+                List<DataFile> datafiles = dataset.getFiles();
+
+                // todo: decide if we want to remove datafiles in REPLACE mode
+                //removeDataFilesThatNoLongerExist(list);
+
+                // add files
+                for (Object dataFile : list) {
+                    datafiles.add((DataFile) dataFile);
+                }
+                dataset.getLatestVersion().getDataset().setFiles(datafiles);
+            } else {
+                logger.log(Level.SEVERE, "Unable to save imported datafiles because the dataset must be a single " 
+                        + "version in draft mode.");
+                
             }
-            dataset.getLatestVersion().getDataset().setFiles(datafiles);
         } else {
             logger.log(Level.SEVERE, "Unable to save imported datafiles because the authenticated user has " +
                     "insufficient permission.");

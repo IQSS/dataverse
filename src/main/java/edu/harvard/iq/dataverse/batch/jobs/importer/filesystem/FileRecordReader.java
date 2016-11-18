@@ -102,9 +102,15 @@ public class FileRecordReader extends AbstractItemReader {
         } else {
             stepContext.setExitStatus("FAILED");
         }
-        if (!permissionServiceBean.userOn(user, dataset.getOwner()).has(Permission.AddDataset)) {
+        // constraints: edit permission, single version, in draft
+        if (!permissionServiceBean.userOn(user, dataset.getOwner()).has(Permission.EditDataset)) {
             logger.log(Level.SEVERE, "User doesn't have permission to import files into this dataset.");
             persistentUserData += "FAILED: User doesn't have permission to import files into this dataset.";
+            stepContext.setExitStatus("FAILED");
+        }
+        if (dataset.getVersions().size() != 1) {
+            logger.log(Level.SEVERE, "File system import is currently only supported for datasets with one version.");
+            persistentUserData += "FAILED: File system import is currently only supported for for datasets with one version.";
             stepContext.setExitStatus("FAILED");
         }
         if (dataset.getLatestVersion().getVersionState() != DatasetVersion.VersionState.DRAFT) {
