@@ -9,7 +9,10 @@ import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationFailedExc
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -34,6 +37,9 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
 
     @EJB
     BuiltinUserServiceBean builtinUserSvc;
+
+    @EJB
+    SystemConfig systemConfig;
 
     @Inject
     DataverseSession session;
@@ -175,6 +181,20 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
 
     public void setAuthenticationFailed(boolean authenticationFailed) {
         this.authenticationFailed = authenticationFailed;
+    }
+
+    public String getCreateFromWhereTip() {
+        AbstractOAuth2AuthenticationProvider authProvider = authenticationSvc.getOAuth2Provider(newUser.getServiceId());
+        return BundleUtil.getStringFromBundle("oauth2.newAccount.explanation", Arrays.asList(authProvider.getTitle(), systemConfig.getNameOfInstallation()));
+    }
+
+    public String getSuggestConvertInsteadOfCreate() {
+        return BundleUtil.getStringFromBundle("oauth2.newAccount.suggestConvertInsteadOfCreate", Arrays.asList(systemConfig.getNameOfInstallation()));
+    }
+
+    public String getConvertTip() {
+        AbstractOAuth2AuthenticationProvider authProvider = authenticationSvc.getOAuth2Provider(newUser.getServiceId());
+        return BundleUtil.getStringFromBundle("oauth2.convertAccount.explanation", Arrays.asList(systemConfig.getNameOfInstallation(), authProvider.getTitle()));
     }
 
 }

@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.util;
 
 import com.ocpsoft.pretty.PrettyContext;
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.FileInputStream;
@@ -30,6 +31,9 @@ public class SystemConfig {
 
     @EJB
     SettingsServiceBean settingsService;
+
+    @EJB
+    DataverseServiceBean dataverseService;
 
     /**
      * A JVM option for the advertised fully qualified domain name (hostname) of
@@ -561,4 +565,7 @@ public class SystemConfig {
         return saneDefault;
     }
 
+    public String getNameOfInstallation() {
+        return dataverseService.findRootDataverse().getName() + " Dataverse";
+    }
 }
