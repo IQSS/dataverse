@@ -3,6 +3,7 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:o="http://omnifaces.org/ui"
       xmlns:p="http://primefaces.org/ui"
       xmlns:jsf="http://xmlns.jcp.org/jsf">
 
@@ -152,33 +153,27 @@
                                         <!--FIXME not valid xhtml?-->
                                         <!--<a href="http://federation.org/DS/DS?entityID=https%3A%2F%2FyourentityId.edu.edu%2Fshibboleth&return=https%3A%2F%2Fyourreturn.edu%2FShibboleth.sso%2FDS%3FSAMLDS%3D1%26target%3Dhttps%3A%2F%2Fyourreturn.edu%2F">this link</a>.-->
                                     </noscript>
-                                </ui:fragment>
-                                <ui:fragment rendered="#{LoginPage.provider == 'orcid'}">
-                                    <h2 class="no-margin-top">#{bundle['auth.providers.title.orcid']}</h2>
+                                </ui:fragment>                             
+
+                                <ui:fragment rendered="#{LoginPage.provider != 'shib'}">
+                                    <h2 class="no-margin-top">
+                                        <h:outputText value="#{bundle['auth.providers.title.' += LoginPage.provider]}"/>
+                                    </h2>
                                     <p class="help-block">
-                                        <span class="glyphicon glyphicon-info-sign"/>
-                                        <h:outputText value=" #{bundle['auth.providers.title.blurb.orcid']}"/>
-                                    </p>
-                                </ui:fragment>
-                                <ui:fragment rendered="#{LoginPage.provider == 'orcid-sandbox'}">
-                                    <h2 class="no-margin-top">#{bundle['auth.providers.title.orcid-sandbox']}</h2>
-                                    <p class="help-block">
-                                        <span class="glyphicon glyphicon-info-sign"/>
-                                        <h:outputText value=" #{bundle['auth.providers.title.blurb.orcid-sandbox']}"/>
-                                    </p>
-                                </ui:fragment>
-                                <ui:fragment rendered="#{LoginPage.provider == 'google'}">
-                                    <h2 class="no-margin-top">#{bundle['auth.providers.title.google']}</h2>
-                                    <p class="help-block">
-                                        <span class="glyphicon glyphicon-info-sign"/>
-                                        <h:outputText value=" #{bundle['auth.providers.title.blurb.google']}"/>
-                                    </p>
-                                </ui:fragment>
-                                <ui:fragment rendered="#{LoginPage.provider == 'github'}">
-                                    <h2 class="no-margin-top">#{bundle['auth.providers.title.github']}</h2>
-                                    <p class="help-block">
-                                        <span class="glyphicon glyphicon-info-sign"/>
-                                        <h:outputText value=" #{bundle['auth.providers.title.blurb.github']}"/>
+                                        <o:form useRequestURI="true">
+                                            <span class="glyphicon glyphicon-info-sign"/>
+                                            <h:outputFormat value=" #{bundle['auth.providers.blurb']}" escape="false">
+                                                <o:param value="#{bundle['auth.providers.title.' += LoginPage.provider]}"/>
+                                                <o:param>
+                                                    <p:commandLink value="#{bundle['contact.support']}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
+                                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
+                                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
+                                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
+                                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
+                                                    </p:commandLink>                                
+                                                </o:param>
+                                            </h:outputFormat>
+                                        </o:form>
                                     </p>
                                 </ui:fragment>
                                 
