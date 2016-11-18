@@ -182,7 +182,7 @@
                                     </p>
                                 </ui:fragment>
                                 
-                                <div class="form-horizontal">
+                                <div class="form-horizontal" jsf:rendered="#{LoginPage.provider != 'shib'}">
                                     <div class="form-group text-left">
                                         <div class="col-sm-12">
                                             <ui:repeat value="#{OAuth2Page.providers}" var="p">
