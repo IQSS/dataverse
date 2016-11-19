@@ -285,11 +285,11 @@ Info
 
 Get the Dataverse version. The response contains the version and build numbers::
 
-  GET http://$SERVER/api/version
+  GET http://$SERVER/api/info/version
 
 Get the server name. This is useful when a Dataverse system is composed of multiple Java EE servers behind a load balancer::
 
-  GET http://$SERVER/api/server
+  GET http://$SERVER/api/info/server
 
 For now, only the value for the ``:DatasetPublishPopupCustomText`` setting from the :doc:`/installation/config` section of the Installation Guide is exposed::
 
