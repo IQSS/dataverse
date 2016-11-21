@@ -418,7 +418,7 @@
                     </p:dialog>
                     <p:dialog id="downloadDataSubsetPopup" styleClass="smallPopUp" header="Download Data Subset" widgetVar="downloadDataSubsetPopup"
                                modal="true">
-                        <div class="form-inline clearfix" jsf:rendered="#{!(empty FilePage.fileMetadata)}">
+                        <div class="form-inline clearfix" jsf:rendered="#{!(empty FilePage.fileMetadata) and FilePage.fileMetadata.dataFile.tabularData}">
                             <ui:include src="/subset/gui_subset.xhtml">
                                 <ui:param name="dataFile" value="#{FilePage.fileMetadata.dataFile}"/>
                              </ui:include>
