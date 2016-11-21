@@ -11,43 +11,13 @@ import org.junit.BeforeClass;
 import java.util.UUID;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static org.hamcrest.CoreMatchers.equalTo;
-import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 
 public class AdminIT {
 
-    private static String nonSuperuserUsername;
-    private static String nonSuperuserApiToken;
-
-    private static String superuserUsername;
-    private static String superuserApiToken;
-
-    private static Long idOfUserToConvert;
-    private static String usernameOfUserToConvert;
-    private static String emailOfUserToConvert;
-
     @BeforeClass
     public static void setUp() {
-
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
-
-        Response createNonSuperuser = UtilIT.createRandomUser();
-        nonSuperuserUsername = UtilIT.getUsernameFromResponse(createNonSuperuser);
-        nonSuperuserApiToken = UtilIT.getApiTokenFromResponse(createNonSuperuser);
-
-        Response createUserToConvert = UtilIT.createRandomUser();
-        createUserToConvert.prettyPrint();
-
-        idOfUserToConvert = createUserToConvert.body().jsonPath().getLong("data.authenticatedUser.id");
-        emailOfUserToConvert = createUserToConvert.body().jsonPath().getString("data.user.email");
-        usernameOfUserToConvert = UtilIT.getUsernameFromResponse(createUserToConvert);
-
-        Response createSuperuser = UtilIT.createRandomUser();
-        superuserUsername = UtilIT.getUsernameFromResponse(createSuperuser);
-        superuserApiToken = UtilIT.getApiTokenFromResponse(createSuperuser);
-        Response toggleSuperuser = UtilIT.makeSuperUser(superuserUsername);
-        toggleSuperuser.then().assertThat()
-                .statusCode(OK.getStatusCode());
     }
 
     @Test
@@ -56,18 +26,42 @@ public class AdminIT {
         anon.prettyPrint();
         anon.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
 
+        Response createNonSuperuser = UtilIT.createRandomUser();
+        String nonSuperuserUsername = UtilIT.getUsernameFromResponse(createNonSuperuser);
+        String nonSuperuserApiToken = UtilIT.getApiTokenFromResponse(createNonSuperuser);
+
         Response nonSuperuser = UtilIT.listAuthenticatedUsers(nonSuperuserApiToken);
         nonSuperuser.prettyPrint();
         nonSuperuser.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
+
+        Response createSuperuser = UtilIT.createRandomUser();
+        String superuserUsername = UtilIT.getUsernameFromResponse(createSuperuser);
+        String superuserApiToken = UtilIT.getApiTokenFromResponse(createSuperuser);
+        Response toggleSuperuser = UtilIT.makeSuperUser(superuserUsername);
+        toggleSuperuser.then().assertThat()
+                .statusCode(OK.getStatusCode());
 
         Response superuser = UtilIT.listAuthenticatedUsers(superuserApiToken);
         superuser.prettyPrint();
         superuser.then().assertThat().statusCode(OK.getStatusCode());
 
+        Response deleteNonSuperuser = UtilIT.deleteUser(nonSuperuserUsername);
+        assertEquals(200, deleteNonSuperuser.getStatusCode());
+
+        Response deleteSuperuser = UtilIT.deleteUser(superuserUsername);
+        assertEquals(200, deleteSuperuser.getStatusCode());
+
     }
 
     @Test
     public void testConvertShibUserToBuiltin() throws Exception {
+
+        Response createUserToConvert = UtilIT.createRandomUser();
+        createUserToConvert.prettyPrint();
+
+        long idOfUserToConvert = createUserToConvert.body().jsonPath().getLong("data.authenticatedUser.id");
+        String emailOfUserToConvert = createUserToConvert.body().jsonPath().getString("data.user.email");
+        String usernameOfUserToConvert = UtilIT.getUsernameFromResponse(createUserToConvert);
 
         String password = usernameOfUserToConvert;
         String newEmailAddressToUse = "builtin2shib." + UUID.randomUUID().toString().substring(0, 8) + "@mailinator.com";
@@ -76,6 +70,13 @@ public class AdminIT {
         Response builtinToShibAnon = UtilIT.migrateBuiltinToShib(data, "");
         builtinToShibAnon.prettyPrint();
         builtinToShibAnon.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
+
+        Response createSuperuser = UtilIT.createRandomUser();
+        String superuserUsername = UtilIT.getUsernameFromResponse(createSuperuser);
+        String superuserApiToken = UtilIT.getApiTokenFromResponse(createSuperuser);
+        Response toggleSuperuser = UtilIT.makeSuperUser(superuserUsername);
+        toggleSuperuser.then().assertThat()
+                .statusCode(OK.getStatusCode());
 
         Response makeShibUser = UtilIT.migrateBuiltinToShib(data, superuserApiToken);
         makeShibUser.prettyPrint();
@@ -115,6 +116,12 @@ public class AdminIT {
         shouldWork.prettyPrint();
         shouldWork.then().assertThat().statusCode(OK.getStatusCode());
 
+        Response deleteUserToConvert = UtilIT.deleteUser(usernameOfUserToConvert);
+        assertEquals(200, deleteUserToConvert.getStatusCode());
+
+        Response deleteSuperuser = UtilIT.deleteUser(superuserUsername);
+        assertEquals(200, deleteSuperuser.getStatusCode());
+
     }
 
     @Test
@@ -143,25 +150,11 @@ public class AdminIT {
                 .body("data.title", equalTo(username + " " + username))
                 .statusCode(OK.getStatusCode());
 
-    }
+        UtilIT.deleteDataverse(dataverseAlias, apiToken).then().assertThat()
+                .statusCode(OK.getStatusCode());
 
-    @AfterClass
-    public static void tearDownClass() {
-        boolean disabled = false;
-
-        if (disabled) {
-            return;
-        }
-
-        Response deleteNonSuperuser = UtilIT.deleteUser(nonSuperuserUsername);
-        assertEquals(200, deleteNonSuperuser.getStatusCode());
-
-        Response deleteUserToConvert = UtilIT.deleteUser(usernameOfUserToConvert);
-        assertEquals(200, deleteUserToConvert.getStatusCode());
-
-        Response deleteSuperuser = UtilIT.deleteUser(superuserUsername);
+        Response deleteSuperuser = UtilIT.deleteUser(username);
         assertEquals(200, deleteSuperuser.getStatusCode());
-
     }
 
 }
