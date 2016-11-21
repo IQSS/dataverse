@@ -170,10 +170,12 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         context.execute("PF('downloadPopup').hide();");
         if (guestbookResponse != null && guestbookResponse.isWriteResponse() 
                 && (( fmd != null && fmd.getDataFile() != null) || guestbookResponse.getDataFile() != null)){
-            if(guestbookResponse.getDataFile() == null  && fmd != null){
+            if(guestbookResponse.getDataFile() == null  && fmd != null){                
                 guestbookResponse.setDataFile(fmd.getDataFile());
             }
-            writeGuestbookResponseRecord(guestbookResponse);
+            if (fmd == null || !fmd.getDatasetVersion().isDraft()){
+                writeGuestbookResponseRecord(guestbookResponse);
+            }
         }
         
         Long datafileId;
@@ -189,12 +191,14 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     public String startWorldMapDownloadLink(GuestbookResponse guestbookResponse, FileMetadata fmd){
         RequestContext context = RequestContext.getCurrentInstance();
         context.execute("PF('downloadPopup').hide();");
-        
-        if (guestbookResponse != null && guestbookResponse.isWriteResponse() && ((fmd != null && fmd.getDataFile() != null) || guestbookResponse.getDataFile() != null)){
-            if(guestbookResponse.getDataFile() == null){
+                
+        if (guestbookResponse != null  && guestbookResponse.isWriteResponse() && ((fmd != null && fmd.getDataFile() != null) || guestbookResponse.getDataFile() != null)){
+            if(guestbookResponse.getDataFile() == null && fmd != null){
                 guestbookResponse.setDataFile(fmd.getDataFile());
             }
-            writeGuestbookResponseRecord(guestbookResponse);
+            if (fmd == null || !fmd.getDatasetVersion().isDraft()){
+                writeGuestbookResponseRecord(guestbookResponse);
+            }
         }
         DataFile file = null;
         if (fmd != null){

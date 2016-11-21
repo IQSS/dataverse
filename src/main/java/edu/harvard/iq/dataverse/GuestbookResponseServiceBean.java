@@ -601,6 +601,9 @@ public class GuestbookResponseServiceBean {
         if (in != null && fm.getDataFile() != null) {
             in.setDataFile(fm.getDataFile());
         }
+        if (in != null && fm.getDatasetVersion() != null && fm.getDatasetVersion().isDraft() ) {
+            in.setWriteResponse(false);
+        }
         return in;
     }
     
@@ -616,6 +619,10 @@ public class GuestbookResponseServiceBean {
             in.setFileFormat(format);
             in.setDataFile(fm.getDataFile());
         }
+        if (in != null && fm.getDatasetVersion() != null && fm.getDatasetVersion().isDraft() ) {
+            in.setWriteResponse(false);
+        }
+        
         return in;
     }
 

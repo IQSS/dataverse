@@ -262,8 +262,15 @@ public class FileMetadata implements Serializable {
         return "";
     }
      
-     public String getFileCitation(){
-         String citation = this.getDatasetVersion().getCitation();
+    public String getFileCitation(){
+         return getFileCitation(false);
+     }
+     
+     
+     
+     
+    public String getFileCitation(boolean html){
+         String citation = this.getDatasetVersion().getCitation(html);
          /*
          ", #{FilePage.fileMetadata.label} [fileName]"
          <h:outputText value=", #{FilePage.file.unf}" rendered="#{FilePage.file.tabularData and !(empty FilePage.file.unf)}"/>
