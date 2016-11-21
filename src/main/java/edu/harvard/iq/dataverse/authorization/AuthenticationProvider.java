@@ -23,6 +23,7 @@ public interface AuthenticationProvider {
     default boolean isPasswordUpdateAllowed() { return false; };
     default boolean isUserInfoUpdateAllowed() { return false; };
     default boolean isUserDeletionAllowed() { return false; };
+    default boolean isOAuthProvider() { return false; };
     
     /**
      * Some providers (e.g organizational ones) provide verified email addresses.

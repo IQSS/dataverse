@@ -221,4 +221,8 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
         return Objects.equals(this.clientSecret, other.clientSecret);
     }
 
+    @Override
+    public boolean isOAuthProvider() {
+        return true;
+    }
 }

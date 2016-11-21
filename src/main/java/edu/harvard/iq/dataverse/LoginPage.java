@@ -16,6 +16,7 @@ import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -98,6 +99,7 @@ public class LoginPage implements java.io.Serializable {
     
     private String redirectPage = "dataverse.xhtml";
     private String provider;
+    private AuthenticationProvider authProvider;
 
     public void init() {
         Iterator<String> credentialsIterator = authSvc.getAuthenticationProviderIdsOfType( CredentialsAuthenticationProvider.class ).iterator();
@@ -108,6 +110,7 @@ public class LoginPage implements java.io.Serializable {
         if (provider == null) {
             provider = systemConfig.getDefaultAuthProvider();
         }
+        authProvider = authSvc.getAuthenticationProvider(provider);
     }
     
     public boolean isAuthenticationProvidersAvailable() {
@@ -246,4 +249,15 @@ public class LoginPage implements java.io.Serializable {
         this.provider = provider;
     }
 
+    public AuthenticationProvider getAuthProvider() {
+        return authProvider;
+    }
+
+    public void setAuthProvider(AuthenticationProvider authProvider) {
+        this.authProvider = authProvider;
+    }
+    
+    public String getLoginButtonText() {
+        return BundleUtil.getStringFromBundle("login.button", Arrays.asList(authProvider.getInfo().getTitle()));
+    }
 }

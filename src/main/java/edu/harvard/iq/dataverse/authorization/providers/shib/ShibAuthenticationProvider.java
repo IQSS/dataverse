@@ -18,4 +18,9 @@ public class ShibAuthenticationProvider implements AuthenticationProvider {
         return new AuthenticationProviderDisplayInfo(getId(), BundleUtil.getStringFromBundle("auth.providers.title.shib"), "Shibboleth user repository");
     }
 
- }
+    @Override
+    public boolean isOAuthProvider() {
+        return false;
+    }
+
+}
