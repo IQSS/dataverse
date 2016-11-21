@@ -19,7 +19,8 @@
                 <span class="glyphicon glyphicon-warning-sign text-danger"/>
             </span>
         </ui:fragment>
-        
+
+
         <div class="btn-group" jsf:rendered="#{twoRavensHelper.canSeeTwoRavensExploreButtonFromPage(fileMetadata) and worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata)}">           
             <!-- Explore Dropdown: When TwoRavens **AND** WorldMap Explore options are available -->
             <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
@@ -27,12 +28,12 @@
             </button>
             <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
                 <li><!-- Two Ravens -->
-                    <h:outputLink rendered="#{!downloadPopupRequired}"
+                    <h:commandLink rendered="#{!downloadPopupRequired}"
                                    styleClass="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}"
                                    disabled="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}"
-                                   value="#{fileDownloadService.startExploreDownloadLink(guestbookResponse, fileMetadata )}" target="_blank">
+                                   action="#{fileDownloadService.startExploreDownloadLink(guestbookResponse, fileMetadata )}" target="_blank">
                         #{bundle['file.explore.twoRavens']} 
-                    </h:outputLink>
+                    </h:commandLink>
                     <p:commandLink rendered="#{downloadPopupRequired}"                                            
                                    action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'explore' )}"
                                    update="@widgetVar(downloadPopup)"
@@ -41,12 +42,12 @@
                     </p:commandLink>                          
                 </li>
                 <li><!-- WorldMap Explore -->
-                    <h:outputLink rendered="#{!downloadPopupRequired}"
+                    <h:commandLink rendered="#{!downloadPopupRequired}"
                                    styleClass="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}"
                                    disabled="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}"
-                                   value="#{fileDownloadService.startWorldMapDownloadLink(guestbookResponse, fileMetadata )}" target="_blank">
+                                   action="#{fileDownloadService.startWorldMapDownloadLink(guestbookResponse, fileMetadata )}" target="_blank">
                         #{bundle['file.mapData.viewMap']}
-                    </h:outputLink>
+                    </h:commandLink>
                     <p:commandLink rendered="#{downloadPopupRequired}"
                                   styleClass="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}"  
                                    action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'worldMap' )}"
@@ -58,15 +59,15 @@
             </ul>
         </div>
 
-        
+
         <ui:fragment rendered="#{ twoRavensHelper.canSeeTwoRavensExploreButtonFromPage(fileMetadata) and !worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata)}">
             <!-- TwoRavens Explore button ONLY ... not WorldMap -->
-            <h:outputLink rendered="#{!downloadPopupRequired}"
+            <h:commandLink rendered="#{!downloadPopupRequired}"
                            type="button" styleClass="btn btn-default #{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}"
                            disabled="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}"
-                           value="#{fileDownloadService.startExploreDownloadLink( guestbookResponse, fileMetadata )}" target="_blank">
+                           action="#{fileDownloadService.startExploreDownloadLink( guestbookResponse, fileMetadata )}" target="_blank">
                 <span class="glyphicon glyphicon-equalizer"/> <span class="ladda-label">#{bundle.explore}</span>
-            </h:outputLink>
+            </h:commandLink>
             <p:commandLink rendered="#{downloadPopupRequired}"
                            type="button" styleClass="btn btn-default"
                            action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'explore' )}"
@@ -76,14 +77,14 @@
             </p:commandLink>
         </ui:fragment>
 
-        
+
         <ui:fragment rendered="#{worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata) and !(twoRavensHelper.canSeeTwoRavensExploreButtonFromPage(fileMetadata))}">
             <!-- WorldMap Explore button ONLY ... not TwoRavens -->
-            <h:outputLink pt:role="button" rendered="#{!downloadPopupRequired}"
+            <h:commandLink pt:role="button" rendered="#{!downloadPopupRequired}"
                           type="button" styleClass="btn btn-default #{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" disabled="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" 
-                          title="Explore" value="#{ worldMapPermissionHelper.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }" target="_blank">
+                          title="Explore" action="#{ worldMapPermissionHelper.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }" target="_blank">
                 <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore}
-            </h:outputLink>
+            </h:commandLink>
             <p:commandLink rendered="#{downloadPopupRequired}"
                            type="button" styleClass="btn btn-default"
                            action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'worldMap' )}"
@@ -110,7 +111,7 @@
             </ui:fragment>
         </div>
 
-        
+
         <p:commandLink rendered="#{ fileDownloadHelper.canDownloadFile(fileMetadata) and !(fileMetadata.dataFile.tabularData) and !(downloadPopupRequired) }"
                        type="button" styleClass="btn btn-default"
                        actionListener="#{fileDownloadService.startFileDownload(fileMetadata, 'Download')}">

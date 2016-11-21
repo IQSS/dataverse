@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -165,7 +166,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         logger.fine("issued file download redirect for filemetadata "+fileMetadata.getId()+", datafile "+fileMetadata.getDataFile().getId());
     }
     
-    public String startExploreDownloadLink(GuestbookResponse guestbookResponse, FileMetadata fmd){
+    public void startExploreDownloadLink(GuestbookResponse guestbookResponse, FileMetadata fmd){
         RequestContext context = RequestContext.getCurrentInstance();
         context.execute("PF('downloadPopup').hide();");
         if (guestbookResponse != null && guestbookResponse.isWriteResponse() 
@@ -185,10 +186,18 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         } else {
             datafileId = fmd.getDataFile().getId();
         }
-        return twoRavensHelper.getDataExploreURLComplete(datafileId);
+
+        try {
+            if (datafileId != null) {
+                ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
+                externalContext.redirect(twoRavensHelper.getDataExploreURLComplete(datafileId));
+            }
+        } catch (IOException ioe) {
+            logger.warning("Two Ravens Explore failed. " + ioe.getMessage());
+        }
     }
     
-    public String startWorldMapDownloadLink(GuestbookResponse guestbookResponse, FileMetadata fmd){
+    public void startWorldMapDownloadLink(GuestbookResponse guestbookResponse, FileMetadata fmd){
         RequestContext context = RequestContext.getCurrentInstance();
         context.execute("PF('downloadPopup').hide();");
                 
@@ -207,12 +216,14 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         if (guestbookResponse != null && guestbookResponse.getDataFile() != null){
             file  = guestbookResponse.getDataFile();
         }
-              
-        if (file != null){
-            return  worldMapPermissionHelper.getMapLayerMetadata(file).getLayerLink();
-        } else {
-            return "";
-        }     
+        try {
+            if (file != null) {
+                ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
+                externalContext.redirect(worldMapPermissionHelper.getMapLayerMetadata(file).getLayerLink());
+            }
+        } catch (IOException ioe) {
+            logger.warning("World Map Explore failed. " + ioe.getMessage());
+        }
     }
           
     public boolean isDownloadPopupRequired(DatasetVersion datasetVersion) {
