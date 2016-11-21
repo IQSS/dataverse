@@ -43,7 +43,7 @@
                             
                             <div id="builtinProvider" jsf:rendered="#{LoginPage.provider == 'builtin'}">
                                 <h:form id="loginForm" styleClass="form-horizontal">
-                                    <h2 class="no-margin-top">#{bundle['auth.providers.title.builtin']}</h2>
+                                    <!-- <h2 class="no-margin-top"># {bundle['auth.providers.title.builtin']}</h2> -->
                                     <p:focus context="loginForm"/>
                                     <ui:remove>
                                         <ui:fragment rendered="#{LoginPage.multipleProvidersAvailable}">
@@ -91,7 +91,7 @@
                             </div>
                             <div id="remoteProvider" jsf:rendered="#{LoginPage.provider != 'builtin'}">
                                 <ui:fragment rendered="#{(LoginPage.provider == 'shib') and (systemConfig.shibEnabled == true)}">
-                                    <h2 class="no-margin-top">#{bundle['auth.providers.title.shib']}</h2>
+                                    <!--<h2 class="no-margin-top"># {bundle['auth.providers.title.shib']}</h2>-->
 
                                     <h:form>
                                         <p class="help-block">
@@ -156,14 +156,14 @@
                                 </ui:fragment>                             
 
                                 <ui:fragment rendered="#{LoginPage.provider != 'shib'}">
-                                    <h2 class="no-margin-top">
-                                        <h:outputText value="#{bundle['auth.providers.title.' += LoginPage.provider]}"/>
-                                    </h2>
-                                    <p class="help-block">
-                                        <o:form useRequestURI="true">
+                                    <!-- <h2 class="no-margin-top">
+                                        <h:outputText value="# {bundle['auth.providers.title.' += LoginPage.provider]}"/>
+                                    </h2> -->
+                                    <o:form useRequestURI="true">
+                                        <p class="help-block">
                                             <span class="glyphicon glyphicon-info-sign"/>
                                             <h:outputFormat value=" #{bundle['auth.providers.blurb']}" escape="false">
-                                                <o:param value="#{bundle['auth.providers.title.' += LoginPage.provider]}"/>
+                                                <o:param value="#{bundle['auth.providers.title.'.concat(LoginPage.provider)]}"/>
                                                 <o:param>
                                                     <p:commandLink value="#{bundle['contact.support']}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
                                                         <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
@@ -173,8 +173,8 @@
                                                     </p:commandLink>                                
                                                 </o:param>
                                             </h:outputFormat>
-                                        </o:form>
-                                    </p>
+                                        </p>
+                                    </o:form>
                                 </ui:fragment>
 
                                 <!--ONLY RENDER BUTTON FOR OAUTH PROVIDERS (ORCID, Google, GitHub)-->
@@ -185,6 +185,12 @@
                                                 <h:graphicImage rendered="#{LoginPage.authProvider.id == 'orcid' or LoginPage.authProvider.id == 'orcid-sandbox'}" value="/resources/images/orcid_16x16.png" height="16" width="16"/>
                                                 <h:outputFormat value=" #{LoginPage.loginButtonText}"/>
                                             </h:outputLink>
+                                            <ui:fragment rendered="#{LoginPage.authProvider.id == 'orcid' or LoginPage.authProvider.id == 'orcid-sandbox'}">
+                                                <p class="help-block small" style="margin-top:1em;">
+                                                    ORCID is an independent non-profit effort to provide an open registry of unique researcher identifiers and 
+                                                    open services to link research activities and organizations to these identifiers. Learn more at <a href="#" target="_blank">orcid.org</a>.
+                                                </p>
+                                            </ui:fragment>
                                         </div>
                                     </div>
                                 </div>
@@ -193,7 +199,9 @@
                             <div id="otherProviders" jsf:rendered="#{LoginPage.authenticationProvidersAvailable}">
                                 <h4>Other Log In Options</h4>
                                 <ui:repeat value="#{LoginPage.listAuthenticationProviders()}" var="provider">
-                                    <a href="/loginpage.xhtml?redirectPage=dataverseuser.xhtml&amp;provider=#{provider.id}" class="btn btn-default" style="margin-right:1em;"><h:outputText value="#{provider.title}" /></a>
+                                    <h:outputLink rendered="#{provider.id != LoginPage.authProvider.id}" styleClass="btn btn-default" value="/loginpage.xhtml?redirectPage=dataverseuser.xhtml&amp;provider=#{provider.id}">
+                                        <h:outputText value="#{provider.title}" />
+                                    </h:outputLink>
                                 </ui:repeat>
                             </div>
                         </div>
