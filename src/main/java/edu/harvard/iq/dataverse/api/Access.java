@@ -178,9 +178,9 @@ public class Access extends AbstractApiBean {
     @Path("datafile/{fileId}")
     @GET
     @Produces({ "application/xml" })
-    public DownloadInstance datafile(@PathParam("fileId") Long fileId, @PathParam("gbrecs") Boolean gbrecs, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {                
+    public DownloadInstance datafile(@PathParam("fileId") Long fileId, @QueryParam("gbrecs") Boolean gbrecs, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {                
         DataFile df = dataFileService.find(fileId);
-        GuestbookResponse gbr = null;
+        GuestbookResponse gbr = null;        
         if (gbrecs == null ){
             gbr = guestbookResponseService.initDefaultGuestbookResponse(df.getOwner(), df, session);
         }

@@ -146,6 +146,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             }
            
         }
+        System.out.print(fileDownloadUrl);
         logger.fine("Returning file download url: " + fileDownloadUrl);
         try {
             FacesContext.getCurrentInstance().getExternalContext().redirect(fileDownloadUrl);
