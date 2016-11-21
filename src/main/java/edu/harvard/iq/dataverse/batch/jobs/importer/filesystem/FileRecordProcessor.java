@@ -5,20 +5,12 @@ import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
-import edu.harvard.iq.dataverse.DataverseSession;
-import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.batch.jobs.importer.ImportMode;
-import edu.harvard.iq.dataverse.engine.command.Command;
-import edu.harvard.iq.dataverse.engine.command.CommandContext;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetVersionCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 
 import javax.annotation.PostConstruct;
 import javax.batch.api.chunk.ItemProcessor;
@@ -26,10 +18,7 @@ import javax.batch.operations.JobOperator;
 import javax.batch.runtime.BatchRuntime;
 import javax.batch.runtime.context.JobContext;
 import javax.ejb.EJB;
-import javax.ejb.EJBException;
 import javax.enterprise.context.Dependent;
-import javax.faces.application.FacesMessage;
-import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.File;
@@ -61,15 +50,6 @@ public class FileRecordProcessor implements ItemProcessor {
 
     @EJB
     DatasetServiceBean datasetServiceBean;
-
-    @EJB
-    EjbDataverseEngine commandEngine;
-
-    @Inject
-    DataverseRequestServiceBean dataverseRequestServiceBean;
-
-    @Inject
-    DataverseSession dataverseSession;
 
     Dataset dataset;
     AuthenticatedUser user;
@@ -110,8 +90,9 @@ public class FileRecordProcessor implements ItemProcessor {
      */
     private DataFile createDataFile(File file) {
 
-        // enforce batch import constraints
-        if (dataset.getVersions().size() == 1 &&
+        // enforce constraints
+        if (permissionServiceBean.userOn(user, dataset.getOwner()).has(Permission.EditDataset) &&
+                dataset.getVersions().size() == 1 &&
                 dataset.getLatestVersion().getVersionState() == DatasetVersion.VersionState.DRAFT) {
             
             DatasetVersion version = dataset.getLatestVersion();
@@ -138,29 +119,8 @@ public class FileRecordProcessor implements ItemProcessor {
             if (version.getFileMetadatas() == null) version.setFileMetadatas(new ArrayList<>());
             version.getFileMetadatas().add(fmd);
             fmd.setDatasetVersion(version);
-            
-            // update the datasetversion via the command engine to enforce user permissions and constraints
-            try {
-                //dataverseSession.setUser(user);
-                Command<DatasetVersion> cmd;
-                cmd = new UpdateDatasetVersionCommand(null, version);
-                commandEngine.submit(cmd);
-            } catch (EJBException ex) {
-                StringBuilder error = new StringBuilder();
-                error.append(ex).append(" ").append(ex.getMessage()).append(" ");
-                Throwable cause = ex;
-                while (cause.getCause()!= null) {
-                    cause = cause.getCause();
-                    error.append(cause).append(" ").append(cause.getMessage()).append(" ");
-                }
-                logger.log(Level.SEVERE, "EJB Error updating DatasetVersion: " + error.toString());
-                return null;
-            } catch (CommandException ex) {
-                logger.log(Level.SEVERE, "CommandException Error updating DatasetVersion: " + ex.getMessage());
-                return null;
-            }
 
-            //datafile = dataFileServiceBean.save(datafile);
+            datafile = dataFileServiceBean.save(datafile);
             return datafile;
             
         } else {
