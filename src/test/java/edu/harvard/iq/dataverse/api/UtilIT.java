@@ -487,11 +487,27 @@ public class UtilIT {
         return response;
     }
 
+    static Response migrateOAuthToBuiltin(Long userIdToConvert, String newEmailAddress, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(newEmailAddress)
+                .put("/api/admin/authenticatedUsers/id/" + userIdToConvert + "/convertRemoteToBuiltIn");
+        return response;
+    }
+
     static Response migrateBuiltinToShib(String data, String apiToken) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .body(data)
                 .put("/api/admin/authenticatedUsers/convert/builtin2shib");
+        return response;
+    }
+
+    static Response migrateBuiltinToOAuth(String data, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(data)
+                .put("/api/admin/authenticatedUsers/convert/builtin2oauth");
         return response;
     }
 

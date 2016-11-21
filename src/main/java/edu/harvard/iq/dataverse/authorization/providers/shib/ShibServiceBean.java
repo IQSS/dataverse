@@ -325,10 +325,13 @@ public class ShibServiceBean {
 
     /**
      * For testing, don't expect this to work well.
+     *
+     * @todo Move this method to somewhere that makes more sense for OAuth as
+     * well as Shib.
      */
     public Map<String, String> getRandomUser() throws JsonSyntaxException, JsonIOException {
         Map<String, String> fakeUser = new HashMap<>();
-        String sURL = "http://api.randomuser.me/0.8";
+        String sURL = "https://api.randomuser.me/0.8";
         URL url = null;
         try {
             url = new URL(sURL);

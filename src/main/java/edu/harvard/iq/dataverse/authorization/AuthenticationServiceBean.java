@@ -586,6 +586,11 @@ public class AuthenticationServiceBean {
 
     // TODO should probably be moved to the Shib provider - this is a classic Shib-specific
     //      use case. This class should deal with general autnetications.
+    @Deprecated
+    /**
+     * @deprecated. Switch to convertBuiltInUserToRemoteUser instead.
+     * @todo. Switch to convertBuiltInUserToRemoteUser instead.
+     */
     public AuthenticatedUser convertBuiltInToShib(AuthenticatedUser builtInUserToConvert, String shibProviderId, UserIdentifier newUserIdentifierInLookupTable) {
         logger.info("converting user " + builtInUserToConvert.getId() + " from builtin to shib");
         String builtInUserIdentifier = builtInUserToConvert.getIdentifier();
@@ -635,6 +640,55 @@ public class AuthenticationServiceBean {
         return null;
     }
 
+    public AuthenticatedUser convertBuiltInUserToRemoteUser(AuthenticatedUser builtInUserToConvert, String newProviderId, UserIdentifier newUserIdentifierInLookupTable) {
+        logger.info("converting user " + builtInUserToConvert.getId() + " from builtin to remote");
+        String builtInUserIdentifier = builtInUserToConvert.getIdentifier();
+        logger.info("builtin user identifier: " + builtInUserIdentifier);
+        TypedQuery<AuthenticatedUserLookup> typedQuery = em.createQuery("SELECT OBJECT(o) FROM AuthenticatedUserLookup AS o WHERE o.authenticatedUser = :auid", AuthenticatedUserLookup.class);
+        typedQuery.setParameter("auid", builtInUserToConvert);
+        AuthenticatedUserLookup authuserLookup;
+        try {
+            authuserLookup = typedQuery.getSingleResult();
+        } catch (NoResultException | NonUniqueResultException ex) {
+            logger.info("exception caught: " + ex);
+            return null;
+        }
+        if (authuserLookup == null) {
+            return null;
+        }
+
+        String oldProviderId = authuserLookup.getAuthenticationProviderId();
+        logger.info("we expect this to be 'builtin': " + oldProviderId);
+        authuserLookup.setAuthenticationProviderId(newProviderId);
+        String oldUserLookupIdentifier = authuserLookup.getPersistentUserId();
+        logger.info("this should be 'pete' or whatever the old builtin username was: " + oldUserLookupIdentifier);
+        String perUserShibIdentifier = newUserIdentifierInLookupTable.getLookupStringPerAuthProvider();
+        authuserLookup.setPersistentUserId(perUserShibIdentifier);
+        /**
+         * @todo this should be a transaction of some kind. We want to update
+         * the authenticateduserlookup and also delete the row from the
+         * builtinuser table in a single transaction.
+         */
+        em.persist(authuserLookup);
+        String builtinUsername = builtInUserIdentifier.replaceFirst(AuthenticatedUser.IDENTIFIER_PREFIX, "");
+        BuiltinUser builtin = builtinUserServiceBean.findByUserName(builtinUsername);
+        if (builtin != null) {
+            // These were created by AuthenticationResponse.Status.BREAKOUT in ShibServiceBean.canLogInAsBuiltinUser
+            List<PasswordResetData> oldTokens = passwordResetServiceBean.findPasswordResetDataByDataverseUser(builtin);
+            for (PasswordResetData oldToken : oldTokens) {
+                em.remove(oldToken);
+            }
+            em.remove(builtin);
+        } else {
+            logger.info("Couldn't delete builtin user because could find it based on username " + builtinUsername);
+        }
+        AuthenticatedUser nonBuiltinUser = lookupUser(newProviderId, perUserShibIdentifier);
+        if (nonBuiltinUser != null) {
+            return nonBuiltinUser;
+        }
+        return null;
+    }
+
     /**
      * @param idOfAuthUserToConvert The id of the AuthenticatedUser (Shibboleth
      * user) to convert to a BuiltinUser.
@@ -644,14 +698,14 @@ public class AuthenticationServiceBean {
      * @throws java.lang.Exception You must catch and report back to the user (a
      * superuser) any Exceptions.
      */
-    public BuiltinUser convertShibToBuiltIn(Long idOfAuthUserToConvert, String newEmailAddress) throws Exception {
+    public BuiltinUser convertRemoteToBuiltIn(Long idOfAuthUserToConvert, String newEmailAddress) throws Exception {
         AuthenticatedUser authenticatedUser = findByID(idOfAuthUserToConvert);
         if (authenticatedUser == null) {
             throw new Exception("User id " + idOfAuthUserToConvert + " not found.");
         }
         AuthenticatedUser existingUserWithSameEmail = getAuthenticatedUserByEmail(newEmailAddress);
         if (existingUserWithSameEmail != null) {
-            throw new Exception("User id " + idOfAuthUserToConvert + " (" + authenticatedUser.getIdentifier() + ") cannot be converted from Shibboleth to BuiltIn because the email address " + newEmailAddress + " is already in use by user id " + existingUserWithSameEmail.getId() + " (" + existingUserWithSameEmail.getIdentifier() + ").");
+            throw new Exception("User id " + idOfAuthUserToConvert + " (" + authenticatedUser.getIdentifier() + ") cannot be converted from remote to BuiltIn because the email address " + newEmailAddress + " is already in use by user id " + existingUserWithSameEmail.getId() + " (" + existingUserWithSameEmail.getIdentifier() + ").");
         }
         BuiltinUser builtinUser = new BuiltinUser();
         builtinUser.setUserName(authenticatedUser.getUserIdentifier());
@@ -668,12 +722,12 @@ public class AuthenticationServiceBean {
             for (ConstraintViolation<?> violation : violations) {
                 logMsg.append(" Invalid value: <<<").append(violation.getInvalidValue()).append(">>> for ").append(violation.getPropertyPath()).append(" at ").append(violation.getLeafBean()).append(" - ").append(violation.getMessage());
             }
-            throw new Exception("User id " + idOfAuthUserToConvert + " cannot be converted from Shibboleth to BuiltIn because of constraint violations on the BuiltIn user that would be created: " + numViolations + ". Details: " + logMsg);
+            throw new Exception("User id " + idOfAuthUserToConvert + " cannot be converted from remote to BuiltIn because of constraint violations on the BuiltIn user that would be created: " + numViolations + ". Details: " + logMsg);
         }
         try {
             builtinUser = builtinUserServiceBean.save(builtinUser);
         } catch (IllegalArgumentException ex) {
-            throw new Exception("User id " + idOfAuthUserToConvert + " cannot be converted from Shibboleth to BuiltIn because of an IllegalArgumentException creating the row in the builtinuser table: " + ex);
+            throw new Exception("User id " + idOfAuthUserToConvert + " cannot be converted from remote to BuiltIn because of an IllegalArgumentException creating the row in the builtinuser table: " + ex);
         }
         AuthenticatedUserLookup lookup = authenticatedUser.getAuthenticatedUserLookup();
         if (lookup == null) {
@@ -683,9 +737,9 @@ public class AuthenticationServiceBean {
         if (providerId == null) {
             throw new Exception("User id " + idOfAuthUserToConvert + " provider id is null.");
         }
-        String shibProviderId = ShibAuthenticationProvider.PROVIDER_ID;
-        if (!providerId.equals(shibProviderId)) {
-            throw new Exception("User id " + idOfAuthUserToConvert + " cannot be converted from Shibboleth to BuiltIn because current provider id is '" + providerId + "' rather than '" + shibProviderId + "'.");
+        String builtinProviderId = BuiltinAuthenticationProvider.PROVIDER_ID;
+        if (providerId.equals(builtinProviderId)) {
+            throw new Exception("User id " + idOfAuthUserToConvert + " cannot be converted from remote to BuiltIn because current provider id is '" + providerId + "' which is the same as '" + builtinProviderId + "'. This user is already a BuiltIn user.");
         }
         lookup.setAuthenticationProviderId(BuiltinAuthenticationProvider.PROVIDER_ID);
         lookup.setPersistentUserId(authenticatedUser.getUserIdentifier());
