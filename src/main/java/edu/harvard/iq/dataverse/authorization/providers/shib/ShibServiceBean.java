@@ -2,11 +2,8 @@ package edu.harvard.iq.dataverse.authorization.providers.shib;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonIOException;
-import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.google.gson.JsonSyntaxException;
-import edu.harvard.iq.dataverse.Shib;
+import edu.harvard.iq.dataverse.authorization.AuthTestDataServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationRequest;
 import edu.harvard.iq.dataverse.authorization.AuthenticationResponse;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
@@ -15,7 +12,6 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthentic
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.PasswordEncryption;
-import static edu.harvard.iq.dataverse.authorization.providers.shib.ShibUtil.getRandomUserStatic;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -26,7 +22,6 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;
@@ -35,7 +30,6 @@ import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
-import org.apache.commons.lang.StringUtils;
 
 @Named
 @Stateless
@@ -47,6 +41,8 @@ public class ShibServiceBean {
     AuthenticationServiceBean authSvc;
     @EJB
     BuiltinUserServiceBean builtinUserService;
+    @EJB
+    AuthTestDataServiceBean authTestDataService;
     @EJB
     SystemConfig systemConfig;
     @EJB
@@ -314,76 +310,13 @@ public class ShibServiceBean {
     }
 
     private void mutateRequestForDevRandom(HttpServletRequest request) {
-        Map<String, String> randomUser = getRandomUser();
+        Map<String, String> randomUser = authTestDataService.getRandomUser();
         request.setAttribute(ShibUtil.lastNameAttribute, randomUser.get("lastName"));
         request.setAttribute(ShibUtil.firstNameAttribute, randomUser.get("firstName"));
         request.setAttribute(ShibUtil.emailAttribute, randomUser.get("email"));
         request.setAttribute(ShibUtil.shibIdpAttribute, randomUser.get("idp"));
         // eppn
         request.setAttribute(ShibUtil.uniquePersistentIdentifier, UUID.randomUUID().toString().substring(0, 8));
-    }
-
-    /**
-     * For testing, don't expect this to work well.
-     *
-     * @todo Move this method to somewhere that makes more sense for OAuth as
-     * well as Shib.
-     */
-    public Map<String, String> getRandomUser() throws JsonSyntaxException, JsonIOException {
-        Map<String, String> fakeUser = new HashMap<>();
-        String sURL = "https://api.randomuser.me/0.8";
-        URL url = null;
-        try {
-            url = new URL(sURL);
-        } catch (MalformedURLException ex) {
-            logger.info("Exception: " + ex);
-        }
-        HttpURLConnection randomUserRequest = null;
-        try {
-            randomUserRequest = (HttpURLConnection) url.openConnection();
-        } catch (IOException ex) {
-            logger.info("Exception: " + ex);
-        }
-        try {
-            randomUserRequest.connect();
-        } catch (IOException ex) {
-            logger.info("Exception: " + ex);
-        }
-
-        JsonParser jp = new JsonParser();
-        JsonElement root = null;
-        try {
-            root = jp.parse(new InputStreamReader((InputStream) randomUserRequest.getContent()));
-        } catch (IOException ex) {
-            logger.info("Exception: " + ex);
-        }
-        if (root == null) {
-            return getRandomUserStatic();
-        }
-        JsonObject rootObject = root.getAsJsonObject();
-        logger.fine(rootObject.toString());
-        JsonElement results = rootObject.get("results");
-        logger.fine(results.toString());
-        JsonElement firstResult = results.getAsJsonArray().get(0);
-        logger.fine(firstResult.toString());
-        JsonElement user = firstResult.getAsJsonObject().get("user");
-        JsonElement username = user.getAsJsonObject().get("username");
-        JsonElement salt = user.getAsJsonObject().get("salt");
-        JsonElement email = user.getAsJsonObject().get("email");
-        JsonElement password = user.getAsJsonObject().get("password");
-        JsonElement name = user.getAsJsonObject().get("name");
-        JsonElement firstName = name.getAsJsonObject().get("first");
-        JsonElement lastName = name.getAsJsonObject().get("last");
-        String firstNameString = StringUtils.capitalize(firstName.getAsString());
-        String lastNameString = StringUtils.capitalize(lastName.getAsString());
-        fakeUser.put("firstName", firstNameString);
-        fakeUser.put("lastName", lastNameString);
-        fakeUser.put("displayName", firstNameString + " " + lastNameString);
-        fakeUser.put("email", email.getAsString());
-        fakeUser.put("idp", "https://idp." + password.getAsString() + ".com/idp/shibboleth");
-        fakeUser.put("username", username.getAsString());
-        fakeUser.put("eppn", salt.getAsString());
-        return fakeUser;
     }
 
 }

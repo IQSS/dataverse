@@ -48,6 +48,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response.Status;
 import java.util.List;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
+import edu.harvard.iq.dataverse.authorization.AuthTestDataServiceBean;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.User;
 /**
@@ -64,6 +65,8 @@ public class Admin extends AbstractApiBean {
     BuiltinUserServiceBean builtinUserService;
     @EJB
     ShibServiceBean shibService;
+    @EJB
+    AuthTestDataServiceBean authTestDataService;
 
     @Path("settings")
     @GET
@@ -405,7 +408,7 @@ public class Admin extends AbstractApiBean {
             }
         }
         String shibProviderId = ShibAuthenticationProvider.PROVIDER_ID;
-        Map<String, String> randomUser = shibService.getRandomUser();
+        Map<String, String> randomUser = authTestDataService.getRandomUser();
 //        String eppn = UUID.randomUUID().toString().substring(0, 8);
         String eppn = randomUser.get("eppn");
         String idPEntityId = randomUser.get("idp");
@@ -549,7 +552,7 @@ public class Admin extends AbstractApiBean {
             }
         }
 //        String shibProviderId = ShibAuthenticationProvider.PROVIDER_ID;
-        Map<String, String> randomUser = shibService.getRandomUser();
+        Map<String, String> randomUser = authTestDataService.getRandomUser();
 //        String eppn = UUID.randomUUID().toString().substring(0, 8);
         String eppn = randomUser.get("eppn");
         String idPEntityId = randomUser.get("idp");
