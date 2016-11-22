@@ -221,7 +221,8 @@ public class ImportServiceBean {
         // Kraffmiller's export modules; replace the logic below with clean
         // programmatic lookup of the import plugin needed. 
 
-        if ("ddi".equalsIgnoreCase(metadataFormat) || "oai_ddi".equals(metadataFormat)) {
+        if ("ddi".equalsIgnoreCase(metadataFormat) || "oai_ddi".equals(metadataFormat) 
+                || metadataFormat.toLowerCase().matches("^oai_ddi.*")) {
             try {
                 String xmlToParse = new String(Files.readAllBytes(metadataFile.toPath()));
                 // TODO: 

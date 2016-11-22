@@ -72,7 +72,16 @@ import javax.xml.stream.XMLInputFactory;
 
 public class FastGetRecord {
    
-    private static String DATAVERSE_EXTENDED_METADATA = "dataverse_json";
+    private static final String DATAVERSE_EXTENDED_METADATA = "dataverse_json";
+    private static final String XML_METADATA_TAG = "metadata";
+    private static final String XML_METADATA_TAG_OPEN = "<"+XML_METADATA_TAG+">";
+    private static final String XML_METADATA_TAG_CLOSE = "</"+XML_METADATA_TAG+">";
+    private static final String XML_OAI_PMH_CLOSING_TAGS = "</record></GetRecord></OAI-PMH>";
+    private static final String XML_XMLNS_XSI_ATTRIBUTE_TAG = "xmlns:xsi=";
+    private static final String XML_XMLNS_XSI_ATTRIBUTE = " "+XML_XMLNS_XSI_ATTRIBUTE_TAG+"\"http://www.w3.org/2001/XMLSchema-instance\">";
+    private static final String XML_COMMENT_START = "<!--";
+    private static final String XML_COMMENT_END = "-->";
+    
     /**
      * Client-side GetRecord verb constructor
      *
@@ -186,20 +195,34 @@ public class FastGetRecord {
  
             while ( ( line = rd.readLine () ) != null) {
                 if (!metadataFlag) {
-                    if (line.matches(".*<metadata>.*")) {
+                    if (line.matches(".*"+XML_METADATA_TAG_OPEN+".*")) {
                         String lineCopy = line;
 
-                        int i = line.indexOf("<metadata>");
-                        line = line.substring(i+10);
+                        int i = line.indexOf(XML_METADATA_TAG_OPEN);
+                        if (line.length() > i + XML_METADATA_TAG_OPEN.length()) { 
+                            line = line.substring(i + XML_METADATA_TAG_OPEN.length());
+                            // TODO: check if there's anything useful (non-white space, etc.)
+                            // in the remaining part of the line?
+                            if ((i = line.indexOf('<')) > -1) {
+                                if (i > 0) {
+                                    line = line.substring(i);
+                                }
+                            } else {
+                                line = null; 
+                            }
+                        
+                        } else {
+                            line = null;
+                        }
 
-                        oaiResponseHeader = oaiResponseHeader.concat(lineCopy.replaceAll("<metadata>.*", "<metadata></metadata></record></GetRecord></OAI-PMH>"));
+                        oaiResponseHeader = oaiResponseHeader.concat(lineCopy.replaceAll(XML_METADATA_TAG_OPEN+".*", XML_METADATA_TAG_OPEN+XML_METADATA_TAG_CLOSE+XML_OAI_PMH_CLOSING_TAGS));
                         tempFileStream = new FileOutputStream(savedMetadataFile);
                         metadataOut = new PrintWriter (tempFileStream, true);
 
                         //metadataOut.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"); /* ? */
 
                         metadataFlag = true;
-                    } else if (line.matches(".*<metadata [^>]*>.*")) {
+                    } else if (line.matches(".*<"+XML_METADATA_TAG+" [^>]*>.*")) {
                         if (metadataPrefix.equals(DATAVERSE_EXTENDED_METADATA)) {
                             oaiResponseHeader = oaiResponseHeader.concat(line);
                             metadataWritten = true;
@@ -207,7 +230,10 @@ public class FastGetRecord {
                         }
                     }
                 }
+                
+                //System.out.println(line);
 
+                if (line != null) {
                 if (metadataFlag) {
                     if (!metadataWritten) {
                         // Inside an OAI-PMH GetRecord response, the metadata
@@ -224,26 +250,26 @@ public class FastGetRecord {
                         // significant.
                         //  -- L.A. 
 
-                        if (line.matches("<metadata")) {
+                        if (line.matches("<"+XML_METADATA_TAG)) {
                            int i = 0;
-                           while ((i = line.indexOf("<metadata", i)) > -1) {
-                               if (!line.substring(i).matches("^<metadata[^>]*/")) {
+                           while ((i = line.indexOf("<"+XML_METADATA_TAG, i)) > -1) {
+                               if (!line.substring(i).matches("^<"+XML_METADATA_TAG+"[^>]*/")) {
                                    // don't count if it's a closed, empty tag:
                                    // <metadata />
                                    mopen++;
                                }
-                               i+=10;
+                               i+=XML_METADATA_TAG_OPEN.length();
                            }
                         }
-                        if (line.matches(".*</metadata>.*")) {
+                        if (line.matches(".*"+XML_METADATA_TAG_CLOSE+".*")) {
                             int i = 0;
-                            while ((i = line.indexOf("</metadata>", i)) > -1) {
-                                i+=11;
+                            while ((i = line.indexOf(XML_METADATA_TAG_CLOSE, i)) > -1) {
+                                i+=XML_METADATA_TAG_CLOSE.length();
                                 mclose++;
                             }
 
                             if ( mclose > mopen ) {
-                                line = line.substring(0, line.lastIndexOf("</metadata>"));
+                                line = line.substring(0, line.lastIndexOf(XML_METADATA_TAG_CLOSE));
                                 metadataWritten = true;
                             }
                         }
@@ -262,10 +288,13 @@ public class FastGetRecord {
                             // the first "real" XML element (of the form
                             // <!-- ... -->). So we need to skip these!
 
-                            while ( (line.indexOf('<', offset) > -1)
-                                &&
-                                "<!--".equals(line.substring(offset=line.indexOf('<', offset),4))) {
+                            int j = 0; 
+                            while ( ((j = line.indexOf('<', offset)) > -1)
+                                && line.length() >= j+XML_COMMENT_START.length()
+                                && XML_COMMENT_START.equals(line.substring(j,j+XML_COMMENT_START.length()))) {
 
+                                offset = j; 
+                                
                                 //OK, this is a comment allright.
 
                                 // is it terminated on the same line?
@@ -274,13 +303,13 @@ public class FastGetRecord {
 
                                 while (line != null
                                         &&
-                                        ((offset = line.indexOf("-->",offset)) < 0)) {
+                                        ((offset = line.indexOf(XML_COMMENT_END,offset)) < 0)) {
                                     line = line.replaceAll("[\n\r]", " ");
                                     offset = line.length();
                                     line = line.concat(rd.readLine());
                                 }
 
-                                offset += 3;
+                                offset += XML_COMMENT_END.length();
                             }
 
                             // if we have skipped some comments, is there another
@@ -319,10 +348,11 @@ public class FastGetRecord {
 
                                     int i = firstElementStart;
 
-                                    if (!line.substring(i).matches("^<[^>]*xmlns.*")) {
+                                    if (!line.substring(i).matches("^<[^>]*"+XML_XMLNS_XSI_ATTRIBUTE_TAG+".*")) {
                                         String head = line.substring(0, i);
                                         String tail = line.substring(i);
-                                        tail = tail.replaceFirst(">", " xmlns=\"http://www.openarchives.org/OAI/2.0/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">");
+                                        //tail = tail.replaceFirst(">", " xmlns=\"http://www.openarchives.org/OAI/2.0/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">");
+                                        tail = tail.replaceFirst(">", XML_XMLNS_XSI_ATTRIBUTE);
                                         line = head + tail;
                                     }
 
@@ -339,6 +369,7 @@ public class FastGetRecord {
                     }
                 } else {
                     oaiResponseHeader = oaiResponseHeader.concat(line);
+                }
                 }
             }
 
