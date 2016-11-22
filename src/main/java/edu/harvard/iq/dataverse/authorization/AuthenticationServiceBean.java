@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthentic
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProviderFactory;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.PasswordEncryption;
 import edu.harvard.iq.dataverse.authorization.providers.echo.EchoAuthenticationProviderFactory;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2AuthenticationProviderFactory;
@@ -23,6 +24,7 @@ import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailData;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.passwordreset.PasswordResetData;
 import edu.harvard.iq.dataverse.passwordreset.PasswordResetServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Collection;
@@ -624,7 +626,7 @@ public class AuthenticationServiceBean {
         String builtinUsername = builtInUserIdentifier.replaceFirst(AuthenticatedUser.IDENTIFIER_PREFIX, "");
         BuiltinUser builtin = builtinUserServiceBean.findByUserName(builtinUsername);
         if (builtin != null) {
-            // These were created by AuthenticationResponse.Status.BREAKOUT in ShibServiceBean.canLogInAsBuiltinUser
+            // These were created by AuthenticationResponse.Status.BREAKOUT in canLogInAsBuiltinUser
             List<PasswordResetData> oldTokens = passwordResetServiceBean.findPasswordResetDataByDataverseUser(builtin);
             for (PasswordResetData oldToken : oldTokens) {
                 em.remove(oldToken);
@@ -662,8 +664,8 @@ public class AuthenticationServiceBean {
         authuserLookup.setAuthenticationProviderId(newProviderId);
         String oldUserLookupIdentifier = authuserLookup.getPersistentUserId();
         logger.info("this should be 'pete' or whatever the old builtin username was: " + oldUserLookupIdentifier);
-        String perUserShibIdentifier = newUserIdentifierInLookupTable.getLookupStringPerAuthProvider();
-        authuserLookup.setPersistentUserId(perUserShibIdentifier);
+        String perUserIdentifier = newUserIdentifierInLookupTable.getLookupStringPerAuthProvider();
+        authuserLookup.setPersistentUserId(perUserIdentifier);
         /**
          * @todo this should be a transaction of some kind. We want to update
          * the authenticateduserlookup and also delete the row from the
@@ -673,7 +675,7 @@ public class AuthenticationServiceBean {
         String builtinUsername = builtInUserIdentifier.replaceFirst(AuthenticatedUser.IDENTIFIER_PREFIX, "");
         BuiltinUser builtin = builtinUserServiceBean.findByUserName(builtinUsername);
         if (builtin != null) {
-            // These were created by AuthenticationResponse.Status.BREAKOUT in ShibServiceBean.canLogInAsBuiltinUser
+            // These were created by AuthenticationResponse.Status.BREAKOUT in canLogInAsBuiltinUser
             List<PasswordResetData> oldTokens = passwordResetServiceBean.findPasswordResetDataByDataverseUser(builtin);
             for (PasswordResetData oldToken : oldTokens) {
                 em.remove(oldToken);
@@ -682,7 +684,7 @@ public class AuthenticationServiceBean {
         } else {
             logger.info("Couldn't delete builtin user because could find it based on username " + builtinUsername);
         }
-        AuthenticatedUser nonBuiltinUser = lookupUser(newProviderId, perUserShibIdentifier);
+        AuthenticatedUser nonBuiltinUser = lookupUser(newProviderId, perUserIdentifier);
         if (nonBuiltinUser != null) {
             return nonBuiltinUser;
         }
@@ -690,8 +692,8 @@ public class AuthenticationServiceBean {
     }
 
     /**
-     * @param idOfAuthUserToConvert The id of the AuthenticatedUser (Shibboleth
-     * user) to convert to a BuiltinUser.
+     * @param idOfAuthUserToConvert The id of the remote AuthenticatedUser
+     * (Shibboleth user or OAuth user) to convert to a BuiltinUser.
      * @param newEmailAddress The new email address that will be used instead of
      * the user's old email address from the institution that they have left.
      * @return BuiltinUser
@@ -748,6 +750,88 @@ public class AuthenticationServiceBean {
         em.persist(authenticatedUser);
         em.flush();
         return builtinUser;
+    }
+
+    public AuthenticatedUser canLogInAsBuiltinUser(String username, String password) {
+        logger.fine("checking to see if " + username + " knows the password...");
+        if (password == null) {
+            logger.info("password was null");
+            return null;
+        }
+
+        AuthenticationRequest authReq = new AuthenticationRequest();
+        /**
+         * @todo Should this really be coming from a bundle like this? Added
+         * because that's what BuiltinAuthenticationProvider does.
+         */
+        authReq.putCredential(BundleUtil.getStringFromBundle("login.builtin.credential.usernameOrEmail"), username);
+        authReq.putCredential(BundleUtil.getStringFromBundle("login.builtin.credential.password"), password);
+        /**
+         * @todo Should probably set IP address here.
+         */
+//        authReq.setIpAddress(session.getUser().getRequestMetadata().getIpAddress());
+
+        String credentialsAuthProviderId = BuiltinAuthenticationProvider.PROVIDER_ID;
+        try {
+            AuthenticatedUser au = authenticate(credentialsAuthProviderId, authReq);
+            logger.fine("User authenticated:" + au.getEmail());
+            return au;
+        } catch (AuthenticationFailedException ex) {
+            logger.info("The username and/or password entered is invalid: " + ex.getResponse().getMessage());
+            if (AuthenticationResponse.Status.BREAKOUT.equals(ex.getResponse().getStatus())) {
+                /**
+                 * Note that this "BREAKOUT" status creates PasswordResetData!
+                 * We'll delete it just before blowing away the BuiltinUser in
+                 * AuthenticationServiceBean.convertBuiltInToShib
+                 */
+                logger.info("AuthenticationFailedException caught in canLogInAsBuiltinUser: The username and/or password entered is invalid: " + ex.getResponse().getMessage() + " - Maybe the user (" + username + ") hasn't upgraded their password? Checking the old password...");
+                BuiltinUser builtinUser = builtinUserServiceBean.findByUsernameOrEmail(username);
+                if (builtinUser != null) {
+                    boolean userAuthenticated = PasswordEncryption.getVersion(builtinUser.getPasswordEncryptionVersion()).check(password, builtinUser.getEncryptedPassword());
+                    if (userAuthenticated == true) {
+                        AuthenticatedUser authUser = lookupUser(BuiltinAuthenticationProvider.PROVIDER_ID, builtinUser.getUserName());
+                        if (authUser != null) {
+                            return authUser;
+                        } else {
+                            logger.info("canLogInAsBuiltinUser: Couldn't find AuthenticatedUser based on BuiltinUser username " + builtinUser.getUserName());
+                        }
+                    } else {
+                        logger.info("canLogInAsBuiltinUser: User doesn't know old pre-bcrypt password either.");
+                    }
+                } else {
+                    logger.info("canLogInAsBuiltinUser: Couldn't run `check` because no BuiltinUser found with username " + username);
+                }
+            }
+            return null;
+        } catch (EJBException ex) {
+            Throwable cause = ex;
+            StringBuilder sb = new StringBuilder();
+            sb.append(ex + " ");
+            while (cause.getCause() != null) {
+                cause = cause.getCause();
+                sb.append(cause.getClass().getCanonicalName() + " ");
+                sb.append(cause.getMessage()).append(" ");
+                /**
+                 * @todo Investigate why authSvc.authenticate is throwing
+                 * NullPointerException. If you convert a Shib user or an OAuth
+                 * user to a Builtin user, the password will be null.
+                 */
+                if (cause instanceof NullPointerException) {
+                    for (int i = 0; i < 2; i++) {
+                        StackTraceElement stacktrace = cause.getStackTrace()[i];
+                        if (stacktrace != null) {
+                            String classCanonicalName = stacktrace.getClass().getCanonicalName();
+                            String methodName = stacktrace.getMethodName();
+                            int lineNumber = stacktrace.getLineNumber();
+                            String error = "at " + stacktrace.getClassName() + "." + stacktrace.getMethodName() + "(" + stacktrace.getFileName() + ":" + lineNumber + ") ";
+                            sb.append(error);
+                        }
+                    }
+                }
+            }
+            logger.info("When trying to validate password, exception calling authSvc.authenticate: " + sb.toString());
+            return null;
+        }
     }
 
 }

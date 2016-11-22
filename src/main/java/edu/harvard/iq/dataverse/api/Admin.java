@@ -451,7 +451,7 @@ public class Admin extends AbstractApiBean {
             if (oldBuiltInUser != null) {
                 String usernameOfBuiltinAccountToConvert = oldBuiltInUser.getUserName();
                 response.add("old username", usernameOfBuiltinAccountToConvert);
-                AuthenticatedUser authenticatedUser = shibService.canLogInAsBuiltinUser(usernameOfBuiltinAccountToConvert, password);
+                AuthenticatedUser authenticatedUser = authSvc.canLogInAsBuiltinUser(usernameOfBuiltinAccountToConvert, password);
                 if (authenticatedUser != null) {
                     knowsExistingPassword = true;
                     AuthenticatedUser convertedUser = authSvc.convertBuiltInToShib(builtInUserToConvert, shibProviderId, newUserIdentifierInLookupTable);
@@ -597,7 +597,7 @@ public class Admin extends AbstractApiBean {
             if (oldBuiltInUser != null) {
                 String usernameOfBuiltinAccountToConvert = oldBuiltInUser.getUserName();
                 response.add("old username", usernameOfBuiltinAccountToConvert);
-                AuthenticatedUser authenticatedUser = shibService.canLogInAsBuiltinUser(usernameOfBuiltinAccountToConvert, password);
+                AuthenticatedUser authenticatedUser = authSvc.canLogInAsBuiltinUser(usernameOfBuiltinAccountToConvert, password);
                 if (authenticatedUser != null) {
                     knowsExistingPassword = true;
                     AuthenticatedUser convertedUser = authSvc.convertBuiltInUserToRemoteUser(builtInUserToConvert, newProviderId, newUserIdentifierInLookupTable);
