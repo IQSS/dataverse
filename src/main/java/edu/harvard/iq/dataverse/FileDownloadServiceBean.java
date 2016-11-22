@@ -157,18 +157,19 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     }
     
         //public String startFileDownload(FileMetadata fileMetadata, String format) {
-    public void startFileDownload(FileMetadata fileMetadata, String format) {
+    public void startFileDownload(GuestbookResponse guestbookResponse, FileMetadata fileMetadata, String format) {
         boolean recordsWritten = false;
-        if(fileMetadata.getDatasetVersion().isDraft()){
+        if(!fileMetadata.getDatasetVersion().isDraft()){
+           guestbookResponse = guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, format);
+           writeGuestbookResponseRecord(guestbookResponse);
             recordsWritten = true;
         }
         callDownloadServlet(format, fileMetadata.getDataFile().getId(), recordsWritten);
         logger.fine("issued file download redirect for filemetadata "+fileMetadata.getId()+", datafile "+fileMetadata.getDataFile().getId());
     }
     
-    public void startExploreDownloadLink(GuestbookResponse guestbookResponse, FileMetadata fmd){
-        RequestContext context = RequestContext.getCurrentInstance();
-        context.execute("PF('downloadPopup').hide();");
+    public String startExploreDownloadLink(GuestbookResponse guestbookResponse, FileMetadata fmd){
+
         if (guestbookResponse != null && guestbookResponse.isWriteResponse() 
                 && (( fmd != null && fmd.getDataFile() != null) || guestbookResponse.getDataFile() != null)){
             if(guestbookResponse.getDataFile() == null  && fmd != null){                
@@ -186,20 +187,18 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         } else {
             datafileId = fmd.getDataFile().getId();
         }
-
+        String retVal = twoRavensHelper.getDataExploreURLComplete(datafileId);
+        
         try {
-            if (datafileId != null) {
-                ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
-                externalContext.redirect(twoRavensHelper.getDataExploreURLComplete(datafileId));
-            }
-        } catch (IOException ioe) {
-            logger.warning("Two Ravens Explore failed. " + ioe.getMessage());
+            FacesContext.getCurrentInstance().getExternalContext().redirect(retVal);
+            return retVal;
+        } catch (IOException ex) {
+            logger.info("Failed to issue a redirect to file download url.");
         }
+        return retVal;
     }
     
-    public void startWorldMapDownloadLink(GuestbookResponse guestbookResponse, FileMetadata fmd){
-        RequestContext context = RequestContext.getCurrentInstance();
-        context.execute("PF('downloadPopup').hide();");
+    public String startWorldMapDownloadLink(GuestbookResponse guestbookResponse, FileMetadata fmd){
                 
         if (guestbookResponse != null  && guestbookResponse.isWriteResponse() && ((fmd != null && fmd.getDataFile() != null) || guestbookResponse.getDataFile() != null)){
             if(guestbookResponse.getDataFile() == null && fmd != null){
@@ -216,14 +215,17 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         if (guestbookResponse != null && guestbookResponse.getDataFile() != null){
             file  = guestbookResponse.getDataFile();
         }
+        
+
+        String retVal = worldMapPermissionHelper.getMapLayerMetadata(file).getLayerLink();
+        
         try {
-            if (file != null) {
-                ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
-                externalContext.redirect(worldMapPermissionHelper.getMapLayerMetadata(file).getLayerLink());
-            }
-        } catch (IOException ioe) {
-            logger.warning("World Map Explore failed. " + ioe.getMessage());
+            FacesContext.getCurrentInstance().getExternalContext().redirect(retVal);
+            return retVal;
+        } catch (IOException ex) {
+            logger.info("Failed to issue a redirect to file download url.");
         }
+        return retVal;
     }
           
     public boolean isDownloadPopupRequired(DatasetVersion datasetVersion) {

@@ -145,18 +145,18 @@
                            update="@([id$=Messages]) @form" oncomplete="if (args &amp;&amp; !args.validationFailed) {PF('downloadPopup').hide(); PF('downloadDataSubsetPopup').show();}">                                    
                 <f:param name="DO_GB_VALIDATION" value="true"/>               
             </p:commandLink>
-            <h:commandLink type="button" styleClass="btn btn-default" rendered="#{guestbookResponse.fileFormat == 'worldMap'}"
-                           action="#{fileDownloadService.startWorldMapDownloadLink(guestbookResponse, null)}"  target="_blank"
-                           onclick="PF('downloadPopup').hide();"
-                            > 
+            <p:commandLink type="button" styleClass="btn btn-default" rendered="#{guestbookResponse.fileFormat == 'worldMap'}"
+                           actionListener="#{fileDownloadService.startWorldMapDownloadLink(guestbookResponse, null)}" 
+                            update="@([id$=Messages])" oncomplete="if (args &amp;&amp; !args.validationFailed) PF('downloadPopup').hide();">
                 #{bundle['acceptTerms']} 
-            </h:commandLink>
-            <h:commandLink type="button" styleClass="btn btn-default"  rendered="#{guestbookResponse.fileFormat == 'explore'}"
-                           action="#{fileDownloadService.startExploreDownloadLink(guestbookResponse, null)}" target="_blank"
-                           onclick="PF('downloadPopup').hide();"
-                           >
+           <f:param name="DO_GB_VALIDATION" value="true"/> 
+            </p:commandLink>
+            <p:commandLink type="button" styleClass="btn btn-default"  rendered="#{guestbookResponse.fileFormat == 'explore'}"
+                           actionListener="#{fileDownloadService.startExploreDownloadLink(guestbookResponse, null)}"                           
+                           update="@([id$=Messages])" oncomplete="if (args &amp;&amp; !args.validationFailed) PF('downloadPopup').hide();">
                 #{bundle['acceptTerms']} 
-            </h:commandLink>
+                <f:param name="DO_GB_VALIDATION" value="true"/> 
+            </p:commandLink>
             <button type="button" class="btn btn-default" onclick="PF('downloadPopup').hide();PF('blockDatasetForm').hide();" value="#{bundle.cancel}">#{bundle.cancel}</button>
         </div>
 </ui:composition>

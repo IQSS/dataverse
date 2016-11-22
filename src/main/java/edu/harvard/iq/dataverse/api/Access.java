@@ -181,10 +181,13 @@ public class Access extends AbstractApiBean {
     public DownloadInstance datafile(@PathParam("fileId") Long fileId, @QueryParam("gbrecs") Boolean gbrecs, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {                
         DataFile df = dataFileService.find(fileId);
         GuestbookResponse gbr = null;    
-        if (gbrecs == null ){
-            gbr = guestbookResponseService.initDefaultGuestbookResponse(df.getOwner(), df, session);
-        }
         
+        /*
+        if (gbrecs == null && df.isReleased()){
+            //commenting out for 4.6 SEK
+           // gbr = guestbookResponseService.initDefaultGuestbookResponse(df.getOwner(), df, session);
+        }
+        */
         if (df == null) {
             logger.warning("Access: datafile service could not locate a DataFile object for id "+fileId+"!");
             throw new WebApplicationException(Response.Status.NOT_FOUND);
