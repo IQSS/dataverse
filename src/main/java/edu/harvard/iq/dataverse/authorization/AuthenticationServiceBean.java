@@ -17,6 +17,8 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.PasswordEncrypti
 import edu.harvard.iq.dataverse.authorization.providers.echo.EchoAuthenticationProviderFactory;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2AuthenticationProviderFactory;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.GitHubOAuth2AP;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.GoogleOAuth2AP;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -26,6 +28,7 @@ import edu.harvard.iq.dataverse.passwordreset.PasswordResetData;
 import edu.harvard.iq.dataverse.passwordreset.PasswordResetServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.sql.Timestamp;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -832,6 +835,23 @@ public class AuthenticationServiceBean {
             logger.info("When trying to validate password, exception calling authSvc.authenticate: " + sb.toString());
             return null;
         }
+    }
+
+    public List<String> getAuthenticationProviderIdsSorted() {
+        GitHubOAuth2AP github = new GitHubOAuth2AP(null, null);
+        GoogleOAuth2AP google = new GoogleOAuth2AP(null, null);
+        /**
+         * @todo Stop hard-coding the magic strings "orcid" and "orcid-sandbox"
+         * below. Centralize them as static.
+         */
+        return Arrays.asList(
+                BuiltinAuthenticationProvider.PROVIDER_ID,
+                ShibAuthenticationProvider.PROVIDER_ID,
+                "orcid",
+                "orcid-sandbox",
+                github.getId(),
+                google.getId()
+        );
     }
 
 }

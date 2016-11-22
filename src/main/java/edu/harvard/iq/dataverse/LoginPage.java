@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.CredentialsAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationFailedException;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
+import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -128,9 +129,17 @@ public class LoginPage implements java.io.Serializable {
     
     public List<AuthenticationProviderDisplayInfo> listAuthenticationProviders() {
         List<AuthenticationProviderDisplayInfo> infos = new LinkedList<>();
-        for ( String id : authSvc.getAuthenticationProviderIds() ) {
+        for (String id : authSvc.getAuthenticationProviderIdsSorted()) {
             AuthenticationProvider authenticationProvider = authSvc.getAuthenticationProvider(id);
-            infos.add( authenticationProvider.getInfo());
+            if (authenticationProvider != null) {
+                if (ShibAuthenticationProvider.PROVIDER_ID.equals(authenticationProvider.getId())) {
+                    if (systemConfig.isShibEnabled()) {
+                        infos.add(authenticationProvider.getInfo());
+                    }
+                } else {
+                    infos.add(authenticationProvider.getInfo());
+                }
+            }
         }
         return infos;
     }
