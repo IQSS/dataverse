@@ -39,7 +39,7 @@
 
                     <div class="col-md-12">
                         <div class="col-md-6 col-md-offset-3">
-                            <h2><span class="glyphicon glyphicon-log-in" /> Log In</h2>
+                            <h2><span class="glyphicon glyphicon-log-in" /> #{bundle.login}</h2>
                             
                             <div id="builtinProvider" jsf:rendered="#{LoginPage.provider == 'builtin'}">
                                 <h:form id="loginForm" styleClass="form-horizontal">
@@ -76,8 +76,8 @@
                                     </ui:repeat>
                                     <div class="form-group">
                                         <div class="col-sm-offset-4 col-sm-9 button-block">
-                                            <p:commandButton id="login" value="#{bundle.login}" update="@all" action="#{LoginPage.login}"/>
-                                            <p:button value="#{bundle.cancel}" outcome="/dataverse.xhtml?alias=#{dataverseServiceBean.findRootDataverse().alias}"/>
+                                            <p:commandButton id="login" styleClass="btn btn-default" value="#{bundle.login}" update="@all" action="#{LoginPage.login}"/>
+                                            <!-- <p:button styleClass="btn btn-default" value="# {bundle.cancel}" outcome="/dataverse.xhtml?alias=# {dataverseServiceBean.findRootDataverse().alias}"/> -->
                                         </div>
                                     </div>
                                     <div class="form-group">
@@ -188,7 +188,7 @@
                                             <ui:fragment rendered="#{LoginPage.authProvider.id == 'orcid' or LoginPage.authProvider.id == 'orcid-sandbox'}">
                                                 <p class="help-block small" style="margin-top:1em;">
                                                     ORCID is an independent non-profit effort to provide an open registry of unique researcher identifiers and 
-                                                    open services to link research activities and organizations to these identifiers. Learn more at <a href="#" target="_blank">orcid.org</a>.
+                                                    open services to link research activities and organizations to these identifiers. Learn more at <a href="http://orcid.org/" target="_blank">orcid.org</a>.
                                                 </p>
                                             </ui:fragment>
                                         </div>
@@ -197,7 +197,7 @@
                             </div>
                             
                             <div id="otherProviders" jsf:rendered="#{LoginPage.authenticationProvidersAvailable}">
-                                <h4>Other Log In Options</h4>
+                                <h4>#{bundle['auth.providers.title']}</h4>
                                 <ui:repeat value="#{LoginPage.listAuthenticationProviders()}" var="provider">
                                     <h:outputLink rendered="#{provider.id != LoginPage.authProvider.id}" styleClass="btn btn-default" value="/loginpage.xhtml?redirectPage=dataverseuser.xhtml&amp;provider=#{provider.id}">
                                         <h:outputText value="#{provider.title}" />
