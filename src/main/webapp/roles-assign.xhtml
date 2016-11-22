@@ -52,7 +52,14 @@
                                                   value="#{managePermissionsPage.selectedRoleId}"
                                                   required="#{param['DO_ASSIGN_VALIDATION']}"
                                                   requiredMessage="#{bundle['dataverse.permissions.usersOrGroups.assignDialog.role.requiredMsg']}">
-                                    <f:selectItems value="#{managePermissionsPage.availableRoles}" var="role" itemValue="#{role.id}" itemLabel="#{role.name}"/>
+                                   <f:selectItems 
+									value="#{managePermissionsPage.availableRoles}" 
+									var="role" 
+									itemValue="#{role.id}" 
+									itemLabel="#{bundle[role.name]}"/> 
+									
+									
+                                   
                                     <p:ajax update="roleDetails" process="@this"/>
                                 </p:selectOneRadio>
                                 <p:message for="assignRoleRadios" display="text"/>
@@ -63,7 +70,7 @@
                                 <div id="assignRolePermissionLabels">
                                     <p class="help-block">#{bundle['dataverse.permissions.usersOrGroups.assignDialog.role.description']}</p>
                                     <div jsf:rendered="#{!empty managePermissionsPage.assignedRole.name}">
-                                        <span class="highlightBold">#{managePermissionsPage.assignedRole.name}</span>
+                                       <span class="highlightBold">#{(bundle[managePermissionsPage.assignedRole.name].startsWith("???")) ? managePermissionsPage.assignedRole.name : bundle[managePermissionsPage.assignedRole.name]}</span>  <!-- Hack to translate values from the database -->
                                         <div class="small" jsf:rendered="#{!empty managePermissionsPage.assignedRole.description}">#{managePermissionsPage.assignedRole.description}</div>
                                         <div class="margin-bottom">
                                             <ui:repeat value="#{managePermissionsPage.assignedRole.permissions().toArray()}" var="prm">
@@ -77,7 +84,7 @@
                                                 <f:param value="#{managePermissionsPage.assignedRoleObjectTypes}"/>
                                                 <f:param value="#{managePermissionsPage.definitionLevelString}"/>
                                             </h:outputFormat>
-                                        </p>
+                                        </p> 
                                     </div>
                                 </div>
                             </p:fragment>

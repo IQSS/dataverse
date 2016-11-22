@@ -1,41 +1,41 @@
-#metadataBlock	name	dataverseAlias	displayName												
-	journal		Journal Metadata												
-#datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	metadatablock_id
-	journalVolumeIssue	Journal	Indicates the volume, issue and date of a journal, which this Dataset is associated with.		none	0		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		journal
-	journalVolume	Volume	The journal volume which this Dataset is associated with (e.g., Volume 4).		text	1		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	journalVolumeIssue	journal
-	journalIssue	Issue	The journal issue number which this Dataset is associated with (e.g., Number 2, Autumn).		text	2		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	journalVolumeIssue	journal
-	journalPubDate	Publication Date	The publication date for this journal volume/issue, which this Dataset is associated with (e.g., 1999).	YYYY or YYYY-MM or YYYY-MM-DD	date	3		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	journalVolumeIssue	journal
-	journalArticleType	Type of Article	Indicates what kind of article this is, for example, a research article, a commentary, a book or product review, a case report, a calendar, etc (based on JATS). 		text	4		TRUE	TRUE	FALSE	TRUE	FALSE	FALSE		journal
-#controlledVocabulary	DatasetField	Value	identifier	displayOrder											
-	journalArticleType	abstract		0											
-	journalArticleType	addendum		1											
-	journalArticleType	announcement		2											
-	journalArticleType	article-commentary		3											
-	journalArticleType	book review		4											
-	journalArticleType	books received		5											
-	journalArticleType	brief report		6											
-	journalArticleType	calendar		7											
-	journalArticleType	case report		8											
-	journalArticleType	collection		9											
-	journalArticleType	correction		10											
-	journalArticleType	data paper		11											
-	journalArticleType	discussion		12											
-	journalArticleType	dissertation		13											
-	journalArticleType	editorial		14											
-	journalArticleType	in brief		15											
-	journalArticleType	introduction		16											
-	journalArticleType	letter		17											
-	journalArticleType	meeting report		18											
-	journalArticleType	news		19											
-	journalArticleType	obituary		20											
-	journalArticleType	oration		21											
-	journalArticleType	partial retraction		22											
-	journalArticleType	product review		23											
-	journalArticleType	rapid communication		24											
-	journalArticleType	reply		25											
-	journalArticleType	reprint		26											
-	journalArticleType	research article		27											
-	journalArticleType	retraction		28											
-	journalArticleType	review article		29											
-	journalArticleType	translation		30											
-	journalArticleType	other		31											
+#metadataBlock	name	dataverseAlias	displayName	frenchdisplayName													
+	journal		Journal Metadata	Métadonnées liées à la revue													
+#datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	metadatablock_id	frenchtitle	frenchdescription
+	journalVolumeIssue	Journal	Indicates the volume, issue and date of a journal, which this Dataset is associated with.		none	0		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		journal	Revue	Comprend le volume, le numéro et la date de publication de la revue à laquelle cet ensemble de données est associé.
+	journalVolume	Volume	The journal volume which this Dataset is associated with (e.g., Volume 4).		text	1		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	journalVolumeIssue	journal	Volume	Volume de la revue associé à cet ensemble de données (p. ex. le volume 4).
+	journalIssue	Issue	The journal issue number which this Dataset is associated with (e.g., Number 2, Autumn).		text	2		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	journalVolumeIssue	journal	Numéro	Numéro de la revue associé à cet ensemble de données (p. ex. numéro 2, automne).
+	journalPubDate	Publication Date	The publication date for this journal volume/issue, which this Dataset is associated with (e.g., 1999).	YYYY or YYYY-MM or YYYY-MM-DD	date	3		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	journalVolumeIssue	journal	Date de publication	Date de publication du volume/numéro de cette revue associé à cet ensemble de données (p. ex. 1999).
+	journalArticleType	Type of Article	Indicates what kind of article this is, for example, a research article, a commentary, a book or product review, a case report, a calendar, etc (based on JATS). 		text	4		TRUE	TRUE	FALSE	TRUE	FALSE	FALSE		journal	Type d'article	Indique le type d'article dont il s'agit, par exemple un article de recherche, un commentaire, une critique de livre ou de produit, une étude de cas, un calendrier, etc. (en fonction du JATS)
+#controlledVocabulary	DatasetField	Value	identifier	displayOrder													Valeur
+	journalArticleType	abstract		0													Résumé
+	journalArticleType	addendum		1													Addenda
+	journalArticleType	announcement		2													Annonce
+	journalArticleType	article-commentary		3													Article-commentaire
+	journalArticleType	book review		4													Critique de livre
+	journalArticleType	books received		5													Livres reçus
+	journalArticleType	brief report		6													Rapport sommaire
+	journalArticleType	calendar		7													Calendrier
+	journalArticleType	case report		8													Étude de cas
+	journalArticleType	collection		9													Collection
+	journalArticleType	correction		10													Correction
+	journalArticleType	data paper		11													Document sur les données
+	journalArticleType	discussion		12													Discussion
+	journalArticleType	dissertation		13													Dissertation
+	journalArticleType	editorial		14													Éditorial
+	journalArticleType	in brief		15													En résumé
+	journalArticleType	introduction		16													Introduction
+	journalArticleType	letter		17													Lettre
+	journalArticleType	meeting report		18													Rapport de réunion
+	journalArticleType	news		19													Nouvelles
+	journalArticleType	obituary		20													Article nécrologique
+	journalArticleType	oration		21													Discours
+	journalArticleType	partial retraction		22													Rétractation partielle
+	journalArticleType	product review		23													Examen des produits
+	journalArticleType	rapid communication		24													Communication rapide
+	journalArticleType	reply		25													Réponse
+	journalArticleType	reprint		26													Réimpression
+	journalArticleType	research article		27													Article de recherche
+	journalArticleType	retraction		28													Rétractation  
+	journalArticleType	review article		29													Mise au point
+	journalArticleType	translation		30													Traduction
+	journalArticleType	other		31													Autre

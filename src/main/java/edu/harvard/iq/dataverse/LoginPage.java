@@ -18,6 +18,7 @@ import java.net.URLDecoder;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -142,7 +143,7 @@ public class LoginPage implements java.io.Serializable {
         }
         for ( FilledCredential fc : filledCredentialsList ) {
             if(fc.getValue()==null || fc.getValue().isEmpty()){
-                JH.addMessage(FacesMessage.SEVERITY_ERROR, "Please enter a "+fc.getCredential().getTitle());
+                JH.addMessage(FacesMessage.SEVERITY_ERROR, ResourceBundle.getBundle("Bundle").getString("login."+fc.getCredential().getTitle()));
             }
             authReq.putCredential(fc.getCredential().getTitle(), fc.getValue());
         }

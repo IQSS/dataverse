@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -76,6 +77,7 @@ public class BuiltinUserPage implements java.io.Serializable {
 
         CREATE, EDIT, CHANGE_PASSWORD, FORGOT
     };
+    private static final ResourceBundle bundle = ResourceBundle.getBundle("Bundle");
 
     @Inject
     DataverseSession session;
@@ -116,10 +118,10 @@ public class BuiltinUserPage implements java.io.Serializable {
     private EditMode editMode;
     private String redirectPage = "dataverse.xhtml";    
 
-    @NotBlank(message = "Please enter a password for your account.")
+    @NotBlank(message = "{dataverseUserPage.enterPassword}")
     private String inputPassword;
 
-    @NotBlank(message = "Please enter a password for your account.")
+    @NotBlank(message = "{dataverseUserPage.enterPassword}")    
     private String currentPassword;
     private Long dataverseId;
     private List<UserNotification> notificationsList;
@@ -356,7 +358,7 @@ public class BuiltinUserPage implements java.io.Serializable {
         }
         if (!userNameFound) {
             ((UIInput) toValidate).setValid(false);
-            FacesMessage message = new FacesMessage("Username or Email is incorrect.");
+            FacesMessage message = new FacesMessage(bundle.getString("userPage.usernameIncorrect"));
             context.addMessage(toValidate.getClientId(context), message);
         }
     }
@@ -370,7 +372,7 @@ public class BuiltinUserPage implements java.io.Serializable {
             
             ((UIInput) toValidate).setValid(false);
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, 
-                "Password Error", "Password is blank: re-type it again.");
+                JH.localize("userPage.passwordError"), JH.localize("userPage.passwordBlankRetype"));
             context.addMessage(toValidate.getClientId(context), message);
             return;
             
@@ -382,7 +384,7 @@ public class BuiltinUserPage implements java.io.Serializable {
         
         if ( ! PasswordEncryption.getVersion(builtinUser.getPasswordEncryptionVersion()).check(password, builtinUser.getEncryptedPassword()) ) {
             ((UIInput) toValidate).setValid(false);
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Password Error", "Password is incorrect.");
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, JH.localize("userPage.passwordError"), JH.localize("userPage.passwordIncorrect"));
             context.addMessage(toValidate.getClientId(context), message);
         }
     }
@@ -395,7 +397,7 @@ public class BuiltinUserPage implements java.io.Serializable {
             ((UIInput) toValidate).setValid(false);
 
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, 
-                "Password Error", "The new password is blank: re-type it again");
+                JH.localize("userPage.passwordError"), JH.localize("userPage.newPasswordBlankRetype"));
             context.addMessage(toValidate.getClientId(context), message);
             return;
             
@@ -413,8 +415,8 @@ public class BuiltinUserPage implements java.io.Serializable {
         boolean passwordIsComplexEnough = password!= null && validator.validatePassword(password);
         if (!passwordIsComplexEnough) {
             ((UIInput) toValidate).setValid(false);
-            String messageDetail = "Password is not complex enough. The password must have at least one letter, one number and be at least " + minPasswordLength + " characters in length.";
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Password Error", messageDetail);
+            String messageDetail = java.text.MessageFormat.format(JH.localize("userPage.passwordNotComplex"), new Object[] {minPasswordLength});
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, JH.localize("userPage.passwordError"), messageDetail);
             context.addMessage(toValidate.getClientId(context), message);
         }
     }
@@ -492,9 +494,9 @@ public class BuiltinUserPage implements java.io.Serializable {
                 emailChanged = true;
             }
             editMode = null;
-            String msg = "Your account information has been successfully updated.";
+            String msg = bundle.getString("userPage.informationUpdated");
             if (passwordChanged) {
-                msg = "Your account password has been successfully changed.";
+                msg = bundle.getString("userPage.passwordChanged");
             }
             if (emailChanged) {
                 ConfirmEmailUtil confirmEmailUtil = new ConfirmEmailUtil();
