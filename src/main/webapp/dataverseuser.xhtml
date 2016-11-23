@@ -532,7 +532,10 @@
                                         #{bundle['auth.providers.brandForIdentifier.orcid-sandbox']}
                                     </label>
                                     <div class="col-sm-9">
-                                        <p class="form-control-static">#{DataverseUserPage.currentUser.authenticatedUserLookup.persistentUserId}</p>
+                                        <p class="form-control-static">
+                                            <h:graphicImage value="/resources/images/orcid_16x16.png" height="16" width="16"/>
+                                            #{DataverseUserPage.currentUser.authenticatedUserLookup.persistentUserId}
+                                        </p>
                                     </div>
                                 </div>
                                 <!-- ORCID iD -->
@@ -541,7 +544,10 @@
                                         #{bundle['auth.providers.brandForIdentifier.orcid']}
                                     </label>
                                     <div class="col-sm-9">
-                                        <p class="form-control-static">#{DataverseUserPage.currentUser.authenticatedUserLookup.persistentUserId}</p>
+                                        <p class="form-control-static">
+                                            <h:graphicImage value="/resources/images/orcid_16x16.png" height="16" width="16"/>
+                                            #{DataverseUserPage.currentUser.authenticatedUserLookup.persistentUserId}
+                                        </p>
                                     </div>
                                 </div>
                                 <div class="form-group" jsf:rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
