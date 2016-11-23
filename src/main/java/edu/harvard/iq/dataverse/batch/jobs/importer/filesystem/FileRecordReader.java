@@ -92,9 +92,18 @@ public class FileRecordReader extends AbstractItemReader {
 
     @Override
     public void open(Serializable checkpoint) throws Exception {
+        
+        /**
+         * Current constraints:
+         * 1. valid directory
+         * 2. user has edit dataset permission
+         * 3. only one dataset version
+         * 4. dataset version is draft
+         */
+        
         directory = new File(System.getProperty("dataverse.files.directory")
                 + File.separator + dataset.getAuthority() + File.separator + dataset.getIdentifier());
-        if (isValidDirectory()) {
+        if (isValidDirectory(directory)) {
             files = getFiles(directory);
             iterator = files.listIterator();
             currentRecordNumber = 0;
@@ -102,20 +111,22 @@ public class FileRecordReader extends AbstractItemReader {
         } else {
             stepContext.setExitStatus("FAILED");
         }
-        // constraints: edit permission, single version, in draft
+        
         if (!permissionServiceBean.userOn(user, dataset.getOwner()).has(Permission.EditDataset)) {
-            logger.log(Level.SEVERE, "User doesn't have permission to import files into this dataset.");
+            logger.log(Level.SEVERE, "User doesn't have permission to import files into this dataset. ");
             persistentUserData += "FAILED: User doesn't have permission to import files into this dataset.";
             stepContext.setExitStatus("FAILED");
         }
+        
         if (dataset.getVersions().size() != 1) {
             logger.log(Level.SEVERE, "File system import is currently only supported for datasets with one version.");
-            persistentUserData += "FAILED: File system import is currently only supported for for datasets with one version.";
+            persistentUserData += "FAILED: File system import is currently only supported for for datasets with one version. ";
             stepContext.setExitStatus("FAILED");
         }
+        
         if (dataset.getLatestVersion().getVersionState() != DatasetVersion.VersionState.DRAFT) {
             logger.log(Level.SEVERE, "File system import is currently only supported for DRAFT versions.");
-            persistentUserData += "FAILED: File system import is currently only supported for DRAFT versions.";
+            persistentUserData += "FAILED: File system import is currently only supported for DRAFT versions. ";
             stepContext.setExitStatus("FAILED");
         }
     }
@@ -167,11 +178,11 @@ public class FileRecordReader extends AbstractItemReader {
      * Make sure the directory path is truly a directory, exists and we can read it.
      * @return isValid
      */
-    private boolean isValidDirectory() {
+    private boolean isValidDirectory(File directory) {
         String path = directory.getAbsolutePath();
         if (!directory.exists()) {
-            logger.log(Level.SEVERE, "Directory " + path + "does not exist.");
-            persistentUserData += "FAILED: Directory " + path + "does not exist.";
+            logger.log(Level.SEVERE, "Directory " + path + " does not exist.");
+            persistentUserData += "FAILED: Directory " + path + " does not exist.";
             return false;
         }
         if (!directory.isDirectory()) {

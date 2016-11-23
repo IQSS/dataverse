@@ -1,14 +1,9 @@
 package edu.harvard.iq.dataverse.batch.jobs.importer.filesystem;
 
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
-import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.batch.jobs.importer.ImportMode;
 
@@ -22,9 +17,6 @@ import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.File;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -38,12 +30,6 @@ public class FileRecordProcessor implements ItemProcessor {
 
     @Inject
     JobContext jobContext;
-
-    @EJB
-    DataFileServiceBean dataFileServiceBean;
-    
-    @EJB
-    PermissionServiceBean permissionServiceBean;
 
     @EJB
     AuthenticationServiceBean authenticationServiceBean;
@@ -79,53 +65,7 @@ public class FileRecordProcessor implements ItemProcessor {
                 return null;
             }
         }
-        return createDataFile(new File(path));
+        return new File(path);
     }
 
-    /**
-     * Create a DatasetFile and corresponding FileMetadata for a file on the filesystem and add it to the
-     * latest dataset version (if the user has AddDataset permissions for the dataset).
-     * @param file
-     * @return datafile
-     */
-    private DataFile createDataFile(File file) {
-
-        // enforce constraints
-        if (permissionServiceBean.userOn(user, dataset.getOwner()).has(Permission.EditDataset) &&
-                dataset.getVersions().size() == 1 &&
-                dataset.getLatestVersion().getVersionState() == DatasetVersion.VersionState.DRAFT) {
-            
-            DatasetVersion version = dataset.getLatestVersion();
-            String path = file.getAbsolutePath();
-            String gid = dataset.getAuthority() + dataset.getDoiSeparator() + dataset.getIdentifier();
-            String relativePath = path.substring(path.indexOf(gid) + gid.length() + 1);
-            DataFile datafile = new DataFile("application/octet-stream"); // we don't determine mime type
-            datafile.setStorageIdentifier(relativePath);
-            datafile.setFilesize(file.length());
-            datafile.setModificationTime(new Timestamp(new Date().getTime()));
-            datafile.setCreateDate(new Timestamp(new Date().getTime()));
-            datafile.setPermissionModificationTime(new Timestamp(new Date().getTime()));
-            datafile.setOwner(dataset);
-            datafile.setIngestDone();
-            datafile.setChecksumType(DataFile.ChecksumType.SHA1);
-            datafile.setChecksumValue("Unknown"); // only temporary since a checksum import job will run next
-
-            // set metadata and add to latest version
-            FileMetadata fmd = new FileMetadata();
-            fmd.setLabel(file.getName());
-            fmd.setDirectoryLabel(relativePath.replace(File.separator + file.getName(), ""));
-            fmd.setDataFile(datafile);
-            datafile.getFileMetadatas().add(fmd);
-            if (version.getFileMetadatas() == null) version.setFileMetadatas(new ArrayList<>());
-            version.getFileMetadatas().add(fmd);
-            fmd.setDatasetVersion(version);
-
-            datafile = dataFileServiceBean.save(datafile);
-            return datafile;
-            
-        } else {
-            return null;
-        }
-
-    }
 }
