@@ -17,6 +17,7 @@ import java.util.Objects;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.Files;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
@@ -693,4 +694,19 @@ public class DataFile extends DvObject implements Comparable {
         }
         return false;
     }
+    
+    public String getPublicationDateFormattedYYYYMMDD() {
+        if (getPublicationDate() != null){
+                   return new SimpleDateFormat("yyyy-MM-dd").format(getPublicationDate()); 
+        }
+        return null;
+    }
+    
+    public String getCreateDateFormattedYYYYMMDD() {
+        if (getCreateDate() != null){
+                   return new SimpleDateFormat("yyyy-MM-dd").format(getCreateDate()); 
+        }
+        return null;
+    }
+    
 }

@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.faces.application.FacesMessage;
@@ -32,6 +33,8 @@ import org.apache.commons.lang.StringUtils;
 @Named("GuestbookPage")
 public class GuestbookPage implements java.io.Serializable {
 
+    private static final Logger logger = Logger.getLogger(GuestbookPage.class.getCanonicalName());
+    
     @EJB
     GuestbookServiceBean guestbookService;
 
@@ -309,13 +312,12 @@ public class GuestbookPage implements java.io.Serializable {
             }
             //
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_FATAL, "Guestbook Save Failed", " - " + error.toString()));
-            System.out.print("dataverse " + dataverse.getName());
-            System.out.print("Ejb exception");
-            System.out.print(error.toString());
+            logger.info("Guestbook Page EJB Exception. Dataverse: " + dataverse.getName());
+            logger.info(error.toString());
             return null;
         } catch (CommandException ex) {
-            System.out.print("command exception");
-            System.out.print(ex.toString());
+            logger.info("Guestbook Page Command Exception. Dataverse: " + dataverse.getName());
+            logger.info(ex.toString());
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_FATAL, "Guestbook Save Failed", " - " + ex.toString()));
             //logger.severe(ex.getMessage());
         }
