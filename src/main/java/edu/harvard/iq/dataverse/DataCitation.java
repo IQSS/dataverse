@@ -172,7 +172,7 @@ public class DataCitation {
 
         // append UNF
         if (!StringUtils.isEmpty(UNF)) {
-            citation.append(" [").append(UNF).append("]");
+            citation.append(", ").append(UNF);
         }
 
         for (DatasetField dsf : optionalValues) {

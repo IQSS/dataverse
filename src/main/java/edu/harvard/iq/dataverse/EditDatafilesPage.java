@@ -149,6 +149,9 @@ public class EditDatafilesPage implements java.io.Serializable {
     
     private String persistentId;
     
+    private String versionString = "";
+            
+    
     private boolean saveEnabled = false; 
 
     // Used to store results of permissions checks
@@ -416,6 +419,13 @@ public class EditDatafilesPage implements java.io.Serializable {
             if (fileMetadatas.size() < 1) {
                 return permissionsWrapper.notFound();
             }
+            
+            if (FileEditMode.SINGLE == mode){
+                if (fileMetadatas.get(0).getDatasetVersion().getId() != null){
+                    versionString = "DRAFT";
+                }
+            }
+            
         }
         
         saveEnabled = true; 
@@ -988,7 +998,8 @@ public class EditDatafilesPage implements java.io.Serializable {
             // the individual File Landing page, we want to redirect back to 
             // the landing page. BUT ONLY if the file still exists - i.e., if 
             // the user hasn't just deleted it!
-            return returnToFileLandingPage(fileMetadatas.get(0).getId());
+            versionString = "DRAFT";
+            return returnToFileLandingPage();
         }
         
         //if (newDraftVersion) {
@@ -1009,24 +1020,29 @@ public class EditDatafilesPage implements java.io.Serializable {
          return "/dataset.xhtml?persistentId=" + dataset.getGlobalId() + "&version=DRAFT&faces-redirect=true";    
     }
     
-    private String returnToDraftVersionById() {
-          return "/dataset.xhtml?versionId=" + workingVersion.getId() + "&faces-redirect=true";
-    }
-    
     private String returnToDatasetOnly(){
          dataset = datasetService.find(dataset.getId());
          return "/dataset.xhtml?persistentId=" + dataset.getGlobalId()  +  "&faces-redirect=true";       
     }
     
-    private String returnToFileLandingPage(Long fileId) {
-        return "/file.xhtml?fileId=" + fileId  + "&datasetVersionId=" + workingVersion.getId() + "&faces-redirect=true";
+    private String returnToFileLandingPage() {
+        
+        Long fileId = fileMetadatas.get(0).getDataFile().getId();       
+        if (versionString.equals("DRAFT")){
+            return  "/file.xhtml?fileId=" + fileId  +  "&version=DRAFT&faces-redirect=true";
+        }
+        return  "/file.xhtml?fileId=" + fileId  +  "&faces-redirect=true";
+
     }
     
     public String cancel() {
+        if (mode == FileEditMode.SINGLE) {
+            return returnToFileLandingPage();
+        }
         if (workingVersion.getId() != null) {
             return returnToDraftVersion();
         }
-        return  returnToDatasetOnly();
+        return returnToDatasetOnly();
     }
 
     public boolean isDuplicate(FileMetadata fileMetadata) {
@@ -1847,30 +1863,6 @@ public class EditDatafilesPage implements java.io.Serializable {
         savedLabelsTempFile = null;
 
         fileMetadataSelectedForIngestOptionsPopup = null;
-    }
-
-    public String getFileDateToDisplay(FileMetadata fileMetadata) {
-        Date fileDate = null;
-        DataFile datafile = fileMetadata.getDataFile();
-        if (datafile != null) {
-            boolean fileHasBeenReleased = datafile.isReleased();
-            if (fileHasBeenReleased) {
-                Timestamp filePublicationTimestamp = datafile.getPublicationDate();
-                if (filePublicationTimestamp != null) {
-                    fileDate = filePublicationTimestamp;
-                }
-            } else {
-                Timestamp fileCreateTimestamp = datafile.getCreateDate();
-                if (fileCreateTimestamp != null) {
-                    fileDate = fileCreateTimestamp;
-                }
-            }
-        }
-        if (fileDate != null) {
-            return displayDateFormat.format(fileDate);
-        }
-
-        return "";
     }
 
     private void populateFileMetadatas() {

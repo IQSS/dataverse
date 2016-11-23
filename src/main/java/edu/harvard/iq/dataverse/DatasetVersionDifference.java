@@ -69,6 +69,17 @@ public class DatasetVersionDifference {
             }
         }
 
+        
+        // TODO: ? 
+        // It looks like we are going through the filemetadatas in both versions, 
+        // *sequentially* (i.e. at the cost of O(N*M)), to select the lists of 
+        // changed, deleted and added files between the 2 versions... But why 
+        // are we doing it, if we are doing virtually the same thing inside 
+        // the initDatasetFilesDifferenceList(), below - but in a more efficient 
+        // way (sorting both lists, then goint through them in parallel, at the 
+        // cost of (N+M) max.? 
+        // -- 4.6 Nov. 2016
+        
         for (FileMetadata fmdo : originalVersion.getFileMetadatas()) {
             boolean deleted = true;
             for (FileMetadata fmdn : newVersion.getFileMetadatas()) {
@@ -648,6 +659,7 @@ public class DatasetVersionDifference {
         // same study file, the file metadatas ARE version-specific, so some of
         // the fields there (filename, etc.) may be different. If this is the
         // case, we want to display these differences as well.
+        
         if (originalVersion.getFileMetadatas().size() == 0 && newVersion.getFileMetadatas().size() == 0) {
             noFileDifferencesFoundLabel = "No data files in either version of the study";
             return;
@@ -659,50 +671,62 @@ public class DatasetVersionDifference {
         FileMetadata fm1;
         FileMetadata fm2;
         
-           Collections.sort(originalVersion.getFileMetadatas(), new Comparator<FileMetadata>() {
-                public int compare(FileMetadata l1, FileMetadata l2) {
-                    FileMetadata fm1 = l1;  //(DatasetField[]) l1.get(0);
-                    FileMetadata fm2 = l2;
-                    int a = fm1.getDataFile().getId().intValue();
-                    int b = fm2.getDataFile().getId().intValue();
-                    return Integer.valueOf(a).compareTo(Integer.valueOf(b));
-                }
-            });
-           
-           // Here's a potential problem: this new version may have been created
-           // specifically because new files are being added to the dataset. 
-           // In which case there may be files associated with this new version 
-           // with no database ids - since they haven't been saved yet. 
-           // So if we try to sort the files in the version the way we did above, 
-           // by ID, it may fail with a null pointer. 
-           // To solve this, we should simply check if the file has the id; and if not, 
-           // sort it higher than any file with an id - because it is a most recently
-           // added file. Since we are only doing this for the purposes of generating
-           // version differences, this should be OK. 
-           //   -- L.A. Aug. 2014
-           
-            Collections.sort(newVersion.getFileMetadatas(), new Comparator<FileMetadata>() {
-                public int compare(FileMetadata l1, FileMetadata l2) {
-                    FileMetadata fm1 = l1;  //(DatasetField[]) l1.get(0);
-                    FileMetadata fm2 = l2;
-                    Long a = fm1.getDataFile().getId();
-                    Long b = fm2.getDataFile().getId();
-                    
-                    if (a == null && b == null) {
-                        return 0;
-                    } else if (a == null) {
-                        return 1; 
-                    } else if (b == null) {
-                        return -1;
-                    }
-                    return a.compareTo(b);
-                }
-            });
+        // We also have to be careful sorting this FileMetadatas. If we sort the 
+        // lists as they are still attached to their respective versions, we may end
+        // up messing up the page, which was rendered based on the specific order 
+        // of these in the working version! 
+        // So the right way of doing this is to create defensive copies of the
+        // lists; extra memory, but safer. 
+        // -- L.A. Nov. 2016
+        
+        List<FileMetadata> fileMetadatasNew = new ArrayList<>(newVersion.getFileMetadatas());
+        List<FileMetadata> fileMetadatasOriginal = new ArrayList<>(originalVersion.getFileMetadatas());
 
-        while (i < originalVersion.getFileMetadatas().size()
-                && j < newVersion.getFileMetadatas().size()) {
-            fm1 = originalVersion.getFileMetadatas().get(i);
-            fm2 = newVersion.getFileMetadatas().get(j);
+        Collections.sort(fileMetadatasOriginal, new Comparator<FileMetadata>() {
+            public int compare(FileMetadata l1, FileMetadata l2) {
+                FileMetadata fm1 = l1;  //(DatasetField[]) l1.get(0);
+                FileMetadata fm2 = l2;
+                int a = fm1.getDataFile().getId().intValue();
+                int b = fm2.getDataFile().getId().intValue();
+                return Integer.valueOf(a).compareTo(Integer.valueOf(b));
+            }
+        });
+
+        // Here's a potential problem: this new version may have been created
+        // specifically because new files are being added to the dataset. 
+        // In which case there may be files associated with this new version 
+        // with no database ids - since they haven't been saved yet. 
+        // So if we try to sort the files in the version the way we did above, 
+        // by ID, it may fail with a null pointer. 
+        // To solve this, we should simply check if the file has the id; and if not, 
+        // sort it higher than any file with an id - because it is a most recently
+        // added file. Since we are only doing this for the purposes of generating
+        // version differences, this should be OK. 
+        //   -- L.A. Aug. 2014
+        
+
+        Collections.sort(fileMetadatasNew, new Comparator<FileMetadata>() {
+            public int compare(FileMetadata l1, FileMetadata l2) {
+                FileMetadata fm1 = l1;  //(DatasetField[]) l1.get(0);
+                FileMetadata fm2 = l2;
+                Long a = fm1.getDataFile().getId();
+                Long b = fm2.getDataFile().getId();
+
+                if (a == null && b == null) {
+                    return 0;
+                } else if (a == null) {
+                    return 1;
+                } else if (b == null) {
+                    return -1;
+                }
+                return a.compareTo(b);
+            }
+        });
+
+        while (i < fileMetadatasOriginal.size()
+                && j < fileMetadatasNew.size()) {
+            fm1 = fileMetadatasOriginal.get(i);
+            fm2 = fileMetadatasNew.get(j);
 
             if (fm2.getDataFile().getId() != null && fm1.getDataFile().getId().compareTo(fm2.getDataFile().getId()) == 0) {
                 // The 2 versions share the same study file;
@@ -739,8 +763,8 @@ public class DatasetVersionDifference {
         // We've reached the end of at least one file list.
         // Whatever files are left on either of the 2 lists are automatically "different"
         // between the 2 versions.
-        while (i < originalVersion.getFileMetadatas().size()) {
-            fm1 = originalVersion.getFileMetadatas().get(i);
+        while (i < fileMetadatasOriginal.size()) {
+            fm1 = fileMetadatasOriginal.get(i);
             datasetFileDifferenceItem fdi = selectFileMetadataDiffs(fm1, null);
             fdi.setFileId(fm1.getDataFile().getId().toString());
             fdi.setFileChecksumType(fm1.getDataFile().getChecksumType());
@@ -750,8 +774,8 @@ public class DatasetVersionDifference {
             i++;
         }
 
-        while (j < newVersion.getFileMetadatas().size()) {
-            fm2 = newVersion.getFileMetadatas().get(j);
+        while (j < fileMetadatasNew.size()) {
+            fm2 = fileMetadatasNew.get(j);
             datasetFileDifferenceItem fdi = selectFileMetadataDiffs(null, fm2);
             if (fm2.getDataFile().getId() != null) {
                 fdi.setFileId(fm2.getDataFile().getId().toString());
