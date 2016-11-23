@@ -104,7 +104,7 @@
                                      jsf:rendered="#{!empty EditDatafilesPage.fileMetadatas}">
                                     <div class="btn-group">
                                         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                            <span class="glyphicon glyphicon-lock"/> #{bundle['file.editAccess']} <span class="caret"></span>
+                                            <span class="glyphicon glyphicon-lock"/> #{bundle['file.restrict']} <span class="caret"></span>
                                         </button>
                                         <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
                                             <li>
@@ -165,7 +165,7 @@
                         <div class="text-muted small">
                             <h:outputText id="fileTypeOutputRegular" value="#{fileMetadata.dataFile.friendlyType}" rendered="#{!(fileMetadata.dataFile.tabularData)}"/>
                             <h:outputText id="fileTypeOutputTabular" value="#{bundle['file.type.tabularData']}" rendered="#{fileMetadata.dataFile.tabularData}"/>
-                            <h:outputText id="fileCreatePublishDate" value=" - #{EditDatafilesPage.getFileDateToDisplay(fileMetadata)}" rendered="#{!(empty fileMetadata.id)}"/>
+                            <h:outputText id="fileCreatePublishDate" value=" - #{fileMetadata.getFileDateToDisplay()}" rendered="#{!(empty fileMetadata.id)}"/>
                             <div class="checksum-block">
                                 <h:outputText id="fileChecksum" value="#{fileMetadata.dataFile.tabularData ? fileMetadata.dataFile.originalChecksumType : fileMetadata.dataFile.checksumType}: #{fileMetadata.dataFile.checksumValue};" rendered="#{!(empty fileMetadata.dataFile.checksumValue)}"/>
                             </div>

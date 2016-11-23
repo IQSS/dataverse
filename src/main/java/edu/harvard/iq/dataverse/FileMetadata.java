@@ -1,9 +1,12 @@
 package edu.harvard.iq.dataverse;
 
 import java.io.Serializable;
+import java.sql.Timestamp;
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
@@ -35,7 +38,7 @@ import javax.validation.constraints.Pattern;
 @Entity
 public class FileMetadata implements Serializable {
     private static final long serialVersionUID = 1L;
-    
+    private static final DateFormat displayDateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);    
     private static final Logger logger = Logger.getLogger(FileMetadata.class.getCanonicalName());
 
     @Pattern(regexp="^[^:<>;#/\"\\*\\|\\?\\\\]*$", 
@@ -236,8 +239,49 @@ public class FileMetadata implements Serializable {
         }
     }
     
-  
-    
+     public String getFileDateToDisplay() {
+        Date fileDate = null;
+        DataFile datafile = this.getDataFile();
+        if (datafile != null) {
+            boolean fileHasBeenReleased = datafile.isReleased();
+            if (fileHasBeenReleased) {
+                Timestamp filePublicationTimestamp = datafile.getPublicationDate();
+                if (filePublicationTimestamp != null) {
+                    fileDate = filePublicationTimestamp;
+                }
+            } else {
+                Timestamp fileCreateTimestamp = datafile.getCreateDate();
+                if (fileCreateTimestamp != null) {
+                    fileDate = fileCreateTimestamp;
+                }
+            }
+        }
+        if (fileDate != null) {
+            return displayDateFormat.format(fileDate);
+        }
+        return "";
+    }
+     
+    public String getFileCitation(){
+         return getFileCitation(false);
+     }
+     
+     
+     
+     
+    public String getFileCitation(boolean html){
+         String citation = this.getDatasetVersion().getCitation(html);
+         /*
+         ", #{FilePage.fileMetadata.label} [fileName]"
+         <h:outputText value=", #{FilePage.file.unf}" rendered="#{FilePage.file.tabularData and !(empty FilePage.file.unf)}"/>
+         */
+         citation += "; " + this.getLabel() + " [fileName]" ;
+         if (this.dataFile.isTabularData() && this.dataFile.getUnf() != null && !this.dataFile.getUnf().isEmpty()){
+             citation += ", " + this.dataFile.getUnf() + " [fileUNF]";                    
+         }
+         return citation;
+     }
+        
     public DatasetVersion getDatasetVersion() {
         return datasetVersion;
     }

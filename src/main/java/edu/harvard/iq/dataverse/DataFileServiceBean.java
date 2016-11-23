@@ -656,7 +656,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         logger.fine("Retrieved and mapped "+i+" file categories attached to files in the version "+version.getId());
         categoryResults = null;
         
-        List<Object[]> metadataResults = em.createNativeQuery("select id, datafile_id, DESCRIPTION, LABEL, RESTRICTED, DIRECTORYLABEL from FileMetadata where datasetversion_id = "+version.getId()).getResultList();
+        List<Object[]> metadataResults = em.createNativeQuery("select id, datafile_id, DESCRIPTION, LABEL, RESTRICTED, DIRECTORYLABEL from FileMetadata where datasetversion_id = "+version.getId() + " ORDER BY LABEL").getResultList();
         
         for (Object[] result : metadataResults) {
             Integer filemeta_id = (Integer) result[0];
@@ -721,7 +721,14 @@ public class DataFileServiceBean implements java.io.Serializable {
         logger.fine("Retrieved "+retList.size()+" file metadatas for version "+version.getId()+" (inside the retrieveFileMetadataForVersion method).");
                 
         
-        Collections.sort(retList, FileMetadata.compareByLabel);
+        /* 
+            We no longer perform this sort here, just to keep this filemetadata
+            list as identical as possible to when it's produced by the "traditional"
+            EJB method. When it's necessary to have the filemetadatas sorted by 
+            FileMetadata.compareByLabel, the DatasetVersion.getFileMetadatasSorted()
+            method should be called. 
+        
+        Collections.sort(retList, FileMetadata.compareByLabel); */
         
         return retList; 
     }

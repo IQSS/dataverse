@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.logging.Logger;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -41,6 +42,7 @@ import org.hibernate.validator.constraints.NotBlank;
     @Index(columnList = "thumbnailfile_id")},
         uniqueConstraints = @UniqueConstraint(columnNames = {"authority,protocol,identifier,doiseparator"}))
 public class Dataset extends DvObjectContainer {
+    private static final Logger logger = Logger.getLogger(Dataset.class.getCanonicalName());
 
 //    public static final String REDIRECT_URL = "/dataset.xhtml?persistentId=";
     public static final String TARGET_URL = "/citation?persistentId=";
@@ -186,10 +188,12 @@ public class Dataset extends DvObjectContainer {
     }
 
     public List<DataFile> getFiles() {
+        logger.info("getFiles() on dataset "+this.getId());
         return files;
     }
 
     public void setFiles(List<DataFile> files) {
+        logger.info("setFiles() on dataset "+this.getId());
         this.files = files;
     }
 
@@ -213,6 +217,10 @@ public class Dataset extends DvObjectContainer {
         boolean hasDeaccessionedVersions = false;
         for (DatasetVersion testDsv : getVersions()) {
             if (testDsv.isReleased()) {
+                return false;
+            }
+            //Also check for draft version
+            if (testDsv.isDraft()) {
                 return false;
             }
             if (testDsv.isDeaccessioned()) {
