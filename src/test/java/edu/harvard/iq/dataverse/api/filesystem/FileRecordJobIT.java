@@ -305,6 +305,74 @@ public class FileRecordJobIT {
         }
     }
 
+    /**
+     * Import the same file in different directories, in the same dataset.
+     * This is not permitted via HTTP file upload since identical checksums are not allowed in the same dataset.
+     * Ignores failed checksum manifest import.
+     */
+    @Test
+    public void testSameFileInDifferentDirectoriesUnauthorizedUser() {
+
+        try {
+
+            // create unauthorized user
+            String unauthUser = UUID.randomUUID().toString().substring(0, 8);
+            String unauthToken = given()
+                    .body("{" +
+                            "   \"userName\": \"" + unauthUser + "\"," +
+                            "   \"firstName\": \"" + unauthUser + "\"," +
+                            "   \"lastName\": \"" + unauthUser + "\"," +
+                            "   \"email\": \"" + unauthUser + "@mailinator.com\"" +
+                            "}")
+                    .contentType(ContentType.JSON)
+                    .request()
+                    .post("/api/builtin-users/secret/" + props.getProperty("builtin.user.key"))
+                    .then().assertThat().statusCode(200)
+                    .extract().jsonPath().getString("data.apiToken");
+
+            // create a single test file and put it in two places
+            String file1 =  "testfile.txt";
+            String file2 = "subdir/testfile.txt";
+            File file = createTestFile(dsDir, file1, 0.25);
+            if (file != null) {
+                FileUtils.copyFile(file, new File(dsDir + file2));
+            } else {
+                System.out.println("Unable to copy file: " + dsDir + file2);
+                fail();
+            }
+
+            // mock the checksum manifest
+            String checksum1 = "asfdasdfasdfasdf";
+            String checksum2 = "sgsdgdsgfsdgsdgf";
+            if (file1 != null && file2 != null) {
+                PrintWriter pw = new PrintWriter(new FileWriter(dsDir + "/files.sha"));
+                pw.write(checksum1 + " " + file1);
+                pw.write("\n");
+                pw.write(checksum2 + " " + file2);
+                pw.write("\n");
+                pw.close();
+            } else {
+                fail();
+            }
+
+            // should return 403
+            given()
+                .header(API_TOKEN_HTTP_HEADER, unauthToken)
+                .post(props.getProperty("filesystem.api") + "/" + dsDoi)
+                .then().assertThat().statusCode(403);
+
+            // delete unauthorized user
+            given().header(API_TOKEN_HTTP_HEADER, token)
+                    .delete("/api/admin/authenticatedUsers/"+unauthUser+"/")
+                    .then().assertThat().statusCode(200);
+
+        } catch (Exception e) {
+            System.out.println("Error testSameFileInDifferentDirectoriesUnauthorizedUser: " + e.getMessage());
+            e.printStackTrace();
+            fail();
+        }
+    }
+    
     @Test
     /**
      * Delete a file in REPLACE mode
@@ -1012,48 +1080,7 @@ public class FileRecordJobIT {
             fail();
         }
     }
-
-    @Test
-    /**
-     * Unauthorize users shouldn't be able to run jobs
-     */
-    public void testUnauthorizedUser() {
-        try {
-            // create unauthorized user
-            String unauthUser = UUID.randomUUID().toString().substring(0, 8);
-            String unauthToken = given()
-                    .body("{" +
-                            "   \"userName\": \"" + unauthUser + "\"," +
-                            "   \"firstName\": \"" + unauthUser + "\"," +
-                            "   \"lastName\": \"" + unauthUser + "\"," +
-                            "   \"email\": \"" + unauthUser + "@mailinator.com\"" +
-                            "}")
-                    .contentType(ContentType.JSON)
-                    .request()
-                    .post("/api/builtin-users/secret/" + props.getProperty("builtin.user.key"))
-                    .then().assertThat().statusCode(200)
-                    .extract().jsonPath().getString("data.apiToken");
-
-            // attempt to run batch job as unauthorized user
-            String message  = given()
-                    .header(API_TOKEN_HTTP_HEADER, unauthToken)
-                    .post(props.getProperty("filesystem.api") + "/" + dsDoi)
-                    .then().assertThat().statusCode(403)
-                    .extract().jsonPath().getString("message");
-            assertEquals("User is not authorized.", message);
-
-            // delete unauthorized user
-            given().header(API_TOKEN_HTTP_HEADER, token)
-                    .delete("/api/admin/authenticatedUsers/"+unauthUser+"/")
-                    .then().assertThat().statusCode(200);
-
-        } catch (Exception e) {
-            System.out.println("Error testUnauthorizedUser: " + e.getMessage());
-            e.printStackTrace();
-            fail();
-        }
-    }
-
+    
     // UTILS
 
     /***
@@ -1167,9 +1194,9 @@ public class FileRecordJobIT {
                             .get(props.getProperty("job.status.api") + jobId);
                     json = jobResponse.body().asString();
                     status = JsonPath.from(json).getString("status");
-                    System.out.println("JOB STATUS RETRY ATTEMPT: " + Integer.toString(retry));
+                    System.out.println("JOB STATUS RETRY ATTEMPT: " + maxTries);
                 } else {
-                    System.out.println("JOB STATUS ERROR: Failed to get job status after " + Integer.toString(retry)
+                    System.out.println("JOB STATUS ERROR: Failed to get job status after " + maxTries
                             + " attempts.");
                     break;
                 }
@@ -1218,6 +1245,29 @@ public class FileRecordJobIT {
         }
     }
 
+    /**
+     * Kick off a job with default mode (MERGE)
+     * @return a job execution entity
+     */
+    private JobExecutionEntity getJobWithToken(String userToken) {
+        System.out.println("JOB API: " + props.getProperty("filesystem.api") + "/" + dsDoi);
+        System.out.println("TOKEN USED: " + userToken);
+        try {
+            // run batch job and wait for result
+            String jobId = given()
+                    .header(API_TOKEN_HTTP_HEADER, userToken)
+                    .post(props.getProperty("filesystem.api") + "/" + dsDoi)
+                    .then().assertThat().statusCode(200)
+                    .extract().jsonPath().getString("data.executionId");
+            String jobResult = pollJobStatus(jobId, token, Integer.valueOf(props.getProperty("polling.retries")),
+                    Integer.valueOf(props.getProperty("polling.wait")));
+            System.out.println("JOB JSON: " + jobResult);
+            return mapper.readValue(jobResult, JobExecutionEntity.class);
+        } catch (IOException ioe) {
+            System.out.println("Error getting job execution entity: " + ioe.getMessage());
+            return null;
+        }
+    }
     /**
      * Kick off a job with a specified mode: MERGE, UPDATE, REPLACE
      * @param mode

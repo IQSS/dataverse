@@ -6,7 +6,6 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
@@ -15,7 +14,6 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.batch.entities.JobExecutionEntity;
 import edu.harvard.iq.dataverse.batch.jobs.importer.ImportMode;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
-import org.apache.commons.lang.StringUtils;
 
 import javax.batch.api.listener.JobListener;
 import javax.batch.api.listener.StepListener;
@@ -52,8 +50,6 @@ public class FileRecordJobListener implements StepListener, JobListener {
     @Inject
     private StepContext stepContext;
 
-    Properties jobParams;
-
     @EJB
     UserNotificationServiceBean notificationServiceBean;
 
@@ -65,10 +61,7 @@ public class FileRecordJobListener implements StepListener, JobListener {
 
     @EJB
     DatasetServiceBean datasetServiceBean;
-
-    @EJB
-    PermissionServiceBean permissionServiceBean;
-
+    
     @EJB
     DataFileServiceBean dataFileServiceBean;
     
@@ -82,6 +75,7 @@ public class FileRecordJobListener implements StepListener, JobListener {
         // no-op
     }
 
+    Properties jobParams;
     Dataset dataset;
     String mode;
     AuthenticatedUser user;
@@ -162,17 +156,12 @@ public class FileRecordJobListener implements StepListener, JobListener {
                 // [2] send user notifications
                 notificationServiceBean.sendNotification(user, timestamp, notifyType, datasetVersionId);
                 // also send admin notification
-                AuthenticatedUser adminUser = authenticationServiceBean.getAdminUser();
+                AuthenticatedUser adminUser = authenticationServiceBean.getAuthenticatedUser("admin");
                 if (adminUser != null) {
                     notificationServiceBean.sendNotification(adminUser, timestamp, notifyType, datasetVersionId);
                 }
                 // [3] action log it
-                // truncate the log message or risk: 
-                // Internal Exception: org.postgresql.util.PSQLException: ERROR: value too long for type character varying(1024)
-                //actionLogServiceBean.log(LoggingUtil.getActionLogRecord(user.getIdentifier(), jobExecution,
-                //        StringUtils.substring(jobJson, 0, 1024), jobId));
-               
-                // simply store location of the full json log to avoid truncation issues
+                // store location of the full json log to avoid truncation issues
                 actionLogServiceBean.log(LoggingUtil.getActionLogRecord(user.getIdentifier(), jobExecution,
                         logDir + "/job-" + jobId + ".json", jobId));
 

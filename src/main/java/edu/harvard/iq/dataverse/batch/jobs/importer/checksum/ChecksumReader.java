@@ -61,7 +61,6 @@ public class ChecksumReader extends AbstractItemReader {
     File directory;
     File manifest;
     
-
     ArrayList<ChecksumRecord> records = new ArrayList<>();
 
     Iterator<ChecksumRecord> iterator;
@@ -127,8 +126,7 @@ public class ChecksumReader extends AbstractItemReader {
     public ChecksumRecord readItem() {
         if (iterator != null && iterator.hasNext()) {
             currentRecordNumber++;
-            ChecksumRecord record = iterator.next();
-            return record;
+            return iterator.next();
         } else {
             return null;
         }

@@ -3,11 +3,10 @@ package edu.harvard.iq.dataverse.api.batchjob;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 
 import javax.batch.operations.JobOperator;
 import javax.batch.operations.JobSecurityException;
@@ -17,7 +16,6 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.json.JsonObjectBuilder;
 import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -25,6 +23,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.File;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -39,7 +38,7 @@ public class FileRecordJobResource extends AbstractApiBean {
     private static final Logger logger = Logger.getLogger(FileRecordJobResource.class.getName());
 
     @EJB
-    PermissionServiceBean permissionService;
+    PermissionServiceBean permissionServiceBean;
 
     @EJB
     DatasetServiceBean datasetService;
@@ -53,85 +52,95 @@ public class FileRecordJobResource extends AbstractApiBean {
                                         @QueryParam("mode") @DefaultValue("MERGE") String mode) {
 
         try {
+            
             String doi = "doi:" + doi1 + "/" + doi2 + "/" + doi3;
             try {
-                Dataset ds = datasetService.findByGlobalId(doi);
-                if (ds != null) {
+                Dataset dataset = datasetService.findByGlobalId(doi);
+                AuthenticatedUser user = findAuthenticatedUserOrDie();
+                /**
+                 * Current constraints:
+                 * 1. valid dataset
+                 * 2. valid dataset directory
+                 * 3. valid user & user has edit dataset permission
+                 * 4. only one dataset version
+                 * 5. dataset version is draft
+                 */
 
-                    DataverseRequest req = createDataverseRequest(findAuthenticatedUserOrDie());
+                if (dataset == null) {
+                    return error(Response.Status.BAD_REQUEST, "Can't find dataset with ID: " + doi);
+                }
+                File directory = new File(System.getProperty("dataverse.files.directory")
+                        + File.separator + dataset.getAuthority() + File.separator + dataset.getIdentifier());
+                if (!isValidDirectory(directory)) {
+                    return error(Response.Status.BAD_REQUEST, "Dataset directory is invalid.");    
+                }
 
-                    if (isAuthorized(req, ds.getOwner())) {
-                        
-                        if (ds.getVersions().size() == 1) {
-                            
-                            if (ds.getLatestVersion().getVersionState() == DatasetVersion.VersionState.DRAFT) {
+                if (user == null || !permissionServiceBean.userOn(user, dataset.getOwner()).has(Permission.EditDataset)) {
+                    logger.log(Level.SEVERE, "User doesn't have permission to import files into this dataset.");
+                    return error(Response.Status.FORBIDDEN, "User is not authorized.");                    }
 
-                                long jid = 0;
+                if (dataset.getVersions().size() != 1) {
+                    logger.log(Level.SEVERE, "File system import is currently only supported for datasets with one version.");
+                    return error(Response.Status.BAD_REQUEST, "Error creating FilesystemImportJob with dataset with ID: " + doi
+                                + " - Dataset has more than one version.");                        
+                }
 
-                                try {
-                                    Properties props = new Properties();
-                                    props.setProperty("datasetId", doi);
-                                    props.setProperty("userId", req.getUser().getIdentifier().replace("@", ""));
-                                    props.setProperty("mode", mode);
-                                    JobOperator jo = BatchRuntime.getJobOperator();
-                                    jid = jo.start("FileSystemImportJob", props);
-
-                                } catch (JobStartException | JobSecurityException ex) {
-                                    logger.log(Level.SEVERE, "Job Error: " + ex.getMessage());
-                                    ex.printStackTrace();
-                                }
-
-                                if (jid > 0) {
-
-                                    // success json
-                                    JsonObjectBuilder bld = jsonObjectBuilder();
-                                    return this.ok(bld
-                                            .add("executionId", jid)
-                                            .add("message", "FileSystemImportJob in progress")
-                                    );
-
-                                } else {
-                                    return this.error(Response.Status.BAD_REQUEST,
-                                            "Error creating FilesystemImportJob with dataset with ID: " + doi);
-                                }
-                            } else {
-                                return this.error(Response.Status.BAD_REQUEST,
-                                        "Error creating FilesystemImportJob with dataset with ID: " + doi
-                                                + " - Dataset isn't in DRAFT mode.");
-                            }
-                            
-                        } else {
-                            return this.error(Response.Status.BAD_REQUEST,
-                                    "Error creating FilesystemImportJob with dataset with ID: " + doi
-                                    + " - Dataset has more than one version.");                        
-                        }
-
+                if (dataset.getLatestVersion().getVersionState() != DatasetVersion.VersionState.DRAFT) {
+                    logger.log(Level.SEVERE, "File system import is currently only supported for DRAFT versions.");
+                    return error(Response.Status.BAD_REQUEST, "Error creating FilesystemImportJob with dataset with ID: " + doi
+                                            + " - Dataset isn't in DRAFT mode.");
+                }
+                
+                try {
+                    long jid;
+                    Properties props = new Properties();
+                    props.setProperty("datasetId", doi);
+                    props.setProperty("userId", user.getIdentifier().replace("@", ""));
+                    props.setProperty("mode", mode);
+                    JobOperator jo = BatchRuntime.getJobOperator();
+                    jid = jo.start("FileSystemImportJob", props);
+                    if (jid > 0) {
+                        // build success json response
+                        JsonObjectBuilder bld = jsonObjectBuilder();
+                        return this.ok(bld.add("executionId", jid).add("message", "FileSystemImportJob in progress"));
                     } else {
-                        return this.error(Response.Status.FORBIDDEN, "User is not authorized.");
+                        return error(Response.Status.BAD_REQUEST, "Error creating FilesystemImportJob with dataset with ID: " + doi);
                     }
 
-                } else {
-                    return this.error(Response.Status.BAD_REQUEST, "Can't find dataset with ID: " + doi);
+                } catch (JobStartException | JobSecurityException ex) {
+                    logger.log(Level.SEVERE, "Job Error: " + ex.getMessage());
+                    return error(Response.Status.BAD_REQUEST,
+                            "Error creating FilesystemImportJob with dataset with ID: " + doi + " - " + ex.getMessage());
                 }
+
             } catch (WrappedResponse wr) {
                 return wr.getResponse();
             }
+            
         } catch (Exception e) {
-            return this.error(Response.Status.BAD_REQUEST, "Import Exception - " + e.getMessage());
+            return error(Response.Status.BAD_REQUEST, "Import Exception - " + e.getMessage());
         }
     }
 
     /**
-     *
-     * @param dvReq
-     * @param dv
-     * @return
+     * Make sure the directory path is truly a directory, exists and we can read it.
+     * @return isValid
      */
-    private boolean isAuthorized(DataverseRequest dvReq, Dataverse dv) {
-        if (permissionService.requestOn(dvReq, dv).has(Permission.EditDataset))
-            return true;
-        else
+    private boolean isValidDirectory(File directory) {
+        String path = directory.getAbsolutePath();
+        if (!directory.exists()) {
+            logger.log(Level.SEVERE, "Directory " + path + " does not exist.");
             return false;
+        }
+        if (!directory.isDirectory()) {
+            logger.log(Level.SEVERE, path + " is not a directory.");
+            return false;
+        }
+        if (!directory.canRead()) {
+            logger.log(Level.SEVERE, "Unable to read files from directory " + path + ". Permission denied.");
+            return false;
+        }
+        return true;
     }
-
+    
 }
