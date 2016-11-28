@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.EMailValidator;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.RoleAssignment;
@@ -203,6 +204,14 @@ public class DataverseUserPage implements java.io.Serializable {
     
     public void validateUserEmail(FacesContext context, UIComponent toValidate, Object value) {
         String userEmail = (String) value;
+        boolean emailValid = EMailValidator.isEmailValid(userEmail, null);
+        if (!emailValid) {
+            ((UIInput) toValidate).setValid(false);
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("oauth2.newAccount.emailInvalid"), null);
+            context.addMessage(toValidate.getClientId(context), message);
+            logger.info("Email is not valid: " + userEmail);
+            return;
+        }
         boolean userEmailFound = false;
         AuthenticatedUser aUser = authenticationService.getAuthenticatedUserByEmail(userEmail);
         if (editMode == EditMode.CREATE) {

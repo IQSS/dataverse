@@ -22,6 +22,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
+import org.hibernate.validator.constraints.NotBlank;
 
 @NamedQueries({
     @NamedQuery( name="AuthenticatedUser.findAll",
@@ -72,7 +73,9 @@ public class AuthenticatedUser implements User, Serializable {
     private String email;
     private String affiliation;
     private String position;
+    @NotBlank(message = "Please enter your last name.")
     private String lastName;
+    @NotBlank(message = "Please enter your first name.")
     private String firstName;
     @Column(nullable = true)
     private Timestamp emailConfirmed;

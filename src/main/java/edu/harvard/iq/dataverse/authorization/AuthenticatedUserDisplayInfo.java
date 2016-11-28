@@ -1,14 +1,17 @@
 package edu.harvard.iq.dataverse.authorization;
 
 import java.util.Objects;
+import org.hibernate.validator.constraints.NotBlank;
 
 /**
  *
  * @author gdurand
  */
 public class AuthenticatedUserDisplayInfo extends RoleAssigneeDisplayInfo {
-  
+
+    @NotBlank(message = "Please enter your last name.")
     private String lastName;
+    @NotBlank(message = "Please enter your first name.")
     private String firstName;
     private String position;
     
