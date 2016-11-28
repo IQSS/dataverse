@@ -55,7 +55,6 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import java.text.DateFormat;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.logging.Level;
 import javax.faces.event.AjaxBehaviorEvent;
@@ -1268,15 +1267,15 @@ public class EditDatafilesPage implements java.io.Serializable {
         // to the full list of new files, and the list of filemetadatas 
         // used to render the page:
         
-        ingestService.addFilesToDataset(workingVersion, uploadedFiles);
+        if (mode == FileEditMode.CREATE) {
+            ingestService.addFilesToDataset(workingVersion, uploadedFiles);
+        }
         
         for (DataFile dataFile : uploadedFiles) {
             fileMetadatas.add(dataFile.getFileMetadata());
             newFiles.add(dataFile);
         }
         
-        Collections.sort(fileMetadatas, FileMetadata.compareByLabel);
-
         uploadedFiles = new ArrayList<>();
         uploadInProgress = false;
 
