@@ -339,12 +339,14 @@ public class AuthenticationServiceBean {
              * @todo Why does a method called "authenticate" have the potential
              * to call "createAuthenticatedUser"? Isn't the creation of a user a
              * different action than authenticating?
+             *
+             * @todo Wouldn't this be more readable with if/else rather than
+             * ternary?
              */
             return ( user == null ) ?
                 AuthenticationServiceBean.this.createAuthenticatedUser(
                         new UserRecordIdentifier(authenticationProviderId, resp.getUserId()), resp.getUserId(), resp.getUserDisplayInfo(), true )
-                : updateAuthenticatedUser( user, resp.getUserDisplayInfo() );
-
+                    : (BuiltinAuthenticationProvider.PROVIDER_ID.equals(user.getAuthenticatedUserLookup().getAuthenticationProviderId())) ? user : updateAuthenticatedUser(user, resp.getUserDisplayInfo());
         } else { 
             throw new AuthenticationFailedException(resp, "Authentication Failed: " + resp.getMessage());
         }
