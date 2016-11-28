@@ -55,6 +55,7 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import java.text.DateFormat;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.logging.Level;
 import javax.faces.event.AjaxBehaviorEvent;
@@ -1238,24 +1239,9 @@ public class EditDatafilesPage implements java.io.Serializable {
         // started. It will be called *once*, even if it is a multiple file upload 
         // (either through drag-and-drop or select menu). 
        
-        
         logger.fine("upload started");
         
-        /*uploadedFiles = new ArrayList(); 
-
-        
-        // We clear the following duplicate warning labels, because we want to 
-        // only inform the user of the duplicates dropped in the current upload 
-        // attempt - for ex., one batch of drag-and-dropped files, or a single 
-        // file uploaded through the file chooser. 
-        
-        dupeFileNamesExisting = null; 
-        dupeFileNamesNew = null;
-        multipleDupesExisting = false;
-        multipleDupesNew = false;*/
-        uploadInProgress = true;
-        /*uploadWarningMessage = null; */
-        
+        uploadInProgress = true;        
     }
     
     public void uploadFinished() {
@@ -1282,14 +1268,14 @@ public class EditDatafilesPage implements java.io.Serializable {
         // to the full list of new files, and the list of filemetadatas 
         // used to render the page:
         
-        if (mode == FileEditMode.CREATE) {
-            ingestService.addFilesToDataset(workingVersion, uploadedFiles);
-        }
+        ingestService.addFilesToDataset(workingVersion, uploadedFiles);
         
         for (DataFile dataFile : uploadedFiles) {
             fileMetadatas.add(dataFile.getFileMetadata());
             newFiles.add(dataFile);
         }
+        
+        Collections.sort(fileMetadatas, FileMetadata.compareByLabel);
 
         uploadedFiles = new ArrayList<>();
         uploadInProgress = false;
@@ -1316,6 +1302,9 @@ public class EditDatafilesPage implements java.io.Serializable {
     private String uploadComponentId = null; 
     
     public void handleFileUpload(FileUploadEvent event) {
+        if (!uploadInProgress) {
+            uploadInProgress = true;
+        }
         UploadedFile uFile = event.getFile();
         List<DataFile> dFileList = null;
         
