@@ -2,8 +2,8 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.datasetutility.TwoRavensHelper;
+import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateGuestbookResponseCommand;
@@ -16,15 +16,15 @@ import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
-import javax.faces.application.FacesMessage;
+import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
-import javax.faces.model.SelectItem;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
+import org.primefaces.context.RequestContext;
 
 /**
  *
@@ -51,7 +51,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     PermissionServiceBean permissionService;
     @EJB
     DataverseServiceBean dataverseService;
-        @EJB
+    @EJB
     UserNotificationServiceBean userNotificationService;
     
     @Inject
@@ -62,12 +62,14 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     
     @Inject
     DataverseRequestServiceBean dvRequestService;
+    
+    @Inject TwoRavensHelper twoRavensHelper;
+    @Inject WorldMapPermissionHelper worldMapPermissionHelper;
 
     private static final Logger logger = Logger.getLogger(FileDownloadServiceBean.class.getCanonicalName());
     
     
     public void writeGuestbookAndStartDownload(GuestbookResponse guestbookResponse){
-        
         if (guestbookResponse != null && guestbookResponse.getDataFile() != null     ){
             writeGuestbookResponseRecord(guestbookResponse);
             callDownloadServlet(guestbookResponse.getFileFormat(), guestbookResponse.getDataFile().getId(), guestbookResponse.isWriteResponse());
@@ -155,21 +157,27 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     }
     
         //public String startFileDownload(FileMetadata fileMetadata, String format) {
-    public void startFileDownload(FileMetadata fileMetadata, String format) {
+    public void startFileDownload(GuestbookResponse guestbookResponse, FileMetadata fileMetadata, String format) {
         boolean recordsWritten = false;
-        if(fileMetadata.getDatasetVersion().isDraft()){
+        if(!fileMetadata.getDatasetVersion().isDraft()){
+           guestbookResponse = guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, format);
+           writeGuestbookResponseRecord(guestbookResponse);
             recordsWritten = true;
         }
         callDownloadServlet(format, fileMetadata.getDataFile().getId(), recordsWritten);
         logger.fine("issued file download redirect for filemetadata "+fileMetadata.getId()+", datafile "+fileMetadata.getDataFile().getId());
     }
     
-    public String startExploreDownloadLink(TwoRavensHelper trHelper, GuestbookResponse guestbookResponse, FileMetadata fmd){
-        if (guestbookResponse != null && guestbookResponse.isWriteResponse() && (fmd.getDataFile() != null || guestbookResponse.getDataFile() != null)){
-            if(guestbookResponse.getDataFile() == null){
+    public String startExploreDownloadLink(GuestbookResponse guestbookResponse, FileMetadata fmd){
+
+        if (guestbookResponse != null && guestbookResponse.isWriteResponse() 
+                && (( fmd != null && fmd.getDataFile() != null) || guestbookResponse.getDataFile() != null)){
+            if(guestbookResponse.getDataFile() == null  && fmd != null){                
                 guestbookResponse.setDataFile(fmd.getDataFile());
             }
-            writeGuestbookResponseRecord(guestbookResponse);
+            if (fmd == null || !fmd.getDatasetVersion().isDraft()){
+                writeGuestbookResponseRecord(guestbookResponse);
+            }
         }
         
         Long datafileId;
@@ -179,11 +187,47 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         } else {
             datafileId = fmd.getDataFile().getId();
         }
-        return trHelper.getDataExploreURLComplete(datafileId);
+        String retVal = twoRavensHelper.getDataExploreURLComplete(datafileId);
+        
+        try {
+            FacesContext.getCurrentInstance().getExternalContext().redirect(retVal);
+            return retVal;
+        } catch (IOException ex) {
+            logger.info("Failed to issue a redirect to file download url.");
+        }
+        return retVal;
     }
     
-    
-    
+    public String startWorldMapDownloadLink(GuestbookResponse guestbookResponse, FileMetadata fmd){
+                
+        if (guestbookResponse != null  && guestbookResponse.isWriteResponse() && ((fmd != null && fmd.getDataFile() != null) || guestbookResponse.getDataFile() != null)){
+            if(guestbookResponse.getDataFile() == null && fmd != null){
+                guestbookResponse.setDataFile(fmd.getDataFile());
+            }
+            if (fmd == null || !fmd.getDatasetVersion().isDraft()){
+                writeGuestbookResponseRecord(guestbookResponse);
+            }
+        }
+        DataFile file = null;
+        if (fmd != null){
+            file  = fmd.getDataFile();
+        }
+        if (guestbookResponse != null && guestbookResponse.getDataFile() != null){
+            file  = guestbookResponse.getDataFile();
+        }
+        
+
+        String retVal = worldMapPermissionHelper.getMapLayerMetadata(file).getLayerLink();
+        
+        try {
+            FacesContext.getCurrentInstance().getExternalContext().redirect(retVal);
+            return retVal;
+        } catch (IOException ex) {
+            logger.info("Failed to issue a redirect to file download url.");
+        }
+        return retVal;
+    }
+          
     public boolean isDownloadPopupRequired(DatasetVersion datasetVersion) {
         // Each of these conditions is sufficient reason to have to 
         // present the user with the popup: 

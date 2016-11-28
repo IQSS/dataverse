@@ -294,7 +294,7 @@
                                 </div>
                             </div>
                             <!-- END: Metrics -->
-                        </div>
+                            </div>
                         <div id="datasetVersionBlock" class="container-fluid">
                             <div id="title-block" class="row" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.title.value}">
                                 <span id="title">#{DatasetPage.datasetVersionUI.title.value}</span>
@@ -1072,7 +1072,7 @@
 
                     <p:dialog id="downloadDataSubsetPopup" styleClass="smallPopUp" header="Download Data Subset" widgetVar="downloadDataSubsetPopup"
                               rendered="#{empty DatasetPage.editMode}" modal="true">
-                        <div class="form-inline clearfix" jsf:rendered="#{!(empty DatasetPage.guestbookResponse.dataFile)}">
+                        <div class="form-inline clearfix" jsf:rendered="#{!(empty DatasetPage.guestbookResponse.dataFile) and DatasetPage.guestbookResponse.dataFile.tabularData}">
                             <ui:include src="/subset/gui_subset.xhtml">
                                 <ui:param name="dataFile" value="#{DatasetPage.guestbookResponse.dataFile}"/>
                             </ui:include>

@@ -438,7 +438,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         
         int i = 0; 
         
-        List<Object[]> dataTableResults = em.createNativeQuery("SELECT t0.ID, t0.DATAFILE_ID, t0.UNF, t0.CASEQUANTITY, t0.VARQUANTITY, t0.ORIGINALFILEFORMAT FROM dataTable t0, dataFile t1, dvObject t2 WHERE ((t0.DATAFILE_ID = t1.ID) AND (t1.ID = t2.ID) AND (t2.OWNER_ID = " + owner.getId() + "))").getResultList();
+        List<Object[]> dataTableResults = em.createNativeQuery("SELECT t0.ID, t0.DATAFILE_ID, t0.UNF, t0.CASEQUANTITY, t0.VARQUANTITY, t0.ORIGINALFILEFORMAT FROM dataTable t0, dataFile t1, dvObject t2 WHERE ((t0.DATAFILE_ID = t1.ID) AND (t1.ID = t2.ID) AND (t2.OWNER_ID = " + owner.getId() + ")) ORDER BY t0.ID").getResultList();
         
         for (Object[] result : dataTableResults) {
             DataTable dataTable = new DataTable(); 
@@ -475,11 +475,11 @@ public class DataFileServiceBean implements java.io.Serializable {
         }
         dataTagsResults = null;
         
-        logger.fine("Retrieved "+i+" data tags.");
+        logger.fine("Retrieved "+i+" data tags.");
         
         i = 0; 
         
-        List<Object[]> fileResults = em.createNativeQuery("SELECT t0.ID, t0.CREATEDATE, t0.INDEXTIME, t0.MODIFICATIONTIME, t0.PERMISSIONINDEXTIME, t0.PERMISSIONMODIFICATIONTIME, t0.PUBLICATIONDATE, t0.CREATOR_ID, t0.RELEASEUSER_ID, t1.CONTENTTYPE, t1.FILESYSTEMNAME, t1.FILESIZE, t1.INGESTSTATUS, t1.CHECKSUMVALUE, t1.RESTRICTED, t1.CHECKSUMTYPE FROM DVOBJECT t0, DATAFILE t1 WHERE ((t0.OWNER_ID = " + owner.getId() + ") AND ((t1.ID = t0.ID) AND (t0.DTYPE = 'DataFile')))").getResultList(); 
+        List<Object[]> fileResults = em.createNativeQuery("SELECT t0.ID, t0.CREATEDATE, t0.INDEXTIME, t0.MODIFICATIONTIME, t0.PERMISSIONINDEXTIME, t0.PERMISSIONMODIFICATIONTIME, t0.PUBLICATIONDATE, t0.CREATOR_ID, t0.RELEASEUSER_ID, t1.CONTENTTYPE, t1.FILESYSTEMNAME, t1.FILESIZE, t1.INGESTSTATUS, t1.CHECKSUMVALUE, t1.RESTRICTED, t1.CHECKSUMTYPE FROM DVOBJECT t0, DATAFILE t1 WHERE ((t0.OWNER_ID = " + owner.getId() + ") AND ((t1.ID = t0.ID) AND (t0.DTYPE = 'DataFile'))) ORDER BY t0.ID").getResultList(); 
     
         for (Object[] result : fileResults) {
             Integer file_id = (Integer) result[0];
@@ -602,7 +602,6 @@ public class DataFileServiceBean implements java.io.Serializable {
             filesMap.put(dataFile.getId(), i++);
         } 
         
-        owner.setFiles(dataFiles);
         fileResults = null; 
         
         logger.fine("Retrieved and cached "+i+" datafiles.");
@@ -616,13 +615,14 @@ public class DataFileServiceBean implements java.io.Serializable {
         logger.fine("Retrieved "+i+" file categories attached to the dataset.");
         
         if (requestedVersion != null) {
-            requestedVersion.setFileMetadatas(retrieveFileMetadataForVersion(owner, requestedVersion, filesMap, categoryMap));
+            requestedVersion.setFileMetadatas(retrieveFileMetadataForVersion(owner, requestedVersion, dataFiles, filesMap, categoryMap));
         } else {
             for (DatasetVersion version : owner.getVersions()) {
-                version.setFileMetadatas(retrieveFileMetadataForVersion(owner, version, filesMap, categoryMap));
+                version.setFileMetadatas(retrieveFileMetadataForVersion(owner, version, dataFiles, filesMap, categoryMap));
                 logger.fine("Retrieved "+version.getFileMetadatas().size()+" filemetadatas for the version "+version.getId());
             }
         }
+        owner.setFiles(dataFiles);
     }
     
      private List<AuthenticatedUser> retrieveFileAccessRequesters(DataFile fileIn){
@@ -641,7 +641,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         return retList;
     }
     
-    private List<FileMetadata> retrieveFileMetadataForVersion(Dataset dataset, DatasetVersion version, Map<Long, Integer> filesMap, Map<Long, Integer> categoryMap) {
+    private List<FileMetadata> retrieveFileMetadataForVersion(Dataset dataset, DatasetVersion version, List<DataFile> dataFiles, Map<Long, Integer> filesMap, Map<Long, Integer> categoryMap) {
         List<FileMetadata> retList = new ArrayList<>();
         Map<Long, Set<Long>> categoryMetaMap = new HashMap<>();
         
@@ -659,7 +659,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         logger.fine("Retrieved and mapped "+i+" file categories attached to files in the version "+version.getId());
         categoryResults = null;
         
-        List<Object[]> metadataResults = em.createNativeQuery("select id, datafile_id, DESCRIPTION, LABEL, RESTRICTED, DIRECTORYLABEL from FileMetadata where datasetversion_id = "+version.getId()).getResultList();
+        List<Object[]> metadataResults = em.createNativeQuery("select id, datafile_id, DESCRIPTION, LABEL, RESTRICTED, DIRECTORYLABEL from FileMetadata where datasetversion_id = "+version.getId() + " ORDER BY LABEL").getResultList();
         
         for (Object[] result : metadataResults) {
             Integer filemeta_id = (Integer) result[0];
@@ -691,7 +691,8 @@ public class DataFileServiceBean implements java.io.Serializable {
 
             fileMetadata.setDatasetVersion(version);
             
-            fileMetadata.setDataFile(dataset.getFiles().get(file_list_id));
+            //fileMetadata.setDataFile(dataset.getFiles().get(file_list_id));
+            fileMetadata.setDataFile(dataFiles.get(file_list_id));
             
             String description = (String) result[2]; 
             
@@ -723,7 +724,14 @@ public class DataFileServiceBean implements java.io.Serializable {
         logger.fine("Retrieved "+retList.size()+" file metadatas for version "+version.getId()+" (inside the retrieveFileMetadataForVersion method).");
                 
         
-        Collections.sort(retList, FileMetadata.compareByLabel);
+        /* 
+            We no longer perform this sort here, just to keep this filemetadata
+            list as identical as possible to when it's produced by the "traditional"
+            EJB method. When it's necessary to have the filemetadatas sorted by 
+            FileMetadata.compareByLabel, the DatasetVersion.getFileMetadatasSorted()
+            method should be called. 
+        
+        Collections.sort(retList, FileMetadata.compareByLabel); */
         
         return retList; 
     }
@@ -1172,7 +1180,7 @@ public class DataFileServiceBean implements java.io.Serializable {
             return false;
         }
         
-        // "Documents": PDF, assorted MS docs, etc. 
+        // "Documents": PDF, assorted MS docs, etc. 
         
         String contentType = file.getContentType();
         int scIndex = 0;

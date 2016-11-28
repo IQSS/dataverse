@@ -247,10 +247,18 @@
                 </ui:remove>
         </p:column>
         <p:column class="col-file-metadata">
-            <h:outputLink  
-                           value="/file.xhtml?fileId=#{fileMetadata.dataFile.id}&#38;datasetVersionId=#{DatasetPage.workingVersion.id}">
-                <h:outputText id="fileNameLink" value="#{fileMetadata.label}" style="display:block;font-weight:bold;"/>
-            </h:outputLink>
+            <ui:fragment rendered="#{fileMetadata.datasetVersion.released or ((fileMetadata.datasetVersion.deaccessioned or fileMetadata.datasetVersion.draft) 
+                                     and permissionServiceBean.on(DatasetPage.dataset).has('ViewUnpublishedDataset'))}">
+                <ui:fragment rendered="#{!(fileMetadata.datasetVersion.released or fileMetadata.datasetVersion.deaccessioned)}">
+                    <a id="versionLink" href="/file.xhtml?fileId=#{fileMetadata.dataFile.id}&#38;version=#{fileMetadata.datasetVersion.versionState}" class="ui-commandlink ui-widget">
+                        <h:outputText rendered="#{!(fileMetadata.datasetVersion.released or fileMetadata.datasetVersion.deaccessioned)}" value="#{fileMetadata.label}" /></a>
+                </ui:fragment>
+                <ui:fragment rendered="#{(fileMetadata.datasetVersion.released or fileMetadata.datasetVersion.deaccessioned)}">
+                    <a id="versionLink" href="/file.xhtml?fileId=#{fileMetadata.dataFile.id}&#38;version=#{fileMetadata.datasetVersion.versionNumber}.#{fileMetadata.datasetVersion.minorVersionNumber}" class="ui-commandlink ui-widget">
+                        <h:outputText rendered="#{fileMetadata.datasetVersion.released or fileMetadata.datasetVersion.deaccessioned}" value="#{fileMetadata.label}" /></a>
+                </ui:fragment>
+            </ui:fragment>
+                        
             <ui:remove>
             <!-- No longer need dynamic render logic for displaying link to file pg 
             rendered="# { settingsWrapper.isTrueForKey(':ShowFileLandingPage', false)}" -->
@@ -316,10 +324,7 @@
                             <ui:param name="downloadPopupRequired" value="#{DatasetPage.downloadPopupRequired}"/>
                             <ui:param name="guestbookResponse" value="#{DatasetPage.guestbookResponse}"/>
                             <ui:param name="guestbookResponseService" value="#{DatasetPage.guestbookResponseService}"/>
-                            <ui:param name="fileDownloadHelper" value="#{DatasetPage.fileDownloadHelper}"/>
                             <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
-                            <ui:param name="worldMapPermissionHelper" value="#{DatasetPage.worldMapPermissionHelper}"/>
-                            <ui:param name="twoRavensHelper" value="#{DatasetPage.twoRavensHelper}"/>
                         </ui:include>
             </div>
             <!-- END: button-block -->

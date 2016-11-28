@@ -7,43 +7,41 @@ package edu.harvard.iq.dataverse.datasetutility;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DataverseSession;
+import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.HashMap;
 import java.util.Map;
+import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
  * @author rmp553
+
  */
-public class TwoRavensHelper {
+@ViewScoped
+@Named
+public class TwoRavensHelper implements java.io.Serializable {
     
-    private final SettingsServiceBean settingsService;
-    private final PermissionServiceBean permissionService;
-    private final AuthenticationServiceBean authService;
+    @Inject SettingsServiceBean settingsService;
+    @Inject PermissionServiceBean permissionService;
+    @Inject AuthenticationServiceBean authService;
     
-    private final DataverseSession session;
+    @Inject
+    DataverseSession session;
             
     private final Map<Long, Boolean> fileMetadataTwoRavensExploreMap = new HashMap<>(); // { FileMetadata.id : Boolean } 
 
-    public TwoRavensHelper(SettingsServiceBean settingsService, PermissionServiceBean permissionService, DataverseSession session,
-                        AuthenticationServiceBean authService){
-        if (settingsService == null){
-            throw new NullPointerException("settingsService cannot be null");
-        }
-        if (permissionService == null){
-            throw new NullPointerException("permissionService cannot be null");
-        }
-        this.permissionService = permissionService;
-        this.settingsService = settingsService;
-        this.session = session;
-        this.authService = authService;
+    public TwoRavensHelper(){
         
     }
    
@@ -102,13 +100,17 @@ public class TwoRavensHelper {
      * @return 
      */
     public boolean canSeeTwoRavensExploreButton(FileMetadata fm, boolean permissionsChecked){
-       
         if (fm == null){
             return false;
         }
         
         // This is only here as a reminder to the public method users 
         if (!permissionsChecked){
+            return false;
+        }
+        
+        if (!fm.getDataFile().isTabularData()){
+            this.fileMetadataTwoRavensExploreMap.put(fm.getId(), false);
             return false;
         }
         
@@ -119,13 +121,30 @@ public class TwoRavensHelper {
             return this.fileMetadataTwoRavensExploreMap.get(fm.getId());
         }
         
+        
+        // (1) Is TwoRavens active via the "setting" table?
+        //      Nope: get out
+        //      
+        if (!settingsService.isTrueForKey(SettingsServiceBean.Key.TwoRavensTabularView, false)){
+            this.fileMetadataTwoRavensExploreMap.put(fm.getId(), false);
+            return false;
+        }
+        
         //----------------------------------------------------------------------
-        //(0) Before we do any testing - if version is deaccessioned and user
+        //(1a) Before we do any testing - if version is deaccessioned and user
         // does not have edit dataset permission then may download
-        //----------------------------------------------------------------------
+        //--- 
+        
+        // (2) Is the DataFile object there and persisted?
+        //      Nope: scat
+        //
+        if ((fm.getDataFile() == null)||(fm.getDataFile().getId()==null)){
+            this.fileMetadataTwoRavensExploreMap.put(fm.getId(), false);
+            return false;
+        }
         
        if (fm.getDatasetVersion().isDeaccessioned()) {
-           if (this.doesSessionUserHaveDataSetPermission(fm.getDatasetVersion().getDataset(), Permission.EditDataset)) {
+           if (this.doesSessionUserHavePermission( Permission.EditDataset, fm)) {
                // Yes, save answer and return true
                this.fileMetadataTwoRavensExploreMap.put(fm.getId(), true);
                return true;
@@ -136,19 +155,31 @@ public class TwoRavensHelper {
        }
         
         
-        // (1) Is TwoRavens active via the "setting" table?
-        //      Nope: get out
-        //      
-        if (!settingsService.isTrueForKey(SettingsServiceBean.Key.TwoRavensTabularView, false)){
+
+        
+        //Check for restrictions
+        
+        boolean isRestrictedFile = fm.isRestricted();
+        
+        
+        // --------------------------------------------------------------------
+        // Conditions (2) through (4) are for Restricted files
+        // --------------------------------------------------------------------
+
+
+        if (isRestrictedFile && session.getUser() instanceof GuestUser){
             this.fileMetadataTwoRavensExploreMap.put(fm.getId(), false);
             return false;
         }
+
+        
+        // --------------------------------------------------------------------
+        // (3) Does the User have DownloadFile Permission at the **Dataset** level 
+        // --------------------------------------------------------------------
         
 
-        // (2) Is the DataFile object there and persisted?
-        //      Nope: scat
-        //
-        if ((fm.getDataFile() == null)||(fm.getDataFile().getId()==null)){
+        if (isRestrictedFile && !this.doesSessionUserHavePermission(Permission.DownloadFile, fm)){
+            // Yes, save answer and return true
             this.fileMetadataTwoRavensExploreMap.put(fm.getId(), false);
             return false;
         }
@@ -194,7 +225,6 @@ public class TwoRavensHelper {
      * @return 
      */
     public String getDataExploreURLComplete(Long fileid) {
-        System.out.print("in Two ravens helper...");
         if (fileid == null){
             throw new NullPointerException("fileid cannot be null");
         }
@@ -222,23 +252,18 @@ public class TwoRavensHelper {
         }
 
         // For a local TwoRavens setup it's enough to call it with just 
-        // the file id:
-                    System.out.print("TwoRavensUrl " + TwoRavensUrl);
-           System.out.print("TwoRavensUrlDefault " + TwoRavensDefaultLocal + fileid + "&" + getApiTokenKey());         
+        // the file id:     
         return TwoRavensDefaultLocal + fileid + "&" + getApiTokenKey();
     }
     
     private String getApiTokenKey() {
         ApiToken apiToken;
-            System.out.print("In getApiTokenKey ");
         if (session.getUser() == null) {
-            System.out.print("Session User null ");
             return null;
         }
         if (isSessionUserAuthenticated()) {
             AuthenticatedUser au = (AuthenticatedUser) session.getUser();
             apiToken = authService.findApiTokenByUser(au);
-            System.out.print("apiToken " + apiToken);
             if (apiToken != null) {
                 return "key=" + apiToken.getTokenString();
             }
@@ -268,16 +293,27 @@ public class TwoRavensHelper {
 
     }
     
-    public boolean doesSessionUserHaveDataSetPermission(Dataset dataset, Permission permissionToCheck){
+    public boolean doesSessionUserHavePermission(Permission permissionToCheck, FileMetadata fileMetadata){
         if (permissionToCheck == null){
             return false;
         }
-               
-
+        
+        DvObject objectToCheck = null;
+        
+        if (permissionToCheck.equals(Permission.EditDataset)){
+            objectToCheck = fileMetadata.getDatasetVersion().getDataset();
+        } else if (permissionToCheck.equals(Permission.DownloadFile)){
+            objectToCheck = fileMetadata.getDataFile();
+        }
+        
+        if (objectToCheck == null){
+            return false;
+        }
+              
         
         // Check the permission
         //
-        boolean hasPermission = this.permissionService.userOn(this.session.getUser(), dataset).has(permissionToCheck);
+        boolean hasPermission = this.permissionService.userOn(this.session.getUser(), objectToCheck).has(permissionToCheck);
 
         
         // return true/false

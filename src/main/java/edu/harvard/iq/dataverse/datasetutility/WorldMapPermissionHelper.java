@@ -8,16 +8,21 @@ package edu.harvard.iq.dataverse.datasetutility;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DataverseSession;
+import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.MapLayerMetadata;
 import edu.harvard.iq.dataverse.MapLayerMetadataServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  * This class originally encapsulated display logic for the DatasetPage
@@ -39,113 +44,24 @@ import java.util.Map;
  * 
  * @author rmp553
  */
-public class WorldMapPermissionHelper {
+@ViewScoped
+@Named
+public class WorldMapPermissionHelper implements java.io.Serializable {
     
-    private SettingsServiceBean settingsService;
-    private MapLayerMetadataServiceBean mapLayerMetadataService;
-    private PermissionServiceBean permissionService;
-    private DataverseSession session;
+    @Inject SettingsServiceBean settingsService;
+    @Inject MapLayerMetadataServiceBean mapLayerMetadataService;
+    @Inject PermissionServiceBean permissionService;
+    @Inject DataverseSession session;
 
-    private Dataset dataset;
     
     private final Map<Long, Boolean> fileMetadataWorldMapExplore = new HashMap<>(); // { FileMetadata.id : Boolean } 
-    private final Map<Long, MapLayerMetadata> mapLayerMetadataLookup = new HashMap<>();
+    private  Map<Long, MapLayerMetadata> mapLayerMetadataLookup = null;
     private final Map<String, Boolean> datasetPermissionMap = new HashMap<>(); // { Permission human_name : Boolean }
 
     
-    public WorldMapPermissionHelper(SettingsServiceBean settingsService, MapLayerMetadataServiceBean mapLayerMetadataService,
-                Dataset dataset, PermissionServiceBean permissionService, DataverseSession session ){
-
-        if (dataset == null){
-            throw new NullPointerException("dataset cannot be null");
-        }
-        if (dataset.getId() == null){
-            throw new NullPointerException("dataset must be saved! (have an id)");
-        }
+    public WorldMapPermissionHelper( ){
         
-        if (settingsService == null){
-            throw new NullPointerException("settingsService cannot be null");
-        }
-        if (mapLayerMetadataService == null){
-            throw new NullPointerException("mapLayerMetadataService cannot be null");
-        }
- 
-        this.dataset = dataset;
-        
-        this.settingsService = settingsService;
-        this.mapLayerMetadataService = mapLayerMetadataService;
-        this.permissionService = permissionService;
-        this.session = session;
-        
-        loadMapLayerMetadataLookup();
     }
- 
-    
-    /**
-     * Convenience method for instantiating from dataset page or File page
-     * 
-     * 
-     * @param settingsService
-     * @param mapLayerMetadataService
-     * @param dataset
-     * @param permissionService
-     * @param session
-     * @return 
-     */
-    public static WorldMapPermissionHelper getPermissionHelperForDatasetPage(
-                    SettingsServiceBean settingsService, 
-                    MapLayerMetadataServiceBean mapLayerMetadataService,
-                    Dataset dataset,
-                    PermissionServiceBean permissionService,
-                    DataverseSession session){
-
-       return new WorldMapPermissionHelper(settingsService, mapLayerMetadataService, dataset, permissionService, session);        
-    }
-    
-    /**
-     * Convenience method for instantiating from the API
-     * 
-     *  REQUIRES PermissionServiceBean
-     * 
-     * @param settingsService
-     * @param mapLayerMetadataService
-     * @param dataset
-     * @param permissionService
-     * @return 
-     */
-    public static WorldMapPermissionHelper getPermissionHelperForAPI(
-                SettingsServiceBean settingsService, 
-                MapLayerMetadataServiceBean mapLayerMetadataService,
-                Dataset dataset,
-                PermissionServiceBean permissionService,
-                DataverseSession session){
-
-       if (permissionService == null){
-           throw new NullPointerException("permissionService is required for API checks");
-       }
-       
-       return new WorldMapPermissionHelper(settingsService, mapLayerMetadataService, dataset, permissionService, session);        
-    }
-    
-    
-    /**
-     * Create a hashmap consisting of { DataFile.id : MapLayerMetadata object}
-     *
-     * Very few DataFiles will have associated MapLayerMetadata objects so only
-     * use 1 query to get them
-     */
-    private void loadMapLayerMetadataLookup() {
-        
-        
-        List<MapLayerMetadata> mapLayerMetadataList = mapLayerMetadataService.getMapLayerMetadataForDataset(this.dataset);
-        if (mapLayerMetadataList == null) {
-            return;
-        }
-        for (MapLayerMetadata layer_metadata : mapLayerMetadataList) {
-            mapLayerMetadataLookup.put(layer_metadata.getDataFile().getId(), layer_metadata);
-        }
-
-    }// A DataFile may have a related MapLayerMetadata object
 
     
      /**
@@ -157,6 +73,9 @@ public class WorldMapPermissionHelper {
     public MapLayerMetadata getMapLayerMetadata(DataFile df) {
         if (df == null) {
             return null;
+        }
+        if (mapLayerMetadataLookup == null){
+            loadMapLayerMetadataLookup(df.getOwner());
         }
         return this.mapLayerMetadataLookup.get(df.getId());
     }
@@ -229,10 +148,20 @@ public class WorldMapPermissionHelper {
         /* -----------------------------------------------------
            Does a Map Exist?
          ----------------------------------------------------- */
-        if (!(this.hasMapLayerMetadata(fm))){
-            // Nope: no button
-            this.fileMetadataWorldMapExplore.put(fm.getId(), false);
-            return false;
+        if (!(this.hasMapLayerMetadata(fm))) {
+            //See if it does
+            MapLayerMetadata layer_metadata = mapLayerMetadataService.findMetadataByDatafile(fm.getDataFile());
+            if (layer_metadata != null) {
+                if (mapLayerMetadataLookup == null) {
+                    loadMapLayerMetadataLookup(fm.getDataFile().getOwner());
+                }
+                // yes: keep going...
+                mapLayerMetadataLookup.put(layer_metadata.getDataFile().getId(), layer_metadata);
+            } else {
+                // Nope: no button
+                this.fileMetadataWorldMapExplore.put(fm.getId(), false);
+                return false;
+            }
         }
               
         /*
@@ -249,7 +178,7 @@ public class WorldMapPermissionHelper {
         //----------------------------------------------------------------------
         
        if (fm.getDatasetVersion().isDeaccessioned()) {
-           if (this.doesSessionUserHaveDataSetPermission( Permission.EditDataset)) {
+           if (this.doesSessionUserHavePermission( Permission.EditDataset, fm)) {
                // Yes, save answer and return true
                this.fileMetadataWorldMapExplore.put(fm.getId(), true);
                return true;
@@ -258,6 +187,40 @@ public class WorldMapPermissionHelper {
                return false;
            }
        }
+               //Check for restrictions
+        
+        boolean isRestrictedFile = fm.isRestricted();
+        
+        // --------------------------------------------------------------------
+        //  Is the file Unrestricted ?        
+        // --------------------------------------------------------------------
+        if (!isRestrictedFile){
+            // Yes, save answer and return true
+            this.fileMetadataWorldMapExplore.put(fm.getId(), true);
+            return true;
+        }
+        
+        // --------------------------------------------------------------------
+        // Conditions (2) through (4) are for Restricted files
+        // --------------------------------------------------------------------
+
+
+        if (session.getUser() instanceof GuestUser){
+            this.fileMetadataWorldMapExplore.put(fm.getId(), false);
+            return false;
+        }
+
+        
+        // --------------------------------------------------------------------
+        // (3) Does the User have DownloadFile Permission at the **Dataset** level 
+        // --------------------------------------------------------------------
+        
+
+        if (!this.doesSessionUserHavePermission(Permission.DownloadFile, fm)){
+            // Yes, save answer and return true
+            this.fileMetadataWorldMapExplore.put(fm.getId(), false);
+            return false;
+        }
         
         /* -----------------------------------------------------
              Yes: User can view button!
@@ -279,6 +242,9 @@ public class WorldMapPermissionHelper {
         if (fm.getDataFile() == null) {
             return false;
         }
+        if (mapLayerMetadataLookup == null) {
+            loadMapLayerMetadataLookup(fm.getDataFile().getOwner());
+        }
         return doesDataFileHaveMapLayerMetadata(fm.getDataFile());
     }
 
@@ -297,7 +263,30 @@ public class WorldMapPermissionHelper {
         }
         return this.mapLayerMetadataLookup.containsKey(df.getId());
     }
+    
+    
+    /**
+     * Create a hashmap consisting of { DataFile.id : MapLayerMetadata object}
+     *
+     * Very few DataFiles will have associated MapLayerMetadata objects so only
+     * use 1 query to get them
+     */
+    private void loadMapLayerMetadataLookup(Dataset dataset) {
+        mapLayerMetadataLookup = new HashMap<>();
+        if (dataset == null) {
+        }
+        if (dataset.getId() == null) {
+            return;
+        }
+        List<MapLayerMetadata> mapLayerMetadataList = mapLayerMetadataService.getMapLayerMetadataForDataset(dataset);
+        if (mapLayerMetadataList == null) {
+            return;
+        }
+        for (MapLayerMetadata layer_metadata : mapLayerMetadataList) {
+            mapLayerMetadataLookup.put(layer_metadata.getDataFile().getId(), layer_metadata);
+        }
 
+    }// A DataFile may have a related MapLayerMetadata object
     
     
     /**
@@ -361,6 +350,10 @@ public class WorldMapPermissionHelper {
             return false;
         }
         
+        if (mapLayerMetadataLookup == null){
+            loadMapLayerMetadataLookup(fm.getDatasetVersion().getDataset());
+        }
+        
         return this.canSeeMapButtonReminderToPublish(fm, true);
         
     }
@@ -382,7 +375,7 @@ public class WorldMapPermissionHelper {
             return false;
         }
         
-        if (!this.permissionService.userOn(user, this.dataset).has(Permission.EditDataset)){
+        if (!this.permissionService.userOn(user, fm.getDataFile().getOwner()).has(Permission.EditDataset)){
             return false;
         }
 
@@ -410,7 +403,7 @@ public class WorldMapPermissionHelper {
         
         // Is this user authenticated with EditDataset permission?
         //
-        if (!(isUserAuthenticatedWithEditDatasetPermission())){
+        if (!(isUserAuthenticatedWithEditDatasetPermission(fm))){
             return false;
         }
         
@@ -438,7 +431,7 @@ public class WorldMapPermissionHelper {
         }
         
         // (4) Does a map already exist?  Yes, don't need reminder
-        //
+        //       
         if (this.hasMapLayerMetadata(fm)){
             return false;
         }
@@ -462,10 +455,15 @@ public class WorldMapPermissionHelper {
         
         // Is this user authenticated with EditDataset permission?
         //
-        if (!(isUserAuthenticatedWithEditDatasetPermission())){
+        if (!(isUserAuthenticatedWithEditDatasetPermission(fm))){
             return false;
         }
-        
+        if (mapLayerMetadataLookup == null){
+            loadMapLayerMetadataLookup(fm.getDatasetVersion().getDataset());
+        }
+        if (this.hasMapLayerMetadata(fm)){
+            return false;
+        }
         return this.canUserSeeMapDataButton(fm, true);
     }
             
@@ -487,7 +485,7 @@ public class WorldMapPermissionHelper {
             return false;
         }
         
-        if (!this.permissionService.userOn(user, this.dataset).has(Permission.EditDataset)){
+        if (!this.permissionService.userOn(user, fm.getDataFile().getOwner()).has(Permission.EditDataset)){
             return false;
         }
 
@@ -513,7 +511,6 @@ public class WorldMapPermissionHelper {
      * @return boolean
      */
     private boolean canUserSeeMapDataButton(FileMetadata fm, boolean permissionsChecked){
-
         if (fm==null){
             return false;
         }         
@@ -550,7 +547,7 @@ public class WorldMapPermissionHelper {
         return false;
     }
     
-    private boolean isUserAuthenticatedWithEditDatasetPermission(){
+    private boolean isUserAuthenticatedWithEditDatasetPermission( FileMetadata fm){
         
         // Is the user authenticated?
         //
@@ -560,7 +557,7 @@ public class WorldMapPermissionHelper {
         
         //  If so, can the logged in user edit the Dataset to which this FileMetadata belongs?
         //
-        if (!this.doesSessionUserHaveDataSetPermission(Permission.EditDataset)){
+        if (!this.doesSessionUserHavePermission(Permission.EditDataset, fm)){
             return false;
         }
         
@@ -582,8 +579,20 @@ public class WorldMapPermissionHelper {
 
     }
     
-    public boolean doesSessionUserHaveDataSetPermission(Permission permissionToCheck){
+    private boolean doesSessionUserHavePermission(Permission permissionToCheck, FileMetadata fileMetadata){
         if (permissionToCheck == null){
+            return false;
+        }
+        
+        DvObject objectToCheck = null;
+        
+        if (permissionToCheck.equals(Permission.EditDataset)){
+            objectToCheck = fileMetadata.getDatasetVersion().getDataset();
+        } else if (permissionToCheck.equals(Permission.DownloadFile)){
+            objectToCheck = fileMetadata.getDataFile();
+        }
+        
+        if (objectToCheck == null){
             return false;
         }
         
@@ -607,7 +616,7 @@ public class WorldMapPermissionHelper {
         // Check the permission
         //
         
-        boolean hasPermission = this.permissionService.userOn(this.session.getUser(), this.dataset).has(permissionToCheck);
+        boolean hasPermission = this.permissionService.userOn(this.session.getUser(), objectToCheck).has(permissionToCheck);
 
         // Save the permission
         this.datasetPermissionMap.put(permName, hasPermission);

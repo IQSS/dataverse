@@ -455,25 +455,10 @@ public class GuestbookResponseServiceBean {
         if (fileMetadata != null){
            guestbookResponse.setDataFile(fileMetadata.getDataFile());
         }
-        
-        
-        User user = session.getUser();
+
         if (dataset.getGuestbook() != null) {
             guestbookResponse.setGuestbook(workingVersion.getDataset().getGuestbook());
-            guestbookResponse.setName("");
-            guestbookResponse.setEmail("");
-            guestbookResponse.setInstitution("");
-            guestbookResponse.setPosition("");
-            guestbookResponse.setSessionId(session.toString());
-            if (user.isAuthenticated()) {
-                AuthenticatedUser aUser = (AuthenticatedUser) user;
-                guestbookResponse.setName(aUser.getName());
-                guestbookResponse.setAuthenticatedUser(aUser);
-                guestbookResponse.setEmail(aUser.getEmail());
-                guestbookResponse.setInstitution(aUser.getAffiliation());
-                guestbookResponse.setPosition(aUser.getPosition());
-                guestbookResponse.setSessionId(session.toString());
-            }
+            setUserDefaultResponses(guestbookResponse, session);
             if (fileMetadata != null){
                 guestbookResponse.setDataFile(fileMetadata.getDataFile());
             }            
@@ -485,18 +470,7 @@ public class GuestbookResponseServiceBean {
             }          
         }
         if (dataset.getGuestbook() != null && !dataset.getGuestbook().getCustomQuestions().isEmpty()) {
-            guestbookResponse.setCustomQuestionResponses(new ArrayList());
-            for (CustomQuestion cq : dataset.getGuestbook().getCustomQuestions()) {
-                CustomQuestionResponse cqr = new CustomQuestionResponse();
-                cqr.setGuestbookResponse(guestbookResponse);
-                cqr.setCustomQuestion(cq);
-                cqr.setResponse("");
-                if (cq.getQuestionType().equals("options")) {
-                    //response select Items
-                    cqr.setResponseSelectItems(setResponseUISelectItems(cq));
-                }
-                guestbookResponse.getCustomQuestionResponses().add(cqr);
-            }
+            initCustomQuestions(guestbookResponse, dataset);
         }
         guestbookResponse.setDownloadtype("Download");
 
@@ -506,13 +480,8 @@ public class GuestbookResponseServiceBean {
     }
     
     public GuestbookResponse initGuestbookResponseForFragment(FileMetadata fileMetadata, DataverseSession session){    
-        
-        DatasetVersion workingVersion = null;
-        if (fileMetadata != null){
-            workingVersion = fileMetadata.getDatasetVersion();
-        }
-        
-        return initGuestbookResponseForFragment(workingVersion.getDataset(), fileMetadata, session);
+
+        return initGuestbookResponseForFragment(fileMetadata.getDatasetVersion().getDataset(), fileMetadata, session);
     }
     
     public void initGuestbookResponse(FileMetadata fileMetadata, String downloadType, DataverseSession session){
@@ -539,24 +508,10 @@ public class GuestbookResponseServiceBean {
         if (fileMetadata != null){
            guestbookResponse.setDataFile(fileMetadata.getDataFile());
         }
-        
-        User user = session.getUser();
+
         if (dataset.getGuestbook() != null) {
             guestbookResponse.setGuestbook(workingVersion.getDataset().getGuestbook());
-            guestbookResponse.setName("");
-            guestbookResponse.setEmail("");
-            guestbookResponse.setInstitution("");
-            guestbookResponse.setPosition("");
-            guestbookResponse.setSessionId(session.toString());
-            if (user.isAuthenticated()) {
-                AuthenticatedUser aUser = (AuthenticatedUser) user;
-                guestbookResponse.setName(aUser.getName());
-                guestbookResponse.setAuthenticatedUser(aUser);
-                guestbookResponse.setEmail(aUser.getEmail());
-                guestbookResponse.setInstitution(aUser.getAffiliation());
-                guestbookResponse.setPosition(aUser.getPosition());
-                guestbookResponse.setSessionId(session.toString());
-            }
+            setUserDefaultResponses(guestbookResponse, session);
             if (fileMetadata != null){
                 guestbookResponse.setDataFile(fileMetadata.getDataFile());
             }            
@@ -568,18 +523,7 @@ public class GuestbookResponseServiceBean {
             }          
         }
         if (dataset.getGuestbook() != null && !dataset.getGuestbook().getCustomQuestions().isEmpty()) {
-            guestbookResponse.setCustomQuestionResponses(new ArrayList());
-            for (CustomQuestion cq : dataset.getGuestbook().getCustomQuestions()) {
-                CustomQuestionResponse cqr = new CustomQuestionResponse();
-                cqr.setGuestbookResponse(guestbookResponse);
-                cqr.setCustomQuestion(cq);
-                cqr.setResponse("");
-                if (cq.getQuestionType().equals("options")) {
-                    //response select Items
-                    cqr.setResponseSelectItems(setResponseUISelectItems(cq));
-                }
-                guestbookResponse.getCustomQuestionResponses().add(cqr);
-            }
+            initCustomQuestions(guestbookResponse, dataset);
         }
         guestbookResponse.setDownloadtype("Download");
         if(downloadFormat.toLowerCase().equals("subset")){
@@ -591,6 +535,39 @@ public class GuestbookResponseServiceBean {
         guestbookResponse.setDataset(dataset);
         
         return guestbookResponse;
+    }
+    
+    private void initCustomQuestions(GuestbookResponse guestbookResponse, Dataset dataset) {
+        guestbookResponse.setCustomQuestionResponses(new ArrayList());
+        for (CustomQuestion cq : dataset.getGuestbook().getCustomQuestions()) {
+            CustomQuestionResponse cqr = new CustomQuestionResponse();
+            cqr.setGuestbookResponse(guestbookResponse);
+            cqr.setCustomQuestion(cq);
+            cqr.setResponse("");
+            if (cq.getQuestionType().equals("options")) {
+                //response select Items
+                cqr.setResponseSelectItems(setResponseUISelectItems(cq));
+            }
+            guestbookResponse.getCustomQuestionResponses().add(cqr);
+        }
+    }
+    
+    private void setUserDefaultResponses(GuestbookResponse guestbookResponse, DataverseSession session) {
+        User user = session.getUser();
+        if (user != null) {
+            guestbookResponse.setEmail(getUserEMail(user));
+            guestbookResponse.setName(getUserName(user));
+            guestbookResponse.setInstitution(getUserInstitution(user));
+            guestbookResponse.setPosition(getUserPosition(user));
+            guestbookResponse.setAuthenticatedUser(getAuthenticatedUser(user));
+        } else {
+            guestbookResponse.setEmail("");
+            guestbookResponse.setName("");
+            guestbookResponse.setInstitution("");
+            guestbookResponse.setPosition("");
+            guestbookResponse.setAuthenticatedUser(null);
+        }
+        guestbookResponse.setSessionId(session.toString());
     }
 
     public GuestbookResponse initDefaultGuestbookResponse(Dataset dataset, DataFile dataFile, DataverseSession session) {
@@ -606,20 +583,7 @@ public class GuestbookResponseServiceBean {
         guestbookResponse.setResponseTime(new Date());
         guestbookResponse.setSessionId(session.toString());
         guestbookResponse.setDownloadtype("Download");
-        User user = session.getUser();
-        if (user != null) {
-            guestbookResponse.setEmail(getUserEMail(user));
-            guestbookResponse.setName(getUserName(user));
-            guestbookResponse.setInstitution(getUserInstitution(user));
-            guestbookResponse.setPosition(getUserPosition(user));
-            guestbookResponse.setAuthenticatedUser(getAuthenticatedUser(user));
-        } else {
-            guestbookResponse.setEmail("");
-            guestbookResponse.setName("");
-            guestbookResponse.setInstitution("");
-            guestbookResponse.setPosition("");
-            guestbookResponse.setAuthenticatedUser(null);
-        }
+        setUserDefaultResponses(guestbookResponse, session);
         return guestbookResponse;
     }
     
@@ -637,6 +601,9 @@ public class GuestbookResponseServiceBean {
         if (in != null && fm.getDataFile() != null) {
             in.setDataFile(fm.getDataFile());
         }
+        if (in != null && fm.getDatasetVersion() != null && fm.getDatasetVersion().isDraft() ) {
+            in.setWriteResponse(false);
+        }
         return in;
     }
     
@@ -652,6 +619,10 @@ public class GuestbookResponseServiceBean {
             in.setFileFormat(format);
             in.setDataFile(fm.getDataFile());
         }
+        if (in != null && fm.getDatasetVersion() != null && fm.getDatasetVersion().isDraft() ) {
+            in.setWriteResponse(false);
+        }
+        
         return in;
     }
 

@@ -23,6 +23,7 @@ import java.util.Objects;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.Files;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -960,5 +961,23 @@ public class DataFile extends DvObject implements Comparable {
         return fullFileJSON.toString();
         
     }
+    
+    public String getPublicationDateFormattedYYYYMMDD() {
+        if (getPublicationDate() != null){
+                   return new SimpleDateFormat("yyyy-MM-dd").format(getPublicationDate()); 
+        }
+        return null;
+    }
+    
+    public String getCreateDateFormattedYYYYMMDD() {
+        if (getCreateDate() != null){
+                   return new SimpleDateFormat("yyyy-MM-dd").format(getCreateDate()); 
+        }
+        return null;
+    }
 
 } // end of class
+    
+
+    
+

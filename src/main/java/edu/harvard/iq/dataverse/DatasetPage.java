@@ -167,6 +167,9 @@ public class DatasetPage implements java.io.Serializable {
     @Inject
     DatasetVersionUI datasetVersionUI;
     @Inject PermissionsWrapper permissionsWrapper;
+    @Inject FileDownloadHelper fileDownloadHelper;
+    @Inject TwoRavensHelper twoRavensHelper;
+    @Inject WorldMapPermissionHelper worldMapPermissionHelper;
 
 
 
@@ -216,18 +219,8 @@ public class DatasetPage implements java.io.Serializable {
     
     // Used to store results of permissions checks
     private final Map<String, Boolean> datasetPermissionMap = new HashMap<>(); // { Permission human_name : Boolean }
-    private final Map<Long, Boolean> fileDownloadPermissionMap = new HashMap<>(); // { FileMetadata.id : Boolean }
-
-    private final Map<Long, Boolean> fileMetadataTwoRavensExploreMap = new HashMap<>(); // { FileMetadata.id : Boolean } 
-    private final Map<Long, Boolean> fileMetadataWorldMapExplore = new HashMap<>(); // { FileMetadata.id : Boolean } 
     
-    private FileDownloadHelper fileDownloadHelper;
-    // Used to help with displaying buttons related to the WorldMap
-    private WorldMapPermissionHelper worldMapPermissionHelper;
 
-    
-    // Used to help with displaying buttons related to TwoRavens
-    private TwoRavensHelper twoRavensHelper;
     
     private DataFile selectedDownloadFile;
 
@@ -315,7 +308,7 @@ public class DatasetPage implements java.io.Serializable {
         
         List<FileMetadata> retList = new ArrayList<>(); 
         
-        for (FileMetadata fileMetadata : workingVersion.getFileMetadatas()) {
+        for (FileMetadata fileMetadata : workingVersion.getFileMetadatasSorted()) {
             if (searchResultsIdSet == null || searchResultsIdSet.contains(fileMetadata.getId())) {
                 retList.add(fileMetadata);
             }
@@ -948,33 +941,6 @@ public class DatasetPage implements java.io.Serializable {
         // System.out.println(s);
     }
     
-       /**
-     * This object wraps methods used for hiding/displaying WorldMap related messages
-     *
-     */
-    private void loadTwoRavensHelper() {
-       
-        twoRavensHelper = new TwoRavensHelper(settingsService, permissionService, session, authService);
-        
-    }
-    
-    /**
-     * This object wraps methods used for hiding/displaying WorldMap related messages
-     *
-     */
-    private void loadWorldMapPermissionHelper() {
-       
-        worldMapPermissionHelper = WorldMapPermissionHelper.getPermissionHelperForDatasetPage(settingsService, 
-                        mapLayerMetadataService, 
-                        dataset, 
-                        permissionService,
-                        session);
-        
-    }
-
-    
-
-   
     /**
      * For development
      * 
@@ -1158,22 +1124,19 @@ public class DatasetPage implements java.io.Serializable {
             
             // init the citation
             displayCitation = dataset.getCitation(true, workingVersion);
-
+            
 
             if (initFull) {
-                // init the files
-                //fileMetadatas = populateFileMetadatas();
+                // init the list of FileMetadatas
                 if (workingVersion.isDraft() && canUpdateDataset()) {
                     readOnly = false;
-                    fileMetadatasSearch = workingVersion.getFileMetadatasSorted();
                 } else {
                     // an attempt to retreive both the filemetadatas and datafiles early on, so that 
                     // we don't have to do so later (possibly, many more times than necessary):
-
                     datafileService.findFileMetadataOptimizedExperimental(dataset);
-                    fileMetadatasSearch = workingVersion.getFileMetadatas();
                 }
-            
+                fileMetadatasSearch = workingVersion.getFileMetadatasSorted();
+
                 ownerId = dataset.getOwner().getId();
                 datasetNextMajorVersion = this.dataset.getNextMajorVersionString();
                 datasetNextMinorVersion = this.dataset.getNextMinorVersionString();
@@ -1188,9 +1151,6 @@ public class DatasetPage implements java.io.Serializable {
                 // lazyModel = new LazyFileMetadataDataModel(workingVersion.getId(), datafileService );
                 // populate MapLayerMetadata
                 this.loadMapLayerMetadataLookup();  // A DataFile may have a related MapLayerMetadata object
-                this.loadFileDownloadHelper();
-                this.loadWorldMapPermissionHelper();  // A DataFile may have a related MapLayerMetadata object
-                this.loadTwoRavensHelper();
                 this.guestbookResponse = guestbookResponseService.initGuestbookResponseForFragment(dataset, null, session);
                 
             }
@@ -1650,13 +1610,10 @@ public class DatasetPage implements java.io.Serializable {
 
         
 
-
         if (readOnly) {
             datafileService.findFileMetadataOptimizedExperimental(dataset);
-            fileMetadatasSearch = workingVersion.getFileMetadatas();
-        } else {
-            fileMetadatasSearch = workingVersion.getFileMetadatasSorted();
-        }
+        } 
+        fileMetadatasSearch = workingVersion.getFileMetadatasSorted();
 
         displayCitation = dataset.getCitation(true, workingVersion);
         stateChanged = false;
@@ -2316,37 +2273,6 @@ public class DatasetPage implements java.io.Serializable {
         return  returnToLatestVersion();
     }
 
-    public boolean isDuplicate(FileMetadata fileMetadata) {
-        String thisMd5 = fileMetadata.getDataFile().getChecksumValue();
-        if (thisMd5 == null) {
-            return false;
-        }
-
-        Map<String, Integer> MD5Map = new HashMap<String, Integer>();
-
-        // TODO: 
-        // think of a way to do this that doesn't involve populating this 
-        // map for every file on the page? 
-        // man not be that much of a problem, if we paginate and never display 
-        // more than a certain number of files... Still, needs to be revisited
-        // before the final 4.0. 
-        // -- L.A. 4.0
-        Iterator<FileMetadata> fmIt = workingVersion.getFileMetadatas().iterator();
-        while (fmIt.hasNext()) {
-            FileMetadata fm = fmIt.next();
-            String md5 = fm.getDataFile().getChecksumValue();
-            if (md5 != null) {
-                if (MD5Map.get(md5) != null) {
-                    MD5Map.put(md5, MD5Map.get(md5).intValue() + 1);
-                } else {
-                    MD5Map.put(md5, 1);
-                }
-            }
-        }
-
-        return MD5Map.get(thisMd5) != null && MD5Map.get(thisMd5).intValue() > 1;
-    }
-
     private HttpClient getClient() {
         // TODO: 
         // cache the http client? -- L.A. 4.0 alpha
@@ -2455,8 +2381,8 @@ public class DatasetPage implements java.io.Serializable {
      * See: dataset-versions.xhtml, remoteCommand 'postLoadVersionTablList'
     */
     public void postLoadSetVersionTabList(){
-        
-        if (this.getVersionTabList().isEmpty()){
+
+        if (this.getVersionTabList().isEmpty() && workingVersion.isDeaccessioned()){
             setVersionTabList(resetVersionTabList());
         }
         
@@ -3399,7 +3325,7 @@ public class DatasetPage implements java.io.Serializable {
         return false;
     }
 
-    public boolean isDownloadPopupRequired() {      
+    public boolean isDownloadPopupRequired() {
         return fileDownloadService.isDownloadPopupRequired(workingVersion);
     }
     
@@ -3588,12 +3514,6 @@ public class DatasetPage implements java.io.Serializable {
 
     public String getPrivateUrlLink(PrivateUrl privateUrl) {
         return privateUrl.getLink();
-    }
-    
-    private void loadFileDownloadHelper() {
-       
-        fileDownloadHelper = new FileDownloadHelper( dataset, permissionService, session);
-        
     }
     
     
