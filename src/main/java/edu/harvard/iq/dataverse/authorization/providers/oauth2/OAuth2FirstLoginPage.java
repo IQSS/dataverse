@@ -131,7 +131,8 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
 
     public void setNewUser(OAuth2UserRecord newUser) {
         this.newUser = newUser;
-        setUsername(newUser.getUsername());
+        // uncomment to suggest username to user
+        //setUsername(newUser.getUsername());
         setSelectedEmail(newUser.getDisplayInfo().getEmailAddress());
     }
 
