@@ -47,6 +47,7 @@ public class ImportDDIServiceBean {
     public static final String NAMING_PROTOCOL_DOI = "doi";
     public static final String AGENCY_HANDLE = "handle";
     public static final String AGENCY_DOI = "DOI";
+    public static final String AGENCY_DARA = "dara"; // da|ra - http://www.da-ra.de/en/home/
     public static final String REPLICATION_FOR_TYPE = "replicationFor";
     public static final String VAR_WEIGHTED = "wgtd";
     public static final String VAR_INTERVAL_CONTIN = "contin";
@@ -1242,6 +1243,16 @@ public class ImportDDIServiceBean {
                         parseStudyIdHandle( parseText(xmlr), datasetDTO );
                     } else if ( AGENCY_DOI.equals( xmlr.getAttributeValue(null, "agency") ) ) {
                         parseStudyIdDOI( parseText(xmlr), datasetDTO );
+                    } else if ( AGENCY_DARA.equals( xmlr.getAttributeValue(null, "agency"))) {
+                        /* 
+                            da|ra - "Registration agency for social and economic data"
+                            (http://www.da-ra.de/en/home/)
+                            ICPSR uses da|ra to register their DOIs; so they have agency="dara" 
+                            in their IDNo entries. 
+                            Also, their DOIs are formatted differently, without the 
+                            hdl: prefix. 
+                        */
+                        parseStudyIdDoiICPSRdara( parseText(xmlr), datasetDTO );
                     } else {
                         HashSet<FieldDTO> set = new HashSet<>();
                         addToSet(set,"otherIdAgency", xmlr.getAttributeValue(null, "agency"));
@@ -1523,6 +1534,31 @@ public class ImportDDIServiceBean {
         datasetDTO.setDoiSeparator("/");
        
         datasetDTO.setIdentifier(_id.substring(index2+1));
+    }
+    
+    private void parseStudyIdDoiICPSRdara(String _id, DatasetDTO datasetDTO) throws ImportException{
+        /*
+            dara/ICPSR DOIs are formatted without the hdl: prefix; for example - 
+            10.3886/ICPSR06635.v1
+            so we assume that everything before the last "/" is the authority, 
+            and everything past it - the identifier:
+        */
+        
+        int index = _id.lastIndexOf('/');  
+       
+        if (index == -1) {
+            throw new ImportException("Error parsing ICPSR/dara DOI IdNo: "+_id+". '/' not found in string");
+        } 
+        
+        if (index == _id.length() - 1) {
+            throw new ImportException("Error parsing ICPSR/dara DOI IdNo: "+_id+" ends with '/'");
+        }
+        
+        datasetDTO.setAuthority(_id.substring(0, index));
+        datasetDTO.setProtocol("doi");
+        datasetDTO.setDoiSeparator("/");
+       
+        datasetDTO.setIdentifier(_id.substring(index+1));
     }
     // Helper methods
     private MetadataBlockDTO getCitation(DatasetVersionDTO dvDTO) {
