@@ -249,6 +249,7 @@ public class ImportDDIServiceBean {
                 else if (xmlr.getLocalName().equals("fileDscr") && !isMigrationImport(importType)) {
                     // EMK TODO: add this back in for ImportType.NEW
                     //processFileDscr(xmlr, datasetDTO, filesMap);
+                    processFileDscrMinimal(xmlr, datasetDTO, filesMap);
                     
                 }
                 else if (xmlr.getLocalName().equals("otherMat") && (isNewImport(importType) || isHarvestWithFilesImport(importType)) ) {
@@ -1645,6 +1646,40 @@ public class ImportDDIServiceBean {
         }
     }
 
+    // this method is for attempting to extract the minimal amount of file-level
+    // metadata from an ICPSR-supplied DDI. (they use the "fileDscr" instead of 
+    // "otherMat" for general file metadata; the only field they populate is 
+    // "fileName". -- 4.6
+    
+    private void processFileDscrMinimal(XMLStreamReader xmlr, DatasetDTO datasetDTO, Map filesMap) throws XMLStreamException {
+        FileMetadataDTO fmdDTO = new FileMetadataDTO();
+        
+        if (datasetDTO.getDatasetVersion().getFileMetadatas() == null) {
+            datasetDTO.getDatasetVersion().setFileMetadatas(new ArrayList<>());
+        }
+        datasetDTO.getDatasetVersion().getFileMetadatas().add(fmdDTO);
+
+        DataFileDTO dfDTO = new DataFileDTO();
+        fmdDTO.setDataFile(dfDTO);
+        
+        for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
+            if (event == XMLStreamConstants.START_ELEMENT) {
+                if (xmlr.getLocalName().equals("fileName")) {
+                    // this is the file name: 
+                    fmdDTO.setLabel( parseText(xmlr) );
+                } 
+            } else if (event == XMLStreamConstants.END_ELEMENT) {// </codeBook>
+                if (xmlr.getLocalName().equals("fileDscr")) {
+                    if (fmdDTO.getLabel() == null || fmdDTO.getLabel().trim().equals("") ) {
+                        fmdDTO.setLabel("harvested file");
+                    }
+
+                    return;
+                }
+            }
+        }
+    }
+    
     private void processFileDscr(XMLStreamReader xmlr, DatasetDTO datasetDTO, Map filesMap) throws XMLStreamException {
         FileMetadataDTO fmdDTO = new FileMetadataDTO();
         
