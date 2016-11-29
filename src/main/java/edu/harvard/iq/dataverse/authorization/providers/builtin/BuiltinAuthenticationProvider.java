@@ -128,4 +128,9 @@ public class BuiltinAuthenticationProvider implements CredentialsAuthenticationP
         return CREDENTIALS_LIST;
     }
 
+    @Override
+    public boolean isOAuthProvider() {
+        return false;
+    }
+
 }

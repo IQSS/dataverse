@@ -99,7 +99,6 @@ public class LoginPage implements java.io.Serializable {
     private List<FilledCredential> filledCredentials;
     
     private String redirectPage = "dataverse.xhtml";
-//    private String provider;
     private AuthenticationProvider authProvider;
 
     public void init() {
@@ -108,13 +107,7 @@ public class LoginPage implements java.io.Serializable {
             setCredentialsAuthProviderId(credentialsIterator.next());
         }
         resetFilledCredentials(null);
-//        if (provider == null) {
-//            provider = systemConfig.getDefaultAuthProvider();
-//        }
-        /**
-         * @todo How do we set the authProvider without a query parameter?
-         */
-//        authProvider = authSvc.getAuthenticationProvider(provider);
+        authProvider = authSvc.getAuthenticationProvider(systemConfig.getDefaultAuthProvider());
     }
 
     public List<AuthenticationProviderDisplayInfo> listCredentialsAuthenticationProviders() {
@@ -248,28 +241,21 @@ public class LoginPage implements java.io.Serializable {
     public void setRedirectPage(String redirectPage) {
         this.redirectPage = redirectPage;
     }
-//
-//    public String getProvider() {
-//        return provider;
-//    }
-//
-//    public void setProvider(String provider) {
-//        this.provider = provider;
-//    }
 
     public AuthenticationProvider getAuthProvider() {
         return authProvider;
     }
 
-//    public void setAuthProvider(AuthenticationProvider authProvider) {
-//        this.authProvider = authProvider;
-//    }
-    
+    public void setAuthProviderById(String authProviderId) {
+        logger.info("Setting auth provider to " + authProviderId);
+        this.authProvider = authSvc.getAuthenticationProvider(authProviderId);
+    }
+
     public String getLoginButtonText() {
         if (authProvider != null) {
             return BundleUtil.getStringFromBundle("login.button", Arrays.asList(authProvider.getInfo().getTitle()));
         } else {
-            return "No auth provider found";
+            return BundleUtil.getStringFromBundle("login.button", Arrays.asList("???"));
         }
     }
 }
