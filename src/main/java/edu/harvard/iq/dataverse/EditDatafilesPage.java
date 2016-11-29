@@ -153,9 +153,9 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
     
     public List<FileMetadata> getFileMetadatas() {
-        if (uploadInProgress) {
-            return null; 
-        }
+        //if (uploadInProgress) {
+        //    return null; 
+        //}
         if (fileMetadatas != null) {
             logger.fine("Returning a list of "+fileMetadatas.size()+" file metadatas.");
         } else {
@@ -1238,7 +1238,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         // started. It will be called *once*, even if it is a multiple file upload 
         // (either through drag-and-drop or select menu). 
        
-        logger.fine("upload started");
+        logger.info("upload started");
         
         uploadInProgress = true;        
     }
@@ -1261,7 +1261,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         // (check editFilesFragment.xhtml for the exact code handling this; and 
         // http://stackoverflow.com/questions/20747201/when-multiple-upload-is-finished-in-pfileupload
         // for more info). -- 4.6
-        logger.fine("upload finished");
+        logger.info("upload finished");
 
         // Add the file(s) added during this last upload event, single or multiple, 
         // to the full list of new files, and the list of filemetadatas 

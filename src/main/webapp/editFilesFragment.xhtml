@@ -61,7 +61,7 @@
                         </ui:fragment> 
                     </p>
                     <p:fileUpload id="fileUpload" widgetVar="fileUploadWidget" styleClass="margin-bottom" dragDropSupport="true" auto="true" multiple="true" rendered="#{datasetPage || EditDatafilesPage.showFileUploadFileComponent()}"
-                                  fileUploadListener="#{EditDatafilesPage.handleFileUpload}" process="filesTable" update="" label="#{bundle['file.selectToAddBtn']}"
+                                  fileUploadListener="#{EditDatafilesPage.handleFileUpload}" process="filesTable" update="@none" label="#{bundle['file.selectToAddBtn']}"
                                   oncomplete="javascript:dataset_fileupload_rebind();uploadWidgetDropMsg();uploadFinished(PF('fileUploadWidget'));" onstart="javascript:uploadWidgetDropRemoveMsg();uploadStarted();"
                                   sizeLimit="#{EditDatafilesPage.getMaxFileUploadSizeInBytes()}" fileLimit="#{EditDatafilesPage.getMaxNumberOfFiles()}" invalidSizeMessage="File exceeds our limits. Please contact support. " sequential="true"/>
                     <!-- Dropbox Upload -->
@@ -76,7 +76,7 @@
                     </div>
                     <p:message for="fileUpload" id="uploadMessage" display="text" />
                     
-                    <p:commandButton id="uploadStarted" action="#{EditDatafilesPage.uploadStarted()}" style="display:none"/>
+                    <p:commandButton id="uploadStarted" action="#{EditDatafilesPage.uploadStarted()}" update="@none" style="display:none"/>
                     <p:commandButton id="AllUploadsFinished" action="#{EditDatafilesPage.uploadFinished()}" update="filesTable,uploadMessage" style="display:none"/>
                 </ui:fragment>
 

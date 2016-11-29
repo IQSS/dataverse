@@ -188,7 +188,7 @@ public class Dataset extends DvObjectContainer {
     }
 
     public List<DataFile> getFiles() {
-        logger.info("getFiles() on dataset "+this.getId());
+        //logger.info("getFiles() on dataset "+this.getId());
         return files;
     }
 

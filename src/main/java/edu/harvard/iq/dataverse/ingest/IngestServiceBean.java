@@ -74,6 +74,7 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -205,7 +206,7 @@ public class IngestServiceBean {
                     String fileName = fileMetadata.getLabel();
                     
                     // temp dbug line
-                    System.out.println("ADDING FILE: " + fileName + "; for dataset: " + dataset.getGlobalId());                    
+                    //System.out.println("ADDING FILE: " + fileName + "; for dataset: " + dataset.getGlobalId());                    
                     
                     // Make sure the file is attached to the dataset and to the version, if this 
                     // hasn't been done yet:
@@ -256,9 +257,16 @@ public class IngestServiceBean {
                     WritableByteChannel writeChannel = null;
                     FileChannel readChannel = null;
                     
+                    boolean localFile = false;
+                    boolean savedSuccess = false; 
+                    
                     try {
 
                         DataFileIO dataAccess = dataFile.getAccessObject();
+                        
+                        if (dataAccess.isLocalFile()) {
+                            localFile = true; 
+                        }
      
                         /* 
                          This commented-out code demonstrates how to copy bytes
@@ -295,6 +303,7 @@ public class IngestServiceBean {
                         // Set filesize in bytes
                         // 
                         dataFile.setFilesize(dataAccess.getSize());
+                        savedSuccess = true;
                         
                     } catch (IOException ioex) {
                         logger.warning("Failed to save the file, storage id " + dataFile.getStorageIdentifier());
@@ -303,26 +312,71 @@ public class IngestServiceBean {
                         if (writeChannel != null) {try{writeChannel.close();}catch(IOException e){}}
                     }
 
-                    // delete the temporary file: 
+                    // Since we may have already spent some CPU cycles scaling down image thumbnails, 
+                    // we may as well save them, by moving these generated images to the permanent 
+                    // dataset directory. We should also remember to delete any such files in the
+                    // temp directory:
+                    
+                    List<Path> generatedTempFiles = listGeneratedTempFiles(Paths.get(FileUtil.getFilesTempDirectory()), dataFile.getStorageIdentifier());
+                    if (generatedTempFiles != null) {
+                        for (Path generated : generatedTempFiles) {
+                            if (savedSuccess && localFile) {
+                                logger.fine("Will try to permanently save generated file "+generated.toString());
+                                try {
+                                    Files.copy(generated, Paths.get(dataset.getFileSystemDirectory().toString(), generated.getFileName().toString()));
+                                } catch (IOException ioex) {
+                                    logger.warning("Failed to save generated file "+generated.toString());
+                                }
+                                
+                                try {
+                                    Files.delete(generated);
+                                } catch (IOException ioex) {
+                                    logger.warning("Failed to delete generated file "+generated.toString());
+                                }
+                            }
+                        }
+                    }
+                    
                     try {
                         logger.fine("Will attempt to delete the temp file "+tempLocationPath.toString());
-                        // also, delete a temporary thumbnail image file, if exists:
-                        // (TODO: probably not a very good style, that the size of the thumbnail 
-                        // is hard-coded here; it may change in the future...)
-                        Path tempThumbnailPath = Paths.get(tempLocationPath.toString() + ".thumb64");
                         Files.delete(tempLocationPath);
-                        if (tempThumbnailPath.toFile().exists()) {
-                            Files.delete(tempThumbnailPath);
-                        }
                     } catch (IOException ex) {
                         // (non-fatal - it's just a temp file.)
                         logger.warning("Failed to delete temp file "+tempLocationPath.toString());
                     }
+                    
                     // Any necessary post-processing: 
                     performPostProcessingTasks(dataFile);
                 }
             }
         }
+    }
+    
+    private List<Path> listGeneratedTempFiles(Path tempDirectory, String baseName) {
+        List<Path> generatedFiles = new ArrayList<>();
+
+        // for example, <filename>.thumb64 or <filename>.thumb400.
+
+        if (baseName == null || baseName.equals("")) {
+            return null;
+        }
+
+        DirectoryStream.Filter<Path> filter = new DirectoryStream.Filter<Path>() {
+            @Override
+            public boolean accept(Path file) throws IOException {
+                return (file.getFileName() != null
+                        && file.getFileName().toString().startsWith(baseName + ".thumb"));
+            }
+        };
+
+        try (DirectoryStream<Path> dirStream = Files.newDirectoryStream(tempDirectory, filter)) {
+            for (Path filePath : dirStream) {
+                generatedFiles.add(filePath);
+            }
+        } catch (IOException ex) {
+        }
+
+        return generatedFiles;
     }
     
     // TODO: consider creating a version of this method that would take 
