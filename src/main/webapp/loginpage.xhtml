@@ -22,7 +22,7 @@
             <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:param name="loginRedirectPage" value="dataverse.xhtml"/>
             <ui:define name="body">
-                <ui:fragment rendered="#{not LoginPage.authenticationProvidersAvailable}">
+                <ui:fragment rendered="#{LoginPage.listAuthenticationProviders().size() lt 1}">
                     <div class="row">
                         <div class="col-sm-12">
                             <div class="alert alert-danger">
@@ -198,7 +198,7 @@
                                 </div>
                             </div>
                             
-                            <div id="otherProviders" jsf:rendered="#{LoginPage.authenticationProvidersAvailable}">
+                            <div id="otherProviders" jsf:rendered="#{LoginPage.listAuthenticationProviders().size() > 1}">
                                 <h4>#{bundle['auth.providers.title']}</h4>
                                 <ui:repeat value="#{LoginPage.listAuthenticationProviders()}" var="provider">
                                     <h:outputLink rendered="#{provider.id != LoginPage.authProvider.id}" styleClass="btn btn-default" value="/loginpage.xhtml?redirectPage=dataverseuser.xhtml&amp;provider=#{provider.id}">
