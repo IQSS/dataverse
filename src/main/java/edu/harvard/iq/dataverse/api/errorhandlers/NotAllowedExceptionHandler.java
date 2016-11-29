@@ -1,3 +1,5 @@
+package edu.harvard.iq.dataverse.api.errorhandlers;
+
 import javax.json.Json;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.NotAllowedException;
