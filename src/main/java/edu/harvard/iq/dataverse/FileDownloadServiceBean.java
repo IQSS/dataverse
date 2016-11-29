@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateGuestbookResponseCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.RequestAccessCommand;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -397,25 +398,39 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     }
 
     
-    public void requestAccess(DataFile file, boolean sendNotification) {
-        if (!file.getFileAccessRequesters().contains((AuthenticatedUser) session.getUser())) {
+    
+    public void requestAccess(DataFile file) {
+        if (requestAccess(file.getId())) {
+            // update the local file object so that the page properly updates
             file.getFileAccessRequesters().add((AuthenticatedUser) session.getUser());
-            datafileService.save(file);
-
+            
             // create notifications
-            if (sendNotification) {
-                sendRequestFileAccessNotification(file);
-
-            }
+            sendRequestFileAccessNotification(file.getOwner(), file.getId());           
         }
-    }
-
-    private void sendRequestFileAccessNotification(DataFile file) {
-        for (AuthenticatedUser au : permissionService.getUsersWithPermissionOn(Permission.ManageDatasetPermissions, file.getOwner())) {
-            userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.REQUESTFILEACCESS, file.getId());
+        
+    }    
+    
+    public boolean requestAccess(Long fileId) {     
+        DataFile file = datafileService.find(fileId);
+        if (!file.getFileAccessRequesters().contains((AuthenticatedUser) session.getUser())) {            
+            try {
+                commandEngine.submit(new RequestAccessCommand(dvRequestService.getDataverseRequest(), file));                        
+                return true;
+            } catch (CommandException ex) {
+                logger.info("Unable to request access for file id " + fileId + ". Exception: " + ex);
+            }             
         }
+        
+        return false;
+    }    
+    
+    public void sendRequestFileAccessNotification(Dataset dataset, Long fileId) {
+        permissionService.getUsersWithPermissionOn(Permission.ManageDatasetPermissions, dataset).stream().forEach((au) -> {
+            userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.REQUESTFILEACCESS, fileId);
+        });
 
-    }
+    }    
+
 
     
 }
