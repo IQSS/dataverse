@@ -59,8 +59,8 @@ public class IngestServiceBeanHelper {
             if (fm.getId() != null) {
                 String existingName = fm.getLabel();
                 String existingDir = fm.getDirectoryLabel();
-                // add file separator to end of any non-empty directory label
-                if (!existingDir.isEmpty()) {
+                // add file separator to end of any non-null, non-empty directory label
+                if (existingDir != null && !existingDir.isEmpty()) {
                     existingDir = existingDir + File.separator;
                 }
                 String existingPath = existingDir + existingName;
@@ -87,7 +87,7 @@ public class IngestServiceBeanHelper {
             FileMetadata fm = dfIt.next().getFileMetadata();
             String fileName = fm.getLabel();
             String dirName = fm.getDirectoryLabel();
-            if (!dirName.isEmpty()) {
+            if (dirName != null && !dirName.isEmpty()) {
                 dirName = dirName + File.separator;
             }
             String pathName = dirName + fileName;
