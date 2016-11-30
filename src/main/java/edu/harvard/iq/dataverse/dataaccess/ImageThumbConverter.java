@@ -233,7 +233,7 @@ public class ImageThumbConverter {
             logger.fine("obtained non-null imageThumbFileName: "+imageThumbFileName);
             File imageThumbFile = new File(imageThumbFileName);
 
-            if (imageThumbFile != null && imageThumbFile.exists()) {
+            if (imageThumbFile.exists()) {
                 return imageThumbFile;
                 
             }
@@ -495,7 +495,7 @@ public class ImageThumbConverter {
             // generate smaller-size thumbnails.
             previewFileLocation = fileLocation + ".thumb" + DEFAULT_PREVIEW_SIZE;
 
-            if (!(new File(previewFileLocation).exists())) {
+            if (!((new File(previewFileLocation)).exists())) {
                 previewFileLocation = runImageMagick(imageMagickExec, fileLocation, DEFAULT_PREVIEW_SIZE, "pdf");
             }
             
@@ -510,13 +510,11 @@ public class ImageThumbConverter {
             // generate the thumbnail for the requested size, *using the already scaled-down
             // 400x400 png version, above*:
 
-            if (!(new File(thumbFileLocation).exists())) {
-                    thumbFileLocation = runImageMagick(imageMagickExec, previewFileLocation, thumbFileLocation, size, "png");
+            if (!((new File(thumbFileLocation)).exists())) {
+                thumbFileLocation = runImageMagick(imageMagickExec, previewFileLocation, thumbFileLocation, size, "png");
             }
                     
-            if (new File(thumbFileLocation).exists()) {
-                return thumbFileLocation;
-            }
+            return thumbFileLocation;
             
             
             /*
