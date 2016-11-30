@@ -63,7 +63,8 @@
                     <p:fileUpload id="fileUpload" widgetVar="fileUploadWidget" styleClass="margin-bottom" dragDropSupport="true" auto="true" multiple="true" rendered="#{datasetPage || EditDatafilesPage.showFileUploadFileComponent()}"
                                   fileUploadListener="#{EditDatafilesPage.handleFileUpload}" process="filesTable" update="@none" label="#{bundle['file.selectToAddBtn']}"
                                   oncomplete="javascript:dataset_fileupload_rebind();uploadWidgetDropMsg();uploadFinished(PF('fileUploadWidget'));" onstart="javascript:uploadWidgetDropRemoveMsg();uploadStarted();"
-                                  sizeLimit="#{EditDatafilesPage.getMaxFileUploadSizeInBytes()}" fileLimit="#{EditDatafilesPage.getMaxNumberOfFiles()}" invalidSizeMessage="File exceeds our limits. Please contact support. " sequential="true"/>
+                                  sizeLimit="#{EditDatafilesPage.getMaxFileUploadSizeInBytes()}" fileLimit="#{EditDatafilesPage.getMaxNumberOfFiles()}" invalidSizeMessage="File exceeds our limits. Please contact support. " sequential="true"
+                                  previewWidth="-1"/>
                     <!-- Dropbox Upload -->
                     <div id="dropboxUploadBlock" class="panel panel-default margin-bottom" jsf:rendered="#{!empty EditDatafilesPage.dropBoxKey}">
                         <div class="panel-body">
@@ -136,8 +137,8 @@
                                 <p:graphicImage value="/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=true"/>
                             </span>
                             <!-- Default Icon -->
-                            <span class="icon-#{dataFileServiceBean.getFileClass(fileMetadata.dataFile)} file-thumbnail-icon text-muted" jsf:rendered="#{(!empty fileMetadata.dataFile.id and !dataFileServiceBean.isThumbnailAvailable(fileMetadata.dataFile)) or (empty fileMetadata.dataFile.id and !dataFileServiceBean.isTemporaryPreviewAvailable(fileMetadata.dataFile.storageIdentifier, fileMetadata.dataFile.contentType))}"/>
-                            <ui:fragment rendered="#{empty fileMetadata.dataFile.id and !empty fileMetadata.dataFile.storageIdentifier and dataFileServiceBean.isTemporaryPreviewAvailable(fileMetadata.dataFile.storageIdentifier, fileMetadata.dataFile.contentType)}">
+                            <span class="icon-#{dataFileServiceBean.getFileClass(fileMetadata.dataFile)} file-thumbnail-icon text-muted" jsf:rendered="#{(!empty fileMetadata.dataFile.id and !dataFileServiceBean.isThumbnailAvailable(fileMetadata.dataFile)) or (empty fileMetadata.dataFile.id and !fileMetadata.dataFile.previewImageAvailable)}"/>
+                            <ui:fragment rendered="#{empty fileMetadata.dataFile.id and !empty fileMetadata.dataFile.storageIdentifier and fileMetadata.dataFile.previewImageAvailable}">
                                 <p:graphicImage value="/api/access/tempPreview/#{fileMetadata.dataFile.storageIdentifier}?mimetype=#{fileMetadata.dataFile.contentType}"/>
                                 <h:outputText id="imgPreview" value="Preview" styleClass="bg-info text-info text-center show"/>
                             </ui:fragment>

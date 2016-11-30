@@ -7,6 +7,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataFileCommand;
@@ -1399,6 +1400,9 @@ public class EditDatafilesPage implements java.io.Serializable {
                 // But let's check if its filename is a duplicate of another 
                 // file already uploaded, or already in the dataset:
                 dataFile.getFileMetadata().setLabel(duplicateFilenameCheck(dataFile.getFileMetadata()));
+                if (isTemporaryPreviewAvailable(dataFile.getStorageIdentifier(), dataFile.getContentType())) {
+                    dataFile.setPreviewImageAvailable(true);
+                }
                 uploadedFiles.add(dataFile);
                 // We are NOT adding the fileMetadata to the list that is being used
                 // to render the page; we'll do that once we know that all the individual uploads
@@ -1483,6 +1487,30 @@ public class EditDatafilesPage implements java.io.Serializable {
         }
 
         return null;
+    }
+    
+    public boolean isTemporaryPreviewAvailable(String fileSystemId, String mimeType) {
+        
+        String filesRootDirectory = System.getProperty("dataverse.files.directory");
+        if (filesRootDirectory == null || filesRootDirectory.equals("")) {
+            filesRootDirectory = "/tmp/files";
+        }
+
+        String fileSystemName = filesRootDirectory + "/temp/" + fileSystemId;
+        
+        String imageThumbFileName = null;
+        
+        if ("application/pdf".equals(mimeType)) {
+            imageThumbFileName = ImageThumbConverter.generatePDFThumb(fileSystemName);
+        } else if (mimeType != null && mimeType.startsWith("image/")) {
+            imageThumbFileName = ImageThumbConverter.generateImageThumb(fileSystemName);
+        }
+        
+        if (imageThumbFileName != null) {
+            return true; 
+        }
+            
+        return false;
     }
 
     private Set<String> fileLabelsExisting = null; 
