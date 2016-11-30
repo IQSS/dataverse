@@ -108,15 +108,6 @@
                                         </h:selectOneListbox>
                                     </div>
                                 </div>
-                                <div class="col-sm-3">
-                                    <p:fragment id="emailLabels">
-                                        <div class="alert alert-success" 
-                                             jsf:rendered="#{OAuth2FirstLoginPage.emailValid and OAuth2FirstLoginPage.emailAvailable}">#{bundle['oauth2.newAccount.emailOk']}</div>
-                                        <div class="alert alert-danger" 
-                                             jsf:rendered="#{OAuth2FirstLoginPage.emailValid and (!OAuth2FirstLoginPage.emailAvailable)}">#{bundle['oauth2.newAccount.emailTaken']}</div>
-                                        <div class="alert alert-danger" jsf:rendered="#{! OAuth2FirstLoginPage.emailValid}">#{bundle['oauth2.newAccount.emailInvalid']}</div>
-                                    </p:fragment>
-                                </div>
                             </div>
                             <div class="form-group">
                                 <label for="position" class="col-sm-3 control-label">

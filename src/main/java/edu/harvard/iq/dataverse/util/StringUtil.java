@@ -26,6 +26,7 @@ import org.jsoup.Jsoup;
  */
 public class StringUtil {
        
+    private static final Logger logger = Logger.getLogger(StringUtil.class.getCanonicalName());
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$");
     
     public static final boolean nonEmpty( String str ) {
@@ -50,8 +51,17 @@ public class StringUtil {
       }  
       return true;
     }
-    
+
+    /**
+     * @todo Unless there is a compelling reason not to, we should switch to the
+     * validation routines in EMailValidator.
+     */
+    @Deprecated
     public static boolean isValidEmail( String s ) {
+        logger.fine("Validating <<<" + s + ">>>.");
+        if (s == null) {
+            return false;
+        }
         return EMAIL_PATTERN.matcher(s).matches();
     }
     

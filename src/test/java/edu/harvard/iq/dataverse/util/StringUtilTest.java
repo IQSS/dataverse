@@ -141,5 +141,6 @@ public class StringUtilTest {
         assertFalse( StringUtil.isValidEmail("hellounder@.world.co.il") );
         assertFalse( StringUtil.isValidEmail("hellounder") );
         assertFalse( StringUtil.isValidEmail("") );
+        assertFalse( StringUtil.isValidEmail(null) );
     }
 }
