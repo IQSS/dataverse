@@ -15,7 +15,7 @@
             <!--<f:viewAction action="#{OAuth2FirstLoginPage.setupMockData()}"/>-->
         </f:metadata>
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="#{bundle['oauth2.convertAccount.title']}"/>
+            <ui:param name="pageTitle" value="#{bundle.account} - #{dataverseServiceBean.findRootDataverse().name} #{bundle.dataverse}"/>
             <ui:param name="showDataverseHeader" value="false"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:define name="body">
@@ -30,7 +30,7 @@
                 </div>
 
                 <p:tabView id="tabView" activeIndex="#{OAuth2FirstLoginPage.selectedTabIndex}">
-                    <p:tab id="convertAccountTab" title="#{bundle['oauth2.newAccount.tabs.convertAccount']}">
+                    <p:tab id="convertAccountTab" title="#{bundle['account.info']}">
                         <h:form id="convertAccountForm" styleClass="form-horizontal">
                             <p class="help-block">
                                 <span class="glyphicon glyphicon-info-sign"/>
@@ -38,7 +38,7 @@
                             </p>
                             <div class="form-group">
                                 <label for="position" class="col-sm-3 control-label">
-                                    #{bundle['login.builtin.credential.usernameOrEmail']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
+                                    #{bundle['login.builtin.credential.usernameOrEmail']}
                                 </label>
                                 <div class="col-sm-9">
                                     <h:inputText value="#{OAuth2FirstLoginPage.username}" />
@@ -46,12 +46,15 @@
                             </div>
                             <div class="form-group">
                                 <label for="position" class="col-sm-3 control-label">
-                                    #{bundle['oauth2.convertAccount.password']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
+                                    #{bundle['login.builtin.credential.password']}
                                 </label>
                                 <div class="col-sm-9">
                                     <h:inputSecret value="#{OAuth2FirstLoginPage.password}" />
                                 </div>
                             </div>
+                            
+                            <!-- WHAT IS THIS CUSTOM MSG BLK FOR? -->
+                            
                             <div jsf:rendered="#{OAuth2FirstLoginPage.authenticationFailed}" class="row">
                                 <div class="col-md-12">
                                     <div class="alert alert-danger">
@@ -59,20 +62,21 @@
                                     </div>
                                 </div>
                             </div>
+                            
+                            
                             <div class="form-group">
-                                <div class="col-sm-offset-4 col-sm-9">
+                                <div class="col-sm-offset-3 col-sm-9">
                                     <a href="/passwordreset.xhtml">
                                         #{bundle['login.forgot.text']}
                                     </a>
                                 </div>
                             </div>
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <p:commandButton value="#{bundle['oauth2.convertAccount.buttonTitle']}"
+                            <div class="form-group">
+                                <div class="col-md-12 button-block">
+                                    <p:commandButton value="#{bundle['oauth2.convertAccount.buttonTitle']}" styleClass="btn btn-default"
                                                      action="#{OAuth2FirstLoginPage.convertExistingAccount}"
-                                                     ajax="false"
-                                                     update="@all" />
-                                    <p:commandButton value="#{bundle['cancel']}"
+                                                     ajax="false" update="@all" />
+                                    <p:commandButton value="#{bundle['cancel']}" styleClass="btn btn-default"
                                                      action="/oauth2/firstLogin.xhtml?faces-redirect=true"/>
                                 </div>
                             </div>
