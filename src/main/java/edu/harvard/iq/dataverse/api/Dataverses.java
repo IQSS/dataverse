@@ -256,10 +256,16 @@ public class Dataverses extends AbstractApiBean {
 	@GET
 	@Path("{identifier}/metadatablocks")
 	public Response listMetadataBlocks( @PathParam("identifier") String dvIdtf ) {
-        return response( req ->ok(
-                execCommand( new ListMetadataBlocksCommand(req, findDataverseOrDie(dvIdtf)))
-                .stream().map(brief::json).collect( toJsonArray() )
-        ));
+        try {
+            JsonArrayBuilder arr = Json.createArrayBuilder();
+            final List<MetadataBlock> blocks = execCommand( new ListMetadataBlocksCommand(createDataverseRequest(findUserOrDie()), findDataverseOrDie(dvIdtf)));
+            for ( MetadataBlock mdb : blocks) {
+                arr.add( brief.json(mdb) );
+            }
+            return ok(arr);
+        } catch (WrappedResponse we ){
+            return we.getResponse();
+        }
 	}
 	
     @POST

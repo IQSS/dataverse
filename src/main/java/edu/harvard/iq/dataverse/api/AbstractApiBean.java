@@ -37,8 +37,8 @@ import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.validation.BeanValidationServiceBean;
 import java.io.StringReader;
 import java.net.URI;
+import java.util.UUID;
 import java.util.concurrent.Callable;
-import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -266,7 +266,7 @@ public abstract class AbstractApiBean {
             while (cause.getCause() != null) {
                 cause = cause.getCause();
             }
-            logger.info("Exception caught looking up RoleAssignee based on identifier '" + identifier + "': " + cause.getMessage());
+            logger.log(Level.INFO, "Exception caught looking up RoleAssignee based on identifier ''{0}'': {1}", new Object[]{identifier, cause.getMessage()});
             return null;
         }
     }
@@ -425,8 +425,16 @@ public abstract class AbstractApiBean {
         } catch ( WrappedResponse rr ) {
             return rr.getResponse();
         } catch ( Exception ex ) {
-            logger.log( Level.WARNING, "Error executing callable: " + ex.getMessage(), ex );
-            return error(Status.INTERNAL_SERVER_ERROR, ex.getMessage());
+            String incidentId = UUID.randomUUID().toString();
+            logger.log(Level.SEVERE, "API internal error " + incidentId +": " + ex.getMessage(), ex);
+            return Response.status(500)
+                .entity( Json.createObjectBuilder()
+                             .add("status", "ERROR")
+                             .add("code", 500)
+                             .add("message", "Internal server error. More details available at the server logs.")
+                             .add("incidentId", incidentId)
+                        .build())
+                .type("application/json").build();
         }
     }
     
@@ -449,8 +457,16 @@ public abstract class AbstractApiBean {
         } catch ( WrappedResponse rr ) {
             return rr.getResponse();
         } catch ( Exception ex ) {
-            logger.log( Level.WARNING, "Error executing callable: " + ex.getMessage(), ex );
-            return error(Status.INTERNAL_SERVER_ERROR, ex.getMessage());
+            String incidentId = UUID.randomUUID().toString();
+            logger.log(Level.SEVERE, "API internal error " + incidentId +": " + ex.getMessage(), ex);
+            return Response.status(500)
+                .entity( Json.createObjectBuilder()
+                             .add("status", "ERROR")
+                             .add("code", 500)
+                             .add("message", "Internal server error. More details available at the server logs.")
+                             .add("incidentId", incidentId)
+                        .build())
+                .type("application/json").build();
         }
     }
     
