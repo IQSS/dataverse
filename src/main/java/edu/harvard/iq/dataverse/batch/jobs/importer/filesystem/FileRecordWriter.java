@@ -7,7 +7,6 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
-import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -20,10 +19,10 @@ import javax.batch.runtime.BatchRuntime;
 import javax.batch.runtime.context.JobContext;
 import javax.batch.runtime.context.StepContext;
 import javax.ejb.EJB;
-import javax.ejb.EJBException;
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.Serializable;
 import java.sql.Timestamp;
@@ -102,16 +101,8 @@ public class FileRecordWriter extends AbstractItemWriter {
         if (dataset.getVersions().size() == 1 && version.getVersionState() == DatasetVersion.VersionState.DRAFT) {
             try {
                 Command<DatasetVersion> cmd;
-                cmd = new UpdateDatasetVersionCommand(new DataverseRequest(user, (IpAddress) null), version);
+                cmd = new UpdateDatasetVersionCommand(new DataverseRequest(user, (HttpServletRequest) null), version);
                 commandEngine.submit(cmd);
-            } catch (EJBException cause) {
-                StringBuilder trace = new StringBuilder();
-                for(StackTraceElement element:cause.getStackTrace()) {
-                    trace.append(cause).append(" ").append(element).append(cause.getMessage()).append("\n");
-                }
-                String ejbError = "EJBException updating DatasetVersion from batch job: " + trace.toString();
-                logger.log(Level.SEVERE, ejbError);
-                persistentUserData += ejbError + " ";
             } catch (CommandException ex) {
                 String commandError = "CommandException updating DatasetVersion from batch job: " + ex.getMessage();
                 logger.log(Level.SEVERE, commandError);
