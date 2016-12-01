@@ -351,22 +351,18 @@
                                         </div>
                                     </div>
                                 </div>
-                                <!-- Sandbox ORCID iD -->
-                                <div class="form-group" jsf:rendered="#{DataverseUserPage.currentUser.authenticatedUserLookup.authenticationProviderId == 'orcid-sandbox'}">
-                                    <label for="orchidIdSandbox" class="col-sm-3 control-label">
-                                        #{bundle['auth.providers.brandForIdentifier.orcid-sandbox']}
-                                    </label>
-                                    <div class="col-sm-9">
-                                        <p class="form-control-static">#{DataverseUserPage.currentUser.authenticatedUserLookup.persistentUserId}</p>
-                                    </div>
-                                </div>
                                 <!-- ORCID iD -->
-                                <div class="form-group" jsf:rendered="#{DataverseUserPage.currentUser.authenticatedUserLookup.authenticationProviderId == 'orcid'}">
+                                <div class="form-group" jsf:rendered="#{DataverseUserPage.currentUser.authenticatedUserLookup.authenticationProviderId == 'orcid-sandbox' or DataverseUserPage.currentUser.authenticatedUserLookup.authenticationProviderId == 'orcid'}">
                                     <label for="orchidIdReal" class="col-sm-3 control-label">
                                         #{bundle['auth.providers.brandForIdentifier.orcid']}
                                     </label>
                                     <div class="col-sm-9">
-                                        <p class="form-control-static">#{DataverseUserPage.currentUser.authenticatedUserLookup.persistentUserId}</p>
+                                        <p class="form-control-static">
+                                            <h:graphicImage value="/resources/images/orcid_16x16.png" height="16" width="16"/>&#160;
+                                            <h:outputLink value="http://orcid.org/#{DataverseUserPage.currentUser.authenticatedUserLookup.persistentUserId}" title="#{bundle['auth.providers.brandForIdentifier.orcid']}" target="_blank">
+                                                <h:outputText value="http://orcid.org/#{DataverseUserPage.currentUser.authenticatedUserLookup.persistentUserId}"/>
+                                            </h:outputLink>
+                                        </p>
                                     </div>
                                 </div>
                                 <!-- Affiliation -->
@@ -427,15 +423,13 @@
                                             #{bundle['user.username']} <span class="glyphicon glyphicon-asterisk text-danger"/>
                                         </span>
                                     </label>
-                                    <div class="col-sm-9">
-                                        <p:panelGrid columns="2" styleClass="noBorders">
-                                            <p:inputText id="userName" styleClass="form-control" tabindex="1"
-                                                            validator="#{DataverseUserPage.validateUserName}"
-                                                            value="#{DataverseUserPage.username}"
-                                                            disabled="#{DataverseUserPage.editMode != 'CREATE'}"
-                                                            binding="#{DataverseUserPage.usernameField}"/>
-                                            <p:message for="userName" display="text" />
-                                        </p:panelGrid>
+                                    <div class="col-sm-4">
+                                        <p:inputText id="userName" styleClass="form-control" tabindex="1"
+                                                        validator="#{DataverseUserPage.validateUserName}"
+                                                        value="#{DataverseUserPage.username}"
+                                                        disabled="#{DataverseUserPage.editMode != 'CREATE'}"
+                                                        binding="#{DataverseUserPage.usernameField}"/>
+                                        <p:message for="userName" display="text" />
                                     </div>
                                 </div>
                                 <div class="form-group" jsf:rendered="#{DataverseUserPage.editMode == DataverseUserPage.changePasswordMode}">
@@ -445,11 +439,9 @@
                                             #{bundle['user.currentPasswd']} <span class="glyphicon glyphicon-asterisk text-danger"/>
                                         </span>
                                     </label>
-                                    <div class="col-sm-9">
-                                        <p:panelGrid columns="2" styleClass="noBorders">
-                                            <p:password id="currentPassword" tabindex="1" label="#{bundle['user.currentPasswd']}" styleClass="form-control" value="#{DataverseUserPage.currentPassword}" />
-                                            <p:message for="currentPassword" display="text" />
-                                        </p:panelGrid>
+                                    <div class="col-sm-4">
+                                        <p:password id="currentPassword" tabindex="1" label="#{bundle['user.currentPasswd']}" styleClass="form-control" value="#{DataverseUserPage.currentPassword}" />
+                                        <p:message for="currentPassword" display="text" />
                                     </div>
                                 </div>
                                 <div class="form-group" jsf:rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == DataverseUserPage.changePasswordMode}">
@@ -462,10 +454,10 @@
                                     </label>
                                     <div class="col-sm-9">
                                         <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['user.updatePassword.password']}</p>
-                                        <p:panelGrid columns="2" styleClass="noBorders">
-                                            <p:password id="inputPassword" tabindex="2" label="#{DataverseUserPage.editMode == 'CREATE' ? 'Password' : 'New Password'}" styleClass="form-control" match="retypePassword" value="#{DataverseUserPage.inputPassword}" validator="#{DataverseUserPage.validateNewPassword}"  />
-                                            <p:message for="inputPassword" display="text" />
-                                        </p:panelGrid>
+                                    </div>
+                                    <div class="col-sm-4 col-sm-offset-3">
+                                        <p:password id="inputPassword" tabindex="2" label="#{DataverseUserPage.editMode == 'CREATE' ? 'Password' : 'New Password'}" styleClass="form-control" match="retypePassword" value="#{DataverseUserPage.inputPassword}" validator="#{DataverseUserPage.validateNewPassword}"  />
+                                        <p:message for="inputPassword" display="text" />
                                     </div>
                                 </div>
                                 <div class="form-group" jsf:rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == DataverseUserPage.changePasswordMode}">
@@ -475,11 +467,9 @@
                                             #{bundle['user.rePasswd']} <span class="glyphicon glyphicon-asterisk text-danger"/>
                                         </span>
                                     </label>
-                                    <div class="col-sm-9">
-                                        <p:panelGrid columns="2" styleClass="noBorders">
-                                            <p:password id="retypePassword" tabindex="3" label="#{bundle['user.rePasswd']}" styleClass="form-control" value="#{DataverseUserPage.inputPassword}" />
-                                            <p:message for="retypePassword" display="text" />
-                                        </p:panelGrid>
+                                    <div class="col-sm-4">
+                                        <p:password id="retypePassword" tabindex="3" label="#{bundle['user.rePasswd']}" styleClass="form-control" value="#{DataverseUserPage.inputPassword}" />
+                                        <p:message for="retypePassword" display="text" />
                                     </div>
                                 </div>
                                 <div class="form-group" jsf:rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
@@ -489,11 +479,9 @@
                                             #{bundle['user.firstName']} <span class="glyphicon glyphicon-asterisk text-danger"/>
                                         </span>
                                     </label>
-                                    <div class="col-sm-9">
-                                        <p:panelGrid columns="2" styleClass="noBorders">
-                                            <p:inputText id="firstName" tabindex="4" styleClass="form-control" value="#{DataverseUserPage.userDisplayInfo.firstName}" />
-                                            <p:message for="firstName" display="text" />
-                                        </p:panelGrid>
+                                    <div class="col-sm-4">
+                                        <p:inputText id="firstName" tabindex="4" styleClass="form-control" value="#{DataverseUserPage.userDisplayInfo.firstName}" />
+                                        <p:message for="firstName" display="text" />
                                     </div>
                                 </div>
                                 <div class="form-group" jsf:rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
@@ -503,11 +491,9 @@
                                             #{bundle['user.lastName']} <span class="glyphicon glyphicon-asterisk text-danger"/>
                                         </span>
                                     </label>
-                                    <div class="col-sm-9">
-                                        <p:panelGrid columns="2" styleClass="noBorders">
-                                            <p:inputText id="lastName" tabindex="5" styleClass="form-control" value="#{DataverseUserPage.userDisplayInfo.lastName}" />
-                                            <p:message for="lastName" display="text" />
-                                        </p:panelGrid>
+                                    <div class="col-sm-4">
+                                        <p:inputText id="lastName" tabindex="5" styleClass="form-control" value="#{DataverseUserPage.userDisplayInfo.lastName}" />
+                                        <p:message for="lastName" display="text" />
                                     </div>
                                 </div>
                                 <div class="form-group" jsf:rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
@@ -517,36 +503,24 @@
                                             #{bundle.email} <span class="glyphicon glyphicon-asterisk text-danger"/>
                                         </span>
                                     </label>
-                                    <div class="col-sm-9">
-                                        <p:panelGrid columns="2" styleClass="noBorders">
-                                            <p:inputText id="email" tabindex="6" styleClass="form-control"
-                                                         validator="#{DataverseUserPage.validateUserEmail}"
-                                                         value="#{DataverseUserPage.userDisplayInfo.emailAddress}" />
-                                            <p:message for="email" display="text" />
-                                        </p:panelGrid>
-                                    </div>
-                                </div>
-                                <!-- Sandbox ORCID iD -->
-                                <div class="form-group" jsf:rendered="#{DataverseUserPage.currentUser.authenticatedUserLookup.authenticationProviderId == 'orcid-sandbox'}">
-                                    <label for="orchidIdSandbox" class="col-sm-3 control-label">
-                                        #{bundle['auth.providers.brandForIdentifier.orcid-sandbox']}
-                                    </label>
-                                    <div class="col-sm-9">
-                                        <p class="form-control-static">
-                                            <h:graphicImage value="/resources/images/orcid_16x16.png" height="16" width="16"/>
-                                            #{DataverseUserPage.currentUser.authenticatedUserLookup.persistentUserId}
-                                        </p>
+                                    <div class="col-sm-4">
+                                        <p:inputText id="email" tabindex="6" styleClass="form-control"
+                                                     validator="#{DataverseUserPage.validateUserEmail}"
+                                                     value="#{DataverseUserPage.userDisplayInfo.emailAddress}" />
+                                        <p:message for="email" display="text" />
                                     </div>
                                 </div>
                                 <!-- ORCID iD -->
-                                <div class="form-group" jsf:rendered="#{DataverseUserPage.currentUser.authenticatedUserLookup.authenticationProviderId == 'orcid'}">
+                                <div class="form-group" jsf:rendered="#{DataverseUserPage.currentUser.authenticatedUserLookup.authenticationProviderId == 'orcid-sandbox' or DataverseUserPage.currentUser.authenticatedUserLookup.authenticationProviderId == 'orcid'}">
                                     <label for="orchidIdReal" class="col-sm-3 control-label">
                                         #{bundle['auth.providers.brandForIdentifier.orcid']}
                                     </label>
-                                    <div class="col-sm-9">
+                                    <div class="col-sm-4">
                                         <p class="form-control-static">
-                                            <h:graphicImage value="/resources/images/orcid_16x16.png" height="16" width="16"/>
-                                            #{DataverseUserPage.currentUser.authenticatedUserLookup.persistentUserId}
+                                            <h:graphicImage value="/resources/images/orcid_16x16.png" height="16" width="16"/>&#160;
+                                            <h:outputLink value="http://orcid.org/#{DataverseUserPage.currentUser.authenticatedUserLookup.persistentUserId}" title="#{bundle['auth.providers.brandForIdentifier.orcid']}" target="_blank">
+                                                <h:outputText value="http://orcid.org/#{DataverseUserPage.currentUser.authenticatedUserLookup.persistentUserId}"/>
+                                            </h:outputLink>
                                         </p>
                                     </div>
                                 </div>
@@ -557,11 +531,9 @@
                                             #{bundle.affiliation}
                                         </span>
                                     </label>
-                                    <div class="col-sm-9">
-                                        <p:panelGrid columns="2" styleClass="noBorders">
-                                            <p:inputText id="affiliation" tabindex="7" styleClass="form-control" value="#{DataverseUserPage.userDisplayInfo.affiliation}" />
-                                            <p:message for="affiliation" display="text" />
-                                        </p:panelGrid>
+                                    <div class="col-sm-4">
+                                        <p:inputText id="affiliation" tabindex="7" styleClass="form-control" value="#{DataverseUserPage.userDisplayInfo.affiliation}" />
+                                        <p:message for="affiliation" display="text" />
                                     </div>
                                 </div>
                                 <div class="form-group" jsf:rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
@@ -571,11 +543,9 @@
                                             #{bundle['user.position']}
                                         </span>
                                     </label>
-                                    <div class="col-sm-9">
-                                        <p:panelGrid columns="2" styleClass="noBorders">
-                                            <p:inputText id="position" tabindex="8" styleClass="form-control" value="#{DataverseUserPage.userDisplayInfo.position}" />
-                                            <p:message for="position" display="text" />
-                                        </p:panelGrid>
+                                    <div class="col-sm-4">
+                                        <p:inputText id="position" tabindex="8" styleClass="form-control" value="#{DataverseUserPage.userDisplayInfo.position}" />
+                                        <p:message for="position" display="text" />
                                     </div>
                                 </div>
                                 <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE'}">

@@ -48,7 +48,7 @@
                                     </p:inputText>
                                     <p:message for="username"/>
                                     <p class="help-block">
-                                        <h:outputFormat value="#{OAuth2FirstLoginPage.suggestConvertInsteadOfCreate}" escape="false"/>
+                                        <h:outputText value="#{OAuth2FirstLoginPage.suggestConvertInsteadOfCreate}" escape="false"/>
                                     </p>
                                 </div>
                                 <!-- <div class="col-sm-3">
@@ -108,8 +108,6 @@
                                     </div>
                                 </div>
                             </div>
-                            
-                            
                             <div class="form-group" jsf:rendered="#{OAuth2FirstLoginPage.newUser.serviceId == 'orcid-sandbox' or OAuth2FirstLoginPage.newUser.serviceId == 'orcid'}">
                                 <label for="persistentUserId" class="col-sm-3 control-label">
                                     <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['auth.providers.persistentUserIdTooltip.orcid']}">
@@ -118,13 +116,13 @@
                                 </label>
                                 <div class="col-sm-6">
                                     <p class="form-control-static">
-                                        <h:graphicImage rendered="#{true}" value="/resources/images/orcid_16x16.png" height="16" width="16"/>
-                                        #{OAuth2FirstLoginPage.newUser.idInService}
+                                        <h:graphicImage value="/resources/images/orcid_16x16.png" height="16" width="16"/>&#160;
+                                        <h:outputLink value="http://orcid.org/#{OAuth2FirstLoginPage.newUser.idInService}" title="#{bundle['auth.providers.persistentUserIdName.orcid']}" target="_blank">
+                                            <h:outputText value="http://orcid.org/#{OAuth2FirstLoginPage.newUser.idInService}"/>
+                                        </h:outputLink>
                                     </p>
                                 </div>
                             </div>
-                            
-                            
                             <div class="form-group">
                                 <label for="affiliation" class="col-sm-3 control-label">
                                     <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['user.affiliation.tip']}">
@@ -158,14 +156,11 @@
                                                      ajax="false"
                                                      update="@all"
                                                      value="#{bundle['user.createBtn']}"/>
-                                    
-                                    <!-- disabled="# {! OAuth2FirstLoginPage.newAccountCreationEnabled}" -->
                                 </div>
                             </div>
                         </h:form>
                     </p:tab>
                 </p:tabView>
-
             </ui:define>
         </ui:composition>
     </h:body>
