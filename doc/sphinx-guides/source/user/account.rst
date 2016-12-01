@@ -47,9 +47,9 @@ Create a Dataverse account using Institutional Log In
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 #. Go to “Log In” in the upper right corner of Dataverse.
-#. Find this Institutional Log In box:|image1|
-#. Using the dropdown menu, select your institution then click the Continue button.
-#. You will be brought to your institution's log in page. After you put in your institutional information successfully, you will be brought back to Dataverse to confirm your account. |image2|
+#. Select the "Your Institution" button under the "Other Log In Options" header
+#. Using the dropdown menu, select your institution then click the Continue button to go to your instituion's log in page |image1|
+#. After you put in your institutional credintials successfully, you will be brought back to Dataverse to confirm your account information, and click "Create Account" |image2|
 
 Use your Institutional Log In for your Dataverse account
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -59,15 +59,16 @@ If you already have a Dataverse account, but you want to change it to use your i
 #. Go to the Account Information page to confirm your account email address is the same as your institution email address. If not, you will need to update your account email address to be the same as your institution email address.
 #. Log out of Dataverse.
 #. Go to “Log In” in the upper right corner of Dataverse.
-#. Find this Institutional Log In box: |image1|
-#. Using the dropdown menu, select your institution then click the Continue button.
-#. You will be brought to your institution's log in page. After you successfully input your institutional information, you will be brought back to Dataverse to review your account information. Enter your previous password for your Dataverse account to ensure that you have changed your login. |image3|
-#. Once you click Change/Convert Account, you will have completed changing your Dataverse account to you use your institutional log in.
+#. Select the "Your Institution" button under the "Other Log In Options" header
+#. Using the dropdown menu, select your institution then click the Continue button to go to your instituion's log in page
+#. After you put in your institutional credintials successfully, you will be brought back to Dataverse to confirm your account information
+#. Enter your current password for your Dataverse account and click "Convert Account"
+#. Now you have completed changing your Dataverse account to you use your institutional log in
 
 Disable your Institutional Log In for your Dataverse account
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If you are leaving your institution and need to change your account back to a Dataverse account, you will need to contact support for the Dataverse installation you are using. On your account page, there is a link for "Dataverse Support" that will open the popup form to contact support for assistance: |image4|
+If you are leaving your institution and need to change your account back to a Dataverse account, you will need to contact support for the Dataverse installation you are using. On your account page, there is a link for "Dataverse Support" that will open the popup form to contact support for assistance:
 
 ORCID
 ~~~~~
@@ -101,6 +102,11 @@ Disable your ORCID iD for your Dataverse account
 
 If you are leaving ORCID and need to change your account back to a Dataverse account, you will need to contact support. On your account page, there is a link for "Dataverse Support" that will open the popup form to contact support for assistance.
 
+Other OAuth Options -- GitHub, Google
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can also convert your Dataverse account to use authenication provided by GitHub and Google. These options can be found under the "Other Log In Options" title on the log in page, and function in the same way as ORCID is outline above.
+
 My Data
 -------
 
@@ -128,8 +134,4 @@ API Token
 .. |image1| image:: ./img/image1institutional.png
    :class: img-responsive
 .. |image2| image:: ./img/image2institutional.png
-   :class: img-responsive
-.. |image3| image:: ./img/image3institutional.png
-   :class: img-responsive
-.. |image4| image:: ./img/image4institutional.png
    :class: img-responsive
