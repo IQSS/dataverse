@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.authorization.providers.oauth2;
 
 import edu.harvard.iq.dataverse.DataverseSession;
+import edu.harvard.iq.dataverse.ValidateEmail;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.AuthenticationRequest;
@@ -23,6 +24,7 @@ import javax.enterprise.context.SessionScoped;
 import javax.faces.event.ValueChangeEvent;
 import javax.inject.Named;
 import javax.inject.Inject;
+import org.hibernate.validator.constraints.NotBlank;
 
 /**
  * Backing bean for {@code oauth/welcome.xhtml}, the page that greets new users
@@ -48,8 +50,11 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
 
     OAuth2UserRecord newUser;
 
+    @NotBlank(message = "Please enter your username.")
     String username;
 
+    @NotBlank(message = "Please enter a valid email address.")
+    @ValidateEmail(message = "Please enter a valid email address.")
     String selectedEmail;
 
     String password;

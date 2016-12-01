@@ -43,10 +43,10 @@
                                     </span>
                                 </label>
                                 <div class="col-sm-9">
-                                    <p:inputText id="username" value="#{OAuth2FirstLoginPage.username}" required="true">
+                                    <p:inputText id="username" value="#{OAuth2FirstLoginPage.username}">
                                         <f:ajax event="keyup" execute="@this" render="usernameLabels createNewAccountButton"></f:ajax>
                                     </p:inputText>
-                                    <p:message for="username"/>
+                                    <p:message for="username" display="text"/>
                                     <p class="help-block">
                                         <h:outputText value="#{OAuth2FirstLoginPage.suggestConvertInsteadOfCreate}" escape="false"/>
                                     </p>
@@ -65,9 +65,10 @@
                                     </span>
                                 </label>
                                 <div class="col-sm-6">
-                                    <p:inputText id="givenName" value="#{OAuth2FirstLoginPage.newUser.displayInfo.firstName}" required="true">
+                                    <p:inputText id="givenName" value="#{OAuth2FirstLoginPage.newUser.displayInfo.firstName}">
                                         <f:ajax event="keyup" execute="@this" render="usernameLabels createNewAccountButton"></f:ajax>
                                     </p:inputText>
+                                    <p:message for="givenName" display="text"/>
                                 </div>
                             </div>
                             <div class="form-group">
@@ -77,9 +78,10 @@
                                     </span>
                                 </label>
                                 <div class="col-sm-6">
-                                    <p:inputText id="familyName" value="#{OAuth2FirstLoginPage.newUser.displayInfo.lastName}" required="true">
+                                    <p:inputText id="familyName" value="#{OAuth2FirstLoginPage.newUser.displayInfo.lastName}">
                                         <f:ajax event="keyup" execute="@this" render="usernameLabels createNewAccountButton"></f:ajax>
                                     </p:inputText>
+                                    <p:message for="familyName" display="text"/>
                                 </div>
                             </div>
                             <div class="form-group">
@@ -90,11 +92,10 @@
                                 </label>
                                 <div class="col-sm-3">
                                     <p:inputText id="selectedEmail" value="#{OAuth2FirstLoginPage.selectedEmail}"
-                                                 validatorMessage="#{bundle['oauth2.newAccount.emailInvalid']}"
-                                                 required="true">
+                                                 >
                                         <f:ajax event="keyup" execute="@this" render="emailLabels createNewAccountButton"></f:ajax>
                                     </p:inputText>
-                                    <p:message for="selectedEmail" />
+                                    <p:message for="selectedEmail" display="text"/>
                                 </div>
                                 <div class="col-sm-3">
                                     <div jsf:rendered="#{OAuth2FirstLoginPage.areExtraEmailsAvailable()}">
