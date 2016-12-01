@@ -39,6 +39,9 @@
                                 $('button[id$="AllUploadsFinished"]').trigger('click');
                             }
                         }
+                        function dropBoxUploadFinished(fileupload) {
+                            $('button[id$="dropBoxUploadFinished"]').trigger('click');
+                        }
                         function uploadWidgetDropRemoveMsg() {
                             $('div[id$="fileUpload"] div.ui-fileupload-content div.dropMsg').remove();
                         }
@@ -61,15 +64,15 @@
                         </ui:fragment> 
                     </p>
                     <p:fileUpload id="fileUpload" widgetVar="fileUploadWidget" styleClass="margin-bottom" dragDropSupport="true" auto="true" multiple="true" rendered="#{datasetPage || EditDatafilesPage.showFileUploadFileComponent()}"
-                                  fileUploadListener="#{EditDatafilesPage.handleFileUpload}" process="filesTable" update="@none" label="#{bundle['file.selectToAddBtn']}"
+                                  fileUploadListener="#{EditDatafilesPage.handleFileUpload}" process="filesTable" update="" label="#{bundle['file.selectToAddBtn']}"
                                   oncomplete="javascript:dataset_fileupload_rebind();uploadWidgetDropMsg();uploadFinished(PF('fileUploadWidget'));" onstart="javascript:uploadWidgetDropRemoveMsg();uploadStarted();"
                                   sizeLimit="#{EditDatafilesPage.getMaxFileUploadSizeInBytes()}" fileLimit="#{EditDatafilesPage.getMaxNumberOfFiles()}" invalidSizeMessage="File exceeds our limits. Please contact support. " sequential="true"
-                                  previewWidth="-1"/>
+                                  previewWidth="80"/>
                     <!-- Dropbox Upload -->
                     <div id="dropboxUploadBlock" class="panel panel-default margin-bottom" jsf:rendered="#{!empty EditDatafilesPage.dropBoxKey}">
                         <div class="panel-body">
                             <h:inputText id="dropBoxSelectionInput" style="display:none" value="#{EditDatafilesPage.dropBoxSelection}"/>
-                            <p:commandButton  id="dropBoxButton" actionListener="#{EditDatafilesPage.handleDropBoxUpload}" update="filesTable,dropBoxUploadMessage" style="display:none;" />
+                            <p:commandButton  id="dropBoxButton" actionListener="#{EditDatafilesPage.handleDropBoxUpload}" oncomplete="javascript:dropBoxUploadFinished();" update="@none" style="display:none;" />
                             <p:commandButton value="#{bundle['file.fromDropbox']}" onclick="openDropboxChooser();" icon="dropin-btn-status" />
                             <p class="help-block">#{bundle['file.fromDropbox.tip']}</p>
                         </div>
@@ -77,19 +80,20 @@
                     </div>
                     <p:message for="fileUpload" id="uploadMessage" display="text" />
                     
-                    <p:commandButton id="uploadStarted" action="#{EditDatafilesPage.uploadStarted()}" update="@none" style="display:none"/>
+                    <p:commandButton id="uploadStarted" action="#{EditDatafilesPage.uploadStarted()}" update="" style="display:none"/>
                     <p:commandButton id="AllUploadsFinished" action="#{EditDatafilesPage.uploadFinished()}" update="filesTable,uploadMessage" style="display:none"/>
+                    <p:commandButton id="dropBoxUploadFinished" action="#{EditDatafilesPage.uploadFinished()}" update="filesTable,dropBoxUploadMessage" style="display:none"/>
                 </ui:fragment>
 
                 <!-- Files Table -->
                 <!-- _{dataverseSession.user.authenticated and ( ? permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset) : permissionsWrapper.canIssueUpdateDatasetCommand(EditDatafilesPage.dataset))}" -->
 
                 <p:dataTable id="filesTable" value="#{EditDatafilesPage.fileMetadatas}"
-                             scrollRows="25" scrollable="true" liveScroll="true" scrollHeight="92%" scrollWidth="100%"
+                             scrollable="true" scrollHeight="#{EditDatafilesPage.scrollHeightPercentage}" scrollWidth="100%"
                              rendered="#{datasetPage or (dataverseSession.user.authenticated and permissionsWrapper.canIssueUpdateDatasetCommand(EditDatafilesPage.dataset))}"
                              rowIndexVar="rowNum" rowKey="#{fileMetadata.dataFile.storageIdentifier}"
                              selection="#{EditDatafilesPage.selectedFiles}" var="fileMetadata" widgetVar="filesTable"
-                             emptyMessage="#{datasetPage || EditDatafilesPage.showFileUploadFileComponent() ? bundle['file.noUploadedFiles.tip'] : bundle['file.noSelectedFiles.tip']}">
+                             emptyMessage="#{datasetPage || EditDatafilesPage.showFileUploadFileComponent() ? bundle['file.noUploadedFiles.tip'] : bundle['file.noSelectedFiles.tip']}"><!--liveScroll="true" scrollRows="25" scrollHeight="92%" scrollWidth="100%"-->
                     <f:facet name="header">
                         <div jsf:id="filesHeaderBlock" class="row">
                             <h:inputHidden id="showAccessPopup" value="#{EditDatafilesPage.showAccessPopup}"/>

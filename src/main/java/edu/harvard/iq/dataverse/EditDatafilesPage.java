@@ -136,7 +136,9 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     private Long maxFileUploadSizeInBytes = null;
     private Integer multipleUploadFilesLimit = null; 
-
+    
+    private final int NUMBER_OF_SCROLL_ROWS = 25;
+    
     public String getSelectedFileIds() {
         return selectedFileIdsString;
     }
@@ -154,19 +156,38 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
     
     public List<FileMetadata> getFileMetadatas() {
+        // [experimental] 
+        // this would be a way to hide any already-uploaded files from the page
+        // while a new upload is happening:
+        // (the uploadStarted button on the page needs the update="filesTable"
+        // attribute added for this to work)
         //if (uploadInProgress) {
         //    return null; 
         //}
-        if (fileMetadatas != null) {
-            logger.fine("Returning a list of "+fileMetadatas.size()+" file metadatas.");
-        } else {
-            logger.fine("File metadatas list hasn't been initialized yet.");
-        }
+        
         return fileMetadatas;
     }
     
     public void setFileMetadatas(List<FileMetadata> fileMetadatas) {
         this.fileMetadatas = fileMetadatas;
+    }
+    
+    public String getScrollHeightPercentage() {
+        int perc; 
+        if (fileMetadatas == null || fileMetadatas.size() < NUMBER_OF_SCROLL_ROWS) {
+            perc = 100;
+        } else {
+            perc = NUMBER_OF_SCROLL_ROWS * 100 / fileMetadatas.size();
+        }
+        
+        if (perc == 0) {
+            perc = 1;
+        } else if (perc > 100) {
+            perc = 100;
+        }
+        
+        logger.info("scroll height percentage: "+perc);
+        return perc + "%";
     }
     
     /*
@@ -1133,6 +1154,8 @@ public class EditDatafilesPage implements java.io.Serializable {
     public void handleDropBoxUpload(ActionEvent event) {
         
         logger.fine("handleDropBoxUpload");
+        uploadComponentId = event.getComponent().getClientId();
+        
         // -----------------------------------------------------------
         // Read JSON object from the output of the DropBox Chooser: 
         // -----------------------------------------------------------
@@ -1145,6 +1168,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         // -----------------------------------------------------------
         DataFile dFile = null;
         GetMethod dropBoxMethod = null;
+        String localWarningMessage = null; 
         for (int i = 0; i < dbArray.size(); i++) {
             JsonObject dbObject = dbArray.getJsonObject(i);
 
@@ -1163,10 +1187,15 @@ public class EditDatafilesPage implements java.io.Serializable {
                 - Max size NOT specified in db: default is unlimited
                 - Max size specified in db: check too make sure file is within limits
             // ---------------------------- */
-            if ((!this.isUnlimitedUploadFileSize())&&(fileSize > this.getMaxFileUploadSizeInBytes())){
+            if ((!this.isUnlimitedUploadFileSize()) && (fileSize > this.getMaxFileUploadSizeInBytes())) {
                 String warningMessage = "Dropbox file \"" + fileName + "\" exceeded the limit of " + fileSize + " bytes and was not uploaded.";
                 //msg(warningMessage);
-                FacesContext.getCurrentInstance().addMessage(event.getComponent().getClientId(), new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload failure", warningMessage));
+                //FacesContext.getCurrentInstance().addMessage(event.getComponent().getClientId(), new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload failure", warningMessage));
+                if (localWarningMessage == null) {
+                    localWarningMessage = warningMessage;
+                } else {
+                    localWarningMessage = localWarningMessage.concat("; " + warningMessage);
+                }
                 continue; // skip to next file, and add error mesage
             }
 
@@ -1224,12 +1253,25 @@ public class EditDatafilesPage implements java.io.Serializable {
                 // -----------------------------------------------------------
                 // Check if there are duplicate files or ingest warnings
                 // -----------------------------------------------------------
-                String warningMessage = processUploadedFileList(datafiles);
-                logger.fine("Warning message during upload: " + warningMessage);
-                if (warningMessage != null){
+                uploadWarningMessage = processUploadedFileList(datafiles);
+                logger.fine("Warning message during upload: " + uploadWarningMessage);
+                /*if (warningMessage != null){
                      logger.fine("trying to send faces message to " + event.getComponent().getClientId());
                      FacesContext.getCurrentInstance().addMessage(event.getComponent().getClientId(), new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload failure", warningMessage));
-                }
+                     if (uploadWarningMessage == null) {
+                         uploadWarningMessage = warningMessage;
+                     } else {
+                         uploadWarningMessage = uploadWarningMessage.concat("; "+warningMessage);
+                     }
+                }*/
+            }
+        }
+        
+        if (localWarningMessage != null) {
+            if (uploadWarningMessage == null) {
+                uploadWarningMessage = localWarningMessage;
+            } else {
+                uploadWarningMessage = localWarningMessage.concat("; " + uploadWarningMessage);
             }
         }
     }
