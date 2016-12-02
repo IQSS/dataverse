@@ -61,11 +61,8 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
 
     boolean authenticationFailed = false;
 
-    int selectedTabIndex = 0;
-
     public String createNewAccount() {
 
-        selectedTabIndex = 0;
         AuthenticatedUserDisplayInfo newAud = new AuthenticatedUserDisplayInfo(newUser.getDisplayInfo().getFirstName(),
                 newUser.getDisplayInfo().getLastName(),
                 getSelectedEmail(),
@@ -78,7 +75,6 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
     }
 
     public String convertExistingAccount() {
-        selectedTabIndex = 1;
         BuiltinAuthenticationProvider biap = new BuiltinAuthenticationProvider(builtinUserSvc);
         AuthenticationRequest auReq = new AuthenticationRequest();
         final List<CredentialsAuthenticationProvider.Credential> creds = biap.getRequiredCredentials();
@@ -151,14 +147,6 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
 
     public void setUsername(String username) {
         this.username = username;
-    }
-
-    public int getSelectedTabIndex() {
-        return selectedTabIndex;
-    }
-
-    public void setSelectedTabIndex(int selectedTabIndex) {
-        this.selectedTabIndex = selectedTabIndex;
     }
 
     public void setSelectedEmail(String selectedEmail) {
