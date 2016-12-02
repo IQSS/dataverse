@@ -211,6 +211,7 @@ If the installed location of the convert executable is different from ``/usr/bin
 
    <jvm-options>-Ddataverse.path.imagemagick.convert=/opt/local/bin/convert</jvm-options>
 
+(see the :doc:`config` section for more information on the JVM options)
 
 
 
