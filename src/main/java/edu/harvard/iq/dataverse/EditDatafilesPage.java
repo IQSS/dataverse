@@ -172,6 +172,28 @@ public class EditDatafilesPage implements java.io.Serializable {
         this.fileMetadatas = fileMetadatas;
     }
     
+    /* 
+        The 2 methods below are for setting up the PrimeFaces:dataTabe component
+        used to display the uploaded files, or the files selected for editing. 
+    
+        - isScrollable(): 
+          this supplies the value of the component attribute "scrollable". 
+          When we have more than NUMBER_OF_SCROLL_ROWS worth of files (currently
+          set to 25), we will add a scroller to the table, showing NUMBER_OF_SCROLL_ROWS
+          at a time; thus making the page a little bit more useable. 
+          When there is fewer rows, however, the attribute needs to be set to 
+          "false" - because otherwise some (idiosyncratic) amount of white space 
+          is added to the bottom of the table, making the page look silly. 
+    
+        - getScrollHeightPercentage():
+          this method calculates the *percentage* of the total length of the 
+          list of files, such that the resulting table is always NUMBER_OF_SCROLL_ROWS 
+          high. This is *the only way* to keep the number of files shown in the 
+          table fixed as the size of the list grows! (the "scrollRows" attribute
+          of the p:dataTable component only applies when "liveScroll=true" is being
+          used). 
+    */
+    
     public boolean isScrollable() {
         if (fileMetadatas == null || fileMetadatas.size() <= NUMBER_OF_SCROLL_ROWS + 1) {
             return false;
