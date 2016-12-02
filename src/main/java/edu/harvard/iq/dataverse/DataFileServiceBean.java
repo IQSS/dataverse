@@ -794,7 +794,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         return query.getResultList();
     }
     
-    /**/
+    /*moving to the fileutil*/
     
     public void generateStorageIdentifier(DataFile dataFile) {
         dataFile.setStorageIdentifier(generateStorageIdentifier());
