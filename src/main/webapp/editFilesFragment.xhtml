@@ -89,7 +89,7 @@
                 <!-- _{dataverseSession.user.authenticated and ( ? permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset) : permissionsWrapper.canIssueUpdateDatasetCommand(EditDatafilesPage.dataset))}" -->
 
                 <p:dataTable id="filesTable" value="#{EditDatafilesPage.fileMetadatas}"
-                             scrollable="true" scrollHeight="#{EditDatafilesPage.scrollHeightPercentage}" scrollWidth="100%"
+                             scrollable="#{EditDatafilesPage.scrollable}" scrollHeight="#{EditDatafilesPage.scrollHeightPercentage}" scrollWidth="100%" 
                              rendered="#{datasetPage or (dataverseSession.user.authenticated and permissionsWrapper.canIssueUpdateDatasetCommand(EditDatafilesPage.dataset))}"
                              rowIndexVar="rowNum" rowKey="#{fileMetadata.dataFile.storageIdentifier}"
                              selection="#{EditDatafilesPage.selectedFiles}" var="fileMetadata" widgetVar="filesTable"

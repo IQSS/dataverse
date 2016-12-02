@@ -172,6 +172,14 @@ public class EditDatafilesPage implements java.io.Serializable {
         this.fileMetadatas = fileMetadatas;
     }
     
+    public boolean isScrollable() {
+        if (fileMetadatas == null || fileMetadatas.size() <= NUMBER_OF_SCROLL_ROWS + 1) {
+            return false;
+        }
+        
+        return true;
+    }
+    
     public String getScrollHeightPercentage() {
         int perc; 
         if (fileMetadatas == null || fileMetadatas.size() < NUMBER_OF_SCROLL_ROWS) {
