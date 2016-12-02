@@ -13,7 +13,6 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServi
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
-import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.Arrays;
 import java.util.List;
@@ -21,6 +20,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.application.FacesMessage;
+import javax.faces.component.UIComponent;
+import javax.faces.component.UIInput;
+import javax.faces.context.FacesContext;
 import javax.faces.event.ValueChangeEvent;
 import javax.inject.Named;
 import javax.inject.Inject;
@@ -35,6 +38,8 @@ import org.hibernate.validator.constraints.NotBlank;
 @Named
 @SessionScoped
 public class OAuth2FirstLoginPage implements java.io.Serializable {
+
+    private static final Logger logger = Logger.getLogger(OAuth2FirstLoginPage.class.getCanonicalName());
 
     @EJB
     AuthenticationServiceBean authenticationSvc;
@@ -106,20 +111,23 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
         return authenticationSvc.isEmailAddressAvailable(getSelectedEmail());
     }
 
-    public boolean isEmailValid() {
-        return StringUtil.isValidEmail(getSelectedEmail());
-    }
-
-    public boolean isUsernameAvailable() {
-        return !authenticationSvc.identifierExists(getUsername());
+    /**
+     * @todo This was copied from DataverseUserPage and modified so consider
+     * consolidating common code (DRY).
+     */
+    public void validateUserName(FacesContext context, UIComponent toValidate, Object value) {
+        String userName = (String) value;
+        logger.fine("Validating username: " + userName);
+        boolean userNameFound = authenticationSvc.identifierExists(userName);
+        if (userNameFound) {
+            ((UIInput) toValidate).setValid(false);
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("user.username.taken"), null);
+            context.addMessage(toValidate.getClientId(context), message);
+        }
     }
 
     public void suggestedEmailChanged(ValueChangeEvent evt) {
         setSelectedEmail(evt.getNewValue().toString());
-    }
-
-    public boolean isNewAccountCreationEnabled() {
-        return isEmailValid() && isUsernameAvailable() && isEmailAvailable();
     }
 
     /**

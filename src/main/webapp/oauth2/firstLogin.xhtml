@@ -43,20 +43,12 @@
                                     </span>
                                 </label>
                                 <div class="col-sm-9">
-                                    <p:inputText id="username" value="#{OAuth2FirstLoginPage.username}">
-                                        <f:ajax event="keyup" execute="@this" render="usernameLabels createNewAccountButton"></f:ajax>
-                                    </p:inputText>
+                                    <p:inputText id="username" value="#{OAuth2FirstLoginPage.username}" validator="#{OAuth2FirstLoginPage.validateUserName}"/>
                                     <p:message for="username" display="text"/>
                                     <p class="help-block">
                                         <h:outputText value="#{OAuth2FirstLoginPage.suggestConvertInsteadOfCreate}" escape="false"/>
                                     </p>
                                 </div>
-                                <!-- <div class="col-sm-3">
-                                    <p:fragment id="usernameLabels">
-                                        <div class="alert alert-success" jsf:rendered="# {OAuth2FirstLoginPage.usernameAvailable}"># {bundle['oauth2.newAccount.usernameOk']}</div>
-                                        <div class="alert alert-danger" jsf:rendered="# {! OAuth2FirstLoginPage.usernameAvailable}"># {bundle['oauth2.newAccount.usernameTaken']}</div>
-                                    </p:fragment>
-                                </div> -->
                             </div>
                             <div class="form-group">
                                 <label for="givenName" class="col-sm-3 control-label">
@@ -65,9 +57,7 @@
                                     </span>
                                 </label>
                                 <div class="col-sm-6">
-                                    <p:inputText id="givenName" value="#{OAuth2FirstLoginPage.newUser.displayInfo.firstName}">
-                                        <f:ajax event="keyup" execute="@this" render="usernameLabels createNewAccountButton"></f:ajax>
-                                    </p:inputText>
+                                    <p:inputText id="givenName" value="#{OAuth2FirstLoginPage.newUser.displayInfo.firstName}"/>
                                     <p:message for="givenName" display="text"/>
                                 </div>
                             </div>
@@ -78,9 +68,7 @@
                                     </span>
                                 </label>
                                 <div class="col-sm-6">
-                                    <p:inputText id="familyName" value="#{OAuth2FirstLoginPage.newUser.displayInfo.lastName}">
-                                        <f:ajax event="keyup" execute="@this" render="usernameLabels createNewAccountButton"></f:ajax>
-                                    </p:inputText>
+                                    <p:inputText id="familyName" value="#{OAuth2FirstLoginPage.newUser.displayInfo.lastName}"/>
                                     <p:message for="familyName" display="text"/>
                                 </div>
                             </div>
@@ -91,10 +79,7 @@
                                     </span>
                                 </label>
                                 <div class="col-sm-3">
-                                    <p:inputText id="selectedEmail" value="#{OAuth2FirstLoginPage.selectedEmail}"
-                                                 >
-                                        <f:ajax event="keyup" execute="@this" render="emailLabels createNewAccountButton"></f:ajax>
-                                    </p:inputText>
+                                    <p:inputText id="selectedEmail" value="#{OAuth2FirstLoginPage.selectedEmail}"/>
                                     <p:message for="selectedEmail" display="text"/>
                                 </div>
                                 <div class="col-sm-3">
@@ -131,9 +116,7 @@
                                     </span>
                                 </label>
                                 <div class="col-sm-6">
-                                    <p:inputText id="affiliation" value="#{OAuth2FirstLoginPage.newUser.displayInfo.affiliation}">
-                                        <f:ajax event="keyup" execute="@this" render="usernameLabels createNewAccountButton"></f:ajax>
-                                    </p:inputText>
+                                    <p:inputText id="affiliation" value="#{OAuth2FirstLoginPage.newUser.displayInfo.affiliation}"/>
                                 </div>
                             </div>
                             <div class="form-group">
@@ -143,9 +126,7 @@
                                     </span>
                                 </label>
                                 <div class="col-sm-6">
-                                    <p:inputText id="position" value="#{OAuth2FirstLoginPage.newUser.displayInfo.position}">
-                                        <f:ajax event="keyup" execute="@this" render="usernameLabels createNewAccountButton"></f:ajax>
-                                    </p:inputText>
+                                    <p:inputText id="position" value="#{OAuth2FirstLoginPage.newUser.displayInfo.position}"/>
                                 </div>
                             </div>
                             <ui:include src="../termsofuse.xhtml"/>
