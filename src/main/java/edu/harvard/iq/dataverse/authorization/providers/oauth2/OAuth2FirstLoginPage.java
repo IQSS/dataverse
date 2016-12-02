@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.authorization.providers.oauth2;
 
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.ValidateEmail;
+import edu.harvard.iq.dataverse.authorization.AuthTestDataServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.AuthenticationRequest;
@@ -16,6 +17,7 @@ import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -50,6 +52,9 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
     @EJB
     SystemConfig systemConfig;
 
+    @EJB
+    AuthTestDataServiceBean authTestDataSvc;
+
     @Inject
     DataverseSession session;
 
@@ -65,6 +70,26 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
     String password;
 
     boolean authenticationFailed = false;
+
+    public void init() {
+        logger.fine("init called");
+        /**
+         * @todo Add something like SettingsServiceBean.Key.DebugShibAccountType
+         */
+        boolean devMode = false;
+        if (devMode) {
+            Map<String, String> randomUser = authTestDataSvc.getRandomUser();
+            String lastName = randomUser.get("lastName");
+            String firstName = randomUser.get("firstName");
+            String email = randomUser.get("email");
+            String randomUsername = randomUser.get("username");
+            String eppn = randomUser.get("eppn");
+            String accessToken = "qwe-addssd-iiiiie";
+            setNewUser(new OAuth2UserRecord("github", eppn, randomUsername, accessToken,
+                    new AuthenticatedUserDisplayInfo(firstName, lastName, email, "myAffiliation", "myPosition"),
+                    Arrays.asList("extra1@example.com", "extra2@example.com", "extra3@example.com")));
+        }
+    }
 
     public String createNewAccount() {
 
