@@ -510,10 +510,12 @@
                                         <p:message for="email" display="text" />
                                     </div>
                                 </div>
-                                <!-- ORCID iD -->
                                 <div class="form-group" jsf:rendered="#{DataverseUserPage.currentUser.authenticatedUserLookup.authenticationProviderId == 'orcid-sandbox' or DataverseUserPage.currentUser.authenticatedUserLookup.authenticationProviderId == 'orcid'}">
+                                    <!-- ORCID iD -->
                                     <label for="orchidIdReal" class="col-sm-3 control-label">
-                                        #{bundle['auth.providers.brandForIdentifier.orcid']}
+                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['auth.providers.persistentUserIdTooltip.orcid']}">
+                                            #{bundle['auth.providers.brandForIdentifier.orcid']}
+                                        </span>
                                     </label>
                                     <div class="col-sm-4">
                                         <p class="form-control-static">
