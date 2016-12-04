@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +38,7 @@ import org.hibernate.validator.constraints.NotBlank;
  *
  * @author michael
  */
-@Named
+@Named("OAuth2FirstLoginPage")
 @SessionScoped
 public class OAuth2FirstLoginPage implements java.io.Serializable {
 
@@ -71,8 +72,26 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
 
     boolean authenticationFailed = false;
 
-    public void init() {
+    /**
+     * Attempts to init the page. Redirects the user to {@code /} in case
+     * the initialization fails.
+     * @throws IOException If the redirection fails to be sent. Should not happen*
+     * 
+     * 
+     * 
+     * * Famous last sentences etc.
+     */
+    public void init() throws IOException {
         logger.fine("init called");
+        
+        if ( newUser == null ) {
+            // There's no new user to welcome, so we're out of the "normal" OAuth2 flow.
+            // e.g., someone might have directly accessed this page.
+            // return to sanity be redirection to /index
+            FacesContext.getCurrentInstance().getExternalContext().redirect("/");
+            return;
+        }
+        
         /**
          * @todo Add something like SettingsServiceBean.Key.DebugShibAccountType
          */
