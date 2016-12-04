@@ -1,16 +1,19 @@
 package edu.harvard.iq.dataverse.authorization.providers.oauth2;
 
 import edu.harvard.iq.dataverse.DataverseSession;
+import edu.harvard.iq.dataverse.LoginPage;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.SessionKeys;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static java.util.stream.Collectors.toList;
@@ -92,9 +95,12 @@ public class OAuth2LoginBackingBean implements Serializable {
                 FacesContext.getCurrentInstance().getExternalContext().redirect("/oauth2/firstLogin.xhtml");
 
             } else {
-                // login the user and redirect to HOME.
+                // login the user and redirect to HOME of intended page (if any).
                 session.setUser(dvUser);
-                FacesContext.getCurrentInstance().getExternalContext().redirect("/");
+                Map<String,Object> sessionMap = FacesContext.getCurrentInstance().getExternalContext().getSessionMap();
+                String destination = sessionMap.containsKey(SessionKeys.INTENDED_PAGE.name()) ? (String)sessionMap.get(SessionKeys.INTENDED_PAGE.name()) : "/";
+                
+                FacesContext.getCurrentInstance().getExternalContext().redirect(destination);
             }
 
         } catch (OAuth2Exception ex) {
