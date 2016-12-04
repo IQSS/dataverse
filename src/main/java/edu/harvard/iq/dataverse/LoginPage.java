@@ -166,6 +166,7 @@ public class LoginPage implements java.io.Serializable {
             AuthenticatedUser r = authSvc.authenticate(credentialsAuthProviderId, authReq);
             logger.log(Level.FINE, "User authenticated: {0}", r.getEmail());
             session.setUser(r);
+            FacesContext.getCurrentInstance().getExternalContext().getSessionMap().remove(SessionKeys.INTENDED_PAGE.name());
             
             if ("dataverse.xhtml".equals(redirectPage)) {
                 redirectPage = redirectPage + "&alias=" + dataverseService.findRootDataverse().getAlias();

@@ -99,7 +99,7 @@ public class OAuth2LoginBackingBean implements Serializable {
                 session.setUser(dvUser);
                 Map<String,Object> sessionMap = FacesContext.getCurrentInstance().getExternalContext().getSessionMap();
                 String destination = sessionMap.containsKey(SessionKeys.INTENDED_PAGE.name()) ? (String)sessionMap.get(SessionKeys.INTENDED_PAGE.name()) : "/";
-                
+                sessionMap.remove(SessionKeys.INTENDED_PAGE.name());
                 FacesContext.getCurrentInstance().getExternalContext().redirect(destination);
             }
 
