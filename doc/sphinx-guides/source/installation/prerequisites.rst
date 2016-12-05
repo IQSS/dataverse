@@ -73,7 +73,7 @@ Glassfish Init Script
 
 The Dataverse installation script will start Glassfish if necessary, but while you're configuring Glassfish, you might find the following init script helpful to have Glassfish start on boot.
 
-Adjust `this Glassfish init script <../_static/installation/files/etc/init.d/glassfish>`_ for your needs or write your own.
+Adjust this :download:`Glassfish init script <../_static/installation/files/etc/init.d/glassfish>` for your needs or write your own.
 
 It is not necessary to have Glassfish running before you execute the Dataverse installation script because it will start Glassfish for you.
 
@@ -137,8 +137,6 @@ Configuring Database Access for the Dataverse Application (and the Dataverse Ins
 
       	kill -1 PROCESS_ID
 
-
-
 Solr 
 ----
 
@@ -166,7 +164,7 @@ With the Dataverse-specific schema in place, you can now start Solr::
 Solr Init Script
 ================
 
-The command above will start Solr in the foreground which is good for a quick sanity check that Solr accepted the schema file, but starting Solr with an init script is recommended. You can attempt to adjust `this Solr init script <../_static/installation/files/etc/init.d/solr>`_ for your needs or write your own.
+The command above will start Solr in the foreground which is good for a quick sanity check that Solr accepted the schema file, but starting Solr with an init script is recommended. You can attempt to adjust this `Solr init script <../_static/installation/files/etc/init.d/solr>` for your needs or write your own.
 
 Solr should be running before the installation script is executed.
 

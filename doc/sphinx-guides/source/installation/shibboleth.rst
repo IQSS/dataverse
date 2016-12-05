@@ -74,7 +74,7 @@ Configure Glassfish
 Apply GRIZZLY-1787 Patch
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-In order for the Dataverse "download as zip" feature to work well with large files without causing ``OutOfMemoryError`` problems on Glassfish 4.1 when fronted with Apache, you should stop Glassfish, with ``asadmin stop-domain domain1``, make a backup of ``glassfish4/glassfish/modules/glassfish-grizzly-extra-all.jar``, replace it with a patched version of ``glassfish-grizzly-extra-all.jar`` downloaded from `here <../_static/installation/files/issues/2180/grizzly-patch/glassfish-grizzly-extra-all.jar>`_ (the md5 is in the `README <../_static/installation/files/issues/2180/grizzly-patch/readme.md>`_), and start Glassfish again with ``asadmin start-domain domain1``.
+In order for the Dataverse "download as zip" feature to work well with large files without causing ``OutOfMemoryError`` problems on Glassfish 4.1 when fronted with Apache, you should stop Glassfish, with ``asadmin stop-domain domain1``, make a backup of ``glassfish4/glassfish/modules/glassfish-grizzly-extra-all.jar``, replace it with a patched version of ``glassfish-grizzly-extra-all.jar`` downloaded from :download:`here </_static/installation/files/issues/2180/grizzly-patch/glassfish-grizzly-extra-all.jar>` (the md5 is in the :download:`README <../_static/installation/files/issues/2180/grizzly-patch/readme.md>`), and start Glassfish again with ``asadmin start-domain domain1``.
 
 For more background on the patch, please see https://java.net/jira/browse/GRIZZLY-1787 and https://github.com/IQSS/dataverse/issues/2180 and https://github.com/payara/Payara/issues/350
 
@@ -117,12 +117,13 @@ Enforce HTTPS
 
 To prevent attacks such as `FireSheep <http://en.wikipedia.org/wiki/Firesheep>`_, HTTPS should be enforced. https://wiki.apache.org/httpd/RewriteHTTPToHTTPS provides a good method. You **could** copy and paste that those "rewrite rule" lines into Apache's main config file at ``/etc/httpd/conf/httpd.conf`` but using Apache's "virtual hosts" feature is recommended so that you can leave the main configuration file alone and drop a host-specific file into place.
 
-Below is an example of how "rewrite rule" lines look within a ``VirtualHost`` block. Download a `sample file <../_static/installation/files/etc/httpd/conf.d/dataverse.example.edu.conf>`_ , edit it to substitute your own hostname under ``ServerName``, and place it at ``/etc/httpd/conf.d/dataverse.example.edu.conf`` or a filename that matches your hostname. The file must be in ``/etc/httpd/conf.d`` and must end in ".conf" to be included in Apache's configuration.
+Below is an example of how "rewrite rule" lines look within a ``VirtualHost`` block. Download a :download:`sample file <../_static/installation/files/etc/httpd/conf.d/dataverse.example.edu.conf>` , edit it to substitute your own hostname under ``ServerName``, and place it at ``/etc/httpd/conf.d/dataverse.example.edu.conf`` or a filename that matches your hostname. The file must be in ``/etc/httpd/conf.d`` and must end in ".conf" to be included in Apache's configuration.
 
 .. literalinclude:: ../_static/installation/files/etc/httpd/conf.d/dataverse.example.edu.conf
 
 Edit Apache ssl.conf File
 ^^^^^^^^^^^^^^^^^^^^^^^^^
+
 ``/etc/httpd/conf.d/ssl.conf`` should be edited to contain the FQDN of your hostname like this: ``ServerName dataverse.example.edu:443`` (substituting your hostname).
 
 Near the bottom of ``/etc/httpd/conf.d/ssl.conf`` but before the closing ``</VirtualHost>`` directive, add the following:
@@ -145,7 +146,7 @@ Near the bottom of ``/etc/httpd/conf.d/ssl.conf`` but before the closing ``</Vir
       require valid-user
     </Location>
 
-You can download a `sample ssl.conf file <../_static/installation/files/etc/httpd/conf.d/ssl.conf>`_ to compare it against the file you edited.
+You can download a :download:`sample ssl.conf file <../_static/installation/files/etc/httpd/conf.d/ssl.conf>` to compare it against the file you edited.
 
 Note that ``/etc/httpd/conf.d/shib.conf`` and ``/etc/httpd/conf.d/shibboleth-ds.conf`` are expected to be present from installing Shibboleth via yum.
 
@@ -155,7 +156,7 @@ Configure Shibboleth
 shibboleth2.xml
 ^^^^^^^^^^^^^^^
 
-``/etc/shibboleth/shibboleth2.xml`` should look something like the `sample shibboleth2.xml file <../_static/installation/files/etc/shibboleth/shibboleth2.xml>`_ below, but you must substitute your hostname in the ``entityID`` value. If your starting point is a ``shibboleth2.xml`` file provided by someone else, you must ensure that ``attributePrefix="AJP_"`` is added under ``ApplicationDefaults`` per the `Shibboleth wiki <https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPJavaInstall>`_ . Without the ``AJP_`` configuration in place, the required :ref:`shibboleth-attributes` will be null and users will be unable to log in.
+``/etc/shibboleth/shibboleth2.xml`` should look something like the :download:`sample shibboleth2.xml file <../_static/installation/files/etc/shibboleth/shibboleth2.xml>` below, but you must substitute your hostname in the ``entityID`` value. If your starting point is a ``shibboleth2.xml`` file provided by someone else, you must ensure that ``attributePrefix="AJP_"`` is added under ``ApplicationDefaults`` per the `Shibboleth wiki <https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPJavaInstall>`_ . Without the ``AJP_`` configuration in place, the required :ref:`shibboleth-attributes` will be null and users will be unable to log in.
 
 .. literalinclude:: ../_static/installation/files/etc/shibboleth/shibboleth2.xml
    :language: xml
@@ -168,7 +169,7 @@ When configuring the ``MetadataProvider`` section of ``shibboleth2.xml`` you sho
 Specific Identity Provider(s)
 +++++++++++++++++++++++++++++
 
-Most Dataverse installations will probably only want to authenticate users via Shibboleth using their home institution's Identity Provider (IdP).  The configuration above in ``shibboleth2.xml`` looks for the metadata for the Identity Providers (IdPs) in a file at ``/etc/shibboleth/dataverse-idp-metadata.xml``.  You can download a `sample dataverse-idp-metadata.xml file <../_static/installation/files/etc/shibboleth/dataverse-idp-metadata.xml>`_ and that includes the TestShib IdP from http://testshib.org but you will want to edit this file to include the metadata from the Identity Provider(s) you care about. The identity people at your institution will be able to provide you with this metadata and they will very likely ask for a list of attributes that Dataverse requires, which are listed at :ref:`shibboleth-attributes`.
+Most Dataverse installations will probably only want to authenticate users via Shibboleth using their home institution's Identity Provider (IdP).  The configuration above in ``shibboleth2.xml`` looks for the metadata for the Identity Providers (IdPs) in a file at ``/etc/shibboleth/dataverse-idp-metadata.xml``.  You can download a :download:`sample dataverse-idp-metadata.xml file <../_static/installation/files/etc/shibboleth/dataverse-idp-metadata.xml>` and that includes the TestShib IdP from http://testshib.org but you will want to edit this file to include the metadata from the Identity Provider(s) you care about. The identity people at your institution will be able to provide you with this metadata and they will very likely ask for a list of attributes that Dataverse requires, which are listed at :ref:`shibboleth-attributes`.
 
 Identity Federation
 +++++++++++++++++++
@@ -199,7 +200,7 @@ See also https://www.incommon.org/federation/attributesummary.html and https://w
 attribute-map.xml
 ^^^^^^^^^^^^^^^^^
 
-By default, some attributes ``/etc/shibboleth/attribute-map.xml`` are commented out. Edit the file to enable them so that all the require attributes come through. You can download a `sample attribute-map.xml file <../_static/installation/files/etc/shibboleth/attribute-map.xml>`_.
+By default, some attributes ``/etc/shibboleth/attribute-map.xml`` are commented out. Edit the file to enable them so that all the require attributes come through. You can download a :download:`sample attribute-map.xml file <../_static/installation/files/etc/shibboleth/attribute-map.xml>`.
 
 Disable or Reconfigure SELinux
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -219,7 +220,7 @@ The second (more involved) option is to use the ``checkmodule``, ``semodule_pack
 Put Type Enforcement (TE) File in misc directory
 ````````````````````````````````````````````````
 
-Copy and paste or download the `shibboleth.te <../_static/installation/files/etc/selinux/targeted/src/policy/domains/misc/shibboleth.te>`_ Type Enforcement (TE) file below and put it at ``/etc/selinux/targeted/src/policy/domains/misc/shibboleth.te``.
+Copy and paste or download the :download:`shibboleth.te <../_static/installation/files/etc/selinux/targeted/src/policy/domains/misc/shibboleth.te>` Type Enforcement (TE) file below and put it at ``/etc/selinux/targeted/src/policy/domains/misc/shibboleth.te``.
 
 .. literalinclude:: ../_static/installation/files/etc/selinux/targeted/src/policy/domains/misc/shibboleth.te
    :language: text

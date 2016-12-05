@@ -17,7 +17,7 @@ If ``$id`` is omitted, a root dataverse is created. ``$id`` can either be a data
 
     POST http://$SERVER/api/dataverses/$id?key=$apiKey
 
-The following JSON example can be `downloaded <../_static/api/dataverse-complete.json>`_ and modified to create dataverses to suit your needs. The fields ``name``, ``alias``, and ``dataverseContacts`` are required. The controlled vocabulary for ``dataverseType`` is
+Download the :download:`JSON example <../_static/api/dataverse-complete.json>` file and modified to create dataverses to suit your needs. The fields ``name``, ``alias``, and ``dataverseContacts`` are required. The controlled vocabulary for ``dataverseType`` is
 
 - ``JOURNALS``
 - ``LABORATORY``

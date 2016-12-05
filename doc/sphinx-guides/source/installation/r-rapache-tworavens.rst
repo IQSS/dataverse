@@ -1,6 +1,5 @@
-================================
 R, rApache and TwoRavens
-================================
+========================
 
 Eventually, this document may be split into several parts, dedicated to individual components - 
 such as R, rApache and the TwoRavens applications. Particularly, if the TwoRavens team creates an "official" distribution with their own installation manual. 
@@ -20,7 +19,6 @@ Disable SELinux on httpd:
 ``getenforce``
 
 (Note: a pull request to get rApache working with SELinux is welcome! Please see the :doc:`/developers/selinux` section of the Developer Guide to get started.)
-
 
 https strongly recommended; signed certificate (as opposed to self-signed) is recommended. 
 
@@ -63,7 +61,7 @@ install rApache as follows::
 	yum install libapreq2
 	rpm -ivh http://mirror.hmdc.harvard.edu/HMDC-Public/RedHat-6/rapache-1.2.6-rpm0.x86_64.rpm
 
-If you are using RHEL/CentOS 7, you can `download an experimental rapache-1.2.7-rpm0.x86_64.rpm <../_static/installation/files/home/rpmbuild/rpmbuild/RPMS/x86_64/rapache-1.2.7-rpm0.x86_64.rpm>`_ and install it with::
+If you are using RHEL/CentOS 7, you can download an experimental :download:`rapache-1.2.7-rpm0.x86_64.rpm <../_static/installation/files/home/rpmbuild/rpmbuild/RPMS/x86_64/rapache-1.2.7-rpm0.x86_64.rpm>` and install it with::
 
 	rpm -ivh rapache-1.2.7-rpm0.x86_64.rpm
 
@@ -78,7 +76,6 @@ Make sure you have the standard GNU compilers installed (needed for 3rd-party R 
 
 Again, without these rpms, R package devtools was failing to install, silently or with a non-informative error message. 
 Note: this package ``devtools`` has proven to be very flaky; it is being very actively maintained, new dependencies are being constantly added and new bugs introduced... however, it is only needed to install the package ``Zelig``, the main R workhorse behind TwoRavens. It cannot be installed from CRAN, like all the other 3rd party packages we use - becase TwoRavens requires version 5, which is still in beta. So devtools is needed to build it from sources downloaded directly from github. Once Zelig 5 is released, we'll be able to drop the requirement for devtools - and that will make this process much simpler. For now, be prepared for it to be somewhat of an adventure. 
-
 
 1. Set Up R
 +++++++++++
@@ -160,7 +157,7 @@ configuration that is different still. Under this arrangement
 Glassfish instance is running on a high local port unaccessible from
 the outside, and is "hidden" behind Apache. With the latter running on
 the default https port, accepting and proxying the incoming
-connections to the former. This is described in the `Shibboleth <shibboleth.html>`_
+connections to the former. This is described in the :doc:`shibboleth`
 section of the Installation Guide (please note that, at the moment,
 this functionality is offered as "experimental"). With this proxying
 setup in place, the TwoRavens and rApache configuration actually
