@@ -1786,6 +1786,10 @@ public class AddReplaceFileHelper{
         return this.finalFileList;
     }
     
+    public Boolean isFinalFileListEmpty (){
+        return this.finalFileList.isEmpty();
+    }
+    
     
     /**
      * Return file list before saving
@@ -1802,7 +1806,6 @@ public class AddReplaceFileHelper{
         
         List<FileMetadata> fileMetadatas = new ArrayList<>();
         for (DataFile df : finalFileList){
-            
             fileMetadatas.add(df.getFileMetadata());
         }
         

@@ -215,25 +215,27 @@ public class FilePage implements java.io.Serializable {
         return retList;  
     }
   
-    public String restrictFile(boolean restricted){     
-            String fileNames = null;   
-            
+    public String restrictFile(boolean restricted) {
+        String fileNames = null;
+        String termsOfAccess = this.fileMetadata.getDatasetVersion().getTermsOfUseAndAccess().getTermsOfAccess();        
+        Boolean allowRequest = this.fileMetadata.getDatasetVersion().getTermsOfUseAndAccess().isFileAccessRequest();
         editDataset = this.file.getOwner();
 
-                
-                for (FileMetadata fmw: editDataset.getEditVersion().getFileMetadatas()){
-                    if (fmw.getDataFile().equals(this.fileMetadata.getDataFile())){
-                        
-                        fileNames += fmw.getLabel();
-                        fmw.setRestricted(restricted);
-                    }
-                }
-
+        for (FileMetadata fmw : editDataset.getEditVersion().getFileMetadatas()) {
+            if (fmw.getDataFile().equals(this.fileMetadata.getDataFile())) {
+                fileNames += fmw.getLabel();
+                fmw.setRestricted(restricted);
+            }
+        }
+        
+        editDataset.getEditVersion().getTermsOfUseAndAccess().setTermsOfAccess(termsOfAccess);
+        editDataset.getEditVersion().getTermsOfUseAndAccess().setFileAccessRequest(allowRequest);
+        
         if (fileNames != null) {
             String successMessage = JH.localize("file.restricted.success");
             successMessage = successMessage.replace("{0}", fileNames);
-            JsfHelper.addFlashMessage(successMessage);    
-        }        
+            JsfHelper.addFlashMessage(successMessage);
+        }
         save();
         init();
         return returnToDraftVersion();
@@ -323,7 +325,7 @@ public class FilePage implements java.io.Serializable {
         }
 
 
-        JsfHelper.addSuccessMessage(JH.localize("dataset.message.filesSuccess"));
+        JsfHelper.addSuccessMessage(JH.localize("file.message.editSuccess"));
         setVersion("DRAFT");
         return "";
     }
@@ -399,7 +401,6 @@ public class FilePage implements java.io.Serializable {
      */
     public boolean isReplacementFile(){
    
-        System.out.println("isReplacementFile: " + this.datafileService.isReplacementFile(this.getFile()));
         return this.datafileService.isReplacementFile(this.getFile());
     }
         

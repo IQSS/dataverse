@@ -87,7 +87,7 @@
                                         <li>
                                             <ui:fragment rendered="#{!FilePage.fileMetadata.restricted}">
                                                 <li>
-                                                    <p:commandLink update="@form" actionListener="#{FilePage.restrictFile(true)}">
+                                                    <p:commandLink onclick="PF('accessPopup').show()">
                                                         <h:outputText value="#{bundle['file.restrict']}"/>
                                                     </p:commandLink>
                                                 </li>
@@ -450,6 +450,37 @@
                         <div class="button-block">
                             <p:commandButton value="#{bundle.close}" onclick="PF('accessSignUpLogIn_popup').hide();PF('blockDatasetForm').hide();"/>
                         </div>
+                    </p:dialog>
+                    <p:dialog id="accessPopup" header="File Restrictions" widgetVar="accessPopup" modal="true">
+                        <ui:fragment rendered="true">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label for="metadata_TermsAccess" class="col-sm-3 control-label">
+                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess.title']}">
+                                            #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
+                                        </span>
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <p:inputTextarea value="#{FilePage.fileMetadata.datasetVersion.termsOfUseAndAccess.termsOfAccess}" autoResize="false" rows="5" styleClass="form-control" widgetVar="inputtoa" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="metadata_RequestAccess" class="col-sm-3 control-label">
+                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.title']}">
+                                            #{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess']}
+                                        </span>
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <p:selectBooleanCheckbox id="requestAccess" itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.enableBtn']}"
+                                                                 value="#{FilePage.fileMetadata.datasetVersion.termsOfUseAndAccess.fileAccessRequest}" widgetVar="inputfar"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="button-block">
+                                <p:commandButton value="#{bundle.continue}" onclick="PF('accessPopup').hide();" update=":messagePanel" action="#{FilePage.restrictFile(true)}" />
+                                <p:commandButton value="#{bundle.cancel}" onclick="PF('accessPopup').hide();" type="button" />
+                            </div>
+                        </ui:fragment>
                     </p:dialog>
                 </h:form>
             </ui:define>

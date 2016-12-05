@@ -75,8 +75,9 @@
                             <p:commandButton value="#{bundle['file.fromDropbox']}" onclick="openDropboxChooser();" icon="dropin-btn-status" />
                             <p class="help-block">#{bundle['file.fromDropbox.tip']}</p>
                         </div>
-                        <p:message for="dropBoxButton" id="dropBoxUploadMessage" display="text" />
+                        <p:message for="dropBoxButton" id="dropBoxUploadMessage" display="text" redisplay="false" />
                     </div>
+                    
                     <p:message for="fileUpload" id="uploadMessage" display="text" />
                 </ui:fragment>
 

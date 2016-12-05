@@ -60,6 +60,7 @@ import java.util.Arrays;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import javax.faces.event.AjaxBehaviorEvent;
+import javax.faces.event.FacesEvent;
 import org.apache.commons.lang.StringUtils;
 import org.primefaces.context.RequestContext;
 
@@ -415,6 +416,8 @@ public class EditDatafilesPage implements java.io.Serializable {
                                                 dataset, 
                                                 fileToReplace);
 
+            populateFileMetadatas();
+
         }else if (mode == FileEditMode.EDIT || mode == FileEditMode.SINGLE) {
 
             if (selectedFileIdsString != null) {
@@ -496,6 +499,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         if (params.containsKey("fid")){
             String fid = params.get("fid");
             if ((!fid.isEmpty()) && (StringUtils.isNumeric(fid))){
+                selectedFileIdsList.add(Long.parseLong(fid));
                 return datafileService.find(Long.parseLong(fid));
             }
         }
@@ -707,6 +711,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         }
         
         fileReplacePageHelper.resetReplaceFileHelper();
+
 
         
         String successMessage = getBundleString("file.deleted.replacement.success");
@@ -935,7 +940,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         // Run save!!
         //
         if (fileReplacePageHelper.runSaveReplacementFile_Phase2()){
-            
+            JsfHelper.addSuccessMessage(getBundleString("file.message.replaceSuccess"));
             // It worked!!!  Go to page of new file!!
             return returnToFileLandingPageAfterReplace(fileReplacePageHelper.getFirstNewlyAddedFile());
         }else{
@@ -1151,7 +1156,13 @@ public class EditDatafilesPage implements java.io.Serializable {
         workingVersion = dataset.getEditVersion();
         logger.fine("working version id: "+workingVersion.getId());
         
-        JsfHelper.addSuccessMessage(getBundleString("dataset.message.filesSuccess"));
+        if (mode == FileEditMode.SINGLE){
+            JsfHelper.addSuccessMessage(getBundleString("file.message.editSuccess"));
+            
+        } else {
+            JsfHelper.addSuccessMessage(getBundleString("dataset.message.filesSuccess"));
+        }
+
         
 
         // Call Ingest Service one more time, to 
@@ -1207,13 +1218,13 @@ public class EditDatafilesPage implements java.io.Serializable {
         if (newFile == null){
             throw new NullPointerException("newFile cannot be null!");
         }
-        Long datasetVersionId = newFile.getOwner().getLatestVersion().getId();
-        return "/file.xhtml?fileId=" + newFile.getId()  + "&datasetVersionId=" + datasetVersionId + "&faces-redirect=true";
+        //Long datasetVersionId = newFile.getOwner().getLatestVersion().getId();
+        return "/file.xhtml?fileId=" + newFile.getId()  + "&version=DRAFT&faces-redirect=true";
     }
 
     
     public String cancel() {
-        if (mode == FileEditMode.SINGLE) {
+        if (mode == FileEditMode.SINGLE || mode == FileEditMode.SINGLE_REPLACE ) {
             return returnToFileLandingPage();
         }
         if (workingVersion.getId() != null) {
@@ -1261,7 +1272,6 @@ public class EditDatafilesPage implements java.io.Serializable {
     
     
     public boolean showFileUploadFileComponent(){
-
         if (mode == FileEditMode.UPLOAD || mode == FileEditMode.CREATE) {
            return true;
         }
@@ -1269,8 +1279,8 @@ public class EditDatafilesPage implements java.io.Serializable {
         if (isFileReplaceOperation()){
             //msg("fileReplacePageHelper.showFileUploadComponent(): "+ fileReplacePageHelper.showFileUploadComponent());
             return fileReplacePageHelper.showFileUploadComponent();
-        }
-       
+            }
+
         return false;
         //return false;
     }
@@ -1372,8 +1382,9 @@ public class EditDatafilesPage implements java.io.Serializable {
             // -----------------------------------------------------------
             // Is this a FileReplaceOperation?  If so, then diverge!
             // -----------------------------------------------------------
-            if (this.isFileReplaceOperation()){            
-              this.handleReplaceFileUpload(dropBoxStream, fileName, IngestServiceBean.MIME_TYPE_UNDETERMINED_DEFAULT, null, event);
+            if (this.isFileReplaceOperation()){
+              this.handleReplaceFileUpload(event, dropBoxStream, fileName, IngestServiceBean.MIME_TYPE_UNDETERMINED_DEFAULT, null, event);
+              fileMetadataSelectedForTagsPopup = fileReplacePageHelper.getNewFileMetadatasBeforeSave().get(0);
               return;
              }
             // -----------------------------------------------------------
@@ -1431,13 +1442,13 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
 
 
-    private void handleReplaceFileUpload(InputStream inputStream, 
+    private void handleReplaceFileUpload(FacesEvent event, InputStream inputStream, 
                         String fileName, 
                         String contentType,
                         FileUploadEvent nativeUploadEvent,
                         ActionEvent dropboxUploadEvent
     ){
-        
+
         fileReplacePageHelper.resetReplaceFileHelper();
 
         saveEnabled = false;
@@ -1455,18 +1466,36 @@ public class EditDatafilesPage implements java.io.Serializable {
             if (fileReplacePageHelper.hasContentTypeWarning()){
                 String warningMessage = fileReplacePageHelper.getContentTypeWarning();
                 msg("but content type warning! " + warningMessage);
+                /*
                 JsfHelper.addWarningMessage(warningMessage);
+                                FacesContext.getCurrentInstance().addMessage(
+                    nativeUploadEvent.getComponent().getClientId(), 
+                    new FacesMessage(FacesMessage.SEVERITY_WARN, "content warning", warningMessage));
+                */
+                msg("Client ID " + event.getComponent().getClientId());
+                    FacesContext.getCurrentInstance().addMessage(
+                    nativeUploadEvent.getComponent().getClientId(),                         
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload warning", warningMessage));
             }
+            msgt("Hey! It worked! trying to add message here");
+            msgt(nativeUploadEvent.getComponent().getClientId());
+                FacesContext.getCurrentInstance().addMessage(
+                    nativeUploadEvent.getComponent().getClientId(),                         
+                    new FacesMessage(FacesMessage.SEVERITY_INFO, "upload worked", "Hey! It worked!"));
                 
         }else{
             msgt("upload failed");
             String errMsg = fileReplacePageHelper.getErrorMessages();
+            errMsg += " ******* ";
             if (nativeUploadEvent != null){
+                msg("Client ID failed: " + event.getComponent().getClientId());
+                errMsg += " nativeUploadEvent ";
                 FacesContext.getCurrentInstance().addMessage(
-                    nativeUploadEvent.getComponent().getClientId(), 
+                    nativeUploadEvent.getComponent().getClientId(),                         
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload failure", errMsg));
             }
             if (dropboxUploadEvent != null){
+                                errMsg += " dropboxUploadEvent ";
                  FacesContext.getCurrentInstance().addMessage(
                     dropboxUploadEvent.getComponent().getClientId(), 
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload failure", errMsg));
@@ -1496,11 +1525,14 @@ public class EditDatafilesPage implements java.io.Serializable {
          */
         if (isFileReplaceOperation()){
            
-            handleReplaceFileUpload(uFile.getInputstream(),
+            handleReplaceFileUpload(event, uFile.getInputstream(),
                                     uFile.getFileName(),
                                     uFile.getContentType(),
                                     event,
                                     null);
+            System.out.print("isFileReplaceOperation()");
+            FacesContext.getCurrentInstance().addMessage(event.getComponent().getClientId(), new FacesMessage(FacesMessage.SEVERITY_INFO, "upload INFO", "Upload happening"));
+            System.out.print("after adding faces message");
             return;
                
         }
