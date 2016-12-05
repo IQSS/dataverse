@@ -65,14 +65,11 @@ Install Shibboleth Via Yum
 
 ``yum install shibboleth shibboleth-embedded-ds``
 
-Configuration
--------------
-
 Configure Glassfish
-~~~~~~~~~~~~~~~~~~~
+-------------------
 
 Apply GRIZZLY-1787 Patch
-^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 In order for the Dataverse "download as zip" feature to work well with large files without causing ``OutOfMemoryError`` problems on Glassfish 4.1 when fronted with Apache, you should stop Glassfish, with ``asadmin stop-domain domain1``, make a backup of ``glassfish4/glassfish/modules/glassfish-grizzly-extra-all.jar``, replace it with a patched version of ``glassfish-grizzly-extra-all.jar`` downloaded from :download:`here </_static/installation/files/issues/2180/grizzly-patch/glassfish-grizzly-extra-all.jar>` (the md5 is in the :download:`README <../_static/installation/files/issues/2180/grizzly-patch/readme.md>`), and start Glassfish again with ``asadmin start-domain domain1``.
 
@@ -81,7 +78,7 @@ For more background on the patch, please see https://java.net/jira/browse/GRIZZL
 This problem has been reported to Glassfish at https://java.net/projects/glassfish/lists/users/archive/2015-07/message/1 and while Glassfish 4.1.1 includes a new enough version of Grizzly to fix the bug, other complicating factors prevent its adoption (look for "Glassfish 4.1.1" in the :doc:`prerequisites` section for details on why it is not recommended).
 
 Glassfish HTTP and HTTPS ports
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Apache will be listening on ports 80 and 443 so we need to make sure Glassfish isn't using them. If you've been changing the default ports used by Glassfish per the :doc:`config` section, revert the Glassfish HTTP service to listen on 8080, the default port:
 
@@ -92,7 +89,7 @@ Likewise, if necessary, revert the Glassfish HTTPS service to listen on port 818
 ``asadmin set server-config.network-config.network-listeners.network-listener.http-listener-2.port=8181``
 
 AJP
-^^^
+~~~
 
 A ``jk-connector`` network listener should have already been set up when you ran the installer mentioned in the :doc:`installation-main` section, but for reference, here is the command that is used:
 
@@ -103,17 +100,17 @@ You can verify this with ``asadmin list-network-listeners``.
 This enables the `AJP protocol <http://en.wikipedia.org/wiki/Apache_JServ_Protocol>`_ used in Apache configuration files below.
 
 SSLEngine Warning Workaround
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 When fronting Glassfish with Apache and using the jk-connector (AJP, mod_proxy_ajp), in your Glassfish server.log you can expect to see "WARNING ... org.glassfish.grizzly.http.server.util.RequestUtils ... jk-connector ... Unable to populate SSL attributes java.lang.IllegalStateException: SSLEngine is null".
 
 To hide these warnings, run ``asadmin set-log-levels org.glassfish.grizzly.http.server.util.RequestUtils=SEVERE`` so that the WARNING level is hidden as recommended at https://java.net/jira/browse/GLASSFISH-20694 and https://github.com/IQSS/dataverse/issues/643#issuecomment-49654847
 
 Configure Apache
-~~~~~~~~~~~~~~~~
+----------------
 
 Enforce HTTPS
-^^^^^^^^^^^^^
+~~~~~~~~~~~~~
 
 To prevent attacks such as `FireSheep <http://en.wikipedia.org/wiki/Firesheep>`_, HTTPS should be enforced. https://wiki.apache.org/httpd/RewriteHTTPToHTTPS provides a good method. You **could** copy and paste that those "rewrite rule" lines into Apache's main config file at ``/etc/httpd/conf/httpd.conf`` but using Apache's "virtual hosts" feature is recommended so that you can leave the main configuration file alone and drop a host-specific file into place.
 
@@ -122,7 +119,7 @@ Below is an example of how "rewrite rule" lines look within a ``VirtualHost`` bl
 .. literalinclude:: ../_static/installation/files/etc/httpd/conf.d/dataverse.example.edu.conf
 
 Edit Apache ssl.conf File
-^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ``/etc/httpd/conf.d/ssl.conf`` should be edited to contain the FQDN of your hostname like this: ``ServerName dataverse.example.edu:443`` (substituting your hostname).
 
@@ -151,28 +148,25 @@ You can download a :download:`sample ssl.conf file <../_static/installation/file
 Note that ``/etc/httpd/conf.d/shib.conf`` and ``/etc/httpd/conf.d/shibboleth-ds.conf`` are expected to be present from installing Shibboleth via yum.
 
 Configure Shibboleth
-~~~~~~~~~~~~~~~~~~~~
+--------------------
 
 shibboleth2.xml
-^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~
 
 ``/etc/shibboleth/shibboleth2.xml`` should look something like the :download:`sample shibboleth2.xml file <../_static/installation/files/etc/shibboleth/shibboleth2.xml>` below, but you must substitute your hostname in the ``entityID`` value. If your starting point is a ``shibboleth2.xml`` file provided by someone else, you must ensure that ``attributePrefix="AJP_"`` is added under ``ApplicationDefaults`` per the `Shibboleth wiki <https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPJavaInstall>`_ . Without the ``AJP_`` configuration in place, the required :ref:`shibboleth-attributes` will be null and users will be unable to log in.
 
 .. literalinclude:: ../_static/installation/files/etc/shibboleth/shibboleth2.xml
    :language: xml
 
-Specific Identity Provider(s) vs. Identity Federation
-`````````````````````````````````````````````````````
+Specific Identity Provider(s)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 When configuring the ``MetadataProvider`` section of ``shibboleth2.xml`` you should consider if your users will all come from the same Identity Provider (IdP) or not.
-
-Specific Identity Provider(s)
-+++++++++++++++++++++++++++++
 
 Most Dataverse installations will probably only want to authenticate users via Shibboleth using their home institution's Identity Provider (IdP).  The configuration above in ``shibboleth2.xml`` looks for the metadata for the Identity Providers (IdPs) in a file at ``/etc/shibboleth/dataverse-idp-metadata.xml``.  You can download a :download:`sample dataverse-idp-metadata.xml file <../_static/installation/files/etc/shibboleth/dataverse-idp-metadata.xml>` and that includes the TestShib IdP from http://testshib.org but you will want to edit this file to include the metadata from the Identity Provider(s) you care about. The identity people at your institution will be able to provide you with this metadata and they will very likely ask for a list of attributes that Dataverse requires, which are listed at :ref:`shibboleth-attributes`.
 
 Identity Federation
-+++++++++++++++++++
+^^^^^^^^^^^^^^^^^^^
 
 Rather than or in addition to specifying individual Identity Provider(s) you may wish to broaden the number of users who can log into your Dataverse installation by registering your Dataverse installation as a Service Provider (SP) within an identity federation. For example, in the United States, users from the `many institutions registered with the "InCommon" identity federation <https://incommon.org/federation/info/all-entities.html#IdPs>`_ that release the `"Research & Scholarship Attribute Bundle" <https://spaces.internet2.edu/display/InCFederation/Research+and+Scholarship+Attribute+Bundle>`_  will be able to log into your Dataverse installation if you register it as an `InCommon Service Provider <https://incommon.org/federation/info/all-entities.html#SPs>`_ that is part of the `Research & Scholarship (R&S) category <https://incommon.org/federation/info/all-entity-categories.html#SPs>`_.
 
@@ -185,7 +179,7 @@ Once you've joined a federation the list of IdPs in the dropdown can be quite lo
 .. _shibboleth-attributes:
 
 Shibboleth Attributes
-^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~
 
 The following attributes are required for a successful Shibboleth login:
 
@@ -198,27 +192,27 @@ The following attributes are required for a successful Shibboleth login:
 See also https://www.incommon.org/federation/attributesummary.html and https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPAttributeAccess
 
 attribute-map.xml
-^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~
 
 By default, some attributes ``/etc/shibboleth/attribute-map.xml`` are commented out. Edit the file to enable them so that all the require attributes come through. You can download a :download:`sample attribute-map.xml file <../_static/installation/files/etc/shibboleth/attribute-map.xml>`.
 
 Disable or Reconfigure SELinux
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+------------------------------
 
 SELinux is set to "enforcing" by default on RHEL/CentOS, but unfortunately Shibboleth does not "just work" with SELinux. You have two options. You can disable SELinux or you can reconfigure SELinux to accommodate Shibboleth.
 
 Disable SELinux
-^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~
 
 The first and easiest option is to set ``SELINUX=permisive`` in ``/etc/selinux/config`` and run ``setenforce permissive`` or otherwise disable SELinux to get Shibboleth to work. This is apparently what the Shibboleth project expects because their wiki page at https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPSELinux says, "At the present time, we do not support the SP in conjunction with SELinux, and at minimum we know that communication between the mod_shib and shibd components will fail if it's enabled. Other problems may also occur."
 
 Reconfigure SELinux to Accommodate Shibboleth
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The second (more involved) option is to use the ``checkmodule``, ``semodule_package``, and ``semodule`` tools to apply a local policy to make Shibboleth work with SELinux. Let's get started.
 
 Put Type Enforcement (TE) File in misc directory
-````````````````````````````````````````````````
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Copy and paste or download the :download:`shibboleth.te <../_static/installation/files/etc/selinux/targeted/src/policy/domains/misc/shibboleth.te>` Type Enforcement (TE) file below and put it at ``/etc/selinux/targeted/src/policy/domains/misc/shibboleth.te``.
 
@@ -228,24 +222,24 @@ Copy and paste or download the :download:`shibboleth.te <../_static/installation
 (If you would like to know where the ``shibboleth.te`` came from and how to hack on it, please see the :doc:`/developers/selinux` section of the Developer Guide. Pull requests are welcome!)
 
 Navigate to misc directory
-``````````````````````````
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ``cd /etc/selinux/targeted/src/policy/domains/misc``
 
 Run checkmodule
-```````````````
+^^^^^^^^^^^^^^^
 
 ``checkmodule -M -m -o shibboleth.mod shibboleth.te``
 
 Run semodule_package
-````````````````````
+^^^^^^^^^^^^^^^^^^^^
 
 ``semodule_package -o shibboleth.pp -m shibboleth.mod``
 
 Silent is golden. No output is expected.
 
 Run semodule
-````````````
+^^^^^^^^^^^^
 
 ``semodule -i shibboleth.pp``
 
@@ -254,7 +248,7 @@ Silent is golden. No output is expected. This will place a file in ``/etc/selinu
 Congrats! You've made the creator of http://stopdisablingselinux.com proud. :)
 
 Restart Apache and Shibboleth
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-----------------------------
 
 After configuration is complete:
 
@@ -263,14 +257,14 @@ After configuration is complete:
 ``service httpd restart``
 
 Configure Apache and shibd to Start at Boot
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-------------------------------------------
 
 ``chkconfig httpd on``
 
 ``chkconfig shibd on``
 
 Verify DiscoFeed and Metadata URLs
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+----------------------------------
 
 As a sanity check, visit the following URLs (substituting your hostname) to make sure you see JSON and XML:
 
@@ -280,14 +274,14 @@ As a sanity check, visit the following URLs (substituting your hostname) to make
 The JSON in ``DiscoFeed`` comes from the list of IdPs you configured in the ``MetadataProvider`` section of ``shibboleth2.xml`` and will form a dropdown list on the Login Page.
 
 Enable Shibboleth
-~~~~~~~~~~~~~~~~~
+-----------------
 
 ``curl -X PUT -d true http://localhost:8080/api/admin/settings/:ShibEnabled``
 
 After enabling Shibboleth, assuming the ``DiscoFeed`` is working per above, you should see a list of institutions to log into. You will not be able to log in via these institutions, however, until you have exchanged metadata with them. You can change the boolean above to ``false`` while you wait for the metadata exchange to be complete since it only affects if the Shibboleth login screen is shown.
 
 Exchange Metadata with Your Identity Provider
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---------------------------------------------
 
 http://testshib.org (TestShib) is a fantastic resource for testing Shibboleth configurations. Depending on your relationship with your identity people you may want to avoid bothering them until you have tested your Dataverse configuration with the TestShib Identity Provider (IdP). This process is explained below.
 
