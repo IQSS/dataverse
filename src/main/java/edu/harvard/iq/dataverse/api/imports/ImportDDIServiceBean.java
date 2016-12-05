@@ -1660,13 +1660,27 @@ public class ImportDDIServiceBean {
         datasetDTO.getDatasetVersion().getFileMetadatas().add(fmdDTO);
 
         DataFileDTO dfDTO = new DataFileDTO();
+        dfDTO.setContentType("data/various-formats"); // reserved ICPSR content type identifier
         fmdDTO.setDataFile(dfDTO);
         
         for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
             if (event == XMLStreamConstants.START_ELEMENT) {
                 if (xmlr.getLocalName().equals("fileName")) {
                     // this is the file name: 
-                    fmdDTO.setLabel( parseText(xmlr) );
+                    String label = parseText(xmlr);
+                    // do some cleanup:
+                    int col = label.lastIndexOf(':');
+                    if ( col > -1) {
+                        if (col < label.length() - 1) {
+                            label = label.substring(col+1);
+                        } else {
+                            label = label.replaceAll(":", "");
+                        }
+                    }
+                    label = label.replaceAll(";", "");
+                    // strip leading blanks:
+                    label = label.replaceFirst("^[ \t]*", "");
+                    fmdDTO.setLabel(label);
                 } 
             } else if (event == XMLStreamConstants.END_ELEMENT) {// </codeBook>
                 if (xmlr.getLocalName().equals("fileDscr")) {
