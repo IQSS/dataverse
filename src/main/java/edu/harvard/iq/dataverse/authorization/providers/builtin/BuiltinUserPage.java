@@ -406,10 +406,10 @@ public class BuiltinUserPage implements java.io.Serializable {
         int minPasswordLength = 6;
         boolean forceNumber = true;
         boolean forceSpecialChar = false;
-        boolean forceCapitalLetter = false;
+        boolean forceMixedLetters = false;
         int maxPasswordLength = 255;
 
-        PasswordValidator validator = PasswordValidator.buildValidator(forceSpecialChar, forceCapitalLetter, forceNumber, minPasswordLength, maxPasswordLength);
+        PasswordValidator validator = PasswordValidator.buildValidator(forceSpecialChar, forceMixedLetters, forceNumber, minPasswordLength, maxPasswordLength);
         boolean passwordIsComplexEnough = password!= null && validator.validatePassword(password);
         if (!passwordIsComplexEnough) {
             ((UIInput) toValidate).setValid(false);

@@ -199,7 +199,7 @@ public class PasswordResetServiceBean {
         int minPasswordLength = 6;
         boolean forceNumber = true;
         boolean forceSpecialChar = false;
-        boolean forceCapitalLetter = false;
+        boolean forceMixedLetters = false;
         int maxPasswordLength = 255;
         /**
          *
@@ -213,7 +213,7 @@ public class PasswordResetServiceBean {
          * characters, max 255 characters, all other rules disabled that the
          * password "12345678" is not considered valid.
          */
-        PasswordValidator validator = PasswordValidator.buildValidator(forceSpecialChar, forceCapitalLetter, forceNumber, minPasswordLength, maxPasswordLength);
+        PasswordValidator validator = PasswordValidator.buildValidator(forceSpecialChar, forceMixedLetters, forceNumber, minPasswordLength, maxPasswordLength);
         boolean passwordIsComplexEnough = validator.validatePassword(newPassword);
         if (!passwordIsComplexEnough) {
             messageSummary = messageSummaryFail;

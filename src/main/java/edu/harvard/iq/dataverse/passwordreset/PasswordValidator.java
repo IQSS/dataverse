@@ -24,19 +24,25 @@ public class PasswordValidator {
      * Force the user to build a validator using this way only
      *
      * @param forceSpecialChar
-     * @param forceCapitalLetter
+     * @param forceMixedLetters
      * @param forceNumber
      * @param minLength
      * @param maxLength
      * @return
      */
     public static PasswordValidator buildValidator(boolean forceSpecialChar,
-            boolean forceCapitalLetter,
+            boolean forceMixedLetters,
             boolean forceNumber,
             int minLength,
             int maxLength) {
-        // [a-z] is why one letter is required
-        StringBuilder patternBuilder = new StringBuilder("((?=.*[a-z])");
+
+        final StringBuilder patternBuilder = new StringBuilder("(");
+
+        if (forceMixedLetters) {
+            patternBuilder.append("(?=.*[A-Z])(?=.*[a-z])");
+        } else {
+            patternBuilder.append("(?=.*[A-Za-z])");
+        }
 
         /**
          * @todo should probably allow additional special characters
@@ -45,15 +51,11 @@ public class PasswordValidator {
             patternBuilder.append("(?=.*[@#$%])");
         }
 
-        if (forceCapitalLetter) {
-            patternBuilder.append("(?=.*[A-Z])");
-        }
-
         if (forceNumber) {
             patternBuilder.append("(?=.*\\d)");
         }
 
-        patternBuilder.append(".{" + minLength + "," + maxLength + "})");
+        patternBuilder.append(".{").append(minLength).append(",").append(maxLength).append("})");
         pattern = patternBuilder.toString();
 
         return INSTANCE;
