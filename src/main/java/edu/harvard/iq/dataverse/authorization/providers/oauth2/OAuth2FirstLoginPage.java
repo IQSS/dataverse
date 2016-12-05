@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.authorization.CredentialsAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationFailedException;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
+import edu.harvard.iq.dataverse.authorization.providers.shib.ShibServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
@@ -73,41 +74,47 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
     boolean authenticationFailed = false;
 
     /**
-     * Attempts to init the page. Redirects the user to {@code /} in case
-     * the initialization fails.
-     * @throws IOException If the redirection fails to be sent. Should not happen*
-     * 
-     * 
-     * 
+     * Attempts to init the page. Redirects the user to {@code /} in case the
+     * initialization fails.
+     *
+     * @throws IOException If the redirection fails to be sent. Should not
+     * happen*
+     *
+     *
+     *
      * * Famous last sentences etc.
      */
     public void init() throws IOException {
         logger.fine("init called");
-        
-        if ( newUser == null ) {
+
+        AbstractOAuth2AuthenticationProvider.DevOAuthAccountType devMode = systemConfig.getDevOAuthAccountType();
+        if (!AbstractOAuth2AuthenticationProvider.DevOAuthAccountType.PRODUCTION.equals(devMode)) {
+            if (AbstractOAuth2AuthenticationProvider.DevOAuthAccountType.RANDOM.equals(devMode)) {
+                Map<String, String> randomUser = authTestDataSvc.getRandomUser();
+                String lastName = randomUser.get("lastName");
+                String firstName = randomUser.get("firstName");
+                String email = randomUser.get("email");
+                String randomUsername = randomUser.get("username");
+                String eppn = randomUser.get("eppn");
+                String accessToken = "qwe-addssd-iiiiie";
+                /**
+                 * @todo Do something reasonable with all these extra email
+                 * addresses such as putting them in a DropDown component from
+                 * http://www.primefaces.org/showcase/ui/input/autoComplete.xhtml
+                 */
+                setNewUser(new OAuth2UserRecord("github", eppn, randomUsername, accessToken,
+                        new AuthenticatedUserDisplayInfo(firstName, lastName, email, "myAffiliation", "myPosition"),
+                        Arrays.asList("extra1@example.com", "extra2@example.com", "extra3@example.com")));
+            }
+        }
+
+        if (newUser == null) {
             // There's no new user to welcome, so we're out of the "normal" OAuth2 flow.
             // e.g., someone might have directly accessed this page.
             // return to sanity be redirection to /index
             FacesContext.getCurrentInstance().getExternalContext().redirect("/");
-            return;
         }
-        
-        /**
-         * @todo Add something like SettingsServiceBean.Key.DebugShibAccountType
-         */
-        boolean devMode = false;
-        if (devMode) {
-            Map<String, String> randomUser = authTestDataSvc.getRandomUser();
-            String lastName = randomUser.get("lastName");
-            String firstName = randomUser.get("firstName");
-            String email = randomUser.get("email");
-            String randomUsername = randomUser.get("username");
-            String eppn = randomUser.get("eppn");
-            String accessToken = "qwe-addssd-iiiiie";
-            setNewUser(new OAuth2UserRecord("github", eppn, randomUsername, accessToken,
-                    new AuthenticatedUserDisplayInfo(firstName, lastName, email, "myAffiliation", "myPosition"),
-                    Arrays.asList("extra1@example.com", "extra2@example.com", "extra3@example.com")));
-        }
+
     }
 
     public String createNewAccount() {

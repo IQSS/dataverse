@@ -4,6 +4,7 @@ import com.ocpsoft.pretty.PrettyContext;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -568,4 +569,23 @@ public class SystemConfig {
     public String getNameOfInstallation() {
         return dataverseService.findRootDataverse().getName() + " Dataverse";
     }
+
+    public AbstractOAuth2AuthenticationProvider.DevOAuthAccountType getDevOAuthAccountType() {
+        AbstractOAuth2AuthenticationProvider.DevOAuthAccountType saneDefault = AbstractOAuth2AuthenticationProvider.DevOAuthAccountType.PRODUCTION;
+        String settingReturned = settingsService.getValueForKey(SettingsServiceBean.Key.DebugOAuthAccountType);
+        logger.fine("setting returned: " + settingReturned);
+        if (settingReturned != null) {
+            try {
+                AbstractOAuth2AuthenticationProvider.DevOAuthAccountType parsedValue = AbstractOAuth2AuthenticationProvider.DevOAuthAccountType.valueOf(settingReturned);
+                return parsedValue;
+            } catch (IllegalArgumentException ex) {
+                logger.info("Couldn't parse value: " + ex + " - returning a sane default: " + saneDefault);
+                return saneDefault;
+            }
+        } else {
+            logger.fine("OAuth dev mode has not been configured. Returning a sane default: " + saneDefault);
+            return saneDefault;
+        }
+    }
+
 }

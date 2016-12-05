@@ -92,6 +92,7 @@ public class SettingsServiceBean {
          * of possible account types.
          */
         DebugShibAccountType,
+        DebugOAuthAccountType,
         /** Application-wide Terms of Use per installation. */
         ApplicationTermsOfUse,
         /** Terms of Use specific to API per installation. */

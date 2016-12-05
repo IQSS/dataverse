@@ -225,4 +225,9 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
     public boolean isOAuthProvider() {
         return true;
     }
+
+    public enum DevOAuthAccountType {
+        PRODUCTION,
+        RANDOM,
+    };
 }
