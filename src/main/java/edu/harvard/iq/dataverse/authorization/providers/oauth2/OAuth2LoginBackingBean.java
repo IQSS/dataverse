@@ -23,6 +23,7 @@ import javax.inject.Named;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * Backing bean of the oauth2 login process. Used from the login page and the
@@ -99,8 +100,10 @@ public class OAuth2LoginBackingBean implements Serializable {
                 session.setUser(dvUser);
                 Map<String,Object> sessionMap = FacesContext.getCurrentInstance().getExternalContext().getSessionMap();
                 String destination = sessionMap.containsKey(SessionKeys.INTENDED_PAGE.name()) ? (String)sessionMap.get(SessionKeys.INTENDED_PAGE.name()) : "/";
+                HttpServletResponse response = (HttpServletResponse) FacesContext.getCurrentInstance().getExternalContext().getResponse();
+                String prettyUrl = response.encodeRedirectURL(destination);
                 sessionMap.remove(SessionKeys.INTENDED_PAGE.name());
-                FacesContext.getCurrentInstance().getExternalContext().redirect(destination);
+                FacesContext.getCurrentInstance().getExternalContext().redirect(prettyUrl);
             }
 
         } catch (OAuth2Exception ex) {
