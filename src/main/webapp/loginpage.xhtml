@@ -163,6 +163,8 @@
                                             <span class="glyphicon glyphicon-info-sign"/>
                                             <h:outputFormat value=" #{bundle['auth.providers.blurb']}" escape="false">
                                                 <o:param value="#{bundle['auth.providers.title.'.concat(LoginPage.authProvider.id)]}"/>
+                                                <o:param value="#{settingsWrapper.guidesBaseUrl}"/>
+                                                <o:param value="#{systemConfig.version}"/>
                                                 <o:param>
                                                     <p:commandLink value="#{bundle['contact.support']}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
                                                         <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
