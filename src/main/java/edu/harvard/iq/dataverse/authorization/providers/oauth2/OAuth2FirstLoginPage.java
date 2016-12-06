@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.authorization.providers.oauth2;
 
 import edu.harvard.iq.dataverse.DataverseSession;
+import edu.harvard.iq.dataverse.EMailValidator;
 import edu.harvard.iq.dataverse.ValidateEmail;
 import edu.harvard.iq.dataverse.authorization.AuthTestDataServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
@@ -28,7 +29,6 @@ import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
 import javax.faces.context.FacesContext;
-import javax.faces.event.ValueChangeEvent;
 import javax.inject.Named;
 import javax.inject.Inject;
 import org.hibernate.validator.constraints.NotBlank;
@@ -88,7 +88,7 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
         logger.fine("init called");
 
         AbstractOAuth2AuthenticationProvider.DevOAuthAccountType devMode = systemConfig.getDevOAuthAccountType();
-        logger.info("devMode: " + devMode);
+        logger.fine("devMode: " + devMode);
         if (!AbstractOAuth2AuthenticationProvider.DevOAuthAccountType.PRODUCTION.equals(devMode)) {
             if (devMode.toString().startsWith("RANDOM")) {
                 Map<String, String> randomUser = authTestDataSvc.getRandomUser();
@@ -193,6 +193,31 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
         if (userNameFound) {
             ((UIInput) toValidate).setValid(false);
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("user.username.taken"), null);
+            context.addMessage(toValidate.getClientId(context), message);
+        }
+    }
+
+    /**
+     * @todo This was copied from DataverseUserPage and modified so consider
+     * consolidating common code (DRY).
+     */
+    public void validateUserEmail(FacesContext context, UIComponent toValidate, Object value) {
+        String userEmail = (String) value;
+        boolean emailValid = EMailValidator.isEmailValid(userEmail, null);
+        if (!emailValid) {
+            ((UIInput) toValidate).setValid(false);
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("oauth2.newAccount.emailInvalid"), null);
+            context.addMessage(toValidate.getClientId(context), message);
+            return;
+        }
+        boolean userEmailFound = false;
+        AuthenticatedUser aUser = authenticationSvc.getAuthenticatedUserByEmail(userEmail);
+        if (aUser != null) {
+            userEmailFound = true;
+        }
+        if (userEmailFound) {
+            ((UIInput) toValidate).setValid(false);
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("user.email.taken"), null);
             context.addMessage(toValidate.getClientId(context), message);
         }
     }

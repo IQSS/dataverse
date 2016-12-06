@@ -79,11 +79,11 @@
                                     </span>
                                 </label>
                                 <div class="col-sm-3" jsf:rendered="#{not OAuth2FirstLoginPage.moreThanOneEmailToPickFrom}">
-                                    <p:inputText id="selectedEmailZeroOrOneToPickFrom" value="#{OAuth2FirstLoginPage.selectedEmail}"/>
+                                    <p:inputText id="selectedEmailZeroOrOneToPickFrom" value="#{OAuth2FirstLoginPage.selectedEmail}" validator="#{OAuth2FirstLoginPage.validateUserEmail}"/>
                                     <p:message for="selectedEmailZeroOrOneToPickFrom" display="text"/>
                                 </div>
                                 <div class="col-sm-6" jsf:rendered="#{OAuth2FirstLoginPage.moreThanOneEmailToPickFrom}">
-                                    <p:autoComplete id="selectedEmailMoreThanOneToPickFrom" dropdown="true" value="#{OAuth2FirstLoginPage.selectedEmail}" completeMethod="#{OAuth2FirstLoginPage.getEmailsToPickFrom()}" />
+                                    <p:autoComplete id="selectedEmailMoreThanOneToPickFrom" dropdown="true" value="#{OAuth2FirstLoginPage.selectedEmail}" completeMethod="#{OAuth2FirstLoginPage.getEmailsToPickFrom()}" validator="#{OAuth2FirstLoginPage.validateUserEmail}" />
                                     <p:message for="selectedEmailMoreThanOneToPickFrom" display="text"/>
                                 </div>
                             </div>
