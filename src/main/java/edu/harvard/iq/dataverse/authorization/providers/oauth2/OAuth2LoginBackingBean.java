@@ -75,6 +75,7 @@ public class OAuth2LoginBackingBean implements Serializable {
                     sb.append(line).append("\n");
                 }
                 error = new OAuth2Exception(-1, sb.toString(), "Remote system did not return an authorization code.");
+                logger.info("OAuth2Exception getting code parameter. HTTP return code: " + error.getHttpReturnCode() + ". Message: " + error.getLocalizedMessage() + " Message body: " + error.getMessageBody());
                 return;
             }
         }
@@ -84,7 +85,7 @@ public class OAuth2LoginBackingBean implements Serializable {
         try {
             AbstractOAuth2AuthenticationProvider idp = getIdpFromState(state);
             if (idp == null) {
-                throw new OAuth2Exception(-1, "", "Invalid 'state' parameter");
+                throw new OAuth2Exception(-1, "", "Invalid 'state' parameter.");
             }
             oauthUser = idp.getUserRecord(code, state, getCallbackUrl());
             UserRecordIdentifier idtf = oauthUser.getUserRecordIdentifier();
@@ -108,6 +109,7 @@ public class OAuth2LoginBackingBean implements Serializable {
 
         } catch (OAuth2Exception ex) {
             error = ex;
+            logger.info("OAuth2Exception caught. HTTP return code: " + error.getHttpReturnCode() + ". Message: " + error.getLocalizedMessage() + ". Message body: " + error.getMessageBody());
             Logger.getLogger(OAuth2LoginBackingBean.class.getName()).log(Level.SEVERE, null, ex);
         }
 
