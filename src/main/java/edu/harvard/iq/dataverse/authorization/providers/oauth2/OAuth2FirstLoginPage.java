@@ -11,12 +11,12 @@ import edu.harvard.iq.dataverse.authorization.CredentialsAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationFailedException;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
-import edu.harvard.iq.dataverse.authorization.providers.shib.ShibServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -88,23 +88,40 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
         logger.fine("init called");
 
         AbstractOAuth2AuthenticationProvider.DevOAuthAccountType devMode = systemConfig.getDevOAuthAccountType();
+        logger.info("devMode: " + devMode);
         if (!AbstractOAuth2AuthenticationProvider.DevOAuthAccountType.PRODUCTION.equals(devMode)) {
-            if (AbstractOAuth2AuthenticationProvider.DevOAuthAccountType.RANDOM.equals(devMode)) {
+            if (devMode.toString().startsWith("RANDOM")) {
                 Map<String, String> randomUser = authTestDataSvc.getRandomUser();
                 String lastName = randomUser.get("lastName");
                 String firstName = randomUser.get("firstName");
-                String email = randomUser.get("email");
+                String email = null;
+                List<String> extraEmails = null;
+                switch (devMode) {
+                    case RANDOM_EMAIL0:
+                        break;
+                    case RANDOM_EMAIL1:
+                        email = randomUser.get("email");
+                        break;
+                    case RANDOM_EMAIL2:
+                        email = randomUser.get("email");
+                        extraEmails = new ArrayList<>();
+                        extraEmails.add("extra1@example.com");
+                        break;
+                    case RANDOM_EMAIL3:
+                        email = randomUser.get("email");
+                        extraEmails = new ArrayList<>();
+                        extraEmails.add("extra1@example.com");
+                        extraEmails.add("extra2@example.com");
+                        break;
+                    default:
+                        break;
+                }
                 String randomUsername = randomUser.get("username");
                 String eppn = randomUser.get("eppn");
                 String accessToken = "qwe-addssd-iiiiie";
-                /**
-                 * @todo Do something reasonable with all these extra email
-                 * addresses such as putting them in a DropDown component from
-                 * http://www.primefaces.org/showcase/ui/input/autoComplete.xhtml
-                 */
                 setNewUser(new OAuth2UserRecord("github", eppn, randomUsername, accessToken,
                         new AuthenticatedUserDisplayInfo(firstName, lastName, email, "myAffiliation", "myPosition"),
-                        Arrays.asList("extra1@example.com", "extra2@example.com", "extra3@example.com")));
+                        extraEmails));
             }
         }
 
@@ -113,7 +130,10 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
             // e.g., someone might have directly accessed this page.
             // return to sanity be redirection to /index
             FacesContext.getCurrentInstance().getExternalContext().redirect("/");
+            return;
         }
+
+        setSelectedEmail(newUser.getDisplayInfo().getEmailAddress());
 
     }
 
@@ -177,10 +197,6 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
         }
     }
 
-    public void suggestedEmailChanged(ValueChangeEvent evt) {
-        setSelectedEmail(evt.getNewValue().toString());
-    }
-
     /**
      * @return A textual reference to the user.
      */
@@ -216,8 +232,23 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
         return selectedEmail;
     }
 
-    public boolean areExtraEmailsAvailable() {
-        return newUser.getAvailableEmailAddresses().size() > 1;
+    public boolean isMoreThanOneEmailToPickFrom() {
+        List<String> emailsToPickFrom = new ArrayList<>();
+        if (selectedEmail != null) {
+            emailsToPickFrom.add(selectedEmail);
+        }
+        /**
+         * @todo Is this available or extra?
+         */
+        List<String> available = newUser.getAvailableEmailAddresses();
+        if (available != null) {
+            emailsToPickFrom.addAll(available);
+        }
+        if (emailsToPickFrom.size() > 1) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public List<String> getExtraEmails() {
@@ -252,6 +283,20 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
     public String getConvertTip() {
         AbstractOAuth2AuthenticationProvider authProvider = authenticationSvc.getOAuth2Provider(newUser.getServiceId());
         return BundleUtil.getStringFromBundle("oauth2.convertAccount.explanation", Arrays.asList(systemConfig.getNameOfInstallation(), authProvider.getTitle()));
+    }
+
+    public List<String> getEmailsToPickFrom() {
+        List<String> results = new ArrayList<>();
+        if (selectedEmail != null) {
+            results.add(selectedEmail);
+        }
+        List<String> extraEmails = newUser.getAvailableEmailAddresses();
+        if (!extraEmails.isEmpty()) {
+            for (String extra : newUser.getAvailableEmailAddresses()) {
+                results.add(extra);
+            }
+        }
+        return results;
     }
 
 }
