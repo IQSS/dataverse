@@ -42,9 +42,11 @@
                                         #{bundle['user.username']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
                                     </span>
                                 </label>
-                                <div class="col-sm-9">
-                                    <p:inputText id="username" value="#{OAuth2FirstLoginPage.username}" validator="#{OAuth2FirstLoginPage.validateUserName}"/>
+                                <div class="col-sm-4">
+                                    <p:inputText id="username" styleClass="form-control" value="#{OAuth2FirstLoginPage.username}" validator="#{OAuth2FirstLoginPage.validateUserName}"/>
                                     <p:message for="username" display="text"/>
+                                </div>
+                                <div class="col-sm-offset-3 col-sm-9">
                                     <p class="help-block">
                                         <h:outputText value="#{OAuth2FirstLoginPage.suggestConvertInsteadOfCreate}" escape="false"/>
                                     </p>
@@ -56,8 +58,8 @@
                                         #{bundle['user.firstName']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
                                     </span>
                                 </label>
-                                <div class="col-sm-6">
-                                    <p:inputText id="givenName" value="#{OAuth2FirstLoginPage.newUser.displayInfo.firstName}"/>
+                                <div class="col-sm-4">
+                                    <p:inputText id="givenName" styleClass="form-control" value="#{OAuth2FirstLoginPage.newUser.displayInfo.firstName}"/>
                                     <p:message for="givenName" display="text"/>
                                 </div>
                             </div>
@@ -67,8 +69,8 @@
                                         #{bundle['user.lastName']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
                                     </span>
                                 </label>
-                                <div class="col-sm-6">
-                                    <p:inputText id="familyName" value="#{OAuth2FirstLoginPage.newUser.displayInfo.lastName}"/>
+                                <div class="col-sm-4">
+                                    <p:inputText id="familyName" styleClass="form-control" value="#{OAuth2FirstLoginPage.newUser.displayInfo.lastName}"/>
                                     <p:message for="familyName" display="text"/>
                                 </div>
                             </div>
@@ -78,12 +80,12 @@
                                         #{bundle['email']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
                                     </span>
                                 </label>
-                                <div class="col-sm-3" jsf:rendered="#{not OAuth2FirstLoginPage.moreThanOneEmailToPickFrom}">
-                                    <p:inputText id="selectedEmailZeroOrOneToPickFrom" value="#{OAuth2FirstLoginPage.selectedEmail}" validator="#{OAuth2FirstLoginPage.validateUserEmail}"/>
+                                <div class="col-sm-4" jsf:rendered="#{not OAuth2FirstLoginPage.moreThanOneEmailToPickFrom}">
+                                    <p:inputText id="selectedEmailZeroOrOneToPickFrom" styleClass="form-control" value="#{OAuth2FirstLoginPage.selectedEmail}" validator="#{OAuth2FirstLoginPage.validateUserEmail}"/>
                                     <p:message for="selectedEmailZeroOrOneToPickFrom" display="text"/>
                                 </div>
-                                <div class="col-sm-6" jsf:rendered="#{OAuth2FirstLoginPage.moreThanOneEmailToPickFrom}">
-                                    <p:autoComplete id="selectedEmailMoreThanOneToPickFrom" dropdown="true" value="#{OAuth2FirstLoginPage.selectedEmail}" completeMethod="#{OAuth2FirstLoginPage.getEmailsToPickFrom()}" validator="#{OAuth2FirstLoginPage.validateUserEmail}" />
+                                <div class="col-sm-4" jsf:rendered="#{OAuth2FirstLoginPage.moreThanOneEmailToPickFrom}">
+                                    <p:autoComplete id="selectedEmailMoreThanOneToPickFrom" styleClass="form-control" dropdown="true" value="#{OAuth2FirstLoginPage.selectedEmail}" completeMethod="#{OAuth2FirstLoginPage.getEmailsToPickFrom()}" validator="#{OAuth2FirstLoginPage.validateUserEmail}" />
                                     <p:message for="selectedEmailMoreThanOneToPickFrom" display="text"/>
                                 </div>
                             </div>
@@ -93,7 +95,7 @@
                                         #{bundle['auth.providers.persistentUserIdName.orcid']}
                                     </span>
                                 </label>
-                                <div class="col-sm-6">
+                                <div class="col-sm-4">
                                     <p class="form-control-static">
                                         <h:graphicImage value="/resources/images/orcid_16x16.png" height="16" width="16"/>&#160;
                                         <h:outputLink value="http://orcid.org/#{OAuth2FirstLoginPage.newUser.idInService}" title="#{bundle['auth.providers.persistentUserIdName.orcid']}" target="_blank">
@@ -108,8 +110,8 @@
                                         #{bundle['affiliation']} <span class="glyphicon text-danger" title="#{bundle.requiredField}"/>
                                     </span>
                                 </label>
-                                <div class="col-sm-6">
-                                    <p:inputText id="affiliation" value="#{OAuth2FirstLoginPage.newUser.displayInfo.affiliation}"/>
+                                <div class="col-sm-4">
+                                    <p:inputText id="affiliation" styleClass="form-control" value="#{OAuth2FirstLoginPage.newUser.displayInfo.affiliation}"/>
                                 </div>
                             </div>
                             <div class="form-group">
@@ -118,8 +120,8 @@
                                         #{bundle['user.position']} <span class="glyphicon text-danger" title="#{bundle.requiredField}"/>
                                     </span>
                                 </label>
-                                <div class="col-sm-6">
-                                    <p:inputText id="position" value="#{OAuth2FirstLoginPage.newUser.displayInfo.position}"/>
+                                <div class="col-sm-4">
+                                    <p:inputText id="position" styleClass="form-control" value="#{OAuth2FirstLoginPage.newUser.displayInfo.position}"/>
                                 </div>
                             </div>
                             <ui:include src="../termsofuse.xhtml"/>
