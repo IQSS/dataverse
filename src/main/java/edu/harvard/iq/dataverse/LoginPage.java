@@ -250,7 +250,7 @@ public class LoginPage implements java.io.Serializable {
     }
 
     public void setAuthProviderById(String authProviderId) {
-        logger.info("Setting auth provider to " + authProviderId);
+        logger.fine("Setting auth provider to " + authProviderId);
         this.authProvider = authSvc.getAuthenticationProvider(authProviderId);
     }
 
