@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <job id="FileSystemImportJob" xmlns="http://xmlns.jcp.org/xml/ns/javaee" version="1.0">
 
+    <properties>
+        <property name="job-checksumManifest" value="files.sha"/>
+        <property name="job-checksumType" value="SHA1"/>
+    </properties>
+
     <listeners>
         <listener ref="fileRecordJobListener" />
     </listeners>
@@ -16,7 +21,11 @@
                 </properties>
             </reader>
             <processor ref="fileRecordProcessor"/>
-            <writer ref="fileRecordWriter"/>
+            <writer ref="fileRecordWriter">
+                <properties>
+                    <property name="checksumType" value="#{jobProperties['job-checksumType']}"/>
+                </properties>
+            </writer>
         </chunk>
     </step>
 
@@ -24,10 +33,10 @@
         <chunk>
             <reader ref="checksumReader">
                 <properties>
-                    <property name="checksumManifest" value="files.sha"/>
-                    <property name="checksumType" value="SHA1"/>
+                    <property name="checksumManifest" value="#{jobProperties['job-checksumManifest']}"/>
+                    <property name="checksumType" value="#{jobProperties['job-checksumType']}"/>
                 </properties>
-            </reader>
+            </reader>                    
             <processor ref="checksumProcessor"/>
             <writer ref="checksumWriter"/>
         </chunk>

@@ -90,20 +90,31 @@ public class FileRecordJobListener implements StepListener, JobListener {
         jobParams.setProperty("userId", getUserId());
         jobParams.setProperty("mode", getMode());
 
-        DatasetVersion workingVersion = dataset.getEditVersion();
+
+        // add a dataset lock
+        String info = "Starting batch file import job.";
+        if (user.getId() != null) {
+            datasetServiceBean.addDatasetLock(dataset.getId(), user.getId(), info);
+        } else {
+            datasetServiceBean.addDatasetLock(dataset.getId(), null, info);
+        }
 
         // if mode = UPDATE or REPLACE, remove all filemetadata from the dataset version and start fresh
-        // if mode = MERGE (default), do nothing since only new files will be added
-        if (mode.equalsIgnoreCase(ImportMode.UPDATE.name()) || mode.equalsIgnoreCase(ImportMode.REPLACE.name())) {
-            try {
-                List <FileMetadata> fileMetadataList = workingVersion.getFileMetadatas();
-                for (FileMetadata fmd : fileMetadataList) {
-                    dataFileServiceBean.deleteFromVersion(workingVersion, fmd.getDataFile());
-                }
-            } catch (Exception e) {
-                logger.log(Level.SEVERE, "Error setting mode to UPDATE in beforeJob: " + e.getMessage());
-            }
-        }
+
+
+//        DatasetVersion workingVersion = dataset.getEditVersion();
+//
+//         if mode = MERGE (default), do nothing since only new files will be added
+//        if (mode.equalsIgnoreCase(ImportMode.UPDATE.name()) || mode.equalsIgnoreCase(ImportMode.REPLACE.name())) {
+//            try {
+//                List <FileMetadata> fileMetadataList = workingVersion.getFileMetadatas();
+//                for (FileMetadata fmd : fileMetadataList) {
+//                    dataFileServiceBean.deleteFromVersion(workingVersion, fmd.getDataFile());
+//                }
+//            } catch (Exception e) {
+//                logger.log(Level.SEVERE, "Error setting mode to UPDATE in beforeJob: " + e.getMessage());
+//            }
+//        }
     }
 
     @Override
@@ -112,6 +123,10 @@ public class FileRecordJobListener implements StepListener, JobListener {
         logger.log(Level.INFO, "After Job {0}, instance {1} and execution {2}, batch status [{3}], exit status [{4}]",
                 new Object[]{jobContext.getJobName(), jobContext.getInstanceId(), jobContext.getExecutionId(),
                         jobContext.getBatchStatus(), jobContext.getExitStatus()});
+        // remove dataset lock
+        if (dataset != null && dataset.getId() != null) {
+            datasetServiceBean.removeDatasetLock(dataset.getId());
+        }
     }
 
     /**
@@ -163,7 +178,7 @@ public class FileRecordJobListener implements StepListener, JobListener {
                 // [3] action log it
                 // store location of the full json log to avoid truncation issues
                 actionLogServiceBean.log(LoggingUtil.getActionLogRecord(user.getIdentifier(), jobExecution,
-                        logDir + "/job-" + jobId + ".json", jobId));
+                        logDir + "job-" + jobId + ".json", jobId));
 
             } else {
                 logger.log(Level.SEVERE, "Job execution is null");

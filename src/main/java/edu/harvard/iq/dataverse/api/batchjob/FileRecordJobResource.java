@@ -59,13 +59,17 @@ public class FileRecordJobResource extends AbstractApiBean {
                 AuthenticatedUser user = findAuthenticatedUserOrDie();
                 /**
                  * Current constraints:
-                 * 1. valid dataset
-                 * 2. valid dataset directory
-                 * 3. valid user & user has edit dataset permission
-                 * 4. only one dataset version
-                 * 5. dataset version is draft
+                 * 1. only supports merge mode
+                 * 2. valid dataset
+                 * 3. valid dataset directory
+                 * 4. valid user & user has edit dataset permission
+                 * 5. only one dataset version
+                 * 6. dataset version is draft
                  */
 
+                if (!mode.equalsIgnoreCase("MERGE")) {
+                    return error(Response.Status.NOT_IMPLEMENTED, "Import mode: " + mode + " is not currently supported.");
+                }
                 if (dataset == null) {
                     return error(Response.Status.BAD_REQUEST, "Can't find dataset with ID: " + doi);
                 }

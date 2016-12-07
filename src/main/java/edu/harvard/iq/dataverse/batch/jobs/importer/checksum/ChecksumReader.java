@@ -76,12 +76,20 @@ public class ChecksumReader extends AbstractItemReader {
 
     Dataset dataset;
 
+    String jobChecksumManifest;
+    
     @PostConstruct
     public void init() {
         JobOperator jobOperator = BatchRuntime.getJobOperator();
         Properties jobParams = jobOperator.getParameters(jobContext.getInstanceId());
         dataset = datasetServiceBean.findByGlobalId(jobParams.getProperty("datasetId"));
         dataFileList = dataset.getFiles();
+        // check system property first, otherwise use default property in FileSystemImportJob.xml
+        if (System.getProperty("checksumManifest") != null) {
+            jobChecksumManifest = System.getProperty("checksumManifest");
+        } else {
+            jobChecksumManifest = checksumManifest;
+        }
     }
 
     @Override
@@ -142,7 +150,7 @@ public class ChecksumReader extends AbstractItemReader {
     public boolean preflight() {
         String preflightMessage;
         // make sure the checksum manifest exists
-        manifest = new File(this.directory.getAbsolutePath() + FILE_SEPARATOR + checksumManifest);
+        manifest = new File(this.directory.getAbsolutePath() + FILE_SEPARATOR + jobChecksumManifest);
         if (!manifest.exists()) {
             this.preflight = false;
             preflightMessage = "The checksum manifest cannot be found: " + manifest.getAbsolutePath();

@@ -36,7 +36,7 @@ public class LoggingUtil {
             alr.setUserIdentifier(userId);
             alr.setStartTime(jobExec.getStartTime());
             alr.setEndTime(jobExec.getEndTime());
-            if (jobExec.getBatchStatus().name().equalsIgnoreCase("COMPLETED")) {
+            if (jobExec.getBatchStatus().name().equalsIgnoreCase("STARTED")) {
                 alr.setActionResult(ActionLogRecord.Result.OK);
             } else {
                 alr.setActionResult(ActionLogRecord.Result.InternalError);

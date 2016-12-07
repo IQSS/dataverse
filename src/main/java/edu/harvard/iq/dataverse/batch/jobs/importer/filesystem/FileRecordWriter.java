@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 
+import javax.batch.api.BatchProperty;
 import javax.batch.api.chunk.AbstractItemWriter;
 import javax.batch.operations.JobOperator;
 import javax.batch.runtime.BatchRuntime;
@@ -45,6 +46,14 @@ public class FileRecordWriter extends AbstractItemWriter {
 
     @Inject
     StepContext stepContext;
+
+    @Inject
+    @BatchProperty
+    String checksumManifest;
+
+    @Inject
+    @BatchProperty
+    String checksumType;
 
     @EJB
     DatasetServiceBean datasetServiceBean;
@@ -125,32 +134,46 @@ public class FileRecordWriter extends AbstractItemWriter {
      */
     private DataFile createDataFile(File file) {
         
-            DatasetVersion version = dataset.getLatestVersion();
-            String path = file.getAbsolutePath();
-            String gid = dataset.getAuthority() + dataset.getDoiSeparator() + dataset.getIdentifier();
-            String relativePath = path.substring(path.indexOf(gid) + gid.length() + 1);
-            DataFile datafile = new DataFile("application/octet-stream"); // we don't determine mime type
-            datafile.setStorageIdentifier(relativePath);
-            datafile.setFilesize(file.length());
-            datafile.setModificationTime(new Timestamp(new Date().getTime()));
-            datafile.setCreateDate(new Timestamp(new Date().getTime()));
-            datafile.setPermissionModificationTime(new Timestamp(new Date().getTime()));
-            datafile.setOwner(dataset);
-            datafile.setIngestDone();
-            datafile.setChecksumType(DataFile.ChecksumType.SHA1);
-            datafile.setChecksumValue("Unknown"); // only temporary since a checksum import job will run next
+        DatasetVersion version = dataset.getLatestVersion();
+        String path = file.getAbsolutePath();
+        String gid = dataset.getAuthority() + dataset.getDoiSeparator() + dataset.getIdentifier();
+        String relativePath = path.substring(path.indexOf(gid) + gid.length() + 1);
+        DataFile datafile = new DataFile("application/octet-stream"); // we don't determine mime type
+        datafile.setStorageIdentifier(relativePath);
+        datafile.setFilesize(file.length());
+        datafile.setModificationTime(new Timestamp(new Date().getTime()));
+        datafile.setCreateDate(new Timestamp(new Date().getTime()));
+        datafile.setPermissionModificationTime(new Timestamp(new Date().getTime()));
+        datafile.setOwner(dataset);
+        datafile.setIngestDone();
+        
+        // check system property first, otherwise use the batch job property
+        String jobChecksumType;
+        if (System.getProperty("checksumType") != null) {
+            jobChecksumType = System.getProperty("checksumType");
+        } else {
+            jobChecksumType = checksumType;
+        }
+        datafile.setChecksumType(DataFile.ChecksumType.SHA1); // initial default
+        for (DataFile.ChecksumType type : DataFile.ChecksumType.values()) {
+            if (jobChecksumType.equalsIgnoreCase(type.name())) {
+                datafile.setChecksumType(type);
+                break;
+            }
+        }
+        datafile.setChecksumValue("Unknown"); // only temporary since a checksum import job will run next
 
-            // set metadata and add to latest version
-            FileMetadata fmd = new FileMetadata();
-            fmd.setLabel(file.getName());
-            fmd.setDirectoryLabel(relativePath.replace(File.separator + file.getName(), ""));
-            fmd.setDataFile(datafile);
-            datafile.getFileMetadatas().add(fmd);
-            if (version.getFileMetadatas() == null) version.setFileMetadatas(new ArrayList<>());
-            version.getFileMetadatas().add(fmd);
-            fmd.setDatasetVersion(version);
+        // set metadata and add to latest version
+        FileMetadata fmd = new FileMetadata();
+        fmd.setLabel(file.getName());
+        fmd.setDirectoryLabel(relativePath.replace(File.separator + file.getName(), ""));
+        fmd.setDataFile(datafile);
+        datafile.getFileMetadatas().add(fmd);
+        if (version.getFileMetadatas() == null) version.setFileMetadatas(new ArrayList<>());
+        version.getFileMetadatas().add(fmd);
+        fmd.setDatasetVersion(version);
 
-            return datafile;
+        return datafile;
     }
     
 }
