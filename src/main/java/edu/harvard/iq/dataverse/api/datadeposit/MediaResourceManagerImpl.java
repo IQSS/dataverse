@@ -14,6 +14,8 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,6 +54,8 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
     IngestServiceBean ingestService;
     @EJB
     PermissionServiceBean permissionService;
+    @EJB
+    SystemConfig systemConfig;
     @Inject
     SwordAuth swordAuth;
     @Inject
@@ -258,7 +262,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
             List<DataFile> dataFiles = new ArrayList<>();
             try {
                 try {
-                    dataFiles = ingestService.createDataFiles(editVersion, deposit.getInputStream(), uploadedZipFilename, guessContentTypeForMe);
+                    dataFiles = FileUtil.createDataFiles(editVersion, deposit.getInputStream(), uploadedZipFilename, guessContentTypeForMe, systemConfig);
                 } catch (EJBException ex) {
                     Throwable cause = ex.getCause();
                     if (cause != null) {
@@ -279,10 +283,10 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                     } else {
                         throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Exception caught calling ingestService.createDataFiles. No cause: " + ex.getMessage());
                     }
-                } catch (FileExceedsMaxSizeException ex) {
+                } /*TODO: L.A. 4.6! catch (FileExceedsMaxSizeException ex) {
                     throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Exception caught calling ingestService.createDataFiles: " + ex.getMessage());
                     //Logger.getLogger(MediaResourceManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                }
+                }*/
             } catch (IOException ex) {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to add file(s) to dataset: " + ex.getMessage());
             }

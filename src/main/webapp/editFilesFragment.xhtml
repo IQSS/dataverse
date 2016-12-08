@@ -31,6 +31,17 @@
                                 $(fileUpload).prepend('<div id="dragdropMsg">#{bundle['file.fromDropbox.description']}</div>');
                             }
                         }
+                        function uploadStarted() {
+                            $('button[id$="uploadStarted"]').trigger('click');
+                        }
+                        function uploadFinished(fileupload) {
+                            if (fileupload.files.length === 0) {
+                                $('button[id$="AllUploadsFinished"]').trigger('click');
+                            }
+                        }
+                        function dropBoxUploadFinished(fileupload) {
+                            $('button[id$="dropBoxUploadFinished"]').trigger('click');
+                        }
                         function uploadWidgetDropRemoveMsg() {
                             $('div[id$="fileUpload"] div.ui-fileupload-content div.dropMsg').remove();
                         }
@@ -53,25 +64,27 @@
                         </ui:fragment> 
                     </p>
                     <p:fileUpload id="fileUpload" 
-                                  styleClass="margin-bottom" 
+                                  styleClass="margin-bottom"
                                   dragDropSupport="true"
-                                  auto="true" 
-                                  multiple="#{datasetPage || EditDatafilesPage.allowMultipleFileUpload()}" 
+                                  auto="true"
+                                  multiple="#{datasetPage || EditDatafilesPage.allowMultipleFileUpload()}"
                                   rendered="#{datasetPage || EditDatafilesPage.showFileUploadFileComponent()}"
                                   fileUploadListener="#{EditDatafilesPage.handleFileUpload}" 
                                   process="filesTable" 
-                                  update="filesTable,uploadMessage,fileUpload" 
+                                  update=""
                                   label="#{bundle['file.selectToAddBtn']}"
-                                  oncomplete="javascript:dataset_fileupload_rebind();uploadWidgetDropMsg();"
-                                  onstart="javascript:uploadWidgetDropRemoveMsg();"
-                                  sizeLimit="#{EditDatafilesPage.getMaxFileUploadSizeInBytes()}" 
-                                  invalidSizeMessage="File exceeds our limits. Please contact support. ">
-                    </p:fileUpload>    
+                                  oncomplete="javascript:dataset_fileupload_rebind();uploadWidgetDropMsg();uploadFinished(PF('fileUploadWidget'));"
+                                  onstart="javascript:uploadWidgetDropRemoveMsg();uploadStarted();"
+                                  sizeLimit="#{EditDatafilesPage.getMaxFileUploadSizeInBytes()}"
+                                  fileLimit="#{EditDatafilesPage.getMaxNumberOfFiles()}" 
+                                  invalidSizeMessage="File exceeds our limits. Please contact support. " 
+                                  sequential="true"
+                                  widgetVar="fileUploadWidget"/>
                     <!-- Dropbox Upload -->
                     <div id="dropboxUploadBlock" class="panel panel-default margin-bottom" jsf:rendered="#{!empty EditDatafilesPage.dropBoxKey}">
                         <div class="panel-body">
                             <h:inputText id="dropBoxSelectionInput" style="display:none" value="#{EditDatafilesPage.dropBoxSelection}"/>
-                            <p:commandButton  id="dropBoxButton" actionListener="#{EditDatafilesPage.handleDropBoxUpload}" update="filesTable,dropBoxUploadMessage" style="display:none;" />
+                            <p:commandButton  id="dropBoxButton" actionListener="#{EditDatafilesPage.handleDropBoxUpload}" oncomplete="javascript:dropBoxUploadFinished();" update="@none" style="display:none;" />
                             <p:commandButton value="#{bundle['file.fromDropbox']}" onclick="openDropboxChooser();" icon="dropin-btn-status" />
                             <p class="help-block">#{bundle['file.fromDropbox.tip']}</p>
                         </div>
@@ -79,19 +92,23 @@
                     </div>
                     
                     <p:message for="fileUpload" id="uploadMessage" display="text" />
+                    
+                    <p:commandButton id="uploadStarted" action="#{EditDatafilesPage.uploadStarted()}" update="" style="display:none"/>
+                    <p:commandButton id="AllUploadsFinished" action="#{EditDatafilesPage.uploadFinished()}" update="filesTable,uploadMessage" style="display:none"/>
+                    <p:commandButton id="dropBoxUploadFinished" action="#{EditDatafilesPage.uploadFinished()}" update="filesTable,dropBoxUploadMessage" style="display:none"/>
                 </ui:fragment>
 
                 <!-- Files Table -->
-                <!-- _{dataverseSession.user.authenticated and ( ? permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset) : permissionsWrapper.canIssueUpdateDatasetCommand(EditDatafilesPage.dataset))}" -->
-
-                <p:dataTable id="filesTable" value="#{datasetPage ? DatasetPage.workingVersion.fileMetadatas : EditDatafilesPage.fileMetadatas}"
+                <p:dataTable id="filesTable" 
+                             value="#{EditDatafilesPage.fileMetadatas}"
                              rendered="#{datasetPage or (dataverseSession.user.authenticated and permissionsWrapper.canIssueUpdateDatasetCommand(EditDatafilesPage.dataset))}"
                              rowIndexVar="rowNum" 
                              rowKey="#{fileMetadata.dataFile.storageIdentifier}"
                              selection="#{EditDatafilesPage.selectedFiles}" 
                              var="fileMetadata" 
                              widgetVar="filesTable"
-                             emptyMessage="#{datasetPage || EditDatafilesPage.showFileUploadFileComponent() ? bundle['file.noUploadedFiles.tip'] : bundle['file.noSelectedFiles.tip']}">
+                             emptyMessage="#{datasetPage || EditDatafilesPage.showFileUploadFileComponent() ? bundle['file.noUploadedFiles.tip'] : bundle['file.noSelectedFiles.tip']}"
+                             scrollable="#{EditDatafilesPage.scrollable}" scrollHeight="#{EditDatafilesPage.scrollHeightPercentage}" scrollWidth="100%" >
                     <f:facet name="header">
                         <div jsf:id="filesHeaderBlock" class="row">
                             <h:inputHidden id="showAccessPopup" value="#{EditDatafilesPage.showAccessPopup}"/>
@@ -139,8 +156,8 @@
                                 <p:graphicImage value="/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=true"/>
                             </span>
                             <!-- Default Icon -->
-                            <span class="icon-#{dataFileServiceBean.getFileClass(fileMetadata.dataFile)} file-thumbnail-icon text-muted" jsf:rendered="#{(!empty fileMetadata.dataFile.id and !dataFileServiceBean.isThumbnailAvailable(fileMetadata.dataFile)) or (empty fileMetadata.dataFile.id and !dataFileServiceBean.isTemporaryPreviewAvailable(fileMetadata.dataFile.storageIdentifier, fileMetadata.dataFile.contentType))}"/>
-                            <ui:fragment rendered="#{empty fileMetadata.dataFile.id and !empty fileMetadata.dataFile.storageIdentifier and dataFileServiceBean.isTemporaryPreviewAvailable(fileMetadata.dataFile.storageIdentifier, fileMetadata.dataFile.contentType)}">
+                            <span class="icon-#{dataFileServiceBean.getFileClass(fileMetadata.dataFile)} file-thumbnail-icon text-muted" jsf:rendered="#{(!empty fileMetadata.dataFile.id and !dataFileServiceBean.isThumbnailAvailable(fileMetadata.dataFile)) or (empty fileMetadata.dataFile.id and !fileMetadata.dataFile.previewImageAvailable)}"/>
+                            <ui:fragment rendered="#{empty fileMetadata.dataFile.id and !empty fileMetadata.dataFile.storageIdentifier and fileMetadata.dataFile.previewImageAvailable}">
                                 <p:graphicImage value="/api/access/tempPreview/#{fileMetadata.dataFile.storageIdentifier}?mimetype=#{fileMetadata.dataFile.contentType}"/>
                                 <h:outputText id="imgPreview" value="Preview" styleClass="bg-info text-info text-center show"/>
                             </ui:fragment>
@@ -170,11 +187,7 @@
                             <h:outputText id="fileTypeOutputTabular" value="#{bundle['file.type.tabularData']}" rendered="#{fileMetadata.dataFile.tabularData}"/>
                             <h:outputText id="fileCreatePublishDate" value=" - #{fileMetadata.getFileDateToDisplay()}" rendered="#{!(empty fileMetadata.id)}"/>
                             <div class="checksum-block">
-                                <h:outputText id="fileChecksum" value="#{fileMetadata.dataFile.tabularData ? fileMetadata.dataFile.originalChecksumType : fileMetadata.dataFile.checksumType}: #{fileMetadata.dataFile.checksumValue};" rendered="#{!(empty fileMetadata.dataFile.checksumValue) and (!EditDatafilesPage.isDuplicate(fileMetadata))}"/>
-                                <h:outputText id="duplicateFileChecksum" styleClass="text-danger" value="#{fileMetadata.dataFile.tabularData ? fileMetadata.dataFile.originalChecksumType: fileMetadata.dataFile.checksumType}: #{fileMetadata.dataFile.checksumValue}" rendered="#{!(empty fileMetadata.dataFile.checksumValue) and EditDatafilesPage.isDuplicate(fileMetadata)}"/>
-                                <ui:fragment rendered="#{EditDatafilesPage.isDuplicate(fileMetadata) and (empty fileMetadata.id)}">
-                                    <div style="display:inline-block;" class="ui-message ui-message-error ui-widget ui-corner-all fileDuplicateWarning"><span class="ui-message-error-detail">#{bundle['file.checksum.exists.tip']}</span></div>
-                                </ui:fragment>
+                                <h:outputText id="fileChecksum" value="#{fileMetadata.dataFile.tabularData ? fileMetadata.dataFile.originalChecksumType : fileMetadata.dataFile.checksumType}: #{fileMetadata.dataFile.checksumValue};" rendered="#{!(empty fileMetadata.dataFile.checksumValue)}"/>
                             </div>
                         </div>
                         <!-- UNF + Variables, Obsersvations -->

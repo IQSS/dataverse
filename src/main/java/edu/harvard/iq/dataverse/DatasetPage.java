@@ -3,16 +3,12 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
-import edu.harvard.iq.dataverse.authorization.users.ApiToken;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
-import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.CreateGuestbookResponseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreatePrivateUrlCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeaccessionDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetVersionCommand;
@@ -37,6 +33,7 @@ import edu.harvard.iq.dataverse.search.SortBy;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileSortFieldAndOrder;
+import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.StringUtil;
@@ -68,24 +65,18 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.UploadedFile;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.ConstraintViolation;
 import org.apache.commons.httpclient.HttpClient;
 import org.primefaces.context.RequestContext;
-import java.text.DateFormat;
 import java.util.Arrays;
 import java.util.HashSet;
 import javax.faces.model.SelectItem;
 import java.util.logging.Level;
 import edu.harvard.iq.dataverse.datasetutility.TwoRavensHelper;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
-import javax.faces.component.UIComponent;
-import javax.faces.component.UIInput;
 
 import javax.faces.event.AjaxBehaviorEvent;
 
-import javax.faces.context.ExternalContext;
 import org.apache.commons.lang.StringEscapeUtils;
 
 import org.primefaces.component.tabview.TabView;
@@ -2098,10 +2089,10 @@ public class DatasetPage implements java.io.Serializable {
                         // local filesystem: 
 
                         try {
-                            Files.delete(Paths.get(ingestService.getFilesTempDirectory() + "/" + dfn.getStorageIdentifier()));
+                            Files.delete(Paths.get(FileUtil.getFilesTempDirectory() + "/" + dfn.getStorageIdentifier()));
                         } catch (IOException ioEx) {
                             // safe to ignore - it's just a temp file. 
-                            logger.warning("Failed to delete temporary file " + ingestService.getFilesTempDirectory() + "/" + dfn.getStorageIdentifier());
+                            logger.warning("Failed to delete temporary file " + FileUtil.getFilesTempDirectory() + "/" + dfn.getStorageIdentifier());
                         }
                         
                         dfIt.remove();
@@ -2145,12 +2136,6 @@ public class DatasetPage implements java.io.Serializable {
             return "";
         }
                
-
-
-        // One last check before we save the files - go through the newly-uploaded 
-        // ones and modify their names so that there are no duplicates. 
-        // (but should we really be doing it here? - maybe a better approach to do it
-        // in the ingest service bean, when the files get uploaded.)
         // Finally, save the files permanently: 
         ingestService.addFiles(workingVersion, newFiles);
 
@@ -3329,7 +3314,7 @@ public class DatasetPage implements java.io.Serializable {
         return fileDownloadService.isDownloadPopupRequired(workingVersion);
     }
     
-   public String requestAccessMultipleFiles(String fileIdString) {
+       public String requestAccessMultipleFiles(String fileIdString) {
             if (fileIdString.isEmpty()) {
             RequestContext requestContext = RequestContext.getCurrentInstance();
             requestContext.execute("PF('selectFilesForRequestAccess').show()");
@@ -3348,37 +3333,18 @@ public class DatasetPage implements java.io.Serializable {
                     test = null;
                 }
                 if (test != null) {
-                    DataFile request = datafileService.find(test);
                     idForNotification = test;
-                    requestAccess(request, false);
+                    fileDownloadService.requestAccess(test);
                 }
             }
         }
         if (idForNotification.intValue() > 0) {
-            sendRequestFileAccessNotification(idForNotification);
+            fileDownloadService.sendRequestFileAccessNotification(dataset,idForNotification);
         }
         return returnToDatasetOnly();
     }
+   
 
-    public void requestAccess(DataFile file, boolean sendNotification) {       
-        if (!file.getFileAccessRequesters().contains((AuthenticatedUser) session.getUser())) {
-            file.getFileAccessRequesters().add((AuthenticatedUser) session.getUser());
-            datafileService.save(file);
-
-            // create notifications
-            if (sendNotification) {
-                sendRequestFileAccessNotification(file.getId());
-
-            }
-        }
-    }
-
-    private void sendRequestFileAccessNotification(Long fileId) {
-        for (AuthenticatedUser au : permissionService.getUsersWithPermissionOn(Permission.ManageDatasetPermissions, dataset)) {
-            userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.REQUESTFILEACCESS, fileId);
-        }
-
-    }
 
     public boolean isSortButtonEnabled() {
         /**

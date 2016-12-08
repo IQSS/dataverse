@@ -431,7 +431,8 @@ public class FileUploadTestPage implements java.io.Serializable {
                                                 datasetService,
                                                 datafileService,
                                                 permissionService,
-                                                commandEngine);
+                                                commandEngine,
+                                                systemConfig);
     
         
         InputStream inputStream = null;

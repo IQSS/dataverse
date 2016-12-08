@@ -22,6 +22,8 @@ import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -104,6 +106,7 @@ public class AddReplaceFileHelper{
     private DataFileServiceBean fileService;        
     private PermissionServiceBean permissionService;
     private EjbDataverseEngine commandEngine;
+    private SystemConfig systemConfig;
     
     // -----------------------------------
     // Instance variables directly added
@@ -183,7 +186,8 @@ public class AddReplaceFileHelper{
                             DatasetServiceBean datasetService,
                             DataFileServiceBean fileService,
                             PermissionServiceBean permissionService,
-                            EjbDataverseEngine commandEngine){
+                            EjbDataverseEngine commandEngine,
+                            SystemConfig systemConfig){
 
         // ---------------------------------
         // make sure DataverseRequest isn't null and has a user
@@ -213,6 +217,9 @@ public class AddReplaceFileHelper{
         if (commandEngine == null){
             throw new NullPointerException("commandEngine cannot be null");
         }
+        if (systemConfig == null) {
+            throw new NullPointerException("systemConfig cannot be null");
+        }
 
         // ---------------------------------
         
@@ -221,6 +228,7 @@ public class AddReplaceFileHelper{
         this.fileService = fileService;
         this.permissionService = permissionService;
         this.commandEngine = commandEngine;
+        this.systemConfig = systemConfig;
         
         
         
@@ -1037,21 +1045,22 @@ public class AddReplaceFileHelper{
         workingVersion = dataset.getEditVersion();
                 
         try {
-            initialFileList = ingestService.createDataFiles(workingVersion,
+            initialFileList = FileUtil.createDataFiles(workingVersion,
                     this.newFileInputStream,
                     this.newFileName,
-                    this.newFileContentType);
+                    this.newFileContentType,
+                    this.systemConfig);
 
         } catch (IOException ex) {
             this.addErrorSevere(getBundleErr("ingest_create_file_err"));
             logger.severe(ex.toString());
             this.runMajorCleanup(); 
             return false;
-        } catch (FileExceedsMaxSizeException ex) {
+        } /*TODO: catch (FileExceedsMaxSizeException ex) {
             this.addErrorSevere(ex.getMessage());
             this.runMajorCleanup(); 
             return false;    
-        } 
+        }*/
         
         
         /**

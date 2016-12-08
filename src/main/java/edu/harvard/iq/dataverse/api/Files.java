@@ -23,6 +23,7 @@ import edu.harvard.iq.dataverse.datasetutility.NoFilesException;
 import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.InputStream;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
@@ -62,6 +63,8 @@ public class Files extends AbstractApiBean {
     EjbDataverseEngine commandEngine;
     @EJB
     UserNotificationServiceBean userNotificationService;
+    @EJB
+    SystemConfig systemConfig;
     
     private static final Logger logger = Logger.getLogger(Files.class.getName());
     
@@ -175,7 +178,8 @@ public class Files extends AbstractApiBean {
                                                 this.datasetService,
                                                 this.fileService,
                                                 this.permissionSvc,
-                                                this.commandEngine);
+                                                this.commandEngine,
+                                                this.systemConfig);
 
         //-------------------
         // (5) Run "runReplaceFileByDatasetId"

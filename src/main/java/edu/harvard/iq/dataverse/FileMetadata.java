@@ -60,9 +60,7 @@ public class FileMetadata implements Serializable {
             message = "Directory Name cannot contain leading or trailing file separators.")    
     @Expose
     @Column ( nullable=true )
-    private String directoryLabel = "";
-
-    @Expose
+    private String directoryLabel;
     @Column(columnDefinition = "TEXT")
     private String description = "";
     
@@ -462,14 +460,6 @@ public class FileMetadata implements Serializable {
         } else if (other.getDescription() != null) {
             return false;
         }
-        
-        /* 
-         * we could also compare the sets of file categories; but since this 
-         * functionality is for deciding whether to index an extra filemetadata, 
-         * we're not doing it, as of now; because the categories are not indexed
-         * and not displayed on the search cards. 
-         * -- L.A. 4.0 beta12
-        */
         
         return true;
     }
