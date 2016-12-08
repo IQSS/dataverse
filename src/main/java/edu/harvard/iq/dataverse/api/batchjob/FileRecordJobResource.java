@@ -79,7 +79,8 @@ public class FileRecordJobResource extends AbstractApiBean {
                     return error(Response.Status.BAD_REQUEST, "Dataset directory is invalid.");    
                 }
 
-                if (user == null || !permissionServiceBean.userOn(user, dataset.getOwner()).has(Permission.EditDataset)) {
+                // todo: gustavo claims this can be done via command method that will return a proper WrappedResponse
+                if (user == null || !permissionServiceBean.userOn(user, dataset).has(Permission.EditDataset)) {
                     logger.log(Level.SEVERE, "User doesn't have permission to import files into this dataset.");
                     return error(Response.Status.FORBIDDEN, "User is not authorized.");                    }
 
