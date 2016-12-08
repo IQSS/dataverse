@@ -228,6 +228,9 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
 
     public enum DevOAuthAccountType {
         PRODUCTION,
-        RANDOM,
+        RANDOM_EMAIL0,
+        RANDOM_EMAIL1,
+        RANDOM_EMAIL2,
+        RANDOM_EMAIL3,
     };
 }
