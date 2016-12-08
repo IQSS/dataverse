@@ -27,7 +27,9 @@ public class ChecksumWriter extends AbstractItemWriter {
     public void writeItems(List list) {
 
         for (Object dataFile : list) {
-            dataFileServiceBean.save((DataFile) dataFile);
+            DataFile file = (DataFile) dataFile;
+            file.setMergeable(true);
+            dataFileServiceBean.save(file);
         }
     }
 
