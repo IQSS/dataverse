@@ -78,6 +78,8 @@ public class FileRecordWriter extends AbstractItemWriter {
 
     @Override
     public void close() {
+        // update the dataset
+        updateDatasetVersion(dataset.getLatestVersion());
         if (!persistentUserData.isEmpty()) {
             stepContext.setPersistentUserData(persistentUserData);
         }
@@ -85,15 +87,11 @@ public class FileRecordWriter extends AbstractItemWriter {
 
     @Override
     public void writeItems(List list) {
-
         List<DataFile> datafiles = dataset.getFiles();
         for (Object file : list) {
             datafiles.add(createDataFile((File) file));
         }
-        // update the dataset
         dataset.getLatestVersion().getDataset().setFiles(datafiles);
-        updateDatasetVersion(dataset.getLatestVersion());
-
     }
     
     // utils
