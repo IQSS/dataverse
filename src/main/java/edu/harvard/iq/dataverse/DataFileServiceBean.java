@@ -284,6 +284,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         Integer file_id = (Integer) result[0];
 
         dataFile = new DataFile();
+        dataFile.setMergeable(false);
 
         dataFile.setId(file_id.longValue());
 
@@ -499,6 +500,7 @@ public class DataFileServiceBean implements java.io.Serializable {
             Integer file_id = (Integer) result[0];
             
             DataFile dataFile = new DataFile();
+            dataFile.setMergeable(false);
             
             dataFile.setId(file_id.longValue());
             
@@ -773,9 +775,12 @@ public class DataFileServiceBean implements java.io.Serializable {
     }
     
     public DataFile save(DataFile dataFile) {
-            
-        DataFile savedDataFile = em.merge(dataFile);
-        return savedDataFile;
+        if (dataFile.isMergeable()) {   
+            DataFile savedDataFile = em.merge(dataFile);
+            return savedDataFile;
+        } else {
+            throw new IllegalArgumentException("This DataFile object has been set to NOT MERGEABLE; please ensure a MERGEABLE object is passed to the save method.");
+        } 
     }
     
     public Boolean isPreviouslyPublished(Long fileId){
@@ -811,7 +816,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         return query.getResultList();
     }
     
-    /**/
+    /*moving to the fileutil*/
     
     public void generateStorageIdentifier(DataFile dataFile) {
         dataFile.setStorageIdentifier(generateStorageIdentifier());

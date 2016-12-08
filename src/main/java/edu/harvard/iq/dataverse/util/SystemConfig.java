@@ -68,6 +68,7 @@ public class SystemConfig {
      * zip file upload.
      */
     private static final int defaultZipUploadFilesLimit = 1000; 
+    private static final int defaultMultipleUploadFilesLimit = 1000;
 
     private static String appVersionString = null; 
     private static String buildNumberString = null; 
@@ -348,11 +349,36 @@ public class SystemConfig {
         }
         
         if (limit != null) {
-            return limit.intValue();
+            return limit;
         }
         
         return defaultZipUploadFilesLimit; 
     }
+    
+    /*
+    `   the number of files the GUI user is allowed to upload in one batch, 
+        via drag-and-drop, or through the file select dialog
+    */
+    public int getMultipleUploadFilesLimit() {
+        String limitOption = settingsService.getValueForKey(SettingsServiceBean.Key.MultipleUploadFilesLimit);
+        Integer limit = null; 
+        
+        if (limitOption != null && !limitOption.equals("")) {
+            try {
+                limit = new Integer(limitOption);
+            } catch (NumberFormatException nfe) {
+                limit = null; 
+            }
+        }
+        
+        if (limit != null) {
+            return limit;
+        }
+        
+        return defaultMultipleUploadFilesLimit; 
+    }
+    
+    
 
     // TODO: (?)
     // create sensible defaults for these things? -- 4.2.2
