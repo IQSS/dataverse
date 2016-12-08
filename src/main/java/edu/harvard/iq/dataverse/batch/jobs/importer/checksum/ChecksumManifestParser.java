@@ -26,7 +26,7 @@ public class ChecksumManifestParser extends DelimitedRecordParserFactory {
             public Object read() throws IOException, RecordIOException {
                 ++lineNumber;
                 recordText = reader.readLine();
-                return recordText == null ? null : recordText.split(" +", 2); // split on first whitespace
+                return recordText == null ? null : recordText.split("\\s+", 2); // split on first whitespace
             }
             public void close() throws IOException {
                 reader.close();
