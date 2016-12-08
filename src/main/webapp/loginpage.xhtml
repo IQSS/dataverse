@@ -183,7 +183,7 @@
                                 <div class="form-horizontal" jsf:rendered="#{LoginPage.authProvider.OAuthProvider}">
                                     <div class="form-group text-left">
                                         <div class="col-sm-12">
-                                            <h:outputLink styleClass="btn btn-default" value="#{OAuth2Page.linkFor(LoginPage.authProvider.id)}">
+                                            <h:outputLink styleClass="btn btn-default" value="#{OAuth2Page.linkFor(LoginPage.authProvider.id, LoginPage.redirectPage)}">
                                                 <h:graphicImage rendered="#{LoginPage.authProvider.id == 'orcid' or LoginPage.authProvider.id == 'orcid-sandbox'}" value="/resources/images/orcid_16x16.png" height="16" width="16"/>
                                                 <h:outputFormat value=" #{LoginPage.loginButtonText}"/>
                                             </h:outputLink>

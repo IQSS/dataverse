@@ -8,6 +8,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -51,7 +52,15 @@ public class StringUtil {
       }  
       return true;
     }
-
+    
+    public static Optional<String> toOption(String s) {
+        if ( s == null ) {
+            return Optional.empty();
+        }
+        s = s.trim();
+        return s.isEmpty() ? Optional.empty() : Optional.of(s);
+    }
+    
     /**
      * @todo Unless there is a compelling reason not to, we should switch to the
      * validation routines in EMailValidator.

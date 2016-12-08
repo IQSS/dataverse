@@ -5,14 +5,13 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.SessionKeys;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static java.util.stream.Collectors.toList;
@@ -23,6 +22,7 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import static edu.harvard.iq.dataverse.util.StringUtil.toOption;
 
 /**
  * Backing bean of the oauth2 login process. Used from the login page and the
@@ -38,6 +38,7 @@ public class OAuth2LoginBackingBean implements Serializable {
     private static final long STATE_TIMEOUT = 1000 * 60 * 15; // 15 minutes in msec
     private int responseCode;
     private String responseBody;
+    private Optional<String> redirectPage;
     private OAuth2Exception error;
     private OAuth2UserRecord oauthUser;
 
@@ -53,9 +54,9 @@ public class OAuth2LoginBackingBean implements Serializable {
     @Inject
     OAuth2FirstLoginPage newAccountPage;
 
-    public String linkFor(String idpId) {
+    public String linkFor(String idpId, String redirectPage) {
         AbstractOAuth2AuthenticationProvider idp = authenticationSvc.getOAuth2Provider(idpId);
-        return idp.getService(createState(idp), getCallbackUrl()).getAuthorizationUrl();
+        return idp.getService(createState(idp, toOption(redirectPage) ), getCallbackUrl()).getAuthorizationUrl();
     }
 
     public String getCallbackUrl() {
@@ -74,7 +75,7 @@ public class OAuth2LoginBackingBean implements Serializable {
                     sb.append(line).append("\n");
                 }
                 error = new OAuth2Exception(-1, sb.toString(), "Remote system did not return an authorization code.");
-                logger.info("OAuth2Exception getting code parameter. HTTP return code: " + error.getHttpReturnCode() + ". Message: " + error.getLocalizedMessage() + " Message body: " + error.getMessageBody());
+                logger.log(Level.INFO, "OAuth2Exception getting code parameter. HTTP return code: {0}. Message: {1} Message body: {2}", new Object[]{error.getHttpReturnCode(), error.getLocalizedMessage(), error.getMessageBody()});
                 return;
             }
         }
@@ -82,7 +83,7 @@ public class OAuth2LoginBackingBean implements Serializable {
         final String state = req.getParameter("state");
 
         try {
-            AbstractOAuth2AuthenticationProvider idp = getIdpFromState(state);
+            AbstractOAuth2AuthenticationProvider idp = parseState(state);
             if (idp == null) {
                 throw new OAuth2Exception(-1, "", "Invalid 'state' parameter.");
             }
@@ -98,23 +99,21 @@ public class OAuth2LoginBackingBean implements Serializable {
             } else {
                 // login the user and redirect to HOME of intended page (if any).
                 session.setUser(dvUser);
-                Map<String,Object> sessionMap = FacesContext.getCurrentInstance().getExternalContext().getSessionMap();
-                String destination = sessionMap.containsKey(SessionKeys.INTENDED_PAGE.name()) ? (String)sessionMap.get(SessionKeys.INTENDED_PAGE.name()) : "/";
+                String destination = redirectPage.orElse("/");
                 HttpServletResponse response = (HttpServletResponse) FacesContext.getCurrentInstance().getExternalContext().getResponse();
                 String prettyUrl = response.encodeRedirectURL(destination);
-                sessionMap.remove(SessionKeys.INTENDED_PAGE.name());
                 FacesContext.getCurrentInstance().getExternalContext().redirect(prettyUrl);
             }
 
         } catch (OAuth2Exception ex) {
             error = ex;
-            logger.info("OAuth2Exception caught. HTTP return code: " + error.getHttpReturnCode() + ". Message: " + error.getLocalizedMessage() + ". Message body: " + error.getMessageBody());
+            logger.log(Level.INFO, "OAuth2Exception caught. HTTP return code: {0}. Message: {1}. Message body: {2}", new Object[]{error.getHttpReturnCode(), error.getLocalizedMessage(), error.getMessageBody()});
             Logger.getLogger(OAuth2LoginBackingBean.class.getName()).log(Level.SEVERE, null, ex);
         }
 
     }
 
-    private AbstractOAuth2AuthenticationProvider getIdpFromState(String state) {
+    private AbstractOAuth2AuthenticationProvider parseState(String state) {
         String[] topFields = state.split("~", 2);
         if (topFields.length != 2) {
             logger.log(Level.INFO, "Wrong number of fields in state string", state);
@@ -131,6 +130,9 @@ public class OAuth2LoginBackingBean implements Serializable {
             long timeOrigin = Long.parseLong(stateFields[1]);
             long timeDifference = System.currentTimeMillis() - timeOrigin;
             if (timeDifference > 0 && timeDifference < STATE_TIMEOUT) {
+                if ( stateFields.length > 3) {
+                    redirectPage = Optional.ofNullable(stateFields[3]);
+                }
                 return idp;
             } else {
                 logger.info("State timeout");
@@ -142,11 +144,13 @@ public class OAuth2LoginBackingBean implements Serializable {
         }
     }
 
-    private String createState(AbstractOAuth2AuthenticationProvider idp) {
+    private String createState(AbstractOAuth2AuthenticationProvider idp, Optional<String> redirectPage ) {
         if (idp == null) {
             throw new IllegalArgumentException("idp cannot be null");
         }
-        String base = idp.getId() + "~" + System.currentTimeMillis() + "~" + (int) java.lang.Math.round(java.lang.Math.random() * 1000);
+        String base = idp.getId() + "~" + System.currentTimeMillis() 
+                                  + "~" + (int) java.lang.Math.round(java.lang.Math.random() * 1000)
+                                  + redirectPage.map( page -> "~"+page).orElse("");
 
         String encrypted = StringUtil.encrypt(base, idp.clientSecret);
         final String state = idp.getId() + "~" + encrypted;

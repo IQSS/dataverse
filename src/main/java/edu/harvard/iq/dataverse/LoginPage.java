@@ -14,7 +14,6 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
-import edu.harvard.iq.dataverse.util.SessionKeys;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -110,7 +109,6 @@ public class LoginPage implements java.io.Serializable {
         }
         resetFilledCredentials(null);
         authProvider = authSvc.getAuthenticationProvider(systemConfig.getDefaultAuthProvider());
-        FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put(SessionKeys.INTENDED_PAGE.name(), redirectPage);
     }
 
     public List<AuthenticationProviderDisplayInfo> listCredentialsAuthenticationProviders() {
@@ -166,7 +164,6 @@ public class LoginPage implements java.io.Serializable {
             AuthenticatedUser r = authSvc.authenticate(credentialsAuthProviderId, authReq);
             logger.log(Level.FINE, "User authenticated: {0}", r.getEmail());
             session.setUser(r);
-            FacesContext.getCurrentInstance().getExternalContext().getSessionMap().remove(SessionKeys.INTENDED_PAGE.name());
             
             if ("dataverse.xhtml".equals(redirectPage)) {
                 redirectPage = redirectPage + "&alias=" + dataverseService.findRootDataverse().getAlias();
