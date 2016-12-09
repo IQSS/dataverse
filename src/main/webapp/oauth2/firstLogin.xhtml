@@ -85,7 +85,8 @@
                                     <p:message for="selectedEmailZeroOrOneToPickFrom" display="text"/>
                                 </div>
                                 <div class="col-sm-4" jsf:rendered="#{OAuth2FirstLoginPage.moreThanOneEmailToPickFrom}">
-                                    <p:autoComplete id="selectedEmailMoreThanOneToPickFrom" styleClass="form-control" dropdown="true" value="#{OAuth2FirstLoginPage.selectedEmail}" completeMethod="#{OAuth2FirstLoginPage.getEmailsToPickFrom()}" validator="#{OAuth2FirstLoginPage.validateUserEmail}" />
+                                    <!--FIXME: We can't use "form-control" below or the input looks weird.-->
+                                    <p:autoComplete id="selectedEmailMoreThanOneToPickFrom" styleClass="" dropdown="true" value="#{OAuth2FirstLoginPage.selectedEmail}" completeMethod="#{OAuth2FirstLoginPage.getEmailsToPickFrom()}" validator="#{OAuth2FirstLoginPage.validateUserEmail}" />
                                     <p:message for="selectedEmailMoreThanOneToPickFrom" display="text"/>
                                 </div>
                             </div>
