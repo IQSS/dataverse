@@ -149,7 +149,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
             logger.info("Failed to retrieve image. Error:" + e2);
         }
         
-        return okResponse( "Looks good " + identifier + " " + mapLayerMetadata.getLayerName());
+        return ok( "Looks good " + identifier + " " + mapLayerMetadata.getLayerName());
     }
     
     
@@ -201,7 +201,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
             }
         } 
         if (user==null){
-            return errorResponse(Response.Status.FORBIDDEN, "Not logged in");
+            return error(Response.Status.FORBIDDEN, "Not logged in");
         }
         
         
@@ -214,27 +214,27 @@ public class WorldMapRelatedData extends AbstractApiBean {
         // Check if the user exists
         AuthenticatedUser dvUser = dataverseUserService.findByID(dvuser_id);
 	if ( dvUser == null ){
-            return errorResponse(Response.Status.FORBIDDEN, "Invalid user");
+            return error(Response.Status.FORBIDDEN, "Invalid user");
         }
 
         // Check if this file exists
         DataFile dfile = dataFileService.find(datafile_id);
         if (dfile==null){
-           return errorResponse(Response.Status.NOT_FOUND, "DataFile not found for id: " + datafile_id);
+           return error(Response.Status.NOT_FOUND, "DataFile not found for id: " + datafile_id);
         }
         
         /*
             Is the dataset public?
         */
         if (!dfile.getOwner().isReleased()){
-           return errorResponse(Response.Status.FORBIDDEN, "Mapping is only permitted for public datasets/files");
+           return error(Response.Status.FORBIDDEN, "Mapping is only permitted for public datasets/files");
             
         }
         
         // Does this user have permission to edit metadata for this file?    
         if (!permissionService.request(createDataverseRequest(dvUser)).on(dfile.getOwner()).has(Permission.EditDataset)){
            String errMsg = "The user does not have permission to edit metadata for this file.";
-           return errorResponse(Response.Status.FORBIDDEN, errMsg);
+           return error(Response.Status.FORBIDDEN, errMsg);
         }
         
         WorldMapToken token = tokenServiceBean.getNewToken(dfile, dvUser);
@@ -243,7 +243,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
             // Return only the token in a JSON object
             final JsonObjectBuilder jsonInfo = Json.createObjectBuilder();
             jsonInfo.add(WorldMapToken.GEOCONNECT_TOKEN_KEY, token.getToken()); 
-            return okResponse(jsonInfo);
+            return ok(jsonInfo);
         }
             
         // Redirect to geoconnect url
@@ -256,7 +256,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
         try {
             redirect_uri = new URI(redirect_url_str);
         } catch (URISyntaxException ex) {
-             return errorResponse(Response.Status.NOT_FOUND, "Faile to create URI from: " + redirect_url_str);
+             return error(Response.Status.NOT_FOUND, "Faile to create URI from: " + redirect_url_str);
         }
 //        Response.
         return Response.seeOther(redirect_uri).build();
@@ -354,7 +354,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
             jsonTokenInfo = Json.createReader(rdr).readObject();
         } catch ( JsonParsingException jpe ) {
             logger.log(Level.SEVERE, "Json: " + jsonTokenData);
-            return errorResponse( Response.Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage() );
+            return error( Response.Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage() );
         }
         logger.info("(1a) jsonTokenInfo: " + jsonTokenInfo);
         
@@ -362,7 +362,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
         String worldmapTokenParam = this.retrieveTokenValueFromJson(jsonTokenInfo);
         logger.info("(1b) token from JSON: " + worldmapTokenParam);
         if (worldmapTokenParam==null){
-            return errorResponse(Response.Status.BAD_REQUEST, "Token not found in JSON request.");
+            return error(Response.Status.BAD_REQUEST, "Token not found in JSON request.");
         }
 
         // Retrieve WorldMapToken and make sure it is valid
@@ -371,7 +371,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
         logger.info("(2) token retrieved from db: " + wmToken);
 
         if (wmToken==null){
-            return errorResponse(Response.Status.UNAUTHORIZED, "No access. Invalid token.");
+            return error(Response.Status.UNAUTHORIZED, "No access. Invalid token.");
         }
         
         // Make sure the token's User still has permissions to access the file
@@ -379,7 +379,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
         logger.info("(3) check permissions");
         if (!(tokenServiceBean.canTokenUserEditFile(wmToken))){
             tokenServiceBean.expireToken(wmToken);
-            return errorResponse(Response.Status.UNAUTHORIZED, "No access. Invalid token.");
+            return error(Response.Status.UNAUTHORIZED, "No access. Invalid token.");
         }
 
 
@@ -389,24 +389,24 @@ public class WorldMapRelatedData extends AbstractApiBean {
         //
         AuthenticatedUser dvUser = wmToken.getDataverseUser();
         if (dvUser == null) {
-            return errorResponse(Response.Status.NOT_FOUND, "DataverseUser not found for token");
+            return error(Response.Status.NOT_FOUND, "DataverseUser not found for token");
         }
         DataFile dfile = wmToken.getDatafile();
         if (dfile  == null) {
-            return errorResponse(Response.Status.NOT_FOUND, "DataFile not found for token");
+            return error(Response.Status.NOT_FOUND, "DataFile not found for token");
         }
         
         
         // (1a) Retrieve FileMetadata
         FileMetadata dfile_meta = dfile.getFileMetadata();
         if (dfile_meta==null){
-           return errorResponse(Response.Status.NOT_FOUND, "FileMetadata not found");
+           return error(Response.Status.NOT_FOUND, "FileMetadata not found");
         }
         
         // (2) Now get the dataset and the latest DatasetVersion
         Dataset dset = dfile.getOwner();
         if (dset==null){
-            return errorResponse(Response.Status.NOT_FOUND, "Owning Dataset for this DataFile not found");
+            return error(Response.Status.NOT_FOUND, "Owning Dataset for this DataFile not found");
         }
         
         // (2a) latest DatasetVersion
@@ -414,13 +414,13 @@ public class WorldMapRelatedData extends AbstractApiBean {
         //
         DatasetVersion dset_version = dset.getLatestVersion();
         if (dset_version==null){
-            return errorResponse(Response.Status.NOT_FOUND, "Latest DatasetVersion for this DataFile not found");
+            return error(Response.Status.NOT_FOUND, "Latest DatasetVersion for this DataFile not found");
         }
         
         // (3) get Dataverse
         Dataverse dverse = dset.getOwner();
         if (dverse==null){
-            return errorResponse(Response.Status.NOT_FOUND, "Dataverse for this DataFile's Dataset not found");
+            return error(Response.Status.NOT_FOUND, "Dataverse for this DataFile's Dataset not found");
         }
         
         // (4) Roll it all up in a JSON response
@@ -437,7 +437,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
             jsonData.add("mapping_type", "tabular");        
         }else{
             logger.log(Level.SEVERE, "This was neither a Shapefile nor a Tabular data file.  DataFile id: " + dfile.getId());
-            return errorResponse( Response.Status.BAD_REQUEST, "Sorry! This file does not have mapping data. Please contact the Dataverse administrator. DataFile id: " + dfile.getId()); 
+            return error( Response.Status.BAD_REQUEST, "Sorry! This file does not have mapping data. Please contact the Dataverse administrator. DataFile id: " + dfile.getId()); 
         }
     
         
@@ -494,7 +494,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
         jsonData.add("datafile_id", dfile.getId());
         jsonData.add("datafile_label", dfile_meta.getLabel());
         //jsonData.add("filename", dfile_meta.getLabel());
-        jsonData.add("datafile_expected_md5_checksum", dfile.getmd5());
+        jsonData.add("datafile_expected_md5_checksum", dfile.getChecksumValue());
         Long fsize = dfile.getFilesize();
         if (fsize == null){
             fsize= new Long(-1);
@@ -504,7 +504,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
         jsonData.add("datafile_content_type", dfile.getContentType());
         jsonData.add("datafile_create_datetime", dfile.getCreateDate().toString());
         
-        return okResponse(jsonData);
+        return ok(jsonData);
  
     }
 
@@ -532,7 +532,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
         //----------------------------------
         if (jsonLayerData==null){
             logger.log(Level.SEVERE, "jsonLayerData is null");
-            return errorResponse( Response.Status.BAD_REQUEST, "No JSON data");
+            return error( Response.Status.BAD_REQUEST, "No JSON data");
         }
 
         // (1) Parse JSON 
@@ -542,27 +542,27 @@ public class WorldMapRelatedData extends AbstractApiBean {
             jsonInfo = Json.createReader(rdr).readObject();
         } catch ( JsonParsingException jpe ) {
             logger.log(Level.SEVERE, "Json: " + jsonLayerData);
-            return errorResponse( Response.Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage() );
+            return error( Response.Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage() );
         }
         
         // Retrieve token string
         String worldmapTokenParam = this.retrieveTokenValueFromJson(jsonInfo);
         if (worldmapTokenParam==null){
-            return errorResponse(Response.Status.BAD_REQUEST, "Token not found in JSON request.");
+            return error(Response.Status.BAD_REQUEST, "Token not found in JSON request.");
         }
 
         // Retrieve WorldMapToken and make sure it is valid
         //
         WorldMapToken wmToken = this.tokenServiceBean.retrieveAndRefreshValidToken(worldmapTokenParam);
         if (wmToken==null){
-            return errorResponse(Response.Status.UNAUTHORIZED, "No access. Invalid token.");
+            return error(Response.Status.UNAUTHORIZED, "No access. Invalid token.");
         }
 
         // Make sure the token's User still has permissions to access the file
         //
         if (!(tokenServiceBean.canTokenUserEditFile(wmToken))){
             tokenServiceBean.expireToken(wmToken);
-            return errorResponse(Response.Status.UNAUTHORIZED, "No access. Invalid token.");
+            return error(Response.Status.UNAUTHORIZED, "No access. Invalid token.");
         }
 
         
@@ -570,26 +570,26 @@ public class WorldMapRelatedData extends AbstractApiBean {
         //
         for (String attr : MapLayerMetadata.MANDATORY_JSON_FIELDS ){
             if (!jsonInfo.containsKey(attr)){
-                return errorResponse( Response.Status.BAD_REQUEST, "Error parsing Json.  Key not found [" + attr + "]\nRequired keys are: " + MapLayerMetadata.MANDATORY_JSON_FIELDS  );
+                return error( Response.Status.BAD_REQUEST, "Error parsing Json.  Key not found [" + attr + "]\nRequired keys are: " + MapLayerMetadata.MANDATORY_JSON_FIELDS  );
             }
         }
         
         // (3) Attempt to retrieve DataverseUser      
         AuthenticatedUser dvUser = wmToken.getDataverseUser();
         if (dvUser == null) {
-            return errorResponse(Response.Status.NOT_FOUND, "DataverseUser not found for token");
+            return error(Response.Status.NOT_FOUND, "DataverseUser not found for token");
         }
         
         // (4) Attempt to retrieve DataFile      
         DataFile dfile = wmToken.getDatafile();
         if (dfile==null){
-            return errorResponse(Response.Status.NOT_FOUND, "DataFile not found for token");
+            return error(Response.Status.NOT_FOUND, "DataFile not found for token");
          }
 
         // check permissions!
         if (!permissionService.request( createDataverseRequest(dvUser) ).on(dfile.getOwner()).has(Permission.EditDataset)){
            String errMsg = "The user does not have permission to edit metadata for this file. (MapLayerMetadata)";
-           return errorResponse(Response.Status.FORBIDDEN, errMsg);
+           return error(Response.Status.FORBIDDEN, errMsg);
         }
         
         
@@ -639,7 +639,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
         MapLayerMetadata savedMapLayerMetadata = mapLayerMetadataService.save(mapLayerMetadata);
         if (savedMapLayerMetadata==null){
             logger.log(Level.SEVERE, "Json: " + jsonLayerData);
-            return errorResponse( Response.Status.BAD_REQUEST, "Failed to save map layer!  Original JSON: ");
+            return error( Response.Status.BAD_REQUEST, "Failed to save map layer!  Original JSON: ");
         }
         
         
@@ -658,7 +658,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
                 Logger.getLogger(WorldMapRelatedData.class.getName()).log(Level.SEVERE, null, ex);
         }  
         
-        return okResponse("map layer object saved!");
+        return ok("map layer object saved!");
 
     }  // end updateWorldMapLayerData
     
@@ -684,7 +684,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
         //----------------------------------*/
         if (jsonData==null){
             logger.log(Level.SEVERE, "jsonData is null");
-            return errorResponse( Response.Status.BAD_REQUEST, "No JSON data");
+            return error( Response.Status.BAD_REQUEST, "No JSON data");
         }
         // (1) Parse JSON 
         //
@@ -693,44 +693,44 @@ public class WorldMapRelatedData extends AbstractApiBean {
             jsonInfo = Json.createReader(rdr).readObject();
         } catch ( JsonParsingException jpe ) {
             logger.log(Level.SEVERE, "Json: " + jsonData);
-            return errorResponse( Response.Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage() );
+            return error( Response.Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage() );
         }
         
         // (2) Retrieve token string
         String worldmapTokenParam = this.retrieveTokenValueFromJson(jsonInfo);
         if (worldmapTokenParam==null){
-            return errorResponse(Response.Status.BAD_REQUEST, "Token not found in JSON request.");
+            return error(Response.Status.BAD_REQUEST, "Token not found in JSON request.");
         }
 
         // (3) Retrieve WorldMapToken and make sure it is valid
         //
         WorldMapToken wmToken = this.tokenServiceBean.retrieveAndRefreshValidToken(worldmapTokenParam);
         if (wmToken==null){
-            return errorResponse(Response.Status.UNAUTHORIZED, "No access. Invalid token.");
+            return error(Response.Status.UNAUTHORIZED, "No access. Invalid token.");
         }
 
         // (4) Make sure the token's User still has permissions to access the file
         //
         if (!(tokenServiceBean.canTokenUserEditFile(wmToken))){
             tokenServiceBean.expireToken(wmToken);
-            return errorResponse(Response.Status.UNAUTHORIZED, "No access. Invalid token.");
+            return error(Response.Status.UNAUTHORIZED, "No access. Invalid token.");
         }
 
         // (5) Attempt to retrieve DataFile and mapLayerMetadata   
         DataFile dfile = wmToken.getDatafile();
         MapLayerMetadata mapLayerMetadata = this.mapLayerMetadataService.findMetadataByDatafile(dfile);
         if (mapLayerMetadata==null){
-            return errorResponse(Response.Status.EXPECTATION_FAILED, "No map layer metadata found.");
+            return error(Response.Status.EXPECTATION_FAILED, "No map layer metadata found.");
         }
         
        // (6) Delete the mapLayerMetadata
        //   (note: permissions checked here for a second time by the mapLayerMetadataService call)
        //
        if (!(this.mapLayerMetadataService.deleteMapLayerMetadataObject(mapLayerMetadata, wmToken.getDataverseUser()))){
-            return errorResponse(Response.Status.PRECONDITION_FAILED, "Failed to delete layer");               
+            return error(Response.Status.PRECONDITION_FAILED, "Failed to delete layer");               
        };
        
-       return okResponse("Map layer metadata deleted.");
+       return ok("Map layer metadata deleted.");
         
     }  // end deleteWorldMapLayerData
 
@@ -753,7 +753,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
         //----------------------------------*/
         if (jsonData==null){
             logger.log(Level.SEVERE, "jsonData is null");
-            return errorResponse( Response.Status.BAD_REQUEST, "No JSON data");
+            return error( Response.Status.BAD_REQUEST, "No JSON data");
         }
         // (1) Parse JSON 
         //
@@ -762,26 +762,26 @@ public class WorldMapRelatedData extends AbstractApiBean {
             jsonInfo = Json.createReader(rdr).readObject();
         } catch ( JsonParsingException jpe ) {
             logger.log(Level.SEVERE, "Json: " + jsonData);
-            return errorResponse( Response.Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage() );
+            return error( Response.Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage() );
         }
         
         // (2) Retrieve token string
         String worldmapTokenParam = this.retrieveTokenValueFromJson(jsonInfo);
         if (worldmapTokenParam==null){
-            return errorResponse(Response.Status.BAD_REQUEST, "Token not found in JSON request.");
+            return error(Response.Status.BAD_REQUEST, "Token not found in JSON request.");
         }
 
         // (3) Retrieve WorldMapToken
         //
         WorldMapToken wmToken = this.tokenServiceBean.findByName(worldmapTokenParam);
         if (wmToken==null){
-            return errorResponse(Response.Status.NOT_FOUND, "Token not found.");
+            return error(Response.Status.NOT_FOUND, "Token not found.");
         }
 
         // (4) Delete the token
         //
         tokenServiceBean.deleteToken(wmToken);               
-        return okResponse("Token has been deleted.");
+        return ok("Token has been deleted.");
         
     }  // end deleteWorldMapLayerData    
     

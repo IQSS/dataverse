@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.util.json;
 
+import edu.emory.mathcs.backport.java.util.Collections;
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
@@ -12,6 +13,7 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseContact;
 import edu.harvard.iq.dataverse.DataverseFacet;
+import edu.harvard.iq.dataverse.DataverseTheme;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.FileMetadata;
@@ -30,9 +32,11 @@ import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderRo
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
+import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.util.DatasetFieldWalker;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
+import java.util.ArrayList;
 import java.util.Set;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -47,6 +51,7 @@ import java.util.Deque;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -55,7 +60,6 @@ import java.util.stream.Collector;
 import static java.util.stream.Collectors.toList;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
-import javax.json.JsonValue;
 
 /**
  * Convert objects to Json.
@@ -199,7 +203,8 @@ public class JsonPrinter {
                 .add("affiliation", dv.getAffiliation())
                 .add("dataverseContacts", json(dv.getDataverseContacts()))
                 .add("permissionRoot", dv.isPermissionRoot())
-                .add("description", dv.getDescription());
+                .add("description", dv.getDescription())
+                .add("dataverseType", dv.getDataverseType().name());
         if (dv.getOwner() != null) {
             bld.add("ownerId", dv.getOwner().getId());
         }
@@ -217,14 +222,26 @@ public class JsonPrinter {
     }
 
     public static JsonArrayBuilder json(List<DataverseContact> dataverseContacts) {
-        JsonArrayBuilder bld = Json.createArrayBuilder();
-        for (DataverseContact dc : dataverseContacts) {
-            bld.add(jsonObjectBuilder()
-                    .add("displayOrder", dc.getDisplayOrder())
-                    .add("contactEmail", dc.getContactEmail())
-            );
+        return dataverseContacts.stream()
+                .map( dc -> jsonObjectBuilder()
+                        .add("displayOrder", dc.getDisplayOrder())
+                        .add("contactEmail", dc.getContactEmail())
+                ).collect( toJsonArray() );
+    }
+    
+    public static JsonObjectBuilder json( DataverseTheme theme ) {
+        final NullSafeJsonBuilder baseObject = jsonObjectBuilder()
+                .add("id", theme.getId() )
+                .add("logo", theme.getLogo())
+                .add("tagline", theme.getTagline())
+                .add("linkUrl", theme.getLinkUrl())
+                .add("linkColor", theme.getLinkColor())
+                .add("textColor", theme.getTextColor())
+                .add("backgroundColor", theme.getBackgroundColor());
+        if ( theme.getLogoAlignment() != null ) {
+            baseObject.add("logoBackgroundColor", theme.getLogoBackgroundColor());
         }
-        return bld;
+        return baseObject;
     }
 
     public static JsonObjectBuilder json(BuiltinUser user) {
@@ -249,19 +266,6 @@ public class JsonPrinter {
                 .add("authority", ds.getAuthority())
                 .add("publisher", getRootDataverseNameforCitation(ds))
                 .add("publicationDate", ds.getPublicationDateFormattedYYYYMMDD());
-    }
-
-    private static String getRootDataverseNameforCitation(Dataset dataset) {
-        Dataverse root = dataset.getOwner();
-        while (root.getOwner() != null) {
-            root = root.getOwner();
-        }
-        String rootDataverseName = root.getName();
-        if (!StringUtil.isEmpty(rootDataverseName)) {
-            return rootDataverseName + " Dataverse";
-        } else {
-            return "";
-        }
     }
 
     public static JsonObjectBuilder json(DatasetVersion dsv) {
@@ -304,7 +308,20 @@ public class JsonPrinter {
 
         return bld;
     }
-
+    
+    private static String getRootDataverseNameforCitation(Dataset dataset) {
+        Dataverse root = dataset.getOwner();
+        while (root.getOwner() != null) {
+            root = root.getOwner();
+        }
+        String rootDataverseName = root.getName();
+        if (!StringUtil.isEmpty(rootDataverseName)) {
+            return rootDataverseName + " Dataverse";
+        } else {
+            return "";
+        }
+    }
+    
     private static String getLicenseInfo(DatasetVersion dsv) {
         if (dsv.getTermsOfUseAndAccess().getLicense() != null && dsv.getTermsOfUseAndAccess().getLicense().equals(TermsOfUseAndAccess.License.CC0)) {
             return "CC0 Waiver";
@@ -458,6 +475,7 @@ public class JsonPrinter {
                 // categories - and we probably need to export them too!) -- L.A. 4.5
                 .add("description", fmd.getDescription())
                 .add("label", fmd.getLabel()) // "label" is the filename
+                .add("directoryLabel", fmd.getDirectoryLabel())
                 .add("version", fmd.getVersion())
                 .add("datasetVersionId", fmd.getDatasetVersion().getId())
                 .add("dataFile", json(fmd.getDataFile(), fmd));
@@ -494,7 +512,12 @@ public class JsonPrinter {
                 .add("originalFileFormat", df.getOriginalFileFormat())
                 .add("originalFormatLabel", df.getOriginalFormatLabel())
                 .add("UNF", df.getUnf())
-                .add("md5", df.getmd5())
+                /**
+                 * @todo Should we deprecate "md5" now that it's under
+                 * "checksum" (which may also be a SHA-1 rather than an MD5)?
+                 */
+                .add("md5", getMd5IfItExists(df.getChecksumType(), df.getChecksumValue()))
+                .add("checksum", getChecksumTypeAndValue(df.getChecksumType(), df.getChecksumValue()))
                 .add("description", df.getDescription());
     }
 
@@ -585,10 +608,8 @@ public class JsonPrinter {
                 .add("roleAssignment", json(privateUrl.getRoleAssignment()));
     }
 
-    public static <T> JsonObjectBuilder json(T j ) {
-        if (j instanceof ExplicitGroup) {
-            ExplicitGroup eg = (ExplicitGroup) j;
-            JsonArrayBuilder ras = Json.createArrayBuilder();
+    public static JsonObjectBuilder json( ExplicitGroup eg ) {
+        JsonArrayBuilder ras = Json.createArrayBuilder();
             for (String u : eg.getContainedRoleAssgineeIdentifiers()) {
                 ras.add(u);
             }
@@ -599,24 +620,15 @@ public class JsonPrinter {
                     .add("description", eg.getDescription())
                     .add("displayName", eg.getDisplayName())
                     .add("containedRoleAssignees", ras);
-
-        } else { // implication: (j instanceof DataverseFacet)
-            DataverseFacet f = (DataverseFacet) j;
-            return jsonObjectBuilder()
-                    .add("id", String.valueOf(f.getId())) // TODO should just be id I think
-                    .add("name", f.getDatasetFieldType().getDisplayName());
-        }
     }
-
-    public static <T> JsonArrayBuilder json(Collection<T> jc) {
-        JsonArrayBuilder bld = Json.createArrayBuilder();
-        for (T j : jc) {
-            bld.add(json(j));
-        }
-        return bld;
+    
+    public static JsonObjectBuilder json( DataverseFacet aFacet ) {
+        return jsonObjectBuilder()
+                    .add("id", String.valueOf(aFacet.getId())) // TODO should just be id I think
+                    .add("name", aFacet.getDatasetFieldType().getDisplayName());
     }
-
-        public static Collector<String, JsonArrayBuilder, JsonArrayBuilder> stringsToJsonArray() {
+        
+    public static Collector<String, JsonArrayBuilder, JsonArrayBuilder> stringsToJsonArray() {
         return new Collector<String, JsonArrayBuilder, JsonArrayBuilder>() {
 
             @Override
@@ -651,39 +663,59 @@ public class JsonPrinter {
         };
     }
 
-    public static Collector<JsonValue, JsonArrayBuilder, JsonArrayBuilder> toJsonArray() {
-        return new Collector<JsonValue, JsonArrayBuilder, JsonArrayBuilder>() {
+    public static Collector<JsonObjectBuilder, ArrayList<JsonObjectBuilder>, JsonArrayBuilder> toJsonArray() {
+        return new Collector<JsonObjectBuilder, ArrayList<JsonObjectBuilder>, JsonArrayBuilder>() {
 
             @Override
-            public Supplier<JsonArrayBuilder> supplier() {
-                return () -> Json.createArrayBuilder();
+            public Supplier<ArrayList<JsonObjectBuilder>> supplier() {
+                return () -> new ArrayList<>();
             }
 
             @Override
-            public BiConsumer<JsonArrayBuilder, JsonValue> accumulator() {
-                return (JsonArrayBuilder b, JsonValue s) -> b.add(s);
+            public BiConsumer<ArrayList<JsonObjectBuilder>, JsonObjectBuilder> accumulator() {
+                return (t, u) ->t.add(u);
             }
 
             @Override
-            public BinaryOperator<JsonArrayBuilder> combiner() {
+            public BinaryOperator<ArrayList<JsonObjectBuilder>> combiner() {
                 return (jab1, jab2) -> {
-                    JsonArrayBuilder retVal = Json.createArrayBuilder();
-                    jab1.build().forEach(retVal::add);
-                    jab2.build().forEach(retVal::add);
-                    return retVal;
+                    jab1.addAll(jab2);
+                    return jab1;
                 };
             }
 
             @Override
-            public Function<JsonArrayBuilder, JsonArrayBuilder> finisher() {
-                return Function.identity();
+            public Function<ArrayList<JsonObjectBuilder>, JsonArrayBuilder> finisher() {
+                return (l) -> {
+                  JsonArrayBuilder bld = Json.createArrayBuilder();
+                  l.forEach( bld::add );
+                  return bld;
+                };
             }
 
             @Override
             public Set<Collector.Characteristics> characteristics() {
-                return EnumSet.of(Collector.Characteristics.IDENTITY_FINISH);
+                return Collections.emptySet();
             }
         };
+    }
+
+    public static String getMd5IfItExists(DataFile.ChecksumType checksumType, String checksumValue) {
+        if (DataFile.ChecksumType.MD5.equals(checksumType)) {
+            return checksumValue;
+        } else {
+            return null;
+        }
+    }
+
+    public static JsonObjectBuilder getChecksumTypeAndValue(DataFile.ChecksumType checksumType, String checksumValue) {
+        if (checksumType != null) {
+            return Json.createObjectBuilder()
+                    .add("type", checksumType.toString())
+                    .add("value", checksumValue);
+        } else {
+            return null;
+        }
     }
 
 }

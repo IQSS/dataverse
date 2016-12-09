@@ -1,11 +1,11 @@
 #!/bin/sh
 if [ -z "$1" ]; then
-    curl -s 'http://localhost:8080/api/search?q=*'
+    curl -H "X-Dataverse-key: $API_TOKEN" -s 'http://localhost:8080/api/search?q=*'
     #curl -s 'http://localhost:8080/api/search?q=*&key=pete'
 else
     # i.e. ./search 'q=*&fq=filetype_s:"image"&fq=dvtype:files'
     # i.e. ./search 'q=*&start=10'
     # i.e. ./search 'q=*&sort=name_sort&order=asc'
     # i.e. ./search 'q=*&sort=name_sort&order=asc' | jq '.itemsJson[] | {name_sort}'
-    curl -s "http://localhost:8080/api/search?$1"
+    curl -H "X-Dataverse-key: $API_TOKEN" -s "http://localhost:8080/api/search?$1"
 fi

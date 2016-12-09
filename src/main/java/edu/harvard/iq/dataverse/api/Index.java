@@ -112,7 +112,7 @@ public class Index extends AbstractApiBean {
             long numPartitions = 1;
             if (numPartitionsSelected != null) {
                 if (numPartitionsSelected < 1) {
-                    return errorResponse(Status.BAD_REQUEST, "numPartitions must be 1 or higher but was " + numPartitionsSelected);
+                    return error(Status.BAD_REQUEST, "numPartitions must be 1 or higher but was " + numPartitionsSelected);
                 } else {
                     numPartitions = numPartitionsSelected;
                 }
@@ -122,7 +122,7 @@ public class Index extends AbstractApiBean {
                 availablePartitionIds.add(i);
             }
 
-            Response invalidParitionIdSelection = errorResponse(Status.BAD_REQUEST, "You specified " + numPartitions + " partition(s) and your selected partitionId was " + partitionIdToProcess + " but you must select from these availableParitionIds: " + availablePartitionIds);
+            Response invalidParitionIdSelection = error(Status.BAD_REQUEST, "You specified " + numPartitions + " partition(s) and your selected partitionId was " + partitionIdToProcess + " but you must select from these availableParitionIds: " + availablePartitionIds);
             if (partitionIdToProcess != null) {
                 long selected = partitionIdToProcess;
                 if (!availablePartitionIds.contains(selected)) {
@@ -151,7 +151,7 @@ public class Index extends AbstractApiBean {
             if (previewOnly) {
                 preview.add("args", args);
                 preview.add("availablePartitionIds", availablePartitionIdsBuilder);
-                return okResponse(preview);
+                return ok(preview);
             }
 
             JsonObjectBuilder response = Json.createObjectBuilder();
@@ -167,7 +167,7 @@ public class Index extends AbstractApiBean {
             int datasetCount = workloadPreview.getInt("datasetCount");
             String status = "indexAllOrSubset has begun of " + dataverseCount + " dataverses and " + datasetCount + " datasets.";
             response.add("message", status);
-            return okResponse(response);
+            return ok(response);
         } catch (EJBException ex) {
             Throwable cause = ex;
             StringBuilder sb = new StringBuilder();
@@ -195,9 +195,9 @@ public class Index extends AbstractApiBean {
                 }
             }
             if (sb.toString().equals("javax.ejb.EJBException: Transaction aborted javax.transaction.RollbackException java.lang.IllegalStateException ")) {
-                return okResponse("indexing went as well as can be expected... got java.lang.IllegalStateException but some indexing may have happened anyway");
+                return ok("indexing went as well as can be expected... got java.lang.IllegalStateException but some indexing may have happened anyway");
             } else {
-                return errorResponse(Status.INTERNAL_SERVER_ERROR, sb.toString());
+                return error(Status.INTERNAL_SERVER_ERROR, sb.toString());
             }
         }
     }
@@ -207,9 +207,9 @@ public class Index extends AbstractApiBean {
     public Response clearSolrIndex() {
         try {
             JsonObjectBuilder response = SolrIndexService.deleteAllFromSolrAndResetIndexTimes();
-            return okResponse(response);
+            return ok(response);
         } catch (SolrServerException | IOException ex) {
-            return errorResponse(Status.INTERNAL_SERVER_ERROR, ex.getLocalizedMessage());
+            return error(Status.INTERNAL_SERVER_ERROR, ex.getLocalizedMessage());
         }
     }
 
@@ -224,7 +224,7 @@ public class Index extends AbstractApiBean {
                      * @todo Can we display the result of indexing to the user?
                      */
                     Future<String> indexDataverseFuture = indexService.indexDataverse(dataverse);
-                    return okResponse("starting reindex of dataverse " + id);
+                    return ok("starting reindex of dataverse " + id);
                 } else {
                     String response = indexService.removeSolrDocFromIndex(IndexServiceBean.solrDocIdentifierDataverse + id);
                     return notFound("Could not find dataverse with id of " + id + ". Result from deletion attempt: " + response);
@@ -234,7 +234,7 @@ public class Index extends AbstractApiBean {
                 if (dataset != null) {
                     boolean doNormalSolrDocCleanUp = true;
                     Future<String> indexDatasetFuture = indexService.indexDataset(dataset, doNormalSolrDocCleanUp);
-                    return okResponse("starting reindex of dataset " + id);
+                    return ok("starting reindex of dataset " + id);
                 } else {
                     /**
                      * @todo what about published, deaccessioned, etc.? Need
@@ -251,9 +251,9 @@ public class Index extends AbstractApiBean {
                  */
                 boolean doNormalSolrDocCleanUp = true;
                 Future<String> indexDatasetFuture = indexService.indexDataset(datasetThatOwnsTheFile, doNormalSolrDocCleanUp);
-                return okResponse("started reindexing " + type + "/" + id);
+                return ok("started reindexing " + type + "/" + id);
             } else {
-                return errorResponse(Status.BAD_REQUEST, "illegal type: " + type);
+                return error(Status.BAD_REQUEST, "illegal type: " + type);
             }
         } catch (EJBException ex) {
             Throwable cause = ex;
@@ -282,7 +282,7 @@ public class Index extends AbstractApiBean {
                     }
                 }
             }
-            return errorResponse(Status.INTERNAL_SERVER_ERROR, sb.toString());
+            return error(Status.INTERNAL_SERVER_ERROR, sb.toString());
         }
     }
 
@@ -290,13 +290,13 @@ public class Index extends AbstractApiBean {
     @Path("dataset")
     public Response indexDatasetByPersistentId(@QueryParam("persistentId") String persistentId) {
         if (persistentId == null) {
-            return errorResponse(Status.BAD_REQUEST, "No persistent id given.");
+            return error(Status.BAD_REQUEST, "No persistent id given.");
         }
         Dataset dataset = null;
         try {
             dataset = datasetService.findByGlobalId(persistentId);
         } catch (Exception ex) {
-            return errorResponse(Status.BAD_REQUEST, "Problem looking up dataset with persistent id \"" + persistentId + "\". Error: " + ex.getMessage());
+            return error(Status.BAD_REQUEST, "Problem looking up dataset with persistent id \"" + persistentId + "\". Error: " + ex.getMessage());
         }
         if (dataset != null) {
             boolean doNormalSolrDocCleanUp = true;
@@ -313,9 +313,9 @@ public class Index extends AbstractApiBean {
                 versions.add(versionObject);
             }
             data.add("versions", versions);
-            return okResponse(data);
+            return ok(data);
         } else {
-            return errorResponse(Status.BAD_REQUEST, "Could not find dataset with persistent id " + persistentId);
+            return error(Status.BAD_REQUEST, "Could not find dataset with persistent id " + persistentId);
         }
     }
 
@@ -335,14 +335,14 @@ public class Index extends AbstractApiBean {
         response.add("partitions", partitions);
         response.add("which", which);
         response.add("mine", mine.toString());
-        return okResponse(response);
+        return ok(response);
     }
 
     @GET
     @Path("perms")
     public Response indexAllPermissions() {
         IndexResponse indexResponse = solrIndexService.indexAllPermissions();
-        return okResponse(indexResponse.getMessage());
+        return ok(indexResponse.getMessage());
     }
 
     @GET
@@ -350,10 +350,10 @@ public class Index extends AbstractApiBean {
     public Response indexPermissions(@PathParam("id") Long id) {
         DvObject dvObject = dvObjectService.findDvObject(id);
         if (dvObject == null) {
-            return errorResponse(Status.BAD_REQUEST, "Could not find DvObject based on id " + id);
+            return error(Status.BAD_REQUEST, "Could not find DvObject based on id " + id);
         } else {
             IndexResponse indexResponse = solrIndexService.indexPermissionsForOneDvObject(dvObject);
-            return okResponse(indexResponse.getMessage());
+            return ok(indexResponse.getMessage());
         }
     }
 
@@ -366,7 +366,7 @@ public class Index extends AbstractApiBean {
         try {
             contentInSolrButNotDatabase = getContentInSolrButNotDatabase();
         } catch (SearchException ex) {
-            return errorResponse(Response.Status.INTERNAL_SERVER_ERROR, "Can not determine index status. " + ex.getLocalizedMessage() + ". Is Solr down? Exception: " + ex.getCause().getLocalizedMessage());
+            return error(Response.Status.INTERNAL_SERVER_ERROR, "Can not determine index status. " + ex.getLocalizedMessage() + ". Is Solr down? Exception: " + ex.getCause().getLocalizedMessage());
         }
 
         JsonObjectBuilder permissionsInDatabaseButStaleInOrMissingFromSolr = getPermissionsInDatabaseButStaleInOrMissingFromSolr();
@@ -378,7 +378,7 @@ public class Index extends AbstractApiBean {
                 .add("permissionsInDatabaseButStaleInOrMissingFromIndex", permissionsInDatabaseButStaleInOrMissingFromSolr)
                 .add("permissionsInIndexButNotDatabase", permissionsInSolrButNotDatabase);
 
-        return okResponse(data);
+        return ok(data);
     }
 
     private JsonObjectBuilder getContentInDatabaseButStaleInOrMissingFromSolr() {
@@ -560,7 +560,7 @@ public class Index extends AbstractApiBean {
 
         User user = findUserByApiToken(apiToken);
         if (user == null) {
-            return errorResponse(Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiToken + "'");
+            return error(Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiToken + "'");
         }
 
         Dataverse subtreeScope = dataverseService.findRootDataverse();
@@ -574,7 +574,7 @@ public class Index extends AbstractApiBean {
         try {
             solrQueryResponse = searchService.search(createDataverseRequest(user), subtreeScope, query, filterQueries, sortField, sortOrder, paginationStart, dataRelatedToMe, numResultsPerPage);
         } catch (SearchException ex) {
-            return errorResponse(Response.Status.INTERNAL_SERVER_ERROR, ex.getLocalizedMessage() + ": " + ex.getCause().getLocalizedMessage());
+            return error(Response.Status.INTERNAL_SERVER_ERROR, ex.getLocalizedMessage() + ": " + ex.getCause().getLocalizedMessage());
         }
 
         JsonArrayBuilder itemsArrayBuilder = Json.createArrayBuilder();
@@ -583,7 +583,7 @@ public class Index extends AbstractApiBean {
             itemsArrayBuilder.add(solrSearchResult.getType() + ":" + solrSearchResult.getNameSort());
         }
 
-        return okResponse(itemsArrayBuilder);
+        return ok(itemsArrayBuilder);
     }
 
     /**
@@ -597,12 +597,12 @@ public class Index extends AbstractApiBean {
 
         User user = findUserByApiToken(apiToken);
         if (user == null) {
-            return errorResponse(Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiToken + "'");
+            return error(Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiToken + "'");
         }
 
         DvObject dvObjectToLookUp = dvObjectService.findDvObject(dvObjectId);
         if (dvObjectToLookUp == null) {
-            return errorResponse(Status.BAD_REQUEST, "Could not find DvObject based on id " + dvObjectId);
+            return error(Status.BAD_REQUEST, "Could not find DvObject based on id " + dvObjectId);
         }
         List<DvObjectSolrDoc> solrDocs = SolrIndexService.determineSolrDocs(dvObjectToLookUp);
 
@@ -637,21 +637,21 @@ public class Index extends AbstractApiBean {
         data.add("timestamps", timestamps);
         data.add("roleAssignments", roleAssignmentsData);
 
-        return okResponse(data);
+        return ok(data);
     }
 
     @DELETE
     @Path("timestamps")
     public Response deleteAllTimestamps() {
         int numItemsCleared = dvObjectService.clearAllIndexTimes();
-        return okResponse("cleared: " + numItemsCleared);
+        return ok("cleared: " + numItemsCleared);
     }
 
     @DELETE
     @Path("timestamps/{dvObjectId}")
     public Response deleteTimestamp(@PathParam("dvObjectId") long dvObjectId) {
         int numItemsCleared = dvObjectService.clearIndexTimes(dvObjectId);
-        return okResponse("cleared: " + numItemsCleared);
+        return ok("cleared: " + numItemsCleared);
     }
 
     @GET
@@ -659,7 +659,7 @@ public class Index extends AbstractApiBean {
     public Response filesearch(@QueryParam("persistentId") String persistentId, @QueryParam("semanticVersion") String semanticVersion, @QueryParam("q") String userSuppliedQuery) {
         Dataset dataset = datasetService.findByGlobalId(persistentId);
         if (dataset == null) {
-            return errorResponse(Status.BAD_REQUEST, "Could not find dataset with persistent id " + persistentId);
+            return error(Status.BAD_REQUEST, "Could not find dataset with persistent id " + persistentId);
         }
         User user = GuestUser.get();
         try {
@@ -671,12 +671,12 @@ public class Index extends AbstractApiBean {
         }
         RetrieveDatasetVersionResponse datasetVersionResponse = datasetVersionService.retrieveDatasetVersionByPersistentId(persistentId, semanticVersion);
         if (datasetVersionResponse == null) {
-            return errorResponse(Status.BAD_REQUEST, "Problem searching for files. Could not find dataset version based on " + persistentId + " and " + semanticVersion);
+            return error(Status.BAD_REQUEST, "Problem searching for files. Could not find dataset version based on " + persistentId + " and " + semanticVersion);
         }
         DatasetVersion datasetVersion = datasetVersionResponse.getDatasetVersion();
         FileView fileView = searchFilesService.getFileView(datasetVersion, user, userSuppliedQuery);
         if (fileView == null) {
-            return errorResponse(Status.BAD_REQUEST, "Problem searching for files. Null returned from getFileView.");
+            return error(Status.BAD_REQUEST, "Problem searching for files. Null returned from getFileView.");
         }
         JsonArrayBuilder filesFound = Json.createArrayBuilder();
         JsonArrayBuilder cards = Json.createArrayBuilder();
@@ -714,7 +714,7 @@ public class Index extends AbstractApiBean {
         data.add("filterQueries", filterQueries);
         data.add("allDataverVersionIds", allDatasetVersionIds);
         data.add("semanticVersion", datasetVersion.getSemanticVersion());
-        return okResponse(data);
+        return ok(data);
     }
 
     @GET
@@ -730,12 +730,12 @@ public class Index extends AbstractApiBean {
         try {
             fileMetadatasFound = dataFileService.findFileMetadataByDatasetVersionId(datasetIdToLookUp, maxResults, sortField, sortOrder);
         } catch (Exception ex) {
-            return errorResponse(Status.BAD_REQUEST, "error: " + ex.getCause().getMessage() + ex);
+            return error(Status.BAD_REQUEST, "error: " + ex.getCause().getMessage() + ex);
         }
         for (FileMetadata fileMetadata : fileMetadatasFound) {
             data.add(fileMetadata.getLabel());
         }
-        return okResponse(data);
+        return ok(data);
     }
 
 }

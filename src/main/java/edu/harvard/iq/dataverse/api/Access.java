@@ -18,6 +18,8 @@ import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DataverseTheme;
+import edu.harvard.iq.dataverse.GuestbookResponse;
+import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -113,6 +115,8 @@ public class Access extends AbstractApiBean {
     WorldMapTokenServiceBean worldMapTokenServiceBean;
     @Inject
     DataverseRequestServiceBean dvRequestService;
+    @EJB
+    GuestbookResponseServiceBean guestbookResponseService;
     
     
     private static final String API_KEY_HEADER = "X-Dataverse-key";    
@@ -174,10 +178,16 @@ public class Access extends AbstractApiBean {
     @Path("datafile/{fileId}")
     @GET
     @Produces({ "application/xml" })
-    public DownloadInstance datafile(@PathParam("fileId") Long fileId, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {                
-
+    public DownloadInstance datafile(@PathParam("fileId") Long fileId, @QueryParam("gbrecs") Boolean gbrecs, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {                
         DataFile df = dataFileService.find(fileId);
+        GuestbookResponse gbr = null;    
         
+        /*
+        if (gbrecs == null && df.isReleased()){
+            //commenting out for 4.6 SEK
+           // gbr = guestbookResponseService.initDefaultGuestbookResponse(df.getOwner(), df, session);
+        }
+        */
         if (df == null) {
             logger.warning("Access: datafile service could not locate a DataFile object for id "+fileId+"!");
             throw new WebApplicationException(Response.Status.NOT_FOUND);
@@ -206,7 +216,11 @@ public class Access extends AbstractApiBean {
             dInfo.addServiceAvailable(new OptionalAccessService("subset", "text/tab-separated-values", "variables=&lt;LIST&gt;", "Column-wise Subsetting"));
         }
         DownloadInstance downloadInstance = new DownloadInstance(dInfo);
-        
+        if (gbr != null){
+            downloadInstance.setGbr(gbr);
+            downloadInstance.setDataverseRequestService(dvRequestService);
+            downloadInstance.setCommand(engineSvc);
+        }
         for (String key : uriInfo.getQueryParameters().keySet()) {
             String value = uriInfo.getQueryParameters().getFirst(key);
             

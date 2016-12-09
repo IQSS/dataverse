@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.util;
 
 import com.ocpsoft.pretty.PrettyContext;
+import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -67,6 +68,7 @@ public class SystemConfig {
      * zip file upload.
      */
     private static final int defaultZipUploadFilesLimit = 1000; 
+    private static final int defaultMultipleUploadFilesLimit = 1000;
 
     private static String appVersionString = null; 
     private static String buildNumberString = null; 
@@ -347,11 +349,36 @@ public class SystemConfig {
         }
         
         if (limit != null) {
-            return limit.intValue();
+            return limit;
         }
         
         return defaultZipUploadFilesLimit; 
     }
+    
+    /*
+    `   the number of files the GUI user is allowed to upload in one batch, 
+        via drag-and-drop, or through the file select dialog
+    */
+    public int getMultipleUploadFilesLimit() {
+        String limitOption = settingsService.getValueForKey(SettingsServiceBean.Key.MultipleUploadFilesLimit);
+        Integer limit = null; 
+        
+        if (limitOption != null && !limitOption.equals("")) {
+            try {
+                limit = new Integer(limitOption);
+            } catch (NumberFormatException nfe) {
+                limit = null; 
+            }
+        }
+        
+        if (limit != null) {
+            return limit;
+        }
+        
+        return defaultMultipleUploadFilesLimit; 
+    }
+    
+    
 
     // TODO: (?)
     // create sensible defaults for these things? -- 4.2.2
@@ -533,5 +560,17 @@ public class SystemConfig {
 
     public String getFooterCopyrightAndYear() {
         return BundleUtil.getStringFromBundle("footer.copyright", Arrays.asList(Year.now().getValue() + ""));
+    }
+
+    public DataFile.ChecksumType getFileFixityChecksumAlgorithm() {
+        DataFile.ChecksumType saneDefault = DataFile.ChecksumType.MD5;
+        String checksumStringFromDatabase = settingsService.getValueForKey(SettingsServiceBean.Key.FileFixityChecksumAlgorithm, saneDefault.toString());
+        try {
+            DataFile.ChecksumType checksumTypeFromDatabase = DataFile.ChecksumType.fromString(checksumStringFromDatabase);
+            return checksumTypeFromDatabase;
+        } catch (IllegalArgumentException ex) {
+            logger.info("The setting " + SettingsServiceBean.Key.FileFixityChecksumAlgorithm + " is misconfigured. " + ex.getMessage() + " Returning sane default: " + saneDefault + ".");
+            return saneDefault;
+        }
     }
 }

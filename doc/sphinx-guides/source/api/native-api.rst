@@ -12,10 +12,23 @@ Endpoints
 
 Dataverses
 ~~~~~~~~~~~
-Generates a new dataverse under ``$id``. Expects a json content describing the dataverse.
+Generates a new dataverse under ``$id``. Expects a JSON content describing the dataverse, as in the example below.
 If ``$id`` is omitted, a root dataverse is created. ``$id`` can either be a dataverse id (long) or a dataverse alias (more robust). ::
 
     POST http://$SERVER/api/dataverses/$id?key=$apiKey
+
+The following JSON example can be `downloaded <../_static/api/dataverse-complete.json>`_ and modified to create dataverses to suit your needs. The fields ``name``, ``alias``, and ``dataverseContacts`` are required. The controlled vocabulary for ``dataverseType`` is
+
+- ``JOURNALS``
+- ``LABORATORY``
+- ``ORGANIZATIONS_INSTITUTIONS``
+- ``RESEARCHERS``
+- ``RESEARCH_GROUP``
+- ``RESEARCH_PROJECTS``
+- ``TEACHING_COURSES``
+- ``UNCATEGORIZED``
+
+.. literalinclude:: ../_static/api/dataverse-complete.json
 
 View data about the dataverse identified by ``$id``. ``$id`` can be the id number of the dataverse, its alias, or the special value ``:root``. ::
 
@@ -70,12 +83,15 @@ Sets the metadata blocks of the dataverse. Makes the dataverse a metadatablock r
 
 Get whether the dataverse is a metadata block root, or does it uses its parent blocks::
 
-  GET http://$SERVER/api/dataverses/$id/metadatablocks/:isRoot?key=$apiKey
+  GET http://$SERVER/api/dataverses/$id/metadatablocks/isRoot?key=$apiKey
 
 Set whether the dataverse is a metadata block root, or does it uses its parent blocks. Possible
 values are ``true`` and ``false`` (both are valid JSON expressions). ::
 
-  POST http://$SERVER/api/dataverses/$id/metadatablocks/:isRoot?key=$apiKey
+  PUT http://$SERVER/api/dataverses/$id/metadatablocks/isRoot?key=$apiKey
+
+.. note:: Previous endpoints ``GET http://$SERVER/api/dataverses/$id/metadatablocks/:isRoot?key=$apiKey`` and ``POST http://$SERVER/api/dataverses/$id/metadatablocks/:isRoot?key=$apiKey`` are deprecated, but supported.
+
 
 Create a new dataset in dataverse ``id``. The post data is a Json object, containing the dataset fields and an initial dataset version, under the field of ``"datasetVersion"``. The initial versions version number will be set to ``1.0``, and its state will be set to ``DRAFT`` regardless of the content of the json object. Example json can be found at ``data/dataset-create-new.json``. ::
 
@@ -131,8 +147,7 @@ Export the metadata of the current published version of a dataset in various for
 
     GET http://$SERVER/api/datasets/export?exporter=ddi&persistentId=$persistentId
 
-    Note: Supported exporters (export formats) are ddi, oai_ddi, dcterms, oai_dc, and dataverse_json.
-
+.. note:: Supported exporters (export formats) are ``ddi``, ``oai_ddi``, ``dcterms``, ``oai_dc``, and ``dataverse_json``.
 
 Lists all the file metadata, for the given dataset and version::
 
@@ -268,6 +283,14 @@ Management of Shibboleth groups via API is documented in the :doc:`/installation
 Info
 ~~~~
 
+Get the Dataverse version. The response contains the version and build numbers::
+
+  GET http://$SERVER/api/info/version
+
+Get the server name. This is useful when a Dataverse system is composed of multiple Java EE servers behind a load balancer::
+
+  GET http://$SERVER/api/info/server
+
 For now, only the value for the ``:DatasetPublishPopupCustomText`` setting from the :doc:`/installation/config` section of the Installation Guide is exposed::
 
   GET http://$SERVER/api/info/settings/:DatasetPublishPopupCustomText
@@ -286,7 +309,7 @@ Return data about the block whose ``identifier`` is passed. ``identifier`` can e
 
 Admin
 ~~~~~~~~~~~~~~~~
-This is the administrative part of the API. It is probably a good idea to block it before allowing public access to a Dataverse installation. Blocking can be done using settings. See the ``post-install-api-block.sh`` script in the ``scripts/api`` folder for details.
+This is the administrative part of the API. For security reasons, it is absolutely essential that you block it before allowing public access to a Dataverse installation. Blocking can be done using settings. See the ``post-install-api-block.sh`` script in the ``scripts/api`` folder for details. See also "Blocking API Endpoints" under "Securing Your Installation" in the :doc:`/installation/config` section of the Installation Guide.
 
 List all settings::
 
@@ -373,6 +396,18 @@ List all role assignments of a role assignee (i.e. a user or a group)::
     GET http://$SERVER/api/admin/assignments/assignees/$identifier
 
 Note that ``identifier`` can contain slashes (e.g. ``&ip/localhost-users``).
+
+List permissions a user (based on API Token used) has on a dataverse or dataset::
+
+    GET http://$SERVER/api/admin/permissions/$identifier
+
+The ``$identifier`` can be a dataverse alias or database id or a dataset persistent ID or database id.
+
+List a role assignee (i.e. a user or a group)::
+
+    GET http://$SERVER/api/admin/assignee/$identifier
+
+The ``$identifier`` should start with an ``@`` if it's a user. Groups start with ``&``. "Built in" users and groups start with ``:``. Private URL users start with ``#``.
 
 IpGroups
 ^^^^^^^^

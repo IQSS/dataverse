@@ -88,6 +88,31 @@ public class DataverseHeaderFragment implements java.io.Serializable {
                         dvObject instanceof Dataset ? JH.localize("newDataset") : null );
             }
     }
+
+    public void initBreadcrumbsForFileMetadata(FileMetadata fmd) {
+        if (fmd == null) {
+            return;
+        }
+
+        breadcrumbs.clear();
+        
+        //First Add regular breadcrumb for the data file
+        DvObject dvObject = fmd.getDataFile();
+        breadcrumbs.add(0, new Breadcrumb(dvObject, dvObject.getDisplayName()));
+
+        //Get the Dataset Owning the Datafile and add version to the breadcrumb       
+        dvObject = dvObject.getOwner();
+        String optionalUrlExtension = "&version=" + fmd.getDatasetVersion().getSemanticVersion();
+        breadcrumbs.add(0, new Breadcrumb(dvObject, dvObject.getDisplayName(), optionalUrlExtension));
+
+        // now get Dataverse Owner of the dataset and proceed as usual
+        dvObject = dvObject.getOwner();
+        while (dvObject != null) {
+            breadcrumbs.add(0, new Breadcrumb(dvObject, dvObject.getDisplayName()));
+            dvObject = dvObject.getOwner();
+        }
+
+    }
     
     public Long getUnreadNotificationCount(Long userId){
         
@@ -222,8 +247,15 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     public static class Breadcrumb {
 
         private final String breadcrumbText;
-        private  DvObject dvObject = null;
-        private  String url = null;
+        private DvObject dvObject = null;
+        private String url = null;
+        private String optionalUrlExtension = null;
+
+        public Breadcrumb( DvObject dvObject, String breadcrumbText, String optionalUrlExtension ) {
+            this.breadcrumbText = breadcrumbText;
+            this.dvObject = dvObject;
+            this.optionalUrlExtension = optionalUrlExtension;
+        }
 
         public Breadcrumb( DvObject dvObject, String breadcrumbText) {
             this.breadcrumbText = breadcrumbText;
@@ -250,6 +282,9 @@ public class DataverseHeaderFragment implements java.io.Serializable {
         public String getUrl() {
             return url;
         }
-
+        
+        public String getOptionalUrlExtension() {
+            return optionalUrlExtension;
+        }
     }
 }

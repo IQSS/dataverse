@@ -16,9 +16,9 @@ Securing Your Installation
 Blocking API Endpoints
 ++++++++++++++++++++++
 
-The :doc:`/api/native-api` contains a useful but potentially dangerous API endpoint called "admin" that allows you to change system settings, make ordinary users into superusers, and more. There is a "test" API endpoint used for development and troubleshooting that has some potentially dangerous methods. The ``builtin-users`` endpoint lets people create a local/builtin user account if they know the ``BuiltinUsers.KEY`` value described below.
+The :doc:`/api/native-api` contains a useful but potentially dangerous API endpoint called "admin" that allows you to change system settings, make ordinary users into superusers, and more. The ``builtin-users`` endpoint lets people create a local/builtin user account if they know the ``BuiltinUsers.KEY`` value described below.
 
-By default, all APIs can be operated on remotely and without the need for any authentication. https://github.com/IQSS/dataverse/issues/1886 was opened to explore changing these defaults, but until then it is very important to block both the "admin" and "test" endpoint (and at least consider blocking ``builtin-users``). For details please see also the section on ``:BlockedApiPolicy`` below.
+By default, all APIs can be operated on remotely and without the need for any authentication. https://github.com/IQSS/dataverse/issues/1886 was opened to explore changing these defaults, but until then it is very important to block both the "admin" endpoint (and at least consider blocking ``builtin-users``). For details please see also the section on ``:BlockedApiPolicy`` below.
 
 Forcing HTTPS
 +++++++++++++
@@ -119,11 +119,11 @@ It's also possible to change these values by stopping Glassfish, editing ``glass
 dataverse.fqdn
 ++++++++++++++
 
-If the Dataverse server has multiple DNS names, this option specifies the one to be used as the "official" host name. For example, you may want to have dataverse.foobar.edu, and not the less appealling server-123.socsci.foobar.edu to appear exclusively in all the registered global identifiers, Data Deposit API records, etc. 
+If the Dataverse server has multiple DNS names, this option specifies the one to be used as the "official" host name. For example, you may want to have dataverse.foobar.edu, and not the less appealling server-123.socsci.foobar.edu to appear exclusively in all the registered global identifiers, Data Deposit API records, etc.
 
 The password reset feature requires ``dataverse.fqdn`` to be configured.
 
-| Do note that whenever the system needs to form a service URL, by default, it will be formed with ``https://`` and port 443. I.e., 
+| Do note that whenever the system needs to form a service URL, by default, it will be formed with ``https://`` and port 443. I.e.,
 | ``https://{dataverse.fqdn}/``
 | If that does not suit your setup, you can define an additional option, ``dataverse.siteUrl``, explained below.
 
@@ -245,9 +245,9 @@ Out of the box, all API endpoints are completely open as mentioned in the sectio
 :BlockedApiEndpoints
 ++++++++++++++++++++
 
-A comma separated list of API endpoints to be blocked. For a production installation, "admin" and "test" should be blocked (and perhaps "builtin-users" as well), as mentioned in the section on security above:
+A comma separated list of API endpoints to be blocked. For a production installation, "admin" should be blocked (and perhaps "builtin-users" as well), as mentioned in the section on security above:
 
-``curl -X PUT -d "admin,test,builtin-users" http://localhost:8080/api/admin/settings/:BlockedApiEndpoints``
+``curl -X PUT -d "admin,builtin-users" http://localhost:8080/api/admin/settings/:BlockedApiEndpoints``
 
 See the :doc:`/api/index` for a list of API endpoints.
 
@@ -355,7 +355,7 @@ For dynamically adding information to the top of every page. For example, "For t
 :MaxFileUploadSizeInBytes
 +++++++++++++++++++++++++
 
-Set `MaxFileUploadSizeInBytes` to "2147483648", for example, to limit the size of files uploaded to 2 GB. 
+Set `MaxFileUploadSizeInBytes` to "2147483648", for example, to limit the size of files uploaded to 2 GB.
 Notes:
 - For SWORD, this size is limited by the Java Integer.MAX_VALUE of 2,147,483,647. (see: https://github.com/IQSS/dataverse/issues/2169)
 - If the MaxFileUploadSizeInBytes is NOT set, uploads, including SWORD may be of unlimited size.
@@ -501,3 +501,10 @@ Host FQDN or URL of your Piwik instance before the ``/piwik.php``. Examples:
 or
 
 ``curl -X PUT -d hostname.domain.tld/stats http://localhost:8080/api/admin/settings/:PiwikAnalyticsHost``
+
+:FileFixityChecksumAlgorithm
+++++++++++++++++++++++++++++
+
+Dataverse calculates checksums for uploaded files so that users can determine if their file was corrupted via upload or download. This is sometimes called "file fixity": https://en.wikipedia.org/wiki/File_Fixity
+
+The default checksum algorithm used is MD5 and should be sufficient for establishing file fixity. "SHA-1" is an experimental alternate value for this setting.
