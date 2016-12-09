@@ -32,7 +32,7 @@ public class FileDownloadHelper implements java.io.Serializable {
 
     
     private final Map<Long, Boolean> fileDownloadPermissionMap = new HashMap<>(); // { FileMetadata.id : Boolean } 
-    private final Map<String, Boolean> datasetPermissionMap = new HashMap<>(); // { Permission human_name : Boolean }
+
 
     
     
@@ -169,24 +169,8 @@ public class FileDownloadHelper implements java.io.Serializable {
             return false;
         }
         
-        
-               
-        String permName = permissionToCheck.getHumanName();
-       
-        // Has this check already been done? 
-        // 
-        if (this.datasetPermissionMap.containsKey(permName)){
-            // Yes, return previous answer
-            return this.datasetPermissionMap.get(permName);
-        }
-        
-        // Check the permission
-        //
         boolean hasPermission = this.permissionService.userOn(this.session.getUser(), objectToCheck).has(permissionToCheck);
-
-        // Save the permission
-        this.datasetPermissionMap.put(permName, hasPermission);
-        
+       
         // return true/false
         return hasPermission;
     }

@@ -245,7 +245,7 @@
         <p:commandLink type="button" styleClass="btn btn-default" rendered="#{fileDownloadHelper.session.user.authenticated 
                                                                               and !fileMetadata.datasetVersion.deaccessioned
                                                                               and fileMetadata.dataFile.owner.fileAccessRequest and !(fileDownloadHelper.canDownloadFile(fileMetadata))}"
-                       actionListener="#{fileDownloadService.requestAccess(fileMetadata.dataFile, true)}"
+                       actionListener="#{fileDownloadService.requestAccess(fileMetadata.dataFile)}"
                        update="@this"
                        disabled="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user)}">
             <!-- Request Access -->

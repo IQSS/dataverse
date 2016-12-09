@@ -404,7 +404,7 @@ public class JsonParser {
         if (contentType == null) {
             contentType = "application/octet-stream";
         }
-        String storageIdentifier = datafileJson.getString("storageIdentifier");
+        String storageIdentifier = datafileJson.getString("storageIdentifier", " ");
         JsonObject checksum = datafileJson.getJsonObject("checksum");
         if (checksum != null) {
             // newer style that allows for SHA-1 rather than MD5

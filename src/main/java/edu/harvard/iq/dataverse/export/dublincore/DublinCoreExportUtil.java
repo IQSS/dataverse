@@ -77,7 +77,7 @@ public class DublinCoreExportUtil {
             xmlw.writeAttribute("xmlns:oai_dc", OAI_DC_XML_NAMESPACE);
             xmlw.writeAttribute("xmlns:dc", DC_XML_NAMESPACE);
             xmlw.writeAttribute("xsi:schemaLocation", OAI_DC_XML_NAMESPACE+" "+OAI_DC_XML_SCHEMALOCATION);
-            writeAttribute(xmlw, "version", DEFAULT_XML_VERSION);
+            //writeAttribute(xmlw, "version", DEFAULT_XML_VERSION);
             createOAIDC(xmlw, datasetDto, dcFlavor);
         }
         

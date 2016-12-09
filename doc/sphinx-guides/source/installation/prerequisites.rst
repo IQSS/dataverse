@@ -190,4 +190,31 @@ Installing jq
         # chmod +x jq
         # jq --version
 
+ImageMagick
+-----------
+
+Dataverse uses `ImageMagick <https://www.imagemagick.org>`_ to generate thumbnail previews of PDF files. This is an optional component, meaning that if you don't have ImageMagick installed, there will be no thumbnails for PDF files, in the search results and on the dataset pages; but everything else will be working. (Thumbnail previews for non-PDF image files are generated using standard Java libraries and do not require any special installation steps). 
+
+Installing and configuring ImageMagick
+======================================
+
+On a Red Hat and similar Linux distributions, you can install ImageMagick with something like::
+
+	# yum install ImageMagick 
+
+(most RedHat systems will have it pre-installed). 
+When installed using standard ``yum`` mechanism, above, the executable for the ImageMagick convert utility will be located at ``/usr/bin/convert``. No further configuration steps will then be required. 
+
+On MacOS you can compile ImageMagick from sources, or use one of the popular installation frameworks, such as brew. 
+
+If the installed location of the convert executable is different from ``/usr/bin/convert``, you will also need to specify it in your Glassfish configuration using the JVM option, below. For example::
+
+   <jvm-options>-Ddataverse.path.imagemagick.convert=/opt/local/bin/convert</jvm-options>
+
+(see the :doc:`config` section for more information on the JVM options)
+
+
+
 Now that you have all the prerequisites in place, you can proceed to the :doc:`installation-main` section.
+
+

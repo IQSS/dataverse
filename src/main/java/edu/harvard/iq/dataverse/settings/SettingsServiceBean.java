@@ -159,6 +159,9 @@ public class SettingsServiceBean {
         ZipDownloadLimit,
         /* zip upload number of files limit */
         ZipUploadFilesLimit,
+        /* the number of files the GUI user is allowed to upload in one batch, 
+            via drag-and-drop, or through the file select dialog */
+        MultipleUploadFilesLimit,
         /* Size limits for generating thumbnails on the fly */
         /* (i.e., we'll attempt to generate a thumbnail on the fly if the 
          * size of the file is less than this)
