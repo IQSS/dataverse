@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.batch.jobs.importer.filesystem;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
@@ -64,6 +65,9 @@ public class FileRecordWriter extends AbstractItemWriter {
     @EJB
     EjbDataverseEngine commandEngine;
     
+    @EJB
+    DataFileServiceBean dataFileServiceBean;
+    
     Dataset dataset;
     AuthenticatedUser user;
     private String persistentUserData = "";
@@ -79,7 +83,7 @@ public class FileRecordWriter extends AbstractItemWriter {
     @Override
     public void close() {
         // update the dataset
-        updateDatasetVersion(dataset.getLatestVersion());
+        // updateDatasetVersion(dataset.getLatestVersion());
         if (!persistentUserData.isEmpty()) {
             stepContext.setPersistentUserData(persistentUserData);
         }
@@ -174,6 +178,8 @@ public class FileRecordWriter extends AbstractItemWriter {
         version.getFileMetadatas().add(fmd);
         fmd.setDatasetVersion(version);
 
+        datafile = dataFileServiceBean.save(datafile);
+        
         return datafile;
     }
     

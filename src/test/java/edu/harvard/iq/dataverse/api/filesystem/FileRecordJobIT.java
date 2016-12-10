@@ -195,33 +195,33 @@ public class FileRecordJobIT {
 
     @After
     public void tearDownDataverse() {
-        try {
-
-            // delete dataset
-            if (isDraft) {
-                given().header(API_TOKEN_HTTP_HEADER, token)
-                        .delete("/api/datasets/" + dsId)
-                        .then().assertThat().statusCode(200);
-            } else {
-                given().post("/api/admin/superuser/" + testName);
-                given().header(API_TOKEN_HTTP_HEADER, token)
-                        .delete("/api/datasets/" + dsId + "/destroy")
-                        .then().assertThat().statusCode(200);
-            }
-            // delete dataverse
-            given().header(API_TOKEN_HTTP_HEADER, token)
-                    .delete("/api/dataverses/" + testName)
-                    .then().assertThat().statusCode(200);
-            // delete user
-            given().header(API_TOKEN_HTTP_HEADER, token)
-                    .delete("/api/admin/authenticatedUsers/" + testName + "/")
-                    .then().assertThat().statusCode(200);
-            FileUtils.deleteDirectory(new File(dsDir));
-        } catch (IOException ioe) {
-            System.out.println("Error creating test dataset: " + ioe.getMessage());
-            ioe.printStackTrace();
-            fail();
-        }
+//        try {
+//
+//            // delete dataset
+//            if (isDraft) {
+//                given().header(API_TOKEN_HTTP_HEADER, token)
+//                        .delete("/api/datasets/" + dsId)
+//                        .then().assertThat().statusCode(200);
+//            } else {
+//                given().post("/api/admin/superuser/" + testName);
+//                given().header(API_TOKEN_HTTP_HEADER, token)
+//                        .delete("/api/datasets/" + dsId + "/destroy")
+//                        .then().assertThat().statusCode(200);
+//            }
+//            // delete dataverse
+//            given().header(API_TOKEN_HTTP_HEADER, token)
+//                    .delete("/api/dataverses/" + testName)
+//                    .then().assertThat().statusCode(200);
+//            // delete user
+//            given().header(API_TOKEN_HTTP_HEADER, token)
+//                    .delete("/api/admin/authenticatedUsers/" + testName + "/")
+//                    .then().assertThat().statusCode(200);
+//            FileUtils.deleteDirectory(new File(dsDir));
+//        } catch (IOException ioe) {
+//            System.out.println("Error creating test dataset: " + ioe.getMessage());
+//            ioe.printStackTrace();
+//            fail();
+//        }
     }
 
     /**
@@ -237,6 +237,84 @@ public class FileRecordJobIT {
             // create a single test file and put it in two places
             String file1 =  "testfile.txt";
             String file2 = "subdir/testfile.txt";
+            File file = createTestFile(dsDir, file1, 0.25);
+            if (file != null) {
+                FileUtils.copyFile(file, new File(dsDir + file2));
+            } else {
+                System.out.println("Unable to copy file: " + dsDir + file2);
+                fail();
+            }
+
+            // mock the checksum manifest
+            String checksum1 = "asfdasdfasdfasdf";
+            String checksum2 = "sgsdgdsgfsdgsdgf";
+            if (file1 != null && file2 != null) {
+                PrintWriter pw = new PrintWriter(new FileWriter(dsDir + "/files.sha"));
+                pw.write(checksum1 + " " + file1);
+                pw.write("\n");
+                pw.write(checksum2 + " " + file2);
+                pw.write("\n");
+                pw.close();
+            } else {
+                fail();
+            }
+
+            // validate job
+            JobExecutionEntity job = getJob();
+            assertEquals(job.getSteps().size(), 2);
+            StepExecutionEntity step1 = job.getSteps().get(0);
+            Map<String, Long> metrics = step1.getMetrics();
+            assertEquals(job.getExitStatus(), BatchStatus.COMPLETED.name());
+            assertEquals(job.getStatus(), BatchStatus.COMPLETED);
+            assertEquals(step1.getExitStatus(), BatchStatus.COMPLETED.name());
+            assertEquals(step1.getStatus(), BatchStatus.COMPLETED);
+            assertEquals(step1.getName(), "import-files");
+            assertEquals((long) metrics.get("write_skip_count"), 0);
+            assertEquals((long) metrics.get("commit_count"), 1);
+            assertEquals((long) metrics.get("process_skip_count"), 0);
+            assertEquals((long) metrics.get("read_skip_count"), 0);
+            assertEquals((long) metrics.get("write_count"), 2);
+            assertEquals((long) metrics.get("rollback_count"), 0);
+            assertEquals((long) metrics.get("filter_count"), 0);
+            assertEquals((long) metrics.get("read_count"), 2);
+            assertEquals(step1.getPersistentUserData(), null);
+
+            // confirm data files were imported
+            updateDatasetJsonPath();
+            List<String> storageIds = new ArrayList<>();
+            storageIds.add(dsPath.getString("data.latestVersion.files[0].dataFile.storageIdentifier"));
+            storageIds.add(dsPath.getString("data.latestVersion.files[1].dataFile.storageIdentifier"));
+            assert(storageIds.contains(file1));
+            assert(storageIds.contains(file2));
+
+            // test the reporting apis
+            given()
+                    .header(API_TOKEN_HTTP_HEADER, token)
+                    .get(props.getProperty("job.status.api") + job.getId())
+                    .then().assertThat()
+                    .body("status", equalTo("COMPLETED"));
+            List<Integer> ids =  given()
+                    .header(API_TOKEN_HTTP_HEADER, token)
+                    .get(props.getProperty("job.status.api"))
+                    .then().extract().jsonPath()
+                    .getList("jobs.id");
+            assertTrue(ids.contains((int)job.getId()));
+
+        } catch (Exception e) {
+            System.out.println("Error testIdenticalFilesInDifferentDirectories: " + e.getMessage());
+            e.printStackTrace();
+            fail();
+        }
+    }
+
+    @Test
+    public void testFilesWithNoExtensions() {
+
+        try {
+
+            // create a single test file and put it in two places
+            String file1 =  "testfile";
+            String file2 = "subdir/testfile";
             File file = createTestFile(dsDir, file1, 0.25);
             if (file != null) {
                 FileUtils.copyFile(file, new File(dsDir + file2));
