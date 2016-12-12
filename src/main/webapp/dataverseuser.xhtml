@@ -283,18 +283,20 @@
                                         </p>
                                     </div>
                                 </div>
-                                <div class="form-group" jsf:rendered="#{DataverseUserPage.currentUser.authenticatedUserLookup.authenticationProviderId == 'orcid-sandbox' or DataverseUserPage.currentUser.authenticatedUserLookup.authenticationProviderId == 'orcid'}">
+                                <div class="form-group" jsf:rendered="#{DataverseUserPage.userAuthProvider.OAuthProvider}">
                                     <div class="col-sm-12">
                                         <p class="help-block">
                                             <span class="glyphicon glyphicon-info-sign"/>
-                                            <h:outputText value=" #{bundle['user.helpOrcidBeforeLink']} " />
+                                            <h:outputFormat value=" #{bundle['user.helpOAuthBeforeLink']} ">
+                                                <f:param value="#{DataverseUserPage.userAuthProvider.info.title}"/>
+                                            </h:outputFormat>
                                             <p:commandLink value="#{bundle['contact.support']}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
                                                 <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
                                                 <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
                                                 <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
                                                 <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
                                             </p:commandLink>
-                                            <h:outputText value=" #{bundle['user.helpOrcidAfterLink']}" />
+                                            <h:outputText value=" #{bundle['user.helpOAuthAfterLink']}" />
                                         </p>
                                     </div>
                                 </div>

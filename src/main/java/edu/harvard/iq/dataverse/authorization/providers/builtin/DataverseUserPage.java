@@ -147,6 +147,7 @@ public class DataverseUserPage implements java.io.Serializable {
         
         if ( session.getUser().isAuthenticated() ) {
             setCurrentUser((AuthenticatedUser) session.getUser());
+            userAuthProvider = authenticationService.lookupProvider(currentUser);
             notificationsList = userNotificationService.findByUser(currentUser.getId());
             
             switch (selectTab) {
@@ -500,7 +501,7 @@ public class DataverseUserPage implements java.io.Serializable {
         return currentUser.getEmailConfirmed().equals(ConfirmEmailUtil.getGrandfatheredTime());
     }
     
-    AuthenticationProvider getUserAuthProvider() {
+    public AuthenticationProvider getUserAuthProvider() {
         if ( userAuthProvider == null  ) {
             userAuthProvider = authenticationService.lookupProvider(currentUser);
         }
