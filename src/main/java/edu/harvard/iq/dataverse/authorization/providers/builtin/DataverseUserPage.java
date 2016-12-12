@@ -307,6 +307,10 @@ public class DataverseUserPage implements java.io.Serializable {
             // Authenticated user registered. Save the new bulitin, and log in.
             builtinUserService.save(builtinUser);
             session.setUser(au);
+            /**
+             * @todo Move this to
+             * AuthenticationServiceBean.createAuthenticatedUser
+             */
             userNotificationService.sendNotification(au,
                                                      new Timestamp(new Date().getTime()), 
                                                      UserNotification.Type.CREATEACC, null);

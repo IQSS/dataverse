@@ -2,6 +2,8 @@ package edu.harvard.iq.dataverse.authorization.providers.oauth2;
 
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.EMailValidator;
+import edu.harvard.iq.dataverse.UserNotification;
+import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.ValidateEmail;
 import edu.harvard.iq.dataverse.authorization.AuthTestDataServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
@@ -17,8 +19,10 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -50,6 +54,9 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
 
     @EJB
     BuiltinUserServiceBean builtinUserSvc;
+
+    @EJB
+    UserNotificationServiceBean userNotificationService;
 
     @EJB
     SystemConfig systemConfig;
@@ -146,6 +153,12 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
                 newUser.getDisplayInfo().getPosition());
         final AuthenticatedUser user = authenticationSvc.createAuthenticatedUser(newUser.getUserRecordIdentifier(), getUsername(), newAud, true);
         session.setUser(user);
+        /**
+         * @todo Move this to AuthenticationServiceBean.createAuthenticatedUser
+         */
+        userNotificationService.sendNotification(user,
+                new Timestamp(new Date().getTime()),
+                UserNotification.Type.CREATEACC, null);
 
         return "/dataverse.xhtml?faces-redirect=true";
     }
