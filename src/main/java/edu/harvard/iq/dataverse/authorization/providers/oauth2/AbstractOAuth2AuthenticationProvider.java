@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.logging.Logger;
 
 /**
  * Base class for OAuth2 identity providers, such as GitHub and ORCiD.
@@ -23,7 +24,9 @@ import java.util.Optional;
  * @author michael
  */
 public abstract class AbstractOAuth2AuthenticationProvider implements AuthenticationProvider {
-    
+
+    final static Logger logger = Logger.getLogger(AbstractOAuth2AuthenticationProvider.class.getName());
+
     protected static class ParsedUserResponse {
         public final AuthenticatedUserDisplayInfo displayInfo;
         public final String userIdInProvider;
@@ -117,7 +120,8 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
         final Response response = request.send();
         int responseCode = response.getCode();
         final String body = response.getBody();        
-        
+        logger.fine("In getUserRecord. Body: " + body);
+
         if ( responseCode == 200 ) {
             final ParsedUserResponse parsed = parseUserResponse(body);
             return new OAuth2UserRecord(getId(), parsed.userIdInProvider,
