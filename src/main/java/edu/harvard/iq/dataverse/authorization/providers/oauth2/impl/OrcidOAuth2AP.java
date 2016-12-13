@@ -74,6 +74,9 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
             String familyName = getNodes(doc, "orcid-message", "orcid-profile", "orcid-bio", "personal-details", "family-name" )
                                 .stream().findFirst().map( Node::getTextContent )
                                     .map( String::trim ).orElse("");
+            String affiliation = getNodes(doc, "orcid-message", "orcid-profile", "orcid-activities", "affiliations", "affiliation", "organization", "name" )
+                                .stream().findFirst().map( Node::getTextContent )
+                                    .map( String::trim ).orElse("");
             List<String> emails = new ArrayList<>();
             getNodes(doc, "orcid-message", "orcid-profile", "orcid-bio","contact-details","email").forEach( n ->{
                String email = n.getTextContent().trim();
@@ -98,7 +101,7 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
             }
             
             final ParsedUserResponse userResponse = new ParsedUserResponse(
-                    new AuthenticatedUserDisplayInfo(firstName, familyName, primaryEmail, "", ""), orcidId, username);
+                    new AuthenticatedUserDisplayInfo(firstName, familyName, primaryEmail, affiliation, ""), orcidId, username);
             userResponse.emails.addAll(emails);
             
             return userResponse;
