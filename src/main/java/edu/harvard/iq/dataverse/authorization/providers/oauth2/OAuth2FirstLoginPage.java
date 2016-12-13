@@ -140,7 +140,21 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
             return;
         }
 
-        setSelectedEmail(newUser.getDisplayInfo().getEmailAddress());
+        // Suggest the best email we can.
+        String emailToSuggest = null;
+        String emailFromDisplayInfo = newUser.getDisplayInfo().getEmailAddress();
+        if (emailFromDisplayInfo != null && !emailFromDisplayInfo.isEmpty()) {
+            emailToSuggest = emailFromDisplayInfo;
+        } else {
+            List<String> extraEmails = newUser.getAvailableEmailAddresses();
+            if (extraEmails != null && !extraEmails.isEmpty()) {
+                String firstExtraEmail = extraEmails.get(0);
+                if (firstExtraEmail != null && !firstExtraEmail.isEmpty()) {
+                    emailToSuggest = firstExtraEmail;
+                }
+            }
+        }
+        setSelectedEmail(emailToSuggest);
 
     }
 
@@ -270,25 +284,6 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
         return selectedEmail;
     }
 
-    public boolean isMoreThanOneEmailToPickFrom() {
-        List<String> emailsToPickFrom = new ArrayList<>();
-        if (selectedEmail != null) {
-            emailsToPickFrom.add(selectedEmail);
-        }
-        /**
-         * @todo Is this available or extra?
-         */
-        List<String> available = newUser.getAvailableEmailAddresses();
-        if (available != null) {
-            emailsToPickFrom.addAll(available);
-        }
-        if (emailsToPickFrom.size() > 1) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
     public List<String> getExtraEmails() {
         return newUser.getAvailableEmailAddresses();
     }
@@ -324,17 +319,24 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
     }
 
     public List<String> getEmailsToPickFrom() {
-        List<String> results = new ArrayList<>();
+        List<String> emailsToPickFrom = new ArrayList<>();
         if (selectedEmail != null) {
-            results.add(selectedEmail);
+            emailsToPickFrom.add(selectedEmail);
         }
         List<String> extraEmails = newUser.getAvailableEmailAddresses();
-        if (!extraEmails.isEmpty()) {
+        if (extraEmails != null && !extraEmails.isEmpty()) {
             for (String extra : newUser.getAvailableEmailAddresses()) {
-                results.add(extra);
+                if (selectedEmail != null) {
+                    if (!selectedEmail.equals(extra)) {
+                        emailsToPickFrom.add(extra);
+                    }
+                } else {
+                    emailsToPickFrom.add(extra);
+                }
             }
         }
-        return results;
+        logger.fine(emailsToPickFrom.size() + " emails to pick from: " + emailsToPickFrom);
+        return emailsToPickFrom;
     }
 
 }
