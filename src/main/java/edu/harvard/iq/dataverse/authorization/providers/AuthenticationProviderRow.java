@@ -32,7 +32,11 @@ public class AuthenticationProviderRow implements java.io.Serializable {
     
     @Id
     private String id;
-    
+
+    /**
+     * @todo Consider dropping this column since we override title in order to
+     * internationalize it. Or add a translatableTitle field?
+     */
     private String title;
     
     private String subtitle;

@@ -20,10 +20,12 @@ import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthUtil;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
+import edu.harvard.iq.dataverse.authorization.AuthenticationProviderDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
+import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailData;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailException;
@@ -630,4 +632,29 @@ public class DataverseUserPage implements java.io.Serializable {
         return AuthUtil.isNonLocalLoginEnabled(systemConfig.isShibEnabled(), authenticationService.getAuthenticationProviders());
     }
 
+    public String getSuggestNonLocalLoginTipStatic() {
+        return BundleUtil.getStringFromBundle("user.suggestNonLocalLoginStatic.tip");
+    }
+
+    public String getSuggestNonLocalLoginTipDynamic() {
+        List<AuthenticationProviderDisplayInfo> infos = new ArrayList<>();
+        for (String id : authenticationService.getAuthenticationProviderIdsSorted()) {
+            AuthenticationProvider authenticationProvider = authenticationService.getAuthenticationProvider(id);
+            if (authenticationProvider != null) {
+                if (ShibAuthenticationProvider.PROVIDER_ID.equals(authenticationProvider.getId())) {
+                    if (systemConfig.isShibEnabled()) {
+                        infos.add(authenticationProvider.getInfo());
+                    }
+                } else {
+                    infos.add(authenticationProvider.getInfo());
+                }
+            }
+        }
+        if (infos.isEmpty()) {
+            return BundleUtil.getStringFromBundle("user.suggestNonLocalLoginStatic.tip");
+        } else {
+            String args = AuthUtil.getNamesOfRemoteAuthProvidersWithSeparators(systemConfig.isShibEnabled(), authenticationService.getAuthenticationProviders());
+            return BundleUtil.getStringFromBundle("user.suggestNonLocalLoginDynamic.tip", Arrays.asList(args));
+        }
+    }
 }

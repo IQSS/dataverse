@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.Ignore;
 
 public class AuthUtilTest {
 
@@ -39,6 +40,37 @@ public class AuthUtilTest {
         onlyBuiltin.add(new BuiltinAuthenticationProvider(null));
         // no shib, only builtin provider
         assertEquals(false, AuthUtil.isNonLocalLoginEnabled(false, onlyBuiltin));
+
+    }
+
+    @Test
+    public void testGetTip() {
+        System.out.println("testGetTip");
+
+        // no shib, no providers
+        assertEquals(null, AuthUtil.getNamesOfRemoteAuthProvidersWithSeparators(false, null));
+
+        // yes shib, no providers
+        assertEquals("Your Institution", AuthUtil.getNamesOfRemoteAuthProvidersWithSeparators(true, null));
+
+        Collection<AuthenticationProvider> onlyBuiltin = new HashSet<>();
+        onlyBuiltin.add(new BuiltinAuthenticationProvider(null));
+        // no shib, only builtin provider
+        assertEquals(null, AuthUtil.getNamesOfRemoteAuthProvidersWithSeparators(false, onlyBuiltin));
+
+        Collection<AuthenticationProvider> gitHubAndGoogle = new HashSet<>();
+        gitHubAndGoogle.add(new GitHubOAuth2AP(null, null));
+        gitHubAndGoogle.add(new GoogleOAuth2AP(null, null));
+        // yes shib, yes non local providers
+        assertEquals("Your Institution, GitHub, or Google", AuthUtil.getNamesOfRemoteAuthProvidersWithSeparators(true, gitHubAndGoogle));
+        // no shib, yes non local providers
+        assertEquals("GitHub or Google", AuthUtil.getNamesOfRemoteAuthProvidersWithSeparators(false, gitHubAndGoogle));
+
+        Collection<AuthenticationProvider> gitHubGoogleAndOrcid = new HashSet<>();
+        gitHubGoogleAndOrcid.add(new GitHubOAuth2AP(null, null));
+        gitHubGoogleAndOrcid.add(new GoogleOAuth2AP(null, null));
+        gitHubGoogleAndOrcid.add(new OrcidOAuth2AP(null, null, null));
+        assertEquals("Your Institution, GitHub, ORCID, or Google", AuthUtil.getNamesOfRemoteAuthProvidersWithSeparators(true, gitHubGoogleAndOrcid));
 
     }
 

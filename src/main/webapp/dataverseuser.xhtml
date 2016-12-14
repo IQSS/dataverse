@@ -415,7 +415,9 @@
                     <p:tabView id="accountInfoView" rendered="#{!empty DataverseUserPage.editMode}">
                         <p:tab id="accountInfoEdit" title="#{bundle['account.info']}">
                             <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' and DataverseUserPage.nonLocalLoginEnabled}">
-                                <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> <h:outputText value=" #{bundle['user.suggestNonLocalLogin.tip']}" escape="false"/></p>
+                                <!--FIXME: Decide between static and dynamic text-->
+                                <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> <h:outputText value=" #{DataverseUserPage.suggestNonLocalLoginTipStatic}" escape="false"/></p>
+                                <!--<p class="help-block"><span class="glyphicon glyphicon-info-sign"/> <h:outputText value=" # {DataverseUserPage.suggestNonLocalLoginTipDynamic}" escape="false"/></p>-->
                             </ui:fragment>
                             <div class="form-horizontal">
                                 <div class="form-group" jsf:rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">

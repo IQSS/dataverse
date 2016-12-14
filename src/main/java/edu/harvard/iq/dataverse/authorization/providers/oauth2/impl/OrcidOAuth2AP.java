@@ -3,8 +3,10 @@ package edu.harvard.iq.dataverse.authorization.providers.oauth2.impl;
 import com.github.scribejava.core.builder.api.BaseApi;
 import com.github.scribejava.core.model.OAuth2AccessToken;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
+import edu.harvard.iq.dataverse.authorization.AuthenticationProviderDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2Exception;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -141,5 +143,10 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
         }
         
     }
-    
+
+    @Override
+    public AuthenticationProviderDisplayInfo getInfo() {
+        return new AuthenticationProviderDisplayInfo(getId(), BundleUtil.getStringFromBundle("auth.providers.title.orcid"), "ORCID user repository");
+    }
+
 }
