@@ -42,7 +42,6 @@
                             
                             <div id="builtinProvider" jsf:rendered="#{LoginPage.authProvider.id == 'builtin'}">
                                 <h:form id="loginForm" styleClass="form-horizontal">
-                                    <!-- <h2 class="no-margin-top"># {bundle['auth.providers.title.builtin']}</h2> -->
                                     <p:focus context="loginForm"/>
                                     <ui:remove>
                                         <ui:fragment rendered="#{LoginPage.multipleProvidersAvailable}">
@@ -76,7 +75,6 @@
                                     <div class="form-group">
                                         <div class="col-sm-offset-4 col-sm-9 button-block">
                                             <p:commandButton id="login" styleClass="btn btn-default" value="#{bundle.login}" update="@all" action="#{LoginPage.login}"/>
-                                            <!-- <p:button styleClass="btn btn-default" value="# {bundle.cancel}" outcome="/dataverse.xhtml?alias=# {dataverseServiceBean.findRootDataverse().alias}"/> -->
                                         </div>
                                     </div>
                                     <div class="form-group">
@@ -90,8 +88,6 @@
                             </div>
                             <div id="remoteProvider" jsf:rendered="#{LoginPage.authProvider.id != 'builtin'}">
                                 <ui:fragment rendered="#{(LoginPage.authProvider.id == 'shib') and (systemConfig.shibEnabled == true)}">
-                                    <!--<h2 class="no-margin-top"># {bundle['auth.providers.title.shib']}</h2>-->
-
                                     <h:form>
                                         <p class="help-block">
                                             <span class="glyphicon glyphicon-info-sign"/>
@@ -155,9 +151,6 @@
                                 </ui:fragment>                             
 
                                 <ui:fragment rendered="#{LoginPage.authProvider.id != 'shib'}">
-                                    <!-- <h2 class="no-margin-top">
-                                        <h:outputText value="# {bundle['auth.providers.title.' += LoginPage.provider]}"/>
-                                    </h2> -->
                                     <o:form useRequestURI="true">
                                         <p class="help-block">
                                             <span class="glyphicon glyphicon-info-sign"/>
@@ -179,7 +172,6 @@
                                 </ui:fragment>
 
                                 <!--ONLY RENDER BUTTON FOR OAUTH PROVIDERS (ORCID, Google, GitHub)-->
-                                <!--<div class="form-horizontal" jsf:rendered="#{LoginPage.authProvider.OAuthProvider}">-->
                                 <div class="form-horizontal" jsf:rendered="#{LoginPage.authProvider.OAuthProvider}">
                                     <div class="form-group text-left">
                                         <div class="col-sm-12">
@@ -202,6 +194,12 @@
                             
                             <div id="otherProviders" jsf:rendered="#{LoginPage.listAuthenticationProviders().size() > 1}">
                                 <h4>#{bundle['auth.providers.title']}</h4>
+                                <p class="help-block">
+                                    <h:outputFormat value="#{bundle['auth.providers.tip']}" escape="false">
+                                        <o:param value="#{settingsWrapper.guidesBaseUrl}"/>
+                                        <o:param value="#{systemConfig.version}"/>
+                                    </h:outputFormat>
+                                </p>
                                 <h:form>
                                     <ui:repeat value="#{LoginPage.listAuthenticationProviders()}" var="provider">
                                         <p:commandLink rendered="#{provider.id != LoginPage.authProvider.id}" styleClass="btn btn-default" actionListener="#{LoginPage.setAuthProviderById(provider.id)}" update="login-container">
