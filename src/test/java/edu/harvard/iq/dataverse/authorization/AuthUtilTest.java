@@ -70,7 +70,7 @@ public class AuthUtilTest {
         gitHubGoogleAndOrcid.add(new GitHubOAuth2AP(null, null));
         gitHubGoogleAndOrcid.add(new OrcidOAuth2AP(null, null, null));
         gitHubGoogleAndOrcid.add(new GoogleOAuth2AP(null, null));
-        assertEquals("Your Institution, GitHub, ORCID, or Google", AuthUtil.getNamesOfRemoteAuthProvidersWithSeparators(gitHubGoogleAndOrcid));
+        assertEquals("Your Institution, GitHub, ORCID Sandbox, or Google", AuthUtil.getNamesOfRemoteAuthProvidersWithSeparators(gitHubGoogleAndOrcid));
 
     }
 
