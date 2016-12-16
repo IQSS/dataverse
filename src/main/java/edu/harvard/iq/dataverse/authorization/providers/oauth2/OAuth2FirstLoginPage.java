@@ -79,6 +79,7 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
     String password;
 
     boolean authenticationFailed = false;
+    private AuthenticationProvider authProvider;
 
     /**
      * Attempts to init the page. Redirects the user to {@code /} in case the
@@ -103,10 +104,13 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
                 String firstName = randomUser.get("firstName");
                 String email = null;
                 List<String> extraEmails = null;
+                String authProviderId = "orcid";
                 switch (devMode) {
                     case RANDOM_EMAIL0:
+                        authProviderId = "github";
                         break;
                     case RANDOM_EMAIL1:
+                        authProviderId = "google";
                         email = randomUser.get("email");
                         break;
                     case RANDOM_EMAIL2:
@@ -126,7 +130,7 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
                 String randomUsername = randomUser.get("username");
                 String eppn = randomUser.get("eppn");
                 String accessToken = "qwe-addssd-iiiiie";
-                setNewUser(new OAuth2UserRecord("github", eppn, randomUsername, accessToken,
+                setNewUser(new OAuth2UserRecord(authProviderId, eppn, randomUsername, accessToken,
                         new AuthenticatedUserDisplayInfo(firstName, lastName, email, "myAffiliation", "myPosition"),
                         extraEmails));
             }
@@ -156,6 +160,7 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
         }
         setSelectedEmail(emailToSuggest);
 
+        authProvider = authenticationSvc.getAuthenticationProvider(newUser.getServiceId());
     }
 
     public String createNewAccount() {
@@ -304,9 +309,15 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
         this.authenticationFailed = authenticationFailed;
     }
 
+    public AuthenticationProvider getAuthProvider() {
+        return authProvider;
+    }
+
     public String getCreateFromWhereTip() {
-        AbstractOAuth2AuthenticationProvider authProvider = authenticationSvc.getOAuth2Provider(newUser.getServiceId());
-        return BundleUtil.getStringFromBundle("oauth2.newAccount.explanation", Arrays.asList(authProvider.getTitle(), systemConfig.getNameOfInstallation()));
+        if (authProvider == null) {
+            return "Unknown identity provider. Are you a developer playing with :DebugOAuthAccountType? Try adding this provider to the authenticationproviderrow table: " + newUser.getServiceId();
+        }
+        return BundleUtil.getStringFromBundle("oauth2.newAccount.explanation", Arrays.asList(authProvider.getInfo().getTitle(), systemConfig.getNameOfInstallation()));
     }
 
     public String getSuggestConvertInsteadOfCreate() {
@@ -314,8 +325,10 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
     }
 
     public String getConvertTip() {
-        AbstractOAuth2AuthenticationProvider authProvider = authenticationSvc.getOAuth2Provider(newUser.getServiceId());
-        return BundleUtil.getStringFromBundle("oauth2.convertAccount.explanation", Arrays.asList(systemConfig.getNameOfInstallation(), authProvider.getTitle()));
+        if (authProvider == null) {
+            return "";
+        }
+        return BundleUtil.getStringFromBundle("oauth2.convertAccount.explanation", Arrays.asList(systemConfig.getNameOfInstallation(), authProvider.getInfo().getTitle()));
     }
 
     public List<String> getEmailsToPickFrom() {

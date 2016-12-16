@@ -353,16 +353,16 @@
                                         </div>
                                     </div>
                                 </div>
-                                <!-- ORCID iD -->
-                                <div class="form-group" jsf:rendered="#{DataverseUserPage.currentUser.authenticatedUserLookup.authenticationProviderId == 'orcid-sandbox' or DataverseUserPage.currentUser.authenticatedUserLookup.authenticationProviderId == 'orcid'}">
-                                    <label for="orchidIdReal" class="col-sm-3 control-label">
-                                        #{bundle['auth.providers.brandForIdentifier.orcid']}
+                                <!-- ORCID iD, for example -->
+                                <div class="form-group" jsf:rendered="#{DataverseUserPage.userAuthProvider.displayIdentifier}">
+                                    <label for="userPersistentId" class="col-sm-3 control-label">
+                                        #{DataverseUserPage.userAuthProvider.persistentIdName}
                                     </label>
                                     <div class="col-sm-9">
                                         <p class="form-control-static">
-                                            <h:graphicImage value="/resources/images/orcid_16x16.png" height="16" width="16"/>&#160;
-                                            <h:outputLink value="http://orcid.org/#{DataverseUserPage.currentUser.authenticatedUserLookup.persistentUserId}" title="#{bundle['auth.providers.brandForIdentifier.orcid']}" target="_blank">
-                                                <h:outputText value="http://orcid.org/#{DataverseUserPage.currentUser.authenticatedUserLookup.persistentUserId}"/>
+                                            <h:graphicImage value="#{DataverseUserPage.userAuthProvider.logo}" height="16" width="16"/>&#160;
+                                            <h:outputLink value="#{DataverseUserPage.userAuthProvider.persistentIdUrlPrefix}#{DataverseUserPage.currentUser.authenticatedUserLookup.persistentUserId}" title="#{DataverseUserPage.userAuthProvider.persistentIdName}" target="_blank">
+                                                <h:outputText value="#{DataverseUserPage.userAuthProvider.persistentIdUrlPrefix}#{DataverseUserPage.currentUser.authenticatedUserLookup.persistentUserId}"/>
                                             </h:outputLink>
                                         </p>
                                     </div>
@@ -519,18 +519,18 @@
                                         <p:message for="email" display="text" />
                                     </div>
                                 </div>
-                                <div class="form-group" jsf:rendered="#{DataverseUserPage.currentUser.authenticatedUserLookup.authenticationProviderId == 'orcid-sandbox' or DataverseUserPage.currentUser.authenticatedUserLookup.authenticationProviderId == 'orcid'}">
-                                    <!-- ORCID iD -->
-                                    <label for="orchidIdReal" class="col-sm-3 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['auth.providers.persistentUserIdTooltip.orcid']}">
-                                            #{bundle['auth.providers.brandForIdentifier.orcid']}
+                                <div class="form-group" jsf:rendered="#{DataverseUserPage.userAuthProvider.displayIdentifier}">
+                                    <!-- ORCID iD, for example -->
+                                    <label for="userPersistentId" class="col-sm-3 control-label">
+                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{DataverseUserPage.userAuthProvider.persistentIdDescription}">
+                                            #{DataverseUserPage.userAuthProvider.persistentIdName}
                                         </span>
                                     </label>
                                     <div class="col-sm-4">
                                         <p class="form-control-static">
-                                            <h:graphicImage value="/resources/images/orcid_16x16.png" height="16" width="16"/>&#160;
-                                            <h:outputLink value="http://orcid.org/#{DataverseUserPage.currentUser.authenticatedUserLookup.persistentUserId}" title="#{bundle['auth.providers.brandForIdentifier.orcid']}" target="_blank">
-                                                <h:outputText value="http://orcid.org/#{DataverseUserPage.currentUser.authenticatedUserLookup.persistentUserId}"/>
+                                            <h:graphicImage value="#{DataverseUserPage.userAuthProvider.logo}" height="16" width="16"/>&#160;
+                                            <h:outputLink value="#{DataverseUserPage.userAuthProvider.persistentIdUrlPrefix}#{DataverseUserPage.currentUser.authenticatedUserLookup.persistentUserId}" title="#{DataverseUserPage.userAuthProvider.persistentIdName}" target="_blank">
+                                                <h:outputText value="#{DataverseUserPage.userAuthProvider.persistentIdUrlPrefix}#{DataverseUserPage.currentUser.authenticatedUserLookup.persistentUserId}"/>
                                             </h:outputLink>
                                         </p>
                                     </div>

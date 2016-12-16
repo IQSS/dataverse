@@ -149,4 +149,29 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
         return new AuthenticationProviderDisplayInfo(getId(), BundleUtil.getStringFromBundle("auth.providers.title.orcid"), "ORCID user repository");
     }
 
+    @Override
+    public boolean isDisplayIdentifier() {
+        return true;
+    }
+
+    @Override
+    public String getPersistentIdName() {
+        return BundleUtil.getStringFromBundle("auth.providers.persistentUserIdName.orcid");
+    }
+
+    @Override
+    public String getPersistentIdDescription() {
+        return BundleUtil.getStringFromBundle("auth.providers.persistentUserIdTooltip.orcid");
+    }
+
+    @Override
+    public String getPersistentIdUrlPrefix() {
+        return "http://orcid.org/";
+    }
+
+    @Override
+    public String getLogo() {
+        return "/resources/images/orcid_16x16.png";
+    }
+
 }

@@ -62,5 +62,10 @@ public class GoogleOAuth2AP extends AbstractOAuth2AuthenticationProvider {
             return new ParsedUserResponse(displayInfo, persistentUserId, username);
         }
     }
+
+    @Override
+    public boolean isDisplayIdentifier() {
+        return false;
+    }
     
 }
