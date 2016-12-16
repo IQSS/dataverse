@@ -126,9 +126,7 @@ public class LoginPage implements java.io.Serializable {
             AuthenticationProvider authenticationProvider = authSvc.getAuthenticationProvider(id);
             if (authenticationProvider != null) {
                 if (ShibAuthenticationProvider.PROVIDER_ID.equals(authenticationProvider.getId())) {
-                    if (systemConfig.isShibEnabled()) {
-                        infos.add(authenticationProvider.getInfo());
-                    }
+                    infos.add(authenticationProvider.getInfo());
                 } else {
                     infos.add(authenticationProvider.getInfo());
                 }

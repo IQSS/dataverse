@@ -87,7 +87,7 @@
                                 </h:form>
                             </div>
                             <div id="remoteProvider" jsf:rendered="#{LoginPage.authProvider.id != 'builtin'}">
-                                <ui:fragment rendered="#{(LoginPage.authProvider.id == 'shib') and (systemConfig.shibEnabled == true)}">
+                                <ui:fragment rendered="#{LoginPage.authProvider.id == 'shib'}">
                                     <h:form>
                                         <p class="help-block">
                                             <span class="glyphicon glyphicon-info-sign"/>

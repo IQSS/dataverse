@@ -12,19 +12,14 @@ public class AuthUtil {
 
     private static final Logger logger = Logger.getLogger(DataverseUserPage.class.getCanonicalName());
 
-    public static boolean isNonLocalLoginEnabled(boolean shibEnabled, Collection<AuthenticationProvider> providers) {
-        if (shibEnabled) {
-            return true;
-        } else {
-            logger.fine("Shib is not enabled.");
-        }
+    public static boolean isNonLocalLoginEnabled(Collection<AuthenticationProvider> providers) {
         if (providers != null) {
             for (AuthenticationProvider provider : providers) {
-                if (provider instanceof AbstractOAuth2AuthenticationProvider) {
-                    logger.fine("found an oauth provider (returning true): " + provider.getId());
+                if (provider instanceof AbstractOAuth2AuthenticationProvider || provider instanceof ShibAuthenticationProvider) {
+                    logger.fine("found an remote auth provider (returning true): " + provider.getId());
                     return true;
                 } else {
-                    logger.fine("not an oauth provider: " + provider.getId());
+                    logger.fine("not a remote auth provider: " + provider.getId());
                 }
             }
         }
@@ -34,16 +29,12 @@ public class AuthUtil {
     /**
      * @todo Cleanup and refactor (DRY) if we decide to use this.
      */
-    public static String getNamesOfRemoteAuthProvidersWithSeparators(boolean shibEnabled, Collection<AuthenticationProvider> authenticationProviders) {
+    public static String getNamesOfRemoteAuthProvidersWithSeparators(Collection<AuthenticationProvider> authenticationProviders) {
         List<AuthenticationProvider> finalList = new ArrayList<>();
-        if (shibEnabled) {
-            logger.fine("Shib enabled, adding.");
-            finalList.add(new ShibAuthenticationProvider());
-        }
         if (authenticationProviders != null) {
             for (AuthenticationProvider provider : authenticationProviders) {
-                if (provider instanceof AbstractOAuth2AuthenticationProvider) {
-                    logger.fine("found an oauth provider (returning true): " + provider.getId());
+                if (provider instanceof AbstractOAuth2AuthenticationProvider || provider instanceof ShibAuthenticationProvider) {
+                    logger.fine("found an remote auth provider (returning true): " + provider.getId());
                     finalList.add(provider);
                 }
             }

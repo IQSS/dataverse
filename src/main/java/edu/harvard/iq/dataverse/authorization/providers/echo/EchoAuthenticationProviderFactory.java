@@ -9,7 +9,13 @@ import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderRo
 /**
  *
  * @author michael
+ *
+ * @deprecated This was a useful example of a non builtin factory but now we
+ * have real world factories such as OAuth2AuthenticationProviderFactory and
+ * ShibAuthenticationProviderFactory so we could consider deleting this example
+ * from the code base.
  */
+@Deprecated
 public class EchoAuthenticationProviderFactory implements AuthenticationProviderFactory {
 
     @Override

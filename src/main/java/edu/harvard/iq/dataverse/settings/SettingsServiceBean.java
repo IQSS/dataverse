@@ -131,8 +131,6 @@ public class SettingsServiceBean {
          * Experimental: Key for if DDI export is enabled or disabled.
          */
         DdiExportEnabled,
-        /** Key for if Shibboleth is enabled or disabled. */
-        ShibEnabled,
         /** Key for if ScrubMigrationData is enabled or disabled. */
         ScrubMigrationData,
         /** Key for the url to send users who want to sign up to. */

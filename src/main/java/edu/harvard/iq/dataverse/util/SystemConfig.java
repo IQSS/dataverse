@@ -3,8 +3,11 @@ package edu.harvard.iq.dataverse.util;
 import com.ocpsoft.pretty.PrettyContext;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
+import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -35,6 +38,9 @@ public class SystemConfig {
 
     @EJB
     DataverseServiceBean dataverseService;
+
+    @EJB
+    AuthenticationServiceBean authenticationService;
 
     /**
      * A JVM option for the advertised fully qualified domain name (hostname) of
@@ -460,11 +466,6 @@ public class SystemConfig {
     public boolean isDdiExportEnabled() {
         boolean safeDefaultIfKeyNotFound = false;
         return settingsService.isTrueForKey(SettingsServiceBean.Key.DdiExportEnabled, safeDefaultIfKeyNotFound);
-    }
-
-    public boolean isShibEnabled() {
-        boolean safeDefaultIfKeyNotFound = false;
-        return settingsService.isTrueForKey(SettingsServiceBean.Key.ShibEnabled, safeDefaultIfKeyNotFound);
     }
 
     public boolean myDataDoesNotUsePermissionDocs() {

@@ -474,11 +474,6 @@ Allow for migration of non-conformant data (especially dates) from DVN 3.x to Da
 
 The duration in minutes before "Confirm Email" URLs expire. The default is 1440 minutes (24 hours).  See also :doc:`/installation/administration`.
 
-:ShibEnabled
-++++++++++++
-
-This setting is experimental per :doc:`/installation/shibboleth`.
-
 :AllowSignUp
 ++++++++++++
 

@@ -629,7 +629,7 @@ public class DataverseUserPage implements java.io.Serializable {
     }
 
     public boolean isNonLocalLoginEnabled() {
-        return AuthUtil.isNonLocalLoginEnabled(systemConfig.isShibEnabled(), authenticationService.getAuthenticationProviders());
+        return AuthUtil.isNonLocalLoginEnabled(authenticationService.getAuthenticationProviders());
     }
 
     public String getSuggestNonLocalLoginTipStatic() {
@@ -642,9 +642,7 @@ public class DataverseUserPage implements java.io.Serializable {
             AuthenticationProvider authenticationProvider = authenticationService.getAuthenticationProvider(id);
             if (authenticationProvider != null) {
                 if (ShibAuthenticationProvider.PROVIDER_ID.equals(authenticationProvider.getId())) {
-                    if (systemConfig.isShibEnabled()) {
-                        infos.add(authenticationProvider.getInfo());
-                    }
+                    infos.add(authenticationProvider.getInfo());
                 } else {
                     infos.add(authenticationProvider.getInfo());
                 }
@@ -653,7 +651,7 @@ public class DataverseUserPage implements java.io.Serializable {
         if (infos.isEmpty()) {
             return BundleUtil.getStringFromBundle("user.suggestNonLocalLoginStatic.tip");
         } else {
-            String args = AuthUtil.getNamesOfRemoteAuthProvidersWithSeparators(systemConfig.isShibEnabled(), authenticationService.getAuthenticationProviders());
+            String args = AuthUtil.getNamesOfRemoteAuthProvidersWithSeparators(authenticationService.getAuthenticationProviders());
             return BundleUtil.getStringFromBundle("user.suggestNonLocalLoginDynamic.tip", Arrays.asList(args));
         }
     }

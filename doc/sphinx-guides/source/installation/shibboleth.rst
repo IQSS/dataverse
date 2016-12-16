@@ -278,12 +278,25 @@ As a sanity check, visit the following URLs (substituting your hostname) to make
 
 The JSON in ``DiscoFeed`` comes from the list of IdPs you configured in the ``MetadataProvider`` section of ``shibboleth2.xml`` and will form a dropdown list on the Login Page.
 
-Enable Shibboleth
-~~~~~~~~~~~~~~~~~
+Add the Shibboleth Authentication Provider to Dataverse
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-``curl -X PUT -d true http://localhost:8080/api/admin/settings/:ShibEnabled``
+Now that you've configured Glassfish, Apache, and ``shibd``, you are ready to turn your attention back to Dataverse to enable Shibboleth as an "authentication provider." You will be using ``curl`` to POST the `following JSON file <../_static/installation/files/etc/shibboleth/shibAuthProvider.json>`_ to the ``authenticationProviders`` endpoint of the :doc:`/api/native-api`.
 
-After enabling Shibboleth, assuming the ``DiscoFeed`` is working per above, you should see a list of institutions to log into. You will not be able to log in via these institutions, however, until you have exchanged metadata with them. You can change the boolean above to ``false`` while you wait for the metadata exchange to be complete since it only affects if the Shibboleth login screen is shown.
+.. literalinclude:: ../_static/installation/files/etc/shibboleth/shibAuthProvider.json
+   :language: json
+
+``curl -X POST -H 'Content-type: application/json' --upload-file shibAuthProvider.json http://localhost:8080/api/admin/authenticationProviders``
+
+Now that you've added the Shibboleth authentication provider to Dataverse, as described in the :doc:`/user/account` section of the User Guide, you should see a new "Your Institution" button under "Other Log In Options" on the Log In page. After clicking "Your Institution", you should see the institutions you configured in ``/etc/shibboleth/shibboleth2.xml`` above. If not, double check the content of the ``DiscoFeed`` URL above. If you don't see the "Your Institution" button, confirm that the the "shib" authentication provider has been added by listing all the authentication providers Dataverse knows about:
+
+``curl http://localhost:8080/api/admin/authenticationProviders``
+
+Once you have confirmed that the Dataverse web interface is listing the institutions you expect, you'll want to temporarily remove the Shibboleth authentication provider you just added because users won't be able to log in via their institution until you have exchanged metadata with one or more Identity Providers (IdPs), which is described below.  As explained in the section of the :doc:`/api/native-api` of the API Guide, you can delete an authentication provider by passing its ``id``:
+
+``curl -X DELETE http://localhost:8080/api/admin/authenticationProviders/shib``
+
+Before contacting your actual Identity Provider, we recommend testing first with the "TestShib" Identity Provider (IdP) to ensure that you have configured everything correctly.
 
 Exchange Metadata with Your Identity Provider
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -333,6 +346,7 @@ If your Dataverse installation is working with TestShib it **should** work with 
 
 - Send your identity people your metadata file above (or a link to download it themselves). From their perspective you are a Service Provider (SP).
 - Ask your identity people to send you the metadata for the Identity Provider (IdP) they operate. See the section above on ``shibboleth2.xml`` and ``MetadataProvider`` for what to do with the IdP metadata. Restart ``shibd`` and ``httpd`` as necessary.
+- Re-add Shibboleth as an authentication provider to Dataverse as described above.
 - Test login to Dataverse via your institution's Identity Provider (IdP).
 
 Administration
