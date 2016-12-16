@@ -155,7 +155,7 @@
                                         <p class="help-block">
                                             <span class="glyphicon glyphicon-info-sign"/>
                                             <h:outputFormat value=" #{bundle['auth.providers.blurb']}" escape="false">
-                                                <o:param value="#{bundle['auth.providers.title.'.concat(LoginPage.authProvider.id)]}"/>
+                                                <o:param value="#{LoginPage.authProvider.info.title}"/>
                                                 <o:param value="#{settingsWrapper.guidesBaseUrl}"/>
                                                 <o:param value="#{systemConfig.version}"/>
                                                 <o:param>

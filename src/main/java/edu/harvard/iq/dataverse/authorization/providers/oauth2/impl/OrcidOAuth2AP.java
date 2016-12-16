@@ -37,6 +37,9 @@ import org.xml.sax.SAXException;
 public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
     
     final static Logger logger = Logger.getLogger(OrcidOAuth2AP.class.getName());
+
+    public static final String PROVIDER_ID_PRODUCTION = "orcid";
+    public static final String PROVIDER_ID_SANDBOX = "orcid-sandbox";
     
     public OrcidOAuth2AP(String clientId, String clientSecret, String userEndpoint) {
         scope = "/read-limited"; 
@@ -146,7 +149,10 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
 
     @Override
     public AuthenticationProviderDisplayInfo getInfo() {
-        return new AuthenticationProviderDisplayInfo(getId(), BundleUtil.getStringFromBundle("auth.providers.title.orcid"), "ORCID user repository");
+        if (PROVIDER_ID_PRODUCTION.equals(getId())) {
+            return new AuthenticationProviderDisplayInfo(getId(), BundleUtil.getStringFromBundle("auth.providers.title.orcid"), "ORCID user repository");
+        }
+        return new AuthenticationProviderDisplayInfo(getId(), "ORCID Sandbox", "ORCID dev sandbox ");
     }
 
     @Override

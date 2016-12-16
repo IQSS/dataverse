@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2Aut
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2AuthenticationProviderFactory;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.GitHubOAuth2AP;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.GoogleOAuth2AP;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProviderFactory;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
@@ -824,18 +825,18 @@ public class AuthenticationServiceBean {
         }
     }
 
+    /**
+     * @todo Consider making the sort order configurable by making it a colum on
+     * AuthenticationProviderRow
+     */
     public List<String> getAuthenticationProviderIdsSorted() {
         GitHubOAuth2AP github = new GitHubOAuth2AP(null, null);
         GoogleOAuth2AP google = new GoogleOAuth2AP(null, null);
-        /**
-         * @todo Stop hard-coding the magic strings "orcid" and "orcid-sandbox"
-         * below. Centralize them as static.
-         */
         return Arrays.asList(
                 BuiltinAuthenticationProvider.PROVIDER_ID,
                 ShibAuthenticationProvider.PROVIDER_ID,
-                "orcid",
-                "orcid-sandbox",
+                OrcidOAuth2AP.PROVIDER_ID_PRODUCTION,
+                OrcidOAuth2AP.PROVIDER_ID_SANDBOX,
                 github.getId(),
                 google.getId()
         );
