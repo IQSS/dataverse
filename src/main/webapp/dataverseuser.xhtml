@@ -417,11 +417,7 @@
                             <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' and DataverseUserPage.nonLocalLoginEnabled}">
                                 
                                 <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> 
-                                    <h:outputFormat value=" #{bundle['user.signup.otherLogInOptions.tip']}" escape="false">
-                                        <o:param>
-                                            <h:outputLink value="/loginpage.xhtml">#{bundle['auth.providers.title']}</h:outputLink>
-                                        </o:param>
-                                    </h:outputFormat>
+                                    <h:outputText value=" #{bundle['user.signup.otherLogInOptions.tip']}" escape="false"/>
                                 </p>
                                 
                                 <!--FIXME: Decide between static and dynamic text-->

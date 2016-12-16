@@ -194,12 +194,6 @@
                             
                             <div id="otherProviders" jsf:rendered="#{LoginPage.listAuthenticationProviders().size() > 1}">
                                 <h4>#{bundle['auth.providers.title']}</h4>
-                                <p class="help-block">
-                                    <h:outputFormat value="#{bundle['auth.providers.tip']}" escape="false">
-                                        <o:param value="#{settingsWrapper.guidesBaseUrl}"/>
-                                        <o:param value="#{systemConfig.version}"/>
-                                    </h:outputFormat>
-                                </p>
                                 <h:form>
                                     <ui:repeat value="#{LoginPage.listAuthenticationProviders()}" var="provider">
                                         <p:commandLink rendered="#{provider.id != LoginPage.authProvider.id}" styleClass="btn btn-default" actionListener="#{LoginPage.setAuthProviderById(provider.id)}" update="login-container">
@@ -207,6 +201,14 @@
                                         </p:commandLink>
                                     </ui:repeat>
                                 </h:form>
+                                <div jsf:rendered="#{LoginPage.authProvider.id == 'builtin'}">
+                                    <p class="help-block"><span class="glyphicon glyphicon-info-sign"/>
+                                        <h:outputFormat value=" #{bundle['auth.providers.tip']}" escape="false">
+                                            <o:param value="#{settingsWrapper.guidesBaseUrl}"/>
+                                            <o:param value="#{systemConfig.version}"/>
+                                        </h:outputFormat>
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>
