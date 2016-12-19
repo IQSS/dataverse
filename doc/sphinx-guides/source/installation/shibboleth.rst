@@ -10,25 +10,10 @@ By configuring and enabling Shibboleth support in Dataverse, your users will be 
 
 Shibboleth is an implementation of the `Security Assertion Markup Language (SAML) <https://en.wikipedia.org/wiki/Security_Assertion_Markup_Language>`_ protocol which is similar in spirit to systems used by many webapps that allow you to log in via Google, Facebook, or Twitter.
 
-Auth Modes: Local vs. Remote vs. Both
--------------------------------------
-
-There are three valid configurations or modes for authenticating users to Dataverse:
-
-- Local only.
-- Both local and remote (Shibboleth).
-- Remote (Shibboleth) only.
-
-Out of the box, Dataverse is configured in "local only" mode. The "dataverseAdmin" superuser account mentioned in the :doc:`/installation/installation-main` section is an example of a local account.
-
-Enabling Shibboleth support results in a second login screen appearing next to the regular login screen. This is "both local and remote" mode. This mode is especially useful if you have external collaborators or if you want to let users who have left your institution to continue to log into your installation of Dataverse. See also the section below about converting users from Shibboleth users to local users when they have left your institution.
-
-"Remote only" mode means that Shibboleth has been enabled and that ``:AllowSignUp`` is set to "false" per the :doc:`config` section to prevent users from creating local accounts via the web interface. Please note that local accounts can also be created via API, and the way to prevent this is to block the ``builtin-users`` endpoint or scramble (or remove) the ``BuiltinUsers.KEY`` database setting per the :doc:`config` section. The fact that preventing local users from being created does not hide the login screen for local users is being discussed at https://github.com/IQSS/dataverse/issues/2974
-
 Installation
 ------------
 
-We assume you've already gone through a basic installation as described in the :doc:`/installation/installation-main` section.
+We assume you've already gone through a basic installation as described in the :doc:`/installation/installation-main` section and that you've paid particular attention to the "Auth Modes: Local vs. Remote vs. Both" explanation in the :doc:`/installation/config` section. You're going to give Shibboleth a whirl. Let's get started.
 
 System Requirements
 ~~~~~~~~~~~~~~~~~~~

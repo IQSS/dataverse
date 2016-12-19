@@ -33,7 +33,6 @@ public class SettingsServiceBean {
      * So there.
      */
     public enum Key {
-        /** @todo document DefaultAuthProvider in guides */
         DefaultAuthProvider,
         FooterCopyright,
         FileFixityChecksumAlgorithm,
