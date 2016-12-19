@@ -51,6 +51,8 @@ Create a Dataverse account using Institutional Log In
 #. Using the dropdown menu, select your institution then click the Continue button to go to your instituion's log in page |image1|
 #. After you put in your institutional credintials successfully, you will be brought back to Dataverse to confirm your account information, and click "Create Account" |image2|
 
+If you do not find your institution listed, you will need to request that it is added to the Research & Scholarship category of InCommon. Contact support for assistance on how to get this process started with the identity provider support team at your institution.
+
 Use your Institutional Log In for your Dataverse account
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
