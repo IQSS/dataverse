@@ -23,7 +23,7 @@
                     <f:viewParam name="fileId" value="#{FilePage.fileId}"/>
                     <f:viewParam name="version" value="#{FilePage.version}"/>
                     <f:viewAction action="#{FilePage.init}" />
-                    <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(FilePage.file)}"/>
+                    <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbsForFileMetadata(FilePage.fileMetadata)}"/>
                 </f:metadata>
                 <h:form id="fileForm">
                     <div id="topDatasetBlock" class="row">
@@ -382,6 +382,7 @@
                                     </div>
                                 </div>
                             </p:tab>
+                            <ui:remove>
                                 <p:tab id="provenanceTab" title="Provenance" rendered="#{(!FilePage.fileMetadata.datasetVersion.deaccessioned or 
                                                               (FilePage.fileMetadata.datasetVersion.deaccessioned and FilePage.canUpdateDataset()))}">
                                     <!-- Placeholder -->
@@ -391,7 +392,7 @@
                                     <!-- Placeholder -->
                                     <em>Coming soon...</em>
                                 </p:tab>
-
+                            </ui:remove>
                         </p:tabView>
                     </div>
 
