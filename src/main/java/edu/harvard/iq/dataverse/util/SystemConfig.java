@@ -615,4 +615,14 @@ public class SystemConfig {
         }
     }
 
+    public String getOAuth2CallbackUrl() {
+        String saneDefault = getDataverseSiteUrl() + "/oauth2/callback.xhtml";
+        String settingReturned = settingsService.getValueForKey(SettingsServiceBean.Key.OAuth2CallbackUrl);
+        logger.fine("getOAuth2CallbackUrl setting returned: " + settingReturned);
+        if (settingReturned != null) {
+            return settingReturned;
+        }
+        return saneDefault;
+    }
+
 }

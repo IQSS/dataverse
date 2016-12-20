@@ -38,10 +38,6 @@ When you are finished you should have a Client ID and Client Secret from the pro
 Dataverse Side
 ~~~~~~~~~~~~~~
 
-First, set OAuth2CallbackUrl to the value you used in the previous step, for example:
-
-``curl -X PUT -d https://dataverse.example.edu/oauth2/callback.xhtml http://localhost:8080/api/admin/settings/OAuth2CallbackUrl``
-
 As explained under "Auth Modes" in the :doc:`config` section, available authentication providers are stored in the ``authenticationproviderrow`` database table and can be listed with this command:
 
 ``curl http://localhost:8080/api/admin/authenticationProviders``

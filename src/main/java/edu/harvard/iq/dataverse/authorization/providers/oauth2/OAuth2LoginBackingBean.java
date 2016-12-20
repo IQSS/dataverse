@@ -23,6 +23,7 @@ import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import static edu.harvard.iq.dataverse.util.StringUtil.toOption;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 
 /**
  * Backing bean of the oauth2 login process. Used from the login page and the
@@ -46,7 +47,7 @@ public class OAuth2LoginBackingBean implements Serializable {
     AuthenticationServiceBean authenticationSvc;
 
     @EJB
-    SettingsServiceBean settingsSvc;
+    SystemConfig systemConfig;
 
     @Inject
     DataverseSession session;
@@ -60,7 +61,7 @@ public class OAuth2LoginBackingBean implements Serializable {
     }
 
     public String getCallbackUrl() {
-        return settingsSvc.get("OAuth2CallbackUrl", "http://localhost:8080/oauth2/callback.xhtml");
+        return systemConfig.getOAuth2CallbackUrl();
     }
 
     public void exchangeCodeForToken() throws IOException {
@@ -181,10 +182,6 @@ public class OAuth2LoginBackingBean implements Serializable {
         return authenticationSvc.getOAuth2Providers().stream()
                 .sorted(Comparator.comparing(AbstractOAuth2AuthenticationProvider::getTitle))
                 .collect(toList());
-    }
-
-    public boolean isOAuth2CallbackNotSet() {
-        return settingsSvc.get("OAuth2CallbackUrl") == null;
     }
 
     public boolean isOAuth2ProvidersDefined() {
