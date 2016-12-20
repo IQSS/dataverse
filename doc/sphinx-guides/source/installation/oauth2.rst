@@ -1,64 +1,69 @@
-ORCiD and Other OAuth2 Identity Providers
-=========================================
+OAuth Login: ORCID, GitHub, Google
+==================================
 
 .. contents:: :local:
 
 Introduction
 ------------
-`OAuth2 <https://oauth.net/2/>`_ is an authentication protocol that allows systems to
-share user data, while letting the users control what data is being shared. When you
-see buttons stating "login with Google" or "login through Facebook", OAuth2 is probably
-involved.
+`OAuth2 <https://oauth.net/2/>`_ is an authentication protocol that allows systems to share user data, while letting the users control what data is being shared. When you see buttons stating "login with Google" or "login through Facebook", OAuth2 is probably involved. For the purposes of this section, we will shorten "OAuth2" to just "OAuth."
 
-Dataverse supports three OAuth2 providers: `ORCiD <http://orcid.org>`_, `GitHub <github.com>`_,
-and `Google <https://console.developers.google.com>`_. Additional providers can be added
-with relatively small effort, as long as they play according to the OAuth2 rules. Please send us a pull request if you add one!
+Dataverse supports three OAuth providers: `ORCID <http://orcid.org>`_, `GitHub <https://github.com>`_, and `Google <https://console.developers.google.com>`_.
 
 Setup
 -----
 
-Setting up an OAuth2 identity provider to work with Dataverse requires setup in two places:
-the provider, and the Dataverse installation.
+Setting up an OAuth identity provider to work with Dataverse requires setup in two places: the provider, and the Dataverse installation.
 
 Identity Provider Side
 ~~~~~~~~~~~~~~~~~~~~~~
 
-In this stage, you need to register the Dataverse installation at the provider. Large
-providers offer a UI for doing this. Smaller providers, like ORCiD, allow you to
-set up the application by email. The provider will require the following items:
+Obtain Client ID and Client Secret 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- Data about the application, such as name, URL, privacy policy link etc.
-- Callback URL. This is where the provider sends the user to after the authentication is complete. For Dataverse, the value should be ``https://{path-to-dataverse-installation}/oauth2/callback.xhtml``. Normally, the provider will allow multiple urls, to allow test sites and local development alongside a production system.
-- Scopes, which is a list of strings specifying the data Dataverse will request from the
-  provider. These strings are provider-specific:
+Before OAuth providers will release information about their users (first name, last name, etc.) to your Dataverse installation, you must establish request a "Client ID" and "Client Secret" from them. In the case of GitHub and Google, this is as simple as clicking a few buttons and there is no cost associated with using their authentication service. ORCID, on the other hand, does not have automated system for requesting these credentials, and it is not free to use the ORCID authentication service.
 
-  - ORCiD
-        ``/read-limited``
-  - GitHub
-        (no scope required)
-  - Google
-        ``https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email``
+URLs to help you request a Client ID and Client Secret from the providers supported by Dataverse are provided below.  For all of these providers, it's a good idea to request the Client ID and Client secret using a generic account, perhaps the one that's associated with the ``:SystemEmail`` you've configured for Dataverse, rather than your own personal ORCID, GitHub, or Google account:
 
-At the end of this stage, the provider will give you two values: a *Client ID* and a *Client Secret*.
-Keep the secret safe and hidden - in particular, don't push it into a publicly visible code repository, such as GitHub or BitBucket.
+- ORCID: https://orcid.org/content/register-client-application-production-trusted-party
+- GitHub: https://github.com/settings/applications/new via https://developer.github.com/v3/oauth/
+- Google: https://console.developers.google.com/projectselector/apis/credentials via https://developers.google.com/identity/protocols/OAuth2WebServer (pick "OAuth client ID")
+
+Each of these providers will require the following information from you:
+
+- Basic info about your app such as a name, description, URL, logo, privacy policy, etc.
+- OAuth2 Redirect URI (ORCID) or Authorization Callback URL (GitHub) or Authorized Redirect URIs (Google): This is the URL on the Dataverse side to which the user will be sent after successfully authenticating with the identity provider. This should be the URL of your Dataverse installation, probably with https, appended with ``/oauth2/callback.xhtml`` such as ``https://dataverse.example.edu/oauth2/callback.xhtml``
+
+When you are finished you should have a Client ID and Client Secret from the provider. Keep them safe and secret.
 
 Dataverse Side
 ~~~~~~~~~~~~~~
-Adding an OAuth provider to Dataverse is done the usual way, by ``POST``-ing a description of the provider,
-in the form of a .json file, to the providers API endpoint. Sample provider files can be found at ``/scripts/api/data/authentication-providers/``.
 
-Registering a new provider, assuming installation is at ``localhost:8080`` and the provider
-file is called ``orcid.json``::
+First, set OAuth2CallbackUrl to the value you used in the previous step, for example:
 
-   curl -X POST -H"Content-type: application/json"  -d@orcid.json http://localhost:8080/api/admin/authenticationProviders/
+``curl -X PUT -d https://dataverse.example.edu/oauth2/callback.xhtml http://localhost:8080/api/admin/settings/OAuth2CallbackUrl``
 
-When an OAuth2 provider is enabled, Dataverse's Log In screen will list it as a login option below the usual "username/password" panel.
+As explained under "Auth Modes" in the :doc:`config` section, available authentication providers are stored in the ``authenticationproviderrow`` database table and can be listed with this command:
 
-.. warning:: When using OAuth2 in production environments, Dataverse requires the production server's callback URL to be stored in the settings table, under the key ``OAuth2CallbackUrl``. This can be done like so::
+``curl http://localhost:8080/api/admin/authenticationProviders``
 
-      curl -X PUT -dhttp://dataverse.institute.edu/oauth2/callback.xhtml  localhost:8080/api/admin/settings/OAuth2CallbackUrl
+We will ``POST`` a JSON file containing the Client ID and Client Secret to this ``authenticationProviders`` API endpoint to add another authentication provider. As a starting point, you'll want to download the JSON template file matching the provider you're setting up:
 
-  The callback URL has to be identical to one of the callbacks listed at the provider during the previous stage.
+- :download:`orcid.json <../_static/installation/files/root/auth-providers/orcid.json>`
+- :download:`github.json <../_static/installation/files/root/auth-providers/github.json>`
+- :download:`google.json <../_static/installation/files/root/auth-providers/google.json>`
+
+Here's how the JSON template for GitHub looks, for example:
+
+.. literalinclude:: ../_static/installation/files/root/auth-providers/github.json
+   :language: json
+
+Edit the JSON template and replace the two "FIXME" values with the Client ID and Client Secret you obtained earlier. Then use curl to ``POST`` the JSON to Dataverse:
+
+``curl -X POST -H 'Content-type: application/json' --upload-file github.json http://localhost:8080/api/admin/authenticationProviders``
+
+After restarting Glassfish you should see the new provider under "Other options" on the Log In page, as described in the :doc:`/user/account` section of the User Guide.
+
+By default, the Log In page will show the "builtin" provider, but you can adjust this via the ``:DefaultAuthProvider`` configuration option. For details, see :doc:`config`.
 
 Converting Local Users to OAuth
 -------------------------------
