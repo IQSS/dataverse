@@ -364,7 +364,7 @@ public class MailServiceBean implements java.io.Serializable {
                         parentDataverseDisplayName,
                         parentDataverseUrl,
                         systemConfig.getGuidesBaseUrl(),
-                        systemConfig.getVersion()));
+                        systemConfig.getGuidesVersion()));
                 logger.fine(dataverseCreatedMessage);
                 return messageText += dataverseCreatedMessage;
             case REQUESTFILEACCESS:
@@ -393,7 +393,7 @@ public class MailServiceBean implements java.io.Serializable {
                         version.getDataset().getOwner().getDisplayName(),
                         getDataverseLink(version.getDataset().getOwner()),
                         systemConfig.getGuidesBaseUrl(),
-                        systemConfig.getVersion()
+                        systemConfig.getGuidesVersion()
                 ));
                 logger.fine(datasetCreatedMessage);
                 return messageText += datasetCreatedMessage;
@@ -427,7 +427,7 @@ public class MailServiceBean implements java.io.Serializable {
             case CREATEACC:
                 String accountCreatedMessage = BundleUtil.getStringFromBundle("notification.email.welcome", Arrays.asList(
                         systemConfig.getGuidesBaseUrl(),
-                        systemConfig.getVersion()
+                        systemConfig.getGuidesVersion()
                 ));
                 String optionalConfirmEmailAddon = confirmEmailService.optionalConfirmEmailAddonMsg(userNotification.getUser());
                 accountCreatedMessage += optionalConfirmEmailAddon;
