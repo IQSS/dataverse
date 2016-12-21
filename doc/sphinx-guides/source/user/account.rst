@@ -47,7 +47,7 @@ Please note that you cannot edit your account information within Dataverse if yo
 Convert Account
 ~~~~~~~~~~~~~~~
 
-If more than one log in option is available, you can convert between them and use the new option from now on.
+If more than one log in option is available, you can convert from one to another and use the new option from now on.
 
 If you are converting from the Email/Username log in option you will need to have your password ready to complete the conversion process. Click Log In, select the new log in option, and go through the log in process. When you return to Dataverse, look for an option allowing you to convert and enter your password to complete the conversion. The section on Remote Authentication below has more specific information on converting to Institutional Log In, ORCID, GitHub, and Google.
 

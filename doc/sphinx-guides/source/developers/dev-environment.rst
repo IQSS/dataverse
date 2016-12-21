@@ -161,7 +161,7 @@ For a list of possible values, please "find usages" on the settings key above an
 
 Now when you go to http://localhost:8080/shib.xhtml you should be prompted to create a Shibboleth account.
 
-OAuth much more straightforward to get working on your laptop than Shibboleth. GitHub is a good identity provider to test with because you can easily request a Client ID and Client Secret that works against localhost. Follow the instructions in the :doc:`/installation/oath2` section of the installation Guide and use "http://localhost:8080/oauth2/callback.xhtml" as the callback URL.
+OAuth much more straightforward to get working on your laptop than Shibboleth. GitHub is a good identity provider to test with because you can easily request a Client ID and Client Secret that works against localhost. Follow the instructions in the :doc:`/installation/oauth2` section of the installation Guide and use "http://localhost:8080/oauth2/callback.xhtml" as the callback URL.
 
 In addition to setting up OAuth on your laptop for real per above, you can also use a dev/debug mode:
 
