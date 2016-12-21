@@ -111,7 +111,7 @@ Create a Dataverse account using ORCID iD
 #. Go to “Log In” in the upper right corner of Dataverse.
 #. Click the "ORCID" button under the "Other options" header.
 #. Click the "Log In with ORCID" button to go to the ORCID website.
-#. After you put in your ORCID credentials successfully, you will be brought back to Dataverse to confirm your account.
+#. After you put in your ORCID credentials successfully, you will be brought back to Dataverse to confirm the creation of your Dataverse account. By default ORCID does not release email addresses, but if you have configured your ORCID account to release one or more email address, it will be suggested to you as an option but you can also enter whatever email address you like. If you have entered employment information within your ORCID account, the name of your employer will be suggested for the "Affiliation" field on the Dataverse side.
 
 Convert your Dataverse account to use ORCID for log in
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
