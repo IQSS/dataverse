@@ -4,6 +4,7 @@ import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.GitHubOAuth2AP;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
@@ -238,6 +239,18 @@ public class AdminIT {
         Response deleteSuperuser = UtilIT.deleteUser(superuserUsername);
         assertEquals(200, deleteSuperuser.getStatusCode());
 
+    }
+
+    @Test
+    public void testCreateNonBuiltinUserViaApi() {
+        Response createUser = UtilIT.createRandomAuthenticatedUser(OrcidOAuth2AP.PROVIDER_ID_PRODUCTION);
+        createUser.prettyPrint();
+        assertEquals(200, createUser.getStatusCode());
+
+        String persistentUserId = createUser.body().jsonPath().getString("data.persistentUserId");
+
+        Response deleteUserToConvert = UtilIT.deleteUser(persistentUserId);
+        assertEquals(200, deleteUserToConvert.getStatusCode());
     }
 
     @Test

@@ -50,6 +50,7 @@ import java.util.List;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.authorization.AuthTestDataServiceBean;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
+import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.users.User;
 /**
  * Where the secure, setup API calls live.
@@ -282,6 +283,32 @@ public class Admin extends AbstractApiBean {
             userArray.add(jsonForAuthUser(user));
         });
         return ok(userArray);
+    }
+
+
+    /**
+     * @todo Make this support creation of BuiltInUsers.
+     *
+     * @todo Add way more error checking. Only the happy path is tested by
+     * AdminIT.
+     */
+    @POST
+    @Path("authenticatedUsers")
+    public Response createAuthenicatedUser(JsonObject jsonObject) {
+        logger.fine("JSON in: " + jsonObject);
+        String persistentUserId = jsonObject.getString("persistentUserId");
+        String identifier = jsonObject.getString("identifier");
+        String proposedAuthenticatedUserIdentifier = identifier.replaceFirst("@", "");
+        String firstName = jsonObject.getString("firstName");
+        String lastName = jsonObject.getString("lastName");
+        String emailAddress = jsonObject.getString("email");
+        String position = null;
+        String affiliation = null;
+        UserRecordIdentifier userRecordId = new UserRecordIdentifier(jsonObject.getString("authenticationProviderId"), persistentUserId);
+        AuthenticatedUserDisplayInfo userDisplayInfo = new AuthenticatedUserDisplayInfo(firstName, lastName, emailAddress, affiliation, position);
+        boolean generateUniqueIdentifier = true;
+        AuthenticatedUser authenticatedUser = authSvc.createAuthenticatedUser(userRecordId, proposedAuthenticatedUserIdentifier, userDisplayInfo, true);
+        return ok(jsonForAuthUser(authenticatedUser));
     }
 
     /**

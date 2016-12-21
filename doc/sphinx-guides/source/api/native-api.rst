@@ -394,6 +394,21 @@ Sample output using "dataverseAdmin" as the ``identifier``::
       "affiliation": "Dataverse.org"
     }
 
+Create an authenticateUser::
+
+    POST http://$SERVER/api/admin/authenticatedUsers
+
+POSTed JSON example::
+
+    {
+      "authenticationProviderId": "orcid",
+      "persistentUserId": "0000-0002-3283-0661",
+      "identifier": "@pete",
+      "firstName": "Pete K.",
+      "lastName": "Dataversky",
+      "email": "pete@mailinator.com"
+    }
+
 Toggles superuser mode on the ``AuthenticatedUser`` whose ``identifier`` (without the ``@`` sign) is passed. ::
 
     POST http://$SERVER/api/admin/superuser/$identifier
