@@ -10,6 +10,8 @@ By configuring and enabling Shibboleth support in Dataverse, your users will be 
 
 Shibboleth is an implementation of the `Security Assertion Markup Language (SAML) <https://en.wikipedia.org/wiki/Security_Assertion_Markup_Language>`_ protocol which is similar in spirit to systems used by many webapps that allow you to log in via Google, Facebook, or Twitter.
 
+Shibboleth can be compared and contrasted with OAuth2, which you can read about in the :doc:`oauth2` section.
+
 Installation
 ------------
 

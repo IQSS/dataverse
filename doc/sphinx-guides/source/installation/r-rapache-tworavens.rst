@@ -158,8 +158,7 @@ Glassfish instance is running on a high local port unaccessible from
 the outside, and is "hidden" behind Apache. With the latter running on
 the default https port, accepting and proxying the incoming
 connections to the former. This is described in the :doc:`shibboleth`
-section of the Installation Guide (please note that, at the moment,
-this functionality is offered as "experimental"). With this proxying
+section of the Installation Guide. With this proxying
 setup in place, the TwoRavens and rApache configuration actually
 becomes simpler. As both the Dataverse and TwoRavens will be served on
 the same port - 443 (the default port for https). So when running the

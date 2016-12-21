@@ -202,7 +202,8 @@ Delete a Private URL from a dataset (if it exists)::
 Builtin Users
 ~~~~~~~~~~~~~
 
-This endopint deals with users of the built-in authentication provider. Note that users may come from other authentication services as well, such as Shibboleth.
+This endpoint deals with users of the built-in authentication provider. For more background on various authentication providers, see :doc:`/user/account` and :doc:`/installation/config`.
+
 For this service to work, the setting ``BuiltinUsers.KEY`` has to be set, and its value passed as ``key`` to
 each of the calls.
 

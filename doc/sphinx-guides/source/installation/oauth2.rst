@@ -5,7 +5,10 @@ OAuth Login: ORCID, GitHub, Google
 
 Introduction
 ------------
-`OAuth2 <https://oauth.net/2/>`_ is an authentication protocol that allows systems to share user data, while letting the users control what data is being shared. When you see buttons stating "login with Google" or "login through Facebook", OAuth2 is probably involved. For the purposes of this section, we will shorten "OAuth2" to just "OAuth."
+
+As explained under "Auth Modes" in the :doc:`config` section, OAuth2 is one of the ways that you can have end users log in to Dataverse.
+
+`OAuth2 <https://oauth.net/2/>`_ is an authentication protocol that allows systems to share user data, while letting the users control what data is being shared. When you see buttons stating "login with Google" or "login through Facebook", OAuth2 is probably involved. For the purposes of this section, we will shorten "OAuth2" to just "OAuth." OAuth can be compared and contrasted with :doc:`shibboleth`.
 
 Dataverse supports three OAuth providers: `ORCID <http://orcid.org>`_, `GitHub <https://github.com>`_, and `Google <https://console.developers.google.com>`_.
 

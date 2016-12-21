@@ -42,7 +42,7 @@ Edit Account
 #. On the top right of your account page, click on the "Edit Account" button and from there you can select to edit either your Account Information or your Account Password.
 #. Select "Save Changes" when you are done.
 
-Please note that you cannot edit your account information within Dataverse if you use the Institutional Log In option. Contact your institution to change your name, email, etc. and the change will be reflected the next time you log into Dataverse.
+Please note that you cannot edit your account information within Dataverse if you use the Institutional Log In option. Instead, you should contact your institution to change your name, email, etc. Once the change is made by your institution, it will be reflected in Dataverse the next time you log in. Users of the Institutional Log In option are not required to verify their email address because the institution providing the email address is trusted.
 
 Convert Account
 ~~~~~~~~~~~~~~~

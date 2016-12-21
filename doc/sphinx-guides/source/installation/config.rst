@@ -6,7 +6,7 @@ Now that you've successfully logged into Dataverse with a superuser account afte
 
 Settings within Dataverse itself are managed via JVM options or by manipulating values in the ``setting`` table directly or through API calls. Configuring Solr requires manipulating XML files.
 
-Once you have finished securing and configuring your Dataverse installation, proceed to the :doc:`administration` section. Advanced configuration topics are covered in the :doc:`r-rapache-tworavens` and :doc:`shibboleth` sections.
+Once you have finished securing and configuring your Dataverse installation, proceed to the :doc:`administration` section. Advanced configuration topics are covered in the :doc:`r-rapache-tworavens`, :doc:`shibboleth` and :doc:`oauth2` sections.
 
 .. contents:: :local:
 
