@@ -20,6 +20,8 @@ public class AuthUtilTest {
     public void testIsNonLocalLoginEnabled() {
         System.out.println("isNonLocalLoginEnabled");
 
+        AuthUtil authUtil = new AuthUtil();
+
         assertEquals(false, AuthUtil.isNonLocalLoginEnabled(null));
 
         Collection<AuthenticationProvider> shibOnly = new HashSet<>();
@@ -37,40 +39,6 @@ public class AuthUtilTest {
         onlyBuiltin.add(new BuiltinAuthenticationProvider(null));
         // only builtin provider
         assertEquals(false, AuthUtil.isNonLocalLoginEnabled(onlyBuiltin));
-
-    }
-
-    @Test
-    public void testGetTip() {
-        System.out.println("testGetTip");
-
-        assertEquals(null, AuthUtil.getNamesOfRemoteAuthProvidersWithSeparators(null));
-
-        Collection<AuthenticationProvider> onlyshib = new HashSet<>();
-        onlyshib.add(new ShibAuthenticationProvider());
-        assertEquals("Your Institution", AuthUtil.getNamesOfRemoteAuthProvidersWithSeparators(onlyshib));
-
-        Collection<AuthenticationProvider> onlyBuiltin = new HashSet<>();
-        onlyBuiltin.add(new BuiltinAuthenticationProvider(null));
-        assertEquals(null, AuthUtil.getNamesOfRemoteAuthProvidersWithSeparators(onlyBuiltin));
-
-        Collection<AuthenticationProvider> gitHubAndGoogle = new HashSet<>();
-        gitHubAndGoogle.add(new GitHubOAuth2AP(null, null));
-        gitHubAndGoogle.add(new GoogleOAuth2AP(null, null));
-        assertEquals("GitHub or Google", AuthUtil.getNamesOfRemoteAuthProvidersWithSeparators(gitHubAndGoogle));
-
-        Collection<AuthenticationProvider> shibGitHubAndGoogle = new ArrayList<>();
-        shibGitHubAndGoogle.add(new ShibAuthenticationProvider());
-        shibGitHubAndGoogle.add(new GitHubOAuth2AP(null, null));
-        shibGitHubAndGoogle.add(new GoogleOAuth2AP(null, null));
-        assertEquals("Your Institution, GitHub, or Google", AuthUtil.getNamesOfRemoteAuthProvidersWithSeparators(shibGitHubAndGoogle));
-
-        Collection<AuthenticationProvider> gitHubGoogleAndOrcid = new ArrayList<>();
-        gitHubGoogleAndOrcid.add(new ShibAuthenticationProvider());
-        gitHubGoogleAndOrcid.add(new GitHubOAuth2AP(null, null));
-        gitHubGoogleAndOrcid.add(new OrcidOAuth2AP(null, null, null));
-        gitHubGoogleAndOrcid.add(new GoogleOAuth2AP(null, null));
-        assertEquals("Your Institution, GitHub, ORCID Sandbox, or Google", AuthUtil.getNamesOfRemoteAuthProvidersWithSeparators(gitHubGoogleAndOrcid));
 
     }
 

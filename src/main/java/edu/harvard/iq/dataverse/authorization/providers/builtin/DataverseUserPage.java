@@ -632,27 +632,4 @@ public class DataverseUserPage implements java.io.Serializable {
         return AuthUtil.isNonLocalLoginEnabled(authenticationService.getAuthenticationProviders());
     }
 
-    public String getSuggestNonLocalLoginTipStatic() {
-        return BundleUtil.getStringFromBundle("user.suggestNonLocalLoginStatic.tip");
-    }
-
-    public String getSuggestNonLocalLoginTipDynamic() {
-        List<AuthenticationProviderDisplayInfo> infos = new ArrayList<>();
-        for (String id : authenticationService.getAuthenticationProviderIdsSorted()) {
-            AuthenticationProvider authenticationProvider = authenticationService.getAuthenticationProvider(id);
-            if (authenticationProvider != null) {
-                if (ShibAuthenticationProvider.PROVIDER_ID.equals(authenticationProvider.getId())) {
-                    infos.add(authenticationProvider.getInfo());
-                } else {
-                    infos.add(authenticationProvider.getInfo());
-                }
-            }
-        }
-        if (infos.isEmpty()) {
-            return BundleUtil.getStringFromBundle("user.suggestNonLocalLoginStatic.tip");
-        } else {
-            String args = AuthUtil.getNamesOfRemoteAuthProvidersWithSeparators(authenticationService.getAuthenticationProviders());
-            return BundleUtil.getStringFromBundle("user.suggestNonLocalLoginDynamic.tip", Arrays.asList(args));
-        }
-    }
 }
