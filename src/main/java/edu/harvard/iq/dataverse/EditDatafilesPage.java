@@ -1302,9 +1302,8 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
     
     private String returnToFileLandingPage() {
-        
-        Long fileId = fileMetadatas.get(0).getDataFile().getId();       
-        if (versionString.equals("DRAFT")){
+        Long fileId = fileMetadatas.get(0).getDataFile().getId();   
+        if (versionString != null && versionString.equals("DRAFT")){
             return  "/file.xhtml?fileId=" + fileId  +  "&version=DRAFT&faces-redirect=true";
         }
         return  "/file.xhtml?fileId=" + fileId  +  "&faces-redirect=true";
