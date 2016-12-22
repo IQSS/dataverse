@@ -3,6 +3,7 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:o="http://omnifaces.org/ui"
       xmlns:p="http://primefaces.org/ui"
       xmlns:jsf="http://xmlns.jcp.org/jsf">
 
@@ -20,7 +21,7 @@
             <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:param name="loginRedirectPage" value="dataverse.xhtml"/>
             <ui:define name="body">
-                <ui:fragment rendered="#{not LoginPage.authenticationProvidersAvailable}">
+                <ui:fragment rendered="#{LoginPage.listAuthenticationProviders().size() lt 1}">
                     <div class="row">
                         <div class="col-sm-12">
                             <div class="alert alert-danger">
@@ -33,13 +34,13 @@
                         </div>
                     </div>
                 </ui:fragment>
-                <div id="login-container" class="row">
+                <div jsf:id="login-container" class="row">
 
-                    <div class="panel panel-default highlight #{systemConfig.shibEnabled ? 'col-md-12' : 'col-md-6'}">
-                        <div class="panel-body row">
-
-                            <div id="builtinColumn" class="#{systemConfig.shibEnabled ? 'col-md-5' : 'col-md-12'}" jsf:rendered="#{LoginPage.authenticationProvidersAvailable}">
-                                <h2 class="no-margin-top" jsf:rendered="#{systemConfig.shibEnabled == true}">#{bundle['login.builtin']}</h2>
+                    <div class="col-md-12">
+                        <div class="col-md-6 col-md-offset-3">
+                            <h2><span class="glyphicon glyphicon-log-in" /> #{bundle.login}</h2>
+                            
+                            <div id="builtinProvider" jsf:rendered="#{LoginPage.authProvider.id == 'builtin'}">
                                 <h:form id="loginForm" styleClass="form-horizontal">
                                     <p:focus context="loginForm"/>
                                     <ui:remove>
@@ -58,7 +59,7 @@
                                             </div>
                                         </ui:fragment>
                                     </ui:remove>
-                                    <ui:repeat id="credentialsContainer2" value="#{LoginPage.filledCredentials}" var="fc">
+                                    <ui:repeat id="credentialsContainer" value="#{LoginPage.filledCredentials}" var="fc">
                                         <div class="form-group text-left">
                                             <label class="col-sm-4 control-label" for="credValue">
                                                 #{fc.credential.title}
@@ -73,8 +74,7 @@
                                     </ui:repeat>
                                     <div class="form-group">
                                         <div class="col-sm-offset-4 col-sm-9 button-block">
-                                            <p:commandButton id="login" value="#{bundle.login}" update="@all" action="#{LoginPage.login}"/>
-                                            <p:button value="#{bundle.cancel}" outcome="/dataverse.xhtml?alias=#{dataverseServiceBean.findRootDataverse().alias}"/>
+                                            <p:commandButton id="login" styleClass="btn btn-default" value="#{bundle.login}" update="@all" action="#{LoginPage.login}"/>
                                         </div>
                                     </div>
                                     <div class="form-group">
@@ -86,69 +86,133 @@
                                     </div>
                                 </h:form>
                             </div>
+                            <div id="remoteProvider" jsf:rendered="#{LoginPage.authProvider.id != 'builtin'}">
+                                <ui:fragment rendered="#{LoginPage.authProvider.id == 'shib'}">
+                                    <h:form>
+                                        <p class="help-block">
+                                            <span class="glyphicon glyphicon-info-sign"/>
+                                            <h:outputFormat value=" #{bundle['login.institution.blurb']} " escape="false">
+                                                <f:param value="#{settingsWrapper.guidesBaseUrl}"/>
+                                                <f:param value="#{systemConfig.version}"/>
+                                            </h:outputFormat>
+                                            <h:outputText value="#{bundle['login.institution.support.beforeLink']} " />
+                                            <p:commandLink value="#{bundle['contact.support']}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
+                                                <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
+                                                <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
+                                                <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
+                                                <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
+                                            </p:commandLink>
+                                            <h:outputText value=" #{bundle['login.institution.support.afterLink']}" escape="false"/>
+                                        </p>
+                                    </h:form>
 
-                            <div class="col-md-1" jsf:rendered="#{systemConfig.shibEnabled == true}">&#160;</div>
+                                    <div class="form-horizontal">
+                                        <div class="form-group text-left">
+                                            <label class="col-sm-4 control-label">
+                                                #{bundle['auth.providers.title.shib']}
+                                            </label>
+                                            <div id="idpSelect" class="col-sm-8">
 
-                            <div class="col-md-6" jsf:rendered="#{systemConfig.shibEnabled == true}">
-                                <h2 class="no-margin-top">#{bundle['login.institution']}</h2>
-                                
-                                <div id="idpSelect" class="margin-bottom"></div>
-                                
-                                <h:form>
-                                    <p class="help-block">
-                                        <span class="glyphicon glyphicon-info-sign"/>
-                                        <h:outputFormat value=" #{bundle['login.institution.blurb']} " escape="false">
-                                            <f:param value="#{settingsWrapper.guidesBaseUrl}"/>
-                                            <f:param value="#{systemConfig.version}"/>
-                                        </h:outputFormat>
-                                        <h:outputText value="#{bundle['login.institution.support.beforeLink']} " />
-                                        <p:commandLink value="#{bundle['contact.support']}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
-                                            <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
-                                            <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
-                                            <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
-                                            <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
-                                        </p:commandLink>
-                                        <h:outputText value=" #{bundle['login.institution.support.afterLink']}" escape="false"/>
-                                    </p>
-                                </h:form>
-                                
-                                <script type="text/javascript">
-                                    // TODO: get this working for https://github.com/IQSS/dataverse/issues/1551
-                                    //shibRedirectPage = '?redirectPage=' + '#{LoginPage.redirectPage}';
-                                    shibRedirectPage = ''
-                                </script>
+                                            </div>
+                                        </div>
+                                    </div>
 
-                                <script src="/resources/js/shib/idpselect_config.js" type="text/javascript" language="javascript"></script>
+                                    <script type="text/javascript">
+                                        // TODO: get this working for https://github.com/IQSS/dataverse/issues/1551
+                                        //shibRedirectPage = '?redirectPage=' + '#{LoginPage.redirectPage}';
+                                        shibRedirectPage = '';
+                                    </script>
 
-                                <script src="/resources/js/shib/idpselect.js" type="text/javascript" language="javascript"></script>
+                                    <script src="/resources/js/shib/idpselect_config.js" type="text/javascript" language="javascript"></script>
 
-                                <script src="/resources/js/shib/idpselect_style.js" type="text/javascript" language="javascript"></script>
+                                    <script src="/resources/js/shib/idpselect.js" type="text/javascript" language="javascript"></script>
 
-                                <noscript>
-                                    <!-- If you need to care about non javascript browsers you will need to
-                                         generate a hyperlink to a non-js DS.
+                                    <script src="/resources/js/shib/idpselect_style.js" type="text/javascript" language="javascript"></script>
 
-                                         To build you will need:
-                                             - URL:  The base URL of the DS you use
-                                             - EI: Your entityId, URLencoded.  You can get this from the line that
-                                               this page is called with.
-                                             - RET: Your return address dlib-adidp.ucs.ed.ac.uk. Again you can get
-                                               this from the page this is called with, but beware of the
-                                               target%3Dcookie%253A5269905f bit..
+                                    <noscript>
+                                        <!-- If you need to care about non javascript browsers you will need to
+                                             generate a hyperlink to a non-js DS.
 
-                                        < href=${URL}?entityID=${EI}&return=${RET}
-                                    -->
+                                             To build you will need:
+                                                 - URL:  The base URL of the DS you use
+                                                 - EI: Your entityId, URLencoded.  You can get this from the line that
+                                                   this page is called with.
+                                                 - RET: Your return address dlib-adidp.ucs.ed.ac.uk. Again you can get
+                                                   this from the page this is called with, but beware of the
+                                                   target%3Dcookie%253A5269905f bit..
 
-                                    Your Browser does not support javascript. Please use
-                                    <!--FIXME not valid xhtml?-->
-                                    <!--<a href="http://federation.org/DS/DS?entityID=https%3A%2F%2FyourentityId.edu.edu%2Fshibboleth&return=https%3A%2F%2Fyourreturn.edu%2FShibboleth.sso%2FDS%3FSAMLDS%3D1%26target%3Dhttps%3A%2F%2Fyourreturn.edu%2F">this link</a>.-->
-                                </noscript>
+                                            < href=${URL}?entityID=${EI}&return=${RET}
+                                        -->
+
+                                        Your Browser does not support javascript. Please use
+                                        <!--FIXME not valid xhtml?-->
+                                        <!--<a href="http://federation.org/DS/DS?entityID=https%3A%2F%2FyourentityId.edu.edu%2Fshibboleth&return=https%3A%2F%2Fyourreturn.edu%2FShibboleth.sso%2FDS%3FSAMLDS%3D1%26target%3Dhttps%3A%2F%2Fyourreturn.edu%2F">this link</a>.-->
+                                    </noscript>
+                                </ui:fragment>                             
+
+                                <ui:fragment rendered="#{LoginPage.authProvider.id != 'shib'}">
+                                    <o:form useRequestURI="true">
+                                        <p class="help-block">
+                                            <span class="glyphicon glyphicon-info-sign"/>
+                                            <h:outputFormat value=" #{bundle['auth.providers.blurb']}" escape="false">
+                                                <o:param value="#{LoginPage.authProvider.info.title}"/>
+                                                <o:param value="#{settingsWrapper.guidesBaseUrl}"/>
+                                                <o:param value="#{systemConfig.version}"/>
+                                                <o:param>
+                                                    <p:commandLink value="#{bundle['contact.support']}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
+                                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
+                                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
+                                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
+                                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
+                                                    </p:commandLink>                                
+                                                </o:param>
+                                            </h:outputFormat>
+                                        </p>
+                                    </o:form>
+                                </ui:fragment>
+
+                                <!--ONLY RENDER BUTTON FOR OAUTH PROVIDERS (ORCID, Google, GitHub)-->
+                                <div class="form-horizontal" jsf:rendered="#{LoginPage.authProvider.OAuthProvider}">
+                                    <div class="form-group text-left">
+                                        <div class="col-sm-12">
+                                            <h:outputLink styleClass="btn btn-default" value="#{OAuth2Page.linkFor(LoginPage.authProvider.id, LoginPage.redirectPage)}">
+                                                <h:graphicImage rendered="#{LoginPage.authProvider.id == 'orcid' or LoginPage.authProvider.id == 'orcid-sandbox'}" value="/resources/images/orcid_16x16.png" height="16" width="16"/>
+                                                <h:outputFormat value=" #{LoginPage.loginButtonText}"/>
+                                            </h:outputLink>
+                                            <ui:fragment rendered="#{LoginPage.authProvider.id == 'orcid' or LoginPage.authProvider.id == 'orcid-sandbox'}">
+                                                <p class="help-block small" style="margin-top:1em;">
+                                                    ORCID is an open, non-profit, community-based effort to provide a registry of unique researcher identifiers
+                                                    and a transparent method of linking research activities and outputs to these identifiers. ORCID is unique in
+                                                    its ability to reach across disciplines, research sectors, and national boundaries and its cooperation with
+                                                    other identifier systems. Find out more at <a href="http://orcid.org/about" target="_blank">orcid.org/about</a>.
+                                                </p>
+                                            </ui:fragment>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-
+                            
+                            <div id="otherProviders" jsf:rendered="#{LoginPage.listAuthenticationProviders().size() > 1}">
+                                <h4>#{bundle['auth.providers.title']}</h4>
+                                <h:form>
+                                    <ui:repeat value="#{LoginPage.listAuthenticationProviders()}" var="provider">
+                                        <p:commandLink rendered="#{provider.id != LoginPage.authProvider.id}" styleClass="btn btn-default" actionListener="#{LoginPage.setAuthProviderById(provider.id)}" update="login-container">
+                                            <h:outputText value="#{provider.title}" />
+                                        </p:commandLink>
+                                    </ui:repeat>
+                                </h:form>
+                                <div jsf:rendered="#{LoginPage.authProvider.id == 'builtin'}">
+                                    <p class="help-block"><span class="glyphicon glyphicon-info-sign"/>
+                                        <h:outputFormat value=" #{bundle['auth.providers.tip']}" escape="false">
+                                            <o:param value="#{settingsWrapper.guidesBaseUrl}"/>
+                                            <o:param value="#{systemConfig.version}"/>
+                                        </h:outputFormat>
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-
             </ui:define>
         </ui:composition>
     </h:body>

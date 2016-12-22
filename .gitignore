@@ -23,3 +23,6 @@ doc/sphinx-guides/build
 faces-config.NavData
 src/main/java/BuildNumber.properties
 /nbproject/
+oauth-credentials.md
+
+/src/main/webapp/oauth2/newAccount.html

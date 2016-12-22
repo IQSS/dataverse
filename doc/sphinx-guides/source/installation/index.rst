@@ -19,3 +19,4 @@ Contents:
    upgrading
    r-rapache-tworavens
    shibboleth
+   oauth2

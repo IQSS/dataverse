@@ -232,10 +232,12 @@ body.widget-view #dataverse-header-block {padding-top:0px;}
 div.panel.highlight {
     background-color: #f7f7f9;
 }
+#otherProviders a.ui-commandlink.ui-widget {margin-right:1em; margin-bottom:1em;}
 #idpSelectIdPListTile form, #idpSelectIdPEntryTile form {margin-bottom:1em;}
 #idpSelectIdPListTile input.btn, #idpSelectIdPEntryTile input.btn {margin-left:.5em;}
 #idpSelectIdPEntryTile {position: relative;}
 .IdPSelectPreferredIdPButton {display:inline-block;text-align:center;margin-right:4px;margin-bottom:.5em;}
+#idpSelectInput, #idpSelectSelector.form-control {width: 60%;}
 ul.IdPSelectDropDown {
     background-clip: padding-box;
     background-color: #fff;
@@ -754,6 +756,7 @@ div.ui-widget-overlay {background:#ccc; opacity:.6;}
 .ui-state-disabled, .ui-widget-content .ui-state-disabled, .ui-widget-header .ui-state-disabled {background: #e0e0e0; border-color: #ccc; opacity: 0.65;}
 .ui-autocomplete-input-token input, .ui-autocomplete-input-token {width:100%;}
 .ui-autocomplete-panel {z-index:100002 !important;}
+.ui-autocomplete input.ui-autocomplete-input {width:calc(100% - 34px);}
 
 /* CITATION-FRAME */
 #citation-banner {width:100%; height:45px; position: absolute; z-index: 999999; border-radius: 0; border-width: 0 0 1px 0;}
