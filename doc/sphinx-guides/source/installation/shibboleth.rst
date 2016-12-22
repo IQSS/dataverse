@@ -331,30 +331,38 @@ If your Dataverse installation is working with TestShib it **should** work with 
 - Re-add Shibboleth as an authentication provider to Dataverse as described above.
 - Test login to Dataverse via your institution's Identity Provider (IdP).
 
-Administration
---------------
+Backup sp-cert.pem and sp-key.pem Files
+---------------------------------------
 
-Institution-Wide Shibboleth Groups
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Especially if you have gotten authentication working with your institution's Identity Provider (IdP), now is the time to make sure you have backups.
 
-Dataverse allows you to optionally define "institution-wide Shibboleth groups" based on the the entityID of the Identity Provider (IdP) used to authenticate. For example, an "institution-wide Shibboleth group" with ``https://idp.testshib.org/idp/shibboleth`` as the IdP would include everyone who logs in via the TestShib IdP mentioned above.
+The installation and configuration of Shibboleth will result in the following cert and key files being created and it's important to back them up. The cert is in the metadata you shared with your IdP:
 
-To create an institution-wide Shibboleth groups, create a JSON file as below and issue this curl command: ``curl http://localhost:8080/api/admin/groups/shib -X POST -H 'Content-type:application/json' --upload-file shibGroupTestShib.json``
+- ``/etc/shibboleth/sp-cert.pem``
+- ``/etc/shibboleth/sp-key.pem``
 
-.. literalinclude:: ../_static/installation/files/etc/shibboleth/shibGroupTestShib.json 
+If you have more than one Glassfish server, you should use the same ``sp-cert.pem`` and ``sp-key.pem`` files on all of them. If these files are compromised and you need to regenerate them, you can ``cd /etc/shibboleth`` and run ``keygen.sh`` like this (substituting you own hostname):
 
-Institution-wide Shibboleth groups are based on the "Shib-Identity-Provider" SAML attribute asserted at runtime after successful authentication with the Identity Provider (IdP) and held within the browser session rather than being persisted in the database for any length of time. It is for this reason that roles based on these groups, such as the ability to create a dataset, are not honored by non-browser interactions, such as through the SWORD API. 
+``./keygen.sh -f -u shibd -g shibd -h dataverse.example.edu -e https://dataverse.example.edu/sp``
 
-To list institution-wide Shibboleth groups: ``curl http://localhost:8080/api/admin/groups/shib``
+Debugging
+---------
 
-To delete an institution-wide Shibboleth group (assuming id 1): ``curl -X DELETE http://localhost:8080/api/admin/groups/shib/1``
+The :doc:`administration` section explains how to increase Glassfish logging levels. The relevant classes and packages are:
 
-Support for arbitrary attributes beyond "Shib-Identity-Provider" such as "eduPersonScopedAffiliation", etc. is being tracked at https://github.com/IQSS/dataverse/issues/1515
+- edu.harvard.iq.dataverse.Shib
+- edu.harvard.iq.dataverse.authorization.providers.shib
+- edu.harvard.iq.dataverse.authorization.groups.impl.shib
+
+Converting Accounts
+-------------------
+
+As explained in the :doc:`/user/account` section of the User Guide, users can convert from one login option to another.
 
 Converting Local Users to Shibboleth
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If you are running in "remote and local" mode and have existing local users that you'd like to convert to Shibboleth users, give them the following steps to follow:
+If you are running in "remote and local" mode and have existing local users that you'd like to convert to Shibboleth users, give them the following steps to follow, which are also explained in the :doc:`/user/account` section of the User Guide:
 
 - Log in with your local account to make sure you know your password, which will be needed for the account conversion process.
 - Log out of your local account.
@@ -384,23 +392,19 @@ Rather than looking up the user's id in the ``authenticateduser`` database table
 
 Per above, you now need to tell the user to use the password reset feature to set a password for their local account.
 
-Debugging
-~~~~~~~~~
+Institution-Wide Shibboleth Groups
+----------------------------------
 
-The :doc:`administration` section explains how to increase Glassfish logging levels. The relevant classes and packages are:
+Dataverse allows you to optionally define "institution-wide Shibboleth groups" based on the the entityID of the Identity Provider (IdP) used to authenticate. For example, an "institution-wide Shibboleth group" with ``https://idp.testshib.org/idp/shibboleth`` as the IdP would include everyone who logs in via the TestShib IdP mentioned above.
 
-- edu.harvard.iq.dataverse.Shib
-- edu.harvard.iq.dataverse.authorization.providers.shib
-- edu.harvard.iq.dataverse.authorization.groups.impl.shib
+To create an institution-wide Shibboleth groups, create a JSON file as below and issue this curl command: ``curl http://localhost:8080/api/admin/groups/shib -X POST -H 'Content-type:application/json' --upload-file shibGroupTestShib.json``
 
-Backups
-~~~~~~~
+.. literalinclude:: ../_static/installation/files/etc/shibboleth/shibGroupTestShib.json 
 
-The installation and configuration of Shibboleth will result in the following cert and key files being created and it's important to back them up:
+Institution-wide Shibboleth groups are based on the "Shib-Identity-Provider" SAML attribute asserted at runtime after successful authentication with the Identity Provider (IdP) and held within the browser session rather than being persisted in the database for any length of time. It is for this reason that roles based on these groups, such as the ability to create a dataset, are not honored by non-browser interactions, such as through the SWORD API. 
 
-- ``/etc/shibboleth/sp-cert.pem``
-- ``/etc/shibboleth/sp-key.pem``
+To list institution-wide Shibboleth groups: ``curl http://localhost:8080/api/admin/groups/shib``
 
-If you have more than one Glassfish server, you should use the same ``sp-cert.pem`` and ``sp-key.pem`` files on all of them. If these files are compromised and you need to regenerate them, you can ``cd /etc/shibboleth`` and run ``keygen.sh`` like this (substituting you own hostname):
+To delete an institution-wide Shibboleth group (assuming id 1): ``curl -X DELETE http://localhost:8080/api/admin/groups/shib/1``
 
-``./keygen.sh -f -u shibd -g shibd -h dataverse.example.edu -e https://dataverse.example.edu/sp``
+Support for arbitrary attributes beyond "Shib-Identity-Provider" such as "eduPersonScopedAffiliation", etc. is being tracked at https://github.com/IQSS/dataverse/issues/1515
