@@ -27,12 +27,19 @@
                     <f:viewParam name="mode" value="#{EditDatafilesPage.mode}"/>
                     <!-- f:viewParam name="versionId" value="#.EditDatafilesPage.versionId."/ -->
                     <f:viewParam name="selectedFileIds" value="#{EditDatafilesPage.selectedFileIds}"/>
+                    <f:viewParam name="versionString" value="#{EditDatafilesPage.versionString}"/>
+                    <f:viewParam name="fromFilesPage" value="#{(EditDatafilesPage.mode == 'SINGLE' || EditDatafilesPage.mode == 'SINGLE_REPLACE')}"/>
                     <f:viewAction action="#{EditDatafilesPage.init}" />
-                    <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(EditDatafilesPage.dataset, (datasetPage || EditDatafilesPage.showFileUploadFileComponent() ? bundle['file.uploadFiles'] : bundle['file.editFiles']))}"/>
+                    <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(EditDatafilesPage.dataset, (datasetPage || EditDatafilesPage.showFileUploadFileComponent() ? bundle['file.uploadFiles'] : bundle['file.editFiles']))}"
+                                  if="#{!param.fromFilesPage}" />
+                    <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbsForFileMetadata(EditDatafilesPage.singleFile, param.version, bundle['file.editFiles'])}"
+                                  if="#{param.fromFilesPage}" />
                 </f:metadata>
                 <h:form id="datasetForm">
-                    
-                
+                    #{(EditDatafilesPage.mode =='SINGLE' || EditDatafilesPage.mode == 'SINGLE_REPLACE')}
+                    #{EditDatafilesPage.mode}
+                    #{FileEditMode.SINGLE}
+                    #{param.fromFilesPage}
                     <!-- BEGIN: file replace original -->
                     <ui:fragment rendered="#{EditDatafilesPage.fileReplaceOperation}">
                         <c:if test="#{EditDatafilesPage.getFileToReplace() != null}">

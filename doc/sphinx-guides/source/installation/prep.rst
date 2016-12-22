@@ -16,7 +16,7 @@ Choose Your Own Installation Adventure
 Vagrant (for Testing Only)
 ++++++++++++++++++++++++++
 
-If you are looking to simply kick the tires on Dataverse and are familiar with Vagrant, running ``vagrant up`` after cloning the Dataverse repo **should** give you a working installation at http://localhost:8888 . This is one of the :doc:`/developers/tools` developers use to test the installation process but you're welcome to give it a shot.
+If you are looking to simply kick the tires on installing Dataverse and are familiar with Vagrant, you are welcome to read through the "Vagrant" section of the :doc:`/developers/tools` section of the Developer Guide. Checking out a tagged release is recommended rather than running ``vagrant up`` on unreleased code.
 
 Pilot Installation
 ++++++++++++++++++

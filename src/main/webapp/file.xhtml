@@ -80,7 +80,7 @@
                                     </button>
                                     <ul class="dropdown-menu pull-right text-left" role="menu">
                                         <li>
-                                            <h:outputLink value="/editdatafiles.xhtml?selectedFileIds=#{FilePage.fileMetadata.dataFile.id}&#38;datasetId=#{FilePage.fileMetadata.datasetVersion.dataset.id}&#38;mode=SINGLE">
+                                            <h:outputLink value="/editdatafiles.xhtml?selectedFileIds=#{FilePage.fileMetadata.dataFile.id}&#38;datasetId=#{FilePage.fileMetadata.datasetVersion.dataset.id}&#38;mode=SINGLE&#38;version=#{FilePage.version}">
                                                 <h:outputText id="editFile-Multi-Link" value="Metadata"/>
                                             </h:outputLink>
                                         </li>
@@ -102,7 +102,7 @@
                                         </li>
                                         <ui:fragment rendered="#{FilePage.fileMetadata.dataFile.released}">                                        
                                         <li><!-- start: replace file link -->
-                                            <h:outputLink value="/editdatafiles.xhtml?mode=SINGLE_REPLACE&#38;datasetId=#{FilePage.fileMetadata.datasetVersion.dataset.id}&#38;fid=#{FilePage.fileMetadata.dataFile.id}">
+                                            <h:outputLink value="/editdatafiles.xhtml?mode=SINGLE_REPLACE&#38;datasetId=#{FilePage.fileMetadata.datasetVersion.dataset.id}&#38;fid=#{FilePage.fileMetadata.dataFile.id}&#38;version=#{FilePage.version}">
                                                  <h:outputText value="#{bundle['file.replace']}"/>
                                             </h:outputLink>
                                         <!-- end replace file link --></li>

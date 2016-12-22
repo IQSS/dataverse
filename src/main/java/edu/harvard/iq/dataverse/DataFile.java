@@ -57,7 +57,7 @@ import org.hibernate.validator.constraints.NotBlank;
 })
 @Entity
 @Table(indexes = {@Index(columnList="ingeststatus")
-		, @Index(columnList="md5")
+		, @Index(columnList="checksumvalue")
 		, @Index(columnList="contenttype")
 		, @Index(columnList="restricted")})
 public class DataFile extends DvObject implements Comparable {

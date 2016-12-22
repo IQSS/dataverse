@@ -152,6 +152,16 @@ public class EditDatafilesPage implements java.io.Serializable {
     
     private final int NUMBER_OF_SCROLL_ROWS = 25;
     
+    private DataFile singleFile = null;
+
+    public DataFile getSingleFile() {
+        return singleFile;
+    }
+
+    public void setSingleFile(DataFile singleFile) {
+        this.singleFile = singleFile;
+    }
+    
     public String getSelectedFileIds() {
         return selectedFileIdsString;
     }
@@ -431,6 +441,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     
     
     public String init() {
+        System.out.print("in init of edit page");
         fileMetadatas = new ArrayList<>();
         
         newFiles = new ArrayList();
@@ -495,7 +506,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                                                 fileToReplace);
 
             populateFileMetadatas();
-
+            singleFile = getFileToReplace();
         }else if (mode == FileEditMode.EDIT || mode == FileEditMode.SINGLE) {
 
             if (selectedFileIdsString != null) {
@@ -536,11 +547,12 @@ public class EditDatafilesPage implements java.io.Serializable {
             }
             
             if (FileEditMode.SINGLE == mode){
+                singleFile = fileMetadatas.get(0).getDataFile();
                 if (fileMetadatas.get(0).getDatasetVersion().getId() != null){
                     versionString = "DRAFT";
                 }
-            }
-            
+            }           
+                       
         }
         
         saveEnabled = true; 
@@ -603,6 +615,14 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     public void setSelectAllFiles(boolean selectAllFiles) {
         this.selectAllFiles = selectAllFiles;
+    }
+    
+    public String getVersionString() {
+        return versionString;
+    }
+
+    public void setVersionString(String versionString) {
+        this.versionString = versionString;
     }
     
     public void toggleSelectedFiles(){
@@ -1579,6 +1599,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
     
     public void uploadFinished() {
+        System.out.print("in uploadFinished");
         // This method is triggered from the page, by the <p:upload ... onComplete=...
         // attribute. 
         // Note that its behavior is different from that of of <p:upload ... onStart=...
@@ -1623,7 +1644,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         // only inform the user of the duplicates dropped in the current upload 
         // attempt - for ex., one batch of drag-and-dropped files, or a single 
         // file uploaded through the file chooser. 
-        
+        System.out.print("end of baking bean method");
         dupeFileNamesExisting = null; 
         dupeFileNamesNew = null;
         multipleDupesExisting = false;
@@ -1725,7 +1746,8 @@ public class EditDatafilesPage implements java.io.Serializable {
                                     event,
                                     null);
             System.out.print("isFileReplaceOperation()");
-            FacesContext.getCurrentInstance().addMessage(event.getComponent().getClientId(), new FacesMessage(FacesMessage.SEVERITY_INFO, "upload INFO", "Upload happening"));
+            FacesContext.getCurrentInstance().addMessage(event.getComponent().getClientId(), new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload INFO", "Upload happening"));
+            
             System.out.print("after adding faces message");
             return;
                

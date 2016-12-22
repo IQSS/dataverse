@@ -6,6 +6,7 @@ ALTER TABLE datafile ALTER COLUMN checksumtype SET NOT NULL;
 -- note that in the database we use "SHA1" (no hyphen) but the GUI will show "SHA-1"
 --UPDATE datafile SET checksumtype = 'SHA1';
 ALTER TABLE datafile RENAME md5 TO checksumvalue;
+ALTER TABLE filemetadata ADD COLUMN directorylabel character varying(255);
 -- For DataFile, file replace functionality:
 ALTER TABLE datafile ADD COLUMN rootdatafileid bigint default -1;
 ALTER TABLE datafile ADD COLUMN previousdatafileid bigint default null;
