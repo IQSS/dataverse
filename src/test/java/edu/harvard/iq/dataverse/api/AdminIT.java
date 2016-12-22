@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.api;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.GitHubOAuth2AP;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
@@ -81,6 +82,13 @@ public class AdminIT {
         toggleSuperuser.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
+        Response getAuthProviders = UtilIT.getAuthProviders(superuserApiToken);
+        getAuthProviders.prettyPrint();
+        if (!getAuthProviders.body().asString().contains(BuiltinAuthenticationProvider.PROVIDER_ID)) {
+            System.out.println("Can't proceed with test without builtin provider.");
+            return;
+        }
+
         Response makeShibUser = UtilIT.migrateBuiltinToShib(data, superuserApiToken);
         makeShibUser.prettyPrint();
         makeShibUser.then().assertThat()
@@ -155,9 +163,9 @@ public class AdminIT {
         String data = emailOfUserToConvert + ":" + password + ":" + newEmailAddressToUse + ":" + providerIdToConvertTo + ":" + newPersistentUserIdInLookupTable;
 
         System.out.println("data: " + data);
-        Response builtinToShibAnon = UtilIT.migrateBuiltinToOAuth(data, "");
-        builtinToShibAnon.prettyPrint();
-        builtinToShibAnon.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
+        Response builtinToOAuthAnon = UtilIT.migrateBuiltinToOAuth(data, "");
+        builtinToOAuthAnon.prettyPrint();
+        builtinToOAuthAnon.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
 
         Response createSuperuser = UtilIT.createRandomUser();
         String superuserUsername = UtilIT.getUsernameFromResponse(createSuperuser);
@@ -166,9 +174,16 @@ public class AdminIT {
         toggleSuperuser.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        Response makeShibUser = UtilIT.migrateBuiltinToOAuth(data, superuserApiToken);
-        makeShibUser.prettyPrint();
-        makeShibUser.then().assertThat()
+        Response getAuthProviders = UtilIT.getAuthProviders(superuserApiToken);
+        getAuthProviders.prettyPrint();
+        if (!getAuthProviders.body().asString().contains(BuiltinAuthenticationProvider.PROVIDER_ID)) {
+            System.out.println("Can't proceed with test without builtin provider.");
+            return;
+        }
+
+        Response makeOAuthUser = UtilIT.migrateBuiltinToOAuth(data, superuserApiToken);
+        makeOAuthUser.prettyPrint();
+        makeOAuthUser.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 //                .body("data.affiliation", equalTo("TestShib Test IdP"))
                 .body("data.'changing to this provider'", equalTo("github"))

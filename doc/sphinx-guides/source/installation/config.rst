@@ -106,7 +106,7 @@ Auth Modes: Local vs. Remote vs. Both
 
 There are three valid configurations or modes for authenticating users to Dataverse:
 
-- Local only (also known as "builtin").
+- Local only (also known as "builtin" or "Username/Email").
 - Both local and remote (Shibboleth and/or OAuth).
 - Remote (Shibboleth and/or OAuth) only.
 
@@ -118,11 +118,11 @@ The ``authenticationproviderrow`` database table controls which "authentication 
 
 Enabling a second authentication provider will result in the Log In page showing additional providers for your users to choose from. By default, the Log In page will show the "builtin" provider, but you can adjust this via the ``:DefaultAuthProvider`` configuration option. 
 
-"Remote only" mode should be considered experiemental until https://github.com/IQSS/dataverse/issues/2974 is resolved. For now, "remote only" means:
+"Remote only" mode should be considered experimental until https://github.com/IQSS/dataverse/issues/2974 is resolved. For now, "remote only" means:
 
 - Shibboleth or OAuth has been enabled.
 - ``:AllowSignUp`` is set to "false" per the :doc:`config` section to prevent users from creating local accounts via the web interface. Please note that local accounts can also be created via API, and the way to prevent this is to block the ``builtin-users`` endpoint or scramble (or remove) the ``BuiltinUsers.KEY`` database setting per the :doc:`config` section. 
-- The "builtin" authentication provider has been disabled. Note that disabling the builting auth provider means that the API endpoint for converting an account from a remote auth provider will not work.  This is the main reason why https://github.com/IQSS/dataverse/issues/2974 is still open.
+- The "builtin" authentication provider has been disabled. Note that disabling the builting auth provider means that the API endpoint for converting an account from a remote auth provider will not work. This is the main reason why https://github.com/IQSS/dataverse/issues/2974 is still open. Converting directly from one remote authentication provider to another (i.e. from GitHub to Google) is not supported. Conversion from remote is always to builtin. Then the user initiates a conversion from builtin to remote. Note that longer term, the plan is to permit multiple login options to the same Dataverse account per https://github.com/IQSS/dataverse/issues/3487 (so all this talk of conversion will be moot) but for now users can only use a single login option, as explained in the :doc:`/user/account` section of the User Guide. In short, "remote only" might work for you if you only plan to use a single remote authentication provider such that no conversion between remote authentication providers will be necessary.
 
 JVM Options
 -----------

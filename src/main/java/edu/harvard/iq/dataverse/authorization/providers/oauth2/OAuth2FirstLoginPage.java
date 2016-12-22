@@ -320,6 +320,15 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
         return BundleUtil.getStringFromBundle("oauth2.newAccount.explanation", Arrays.asList(authProvider.getInfo().getTitle(), systemConfig.getNameOfInstallation()));
     }
 
+    public boolean isConvertFromBuiltinIsPossible() {
+        AuthenticationProvider builtinAuthProvider = authenticationSvc.getAuthenticationProvider(BuiltinAuthenticationProvider.PROVIDER_ID);
+        if (builtinAuthProvider != null) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     public String getSuggestConvertInsteadOfCreate() {
         return BundleUtil.getStringFromBundle("oauth2.newAccount.suggestConvertInsteadOfCreate", Arrays.asList(systemConfig.getNameOfInstallation()));
     }
@@ -328,7 +337,7 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
         if (authProvider == null) {
             return "";
         }
-        return BundleUtil.getStringFromBundle("oauth2.convertAccount.explanation", Arrays.asList(systemConfig.getNameOfInstallation(), authProvider.getInfo().getTitle()));
+        return BundleUtil.getStringFromBundle("oauth2.convertAccount.explanation", Arrays.asList(systemConfig.getNameOfInstallation(), authProvider.getInfo().getTitle(), systemConfig.getGuidesBaseUrl(), systemConfig.getVersion()));
     }
 
     public List<String> getEmailsToPickFrom() {

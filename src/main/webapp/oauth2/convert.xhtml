@@ -34,7 +34,7 @@
                         <h:form id="convertAccountForm" styleClass="form-horizontal">
                             <p class="help-block">
                                 <span class="glyphicon glyphicon-info-sign"/>
-                                <span>#{OAuth2FirstLoginPage.convertTip}</span>
+                                <h:outputFormat value="#{OAuth2FirstLoginPage.convertTip}" escape="false"/>
                             </p>
                             <div class="form-group">
                                 <label for="position" class="col-sm-3 control-label">

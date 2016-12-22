@@ -501,6 +501,13 @@ public class UtilIT {
         return response;
     }
 
+    static Response getAuthProviders(String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/admin/authenticationProviders");
+        return response;
+    }
+
     static Response migrateShibToBuiltin(Long userIdToConvert, String newEmailAddress, String apiToken) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
