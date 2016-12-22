@@ -56,7 +56,7 @@ When planning your installation you should be aware of the following components 
 - PostgreSQL: a relational database.
 - Solr: a search engine. A Dataverse-specific schema is provided.
 - SMTP server: for sending mail for password resets and other notifications.
-- Persistent indentifier service: DOI support is provided. An EZID subscription or DataCite account is required for production use.
+- Persistent identifier service: DOI support is provided. An EZID subscription or DataCite account is required for production use.
 
 There are a number of optional components you may choose to install or configure, including:
 

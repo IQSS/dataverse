@@ -159,6 +159,7 @@ The reason for backing up the ``schema.xml`` file is that Dataverse requires a c
 
 With the Dataverse-specific schema in place, you can now start Solr::
 
+	# cd /usr/local/solr-4.6.0/example
 	# java -jar start.jar
 
 Solr Init Script

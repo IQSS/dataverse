@@ -286,7 +286,7 @@ BuiltinUsers.KEY
 
 The key required to create users via API as documented at :doc:`/api/native-api`. Unlike other database settings, this one doesn't start with a colon.
 
-``curl -X PUT -d builtInS3kretKey http://localhost:8080/api/admin/settings/:BuiltinUsers.KEY``
+``curl -X PUT -d builtInS3kretKey http://localhost:8080/api/admin/settings/BuiltinUsers.KEY``
 
 :SystemEmail
 ++++++++++++
@@ -422,7 +422,7 @@ Set your Google Analytics Tracking ID thusly:
 :SolrHostColonPort
 ++++++++++++++++++
 
-By default Dataverse will attempt to connect to Solr on port 8983 on localhost. Use this setting to change the hostname or port.
+By default Dataverse will attempt to connect to Solr on port 8983 on localhost. Use this setting to change the hostname or port. You must restart Glassfish after making this change.
 
 ``curl -X PUT -d localhost:8983 http://localhost:8080/api/admin/settings/:SolrHostColonPort``
 
@@ -431,7 +431,7 @@ By default Dataverse will attempt to connect to Solr on port 8983 on localhost. 
 
 The relative path URL to which users will be sent after signup. The default setting is below.
 
-``curl -X PUT -d true /dataverseuser.xhtml?editMode=CREATE http://localhost:8080/api/admin/settings/:SignUpUrl``
+``curl -X PUT -d '/dataverseuser.xhtml?editMode=CREATE' http://localhost:8080/api/admin/settings/:SignUpUrl``
 
 :TwoRavensUrl
 +++++++++++++
