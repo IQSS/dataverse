@@ -129,7 +129,7 @@ If you already have a Dataverse account associated with the Username/Email log i
 Convert your Dataverse account away from ORCID for log in
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If for whatever reason you don't want to log in to Dataverse using ORCID any more want to convert your Dataverse account to the Username/Email log in option, you will need to contact support for the Dataverse installation you are using. On your account page, there is a link for "Dataverse Support" that will open the popup form to contact support for assistance.
+If, for whatever reason, you don't want to log in to Dataverse using ORCID any more, you will want to convert your Dataverse account to the Username/Email log in option. To do this, you will need to contact support for the Dataverse installation you are using. On your account page, there is a link for "Dataverse Support" that will open the popup form to contact support for assistance.
 
 GitHub and Google
 ~~~~~~~~~~~~~~~~~
