@@ -158,7 +158,7 @@ API Token
 ---------
 
 #. To create your API token, click on your name in the header on right hand side and then click on API Token.
-#. In this tab, you can create your API Token for the first time as well as recreate it if you need a new API Token or your API Token becomes compromised.
+#. In this tab, you can create your API Token for the first time as well as recreate it if you need a new API Token or if your API Token becomes compromised.
 
 .. |image1| image:: ./img/image1institutional.png
    :class: img-responsive
