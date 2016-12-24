@@ -113,7 +113,7 @@ public class Datasets extends AbstractApiBean {
             final DatasetVersion latest = execCommand(new GetLatestAccessibleDatasetVersionCommand(req, retrieved));
             final JsonObjectBuilder jsonbuilder = json(retrieved);
 
-            return ok(jsonbuilder.add("latestVersion", (latest != null) ? json(latest) : null));
+            return allowCors(ok(jsonbuilder.add("latestVersion", (latest != null) ? json(latest) : null)));
         });
     }
     

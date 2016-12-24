@@ -3,6 +3,10 @@ Native API
 
 Dataverse 4.0 exposes most of its GUI functionality via a REST-based API. Some API calls do not require authentication. Calls that do require authentication require the user's API key. That key can be passed either via an extra query parameter, ``key``, as in ``ENPOINT?key=API_KEY``, or via the HTTP header ``X-Dataverse-key``. Note that while the header option normally requires more work on client side, it is considered safer, as the API key is not logged in the server access logs.
 
+.. note:: Some API endpoint allow CORS_ (cross-origin resource sharing), which makes them usable from Javascript run in web browsers. These endpoints are marked with ``(CORS)``.
+
+.. _CORS: https://www.w3.org/TR/cors/
+
 .. warning:: Dataverse 4.0's API is versioned at the URI - all API calls may include the version number like so: ``http://server-address//api/v1/...``. Omitting the ``v1`` part would default to the latest API version (currently 1). When writing scripts/applications that will be used for a long time, make sure to specify the API version, so they don't break when the API is upgraded.
 
 .. contents::
@@ -30,7 +34,7 @@ The following JSON example can be `downloaded <../_static/api/dataverse-complete
 
 .. literalinclude:: ../_static/api/dataverse-complete.json
 
-View data about the dataverse identified by ``$id``. ``$id`` can be the id number of the dataverse, its alias, or the special value ``:root``. ::
+``CORS`` View data about the dataverse identified by ``$id``. ``$id`` can be the id number of the dataverse, its alias, or the special value ``:root``. ::
 
     GET http://$SERVER/api/dataverses/$id
 
@@ -38,7 +42,7 @@ Deletes the dataverse whose ID is given::
 
     DELETE http://$SERVER/api/dataverses/$id?key=$apiKey
 
-Lists all the DvObjects under dataverse ``id``. ::
+``CORS`` Lists all the DvObjects under dataverse ``id``. ::
 
     GET http://$SERVER/api/dataverses/$id/contents
 
@@ -73,7 +77,7 @@ Delete the assignment whose id is ``$id``::
 
   DELETE http://$SERVER/api/dataverses/$id/assignments/$id?key=$apiKey
 
-Get the metadata blocks defined on the passed dataverse::
+``CORS`` Get the metadata blocks defined on the passed dataverse::
 
   GET http://$SERVER/api/dataverses/$id/metadatablocks?key=$apiKey
 
@@ -283,7 +287,7 @@ Management of Shibboleth groups via API is documented in the :doc:`/installation
 Info
 ~~~~
 
-Get the Dataverse version. The response contains the version and build numbers::
+``(CORS)`` Get the Dataverse version. The response contains the version and build numbers::
 
   GET http://$SERVER/api/info/version
 
