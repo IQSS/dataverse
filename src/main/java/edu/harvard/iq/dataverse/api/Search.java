@@ -186,9 +186,9 @@ public class Search extends AbstractApiBean {
                 return error(Response.Status.BAD_REQUEST, solrQueryResponse.getError());
             }
             response.setHeader("Access-Control-Allow-Origin", "*");
-            return ok(value);
+            return allowCors(ok(value));
         } else {
-            return error(Response.Status.BAD_REQUEST, "q parameter is missing");
+            return allowCors(error(Response.Status.BAD_REQUEST, "q parameter is missing"));
         }
     }
 
