@@ -500,7 +500,6 @@ public class JsonPrinter {
             // version *you want*! (L.A.)
             fileName = df.getFileMetadata().getLabel();
         }
-        df.getFileMetadata().getCategoriesByName();
         return jsonObjectBuilder()
                 .add("id", df.getId())
                 .add("filename", fileName)
