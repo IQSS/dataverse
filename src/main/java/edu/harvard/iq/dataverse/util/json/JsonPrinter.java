@@ -468,16 +468,13 @@ public class JsonPrinter {
 
     public static JsonObjectBuilder json(FileMetadata fmd) {
         return jsonObjectBuilder()
-                // deprecated: .add("category", fmd.getCategory())
-                // TODO: uh, figure out what to do here... it's deprecated 
-                // in a sense that there's no longer the category field in the 
-                // fileMetadata object; but there are now multiple, oneToMany file 
-                // categories - and we probably need to export them too!) -- L.A. 4.5
                 .add("description", fmd.getDescription())
                 .add("label", fmd.getLabel()) // "label" is the filename
                 .add("directoryLabel", fmd.getDirectoryLabel())
                 .add("version", fmd.getVersion())
                 .add("datasetVersionId", fmd.getDatasetVersion().getId())
+                // We should probably export tags too.
+                .add("tags", getFileTags(fmd))
                 .add("dataFile", json(fmd.getDataFile(), fmd));
     }
 
@@ -503,7 +500,7 @@ public class JsonPrinter {
             // version *you want*! (L.A.)
             fileName = df.getFileMetadata().getLabel();
         }
-        
+        df.getFileMetadata().getCategoriesByName();
         return jsonObjectBuilder()
                 .add("id", df.getId())
                 .add("filename", fileName)
@@ -523,6 +520,17 @@ public class JsonPrinter {
 
     public static String format(Date d) {
         return (d == null) ? null : Util.getDateTimeFormat().format(d);
+    }
+
+    private static JsonArrayBuilder getFileTags(FileMetadata fmd) {
+        if (fmd == null) {
+            return null;
+        }
+        JsonArrayBuilder tags = Json.createArrayBuilder();
+        for (String tag : fmd.getCategoriesByName()) {
+            tags.add(tag);
+        }
+        return tags;
     }
 
     private static class DatasetFieldsToJson implements DatasetFieldWalker.Listener {
