@@ -120,7 +120,7 @@ public class FileRecordJobIT {
             }
         }
     }
-    
+
     @Before
     public void setUpDataverse() {
 
@@ -195,33 +195,33 @@ public class FileRecordJobIT {
 
     @After
     public void tearDownDataverse() {
-//        try {
-//
-//            // delete dataset
-//            if (isDraft) {
-//                given().header(API_TOKEN_HTTP_HEADER, token)
-//                        .delete("/api/datasets/" + dsId)
-//                        .then().assertThat().statusCode(200);
-//            } else {
-//                given().post("/api/admin/superuser/" + testName);
-//                given().header(API_TOKEN_HTTP_HEADER, token)
-//                        .delete("/api/datasets/" + dsId + "/destroy")
-//                        .then().assertThat().statusCode(200);
-//            }
-//            // delete dataverse
-//            given().header(API_TOKEN_HTTP_HEADER, token)
-//                    .delete("/api/dataverses/" + testName)
-//                    .then().assertThat().statusCode(200);
-//            // delete user
-//            given().header(API_TOKEN_HTTP_HEADER, token)
-//                    .delete("/api/admin/authenticatedUsers/" + testName + "/")
-//                    .then().assertThat().statusCode(200);
-//            FileUtils.deleteDirectory(new File(dsDir));
-//        } catch (IOException ioe) {
-//            System.out.println("Error creating test dataset: " + ioe.getMessage());
-//            ioe.printStackTrace();
-//            fail();
-//        }
+        try {
+
+            // delete dataset
+            if (isDraft) {
+                given().header(API_TOKEN_HTTP_HEADER, token)
+                        .delete("/api/datasets/" + dsId)
+                        .then().assertThat().statusCode(200);
+            } else {
+                given().post("/api/admin/superuser/" + testName);
+                given().header(API_TOKEN_HTTP_HEADER, token)
+                        .delete("/api/datasets/" + dsId + "/destroy")
+                        .then().assertThat().statusCode(200);
+            }
+            // delete dataverse
+            given().header(API_TOKEN_HTTP_HEADER, token)
+                    .delete("/api/dataverses/" + testName)
+                    .then().assertThat().statusCode(200);
+            // delete user
+            given().header(API_TOKEN_HTTP_HEADER, token)
+                    .delete("/api/admin/authenticatedUsers/" + testName + "/")
+                    .then().assertThat().statusCode(200);
+            FileUtils.deleteDirectory(new File(dsDir));
+        } catch (IOException ioe) {
+            System.out.println("Error creating test dataset: " + ioe.getMessage());
+            ioe.printStackTrace();
+            fail();
+        }
     }
 
     /**
@@ -261,85 +261,7 @@ public class FileRecordJobIT {
 
             // validate job
             JobExecutionEntity job = getJob();
-            assertEquals(job.getSteps().size(), 2);
-            StepExecutionEntity step1 = job.getSteps().get(0);
-            Map<String, Long> metrics = step1.getMetrics();
-            assertEquals(job.getExitStatus(), BatchStatus.COMPLETED.name());
-            assertEquals(job.getStatus(), BatchStatus.COMPLETED);
-            assertEquals(step1.getExitStatus(), BatchStatus.COMPLETED.name());
-            assertEquals(step1.getStatus(), BatchStatus.COMPLETED);
-            assertEquals(step1.getName(), "import-files");
-            assertEquals((long) metrics.get("write_skip_count"), 0);
-            assertEquals((long) metrics.get("commit_count"), 1);
-            assertEquals((long) metrics.get("process_skip_count"), 0);
-            assertEquals((long) metrics.get("read_skip_count"), 0);
-            assertEquals((long) metrics.get("write_count"), 2);
-            assertEquals((long) metrics.get("rollback_count"), 0);
-            assertEquals((long) metrics.get("filter_count"), 0);
-            assertEquals((long) metrics.get("read_count"), 2);
-            assertEquals(step1.getPersistentUserData(), null);
-
-            // confirm data files were imported
-            updateDatasetJsonPath();
-            List<String> storageIds = new ArrayList<>();
-            storageIds.add(dsPath.getString("data.latestVersion.files[0].dataFile.storageIdentifier"));
-            storageIds.add(dsPath.getString("data.latestVersion.files[1].dataFile.storageIdentifier"));
-            assert(storageIds.contains(file1));
-            assert(storageIds.contains(file2));
-
-            // test the reporting apis
-            given()
-                    .header(API_TOKEN_HTTP_HEADER, token)
-                    .get(props.getProperty("job.status.api") + job.getId())
-                    .then().assertThat()
-                    .body("status", equalTo("COMPLETED"));
-            List<Integer> ids =  given()
-                    .header(API_TOKEN_HTTP_HEADER, token)
-                    .get(props.getProperty("job.status.api"))
-                    .then().extract().jsonPath()
-                    .getList("jobs.id");
-            assertTrue(ids.contains((int)job.getId()));
-
-        } catch (Exception e) {
-            System.out.println("Error testIdenticalFilesInDifferentDirectories: " + e.getMessage());
-            e.printStackTrace();
-            fail();
-        }
-    }
-
-    @Test
-    public void testFilesWithNoExtensions() {
-
-        try {
-
-            // create a single test file and put it in two places
-            String file1 =  "testfile";
-            String file2 = "subdir/testfile";
-            File file = createTestFile(dsDir, file1, 0.25);
-            if (file != null) {
-                FileUtils.copyFile(file, new File(dsDir + file2));
-            } else {
-                System.out.println("Unable to copy file: " + dsDir + file2);
-                fail();
-            }
-
-            // mock the checksum manifest
-            String checksum1 = "asfdasdfasdfasdf";
-            String checksum2 = "sgsdgdsgfsdgsdgf";
-            if (file1 != null && file2 != null) {
-                PrintWriter pw = new PrintWriter(new FileWriter(dsDir + "/files.sha"));
-                pw.write(checksum1 + " " + file1);
-                pw.write("\n");
-                pw.write(checksum2 + " " + file2);
-                pw.write("\n");
-                pw.close();
-            } else {
-                fail();
-            }
-
-            // validate job
-            JobExecutionEntity job = getJob();
-            assertEquals(job.getSteps().size(), 2);
+            assertEquals(job.getSteps().size(), 1);
             StepExecutionEntity step1 = job.getSteps().get(0);
             Map<String, Long> metrics = step1.getMetrics();
             assertEquals(job.getExitStatus(), BatchStatus.COMPLETED.name());
@@ -405,9 +327,9 @@ public class FileRecordJobIT {
                     .then().assertThat().statusCode(200)
                     .extract().jsonPath().getString("data.apiToken");
 
-            Response grantRole = UtilIT.grantRoleOnDataverse(testName, DataverseRole.EDITOR.toString(), 
+            Response grantRole = UtilIT.grantRoleOnDataverse(testName, DataverseRole.EDITOR.toString(),
                     "@" + contribUser, token);
-            
+
             //grantRole.prettyPrint();
 
             // create a single test file and put it in two places
@@ -437,7 +359,7 @@ public class FileRecordJobIT {
 
             // validate job
             JobExecutionEntity job = getJobWithToken(contribToken);
-            assertEquals(job.getSteps().size(), 2);
+            assertEquals(job.getSteps().size(), 1);
             StepExecutionEntity step1 = job.getSteps().get(0);
             Map<String, Long> metrics = step1.getMetrics();
             assertEquals(job.getExitStatus(), BatchStatus.COMPLETED.name());
@@ -482,7 +404,7 @@ public class FileRecordJobIT {
             fail();
         }
     }
-    
+
     /**
      * Import the same file in different directories, in the same dataset.
      * This is not permitted via HTTP file upload since identical checksums are not allowed in the same dataset.
@@ -535,9 +457,9 @@ public class FileRecordJobIT {
 
             // should return 403
             given()
-                .header(API_TOKEN_HTTP_HEADER, unauthToken)
-                .post(props.getProperty("filesystem.api") + "/" + dsDoi)
-                .then().assertThat().statusCode(403);
+                    .header(API_TOKEN_HTTP_HEADER, unauthToken)
+                    .post(props.getProperty("filesystem.api") + "/" + dsDoi)
+                    .then().assertThat().statusCode(403);
 
             // delete unauthorized user
             given().header(API_TOKEN_HTTP_HEADER, token)
@@ -550,7 +472,7 @@ public class FileRecordJobIT {
             fail();
         }
     }
-    
+
 //    @Test
 //    /**
 //     * Delete a file in REPLACE mode
@@ -721,7 +643,7 @@ public class FileRecordJobIT {
 
             // validate job
             JobExecutionEntity job = getJob();
-            assertEquals(job.getSteps().size(), 2);
+            assertEquals(job.getSteps().size(), 1);
             StepExecutionEntity step1 = job.getSteps().get(0);
             Map<String, Long> metrics = step1.getMetrics();
             assertEquals(job.getExitStatus(), BatchStatus.COMPLETED.name());
@@ -781,8 +703,8 @@ public class FileRecordJobIT {
             }
 
             // validate job again
-            JobExecutionEntity newJob = getJob();
-            assertEquals(newJob.getSteps().size(), 2);
+            JobExecutionEntity newJob = getJobWithMode("MERGE");
+            assertEquals(newJob.getSteps().size(), 1);
             StepExecutionEntity newSteps = newJob.getSteps().get(0);
             Map<String, Long> newMetrics = newSteps.getMetrics();
             assertEquals(newJob.getExitStatus(), BatchStatus.COMPLETED.name());
@@ -854,11 +776,9 @@ public class FileRecordJobIT {
             }
 
             JobExecutionEntity job = getJob();
-            assertEquals(job.getSteps().size(), 2);
+            assertEquals(job.getSteps().size(), 1);
             StepExecutionEntity step1 = job.getSteps().get(0);
-            StepExecutionEntity step2 = job.getSteps().get(1);
             Map<String, Long> metrics1 = step1.getMetrics();
-            Map<String, Long> metrics2 = step2.getMetrics();
             // check job status
             assertEquals(BatchStatus.COMPLETED.name(), job.getExitStatus());
             assertEquals(BatchStatus.COMPLETED, job.getStatus());
@@ -877,21 +797,6 @@ public class FileRecordJobIT {
             assertEquals((long) metrics1.get("read_count"), 2);
             // should be no user data (error messages)
             assertEquals(step1.getPersistentUserData(), null);
-            // check step 2 status and name
-            assertEquals(step2.getExitStatus(), BatchStatus.COMPLETED.name());
-            assertEquals(step2.getStatus(), BatchStatus.COMPLETED);
-            assertEquals(step2.getName(), "import-checksums");
-            // verify step 2 metrics
-            assertEquals((long) metrics2.get("write_skip_count"), 0);
-            assertEquals((long) metrics2.get("commit_count"), 1);
-            assertEquals((long) metrics2.get("process_skip_count"), 0);
-            assertEquals((long) metrics2.get("read_skip_count"), 0);
-            assertEquals((long) metrics2.get("write_count"), 2);
-            assertEquals((long) metrics2.get("rollback_count"), 0);
-            assertEquals((long) metrics2.get("filter_count"), 0);
-            assertEquals((long) metrics2.get("read_count"), 2);
-            // should be no user data (error messages)
-            assertEquals(step2.getPersistentUserData(), null);
 
             // confirm files were imported
             updateDatasetJsonPath();
@@ -928,44 +833,27 @@ public class FileRecordJobIT {
             createTestFile(dsDir, "testfile2.txt", 0.25);
 
             JobExecutionEntity job = getJob();
-            assertEquals(job.getSteps().size(), 2);
+            assertEquals(job.getSteps().size(), 1);
             StepExecutionEntity step1 = job.getSteps().get(0);
-            StepExecutionEntity step2 = job.getSteps().get(1);
             Map<String, Long> metrics1 = step1.getMetrics();
-            Map<String, Long> metrics2 = step2.getMetrics();
             // check job status
-            assertEquals(job.getExitStatus(), BatchStatus.COMPLETED.name());
-            assertEquals(job.getStatus(), BatchStatus.COMPLETED);
+            assertEquals(job.getExitStatus(), BatchStatus.FAILED.name());
+            assertEquals(job.getStatus(), BatchStatus.FAILED);
             // check step 1 status and name
-            assertEquals(step1.getExitStatus(), BatchStatus.COMPLETED.name());
-            assertEquals(step1.getStatus(), BatchStatus.COMPLETED);
+            assertEquals(step1.getExitStatus(), BatchStatus.FAILED.name());
+            assertEquals(step1.getStatus(), BatchStatus.FAILED);
             assertEquals(step1.getName(), "import-files");
             // verify step 1 metrics
             assertEquals((long) metrics1.get("write_skip_count"), 0);
-            assertEquals((long) metrics1.get("commit_count"), 1);
+            assertEquals((long) metrics1.get("commit_count"), 0);
             assertEquals((long) metrics1.get("process_skip_count"), 0);
             assertEquals((long) metrics1.get("read_skip_count"), 0);
-            assertEquals((long) metrics1.get("write_count"), 2);
+            assertEquals((long) metrics1.get("write_count"), 0);
             assertEquals((long) metrics1.get("rollback_count"), 0);
             assertEquals((long) metrics1.get("filter_count"), 0);
-            assertEquals((long) metrics1.get("read_count"), 2);
+            assertEquals((long) metrics1.get("read_count"), 0);
             // should be no user data (error messages)
             assertEquals(step1.getPersistentUserData(), null);
-            // check step 2 status and name
-            assertEquals(step2.getExitStatus(), BatchStatus.FAILED.name());
-            assertEquals(step2.getStatus(), BatchStatus.COMPLETED);
-            assertEquals(step2.getName(), "import-checksums");
-            // verify step 2 metrics
-            assertEquals((long) metrics2.get("write_skip_count"), 0);
-            assertEquals((long) metrics2.get("commit_count"), 1);
-            assertEquals((long) metrics2.get("process_skip_count"), 0);
-            assertEquals((long) metrics2.get("read_skip_count"), 0);
-            assertEquals((long) metrics2.get("write_count"), 0);
-            assertEquals((long) metrics2.get("rollback_count"), 0);
-            assertEquals((long) metrics2.get("filter_count"), 0);
-            assertEquals((long) metrics2.get("read_count"), 0);
-            // should include detailed error message
-            assert(step2.getPersistentUserData().contains("FAILED: missing checksums"));
 
             // confirm files were imported and checksums unknown
             updateDatasetJsonPath();
@@ -1008,11 +896,9 @@ public class FileRecordJobIT {
             }
 
             JobExecutionEntity job = getJob();
-            assertEquals(job.getSteps().size(), 2);
+            assertEquals(job.getSteps().size(), 1);
             StepExecutionEntity step1 = job.getSteps().get(0);
-            StepExecutionEntity step2 = job.getSteps().get(1);
             Map<String, Long> metrics1 = step1.getMetrics();
-            Map<String, Long> metrics2 = step2.getMetrics();
             // check job status
             assertEquals(job.getExitStatus(), BatchStatus.COMPLETED.name());
             assertEquals(job.getStatus(), BatchStatus.COMPLETED);
@@ -1031,21 +917,6 @@ public class FileRecordJobIT {
             assertEquals((long) metrics1.get("read_count"), 2);
             // should be no user data (error messages)
             assertEquals(step1.getPersistentUserData(), null);
-            // check step 2 status and name
-            assertEquals(step2.getExitStatus(), BatchStatus.FAILED.name());
-            assertEquals(step2.getStatus(), BatchStatus.COMPLETED);
-            assertEquals(step2.getName(), "import-checksums");
-            // verify step 2 metrics
-            assertEquals((long) metrics2.get("write_skip_count"), 0);
-            assertEquals((long) metrics2.get("commit_count"), 1);
-            assertEquals((long) metrics2.get("process_skip_count"), 0);
-            assertEquals((long) metrics2.get("read_skip_count"), 0);
-            assertEquals((long) metrics2.get("write_count"), 1);
-            assertEquals((long) metrics2.get("rollback_count"), 0);
-            assertEquals((long) metrics2.get("filter_count"), 0);
-            assertEquals((long) metrics2.get("read_count"), 1);
-            // should include detailed error message
-            assert(step2.getPersistentUserData().contains("FAILED: missing checksums [testfile2.txt]"));
 
             // confirm files were imported
             updateDatasetJsonPath();
@@ -1096,11 +967,9 @@ public class FileRecordJobIT {
             }
 
             JobExecutionEntity job = getJob();
-            assertEquals(job.getSteps().size(), 2);
+            assertEquals(job.getSteps().size(), 1);
             StepExecutionEntity step1 = job.getSteps().get(0);
-            StepExecutionEntity step2 = job.getSteps().get(1);
             Map<String, Long> metrics1 = step1.getMetrics();
-            Map<String, Long> metrics2 = step2.getMetrics();
             // check job status
             assertEquals(job.getExitStatus(), BatchStatus.COMPLETED.name());
             assertEquals(job.getStatus(), BatchStatus.COMPLETED);
@@ -1119,21 +988,6 @@ public class FileRecordJobIT {
             assertEquals((long) metrics1.get("read_count"), 2);
             // should be no user data (error messages)
             assertEquals(step1.getPersistentUserData(), null);
-            // check step 2 status and name
-            assertEquals(step2.getExitStatus(), BatchStatus.FAILED.name());
-            assertEquals(step2.getStatus(), BatchStatus.COMPLETED);
-            assertEquals(step2.getName(), "import-checksums");
-            // verify step 2 metrics
-            assertEquals((long) metrics2.get("write_skip_count"), 0);
-            assertEquals((long) metrics2.get("commit_count"), 1);
-            assertEquals((long) metrics2.get("process_skip_count"), 0);
-            assertEquals((long) metrics2.get("read_skip_count"), 0);
-            assertEquals((long) metrics2.get("write_count"), 2);
-            assertEquals((long) metrics2.get("rollback_count"), 0);
-            assertEquals((long) metrics2.get("filter_count"), 1);
-            assertEquals((long) metrics2.get("read_count"), 3);
-            // should report missing data file
-            assert(step2.getPersistentUserData().contains("FAILED: missing data files [fileThatDoesntExist.txt]"));
 
             // confirm files were imported
             updateDatasetJsonPath();
@@ -1165,33 +1019,33 @@ public class FileRecordJobIT {
         try {
 
             RestAssured.urlEncodingEnabled = false;
-            
+
             // publish the dataverse
             System.out.println("DATAVERSE: http://localhost:8080/api/dataverses/"+testName+"/actions/:publish?key="+token);
             given().body("{}").contentType("application/json")
                     .post("/api/dataverses/" + testName + "/actions/:publish?key="+token)
                     .then().assertThat().statusCode(200);
-            
+
             // publish the dataset
             System.out.println("DATASET: http://localhost:8080/api/datasets/"+dsId+"/actions/:publish?type=major&key="+token);
             given()
                     .get("/api/datasets/" + dsId + "/actions/:publish?type=major&key="+token)
                     .then().assertThat().statusCode(200);
-            
+
             isDraft = false;
-            
+
             JsonPath jsonPath = getFaileJobJson();
             assertTrue(jsonPath.getString("status").equalsIgnoreCase("ERROR"));
             assertTrue(jsonPath.getString("message").contains("Dataset isn't in DRAFT mode."));
-            
+
         } catch (Exception e) {
             System.out.println("Error testChecksumImport: " + e.getMessage());
             e.printStackTrace();
             fail();
         }
     }
-    
-    
+
+
 //  todo: figure out how to create a new version using the native api - sorry, i can't get this to work...
 //    @Test
 //    /**
@@ -1258,7 +1112,7 @@ public class FileRecordJobIT {
             fail();
         }
     }
-    
+
     // UTILS
 
     /***
@@ -1399,7 +1253,7 @@ public class FileRecordJobIT {
                 .extract().jsonPath();
         return jsonPath;
     }
-    
+
     /**
      * Kick off a job with default mode (MERGE)
      * @return a job execution entity

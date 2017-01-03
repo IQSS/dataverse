@@ -1,13 +1,27 @@
+/*
+   Copyright (C) 2005-2017, by the President and Fellows of Harvard College.
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+
+   Dataverse Network - A web application to share, preserve and analyze research data.
+   Developed at the Institute for Quantitative Social Science, Harvard University.
+*/
+
 package edu.harvard.iq.dataverse.batch.jobs.importer.filesystem;
 
-import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.PermissionServiceBean;
-import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
-import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.batch.jobs.importer.ImportMode;
 import org.apache.commons.io.filefilter.NotFileFilter;
@@ -29,6 +43,7 @@ import java.io.FileFilter;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -38,8 +53,8 @@ import java.util.logging.Logger;
 @Named
 @Dependent
 public class FileRecordReader extends AbstractItemReader {
-
-    private static final Logger logger = Logger.getLogger(FileRecordReader.class.getName());
+    
+    public static final String SEP = System.getProperty("file.separator");
 
     @Inject
     JobContext jobContext;
@@ -50,19 +65,7 @@ public class FileRecordReader extends AbstractItemReader {
     @Inject
     @BatchProperty
     String excludes;
-
-    @EJB
-    DatasetServiceBean datasetService;
-
-    @EJB
-    DataFileServiceBean fileService;
-
-    @EJB
-    UserServiceBean userServiceBean;
-
-    @EJB
-    PermissionServiceBean permissionServiceBean;
-
+    
     @EJB
     DatasetServiceBean datasetServiceBean;
 
@@ -75,11 +78,11 @@ public class FileRecordReader extends AbstractItemReader {
 
     long currentRecordNumber;
     long totalRecordNumber;
-    private String persistentUserData = "";
 
     Dataset dataset;
     AuthenticatedUser user;
     String mode = ImportMode.MERGE.name();
+    Logger jobLogger;
 
     @PostConstruct
     public void init() {
@@ -88,78 +91,56 @@ public class FileRecordReader extends AbstractItemReader {
         dataset = datasetServiceBean.findByGlobalId(jobParams.getProperty("datasetId"));
         user = authenticationServiceBean.getAuthenticatedUser(jobParams.getProperty("userId"));
         mode = jobParams.getProperty("mode");
+        jobLogger = Logger.getLogger("job-"+Long.toString(jobContext.getInstanceId()));
     }
 
     @Override
     public void open(Serializable checkpoint) throws Exception {
-        
-        /**
-         * Current constraints:
-         * 1. valid directory
-         * 2. user has edit dataset permission
-         * 3. only one dataset version
-         * 4. dataset version is draft
-         */
-        
+ 
         directory = new File(System.getProperty("dataverse.files.directory")
-                + File.separator + dataset.getAuthority() + File.separator + dataset.getIdentifier());
+                + SEP + dataset.getAuthority() + SEP + dataset.getIdentifier());
+        jobLogger.log(Level.INFO, "Reading dataset directory: " + directory.getAbsolutePath() 
+                + " (excluding: " + excludes + ")");
         if (isValidDirectory(directory)) {
             files = getFiles(directory);
             iterator = files.listIterator();
             currentRecordNumber = 0;
             totalRecordNumber = (long) files.size();
+            jobLogger.log(Level.INFO, "Files found = " + totalRecordNumber);
+            // report if checksum total not equal to file total
+            int checksumCount = ((HashMap<String, String>) jobContext.getTransientUserData()).size();
+            if (checksumCount != files.size()) {
+                jobLogger.log(Level.SEVERE, "Checksum mismatch: " + checksumCount + " checksums found in the manifest "
+                        + "and " + files.size() + " files found in the dataset directory.");
+            }
+
         } else {
-            stepContext.setExitStatus("FAILED");
-        }
-        
-        if (!permissionServiceBean.userOn(user, dataset.getOwner()).has(Permission.EditDataset)) {
-            logger.log(Level.SEVERE, "User doesn't have permission to import files into this dataset. ");
-            persistentUserData += "FAILED: User doesn't have permission to import files into this dataset.";
-            stepContext.setExitStatus("FAILED");
-        }
-        
-        if (dataset.getVersions().size() != 1) {
-            logger.log(Level.SEVERE, "File system import is currently only supported for datasets with one version.");
-            persistentUserData += "FAILED: File system import is currently only supported for for datasets with one version. ";
-            stepContext.setExitStatus("FAILED");
-        }
-        
-        if (dataset.getLatestVersion().getVersionState() != DatasetVersion.VersionState.DRAFT) {
-            logger.log(Level.SEVERE, "File system import is currently only supported for DRAFT versions.");
-            persistentUserData += "FAILED: File system import is currently only supported for DRAFT versions. ";
             stepContext.setExitStatus("FAILED");
         }
     }
 
     @Override
     public void close() {
-        if (!persistentUserData.isEmpty()) {
-            stepContext.setPersistentUserData(persistentUserData);
-        }
+        jobLogger.log(Level.INFO, "Files read  = " + currentRecordNumber);
     }
 
     @Override
     public File readItem() {
         if (iterator.hasNext()) {
             currentRecordNumber++;
-            logger.log(Level.FINE,
-                    "Reading file " + Long.toString(currentRecordNumber) + " of " + Long.toString(totalRecordNumber));
-            return iterator.next(); // skip if it's in the ignore list
+            return iterator.next();
         }
         return null;
     }
 
     /**
      * Get the list of files in the directory, minus any in the skip list.
-     * @param directory
+     * @param directory directory where dataset files can be found
      * @return list of files
      */
     private List<File> getFiles(final File directory) {
-
-        // create filter from excludes property
-        FileFilter excludeFilter = new NotFileFilter(
-                new WildcardFileFilter(Arrays.asList(excludes.split("\\s*,\\s*"))));
-
+        // create filter from job xml excludes property
+        FileFilter excludeFilter = new NotFileFilter(new WildcardFileFilter(Arrays.asList(excludes.split("\\s*,\\s*"))));
         List<File> files = new ArrayList<>();
         File[] filesList = directory.listFiles(excludeFilter);
         if (filesList != null) {
@@ -181,21 +162,18 @@ public class FileRecordReader extends AbstractItemReader {
     private boolean isValidDirectory(File directory) {
         String path = directory.getAbsolutePath();
         if (!directory.exists()) {
-            logger.log(Level.SEVERE, "Directory " + path + " does not exist.");
-            persistentUserData += "FAILED: Directory " + path + " does not exist.";
+            jobLogger.log(Level.SEVERE, "Directory " + path + " does not exist.");
             return false;
         }
         if (!directory.isDirectory()) {
-            logger.log(Level.SEVERE, path + " is not a directory.");
-            persistentUserData += "FAILED: " + path + " is not a directory.";
+            jobLogger.log(Level.SEVERE, path + " is not a directory.");
             return false;
         }
         if (!directory.canRead()) {
-            logger.log(Level.SEVERE, "Unable to read files from directory " + path + ". Permission denied.");
-            persistentUserData += "FAILED: Unable to read files from directory " + path + ". Permission denied.";
+            jobLogger.log(Level.SEVERE, "Unable to read files from directory " + path + ". Permission denied.");
             return false;
         }
         return true;
     }
-
+    
 }

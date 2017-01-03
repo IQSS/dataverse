@@ -61,7 +61,7 @@ public class FileRecordJobResource extends AbstractApiBean {
                 AuthenticatedUser user = findAuthenticatedUserOrDie();
                 /**
                  * Current constraints:
-                 * 1. only supports merge mode
+                 * 1. only supports merge and replace mode
                  * 2. valid dataset
                  * 3. valid dataset directory
                  * 4. valid user & user has edit dataset permission
@@ -69,7 +69,7 @@ public class FileRecordJobResource extends AbstractApiBean {
                  * 6. dataset version is draft
                  */
 
-                if (!mode.equalsIgnoreCase("MERGE")) {
+                if (!mode.equalsIgnoreCase("MERGE") && !mode.equalsIgnoreCase("REPLACE")) {
                     return error(Response.Status.NOT_IMPLEMENTED, "Import mode: " + mode + " is not currently supported.");
                 }
                 if (dataset == null) {

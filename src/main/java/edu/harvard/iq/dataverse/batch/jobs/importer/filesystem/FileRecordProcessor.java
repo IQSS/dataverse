@@ -1,11 +1,29 @@
+/*
+   Copyright (C) 2005-2017, by the President and Fellows of Harvard College.
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+
+   Dataverse Network - A web application to share, preserve and analyze research data.
+   Developed at the Institute for Quantitative Social Science, Harvard University.
+*/
+
 package edu.harvard.iq.dataverse.batch.jobs.importer.filesystem;
 
+import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.batch.jobs.importer.ImportMode;
+import edu.harvard.iq.dataverse.DatasetVersion;
 
 import javax.annotation.PostConstruct;
 import javax.batch.api.chunk.ItemProcessor;
@@ -25,47 +43,44 @@ import java.util.logging.Logger;
 @Named
 @Dependent
 public class FileRecordProcessor implements ItemProcessor {
-
-    private static final Logger logger = Logger.getLogger(FileRecordProcessor.class.getName());
-
+    
     @Inject
     JobContext jobContext;
-
-    @EJB
-    AuthenticationServiceBean authenticationServiceBean;
-
+    
     @EJB
     DatasetServiceBean datasetServiceBean;
 
+    @EJB
+    DataFileServiceBean dataFileServiceBean;
+
     Dataset dataset;
-    AuthenticatedUser user;
-    String mode = ImportMode.MERGE.name();
+    Logger jobLogger;
     
     @PostConstruct
     public void init() {
         JobOperator jobOperator = BatchRuntime.getJobOperator();
         Properties jobParams = jobOperator.getParameters(jobContext.getInstanceId());
         dataset = datasetServiceBean.findByGlobalId(jobParams.getProperty("datasetId"));
-        user = authenticationServiceBean.getAuthenticatedUser(jobParams.getProperty("userId"));
-        mode = jobParams.getProperty("mode");
+        jobLogger = Logger.getLogger("job-"+Long.toString(jobContext.getInstanceId()));
     }
 
     @Override
     public Object processItem(Object object) throws Exception {
-        
+
+        DatasetVersion version = dataset.getLatestVersion();
         String path = object.toString();
         String gid = dataset.getAuthority() + dataset.getDoiSeparator() + dataset.getIdentifier();
         String relativePath = path.substring(path.indexOf(gid) + gid.length() + 1);
         
-        // if mode = MERGE, this will skip any datafiles already referenced by filemetadata
-        // if mode = UPDATE or REPLACE, the filemetadata list will already be empty at this point
-        for (FileMetadata fmd : dataset.getLatestVersion().getFileMetadatas()) {
-            if (fmd.getDataFile().getStorageIdentifier().equalsIgnoreCase(relativePath)) {
-                logger.log(Level.FINE, "Skipping: " + relativePath + " since it is already in the file metadata list.");
-                return null;
-            }
+        // skip if it already exists
+        DataFile datafile = dataFileServiceBean.findByStorageIdandDatasetVersion(relativePath, version);
+        if (datafile == null) {
+            return new File(path);
+        } else {
+            jobLogger.log(Level.INFO, "Skipping " + relativePath + ", DataFile already exists.");
+            return null;
         }
-        return new File(path);
+        
     }
 
 }
