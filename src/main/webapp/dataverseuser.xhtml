@@ -515,7 +515,8 @@
                                         <p:message for="email" display="text" />
                                     </div>
                                 </div>
-                                <div class="form-group" jsf:rendered="#{DataverseUserPage.userAuthProvider.displayIdentifier}">
+                                <!--FIXME: refactor to remove need for EDIT? userAuthProvider is null on CREATE-->
+                                <div class="form-group" jsf:rendered="#{DataverseUserPage.editMode == 'EDIT' and DataverseUserPage.userAuthProvider.displayIdentifier}">
                                     <!-- ORCID iD, for example -->
                                     <label for="userPersistentId" class="col-sm-3 control-label">
                                         <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{DataverseUserPage.userAuthProvider.persistentIdDescription}">
