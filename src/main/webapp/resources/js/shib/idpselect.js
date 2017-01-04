@@ -1616,21 +1616,21 @@ function IdPSelectUI() {
         var form = buildSelectForm();
 
         var textInput = document.createElement('input');
-        form.appendChild(textInput);
+        //form.appendChild(textInput);
 
         textInput.type='text';
         setID(textInput, 'Input');
 
         var hidden = document.createElement('input');
         hidden.setAttribute('type', 'hidden');
-        form.appendChild(hidden);
+        //form.appendChild(hidden);
 
         hidden.name = returnIDParam;
         hidden.value='-';
 
         var button = buildContinueButton('Select');
         button.disabled = true;
-        form.appendChild(button);
+        //form.appendChild(button);
 
         form.onsubmit = function () {
             //
