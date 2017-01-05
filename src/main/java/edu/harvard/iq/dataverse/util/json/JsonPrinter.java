@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.util.json;
 import edu.emory.mathcs.backport.java.util.Collections;
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFileTag;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetDistributor;
 import edu.harvard.iq.dataverse.DatasetFieldType;
@@ -473,8 +474,7 @@ public class JsonPrinter {
                 .add("directoryLabel", fmd.getDirectoryLabel())
                 .add("version", fmd.getVersion())
                 .add("datasetVersionId", fmd.getDatasetVersion().getId())
-                // We should probably export tags too.
-                .add("tags", getFileTags(fmd))
+                .add("categories", getFileCategories(fmd))
                 .add("dataFile", json(fmd.getDataFile(), fmd));
     }
 
@@ -514,6 +514,7 @@ public class JsonPrinter {
                  */
                 .add("md5", getMd5IfItExists(df.getChecksumType(), df.getChecksumValue()))
                 .add("checksum", getChecksumTypeAndValue(df.getChecksumType(), df.getChecksumValue()))
+                .add("tabularTags", getTabularFileTags(df))
                 .add("description", df.getDescription());
     }
 
@@ -521,15 +522,37 @@ public class JsonPrinter {
         return (d == null) ? null : Util.getDateTimeFormat().format(d);
     }
 
-    private static JsonArrayBuilder getFileTags(FileMetadata fmd) {
+    private static JsonArrayBuilder getFileCategories(FileMetadata fmd) {
         if (fmd == null) {
             return null;
         }
-        JsonArrayBuilder tags = Json.createArrayBuilder();
-        for (String tag : fmd.getCategoriesByName()) {
-            tags.add(tag);
+        List<String> categories = fmd.getCategoriesByName();
+        if (categories == null || categories.isEmpty()) {
+            return null;
         }
-        return tags;
+        JsonArrayBuilder fileCategories = Json.createArrayBuilder();
+        for (String category : categories) {
+            fileCategories.add(category);
+        }
+        return fileCategories;
+    }
+
+    private static JsonArrayBuilder getTabularFileTags(DataFile df) {
+        if (df == null) {
+            return null;
+        }
+        List<DataFileTag> tags = df.getTags();
+        if (tags == null || tags.isEmpty()) {
+            return null;
+        }
+        JsonArrayBuilder tabularTags = Json.createArrayBuilder();
+        for (DataFileTag tag : tags) {
+            String label = tag.getTypeLabel();
+            if (label != null) {
+                tabularTags.add(label);
+            }
+        }
+        return tabularTags;
     }
 
     private static class DatasetFieldsToJson implements DatasetFieldWalker.Listener {
