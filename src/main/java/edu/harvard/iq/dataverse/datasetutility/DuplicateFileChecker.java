@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse.datasetutility;
 
+import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.FileMetadata;
@@ -110,13 +111,15 @@ public class DuplicateFileChecker {
         }
         return checksumHashCounts;
     }
-   
     
     
     /** 
      * Original isDuplicate method from the DatasetPage and EditDatafilesPage
      * 
      * Note: this has efficiency issues in that the hash is re-created for every fileMetadata checked
+     * Note: the only remaining component that uses this method is AddReplaceFileHelper; 
+     * Currently it is only being used for file replace calls from the File page - which always 
+     * operates on one file at a time; so performance is not much of an issue. -- L.A. 4.6.1
      * 
      * @param workingVersion
      * @param fileMetadata
@@ -158,7 +161,7 @@ public class DuplicateFileChecker {
                 }
             }
         }
-        return checkSumMap.get(selectedCheckSum) != null && checkSumMap.get(selectedCheckSum).intValue() > 1;
+        return checkSumMap.get(selectedCheckSum) != null; // && checkSumMap.get(selectedCheckSum).intValue() > 1;
             
     }
     

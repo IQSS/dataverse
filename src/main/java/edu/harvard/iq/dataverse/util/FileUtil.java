@@ -948,8 +948,6 @@ public class FileUtil implements java.io.Serializable  {
         FileMetadata fmd = new FileMetadata();
         
         // TODO: add directoryLabel?
-        // *this check must be done later, after we drop any duplicates by content* //
-        //fmd.setLabel(checkForDuplicateFileNames(version,fileName));
         fmd.setLabel(fileName);
 
         if (addToDataset) {

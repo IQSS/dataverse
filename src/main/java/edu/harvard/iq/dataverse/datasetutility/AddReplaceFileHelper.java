@@ -1094,7 +1094,12 @@ public class AddReplaceFileHelper{
         }
                        
 
-        return this.step_045_auto_checkForFileReplaceDuplicate();
+        if (this.step_045_auto_checkForFileReplaceDuplicate()) {
+            //ingestService.addFilesToDataset(workingVersion, finalFileList);
+            return true;
+        }
+        
+        return false;
     }
     
     
@@ -1147,7 +1152,6 @@ public class AddReplaceFileHelper{
             // (2) Check for duplicates
             // -----------------------------------------------------------                        
             if (DuplicateFileChecker.isDuplicateOriginalWay(workingVersion, df.getFileMetadata())){
-
                 String dupeName = df.getFileMetadata().getLabel();
                 //removeUnSavedFilesFromWorkingVersion();
                 //removeLinkedFileFromDataset(dataset, df);

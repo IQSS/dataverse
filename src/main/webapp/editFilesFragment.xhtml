@@ -21,7 +21,7 @@
         <div class="ui-tabs-panels">
             <div aria-hidden="false" role="tabpanel" class="ui-tabs-panel ui-widget-content ui-corner-bottom" id="datasetForm:tabView:dataFilesTab">
                 <!-- Upload -->
-                <ui:fragment rendered="#{datasetPage || EditDatafilesPage.showFileUploadFileComponent()}">
+                <ui:fragment id="fileUploadFragment" rendered="#{datasetPage || EditDatafilesPage.showFileUploadFragment()}">
                     <script>
                         function uploadWidgetDropMsg() {
                             var fileUpload = $('div[id$="fileUpload"] div.ui-fileupload-content');
@@ -37,8 +37,8 @@
                         function uploadFinished(fileupload) {
                             
                             if (fileupload.files.length === 0) {
-                                //alert("all uploads finished");
                                 $('button[id$="AllUploadsFinished"]').trigger('click');
+                                //alert("all uploads finished");
                             }
                         }
                         function dropBoxUploadFinished(fileupload) {
@@ -70,10 +70,10 @@
                                   dragDropSupport="true"
                                   auto="true"
                                   multiple="#{datasetPage || EditDatafilesPage.allowMultipleFileUpload()}"
-                                  rendered="#{datasetPage || EditDatafilesPage.showFileUploadFileComponent()}"
+                                  disabled="#{!(datasetPage || EditDatafilesPage.showFileUploadComponent())}"
                                   fileUploadListener="#{EditDatafilesPage.handleFileUpload}" 
                                   process="filesTable" 
-                                  update=""
+                                  update="@this" 
                                   label="#{bundle['file.selectToAddBtn']}"
                                   oncomplete="javascript:dataset_fileupload_rebind();uploadWidgetDropMsg();uploadFinished(PF('fileUploadWidget'));"
                                   onstart="javascript:uploadWidgetDropRemoveMsg();uploadStarted();"
@@ -83,11 +83,12 @@
                                   sequential="true"
                                   widgetVar="fileUploadWidget"/>
                     <!-- Dropbox Upload -->
-                    <div id="dropboxUploadBlock" class="panel panel-default margin-bottom" jsf:rendered="#{!empty EditDatafilesPage.dropBoxKey}">
+                    <div jsf:id="dropboxUploadBlock" class="panel panel-default margin-bottom" jsf:rendered="#{(!(empty EditDatafilesPage.dropBoxKey))}">
                         <div class="panel-body">
                             <h:inputText id="dropBoxSelectionInput" style="display:none" value="#{EditDatafilesPage.dropBoxSelection}"/>
-                            <p:commandButton  id="dropBoxButton" actionListener="#{EditDatafilesPage.handleDropBoxUpload}" oncomplete="javascript:dropBoxUploadFinished();" update="@none" style="display:none;" />
-                            <p:commandButton value="#{bundle['file.fromDropbox']}" onclick="openDropboxChooser();" icon="dropin-btn-status" />
+                            <p:commandButton id="dropBoxButton" actionListener="#{EditDatafilesPage.handleDropBoxUpload}" oncomplete="javascript:dropBoxUploadFinished();" update="@none" style="display:none;" />
+                            <p:commandButton id="dropBoxUserButton" disabled="#{!(datasetPage || EditDatafilesPage.showFileUploadComponent())}" value="#{bundle['file.fromDropbox']}" onclick="openDropboxChooser();" icon="dropin-btn-status" />
+                            
                             <p class="help-block">#{bundle['file.fromDropbox.tip']}</p>
                         </div>
                         <p:message for="dropBoxButton" id="dropBoxUploadMessage" display="text" redisplay="false" />
@@ -96,8 +97,8 @@
                     <p:message for="fileUpload" id="uploadMessage" display="text" />
                     
                     <p:commandButton id="uploadStarted" action="#{EditDatafilesPage.uploadStarted()}" update="" style="display:none"/>
-                    <p:commandButton id="AllUploadsFinished" action="#{EditDatafilesPage.uploadFinished()}" update="filesTable,uploadMessage" style="display:none"/>
-                    <p:commandButton id="dropBoxUploadFinished" action="#{EditDatafilesPage.uploadFinished()}" update="filesTable,dropBoxUploadMessage" style="display:none"/>
+                    <p:commandButton id="AllUploadsFinished" action="#{EditDatafilesPage.uploadFinished()}" update="datasetForm:fileUpload,datasetForm:dropBoxUserButton,datasetForm:uploadMessage,datasetForm:filesTable" style="display:none"/> 
+                    <p:commandButton id="dropBoxUploadFinished" action="#{EditDatafilesPage.uploadFinished()}" update="datasetForm:fileUpload,datasetForm:dropBoxUserButton,datasetForm:dropBoxUploadMessage,datasetForm:filesTable" style="display:none"/>
                 </ui:fragment>
 
                 <!-- Files Table -->
@@ -109,7 +110,7 @@
                              selection="#{EditDatafilesPage.selectedFiles}" 
                              var="fileMetadata" 
                              widgetVar="filesTable"
-                             emptyMessage="#{datasetPage || EditDatafilesPage.showFileUploadFileComponent() ? bundle['file.noUploadedFiles.tip'] : bundle['file.noSelectedFiles.tip']}"
+                             emptyMessage="#{datasetPage || EditDatafilesPage.showFileUploadFragment() ? bundle['file.noUploadedFiles.tip'] : bundle['file.noSelectedFiles.tip']}"
                              scrollable="#{EditDatafilesPage.scrollable}" scrollHeight="#{EditDatafilesPage.scrollHeightPercentage}" scrollWidth="100%" >
                     <f:facet name="header">
                         <div jsf:id="filesHeaderBlock" class="row">

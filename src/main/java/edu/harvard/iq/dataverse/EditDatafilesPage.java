@@ -269,7 +269,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             perc = 100;
         }
         
-        logger.info("scroll height percentage: "+perc);
+        logger.fine("scroll height percentage: "+perc);
         return perc + "%";
     }
     
@@ -441,7 +441,6 @@ public class EditDatafilesPage implements java.io.Serializable {
     
     
     public String init() {
-        System.out.print("in init of edit page");
         fileMetadatas = new ArrayList<>();
         
         newFiles = new ArrayList();
@@ -500,7 +499,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                                                 permissionService,
                                                 commandEngine,
                                                 systemConfig);
-            
+                        
             fileReplacePageHelper = new FileReplacePageHelper(addReplaceFileHelper,
                                                 dataset, 
                                                 fileToReplace);
@@ -1392,8 +1391,16 @@ public class EditDatafilesPage implements java.io.Serializable {
         return true;
     }
     
+    public boolean showFileUploadFragment(){
+        if (mode == FileEditMode.UPLOAD || mode == FileEditMode.CREATE || mode == FileEditMode.SINGLE_REPLACE) {
+           return true;
+        }
+
+        return false;
+    }
     
-    public boolean showFileUploadFileComponent(){
+    
+    public boolean showFileUploadComponent(){
         if (mode == FileEditMode.UPLOAD || mode == FileEditMode.CREATE) {
            return true;
         }
@@ -1592,13 +1599,12 @@ public class EditDatafilesPage implements java.io.Serializable {
         // started. It will be called *once*, even if it is a multiple file upload 
         // (either through drag-and-drop or select menu). 
        
-        logger.info("upload started");
+        logger.fine("upload started");
         
         uploadInProgress = true;        
     }
     
     public void uploadFinished() {
-        System.out.print("in uploadFinished");
         // This method is triggered from the page, by the <p:upload ... onComplete=...
         // attribute. 
         // Note that its behavior is different from that of of <p:upload ... onStart=...
@@ -1616,12 +1622,12 @@ public class EditDatafilesPage implements java.io.Serializable {
         // (check editFilesFragment.xhtml for the exact code handling this; and 
         // http://stackoverflow.com/questions/20747201/when-multiple-upload-is-finished-in-pfileupload
         // for more info). -- 4.6
-        logger.info("upload finished");
+        logger.fine("upload finished");
 
         // Add the file(s) added during this last upload event, single or multiple, 
         // to the full list of new files, and the list of filemetadatas 
         // used to render the page:
-        
+                
         if (mode == FileEditMode.CREATE) {
             ingestService.addFilesToDataset(workingVersion, uploadedFiles);
         }
@@ -1638,8 +1644,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         if (uploadComponentId != null) {
             if (uploadWarningMessage != null) {
                 FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload warning", uploadWarningMessage));
-            } 
-            if (uploadSuccessMessage != null) {
+            } else if (uploadSuccessMessage != null) {
                 FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_INFO, "upload worked", uploadSuccessMessage));
             }
         }
@@ -1648,7 +1653,6 @@ public class EditDatafilesPage implements java.io.Serializable {
         // only inform the user of the duplicates dropped in the current upload 
         // attempt - for ex., one batch of drag-and-dropped files, or a single 
         // file uploaded through the file chooser. 
-        System.out.print("end of baking bean method");
         dupeFileNamesExisting = null; 
         dupeFileNamesNew = null;
         multipleDupesExisting = false;
@@ -1668,7 +1672,7 @@ public class EditDatafilesPage implements java.io.Serializable {
 
         saveEnabled = false;
         
-        uploadComponentId = event.getComponent().getClientId();
+        uploadComponentId = nativeUploadEvent.getComponent().getClientId();
         
         if (fileReplacePageHelper.handleNativeFileUpload(inputStream,
                                     fileName,
@@ -1676,13 +1680,11 @@ public class EditDatafilesPage implements java.io.Serializable {
                                 )){
             saveEnabled = true;
 
-            msgt("upload worked message");
             /**
              * If the file content type changed, let the user know
              */
             if (fileReplacePageHelper.hasContentTypeWarning()){
-                String warningMessage = fileReplacePageHelper.getContentTypeWarning();
-                msg("but content type warning! " + warningMessage);
+                uploadWarningMessage = fileReplacePageHelper.getContentTypeWarning();
                 
                 /* 
                     Note on the info messages - upload errors, warnings and success messages:
@@ -1699,38 +1701,35 @@ public class EditDatafilesPage implements java.io.Serializable {
                    
                 */
                 //FacesContext.getCurrentInstance().addMessage(
-                //nativeUploadEvent.getComponent().getClientId(),                         
-                //new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload warning", warningMessage));
-                uploadWarningMessage = warningMessage;
+                //        uploadComponentId,                         
+                //        new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload warning", uploadWarningMessage));
             }
-            msgt("Hey! It worked! trying to add message here");
-            msgt(nativeUploadEvent.getComponent().getClientId());
             // See the comment above, on how upload messages are displayed.
-            //FacesContext.getCurrentInstance().addMessage(
-            //        nativeUploadEvent.getComponent().getClientId(),
-            //        new FacesMessage(FacesMessage.SEVERITY_INFO, "upload worked", "Hey! It worked!"));
-            uploadSuccessMessage = "Hey! It worked!";
+            
+            // Commented out the success message below - since we probably don't
+            // need it - the state of the page will indicate the success fairly 
+            // unambiguously: the primefaces upload and the dropbox upload components
+            // will become disabled, and the uploaded file will appear on the page. 
+            // But feel free to un-comment it, if you feel it could be useful. 
+            // -- L.A. 4.6.1
+            //uploadSuccessMessage = "Hey! It worked!";
                 
         } else {
-            msgt("upload failed");
             // See the comment above, on how upload messages are displayed.
             uploadWarningMessage = fileReplacePageHelper.getErrorMessages();
             uploadWarningMessage += " ******* ";
             
             
             if (nativeUploadEvent != null){
-                //msg("Client ID failed: " + event.getComponent().getClientId());
                 uploadWarningMessage += " nativeUploadEvent ";
-                //FacesContext.getCurrentInstance().addMessage(
-                //    nativeUploadEvent.getComponent().getClientId(),                         
-                //    new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload failure", errMsg));
+                
             }
             if (dropboxUploadEvent != null){
                 uploadWarningMessage += " dropboxUploadEvent ";
-                //FacesContext.getCurrentInstance().addMessage(
-                //    dropboxUploadEvent.getComponent().getClientId(), 
-                //    new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload failure", errMsg));
             }
+            //FacesContext.getCurrentInstance().addMessage(
+            //    uploadComponentId,                         
+            //    new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload failure", uploadWarningMessage));
         }
     }
 
@@ -1767,10 +1766,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                                     uFile.getContentType(),
                                     event,
                                     null);
-            System.out.print("isFileReplaceOperation()");
-            FacesContext.getCurrentInstance().addMessage(event.getComponent().getClientId(), new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload INFO", "Upload happening"));
             
-            System.out.print("after adding faces message");
             return;
                
         }
