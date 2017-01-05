@@ -1635,8 +1635,13 @@ public class EditDatafilesPage implements java.io.Serializable {
         uploadInProgress = false;
 
         // refresh the warning message below the upload component, if exists:
-        if (uploadWarningMessage != null && uploadComponentId != null) {
-            FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload warning", uploadWarningMessage));
+        if (uploadComponentId != null) {
+            if (uploadWarningMessage != null) {
+                FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload warning", uploadWarningMessage));
+            } 
+            if (uploadSuccessMessage != null) {
+                FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_INFO, "upload worked", uploadSuccessMessage));
+            }
         }
         
         // We clear the following duplicate warning labels, because we want to 
@@ -1648,7 +1653,8 @@ public class EditDatafilesPage implements java.io.Serializable {
         dupeFileNamesNew = null;
         multipleDupesExisting = false;
         multipleDupesNew = false; 
-        uploadWarningMessage = null; 
+        uploadWarningMessage = null;
+        uploadSuccessMessage = null; 
     }
 
     private void handleReplaceFileUpload(FacesEvent event, InputStream inputStream, 
@@ -1661,6 +1667,8 @@ public class EditDatafilesPage implements java.io.Serializable {
         fileReplacePageHelper.resetReplaceFileHelper();
 
         saveEnabled = false;
+        
+        uploadComponentId = event.getComponent().getClientId();
         
         if (fileReplacePageHelper.handleNativeFileUpload(inputStream,
                                     fileName,
@@ -1675,44 +1683,59 @@ public class EditDatafilesPage implements java.io.Serializable {
             if (fileReplacePageHelper.hasContentTypeWarning()){
                 String warningMessage = fileReplacePageHelper.getContentTypeWarning();
                 msg("but content type warning! " + warningMessage);
-                /*
-                JsfHelper.addWarningMessage(warningMessage);
-                                FacesContext.getCurrentInstance().addMessage(
-                    nativeUploadEvent.getComponent().getClientId(), 
-                    new FacesMessage(FacesMessage.SEVERITY_WARN, "content warning", warningMessage));
+                
+                /* 
+                    Note on the info messages - upload errors, warnings and success messages:
+                    Instead of trying to display the message here (commented out code below),
+                    we only save the message, as a string - and it will be displayed by 
+                    the uploadFinished() method, triggered next, after the upload event
+                    is processed and, as the name suggests, finished. 
+                    This is done in 2 stages like this so that when the upload component
+                    is called for large numbers of files, in multiple mode, the page could 
+                    be updated and re-rendered just once, after all the uploads are finished - 
+                    and not after each individual upload. Of course for the "replace" upload
+                    there is always only one... but we have to use this scheme for 
+                    consistency. -- L.A. 4.6.1
+                   
                 */
-                msg("Client ID " + event.getComponent().getClientId());
-                    FacesContext.getCurrentInstance().addMessage(
-                    nativeUploadEvent.getComponent().getClientId(),                         
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload warning", warningMessage));
+                //FacesContext.getCurrentInstance().addMessage(
+                //nativeUploadEvent.getComponent().getClientId(),                         
+                //new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload warning", warningMessage));
+                uploadWarningMessage = warningMessage;
             }
             msgt("Hey! It worked! trying to add message here");
             msgt(nativeUploadEvent.getComponent().getClientId());
-                FacesContext.getCurrentInstance().addMessage(
-                    nativeUploadEvent.getComponent().getClientId(),                         
-                    new FacesMessage(FacesMessage.SEVERITY_INFO, "upload worked", "Hey! It worked!"));
+            // See the comment above, on how upload messages are displayed.
+            //FacesContext.getCurrentInstance().addMessage(
+            //        nativeUploadEvent.getComponent().getClientId(),
+            //        new FacesMessage(FacesMessage.SEVERITY_INFO, "upload worked", "Hey! It worked!"));
+            uploadSuccessMessage = "Hey! It worked!";
                 
-        }else{
+        } else {
             msgt("upload failed");
-            String errMsg = fileReplacePageHelper.getErrorMessages();
-            errMsg += " ******* ";
+            // See the comment above, on how upload messages are displayed.
+            uploadWarningMessage = fileReplacePageHelper.getErrorMessages();
+            uploadWarningMessage += " ******* ";
+            
+            
             if (nativeUploadEvent != null){
-                msg("Client ID failed: " + event.getComponent().getClientId());
-                errMsg += " nativeUploadEvent ";
-                FacesContext.getCurrentInstance().addMessage(
-                    nativeUploadEvent.getComponent().getClientId(),                         
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload failure", errMsg));
+                //msg("Client ID failed: " + event.getComponent().getClientId());
+                uploadWarningMessage += " nativeUploadEvent ";
+                //FacesContext.getCurrentInstance().addMessage(
+                //    nativeUploadEvent.getComponent().getClientId(),                         
+                //    new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload failure", errMsg));
             }
             if (dropboxUploadEvent != null){
-                                errMsg += " dropboxUploadEvent ";
-                 FacesContext.getCurrentInstance().addMessage(
-                    dropboxUploadEvent.getComponent().getClientId(), 
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload failure", errMsg));
+                uploadWarningMessage += " dropboxUploadEvent ";
+                //FacesContext.getCurrentInstance().addMessage(
+                //    dropboxUploadEvent.getComponent().getClientId(), 
+                //    new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload failure", errMsg));
             }
         }
     }
 
     private String uploadWarningMessage = null; 
+    private String uploadSuccessMessage = null; 
     private String uploadComponentId = null; 
     
     /**
