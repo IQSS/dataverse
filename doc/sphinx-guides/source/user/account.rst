@@ -75,8 +75,8 @@ Create a Dataverse account using Institutional Log In
 
 #. Go to “Log In” in the upper right corner of Dataverse.
 #. Select the "Your Institution" button under the "Other options" header
-#. Using the dropdown menu, select your institution then click the Continue button to go to your institution's log in page |image1|
-#. After you put in your institutional credentials successfully, you will be brought back to Dataverse to confirm your account information, and click "Create Account". |image2|
+#. Using the dropdown menu, select your institution then click the Continue button to go to your institution's log in page.
+#. After you put in your institutional credentials successfully, you will be brought back to Dataverse to confirm your account information, and click "Create Account".
 #. A username has been selected for you. You won't use this username to log in but it will appear next to your name when other users search for you to assign permissions within the system. To see what you username is, click on your name in the top right corner and click Account Information.
 
 If you do not find your institution listed, you will need to request that it is added to the Research & Scholarship category of InCommon. Contact support for assistance on how to get this process started with the identity provider support team at your institution.
@@ -159,8 +159,3 @@ API Token
 
 #. To create your API token, click on your name in the header on right hand side and then click on API Token.
 #. In this tab, you can create your API Token for the first time as well as recreate it if you need a new API Token or if your API Token becomes compromised.
-
-.. |image1| image:: ./img/image1institutional.png
-   :class: img-responsive
-.. |image2| image:: ./img/image2institutional.png
-   :class: img-responsive
