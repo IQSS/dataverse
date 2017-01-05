@@ -83,7 +83,7 @@ Congratulations! You have a working Dataverse installation. Soon you'll be tweet
 
 Trouble? See if you find an answer in the troubleshooting section below.
 
-Next you'll want to check out the :doc:`config` section.
+Next you'll want to check out the :doc:`config` section, especially the section on security which reminds you to change the password above.
 
 Troubleshooting
 ---------------

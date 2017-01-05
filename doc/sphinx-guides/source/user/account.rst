@@ -8,10 +8,10 @@ Account Information
 
 As a registered user, you can:
 
--  Create your own dataverse and customize it
--  Add datasets to dataverses, if available
--  Contribute to existing datasets, if available
--  Request access to restricted files, if available
+-  Create your own dataverse, if permitted, and customize it.
+-  Add datasets to dataverses, if permitted.
+-  Contribute to existing datasets, if permitted.
+-  Request access to restricted files, if permitted.
 
 Account Log In Options
 ~~~~~~~~~~~~~~~~~~~~~~

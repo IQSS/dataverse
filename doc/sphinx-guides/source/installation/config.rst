@@ -13,6 +13,11 @@ Once you have finished securing and configuring your Dataverse installation, pro
 Securing Your Installation
 --------------------------
 
+Changing the Superuser Password
++++++++++++++++++++++++++++++++
+
+The default password for the "dataverseAdmin" superuser account is "admin", as mentioned in the :doc:`installation-main` section, and you should change it, of course.
+
 Blocking API Endpoints
 ++++++++++++++++++++++
 
