@@ -1449,7 +1449,7 @@ function IdPSelectUI() {
         var preferredTileExists;
         preferredTileExists = buildPreferredIdPTile(containerDiv);
         buildIdPEntryTile(containerDiv, preferredTileExists);
-        buildIdPDropDownListTile(containerDiv, preferredTileExists);
+        //buildIdPDropDownListTile(containerDiv, preferredTileExists);
         return containerDiv;
     };
 
