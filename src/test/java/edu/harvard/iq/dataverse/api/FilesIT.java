@@ -312,18 +312,27 @@ public class FilesIT {
         // -------------------------
         msg("Replace file - 1st time");
         String pathToFile2 = "src/main/webapp/resources/images/cc0.png";
-        Response replaceResp = UtilIT.replaceFile(origFileId, pathToFile2, apiToken);
+        JsonObjectBuilder json = Json.createObjectBuilder()
+                .add("description", "CC0 logo")
+                /**
+                 * @todo Setting categories doesn't work here in "replace" or
+                 * for "add" above. Why?
+                 */
+                .add("categories", Json.createArrayBuilder()
+                        .add("Data")
+                );
+        Response replaceResp = UtilIT.replaceFile(origFileId, pathToFile2, json.build(), apiToken);
         
         msgt(replaceResp.prettyPrint());
         
         String successMsg2 = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.replace");        
 
         replaceResp.then().assertThat()
-                .statusCode(OK.getStatusCode())
                 .body("message", equalTo(successMsg2))
                 .body("data.files[0].label", equalTo("cc0.png"))
+                .body("data.files[0].description", equalTo("CC0 logo"))
                 //.body("data.rootDataFileId", equalTo(origFileId))              
-                ;
+                .statusCode(OK.getStatusCode());
 
         long rootDataFileId = JsonPath.from(replaceResp.body().asString()).getLong("data.files[0].dataFile.rootDataFileId");
         long previousDataFileId = JsonPath.from(replaceResp.body().asString()).getLong("data.files[0].dataFile.previousDataFileId");

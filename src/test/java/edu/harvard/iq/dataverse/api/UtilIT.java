@@ -297,11 +297,18 @@ public class UtilIT {
     }
 
     static Response replaceFile(long fileId, String pathToFile, String apiToken) {
-        //.add("fileToReplaceId", fileId)
+        return replaceFile(fileId, pathToFile, null, apiToken);
+    }
+
+    static Response replaceFile(long fileId, String pathToFile, JsonObject jsonObject, String apiToken) {
+        String optionalJson = "{}";
+        if (jsonObject != null) {
+            optionalJson = jsonObject.toString();
+        }
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .multiPart("file", new File(pathToFile))
-                .multiPart("jsonData", Json.createObjectBuilder().build().toString())
+                .multiPart("jsonData", optionalJson)
                 .post("/api/files/" + fileId + "/replace");
     }
 
