@@ -280,12 +280,19 @@ public class UtilIT {
      * @return 
      */
     static Response uploadFileViaNative(String datasetId, String pathToFile, String apiToken) {
-        
-        
+        return uploadFileViaNative(datasetId, pathToFile, null, apiToken);
+    }
+
+    static Response uploadFileViaNative(String datasetId, String pathToFile, JsonObject jsonObject, String apiToken) {
+        String optionalJson = "{}";
+        if (jsonObject != null) {
+            optionalJson = jsonObject.toString();
+        }
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .multiPart("datasetId", datasetId)
                 .multiPart("file", new File("src/main/webapp/resources/images/dataverseproject.png"))
+                .multiPart("jsonData", optionalJson)
                 .post("/api/datasets/" + datasetId + "/add");
     }
 

@@ -10,6 +10,8 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.ResourceBundle;
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 
 import static javax.ws.rs.core.Response.Status.CREATED;
@@ -18,6 +20,7 @@ import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.nullValue;
 import org.hamcrest.Matchers;
 import static org.junit.Assert.assertNotNull;
 
@@ -87,7 +90,17 @@ public class FilesIT {
        
         
         String pathToFile = "src/main/webapp/resources/images/favicondataverse.png";
-        Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
+
+        JsonObjectBuilder json = Json.createObjectBuilder()
+                .add("description", "my description")
+                /**
+                 * @todo Setting categories doesn't work. Why?
+                 */
+                .add("categories", Json.createArrayBuilder()
+                        .add("Data")
+                );
+
+        Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, json.build(), apiToken);
 
         //addResponse.prettyPrint();
         msgt("Here it is: " + addResponse.prettyPrint());
@@ -98,7 +111,13 @@ public class FilesIT {
                 .body("message", equalTo(successMsg))
                 .body("status", equalTo(AbstractApiBean.STATUS_OK))
                 .body("data.files[0].dataFile.contentType", equalTo("image/png"))
+                .body("data.files[0].dataFile.description", equalTo("my description"))
+//                .body("data.files[0].dataFile.categories", equalTo("TODO"))
+//                .body("data.files[0].dataFile.tags", nullValue())
+                .body("data.files[0].dataFile.tabularTags", nullValue())
                 .body("data.files[0].label", equalTo("dataverseproject.png"))
+                // not sure why description appears in two places
+                .body("data.files[0].description", equalTo("my description"))
                 .statusCode(OK.getStatusCode());
         
         
