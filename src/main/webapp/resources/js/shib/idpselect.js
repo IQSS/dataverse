@@ -1449,7 +1449,7 @@ function IdPSelectUI() {
         var preferredTileExists;
         preferredTileExists = buildPreferredIdPTile(containerDiv);
         buildIdPEntryTile(containerDiv, preferredTileExists);
-        //buildIdPDropDownListTile(containerDiv, preferredTileExists);
+        buildIdPDropDownListTile(containerDiv, preferredTileExists);
         return containerDiv;
     };
 
@@ -1548,7 +1548,7 @@ function IdPSelectUI() {
 
         var preferredIdPDIV = buildDiv('PreferredIdPTile');
 
-        buildTextDiv(preferredIdPDIV, 'idpList.NoPreferred.label');
+        //buildTextDiv(preferredIdPDIV, 'idpList.NoPreferred.label');
 
         for(var i = 0 ; i < maxPreferredIdPs && i < preferredIdPs.length; i++){
             if (preferredIdPs[i]) {
@@ -1739,7 +1739,7 @@ function IdPSelectUI() {
         // The switcher
         //
         var a = document.createElement('a');
-        a.appendChild(document.createTextNode(getLocalizedMessage('idpList.showSearch')));
+        //a.appendChild(document.createTextNode(getLocalizedMessage('idpList.showSearch')));
         a.href = '#';
         setClass(a, 'DropDownToggle');
         a.onclick = function() {
