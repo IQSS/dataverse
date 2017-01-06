@@ -563,7 +563,6 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
     
     
-    
     private void msg(String s){
         System.out.println(s);
     }
@@ -1672,7 +1671,7 @@ public class EditDatafilesPage implements java.io.Serializable {
 
         saveEnabled = false;
         
-        uploadComponentId = nativeUploadEvent.getComponent().getClientId();
+        uploadComponentId = event.getComponent().getClientId();
         
         if (fileReplacePageHelper.handleNativeFileUpload(inputStream,
                                     fileName,
