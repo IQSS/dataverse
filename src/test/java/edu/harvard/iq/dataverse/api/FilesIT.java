@@ -7,6 +7,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import com.jayway.restassured.path.json.JsonPath;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.ResourceBundle;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
@@ -278,7 +279,7 @@ public class FilesIT {
         
         msgt(replaceRespWrongCtype.prettyPrint());
         
-        String errMsgCtype = ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.replace.new_file_has_different_content_type");        
+        String errMsgCtype = BundleUtil.getStringFromBundle("file.addreplace.error.replace.new_file_has_different_content_type", Arrays.asList("PNG Image", "GIF Image"));
 
         
         replaceRespWrongCtype.then().assertThat()
