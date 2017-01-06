@@ -1095,7 +1095,7 @@ public class AddReplaceFileHelper{
                        
 
         if (this.step_045_auto_checkForFileReplaceDuplicate()) {
-            //ingestService.addFilesToDataset(workingVersion, finalFileList);
+            ingestService.addFilesToDataset(workingVersion, finalFileList);
             return true;
         }
         

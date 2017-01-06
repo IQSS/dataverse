@@ -93,9 +93,6 @@ public class FilesIT {
 
         JsonObjectBuilder json = Json.createObjectBuilder()
                 .add("description", "my description")
-                /**
-                 * @todo Setting categories doesn't work. Why?
-                 */
                 .add("categories", Json.createArrayBuilder()
                         .add("Data")
                 );
@@ -110,8 +107,7 @@ public class FilesIT {
         addResponse.then().assertThat()
                 .body("message", equalTo(successMsg))
                 .body("status", equalTo(AbstractApiBean.STATUS_OK))
-                // uncomment this once categories can be set via native API
-//                .body("data.files[0].categories[0]", equalTo("Data"))
+                .body("data.files[0].categories[0]", equalTo("Data"))
                 .body("data.files[0].dataFile.contentType", equalTo("image/png"))
                 .body("data.files[0].dataFile.description", equalTo("my description"))
 //                .body("data.files[0].dataFile.tags", nullValue())
@@ -315,10 +311,6 @@ public class FilesIT {
         String pathToFile2 = "src/main/webapp/resources/images/cc0.png";
         JsonObjectBuilder json = Json.createObjectBuilder()
                 .add("description", "CC0 logo")
-                /**
-                 * @todo Setting categories doesn't work here in "replace" or
-                 * for "add" above. Why?
-                 */
                 .add("categories", Json.createArrayBuilder()
                         .add("Data")
                 );
@@ -332,6 +324,7 @@ public class FilesIT {
                 .body("message", equalTo(successMsg2))
                 .body("data.files[0].label", equalTo("cc0.png"))
                 .body("data.files[0].description", equalTo("CC0 logo"))
+                .body("data.files[0].categories[0]", equalTo("Data"))
                 //.body("data.rootDataFileId", equalTo(origFileId))              
                 .statusCode(OK.getStatusCode());
 
@@ -444,12 +437,8 @@ public class FilesIT {
                 /**
                  * @todo forceReplace doesn't seem to work.
                  */
-                //                .add("forceReplace", true)
+                .add("forceReplace", true)
                 .add("description", "tiny Stata file")
-                /**
-                 * @todo Setting categories doesn't work here in "replace" or
-                 * for "add" above. Why?
-                 */
                 .add("categories", Json.createArrayBuilder()
                         .add("Data")
                 )
@@ -462,7 +451,8 @@ public class FilesIT {
 
         boolean impossibleToSetTabularTagsViaApi = true;
         if (impossibleToSetTabularTagsViaApi) {
-            System.out.println("Skipping attempt to verify that tabular tags can be set. Getting this error: You cannot add data file tags to a non-tabular file.");
+            // previously we were getting this: You cannot add data file tags to a non-tabular file.
+            System.out.println("Skipping attempt to verify that tabular tags can be set. Getting this error: Warning! The original and replacement file have different content types.  Original file is \\\"Tab-Delimited\\\" while replacement file is \\\"Stata Binary\\\"");
             return;
         }
 
@@ -472,6 +462,7 @@ public class FilesIT {
                 .body("message", equalTo(successMsg2))
                 .body("data.files[0].label", equalTo("120745.dta"))
                 .body("data.files[0].description", equalTo("tiny Stata file"))
+                .body("data.files[0].categories[0]", equalTo("Data"))
                 .statusCode(OK.getStatusCode());
 
         long rootDataFileId = JsonPath.from(replaceResp.body().asString()).getLong("data.files[0].dataFile.rootDataFileId");
