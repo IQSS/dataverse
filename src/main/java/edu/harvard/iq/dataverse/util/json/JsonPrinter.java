@@ -563,10 +563,6 @@ public class JsonPrinter {
     }
 
     private static JsonArrayBuilder getFileCategories(FileMetadata fmd) {
-//        /** @todo Remove this! Testing only! */
-//        if (true) {
-//            return Json.createArrayBuilder().add("Data");
-//        }
         if (fmd == null) {
             return null;
         }
