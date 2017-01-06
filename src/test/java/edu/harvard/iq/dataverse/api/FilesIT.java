@@ -116,7 +116,7 @@ public class FilesIT {
                 .body("data.files[0].dataFile.description", equalTo("my description"))
 //                .body("data.files[0].dataFile.tags", nullValue())
                 .body("data.files[0].dataFile.tabularTags", nullValue())
-                .body("data.files[0].label", equalTo("dataverseproject.png"))
+                .body("data.files[0].label", equalTo("favicondataverse.png"))
                 // not sure why description appears in two places
                 .body("data.files[0].description", equalTo("my description"))
                 .statusCode(OK.getStatusCode());
@@ -267,7 +267,7 @@ public class FilesIT {
         addResponse.then().assertThat()
                 .body("message", equalTo(successMsgAdd))
                 .body("data.files[0].dataFile.contentType", equalTo("image/png"))
-                .body("data.files[0].label", equalTo("dataverseproject.png"))
+                .body("data.files[0].label", equalTo("favicondataverse.png"))
                 .statusCode(OK.getStatusCode());
         
         
@@ -507,7 +507,7 @@ public class FilesIT {
         addResponse.then().assertThat()
                 .body("message", equalTo(successMsgAdd))
                 .body("data.files[0].dataFile.contentType", equalTo("image/png"))
-                .body("data.files[0].label", equalTo("dataverseproject.png"))
+                .body("data.files[0].label", equalTo("favicondataverse.png"))
                 .statusCode(OK.getStatusCode());
         
         
@@ -590,7 +590,7 @@ public class FilesIT {
         addResponse.then().assertThat()
                 .body("message", equalTo(successMsgAdd))
                 .body("data.files[0].dataFile.contentType", equalTo("image/png"))
-                .body("data.files[0].label", equalTo("dataverseproject.png"))
+                .body("data.files[0].label", equalTo("favicondataverse.png"))
                 .statusCode(OK.getStatusCode());
         
         
