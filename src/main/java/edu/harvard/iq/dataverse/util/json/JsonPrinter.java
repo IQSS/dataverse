@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.util.json;
 import edu.emory.mathcs.backport.java.util.Collections;
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFileTag;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetDistributor;
 import edu.harvard.iq.dataverse.DatasetFieldType;
@@ -501,6 +502,7 @@ public class JsonPrinter {
                 .add("directoryLabel", fmd.getDirectoryLabel())
                 .add("version", fmd.getVersion())
                 .add("datasetVersionId", fmd.getDatasetVersion().getId())
+                .add("categories", getFileCategories(fmd))
                 .add("dataFile", json(fmd.getDataFile(), fmd));
     }
 
@@ -546,22 +548,55 @@ public class JsonPrinter {
                 .add("rootDataFileId", df.getRootDataFileId())
                 .add("previousDataFileId", df.getPreviousDataFileId())
                 //---------------------------------------------
-                // Add categories + tags
-                //---------------------------------------------
-                .add("categories", fileMetadata.getCategoryNamesAsJsonArrayBuilder())
-                .add("tags", df.getTagLabelsAsJsonArrayBuilder())
-                //---------------------------------------------
                 // Checksum
                 // * @todo Should we deprecate "md5" now that it's under
                 // * "checksum" (which may also be a SHA-1 rather than an MD5)?
                 //---------------------------------------------
                 .add("md5", getMd5IfItExists(df.getChecksumType(), df.getChecksumValue()))
                 .add("checksum", getChecksumTypeAndValue(df.getChecksumType(), df.getChecksumValue()))
+                .add("tabularTags", getTabularFileTags(df))
                 ;
     }
     
     public static String format(Date d) {
         return (d == null) ? null : Util.getDateTimeFormat().format(d);
+    }
+
+    private static JsonArrayBuilder getFileCategories(FileMetadata fmd) {
+//        /** @todo Remove this! Testing only! */
+//        if (true) {
+//            return Json.createArrayBuilder().add("Data");
+//        }
+        if (fmd == null) {
+            return null;
+        }
+        List<String> categories = fmd.getCategoriesByName();
+        if (categories == null || categories.isEmpty()) {
+            return null;
+        }
+        JsonArrayBuilder fileCategories = Json.createArrayBuilder();
+        for (String category : categories) {
+            fileCategories.add(category);
+        }
+        return fileCategories;
+    }
+
+    private static JsonArrayBuilder getTabularFileTags(DataFile df) {
+        if (df == null) {
+            return null;
+        }
+        List<DataFileTag> tags = df.getTags();
+        if (tags == null || tags.isEmpty()) {
+            return null;
+        }
+        JsonArrayBuilder tabularTags = Json.createArrayBuilder();
+        for (DataFileTag tag : tags) {
+            String label = tag.getTypeLabel();
+            if (label != null) {
+                tabularTags.add(label);
+            }
+        }
+        return tabularTags;
     }
 
     private static class DatasetFieldsToJson implements DatasetFieldWalker.Listener {

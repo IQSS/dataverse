@@ -110,9 +110,10 @@ public class FilesIT {
         addResponse.then().assertThat()
                 .body("message", equalTo(successMsg))
                 .body("status", equalTo(AbstractApiBean.STATUS_OK))
+                // uncomment this once categories can be set via native API
+//                .body("data.files[0].categories[0]", equalTo("Data"))
                 .body("data.files[0].dataFile.contentType", equalTo("image/png"))
                 .body("data.files[0].dataFile.description", equalTo("my description"))
-//                .body("data.files[0].dataFile.categories", equalTo("TODO"))
 //                .body("data.files[0].dataFile.tags", nullValue())
                 .body("data.files[0].dataFile.tabularTags", nullValue())
                 .body("data.files[0].label", equalTo("dataverseproject.png"))
