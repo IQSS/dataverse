@@ -208,12 +208,7 @@ public class SwordIT {
         getDatasetJson.prettyPrint();
         getDatasetJson.then().assertThat()
                 .body("data.latestVersion.files[0].dataFile.filename", equalTo("trees.png"))
-                /**
-                 * @todo The plan is to switch this to the nullValue version
-                 * rather than expecting -1.
-                 */
                 .body("data.latestVersion.files[0].dataFile.rootDataFileId", equalTo(-1))
-                //                .body("data.latestVersion.files[0].dataFile.rootDataFileId", nullValue())
                 .body("data.latestVersion.files[0].dataFile.previousDataFileId", nullValue())
                 .statusCode(OK.getStatusCode());
 
