@@ -379,8 +379,110 @@ public class FilesIT {
         assertEquals(rootDataFileId2, origFileId);        
         
     }
-    
-    
+
+    @Test
+    public void test_006_ReplaceFileGoodTabular() {
+        msgt("test_006_ReplaceFileGoodTabular");
+
+        // Create user
+        String apiToken = createUserGetToken();
+
+        // Create Dataverse
+        String dataverseAlias = createDataverseGetAlias(apiToken);
+
+        // Create Dataset
+        Integer datasetId = createDatasetGetId(dataverseAlias, apiToken);
+
+        // -------------------------
+        // Add initial file
+        // -------------------------
+        msg("Add initial file");
+        String pathToFile = "scripts/search/data/tabular/50by1000.dta";
+        Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
+
+        String successMsgAdd = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");
+
+        addResponse.then().assertThat()
+                .body("message", equalTo(successMsgAdd))
+                .body("data.files[0].dataFile.contentType", equalTo("application/x-stata"))
+                .body("data.files[0].label", equalTo("50by1000.dta"))
+                .statusCode(OK.getStatusCode());
+
+        long origFileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
+
+        msg("Orig file id: " + origFileId);
+        assertNotNull(origFileId);    // If checkOut fails, display message
+
+        // -------------------------
+        // Publish dataverse and dataset
+        // -------------------------
+        msg("Publish dataverse and dataset");
+        Response publishDataversetResp = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
+        publishDataversetResp.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        try {
+            /**
+             * @todo Figure out why we are getting an OptimisticLockException if
+             * we don't sleep.
+             */
+            Thread.sleep(1000);
+        } catch (InterruptedException ex) {
+            System.out.println("couldn't sleep!");
+        }
+
+        Response publishDatasetResp = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        publishDatasetResp.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // -------------------------
+        // Replace file
+        // -------------------------
+        msg("Replace file - 1st time");
+        String pathToFile2 = "scripts/search/data/tabular/120745.dta";
+        JsonObjectBuilder json = Json.createObjectBuilder()
+                /**
+                 * @todo forceReplace doesn't seem to work.
+                 */
+                //                .add("forceReplace", true)
+                .add("description", "tiny Stata file")
+                /**
+                 * @todo Setting categories doesn't work here in "replace" or
+                 * for "add" above. Why?
+                 */
+                .add("categories", Json.createArrayBuilder()
+                        .add("Data")
+                )
+                .add("dataFileTags", Json.createArrayBuilder()
+                        .add("Survey")
+                );
+        Response replaceResp = UtilIT.replaceFile(origFileId, pathToFile2, json.build(), apiToken);
+
+        msgt(replaceResp.prettyPrint());
+
+        boolean impossibleToSetTabularTagsViaApi = true;
+        if (impossibleToSetTabularTagsViaApi) {
+            System.out.println("Skipping attempt to verify that tabular tags can be set. Getting this error: You cannot add data file tags to a non-tabular file.");
+            return;
+        }
+
+        String successMsg2 = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.replace");
+
+        replaceResp.then().assertThat()
+                .body("message", equalTo(successMsg2))
+                .body("data.files[0].label", equalTo("120745.dta"))
+                .body("data.files[0].description", equalTo("tiny Stata file"))
+                .statusCode(OK.getStatusCode());
+
+        long rootDataFileId = JsonPath.from(replaceResp.body().asString()).getLong("data.files[0].dataFile.rootDataFileId");
+        long previousDataFileId = JsonPath.from(replaceResp.body().asString()).getLong("data.files[0].dataFile.previousDataFileId");
+        long newDataFileId = JsonPath.from(replaceResp.body().asString()).getLong("data.files[0].dataFile.id");
+
+        assertEquals(origFileId, previousDataFileId);
+        assertEquals(rootDataFileId, previousDataFileId);
+
+    }
+
     @Test
     public void test_007_ReplaceFileUnpublishedAndBadIds() {
         msgt("test_007_ReplaceFileBadIds");

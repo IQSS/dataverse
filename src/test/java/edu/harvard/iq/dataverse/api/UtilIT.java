@@ -291,7 +291,7 @@ public class UtilIT {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .multiPart("datasetId", datasetId)
-                .multiPart("file", new File("src/main/webapp/resources/images/dataverseproject.png"))
+                .multiPart("file", new File(pathToFile))
                 .multiPart("jsonData", optionalJson)
                 .post("/api/datasets/" + datasetId + "/add");
     }
