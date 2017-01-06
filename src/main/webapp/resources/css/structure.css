@@ -540,12 +540,12 @@ div.ui-tabs-panels .ui-tabs.ui-tabs-top .ui-tabs-nav.ui-widget-header {border-bo
 div[id$='roleDisplay'] span.label, div[id$='roleDetails'] span.label {display:inline-block; margin-bottom:4px;}
 
 /* -------- METRICS -------- */
-#metrics-block.col-xs-4 {border:1px solid #6f5499;background:#6f5499;padding:0;}
-#metrics-label {color:#fff;}
-#metrics-label a {color:#fff;display:block;}
+#metrics-block.col-xs-3 {border:1px solid #eee;padding:0;}
+#metrics-label {color:#333;background:#eee;padding:8px 10px;}
+#metrics-label a {color:#333;display:block;}
 #metrics-label a:hover {text-decoration:none;}
 #metrics-label span.metrics-label-text {}
-#metrics-content {color:#6f5499;background:#fff;}
+#metrics-content {color:#333;background:#fff;padding:8px 10px;}
 /* --
 #metrics-tabs a {background:#428bca;display:block;width:38px;line-height:13px;}
 #metrics-tabs a:hover {text-decoration:none;}
