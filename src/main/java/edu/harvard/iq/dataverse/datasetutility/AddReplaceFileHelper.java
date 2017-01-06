@@ -1419,7 +1419,7 @@ public class AddReplaceFileHelper{
 
         
         msgt("File to replace getId: " + fileToReplace.getId());
-
+        
         Iterator<FileMetadata> fmIt = workingVersion.getFileMetadatas().iterator();
         msgt("Clear file to replace");
         int cnt = 0;
@@ -1432,11 +1432,34 @@ public class AddReplaceFileHelper{
            if (fm.getDataFile().getId() != null){
                if (Objects.equals(fm.getDataFile().getId(), fileToReplace.getId())){
                    msg("Let's remove it!");
-                   fmIt.remove();
-                   return true;
+                   
+                    if (workingVersion.getId() != null) {
+                        // If this is an existing draft (i.e., this draft version 
+                        // is already saved in the dataset, we'll also need to remove this filemetadata 
+                        // explicitly:
+                        msg(" this is an existing draft version...");
+                        fileService.removeFileMetadata(fm);
+                       
+                        // remove the filemetadata from the list of filemetadatas
+                        // attached to the datafile object as well, for a good 
+                        // measure: 
+                        fileToReplace.getFileMetadatas().remove(fm);
+                        // (and yes, we can do .remove(fm) safely - if this released
+                        // file is part of an existing draft, we know that the 
+                        // filemetadata object also exists in the database, and thus
+                        // has the id, and can be identified unambiguously. 
+                    }
+
+                    
+                    // and remove it from the list of filemetadatas attached
+                    // to the version object, via the iterator:
+                    fmIt.remove();
+
+                    return true;
                }
            }
         }
+        
         msg("No matches found!");
         addErrorSevere(getBundleErr("failed_to_remove_old_file_from_dataset"));
         runMajorCleanup();
@@ -1525,7 +1548,7 @@ public class AddReplaceFileHelper{
         // -----------------------------------------------------------
         // Set the "root file ids" and "previous file ids"
         // THIS IS A KEY STEP - SPLIT IT OUT
-        //  (1) Old file: Set the Root File Id on the original file and save it
+        //  (1) Old file: Set the Root File Id on the original file  
         //  (2) New file: Set the previousFileId to the id of the original file
         //  (3) New file: Set the rootFileId to the rootFileId of the original file
         // -----------------------------------------------------------
