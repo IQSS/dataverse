@@ -684,6 +684,10 @@ div[id$="filesTable"] thead[id$="filesTable_head"] th.ui-selection-column .ui-ch
 
 div[id$="filesTable"].ui-datatable.ui-datatable-scrollable {padding-right:12px;}
 
+#file-replace-original-block div[id$="filesTable"].col-sm-10 {border:1px solid #ddd;padding:0;}
+#file-replace-original-block div[id$="filesTable"] .col-file-thumb {width:74px !important;padding:4px 10px;}
+#file-replace-original-block div[id$="filesTable"] .col-file-metadata {padding:4px 10px;}
+
 span.ingest-warning {display:inline-block; font-size:30px; line-height:1.42857; vertical-align: middle;}
 span.ingest-warning span.glyphicon {top:5px;} 
 
