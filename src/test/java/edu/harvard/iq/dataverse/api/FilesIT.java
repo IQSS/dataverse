@@ -635,7 +635,36 @@ public class FilesIT {
                ;       
         
     }
-    
+
+    @Test
+    public void testAddTinyFile() {
+        msgt("testAddTinyFile");
+
+        // Create user
+        String apiToken = createUserGetToken();
+
+        // Create Dataverse
+        String dataverseAlias = createDataverseGetAlias(apiToken);
+
+        // Create Dataset
+        Integer datasetId = createDatasetGetId(dataverseAlias, apiToken);
+
+        // -------------------------
+        // Add initial file
+        // -------------------------
+        msg("Add initial file");
+        String pathToFile = "scripts/search/data/tabular/1char";
+        Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
+
+        String successMsgAdd = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");
+
+        addResponse.then().assertThat()
+                .body("message", equalTo(successMsgAdd))
+                .body("data.files[0].dataFile.contentType", equalTo("text/plain; charset=US-ASCII"))
+                .body("data.files[0].label", equalTo("1char"))
+                .statusCode(OK.getStatusCode());
+    }
+
     
     private void msg(String m){
         System.out.println(m);
