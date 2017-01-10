@@ -113,6 +113,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     @Inject
     DataverseRequestServiceBean dvRequestService;
     @Inject PermissionsWrapper permissionsWrapper;
+    @Inject FileDownloadHelper fileDownloadHelper;
 
     private final DateFormat displayDateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
 
@@ -2063,6 +2064,18 @@ public class EditDatafilesPage implements java.io.Serializable {
             }
         }
         return false;
+    }
+    
+    public boolean isThumbnailAvailable(FileMetadata fileMetadata) {
+        // new and optimized logic: 
+        // - check download permission here (should be cached - so it's free!)
+        // - only then ask the file service if the thumbnail is available/exists.
+        // the service itself no longer checks download permissions.  
+        if (!fileDownloadHelper.canDownloadFile(fileMetadata)) {
+            return false;
+        }
+
+        return datafileService.isThumbnailAvailable(fileMetadata.getDataFile());
     }
 
     

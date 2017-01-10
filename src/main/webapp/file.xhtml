@@ -252,8 +252,9 @@
                                         <h:outputText id="fileUNF" value="#{FilePage.file.unf}" rendered="#{!empty FilePage.file.unf}"/>
                                     </div>
                                     
-                                    <!-- for dev/debugging purposes -->
-                                    <ui:fragment rendered="#{FilePage.isReplacementFile()}">
+                                    <!-- for dev/debugging purposes 
+                                    SEK TODO How do we want to indicate that a file is a replacement? -->
+                                    <ui:fragment rendered="#{false}">
                                     <div>
                                          <span class="label label-info">This is a Replacement File</span>
                                     </div>

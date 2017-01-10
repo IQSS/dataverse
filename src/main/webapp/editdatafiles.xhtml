@@ -46,31 +46,21 @@
                             </label>
                             <div id="filesTable" class="col-sm-10">
                                 <div style="" class="pull-left col-file-thumb">
-                                    <div class="thumbnail-block text-center">
-                                        <!-- Thumbnail Preview -->
-                                        <!-- 4.2.1 optimization: replaced dataFileServiceBean.isThumbnailAvailable(fileMetadata.dataFile, dataverseSession.user) with DatasetPage.isThumbnailAvailable(fileMetadata); see comments in the bean -->
-                                        <span class="file-thumbnail-preview-img" jsf:rendered="#{false}"
-                                              data-container="body" data-toggle="popover" data-placement="top" data-trigger="hover" data-html="true" data-content="&lt;img src=&#34;/api/access/datafile/#{fileToReplace.fileMetadata.dataFile.id}?imageThumb=400&#34; alt=&#34; #{bundle['file.preview']} #{fileToReplace.fileMetadata.label}&#34; /&gt;">
+                                    <div class="thumbnail-block text-center">  
+                                    <span class="icon-#{dataFileServiceBean.getFileClass(fileToReplace.fileMetadata.dataFile)} file-thumbnail-icon text-muted" jsf:rendered="#{!EditDatafilesPage.isThumbnailAvailable(fileToReplace.fileMetadata)}"/>
+                                        <span class="file-thumbnail-preview-img" jsf:rendered="#{EditDatafilesPage.isThumbnailAvailable(fileToReplace.fileMetadata)}"
+                                              data-container="body" data-toggle="popover" data-placement="top" data-trigger="hover" data-html="true" data-content="&lt;img src=&#34;/api/access/datafile/#{fileToReplace.fileMetadata.dataFile.id}?imageThumb=400&#34; alt=&#34; #{bundle['file.preview']} #{fileMetadata.label}&#34; /&gt;">
                                             <p:graphicImage value="/api/access/datafile/#{fileToReplace.fileMetadata.dataFile.id}?imageThumb=true"/>
                                         </span>
-
-                                        <!-- Default Icon -->
-                                        <span class="icon-#{dataFileServiceBean.getFileClass(fileMetadata.dataFile)} file-thumbnail-icon text-muted" jsf:rendered="#{true}"/>
-
-                                        <ui:fragment rendered="#{false}">
-                                            <p:graphicImage value="/api/access/tempPreview/#{fileToReplace.fileMetadata.dataFile.storageIdentifier}?mimetype=#{fileToReplace.fileMetadata.dataFile.contentType}"/>
-                                            <h:outputText id="imgPreview" value="Preview" styleClass="bg-info text-info text-center show"/>
-                                        </ui:fragment>
-
                                         <!-- Restricted File Icon -->
-                                        <div class="file-icon-restricted-block" jsf:rendered="#{true}">                  
+                                        <div class="file-icon-restricted-block" jsf:rendered="#{fileToReplace.fileMetadata.restricted and !fileDownloadHelper.canDownloadFile(fileToReplace.fileMetadata)}">                  
                                             <span class="glyphicon glyphicon-lock text-danger"/>
                                         </div>
-                                        <div class="file-icon-restricted-block" jsf:rendered="#{false}">
+                                        <div class="file-icon-restricted-block" jsf:rendered="#{fileToReplace.fileMetadata.restricted and fileDownloadHelper.canDownloadFile(fileToReplace.fileMetadata) }">
                                             <span class="icon-unlock text-success"/>
                                         </div>
                                     </div>
-                                </div>
+                                </div>  
                                 <div class="col-sm-10 col-file-metadata">
                                     <div class="fileNameOriginal">
                                         <span>#{fileToReplace.fileMetadata.label}</span>
