@@ -237,7 +237,7 @@ In practice, you only need one the ``dataset_id`` or the ``persistentId``. The e
     # Using a "jsonData" parameter, add optional description + file tags
     # --------------------------------------------------
     params = dict(description='Blue skies!',
-                tags=['Lily', 'Rosemary', 'Jack of Hearts'])
+                categories=['Lily', 'Rosemary', 'Jack of Hearts'])
 
     params_as_json_string = json.dumps(params)
 
@@ -324,7 +324,7 @@ Example python code to replace a file.  This may be run by changing these parame
     # Using a "jsonData" parameter, add optional description + file tags
     # --------------------------------------------------
     params = dict(description='Sunset',
-                tags=['One', 'More', 'Cup of Coffee'])
+                categories=['One', 'More', 'Cup of Coffee'])
 
     # -------------------
     # IMPORTANT: If the mimetype of the replacement file differs

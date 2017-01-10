@@ -173,6 +173,10 @@ public class OptionalFileParams {
         //----------------------
         if ((jsonObj.has(CATEGORIES_ATTR_NAME)) && (!jsonObj.get(CATEGORIES_ATTR_NAME).isJsonNull())){
 
+            /**
+             * @todo Use JsonParser.getCategories somehow instead (refactoring
+             * required). This code is exercised by FilesIT.
+             */
             setCategories(this.categories = gson.fromJson(jsonObj.get(CATEGORIES_ATTR_NAME), listType));
         }
 
