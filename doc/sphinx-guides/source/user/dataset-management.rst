@@ -139,7 +139,15 @@ To upload new files to a dataset, go to the dataset you want to update and click
 Replace Files
 -------------
 
-If the new file you need to upload to a dataset is a replacement file for one that has already been uploaded, you can use the Replace File feature to add it in place of the old one...
+If you would like to replace a file in your dataset with a new file, then you can use the Replace File feature. This will allow you to track the history of this file across versions of your dataset. This could be useful for updating your data or fixing mistakes in your data.
+
+Go to the page for the file you'd like to replace and click on the Edit button. From the dropdown list, select Replace. This will bring you to an upload page where you can see the metadata for the current file and upload your replacement file. Once you've uploaded the replacement, you can edit the File Name, Description, and Tags. When you're finished, click the Save Changes button.
+
+The new replacement file is automatically put into "draft" status. This draft file is considered part of a new draft of your dataset, along with any other changes that you may have made to your dataset since it was last published. When you publish your new draft of your dataset, it will complete the file replacement process, along with any other changes that you've made to your dataset since it was last published. 
+
+Once you've published your dataset, the file replacement will be documented on the file page, under the "Versions" tab.
+
+NOTE: While your replacement file is in "draft" status, you can not make further replacements to that file. If you would like to delete your draft replacement file, you will need to delete your dataset draft. Keep in mind that deleting your dataset draft will also discard any other "draft" changes you've made to your dataset since you last published it.
 
 .. _license-terms:
 
