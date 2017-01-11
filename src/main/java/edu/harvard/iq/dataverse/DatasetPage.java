@@ -393,6 +393,12 @@ public class DatasetPage implements java.io.Serializable {
         setReleasedVersionTabList(resetReleasedVersionTabList());
         
     }
+    
+    //@author anuj
+    public void changeCloudDataset(ValueChangeEvent e) {
+    logger.info("Dataset id: "+dataset.getDisplayName());
+        datasetService.toggleCloudDataset(dataset.getId());
+    }
 
     public void updateLinkableDataverses() {
         dataversesForLinking = new ArrayList();

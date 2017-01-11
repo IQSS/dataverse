@@ -87,10 +87,10 @@ public class DataFileDownload {
             }
         }
         catch (MalformedURLException mue) {
-            logger.log( Level.WARNING , "Malformed URL: "+fileURL);
+            throw new MalformedURLException( "Malformed URL: "+fileURL);
         }
         catch (IOException ioe){
-            logger.log( Level.WARNING , "Unable to download file with URL: "
+            throw new IOException("Unable to download file with URL: "
                     +fileURL);
             
         }
