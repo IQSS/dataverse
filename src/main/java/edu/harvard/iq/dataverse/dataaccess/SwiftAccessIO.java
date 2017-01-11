@@ -43,6 +43,7 @@ import java.nio.file.StandardCopyOption;
 
 import org.javaswift.joss.client.factory.AccountFactory;
 import static org.javaswift.joss.client.factory.AuthenticationMethod.BASIC;
+import static org.javaswift.joss.client.factory.AuthenticationMethod.KEYSTONE;
 import org.javaswift.joss.model.Account;
 import org.javaswift.joss.model.Container;
 import org.javaswift.joss.model.StoredObject;
@@ -55,6 +56,9 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import java.nio.channels.Channels;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.javaswift.joss.client.factory.AccountConfig;
 
 
 /**
@@ -67,6 +71,13 @@ import java.util.Properties;
     Read-only access, for now. 
 */
 public class SwiftAccessIO extends DataFileIO {
+    
+    private String swiftFolderPath;
+    private String swiftFileName = null;
+    
+    private final static String SWIFT_ENDPOINT = "http://rdgw.kaizen.massopencloud.org/swift/v1";
+    
+    private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO");
 
     public SwiftAccessIO () throws IOException {
         this(null);
@@ -99,7 +110,7 @@ public class SwiftAccessIO extends DataFileIO {
     public boolean canWrite () {
         return isWriteAccess; 
     }
-
+    
 
     @Override
     public void open (DataAccessOption... options) throws IOException {
@@ -157,18 +168,22 @@ public class SwiftAccessIO extends DataFileIO {
     @Override
     public void copyPath(Path fileSystemPath) throws IOException {
         long newFileSize = -1;
-
+        
         if (swiftFileObject == null || !this.canWrite()) {
             open(DataAccessOption.WRITE_ACCESS);
         }
-
+        
         File inputFile = null;
 
         try {
             inputFile = fileSystemPath.toFile();
-
+            
+            //@author Anuj Thakur 
             swiftFileObject.uploadObject(inputFile);
-
+            //After the files object is uploaded the identifier is changed.
+            logger.info(this.swiftFileName+" "+this.swiftFolderPath);
+            this.getDataFile().setStorageIdentifier(SWIFT_ENDPOINT+"/"+this.swiftFolderPath+"/"+this.swiftFileName);
+                 
             newFileSize = inputFile.length();
 
         } catch (Exception ioex) {
@@ -238,29 +253,35 @@ public class SwiftAccessIO extends DataFileIO {
     }
     
     // Auxilary helper methods, Swift-specific:
-    
     private StoredObject initializeSwiftFileObject(boolean writeAccess) throws IOException {
         String storageIdentifier = this.getDataFile().getStorageIdentifier();
         
         String swiftEndPoint = null; 
         String swiftContainer = null; 
-        String swiftFileName = null;
         
-       
-        if (storageIdentifier.startsWith("swift://")) {
+       //
+       // if (storageIdentifier.startsWith("swift://")) {
+        if (storageIdentifier.startsWith(DataAccess.DEFAULT_SWIFT_ENDPOINT_START_CHARACTERS)) {
             // This is a call on an already existing swift object. 
 
-            String[] swiftStorageTokens = storageIdentifier.substring(8).split(":", 3);
-
-            if (swiftStorageTokens.length != 3) {
+            //String[] swiftStorageTokens = storageIdentifier.substring(8).split(":", 3);
+            //The Storage identifier now is the Object store service endpoint
+            //followed by the endpoint named container
+            String[] swiftStorageTokens = storageIdentifier.substring(46).split("/", 2);
+            
+            if (swiftStorageTokens.length != 2) {
                 // bad storage identifier
                 throw new IOException("SwiftAccessIO: invalid swift storage token: " + storageIdentifier);
             }
-
-            swiftEndPoint = swiftStorageTokens[0];
-            swiftContainer = swiftStorageTokens[1];
-            swiftFileName = swiftStorageTokens[2];
-
+            
+            
+            Properties p = getSwiftProperties();
+            swiftEndPoint = p.getProperty("swift.default.endpoint");
+            
+            swiftContainer = swiftStorageTokens[0];
+            swiftFileName = swiftStorageTokens[1];
+            
+            
             if (swiftEndPoint == null || swiftContainer == null || swiftFileName == null
                     || "".equals(swiftEndPoint) || "".equals(swiftContainer) || "".equals(swiftFileName)) {
                 // all of these things need to be specified, for this to be a valid Swift location
@@ -274,10 +295,12 @@ public class SwiftAccessIO extends DataFileIO {
         } else if (this.isWriteAccess) {
             Properties p = getSwiftProperties();
             swiftEndPoint = p.getProperty("swift.default.endpoint");
-            swiftContainer = this.getDataFile().getOwner().getIdentifier(); /* TODO: ? */
-            swiftFileName = storageIdentifier;
-        
-            this.getDataFile().setStorageIdentifier("swift://"+swiftEndPoint+":"+swiftContainer+":"+swiftFileName);
+            swiftFolderPath = this.getDataFile().getOwner().getDisplayName();
+            //swiftContainer = this.getDataFile().getOwner().getIdentifier(); /* TODO: ? */
+            //swiftFileName = storageIdentifier;
+            swiftFileName = this.getDataFile().getDisplayName();
+            //Storage Identifier is now updated after the object is uploaded on Swift.
+            // this.getDataFile().setStorageIdentifier("swift://"+swiftEndPoint+":"+swiftContainer+":"+swiftFileName);
         } else {
             throw new IOException("SwiftAccessIO: unknown access mode.");
         }
@@ -285,11 +308,29 @@ public class SwiftAccessIO extends DataFileIO {
         
         account = authenticateWithSwift(swiftEndPoint);
         
+        /*
+        The containers created is swiftEndPoint concatenated with the swiftContainer
+        property. Creating container with certain names throws 'Unable to create
+        container' error on Openstack. 
+        Any datafile with http://rdgw storage identifier i.e present on Object 
+        store service endpoint already only needs to look-up for container using
+        just swiftContainer which is the concatenated name.
+        In future, a container for the endpoint can be created and for every
+        other swiftContainer Object Store pseudo-folder can be created, which is
+        not provide by the joss Java swift library as of yet.
+        */
+        Container dataContainer;
+          
+        if (storageIdentifier.startsWith(DataAccess.DEFAULT_SWIFT_ENDPOINT_START_CHARACTERS)) {
+            dataContainer = account.getContainer(swiftContainer); 
+        } else {
+            dataContainer = account.getContainer(swiftFolderPath); //changed from swiftendpoint
+        }
         
-        Container dataContainer = account.getContainer(swiftContainer);
         if (!dataContainer.exists()) {
             if (writeAccess) {
                 dataContainer.create();
+                //dataContainer.makePublic();
             } else {
                 // This is a fatal condition - it has to exist, if we were to 
                 // read an existing object!
@@ -340,6 +381,7 @@ public class SwiftAccessIO extends DataFileIO {
         String swiftEndPointAuthUrl = p.getProperty("swift.auth_url."+swiftEndPoint);
         String swiftEndPointUsername = p.getProperty("swift.username."+swiftEndPoint);
         String swiftEndPointSecretKey = p.getProperty("swift.password."+swiftEndPoint);
+        String swiftEndPointTenantName = p.getProperty("swift.tenant."+swiftEndPoint);
         
         if (swiftEndPointAuthUrl == null || swiftEndPointUsername == null || swiftEndPointSecretKey == null ||
                 "".equals(swiftEndPointAuthUrl) || "".equals(swiftEndPointUsername) || "".equals(swiftEndPointSecretKey)) {
@@ -353,14 +395,23 @@ public class SwiftAccessIO extends DataFileIO {
         
         Account account = null; 
         
+        /*
+        This try { } now authenticates using the KEYSTONE mechanism and uses
+        the tenant name in addition to the Username Password and AuthUrl
+        Also, the AuthUrl is now the identity service endpoint of MOC Openstack
+        environment instead of the Object store service endpoint.
+        */
+        
         try {
             account = new AccountFactory()
-                    .setUsername(swiftEndPointUsername)
-                    .setPassword(swiftEndPointSecretKey)
-                    .setAuthUrl(swiftEndPointAuthUrl)
-                    .setAuthenticationMethod(BASIC)
-                    .createAccount();
+                .setTenantName(swiftEndPointTenantName)
+                .setUsername(swiftEndPointUsername)
+                .setPassword(swiftEndPointSecretKey)
+                .setAuthUrl(swiftEndPointAuthUrl)
+                .createAccount();
+            
         } catch (Exception ex) {
+            ex.printStackTrace();
             throw new IOException("SwiftAccessIO: failed to authenticate for the end point "+swiftEndPoint);
         }
         
