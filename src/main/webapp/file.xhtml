@@ -100,11 +100,18 @@
                                                 </li>
                                             </ui:fragment>     
                                         </li>
-                                        <ui:fragment rendered="#{FilePage.fileMetadata.dataFile.released}">                                        
+                                        <ui:fragment rendered="#{FilePage.fileMetadata.dataFile.released and FilePage.draftReplacementFile == false}">                                        
                                         <li><!-- start: replace file link -->
                                             <h:outputLink value="/editdatafiles.xhtml?mode=SINGLE_REPLACE&#38;datasetId=#{FilePage.fileMetadata.datasetVersion.dataset.id}&#38;fid=#{FilePage.fileMetadata.dataFile.id}&#38;version=#{FilePage.version}">
                                                  <h:outputText value="#{bundle['file.replace']}"/>
                                             </h:outputLink>
+                                        <!-- end replace file link --></li>
+                                        </ui:fragment>
+                                        <ui:fragment rendered="#{(FilePage.fileMetadata.dataFile.released and FilePage.draftReplacementFile == true) or (!FilePage.fileMetadata.dataFile.released and FilePage.fileMetadata.datasetVersion.dataset.released) }">                                        
+                                        <li><!-- start: already replaced replace file link -->
+                                            <p:commandLink title="#{bundle['file.delete']}" onclick="PF('fileAlreadyReplaced').show();">
+                                                <h:outputText value="#{bundle['file.replace']}"/>
+                                            </p:commandLink>
                                         <!-- end replace file link --></li>
                                         </ui:fragment>
                                         <li>
@@ -259,6 +266,7 @@
                                          <span class="label label-info">This is a Replacement File</span>
                                     </div>
                                     </ui:fragment>
+                                    draft Replacement file: #{FilePage.draftReplacementFile}
                                 </div>
                             </div>
                             <div id="fileDescriptionBlock" class="col-xs-12" jsf:rendered="#{!empty FilePage.fileMetadata.description}">
@@ -483,6 +491,13 @@
                                 <p:commandButton value="#{bundle.cancel}" onclick="PF('accessPopup').hide();" type="button" />
                             </div>
                         </ui:fragment>
+                    </p:dialog>
+                      <p:dialog id="fileAlreadyReplaced" styleClass="smallPopUp"
+                              header="#{bundle['file.alreadyReplaced.header']}" widgetVar="fileAlreadyReplaced" modal ="true">
+                        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.alreadyReplaced.warningMessage']}</p>
+                        <div class="button-block">
+                            <p:commandButton value="#{bundle.close}" onclick="PF('fileAlreadyReplaced').hide();"/>
+                        </div>
                     </p:dialog>
                 </h:form>
             </ui:define>

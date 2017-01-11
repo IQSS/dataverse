@@ -392,6 +392,51 @@ public class FilePage implements java.io.Serializable {
         this.selectedTabIndex = selectedTabIndex;
     }
     
+    public boolean isDraftReplacementFile(){
+        /*
+        This method tests to see if the file has been replaced in a draft version of the dataset
+        Since it must must work when you are on prior versions of the dataset 
+        it must accrue all replacement files that may have been created
+        */
+        Dataset dataset = fileMetadata.getDataFile().getOwner();
+        DataFile dataFileToTest = fileMetadata.getDataFile();
+        
+        DatasetVersion currentVersion = dataset.getLatestVersion();
+        
+        if (!currentVersion.isDraft()){
+            return false;
+        }
+        
+        if (dataset.getReleasedVersion() == null){
+            return false;
+        }
+        
+        List<DataFile> dataFiles = new ArrayList();
+        
+        dataFiles.add(dataFileToTest);
+        
+        while (datafileService.findReplacementFile(dataFileToTest.getId()) != null ){
+            dataFiles.add(datafileService.findReplacementFile(dataFileToTest.getId()));
+            dataFileToTest = datafileService.findReplacementFile(dataFileToTest.getId());
+        }
+        
+        if(dataFiles.size() <2){
+            return false;
+        }
+        
+        int numFiles = dataFiles.size();
+        
+        DataFile current = dataFiles.get(numFiles - 1 );       
+        
+        DatasetVersion publishedVersion = dataset.getReleasedVersion();
+        
+        if( datafileService.findFileMetadataByFileAndVersionId(current.getId(), publishedVersion.getId()) == null){
+            return true;
+        }
+        
+        return false;
+    }
+    
 
 
     

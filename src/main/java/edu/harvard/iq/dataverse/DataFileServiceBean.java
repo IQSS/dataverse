@@ -149,6 +149,17 @@ public class DataFileServiceBean implements java.io.Serializable {
         
     }*/
     
+    public DataFile findReplacementFile(Long previousFileId){
+        Query query = em.createQuery("select object(o) from DataFile as o where o.previousDataFileId = :previousFileId");
+        query.setParameter("previousFileId", previousFileId);
+        try {
+            DataFile retVal = (DataFile)query.getSingleResult();
+            return retVal;
+        } catch(Exception ex) {
+            return null;
+        }
+    }
+    
     public List<DataFile> findByDatasetId(Long studyId) {
         /* 
            Sure, we don't have *studies* any more, in 4.0; it's a tribute 
@@ -240,7 +251,12 @@ public class DataFileServiceBean implements java.io.Serializable {
         Query query = em.createQuery("select object(o) from FileMetadata as o where o.dataFile.id = :dataFileId and o.datasetVersion.id = :datasetVersionId");
         query.setParameter("dataFileId", dataFileId);
         query.setParameter("datasetVersionId", datasetVersionId);
-        return (FileMetadata)query.getSingleResult();
+        try {
+            FileMetadata retVal = (FileMetadata)query.getSingleResult();
+            return retVal;
+        } catch(Exception ex) {
+            return null;
+        }
     }
     
     public FileMetadata findFileMetadataByDatasetVersionIdAndDataFileId(Long datasetVersionId, Long dataFileId) {
