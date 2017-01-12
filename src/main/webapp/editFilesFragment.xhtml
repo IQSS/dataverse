@@ -267,7 +267,7 @@
         </ui:fragment>
         <div class="button-block">
             <p:commandButton value="#{bundle.continue}" onclick="PF('deleteFileConfirmation').hide()" oncomplete="window.scrollTo(0, 0);"
-                             update=":#{p:component('filesTable')},:messagePanel" action="#{EditDatafilesPage.deleteFiles()}" />
+                             update=":#{p:component('filesTable')},:messagePanel,:#{p:component('fileUpload')}" action="#{EditDatafilesPage.deleteFiles()}" />
             <p:commandButton value="#{bundle.cancel}" onclick="PF('deleteFileConfirmation').hide()" type="button" />
         </div>
     </p:dialog>
