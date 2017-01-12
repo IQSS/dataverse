@@ -143,7 +143,8 @@ In cases where you would like to revise an existing file rather than add a new o
 
 Go to the file page for the file you would like to replace, click on the Edit button, and from the dropdown list select Replace. This will bring you to the Replace File page, where you can see the metadata for the most recently published version of the file and you can upload your replacement file. Once you have uploaded the replacement file, you can edit its File Name, Description, and Tags. When you're finished, click the Save Changes button.
 
-The new replacement file is automatically put into "draft" status. Once you have published the new draft of your dataset, the file replacement will be documented on the file page, under the "Versions" tab.
+
+A new dataset draft will be created after successfully replacing a file, and will be recorded in the dataset Version Details.
 
 .. _license-terms:
 
