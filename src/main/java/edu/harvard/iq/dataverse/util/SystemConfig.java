@@ -322,6 +322,15 @@ public class SystemConfig {
         return saneDefault;
     }
 
+    public String getGuidesVersion() {
+        String saneDefault = getVersion();
+        String guidesVersion = settingsService.getValueForKey(SettingsServiceBean.Key.GuidesVersion, saneDefault);
+        if (guidesVersion != null) {
+            return guidesVersion;
+        }
+        return saneDefault;
+    }
+
     /**
      * Download-as-zip size limit.
      * returns 0 if not specified; 
