@@ -80,6 +80,7 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     private static final Logger logger = Logger.getLogger(EditDatafilesPage.class.getCanonicalName());
     private FileView fileView;
+    private boolean uploadWarningMessageIsNotAnError;
 
     public enum FileEditMode {
 
@@ -1643,7 +1644,11 @@ public class EditDatafilesPage implements java.io.Serializable {
         // refresh the warning message below the upload component, if exists:
         if (uploadComponentId != null) {
             if (uploadWarningMessage != null) {
-                FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload warning", uploadWarningMessage));
+                if (uploadWarningMessageIsNotAnError) {
+                    FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_WARN, "upload warning", uploadWarningMessage));
+                } else {
+                    FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload warning", uploadWarningMessage));
+                }
             } else if (uploadSuccessMessage != null) {
                 FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_INFO, "upload worked", uploadSuccessMessage));
             }
@@ -1685,6 +1690,7 @@ public class EditDatafilesPage implements java.io.Serializable {
              */
             if (fileReplacePageHelper.hasContentTypeWarning()){
                 uploadWarningMessage = fileReplacePageHelper.getContentTypeWarning();
+                uploadWarningMessageIsNotAnError = true;
                 
                 /* 
                     Note on the info messages - upload errors, warnings and success messages:
@@ -1717,15 +1723,15 @@ public class EditDatafilesPage implements java.io.Serializable {
         } else {
             // See the comment above, on how upload messages are displayed.
             uploadWarningMessage = fileReplacePageHelper.getErrorMessages();
-            uploadWarningMessage += " ******* ";
+//            uploadWarningMessage += " ******* ";
             
             
             if (nativeUploadEvent != null){
-                uploadWarningMessage += " nativeUploadEvent ";
+//                uploadWarningMessage += " nativeUploadEvent ";
                 
             }
             if (dropboxUploadEvent != null){
-                uploadWarningMessage += " dropboxUploadEvent ";
+//                uploadWarningMessage += " dropboxUploadEvent ";
             }
             //FacesContext.getCurrentInstance().addMessage(
             //    uploadComponentId,                         
