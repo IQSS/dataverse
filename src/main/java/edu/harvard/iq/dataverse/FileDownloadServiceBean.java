@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateGuestbookResponseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RequestAccessCommand;
+import edu.harvard.iq.dataverse.util.FileUtil;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -295,7 +296,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             fileNameString = "attachment;filename=" + getFileNameDOI(workingVersion) + ".xml";
         } else {
             // Datafile-level citation:
-            fileNameString = "attachment;filename=" + getFileNameDOI(workingVersion) + "-" + fileMetadata.getLabel().replaceAll("\\.tab$", "-endnote.xml");
+            fileNameString = "attachment;filename=" + getFileNameDOI(workingVersion) + "-" + FileUtil.getCiteDataFileFilename(fileMetadata, FileUtil.FileCitationExtension.ENDNOTE);
         }
         response.setHeader("Content-Disposition", fileNameString);
         try {
@@ -336,7 +337,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             fileNameString = "attachment;filename=" + getFileNameDOI(workingVersion) + ".ris";
         } else {
             // Datafile-level citation:
-            fileNameString = "attachment;filename=" + getFileNameDOI(workingVersion) + "-" + fileMetadata.getLabel().replaceAll("\\.tab$", ".ris");
+            fileNameString = "attachment;filename=" + getFileNameDOI(workingVersion) + "-" + FileUtil.getCiteDataFileFilename(fileMetadata, FileUtil.FileCitationExtension.RIS);
         }
         response.setHeader("Content-Disposition", fileNameString);
 
@@ -383,7 +384,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             fileNameString = "attachment;filename=" + getFileNameDOI(workingVersion) + ".bib";
         } else {
             // Datafile-level citation:
-            fileNameString = "attachment;filename=" + getFileNameDOI(workingVersion) + "-" + fileMetadata.getLabel().replaceAll("\\.tab$", ".bib");
+            fileNameString = "attachment;filename=" + getFileNameDOI(workingVersion) + "-" + FileUtil.getCiteDataFileFilename(fileMetadata, FileUtil.FileCitationExtension.BIBTEX);
         }
         response.setHeader("Content-Disposition", fileNameString);
 
