@@ -157,7 +157,7 @@
                                         <h:outputFormat value=" #{bundle['auth.providers.blurb']}" escape="false">
                                             <o:param value="#{LoginPage.authProvider.info.title}"/>
                                             <o:param value="#{settingsWrapper.guidesBaseUrl}"/>
-                                            <o:param value="#{systemConfig.version}"/>
+                                            <o:param value="#{systemConfig.guidesVersion}"/>
                                             <o:param>
                                                 <p:commandLink value="#{bundle['contact.support']}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
                                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
@@ -200,7 +200,7 @@
                                     <p class="help-block"><span class="glyphicon glyphicon-info-sign"/>
                                         <h:outputFormat value=" #{bundle['auth.providers.tip']}" escape="false">
                                             <o:param value="#{settingsWrapper.guidesBaseUrl}"/>
-                                            <o:param value="#{systemConfig.version}"/>
+                                            <o:param value="#{systemConfig.guidesVersion}"/>
                                         </h:outputFormat>
                                     </p>
                                 </div>

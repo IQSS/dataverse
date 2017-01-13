@@ -337,7 +337,7 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
         if (authProvider == null) {
             return "";
         }
-        return BundleUtil.getStringFromBundle("oauth2.convertAccount.explanation", Arrays.asList(systemConfig.getNameOfInstallation(), authProvider.getInfo().getTitle(), systemConfig.getGuidesBaseUrl(), systemConfig.getVersion()));
+        return BundleUtil.getStringFromBundle("oauth2.convertAccount.explanation", Arrays.asList(systemConfig.getNameOfInstallation(), authProvider.getInfo().getTitle(), systemConfig.getGuidesBaseUrl(), systemConfig.getGuidesVersion()));
     }
 
     public List<String> getEmailsToPickFrom() {
