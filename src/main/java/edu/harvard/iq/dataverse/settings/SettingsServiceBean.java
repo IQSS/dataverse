@@ -158,6 +158,8 @@ public class SettingsServiceBean {
          */
         MetricsUrl,
         /* zip download size limit */
+        /** Optionally override version number in guides. */
+        GuidesVersion,
         ZipDownloadLimit,
         /* zip upload number of files limit */
         ZipUploadFilesLimit,
