@@ -837,16 +837,6 @@ public class AddReplaceFileHelper{
         return this.getBundleMsg(msgName, true);
     }
     
-    /**
-     * Convenience method for getting bundle success message
-     * 
-     * @param msgName
-     * @return 
-     */
-    private String getBundleSuccess(String msgName){
-        return this.getBundleMsg(msgName, false);
-    }
-    
     
      
     /**
@@ -920,19 +910,19 @@ public class AddReplaceFileHelper{
         }
         
         if (fileName == null){
-            this.addErrorSevere(getBundleErr("filename_is_null"));
+            this.addErrorSevere(getBundleErr("filename_undetermined"));
             return false;
             
         }
 
         if (fileContentType == null){
-            this.addErrorSevere(getBundleErr("file_content_type_is_null"));
+            this.addErrorSevere(getBundleErr("file_content_type_undetermined"));
             return false;
             
         }
         
         if (fileInputStream == null){
-            this.addErrorSevere(getBundleErr("file_input_stream_is_null"));
+            this.addErrorSevere(getBundleErr("file_upload_failed"));
             return false;
         }
        
@@ -967,8 +957,8 @@ public class AddReplaceFileHelper{
         //
         DataFile existingFile = fileService.find(dataFileId);
 
-        if (existingFile == null){
-            this.addError(getBundleErr("existing_file_to_replace_not_found_by_id") + " " + dataFileId);
+        if (existingFile == null){           
+            this.addError(BundleUtil.getStringFromBundle("file.addreplace.error.existing_file_to_replace_not_found_by_id", Collections.singletonList(dataFileId.toString())));
             return false;
         } 
         
@@ -1384,11 +1374,11 @@ public class AddReplaceFileHelper{
             //
             dataset = commandEngine.submit(update_cmd);
         } catch (CommandException ex) {
-            this.addErrorSevere(getBundleErr("add.command_engine_error"));
+            this.addErrorSevere(getBundleErr("add.add_file_error"));
             logger.severe(ex.getMessage());
             return false;
         }catch (EJBException ex) {
-            this.addErrorSevere("add.ejb_exception (see logs)");
+            this.addErrorSevere("add.add_file_error (see logs)");
             logger.severe(ex.getMessage());
             return false;
         } 
@@ -1747,68 +1737,6 @@ public class AddReplaceFileHelper{
         dashes(); msg(m); dashes();
     }
     
-    
-  
-    /**
-     * When a duplicate file is found after the initial ingest,
-     * remove the file from the dataset because
-     * createDataFiles has already linked it to the dataset:
-     *  - first, through the filemetadata list
-     *  - then through tht datafiles list
-     * 
-     * 
-     * @param dataset
-     * @param dataFileToRemove 
-     */
-    private boolean removeLinkedFileFromDataset(Dataset dataset, DataFile dataFileToRemove){
-        
-        if (dataset==null){
-            this.addErrorSevere(getBundleErr("remove_linked_file.dataset"));
-            return false;
-        }
-        
-        if (dataFileToRemove==null){
-            this.addErrorSevere(getBundleErr("remove_linked_file.file"));       
-            return false;
-        }
-        
-        // -----------------------------------------------------------
-        // (1) Remove file from filemetadata list
-        // -----------------------------------------------------------                        
-        Iterator<FileMetadata> fmIt = workingVersion.getFileMetadatas().iterator();
-        msgt("Clear FileMetadatas");
-        while (fmIt.hasNext()) {
-            FileMetadata fm = fmIt.next();
-            msg("Check: " + fm);
-            if (fm.getId() == null && dataFileToRemove.getStorageIdentifier().equals(fm.getDataFile().getStorageIdentifier())) {
-                msg("Got It! ");
-                fmIt.remove();
-                break;
-            }
-        }
-        
-        
-        // -----------------------------------------------------------
-        // (2) Remove file from datafiles list
-        // -----------------------------------------------------------                        
-        Iterator<DataFile> dfIt = dataset.getFiles().iterator();
-        msgt("Clear Files");
-        while (dfIt.hasNext()) {
-            DataFile dfn = dfIt.next();
-            msg("Check: " + dfn);
-            if (dfn.getId() == null && dataFileToRemove.getStorageIdentifier().equals(dfn.getStorageIdentifier())) {
-                msg("Got It! try to remove from iterator");
-                
-                dfIt.remove();
-                msg("it worked");
-                
-                break;
-            }else{
-                msg("...ok");
-            }
-        }
-        return true;
-    }
     
     /**
      * Return file list before saving
