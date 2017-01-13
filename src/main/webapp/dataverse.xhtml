@@ -496,44 +496,19 @@
                             </p:dialog>
                             <!-- END: Email/Link/Share Button Group -->
                             <!-- Metrics for Root Dataverse -->
-                            <div id="metrics-block" class="pull-left" jsf:rendered="#{ DataversePage.isRootDataverse() }">
-                                <div class="pull-left text-center" id="metrics-label">
-                                    <span class="metrics-label-text small"><span class="glyphicon glyphicon-stats"/> #{bundle['metrics.title']}</span>
+                            <div id="metrics-block" class="col-xs-3" jsf:rendered="#{DataversePage.isRootDataverse()}">
+                                <div id="metrics-label" class="col-xs-4 small text-center">
+                                    <h:outputLink value="#{systemConfig.metricsUrl}" target="_blank" title="#{bundle['metrics.title.tip']}" rendered="#{systemConfig.metricsUrl != null}">
+                                        <span class="glyphicon glyphicon-stats"/> #{bundle['metrics.title']}
+                                    </h:outputLink>
+                                    <ui:fragment rendered="#{systemConfig.metricsUrl == null}">
+                                        <span class="glyphicon glyphicon-stats"/> #{bundle['metrics.title']}
+                                    </ui:fragment>
                                 </div>
-                                <div class="pull-left">
-                                    <div id="metrics-content" class="tab-content">
-                                        <div id="metrics-views" class="metrics-views tab-pane fade small text-center">
-                                            #{bundle['metrics.views']} <em>#{bundle['metrics.comingsoon']}</em>
-                                        </div>
-                                        <div id="metrics-downloads" class="metrics-downloads tab-pane small text-center active in">
-                                            <h:outputFormat value="{0} #{bundle['metrics.downloads']}">
-                                                <f:param value="#{guestbookResponseServiceBean.getCountOfAllGuestbookResponses()}"/>
-                                            </h:outputFormat>
-                                        </div>
-                                        <div id="metrics-citations" class="metrics-citations tab-pane fade small text-center">
-                                            #{bundle['metrics.citations']} <em>#{bundle['metrics.comingsoon']}</em>
-                                        </div>
-                                        <div id="metrics-shares" class="metrics-shares tab-pane fade small text-center">
-                                            #{bundle['metrics.shares']} <em>#{bundle['metrics.comingsoon']}</em>
-                                        </div>
-                                    </div>
-                                    <div id="metrics-tabs">
-                                        <!-- DISABLED TOGGLE UNTIL FURTHER DEVELOPMENT ON METRICS IS COMPLETED 
-                                        ADDED style="pointer-events:none;" ATTRIBUTE TO A-HREF ELEMENTS BELOW 
-                                        REMOVED fade CLASS FROM metrics-downloads DIV ABOVE AND ADDED active in -->
-                                        <div class="metrics-hover pull-left">
-                                            <a href="#metrics-views" style="pointer-events:none;" class="metrics-views" data-toggle="tab">&#160;</a>
-                                        </div>
-                                        <div class="metrics-hover pull-left">
-                                            <a href="#metrics-downloads" style="pointer-events:none;" class="metrics-downloads first" data-toggle="tab">&#160;</a>
-                                        </div>
-                                        <div class="metrics-hover pull-left">
-                                            <a href="#metrics-citations" style="pointer-events:none;" class="metrics-citations" data-toggle="tab">&#160;</a>
-                                        </div>
-                                        <div class="metrics-hover pull-left">
-                                            <a href="#metrics-shares" style="pointer-events:none;" class="metrics-shares" data-toggle="tab">&#160;</a>
-                                        </div>
-                                    </div>
+                                <div id="metrics-content" class="col-xs-8 small text-center">
+                                    <h:outputFormat styleClass="metrics-downloads" value="{0} #{bundle['metrics.downloads']}">
+                                        <f:param value="#{guestbookResponseServiceBean.getCountOfAllGuestbookResponses()}"/>
+                                    </h:outputFormat>
                                 </div>
                             </div>
                             <!-- END: Metrics for Root Dataverse-->
