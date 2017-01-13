@@ -372,13 +372,21 @@
 
                     <!-- view other versions block: -->
                     
-                    <div id="viewOtherVersionsBlock" jsf:rendered="#{!empty DatasetPage.otherVersionsAvailable}">
+                    <div id="viewOtherVersionsBlock" jsf:rendered="#{DatasetPage.versionsAvailable.size() > 1}">
                         <h:outputText value="Other versions available: " />
-                        <p:dataList id="otherVersionsList" value="#{DatasetPage.otherVersionsAvailable}" var="v">
-                            <h:outputLink value="/dataset.xhtml?persistentId=#{DatasetPage.persistentId}&#38;version=#{v.semanticVersion}">
+                        <p:dataList id="otherVersionsList" value="#{DatasetPage.versionsAvailable}" var="v">
+                            <!-- if it's a version different from the working version, display a link: -->
+                            <h:outputLink value="/dataset.xhtml?persistentId=#{DatasetPage.persistentId}&#38;version=#{v.semanticVersion}" rendered="#{DatasetPage.workingVersion.semanticVersion != v.semanticVersion}">
                                 <h:outputText value="version #{v.semanticVersion}"/>
                             </h:outputLink>
+                            <!-- otherwise, display as text: -->
+                            <h:outputText value="version #{v.semanticVersion} (this version)" rendered="#{DatasetPage.workingVersion.semanticVersion == v.semanticVersion}"/>
                         </p:dataList>
+                    </div>
+                    
+                    <!-- or not, if this is the only version: -->
+                    <div id="viewOtherVersionsBlock" jsf:rendered="#{DatasetPage.versionsAvailable.size() == 1}">
+                        <h:outputText value="This is the only version of the dataset available" />
                     </div>
                     
                     <!-- end view other versions block -->

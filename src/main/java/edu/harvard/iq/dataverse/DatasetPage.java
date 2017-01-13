@@ -990,11 +990,11 @@ public class DatasetPage implements java.io.Serializable {
     
     private List<DatasetVersion> otherVersionsAvailable;
     
-    public List<DatasetVersion> getOtherVersionsAvailable() {
+    public List<DatasetVersion> getVersionsAvailable() {
         return otherVersionsAvailable;
     }
     
-    public void setOtherVersionsAvailable(List<DatasetVersion> otherVersionsAvailable) {
+    public void setVersionsAvailable(List<DatasetVersion> otherVersionsAvailable) {
         this.otherVersionsAvailable = otherVersionsAvailable;
     }
     
@@ -1156,11 +1156,11 @@ public class DatasetPage implements java.io.Serializable {
                 
                 otherVersionsAvailable = new ArrayList<>();
                 for (DatasetVersion v : dataset.getVersions()) {
-                    if (!workingVersion.getSemanticVersion().equals(v.getSemanticVersion())) {
+                    //if (!workingVersion.getSemanticVersion().equals(v.getSemanticVersion())) {
                         if (v.isReleased() || v.isDeaccessioned() || this.canViewUnpublishedDataset()) {
                             otherVersionsAvailable.add(v);
                         }
-                    }
+                    //}
                 }
                 
             }
