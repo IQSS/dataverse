@@ -312,6 +312,8 @@
                                 </ui:include>
                             </ui:fragment>
                             <!-- END: CITATION BLOCK -->
+                            
+                            
                             <div id="deaccession-reason-block" class="row bg-danger" jsf:rendered="#{DatasetPage.workingVersion.deaccessioned}">
                                 <h5 class="margin-top-half">#{bundle['dataset.deaccession.reason']}</h5>
                                 <p>#{DatasetPage.workingVersion.versionNote}</p>
@@ -368,6 +370,19 @@
                     </div>
                     <!-- END View editMode -->
 
+                    <!-- view other versions block: -->
+                    
+                    <div id="viewOtherVersionsBlock" jsf:rendered="#{!empty DatasetPage.otherVersionsAvailable}">
+                        <h:outputText value="Other versions available: " />
+                        <p:dataList id="otherVersionsList" value="#{DatasetPage.otherVersionsAvailable}" var="v">
+                            <h:outputLink value="/dataset.xhtml?persistentId=#{DatasetPage.persistentId}&#38;version=#{v.semanticVersion}">
+                                <h:outputText value="version #{v.semanticVersion}"/>
+                            </h:outputLink>
+                        </p:dataList>
+                    </div>
+                    
+                    <!-- end view other versions block -->
+                    
                     <!-- Create/Edit editMode -->
                     <ui:fragment rendered="#{DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE'}">
                         <div class="form-group">
