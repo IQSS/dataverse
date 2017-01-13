@@ -532,16 +532,15 @@ public class FilesIT {
         // Replace file with non-existent Id
         // -------------------------
         pathToFile2 = "src/main/webapp/resources/images/cc0.png";
-        Response replaceResp2 = UtilIT.replaceFile(origFileId+10, pathToFile2, apiToken);
+        long fakeFileId = origFileId+10;
+        Response replaceResp2 = UtilIT.replaceFile(fakeFileId, pathToFile2, apiToken);
 
         msgt("non-existent id: " + replaceResp.prettyPrint());
-
-        String errMsg1 = ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.existing_file_to_replace_not_found_by_id");        
 
         replaceResp2.then().assertThat()
                .statusCode(BAD_REQUEST.getStatusCode())
                .body("status", equalTo(AbstractApiBean.STATUS_ERROR))
-               .body("message", Matchers.startsWith(errMsg1))
+               .body("message", Matchers.equalTo(BundleUtil.getStringFromBundle("file.addreplace.error.existing_file_to_replace_not_found_by_id", Arrays.asList(fakeFileId + ""))))
                ;
 
         
