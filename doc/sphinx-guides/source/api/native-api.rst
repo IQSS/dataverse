@@ -169,6 +169,8 @@ Publishes the dataset whose id is passed. The new dataset version number is dete
 
     POST http://$SERVER/api/datasets/$id/actions/:publish?type=$type&key=$apiKey
 
+.. note:: POST should be used to publish a dataset. GET is supported for backward compatibility but is deprecated and may be removed: https://github.com/IQSS/dataverse/issues/2431
+
 Deletes the draft version of dataset ``$id``. Only the draft version can be deleted::
 
     DELETE http://$SERVER/api/datasets/$id/versions/:draft?key=$apiKey

@@ -331,6 +331,12 @@ public class SystemConfig {
         return saneDefault;
     }
 
+    public String getMetricsUrl() {
+        String saneDefault = null;
+        String metricsUrl = settingsService.getValueForKey(SettingsServiceBean.Key.MetricsUrl, saneDefault);
+        return metricsUrl;
+    }
+
     /**
      * Download-as-zip size limit.
      * returns 0 if not specified; 

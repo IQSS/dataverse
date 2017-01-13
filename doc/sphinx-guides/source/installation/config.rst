@@ -380,6 +380,13 @@ Set ``:GuidesVersion`` to override the version number in the URL of guides. For 
 
 ``curl -X PUT -d 1234-new-feature http://localhost:8080/api/admin/settings/:GuidesVersion``
 
+:MetricsUrl
++++++++++++
+
+Make the metrics component on the root dataverse a clickable link to a website where you present metrics on your Dataverse installation. This could perhaps be an installation of https://github.com/IQSS/miniverse or any site.
+
+``curl -X PUT -d http://metrics.dataverse.example.edu http://localhost:8080/api/admin/settings/:MetricsUrl``
+
 :StatusMessageHeader
 ++++++++++++++++++++
 

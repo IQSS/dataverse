@@ -153,6 +153,11 @@ public class SettingsServiceBean {
         TwoRavensUrl,
         /** Optionally override http://guides.dataverse.org . */
         GuidesBaseUrl,
+        /**
+         * A link to an installation of https://github.com/IQSS/miniverse or
+         * some other metrics app.
+         */
+        MetricsUrl,
         /* zip download size limit */
         /** Optionally override version number in guides. */
         GuidesVersion,
