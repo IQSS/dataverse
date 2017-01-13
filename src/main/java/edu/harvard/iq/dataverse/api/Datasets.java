@@ -87,7 +87,7 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 @Path("datasets")
 public class Datasets extends AbstractApiBean {
 
-    private static final Logger LOGGER = Logger.getLogger(Datasets.class.getName());
+    private static final Logger logger = Logger.getLogger(Datasets.class.getCanonicalName());
     
     private static final String PERSISTENT_ID_KEY=":persistentId";
     
@@ -180,7 +180,7 @@ public class Datasets extends AbstractApiBean {
             // (the way Access API streams its output). 
             // -- L.A., 4.5
             
-            LOGGER.fine("xml to return: " + xml);
+            logger.fine("xml to return: " + xml);
             String mediaType = MediaType.TEXT_PLAIN;
             if (instance.isXMLFormat(exporter)){
                 mediaType = MediaType.APPLICATION_XML;
@@ -366,7 +366,7 @@ public class Datasets extends AbstractApiBean {
             return ok( json(managedVersion) );
                     
         } catch (JsonParseException ex) {
-            LOGGER.log(Level.SEVERE, "Semantic error parsing dataset version Json: " + ex.getMessage(), ex);
+            logger.log(Level.SEVERE, "Semantic error parsing dataset version Json: " + ex.getMessage(), ex);
             return error( Response.Status.BAD_REQUEST, "Error parsing dataset version: " + ex.getMessage() );
             
         } catch (WrappedResponse ex) {
@@ -375,44 +375,45 @@ public class Datasets extends AbstractApiBean {
         }
     }
     
+    /**
+     * @deprecated This was shipped as a GET but should have been a POST, see https://github.com/IQSS/dataverse/issues/2431
+     */
     @GET
-    @Path("{id}/actions/:publish") 
-    public Response publishDataset( @PathParam("id") String id, @QueryParam("type") String type ) {
+    @Path("{id}/actions/:publish")
+    @Deprecated
+    public Response publishDataseUsingGetDeprecated( @PathParam("id") String id, @QueryParam("type") String type ) {
+        logger.info("publishDataseUsingGetDeprecated called on id " + id + ". Encourage use of POST rather than GET, which is deprecated.");
+        return publishDataset(id, type);
+    }
+
+    @POST
+    @Path("{id}/actions/:publish")
+    public Response publishDataset(@PathParam("id") String id, @QueryParam("type") String type) {
         try {
-            if ( type == null ) {
-                return error( Response.Status.BAD_REQUEST, "Missing 'type' parameter (either 'major' or 'minor').");
+            if (type == null) {
+                return error(Response.Status.BAD_REQUEST, "Missing 'type' parameter (either 'major' or 'minor').");
             }
-            
+
             type = type.toLowerCase();
             boolean isMinor;
-            switch ( type ) {
-                case "minor": isMinor = true; break;
-                case "major": isMinor = false; break;
-                default: return error( Response.Status.BAD_REQUEST, "Illegal 'type' parameter value '" + type + "'. It needs to be either 'major' or 'minor'.");
+            switch (type) {
+                case "minor":
+                    isMinor = true;
+                    break;
+                case "major":
+                    isMinor = false;
+                    break;
+                default:
+                    return error(Response.Status.BAD_REQUEST, "Illegal 'type' parameter value '" + type + "'. It needs to be either 'major' or 'minor'.");
             }
-            long dsId;
-            try {
-                dsId = Long.parseLong(id);
-            } catch ( NumberFormatException nfe ) {
-                return error( Response.Status.BAD_REQUEST, "Bad dataset id. Please provide a number.");
-            }
-            
-            Dataset ds = datasetService.find(dsId);
-            
-            User theUser; 
-            if ((session.getUser() != null)&&(session.getUser().isAuthenticated())){
-                theUser = session.getUser();
-            }else{
-                theUser = findAuthenticatedUserOrDie();
-            }
-            
-            
-            return ( ds == null ) ? notFound("Can't find dataset with id '" + id + "'")
-                                  : ok( json(execCommand(new PublishDatasetCommand(ds, 
-                                                                            createDataverseRequest(theUser),
-                                                                            isMinor))) );
-        
-        }  catch (WrappedResponse ex) {
+
+            Dataset ds = findDatasetOrDie(id);
+
+            return ok(json(execCommand(new PublishDatasetCommand(ds,
+                    createDataverseRequest(findAuthenticatedUserOrDie()),
+                    isMinor))));
+
+        } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
     }
@@ -460,7 +461,7 @@ public class Datasets extends AbstractApiBean {
                 return error(Response.Status.FORBIDDEN, "Not a superuser");
             }
 
-            LOGGER.fine("looking up " + persistentId);
+            logger.fine("looking up " + persistentId);
             Dataset dataset = datasetService.findByGlobalId(persistentId);
             if (dataset == null) {
                 return error(Response.Status.NOT_FOUND, "A dataset with the persistentId " + persistentId + " could not be found.");
@@ -479,7 +480,7 @@ public class Datasets extends AbstractApiBean {
                 ddiExportService.exportDataset(dataset.getId(), outputStream, null, null);
                 xml = outputStream.toString();
             }
-            LOGGER.fine("xml to return: " + xml);
+            logger.fine("xml to return: " + xml);
 
             return Response.ok()
                     .entity(xml)
@@ -513,7 +514,7 @@ public class Datasets extends AbstractApiBean {
             return ok(
                     json(execCommand(new AssignRoleCommand(assignee, theRole, dataset, createDataverseRequest(findUserOrDie()), privateUrlToken))));
         } catch (WrappedResponse ex) {
-            LOGGER.log(Level.WARNING, "Can''t create assignment: {0}", ex.getMessage());
+            logger.log(Level.WARNING, "Can''t create assignment: {0}", ex.getMessage());
             return ex.getResponse();
         }
     }
@@ -677,7 +678,7 @@ public class Datasets extends AbstractApiBean {
     
     private void msg(String m){
         //System.out.println(m);
-        LOGGER.fine(m);
+        logger.fine(m);
     }
     private void dashes(){
         msg("----------------");
