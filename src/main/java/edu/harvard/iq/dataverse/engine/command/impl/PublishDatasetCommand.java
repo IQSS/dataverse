@@ -221,7 +221,9 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
             Dataverse dv = savedDataset.getOwner();
             while (dv != null) {
                 if (dv.getDataverseSubjects().addAll(subject.getControlledVocabularyValues())) {
-                    ctxt.index().indexDataverse(dv); // need to reindex to capture the new subjects
+                    Dataverse dvWithSubjectJustAdded = ctxt.em().merge(dv);
+                    ctxt.em().flush();
+                    ctxt.index().indexDataverse(dvWithSubjectJustAdded); // need to reindex to capture the new subjects
                 }
                 dv = dv.getOwner();
             }

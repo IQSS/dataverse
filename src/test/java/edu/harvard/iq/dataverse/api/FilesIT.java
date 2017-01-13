@@ -414,17 +414,8 @@ public class FilesIT {
         publishDataversetResp.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        try {
-            /**
-             * @todo Figure out why we are getting an OptimisticLockException if
-             * we don't sleep.
-             */
-            Thread.sleep(1000);
-        } catch (InterruptedException ex) {
-            System.out.println("couldn't sleep!");
-        }
-
         Response publishDatasetResp = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        publishDatasetResp.prettyPrint();
         publishDatasetResp.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
