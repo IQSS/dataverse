@@ -50,7 +50,7 @@ All the roles defined directly in the dataverse identified by ``id``::
 
   GET http://$SERVER/api/dataverses/$id/roles?key=$apiKey
 
-List all the facets for a given dataverse ``id``. ::
+|CORS| List all the facets for a given dataverse ``id``. ::
 
   GET http://$SERVER/api/dataverses/$id/facets?key=$apiKey
 
