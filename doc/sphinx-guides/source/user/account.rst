@@ -63,7 +63,7 @@ Please note that if you have forgotten your username, you can use this same proc
 Remote Authentication
 ---------------------
 
-Too many passwords? By using your log in credentials from a remote authentication provider, you won't have an extra password to remember for your Dataverse account.
+Too many passwords? You can set up your Dataverse account to use log in credentials from one of the following remote authentication providers. This way, you can log in using your existing credentials from another service.
 
 Institutional Log In
 ~~~~~~~~~~~~~~~~~~~~
@@ -93,25 +93,26 @@ If you already have a Dataverse account associated with the Username/Email log i
 #. Using the dropdown menu, select your institution then click the Continue button to go to your institution's log in page.
 #. After you put in your institutional credentials successfully, you will be brought back to Dataverse to confirm your account information.
 #. Enter your current password for your Dataverse account and click "Convert Account".
-#. Now you have finished converting your Dataverse account to you use your institutional log in.
+#. Now you have finished converting your Dataverse account so you use your institutional log in.
 
 Convert your Dataverse account away from your Institutional Log In
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If you are leaving your institution and need to convert your Dataverse account to the Username/Email log in option, you will need to contact support for the Dataverse installation you are using. On your account page, there is a link for "Dataverse Support" that will open the popup form to contact support for assistance.
+If you are leaving your institution and need to convert your Dataverse account to the Dataverse Username/Email log in option, you will need to contact support for the Dataverse installation you are using. On your account page, there is a link for "Dataverse Support" that will open the popup form to contact support for assistance.
 
-ORCID
-~~~~~
+ORCID Log In
+~~~~~~~~~~~~~
 
-ORCID® is an independent non-profit effort to provide an open registry of unique researcher identifiers and open services to link research activities and organizations to these identifiers. Learn more at `orcid.org <http://orcid.org>`_.
+You can set up your Dataverse account to allow you to log in using your ORCID credentials. ORCID® is an independent non-profit effort to provide an open registry of unique researcher identifiers and open services to link research activities and organizations to these identifiers. Learn more at `orcid.org <http://orcid.org>`_. 
 
-Create a Dataverse account using ORCID iD
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Create a Dataverse account using ORCID
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 #. Go to “Log In” in the upper right corner of Dataverse.
 #. Click the "ORCID" button under the "Other options" header.
 #. Click the "Log In with ORCID" button to go to the ORCID website.
-#. After you put in your ORCID credentials successfully, you will be brought back to Dataverse to confirm the creation of your Dataverse account. By default ORCID does not release email addresses, but if you have configured your ORCID account to release one or more email address, it will be suggested to you as an option but you can also enter whatever email address you like. If you have entered employment information within your ORCID account, the name of your employer will be suggested for the "Affiliation" field on the Dataverse side.
+#. If you do not already have an ORCID account, you can create one on this page. If you already have an ORCID account, click on "Sign in" and then enter your login under the "Personal account" tab.
+#. After you put in your ORCID credentials successfully, you will be brought back to Dataverse to confirm the creation of your Dataverse account. If your ORCID account's privacy settings permit it,  then the email address you've linked to your ORCID account will be suggested to you as an option. You can use this email if you like, or you can use any other email you might wish. If you have entered employment information within your ORCID account, the name of your employer will be suggested for the "Affiliation" field.
 
 Convert your Dataverse account to use ORCID for log in
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -122,19 +123,20 @@ If you already have a Dataverse account associated with the Username/Email log i
 #. Go to "Log In" in the upper right corner of Dataverse.
 #. Click the "ORCID" button under the "Other options" header.
 #. Click the "Log In with ORCID" button to go to the ORCID website.
+#. If you do not already have an ORCID account, you can create one on this page. If you already have an ORCID account, click on "Sign in" and then enter your login under the "Personal account" tab.
 #. After you put in your ORCID credentials successfully, you will be brought back to Dataverse. Click the "convert your account" link.
-#. Enter your previous username and password for your Dataverse account and click "Convert Account".
+#. Enter your username and password for your Dataverse account and click "Convert Account".
 #. Now you have finished converting your Dataverse account to use ORCID for log in.
 
 Convert your Dataverse account away from ORCID for log in
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If, for whatever reason, you don't want to log in to Dataverse using ORCID any more, you will want to convert your Dataverse account to the Username/Email log in option. To do this, you will need to contact support for the Dataverse installation you are using. On your account page, there is a link for "Dataverse Support" that will open the popup form to contact support for assistance.
+If you don't want to log in to Dataverse using ORCID any more, you will want to convert your Dataverse account to the Dataverse Username/Email log in option. To do this, you will need to contact support for the Dataverse installation you are using. On your account page, there is a link for "Dataverse Support" that will open the popup form to contact support for assistance.
 
-GitHub and Google
-~~~~~~~~~~~~~~~~~
+GitHub and Google Log In
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You can also convert your Dataverse account to use authentication provided by GitHub and Google. These options may be found under the "Other options" title on the log in page, and function in the same way as ORCID is outline above.
+You can also convert your Dataverse account to use authentication provided by GitHub or Google. These options may be found in the "Other options" section of the log in page, and function similarly to how ORCID is outlined above. If you would like to convert your account away from using one of these services for log in, then you can follow the same steps as listed above for converting away from the ORCID log in.
 
 My Data
 -------
