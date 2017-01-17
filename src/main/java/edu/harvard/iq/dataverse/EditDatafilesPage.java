@@ -2011,7 +2011,7 @@ public class EditDatafilesPage implements java.io.Serializable {
 
         while (fmIt.hasNext()) {
             FileMetadata fm = fmIt.next();
-            if (fm.getId() != null && fm.getDataFile() != null) {
+            if (fm.getDataFile() != null && fm.getDataFile().getId() != null) {
                 String chksum = fm.getDataFile().getChecksumValue();
                 if (chksum != null) {
                     checksumMapOld.put(chksum, 1);
