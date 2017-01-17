@@ -1153,7 +1153,34 @@ public class FileUtil implements java.io.Serializable  {
                 dataFile.setIngestReport(errorReport);
         }
     }
-    
-    
-    
+
+    public enum FileCitationExtension {
+
+        ENDNOTE("-endnote.xml"),
+        RIS(".ris"),
+        BIBTEX(".bib");
+
+        private final String text;
+
+        private FileCitationExtension(final String text) {
+            this.text = text;
+        }
+    }
+
+    public static String getCiteDataFileFilename(FileMetadata fileMetadata, FileCitationExtension fileCitationExtension) {
+        if (fileMetadata == null) {
+            logger.info("In getCitationBibtex but FileMetadata is null!");
+            return null;
+        }
+        if (fileCitationExtension == null) {
+            logger.info("In getCitationBibtex but fileCitationExtension is null!");
+            return null;
+        }
+        if (fileMetadata.getLabel().endsWith("tab")) {
+            return fileMetadata.getLabel().replaceAll("\\.tab$", fileCitationExtension.text);
+        } else {
+            return fileMetadata.getLabel() + fileCitationExtension.text;
+        }
+    }
+
 }

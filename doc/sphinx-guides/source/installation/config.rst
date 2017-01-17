@@ -345,6 +345,20 @@ Set ``GuidesBaseUrl`` to override the default value "http://guides.dataverse.org
 
 ``curl -X PUT -d http://dataverse.example.edu http://localhost:8080/api/admin/settings/:GuidesBaseUrl``
 
+:GuidesVersion
+++++++++++++++
+
+Set ``:GuidesVersion`` to override the version number in the URL of guides. For example, rather than http://guides.dataverse.org/en/4.6/user/account.html the version is overriden to http://guides.dataverse.org/en/1234-new-feature/user/account.html in the example below:
+
+``curl -X PUT -d 1234-new-feature http://localhost:8080/api/admin/settings/:GuidesVersion``
+
+:MetricsUrl
++++++++++++
+
+Make the metrics component on the root dataverse a clickable link to a website where you present metrics on your Dataverse installation. This could perhaps be an installation of https://github.com/IQSS/miniverse or any site.
+
+``curl -X PUT -d http://metrics.dataverse.example.edu http://localhost:8080/api/admin/settings/:MetricsUrl``
+
 :StatusMessageHeader
 ++++++++++++++++++++
 

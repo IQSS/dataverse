@@ -99,7 +99,7 @@
                                         <span class="glyphicon glyphicon-info-sign"/>
                                         <h:outputFormat value=" #{bundle['login.institution.blurb']} " escape="false">
                                             <f:param value="#{settingsWrapper.guidesBaseUrl}"/>
-                                            <f:param value="#{systemConfig.version}"/>
+                                            <f:param value="#{systemConfig.guidesVersion}"/>
                                         </h:outputFormat>
                                         <h:outputText value="#{bundle['login.institution.support.beforeLink']} " />
                                         <p:commandLink value="#{bundle['contact.support']}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">

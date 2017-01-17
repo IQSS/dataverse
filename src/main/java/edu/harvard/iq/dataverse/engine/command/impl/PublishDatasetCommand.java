@@ -77,6 +77,11 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
             throw new IllegalCommandException("Latest version of dataset " + theDataset.getIdentifier() + " is already released. Only draft versions can be released.", this);
         }
 
+        // prevent publishing of 0.1 version
+        if (minorRelease && theDataset.getVersions().size() == 1 && theDataset.getLatestVersion().isDraft()) {
+            throw new IllegalCommandException("Cannot publish as minor version. Re-try as major release.", this);
+        }
+
         if (minorRelease && !theDataset.getLatestVersion().isMinorUpdate()) {
             throw new IllegalCommandException("Cannot release as minor version. Re-try as major release.", this);
         }
