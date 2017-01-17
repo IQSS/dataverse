@@ -93,7 +93,7 @@ If you already have a Dataverse account associated with the Username/Email log i
 #. Using the dropdown menu, select your institution then click the Continue button to go to your institution's log in page.
 #. After you put in your institutional credentials successfully, you will be brought back to Dataverse to confirm your account information.
 #. Enter your current password for your Dataverse account and click "Convert Account".
-#. Now you have finished converting your Dataverse account so you use your institutional log in.
+#. Now you have finished converting your Dataverse account to use your institutional log in.
 
 Convert your Dataverse account away from your Institutional Log In
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
