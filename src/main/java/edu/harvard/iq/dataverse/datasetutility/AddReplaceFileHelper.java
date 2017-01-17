@@ -1079,15 +1079,17 @@ public class AddReplaceFileHelper{
             }
         }
         
-        if (!this.step_040_auto_checkForDuplicates()){
-            return false;
-        }
-                       
-
-        if (this.step_045_auto_checkForFileReplaceDuplicate()) {
+        if (this.step_040_auto_checkForDuplicates()){
             ingestService.addFilesToDataset(workingVersion, finalFileList);
             return true;
         }
+                       
+
+        /*
+            commenting out. see the comment in the source of the method below.
+        if (this.step_045_auto_checkForFileReplaceDuplicate()) {
+            return true;
+        }*/
         
         return false;
     }
@@ -1120,6 +1122,12 @@ public class AddReplaceFileHelper{
         String warningMessage  = null;
         
 
+        if (isFileReplaceOperation() && this.fileToReplace == null){
+            // This error shouldn't happen if steps called correctly
+            this.addErrorSevere(getBundleErr("existing_file_to_replace_is_null") + " (This error shouldn't happen if steps called in sequence....checkForFileReplaceDuplicate)");
+            return false;
+        }
+        
         // -----------------------------------------------------------
         // Iterate through the recently ingest files
         // -----------------------------------------------------------
@@ -1140,15 +1148,18 @@ public class AddReplaceFileHelper{
             
             // -----------------------------------------------------------
             // (2) Check for duplicates
-            // -----------------------------------------------------------                        
-            if (DuplicateFileChecker.isDuplicateOriginalWay(workingVersion, df.getFileMetadata())){
+            // -----------------------------------------------------------     
+            if (isFileReplaceOperation() && Objects.equals(df.getChecksumValue(), fileToReplace.getChecksumValue())){
+                this.addErrorSevere(getBundleErr("replace.new_file_same_as_replacement"));                                
+                break;
+            } else if (DuplicateFileChecker.isDuplicateOriginalWay(workingVersion, df.getFileMetadata())){
                 String dupeName = df.getFileMetadata().getLabel();
                 //removeUnSavedFilesFromWorkingVersion();
                 //removeLinkedFileFromDataset(dataset, df);
                 //abandonOperationRemoveAllNewFilesFromDataset();
                 this.addErrorSevere(getBundleErr("duplicate_file") + " " + dupeName);   
                 //return false;
-            }else{
+            } else {
                 finalFileList.add(df);
             }
         }
@@ -1169,12 +1180,38 @@ public class AddReplaceFileHelper{
          * are broken into several files--which is OK
          */
             
+       /**
+        *  Also: check that the file is being replaced with the same content type
+        *  file. Treat this as a fatal error, unless this is a "force replace" 
+        *  operation; then it should be treated as merely a warning.
+        */
         if (isFileReplaceOperation()){
         
             if (finalFileList.size() > 1){     
                 String errMsg = "(This shouldn't happen -- error should have been detected in 030_createNewFilesViaIngest)";
                 this.addErrorSevere(getBundleErr("initial_file_list_more_than_one") + " " + errMsg);            
                 return false;
+            }
+            
+            // Has the content type of the file changed?
+            //
+            if (!finalFileList.get(0).getContentType().equalsIgnoreCase(fileToReplace.getContentType())){
+            
+                List<String> errParams = Arrays.asList(fileToReplace.getFriendlyType(),
+                                                finalFileList.get(0).getFriendlyType());
+                
+                String contentTypeErr = BundleUtil.getStringFromBundle("file.addreplace.error.replace.new_file_has_different_content_type", 
+                                errParams);
+                                        
+                if (isForceFileOperation()){
+                    // for force replace, just give a warning
+                    this.setContentTypeWarning(contentTypeErr);
+                }else{
+                    // not a force replace? it's an error
+                    this.addError(contentTypeErr);
+                    runMajorCleanup();
+                    return false;
+                }
             }
         }
         
@@ -1194,8 +1231,17 @@ public class AddReplaceFileHelper{
      * For ADD: If there is not replacement file, then the check is considered a success
      * For REPLACE: The checksum is examined against the "finalFileList" list
      * 
+     * NOTE: this method was always called AFTER the main duplicate check; 
+     * So we would never detect this condition - of the file being replaced with 
+     * the same file... because it would always be caught as simply an attempt
+     * to replace a file with a file alraedy in the dataset! 
+     * So I commented it out, instead modifying the method above, step_040_auto_checkForDuplicates()
+     * to do both - check (first) if a file is being replaced with the exact same file;
+     * and check if a file, or files being uploaded are duplicates of files already 
+     * in the dataset. AND the replacement content type too. -- L.A. Jan 16 2017
+     * 
      */
-    private boolean step_045_auto_checkForFileReplaceDuplicate(){
+    /*private boolean step_045_auto_checkForFileReplaceDuplicate(){
         
         if (this.hasError()){
             return false;
@@ -1257,6 +1303,7 @@ public class AddReplaceFileHelper{
         return true;
         
     } // end step_045_auto_checkForFileReplaceDuplicate
+    */
     
     
     
