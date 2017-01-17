@@ -153,8 +153,6 @@ public class WorldMapRelatedData extends AbstractApiBean {
     }
     
     
-    
-    
     @GET    
     @Path( MAP_IT_API_PATH_FRAGMENT + "{datafile_id}/{dvuser_id}")
     public Response mapDataFile(@Context HttpServletRequest request

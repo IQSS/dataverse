@@ -546,6 +546,10 @@ public abstract class AbstractApiBean {
                 ).type(MediaType.APPLICATION_JSON_TYPE).build();
     }
   
+   protected Response allowCors( Response r ) {
+       r.getHeaders().add("Access-Control-Allow-Origin", "*");
+       return r;
+   }
 }
 
 class LazyRef<T> {
@@ -556,18 +560,16 @@ class LazyRef<T> {
     private Ref<T> ref;
     
     public LazyRef( final Callable<T> initer ) {
-        ref = new Ref<T>(){
-            @Override
-            public T get() {
-                try {
-                    final T t = initer.call();
-                    ref = new Ref<T>(){ @Override public T get() { return t;} };
-                    return ref.get();
-                } catch (Exception ex) {
-                    Logger.getLogger(LazyRef.class.getName()).log(Level.SEVERE, null, ex);
-                    return null;
-                }
-        }};
+        ref = () -> {
+            try {
+                final T t = initer.call();
+                ref = () -> t;
+                return ref.get();
+            } catch (Exception ex) {
+                Logger.getLogger(LazyRef.class.getName()).log(Level.SEVERE, null, ex);
+                return null;
+            }
+        };
     }
     
     public T get()  {
