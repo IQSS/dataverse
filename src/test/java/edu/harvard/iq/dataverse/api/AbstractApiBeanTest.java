@@ -2,11 +2,17 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.util.MockResponse;
 import java.io.StringReader;
+import java.io.StringWriter;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
+import javax.json.JsonWriter;
+import javax.json.JsonWriterFactory;
+import javax.json.stream.JsonGenerator;
 import javax.ws.rs.core.Response;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -59,13 +65,41 @@ public class AbstractApiBeanTest {
     }
 
     @Test
-    public void testMessages() {
+    public void testMessagesNoJsonObject() {
+        String message = "myMessage";
+        Response response = sut.ok(message);
+        JsonReader jsonReader = Json.createReader(new StringReader((String) response.getEntity().toString()));
+        JsonObject jsonObject = jsonReader.readObject();
+        Map<String, Boolean> config = new HashMap<>();
+        config.put(JsonGenerator.PRETTY_PRINTING, true);
+        JsonWriterFactory jwf = Json.createWriterFactory(config);
+        StringWriter sw = new StringWriter();
+        try (JsonWriter jsonWriter = jwf.createWriter(sw)) {
+            jsonWriter.writeObject(jsonObject);
+        }
+        logger.info(sw.toString());
+        /**
+         * @todo Do we really want "message" to appear twice?
+         */
+        assertEquals(message, jsonObject.getString("message"));
+        assertEquals(message, jsonObject.getJsonObject("data").getString("message"));
+    }
+
+    @Test
+    public void testMessagesWithJsonObject() {
         String message = "myMessage";
         JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
         Response response = sut.ok(message, jsonObjectBuilder);
         JsonReader jsonReader = Json.createReader(new StringReader((String) response.getEntity().toString()));
         JsonObject jsonObject = jsonReader.readObject();
-        logger.info("jsonObject: " + jsonObject);
+        Map<String, Boolean> config = new HashMap<>();
+        config.put(JsonGenerator.PRETTY_PRINTING, true);
+        JsonWriterFactory jwf = Json.createWriterFactory(config);
+        StringWriter sw = new StringWriter();
+        try (JsonWriter jsonWriter = jwf.createWriter(sw)) {
+            jsonWriter.writeObject(jsonObject);
+        }
+        logger.info(sw.toString());
         assertEquals(message, jsonObject.getString("message"));
     }
 
