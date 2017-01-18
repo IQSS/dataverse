@@ -3,6 +3,10 @@ Native API
 
 Dataverse 4.0 exposes most of its GUI functionality via a REST-based API. Some API calls do not require authentication. Calls that do require authentication require the user's API key. That key can be passed either via an extra query parameter, ``key``, as in ``ENPOINT?key=API_KEY``, or via the HTTP header ``X-Dataverse-key``. Note that while the header option normally requires more work on client side, it is considered safer, as the API key is not logged in the server access logs.
 
+.. note:: |CORS| Some API endpoint allow CORS_ (cross-origin resource sharing), which makes them usable from scripts runing in web browsers. These endpoints are marked with a *CORS* badge. 
+
+.. _CORS: https://www.w3.org/TR/cors/
+
 .. warning:: Dataverse 4.0's API is versioned at the URI - all API calls may include the version number like so: ``http://server-address//api/v1/...``. Omitting the ``v1`` part would default to the latest API version (currently 1). When writing scripts/applications that will be used for a long time, make sure to specify the API version, so they don't break when the API is upgraded.
 
 .. contents::
@@ -30,7 +34,7 @@ Download the :download:`JSON example <../_static/api/dataverse-complete.json>` f
 
 .. literalinclude:: ../_static/api/dataverse-complete.json
 
-View data about the dataverse identified by ``$id``. ``$id`` can be the id number of the dataverse, its alias, or the special value ``:root``. ::
+|CORS| View data about the dataverse identified by ``$id``. ``$id`` can be the id number of the dataverse, its alias, or the special value ``:root``. ::
 
     GET http://$SERVER/api/dataverses/$id
 
@@ -38,7 +42,7 @@ Deletes the dataverse whose ID is given::
 
     DELETE http://$SERVER/api/dataverses/$id?key=$apiKey
 
-Lists all the DvObjects under dataverse ``id``. ::
+|CORS| Lists all the DvObjects under dataverse ``id``. ::
 
     GET http://$SERVER/api/dataverses/$id/contents
 
@@ -46,7 +50,7 @@ All the roles defined directly in the dataverse identified by ``id``::
 
   GET http://$SERVER/api/dataverses/$id/roles?key=$apiKey
 
-List all the facets for a given dataverse ``id``. ::
+|CORS| List all the facets for a given dataverse ``id``. ::
 
   GET http://$SERVER/api/dataverses/$id/facets?key=$apiKey
 
@@ -73,7 +77,7 @@ Delete the assignment whose id is ``$id``::
 
   DELETE http://$SERVER/api/dataverses/$id/assignments/$id?key=$apiKey
 
-Get the metadata blocks defined on the passed dataverse::
+|CORS| Get the metadata blocks defined on the passed dataverse::
 
   GET http://$SERVER/api/dataverses/$id/metadatablocks?key=$apiKey
 
@@ -105,7 +109,7 @@ Publish the Dataverse pointed by ``identifier``, which can either by the dataver
 Datasets
 ~~~~~~~~
 
-**Note** Creation of new datasets is done with a ``POST`` onto dataverses. See dataverse section.
+**Note** Creation of new datasets is done with a ``POST`` onto dataverses. See Dataverses_ section.
 
 **Note** In all commands below, dataset versions can be referred to as:
 
@@ -126,7 +130,7 @@ Datasets
 
     GET http://$SERVER/api/datasets/:persistentId/versions/:draft?persistentId=doi:10.5072/FK2/J8SJZB
 
-Show the dataset whose id is passed::
+|CORS| Show the dataset whose id is passed::
 
   GET http://$SERVER/api/datasets/$id?key=$apiKey
 
@@ -134,30 +138,29 @@ Delete the dataset whose id is passed::
 
   DELETE http://$SERVER/api/datasets/$id?key=$apiKey
 
-List versions of the dataset::
+|CORS| List versions of the dataset::
 
   GET http://$SERVER/api/datasets/$id/versions?key=$apiKey
 
-Show a version of the dataset. The Dataset also include any metadata blocks the data might have::
+|CORS| Show a version of the dataset. The Dataset also include any metadata blocks the data might have::
 
   GET http://$SERVER/api/datasets/$id/versions/$versionNumber?key=$apiKey
 
-
-Export the metadata of the current published version of a dataset in various formats see Note below::
+|CORS| Export the metadata of the current published version of a dataset in various formats see Note below::
 
     GET http://$SERVER/api/datasets/export?exporter=ddi&persistentId=$persistentId
 
 .. note:: Supported exporters (export formats) are ``ddi``, ``oai_ddi``, ``dcterms``, ``oai_dc``, and ``dataverse_json``.
 
-Lists all the file metadata, for the given dataset and version::
+|CORS| Lists all the file metadata, for the given dataset and version::
 
   GET http://$SERVER/api/datasets/$id/versions/$versionId/files?key=$apiKey
 
-Lists all the metadata blocks and their content, for the given dataset and version::
+|CORS| Lists all the metadata blocks and their content, for the given dataset and version::
 
   GET http://$SERVER/api/datasets/$id/versions/$versionId/metadata?key=$apiKey
 
-Lists the metadata block block named `blockname`, for the given dataset and version::
+|CORS| Lists the metadata block block named `blockname`, for the given dataset and version::
 
   GET http://$SERVER/api/datasets/$id/versions/$versionId/metadata/$blockname?key=$apiKey
 
@@ -286,7 +289,7 @@ Management of Shibboleth groups via API is documented in the :doc:`/installation
 Info
 ~~~~
 
-Get the Dataverse version. The response contains the version and build numbers::
+|CORS| Get the Dataverse version. The response contains the version and build numbers::
 
   GET http://$SERVER/api/info/version
 
@@ -298,14 +301,15 @@ For now, only the value for the ``:DatasetPublishPopupCustomText`` setting from 
 
   GET http://$SERVER/api/info/settings/:DatasetPublishPopupCustomText
 
+
 Metadata Blocks
 ~~~~~~~~~~~~~~~
 
-Lists brief info about all metadata blocks registered in the system::
+|CORS| Lists brief info about all metadata blocks registered in the system::
 
   GET http://$SERVER/api/metadatablocks
 
-Return data about the block whose ``identifier`` is passed. ``identifier`` can either be the block's id, or its name::
+|CORS| Return data about the block whose ``identifier`` is passed. ``identifier`` can either be the block's id, or its name::
 
   GET http://$SERVER/api/metadatablocks/$identifier
 
@@ -477,3 +481,10 @@ Execute a saved search by database id and make links to dataverses and datasets 
 Execute all saved searches and make links to dataverses and datasets that are found. ``debug`` works as described above.  ::
 
   PUT http://$SERVER/api/admin/savedsearches/makelinks/all?debug=true
+
+
+.. |CORS| raw:: html 
+      
+      <span class="label label-success pull-right">
+        CORS
+      </span>
