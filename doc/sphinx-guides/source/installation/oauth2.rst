@@ -74,11 +74,11 @@ Converting OAuth Users to Local
 
 Whereas users convert their own accounts from local to OAuth as described above, conversion in the opposite direction is performed by a sysadmin. A common scenario may be as follows:
 
-- A user emails Support saying, "Rather logging in with Google, I want to log in with ORCID (or a local password). What should I do?"
+- A user emails Support saying, "Rather than logging in with Google, I want to log in with ORCID (or a local password). What should I do?"
 - Support replies asking the user for a new email address to associate with their Dataverse account.
 - The user replies with a new email address to associate with their Dataverse account.
 - Support runs the curl command below, supplying the database id of the user to convert and the new email address and notes the username returned.
-- Support emails the user and indicates that that they should use the password reset feature to set a new password and to make sure to take note of their username under Account Information (or the password reset confirmation email) since the user never had a username before.
+- Support emails the user and indicates that they should use the password reset feature to set a new password and to make sure to take note of their username under Account Information (or the password reset confirmation email) since the user never had a username before.
 - The user resets password and is able to log in with their local account. All permissions have been preserved. The user can continue to log in with this Dataverse-specific password or they can convert to an identity provider, if available.
 
 In the example below, the user has indicated that the new email address they'd like to have associated with their account is "former.oauth.user@mailinator.com" and their user id from the ``authenticateduser`` database table is "42". The API token must belong to a superuser (probably the sysadmin executing the command).
