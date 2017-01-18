@@ -804,7 +804,8 @@
                             <div class="panel-heading text-info" rendered="#{!empty(DatasetPage.datasetVersionDifference.datasetFilesDiffList)}">
                                 <h:outputText id="outputText" value="#{bundle.files}"/>
                             </div>
-                            <p:dataTable id="diffFilesDataTable" styleClass="dvnDifferanceTable" value="#{DatasetPage.datasetVersionDifference.datasetFilesDiffList}" var="fileDiff">
+                            <p:dataTable id="diffFilesDataTable" styleClass="dvnDifferanceTable"  value="#{DatasetPage.datasetVersionDifference.datasetFilesDiffList}" var="fileDiff"
+                                         rendered="#{!empty(DatasetPage.datasetVersionDifference.datasetFilesDiffList)}">
                                 <p:column styleClass="versionValue">
                                     <h:outputText value="#{bundle['file.viewDiffDialog.fileID']} #{fileDiff.fileId}"/>
                                     <br></br>
@@ -830,6 +831,41 @@
                                     <h:outputText value="#{bundle['file.viewDiffDialog.restricted']}: #{fileDiff.fileRest2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileRest2 != null}"/>
                                 </p:column>
                                 <p:column styleClass="versionDetails" rendered="#{fileDiff.file2Empty}">
+                                    &#160;
+                                </p:column>
+                            </p:dataTable>
+                            <p:dataTable id="replacemetFilesDataTable" styleClass="dvnDifferanceTable" value="#{DatasetPage.datasetVersionDifference.datasetFilesReplacementList}" var="fileReplace"
+                                         rendered="#{!empty(DatasetPage.datasetVersionDifference.datasetFilesReplacementList)}">
+                                <p:column styleClass="versionValue">
+                                    <h:outputText value="#{bundle['file.viewDiffDialog.fileReplaced']}"/>
+                                    
+                                    <br></br>
+                                    
+                                </p:column>
+                                <p:column styleClass="versionDetails" rendered="#{! fileReplace.fdi.file1Empty}">
+                                    <h:outputText value="#{bundle['file.viewDiffDialog.fileID']}: #{fileReplace.file1Id}" styleClass="diffDetailBlock" rendered="#{fileReplace.file1Id != null}"/>
+                                    <h:outputText value="#{fileReplace.file1ChecksumType}: #{fileReplace.file1ChecksumValue}" styleClass="diffDetailBlock" rendered="#{fileReplace.file1Id != null}"/>
+                                    <h:outputText value="#{bundle['file.viewDiffDialog.fileName']}: #{fileReplace.fdi.fileName1}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileName1 != null}"/>
+                                    <h:outputText value="#{bundle['file.viewDiffDialog.fileType']}: #{fileReplace.fdi.fileType1}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileType1 != null}"/>
+                                    <h:outputText value="#{bundle['file.viewDiffDialog.fileSize']}: #{fileReplace.fdi.fileSize1}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileSize1 != null}"/>
+                                    <h:outputText value="#{bundle['file.viewDiffDialog.category']}: #{fileReplace.fdi.fileCat1}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileCat1 != null}"/>
+                                    <h:outputText value="#{bundle['file.viewDiffDialog.description']}: #{fileReplace.fdi.fileDesc1}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileDesc1 != null}"/>
+                                    <h:outputText value="#{bundle['file.viewDiffDialog.restricted']}: #{fileReplace.fdi.fileRest1}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileRest1 != null}"/>
+                                </p:column>
+                                <p:column styleClass="versionDetails" rendered="#{fileReplace.fdi.file1Empty}">
+                                    &#160;
+                                </p:column>
+                                <p:column styleClass="versionDetails" rendered="#{! fileReplace.fdi.file2Empty}">
+                                    <h:outputText value="#{bundle['file.viewDiffDialog.fileID']}: #{fileReplace.file2Id}" styleClass="diffDetailBlock" rendered="#{fileReplace.file2Id != null}"/>
+                                    <h:outputText value="#{fileReplace.file2ChecksumType}: #{fileReplace.file2ChecksumValue}" styleClass="diffDetailBlock" rendered="#{fileReplace.file2Id != null}"/>
+                                    <h:outputText value="#{bundle['file.viewDiffDialog.fileName']}: #{fileReplace.fdi.fileName2}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileName2 != null}"/>
+                                    <h:outputText value="#{bundle['file.viewDiffDialog.fileType']}: #{fileReplace.fdi.fileType2}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileType2 != null}"/>
+                                    <h:outputText value="#{bundle['file.viewDiffDialog.fileSize']}: #{fileReplace.fdi.fileSize2}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileSize2 != null}"/>
+                                    <h:outputText value="#{bundle['file.viewDiffDialog.category']}: #{fileReplace.fdi.fileCat2}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileCat2 != null}"/>
+                                    <h:outputText value="#{bundle['file.viewDiffDialog.description']}: #{fileReplace.fdi.fileDesc2}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileDesc2 != null}"/>
+                                    <h:outputText value="#{bundle['file.viewDiffDialog.restricted']}: #{fileReplace.fdi.fileRest2}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileRest2 != null}"/>
+                                </p:column>
+                                <p:column styleClass="versionDetails" rendered="#{fileReplace.fdi.file2Empty}">
                                     &#160;
                                 </p:column>
                             </p:dataTable>
