@@ -277,13 +277,13 @@
                             <div id="versionsBlock" class="row small">
                                 <p:dataList id="versionsList" value="#{DatasetPage.versionsAvailable}" var="v" rendered="#{true}"> <!-- DatasetPage.versionsAvailable.size() > 1 -->
                                     <!-- Working version AKA version you're viewing... -->
-                                    <h:outputText styleClass="highlightBold" value="#{v.semanticVersion == 'DRAFT' ? '' : 'v'}#{v.semanticVersion}" rendered="#{DatasetPage.workingVersion.semanticVersion == v.semanticVersion}"/>
+                                    <h:outputText styleClass="highlightBold" value="#{v.draft ? '' : 'v'}#{v.semanticVersion}" rendered="#{DatasetPage.workingVersion.semanticVersion == v.semanticVersion}"/>
                                     <!-- Other versions... -->
                                     <h:outputLink styleClass="text-muted" value="/dataset.xhtml?persistentId=#{DatasetPage.persistentId}&#38;version=#{v.semanticVersion}" rendered="#{DatasetPage.workingVersion.semanticVersion != v.semanticVersion and (!v.deaccessioned or permissionServiceBean.on(DatasetPage.dataset).has('ViewUnpublishedDataset'))}">
-                                        <h:outputText value="#{v.semanticVersion == 'DRAFT' ? '' : 'v'}#{v.semanticVersion}"/>
+                                        <h:outputText value="#{v.draft ? '' : 'v'}#{v.semanticVersion}"/>
                                     </h:outputLink>
                                     <!-- Deaccessioned versions + no permisssion to view... -->
-                                    <h:outputText styleClass="text-muted" value="#{v.semanticVersion == 'DRAFT' ? '' : 'v'}#{v.semanticVersion}" rendered="#{DatasetPage.workingVersion.semanticVersion != v.semanticVersion and (v.deaccessioned and !permissionServiceBean.on(DatasetPage.dataset).has('ViewUnpublishedDataset'))}"/>
+                                    <h:outputText styleClass="text-muted" value="#{v.draft ? '' : 'v'}#{v.semanticVersion}" rendered="#{DatasetPage.workingVersion.semanticVersion != v.semanticVersion and (v.deaccessioned and !permissionServiceBean.on(DatasetPage.dataset).has('ViewUnpublishedDataset'))}"/>
                                 </p:dataList>
 
                                 <h:outputText value="This is the only version of the dataset available" rendered="#{false}" /> <!-- DatasetPage.versionsAvailable.size() == 1 -->
