@@ -281,6 +281,10 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
     }
 
     public String getUsername() {
+        boolean neverSuggestUsername = true;
+        if (neverSuggestUsername) {
+            return null;
+        }
         return username;
     }
 
