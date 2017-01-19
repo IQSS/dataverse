@@ -42,4 +42,14 @@ public class AuthUtilTest {
 
     }
 
+    @Test
+    public void testGetDisplayName() {
+        AuthUtil authUtil = new AuthUtil();
+        assertEquals(null, AuthUtil.getDisplayName(null, null));
+        assertEquals("Homer", AuthUtil.getDisplayName("Homer", null));
+        assertEquals("Simpson", AuthUtil.getDisplayName(null, "Simpson"));
+        assertEquals("Homer Simpson", AuthUtil.getDisplayName("Homer", "Simpson"));
+        assertEquals("Homer Simpson", AuthUtil.getDisplayName(" Homer", "Simpson"));
+    }
+
 }

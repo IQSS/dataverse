@@ -24,4 +24,20 @@ public class AuthUtil {
         return false;
     }
 
+    public static String getDisplayName(String firstName, String lastName) {
+        if (firstName == null || firstName.isEmpty()) {
+            if (lastName != null && !lastName.isEmpty()) {
+                return lastName.trim();
+            }
+        }
+        if (lastName == null || lastName.isEmpty()) {
+            if (firstName != null && !firstName.isEmpty()) {
+                return firstName.trim();
+            }
+        }
+        if (firstName != null && !firstName.isEmpty() || lastName != null && !lastName.isEmpty()) {
+            return firstName.trim() + " " + lastName.trim();
+        }
+        return null;
+    }
 }

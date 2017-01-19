@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.ValidateEmail;
 import edu.harvard.iq.dataverse.authorization.AuthTestDataServiceBean;
+import edu.harvard.iq.dataverse.authorization.AuthUtil;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.AuthenticationRequest;
@@ -110,15 +111,19 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
                         authProviderId = "github";
                         break;
                     case RANDOM_EMAIL1:
+                        firstName = null;
+                        lastName = null;
                         authProviderId = "google";
                         email = randomUser.get("email");
                         break;
                     case RANDOM_EMAIL2:
+                        firstName = null;
                         email = randomUser.get("email");
                         extraEmails = new ArrayList<>();
                         extraEmails.add("extra1@example.com");
                         break;
                     case RANDOM_EMAIL3:
+                        lastName = null;
                         email = randomUser.get("email");
                         extraEmails = new ArrayList<>();
                         extraEmails.add("extra1@example.com");
@@ -254,12 +259,14 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
         }
     }
 
-    /**
-     * @return A textual reference to the user.
-     */
-    public String getUserReference() {
-        AuthenticatedUserDisplayInfo udi = newUser.getDisplayInfo();
-        return (udi.getFirstName() + " " + udi.getLastName()).trim();
+    public String getWelcomeMessage() {
+        AuthenticatedUserDisplayInfo displayInfo = newUser.getDisplayInfo();
+        String displayName = AuthUtil.getDisplayName(displayInfo.getFirstName(), displayInfo.getLastName());
+        if (displayName != null) {
+            return BundleUtil.getStringFromBundle("oauth2.newAccount.welcomeWithName", Arrays.asList(displayName));
+        } else {
+            return BundleUtil.getStringFromBundle("oauth2.newAccount.welcomeNoName");
+        }
     }
 
     public OAuth2UserRecord getNewUser() {
