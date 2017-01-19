@@ -565,7 +565,13 @@ div[id$='roleDisplay'] span.label, div[id$='roleDetails'] span.label {display:in
 #sharrre-block a.sharrre-google {background:#d73d32;}
 
 /* -------- DATASET -------- */
-#datasetVersionBlock span.label {vertical-align:text-top; line-height:normal; margin-left: .5em;}
+/* -- REMOVE -- */ #datasetVersionBlock span.label {vertical-align:text-top; line-height:normal; margin-left: .5em;}
+
+#versionsBlock {}
+div[id$='versionsList_content'].ui-datalist-content.ui-widget-content {border:0;background:none;}
+ul[id$='versionsList_list'].ui-datalist-data, ul[id$='versionsList_list'].ui-datalist-data li.ui-datalist-item {list-style:none; margin:0 .5em 0 0; padding:0;}
+ul[id$='versionsList_list'].ui-datalist-data li.ui-datalist-item {display:inline-block;}
+ul[id$='versionsList_list'].ui-datalist-data li.ui-datalist-item a {color:#777;}
 
 #title {font-size:1.5em;font-weight:bold;}
 #author, #contact {display:block; margin-bottom:.5em;}
