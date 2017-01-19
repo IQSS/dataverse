@@ -165,7 +165,7 @@ OAuth is much more straightforward to get working on your laptop than Shibboleth
 
 In addition to setting up OAuth on your laptop for real per above, you can also use a dev/debug mode:
 
-``http://localhost:8080/api/admin/settings/:DebugOAuthAccountType -X PUT -d RANDOM_EMAIL2``
+``curl http://localhost:8080/api/admin/settings/:DebugOAuthAccountType -X PUT -d RANDOM_EMAIL2``
 
 For a list of possible values, please "find usages" on the settings key above and look at the enum.
 
