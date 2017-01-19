@@ -105,7 +105,11 @@ public class FilesIT {
 
       
         addResponse.then().assertThat()
-                .body("message", equalTo(successMsg))
+                /**
+                 * @todo We have a need to show human readable success messages
+                 * via API in a consistent location.
+                 */
+                //                .body("message", equalTo(successMsg))
                 .body("status", equalTo(AbstractApiBean.STATUS_OK))
                 .body("data.files[0].categories[0]", equalTo("Data"))
                 .body("data.files[0].dataFile.contentType", equalTo("image/png"))
@@ -261,7 +265,11 @@ public class FilesIT {
         String successMsgAdd = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");        
       
         addResponse.then().assertThat()
-                .body("message", equalTo(successMsgAdd))
+                /**
+                 * @todo We have a need to show human readable success messages
+                 * via API in a consistent location.
+                 */
+                //                .body("message", equalTo(successMsgAdd))
                 .body("data.files[0].dataFile.contentType", equalTo("image/png"))
                 .body("data.files[0].label", equalTo("favicondataverse.png"))
                 .statusCode(OK.getStatusCode());
@@ -321,7 +329,11 @@ public class FilesIT {
         String successMsg2 = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.replace");        
 
         replaceResp.then().assertThat()
-                .body("message", equalTo(successMsg2))
+                /**
+                 * @todo We have a need to show human readable success messages
+                 * via API in a consistent location.
+                 */
+                //                .body("message", equalTo(successMsg2))
                 .body("data.files[0].label", equalTo("cc0.png"))
                 .body("data.files[0].description", equalTo("CC0 logo"))
                 .body("data.files[0].categories[0]", equalTo("Data"))
@@ -355,9 +367,13 @@ public class FilesIT {
         msgt("2nd replace: " + replaceResp2.prettyPrint());
         
         replaceResp2.then().assertThat()
+                /**
+                 * @todo We have a need to show human readable success messages
+                 * via API in a consistent location.
+                 */
+                //                .body("message", equalTo(successMsg2))
                 .statusCode(OK.getStatusCode())
                 .body("status", equalTo(AbstractApiBean.STATUS_OK))
-                .body("message", equalTo(successMsg2))
                 .body("data.files[0].label", equalTo("favicondataverse.png"))
                 ;
 
@@ -396,7 +412,11 @@ public class FilesIT {
         String successMsgAdd = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");
 
         addResponse.then().assertThat()
-                .body("message", equalTo(successMsgAdd))
+                /**
+                 * @todo We have a need to show human readable success messages
+                 * via API in a consistent location.
+                 */
+                //                .body("message", equalTo(successMsgAdd))
                 .body("data.files[0].dataFile.contentType", equalTo("application/x-stata"))
                 .body("data.files[0].label", equalTo("50by1000.dta"))
                 .statusCode(OK.getStatusCode());
@@ -487,7 +507,11 @@ public class FilesIT {
         String successMsgAdd = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");        
       
         addResponse.then().assertThat()
-                .body("message", equalTo(successMsgAdd))
+                /**
+                 * @todo We have a need to show human readable success messages
+                 * via API in a consistent location.
+                 */
+                //                .body("message", equalTo(successMsgAdd))
                 .body("data.files[0].dataFile.contentType", equalTo("image/png"))
                 .body("data.files[0].label", equalTo("favicondataverse.png"))
                 .statusCode(OK.getStatusCode());
@@ -569,7 +593,11 @@ public class FilesIT {
         String successMsgAdd = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");        
       
         addResponse.then().assertThat()
-                .body("message", equalTo(successMsgAdd))
+                /**
+                 * @todo We have a need to show human readable success messages
+                 * via API in a consistent location.
+                 */
+                //                .body("message", equalTo(successMsgAdd))
                 .body("data.files[0].dataFile.contentType", equalTo("image/png"))
                 .body("data.files[0].label", equalTo("favicondataverse.png"))
                 .statusCode(OK.getStatusCode());
@@ -649,7 +677,11 @@ public class FilesIT {
         String successMsgAdd = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");
 
         addResponse.then().assertThat()
-                .body("message", equalTo(successMsgAdd))
+                /**
+                 * @todo We have a need to show human readable success messages
+                 * via API in a consistent location.
+                 */
+                //                .body("message", equalTo(successMsgAdd))
                 .body("data.files[0].dataFile.contentType", equalTo("text/plain; charset=US-ASCII"))
                 .body("data.files[0].label", equalTo("1char"))
                 .statusCode(OK.getStatusCode());

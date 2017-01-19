@@ -659,9 +659,15 @@ public class Datasets extends AbstractApiBean {
             String successMsg = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");        
             try {
                 //msgt("as String: " + addFileHelper.getSuccessResult());
-
-                return ok(successMsg,
-                        addFileHelper.getSuccessResultAsJsonObjectBuilder());
+                /**
+                 * @todo We need a consistent, sane way to communicate a human
+                 * readable message to an API client suitable for human
+                 * consumption. Imagine if the UI were built in Angular or React
+                 * and we want to return a message from the API as-is to the
+                 * user. Human readable.
+                 */
+                logger.fine("successMsg: " + successMsg);
+                return ok(addFileHelper.getSuccessResultAsJsonObjectBuilder());
                 //"Look at that!  You added a file! (hey hey, it may have worked)");
             } catch (NoFilesException ex) {
                 Logger.getLogger(Files.class.getName()).log(Level.SEVERE, null, ex);

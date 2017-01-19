@@ -78,49 +78,7 @@ public class AbstractApiBeanTest {
             jsonWriter.writeObject(jsonObject);
         }
         logger.info(sw.toString());
-        /**
-         * @todo Do we really want "message" to appear twice?
-         */
-        assertEquals(message, jsonObject.getString("message"));
         assertEquals(message, jsonObject.getJsonObject("data").getString("message"));
-    }
-
-    @Test
-    public void testMessagesWithJsonObject() {
-        String message = "myMessage";
-        JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
-        Response response = sut.ok(message, jsonObjectBuilder);
-        JsonReader jsonReader = Json.createReader(new StringReader((String) response.getEntity().toString()));
-        JsonObject jsonObject = jsonReader.readObject();
-        Map<String, Boolean> config = new HashMap<>();
-        config.put(JsonGenerator.PRETTY_PRINTING, true);
-        JsonWriterFactory jwf = Json.createWriterFactory(config);
-        StringWriter sw = new StringWriter();
-        try (JsonWriter jsonWriter = jwf.createWriter(sw)) {
-            jsonWriter.writeObject(jsonObject);
-        }
-        logger.info(sw.toString());
-        assertEquals(message, jsonObject.getString("message"));
-    }
-
-    @Test
-    public void testMessagesNull() {
-        try {
-            sut.ok(null, Json.createObjectBuilder());
-        } catch (NullPointerException ex) {
-            /**
-             * @todo Should this really be a NullPointerException?
-             */
-            assertEquals("message cannot be null", ex.getMessage());
-        }
-        try {
-            sut.ok("myMessage", null);
-        } catch (NullPointerException ex) {
-            /**
-             * @todo Should this really be a NullPointerException?
-             */
-            assertEquals("jsonObjectBuilder cannot be null", ex.getMessage());
-        }
     }
 
     /**
