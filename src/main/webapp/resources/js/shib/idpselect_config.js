@@ -51,7 +51,7 @@ function IdPSelectUIParms() {
             'idpEntry.NoPreferred.label': 'Enter your institution\'s name and click "Continue" to log in via your institution\'s authentication system.',
             'idpList.label': 'Or select your institution from the list below.',
             'idpList.NoPreferred.label': 'Select your institution and click "Continue" to log in via your institution\'s authentication system.',
-            'idpList.defaultOptionLabel': 'Please select your institution...',
+            'idpList.defaultOptionLabel': 'Please select...',
             'idpList.showList': 'Allow me to pick from a list',
             'idpList.showSearch': 'Allow me to type the name of my institution',
             'submitButton.label': 'Continue',

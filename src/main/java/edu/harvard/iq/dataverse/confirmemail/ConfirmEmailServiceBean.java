@@ -93,13 +93,12 @@ public class ConfirmEmailServiceBean {
      * change.
      */
     private void sendLinkOnEmailChange(AuthenticatedUser aUser, String confirmationUrl) throws ConfirmEmailException {
-        ConfirmEmailUtil confirmEmailUtil = new ConfirmEmailUtil();
         String messageBody = BundleUtil.getStringFromBundle("notification.email.changeEmail", Arrays.asList(
                 aUser.getFirstName(),
                 confirmationUrl,
-                confirmEmailUtil.friendlyExpirationTime(systemConfig.getMinutesUntilConfirmEmailTokenExpires())
+                ConfirmEmailUtil.friendlyExpirationTime(systemConfig.getMinutesUntilConfirmEmailTokenExpires())
         ));
-        logger.fine("messageBody:" + messageBody);
+        logger.log(Level.FINE, "messageBody:{0}", messageBody);
 
         try {
             String toAddress = aUser.getEmail();
@@ -220,7 +219,6 @@ public class ConfirmEmailServiceBean {
     }
 
     public String optionalConfirmEmailAddonMsg(AuthenticatedUser user) {
-        ConfirmEmailUtil confirmEmailUtil = new ConfirmEmailUtil();
         final String emptyString = "";
         if (user == null) {
             logger.info("Can't return confirm email message. AuthenticatedUser was null!");
@@ -235,7 +233,7 @@ public class ConfirmEmailServiceBean {
             logger.info("Can't return confirm email message. No ConfirmEmailData for user id " + user.getId());
             return emptyString;
         }
-        String expTime = confirmEmailUtil.friendlyExpirationTime(systemConfig.getMinutesUntilConfirmEmailTokenExpires());
+        String expTime = ConfirmEmailUtil.friendlyExpirationTime(systemConfig.getMinutesUntilConfirmEmailTokenExpires());
         String confirmEmailUrl = systemConfig.getDataverseSiteUrl() + "/confirmemail.xhtml?token=" + confirmEmailData.getToken();
         List<String> args = Arrays.asList(confirmEmailUrl, expTime);
         String optionalConfirmEmailMsg = BundleUtil.getStringFromBundle("notification.email.welcomeConfirmEmailAddOn", args);

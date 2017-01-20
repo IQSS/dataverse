@@ -365,15 +365,6 @@ public class GuestbookResponseServiceBean {
             AuthenticatedUser authUser = (AuthenticatedUser) user;
             return authUser.getName();
         }
-
-        try {
-            if (user.isBuiltInUser()) {
-                BuiltinUser builtinUser = (BuiltinUser) user;
-                return builtinUser.getDisplayName();
-            }
-        } catch (Exception e) {
-            return "";
-        }
         return "Guest";
     }
 
@@ -381,14 +372,6 @@ public class GuestbookResponseServiceBean {
         if (user.isAuthenticated()) {
             AuthenticatedUser authUser = (AuthenticatedUser) user;
             return authUser.getEmail();
-        }
-        try {
-            if (user.isBuiltInUser()) {
-                BuiltinUser builtinUser = (BuiltinUser) user;
-                return builtinUser.getEmail();
-            }
-        } catch (Exception e) {
-            return "";
         }
         return "";
     }
@@ -398,15 +381,6 @@ public class GuestbookResponseServiceBean {
             AuthenticatedUser authUser = (AuthenticatedUser) user;
             return authUser.getAffiliation();
         }
-
-        try {
-            if (user.isBuiltInUser()) {
-                BuiltinUser builtinUser = (BuiltinUser) user;
-                return builtinUser.getAffiliation();
-            }
-        } catch (Exception e) {
-            return "";
-        }
         return "";
     }
 
@@ -415,15 +389,6 @@ public class GuestbookResponseServiceBean {
             AuthenticatedUser authUser = (AuthenticatedUser) user;
             return authUser.getPosition();
         }
-        try {
-            if (user.isBuiltInUser()) {
-                BuiltinUser builtinUser = (BuiltinUser) user;
-                return builtinUser.getPosition();
-            }
-        } catch (Exception e) {
-            return "";
-        }
-
         return "";
     }
 
