@@ -14,12 +14,12 @@ import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseTheme.Alignment;
-import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddressRange;
+import edu.harvard.iq.dataverse.DataverseTheme.Alignment;
+import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -623,12 +623,15 @@ public class JsonParserTest {
     static class MockSettingsSvc extends SettingsServiceBean {
         @Override
         public String getValueForKey( Key key /*, String defaultValue */) {
-            if (key.equals(SettingsServiceBean.Key.Authority)) {
-                return "10.5072/FK2";
-            } else if (key.equals(SettingsServiceBean.Key.Protocol)) {
-                return "doi";
-            } else if( key.equals(SettingsServiceBean.Key.DoiSeparator)) {
-                return "/";
+            switch (key) {
+                case Authority:
+                    return "10.5072/FK2";
+                case Protocol:
+                    return "doi";
+                case DoiSeparator:
+                    return "/";
+                default:
+                    break;
             }
              return null;
         }

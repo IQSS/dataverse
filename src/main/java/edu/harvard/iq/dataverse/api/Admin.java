@@ -47,8 +47,11 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response.Status;
+import java.util.List;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
+import edu.harvard.iq.dataverse.authorization.AuthTestDataServiceBean;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
+import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.users.User;
 /**
  * Where the secure, setup API calls live.
@@ -64,6 +67,8 @@ public class Admin extends AbstractApiBean {
     BuiltinUserServiceBean builtinUserService;
     @EJB
     ShibServiceBean shibService;
+    @EJB
+    AuthTestDataServiceBean authTestDataService;
 
     @Path("settings")
     @GET
@@ -135,7 +140,7 @@ public class Admin extends AbstractApiBean {
                 authSvc.deregisterProvider(provider.getId());
                 authSvc.registerProvider(provider);
             }
-            return created("/s/authenticationProviders/"+managed.getId(), json(managed));
+            return created("/api/admin/authenticationProviders/"+managed.getId(), json(managed));
         } catch ( AuthorizationSetupException e ) {
             return error(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage() );
         }
@@ -151,9 +156,15 @@ public class Admin extends AbstractApiBean {
     
     @POST
     @Path("authenticationProviders/{id}/:enabled")
+    public Response enableAuthenticationProvider_deprecated( @PathParam("id")String id, String body ) {
+        return enableAuthenticationProvider(id, body);
+    }
+    
+    @PUT
+    @Path("authenticationProviders/{id}/enabled")
     @Produces("application/json")
     public Response enableAuthenticationProvider( @PathParam("id")String id, String body ) {
-        
+        body = body.trim();
         if ( ! Util.isBoolean(body) ) {
             return error(Response.Status.BAD_REQUEST, "Illegal value '" + body + "'. Use 'true' or 'false'");
         }
@@ -190,6 +201,19 @@ public class Admin extends AbstractApiBean {
             return ok("Authentication Provider '" + id + "' disabled. " 
                     + ( authSvc.getAuthenticationProviderIds().isEmpty() 
                             ? "WARNING: no enabled authentication providers left." : "") );
+        }
+    }
+    
+    @GET
+    @Path("authenticationProviders/{id}/enabled")
+    public Response checkAuthenticationProviderEnabled(@PathParam("id")String id){
+        List<AuthenticationProviderRow> prvs = em.createNamedQuery("AuthenticationProviderRow.findById", AuthenticationProviderRow.class)
+                .setParameter("id", id)
+                .getResultList();
+        if ( prvs.isEmpty() ) { 
+            return notFound( "Can't find a provider with id '" + id + "'.");
+        } else {
+            return ok(Boolean.toString(prvs.get(0).isEnabled()));
         }
     }
     
@@ -262,12 +286,43 @@ public class Admin extends AbstractApiBean {
         return ok(userArray);
     }
 
+
+    /**
+     * @todo Make this support creation of BuiltInUsers.
+     *
+     * @todo Add way more error checking. Only the happy path is tested by
+     * AdminIT.
+     */
+    @POST
+    @Path("authenticatedUsers")
+    public Response createAuthenicatedUser(JsonObject jsonObject) {
+        logger.fine("JSON in: " + jsonObject);
+        String persistentUserId = jsonObject.getString("persistentUserId");
+        String identifier = jsonObject.getString("identifier");
+        String proposedAuthenticatedUserIdentifier = identifier.replaceFirst("@", "");
+        String firstName = jsonObject.getString("firstName");
+        String lastName = jsonObject.getString("lastName");
+        String emailAddress = jsonObject.getString("email");
+        String position = null;
+        String affiliation = null;
+        UserRecordIdentifier userRecordId = new UserRecordIdentifier(jsonObject.getString("authenticationProviderId"), persistentUserId);
+        AuthenticatedUserDisplayInfo userDisplayInfo = new AuthenticatedUserDisplayInfo(firstName, lastName, emailAddress, affiliation, position);
+        boolean generateUniqueIdentifier = true;
+        AuthenticatedUser authenticatedUser = authSvc.createAuthenticatedUser(userRecordId, proposedAuthenticatedUserIdentifier, userDisplayInfo, true);
+        return ok(jsonForAuthUser(authenticatedUser));
+    }
+
     /**
      * curl -X PUT -d "shib@mailinator.com"
      * http://localhost:8080/api/admin/authenticatedUsers/id/11/convertShibToBuiltIn
+     *
+     * @deprecated We have documented this API endpoint so we'll keep in around
+     * for a while but we should encourage everyone to switch to the
+     * "convertRemoteToBuiltIn" endpoint and then remove this Shib-specfic one.
      */
     @PUT
     @Path("authenticatedUsers/id/{id}/convertShibToBuiltIn")
+    @Deprecated
     public Response convertShibUserToBuiltin(@PathParam("id") Long id, String newEmailAddress) {
         try {
             AuthenticatedUser user = findAuthenticatedUserOrDie();
@@ -278,7 +333,7 @@ public class Admin extends AbstractApiBean {
             return error(Response.Status.FORBIDDEN, "Superusers only.");
         }
         try {
-            BuiltinUser builtinUser = authSvc.convertShibToBuiltIn(id, newEmailAddress);
+            BuiltinUser builtinUser = authSvc.convertRemoteToBuiltIn(id, newEmailAddress);
             if (builtinUser == null) {
                 return error(Response.Status.BAD_REQUEST, "User id " + id + " could not be converted from Shibboleth to BuiltIn. An Exception was not thrown.");
             }
@@ -294,6 +349,39 @@ public class Admin extends AbstractApiBean {
                 sb.append(ex + " ");
             }
             String msg = "User id " + id + " could not be converted from Shibboleth to BuiltIn. Details from Exception: " + sb;
+            logger.info(msg);
+            return error(Response.Status.BAD_REQUEST, msg);
+        }
+    }
+
+    @PUT
+    @Path("authenticatedUsers/id/{id}/convertRemoteToBuiltIn")
+    public Response convertOAuthUserToBuiltin(@PathParam("id") Long id, String newEmailAddress) {
+        try {
+            AuthenticatedUser user = findAuthenticatedUserOrDie();
+            if (!user.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "Superusers only.");
+            }
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.FORBIDDEN, "Superusers only.");
+        }
+        try {
+            BuiltinUser builtinUser = authSvc.convertRemoteToBuiltIn(id, newEmailAddress);
+            if (builtinUser == null) {
+                return error(Response.Status.BAD_REQUEST, "User id " + id + " could not be converted from remote to BuiltIn. An Exception was not thrown.");
+            }
+            JsonObjectBuilder output = Json.createObjectBuilder();
+            output.add("email", builtinUser.getEmail());
+            output.add("username", builtinUser.getUserName());
+            return ok(output);
+        } catch (Throwable ex) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(ex + " ");
+            while (ex.getCause() != null) {
+                ex = ex.getCause();
+                sb.append(ex + " ");
+            }
+            String msg = "User id " + id + " could not be converted from remote to BuiltIn. Details from Exception: " + sb;
             logger.info(msg);
             return error(Response.Status.BAD_REQUEST, msg);
         }
@@ -348,7 +436,7 @@ public class Admin extends AbstractApiBean {
             }
         }
         String shibProviderId = ShibAuthenticationProvider.PROVIDER_ID;
-        Map<String, String> randomUser = shibService.getRandomUser();
+        Map<String, String> randomUser = authTestDataService.getRandomUser();
 //        String eppn = UUID.randomUUID().toString().substring(0, 8);
         String eppn = randomUser.get("eppn");
         String idPEntityId = randomUser.get("idp");
@@ -391,7 +479,7 @@ public class Admin extends AbstractApiBean {
             if (oldBuiltInUser != null) {
                 String usernameOfBuiltinAccountToConvert = oldBuiltInUser.getUserName();
                 response.add("old username", usernameOfBuiltinAccountToConvert);
-                AuthenticatedUser authenticatedUser = shibService.canLogInAsBuiltinUser(usernameOfBuiltinAccountToConvert, password);
+                AuthenticatedUser authenticatedUser = authSvc.canLogInAsBuiltinUser(usernameOfBuiltinAccountToConvert, password);
                 if (authenticatedUser != null) {
                     knowsExistingPassword = true;
                     AuthenticatedUser convertedUser = authSvc.convertBuiltInToShib(builtInUserToConvert, shibProviderId, newUserIdentifierInLookupTable);
@@ -428,6 +516,152 @@ public class Admin extends AbstractApiBean {
         response.add("user to convert", builtInUserToConvert.getIdentifier());
         response.add("existing user found by email (prompt to convert)", existing);
         response.add("changing to this provider", shibProviderId);
+        response.add("value to overwrite old first name", overwriteFirstName);
+        response.add("value to overwrite old last name", overwriteLastName);
+        response.add("value to overwrite old email address", overwriteEmail);
+        if (overwriteAffiliation != null) {
+            response.add("affiliation", overwriteAffiliation);
+        }
+        response.add("problems", problems);
+        return ok(response);
+    }
+
+    /**
+     * This is used in testing via AdminIT.java but we don't expect sysadmins to
+     * use this.
+     */
+    @Path("authenticatedUsers/convert/builtin2oauth")
+    @PUT
+    public Response builtin2oauth(String content) {
+        logger.info("entering builtin2oauth...");
+        try {
+            AuthenticatedUser userToRunThisMethod = findAuthenticatedUserOrDie();
+            if (!userToRunThisMethod.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "Superusers only.");
+            }
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.FORBIDDEN, "Superusers only.");
+        }
+        boolean disabled = false;
+        if (disabled) {
+            return error(Response.Status.BAD_REQUEST, "API endpoint disabled.");
+        }
+        AuthenticatedUser builtInUserToConvert = null;
+        String emailToFind;
+        String password;
+        String authuserId = "0"; // could let people specify id on authuser table. probably better to let them tell us their 
+        String newEmailAddressToUse;
+        String newProviderId;
+        String newPersistentUserIdInLookupTable;
+        logger.info("content: " + content);
+        try {
+            String[] args = content.split(":");
+            emailToFind = args[0];
+            password = args[1];
+            newEmailAddressToUse = args[2];
+            newProviderId = args[3];
+            newPersistentUserIdInLookupTable = args[4];
+//            authuserId = args[666];
+        } catch (ArrayIndexOutOfBoundsException ex) {
+            return error(Response.Status.BAD_REQUEST, "Problem with content <<<" + content + ">>>: " + ex.toString());
+        }
+        AuthenticatedUser existingAuthUserFoundByEmail = shibService.findAuthUserByEmail(emailToFind);
+        String existing = "NOT FOUND";
+        if (existingAuthUserFoundByEmail != null) {
+            builtInUserToConvert = existingAuthUserFoundByEmail;
+            existing = existingAuthUserFoundByEmail.getIdentifier();
+        } else {
+            long longToLookup = Long.parseLong(authuserId);
+            AuthenticatedUser specifiedUserToConvert = authSvc.findByID(longToLookup);
+            if (specifiedUserToConvert != null) {
+                builtInUserToConvert = specifiedUserToConvert;
+            } else {
+                return error(Response.Status.BAD_REQUEST, "No user to convert. We couldn't find a *single* existing user account based on " + emailToFind + " and no user was found using specified id " + longToLookup);
+            }
+        }
+//        String shibProviderId = ShibAuthenticationProvider.PROVIDER_ID;
+        Map<String, String> randomUser = authTestDataService.getRandomUser();
+//        String eppn = UUID.randomUUID().toString().substring(0, 8);
+        String eppn = randomUser.get("eppn");
+        String idPEntityId = randomUser.get("idp");
+        String notUsed = null;
+        String separator = "|";
+//        UserIdentifier newUserIdentifierInLookupTable = new UserIdentifier(idPEntityId + separator + eppn, notUsed);
+        UserIdentifier newUserIdentifierInLookupTable = new UserIdentifier(newPersistentUserIdInLookupTable, notUsed);
+        String overwriteFirstName = randomUser.get("firstName");
+        String overwriteLastName = randomUser.get("lastName");
+        String overwriteEmail = randomUser.get("email");
+        overwriteEmail = newEmailAddressToUse;
+        logger.info("overwriteEmail: " + overwriteEmail);
+        boolean validEmail = EMailValidator.isEmailValid(overwriteEmail, null);
+        if (!validEmail) {
+            // See https://github.com/IQSS/dataverse/issues/2998
+            return error(Response.Status.BAD_REQUEST, "invalid email: " + overwriteEmail);
+        }
+        /**
+         * @todo If affiliation is not null, put it in RoleAssigneeDisplayInfo
+         * constructor.
+         */
+        /**
+         * Here we are exercising (via an API test) shibService.getAffiliation
+         * with the TestShib IdP and a non-production DevShibAccountType.
+         */
+//        idPEntityId = ShibUtil.testShibIdpEntityId;
+//        String overwriteAffiliation = shibService.getAffiliation(idPEntityId, ShibServiceBean.DevShibAccountType.RANDOM);
+        String overwriteAffiliation = null;
+        logger.info("overwriteAffiliation: " + overwriteAffiliation);
+        /**
+         * @todo Find a place to put "position" in the authenticateduser table:
+         * https://github.com/IQSS/dataverse/issues/1444#issuecomment-74134694
+         */
+        String overwritePosition = "staff;student";
+        AuthenticatedUserDisplayInfo displayInfo = new AuthenticatedUserDisplayInfo(overwriteFirstName, overwriteLastName, overwriteEmail, overwriteAffiliation, overwritePosition);
+        JsonObjectBuilder response = Json.createObjectBuilder();
+        JsonArrayBuilder problems = Json.createArrayBuilder();
+        if (password != null) {
+            response.add("password supplied", password);
+            boolean knowsExistingPassword = false;
+            BuiltinUser oldBuiltInUser = builtinUserService.findByUserName(builtInUserToConvert.getUserIdentifier());
+            if (oldBuiltInUser != null) {
+                String usernameOfBuiltinAccountToConvert = oldBuiltInUser.getUserName();
+                response.add("old username", usernameOfBuiltinAccountToConvert);
+                AuthenticatedUser authenticatedUser = authSvc.canLogInAsBuiltinUser(usernameOfBuiltinAccountToConvert, password);
+                if (authenticatedUser != null) {
+                    knowsExistingPassword = true;
+                    AuthenticatedUser convertedUser = authSvc.convertBuiltInUserToRemoteUser(builtInUserToConvert, newProviderId, newUserIdentifierInLookupTable);
+                    if (convertedUser != null) {
+                        /**
+                         * @todo Display name is not being overwritten. Logic
+                         * must be in Shib backing bean
+                         */
+                        AuthenticatedUser updatedInfoUser = authSvc.updateAuthenticatedUser(convertedUser, displayInfo);
+                        if (updatedInfoUser != null) {
+                            response.add("display name overwritten with", updatedInfoUser.getName());
+                        } else {
+                            problems.add("couldn't update display info");
+                        }
+                    } else {
+                        problems.add("unable to convert user");
+                    }
+                }
+            } else {
+                problems.add("couldn't find old username");
+            }
+            if (!knowsExistingPassword) {
+                String message = "User doesn't know password.";
+                problems.add(message);
+                /**
+                 * @todo Someday we should make a errorResponse method that
+                 * takes JSON arrays and objects.
+                 */
+                return error(Status.BAD_REQUEST, problems.build().toString());
+            }
+//            response.add("knows existing password", knowsExistingPassword);
+        }
+
+        response.add("user to convert", builtInUserToConvert.getIdentifier());
+        response.add("existing user found by email (prompt to convert)", existing);
+        response.add("changing to this provider", newProviderId);
         response.add("value to overwrite old first name", overwriteFirstName);
         response.add("value to overwrite old last name", overwriteLastName);
         response.add("value to overwrite old email address", overwriteEmail);
@@ -524,7 +758,17 @@ public class Admin extends AbstractApiBean {
         }
         return ok(msg);
     }
-
+    
+    @Path("assignments/assignees/{raIdtf: .*}")
+    @GET
+    public Response getAssignmentsFor( @PathParam("raIdtf") String raIdtf ) {
+        
+        JsonArrayBuilder arr = Json.createArrayBuilder();
+        roleAssigneeSvc.getAssignmentsFor(raIdtf).forEach( a -> arr.add(json(a)));
+        
+        return ok(arr);
+    }
+    
     /**
      * This method is used in integration tests.
      *
@@ -587,17 +831,6 @@ public class Admin extends AbstractApiBean {
     }
 
     
-    
-    @Path("assignments/assignees/{raIdtf: .*}")
-    @GET
-    public Response getAssignmentsFor( @PathParam("raIdtf") String raIdtf ) {
-        
-        JsonArrayBuilder arr = Json.createArrayBuilder();
-        roleAssigneeSvc.getAssignmentsFor(raIdtf).forEach( a -> arr.add(json(a)));
-        
-        return ok(arr);
-    }
-
     @Path("permissions/{dvo}")
     @GET
     public Response findPermissonsOn(@PathParam("dvo") String dvo) {

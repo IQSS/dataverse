@@ -26,7 +26,7 @@ Execute the installer script like this::
 
 **NEW in Dataverse 4.3:** It is no longer necessary to run the installer as root!
 Just make sure the user that runs the installer has the write permission in the Glassfish directory. For example, if your Glassfish directory is owned by root, and you try to run the installer as a regular user, it's not going to work. 
-(Do note, that you want the Glassfish directory to be owned by the same user that will be running Glassfish. And you most likely won't need to run it as root. The only reason to run it as root would be to be able to run the application on the default HTTP(S) ports 80 and 443, instead of 8080 and 8181. However, an easier, and more secure way to achieve that would be to instead keep Glassfish running on a high port, and hide it behind an Apache Proxy, via AJP, running on port 80. This configuration is in fact required if you choose to have your Dataverse support Shibboleth authentication. See more discussion on this here: :doc:`shibboleth`.)
+(Do note, that you want the Glassfish directory to be owned by the same user that will be running Glassfish. And you most likely won't need to run it as root. The only reason to run Glassfish as root would be to have a convenient way to run the application on the default HTTP(S) ports 80 and 443, instead of 8080 and 8181. However, an easier, and more secure way to achieve that would be to instead keep Glassfish running on a high port, and hide it behind an Apache Proxy, via AJP, running on port 80. This configuration is in fact required if you choose to have your Dataverse support Shibboleth authentication. See more discussion on this here: :doc:`shibboleth`.)
 
 
 The script will prompt you for some configuration values. If this is a test/evaluation installation, it may be possible to accept the default values provided for most of the settings:
@@ -83,7 +83,7 @@ Congratulations! You have a working Dataverse installation. Soon you'll be tweet
 
 Trouble? See if you find an answer in the troubleshooting section below.
 
-Next you'll want to check out the :doc:`config` section.
+Next you'll want to check out the :doc:`config` section, especially the section on security which reminds you to change the password above.
 
 Troubleshooting
 ---------------

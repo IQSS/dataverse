@@ -14,7 +14,7 @@ curl -s -X PUT -d 320 $SERVER/admin/settings/:SearchHighlightFragmentSize
 echo  "- Google Analytics setting"
 curl -X PUT -d true "$SERVER/admin/settings/:ScrubMigrationData"
 echo  "- Enabling Shibboleth"
-curl -X PUT -d true http://localhost:8080/api/admin/settings/:ShibEnabled
+curl -X POST -H "Content-type: application/json" http://localhost:8080/api/admin/authenticationProviders --upload-file ../../doc/sphinx-guides/source/_static/installation/files/etc/shibboleth/shibAuthProvider.json
 echo  "- Enabling TwoRavens"
 curl -s -X PUT -d true "$SERVER/admin/settings/:TwoRavensTabularView"
 echo  "- Enabling Geoconnect"

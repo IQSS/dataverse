@@ -15,10 +15,11 @@
                 <h:outputText value="#{systemConfig.applicationTermsOfUse}" escape="false"/>
             </div>
             <div class="checkbox">
-              <p:selectBooleanCheckbox id="terms" required="true" requiredMessage="#{bundle['user.acccountterms.required']}">
+              <p:selectBooleanCheckbox id="terms" required="true" 
+                                       requiredMessage="#{bundle['user.acccountterms.required']}"
+                                       itemLabel="#{bundle['user.acccountterms.iagree']}">
                 <f:validator validatorId="requiredCheckboxValidator"/>
               </p:selectBooleanCheckbox>
-              <h:outputText value=" #{bundle['user.acccountterms.iagree']}"/>
               <p:message for="terms" display="text" />
             </div>
         </div>
