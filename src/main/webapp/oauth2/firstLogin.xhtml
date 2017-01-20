@@ -41,7 +41,7 @@
                                     </span>
                                 </label>
                                 <div class="col-sm-4">
-                                    <p:inputText id="username" styleClass="form-control" value="#{OAuth2FirstLoginPage.username}" validator="#{OAuth2FirstLoginPage.validateUserName}"/>
+                                    <p:inputText id="username" styleClass="form-control" value="#{OAuth2FirstLoginPage.neverSuggestUsername}" validator="#{OAuth2FirstLoginPage.validateUserName}"/>
                                     <p:message for="username" display="text"/>
                                 </div>
                                 <div class="col-sm-offset-3 col-sm-9" jsf:rendered="#{OAuth2FirstLoginPage.convertFromBuiltinIsPossible}">

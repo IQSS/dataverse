@@ -280,11 +280,12 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
         setSelectedEmail(newUser.getDisplayInfo().getEmailAddress());
     }
 
+    // It's a design decision to not suggest a username.
+    public String getNeverSuggestUsername() {
+        return null;
+    }
+
     public String getUsername() {
-        boolean neverSuggestUsername = true;
-        if (neverSuggestUsername) {
-            return null;
-        }
         return username;
     }
 
