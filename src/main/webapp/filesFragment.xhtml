@@ -47,7 +47,7 @@
                 </div>
                 <div class="col-xs-6">
                     <!-- Button Panels -->
-                    <!-- 4.2.1: replaced permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset) with DatasetPage.canUpdateDataset() -->
+                    <!-- 4.2.1: replaced permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset) with DatasetPage.canUpdateDataset() -->                                                                                                                                                                                                                                                                                                                                                                                                                          
                     <div jsf:id="zipDownloadPanel" class="button-block tab-header pull-right text-right"
                          jsf:rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')
                                          and (DatasetPage.canUpdateDataset()
@@ -128,6 +128,33 @@
                             <span class="glyphicon glyphicon-bullhorn"/> #{bundle['file.requestAccess']}
                         </p:commandLink>
                     </div>
+                    
+                  
+                    <!--Compute button-->
+                    <div jsf:id="computeButton" class="button-single " jsf:rendered="#{( DatasetPage.sessionUserAuthenticated
+                                             and DatasetPage.canUpdateDataset() and !widgetWrapper.widgetView and 
+                                             !(empty DatasetPage.workingVersion.fileMetadatas) and DatasetPage.workingVersion.fileMetadatas.size() > 0)}"
+                         target="_blank">
+                        <h:outputLink value="http://controller-0.kaizen.massopencloud.org/" type="button" styleClass="btn btn-default">
+                           <h:outputText id="compute-button" value="#{bundle['file.compute']}" />
+                        </h:outputLink> 
+                    </div>               
+                    <!--Compute button end--> 
+                      
+                    <!--Cloud dataset button-->
+                    <div id="cloudDatasetCheckbox" class="btn-group">
+                        <div id="cloudDataset" class="ui-chkbox ui-widget" jsf:rendered="#{( DatasetPage.sessionUserAuthenticated and 
+                                                                                           DatasetPage.canUpdateDataset())}">
+                            <p:selectBooleanCheckbox value="#{DatasetPage.dataset.cloudDataset}"
+                                                     onchange="submit()"
+                                                     valueChangeListener="#{DatasetPage.changeCloudDataset}">
+                            </p:selectBooleanCheckbox>
+                            <label for="cloudDataset">Cloud Dataset</label>
+                        </div>
+                    </div>
+                    <!--Cloud dataset button end-->
+                    
+                                        
                     <div jsf:id="restrictDeletePanel" class="button-block pull-right text-right"
                          jsf:rendered="#{DatasetPage.editMode == 'CREATE' and !empty DatasetPage.dataset.latestVersion.fileMetadatas}">
                         <div class="btn-group">

@@ -35,6 +35,7 @@ public class DataAccess {
     }
 
     public static String DEFAULT_STORAGE_DRIVER_IDENTIFIER = "swift";
+    public static String DEFAULT_SWIFT_ENDPOINT_START_CHARACTERS = "http://rdgw";
     
     // The getDataFileIO() methods initialize DataFileIO objects for
     // datafiles that are already saved using one of the supported Dataverse
@@ -55,7 +56,7 @@ public class DataAccess {
         if (df.getStorageIdentifier().startsWith("file://")
                 || (!df.getStorageIdentifier().matches("^[a-z][a-z]*://.*"))) {
             return new FileAccessIO (df, req);
-        } else if (df.getStorageIdentifier().startsWith("swift://")) {
+        } else if (df.getStorageIdentifier().startsWith(DEFAULT_SWIFT_ENDPOINT_START_CHARACTERS)) { //Changing this to the rados gate url
             return new SwiftAccessIO (df, req);
         } else if (df.getStorageIdentifier().startsWith("tmp://")) {
             throw new IOException("DataAccess IO attempted on a temporary file that hasn't been permanently saved yet.");
