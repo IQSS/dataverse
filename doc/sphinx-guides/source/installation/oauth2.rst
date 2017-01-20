@@ -34,7 +34,7 @@ URLs to help you request a Client ID and Client Secret from the providers suppor
 Each of these providers will require the following information from you:
 
 - Basic information about your Dataverse installation such as a name, description, URL, logo, privacy policy, etc.
-- OAuth2 Redirect URI (ORCID) or Authorization Callback URL (GitHub) or Authorized Redirect URIs (Google): This is the URL on the Dataverse side to which the user will be sent after successfully authenticating with the identity provider. This should be the URL of your Dataverse installation, probably with https, appended with ``/oauth2/callback.xhtml`` such as ``https://dataverse.example.edu/oauth2/callback.xhtml``. Please note that the ``dataverse.siteUrl`` JVM option mentioned in the :doc:`config` section is expected to be set to an HTTPS URL such as ``https://dataverse.example.edu``.
+- OAuth2 Redirect URI (ORCID) or Authorization Callback URL (GitHub) or Authorized Redirect URIs (Google): This is the URL on the Dataverse side to which the user will be sent after successfully authenticating with the identity provider. This should be the advertised URL of your Dataverse installation (the protocol, fully qualified domain name, and optional port configured via the ``dataverse.siteUrl`` JVM option mentioned in the :doc:`config` section) appended with ``/oauth2/callback.xhtml`` such as ``https://dataverse.example.edu/oauth2/callback.xhtml``.
 
 When you are finished you should have a Client ID and Client Secret from the provider. Keep them safe and secret.
 
