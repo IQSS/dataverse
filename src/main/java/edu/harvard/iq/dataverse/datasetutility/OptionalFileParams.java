@@ -16,6 +16,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
@@ -33,7 +34,9 @@ import java.util.stream.Collectors;
  * @author rmp553
  */
 public class OptionalFileParams {
-    
+
+    private static final Logger logger = Logger.getLogger(OptionalFileParams.class.getName());
+
     private String description;
     public static final String DESCRIPTION_ATTR_NAME = "description";
 
@@ -148,8 +151,13 @@ public class OptionalFileParams {
             return;
 //            logger.log(Level.SEVERE, "jsonData is null");
         }
-        JsonObject jsonObj = new Gson().fromJson(jsonData, JsonObject.class);
-        
+        JsonObject jsonObj;
+        try {
+            jsonObj = new Gson().fromJson(jsonData, JsonObject.class);
+        } catch (ClassCastException ex) {
+            logger.info("Exception parsing string '" + jsonData + "': " + ex);
+            return;
+        }
 
         // -------------------------------
         // get description as string

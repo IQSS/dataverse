@@ -115,51 +115,35 @@ public class Files extends AbstractApiBean {
         }
 
         // -------------------------------------
-        // (2) Check/Parse the JSON
-        // -------------------------------------        
-        if (jsonData == null){
-            logger.log(Level.SEVERE, "jsonData is null");
-            return error( Response.Status.BAD_REQUEST, "No JSON data");
-        }
-        JsonObject jsonObj = new Gson().fromJson(jsonData, JsonObject.class);
-
-        // (2a) Check for required "fileToReplaceId"
-        // -------------------------------------        
-        /*if ((!jsonObj.has("fileToReplaceId")) || jsonObj.get("fileToReplaceId").isJsonNull()){
-            return error( Response.Status.BAD_REQUEST, "'fileToReplaceId' NOT found in the JSON Request");
-        }
-        
-        Long fileToReplaceId;
-        
-        try {
-            fileToReplaceId = Long.parseLong(jsonObj.get("fileToReplaceId").toString());        
-        } catch (Exception e) {
-            return error( Response.Status.BAD_REQUEST, "'fileToReplaceId' in the JSON Request must be a number.");            
-        }
-        */
-        
-        // (2b) Check for optional "forceReplace"
+        // (2) Check/Parse the JSON (if uploaded)
         // -------------------------------------        
         Boolean forceReplace = false;
-        if ((jsonObj.has("forceReplace")) && (!jsonObj.get("forceReplace").isJsonNull())){
-            forceReplace = jsonObj.get("forceReplace").getAsBoolean();
-            if (forceReplace == null){
-                forceReplace = false;
+        OptionalFileParams optionalFileParams = null;
+        if (jsonData != null) {
+            JsonObject jsonObj = null;
+            try {
+                jsonObj = new Gson().fromJson(jsonData, JsonObject.class);
+                // (2a) Check for optional "forceReplace"
+                // -------------------------------------
+                if ((jsonObj.has("forceReplace")) && (!jsonObj.get("forceReplace").isJsonNull())) {
+                    forceReplace = jsonObj.get("forceReplace").getAsBoolean();
+                    if (forceReplace == null) {
+                        forceReplace = false;
+                    }
+                }
+                try {
+                    // (2b) Load up optional params via JSON
+                    //  - Will skip extra attributes which includes fileToReplaceId and forceReplace
+                    //---------------------------------------
+                    optionalFileParams = new OptionalFileParams(jsonData);
+                } catch (DataFileTagException ex) {
+                    return error(Response.Status.BAD_REQUEST, ex.getMessage());
+                }
+            } catch (ClassCastException ex) {
+                logger.info("Exception parsing string '" + jsonData + "': " + ex);
             }
         }
-        
-        
-        // (2d) Load up optional params via JSON
-        //  - Will skip extra attributes which includes fileToReplaceId and forceReplace
-        //---------------------------------------
-        OptionalFileParams optionalFileParams = null;
-        try {
-            optionalFileParams = new OptionalFileParams(jsonData);
-        } catch (DataFileTagException ex) {
-            return error( Response.Status.BAD_REQUEST, ex.getMessage());            
-        }
-      
-        
+
         // -------------------------------------
         // (3) Get the file name and content type
         // -------------------------------------

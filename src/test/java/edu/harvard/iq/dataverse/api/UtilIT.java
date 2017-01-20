@@ -20,6 +20,7 @@ import org.junit.Test;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.path.xml.XmlPath.from;
+import com.jayway.restassured.specification.RequestSpecification;
 import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -278,35 +279,42 @@ public class UtilIT {
      * @return 
      */
     static Response uploadFileViaNative(String datasetId, String pathToFile, String apiToken) {
-        return uploadFileViaNative(datasetId, pathToFile, null, apiToken);
+        String jsonAsString = null;
+        return uploadFileViaNative(datasetId, pathToFile, jsonAsString, apiToken);
     }
 
     static Response uploadFileViaNative(String datasetId, String pathToFile, JsonObject jsonObject, String apiToken) {
-        String optionalJson = "{}";
-        if (jsonObject != null) {
-            optionalJson = jsonObject.toString();
-        }
-        return given()
+        return uploadFileViaNative(datasetId, pathToFile, jsonObject.toString(), apiToken);
+    }
+
+    static Response uploadFileViaNative(String datasetId, String pathToFile, String jsonAsString, String apiToken) {
+        RequestSpecification requestSpecification = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .multiPart("datasetId", datasetId)
-                .multiPart("file", new File(pathToFile))
-                .multiPart("jsonData", optionalJson)
-                .post("/api/datasets/" + datasetId + "/add");
+                .multiPart("file", new File(pathToFile));
+        if (jsonAsString != null) {
+            requestSpecification.multiPart("jsonData", jsonAsString);
+        }
+        return requestSpecification.post("/api/datasets/" + datasetId + "/add");
     }
 
     static Response replaceFile(long fileId, String pathToFile, String apiToken) {
-        return replaceFile(fileId, pathToFile, null, apiToken);
+        String jsonAsString = null;
+        return replaceFile(fileId, pathToFile, jsonAsString, apiToken);
     }
 
     static Response replaceFile(long fileId, String pathToFile, JsonObject jsonObject, String apiToken) {
-        String optionalJson = "{}";
-        if (jsonObject != null) {
-            optionalJson = jsonObject.toString();
-        }
-        return given()
+        return replaceFile(fileId, pathToFile, jsonObject.toString(), apiToken);
+    }
+
+    static Response replaceFile(long fileId, String pathToFile, String jsonAsString, String apiToken) {
+        RequestSpecification requestSpecification = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .multiPart("file", new File(pathToFile))
-                .multiPart("jsonData", optionalJson)
+                .multiPart("file", new File(pathToFile));
+        if (jsonAsString != null) {
+            requestSpecification.multiPart("jsonData", jsonAsString);
+        }
+        return requestSpecification
                 .post("/api/files/" + fileId + "/replace");
     }
 

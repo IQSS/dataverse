@@ -295,7 +295,7 @@ In practice, you only need one the ``dataset_id`` or the ``persistentId``. The e
 Files
 ~~~~~~~~~~~
 
-Replace an existing file where ``id`` is the Database id of the file to replace::
+Replace an existing file where ``id`` is the Database id of the file to replace. Note that metadata such as description and tags are not carried over from the file being replaced::
 
     POST http://$SERVER/api/files/{id}/replace?key=$apiKey
 

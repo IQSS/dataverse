@@ -207,7 +207,36 @@ public class FilesIT {
                 .body("message", equalTo(errMsg))
                 .statusCode(FORBIDDEN.getStatusCode());
     }
-    
+
+    @Test
+    public void testAddFileBadJson() {
+        msgt("testAddFileBadJson");
+
+        String apiToken = createUserGetToken();
+
+        // Create Dataverse
+        String dataverseAlias = createDataverseGetAlias(apiToken);
+
+        // Create Dataset
+        Integer datasetId = createDatasetGetId(dataverseAlias, apiToken);
+
+        String pathToFile = "src/main/webapp/resources/images/favicondataverse.png";
+
+        String junkJson = "thisIsNotJson";
+
+        Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, junkJson, apiToken);
+
+        addResponse.then().assertThat()
+                .body("status", equalTo(AbstractApiBean.STATUS_OK))
+                .body("data.files[0].categories", nullValue())
+                .body("data.files[0].dataFile.contentType", equalTo("image/png"))
+                .body("data.files[0].dataFile.description", equalTo(""))
+                .body("data.files[0].dataFile.tabularTags", nullValue())
+                .body("data.files[0].label", equalTo("favicondataverse.png"))
+                // not sure why description appears in two places
+                .body("data.files[0].description", equalTo(""))
+                .statusCode(OK.getStatusCode());
+    }
     
     @Test
     public void test_005_AddFileBadPermissions() {
@@ -259,7 +288,7 @@ public class FilesIT {
         // Add initial file
         // -------------------------
         msg("Add initial file");
-        String pathToFile = "src/main/webapp/resources/images/favicondataverse.png";
+        String pathToFile = "scripts/search/data/replace_test/growing_file/2016-01/data.tsv";
         Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
 
         String successMsgAdd = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");        
@@ -270,8 +299,9 @@ public class FilesIT {
                  * via API in a consistent location.
                  */
                 //                .body("message", equalTo(successMsgAdd))
-                .body("data.files[0].dataFile.contentType", equalTo("image/png"))
-                .body("data.files[0].label", equalTo("favicondataverse.png"))
+                .body("data.files[0].dataFile.contentType", equalTo("text/tab-separated-values"))
+                .body("data.files[0].label", equalTo("data.tsv"))
+                .body("data.files[0].description", equalTo(""))
                 .statusCode(OK.getStatusCode());
         
         
@@ -303,7 +333,7 @@ public class FilesIT {
         
         msgt(replaceRespWrongCtype.prettyPrint());
         
-        String errMsgCtype = BundleUtil.getStringFromBundle("file.addreplace.error.replace.new_file_has_different_content_type", Arrays.asList("PNG Image", "GIF Image"));
+        String errMsgCtype = BundleUtil.getStringFromBundle("file.addreplace.error.replace.new_file_has_different_content_type", Arrays.asList("Tab-Delimited", "GIF Image"));
 
         
         replaceRespWrongCtype.then().assertThat()
@@ -316,9 +346,9 @@ public class FilesIT {
         // Replace file
         // -------------------------
         msg("Replace file - 1st time");
-        String pathToFile2 = "src/main/webapp/resources/images/cc0.png";
+        String pathToFile2 = "scripts/search/data/replace_test/growing_file/2016-02/data.tsv";
         JsonObjectBuilder json = Json.createObjectBuilder()
-                .add("description", "CC0 logo")
+                .add("description", "My Tabular Data")
                 .add("categories", Json.createArrayBuilder()
                         .add("Data")
                 );
@@ -334,8 +364,9 @@ public class FilesIT {
                  * via API in a consistent location.
                  */
                 //                .body("message", equalTo(successMsg2))
-                .body("data.files[0].label", equalTo("cc0.png"))
-                .body("data.files[0].description", equalTo("CC0 logo"))
+                .body("data.files[0].label", equalTo("data.tsv"))
+                .body("data.files[0].dataFile.contentType", equalTo("text/tab-separated-values"))
+                .body("data.files[0].description", equalTo("My Tabular Data"))
                 .body("data.files[0].categories[0]", equalTo("Data"))
                 //.body("data.rootDataFileId", equalTo(origFileId))              
                 .statusCode(OK.getStatusCode());
@@ -361,7 +392,7 @@ public class FilesIT {
         // Replace file (again)
         // -------------------------
         msg("Replace file (again)");
-        String pathToFile3 = "src/main/webapp/resources/images/favicondataverse.png";
+        String pathToFile3 = "scripts/search/data/replace_test/growing_file/2016-03/data.tsv";
         Response replaceResp2 = UtilIT.replaceFile(newDataFileId, pathToFile3, apiToken);
         
         msgt("2nd replace: " + replaceResp2.prettyPrint());
@@ -374,7 +405,9 @@ public class FilesIT {
                 //                .body("message", equalTo(successMsg2))
                 .statusCode(OK.getStatusCode())
                 .body("status", equalTo(AbstractApiBean.STATUS_OK))
-                .body("data.files[0].label", equalTo("favicondataverse.png"))
+                .body("data.files[0].label", equalTo("data.tsv"))
+                // yes, replacing a file blanks out the description (and categories)
+                .body("data.files[0].description", equalTo(""))
                 ;
 
         long rootDataFileId2 = JsonPath.from(replaceResp2.body().asString()).getLong("data.files[0].dataFile.rootDataFileId");
@@ -652,6 +685,63 @@ public class FilesIT {
                .body("message", Matchers.startsWith(errMsgDeleted))
                ;       
         
+    }
+
+    @Test
+    public void testReplaceFileBadJson() {
+        msgt("test_008_ReplaceFileAlreadyDeleted");
+
+        // Create user
+        String apiToken = createUserGetToken();
+
+        // Create Dataverse
+        String dataverseAlias = createDataverseGetAlias(apiToken);
+
+        // Create Dataset
+        Integer datasetId = createDatasetGetId(dataverseAlias, apiToken);
+
+        // -------------------------
+        // Add initial file
+        // -------------------------
+        String pathToFile = "src/main/webapp/resources/images/favicondataverse.png";
+        Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
+
+        String successMsgAdd = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");
+
+        addResponse.then().assertThat()
+                .body("data.files[0].dataFile.contentType", equalTo("image/png"))
+                .body("data.files[0].label", equalTo("favicondataverse.png"))
+                .statusCode(OK.getStatusCode());
+
+        long origFileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
+
+        msg("Orig file id: " + origFileId);
+        assertNotNull(origFileId);    // If checkOut fails, display message
+
+        // -------------------------
+        // Publish dataverse
+        // -------------------------
+        Response publishDataversetResp = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
+        publishDataversetResp.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // -------------------------
+        // Publish dataset
+        // -------------------------
+        Response publishDatasetResp = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        publishDatasetResp.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        String pathToFile2 = "src/main/webapp/resources/images/cc0.png";
+        String jsonAsString = "notJson";
+        Response replaceResp = UtilIT.replaceFile(origFileId, pathToFile2, jsonAsString, apiToken);
+
+        msgt("replace resp: " + replaceResp.prettyPrint());
+
+        replaceResp.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("status", equalTo(AbstractApiBean.STATUS_OK));
+
     }
 
     @Test
