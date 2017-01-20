@@ -206,8 +206,7 @@ Delete a Private URL from a dataset (if it exists)::
 
 Add a file to an existing Dataset.  Description and tags are optional::
 
-    PUT http://$SERVER/api/datasets/$id/add?key=$apiKey
-
+    POST http://$SERVER/api/datasets/$id/add?key=$apiKey
 
 Example python code to add a file.  This may be run by changing these parameters in the sample code:
 
