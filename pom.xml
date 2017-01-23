@@ -11,7 +11,8 @@
 
     <properties>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	<additionalparam>-Xdoclint:none</additionalparam>
     </properties>
 
     <repositories>
@@ -373,6 +374,12 @@
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
             <version>1.2.17</version>
+        </dependency>
+        <!-- OAuth2 authentication. -->
+        <dependency>
+            <groupId>com.github.scribejava</groupId>
+            <artifactId>scribejava-apis</artifactId>
+            <version>3.1.0</version>
         </dependency>
 	<!-- EXPERIMENTAL: -->
 	<!-- lyncode xoai OAI-PMH implementation: -->

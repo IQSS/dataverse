@@ -72,6 +72,30 @@ public class UtilIT {
         return userAsJson;
     }
 
+    public static Response createRandomAuthenticatedUser(String authenticationProviderId) {
+        String randomString = getRandomUsername();
+        String userAsJson = getAuthenticatedUserAsJsonString(randomString, randomString, randomString, authenticationProviderId, "@" + randomString);
+        logger.fine("createRandomAuthenticatedUser: " + userAsJson);
+        Response response = given()
+                .body(userAsJson)
+                .contentType(ContentType.JSON)
+                .post("/api/admin/authenticatedUsers");
+        return response;
+    }
+
+    private static String getAuthenticatedUserAsJsonString(String persistentUserId, String firstName, String lastName, String authenticationProviderId, String identifier) {
+        JsonObjectBuilder builder = Json.createObjectBuilder();
+        builder.add("authenticationProviderId", authenticationProviderId);
+        builder.add("persistentUserId", persistentUserId);
+        builder.add("identifier", identifier);
+        builder.add("firstName", firstName);
+        builder.add("lastName", lastName);
+        builder.add(EMAIL_KEY, getEmailFromUserName(persistentUserId));
+        String userAsJson = builder.build().toString();
+        logger.fine("User to create: " + userAsJson);
+        return userAsJson;
+    }
+
     private static String getEmailFromUserName(String username) {
         return username + "@mailinator.com";
     }
@@ -492,6 +516,13 @@ public class UtilIT {
         return response;
     }
 
+    static Response getAuthProviders(String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/admin/authenticationProviders");
+        return response;
+    }
+
     static Response migrateShibToBuiltin(Long userIdToConvert, String newEmailAddress, String apiToken) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
@@ -500,11 +531,27 @@ public class UtilIT {
         return response;
     }
 
+    static Response migrateOAuthToBuiltin(Long userIdToConvert, String newEmailAddress, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(newEmailAddress)
+                .put("/api/admin/authenticatedUsers/id/" + userIdToConvert + "/convertRemoteToBuiltIn");
+        return response;
+    }
+
     static Response migrateBuiltinToShib(String data, String apiToken) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .body(data)
                 .put("/api/admin/authenticatedUsers/convert/builtin2shib");
+        return response;
+    }
+
+    static Response migrateBuiltinToOAuth(String data, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(data)
+                .put("/api/admin/authenticatedUsers/convert/builtin2oauth");
         return response;
     }
 

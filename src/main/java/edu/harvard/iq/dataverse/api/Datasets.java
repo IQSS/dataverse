@@ -113,7 +113,7 @@ public class Datasets extends AbstractApiBean {
             final DatasetVersion latest = execCommand(new GetLatestAccessibleDatasetVersionCommand(req, retrieved));
             final JsonObjectBuilder jsonbuilder = json(retrieved);
 
-            return ok(jsonbuilder.add("latestVersion", (latest != null) ? json(latest) : null));
+            return allowCors(ok(jsonbuilder.add("latestVersion", (latest != null) ? json(latest) : null)));
         });
     }
     
@@ -153,10 +153,10 @@ public class Datasets extends AbstractApiBean {
             if (instance.isXMLFormat(exporter)){
                 mediaType = MediaType.APPLICATION_XML;
             }
-            return Response.ok()
+            return allowCors(Response.ok()
                     .entity(xml)
                     .type(mediaType).
-                    build();
+                    build());
         } catch (Exception wr) {
             return error(Response.Status.FORBIDDEN, "Export Failed");
         }
@@ -212,39 +212,37 @@ public class Datasets extends AbstractApiBean {
 	@GET
 	@Path("{id}/versions")
     public Response listVersions( @PathParam("id") String id ) {
-        return response( req -> {
-            return ok( 
-                    execCommand(
-                        new ListVersionsCommand(req, findDatasetOrDie(id)) )
-                        .stream()
-                        .map( d -> json(d) )
-                        .collect(toJsonArray()));});
+        return allowCors(response( req -> 
+             ok( execCommand( new ListVersionsCommand(req, findDatasetOrDie(id)) )
+                                .stream()
+                                .map( d -> json(d) )
+                                .collect(toJsonArray()))));
     }
 	
 	@GET
 	@Path("{id}/versions/{versionId}")
     public Response getVersion( @PathParam("id") String datasetId, @PathParam("versionId") String versionId) {
-        return response( req -> {
+        return allowCors(response( req -> {
             DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId));            
             return (dsv == null || dsv.getId() == null) ? notFound("Dataset version not found")
                                                         : ok(json(dsv));
-        });
+        }));
     }
 	
     @GET
 	@Path("{id}/versions/{versionId}/files")
     public Response getVersionFiles( @PathParam("id") String datasetId, @PathParam("versionId") String versionId) {
-        return response( req -> ok( jsonFileMetadatas(
-                         getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId)).getFileMetadatas())) );
+        return allowCors(response( req -> ok( jsonFileMetadatas(
+                         getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId)).getFileMetadatas()))));
     }
     
     @GET
 	@Path("{id}/versions/{versionId}/metadata")
     public Response getVersionMetadata( @PathParam("id") String datasetId, @PathParam("versionId") String versionId) {
-		return response( req -> ok(
+		return allowCors(response( req -> ok(
                     jsonByBlocks(
                         getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId) )
-                                .getDatasetFields())));
+                                .getDatasetFields()))));
     }
     
     @GET
@@ -253,7 +251,7 @@ public class Datasets extends AbstractApiBean {
                                              @PathParam("versionNumber") String versionNumber, 
                                              @PathParam("block") String blockName ) {
 		
-        return response( req -> {
+        return allowCors(response( req -> {
             DatasetVersion dsv = getDatasetVersionOrDie(req, versionNumber, findDatasetOrDie(datasetId) );
             
             Map<MetadataBlock, List<DatasetField>> fieldsByBlock = DatasetField.groupByBlock(dsv.getDatasetFields());
@@ -263,7 +261,7 @@ public class Datasets extends AbstractApiBean {
                 }
             }
             return notFound("metadata block named " + blockName + " not found");
-        });
+        }));
     }
 	
     @DELETE

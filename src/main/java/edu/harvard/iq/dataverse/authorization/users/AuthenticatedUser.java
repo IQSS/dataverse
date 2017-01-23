@@ -4,8 +4,8 @@ import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.ValidateEmail;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserLookup;
-import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
+import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.List;
@@ -22,6 +22,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
+import org.hibernate.validator.constraints.NotBlank;
 
 @NamedQueries({
     @NamedQuery( name="AuthenticatedUser.findAll",
@@ -72,7 +73,9 @@ public class AuthenticatedUser implements User, Serializable {
     private String email;
     private String affiliation;
     private String position;
+    @NotBlank(message = "Please enter your last name.")
     private String lastName;
+    @NotBlank(message = "Please enter your first name.")
     private String firstName;
     @Column(nullable = true)
     private Timestamp emailConfirmed;
@@ -96,8 +99,6 @@ public class AuthenticatedUser implements User, Serializable {
         return IDENTIFIER_PREFIX + userIdentifier;
     }
     
-    
-    
     @OneToMany(mappedBy = "user", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<DatasetLock> datasetLocks;
 	
@@ -110,7 +111,7 @@ public class AuthenticatedUser implements User, Serializable {
     }
     
     @Override
-    public RoleAssigneeDisplayInfo getDisplayInfo() {
+    public AuthenticatedUserDisplayInfo getDisplayInfo() {
         return new AuthenticatedUserDisplayInfo(firstName, lastName, email, affiliation, position);
     }
     
@@ -121,9 +122,15 @@ public class AuthenticatedUser implements User, Serializable {
     public void applyDisplayInfo( AuthenticatedUserDisplayInfo inf ) {
         setFirstName(inf.getFirstName());
         setLastName(inf.getLastName());
-        setEmail(inf.getEmailAddress());
-        setAffiliation( inf.getAffiliation() );
-        setPosition( inf.getPosition());
+        if ( nonEmpty(inf.getEmailAddress()) ) {
+            setEmail(inf.getEmailAddress());
+        }
+        if ( nonEmpty(inf.getAffiliation()) ) {
+            setAffiliation( inf.getAffiliation() );
+        }
+        if ( nonEmpty(inf.getPosition()) ) {
+            setPosition( inf.getPosition());
+        }
     }
     
     @Override
@@ -208,15 +215,6 @@ public class AuthenticatedUser implements User, Serializable {
 
     public void setModificationTime(Timestamp modificationTime) {
         this.modificationTime = modificationTime;
-    }
-
-    public boolean isBuiltInUser() {
-        String authProviderString = authenticatedUserLookup.getAuthenticationProviderId();
-        if (authProviderString != null && authProviderString.equals(BuiltinAuthenticationProvider.PROVIDER_ID)) {
-            return true;
-        }
-        
-        return false;
     }
 
     @OneToOne(mappedBy = "authenticatedUser")

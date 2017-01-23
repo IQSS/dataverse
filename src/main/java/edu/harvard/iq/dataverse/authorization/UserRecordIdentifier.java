@@ -31,7 +31,7 @@ public class UserRecordIdentifier {
 
     @Override
     public String toString() {
-        return "[ExternalUserIdentifier " + repoId + "/" + userIdInRepo + ']';
+        return "[UserRecordIdentifier " + repoId + "/" + userIdInRepo + ']';
     }
     
     public AuthenticatedUserLookup createAuthenticatedUserLookup( AuthenticatedUser u ) {
