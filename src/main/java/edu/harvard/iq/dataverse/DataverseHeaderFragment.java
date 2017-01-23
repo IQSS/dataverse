@@ -109,8 +109,8 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     public void initBreadcrumbsForFileMetadata(FileMetadata fmd, DataFile datafile,  String subPage) {
         if (fmd == null ){
             Dataset dataset = datafile.getOwner();
-                Long getDatasetVersionID = dataset.getLatestVersion().getId();
-                fmd = datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(getDatasetVersionID, datafile.getId());
+            Long getDatasetVersionID = dataset.getLatestVersion().getId();
+            fmd = datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(getDatasetVersionID, datafile.getId());
         }
         
         

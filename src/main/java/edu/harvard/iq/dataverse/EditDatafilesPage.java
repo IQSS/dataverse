@@ -522,6 +522,9 @@ public class EditDatafilesPage implements java.io.Serializable {
                         test = null;
                     }
                     if (test != null) {
+                        if (mode == FileEditMode.SINGLE) {
+                            singleFile = datafileService.find(test);
+                        }
                         selectedFileIdsList.add(test);
                     }
                 }
@@ -548,7 +551,6 @@ public class EditDatafilesPage implements java.io.Serializable {
             }
             
             if (FileEditMode.SINGLE == mode){
-                singleFile = fileMetadatas.get(0).getDataFile();
                 if (fileMetadatas.get(0).getDatasetVersion().getId() != null){
                     versionString = "DRAFT";
                 }
