@@ -79,7 +79,7 @@
                                   onstart="javascript:uploadWidgetDropRemoveMsg();uploadStarted();"
                                   sizeLimit="#{EditDatafilesPage.getMaxFileUploadSizeInBytes()}"
                                   fileLimit="#{EditDatafilesPage.getMaxNumberOfFiles()}" 
-                                  invalidSizeMessage="File exceeds our limits. Please contact support. " 
+                                  invalidSizeMessage="#{bundle['file.edit.error.file_exceeds_limit']}" 
                                   sequential="true"
                                   widgetVar="fileUploadWidget"/>
                     <!-- Dropbox Upload -->
