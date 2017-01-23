@@ -21,7 +21,7 @@ If ``$id`` is omitted, a root dataverse is created. ``$id`` can either be a data
 
     POST http://$SERVER/api/dataverses/$id?key=$apiKey
 
-The following JSON example can be `downloaded <../_static/api/dataverse-complete.json>`_ and modified to create dataverses to suit your needs. The fields ``name``, ``alias``, and ``dataverseContacts`` are required. The controlled vocabulary for ``dataverseType`` is
+Download the :download:`JSON example <../_static/api/dataverse-complete.json>` file and modified to create dataverses to suit your needs. The fields ``name``, ``alias``, and ``dataverseContacts`` are required. The controlled vocabulary for ``dataverseType`` is
 
 - ``JOURNALS``
 - ``LABORATORY``
@@ -207,7 +207,8 @@ Delete a Private URL from a dataset (if it exists)::
 Builtin Users
 ~~~~~~~~~~~~~
 
-This endopint deals with users of the built-in authentication provider. Note that users may come from other authentication services as well, such as Shibboleth.
+This endpoint deals with users of the built-in authentication provider. For more background on various authentication providers, see :doc:`/user/account` and :doc:`/installation/config`.
+
 For this service to work, the setting ``BuiltinUsers.KEY`` has to be set, and its value passed as ``key`` to
 each of the calls.
 
@@ -351,7 +352,13 @@ Show data about an authentication provider::
 
 Enable or disable an authentication provider (denoted by ``id``)::
 
-  POST http://$SERVER/api/admin/authenticationProviders/$id/:enabled
+  PUT http://$SERVER/api/admin/authenticationProviders/$id/enabled
+
+.. note:: The former endpoint, ending with ``:enabled`` (that is, with a colon), is still supported, but deprecated.
+
+Check whether an authentication proider is enabled::
+
+  GET http://$SERVER/api/admin/authenticationProviders/$id/enabled
 
 The body of the request should be either ``true`` or ``false``. Content type has to be ``application/json``, like so::
 
@@ -391,6 +398,21 @@ Sample output using "dataverseAdmin" as the ``identifier``::
       "email": "dataverse@mailinator.com",
       "superuser": true,
       "affiliation": "Dataverse.org"
+    }
+
+Create an authenticateUser::
+
+    POST http://$SERVER/api/admin/authenticatedUsers
+
+POSTed JSON example::
+
+    {
+      "authenticationProviderId": "orcid",
+      "persistentUserId": "0000-0002-3283-0661",
+      "identifier": "@pete",
+      "firstName": "Pete K.",
+      "lastName": "Dataversky",
+      "email": "pete@mailinator.com"
     }
 
 Toggles superuser mode on the ``AuthenticatedUser`` whose ``identifier`` (without the ``@`` sign) is passed. ::

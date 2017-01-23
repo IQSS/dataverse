@@ -21,6 +21,8 @@ import javax.persistence.Table;
 @NamedQueries({
     @NamedQuery( name="AuthenticationProviderRow.findAllEnabled",
                  query="SELECT r FROM AuthenticationProviderRow r WHERE r.enabled=true" ),
+    @NamedQuery( name="AuthenticationProviderRow.findById",
+                 query="SELECT r FROM AuthenticationProviderRow r WHERE r.id=:id" ),
     @NamedQuery( name="AuthenticationProviderRow.findAll",
                  query="SELECT r FROM AuthenticationProviderRow r" )
 })
@@ -30,7 +32,11 @@ public class AuthenticationProviderRow implements java.io.Serializable {
     
     @Id
     private String id;
-    
+
+    /**
+     * @todo Consider dropping this column since we override title in order to
+     * internationalize it. Or add a translatableTitle field?
+     */
     private String title;
     
     private String subtitle;
