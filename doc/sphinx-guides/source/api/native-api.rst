@@ -204,11 +204,15 @@ Delete a Private URL from a dataset (if it exists)::
 
     DELETE http://$SERVER/api/datasets/$id/privateUrl?key=$apiKey
 
-Add a file to an existing Dataset.  Description and tags are optional::
+Add a file to an existing Dataset. Description and tags are optional::
 
     POST http://$SERVER/api/datasets/$id/add?key=$apiKey
 
-Example python code to add a file.  This may be run by changing these parameters in the sample code:
+A more detailed "add" example using curl::
+
+    curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F 'file=@data.tsv' -F 'jsonData={"description":"My description.","categories":["Data"]}' "https://example.dataverse.edu/api/datasets/:persistentId/add?persistentId=$PERSISTENT_ID"
+
+Example python code to add a file. This may be run by changing these parameters in the sample code:
 
 * ``dataverse_server`` - e.g. https://dataverse.harvard.edu
 * ``api_key`` - See the top of this document for a description
@@ -295,9 +299,13 @@ In practice, you only need one the ``dataset_id`` or the ``persistentId``. The e
 Files
 ~~~~~~~~~~~
 
-Replace an existing file where ``id`` is the Database id of the file to replace. Note that metadata such as description and tags are not carried over from the file being replaced::
+Replace an existing file where ``id`` is the database id of the file to replace. Note that metadata such as description and tags are not carried over from the file being replaced::
 
     POST http://$SERVER/api/files/{id}/replace?key=$apiKey
+
+A more detailed "replace" example using curl::
+
+    curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F 'file=@data.tsv' -F 'jsonData={"description":"My description.","categories":["Data"]}' "https://localhost:8181/api/files/$FILE_ID/replace"
 
 Example python code to replace a file.  This may be run by changing these parameters in the sample code:
 
