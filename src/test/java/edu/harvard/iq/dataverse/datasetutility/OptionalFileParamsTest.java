@@ -199,8 +199,27 @@ public class OptionalFileParamsTest {
         assertFalse(instance.hasFileDataTags());
 
     }
-    
-    
+
+    @Test
+    public void test_10_emptyString() throws DataFileTagException {
+
+        msgt("test_10_emptyString");
+
+        String jsonParams = "";
+
+        OptionalFileParams instance = new OptionalFileParams(jsonParams);
+
+        assertNull(instance.getDescription());
+        assertFalse(instance.hasDescription());
+
+        assertNull(instance.getCategories());
+        assertFalse(instance.hasCategories());
+
+        assertNull(instance.getDataFileTags());
+        assertFalse(instance.hasFileDataTags());
+
+    }
+
     private void msg(String s){
         System.out.println(s);
     }

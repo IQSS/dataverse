@@ -147,7 +147,7 @@ public class OptionalFileParams {
     private void loadParamsFromJson(String jsonData) throws DataFileTagException{
         
         msgt("jsonData: " +  jsonData);
-        if (jsonData == null){
+        if (jsonData == null || jsonData.isEmpty()){
             return;
 //            logger.log(Level.SEVERE, "jsonData is null");
         }
