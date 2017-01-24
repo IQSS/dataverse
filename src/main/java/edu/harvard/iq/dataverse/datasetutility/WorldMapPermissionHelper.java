@@ -461,9 +461,6 @@ public class WorldMapPermissionHelper implements java.io.Serializable {
         if (mapLayerMetadataLookup == null){
             loadMapLayerMetadataLookup(fm.getDatasetVersion().getDataset());
         }
-        if (this.hasMapLayerMetadata(fm)){
-            return false;
-        }
         return this.canUserSeeMapDataButton(fm, true);
     }
             
