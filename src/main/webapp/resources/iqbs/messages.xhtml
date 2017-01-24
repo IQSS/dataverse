@@ -18,12 +18,8 @@
                 <span class="glyphicon glyphicon glyphicon-ok-sign"></span>&#160;<strong>#{bundle['messages.success']}</strong> – <h:outputText escape="false" value="#{flash['successMsg']}"/>
             </div>
         </ui:fragment>
-        <ui:fragment>
-            <ui:remove>
-                Note: having a rendered attribute in the ui:fragment that referenced flash scope broke the actionListener below. 
-                As a workaround, we have moved that logic into the div style attribute below.
-            </ui:remove>
-            <div class="alert alert-danger" style="display:#{not empty flash['errorMsg']?'block':'none' }">
+        <ui:fragment rendered="#{not empty flash['errorMsg']}">
+            <div class="alert alert-danger">
                 
                 <!-- <h:outputText escape="false" value="# {flash['errorMsg']} "/>
                 Please contact <a href="#" onclick="event.preventDefault();PF('contactForm').show();" title="Contact Dataverse Support">Dataverse Support</a> for assistance. -->
