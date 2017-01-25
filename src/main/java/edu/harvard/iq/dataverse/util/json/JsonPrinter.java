@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.util.json;
 import edu.emory.mathcs.backport.java.util.Collections;
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFileTag;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetDistributor;
 import edu.harvard.iq.dataverse.DatasetFieldType;
@@ -468,16 +469,12 @@ public class JsonPrinter {
 
     public static JsonObjectBuilder json(FileMetadata fmd) {
         return jsonObjectBuilder()
-                // deprecated: .add("category", fmd.getCategory())
-                // TODO: uh, figure out what to do here... it's deprecated 
-                // in a sense that there's no longer the category field in the 
-                // fileMetadata object; but there are now multiple, oneToMany file 
-                // categories - and we probably need to export them too!) -- L.A. 4.5
                 .add("description", fmd.getDescription())
                 .add("label", fmd.getLabel()) // "label" is the filename
                 .add("directoryLabel", fmd.getDirectoryLabel())
                 .add("version", fmd.getVersion())
                 .add("datasetVersionId", fmd.getDatasetVersion().getId())
+                .add("categories", getFileCategories(fmd))
                 .add("dataFile", json(fmd.getDataFile(), fmd));
     }
 
@@ -503,7 +500,6 @@ public class JsonPrinter {
             // version *you want*! (L.A.)
             fileName = df.getFileMetadata().getLabel();
         }
-        
         return jsonObjectBuilder()
                 .add("id", df.getId())
                 .add("filename", fileName)
@@ -518,11 +514,45 @@ public class JsonPrinter {
                  */
                 .add("md5", getMd5IfItExists(df.getChecksumType(), df.getChecksumValue()))
                 .add("checksum", getChecksumTypeAndValue(df.getChecksumType(), df.getChecksumValue()))
+                .add("tabularTags", getTabularFileTags(df))
                 .add("description", df.getDescription());
     }
 
     public static String format(Date d) {
         return (d == null) ? null : Util.getDateTimeFormat().format(d);
+    }
+
+    private static JsonArrayBuilder getFileCategories(FileMetadata fmd) {
+        if (fmd == null) {
+            return null;
+        }
+        List<String> categories = fmd.getCategoriesByName();
+        if (categories == null || categories.isEmpty()) {
+            return null;
+        }
+        JsonArrayBuilder fileCategories = Json.createArrayBuilder();
+        for (String category : categories) {
+            fileCategories.add(category);
+        }
+        return fileCategories;
+    }
+
+    private static JsonArrayBuilder getTabularFileTags(DataFile df) {
+        if (df == null) {
+            return null;
+        }
+        List<DataFileTag> tags = df.getTags();
+        if (tags == null || tags.isEmpty()) {
+            return null;
+        }
+        JsonArrayBuilder tabularTags = Json.createArrayBuilder();
+        for (DataFileTag tag : tags) {
+            String label = tag.getTypeLabel();
+            if (label != null) {
+                tabularTags.add(label);
+            }
+        }
+        return tabularTags;
     }
 
     private static class DatasetFieldsToJson implements DatasetFieldWalker.Listener {
