@@ -185,7 +185,8 @@ public class UtilIT {
     }
 
     static Response createRandomDataverse(String apiToken) {
-        String alias = getRandomIdentifier();
+        // Add any string (i.e. "dv") to avoid possibility of "Alias should not be a number" https://github.com/IQSS/dataverse/issues/211
+        String alias = "dv" + getRandomIdentifier();
         String category = null;
         return createDataverse(alias, category, apiToken);
     }
