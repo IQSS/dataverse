@@ -46,7 +46,9 @@
                                 <div class="btn-group pull-right" jsf:rendered="#{dataverseSession.user.authenticated
                                                          and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset) 
                                                          and dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile)}">
-                                    <p:commandButton value="#{bundle['dataset.editBtn']}" onclick="PF('fileAlreadyReplacedPrevious').show()" type="button" />
+                                    <p:commandLink styleClass="btn btn-default" onclick="PF('fileAlreadyReplacedPrevious').show()">
+                                        <span class="glyphicon glyphicon-pencil"/> #{bundle['dataset.editBtn']}
+                                    </p:commandLink>
                                 </div>
                                 <div class="btn-group pull-right" jsf:rendered="#{dataverseSession.user.authenticated
                                                          and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset)
@@ -468,15 +470,15 @@
                         </ui:fragment>
                     </p:dialog>
                       <p:dialog id="fileAlreadyReplacedDraft" styleClass="smallPopUp"
-                              header="#{bundle['file.alreadyReplaced.header']}" widgetVar="fileAlreadyReplacedDraft" modal ="true">
-                        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.alreadyReplaced.warningMessage']}</p>
+                              header="#{bundle['file.replaced.warning.header']}" widgetVar="fileAlreadyReplacedDraft" modal="true">
+                        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.replaced.warning.draft.warningMessage']}</p>
                         <div class="button-block">
                             <p:commandButton value="#{bundle.close}" onclick="PF('fileAlreadyReplacedDraft').hide();"/>
                         </div>
                     </p:dialog>
                     <p:dialog id="fileAlreadyReplacedPrevious" styleClass="smallPopUp"
-                              header="#{bundle['file.alreadyReplaced.header']}" widgetVar="fileAlreadyReplacedPrevious" modal ="true">
-                        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.alreadyReplaced.previous.warningMessage']}</p>
+                              header="#{bundle['file.replaced.warning.header']}" widgetVar="fileAlreadyReplacedPrevious" modal="true">
+                        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.replaced.warning.previous.warningMessage']}</p>
                         <div class="button-block">
                             <p:commandButton value="#{bundle.close}" onclick="PF('fileAlreadyReplacedPrevious').hide();"/>
                         </div>
