@@ -1352,7 +1352,7 @@ public class DataFileServiceBean implements java.io.Serializable {
        
         
         TypedQuery query = em.createQuery("select o from DataFile o" +
-                    " WHERE o.previousVersionId = :dataFileId;", DataFile.class);
+                    " WHERE o.previousDataFileId = :dataFileId", DataFile.class);
         query.setParameter("dataFileId", df.getId());
         //query.setMaxResults(maxResults);
         

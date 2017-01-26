@@ -44,7 +44,13 @@
                             <div class="button-block pull-right">
                                 <!-- Edit Button Group -->
                                 <div class="btn-group pull-right" jsf:rendered="#{dataverseSession.user.authenticated
-                                                         and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset)}">
+                                                         and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset) 
+                                                         and dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile)}">
+                                    <p:commandButton value="#{bundle['dataset.editBtn']}" onclick="PF('fileAlreadyReplacedPrevious').show()" type="button" />
+                                </div>
+                                <div class="btn-group pull-right" jsf:rendered="#{dataverseSession.user.authenticated
+                                                         and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset)
+                                                         and !dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile)}">
                                     <button type="button" id="editFile" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                                         <span class="glyphicon glyphicon-pencil"/> #{bundle['dataset.editBtn']} <span class="caret"></span>
                                     </button>
@@ -79,7 +85,7 @@
                                         </ui:fragment>
                                         <ui:fragment rendered="#{(FilePage.fileMetadata.dataFile.released and FilePage.draftReplacementFile == true) or (!FilePage.fileMetadata.dataFile.released and FilePage.fileMetadata.datasetVersion.dataset.released) }">                                        
                                         <li><!-- start: already replaced replace file link -->
-                                            <p:commandLink title="#{bundle['file.delete']}" onclick="PF('fileAlreadyReplaced').show();">
+                                            <p:commandLink title="#{bundle['file.delete']}" onclick="PF('fileAlreadyReplacedDraft').show();">
                                                 <h:outputText value="#{bundle['file.replace']}"/>
                                             </p:commandLink>
                                         <!-- end replace file link --></li>
@@ -461,11 +467,18 @@
                             </div>
                         </ui:fragment>
                     </p:dialog>
-                      <p:dialog id="fileAlreadyReplaced" styleClass="smallPopUp"
-                              header="#{bundle['file.alreadyReplaced.header']}" widgetVar="fileAlreadyReplaced" modal ="true">
+                      <p:dialog id="fileAlreadyReplacedDraft" styleClass="smallPopUp"
+                              header="#{bundle['file.alreadyReplaced.header']}" widgetVar="fileAlreadyReplacedDraft" modal ="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.alreadyReplaced.warningMessage']}</p>
                         <div class="button-block">
-                            <p:commandButton value="#{bundle.close}" onclick="PF('fileAlreadyReplaced').hide();"/>
+                            <p:commandButton value="#{bundle.close}" onclick="PF('fileAlreadyReplacedDraft').hide();"/>
+                        </div>
+                    </p:dialog>
+                    <p:dialog id="fileAlreadyReplacedPrevious" styleClass="smallPopUp"
+                              header="#{bundle['file.alreadyReplaced.header']}" widgetVar="fileAlreadyReplacedPrevious" modal ="true">
+                        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.alreadyReplaced.previous.warningMessage']}</p>
+                        <div class="button-block">
+                            <p:commandButton value="#{bundle.close}" onclick="PF('fileAlreadyReplacedPrevious').hide();"/>
                         </div>
                     </p:dialog>
                 </h:form>
