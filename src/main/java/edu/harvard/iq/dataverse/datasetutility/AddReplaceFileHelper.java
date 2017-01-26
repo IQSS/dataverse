@@ -814,7 +814,12 @@ public class AddReplaceFileHelper{
      * 
      * @param msgName
      * @return 
+     * @deprecated This method is deprecated because you have to know to search
+     * only part of a bundle key ("add_file_error") rather than the full bundle
+     * key ("file.addreplace.error.add.add_file_error") leading you to believe
+     * that the bundle key is not used.
      */
+    @Deprecated
     private String getBundleMsg(String msgName, boolean isErr){
         if (msgName == null){
             throw new NullPointerException("msgName cannot be null");
@@ -1421,10 +1426,16 @@ public class AddReplaceFileHelper{
             //
             dataset = commandEngine.submit(update_cmd);
         } catch (CommandException ex) {
+            /**
+             * @todo Add a test to exercise this error.
+             */
             this.addErrorSevere(getBundleErr("add.add_file_error"));
             logger.severe(ex.getMessage());
             return false;
         }catch (EJBException ex) {
+            /**
+             * @todo Add a test to exercise this error.
+             */
             this.addErrorSevere("add.add_file_error (see logs)");
             logger.severe(ex.getMessage());
             return false;
