@@ -299,13 +299,15 @@ In practice, you only need one the ``dataset_id`` or the ``persistentId``. The e
 Files
 ~~~~~~~~~~~
 
+.. note:: Please note that files can be added via the native API but the operation is performed on the parent object, which is a dataset. Please see the "Datasets" endpoint above for more information.
+
 Replace an existing file where ``id`` is the database id of the file to replace. Note that metadata such as description and tags are not carried over from the file being replaced::
 
     POST http://$SERVER/api/files/{id}/replace?key=$apiKey
 
 A more detailed "replace" example using curl::
 
-    curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F 'file=@data.tsv' -F 'jsonData={"description":"My description.","categories":["Data"]}' "https://localhost:8181/api/files/$FILE_ID/replace"
+    curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F 'file=@data.tsv' -F 'jsonData={"description":"My description.","categories":["Data"]}' "https://example.dataverse.edu/api/files/$FILE_ID/replace"
 
 Example python code to replace a file.  This may be run by changing these parameters in the sample code:
 
