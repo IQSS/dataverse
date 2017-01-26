@@ -7,6 +7,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import com.jayway.restassured.path.json.JsonPath;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import static java.lang.Thread.sleep;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.ResourceBundle;
@@ -423,7 +424,7 @@ public class FilesIT {
     }
 
     @Test
-    public void test_006_ReplaceFileGoodTabular() {
+    public void test_006_ReplaceFileGoodTabular() throws InterruptedException {
         msgt("test_006_ReplaceFileGoodTabular");
 
         // Create user
@@ -466,6 +467,9 @@ public class FilesIT {
         Response publishDataversetResp = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
         publishDataversetResp.then().assertThat()
                 .statusCode(OK.getStatusCode());
+
+        // give file time to ingest
+        sleep(1000);
 
         Response publishDatasetResp = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
         publishDatasetResp.prettyPrint();

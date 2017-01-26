@@ -72,7 +72,11 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
         if (!theDataset.getOwner().isReleased()) {
             throw new IllegalCommandException("This dataset may not be published because its host dataverse (" + theDataset.getOwner().getAlias() + ") has not been published.", this);
         }
-        
+
+        if (theDataset.isLocked()) {
+            throw new IllegalCommandException("This dataset is locked due to files being ingested. Please try publishing later.", this);
+        }
+
         if (theDataset.getLatestVersion().isReleased()) {
             throw new IllegalCommandException("Latest version of dataset " + theDataset.getIdentifier() + " is already released. Only draft versions can be released.", this);
         }
