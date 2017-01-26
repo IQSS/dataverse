@@ -482,9 +482,6 @@ public class FilesIT {
         msg("Replace file - 1st time");
         String pathToFile2 = "scripts/search/data/tabular/120745.dta";
         JsonObjectBuilder json = Json.createObjectBuilder()
-                /**
-                 * @todo forceReplace doesn't seem to work.
-                 */
                 .add("forceReplace", true)
                 .add("description", "tiny Stata file")
                 .add("categories", Json.createArrayBuilder()
@@ -522,6 +519,74 @@ public class FilesIT {
 
     }
 
+    @Test
+    public void testForceReplace() {
+        msgt("testForceReplace");
+
+        // Create user
+        String apiToken = createUserGetToken();
+
+        // Create Dataverse
+        String dataverseAlias = createDataverseGetAlias(apiToken);
+
+        // Create Dataset
+        Integer datasetId = createDatasetGetId(dataverseAlias, apiToken);
+
+        // -------------------------
+        // Add initial file
+        // -------------------------
+        msg("Add initial file");
+        String pathToFile = "src/main/webapp/resources/images/cc0.png";
+        Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
+
+        String successMsgAdd = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");
+
+        addResponse.then().assertThat()
+                .body("data.files[0].dataFile.contentType", equalTo("image/png"))
+                .body("data.files[0].label", equalTo("cc0.png"))
+                .statusCode(OK.getStatusCode());
+
+        long origFileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
+
+        msg("Orig file id: " + origFileId);
+        assertNotNull(origFileId);    // If checkOut fails, display message
+
+        // -------------------------
+        // Publish dataverse and dataset
+        // -------------------------
+        msg("Publish dataverse and dataset");
+        Response publishDataversetResp = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
+        publishDataversetResp.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response publishDatasetResp = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        publishDatasetResp.prettyPrint();
+        publishDatasetResp.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // -------------------------
+        // Replace file
+        // -------------------------
+        msg("Replace file - 1st time");
+        String pathToFile2 = "scripts/search/data/replace_test/growing_file/2016-01/data.tsv";
+        JsonObjectBuilder json = Json.createObjectBuilder()
+                .add("forceReplace", true)
+                .add("description", "not an image")
+                .add("categories", Json.createArrayBuilder()
+                        .add("Data")
+                );
+        Response replaceResp = UtilIT.replaceFile(origFileId, pathToFile2, json.build(), apiToken);
+
+        replaceResp.prettyPrint();
+
+        replaceResp.then().assertThat()
+                .body("data.files[0].label", equalTo("data.tsv"))
+                .body("data.files[0].description", equalTo("not an image"))
+                .body("data.files[0].categories[0]", equalTo("Data"))
+                .statusCode(OK.getStatusCode());
+
+    }
+    
     @Test
     public void test_007_ReplaceFileUnpublishedAndBadIds() {
         msgt("test_007_ReplaceFileBadIds");
