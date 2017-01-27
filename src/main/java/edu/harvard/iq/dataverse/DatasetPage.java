@@ -988,6 +988,16 @@ public class DatasetPage implements java.io.Serializable {
         this.displayFileMetadata = displayFileMetadata;
     }
     
+    private List<DatasetVersion> otherVersionsAvailable;
+    
+    public List<DatasetVersion> getVersionsAvailable() {
+        return otherVersionsAvailable;
+    }
+    
+    public void setVersionsAvailable(List<DatasetVersion> otherVersionsAvailable) {
+        this.otherVersionsAvailable = otherVersionsAvailable;
+    }
+    
     private boolean readOnly = true; 
     private boolean metadataExportEnabled;
     private String originalSourceUrl = null;
@@ -1143,6 +1153,15 @@ public class DatasetPage implements java.io.Serializable {
                 // populate MapLayerMetadata
                 this.loadMapLayerMetadataLookup();  // A DataFile may have a related MapLayerMetadata object
                 this.guestbookResponse = guestbookResponseService.initGuestbookResponseForFragment(dataset, null, session);
+                
+                otherVersionsAvailable = new ArrayList<>();
+                for (DatasetVersion v : dataset.getVersions()) {
+                    //if (!workingVersion.getSemanticVersion().equals(v.getSemanticVersion())) {
+                        if (v.isReleased() || v.isDeaccessioned() || this.canViewUnpublishedDataset()) {
+                            otherVersionsAvailable.add(v);
+                        }
+                    //}
+                }
                 
             }
         } else if (ownerId != null) {
