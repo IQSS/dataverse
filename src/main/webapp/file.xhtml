@@ -278,7 +278,9 @@
                                 <div class="btn-group pull-right" jsf:rendered="#{dataverseSession.user.authenticated
                                                          and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset) 
                                                          and (dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile) or dataFileServiceBean.hasBeenDeleted(FilePage.fileMetadata.dataFile)) }">
-                                    <p:commandButton value="#{bundle['dataset.editBtn']}" onclick="PF('fileAlreadyReplacedPrevious').show()" type="button" />
+                                    <p:commandLink styleClass="btn btn-default" onclick="PF('fileAlreadyReplacedPrevious').show()">
+                                        <span class="glyphicon glyphicon-pencil"/> #{bundle['dataset.editBtn']}
+                                    </p:commandLink>
                                 </div>
 
                                     <!-- Export Button -->
