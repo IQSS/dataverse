@@ -121,8 +121,8 @@ public class EditDatafilesPage implements java.io.Serializable {
     private Dataset dataset = new Dataset();
     
     private FileReplacePageHelper fileReplacePageHelper;
-    
-    
+
+
     private String selectedFileIdsString = null; 
     private FileEditMode mode = FileEditMode.EDIT; 
     private List<Long> selectedFileIdsList = new ArrayList<>(); 
@@ -671,11 +671,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     List<FileMetadata> previouslyRestrictedFiles = null;
     
     public boolean isShowAccessPopup() {
-        //System.out.print("in get show access popup");
-        //System.out.print("previously restricted :" + previouslyRestrictedFiles);
         for (FileMetadata fmd : this.fileMetadatas) {
-            //System.out.print("restricted :" + fmd.isRestricted());
-            //System.out.print("file id :" + fmd.getDataFile().getId());
             
             if (fmd.isRestricted()) {
             
@@ -703,7 +699,6 @@ public class EditDatafilesPage implements java.io.Serializable {
                 }
             }
         }
-        //System.out.print("returning false");
         return false;
     }
     
@@ -718,8 +713,6 @@ public class EditDatafilesPage implements java.io.Serializable {
                 previouslyRestrictedFiles.add(fmd);
             }
         }
-
-        //System.out.print(previouslyRestrictedFiles.size());
         
         String fileNames = null;
         
@@ -801,7 +794,6 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     
     public void deleteReplacementFile() throws FileReplaceException{
-
         if (!isFileReplaceOperation()){
             throw new FileReplaceException("Only use this for File Replace Operations");            
         }
@@ -1667,6 +1659,16 @@ public class EditDatafilesPage implements java.io.Serializable {
         uploadWarningMessage = null;
         uploadSuccessMessage = null; 
     }
+    
+    private String warningMessageForPopUp;
+
+    public String getWarningMessageForPopUp() {
+        return warningMessageForPopUp;
+    }
+
+    public void setWarningMessageForPopUp(String warningMessageForPopUp) {
+        this.warningMessageForPopUp = warningMessageForPopUp;
+    }
 
     private void handleReplaceFileUpload(FacesEvent event, InputStream inputStream, 
                         String fileName, 
@@ -1691,9 +1693,8 @@ public class EditDatafilesPage implements java.io.Serializable {
              * If the file content type changed, let the user know
              */
             if (fileReplacePageHelper.hasContentTypeWarning()){
-                uploadWarningMessage = fileReplacePageHelper.getContentTypeWarning();
-                uploadWarningMessageIsNotAnError = true;
-                
+                //Add warning to popup instead of page for Content Type Difference
+                setWarningMessageForPopUp(fileReplacePageHelper.getContentTypeWarning());
                 /* 
                     Note on the info messages - upload errors, warnings and success messages:
                     Instead of trying to display the message here (commented out code below),
@@ -1745,6 +1746,8 @@ public class EditDatafilesPage implements java.io.Serializable {
     private String uploadSuccessMessage = null; 
     private String uploadComponentId = null; 
     
+    
+    
     /**
      * Handle native file replace
      * @param event 
@@ -1753,7 +1756,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         if (!uploadInProgress) {
             uploadInProgress = true;
         }
-
+        
         if (event == null){
             throw new NullPointerException("event cannot be null");
         }
@@ -1768,13 +1771,18 @@ public class EditDatafilesPage implements java.io.Serializable {
          * For File Replace, take a different code path
          */
         if (isFileReplaceOperation()){
-           
+
             handleReplaceFileUpload(event, uFile.getInputstream(),
                                     uFile.getFileName(),
                                     uFile.getContentType(),
                                     event,
                                     null);
-            
+            if(fileReplacePageHelper.hasContentTypeWarning()){
+                    RequestContext context = RequestContext.getCurrentInstance();
+                    RequestContext.getCurrentInstance().update("datasetForm:fileTypeDifferentPopup");
+                    context.execute("PF('fileTypeDifferentPopup').show();");
+                    context.execute("PF('fileTypeDifferentPopup').show();");
+            }
             return;
                
         }

@@ -264,8 +264,12 @@ public class DataFileServiceBean implements java.io.Serializable {
         Query query = em.createQuery("select o from FileMetadata o where o.datasetVersion.id = :datasetVersionId  and o.dataFile.id = :dataFileId");
         query.setParameter("datasetVersionId", datasetVersionId);
         query.setParameter("dataFileId", dataFileId);
-
-        return (FileMetadata) query.getSingleResult();
+        try {
+            FileMetadata retVal = (FileMetadata) query.getSingleResult();
+            return retVal;
+        } catch(Exception ex) {
+            return null;
+        }
     }
 
     public DataFile findCheapAndEasy(Long id) {
@@ -1381,6 +1385,14 @@ public class DataFileServiceBean implements java.io.Serializable {
 
             throw new Exception(errMsg);
         }
+        
+    }
+    
+    public boolean hasBeenDeleted(DataFile df){
+        Dataset dataset = df.getOwner();
+        DatasetVersion dsv = dataset.getLatestVersion();
+        
+        return findFileMetadataByDatasetVersionIdAndDataFileId(dsv.getId(), df.getId()) == null;
         
     }
     

@@ -260,6 +260,16 @@
     <!-- authentication and authorization: #dataverseSession.user.authenticated and permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset) -->
 
     <!-- Popups -->
+    <p:dialog styleClass="smallPopUp" header="#{bundle['file.addreplace.content_type.header']}" widgetVar="fileTypeDifferentPopup" id="fileTypeDifferentPopup" modal="true">
+        <p class="text-info"><span class="glyphicon glyphicon-info-sign"/> #{EditDatafilesPage.warningMessageForPopUp}</p>
+        <div class="button-block">
+            <p:commandButton value="#{bundle['file.delete']}" onclick="PF('fileTypeDifferentPopup').hide()" 
+                             action="#{EditDatafilesPage.deleteFiles()}"
+                             update=":#{p:component('filesTable')},:messagePanel,:#{p:component('fileUpload')},uploadMessage"/>
+            <p:commandButton value="#{bundle.continue}" onclick="PF('fileTypeDifferentPopup').hide()" type="button" />
+        </div>
+    </p:dialog>
+    
     <p:dialog styleClass="smallPopUp" header="#{bundle['file.deleteFileDialog.header']}" widgetVar="deleteFileConfirmation" modal="true">
         <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.tip']}</p>
         <ui:fragment rendered="#{EditDatafilesPage.dataset.released}">

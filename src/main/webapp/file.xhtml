@@ -45,14 +45,14 @@
                                 <!-- Edit Button Group -->
                                 <div class="btn-group pull-right" jsf:rendered="#{dataverseSession.user.authenticated
                                                          and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset) 
-                                                         and dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile)}">
+                                                         and (dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile) or dataFileServiceBean.hasBeenDeleted(FilePage.fileMetadata.dataFile))}">
                                     <p:commandLink styleClass="btn btn-default" onclick="PF('fileAlreadyReplacedPrevious').show()">
                                         <span class="glyphicon glyphicon-pencil"/> #{bundle['dataset.editBtn']}
                                     </p:commandLink>
                                 </div>
                                 <div class="btn-group pull-right" jsf:rendered="#{dataverseSession.user.authenticated
                                                          and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset)
-                                                         and !dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile)}">
+                                                         and !(dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile) or dataFileServiceBean.hasBeenDeleted(FilePage.fileMetadata.dataFile))}">
                                     <button type="button" id="editFile" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                                         <span class="glyphicon glyphicon-pencil"/> #{bundle['dataset.editBtn']} <span class="caret"></span>
                                     </button>
@@ -271,9 +271,15 @@
                                 <div class="button-block tab-header margin-bottom text-right">
                                     <h:outputLink class="btn btn-default" value="/editdatafiles.xhtml?selectedFileIds=#{FilePage.fileMetadata.dataFile.id}&#38;datasetId=#{FilePage.fileMetadata.datasetVersion.dataset.id}&#38;mode=SINGLE"
                                                   rendered="#{dataverseSession.user.authenticated
-                                                     and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset)}">
+                                                     and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset)
+                                                     and !(dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile) or dataFileServiceBean.hasBeenDeleted(FilePage.fileMetadata.dataFile))}">
                                             <span class="glyphicon glyphicon-pencil"/> #{bundle['file.dataFilesTab.metadata.addBtn']}
                                     </h:outputLink>
+                                <div class="btn-group pull-right" jsf:rendered="#{dataverseSession.user.authenticated
+                                                         and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset) 
+                                                         and (dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile) or dataFileServiceBean.hasBeenDeleted(FilePage.fileMetadata.dataFile)) }">
+                                    <p:commandButton value="#{bundle['dataset.editBtn']}" onclick="PF('fileAlreadyReplacedPrevious').show()" type="button" />
+                                </div>
 
                                     <!-- Export Button -->
                                     <div class="btn-group" jsf:rendered="#{FilePage.fileMetadata.datasetVersion.dataset.released}">
@@ -478,7 +484,12 @@
                     </p:dialog>
                     <p:dialog id="fileAlreadyReplacedPrevious" styleClass="smallPopUp"
                               header="#{bundle['file.replaced.warning.header']}" widgetVar="fileAlreadyReplacedPrevious" modal="true">
+                        <ui:fragment rendered="#{dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile) }">
                         <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.replaced.warning.previous.warningMessage']}</p>
+                        </ui:fragment>
+                        <ui:fragment rendered="#{!dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile)}">
+                        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.alreadyDeleted.previous.warningMessage']}</p>
+                        </ui:fragment>
                         <div class="button-block">
                             <p:commandButton value="#{bundle.close}" onclick="PF('fileAlreadyReplacedPrevious').hide();"/>
                         </div>
