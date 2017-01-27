@@ -6,6 +6,8 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
+import edu.harvard.iq.dataverse.ingest.IngestUtil;
+import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -14,12 +16,15 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.inject.Named;
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
@@ -48,6 +53,9 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
     
     @EJB
     SystemConfig systemConfig;
+
+    @EJB
+    IndexServiceBean indexService;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -972,6 +980,26 @@ w
         }
         return hashList;
         */
+    }
+
+    public JsonObjectBuilder fixUnf(String datasetVersionId) {
+        JsonObjectBuilder info = Json.createObjectBuilder();
+        if (datasetVersionId == null || datasetVersionId.isEmpty()) {
+            info.add("message", "datasetVersionId was null or empty!");
+            return info;
+        }
+        long dsvId = Long.parseLong(datasetVersionId);
+        DatasetVersion datasetVersion = find(dsvId);
+        if (datasetVersion == null) {
+            info.add("message", "Could not find a dataset version based on datasetVersionId " + datasetVersionId + ".");
+            return info;
+        }
+        IngestUtil.recalculateDatasetVersionUNF(datasetVersion);
+        DatasetVersion saved = em.merge(datasetVersion);
+        info.add("message", "New UNF value saved (" + saved.getUNF() + "). Reindexing dataset.");
+        boolean doNormalSolrDocCleanUp = true;
+        Future<String> indexingResult = indexService.indexDataset(datasetVersion.getDataset(), doNormalSolrDocCleanUp);
+        return info;
     }
     
 } // end class

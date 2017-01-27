@@ -619,50 +619,11 @@ public class IngestServiceBean {
             dataFile.getDataTable().setUnf(fileUnfValue);
         }
     }
-    
+
     public void recalculateDatasetVersionUNF(DatasetVersion version) {
-        String[] unfValues = new String[0];
-        String datasetUnfValue = null; 
-        List<String> unfValueList = new ArrayList<>();
-        
-        logger.fine("recalculating UNF for dataset version.");
-        Iterator<FileMetadata> itfm = version.getFileMetadatas().iterator();
-        while (itfm.hasNext()) {            
-            FileMetadata fileMetadata = itfm.next();
-            if (fileMetadata != null &&
-                    fileMetadata.getDataFile() != null &&
-                    fileMetadata.getDataFile().isTabularData() &&
-                    fileMetadata.getDataFile().getUnf() != null) {
-                String varunf = fileMetadata.getDataFile().getUnf();
-                unfValueList.add(varunf);
-            }
-        }
-        
-        if (unfValueList.size() > 0) {
-            unfValues = unfValueList.toArray(unfValues);
-        
-            logger.fine("Attempting to calculate new UNF from total of " + unfValueList.size() + " file-level signatures.");
-            try {
-                datasetUnfValue = UNFUtil.calculateUNF(unfValues);
-            } catch (IOException ex) {
-                logger.warning("IO Exception: Failed to recalculate the UNF for the dataset version id="+version.getId());
-            } catch (UnfException uex) {
-                logger.warning("UNF Exception: Failed to recalculate the UNF for the dataset version id="+version.getId());
-            }        
-        
-            if (datasetUnfValue != null) {
-                version.setUNF(datasetUnfValue);
-                logger.fine("Recalculated the UNF for the dataset version id="+version.getId()+", new signature: "+datasetUnfValue);
-            }
-        } else {
-            // Of course if no files in the version have UNFs, we need to make sure
-            // that the version has the NULL UNF too.
-            // Otherwise, the version will still have a UNF if the user deletes
-            // all the tabular files from the version!
-            version.setUNF(null);
-        }
+        IngestUtil.recalculateDatasetVersionUNF(version);
     }
-    
+
     public void sendFailNotification(Long dataset_id) {
         FacesMessage facesMessage = new FacesMessage("ingest failed");
         /* commented out push channel message:

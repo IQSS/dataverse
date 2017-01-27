@@ -20,17 +20,25 @@
 package edu.harvard.iq.dataverse.ingest;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.util.FileUtil;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObjectBuilder;
+import org.dataverse.unf.UNFUtil;
+import org.dataverse.unf.UnfException;
 
 /**
  * Various helper methods used by IngestServiceBean.
@@ -64,10 +72,10 @@ public class IngestUtil {
     }
 
     /**
-     * Checks if the unique file path of the supplied fileMetadata is already on 
-     * the list of the existing files; and if so, keeps generating a new name 
-     * until it is unique. Returns the final file name. (i.e., it only modifies the
-     * filename, and not the folder name, in order to achieve uniqueness)
+     * Checks if the unique file path of the supplied fileMetadata is already on
+     * the list of the existing files; and if so, keeps generating a new name
+     * until it is unique. Returns the final file name. (i.e., it only modifies
+     * the filename, and not the folder name, in order to achieve uniqueness)
      *
      * @param fileMetadata supplied FileMetadata
      * @param existingFileNames a set of the already existing pathnames
@@ -193,6 +201,105 @@ public class IngestUtil {
         }
 
         return pathNamesExisting;
+    }
+
+    /**
+     * @param version The DatasetVersion to mutate, setting or unsetting the
+     * UNF.
+     */
+    public static void recalculateDatasetVersionUNF(DatasetVersion version) {
+        logger.fine("recalculating UNF for dataset version.");
+        if (version == null) {
+            return;
+        }
+        List<String> unfValueList = getUnfValuesOfFiles(version);
+        if (unfValueList.size() > 0) {
+            String[] unfValues = new String[0];
+            unfValues = unfValueList.toArray(unfValues);
+
+            logger.fine("Attempting to calculate new UNF from total of " + unfValueList.size() + " file-level signatures.");
+            String datasetUnfValue = null;
+            try {
+                datasetUnfValue = UNFUtil.calculateUNF(unfValues);
+            } catch (IOException ex) {
+                logger.warning("IO Exception: Failed to recalculate the UNF for the dataset version id=" + version.getId());
+            } catch (UnfException uex) {
+                logger.warning("UNF Exception: Failed to recalculate the UNF for the dataset version id=" + version.getId());
+            }
+
+            if (datasetUnfValue != null) {
+                version.setUNF(datasetUnfValue);
+                logger.fine("Recalculated the UNF for the dataset version id=" + version.getId() + ", new signature: " + datasetUnfValue);
+            }
+        } else {
+            // Of course if no files in the version have UNFs, we need to make sure
+            // that the version has the NULL UNF too.
+            // Otherwise, the version will still have a UNF if the user deletes
+            // all the tabular files from the version!
+            version.setUNF(null);
+        }
+    }
+
+    private static List<String> getUnfValuesOfFiles(DatasetVersion version) {
+        List<String> unfValueList = new ArrayList<>();
+        if (version == null) {
+            return unfValueList;
+        }
+        Iterator<FileMetadata> itfm = version.getFileMetadatas().iterator();
+        while (itfm.hasNext()) {
+            FileMetadata fileMetadata = itfm.next();
+            if (fileMetadata != null
+                    && fileMetadata.getDataFile() != null
+                    && fileMetadata.getDataFile().isTabularData()
+                    && fileMetadata.getDataFile().getUnf() != null) {
+                String varunf = fileMetadata.getDataFile().getUnf();
+                unfValueList.add(varunf);
+            }
+        }
+        return unfValueList;
+    }
+
+    public static boolean shouldHaveUnf(DatasetVersion version) {
+        if (version == null) {
+            return false;
+        }
+        List<String> values = getUnfValuesOfFiles(version);
+        logger.fine("UNF values for files from Dataset version " + version.getSemanticVersion() + " from " + version.getDataset().getGlobalId() + ": " + values);
+        if (values.size() > 0) {
+            return true;
+        } else {
+            return false;
+        }
+
+    }
+
+    public static JsonArrayBuilder getUnfData(List<Dataset> datasets) {
+        JsonArrayBuilder datasetVersionsWithWrongUnfValue = Json.createArrayBuilder();
+        if (datasets == null || datasets.isEmpty()) {
+            return datasetVersionsWithWrongUnfValue;
+        }
+        for (Dataset dataset : datasets) {
+            for (DatasetVersion dsv : dataset.getVersions()) {
+                boolean shouldHaveUnf = IngestUtil.shouldHaveUnf(dsv);
+                String existingUnf = dsv.getUNF();
+                if (shouldHaveUnf) {
+                    if (existingUnf == null) {
+                        String msg = "Dataset version " + dsv.getSemanticVersion() + " (datasetVersionId " + dsv.getId() + ") from " + dsv.getDataset().getGlobalId() + " doesn't have a UNF but should!";
+                        JsonObjectBuilder problem = Json.createObjectBuilder();
+                        problem.add("datasetVersionId", dsv.getId());
+                        problem.add("message", msg);
+                        datasetVersionsWithWrongUnfValue.add(problem);
+                    }
+                } else if (existingUnf != null) {
+                    String msg = "Dataset version " + dsv.getSemanticVersion() + " (datasetVersionId " + dsv.getId() + ") from " + dsv.getDataset().getGlobalId() + " has a UNF (" + existingUnf + ") but shouldn't!";
+                    JsonObjectBuilder problem = Json.createObjectBuilder();
+                    problem.add("datasetVersionId", dsv.getId());
+                    problem.add("message", msg);
+                    datasetVersionsWithWrongUnfValue.add(problem);
+                }
+            }
+        }
+        return datasetVersionsWithWrongUnfValue;
     }
 
 }

@@ -5,53 +5,28 @@ import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.api.Datasets;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-
+import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeDataset;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
-import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeDataset;
 import java.util.Set;
 import javax.validation.ConstraintViolation;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
-/**
- * Tests against IngestServiceBean helper methods.
- * 
- * @author bmckinney 
- */
-public class IngestServiceBeanHelperTest {
+public class IngestUtilTest {
 
-    @BeforeClass
-    public static void setUpClass() {
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
-    
     @Test
     /**
-     * Test adding duplicate file name labels to a dataset version with no subdirectories.
+     * Test adding duplicate file name labels to a dataset version with no
+     * subdirectories.
      */
     public void testCheckForDuplicateFileNamesNoDirectories() throws Exception {
-        
+
         SimpleDateFormat dateFmt = new SimpleDateFormat("yyyyMMdd");
 
         // create dataset
@@ -59,10 +34,10 @@ public class IngestServiceBeanHelperTest {
 
         // create dataset version
         DatasetVersion datasetVersion = dataset.getEditVersion();
-        datasetVersion.setCreateTime( dateFmt.parse("20001012") );
-        datasetVersion.setLastUpdateTime( datasetVersion.getLastUpdateTime() );
-        datasetVersion.setId( MocksFactory.nextId() );
-        datasetVersion.setReleaseTime( dateFmt.parse("20010101") );
+        datasetVersion.setCreateTime(dateFmt.parse("20001012"));
+        datasetVersion.setLastUpdateTime(datasetVersion.getLastUpdateTime());
+        datasetVersion.setId(MocksFactory.nextId());
+        datasetVersion.setReleaseTime(dateFmt.parse("20010101"));
         datasetVersion.setVersionState(DatasetVersion.VersionState.RELEASED);
         datasetVersion.setMinorVersionNumber(0L);
         datasetVersion.setVersionNumber(1L);
@@ -113,9 +88,9 @@ public class IngestServiceBeanHelperTest {
         fmd2.setDatasetVersion(datasetVersion);
 
         dataFileList.add(datafile2);
-        
+
         IngestUtil.checkForDuplicateFileNamesFinal(datasetVersion, dataFileList);
-        
+
         boolean file1NameAltered = false;
         boolean file2NameAltered = false;
         for (DataFile df : dataFileList) {
@@ -126,11 +101,11 @@ public class IngestServiceBeanHelperTest {
                 file2NameAltered = true;
             }
         }
-        
+
         // check filenames are unique and unaltered
         assertEquals(file1NameAltered, true);
         assertEquals(file2NameAltered, true);
-        
+
         // try to add data files with "-1" duplicates and see if it gets incremented to "-2"
         IngestUtil.checkForDuplicateFileNamesFinal(datasetVersion, dataFileList);
 
@@ -150,8 +125,9 @@ public class IngestServiceBeanHelperTest {
 
     @Test
     /**
-     * Test adding duplicate file name labels to a dataset version with empty directory labels. 
-     * This should simulate what happens when uploading a file via the file upload UI.
+     * Test adding duplicate file name labels to a dataset version with empty
+     * directory labels. This should simulate what happens when uploading a file
+     * via the file upload UI.
      */
     public void testCheckForDuplicateFileNamesWithEmptyDirectoryLabels() throws Exception {
 
@@ -162,10 +138,10 @@ public class IngestServiceBeanHelperTest {
 
         // create dataset version
         DatasetVersion datasetVersion = dataset.getEditVersion();
-        datasetVersion.setCreateTime( dateFmt.parse("20001012") );
-        datasetVersion.setLastUpdateTime( datasetVersion.getLastUpdateTime() );
-        datasetVersion.setId( MocksFactory.nextId() );
-        datasetVersion.setReleaseTime( dateFmt.parse("20010101") );
+        datasetVersion.setCreateTime(dateFmt.parse("20001012"));
+        datasetVersion.setLastUpdateTime(datasetVersion.getLastUpdateTime());
+        datasetVersion.setId(MocksFactory.nextId());
+        datasetVersion.setReleaseTime(dateFmt.parse("20010101"));
         datasetVersion.setVersionState(DatasetVersion.VersionState.RELEASED);
         datasetVersion.setMinorVersionNumber(0L);
         datasetVersion.setVersionNumber(1L);
@@ -252,11 +228,11 @@ public class IngestServiceBeanHelperTest {
         assertEquals(file1NameAltered, true);
         assertEquals(file2NameAltered, true);
     }
-    
+
     @Test
     /**
-     * Test adding duplicate file name labels with directories, including a duplicate file name label in another 
-     * directory.
+     * Test adding duplicate file name labels with directories, including a
+     * duplicate file name label in another directory.
      */
     public void testCheckForDuplicateFileNamesWithDirectories() throws Exception {
 
@@ -267,10 +243,10 @@ public class IngestServiceBeanHelperTest {
 
         // create dataset version
         DatasetVersion datasetVersion = dataset.getEditVersion();
-        datasetVersion.setCreateTime( dateFmt.parse("20001012") );
-        datasetVersion.setLastUpdateTime( datasetVersion.getLastUpdateTime() );
-        datasetVersion.setId( MocksFactory.nextId() );
-        datasetVersion.setReleaseTime( dateFmt.parse("20010101") );
+        datasetVersion.setCreateTime(dateFmt.parse("20001012"));
+        datasetVersion.setLastUpdateTime(datasetVersion.getLastUpdateTime());
+        datasetVersion.setId(MocksFactory.nextId());
+        datasetVersion.setReleaseTime(dateFmt.parse("20010101"));
         datasetVersion.setVersionState(DatasetVersion.VersionState.RELEASED);
         datasetVersion.setMinorVersionNumber(0L);
         datasetVersion.setVersionNumber(1L);
@@ -369,7 +345,7 @@ public class IngestServiceBeanHelperTest {
         // add duplicate file in root
         datasetVersion.getFileMetadatas().add(fmd3);
         fmd3.setDatasetVersion(datasetVersion);
-        
+
         // try to add data files with "-1" duplicates and see if it gets incremented to "-2"
         IngestUtil.checkForDuplicateFileNamesFinal(datasetVersion, dataFileList);
 
@@ -393,7 +369,8 @@ public class IngestServiceBeanHelperTest {
 
     @Test
     /**
-     * Test tabular files (e.g., .dta) are changed when .tab files with the same name exist.
+     * Test tabular files (e.g., .dta) are changed when .tab files with the same
+     * name exist.
      */
     public void testCheckForDuplicateFileNamesTabular() throws Exception {
 
@@ -404,15 +381,15 @@ public class IngestServiceBeanHelperTest {
 
         // create dataset version
         DatasetVersion datasetVersion = dataset.getEditVersion();
-        datasetVersion.setCreateTime( dateFmt.parse("20001012") );
-        datasetVersion.setLastUpdateTime( datasetVersion.getLastUpdateTime() );
-        datasetVersion.setId( MocksFactory.nextId() );
-        datasetVersion.setReleaseTime( dateFmt.parse("20010101") );
+        datasetVersion.setCreateTime(dateFmt.parse("20001012"));
+        datasetVersion.setLastUpdateTime(datasetVersion.getLastUpdateTime());
+        datasetVersion.setId(MocksFactory.nextId());
+        datasetVersion.setReleaseTime(dateFmt.parse("20010101"));
         datasetVersion.setVersionState(DatasetVersion.VersionState.RELEASED);
         datasetVersion.setMinorVersionNumber(0L);
         datasetVersion.setVersionNumber(1L);
         datasetVersion.setFileMetadatas(new ArrayList<>());
-        
+
         // create datafiles
         List<DataFile> dataFileList = new ArrayList<>();
         DataFile datafile1 = new DataFile("application/x-strata");
@@ -437,7 +414,7 @@ public class IngestServiceBeanHelperTest {
         datafile1.getFileMetadatas().add(fmd1);
         datasetVersion.getFileMetadatas().add(fmd1);
         fmd1.setDatasetVersion(datasetVersion);
-        
+
         DataFile datafile2 = new DataFile("application/x-strata");
         datafile2.setStorageIdentifier("foobar.dta");
         datafile2.setFilesize(200);
@@ -462,7 +439,7 @@ public class IngestServiceBeanHelperTest {
         dataFileList.add(datafile2);
 
         IngestUtil.checkForDuplicateFileNamesFinal(datasetVersion, dataFileList);
-        
+
         boolean file2NameAltered = false;
         for (DataFile df : dataFileList) {
             if (df.getFileMetadata().getLabel().equals("foobar-1.dta")) {
@@ -549,7 +526,31 @@ public class IngestServiceBeanHelperTest {
         datasetVersion.getFileMetadatas().add(fileMetadata);
         Set<ConstraintViolation> violations13 = datasetVersion.validate();
         assertEquals(1, violations13.size());
-        
+
     }
 
+    @Test
+    public void testRecalculateDatasetVersionUNF() {
+        IngestUtil.recalculateDatasetVersionUNF(null);
+        DatasetVersion dsv1 = new DatasetVersion();
+        IngestUtil.recalculateDatasetVersionUNF(dsv1);
+        assertEquals(null, dsv1.getUNF());
+    }
+
+    @Test
+    public void testShouldHaveUnf() {
+        DatasetVersion dsv1 = new DatasetVersion();
+        IngestUtil.recalculateDatasetVersionUNF(dsv1);
+        assertEquals(null, dsv1.getUNF());
+    }
+
+    @Test
+    public void testGetUnfData() {
+        List<Dataset> datasets = new ArrayList<>();
+        Dataset dataset = new Dataset();
+        DatasetVersion dsv1 = new DatasetVersion();
+        datasets.add(dataset);
+        IngestUtil.getUnfData(datasets);
+        assertEquals(null, dsv1.getUNF());
+    }
 }

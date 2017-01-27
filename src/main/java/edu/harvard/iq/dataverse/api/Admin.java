@@ -53,6 +53,8 @@ import edu.harvard.iq.dataverse.authorization.AuthTestDataServiceBean;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.ingest.IngestUtil;
+import javax.json.JsonArray;
 /**
  * Where the secure, setup API calls live.
  * @author michael
@@ -861,6 +863,23 @@ public class Admin extends AbstractApiBean {
         RoleAssignee ra = roleAssigneeSvc.getRoleAssignee(idtf);
         return (ra == null) ? notFound("Role Assignee '" + idtf + "' not found.")
                 : ok(json(ra.getDisplayInfo()));
+    }
+
+    @Path("datasets/integrity")
+    @GET
+    public Response checkDatasetIntegrity() {
+        JsonArray datasetVersionsWithWrongUnfValue = IngestUtil.getUnfData(datasetSvc.findAll()).build();
+        JsonObjectBuilder info = Json.createObjectBuilder();
+        info.add("numProblems", datasetVersionsWithWrongUnfValue.size());
+        info.add("problems", datasetVersionsWithWrongUnfValue);
+        return ok(info);
+    }
+
+    @Path("datasets/integrity/unf/{datasetVersionId}")
+    @POST
+    public Response fixUnf(@PathParam("datasetVersionId") String datasetVersionId) {
+        JsonObjectBuilder info = datasetVersionSvc.fixUnf(datasetVersionId);
+        return ok(info);
     }
 
 }

@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
@@ -185,6 +186,9 @@ public abstract class AbstractApiBean {
 
     @EJB
     protected UserNotificationServiceBean userNotificationSvc;
+
+    @EJB
+    protected DatasetVersionServiceBean datasetVersionSvc;
 
 	@PersistenceContext(unitName = "VDCNet-ejbPU")
 	protected EntityManager em;
