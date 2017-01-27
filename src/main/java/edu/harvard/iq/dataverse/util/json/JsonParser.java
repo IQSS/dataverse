@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.util.json;
 import com.google.gson.Gson;
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFileCategory;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
@@ -23,6 +24,7 @@ import edu.harvard.iq.dataverse.api.dto.FieldDTO;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddressRange;
+import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.StringReader;
@@ -386,6 +388,7 @@ public class JsonParser {
                 dsv.getDataset().getFiles().add(dataFile);
 
                 fileMetadatas.add(fileMetadata);
+                fileMetadata.setCategories(getCategories(filemetadataJson, dsv.getDataset()));
             }
         }
 
@@ -750,5 +753,27 @@ public class JsonParser {
         harvestingClient.setHarvestingSet(obj.getString("set",null));
 
         return dataverseAlias;
+    }
+
+    private List<DataFileCategory> getCategories(JsonObject filemetadataJson, Dataset dataset) {
+        JsonArray categories = filemetadataJson.getJsonArray(OptionalFileParams.CATEGORIES_ATTR_NAME);
+        if (categories == null || categories.isEmpty() || dataset == null) {
+            return null;
+        }
+        List<DataFileCategory> dataFileCategories = new ArrayList<>();
+        for (Object category : categories.getValuesAs(JsonString.class)) {
+            JsonString categoryAsJsonString;
+            try {
+                categoryAsJsonString = (JsonString) category;
+            } catch (ClassCastException ex) {
+                logger.info("ClassCastException caught in getCategories: " + ex);
+                return null;
+            }
+            DataFileCategory dfc = new DataFileCategory();
+            dfc.setDataset(dataset);
+            dfc.setName(categoryAsJsonString.getString());
+            dataFileCategories.add(dfc);
+        }
+        return dataFileCategories;
     }
 }

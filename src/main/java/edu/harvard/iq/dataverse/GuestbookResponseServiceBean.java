@@ -66,7 +66,7 @@ public class GuestbookResponseServiceBean {
     
     public List<Object[]> findArrayByDataverseId (Long dataverseId){
 
-        String queryString = "select r.id, g.name, v.value, r.responsetime, r.downloadtype,  m.label, r.name, r.email, r.institution, r.position from guestbookresponse r,"
+        String queryString = "select r.id, g.name, v.value,  r.responsetime, r.downloadtype,  m.label, r.dataFile_id, r.name, r.email, r.institution, r.position from guestbookresponse r,"
                 + " datasetfieldvalue v, filemetadata m, dvobject o, guestbook g  "
                 + " where "  
                 + " v.datasetfield_id = (select id from datasetfield f where datasetfieldtype_id = 1 "
@@ -84,7 +84,7 @@ public class GuestbookResponseServiceBean {
     
     public List<Object[]> findArrayByDataverseIdAndGuestbookId (Long dataverseId, Long guestbookId){
 
-        String queryString = "select r.id, g.name, v.value, r.responsetime, r.downloadtype,  m.label, r.name, r.email, r.institution, r.position from guestbookresponse r,"
+        String queryString = "select r.id, g.name, v.value,  r.responsetime, r.downloadtype,  m.label, r.dataFile_id, r.name, r.email, r.institution, r.position from guestbookresponse r,"
                 + " datasetfieldvalue v, filemetadata m, dvobject o, guestbook g  "
                 + " where "  
                 + " v.datasetfield_id = (select id from datasetfield f where datasetfieldtype_id = 1 "
@@ -113,23 +113,23 @@ public class GuestbookResponseServiceBean {
         List<Object[]> guestbookResults = em.createNativeQuery(queryString).getResultList();
         
         for (Object[] result : guestbookResults) {
-            Object[] singleResult = new Object[10];
+            Object[] singleResult = new Object[11];
             singleResult[0] = result[1];
             singleResult[1] = result[2];
             if (result[3] != null){
                 singleResult[2] = new SimpleDateFormat("MM/d/yyyy").format((Date) result[3]); 
             } else {
                 singleResult[2] = "N/A";
-            }
-
+            }           
             singleResult[3] = result[4];
             singleResult[4] = result[5];
             singleResult[5] = result[6];
             singleResult[6] = result[7];
             singleResult[7] = result[8];
             singleResult[8] = result[9];
+            singleResult[9] = result[10];
             String cqString = "select q.questionstring, r.response  from customquestionresponse r, customquestion q where q.id = r.customquestion_id and r.guestbookResponse_id = " + (Integer) result[0];
-                singleResult[9]  = em.createNativeQuery(cqString).getResultList();
+                singleResult[10]  = em.createNativeQuery(cqString).getResultList();
             
             /*
             List<CustomQuestionResponse> customResponses = em.createQuery("select o from CustomQuestionResponse as  o where o.guestbookResponse.id = " + (Integer) result[0] + " order by o.customQuestion.id ", CustomQuestionResponse.class).getResultList();

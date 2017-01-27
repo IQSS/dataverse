@@ -20,6 +20,7 @@ import org.junit.Test;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.path.xml.XmlPath.from;
+import com.jayway.restassured.specification.RequestSpecification;
 import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -184,7 +185,8 @@ public class UtilIT {
     }
 
     static Response createRandomDataverse(String apiToken) {
-        String alias = getRandomIdentifier();
+        // Add any string (i.e. "dv") to avoid possibility of "Alias should not be a number" https://github.com/IQSS/dataverse/issues/211
+        String alias = "dv" + getRandomIdentifier();
         String category = null;
         return createDataverse(alias, category, apiToken);
     }
@@ -291,6 +293,54 @@ public class UtilIT {
                 .post(swordConfiguration.getBaseUrlPathCurrent() + "/edit-media/study/" + persistentId);
         return swordStatementResponse;
 
+    }
+
+    /**
+     * For test purposes, datasetId can be non-numeric
+     * 
+     * @param datasetId
+     * @param pathToFile
+     * @param apiToken
+     * @return 
+     */
+    static Response uploadFileViaNative(String datasetId, String pathToFile, String apiToken) {
+        String jsonAsString = null;
+        return uploadFileViaNative(datasetId, pathToFile, jsonAsString, apiToken);
+    }
+
+    static Response uploadFileViaNative(String datasetId, String pathToFile, JsonObject jsonObject, String apiToken) {
+        return uploadFileViaNative(datasetId, pathToFile, jsonObject.toString(), apiToken);
+    }
+
+    static Response uploadFileViaNative(String datasetId, String pathToFile, String jsonAsString, String apiToken) {
+        RequestSpecification requestSpecification = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .multiPart("datasetId", datasetId)
+                .multiPart("file", new File(pathToFile));
+        if (jsonAsString != null) {
+            requestSpecification.multiPart("jsonData", jsonAsString);
+        }
+        return requestSpecification.post("/api/datasets/" + datasetId + "/add");
+    }
+
+    static Response replaceFile(long fileId, String pathToFile, String apiToken) {
+        String jsonAsString = null;
+        return replaceFile(fileId, pathToFile, jsonAsString, apiToken);
+    }
+
+    static Response replaceFile(long fileId, String pathToFile, JsonObject jsonObject, String apiToken) {
+        return replaceFile(fileId, pathToFile, jsonObject.toString(), apiToken);
+    }
+
+    static Response replaceFile(long fileId, String pathToFile, String jsonAsString, String apiToken) {
+        RequestSpecification requestSpecification = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .multiPart("file", new File(pathToFile));
+        if (jsonAsString != null) {
+            requestSpecification.multiPart("jsonData", jsonAsString);
+        }
+        return requestSpecification
+                .post("/api/files/" + fileId + "/replace");
     }
 
     static Response downloadFile(Integer fileId) {

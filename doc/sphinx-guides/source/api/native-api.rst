@@ -204,6 +204,179 @@ Delete a Private URL from a dataset (if it exists)::
 
     DELETE http://$SERVER/api/datasets/$id/privateUrl?key=$apiKey
 
+Add a file to an existing Dataset. Description and tags are optional::
+
+    POST http://$SERVER/api/datasets/$id/add?key=$apiKey
+
+A more detailed "add" example using curl::
+
+    curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F 'file=@data.tsv' -F 'jsonData={"description":"My description.","categories":["Data"]}' "https://example.dataverse.edu/api/datasets/:persistentId/add?persistentId=$PERSISTENT_ID"
+
+Example python code to add a file. This may be run by changing these parameters in the sample code:
+
+* ``dataverse_server`` - e.g. https://dataverse.harvard.edu
+* ``api_key`` - See the top of this document for a description
+* ``persistentId`` - Example: ``doi:10.5072/FK2/6XACVA``
+* ``dataset_id`` - Database id of the dataset
+
+In practice, you only need one the ``dataset_id`` or the ``persistentId``. The example below shows both uses.
+
+.. code-block:: python
+
+    from datetime import datetime
+    import json
+    import requests  # http://docs.python-requests.org/en/master/
+
+    # --------------------------------------------------
+    # Update the 4 params below to run this code
+    # --------------------------------------------------
+    dataverse_server = 'https://your dataverse server' # no trailing slash
+    api_key = 'api key'
+    dataset_id = 1  # database id of the dataset
+    persistentId = 'doi:10.5072/FK2/6XACVA' # doi or hdl of the dataset
+
+    # --------------------------------------------------
+    # Prepare "file"
+    # --------------------------------------------------
+    file_content = 'content: %s' % datetime.now()
+    files = {'file': ('sample_file.txt', file_content)}
+
+    # --------------------------------------------------
+    # Using a "jsonData" parameter, add optional description + file tags
+    # --------------------------------------------------
+    params = dict(description='Blue skies!',
+                categories=['Lily', 'Rosemary', 'Jack of Hearts'])
+
+    params_as_json_string = json.dumps(params)
+
+    payload = dict(jsonData=params_as_json_string)
+
+    # --------------------------------------------------
+    # Add file using the Dataset's id
+    # --------------------------------------------------
+    url_dataset_id = '%s/api/datasets/%s/add?key=%s' % (dataverse_server, dataset_id, api_key)
+
+    # -------------------
+    # Make the request
+    # -------------------
+    print '-' * 40
+    print 'making request: %s' % url_dataset_id
+    r = requests.post(url_dataset_id, data=payload, files=files)
+
+    # -------------------
+    # Print the response
+    # -------------------
+    print '-' * 40
+    print r.json()
+    print r.status_code
+
+    # --------------------------------------------------
+    # Add file using the Dataset's persistentId (e.g. doi, hdl, etc)
+    # --------------------------------------------------
+    url_persistent_id = '%s/api/datasets/:persistentId/add?persistentId=%s&key=%s' % (dataverse_server, persistentId, api_key)
+
+    # -------------------
+    # Update the file content to avoid a duplicate file error
+    # -------------------
+    file_content = 'content2: %s' % datetime.now()
+    files = {'file': ('sample_file2.txt', file_content)}
+
+
+    # -------------------
+    # Make the request
+    # -------------------
+    print '-' * 40
+    print 'making request: %s' % url_persistent_id
+    r = requests.post(url_persistent_id, data=payload, files=files)
+
+    # -------------------
+    # Print the response
+    # -------------------
+    print '-' * 40
+    print r.json()
+    print r.status_code
+
+Files
+~~~~~~~~~~~
+
+.. note:: Please note that files can be added via the native API but the operation is performed on the parent object, which is a dataset. Please see the "Datasets" endpoint above for more information.
+
+Replace an existing file where ``id`` is the database id of the file to replace. Note that metadata such as description and tags are not carried over from the file being replaced::
+
+    POST http://$SERVER/api/files/{id}/replace?key=$apiKey
+
+A more detailed "replace" example using curl (note that ``forceReplace`` is for replacing one file type with another)::
+
+    curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F 'file=@data.tsv' -F 'jsonData={"description":"My description.","categories":["Data"],"forceReplace":false}' "https://example.dataverse.edu/api/files/$FILE_ID/replace"
+
+Example python code to replace a file.  This may be run by changing these parameters in the sample code:
+
+* ``dataverse_server`` - e.g. https://dataverse.harvard.edu
+* ``api_key`` - See the top of this document for a description
+* ``file_id`` - Database id of the file to replace (returned in the GET API for a Dataset)
+
+.. code-block:: python
+
+    from datetime import datetime
+    import json
+    import requests  # http://docs.python-requests.org/en/master/
+
+    # --------------------------------------------------
+    # Update params below to run code
+    # --------------------------------------------------
+    dataverse_server = 'http://127.0.0.1:8080' # no trailing slash
+    api_key = 'some key'
+    file_id = 1401  # id of the file to replace
+
+    # --------------------------------------------------
+    # Prepare replacement "file"
+    # --------------------------------------------------
+    file_content = 'content: %s' % datetime.now()
+    files = {'file': ('replacement_file.txt', file_content)}
+
+    # --------------------------------------------------
+    # Using a "jsonData" parameter, add optional description + file tags
+    # --------------------------------------------------
+    params = dict(description='Sunset',
+                categories=['One', 'More', 'Cup of Coffee'])
+
+    # -------------------
+    # IMPORTANT: If the mimetype of the replacement file differs
+    #   from the origina file, the replace will fail
+    #
+    #  e.g. if you try to replace a ".csv" with a ".png" or something similar
+    #
+    #  You can override this with a "forceReplace" parameter
+    # -------------------
+    params['forceReplace'] = True
+
+
+    params_as_json_string = json.dumps(params)
+
+    payload = dict(jsonData=params_as_json_string)
+
+    print 'payload', payload
+    # --------------------------------------------------
+    # Replace file using the id of the file to replace
+    # --------------------------------------------------
+    url_replace = '%s/api/v1/files/%s/replace?key=%s' % (dataverse_server, file_id, api_key)
+
+    # -------------------
+    # Make the request
+    # -------------------
+    print '-' * 40
+    print 'making request: %s' % url_replace
+    r = requests.post(url_replace, data=payload, files=files)
+
+    # -------------------
+    # Print the response
+    # -------------------
+    print '-' * 40
+    print r.json()
+    print r.status_code
+
+   
+
 Builtin Users
 ~~~~~~~~~~~~~
 

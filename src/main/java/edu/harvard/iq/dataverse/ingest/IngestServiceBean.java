@@ -41,6 +41,8 @@ import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
 import edu.harvard.iq.dataverse.dataaccess.FileAccessIO;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.TabularSubsetGenerator;
+import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
+import edu.harvard.iq.dataverse.datasetutility.FileSizeChecker;
 import edu.harvard.iq.dataverse.datavariable.SummaryStatistic;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.ingest.metadataextraction.FileMetadataExtractor;
@@ -133,10 +135,13 @@ public class IngestServiceBean {
     @Resource(mappedName = "jms/IngestQueueConnectionFactory")
     QueueConnectionFactory factory;
     
+
     private static String timeFormat_hmsS = "HH:mm:ss.SSS";
     private static String dateTimeFormat_ymdhmsS = "yyyy-MM-dd HH:mm:ss.SSS";
     private static String dateFormat_ymd = "yyyy-MM-dd";
     
+   
+
     // addFilesToDataset() takes a list of new DataFiles and attaches them to the parent 
     // Dataset (the files are attached to the dataset, and the fileMetadatas to the
     // supplied version). 

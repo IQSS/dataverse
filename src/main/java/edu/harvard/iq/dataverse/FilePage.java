@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.DatasetVersionServiceBean.RetrieveDatasetVersion
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
+import edu.harvard.iq.dataverse.datasetutility.FileReplaceException;
 import edu.harvard.iq.dataverse.datasetutility.TwoRavensHelper;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
 import edu.harvard.iq.dataverse.engine.command.Command;
@@ -26,6 +27,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.faces.application.FacesMessage;
@@ -213,25 +215,27 @@ public class FilePage implements java.io.Serializable {
         return retList;  
     }
   
-    public String restrictFile(boolean restricted){     
-            String fileNames = null;   
-            
+    public String restrictFile(boolean restricted) {
+        String fileNames = null;
+        String termsOfAccess = this.fileMetadata.getDatasetVersion().getTermsOfUseAndAccess().getTermsOfAccess();        
+        Boolean allowRequest = this.fileMetadata.getDatasetVersion().getTermsOfUseAndAccess().isFileAccessRequest();
         editDataset = this.file.getOwner();
 
-                
-                for (FileMetadata fmw: editDataset.getEditVersion().getFileMetadatas()){
-                    if (fmw.getDataFile().equals(this.fileMetadata.getDataFile())){
-                        
-                        fileNames += fmw.getLabel();
-                        fmw.setRestricted(restricted);
-                    }
-                }
-
+        for (FileMetadata fmw : editDataset.getEditVersion().getFileMetadatas()) {
+            if (fmw.getDataFile().equals(this.fileMetadata.getDataFile())) {
+                fileNames += fmw.getLabel();
+                fmw.setRestricted(restricted);
+            }
+        }
+        
+        editDataset.getEditVersion().getTermsOfUseAndAccess().setTermsOfAccess(termsOfAccess);
+        editDataset.getEditVersion().getTermsOfUseAndAccess().setFileAccessRequest(allowRequest);
+        
         if (fileNames != null) {
             String successMessage = JH.localize("file.restricted.success");
             successMessage = successMessage.replace("{0}", fileNames);
-            JsfHelper.addFlashMessage(successMessage);    
-        }        
+            JsfHelper.addFlashMessage(successMessage);
+        }
         save();
         init();
         return returnToDraftVersion();
@@ -321,7 +325,7 @@ public class FilePage implements java.io.Serializable {
         }
 
 
-        JsfHelper.addSuccessMessage(JH.localize("dataset.message.filesSuccess"));
+        JsfHelper.addSuccessMessage(JH.localize("file.message.editSuccess"));
         setVersion("DRAFT");
         return "";
     }
@@ -387,6 +391,62 @@ public class FilePage implements java.io.Serializable {
     public void setSelectedTabIndex(int selectedTabIndex) {
         this.selectedTabIndex = selectedTabIndex;
     }
+    
+    public boolean isDraftReplacementFile(){
+        /*
+        This method tests to see if the file has been replaced in a draft version of the dataset
+        Since it must must work when you are on prior versions of the dataset 
+        it must accrue all replacement files that may have been created
+        */
+        Dataset dataset = fileMetadata.getDataFile().getOwner();
+        DataFile dataFileToTest = fileMetadata.getDataFile();
+        
+        DatasetVersion currentVersion = dataset.getLatestVersion();
+        
+        if (!currentVersion.isDraft()){
+            return false;
+        }
+        
+        if (dataset.getReleasedVersion() == null){
+            return false;
+        }
+        
+        List<DataFile> dataFiles = new ArrayList();
+        
+        dataFiles.add(dataFileToTest);
+        
+        while (datafileService.findReplacementFile(dataFileToTest.getId()) != null ){
+            dataFiles.add(datafileService.findReplacementFile(dataFileToTest.getId()));
+            dataFileToTest = datafileService.findReplacementFile(dataFileToTest.getId());
+        }
+        
+        if(dataFiles.size() <2){
+            return false;
+        }
+        
+        int numFiles = dataFiles.size();
+        
+        DataFile current = dataFiles.get(numFiles - 1 );       
+        
+        DatasetVersion publishedVersion = dataset.getReleasedVersion();
+        
+        if( datafileService.findFileMetadataByFileAndVersionId(current.getId(), publishedVersion.getId()) == null){
+            return true;
+        }
+        
+        return false;
+    }
+    
+
 
     
+    /**
+     * To help with replace development 
+     * @return 
+     */
+    public boolean isReplacementFile(){
+   
+        return this.datafileService.isReplacementFile(this.getFile());
+    }
+        
 }

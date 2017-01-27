@@ -18,6 +18,28 @@ For more details about what Citation and Domain specific metadata is supported p
 
 Note that once a dataset has been published its metadata may be exported. A button on the dataset page's metadata tab will allow a user to export the metadata of the most recently published version of the dataset. Currently supported export formats are DDI, Dublin Core and JSON.
 
+Adding a New Dataset
+============================
+
+#. Navigate to the dataverse in which you want to add a dataset. 
+#. Click on the "Add Data" button and select "New Dataset" in the dropdown menu.
+#. To quickly get started, enter at minimum all the required fields with an asterisk to get a Data Citation with a DOI (e.g., the Dataset Title, Author, 
+   Description, Contact Email and Subject).
+#. Scroll down to the "Files" section and click on "Select Files to Add" to add all the relevant files to your Dataset. 
+   You can also upload your files directly from your Dropbox. **Tip:** You can drag and drop or select multiple files at a time from your desktop,
+   directly into the upload widget. Your files will appear below the "Select Files to Add" button where you can add a
+   description and tags (via the "Edit Tag" button) for each file. Additionally, an MD5 checksum will be added for each file. If you upload a tabular file a :ref:`Universal Numerical Fingerprint (UNF) <unf>` will be added to this file.
+#. Click the "Save Dataset" button when you are done. Your unpublished dataset is now created. 
+
+Note 1: You can add additional metadata once you have completed the initial dataset creation by going to Edit Dataset > Metadata. 
+
+Supported HTML Fields
+------------------------
+
+We currently only support the following HTML tags for any of our textbox meatdata fields (i.e., Description) : <a>, <b>, <blockquote>, 
+<br>, <code>, <del>, <dd>, <dl>, <dt>, <em>, <hr>, <h1>-<h3>, <i>, <img>, <kbd>, <li>, <ol>, <p>, <pre>, <s>, <sup>, <sub>, 
+<strong>, <strike>, <ul>.
+
 File Handling + Uploading
 =========================
 
@@ -27,9 +49,9 @@ The file types listed below are supported by additional functionality, which can
 through data visualization and analysis. 
 
 Tabular Data Files
-------------------
+--------------------
 
-Files in certain formats - Stata, SPSS, R, Excel(xlsx) and CSV - may be ingested as tabular data (see "Tabular Data Ingest" section for details). Tabular data files can be further explored and manipulated with TwoRavens - a statistical data exploration application integrated with Dataverse. It allows the user to run statistical models, view summary statistics, download subsets of variable vectors and more. To start, click on the "Explore" button, found next to each relevant tabular file (the application will be opened in a new window). To download subsets of variables click on the "Download" button found next to a relevant tabular file and select "Data Subset" in the dropdown menu. You will then be able to create your subset using the interface opened in a new window (this functionality is also provided by the TwoRavens project). See the :ref:`TwoRavens <two-ravens>` documention for more information.
+Files in certain formats - Stata, SPSS, R, Excel(xlsx) and CSV - may be ingested as tabular data (see "Tabular Data Ingest" section for details). Tabular data files can be further explored and manipulated with `TwoRavens <../user/data-exploration/tworavens.html>`_ - a statistical data exploration application integrated with Dataverse. It allows the user to run statistical models, view summary statistics, download subsets of variable vectors and more. To start, click on the "Explore" button, found next to each relevant tabular file (the application will be opened in a new window). To download subsets of variables click on the "Download" button found next to a relevant tabular file and select "Data Subset" in the dropdown menu. You will then be able to create your subset using the interface opened in a new window (this functionality is also provided by the `TwoRavens <../user/data-exploration/tworavens.html>`_ project). See the `TwoRavens documentation section <../user/data-exploration/tworavens.html>`_ for more information.
 
 For example, the ingest functionality for tabular files in the Harvard Dataverse, a file can only be up to 2GB in size. To use the ingest functionality for RData files, a file can only be up to 1MB in size, however, to upload a RData file without using ingest, a file can be up to 2GB in size.
 
@@ -47,7 +69,7 @@ Additional download options available for tabular data (found in the same drop-d
 Geospatial
 ----------
 
-Geospatial `shapefiles <http://en.wikipedia.org/wiki/Shapefile>`_ can be further explored and manipulated through our integration with :ref:`WorldMap <world-map>`, a geospatial data visualization and analysis tool developed by the `Center for Geographic Analysis <http://gis.harvard.edu/>`_ at Harvard University. A shapefile is a set of files, often uploaded/transferred in .zip format.  This set may contain up to 15 files.  A minimum of 3 specific files (.shp, .shx, .dbf) are needed to be a valid shapefile and a 4th file (.prj) is required for WorldMap--or any type of meaningful visualization.
+Geospatial `shapefiles <http://en.wikipedia.org/wiki/Shapefile>`_ can be further explored and manipulated through our integration with `WorldMap <../user/data-exploration/worldmap.html>`_, a geospatial data visualization and analysis tool developed by the `Center for Geographic Analysis <http://gis.harvard.edu/>`_ at Harvard University. A shapefile is a set of files, often uploaded/transferred in .zip format.  This set may contain up to 15 files.  A minimum of 3 specific files (.shp, .shx, .dbf) are needed to be a valid shapefile and a 4th file (.prj) is required for WorldMap--or any type of meaningful visualization.
 
 For ingest into Dataverse and connecting to WorldMap, these 4 files are the minimum required:
 
@@ -70,15 +92,12 @@ For example, if these files were included within a .zip, the “Map Data” butt
 * subway_line.prj 
 * subway_line.dbf
 
-Once you publish your dataset with your shape files, you will be able to use the "Map Data" button using `GeoConnect <https://github.com/IQSS/geoconnect>`_ to visualize and manipulate these files for users to Explore this geospatial data using the `WorldMap <http://worldmap.harvard.edu/>`__ interface.
-
-Please note: In order to map your data file, a copy will be sent to Harvard's `WorldMap <http://worldmap.harvard.edu/>`__ platform. You have the ability to delete any maps, and associated data, from the Harvard WorldMap platform, at any time.
+Once you publish your dataset with your shape files, you will be able to use the "Map Data" button using `GeoConnect <https://github.com/IQSS/geoconnect>`_ to visualize and manipulate these files for users to Explore this geospatial data using the `WorldMap <http://worldmap.harvard.edu/>`__ interface. Please note: In order to map your data file, a copy will be sent to Harvard's `WorldMap <http://worldmap.harvard.edu/>`__ platform. You have the ability to delete any maps, and associated data, from the Harvard WorldMap platform, at any time.
 
 Astronomy (FITS)
 ----------------
 
-Metadata found in the header section of `Flexible Image Transport System (FITS) files <http://fits.gsfc.nasa.gov/fits_primer.html>`_ are automatically extracted by Dataverse, aggregated and displayed in the Astronomy Domain-Specific Metadata of the Dataset that the file belongs to. This FITS file metadata, is therefore searchable
-and browsable (facets) at the Dataset-level.
+Metadata found in the header section of `Flexible Image Transport System (FITS) files <http://fits.gsfc.nasa.gov/fits_primer.html>`_ are automatically extracted by Dataverse, aggregated and displayed in the Astronomy Domain-Specific Metadata of the Dataset that the file belongs to. This FITS file metadata, is therefore searchable and browsable (facets) at the Dataset-level.
 
 Compressed Files
 ----------------
@@ -94,28 +113,6 @@ There are several advanced options available for certain file types.
 
 - Image files: jpgs, pngs, and tiff files are able to be selected as the default thumbnail for a dataset. The selected thumbnail will appear on the search result card for that dataset.
 - SPSS files: SPSS files can be tagged with the language they were originally coded in. This is found by clicking on Advanced Options and selecting the language from the list provided.
-
-Adding a New Dataset
-====================
-
-#. Navigate to the dataverse in which you want to add a dataset. 
-#. Click on the "Add Data" button and select "New Dataset" in the dropdown menu.
-#. To quickly get started, enter at minimum all the required fields with an asterisk to get a Data Citation with a DOI (e.g., the Dataset Title, Author, 
-   Description, Contact Email and Subject).
-#. Scroll down to the "Files" section and click on "Select Files to Add" to add all the relevant files to your Dataset. 
-   You can also upload your files directly from your Dropbox. **Tip:** You can drag and drop or select multiple files at a time from your desktop,
-   directly into the upload widget. Your files will appear below the "Select Files to Add" button where you can add a
-   description and tags (via the "Edit Tag" button) for each file. Additionally, an MD5 checksum will be added for each file. If you upload a tabular file a :ref:`Universal Numerical Fingerprint (UNF) <unf>` will be added to this file.
-#. Click the "Save Dataset" button when you are done. Your unpublished dataset is now created. 
-
-Note 1: You can add additional metadata once you have completed the initial dataset creation by going to Edit Dataset > Metadata. 
-
-Supported HTML Fields
----------------------
-
-We currently only support the following HTML tags for any of our textbox meatdata fields (i.e., Description) : <a>, <b>, <blockquote>, 
-<br>, <code>, <del>, <dd>, <dl>, <dt>, <em>, <hr>, <h1>-<h3>, <i>, <img>, <kbd>, <li>, <ol>, <p>, <pre>, <s>, <sup>, <sub>, 
-<strong>, <strike>, <ul>.
 
 Edit Files
 ==========
@@ -139,6 +136,16 @@ Upload New Files
 ----------------
 
 To upload new files to a dataset, go to the dataset you want to update and click on the Upload Files button in the files tab. From there you will be brought to the Upload Files page for the dataset. Once you have uploaded files, you will be able to edit the file metadata, restrict, add tags, or delete them before saving.
+
+Replace Files
+-------------
+
+In cases where you would like to revise an existing file rather than add a new one, you can do so using our Replace File feature. This will allow you to track the history of this file across versions of your dataset. This could be useful for updating your data or fixing mistakes in your data.
+
+Go to the file page for the file you would like to replace, click on the Edit button, and from the dropdown list select Replace. This will bring you to the Replace File page, where you can see the metadata for the most recently published version of the file and you can upload your replacement file. Once you have uploaded the replacement file, you can edit its File Name, Description, and Tags. When you're finished, click the Save Changes button.
+
+
+A new dataset draft will be created after successfully replacing a file, and will be recorded in the dataset Version Details.
 
 .. _license-terms:
 

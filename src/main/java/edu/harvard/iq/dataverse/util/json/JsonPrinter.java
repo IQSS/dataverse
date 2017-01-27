@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.util.json;
 import edu.emory.mathcs.backport.java.util.Collections;
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFileTag;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetDistributor;
 import edu.harvard.iq.dataverse.DatasetFieldType;
@@ -36,6 +37,7 @@ import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.util.DatasetFieldWalker;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Set;
 import javax.json.Json;
@@ -57,6 +59,7 @@ import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import static java.util.stream.Collectors.toList;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
@@ -309,6 +312,26 @@ public class JsonPrinter {
         return bld;
     }
     
+    
+    public static JsonObjectBuilder jsonDataFileList(List<DataFile> dataFiles){
+    
+        if (dataFiles==null){
+            throw new NullPointerException("dataFiles cannot be null");
+        }
+        
+        JsonObjectBuilder bld = jsonObjectBuilder();
+        
+        
+        List<FileMetadata> dataFileList = dataFiles.stream()
+                                    .map(x -> x.getFileMetadata())
+                                    .collect(Collectors.toList());
+
+        
+        bld.add("files", jsonFileMetadatas(dataFileList));
+
+        return bld;
+    }
+    
     private static String getRootDataverseNameforCitation(Dataset dataset) {
         Dataverse root = dataset.getOwner();
         while (root.getOwner() != null) {
@@ -366,6 +389,7 @@ public class JsonPrinter {
         for (FileMetadata fmd : fmds) {
             filesArr.add(json(fmd));
         }
+
         return filesArr;
     }
 
@@ -478,6 +502,7 @@ public class JsonPrinter {
                 .add("directoryLabel", fmd.getDirectoryLabel())
                 .add("version", fmd.getVersion())
                 .add("datasetVersionId", fmd.getDatasetVersion().getId())
+                .add("categories", getFileCategories(fmd))
                 .add("dataFile", json(fmd.getDataFile(), fmd));
     }
 
@@ -504,25 +529,70 @@ public class JsonPrinter {
             fileName = df.getFileMetadata().getLabel();
         }
         
+        
         return jsonObjectBuilder()
                 .add("id", df.getId())
                 .add("filename", fileName)
-                .add("contentType", df.getContentType())
+                .add("contentType", df.getContentType())            
+                .add("filesize", df.getFilesize())            
+                .add("description", df.getDescription())    
+                //.add("released", df.isReleased())
+                //.add("restricted", df.isRestricted())
                 .add("storageIdentifier", df.getStorageIdentifier())
                 .add("originalFileFormat", df.getOriginalFileFormat())
                 .add("originalFormatLabel", df.getOriginalFormatLabel())
                 .add("UNF", df.getUnf())
-                /**
-                 * @todo Should we deprecate "md5" now that it's under
-                 * "checksum" (which may also be a SHA-1 rather than an MD5)?
-                 */
+                //---------------------------------------------
+                // For file replace: rootDataFileId, previousDataFileId
+                //---------------------------------------------
+                .add("rootDataFileId", df.getRootDataFileId())
+                .add("previousDataFileId", df.getPreviousDataFileId())
+                //---------------------------------------------
+                // Checksum
+                // * @todo Should we deprecate "md5" now that it's under
+                // * "checksum" (which may also be a SHA-1 rather than an MD5)?
+                //---------------------------------------------
                 .add("md5", getMd5IfItExists(df.getChecksumType(), df.getChecksumValue()))
                 .add("checksum", getChecksumTypeAndValue(df.getChecksumType(), df.getChecksumValue()))
-                .add("description", df.getDescription());
+                .add("tabularTags", getTabularFileTags(df))
+                ;
     }
-
+    
     public static String format(Date d) {
         return (d == null) ? null : Util.getDateTimeFormat().format(d);
+    }
+
+    private static JsonArrayBuilder getFileCategories(FileMetadata fmd) {
+        if (fmd == null) {
+            return null;
+        }
+        List<String> categories = fmd.getCategoriesByName();
+        if (categories == null || categories.isEmpty()) {
+            return null;
+        }
+        JsonArrayBuilder fileCategories = Json.createArrayBuilder();
+        for (String category : categories) {
+            fileCategories.add(category);
+        }
+        return fileCategories;
+    }
+
+    private static JsonArrayBuilder getTabularFileTags(DataFile df) {
+        if (df == null) {
+            return null;
+        }
+        List<DataFileTag> tags = df.getTags();
+        if (tags == null || tags.isEmpty()) {
+            return null;
+        }
+        JsonArrayBuilder tabularTags = Json.createArrayBuilder();
+        for (DataFileTag tag : tags) {
+            String label = tag.getTypeLabel();
+            if (label != null) {
+                tabularTags.add(label);
+            }
+        }
+        return tabularTags;
     }
 
     private static class DatasetFieldsToJson implements DatasetFieldWalker.Listener {

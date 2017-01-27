@@ -665,12 +665,12 @@ div[id$="filesTable"].ui-datatable.ui-widget table td {box-sizing: content-box;}
 div[id$="filesTable"] div.ui-datatable-header.ui-widget-header {padding:0; background:none; border:0;}
 div[id$="filesTable"] #filesHeaderCount {padding:10px 10px 4px 10px;}
 div[id$="filesTable"] #filesHeaderCount span.highlightBold {display:block; padding:0; line-height:1.65;}
-div[id$="filesTable"] td.col-file-thumb {border-right:0;}
-div[id$="filesTable"] td.col-file-thumb div.thumbnail-block {position:relative;width:64px;height:64px;margin:0 auto;}
-div[id$="filesTable"] td.col-file-thumb div.thumbnail-block span.file-thumbnail-icon {font-size:62px;line-height:1.05;}
-div[id$="filesTable"] td.col-file-thumb div.thumbnail-block span.file-thumbnail-preview-img {display:block;}
-div[id$="filesTable"] td.col-file-thumb div.thumbnail-block div.file-icon-restricted-block {display:block;position:absolute;bottom:-4px;right:-1px;}
-div[id$="filesTable"] td.col-file-metadata {/*width: 33.3333% !important;*/ padding-left:0; border-left:0; border-right:0; text-align:left; font-weight:normal;}
+div[id$="filesTable"] .col-file-thumb {border-right:0;}
+div[id$="filesTable"] .col-file-thumb div.thumbnail-block {position:relative;width:64px;height:64px;margin:0 auto;}
+div[id$="filesTable"] .col-file-thumb div.thumbnail-block span.file-thumbnail-icon {font-size:62px;line-height:1.05;}
+div[id$="filesTable"] .col-file-thumb div.thumbnail-block span.file-thumbnail-preview-img {display:block;}
+div[id$="filesTable"] .col-file-thumb div.thumbnail-block div.file-icon-restricted-block {display:block;position:absolute;bottom:-4px;right:-1px;}
+div[id$="filesTable"] .col-file-metadata {/*width: 33.3333% !important;*/ padding-left:0; border-left:0; border-right:0; text-align:left; font-weight:normal;}
 div[id$="filesTable"] td.col-file-action {/*width:320px !important;*/ border-left:0; overflow:visible;}
 div[id$="filesTable"] div.file-tags-block {padding-bottom:2px;}
 div[id$="filesTable"] div.file-tags-block a.ui-commandlink {font-size:12px;}
@@ -690,6 +690,10 @@ div[id$="filesTable"] thead[id$="filesTable_head"] th.ui-selection-column {/*wid
 div[id$="filesTable"] thead[id$="filesTable_head"] th.ui-selection-column .ui-chkbox-box.ui-widget {margin-top:0 !important;}
 
 div[id$="filesTable"].ui-datatable.ui-datatable-scrollable {padding-right:12px;}
+
+#file-replace-original-block div[id$="filesTable"].col-sm-10 {border:1px solid #ddd;padding:0;}
+#file-replace-original-block div[id$="filesTable"] .col-file-thumb {width:74px !important;padding:4px 10px;}
+#file-replace-original-block div[id$="filesTable"] .col-file-metadata {padding:4px 10px;}
 
 span.ingest-warning {display:inline-block; font-size:30px; line-height:1.42857; vertical-align: middle;}
 span.ingest-warning span.glyphicon {top:5px;} 

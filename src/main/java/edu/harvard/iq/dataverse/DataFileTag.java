@@ -20,6 +20,7 @@ import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import org.apache.commons.lang.StringUtils;
 
 /**
  *
@@ -167,4 +168,45 @@ public class DataFileTag implements Serializable {
         return "edu.harvard.iq.dataverse.DataFileTag[ id=" + id + " ]";
     }
     
+    
+    /**
+     * Static method to check whether a string is a valid tag
+     * 
+     * Used for API check
+     * 
+     * @param tagString
+     * @return 
+     */
+    public static boolean isDataFileTag(String label){
+        
+        if (label == null){
+            throw new NullPointerException("label cannot be null");
+        }
+       
+        if (TagLabelToTypes.containsKey(label)){
+            return true;
+        }
+    
+        return false;
+    }
+    
+    public TagType getDataFileTagFromLabel(String label){
+        
+        if (!TagLabelToTypes.containsKey(label)){
+            return null;
+        }
+        
+        return TagLabelToTypes.get(label);
+    }
+    
+    
+    public static List<String> getListofLabels(){
+    
+        return new ArrayList<>(TagTypeToLabels.values());
+    }
+    
+    public static String getListofLabelsAsString(){
+        
+        return StringUtils.join(DataFileTag.getListofLabels(), ", ");
+    }
 }

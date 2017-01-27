@@ -529,14 +529,14 @@ public class WorldMapPermissionHelper implements java.io.Serializable {
 
         //  (2) Is the view GeoconnectViewMaps 
         if (!settingsService.isTrueForKey(SettingsServiceBean.Key.GeoconnectCreateEditMaps, false)){
-
+             
             return false;
         }
                      
         //  (3) Is File released?
         //
         if (fm.getDataFile().isReleased()){
-
+            
             return true;
         }
         
