@@ -41,6 +41,7 @@ import javax.ejb.EJBException;
 import javax.json.JsonObjectBuilder;
 import javax.validation.ConstraintViolation;
 import javax.ws.rs.core.Response;
+import org.ocpsoft.common.util.Strings;
 
 /**
  *  Methods to add or replace a single file.
@@ -1047,7 +1048,11 @@ public class AddReplaceFileHelper{
                     this.systemConfig);
 
         } catch (IOException ex) {
-            this.addErrorSevere(getBundleErr("ingest_create_file_err"));
+            if (!Strings.isNullOrEmpty(ex.getMessage())) {
+                this.addErrorSevere(getBundleErr("ingest_create_file_err") + " " + ex.getMessage());
+            } else {
+                this.addErrorSevere(getBundleErr("ingest_create_file_err"));
+            }
             logger.severe(ex.toString());
             this.runMajorCleanup(); 
             return false;
