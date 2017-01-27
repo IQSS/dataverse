@@ -1781,7 +1781,6 @@ public class EditDatafilesPage implements java.io.Serializable {
                     RequestContext context = RequestContext.getCurrentInstance();
                     RequestContext.getCurrentInstance().update("datasetForm:fileTypeDifferentPopup");
                     context.execute("PF('fileTypeDifferentPopup').show();");
-                    context.execute("PF('fileTypeDifferentPopup').show();");
             }
             return;
                

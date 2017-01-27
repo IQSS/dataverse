@@ -275,7 +275,7 @@
                                                      and !(dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile) or dataFileServiceBean.hasBeenDeleted(FilePage.fileMetadata.dataFile))}">
                                             <span class="glyphicon glyphicon-pencil"/> #{bundle['file.dataFilesTab.metadata.addBtn']}
                                     </h:outputLink>
-                                <div class="btn-group pull-right" jsf:rendered="#{dataverseSession.user.authenticated
+                                <div class="btn-group" jsf:rendered="#{dataverseSession.user.authenticated
                                                          and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset) 
                                                          and (dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile) or dataFileServiceBean.hasBeenDeleted(FilePage.fileMetadata.dataFile)) }">
                                     <p:commandLink styleClass="btn btn-default" onclick="PF('fileAlreadyReplacedPrevious').show()">
