@@ -20,12 +20,19 @@
 package edu.harvard.iq.dataverse.batch.jobs.importer.filesystem;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFile.ChecksumType;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.engine.command.Command;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 
 import javax.annotation.PostConstruct;
 import javax.batch.api.BatchProperty;
@@ -39,7 +46,10 @@ import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
@@ -48,6 +58,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.servlet.http.HttpServletRequest;
 
 @Named
 @Dependent
@@ -72,17 +83,30 @@ public class FileRecordWriter extends AbstractItemWriter {
     @EJB
     DataFileServiceBean dataFileServiceBean;
 
-    Dataset dataset;
-    Logger jobLogger;
-    int fileCount;
+    @EJB
+    EjbDataverseEngine commandEngine;
 
+    Dataset dataset;
+    AuthenticatedUser user;
+    private String persistentUserData = "";
+    private static Logger jobLogger;
+    int fileCount;
+    String mode; 
+
+    public static String MODE_INDIVIDUAL_FILES = "individual_files";
+    public static String MODE_PACKAGE_FILE = "package_file";
+    
+    
+    
     @PostConstruct
     public void init() {
         JobOperator jobOperator = BatchRuntime.getJobOperator();
         Properties jobParams = jobOperator.getParameters(jobContext.getInstanceId());
         dataset = datasetServiceBean.findByGlobalId(jobParams.getProperty("datasetId"));
+        user = authenticationServiceBean.getAuthenticatedUser(jobParams.getProperty("userId"));
         jobLogger = Logger.getLogger("job-"+Long.toString(jobContext.getInstanceId()));
         fileCount = ((HashMap<String, String>) jobContext.getTransientUserData()).size();
+        mode = jobParams.getProperty("mode");
     }
     
     @Override
@@ -98,23 +122,165 @@ public class FileRecordWriter extends AbstractItemWriter {
     @Override
     public void writeItems(List list) {
         if (!list.isEmpty()) {
-            List<DataFile> datafiles = dataset.getFiles();
-            for (Object file : list) {
-                DataFile df = createDataFile((File) file);
-                if (df != null) {
-                    // log success if the dataset isn't huge
-                    if (fileCount < 20000) {
-                        jobLogger.log(Level.INFO, "Creating DataFile for: " + ((File) file).getAbsolutePath());
+            if (MODE_INDIVIDUAL_FILES.equals(mode)) {
+                List<DataFile> datafiles = dataset.getFiles();
+                for (Object file : list) {
+                    DataFile df = createDataFile((File) file);
+                    if (df != null) {
+                        // log success if the dataset isn't huge
+                        if (fileCount < 20000) {
+                            jobLogger.log(Level.INFO, "Creating DataFile for: " + ((File) file).getAbsolutePath());
+                        }
+                        datafiles.add(df);
+                    } else {
+                        jobLogger.log(Level.SEVERE, "Unable to create DataFile for: " + ((File) file).getAbsolutePath());
                     }
-                    datafiles.add(df);
-                } else {
-                    jobLogger.log(Level.SEVERE, "Unable to create DataFile for: " + ((File) file).getAbsolutePath());
                 }
+                dataset.getLatestVersion().getDataset().setFiles(datafiles);
+            } else if (MODE_PACKAGE_FILE.equals(mode)) {
+                DataFile packageFile = createPackageDataFile(list);
+                updateDatasetVersion(dataset.getLatestVersion());
             }
-            dataset.getLatestVersion().getDataset().setFiles(datafiles);
         } else {
             jobLogger.log(Level.SEVERE, "No items in the writeItems list.");
         }
+    }
+    
+    // utils
+    /**
+     * Update the dataset version using the command engine so permissions and constraints are enforced.
+     * Log errors to both the glassfish log and inside the job step's persistentUserData
+     * 
+     * @param version dataset version
+     *        
+     */
+    private void updateDatasetVersion(DatasetVersion version) {
+    
+        // update version using the command engine to enforce user permissions and constraints
+        if (dataset.getVersions().size() == 1 && version.getVersionState() == DatasetVersion.VersionState.DRAFT) {
+            try {
+                Command<DatasetVersion> cmd;
+                cmd = new UpdateDatasetVersionCommand(new DataverseRequest(user, (HttpServletRequest) null), version);
+                commandEngine.submit(cmd);
+            } catch (CommandException ex) {
+                String commandError = "CommandException updating DatasetVersion from batch job: " + ex.getMessage();
+                jobLogger.log(Level.SEVERE, commandError);
+                persistentUserData += commandError + " ";
+            }
+        } else {
+            String constraintError = "ConstraintException updating DatasetVersion form batch job: dataset must be a "
+                    + "single version in draft mode.";
+            jobLogger.log(Level.SEVERE, constraintError);
+            persistentUserData += constraintError + " ";
+        }
+       
+    }
+    
+    private DataFile createPackageDataFile(List<File> files) {
+        DataFile packageFile = new DataFile(DataFileServiceBean.MIME_TYPE_PACKAGE_FILE);
+        String folderName = null;
+        long totalSize = 0L;
+        String combinedChecksums = null;
+
+        String gid = dataset.getAuthority() + dataset.getDoiSeparator() + dataset.getIdentifier();
+        
+        packageFile.setChecksumType(DataFile.ChecksumType.SHA1); // initial default
+
+        // check system property first, otherwise use the batch job property:
+        String jobChecksumType;
+        if (System.getProperty("checksumType") != null) {
+            jobChecksumType = System.getProperty("checksumType");
+        } else {
+            jobChecksumType = checksumType;
+        }
+
+        for (DataFile.ChecksumType type : DataFile.ChecksumType.values()) {
+            if (jobChecksumType.equalsIgnoreCase(type.name())) {
+                packageFile.setChecksumType(type);
+                break;
+            }
+        }
+
+        for (File file : files) {
+            String path = file.getAbsolutePath();
+            String relativePath = path.substring(path.indexOf(gid) + gid.length() + 1);
+            
+            // All the files have been moved into the same final destination folder by now; so 
+            // the folderName needs to be initialized only once: 
+            if (folderName == null) {
+                if (relativePath != null && relativePath.indexOf(File.separatorChar) > -1) {
+                    folderName = relativePath.substring(0, relativePath.indexOf(File.separatorChar));
+                } else {
+                    jobLogger.log(Level.SEVERE, "Invalid file package (files are not in a folder)");
+                    jobContext.setExitStatus("FAILED");
+                    return null;
+                }
+            }
+
+            totalSize += file.length();
+
+            String checksumValue;
+
+            // lookup the checksum value in the job's manifest hashmap
+            if (jobContext.getTransientUserData() != null) {
+                checksumValue = ((HashMap<String, String>) jobContext.getTransientUserData()).get(relativePath);
+                if (checksumValue != null) {
+                    // remove the key, so we can check for unused checksums when the job is complete
+                    ((HashMap<String, String>) jobContext.getTransientUserData()).remove(relativePath);
+
+                    if (combinedChecksums == null) {
+                        combinedChecksums = checksumValue;
+                    } else {
+                        combinedChecksums = combinedChecksums.concat("\n").concat(checksumValue);
+                    }
+                } else {
+                    jobLogger.log(Level.SEVERE, "Unable to find checksum in manifest for: " + file.getAbsolutePath());
+                }
+            } else {
+                jobLogger.log(Level.SEVERE, "No checksum hashmap found in transientUserData");
+                jobContext.setExitStatus("FAILED");
+                return null;
+            }
+
+        }
+        
+        if (combinedChecksums != null) {
+            // calculate the "product checksum" for the package: 
+            
+            try {
+                packageFile.setChecksumValue(calculateProductChecksum(combinedChecksums, packageFile.getChecksumType()));
+            } catch (NoSuchAlgorithmException nsae) {
+                
+                jobLogger.log(Level.SEVERE, "No such checksum algorithm: "+packageFile.getContentType());
+                jobContext.setExitStatus("FAILED");
+                return null;
+            }
+        }
+        
+        packageFile.setStorageIdentifier(folderName);
+        
+        packageFile.setFilesize(totalSize);
+        packageFile.setModificationTime(new Timestamp(new Date().getTime()));
+        packageFile.setCreateDate(new Timestamp(new Date().getTime()));
+        packageFile.setPermissionModificationTime(new Timestamp(new Date().getTime()));
+        packageFile.setOwner(dataset);
+        dataset.getFiles().add(packageFile);
+
+        packageFile.setIngestDone();
+
+        // set metadata and add to latest version
+        FileMetadata fmd = new FileMetadata();
+        fmd.setLabel(folderName);
+        
+        fmd.setDataFile(packageFile);
+        packageFile.getFileMetadatas().add(fmd);
+        if (dataset.getLatestVersion().getFileMetadatas() == null) dataset.getLatestVersion().setFileMetadatas(new ArrayList<>());
+        
+        dataset.getLatestVersion().getFileMetadatas().add(fmd);
+        fmd.setDatasetVersion(dataset.getLatestVersion());
+
+        
+        return packageFile;
     }
     
     /**
@@ -187,4 +353,29 @@ public class FileRecordWriter extends AbstractItemWriter {
         return datafile;
     }
 
+    
+    private String calculateProductChecksum (String combinedChecksums, ChecksumType type) throws NoSuchAlgorithmException {
+        // calculate the "product checksum" for the package: 
+            
+            MessageDigest md = null;
+            try {
+                // Use "SHA-1" (toString) rather than "SHA1", for example.
+                md = MessageDigest.getInstance(type.toString());
+            } catch (NoSuchAlgorithmException e) {
+                jobLogger.log(Level.SEVERE, "No such checksum algorithm: "+type);
+                jobContext.setExitStatus("FAILED");
+                return null;
+            }
+
+            md.update(combinedChecksums.getBytes());
+            
+            // convert the message digest bytes into a string: 
+            byte[] mdbytes = md.digest();
+            StringBuilder sb = new StringBuilder("");
+            for (int i = 0; i < mdbytes.length; i++) {
+                sb.append(Integer.toString((mdbytes[i] & 0xff) + 0x100, 16).substring(1));
+            }
+            
+            return sb.toString();
+    }
 }
