@@ -5,16 +5,22 @@ import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.api.Datasets;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeDataset;
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.json.Json;
+import javax.json.JsonArray;
 import javax.validation.ConstraintViolation;
+import org.dataverse.unf.UNFUtil;
+import org.dataverse.unf.UnfException;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -532,9 +538,43 @@ public class IngestUtilTest {
     @Test
     public void testRecalculateDatasetVersionUNF() {
         IngestUtil.recalculateDatasetVersionUNF(null);
+        DatasetVersion dsvNoFile = new DatasetVersion();
+        IngestUtil.recalculateDatasetVersionUNF(dsvNoFile);
+        assertEquals(null, dsvNoFile.getUNF());
+
+        List<Dataset> datasets = new ArrayList<>();
+        Dataset dataset = new Dataset();
+        dataset.setProtocol("doi");
+        dataset.setAuthority("fakeAuthority");
+        dataset.setIdentifier("12345");
         DatasetVersion dsv1 = new DatasetVersion();
-        IngestUtil.recalculateDatasetVersionUNF(dsv1);
+        dsv1.setDataset(dataset);
+        dsv1.setId(42l);
+        dsv1.setVersionState(DatasetVersion.VersionState.DRAFT);
+        List<DatasetVersion> datasetVersions = new ArrayList<>();
+        datasetVersions.add(dsv1);
+
+        DataFile datafile1 = new DataFile("application/octet-stream");
+        DataTable dataTable = new DataTable();
+        dataTable.setUnf("unfOnDataTable");
+        datafile1.setDataTable(dataTable);
+        assertEquals(true, datafile1.isTabularData());
+
+        FileMetadata fmd1 = new FileMetadata();
+        fmd1.setId(1L);
+        fmd1.setLabel("datafile1.txt");
+        fmd1.setDataFile(datafile1);
+        datafile1.getFileMetadatas().add(fmd1);
+        dsv1.getFileMetadatas().add(fmd1);
+        fmd1.setDatasetVersion(dsv1);
+
+        dataset.setVersions(datasetVersions);
+        datasets.add(dataset);
+
         assertEquals(null, dsv1.getUNF());
+        IngestUtil.recalculateDatasetVersionUNF(dsv1);
+        assertEquals("UNF:6:rDlgOhoEkEQQdwtLRHjmtw==", dsv1.getUNF());
+
     }
 
     @Test
@@ -552,5 +592,92 @@ public class IngestUtilTest {
         datasets.add(dataset);
         IngestUtil.getUnfData(datasets);
         assertEquals(null, dsv1.getUNF());
+        assertEquals(Json.createArrayBuilder().build(), IngestUtil.getUnfData(null).build());
     }
+
+    @Test
+    public void testGetUnfValuesOfFiles() {
+        List<String> emptyList = new ArrayList<>();
+        assertEquals(emptyList, IngestUtil.getUnfValuesOfFiles(null));
+
+    }
+
+    @Test
+    public void testshouldHaveUnf() {
+        assertEquals(false, IngestUtil.shouldHaveUnf(null));
+    }
+
+    @Test
+    public void testDatasetShouldNotHaveUnf() {
+        List<Dataset> datasets = new ArrayList<>();
+        Dataset dataset = new Dataset();
+        dataset.setProtocol("doi");
+        dataset.setAuthority("fakeAuthority");
+        dataset.setIdentifier("12345");
+        DatasetVersion dsv1 = new DatasetVersion();
+        dsv1.setDataset(dataset);
+        dsv1.setId(42l);
+        dsv1.setVersionState(DatasetVersion.VersionState.DRAFT);
+        dsv1.setUNF("pretendThisIsValidUnf");
+        List<DatasetVersion> datasetVersions = new ArrayList<>();
+        datasetVersions.add(dsv1);
+        dataset.setVersions(datasetVersions);
+        datasets.add(dataset);
+        JsonArray array = IngestUtil.getUnfData(datasets).build();
+        System.out.println("array: " + array);
+        assertEquals("pretendThisIsValidUnf", dsv1.getUNF());
+        assertEquals(42, array.getJsonObject(0).getInt("datasetVersionId"));
+        assertEquals("Dataset version DRAFT (datasetVersionId 42) from doi:fakeAuthority/12345 has a UNF (pretendThisIsValidUnf) but shouldn't!", array.getJsonObject(0).getString("message"));
+    }
+
+    @Test
+    public void testDatasetShouldHaveUnf() {
+        List<Dataset> datasets = new ArrayList<>();
+        Dataset dataset = new Dataset();
+        dataset.setProtocol("doi");
+        dataset.setAuthority("fakeAuthority");
+        dataset.setIdentifier("12345");
+        DatasetVersion dsv1 = new DatasetVersion();
+        dsv1.setDataset(dataset);
+        dsv1.setId(42l);
+        dsv1.setVersionState(DatasetVersion.VersionState.DRAFT);
+        List<DatasetVersion> datasetVersions = new ArrayList<>();
+        datasetVersions.add(dsv1);
+
+        DataFile datafile1 = new DataFile("application/octet-stream");
+        DataTable dataTable = new DataTable();
+        dataTable.setUnf("unfOnDataTable");
+        datafile1.setDataTable(dataTable);
+        assertEquals(true, datafile1.isTabularData());
+
+        FileMetadata fmd1 = new FileMetadata();
+        fmd1.setId(1L);
+        fmd1.setLabel("datafile1.txt");
+        fmd1.setDataFile(datafile1);
+        datafile1.getFileMetadatas().add(fmd1);
+        dsv1.getFileMetadatas().add(fmd1);
+        fmd1.setDatasetVersion(dsv1);
+
+        dataset.setVersions(datasetVersions);
+        datasets.add(dataset);
+        JsonArray array = IngestUtil.getUnfData(datasets).build();
+        System.out.println("array: " + array);
+        assertEquals(42, array.getJsonObject(0).getInt("datasetVersionId"));
+        assertEquals("Dataset version DRAFT (datasetVersionId 42) from doi:fakeAuthority/12345 doesn't have a UNF but should!", array.getJsonObject(0).getString("message"));
+    }
+
+    @Test
+    public void testUnfUtil() {
+        String[] unfValues = {"a", "b", "c"};
+        String datasetUnfValue = null;
+        try {
+            datasetUnfValue = UNFUtil.calculateUNF(unfValues);
+        } catch (IOException ex) {
+            Logger.getLogger(IngestUtilTest.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (UnfException ex) {
+            Logger.getLogger(IngestUtilTest.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        assertEquals("UNF:6:FWBO/a1GcxDnM3fNLdzrHw==", datasetUnfValue);
+    }
+
 }

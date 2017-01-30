@@ -222,8 +222,10 @@ public class IngestUtil {
             try {
                 datasetUnfValue = UNFUtil.calculateUNF(unfValues);
             } catch (IOException ex) {
+                // It's unclear how to exercise this IOException.
                 logger.warning("IO Exception: Failed to recalculate the UNF for the dataset version id=" + version.getId());
             } catch (UnfException uex) {
+                // It's unclear how to exercise this UnfException.
                 logger.warning("UNF Exception: Failed to recalculate the UNF for the dataset version id=" + version.getId());
             }
 
@@ -240,7 +242,7 @@ public class IngestUtil {
         }
     }
 
-    private static List<String> getUnfValuesOfFiles(DatasetVersion version) {
+    public static List<String> getUnfValuesOfFiles(DatasetVersion version) {
         List<String> unfValueList = new ArrayList<>();
         if (version == null) {
             return unfValueList;
