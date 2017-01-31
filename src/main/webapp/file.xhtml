@@ -219,6 +219,25 @@
                             </div>
                             <div id="fileMetadataBlock" class="col-xs-12">
                                 <div class="text-muted">
+                                    <div id="debugPopupAndDownloadUrl" style="background-color: lightgray" jsf:rendered="#{false}">
+                                        - license: #{FilePage.fileMetadata.datasetVersion.termsOfUseAndAccess.license}<br/>
+                                        - terms of use: #{FilePage.fileMetadata.datasetVersion.termsOfUseAndAccess.termsOfUse}<br/>
+                                        - terms of access: #{FilePage.fileMetadata.datasetVersion.termsOfUseAndAccess.termsOfAccess}<br/>
+                                        - guestbook name: #{FilePage.file.owner.guestbook.name}<br/>
+                                        - restricted: #{FilePage.fileMetadata.restricted}<br/>
+                                    </div>
+                                    <div id="file-public-download-url" jsf:rendered="#{FilePage.publiclyDownloadable}">
+                                        <h:outputText value="#{bundle['file.downloadUrl.label']}: "/>
+                                        <h:outputLink value="#{FilePage.publicDownloadUrl}">
+                                            <h:outputText value="#{FilePage.publicDownloadUrl}"/>
+                                        </h:outputLink>
+                                    <br/>
+                                    </div>
+                                    <div id="file-public-download-url" jsf:rendered="#{!FilePage.publiclyDownloadable}">
+                                        <h:outputText value="#{bundle['file.downloadUrl.label']}: "/>
+                                        <h:outputText value="#{bundle['file.downloadUrl.notPublic']}"/>
+                                    <br/>
+                                    </div>
                                     <h:outputText id="fileTypeOutputRegular" value="#{FilePage.fileMetadata.dataFile.friendlyType}" rendered="#{!(FilePage.fileMetadata.dataFile.tabularData)}"/>
                                     <h:outputText id="fileTypeOutputTabular" value="#{bundle['file.type.tabularData']}" rendered="#{FilePage.fileMetadata.dataFile.tabularData}"/>
                                     <h:outputText id="fileSize" value=" - #{FilePage.fileMetadata.dataFile.friendlySize}" />

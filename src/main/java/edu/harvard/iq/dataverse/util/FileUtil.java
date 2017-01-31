@@ -20,18 +20,16 @@
 
 package edu.harvard.iq.dataverse.util;
 
-import edu.emory.mathcs.backport.java.util.Collections;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFile.ChecksumType;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
 import edu.harvard.iq.dataverse.ingest.IngestReport;
-import edu.harvard.iq.dataverse.ingest.IngestUtil;
 import edu.harvard.iq.dataverse.ingest.IngestServiceShapefileHelper;
 import edu.harvard.iq.dataverse.ingest.IngestableDataChecker;
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -56,11 +54,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -1180,6 +1175,112 @@ public class FileUtil implements java.io.Serializable  {
         } else {
             return fileMetadata.getLabel() + fileCitationExtension.text;
         }
+    }
+
+    /**
+     * @todo Consider returning not only the boolean but the human readable
+     * reason why the popup is required, which could be used in the GUI to
+     * elaborate on the text "This file cannot be downloaded publicly."
+     */
+    public static boolean isDownloadPopupRequired(DatasetVersion datasetVersion) {
+        // Each of these conditions is sufficient reason to have to 
+        // present the user with the popup: 
+        if (datasetVersion == null) {
+            logger.fine("Download popup required because datasetVersion is null.");
+            return false;
+        }
+        //0. if version is draft then Popup "not required"
+        if (!datasetVersion.isReleased()) {
+            logger.fine("Download popup required because datasetVersion has not been released.");
+            return false;
+        }
+        // 1. License and Terms of Use:
+        if (datasetVersion.getTermsOfUseAndAccess() != null) {
+            if (!TermsOfUseAndAccess.License.CC0.equals(datasetVersion.getTermsOfUseAndAccess().getLicense())
+                    && !(datasetVersion.getTermsOfUseAndAccess().getTermsOfUse() == null
+                    || datasetVersion.getTermsOfUseAndAccess().getTermsOfUse().equals(""))) {
+                logger.fine("Download popup required because of license or terms of use.");
+                return true;
+            }
+
+            // 2. Terms of Access:
+            if (!(datasetVersion.getTermsOfUseAndAccess().getTermsOfAccess() == null) && !datasetVersion.getTermsOfUseAndAccess().getTermsOfAccess().equals("")) {
+                logger.fine("Download popup required because of terms of access.");
+                return true;
+            }
+        }
+
+        // 3. Guest Book:
+        if (datasetVersion.getDataset() != null && datasetVersion.getDataset().getGuestbook() != null && datasetVersion.getDataset().getGuestbook().isEnabled() && datasetVersion.getDataset().getGuestbook().getDataverse() != null) {
+            logger.fine("Download popup required because of guestbook.");
+            return true;
+        }
+
+        logger.fine("Download popup is not required.");
+        return false;
+    }
+
+    /**
+     * Provide download URL if no Terms of Use, no guestbook, and not
+     * restricted.
+     */
+    public static boolean isPubliclyDownloadable(FileMetadata fileMetadata) {
+        if (fileMetadata == null) {
+            return false;
+        }
+        if (fileMetadata.isRestricted()) {
+            String msg = "Not publicly downloadable because the file is restricted.";
+            logger.fine(msg);
+            return false;
+        }
+        boolean popupReasons = isDownloadPopupRequired(fileMetadata.getDatasetVersion());
+        if (popupReasons == true) {
+            return false;
+        }
+        return true;
+    }
+
+    public static String getFileDownloadUrlPath(String downloadType, Long fileId, boolean gbRecordsWritten) {
+        /**
+         * @todo What happens when we bump the API version to v1.1 or v2? See
+         * also https://github.com/IQSS/dataverse/issues/3325
+         */
+        String fileDownloadUrl = "/api/access/datafile/" + fileId;
+        if (downloadType != null && downloadType.equals("bundle")) {
+            fileDownloadUrl = "/api/access/datafile/bundle/" + fileId;
+        }
+        if (downloadType != null && downloadType.equals("original")) {
+            fileDownloadUrl = "/api/access/datafile/" + fileId + "?format=original";
+        }
+        if (downloadType != null && downloadType.equals("RData")) {
+            fileDownloadUrl = "/api/access/datafile/" + fileId + "?format=RData";
+        }
+        if (downloadType != null && downloadType.equals("var")) {
+            fileDownloadUrl = "/api/meta/datafile/" + fileId;
+        }
+        if (downloadType != null && downloadType.equals("tab")) {
+            fileDownloadUrl = "/api/access/datafile/" + fileId + "?format=tab";
+        }
+        if (gbRecordsWritten) {
+            if (downloadType != null && (downloadType.equals("original") || downloadType.equals("RData") || downloadType.equals("tab"))) {
+                fileDownloadUrl += "&gbrecs=true";
+            } else {
+                fileDownloadUrl += "?gbrecs=true";
+            }
+        }
+        logger.fine("Returning file download url: " + fileDownloadUrl);
+        return fileDownloadUrl;
+    }
+
+    public static String getPublicDownloadUrl(String dataverseSiteUrl, Long fileId) {
+        if (fileId == null) {
+            logger.info("In getPublicDownloadUrl but fileId is null!");
+            return null;
+        }
+        String downloadType = null;
+        boolean gbRecordsWritten = false;
+        String path = getFileDownloadUrlPath(downloadType, fileId, gbRecordsWritten);
+        return dataverseSiteUrl + path;
     }
 
 }
