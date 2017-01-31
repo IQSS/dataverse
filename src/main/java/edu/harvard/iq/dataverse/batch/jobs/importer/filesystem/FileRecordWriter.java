@@ -91,10 +91,10 @@ public class FileRecordWriter extends AbstractItemWriter {
     private String persistentUserData = "";
     private static Logger jobLogger;
     int fileCount;
-    String mode; 
+    String fileMode; 
 
-    public static String MODE_INDIVIDUAL_FILES = "individual_files";
-    public static String MODE_PACKAGE_FILE = "package_file";
+    public static String FILE_MODE_INDIVIDUAL_FILES = "individual_files";
+    public static String FILE_MODE_PACKAGE_FILE = "package_file";
     
     
     
@@ -106,7 +106,7 @@ public class FileRecordWriter extends AbstractItemWriter {
         user = authenticationServiceBean.getAuthenticatedUser(jobParams.getProperty("userId"));
         jobLogger = Logger.getLogger("job-"+Long.toString(jobContext.getInstanceId()));
         fileCount = ((HashMap<String, String>) jobContext.getTransientUserData()).size();
-        mode = jobParams.getProperty("mode");
+        fileMode = jobParams.getProperty("fileMode");
     }
     
     @Override
@@ -122,7 +122,7 @@ public class FileRecordWriter extends AbstractItemWriter {
     @Override
     public void writeItems(List list) {
         if (!list.isEmpty()) {
-            if (MODE_INDIVIDUAL_FILES.equals(mode)) {
+            if (FILE_MODE_INDIVIDUAL_FILES.equals(fileMode)) {
                 List<DataFile> datafiles = dataset.getFiles();
                 for (Object file : list) {
                     DataFile df = createDataFile((File) file);
@@ -137,9 +137,17 @@ public class FileRecordWriter extends AbstractItemWriter {
                     }
                 }
                 dataset.getLatestVersion().getDataset().setFiles(datafiles);
-            } else if (MODE_PACKAGE_FILE.equals(mode)) {
+            } else if (FILE_MODE_PACKAGE_FILE.equals(fileMode)) {
                 DataFile packageFile = createPackageDataFile(list);
+                if (packageFile == null) {
+                    jobLogger.log(Level.SEVERE, "File package import failed.");
+                    jobContext.setExitStatus("FAILED");
+                    return;
+                }
                 updateDatasetVersion(dataset.getLatestVersion());
+            } else {
+                jobLogger.log(Level.SEVERE, "File mode "+fileMode+" is not supported.");
+                jobContext.setExitStatus("FAILED");
             }
         } else {
             jobLogger.log(Level.SEVERE, "No items in the writeItems list.");
@@ -176,6 +184,20 @@ public class FileRecordWriter extends AbstractItemWriter {
        
     }
     
+    /**
+     * Import the supplied batch of files as a single "package file" DataFile 
+     * (basically, a folder/directory, with the single associated DataFile/FileMetadata, etc.)
+     * and add it to the
+     * latest dataset version 
+     * @param files list of files, already copied to the dataset directory by rsync or otherwise. 
+     * @return datafile
+     * 
+     * Consider: 
+     * instead of expecting to have an extra top-level directory/folder to be 
+     * present already, generate it here (using the standard code used for generating
+     * storage identifiers for "normal" files), create it as a directory, and move
+     * all the supplied files there.l
+     */
     private DataFile createPackageDataFile(List<File> files) {
         DataFile packageFile = new DataFile(DataFileServiceBean.MIME_TYPE_PACKAGE_FILE);
         String folderName = null;

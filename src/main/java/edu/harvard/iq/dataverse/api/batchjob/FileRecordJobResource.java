@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.batch.jobs.importer.filesystem.FileRecordWriter;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 
 import javax.batch.operations.JobOperator;
@@ -51,7 +52,8 @@ public class FileRecordJobResource extends AbstractApiBean {
     public Response getFilesystemImport(@PathParam("doi1") String doi1, 
                                         @PathParam("doi2") String doi2,
                                         @PathParam("doi3") String doi3,
-                                        @QueryParam("mode") @DefaultValue("MERGE") String mode) {
+                                        @QueryParam("mode") @DefaultValue("MERGE") String mode,
+                                        @QueryParam("fileMode") @DefaultValue("package_file") String fileMode) {
 
         try {
             
@@ -71,6 +73,9 @@ public class FileRecordJobResource extends AbstractApiBean {
 
                 if (!mode.equalsIgnoreCase("MERGE") && !mode.equalsIgnoreCase("REPLACE")) {
                     return error(Response.Status.NOT_IMPLEMENTED, "Import mode: " + mode + " is not currently supported.");
+                }
+                if (!fileMode.equals(FileRecordWriter.FILE_MODE_INDIVIDUAL_FILES) && !fileMode.equals(FileRecordWriter.FILE_MODE_PACKAGE_FILE)) {
+                    return error(Response.Status.NOT_IMPLEMENTED, "File import mode: " + fileMode + " is not supported.");
                 }
                 if (dataset == null) {
                     return error(Response.Status.BAD_REQUEST, "Can't find dataset with ID: " + doi);
