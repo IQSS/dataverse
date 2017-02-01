@@ -219,33 +219,10 @@
                             </div>
                             <div id="fileMetadataBlock" class="col-xs-12">
                                 <div class="text-muted">
-                                    <div id="debugPopupAndDownloadUrl" style="background-color: lightgray" jsf:rendered="#{false}">
-                                        - license: #{FilePage.fileMetadata.datasetVersion.termsOfUseAndAccess.license}<br/>
-                                        - terms of use: #{FilePage.fileMetadata.datasetVersion.termsOfUseAndAccess.termsOfUse}<br/>
-                                        - terms of access: #{FilePage.fileMetadata.datasetVersion.termsOfUseAndAccess.termsOfAccess}<br/>
-                                        - guestbook name: #{FilePage.file.owner.guestbook.name}<br/>
-                                        - restricted: #{FilePage.fileMetadata.restricted}<br/>
-                                    </div>
-                                    <div id="file-public-download-url" jsf:rendered="#{FilePage.publiclyDownloadable}">
-                                        <h:outputText value="#{bundle['file.downloadUrl.label']}: "/>
-                                        <h:outputLink value="#{FilePage.publicDownloadUrl}">
-                                            <h:outputText value="#{FilePage.publicDownloadUrl}"/>
-                                        </h:outputLink>
-                                    <br/>
-                                    </div>
-                                    <div id="file-public-download-url" jsf:rendered="#{!FilePage.publiclyDownloadable}">
-                                        <h:outputText value="#{bundle['file.downloadUrl.label']}: "/>
-                                        <h:outputText value="#{bundle['file.downloadUrl.notPublic']}"/>
-                                    <br/>
-                                    </div>
                                     <h:outputText id="fileTypeOutputRegular" value="#{FilePage.fileMetadata.dataFile.friendlyType}" rendered="#{!(FilePage.fileMetadata.dataFile.tabularData)}"/>
                                     <h:outputText id="fileTypeOutputTabular" value="#{bundle['file.type.tabularData']}" rendered="#{FilePage.fileMetadata.dataFile.tabularData}"/>
                                     <h:outputText id="fileSize" value=" - #{FilePage.fileMetadata.dataFile.friendlySize}" />
-                                    
-                                    
                                     <h:outputText id="fileCreatePublishDate" value=" - #{bundle['file.lastupdated.label']}: #{FilePage.fileMetadata.fileDateToDisplay}" rendered="#{!(empty FilePage.fileMetadata.id)}"/>
-                                    
-                                    
                                     <div class="checksum-block" jsf:rendered="#{!FilePage.file.tabularData}">
                                         <h:outputText id="file-checksum" value="#{FilePage.file.tabularData ? FilePage.file.originalChecksumType : FilePage.file.checksumType}: #{FilePage.file.checksumValue}"
                                                       rendered="#{!(empty FilePage.file.checksumValue)}"/>
@@ -255,14 +232,6 @@
                                         <h:outputText id="fileNumObs" value="#{FilePage.file.dataTable.caseQuantity} #{bundle['file.metaData.dataFile.dataTab.observations']} #{!empty FilePage.file.unf ? ' - ' : ''}" rendered="#{FilePage.file.tabularData}"/>
                                         <h:outputText id="fileUNF" value="#{FilePage.file.unf}" rendered="#{!empty FilePage.file.unf}"/>
                                     </div>
-                                    
-                                    <!-- for dev/debugging purposes 
-                                    SEK TODO How do we want to indicate that a file is a replacement? -->
-                                    <ui:fragment rendered="#{false}">
-                                    <div>
-                                         <span class="label label-info">This is a Replacement File</span>
-                                    </div>
-                                    </ui:fragment>
                                 </div>
                             </div>
                             <div id="fileDescriptionBlock" class="col-xs-12" jsf:rendered="#{!empty FilePage.fileMetadata.description}">
@@ -325,6 +294,16 @@
                                     </div>
                                     <div id="panelCollapseFMD" class="collapse in">
                                         <div class="panel-body">
+                                            <div class="form-group" jsf:rendered="#{FilePage.publiclyDownloadable}">
+                                                <label class="col-sm-3 control-label">                                                   
+                                                   #{bundle['file.metadataTab.fileMetadata.downloadUrl.label']}
+                                                </label>
+                                                <div class="col-sm-9">
+                                                    <a href="#{FilePage.publicDownloadUrl}">
+                                                        <h:outputText value="#{FilePage.publicDownloadUrl}"/>
+                                                    </a>
+                                                </div>
+                                            </div>
                                             <div class="form-group" jsf:rendered="#{!(empty FilePage.file.checksumValue)}">
                                                 <label class="col-sm-3 control-label">                                                   
                                                    #{FilePage.file.tabularData ? FilePage.file.originalChecksumType : FilePage.file.checksumType}
@@ -341,8 +320,6 @@
                                                     <h:outputText value="#{FilePage.file.unf}"/>
                                                 </div>
                                             </div>
-                                            
-                                            
                                             <div class="form-group" jsf:rendered="#{FilePage.file.released}">
                                                 <label class="col-sm-3 control-label">
                                                    #{bundle['file.metadataTab.fileMetadata.publicationDate.label']}
@@ -351,8 +328,6 @@
                                                     <h:outputText value="#{FilePage.file.publicationDateFormattedYYYYMMDD}"/>
                                                 </div>
                                             </div>
-                                            
-                                            
                                             <div class="form-group" jsf:rendered="#{!(empty FilePage.file.friendlySize)}">
                                                 <label class="col-sm-3 control-label">
                                                    #{bundle['file.metadataTab.fileMetadata.size.label']}
@@ -393,8 +368,6 @@
                                                     <h:outputText value="#{FilePage.fileMetadata.description}"/>
                                                 </div>
                                             </div>
-                                            
-                                            
                                             <div class="form-group">
                                                 <label class="col-sm-3 control-label">
                                                    #{bundle['file.metadataTab.fileMetadata.depositDate.label']}
@@ -403,8 +376,6 @@
                                                     <h:outputText value="#{FilePage.file.createDateFormattedYYYYMMDD}"/> 
                                                 </div>
                                             </div>
-                                            
-                                            
                                         </div>
                                     </div>
                                 </div>
