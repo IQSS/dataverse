@@ -566,6 +566,9 @@ div[id$='roleDisplay'] span.label, div[id$='roleDetails'] span.label {display:in
 #sharrre-block a.sharrre-twitter {background:#55acee;}
 #sharrre-block a.sharrre-google {background:#d73d32;}
 
+/* -------- THEME/THUMBNAIL UPLOAD -------- */
+.uploadNewLogo {width: 85%;}
+
 /* -------- DATASET -------- */
 #datasetVersionBlock span.label {vertical-align:text-top; line-height:normal; margin-left: .5em;}
 

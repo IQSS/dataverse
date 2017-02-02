@@ -21,34 +21,39 @@
                     <f:viewAction action="#{DatasetWidgetsPage.init}" />
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(DatasetWidgetsPage.dataset, bundle['dataset.thumbnailsAndWidget.breadcrumbs.title'])}"/>
                 </f:metadata>
-                <p:tabView  rendered="#{themeWidgetFragment.editDv!=null}" id="themeWidgetsTabView" widgetVar="content">
+                <p:tabView rendered="#{themeWidgetFragment.editDv!=null}" id="themeWidgetsTabView" widgetVar="content">
                     <p:tab id="thumbnailsTab" title="#{bundle['dataset.thumbnailsAndWidget.thumbnails.title']}">
-                        <h:form id="themeWidgetsForm">
-
-
+                        <h:form id="themeWidgetsForm" styleClass="row form-horizontal">
                             <div class="form-group" jsf:rendered="#{true or themeWidgetFragment.editDv.themeRoot}">
                                 <label class="col-sm-3 control-label" for="logoFormat">
-                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataverse.theme.logo.image.title']}">
+                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.title']}">
                                         #{bundle['dataset.thumbnailsAndWidget.thumbnailImage']}
                                     </span>
                                 </label>
                                 <div class="col-sm-9">
-                                    <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.theme.logo.tip']}</p>
-                                    <p:panelGrid columns="3" styleClass="noBorders" columnClasses="text-center,uploadNewLogo,messageCell">
+                                    <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataset.thumbnailsAndWidget.thumbnailImage.tip']}</p>
+                                    <p:panelGrid columns="2" styleClass="noBorders" columnClasses="text-center,uploadNewLogo">
                                         <p:column>
                                             <p>
-                                                <h:graphicImage value="#{DatasetWidgetsPage.dataset.defaultThumbnail}" rendered="#{DatasetWidgetsPage.dataset.thumbnail == null}"/>
+                                                <span class="icon-dataset text-info" style="font-size: 2.8em;" jsf:rendered="#{DatasetWidgetsPage.dataset.thumbnail == null}"/>
+                                                <!--FIXME: remove all the backend logic and image file for this default view -->
+                                                <h:graphicImage value="#{DatasetWidgetsPage.dataset.defaultThumbnail}" rendered="#{false}"/>
                                                 <h:graphicImage value="#{DatasetWidgetsPage.dataset.thumbnail}" rendered="#{DatasetWidgetsPage.dataset.thumbnail != null}"/>
                                             </p>
-                                            <p:commandButton update="@all" value="#{bundle.remove}" action="#{DatasetWidgetsPage.removeLogo()}" oncomplete="bind_bsui_components();"/>
+                                            <span class="text-muted" jsf:rendered="#{DatasetWidgetsPage.dataset.thumbnail == null}"><em>Default Icon</em></span>
+                                            <p:commandButton update="@all" value="#{bundle.remove}" action="#{DatasetWidgetsPage.removeLogo()}" rendered="#{DatasetWidgetsPage.dataset.thumbnail != null}" oncomplete="bind_bsui_components();"/>
                                         </p:column>
-                                        <!--FIXME: consider supporting SVG: https://github.com/IQSS/dataverse/issues/2843-->
-                                        <p:fileUpload invalidFileMessage="#{bundle['dataverse.theme.logo.image.invalidMsg']}" id="changelogo" allowTypes="/(\.|\/)(jpg|jpeg|tff|png|gif)$/" update="@all" oncomplete="bind_bsui_components();" dragDropSupport="true" auto="true" multiple="false"
-                                                      fileUploadListener="#{DatasetWidgetsPage.handleImageFileUpload}" label="#{bundle['dataverse.theme.logo.image.upload']}"/>
+                                        <p:column>
+                                            <!--FIXME: consider supporting SVG: https://github.com/IQSS/dataverse/issues/2843-->
+                                            <p:fileUpload invalidFileMessage="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.upload.invalidMsg']}" id="changelogo" allowTypes="/(\.|\/)(jpg|jpeg|tff|png|gif)$/" update="@all" oncomplete="bind_bsui_components();" dragDropSupport="true" auto="true" multiple="false"
+                                                            fileUploadListener="#{DatasetWidgetsPage.handleImageFileUpload}" label="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.upload']}"/>
+                                        </p:column>
                                     </p:panelGrid>
-                                    <p:commandButton update="@all" value="#{bundle.saveChanges}" action="#{DatasetWidgetsPage.save()}"/>
-                                    <p:commandButton update="@all" value="#{bundle.cancel}" action="#{DatasetWidgetsPage.cancel()}"/>
                                 </div>
+                            </div>
+                            <div class="button-block">
+                                <p:commandButton styleClass="btn btn-default" update="@all" value="#{bundle.saveChanges}" action="#{DatasetWidgetsPage.save()}"/>
+                                <p:commandButton styleClass="btn btn-default" update="@all" value="#{bundle.cancel}" action="#{DatasetWidgetsPage.cancel()}"/>
                             </div>
                         </h:form>
                     </p:tab>
