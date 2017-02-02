@@ -33,6 +33,7 @@ import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
+import edu.harvard.iq.dataverse.util.FileUtil;
 
 import javax.annotation.PostConstruct;
 import javax.batch.api.BatchProperty;
@@ -196,11 +197,12 @@ public class FileRecordWriter extends AbstractItemWriter {
      * instead of expecting to have an extra top-level directory/folder to be 
      * present already, generate it here (using the standard code used for generating
      * storage identifiers for "normal" files), create it as a directory, and move
-     * all the supplied files there.l
+     * all the supplied files there. [DONE]
      */
     private DataFile createPackageDataFile(List<File> files) {
         DataFile packageFile = new DataFile(DataFileServiceBean.MIME_TYPE_PACKAGE_FILE);
-        String folderName = null;
+        FileUtil.generateStorageIdentifier(packageFile);
+        String datasetDirectory = null;
         long totalSize = 0L;
         String combinedChecksums = null;
 
@@ -228,19 +230,19 @@ public class FileRecordWriter extends AbstractItemWriter {
             String relativePath = path.substring(path.indexOf(gid) + gid.length() + 1);
             
             // All the files have been moved into the same final destination folder by now; so 
-            // the folderName needs to be initialized only once: 
-            if (folderName == null) {
-                if (relativePath != null && relativePath.indexOf(File.separatorChar) > -1) {
-                    folderName = relativePath.substring(0, relativePath.indexOf(File.separatorChar));
-                } else {
-                    jobLogger.log(Level.SEVERE, "Invalid file package (files are not in a folder)");
-                    jobContext.setExitStatus("FAILED");
-                    return null;
-                }
+            // the datasetDirectory needs to be initialized only once: 
+            if (datasetDirectory == null) {
+                datasetDirectory = path.substring(0, path.indexOf(gid) + gid.length() + 1);
             }
 
             totalSize += file.length();
 
+            if (file.renameTo(new File(datasetDirectory + File.separator + packageFile.getStorageIdentifier() + File.separator + relativePath))) {
+                jobLogger.log(Level.SEVERE, "Could not move the file to the final destination: " + datasetDirectory + File.separator + packageFile.getStorageIdentifier() + File.separator + relativePath);
+                jobContext.setExitStatus("FAILED");
+                return null;
+            }
+            
             String checksumValue;
 
             // lookup the checksum value in the job's manifest hashmap
@@ -278,9 +280,7 @@ public class FileRecordWriter extends AbstractItemWriter {
                 return null;
             }
         }
-        
-        packageFile.setStorageIdentifier(folderName);
-        
+                
         packageFile.setFilesize(totalSize);
         packageFile.setModificationTime(new Timestamp(new Date().getTime()));
         packageFile.setCreateDate(new Timestamp(new Date().getTime()));
@@ -292,7 +292,7 @@ public class FileRecordWriter extends AbstractItemWriter {
 
         // set metadata and add to latest version
         FileMetadata fmd = new FileMetadata();
-        fmd.setLabel(folderName);
+        fmd.setLabel(packageFile.getStorageIdentifier());
         
         fmd.setDataFile(packageFile);
         packageFile.getFileMetadatas().add(fmd);
