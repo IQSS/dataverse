@@ -132,7 +132,7 @@ public class DataFileServiceBean implements java.io.Serializable {
     private static final String MIME_TYPE_UNDETERMINED_DEFAULT = "application/octet-stream";
     private static final String MIME_TYPE_UNDETERMINED_BINARY = "application/binary";
     
-    public static final String MIME_TYPE_PACKAGE_FILE = "application/dataverse-file-package";
+    public static final String MIME_TYPE_PACKAGE_FILE = "application/vnd.edu.harvard.iq.dataverse.file-package";
     
     public DataFile find(Object pk) {
         return (DataFile) em.find(DataFile.class, pk);

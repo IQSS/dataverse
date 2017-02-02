@@ -510,6 +510,13 @@ public class DataFile extends DvObject implements Comparable {
         // generate thumbnails and previews for them)
         return (contentType != null && (contentType.startsWith("image/") || contentType.equalsIgnoreCase("application/pdf")));
     }
+    
+    public boolean isFilePackage() {
+        if (DataFileServiceBean.MIME_TYPE_PACKAGE_FILE.equalsIgnoreCase(contentType)) {
+            return true;
+        }
+        return false;
+    }
 
     public void setIngestStatus(char ingestStatus) {
         this.ingestStatus = ingestStatus; 

@@ -93,6 +93,7 @@ public class FileRecordWriter extends AbstractItemWriter {
     private static Logger jobLogger;
     int fileCount;
     String fileMode; 
+    Long suppliedSize = null;
 
     public static String FILE_MODE_INDIVIDUAL_FILES = "individual_files";
     public static String FILE_MODE_PACKAGE_FILE = "package_file";
@@ -108,6 +109,14 @@ public class FileRecordWriter extends AbstractItemWriter {
         jobLogger = Logger.getLogger("job-"+Long.toString(jobContext.getInstanceId()));
         fileCount = ((HashMap<String, String>) jobContext.getTransientUserData()).size();
         fileMode = jobParams.getProperty("fileMode");
+        if (jobParams.getProperty("totalSize") != null) {
+            try { 
+                suppliedSize = new Long(jobParams.getProperty("totalSize"));
+            } catch (Exception ex) {
+                jobLogger.log(Level.WARNING, "Invalid file size supplied: "+jobParams.getProperty("totalSize"));
+                suppliedSize = null; 
+            }
+        }
     }
     
     @Override
@@ -197,15 +206,23 @@ public class FileRecordWriter extends AbstractItemWriter {
      * instead of expecting to have an extra top-level directory/folder to be 
      * present already, generate it here (using the standard code used for generating
      * storage identifiers for "normal" files), create it as a directory, and move
-     * all the supplied files there. [DONE]
+     * all the supplied files there.l
      */
     private DataFile createPackageDataFile(List<File> files) {
         DataFile packageFile = new DataFile(DataFileServiceBean.MIME_TYPE_PACKAGE_FILE);
         FileUtil.generateStorageIdentifier(packageFile);
+        
         String datasetDirectory = null;
-        long totalSize = 0L;
-        String combinedChecksums = null;
+        String folderName = null; 
+        
+        long totalSize;
 
+        if (suppliedSize != null) {
+            totalSize = suppliedSize;
+        } else {
+            totalSize = 0L;
+        }
+        
         String gid = dataset.getAuthority() + dataset.getDoiSeparator() + dataset.getIdentifier();
         
         packageFile.setChecksumType(DataFile.ChecksumType.SHA1); // initial default
@@ -230,19 +247,22 @@ public class FileRecordWriter extends AbstractItemWriter {
             String relativePath = path.substring(path.indexOf(gid) + gid.length() + 1);
             
             // All the files have been moved into the same final destination folder by now; so 
-            // the datasetDirectory needs to be initialized only once: 
-            if (datasetDirectory == null) {
+            // the folderName and datasetDirectory need to be initialized only once: 
+            if (datasetDirectory == null && folderName == null) {
                 datasetDirectory = path.substring(0, path.indexOf(gid) + gid.length() + 1);
+                if (relativePath != null && relativePath.indexOf(File.separatorChar) > -1) {
+                    folderName = relativePath.substring(0, relativePath.indexOf(File.separatorChar));
+                } else {
+                    jobLogger.log(Level.SEVERE, "Invalid file package (files are not in a folder)");
+                    jobContext.setExitStatus("FAILED");
+                    return null;
+                }
             }
 
-            totalSize += file.length();
-
-            if (file.renameTo(new File(datasetDirectory + File.separator + packageFile.getStorageIdentifier() + File.separator + relativePath))) {
-                jobLogger.log(Level.SEVERE, "Could not move the file to the final destination: " + datasetDirectory + File.separator + packageFile.getStorageIdentifier() + File.separator + relativePath);
-                jobContext.setExitStatus("FAILED");
-                return null;
+            if (suppliedSize == null) {
+                totalSize += file.length();
             }
-            
+
             String checksumValue;
 
             // lookup the checksum value in the job's manifest hashmap
@@ -252,11 +272,6 @@ public class FileRecordWriter extends AbstractItemWriter {
                     // remove the key, so we can check for unused checksums when the job is complete
                     ((HashMap<String, String>) jobContext.getTransientUserData()).remove(relativePath);
 
-                    if (combinedChecksums == null) {
-                        combinedChecksums = checksumValue;
-                    } else {
-                        combinedChecksums = combinedChecksums.concat("\n").concat(checksumValue);
-                    }
                 } else {
                     jobLogger.log(Level.SEVERE, "Unable to find checksum in manifest for: " + file.getAbsolutePath());
                 }
@@ -268,19 +283,39 @@ public class FileRecordWriter extends AbstractItemWriter {
 
         }
         
-        if (combinedChecksums != null) {
-            // calculate the "product checksum" for the package: 
-            
-            try {
-                packageFile.setChecksumValue(calculateProductChecksum(combinedChecksums, packageFile.getChecksumType()));
-            } catch (NoSuchAlgorithmException nsae) {
-                
-                jobLogger.log(Level.SEVERE, "No such checksum algorithm: "+packageFile.getContentType());
-                jobContext.setExitStatus("FAILED");
-                return null;
+        // If the manifest file is present, calculate the checksum of the manifest 
+        // and use it as the checksum of the datafile: 
+        
+        String checksumManifest = System.getProperty("checksumManifest");
+        File checksumManifestFile = null; 
+        if (checksumManifest != null && !checksumManifest.isEmpty()) {
+            String checksumManifestPath = datasetDirectory + File.separator + folderName + File.separator + checksumManifest;
+            checksumManifestFile = new File (checksumManifestPath);
+        
+            if (!checksumManifestFile.exists()) {
+                jobLogger.log(Level.WARNING, "Manifest file not found");
+                // TODO: 
+                // add code to generate the manifest, if not present? -- L.A. 
+            } else {
+                try {
+                    packageFile.setChecksumValue(FileUtil.CalculateCheckSum(checksumManifestPath, packageFile.getChecksumType()));
+                } catch (Exception ex) {
+                    jobLogger.log(Level.SEVERE, "Failed to calculate checksum (type "+packageFile.getChecksumType()+") "+ex.getMessage());
+                    jobContext.setExitStatus("FAILED");
+                    return null;
+                }
             }
+        } else {
+            jobLogger.log(Level.WARNING, "No manifest property supplied");
         }
-                
+        
+        // Move the folder to the final destination: 
+        if (new File(datasetDirectory + File.separator + folderName).renameTo(new File(datasetDirectory + File.separator + packageFile.getStorageIdentifier()))) {
+            jobLogger.log(Level.SEVERE, "Could not move the file folder to the final destination (" + datasetDirectory + File.separator + packageFile.getStorageIdentifier() + ")");
+            jobContext.setExitStatus("FAILED");
+            return null;
+        }
+            
         packageFile.setFilesize(totalSize);
         packageFile.setModificationTime(new Timestamp(new Date().getTime()));
         packageFile.setCreateDate(new Timestamp(new Date().getTime()));
@@ -292,7 +327,7 @@ public class FileRecordWriter extends AbstractItemWriter {
 
         // set metadata and add to latest version
         FileMetadata fmd = new FileMetadata();
-        fmd.setLabel(packageFile.getStorageIdentifier());
+        fmd.setLabel(folderName);
         
         fmd.setDataFile(packageFile);
         packageFile.getFileMetadatas().add(fmd);
@@ -374,30 +409,5 @@ public class FileRecordWriter extends AbstractItemWriter {
         datafile = dataFileServiceBean.save(datafile);
         return datafile;
     }
-
     
-    private String calculateProductChecksum (String combinedChecksums, ChecksumType type) throws NoSuchAlgorithmException {
-        // calculate the "product checksum" for the package: 
-            
-            MessageDigest md = null;
-            try {
-                // Use "SHA-1" (toString) rather than "SHA1", for example.
-                md = MessageDigest.getInstance(type.toString());
-            } catch (NoSuchAlgorithmException e) {
-                jobLogger.log(Level.SEVERE, "No such checksum algorithm: "+type);
-                jobContext.setExitStatus("FAILED");
-                return null;
-            }
-
-            md.update(combinedChecksums.getBytes());
-            
-            // convert the message digest bytes into a string: 
-            byte[] mdbytes = md.digest();
-            StringBuilder sb = new StringBuilder("");
-            for (int i = 0; i < mdbytes.length; i++) {
-                sb.append(Integer.toString((mdbytes[i] & 0xff) + 0x100, 16).substring(1));
-            }
-            
-            return sb.toString();
-    }
 }

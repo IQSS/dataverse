@@ -53,8 +53,14 @@ public class FileRecordJobResource extends AbstractApiBean {
                                         @PathParam("doi2") String doi2,
                                         @PathParam("doi3") String doi3,
                                         @QueryParam("mode") @DefaultValue("MERGE") String mode,
-                                        @QueryParam("fileMode") @DefaultValue("package_file") String fileMode) {
+                                        /*@QueryParam("fileMode") @DefaultValue("package_file") String fileMode*/
+                                        @QueryParam("totalSize") Long totalSize) {
 
+        /* 
+           batch import as-individual-datafiles is disabled in this iteration; 
+           only the import-as-a-package is allowed. -- L.A. Feb 2 2017
+        */
+        String fileMode = FileRecordWriter.FILE_MODE_PACKAGE_FILE;
         try {
             
             String doi = "doi:" + doi1 + "/" + doi2 + "/" + doi3;
@@ -112,6 +118,10 @@ public class FileRecordJobResource extends AbstractApiBean {
                     props.setProperty("datasetId", doi);
                     props.setProperty("userId", user.getIdentifier().replace("@", ""));
                     props.setProperty("mode", mode);
+                    props.setProperty("fileMode", fileMode);
+                    if (totalSize != null && totalSize > 0) {
+                        props.setProperty("totalSize", totalSize.toString());
+                    }
                     JobOperator jo = BatchRuntime.getJobOperator();
                     jid = jo.start("FileSystemImportJob", props);
                     if (jid > 0) {
