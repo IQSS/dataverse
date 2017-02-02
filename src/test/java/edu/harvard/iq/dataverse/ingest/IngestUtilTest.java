@@ -590,9 +590,9 @@ public class IngestUtilTest {
         Dataset dataset = new Dataset();
         DatasetVersion dsv1 = new DatasetVersion();
         datasets.add(dataset);
-        IngestUtil.getUnfData(datasets);
+        IngestUtil.getVersionsWithMissingUNFs(datasets);
         assertEquals(null, dsv1.getUNF());
-        assertEquals(Json.createArrayBuilder().build(), IngestUtil.getUnfData(null).build());
+        assertEquals(Json.createArrayBuilder().build(), IngestUtil.getVersionsWithMissingUNFs(null).build());
     }
 
     @Test
@@ -623,7 +623,7 @@ public class IngestUtilTest {
         datasetVersions.add(dsv1);
         dataset.setVersions(datasetVersions);
         datasets.add(dataset);
-        JsonArray array = IngestUtil.getUnfData(datasets).build();
+        JsonArray array = IngestUtil.getVersionsWithMissingUNFs(datasets).build();
         System.out.println("array: " + array);
         assertEquals("pretendThisIsValidUnf", dsv1.getUNF());
         assertEquals(42, array.getJsonObject(0).getInt("datasetVersionId"));
@@ -660,7 +660,7 @@ public class IngestUtilTest {
 
         dataset.setVersions(datasetVersions);
         datasets.add(dataset);
-        JsonArray array = IngestUtil.getUnfData(datasets).build();
+        JsonArray array = IngestUtil.getVersionsWithMissingUNFs(datasets).build();
         System.out.println("array: " + array);
         assertEquals(42, array.getJsonObject(0).getInt("datasetVersionId"));
         assertEquals("Dataset version DRAFT (datasetVersionId 42) from doi:fakeAuthority/12345 doesn't have a UNF but should!", array.getJsonObject(0).getString("message"));

@@ -30,6 +30,7 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import org.apache.commons.lang.StringUtils;
+import org.jsoup.helper.StringUtil;
 
     
 /**
@@ -992,6 +993,10 @@ w
         DatasetVersion datasetVersion = find(dsvId);
         if (datasetVersion == null) {
             info.add("message", "Could not find a dataset version based on datasetVersionId " + datasetVersionId + ".");
+            return info;
+        }
+        if (!StringUtil.isBlank(datasetVersion.getUNF())) {
+            info.add("message", "Dataset version (id=" + datasetVersionId + ") already has a UNF. Blank the UNF value in the database if you must change it.");
             return info;
         }
         IngestUtil.recalculateDatasetVersionUNF(datasetVersion);

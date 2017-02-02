@@ -274,11 +274,16 @@ public class IngestUtil {
         }
 
     }
+    
+    // TODO: 
+    // provide a similar method that would find versions with *wrong* UNFs;
+    // i.e. recalculate on the fly the UNFs for the versions that have them, 
+    // compare the 2, and list the mismatches. 
 
-    public static JsonArrayBuilder getUnfData(List<Dataset> datasets) {
-        JsonArrayBuilder datasetVersionsWithWrongUnfValue = Json.createArrayBuilder();
+    public static JsonArrayBuilder getVersionsWithMissingUNFs(List<Dataset> datasets) {
+        JsonArrayBuilder datasetVersionsWithMissingUNFs = Json.createArrayBuilder();
         if (datasets == null || datasets.isEmpty()) {
-            return datasetVersionsWithWrongUnfValue;
+            return datasetVersionsWithMissingUNFs;
         }
         for (Dataset dataset : datasets) {
             for (DatasetVersion dsv : dataset.getVersions()) {
@@ -290,18 +295,18 @@ public class IngestUtil {
                         JsonObjectBuilder problem = Json.createObjectBuilder();
                         problem.add("datasetVersionId", dsv.getId());
                         problem.add("message", msg);
-                        datasetVersionsWithWrongUnfValue.add(problem);
+                        datasetVersionsWithMissingUNFs.add(problem);
                     }
                 } else if (existingUnf != null) {
                     String msg = "Dataset version " + dsv.getSemanticVersion() + " (datasetVersionId " + dsv.getId() + ") from " + dsv.getDataset().getGlobalId() + " has a UNF (" + existingUnf + ") but shouldn't!";
                     JsonObjectBuilder problem = Json.createObjectBuilder();
                     problem.add("datasetVersionId", dsv.getId());
                     problem.add("message", msg);
-                    datasetVersionsWithWrongUnfValue.add(problem);
+                    datasetVersionsWithMissingUNFs.add(problem);
                 }
             }
         }
-        return datasetVersionsWithWrongUnfValue;
+        return datasetVersionsWithMissingUNFs;
     }
 
 }

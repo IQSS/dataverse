@@ -868,14 +868,14 @@ public class Admin extends AbstractApiBean {
     @Path("datasets/integrity")
     @GET
     public Response checkDatasetIntegrity() {
-        JsonArray datasetVersionsWithWrongUnfValue = IngestUtil.getUnfData(datasetSvc.findAll()).build();
+        JsonArray datasetVersionsWithWrongUnfValue = IngestUtil.getVersionsWithMissingUNFs(datasetSvc.findAll()).build();
         JsonObjectBuilder info = Json.createObjectBuilder();
         info.add("numProblems", datasetVersionsWithWrongUnfValue.size());
         info.add("problems", datasetVersionsWithWrongUnfValue);
         return ok(info);
     }
 
-    @Path("datasets/integrity/unf/{datasetVersionId}")
+    @Path("datasets/integrity/{datasetVersionId}/fixunf")
     @POST
     public Response fixUnf(@PathParam("datasetVersionId") String datasetVersionId) {
         JsonObjectBuilder info = datasetVersionSvc.fixUnf(datasetVersionId);
