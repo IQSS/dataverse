@@ -133,6 +133,7 @@ public class SearchIT {
 
     }
 
+    @Ignore
     @Test
     public void testSearchCitation() {
 
@@ -478,6 +479,7 @@ public class SearchIT {
 
     }
 
+    @Ignore
     @Test
     public void testAssignGroupAtDataverse() throws InterruptedException {
         Response createUser1 = UtilIT.createRandomUser();
@@ -836,6 +838,11 @@ public class SearchIT {
                 .put("/dvn/api/data-deposit/v1.1/swordv2/edit/study/" + persistentId);
     }
 
+    /**
+     * @deprecated We can't assume we'll be able to query Solr across the wire.
+     * For security, we shouldn't be allowed to!
+     */
+    @Deprecated
     private Response querySolr(String query) {
         Response querySolrResponse = given().get("http://localhost:8983/solr/collection1/select?wt=json&indent=true&q=" + query);
         return querySolrResponse;
@@ -999,6 +1006,7 @@ public class SearchIT {
         return datasetIdFound;
     }
 
+    @Deprecated
     private Response search(TestSearchQuery query, TestUser user) {
         return given()
                 .get("api/search?key=" + user.getApiToken()
@@ -1007,6 +1015,7 @@ public class SearchIT {
                 );
     }
 
+    @Deprecated
     static Response search(String query, String apiToken) {
         return given()
                 .header(keyString, apiToken)
@@ -1303,4 +1312,40 @@ public class SearchIT {
 
     }
 
+    @Test
+    public void testDatasetThumbnail() {
+
+        Response createUser = UtilIT.createRandomUser();
+//        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+//        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+
+        Response datasetAsJson = UtilIT.nativeGet(datasetId, apiToken);
+        String protocol = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.protocol");
+        String authority = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.authority");
+        String identifier = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.identifier");
+        String datasetPersistentId = protocol + ":" + authority + "/" + identifier;
+
+        Response uploadFile = UtilIT.uploadFile(datasetPersistentId, "trees.zip", apiToken);
+        uploadFile.prettyPrint();
+
+        Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
+        publishDataverse.prettyPrint();
+        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        publishDataset.prettyPrint();
+
+        Response searchResponse = UtilIT.search("id:dataset_" + datasetId, apiToken);
+        searchResponse.prettyPrint();
+        String imageUrl = JsonPath.from(searchResponse.body().asString()).getString("data.items[0].image_url");
+        System.out.println("imageUrl: " + imageUrl);
+
+    }
 }
