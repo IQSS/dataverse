@@ -1075,6 +1075,17 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 valueSet = true;
             } else if (result.getType().equals("datasets") /*&& result.getEntity() instanceof Dataset*/) {
                 result.setImageUrl(getDatasetCardImageUrl(result));
+                /**
+                 * @todo Improve this inefficient hack to show the alternate
+                 * thumbnail on the dataset.
+                 */
+                Dataset dataset = datasetService.find(result.getEntityId());
+                if (dataset != null) {
+                    String altThumbnail = dataset.getAltThumbnail();
+                    if (altThumbnail != null) {
+                        result.setImageUrl(altThumbnail);
+                    }
+                }
                 valueSet = true;
                 if (result.isHarvested()) {
                     if (harvestedDatasetIds == null) {
