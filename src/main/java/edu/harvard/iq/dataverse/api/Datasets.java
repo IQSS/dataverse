@@ -591,7 +591,7 @@ public class Datasets extends AbstractApiBean {
             Dataset dataset = findDatasetOrDie(idSupplied);
             File file = null;
             try {
-                file = FileUtil.intputStreamToFile(fileInputStream);
+                file = FileUtil.inputStreamToFile(fileInputStream);
             } catch (IOException ex) {
                 return error(Response.Status.BAD_REQUEST, "Problem uploading file: " + ex);
             }

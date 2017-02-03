@@ -321,7 +321,7 @@ public class ImageThumbConverter {
 
     }
     
-    private static String rescaleImage(BufferedImage fullSizeImage, int width, int height, int size, String fileLocation) {
+    public static String rescaleImage(BufferedImage fullSizeImage, int width, int height, int size, String fileLocation) {
         String thumbFileLocation = fileLocation + ".thumb" + size;
         
         double scaleFactor = 0.0;

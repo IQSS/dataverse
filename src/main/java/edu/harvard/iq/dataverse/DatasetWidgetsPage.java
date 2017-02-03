@@ -5,7 +5,6 @@
  */
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.io.File;
@@ -73,9 +72,10 @@ public class DatasetWidgetsPage implements java.io.Serializable {
         UploadedFile uploadedFile = event.getFile();
         try {
             InputStream fileInputStream = uploadedFile.getInputstream();
-            File file = FileUtil.intputStreamToFile(fileInputStream);
-            String thumbnail = ImageThumbConverter.getImageAsBase64FromFile(file);
-            dataset.setAltThumbnail(thumbnail);
+            File file = FileUtil.inputStreamToFile(fileInputStream);
+            String rescaledThumbnail = FileUtil.rescaleImage(file);
+            logger.fine("rescaledThumbnail: " + rescaledThumbnail);
+            dataset.setAltThumbnail(rescaledThumbnail);
         } catch (IOException ex) {
             logger.info("Problem uploading thumbnail to dataset id " + dataset.getId() + ": " + ex);
         }

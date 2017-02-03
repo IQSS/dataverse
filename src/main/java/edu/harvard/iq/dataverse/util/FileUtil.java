@@ -20,18 +20,17 @@
 
 package edu.harvard.iq.dataverse.util;
 
-import edu.emory.mathcs.backport.java.util.Collections;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFile.ChecksumType;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
 import edu.harvard.iq.dataverse.ingest.IngestReport;
-import edu.harvard.iq.dataverse.ingest.IngestUtil;
 import edu.harvard.iq.dataverse.ingest.IngestServiceShapefileHelper;
 import edu.harvard.iq.dataverse.ingest.IngestableDataChecker;
+import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -57,11 +56,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -73,6 +69,7 @@ import javax.xml.stream.XMLStreamReader;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import javax.imageio.ImageIO;
 
 
 /**
@@ -1183,7 +1180,7 @@ public class FileUtil implements java.io.Serializable  {
         }
     }
 
-    public static File intputStreamToFile(InputStream inputStream) throws IOException {
+    public static File inputStreamToFile(InputStream inputStream) throws IOException {
         File file = File.createTempFile(UUID.randomUUID().toString(), UUID.randomUUID().toString());
         OutputStream outputStream = new FileOutputStream(file);
         int read = 0;
@@ -1193,4 +1190,18 @@ public class FileUtil implements java.io.Serializable  {
         }
         return file;
     }
+
+    public static String rescaleImage(File file) throws IOException {
+        File tmpFile = File.createTempFile("tempFileToRescale", ".tmp");
+        BufferedImage fullSizeImage = ImageIO.read(file);
+        int width = fullSizeImage.getWidth();
+        int height = fullSizeImage.getHeight();
+        FileChannel src = new FileInputStream(file).getChannel();
+        FileChannel dest = new FileOutputStream(tmpFile).getChannel();
+        dest.transferFrom(src, 0, src.size());
+        String pathToResizedFile = ImageThumbConverter.rescaleImage(fullSizeImage, width, height, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE, tmpFile.getAbsolutePath());
+        File resizedFile = new File(pathToResizedFile);
+        return ImageThumbConverter.getImageAsBase64FromFile(resizedFile);
+    }
+
 }

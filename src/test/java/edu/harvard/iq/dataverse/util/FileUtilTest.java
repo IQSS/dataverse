@@ -1,6 +1,8 @@
 package edu.harvard.iq.dataverse.util;
 
 import edu.harvard.iq.dataverse.FileMetadata;
+import java.io.File;
+import java.io.IOException;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
@@ -23,6 +25,13 @@ public class FileUtilTest {
         assertEquals("50by1000-endnote.xml", FileUtil.getCiteDataFileFilename(tabular, FileUtil.FileCitationExtension.ENDNOTE));
         assertEquals("50by1000.ris", FileUtil.getCiteDataFileFilename(tabular, FileUtil.FileCitationExtension.RIS));
         assertEquals("50by1000.bib", FileUtil.getCiteDataFileFilename(tabular, FileUtil.FileCitationExtension.BIBTEX));
+    }
+
+    @Test
+    public void testRescaleImage() throws IOException {
+        File file = new File("src/main/webapp/resources/images/cc0.png");
+        String string = FileUtil.rescaleImage(file);
+        System.out.println("string: " + string);
     }
 
 }
