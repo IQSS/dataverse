@@ -73,8 +73,8 @@ public class Dataset extends DvObjectContainer {
     @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     @JoinColumn(name = "thumbnailfile_id")
     private DataFile thumbnailFile;
-    @Transient
-    private String thumbnail;
+    @Column(columnDefinition = "TEXT")
+    private String altThumbnail;
 
     @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     @JoinColumn(name = "guestbook_id", unique = false, nullable = true, insertable = true, updatable = true)
@@ -543,12 +543,12 @@ public class Dataset extends DvObjectContainer {
         this.thumbnailFile = thumbnailFile;
     }
 
-    public String getThumbnail() {
-        return thumbnail;
+    public String getAltThumbnail() {
+        return altThumbnail;
     }
 
-    public void setThumbnail(String thumbnail) {
-        this.thumbnail = thumbnail;
+    public void setAltThumbnail(String altThumbnail) {
+        this.altThumbnail = altThumbnail;
     }
 
     public String getDefaultThumbnail() {

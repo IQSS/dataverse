@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
 import edu.harvard.iq.dataverse.datasetutility.DataFileTagException;
 import edu.harvard.iq.dataverse.datasetutility.NoFilesException;
@@ -50,11 +51,16 @@ import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.util.Collections;
@@ -558,9 +564,46 @@ public class Datasets extends AbstractApiBean {
             }
         });
     }
-    
-    
-    
+
+    /**
+     * @todo Comment out or delete if not needed. Enforce permissions.
+     */
+    @GET
+    @Path("{id}/thumbnail")
+    public Response getDatasetThumbnail(@PathParam("id") String idSupplied) {
+        try {
+            Dataset dataset = findDatasetOrDie(idSupplied);
+            return ok("All good, got dataset id: " + dataset.getId());
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.NOT_FOUND, "Could not find dataset based on id supplied: " + idSupplied + ".");
+        }
+    }
+
+    /**
+     * @todo Enforce permissions. Make into a Command?
+     */
+    @POST
+    @Path("{id}/thumbnail")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    public Response overrideDatasetThumbnail(@PathParam("id") String idSupplied, @FormDataParam("file") InputStream fileInputStream
+    ) {
+        try {
+            Dataset dataset = findDatasetOrDie(idSupplied);
+            File file = null;
+            try {
+                file = FileUtil.intputStreamToFile(fileInputStream);
+            } catch (IOException ex) {
+                return error(Response.Status.BAD_REQUEST, "Problem uploading file: " + ex);
+            }
+            String thumbnail = ImageThumbConverter.getImageAsBase64FromFile(file);
+            dataset.setAltThumbnail(thumbnail);
+            Dataset merged = datasetService.merge(dataset);
+            return ok("Thumbnail overridden for dataset id: " + merged.getId());
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.NOT_FOUND, "Could not find dataset based on id supplied: " + idSupplied + ".");
+        }
+    }
+
     /**
      * Add a File to an existing Dataset
      * 

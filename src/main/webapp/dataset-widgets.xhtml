@@ -35,13 +35,13 @@
                                     <p:panelGrid columns="2" styleClass="noBorders" columnClasses="text-center,uploadNewLogo">
                                         <p:column>
                                             <p>
-                                                <span class="icon-dataset text-info" style="font-size: 2.8em;" jsf:rendered="#{DatasetWidgetsPage.dataset.thumbnail == null}"/>
+                                                <span class="icon-dataset text-info" style="font-size: 2.8em;" jsf:rendered="#{DatasetWidgetsPage.dataset.altThumbnail == null}"/>
                                                 <!--FIXME: remove all the backend logic and image file for this default view -->
                                                 <h:graphicImage value="#{DatasetWidgetsPage.dataset.defaultThumbnail}" rendered="#{false}"/>
-                                                <h:graphicImage value="#{DatasetWidgetsPage.dataset.thumbnail}" rendered="#{DatasetWidgetsPage.dataset.thumbnail != null}"/>
+                                                <h:graphicImage value="#{DatasetWidgetsPage.dataset.altThumbnail}" rendered="#{DatasetWidgetsPage.dataset.altThumbnail != null}"/>
                                             </p>
-                                            <span class="text-muted" jsf:rendered="#{DatasetWidgetsPage.dataset.thumbnail == null}"><em>Default Icon</em></span>
-                                            <p:commandButton update="@all" value="#{bundle.remove}" action="#{DatasetWidgetsPage.removeLogo()}" rendered="#{DatasetWidgetsPage.dataset.thumbnail != null}" oncomplete="bind_bsui_components();"/>
+                                            <span class="text-muted" jsf:rendered="#{DatasetWidgetsPage.dataset.altThumbnail == null}"><em>Default Icon</em></span>
+                                            <p:commandButton update="@all" value="#{bundle.remove}" action="#{DatasetWidgetsPage.removeThumbnail()}" rendered="#{DatasetWidgetsPage.dataset.altThumbnail != null}" oncomplete="bind_bsui_components();"/>
                                         </p:column>
                                         <p:column>
                                             <!--FIXME: consider supporting SVG: https://github.com/IQSS/dataverse/issues/2843-->

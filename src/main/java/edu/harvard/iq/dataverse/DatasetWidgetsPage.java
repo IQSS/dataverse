@@ -5,13 +5,19 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
+import edu.harvard.iq.dataverse.util.FileUtil;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import org.primefaces.event.FileUploadEvent;
+import org.primefaces.model.UploadedFile;
 
 /**
  *
@@ -63,19 +69,31 @@ public class DatasetWidgetsPage implements java.io.Serializable {
     }
 
     public void handleImageFileUpload(FileUploadEvent event) {
-        logger.info("handleImageFileUpload clicked");
+        logger.fine("handleImageFileUpload clicked");
+        UploadedFile uploadedFile = event.getFile();
+        try {
+            InputStream fileInputStream = uploadedFile.getInputstream();
+            File file = FileUtil.intputStreamToFile(fileInputStream);
+            String thumbnail = ImageThumbConverter.getImageAsBase64FromFile(file);
+            dataset.setAltThumbnail(thumbnail);
+        } catch (IOException ex) {
+            logger.info("Problem uploading thumbnail to dataset id " + dataset.getId() + ": " + ex);
+        }
     }
 
-    public void removeLogo() {
-        logger.info("remove clicked");
+    public void removeThumbnail() {
+        logger.fine("removeThumbnail clicked");
+        dataset.setAltThumbnail(null);
     }
 
     public void save() {
-        logger.info("save clicked");
+        Dataset merged = datasetService.merge(dataset);
+        logger.fine("Save clicked. Alternative thumbnail is now: " + merged.getAltThumbnail());
     }
 
-    public void cancel() {
-        logger.info("cancel clicked");
+    public String cancel() {
+        logger.fine("cancel clicked");
+        return "/dataset.xhtml?persistentId=" + dataset.getGlobalId()  +  "&faces-redirect=true";
     }
 
 }

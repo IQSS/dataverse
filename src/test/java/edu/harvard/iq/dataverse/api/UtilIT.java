@@ -25,6 +25,11 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static com.jayway.restassured.RestAssured.given;
+import static com.jayway.restassured.path.xml.XmlPath.from;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 public class UtilIT {
 
@@ -631,6 +636,23 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .delete("/api/datasets/" + datasetId + "/privateUrl");
         return response;
+    }
+
+    static Response downloadDatasetThumbnail(String datasetPersistentId, String imageFile, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                //                .post("/api/datasets/" + datasetPersistentId + "/thumbnail");
+                //                .post("/api/datasets/:persistentId/thumbnail" + "?persistentId=" + datasetPersistentId);
+                .get("/api/datasets/:persistentId/thumbnail" + "?persistentId=" + datasetPersistentId);
+    }
+
+    static Response overrideDatasetThumbnail(String datasetPersistentId, String pathToImageFile, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                //                .post("/api/datasets/" + datasetPersistentId + "/thumbnail");
+                .multiPart("file", new File(pathToImageFile))
+                .post("/api/datasets/:persistentId/thumbnail" + "?persistentId=" + datasetPersistentId);
+//                .get("/api/datasets/:persistentId/thumbnail" + "?persistentId=" + datasetPersistentId);
     }
 
     static Response search(String query, String apiToken) {

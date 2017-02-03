@@ -1316,12 +1316,12 @@ public class SearchIT {
     public void testDatasetThumbnail() {
 
         Response createUser = UtilIT.createRandomUser();
-//        createUser.prettyPrint();
+        createUser.prettyPrint();
         String username = UtilIT.getUsernameFromResponse(createUser);
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
 
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
-//        createDataverseResponse.prettyPrint();
+        createDataverseResponse.prettyPrint();
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
 
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
@@ -1336,6 +1336,12 @@ public class SearchIT {
 
         Response uploadFile = UtilIT.uploadFile(datasetPersistentId, "trees.zip", apiToken);
         uploadFile.prettyPrint();
+
+        String imageFile = "src/main/webapp/resources/images/cc0.png";
+        Response overrideThumbnail = UtilIT.overrideDatasetThumbnail(datasetPersistentId, imageFile, apiToken);
+        overrideThumbnail.prettyPrint();
+        overrideThumbnail.then().assertThat()
+                .statusCode(200);
 
         Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
         publishDataverse.prettyPrint();

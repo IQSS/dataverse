@@ -39,6 +39,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ResourceBundle;
 import java.util.MissingResourceException;
 import java.nio.channels.FileChannel;
@@ -1182,4 +1183,14 @@ public class FileUtil implements java.io.Serializable  {
         }
     }
 
+    public static File intputStreamToFile(InputStream inputStream) throws IOException {
+        File file = File.createTempFile(UUID.randomUUID().toString(), UUID.randomUUID().toString());
+        OutputStream outputStream = new FileOutputStream(file);
+        int read = 0;
+        byte[] bytes = new byte[1024];
+        while ((read = inputStream.read(bytes)) != -1) {
+            outputStream.write(bytes, 0, read);
+        }
+        return file;
+    }
 }
