@@ -1241,10 +1241,6 @@ public class FileUtil implements java.io.Serializable  {
     }
 
     public static String getFileDownloadUrlPath(String downloadType, Long fileId, boolean gbRecordsWritten) {
-        /**
-         * @todo What happens when we bump the API version to v1.1 or v2? See
-         * also https://github.com/IQSS/dataverse/issues/3325
-         */
         String fileDownloadUrl = "/api/access/datafile/" + fileId;
         if (downloadType != null && downloadType.equals("bundle")) {
             fileDownloadUrl = "/api/access/datafile/bundle/" + fileId;
