@@ -158,4 +158,16 @@ public class FileUtilTest {
         assertEquals("https://demo.dataverse.org/api/access/datafile/42", FileUtil.getPublicDownloadUrl("https://demo.dataverse.org", 42l));
     }
 
+    @Test
+    public void testGenerateOriginalExtension() {
+        assertEquals("", FileUtil.generateOriginalExtension("foo"));
+        // uh-oh, NullPointerException
+//        assertEquals("", FileUtil.generateOriginalExtension(null));
+        assertEquals(".sav", FileUtil.generateOriginalExtension("application/x-spss-sav"));
+        assertEquals(".por", FileUtil.generateOriginalExtension("application/x-spss-por"));
+        assertEquals(".dta", FileUtil.generateOriginalExtension("application/x-stata"));
+        assertEquals(".RData", FileUtil.generateOriginalExtension("application/x-rlang-transport"));
+        assertEquals(".csv", FileUtil.generateOriginalExtension("text/csv"));
+        assertEquals(".xlsx", FileUtil.generateOriginalExtension("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+    }
 }
