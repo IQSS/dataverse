@@ -655,6 +655,16 @@ Execute all saved searches and make links to dataverses and datasets that are fo
 
   PUT http://$SERVER/api/admin/savedsearches/makelinks/all?debug=true
 
+Dataset Integrity
+^^^^^^^^^^^^^^^^^
+
+Iterate over all datasets, checking for integrity problems::
+
+  GET http://$SERVER/api/admin/datasets/integrity
+
+Correct the UNF value for a dataset version, based on its database id::
+
+  POST http://$SERVER/api/admin/datasets/integrity/{datasetVersionId}/fixunf
 
 .. |CORS| raw:: html 
       
