@@ -36,15 +36,10 @@ public class FileUtilTest {
     }
 
     @Test
-    public void testIsDownloadPopupRequiredNoPopup() {
-        DatasetVersion dsv1 = new DatasetVersion();
-        assertEquals(false, FileUtil.isDownloadPopupRequired(dsv1));
-    }
-
-    @Test
     public void testIsDownloadPopupRequiredDraft() {
-        DatasetVersion dsv1 = new DatasetVersion();
-        dsv1.setVersionState(DatasetVersion.VersionState.DRAFT);
+        Dataset dataset = new Dataset();
+        DatasetVersion dsv1 = dataset.getEditVersion();
+        assertEquals(DatasetVersion.VersionState.DRAFT, dsv1.getVersionState());
         assertEquals(false, FileUtil.isDownloadPopupRequired(dsv1));
     }
 
