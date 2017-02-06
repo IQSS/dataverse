@@ -6,6 +6,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,6 +30,9 @@ public class FileDownloadHelper implements java.io.Serializable {
 
     @EJB
     PermissionServiceBean  permissionService;
+    
+    @EJB
+    FileDownloadServiceBean  fileDownloadService;
 
     
     private final Map<Long, Boolean> fileDownloadPermissionMap = new HashMap<>(); // { FileMetadata.id : Boolean } 
@@ -174,7 +178,21 @@ public class FileDownloadHelper implements java.io.Serializable {
         // return true/false
         return hasPermission;
     }
-
+    
+    
+    public void requestAccess(DataFile file) {
+        if (fileDownloadService.requestAccess(file.getId())) {
+            // update the local file object so that the page properly updates
+            file.getFileAccessRequesters().add((AuthenticatedUser) session.getUser());
+            
+            // create notifications
+            fileDownloadService.sendRequestFileAccessNotification(file.getOwner(), file.getId());           
+        }
+        
+    }    
+    
+    
+    //todo: potential cleanup - are these methods needed?
     public DataverseSession getSession() {
         return session;
     }
