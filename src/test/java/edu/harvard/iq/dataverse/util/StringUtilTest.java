@@ -119,4 +119,28 @@ public class StringUtilTest {
         assertEquals( "hello", StringUtil.nullToEmpty("hello") );
         assertEquals( "", StringUtil.nullToEmpty(null) );
     }
+    
+    @Test
+    public void testSymmetricEncryption() {
+        String source = "Hello, world! This is an encryption test";
+        String password = "12345678";
+        final String encrypted = StringUtil.encrypt(source, password);
+        final String decrypted = StringUtil.decrypt(encrypted, password);
+        
+        assertEquals(source, decrypted);
+    }
+    
+    @Test
+    public void testIsValidEmail() {
+        assertTrue( StringUtil.isValidEmail("hello@world.com") );
+        assertTrue( StringUtil.isValidEmail("hello@world.co.il") );
+        assertTrue( StringUtil.isValidEmail("hello@under.world.co.il") );
+        
+        assertFalse( StringUtil.isValidEmail("hello at under.world.co.il") );
+        assertFalse( StringUtil.isValidEmail("hellounder.world.co.il") );
+        assertFalse( StringUtil.isValidEmail("hellounder@.world.co.il") );
+        assertFalse( StringUtil.isValidEmail("hellounder") );
+        assertFalse( StringUtil.isValidEmail("") );
+        assertFalse( StringUtil.isValidEmail(null) );
+    }
 }

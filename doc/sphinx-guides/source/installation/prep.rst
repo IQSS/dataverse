@@ -6,7 +6,7 @@ Preparation
 
 > "What are you preparing? You're always preparing! Just go!" -- Spaceballs
 
-We'll try to get you up and running as quicky as possible, but we thought you might like to hear about your options. :)
+We'll try to get you up and running as quickly as possible, but we thought you might like to hear about your options. :)
 
 .. contents:: :local:
 
@@ -16,7 +16,7 @@ Choose Your Own Installation Adventure
 Vagrant (for Testing Only)
 ++++++++++++++++++++++++++
 
-If you are looking to simply kick the tires on Dataverse and are familiar with Vagrant, running ``vagrant up`` after cloning the Dataverse repo **should** give you a working installation at http://localhost:8888 . This is one of the :doc:`/developers/tools` developers use to test the installation process but you're welcome to give it a shot.
+If you are looking to simply kick the tires on installing Dataverse and are familiar with Vagrant, you are welcome to read through the "Vagrant" section of the :doc:`/developers/tools` section of the Developer Guide. Checking out a tagged release is recommended rather than running ``vagrant up`` on unreleased code.
 
 Pilot Installation
 ++++++++++++++++++
@@ -56,7 +56,7 @@ When planning your installation you should be aware of the following components 
 - PostgreSQL: a relational database.
 - Solr: a search engine. A Dataverse-specific schema is provided.
 - SMTP server: for sending mail for password resets and other notifications.
-- Persistent indentifier service: DOI support is provided. An EZID subscription or DataCite account is required for production use. 
+- Persistent identifier service: DOI support is provided. An EZID subscription or DataCite account is required for production use.
 
 There are a number of optional components you may choose to install or configure, including:
 
@@ -64,6 +64,7 @@ There are a number of optional components you may choose to install or configure
 - Dropbox integration: for uploading files from the Dropbox API.
 - Apache: a web server that can "reverse proxy" Glassfish applications and rewrite HTTP traffic.
 - Shibboleth: an authentication system described in :doc:`shibboleth`. Its use with Dataverse requires Apache.
+- OAuth2: an authentication system described in :doc:`oauth2`.
 - Geoconnect: :doc:`/user/data-exploration/worldmap` describes the feature and the code can be downloaded from https://github.com/IQSS/geoconnect
 
 System Requirements
@@ -94,6 +95,7 @@ Here are some questions to keep in the back of your mind as you test and move in
 
 - How much storage do I need?
 - Which features do I want based on :ref:`architecture`?
+- How do I want my users to log in to Dataverse? With local accounts? With Shibboleth/SAML? With OAuth providers such as ORCID, GitHub, or Google?
 - Do I want to to run Glassfish on the standard web ports (80 and 443) or do I prefer to have a proxy such as Apache in front?
 - How many points of failure am I willing to tolerate? How much complexity do I want?
 - How much does it cost to subscribe to a service to create persistent identifiers such as DOIs?

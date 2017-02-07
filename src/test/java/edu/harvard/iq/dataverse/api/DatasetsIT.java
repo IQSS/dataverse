@@ -26,8 +26,8 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.UUID;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static junit.framework.Assert.assertEquals;
-import org.hamcrest.CoreMatchers;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
 
 public class DatasetsIT {
@@ -91,10 +91,30 @@ public class DatasetsIT {
         createDatasetResponse.prettyPrint();
         Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
 
+        Response getDatasetJsonBeforePublishing = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetJsonBeforePublishing.prettyPrint();
+        String protocol = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.protocol");
+        String authority = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.authority");
+        String identifier = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.identifier");
+        String datasetPersistentId = protocol + ":" + authority + "/" + identifier;
+
         Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
         assertEquals(200, publishDataverse.getStatusCode());
-        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        Response attemptToPublishZeroDotOne = UtilIT.publishDatasetViaNativeApiDeprecated(datasetPersistentId, "minor", apiToken);
+        attemptToPublishZeroDotOne.prettyPrint();
+        attemptToPublishZeroDotOne.then().assertThat()
+                .body("message", equalTo("Cannot publish as minor version. Re-try as major release."))
+                .statusCode(403);
+
+        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
         assertEquals(200, publishDataset.getStatusCode());
+
+        Response getDatasetJsonAfterPublishing = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetJsonAfterPublishing.prettyPrint();
+        getDatasetJsonAfterPublishing.then().assertThat()
+                .body("data.latestVersion.versionNumber", equalTo(1))
+                .body("data.latestVersion.versionMinorNumber", equalTo(0))
+                .statusCode(OK.getStatusCode());
 
         Response deleteDatasetResponse = UtilIT.destroyDataset(datasetId, apiToken);
         deleteDatasetResponse.prettyPrint();
@@ -465,4 +485,6 @@ public class DatasetsIT {
                 .statusCode(OK.getStatusCode());
 
     }
+
+  
 }

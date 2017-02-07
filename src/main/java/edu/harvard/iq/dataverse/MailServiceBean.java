@@ -102,6 +102,8 @@ public class MailServiceBean implements java.io.Serializable {
 
     public boolean sendSystemEmail(String to, String subject, String messageText) {
         boolean sent = false;
+        String body = messageText + ResourceBundle.getBundle("Bundle").getString("notification.email.closing");
+        logger.fine("Sending email to " + to + ". Subject: <<<" + subject + ">>>. Body: " + body);
         try {
              Message msg = new MimeMessage(session);
 
@@ -112,7 +114,7 @@ public class MailServiceBean implements java.io.Serializable {
                 msg.setRecipients(Message.RecipientType.TO,
                         InternetAddress.parse(to, false));
                 msg.setSubject(subject);
-                msg.setText(messageText + ResourceBundle.getBundle("Bundle").getString("notification.email.closing"));
+                msg.setText(body);
                 try {
                     Transport.send(msg);
                     sent = true;
@@ -370,7 +372,7 @@ public class MailServiceBean implements java.io.Serializable {
                         parentDataverseDisplayName,
                         parentDataverseUrl,
                         systemConfig.getGuidesBaseUrl(),
-                        systemConfig.getVersion()));
+                        systemConfig.getGuidesVersion()));
                 logger.fine(dataverseCreatedMessage);
                 return messageText += dataverseCreatedMessage;
             case REQUESTFILEACCESS:
@@ -399,7 +401,7 @@ public class MailServiceBean implements java.io.Serializable {
                         version.getDataset().getOwner().getDisplayName(),
                         getDataverseLink(version.getDataset().getOwner()),
                         systemConfig.getGuidesBaseUrl(),
-                        systemConfig.getVersion()
+                        systemConfig.getGuidesVersion()
                 ));
                 logger.fine(datasetCreatedMessage);
                 return messageText += datasetCreatedMessage;
@@ -433,11 +435,11 @@ public class MailServiceBean implements java.io.Serializable {
             case CREATEACC:
                 String accountCreatedMessage = BundleUtil.getStringFromBundle("notification.email.welcome", Arrays.asList(
                         systemConfig.getGuidesBaseUrl(),
-                        systemConfig.getVersion()
+                        systemConfig.getGuidesVersion()
                 ));
                 String optionalConfirmEmailAddon = confirmEmailService.optionalConfirmEmailAddonMsg(userNotification.getUser());
                 accountCreatedMessage += optionalConfirmEmailAddon;
-                logger.info("accountCreatedMessage: " + accountCreatedMessage);
+                logger.fine("accountCreatedMessage: " + accountCreatedMessage);
                 return messageText += accountCreatedMessage;
 
             case CHECKSUMFAIL:

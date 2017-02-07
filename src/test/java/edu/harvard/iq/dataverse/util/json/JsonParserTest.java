@@ -14,11 +14,12 @@ import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseTheme.Alignment;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddressRange;
+import edu.harvard.iq.dataverse.DataverseTheme.Alignment;
+import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -27,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
+import java.math.BigDecimal;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -41,8 +43,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
 import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
+import javax.json.JsonValue;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -524,7 +530,39 @@ public class JsonParserTest {
         assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("2.1.1.1")) ));
         
     }
-    
+
+    @Test
+    public void testparseFiles() throws JsonParseException {
+        JsonArrayBuilder metadatasJsonBuilder = Json.createArrayBuilder();
+        JsonObjectBuilder fileMetadataGood = Json.createObjectBuilder();
+        fileMetadataGood.add("label", "myLabel");
+        JsonObjectBuilder fileGood = Json.createObjectBuilder();
+        fileMetadataGood.add("dataFile", fileGood);
+        fileMetadataGood.add("categories", Json.createArrayBuilder()
+                .add("Documentation")
+        );
+        JsonObjectBuilder fileMetadataBad = Json.createObjectBuilder();
+        fileMetadataBad.add("label", "bad");
+        JsonObjectBuilder fileBad = Json.createObjectBuilder();
+        fileMetadataBad.add("dataFile", fileBad);
+        fileMetadataBad.add("categories", Json.createArrayBuilder()
+                .add(BigDecimal.ONE)
+        );
+        metadatasJsonBuilder.add(fileMetadataGood);
+        metadatasJsonBuilder.add(fileMetadataBad);
+        JsonArray metadatasJson = metadatasJsonBuilder.build();
+        DatasetVersion dsv = new DatasetVersion();
+        Dataset dataset = new Dataset();
+        dsv.setDataset(dataset);
+        List<FileMetadata> fileMetadatas = new JsonParser().parseFiles(metadatasJson, dsv);
+        System.out.println("fileMetadatas: " + fileMetadatas);
+        assertEquals("myLabel", fileMetadatas.get(0).getLabel());
+        assertEquals("Documentation", fileMetadatas.get(0).getCategories().get(0).getName());
+        assertEquals(null, fileMetadatas.get(1).getCategories());
+        List<FileMetadata> codeCoverage = new JsonParser().parseFiles(Json.createArrayBuilder().add(Json.createObjectBuilder().add("label", "myLabel").add("dataFile", Json.createObjectBuilder().add("categories", JsonValue.NULL))).build(), dsv);
+        assertEquals(null, codeCoverage.get(0).getCategories());
+    }
+
     JsonObject json( String s ) {
         return Json.createReader( new StringReader(s) ).readObject();
     }
@@ -585,12 +623,15 @@ public class JsonParserTest {
     static class MockSettingsSvc extends SettingsServiceBean {
         @Override
         public String getValueForKey( Key key /*, String defaultValue */) {
-            if (key.equals(SettingsServiceBean.Key.Authority)) {
-                return "10.5072/FK2";
-            } else if (key.equals(SettingsServiceBean.Key.Protocol)) {
-                return "doi";
-            } else if( key.equals(SettingsServiceBean.Key.DoiSeparator)) {
-                return "/";
+            switch (key) {
+                case Authority:
+                    return "10.5072/FK2";
+                case Protocol:
+                    return "doi";
+                case DoiSeparator:
+                    return "/";
+                default:
+                    break;
             }
              return null;
         }

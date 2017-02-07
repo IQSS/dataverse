@@ -3,6 +3,10 @@ Native API
 
 Dataverse 4.0 exposes most of its GUI functionality via a REST-based API. Some API calls do not require authentication. Calls that do require authentication require the user's API key. That key can be passed either via an extra query parameter, ``key``, as in ``ENPOINT?key=API_KEY``, or via the HTTP header ``X-Dataverse-key``. Note that while the header option normally requires more work on client side, it is considered safer, as the API key is not logged in the server access logs.
 
+.. note:: |CORS| Some API endpoint allow CORS_ (cross-origin resource sharing), which makes them usable from scripts runing in web browsers. These endpoints are marked with a *CORS* badge. 
+
+.. _CORS: https://www.w3.org/TR/cors/
+
 .. warning:: Dataverse 4.0's API is versioned at the URI - all API calls may include the version number like so: ``http://server-address//api/v1/...``. Omitting the ``v1`` part would default to the latest API version (currently 1). When writing scripts/applications that will be used for a long time, make sure to specify the API version, so they don't break when the API is upgraded.
 
 .. contents::
@@ -17,7 +21,7 @@ If ``$id`` is omitted, a root dataverse is created. ``$id`` can either be a data
 
     POST http://$SERVER/api/dataverses/$id?key=$apiKey
 
-The following JSON example can be `downloaded <../_static/api/dataverse-complete.json>`_ and modified to create dataverses to suit your needs. The fields ``name``, ``alias``, and ``dataverseContacts`` are required. The controlled vocabulary for ``dataverseType`` is
+Download the :download:`JSON example <../_static/api/dataverse-complete.json>` file and modified to create dataverses to suit your needs. The fields ``name``, ``alias``, and ``dataverseContacts`` are required. The controlled vocabulary for ``dataverseType`` is
 
 - ``JOURNALS``
 - ``LABORATORY``
@@ -30,7 +34,7 @@ The following JSON example can be `downloaded <../_static/api/dataverse-complete
 
 .. literalinclude:: ../_static/api/dataverse-complete.json
 
-View data about the dataverse identified by ``$id``. ``$id`` can be the id number of the dataverse, its alias, or the special value ``:root``. ::
+|CORS| View data about the dataverse identified by ``$id``. ``$id`` can be the id number of the dataverse, its alias, or the special value ``:root``. ::
 
     GET http://$SERVER/api/dataverses/$id
 
@@ -38,7 +42,7 @@ Deletes the dataverse whose ID is given::
 
     DELETE http://$SERVER/api/dataverses/$id?key=$apiKey
 
-Lists all the DvObjects under dataverse ``id``. ::
+|CORS| Lists all the DvObjects under dataverse ``id``. ::
 
     GET http://$SERVER/api/dataverses/$id/contents
 
@@ -46,7 +50,7 @@ All the roles defined directly in the dataverse identified by ``id``::
 
   GET http://$SERVER/api/dataverses/$id/roles?key=$apiKey
 
-List all the facets for a given dataverse ``id``. ::
+|CORS| List all the facets for a given dataverse ``id``. ::
 
   GET http://$SERVER/api/dataverses/$id/facets?key=$apiKey
 
@@ -73,7 +77,7 @@ Delete the assignment whose id is ``$id``::
 
   DELETE http://$SERVER/api/dataverses/$id/assignments/$id?key=$apiKey
 
-Get the metadata blocks defined on the passed dataverse::
+|CORS| Get the metadata blocks defined on the passed dataverse::
 
   GET http://$SERVER/api/dataverses/$id/metadatablocks?key=$apiKey
 
@@ -105,7 +109,7 @@ Publish the Dataverse pointed by ``identifier``, which can either by the dataver
 Datasets
 ~~~~~~~~
 
-**Note** Creation of new datasets is done with a ``POST`` onto dataverses. See dataverse section.
+**Note** Creation of new datasets is done with a ``POST`` onto dataverses. See Dataverses_ section.
 
 **Note** In all commands below, dataset versions can be referred to as:
 
@@ -126,7 +130,7 @@ Datasets
 
     GET http://$SERVER/api/datasets/:persistentId/versions/:draft?persistentId=doi:10.5072/FK2/J8SJZB
 
-Show the dataset whose id is passed::
+|CORS| Show the dataset whose id is passed::
 
   GET http://$SERVER/api/datasets/$id?key=$apiKey
 
@@ -134,30 +138,29 @@ Delete the dataset whose id is passed::
 
   DELETE http://$SERVER/api/datasets/$id?key=$apiKey
 
-List versions of the dataset::
+|CORS| List versions of the dataset::
 
   GET http://$SERVER/api/datasets/$id/versions?key=$apiKey
 
-Show a version of the dataset. The Dataset also include any metadata blocks the data might have::
+|CORS| Show a version of the dataset. The Dataset also include any metadata blocks the data might have::
 
   GET http://$SERVER/api/datasets/$id/versions/$versionNumber?key=$apiKey
 
-
-Export the metadata of the current published version of a dataset in various formats see Note below::
+|CORS| Export the metadata of the current published version of a dataset in various formats see Note below::
 
     GET http://$SERVER/api/datasets/export?exporter=ddi&persistentId=$persistentId
 
 .. note:: Supported exporters (export formats) are ``ddi``, ``oai_ddi``, ``dcterms``, ``oai_dc``, and ``dataverse_json``.
 
-Lists all the file metadata, for the given dataset and version::
+|CORS| Lists all the file metadata, for the given dataset and version::
 
   GET http://$SERVER/api/datasets/$id/versions/$versionId/files?key=$apiKey
 
-Lists all the metadata blocks and their content, for the given dataset and version::
+|CORS| Lists all the metadata blocks and their content, for the given dataset and version::
 
   GET http://$SERVER/api/datasets/$id/versions/$versionId/metadata?key=$apiKey
 
-Lists the metadata block block named `blockname`, for the given dataset and version::
+|CORS| Lists the metadata block block named `blockname`, for the given dataset and version::
 
   GET http://$SERVER/api/datasets/$id/versions/$versionId/metadata/$blockname?key=$apiKey
 
@@ -168,6 +171,8 @@ Updates the current draft version of dataset ``$id``. If the dataset does not ha
 Publishes the dataset whose id is passed. The new dataset version number is determined by the most recent version number and the ``type`` parameter. Passing ``type=minor`` increases the minor version number (2.3 is updated to 2.4). Passing ``type=major`` increases the major version number (2.3 is updated to 3.0)::
 
     POST http://$SERVER/api/datasets/$id/actions/:publish?type=$type&key=$apiKey
+
+.. note:: POST should be used to publish a dataset. GET is supported for backward compatibility but is deprecated and may be removed: https://github.com/IQSS/dataverse/issues/2431
 
 Deletes the draft version of dataset ``$id``. Only the draft version can be deleted::
 
@@ -199,10 +204,184 @@ Delete a Private URL from a dataset (if it exists)::
 
     DELETE http://$SERVER/api/datasets/$id/privateUrl?key=$apiKey
 
+Add a file to an existing Dataset. Description and tags are optional::
+
+    POST http://$SERVER/api/datasets/$id/add?key=$apiKey
+
+A more detailed "add" example using curl::
+
+    curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F 'file=@data.tsv' -F 'jsonData={"description":"My description.","categories":["Data"]}' "https://example.dataverse.edu/api/datasets/:persistentId/add?persistentId=$PERSISTENT_ID"
+
+Example python code to add a file. This may be run by changing these parameters in the sample code:
+
+* ``dataverse_server`` - e.g. https://dataverse.harvard.edu
+* ``api_key`` - See the top of this document for a description
+* ``persistentId`` - Example: ``doi:10.5072/FK2/6XACVA``
+* ``dataset_id`` - Database id of the dataset
+
+In practice, you only need one the ``dataset_id`` or the ``persistentId``. The example below shows both uses.
+
+.. code-block:: python
+
+    from datetime import datetime
+    import json
+    import requests  # http://docs.python-requests.org/en/master/
+
+    # --------------------------------------------------
+    # Update the 4 params below to run this code
+    # --------------------------------------------------
+    dataverse_server = 'https://your dataverse server' # no trailing slash
+    api_key = 'api key'
+    dataset_id = 1  # database id of the dataset
+    persistentId = 'doi:10.5072/FK2/6XACVA' # doi or hdl of the dataset
+
+    # --------------------------------------------------
+    # Prepare "file"
+    # --------------------------------------------------
+    file_content = 'content: %s' % datetime.now()
+    files = {'file': ('sample_file.txt', file_content)}
+
+    # --------------------------------------------------
+    # Using a "jsonData" parameter, add optional description + file tags
+    # --------------------------------------------------
+    params = dict(description='Blue skies!',
+                categories=['Lily', 'Rosemary', 'Jack of Hearts'])
+
+    params_as_json_string = json.dumps(params)
+
+    payload = dict(jsonData=params_as_json_string)
+
+    # --------------------------------------------------
+    # Add file using the Dataset's id
+    # --------------------------------------------------
+    url_dataset_id = '%s/api/datasets/%s/add?key=%s' % (dataverse_server, dataset_id, api_key)
+
+    # -------------------
+    # Make the request
+    # -------------------
+    print '-' * 40
+    print 'making request: %s' % url_dataset_id
+    r = requests.post(url_dataset_id, data=payload, files=files)
+
+    # -------------------
+    # Print the response
+    # -------------------
+    print '-' * 40
+    print r.json()
+    print r.status_code
+
+    # --------------------------------------------------
+    # Add file using the Dataset's persistentId (e.g. doi, hdl, etc)
+    # --------------------------------------------------
+    url_persistent_id = '%s/api/datasets/:persistentId/add?persistentId=%s&key=%s' % (dataverse_server, persistentId, api_key)
+
+    # -------------------
+    # Update the file content to avoid a duplicate file error
+    # -------------------
+    file_content = 'content2: %s' % datetime.now()
+    files = {'file': ('sample_file2.txt', file_content)}
+
+
+    # -------------------
+    # Make the request
+    # -------------------
+    print '-' * 40
+    print 'making request: %s' % url_persistent_id
+    r = requests.post(url_persistent_id, data=payload, files=files)
+
+    # -------------------
+    # Print the response
+    # -------------------
+    print '-' * 40
+    print r.json()
+    print r.status_code
+
+Files
+~~~~~~~~~~~
+
+.. note:: Please note that files can be added via the native API but the operation is performed on the parent object, which is a dataset. Please see the "Datasets" endpoint above for more information.
+
+Replace an existing file where ``id`` is the database id of the file to replace. Note that metadata such as description and tags are not carried over from the file being replaced::
+
+    POST http://$SERVER/api/files/{id}/replace?key=$apiKey
+
+A more detailed "replace" example using curl (note that ``forceReplace`` is for replacing one file type with another)::
+
+    curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F 'file=@data.tsv' -F 'jsonData={"description":"My description.","categories":["Data"],"forceReplace":false}' "https://example.dataverse.edu/api/files/$FILE_ID/replace"
+
+Example python code to replace a file.  This may be run by changing these parameters in the sample code:
+
+* ``dataverse_server`` - e.g. https://dataverse.harvard.edu
+* ``api_key`` - See the top of this document for a description
+* ``file_id`` - Database id of the file to replace (returned in the GET API for a Dataset)
+
+.. code-block:: python
+
+    from datetime import datetime
+    import json
+    import requests  # http://docs.python-requests.org/en/master/
+
+    # --------------------------------------------------
+    # Update params below to run code
+    # --------------------------------------------------
+    dataverse_server = 'http://127.0.0.1:8080' # no trailing slash
+    api_key = 'some key'
+    file_id = 1401  # id of the file to replace
+
+    # --------------------------------------------------
+    # Prepare replacement "file"
+    # --------------------------------------------------
+    file_content = 'content: %s' % datetime.now()
+    files = {'file': ('replacement_file.txt', file_content)}
+
+    # --------------------------------------------------
+    # Using a "jsonData" parameter, add optional description + file tags
+    # --------------------------------------------------
+    params = dict(description='Sunset',
+                categories=['One', 'More', 'Cup of Coffee'])
+
+    # -------------------
+    # IMPORTANT: If the mimetype of the replacement file differs
+    #   from the origina file, the replace will fail
+    #
+    #  e.g. if you try to replace a ".csv" with a ".png" or something similar
+    #
+    #  You can override this with a "forceReplace" parameter
+    # -------------------
+    params['forceReplace'] = True
+
+
+    params_as_json_string = json.dumps(params)
+
+    payload = dict(jsonData=params_as_json_string)
+
+    print 'payload', payload
+    # --------------------------------------------------
+    # Replace file using the id of the file to replace
+    # --------------------------------------------------
+    url_replace = '%s/api/v1/files/%s/replace?key=%s' % (dataverse_server, file_id, api_key)
+
+    # -------------------
+    # Make the request
+    # -------------------
+    print '-' * 40
+    print 'making request: %s' % url_replace
+    r = requests.post(url_replace, data=payload, files=files)
+
+    # -------------------
+    # Print the response
+    # -------------------
+    print '-' * 40
+    print r.json()
+    print r.status_code
+
+   
+
 Builtin Users
 ~~~~~~~~~~~~~
 
-This endopint deals with users of the built-in authentication provider. Note that users may come from other authentication services as well, such as Shibboleth.
+This endpoint deals with users of the built-in authentication provider. For more background on various authentication providers, see :doc:`/user/account` and :doc:`/installation/config`.
+
 For this service to work, the setting ``BuiltinUsers.KEY`` has to be set, and its value passed as ``key`` to
 each of the calls.
 
@@ -283,7 +462,7 @@ Management of Shibboleth groups via API is documented in the :doc:`/installation
 Info
 ~~~~
 
-Get the Dataverse version. The response contains the version and build numbers::
+|CORS| Get the Dataverse version. The response contains the version and build numbers::
 
   GET http://$SERVER/api/info/version
 
@@ -295,14 +474,15 @@ For now, only the value for the ``:DatasetPublishPopupCustomText`` setting from 
 
   GET http://$SERVER/api/info/settings/:DatasetPublishPopupCustomText
 
+
 Metadata Blocks
 ~~~~~~~~~~~~~~~
 
-Lists brief info about all metadata blocks registered in the system::
+|CORS| Lists brief info about all metadata blocks registered in the system::
 
   GET http://$SERVER/api/metadatablocks
 
-Return data about the block whose ``identifier`` is passed. ``identifier`` can either be the block's id, or its name::
+|CORS| Return data about the block whose ``identifier`` is passed. ``identifier`` can either be the block's id, or its name::
 
   GET http://$SERVER/api/metadatablocks/$identifier
 
@@ -345,7 +525,13 @@ Show data about an authentication provider::
 
 Enable or disable an authentication provider (denoted by ``id``)::
 
-  POST http://$SERVER/api/admin/authenticationProviders/$id/:enabled
+  PUT http://$SERVER/api/admin/authenticationProviders/$id/enabled
+
+.. note:: The former endpoint, ending with ``:enabled`` (that is, with a colon), is still supported, but deprecated.
+
+Check whether an authentication proider is enabled::
+
+  GET http://$SERVER/api/admin/authenticationProviders/$id/enabled
 
 The body of the request should be either ``true`` or ``false``. Content type has to be ``application/json``, like so::
 
@@ -385,6 +571,21 @@ Sample output using "dataverseAdmin" as the ``identifier``::
       "email": "dataverse@mailinator.com",
       "superuser": true,
       "affiliation": "Dataverse.org"
+    }
+
+Create an authenticateUser::
+
+    POST http://$SERVER/api/admin/authenticatedUsers
+
+POSTed JSON example::
+
+    {
+      "authenticationProviderId": "orcid",
+      "persistentUserId": "0000-0002-3283-0661",
+      "identifier": "@pete",
+      "firstName": "Pete K.",
+      "lastName": "Dataversky",
+      "email": "pete@mailinator.com"
     }
 
 Toggles superuser mode on the ``AuthenticatedUser`` whose ``identifier`` (without the ``@`` sign) is passed. ::
@@ -453,3 +654,10 @@ Execute a saved search by database id and make links to dataverses and datasets 
 Execute all saved searches and make links to dataverses and datasets that are found. ``debug`` works as described above.  ::
 
   PUT http://$SERVER/api/admin/savedsearches/makelinks/all?debug=true
+
+
+.. |CORS| raw:: html 
+      
+      <span class="label label-success pull-right">
+        CORS
+      </span>

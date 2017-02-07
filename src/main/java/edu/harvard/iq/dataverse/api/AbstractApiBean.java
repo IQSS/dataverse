@@ -66,7 +66,9 @@ public abstract class AbstractApiBean {
     
     private static final Logger logger = Logger.getLogger(AbstractApiBean.class.getName());
     private static final String DATAVERSE_KEY_HEADER_NAME = "X-Dataverse-key";
-    
+    public static final String STATUS_ERROR = "ERROR";
+    public static final String STATUS_OK = "OK";
+
     /**
      * Utility class to convey a proper error response using Java's exceptions.
      */
@@ -476,29 +478,29 @@ public abstract class AbstractApiBean {
     
     protected Response ok( JsonArrayBuilder bld ) {
         return Response.ok(Json.createObjectBuilder()
-            .add("status", "OK")
+            .add("status", STATUS_OK)
             .add("data", bld).build()).build();
     }
-    
+
     protected Response ok( JsonObjectBuilder bld ) {
         return Response.ok( Json.createObjectBuilder()
-            .add("status", "OK")
+            .add("status", STATUS_OK)
             .add("data", bld).build() )
             .type(MediaType.APPLICATION_JSON)
             .build();
     }
-    
+
     protected Response ok( String msg ) {
         return Response.ok().entity(Json.createObjectBuilder()
-            .add("status", "OK")
+            .add("status", STATUS_OK)
             .add("data", Json.createObjectBuilder().add("message",msg)).build() )
             .type(MediaType.APPLICATION_JSON)
             .build();
     }
-    
+
     protected Response ok( boolean value ) {
         return Response.ok().entity(Json.createObjectBuilder()
-            .add("status", "OK")
+            .add("status", STATUS_OK)
             .add("data", value).build() ).build();
     }
     
@@ -514,7 +516,7 @@ public abstract class AbstractApiBean {
     protected Response accepted() {
         return Response.accepted()
                 .entity(Json.createObjectBuilder()
-                        .add("status", "OK").build()
+                        .add("status", STATUS_OK).build()
                 ).build();
     }
     
@@ -541,11 +543,15 @@ public abstract class AbstractApiBean {
     protected static Response error( Status sts, String msg ) {
         return Response.status(sts)
                 .entity( NullSafeJsonBuilder.jsonObjectBuilder()
-                        .add("status", "ERROR")
+                        .add("status", STATUS_ERROR)
                         .add( "message", msg ).build()
                 ).type(MediaType.APPLICATION_JSON_TYPE).build();
     }
   
+   protected Response allowCors( Response r ) {
+       r.getHeaders().add("Access-Control-Allow-Origin", "*");
+       return r;
+   }
 }
 
 class LazyRef<T> {
@@ -556,18 +562,16 @@ class LazyRef<T> {
     private Ref<T> ref;
     
     public LazyRef( final Callable<T> initer ) {
-        ref = new Ref<T>(){
-            @Override
-            public T get() {
-                try {
-                    final T t = initer.call();
-                    ref = new Ref<T>(){ @Override public T get() { return t;} };
-                    return ref.get();
-                } catch (Exception ex) {
-                    Logger.getLogger(LazyRef.class.getName()).log(Level.SEVERE, null, ex);
-                    return null;
-                }
-        }};
+        ref = () -> {
+            try {
+                final T t = initer.call();
+                ref = () -> t;
+                return ref.get();
+            } catch (Exception ex) {
+                Logger.getLogger(LazyRef.class.getName()).log(Level.SEVERE, null, ex);
+                return null;
+            }
+        };
     }
     
     public T get()  {

@@ -9,7 +9,6 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateHarvestingClientCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetHarvestingClientCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateHarvestingClientCommand;
-import edu.harvard.iq.dataverse.harvest.client.ClientHarvestRun;
 import edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClientServiceBean;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
@@ -55,7 +54,7 @@ public class HarvestingClients extends AbstractApiBean {
      *  optionally, plain text output may be provided as well.
      */
     @GET
-    @Path("")
+    @Path("/")
     public Response harvestingClients(@QueryParam("key") String apiKey) throws IOException {
         
         List<HarvestingClient> harvestingClients = null; 

@@ -2370,6 +2370,7 @@ public class DatasetPage implements java.io.Serializable {
         if (this.getVersionTabList().isEmpty() && workingVersion.isDeaccessioned()){
             setVersionTabList(resetVersionTabList());
         }
+        
         this.setVersionTabListForPostLoad(this.getVersionTabList());
         
 

@@ -240,8 +240,8 @@ public class Dataverses extends AbstractApiBean {
 	@GET
 	@Path("{identifier}")
 	public Response viewDataverse( @PathParam("identifier") String idtf ) {
-        return response( req -> ok(json(execCommand(
-                                    new GetDataverseCommand(req, findDataverseOrDie(idtf))))));
+        return allowCors(response( req -> ok(json(execCommand(
+                                    new GetDataverseCommand(req, findDataverseOrDie(idtf)))))));
 	}
 	
 	@DELETE
@@ -262,7 +262,7 @@ public class Dataverses extends AbstractApiBean {
             for ( MetadataBlock mdb : blocks) {
                 arr.add( brief.json(mdb) );
             }
-            return ok(arr);
+            return allowCors(ok(arr));
         } catch (WrappedResponse we ){
             return we.getResponse();
         }
@@ -343,9 +343,9 @@ public class Dataverses extends AbstractApiBean {
     @GET
     @Path("{identifier}/facets/")
     public Response listFacets( @PathParam("identifier") String dvIdtf ) {
-        return response( req -> ok(
+        return allowCors(response( req -> ok(
                         execCommand(new ListFacetsCommand(req, findDataverseOrDie(dvIdtf)) )
-                            .stream().map(f->json(f)).collect(toJsonArray())));
+                            .stream().map(f->json(f)).collect(toJsonArray()))));
     }
 
     @POST
@@ -396,11 +396,11 @@ public class Dataverses extends AbstractApiBean {
 			public JsonObjectBuilder visit(DataFile df) { throw new UnsupportedOperationException("Files don't live directly in Dataverses"); }
 		};
         
-        return response( req -> ok(
+        return allowCors(response( req -> ok(
             execCommand(new ListDataverseContentCommand(req, findDataverseOrDie(dvIdtf)))
                 .stream()
                 .map( dvo->(JsonObjectBuilder)dvo.accept(ser))
-                .collect(toJsonArray())
+                .collect(toJsonArray()))
         ));
 	}
 	

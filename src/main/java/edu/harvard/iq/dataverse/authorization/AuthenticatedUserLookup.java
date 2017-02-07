@@ -32,7 +32,9 @@ import javax.persistence.UniqueConstraint;
     @NamedQuery( name="AuthenticatedUserLookup.findByAuthPrvID_PersUserId",
                  query="SELECT au FROM AuthenticatedUserLookup au "
                          + "WHERE au.authenticationProviderId=:authPrvId "
-                         + "  AND au.persistentUserId=:persUserId ")
+                         + "  AND au.persistentUserId=:persUserId "),
+    @NamedQuery( name="AuthenticatedUserLookup.findByAuthUser",
+                 query="SELECT au FROM AuthenticatedUserLookup au WHERE au.authenticatedUser=:authUser")
 })
 @Entity
 public class AuthenticatedUserLookup implements Serializable {

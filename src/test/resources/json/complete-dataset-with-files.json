@@ -192,6 +192,7 @@
           "directoryLabel": "data/subdir2",
           "version": 1,
           "datasetVersionId": 2,
+          "categories": ["Data"],
           "dataFile": {
             "id": 425,
             "filename": "yn152_4_002.img",

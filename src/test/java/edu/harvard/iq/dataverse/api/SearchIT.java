@@ -1165,10 +1165,6 @@ public class SearchIT {
         /**
          * This should probably be a POST rather than a GET:
          * https://github.com/IQSS/dataverse/issues/2431
-         *
-         * Allows version less than v1.0 to be published (i.e. v0.1):
-         * https://github.com/IQSS/dataverse/issues/2461
-         *
          */
         return given()
                 .header(keyString, apiToken)
