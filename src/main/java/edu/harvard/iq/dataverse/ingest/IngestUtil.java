@@ -26,13 +26,14 @@ import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.util.FileUtil;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -280,18 +281,27 @@ public class IngestUtil {
     // i.e. recalculate on the fly the UNFs for the versions that have them, 
     // compare the 2, and list the mismatches. 
 
-    public static JsonArrayBuilder getVersionsWithMissingUNFs(List<Dataset> datasets) {
+    public static JsonArrayBuilder getVersionsWithMissingUNFs(List<Dataset> datasets, String logFile) {
         JsonArrayBuilder datasetVersionsWithMissingUNFs = Json.createArrayBuilder();
+        PrintWriter datasetIntegrityLog = null;
+        try {
+            datasetIntegrityLog = new PrintWriter(new FileWriter(logFile));
+        } catch (IOException ex) {
+            logger.info("Problem opening log file for dataset integrity check: " + ex);
+            return datasetVersionsWithMissingUNFs;
+        }
         if (datasets == null || datasets.isEmpty()) {
             return datasetVersionsWithMissingUNFs;
         }
         for (Dataset dataset : datasets) {
             for (DatasetVersion dsv : dataset.getVersions()) {
+                datasetIntegrityLog.println("Checking integrity of dataset id " + dataset.getId() + ", dataset version id " + dsv.getId());
                 boolean shouldHaveUnf = IngestUtil.shouldHaveUnf(dsv);
                 String existingUnf = dsv.getUNF();
                 if (shouldHaveUnf) {
                     if (existingUnf == null) {
                         String msg = "Dataset version " + dsv.getSemanticVersion() + " (datasetVersionId " + dsv.getId() + ") from " + dsv.getDataset().getGlobalId() + " doesn't have a UNF but should!";
+                        datasetIntegrityLog.println(msg);
                         JsonObjectBuilder problem = Json.createObjectBuilder();
                         problem.add("datasetVersionId", dsv.getId());
                         problem.add("message", msg);
@@ -299,6 +309,7 @@ public class IngestUtil {
                     }
                 } else if (existingUnf != null) {
                     String msg = "Dataset version " + dsv.getSemanticVersion() + " (datasetVersionId " + dsv.getId() + ") from " + dsv.getDataset().getGlobalId() + " has a UNF (" + existingUnf + ") but shouldn't!";
+                    datasetIntegrityLog.println(msg);
                     JsonObjectBuilder problem = Json.createObjectBuilder();
                     problem.add("datasetVersionId", dsv.getId());
                     problem.add("message", msg);
@@ -306,6 +317,7 @@ public class IngestUtil {
                 }
             }
         }
+        datasetIntegrityLog.close();
         return datasetVersionsWithMissingUNFs;
     }
 

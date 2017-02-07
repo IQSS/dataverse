@@ -26,6 +26,8 @@ import static org.junit.Assert.*;
 
 public class IngestUtilTest {
 
+    String logFile = "/tmp/testLogFile";
+
     @Test
     /**
      * Test adding duplicate file name labels to a dataset version with no
@@ -590,9 +592,9 @@ public class IngestUtilTest {
         Dataset dataset = new Dataset();
         DatasetVersion dsv1 = new DatasetVersion();
         datasets.add(dataset);
-        IngestUtil.getVersionsWithMissingUNFs(datasets);
+        IngestUtil.getVersionsWithMissingUNFs(datasets, logFile);
         assertEquals(null, dsv1.getUNF());
-        assertEquals(Json.createArrayBuilder().build(), IngestUtil.getVersionsWithMissingUNFs(null).build());
+        assertEquals(Json.createArrayBuilder().build(), IngestUtil.getVersionsWithMissingUNFs(null, logFile).build());
     }
 
     @Test
@@ -623,7 +625,7 @@ public class IngestUtilTest {
         datasetVersions.add(dsv1);
         dataset.setVersions(datasetVersions);
         datasets.add(dataset);
-        JsonArray array = IngestUtil.getVersionsWithMissingUNFs(datasets).build();
+        JsonArray array = IngestUtil.getVersionsWithMissingUNFs(datasets, logFile).build();
         System.out.println("array: " + array);
         assertEquals("pretendThisIsValidUnf", dsv1.getUNF());
         assertEquals(42, array.getJsonObject(0).getInt("datasetVersionId"));
@@ -660,7 +662,7 @@ public class IngestUtilTest {
 
         dataset.setVersions(datasetVersions);
         datasets.add(dataset);
-        JsonArray array = IngestUtil.getVersionsWithMissingUNFs(datasets).build();
+        JsonArray array = IngestUtil.getVersionsWithMissingUNFs(datasets, logFile).build();
         System.out.println("array: " + array);
         assertEquals(42, array.getJsonObject(0).getInt("datasetVersionId"));
         assertEquals("Dataset version DRAFT (datasetVersionId 42) from doi:fakeAuthority/12345 doesn't have a UNF but should!", array.getJsonObject(0).getString("message"));

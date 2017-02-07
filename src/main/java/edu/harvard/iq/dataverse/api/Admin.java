@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
 
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.EMailValidator;
@@ -53,8 +54,10 @@ import edu.harvard.iq.dataverse.authorization.AuthTestDataServiceBean;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.users.User;
-import edu.harvard.iq.dataverse.ingest.IngestUtil;
-import javax.json.JsonArray;
+import edu.harvard.iq.dataverse.ingest.IngestAsync;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.concurrent.Future;
 /**
  * Where the secure, setup API calls live.
  * @author michael
@@ -868,11 +871,19 @@ public class Admin extends AbstractApiBean {
     @Path("datasets/integrity")
     @GET
     public Response checkDatasetIntegrity() {
-        JsonArray datasetVersionsWithWrongUnfValue = IngestUtil.getVersionsWithMissingUNFs(datasetSvc.findAll()).build();
-        JsonObjectBuilder info = Json.createObjectBuilder();
-        info.add("numProblems", datasetVersionsWithWrongUnfValue.size());
-        info.add("problems", datasetVersionsWithWrongUnfValue);
-        return ok(info);
+        List<Dataset> datasets = datasetSvc.findAll();
+        SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
+        String logTimestamp = logFormatter.format(new Date());
+        String logFile = "../logs/dataset_integrity_" + logTimestamp + ".txt";
+        Future<JsonObjectBuilder> datasetVersionsWithMissingUNFs = IngestAsync.getVersionsWithMissingUNFs(datasets, logFile);
+        /**
+         * @todo Output this data somewhere?
+         */
+//        JsonObjectBuilder info = Json.createObjectBuilder();
+//        info.add("numProblems", datasetVersionsWithMissingUNFs.size());
+//        info.add("problems", datasetVersionsWithMissingUNFs);
+        String status = "Dataset integrity check has begun. See log at " + logFile;
+        return ok(status);
     }
 
     @Path("datasets/integrity/{datasetVersionId}/fixunf")
