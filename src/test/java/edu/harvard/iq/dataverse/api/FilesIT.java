@@ -469,7 +469,7 @@ public class FilesIT {
                 .statusCode(OK.getStatusCode());
 
         // give file time to ingest
-        sleep(1000);
+        sleep(10000);
 
         Response publishDatasetResp = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
         publishDatasetResp.prettyPrint();
