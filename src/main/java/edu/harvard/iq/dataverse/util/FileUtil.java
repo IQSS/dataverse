@@ -1235,6 +1235,28 @@ public class FileUtil implements java.io.Serializable  {
         }
         boolean popupReasons = isDownloadPopupRequired(fileMetadata.getDatasetVersion());
         if (popupReasons == true) {
+            /**
+             * @todo The user clicking publish may have a bad "Dude, where did
+             * the file Download URL go" experience in the following scenario:
+             *
+             * - The user creates a dataset and uploads a file.
+             *
+             * - The user sets Terms of Use, which means a Download URL should
+             * not be displayed.
+             *
+             * - While the dataset is in draft, the Download URL is displayed
+             * due to the rule "Download popup required because datasetVersion
+             * has not been released."
+             *
+             * - Once the dataset is published the Download URL disappears due
+             * to the rule "Download popup required because of license or terms
+             * of use."
+             *
+             * In short, the Download URL disappears on publish in the scenario
+             * above, which is weird. We should probably attempt to see into the
+             * future to when the dataset is published to see if the file will
+             * be publicly downloadable or not.
+             */
             return false;
         }
         return true;
