@@ -35,6 +35,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.Ignore;
 
 import javax.batch.runtime.BatchStatus;
 import java.io.BufferedWriter;
@@ -230,6 +231,7 @@ public class FileRecordJobIT {
      * Ignores failed checksum manifest import.
      */
     @Test
+    @Ignore
     public void testSameFileInDifferentDirectories() {
 
         try {
@@ -308,6 +310,7 @@ public class FileRecordJobIT {
     }
 
     @Test
+    @Ignore
     public void testNewEditor() {
 
         try {
@@ -411,6 +414,7 @@ public class FileRecordJobIT {
      * Ignores failed checksum manifest import.
      */
     @Test
+    @Ignore
     public void testSameFileInDifferentDirectoriesUnauthorizedUser() {
 
         try {
@@ -609,6 +613,7 @@ public class FileRecordJobIT {
 //    }
 
     @Test
+    @Ignore
     /**
      * Add a file in MERGE mode (default), should only need to commit the new file
      */
@@ -753,6 +758,7 @@ public class FileRecordJobIT {
     }
 
     @Test
+    @Ignore
     /**
      * The success case: all files uploaded and present in checksum manifest
      */
@@ -821,6 +827,7 @@ public class FileRecordJobIT {
     }
 
     @Test
+    @Ignore
     /**
      * No checksum manifest found
      */
@@ -874,6 +881,7 @@ public class FileRecordJobIT {
     }
 
     @Test
+    @Ignore
     /**
      * Checksum manifest is missing an uploaded file
      */
@@ -940,6 +948,7 @@ public class FileRecordJobIT {
     }
 
     @Test
+    @Ignore
     /**
      * Checksum manifest references a file that isn't present, it should return failed status and detailed 
      * message in persistentUserData
@@ -1011,6 +1020,7 @@ public class FileRecordJobIT {
     }
 
     @Test
+    @Ignore
     /**
      * Published datasets should not allow import jobs for now since it isn't in DRAFT mode
      */
@@ -1092,6 +1102,7 @@ public class FileRecordJobIT {
 //    }
 
     @Test
+    @Ignore
     /**
      * No dataset found responses (bad dataset id, etc.)
      */

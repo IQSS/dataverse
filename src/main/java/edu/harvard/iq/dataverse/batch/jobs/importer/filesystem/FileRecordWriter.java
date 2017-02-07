@@ -74,6 +74,10 @@ public class FileRecordWriter extends AbstractItemWriter {
     @Inject
     @BatchProperty
     String checksumType;
+    
+    @Inject
+    @BatchProperty
+    String checksumManifest;
 
     @EJB
     DatasetServiceBean datasetServiceBean;
@@ -112,6 +116,7 @@ public class FileRecordWriter extends AbstractItemWriter {
         if (jobParams.getProperty("totalSize") != null) {
             try { 
                 suppliedSize = new Long(jobParams.getProperty("totalSize"));
+                jobLogger.log(Level.INFO, "Size parameter supplied: "+suppliedSize);
             } catch (Exception ex) {
                 jobLogger.log(Level.WARNING, "Invalid file size supplied: "+jobParams.getProperty("totalSize"));
                 suppliedSize = null; 
@@ -286,10 +291,13 @@ public class FileRecordWriter extends AbstractItemWriter {
         // If the manifest file is present, calculate the checksum of the manifest 
         // and use it as the checksum of the datafile: 
         
-        String checksumManifest = System.getProperty("checksumManifest");
+        if (System.getProperty("checksumManifest") != null) {
+            checksumManifest = System.getProperty("checksumManifest");
+        }
+        
         File checksumManifestFile = null; 
         if (checksumManifest != null && !checksumManifest.isEmpty()) {
-            String checksumManifestPath = datasetDirectory + File.separator + folderName + File.separator + checksumManifest;
+            String checksumManifestPath = datasetDirectory + /*File.separator + folderName +*/ File.separator + checksumManifest;
             checksumManifestFile = new File (checksumManifestPath);
         
             if (!checksumManifestFile.exists()) {
@@ -306,11 +314,11 @@ public class FileRecordWriter extends AbstractItemWriter {
                 }
             }
         } else {
-            jobLogger.log(Level.WARNING, "No manifest property supplied");
+            jobLogger.log(Level.WARNING, "No checksumManifest property supplied");
         }
         
         // Move the folder to the final destination: 
-        if (new File(datasetDirectory + File.separator + folderName).renameTo(new File(datasetDirectory + File.separator + packageFile.getStorageIdentifier()))) {
+        if (!(new File(datasetDirectory + File.separator + folderName).renameTo(new File(datasetDirectory + File.separator + packageFile.getStorageIdentifier())))) {
             jobLogger.log(Level.SEVERE, "Could not move the file folder to the final destination (" + datasetDirectory + File.separator + packageFile.getStorageIdentifier() + ")");
             jobContext.setExitStatus("FAILED");
             return null;
