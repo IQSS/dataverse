@@ -340,18 +340,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     }
 
     
-    
-    public void requestAccess(DataFile file) {
-        if (requestAccess(file.getId())) {
-            // update the local file object so that the page properly updates
-            file.getFileAccessRequesters().add((AuthenticatedUser) session.getUser());
-            
-            // create notifications
-            sendRequestFileAccessNotification(file.getOwner(), file.getId());           
-        }
-        
-    }    
-    
+       
     public boolean requestAccess(Long fileId) {     
         DataFile file = datafileService.find(fileId);
         if (!file.getFileAccessRequesters().contains((AuthenticatedUser) session.getUser())) {            
