@@ -331,10 +331,14 @@ public class Dataset extends DvObjectContainer {
         }
     }
 
- public DatasetVersion getCreateVersion() {
+    /**
+     * @todo Investigate if this method should be deprecated in favor of
+     * createNewDatasetVersion.
+     */
+    public DatasetVersion getCreateVersion() {
         DatasetVersion dsv = new DatasetVersion();
         dsv.setVersionState(DatasetVersion.VersionState.DRAFT);
-        dsv.setDataset(this);        
+        dsv.setDataset(this);
         dsv.initDefaultValues();
         this.setVersions(new ArrayList());
         getVersions().add(0, dsv);

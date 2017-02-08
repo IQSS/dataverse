@@ -3311,7 +3311,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public boolean isDownloadPopupRequired() {
-        return fileDownloadService.isDownloadPopupRequired(workingVersion);
+        return FileUtil.isDownloadPopupRequired(workingVersion);
     }
     
        public String requestAccessMultipleFiles(String fileIdString) {
