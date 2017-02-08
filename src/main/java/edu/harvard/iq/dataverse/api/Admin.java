@@ -54,7 +54,6 @@ import edu.harvard.iq.dataverse.authorization.AuthTestDataServiceBean;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.users.User;
-import edu.harvard.iq.dataverse.ingest.IngestAsync;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.Future;
@@ -866,24 +865,6 @@ public class Admin extends AbstractApiBean {
         RoleAssignee ra = roleAssigneeSvc.getRoleAssignee(idtf);
         return (ra == null) ? notFound("Role Assignee '" + idtf + "' not found.")
                 : ok(json(ra.getDisplayInfo()));
-    }
-
-    @Path("datasets/integrity")
-    @GET
-    public Response checkDatasetIntegrity() {
-        List<Dataset> datasets = datasetSvc.findAll();
-        SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
-        String logTimestamp = logFormatter.format(new Date());
-        String logFile = "../logs/dataset_integrity_" + logTimestamp + ".txt";
-        Future<JsonObjectBuilder> datasetVersionsWithMissingUNFs = IngestAsync.getVersionsWithMissingUNFs(datasets, logFile);
-        /**
-         * @todo Output this data somewhere?
-         */
-//        JsonObjectBuilder info = Json.createObjectBuilder();
-//        info.add("numProblems", datasetVersionsWithMissingUNFs.size());
-//        info.add("problems", datasetVersionsWithMissingUNFs);
-        String status = "Dataset integrity check has begun. See log at " + logFile;
-        return ok(status);
     }
 
     @Path("datasets/integrity/{datasetVersionId}/fixunf")

@@ -658,10 +658,6 @@ Execute all saved searches and make links to dataverses and datasets that are fo
 Dataset Integrity
 ^^^^^^^^^^^^^^^^^
 
-Iterate over all datasets, checking for integrity problems (currently only UNF problems are reported)::
-
-  GET http://$SERVER/api/admin/datasets/integrity
-
 Add a UNF value for a dataset version, if it's missing, by supplying the dataset version database id::
 
   POST http://$SERVER/api/admin/datasets/integrity/{datasetVersionId}/fixunf

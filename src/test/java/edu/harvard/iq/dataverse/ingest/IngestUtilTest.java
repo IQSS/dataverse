@@ -587,17 +587,6 @@ public class IngestUtilTest {
     }
 
     @Test
-    public void testGetUnfData() {
-        List<Dataset> datasets = new ArrayList<>();
-        Dataset dataset = new Dataset();
-        DatasetVersion dsv1 = new DatasetVersion();
-        datasets.add(dataset);
-        IngestUtil.getVersionsWithMissingUNFs(datasets, logFile);
-        assertEquals(null, dsv1.getUNF());
-        assertEquals(Json.createArrayBuilder().build(), IngestUtil.getVersionsWithMissingUNFs(null, logFile).build());
-    }
-
-    @Test
     public void testGetUnfValuesOfFiles() {
         List<String> emptyList = new ArrayList<>();
         assertEquals(emptyList, IngestUtil.getUnfValuesOfFiles(null));
@@ -607,65 +596,6 @@ public class IngestUtilTest {
     @Test
     public void testshouldHaveUnf() {
         assertEquals(false, IngestUtil.shouldHaveUnf(null));
-    }
-
-    @Test
-    public void testDatasetShouldNotHaveUnf() {
-        List<Dataset> datasets = new ArrayList<>();
-        Dataset dataset = new Dataset();
-        dataset.setProtocol("doi");
-        dataset.setAuthority("fakeAuthority");
-        dataset.setIdentifier("12345");
-        DatasetVersion dsv1 = new DatasetVersion();
-        dsv1.setDataset(dataset);
-        dsv1.setId(42l);
-        dsv1.setVersionState(DatasetVersion.VersionState.DRAFT);
-        dsv1.setUNF("pretendThisIsValidUnf");
-        List<DatasetVersion> datasetVersions = new ArrayList<>();
-        datasetVersions.add(dsv1);
-        dataset.setVersions(datasetVersions);
-        datasets.add(dataset);
-        JsonArray array = IngestUtil.getVersionsWithMissingUNFs(datasets, logFile).build();
-        System.out.println("array: " + array);
-        assertEquals("pretendThisIsValidUnf", dsv1.getUNF());
-        assertEquals(42, array.getJsonObject(0).getInt("datasetVersionId"));
-        assertEquals("Dataset version DRAFT (datasetVersionId 42) from doi:fakeAuthority/12345 has a UNF (pretendThisIsValidUnf) but shouldn't!", array.getJsonObject(0).getString("message"));
-    }
-
-    @Test
-    public void testDatasetShouldHaveUnf() {
-        List<Dataset> datasets = new ArrayList<>();
-        Dataset dataset = new Dataset();
-        dataset.setProtocol("doi");
-        dataset.setAuthority("fakeAuthority");
-        dataset.setIdentifier("12345");
-        DatasetVersion dsv1 = new DatasetVersion();
-        dsv1.setDataset(dataset);
-        dsv1.setId(42l);
-        dsv1.setVersionState(DatasetVersion.VersionState.DRAFT);
-        List<DatasetVersion> datasetVersions = new ArrayList<>();
-        datasetVersions.add(dsv1);
-
-        DataFile datafile1 = new DataFile("application/octet-stream");
-        DataTable dataTable = new DataTable();
-        dataTable.setUnf("unfOnDataTable");
-        datafile1.setDataTable(dataTable);
-        assertEquals(true, datafile1.isTabularData());
-
-        FileMetadata fmd1 = new FileMetadata();
-        fmd1.setId(1L);
-        fmd1.setLabel("datafile1.txt");
-        fmd1.setDataFile(datafile1);
-        datafile1.getFileMetadatas().add(fmd1);
-        dsv1.getFileMetadatas().add(fmd1);
-        fmd1.setDatasetVersion(dsv1);
-
-        dataset.setVersions(datasetVersions);
-        datasets.add(dataset);
-        JsonArray array = IngestUtil.getVersionsWithMissingUNFs(datasets, logFile).build();
-        System.out.println("array: " + array);
-        assertEquals(42, array.getJsonObject(0).getInt("datasetVersionId"));
-        assertEquals("Dataset version DRAFT (datasetVersionId 42) from doi:fakeAuthority/12345 doesn't have a UNF but should!", array.getJsonObject(0).getString("message"));
     }
 
     @Test
