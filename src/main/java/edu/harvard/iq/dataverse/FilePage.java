@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -91,6 +92,8 @@ public class FilePage implements java.io.Serializable {
     TwoRavensHelper twoRavensHelper;
     @Inject WorldMapPermissionHelper worldMapPermissionHelper;
 
+    private static final Logger logger = Logger.getLogger(FilePage.class.getCanonicalName());
+
     public String init() {
      
         
@@ -157,7 +160,7 @@ public class FilePage implements java.io.Serializable {
         if(fileMetadata.getId() == null || fileMetadata.getDatasetVersion().getId() == null ){
             return false;
         }
-        return fileDownloadService.isDownloadPopupRequired(fileMetadata.getDatasetVersion());
+        return FileUtil.isDownloadPopupRequired(fileMetadata.getDatasetVersion());
     }
 
 
@@ -448,5 +451,13 @@ public class FilePage implements java.io.Serializable {
    
         return this.datafileService.isReplacementFile(this.getFile());
     }
-        
+
+    public boolean isPubliclyDownloadable() {
+        return FileUtil.isPubliclyDownloadable(fileMetadata);
+    }
+
+    public String getPublicDownloadUrl() {
+        return FileUtil.getPublicDownloadUrl(systemConfig.getDataverseSiteUrl(), fileId);
+    }
+
 }
