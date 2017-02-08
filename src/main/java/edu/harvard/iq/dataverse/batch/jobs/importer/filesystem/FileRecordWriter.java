@@ -60,6 +60,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
+import org.ocpsoft.common.util.Strings;
 
 @Named
 @Dependent
@@ -93,11 +94,10 @@ public class FileRecordWriter extends AbstractItemWriter {
 
     Dataset dataset;
     AuthenticatedUser user;
-    private String persistentUserData = "";
-    private static Logger jobLogger;
     int fileCount;
     String fileMode; 
     Long suppliedSize = null;
+    String uploadFolder; 
 
     public static String FILE_MODE_INDIVIDUAL_FILES = "individual_files";
     public static String FILE_MODE_PACKAGE_FILE = "package_file";
@@ -110,15 +110,16 @@ public class FileRecordWriter extends AbstractItemWriter {
         Properties jobParams = jobOperator.getParameters(jobContext.getInstanceId());
         dataset = datasetServiceBean.findByGlobalId(jobParams.getProperty("datasetId"));
         user = authenticationServiceBean.getAuthenticatedUser(jobParams.getProperty("userId"));
-        jobLogger = Logger.getLogger("job-"+Long.toString(jobContext.getInstanceId()));
+        //jobLogger = Logger.getLogger("job-"+Long.toString(jobContext.getInstanceId()));
         fileCount = ((HashMap<String, String>) jobContext.getTransientUserData()).size();
         fileMode = jobParams.getProperty("fileMode");
+        uploadFolder = jobParams.getProperty("uploadFolder");
         if (jobParams.getProperty("totalSize") != null) {
             try { 
                 suppliedSize = new Long(jobParams.getProperty("totalSize"));
-                jobLogger.log(Level.INFO, "Size parameter supplied: "+suppliedSize);
+                getJobLogger().log(Level.INFO, "Size parameter supplied: "+suppliedSize);
             } catch (Exception ex) {
-                jobLogger.log(Level.WARNING, "Invalid file size supplied: "+jobParams.getProperty("totalSize"));
+                getJobLogger().log(Level.WARNING, "Invalid file size supplied: "+jobParams.getProperty("totalSize"));
                 suppliedSize = null; 
             }
         }
@@ -144,35 +145,35 @@ public class FileRecordWriter extends AbstractItemWriter {
                     if (df != null) {
                         // log success if the dataset isn't huge
                         if (fileCount < 20000) {
-                            jobLogger.log(Level.INFO, "Creating DataFile for: " + ((File) file).getAbsolutePath());
+                            getJobLogger().log(Level.INFO, "Creating DataFile for: " + ((File) file).getAbsolutePath());
                         }
                         datafiles.add(df);
                     } else {
-                        jobLogger.log(Level.SEVERE, "Unable to create DataFile for: " + ((File) file).getAbsolutePath());
+                        getJobLogger().log(Level.SEVERE, "Unable to create DataFile for: " + ((File) file).getAbsolutePath());
                     }
                 }
                 dataset.getLatestVersion().getDataset().setFiles(datafiles);
             } else if (FILE_MODE_PACKAGE_FILE.equals(fileMode)) {
                 DataFile packageFile = createPackageDataFile(list);
                 if (packageFile == null) {
-                    jobLogger.log(Level.SEVERE, "File package import failed.");
+                    getJobLogger().log(Level.SEVERE, "File package import failed.");
                     jobContext.setExitStatus("FAILED");
                     return;
                 }
                 updateDatasetVersion(dataset.getLatestVersion());
             } else {
-                jobLogger.log(Level.SEVERE, "File mode "+fileMode+" is not supported.");
+                getJobLogger().log(Level.SEVERE, "File mode "+fileMode+" is not supported.");
                 jobContext.setExitStatus("FAILED");
             }
         } else {
-            jobLogger.log(Level.SEVERE, "No items in the writeItems list.");
+            getJobLogger().log(Level.SEVERE, "No items in the writeItems list.");
         }
     }
     
     // utils
     /**
      * Update the dataset version using the command engine so permissions and constraints are enforced.
-     * Log errors to both the glassfish log and inside the job step's persistentUserData
+     * Log errors to both the glassfish log and in the job context, as the exit status "failed". 
      * 
      * @param version dataset version
      *        
@@ -187,14 +188,14 @@ public class FileRecordWriter extends AbstractItemWriter {
                 commandEngine.submit(cmd);
             } catch (CommandException ex) {
                 String commandError = "CommandException updating DatasetVersion from batch job: " + ex.getMessage();
-                jobLogger.log(Level.SEVERE, commandError);
-                persistentUserData += commandError + " ";
+                getJobLogger().log(Level.SEVERE, commandError);
+                jobContext.setExitStatus("FAILED");
             }
         } else {
             String constraintError = "ConstraintException updating DatasetVersion form batch job: dataset must be a "
                     + "single version in draft mode.";
-            jobLogger.log(Level.SEVERE, constraintError);
-            persistentUserData += constraintError + " ";
+            getJobLogger().log(Level.SEVERE, constraintError);
+            jobContext.setExitStatus("FAILED");
         }
        
     }
@@ -258,7 +259,12 @@ public class FileRecordWriter extends AbstractItemWriter {
                 if (relativePath != null && relativePath.indexOf(File.separatorChar) > -1) {
                     folderName = relativePath.substring(0, relativePath.indexOf(File.separatorChar));
                 } else {
-                    jobLogger.log(Level.SEVERE, "Invalid file package (files are not in a folder)");
+                    getJobLogger().log(Level.SEVERE, "Invalid file package (files are not in a folder)");
+                    jobContext.setExitStatus("FAILED");
+                    return null;
+                }
+                if (!uploadFolder.equals(folderName)) {
+                    getJobLogger().log(Level.SEVERE, "Folder name mismatch: "+uploadFolder+" expected, "+folderName+" found.");
                     jobContext.setExitStatus("FAILED");
                     return null;
                 }
@@ -272,16 +278,17 @@ public class FileRecordWriter extends AbstractItemWriter {
 
             // lookup the checksum value in the job's manifest hashmap
             if (jobContext.getTransientUserData() != null) {
-                checksumValue = ((HashMap<String, String>) jobContext.getTransientUserData()).get(relativePath);
+                String manifestPath = relativePath.substring(folderName.length() + 1);
+                checksumValue = ((HashMap<String, String>) jobContext.getTransientUserData()).get(manifestPath);
                 if (checksumValue != null) {
                     // remove the key, so we can check for unused checksums when the job is complete
-                    ((HashMap<String, String>) jobContext.getTransientUserData()).remove(relativePath);
+                    ((HashMap<String, String>) jobContext.getTransientUserData()).remove(manifestPath);
 
                 } else {
-                    jobLogger.log(Level.SEVERE, "Unable to find checksum in manifest for: " + file.getAbsolutePath());
+                    getJobLogger().log(Level.WARNING, "Unable to find checksum in manifest for: " + file.getAbsolutePath());
                 }
             } else {
-                jobLogger.log(Level.SEVERE, "No checksum hashmap found in transientUserData");
+                getJobLogger().log(Level.SEVERE, "No checksum hashmap found in transientUserData");
                 jobContext.setExitStatus("FAILED");
                 return null;
             }
@@ -297,29 +304,29 @@ public class FileRecordWriter extends AbstractItemWriter {
         
         File checksumManifestFile = null; 
         if (checksumManifest != null && !checksumManifest.isEmpty()) {
-            String checksumManifestPath = datasetDirectory + /*File.separator + folderName +*/ File.separator + checksumManifest;
+            String checksumManifestPath = datasetDirectory + File.separator + folderName + File.separator + checksumManifest;
             checksumManifestFile = new File (checksumManifestPath);
         
             if (!checksumManifestFile.exists()) {
-                jobLogger.log(Level.WARNING, "Manifest file not found");
+                getJobLogger().log(Level.WARNING, "Manifest file not found");
                 // TODO: 
                 // add code to generate the manifest, if not present? -- L.A. 
             } else {
                 try {
                     packageFile.setChecksumValue(FileUtil.CalculateCheckSum(checksumManifestPath, packageFile.getChecksumType()));
                 } catch (Exception ex) {
-                    jobLogger.log(Level.SEVERE, "Failed to calculate checksum (type "+packageFile.getChecksumType()+") "+ex.getMessage());
+                    getJobLogger().log(Level.SEVERE, "Failed to calculate checksum (type "+packageFile.getChecksumType()+") "+ex.getMessage());
                     jobContext.setExitStatus("FAILED");
                     return null;
                 }
             }
         } else {
-            jobLogger.log(Level.WARNING, "No checksumManifest property supplied");
+            getJobLogger().log(Level.WARNING, "No checksumManifest property supplied");
         }
         
         // Move the folder to the final destination: 
         if (!(new File(datasetDirectory + File.separator + folderName).renameTo(new File(datasetDirectory + File.separator + packageFile.getStorageIdentifier())))) {
-            jobLogger.log(Level.SEVERE, "Could not move the file folder to the final destination (" + datasetDirectory + File.separator + packageFile.getStorageIdentifier() + ")");
+            getJobLogger().log(Level.SEVERE, "Could not move the file folder to the final destination (" + datasetDirectory + File.separator + packageFile.getStorageIdentifier() + ")");
             jobContext.setExitStatus("FAILED");
             return null;
         }
@@ -344,6 +351,7 @@ public class FileRecordWriter extends AbstractItemWriter {
         dataset.getLatestVersion().getFileMetadatas().add(fmd);
         fmd.setDatasetVersion(dataset.getLatestVersion());
 
+        getJobLogger().log(Level.INFO, "Successfully created a file of type package");
         
         return packageFile;
     }
@@ -393,10 +401,10 @@ public class FileRecordWriter extends AbstractItemWriter {
                 ((HashMap<String, String>) jobContext.getTransientUserData()).remove(relativePath);
             } else {
                 datafile.setChecksumValue("Unknown");
-                jobLogger.log(Level.SEVERE, "Unable to find checksum in manifest for: " + file.getAbsolutePath());
+                getJobLogger().log(Level.WARNING, "Unable to find checksum in manifest for: " + file.getAbsolutePath());
             }
         } else {
-            jobLogger.log(Level.SEVERE, "No checksum hashmap found in transientUserData");
+            getJobLogger().log(Level.SEVERE, "No checksum hashmap found in transientUserData");
             jobContext.setExitStatus("FAILED");
             return null;
         }
@@ -416,6 +424,10 @@ public class FileRecordWriter extends AbstractItemWriter {
 
         datafile = dataFileServiceBean.save(datafile);
         return datafile;
+    }
+    
+    private Logger getJobLogger() {
+        return Logger.getLogger("job-"+jobContext.getInstanceId());
     }
     
 }

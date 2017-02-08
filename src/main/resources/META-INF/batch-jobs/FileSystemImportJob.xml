@@ -19,7 +19,7 @@
         <listeners>
             <listener ref="fileRecordJobListener"/>
         </listeners>
-        <chunk checkpoint-policy="item" item-count="50" time-limit="0" skip-limit="0" retry-limit="1">
+        <chunk checkpoint-policy="item" item-count="1000000" time-limit="0" skip-limit="0" retry-limit="1">
             <reader ref="fileRecordReader">
                 <properties>
                     <property name="excludes" value="*.DS_Store, *.sha, *.cached"/>

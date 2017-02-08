@@ -82,7 +82,7 @@ public class FileRecordReader extends AbstractItemReader {
     Dataset dataset;
     AuthenticatedUser user;
     String mode = ImportMode.MERGE.name();
-    Logger jobLogger;
+    String uploadFolder;
 
     @PostConstruct
     public void init() {
@@ -91,26 +91,26 @@ public class FileRecordReader extends AbstractItemReader {
         dataset = datasetServiceBean.findByGlobalId(jobParams.getProperty("datasetId"));
         user = authenticationServiceBean.getAuthenticatedUser(jobParams.getProperty("userId"));
         mode = jobParams.getProperty("mode");
-        jobLogger = Logger.getLogger("job-"+Long.toString(jobContext.getInstanceId()));
+        uploadFolder = jobParams.getProperty("uploadFolder");
     }
 
     @Override
     public void open(Serializable checkpoint) throws Exception {
  
         directory = new File(System.getProperty("dataverse.files.directory")
-                + SEP + dataset.getAuthority() + SEP + dataset.getIdentifier());
-        jobLogger.log(Level.INFO, "Reading dataset directory: " + directory.getAbsolutePath() 
+                + SEP + dataset.getAuthority() + SEP + dataset.getIdentifier() + SEP + uploadFolder);
+        getJobLogger().log(Level.INFO, "Reading dataset directory: " + directory.getAbsolutePath() 
                 + " (excluding: " + excludes + ")");
         if (isValidDirectory(directory)) {
             files = getFiles(directory);
             iterator = files.listIterator();
             currentRecordNumber = 0;
             totalRecordNumber = (long) files.size();
-            jobLogger.log(Level.INFO, "Files found = " + totalRecordNumber);
+            getJobLogger().log(Level.INFO, "Files found = " + totalRecordNumber);
             // report if checksum total not equal to file total
             int checksumCount = ((HashMap<String, String>) jobContext.getTransientUserData()).size();
             if (checksumCount != files.size()) {
-                jobLogger.log(Level.SEVERE, "Checksum mismatch: " + checksumCount + " checksums found in the manifest "
+                getJobLogger().log(Level.SEVERE, "Checksum mismatch: " + checksumCount + " checksums found in the manifest "
                         + "and " + files.size() + " files found in the dataset directory.");
             }
 
@@ -121,7 +121,7 @@ public class FileRecordReader extends AbstractItemReader {
 
     @Override
     public void close() {
-        jobLogger.log(Level.INFO, "Files read  = " + currentRecordNumber);
+        getJobLogger().log(Level.INFO, "Files read  = " + currentRecordNumber);
     }
 
     @Override
@@ -162,18 +162,22 @@ public class FileRecordReader extends AbstractItemReader {
     private boolean isValidDirectory(File directory) {
         String path = directory.getAbsolutePath();
         if (!directory.exists()) {
-            jobLogger.log(Level.SEVERE, "Directory " + path + " does not exist.");
+            getJobLogger().log(Level.SEVERE, "Directory " + path + " does not exist.");
             return false;
         }
         if (!directory.isDirectory()) {
-            jobLogger.log(Level.SEVERE, path + " is not a directory.");
+            getJobLogger().log(Level.SEVERE, path + " is not a directory.");
             return false;
         }
         if (!directory.canRead()) {
-            jobLogger.log(Level.SEVERE, "Unable to read files from directory " + path + ". Permission denied.");
+            getJobLogger().log(Level.SEVERE, "Unable to read files from directory " + path + ". Permission denied.");
             return false;
         }
         return true;
+    }
+    
+    private Logger getJobLogger() {
+        return Logger.getLogger("job-"+jobContext.getInstanceId());
     }
     
 }

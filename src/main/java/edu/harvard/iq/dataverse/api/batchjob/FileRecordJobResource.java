@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api.batchjob;
 
+import com.google.common.base.Strings;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
@@ -54,6 +55,7 @@ public class FileRecordJobResource extends AbstractApiBean {
                                         @PathParam("doi3") String doi3,
                                         @QueryParam("mode") @DefaultValue("MERGE") String mode,
                                         /*@QueryParam("fileMode") @DefaultValue("package_file") String fileMode*/
+                                        @QueryParam("uploadFolder") String uploadFolder,
                                         @QueryParam("totalSize") Long totalSize) {
 
         /* 
@@ -91,6 +93,17 @@ public class FileRecordJobResource extends AbstractApiBean {
                 if (!isValidDirectory(directory)) {
                     return error(Response.Status.BAD_REQUEST, "Dataset directory is invalid.");    
                 }
+                
+                if (Strings.isNullOrEmpty(uploadFolder)) {
+                    return error(Response.Status.BAD_REQUEST, "No uploadFolder specified");
+                }
+                
+                File uploadDirectory = new File(System.getProperty("dataverse.files.directory")
+                        + File.separator + dataset.getAuthority() + File.separator + dataset.getIdentifier()
+                        + File.separator + uploadFolder);
+                if (!isValidDirectory(uploadDirectory)) {
+                    return error(Response.Status.BAD_REQUEST, "Upload folder is not a valid directory.");
+                }
 
                 // check if user has permission to update the dataset
                 boolean canIssueCommand = permissionServiceBean
@@ -119,6 +132,7 @@ public class FileRecordJobResource extends AbstractApiBean {
                     props.setProperty("userId", user.getIdentifier().replace("@", ""));
                     props.setProperty("mode", mode);
                     props.setProperty("fileMode", fileMode);
+                    props.setProperty("uploadFolder", uploadFolder);
                     if (totalSize != null && totalSize > 0) {
                         props.setProperty("totalSize", totalSize.toString());
                     }

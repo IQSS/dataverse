@@ -76,7 +76,7 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
     private static final UserNotification.Type notifyType = UserNotification.Type.FILESYSTEMIMPORT;
     
     @Inject
-    private JobContext jobContext = null;
+    private JobContext jobContext;
 
     @Inject
     private StepContext stepContext;
@@ -110,8 +110,8 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
     Properties jobParams;
     Dataset dataset;
     String mode;
+    String uploadFolder;
     AuthenticatedUser user;
-    Logger jobLogger;
 
     @Override
     public void afterStep() throws Exception {
@@ -140,8 +140,13 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
     
     @Override
     public void beforeJob() throws Exception {
+        Logger jobLogger; 
 
         // initialize logger
+        // (the beforeJob() method gets executed before anything else; so we 
+        // initialize the logger here. everywhere else will be retrieving 
+        // it with Logger.getLogger(byname) - that should be giving us the 
+        // same instance, created here - and not creating a new logger)
         jobLogger = LoggingUtil.getJobLogger(Long.toString(jobContext.getInstanceId()));
 
         // update job properties to be used elsewhere to determine dataset, user and mode
@@ -156,6 +161,8 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
         jobParams.setProperty("datasetGlobalId", getDatasetGlobalId());
         jobParams.setProperty("userId", getUserId());
         jobParams.setProperty("mode", getMode());
+        
+        uploadFolder = jobParams.getProperty("uploadFolder");
         
         // lock the dataset
         jobLogger.log(Level.INFO, "Locking dataset");
@@ -193,31 +200,30 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
      */
     @Override
     public void afterJob() throws Exception {
-
         // run reporting and notifications
         doReport();
 
         // report any unused checksums
         HashMap checksumHashMap = (HashMap<String, String>) jobContext.getTransientUserData();
         for (Object key : checksumHashMap.keySet()) {
-            jobLogger.log(Level.SEVERE, "File listed in checksum manifest not found: " + key);
+            getJobLogger().log(Level.SEVERE, "File listed in checksum manifest not found: " + key);
         }
 
         // remove dataset lock
         if (dataset != null && dataset.getId() != null) {
             datasetServiceBean.removeDatasetLock(dataset.getId());
         }
-        jobLogger.log(Level.INFO, "Removing dataset lock.");
+        getJobLogger().log(Level.INFO, "Removing dataset lock.");
         
         // job step info
         JobOperator jobOperator = BatchRuntime.getJobOperator();
         StepExecution step = jobOperator.getStepExecutions(jobContext.getInstanceId()).get(0);
-        jobLogger.log(Level.INFO, "Job start = " + step.getStartTime());
-        jobLogger.log(Level.INFO, "Job end   = " + step.getEndTime());
-        jobLogger.log(Level.INFO, "Job exit status = " + step.getExitStatus());
+        getJobLogger().log(Level.INFO, "Job start = " + step.getStartTime());
+        getJobLogger().log(Level.INFO, "Job end   = " + step.getEndTime());
+        getJobLogger().log(Level.INFO, "Job exit status = " + step.getExitStatus());
         
         // close the job logger handlers
-        for (Handler h:jobLogger.getHandlers()) {
+        for (Handler h:getJobLogger().getHandlers()) {
             h.close();
         }
     }
@@ -234,22 +240,22 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
                 .requestOn(new DataverseRequest(user, (HttpServletRequest) null), dataset)
                 .canIssue(UpdateDatasetCommand.class);
         if (!canIssueCommand) {
-            jobLogger.log(Level.SEVERE, "User doesn't have permission to import files into this dataset.");
+            getJobLogger().log(Level.SEVERE, "User doesn't have permission to import files into this dataset.");
             return false;
         }
 
 //        if (!permissionServiceBean.userOn(user, dataset.getOwner()).has(Permission.EditDataset)) {
-//            jobLogger.log(Level.SEVERE, "User doesn't have permission to import files into this dataset.");
+//            getJobLogger().log(Level.SEVERE, "User doesn't have permission to import files into this dataset.");
 //            return false;
 //        }
 
         if (dataset.getVersions().size() != 1) {
-            jobLogger.log(Level.SEVERE, "File system import is currently only supported for datasets with one version.");
+            getJobLogger().log(Level.SEVERE, "File system import is currently only supported for datasets with one version.");
             return false;
         }
 
         if (dataset.getLatestVersion().getVersionState() != DatasetVersion.VersionState.DRAFT) {
-            jobLogger.log(Level.SEVERE, "File system import is currently only supported for DRAFT versions.");
+            getJobLogger().log(Level.SEVERE, "File system import is currently only supported for DRAFT versions.");
             return false;
         }
         return true;
@@ -259,7 +265,7 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
      * Generate all the job reports and user notifications.
      */
     private void doReport() {
-
+        
         try {
 
             String jobJson;
@@ -267,11 +273,11 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
             JobOperator jobOperator = BatchRuntime.getJobOperator();
 
             if (user == null) {
-                jobLogger.log(Level.SEVERE, "Cannot find authenticated user.");
+                getJobLogger().log(Level.SEVERE, "Cannot find authenticated user.");
                 return;
             }
             if (dataset == null) {
-                jobLogger.log(Level.SEVERE, "Cannot find dataset.");
+                getJobLogger().log(Level.SEVERE, "Cannot find dataset.");
                 return;
             }
 
@@ -305,11 +311,11 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
                         logDir + "job-" + jobId + ".log", jobId));
 
             } else {
-                jobLogger.log(Level.SEVERE, "Job execution is null");
+                getJobLogger().log(Level.SEVERE, "Job execution is null");
             }
 
         } catch (Exception e) {
-            jobLogger.log(Level.SEVERE, "Creating job json: " + e.getMessage());
+            getJobLogger().log(Level.SEVERE, "Creating job json: " + e.getMessage());
         }
     }
 
@@ -321,17 +327,17 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
         if (jobParams.containsKey("datasetId")) {
             String datasetId = jobParams.getProperty("datasetId");
             dataset = datasetServiceBean.findByGlobalId(datasetId);
-            jobLogger.log(Level.INFO, "Dataset Identifier (datasetId=" + datasetId + "): " + dataset.getIdentifier());
+            getJobLogger().log(Level.INFO, "Dataset Identifier (datasetId=" + datasetId + "): " + dataset.getIdentifier());
             return dataset.getGlobalId();
         }
         if (jobParams.containsKey("datasetPrimaryKey")) {
             long datasetPrimaryKey = Long.parseLong(jobParams.getProperty("datasetPrimaryKey"));
             dataset = datasetServiceBean.find(datasetPrimaryKey);
-            jobLogger.log(Level.INFO, "Dataset Identifier (datasetPrimaryKey=" + datasetPrimaryKey + "): " 
+            getJobLogger().log(Level.INFO, "Dataset Identifier (datasetPrimaryKey=" + datasetPrimaryKey + "): " 
                     + dataset.getIdentifier());
             return dataset.getGlobalId();
         }
-        jobLogger.log(Level.SEVERE, "Can't find dataset.");
+        getJobLogger().log(Level.SEVERE, "Can't find dataset.");
         dataset = null;
         return null;
     }
@@ -344,16 +350,16 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
         if (jobParams.containsKey("userPrimaryKey")) {
             long userPrimaryKey = Long.parseLong(jobParams.getProperty("userPrimaryKey"));
             user = authenticationServiceBean.findByID(userPrimaryKey);
-            jobLogger.log(Level.INFO, "User Identifier (userPrimaryKey=" + userPrimaryKey + "): " + user.getIdentifier());
+            getJobLogger().log(Level.INFO, "User Identifier (userPrimaryKey=" + userPrimaryKey + "): " + user.getIdentifier());
             return Long.toString(user.getId());
         }
         if (jobParams.containsKey("userId")) {
             String userId = jobParams.getProperty("userId");
             user = authenticationServiceBean.getAuthenticatedUser(userId);
-            jobLogger.log(Level.INFO, "User Identifier (userId=" + userId + "): " + user.getIdentifier());
+            getJobLogger().log(Level.INFO, "User Identifier (userId=" + userId + "): " + user.getIdentifier());
             return Long.toString(user.getId());
         }
-        jobLogger.log(Level.SEVERE, "Cannot find authenticated user.");
+        getJobLogger().log(Level.SEVERE, "Cannot find authenticated user.");
         user = null;
         return null;
     }
@@ -368,7 +374,7 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
         } else {
             mode = ImportMode.MERGE.name();
         }
-        jobLogger.log(Level.INFO, "Import mode =  " + mode);
+        getJobLogger().log(Level.INFO, "Import mode =  " + mode);
         return mode;
     }
 
@@ -377,29 +383,30 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
      * step context's transientUserData
      */
     private void loadChecksumManifest() {
-        
+                
         // log job checksum type and how it was configured
         if (System.getProperty("checksumType") != null) {
-            jobLogger.log(Level.INFO, "Checksum type = " + System.getProperty("checksumType") + " ('checksumType' System property)");
+            getJobLogger().log(Level.INFO, "Checksum type = " + System.getProperty("checksumType") + " ('checksumType' System property)");
         } else {
-            jobLogger.log(Level.INFO, "Checksum type = " + checksumType + " (FileSystemImportJob.xml property)");
+            getJobLogger().log(Level.INFO, "Checksum type = " + checksumType + " (FileSystemImportJob.xml property)");
         }
         
         // check system property first, otherwise use default property in FileSystemImportJob.xml
         String manifest;
         if (System.getProperty("checksumManifest") != null) {
             manifest = System.getProperty("checksumManifest");
-            jobLogger.log(Level.INFO, "Checksum manifest = " + manifest + " ('checksumManifest' System property)");            
+            getJobLogger().log(Level.INFO, "Checksum manifest = " + manifest + " ('checksumManifest' System property)");            
         } else {
             manifest = checksumManifest;
-            jobLogger.log(Level.INFO, "Checksum manifest = " + manifest + " (FileSystemImportJob.xml property)");
+            getJobLogger().log(Level.INFO, "Checksum manifest = " + manifest + " (FileSystemImportJob.xml property)");
         }
         // construct full path
         String manifestAbsolutePath = System.getProperty("dataverse.files.directory")
                 + SEP + dataset.getAuthority()
                 + SEP + dataset.getIdentifier()
+                + SEP + uploadFolder
                 + SEP + manifest;
-        jobLogger.log(Level.INFO, "Reading checksum manifest: " + manifestAbsolutePath);
+        getJobLogger().log(Level.INFO, "Reading checksum manifest: " + manifestAbsolutePath);
         try {
             Scanner scanner = new Scanner(new FileReader(manifestAbsolutePath));
             HashMap<String, String> map = new HashMap<>();
@@ -410,12 +417,16 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
                 }
             }
             jobContext.setTransientUserData(map);
-            jobLogger.log(Level.INFO, "Checksums found = " + map.size());
+            getJobLogger().log(Level.INFO, "Checksums found = " + map.size());
         } catch (IOException ioe) {
-            jobLogger.log(Level.SEVERE, "Unable to load checksum manifest file: " + ioe.getMessage());
+            getJobLogger().log(Level.SEVERE, "Unable to load checksum manifest file: " + ioe.getMessage());
             jobContext.setExitStatus("FAILED");
         }
 
+    }
+    
+    private Logger getJobLogger() {
+        return Logger.getLogger("job-"+jobContext.getInstanceId());
     }
     
 }

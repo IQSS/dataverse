@@ -54,16 +54,16 @@ public class FileRecordProcessor implements ItemProcessor {
     DataFileServiceBean dataFileServiceBean;
 
     Dataset dataset;
-    Logger jobLogger;
     
     @PostConstruct
     public void init() {
         JobOperator jobOperator = BatchRuntime.getJobOperator();
         Properties jobParams = jobOperator.getParameters(jobContext.getInstanceId());
         dataset = datasetServiceBean.findByGlobalId(jobParams.getProperty("datasetId"));
-        jobLogger = Logger.getLogger("job-"+Long.toString(jobContext.getInstanceId()));
     }
 
+    // TODO: This method may be meaningles when used in the context of a "package file" 
+    // batch import. See if it can be modified/improved? -- L.A. 4.6.1
     @Override
     public Object processItem(Object object) throws Exception {
 
@@ -77,7 +77,7 @@ public class FileRecordProcessor implements ItemProcessor {
         if (datafile == null) {
             return new File(path);
         } else {
-            jobLogger.log(Level.INFO, "Skipping " + relativePath + ", DataFile already exists.");
+            Logger.getLogger("job-"+jobContext.getInstanceId()).log(Level.INFO, "Skipping " + relativePath + ", DataFile already exists.");
             return null;
         }
         
