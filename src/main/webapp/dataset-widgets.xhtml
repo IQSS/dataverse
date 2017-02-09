@@ -32,29 +32,107 @@
                                 </label>
                                 <div class="col-sm-9">
                                     <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataset.thumbnailsAndWidget.thumbnailImage.tip']}</p>
-                                    <p:panelGrid columns="2" styleClass="noBorders" columnClasses="text-center,uploadNewLogo">
-                                        <p:column>
-                                            <p>
-                                                <span class="icon-dataset text-info" style="font-size: 2.8em;" jsf:rendered="#{DatasetWidgetsPage.dataset.altThumbnail == null}"/>
-                                                <!--FIXME: remove all the backend logic and image file for this default view -->
-                                                <h:graphicImage value="#{DatasetWidgetsPage.dataset.defaultThumbnail}" rendered="#{false}"/>
-                                                <h:graphicImage value="#{DatasetWidgetsPage.dataset.altThumbnail}" rendered="#{DatasetWidgetsPage.dataset.altThumbnail != null}"/>
-                                            </p>
-                                            <span class="text-muted" jsf:rendered="#{DatasetWidgetsPage.dataset.altThumbnail == null}"><em>Default Icon</em></span>
-                                            <p:commandButton update="@all" value="#{bundle.remove}" action="#{DatasetWidgetsPage.removeThumbnail()}" rendered="#{DatasetWidgetsPage.dataset.altThumbnail != null}" oncomplete="bind_bsui_components();"/>
-                                        </p:column>
-                                        <p:column>
+
+                                    <div class="col-sm-2 text-center">
+                                        <p>
+                                            <span class="icon-dataset text-info" style="font-size: 2.8em;" jsf:rendered="#{DatasetWidgetsPage.dataset.altThumbnail == null}"/>
+                                            <!--FIXME: remove all the backend logic and image file for this default view -->
+                                            <h:graphicImage value="#{DatasetWidgetsPage.dataset.defaultThumbnail}" rendered="#{false}"/>
+                                            <h:graphicImage value="#{DatasetWidgetsPage.dataset.altThumbnail}" rendered="#{DatasetWidgetsPage.dataset.altThumbnail != null}"/>
+                                        </p>
+                                        <span class="text-muted" jsf:rendered="#{DatasetWidgetsPage.dataset.altThumbnail == null}"><em>Default Icon</em></span>
+                                        <p:commandButton update="@all" value="#{bundle.remove}" action="#{DatasetWidgetsPage.removeThumbnail()}" rendered="#{DatasetWidgetsPage.dataset.altThumbnail != null}" oncomplete="bind_bsui_components();"/>
+                                    </div>
+                                    <div class="col-sm-8">
+                                        <div class="form-group">
+                                            <label for="selectThumbnail" class="control-label">
+                                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataverse.theme.linkColor.title']}">
+                                                    Select Available File
+                                                </span>
+                                            </label>
+                                            <div><button type="button" class="btn btn-default" onclick="PF('selectFileThumbnail').show()" value="Select Thumbnail">Select Thumbnail</button></div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="uploadThumbnail" class="control-label">
+                                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataverse.theme.linkColor.title']}">
+                                                    Upload New File
+                                                </span>
+                                            </label>
                                             <!--FIXME: consider supporting SVG: https://github.com/IQSS/dataverse/issues/2843-->
                                             <p:fileUpload invalidFileMessage="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.upload.invalidMsg']}" id="changelogo" allowTypes="/(\.|\/)(jpg|jpeg|tff|png|gif)$/" update="@all" oncomplete="bind_bsui_components();" dragDropSupport="true" auto="true" multiple="false"
-                                                            fileUploadListener="#{DatasetWidgetsPage.handleImageFileUpload}" label="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.upload']}"/>
-                                        </p:column>
-                                    </p:panelGrid>
+                                                          fileUploadListener="#{DatasetWidgetsPage.handleImageFileUpload}" label="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.upload']}"/>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             <div class="button-block">
                                 <p:commandButton styleClass="btn btn-default" update="@all" value="#{bundle.saveChanges}" action="#{DatasetWidgetsPage.save()}"/>
                                 <p:commandButton styleClass="btn btn-default" update="@all" value="#{bundle.cancel}" action="#{DatasetWidgetsPage.cancel()}"/>
                             </div>
+                            
+                            
+                            <p:dialog id="selectFileThumbnail" header="Select File Thumbnail" widgetVar="selectFileThumbnail" modal="true">
+                                <div class="form-horizontal col-sm-12">
+                                    <div class="form-group">
+                                        <p class="help-block">Select one and continue back to Thumbnail + Widgets page to save to your dataset.</p>
+                                        <label for="fileThumbnails" class="control-label">
+                                            <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataverse.theme.linkColor.title']}">
+                                                File Thumbnails
+                                            </span>
+                                        </label>
+                                        <ui:remove>
+                                            <p:selectOneRadio id="customRadio" value="#{radioView.color}" layout="custom" columns="3">
+                                                <f:selectItems value="#{radioView.cities}" var="c" itemLabel="#{city}" itemValue="#{city}" />
+                                            </p:selectOneRadio>
+
+                                            <h:panelGrid columns="3" cellpadding="5">
+                                                <p:radioButton id="opt1" for="customRadio" itemIndex="0" />
+                                                <h:outputLabel for="opt1" value="file_name1.ext" />
+                                                <h:graphicImage value="#{DatasetWidgetsPage.dataset.altThumbnail}"/>
+                                            </h:panelGrid>
+                                        </ui:remove>
+                                        
+                                        <!-- TODO REMOVE THIS PLACEHOLDER TABLE -->
+                                        <table id="j_idt88:city" role="presentation" class="ui-selectoneradio ui-widget">
+                                            <tbody>
+                                                <tr>
+                                                    <td>
+                                                        <div class="" style="display: inline-block;width:16px;">
+                                                            <input id="j_idt88:city:0" name="j_idt88:city" value="file_name1.ext" data-p-label="City" data-p-hl="oneradio" data-p-grouped="true" type="radio"/>
+                                                        </div>
+                                                        <label style="display: inline-block;" for="j_idt88:city:0">file_name1.ext</label>
+                                                    </td>
+                                                    <td>
+                                                        <div class="" style="display: inline-block;width:16px;">
+                                                            <input id="j_idt88:city:1" name="j_idt88:city" value="file_name2.ext" data-p-label="City" data-p-hl="oneradio" data-p-grouped="true" type="radio"/>
+                                                        </div>
+                                                        <label style="display: inline-block;" for="j_idt88:city:0">file_name2.ext</label>
+                                                    </td>
+                                                    <td>
+                                                        <div class="" style="display: inline-block;width:16px;">
+                                                            <input id="j_idt88:city:2" name="j_idt88:city" value="file_name3.ext" data-p-label="City" data-p-hl="oneradio" data-p-grouped="true" type="radio"/>
+                                                        </div>
+                                                        <label style="display: inline-block;" for="j_idt88:city:0">file_name3.ext</label>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        <!-- TODO REMOVE THIS PLACEHOLDER TABLE -->
+                                        
+                                    </div>
+                                </div>
+                                <div class="button-block">
+                                    <!-- TODO WIRE THIS BUTTON UP -->
+                                    <button type="button" onclick="PF('selectFileThumbnail').hide()" class="btn btn-default" value="#{bundle.continue}">
+                                        #{bundle.continue}
+                                    </button>
+                                    <!-- TODO WIRE THIS BUTTON UP -->
+                                    <button type="button" onclick="PF('selectFileThumbnail').hide()" class="btn btn-default" value="#{bundle.cancel}">
+                                        #{bundle.cancel}
+                                    </button>
+                                </div>
+                            </p:dialog>
+                            
                         </h:form>
                     </p:tab>
                     <p:tab id="widgetsTab" title="#{bundle['dataset.thumbnailsAndWidget.widgets.title']}">
