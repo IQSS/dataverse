@@ -641,18 +641,14 @@ public class UtilIT {
     static Response downloadDatasetThumbnail(String datasetPersistentId, String imageFile, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                //                .post("/api/datasets/" + datasetPersistentId + "/thumbnail");
-                //                .post("/api/datasets/:persistentId/thumbnail" + "?persistentId=" + datasetPersistentId);
                 .get("/api/datasets/:persistentId/thumbnail" + "?persistentId=" + datasetPersistentId);
     }
 
-    static Response overrideDatasetThumbnail(String datasetPersistentId, String pathToImageFile, String apiToken) {
+    static Response uploadDatasetLogo(String datasetPersistentId, String pathToImageFile, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                //                .post("/api/datasets/" + datasetPersistentId + "/thumbnail");
                 .multiPart("file", new File(pathToImageFile))
-                .post("/api/datasets/:persistentId/thumbnail" + "?persistentId=" + datasetPersistentId);
-//                .get("/api/datasets/:persistentId/thumbnail" + "?persistentId=" + datasetPersistentId);
+                .post("/api/datasets/:persistentId/logo" + "?persistentId=" + datasetPersistentId);
     }
 
     static Response search(String query, String apiToken) {

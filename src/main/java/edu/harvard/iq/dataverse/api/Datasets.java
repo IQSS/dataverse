@@ -567,10 +567,12 @@ public class Datasets extends AbstractApiBean {
 
     /**
      * @todo Comment out or delete if not needed. Enforce permissions.
+     *
+     * @todo Should we call this a logo or a thumbnail?
      */
     @GET
-    @Path("{id}/thumbnail")
-    public Response getDatasetThumbnail(@PathParam("id") String idSupplied) {
+    @Path("{id}/logo")
+    public Response getDatasetLogo(@PathParam("id") String idSupplied) {
         try {
             Dataset dataset = findDatasetOrDie(idSupplied);
             return ok("All good, got dataset id: " + dataset.getId());
@@ -583,9 +585,9 @@ public class Datasets extends AbstractApiBean {
      * @todo Enforce permissions. Make into a Command?
      */
     @POST
-    @Path("{id}/thumbnail")
+    @Path("{id}/logo")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public Response overrideDatasetThumbnail(@PathParam("id") String idSupplied, @FormDataParam("file") InputStream fileInputStream
+    public Response uploadDatasetLogo(@PathParam("id") String idSupplied, @FormDataParam("file") InputStream fileInputStream
     ) {
         try {
             Dataset dataset = findDatasetOrDie(idSupplied);
@@ -595,8 +597,8 @@ public class Datasets extends AbstractApiBean {
             } catch (IOException ex) {
                 return error(Response.Status.BAD_REQUEST, "Problem uploading file: " + ex);
             }
-            String thumbnail = ImageThumbConverter.getImageAsBase64FromFile(file);
-            dataset.setAltThumbnail(thumbnail);
+            String datasetLogo = ImageThumbConverter.getImageAsBase64FromFile(file);
+            dataset.setAltThumbnail(datasetLogo);
             Dataset merged = datasetService.merge(dataset);
             return ok("Thumbnail overridden for dataset id: " + merged.getId());
         } catch (WrappedResponse ex) {

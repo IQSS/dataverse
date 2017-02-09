@@ -1337,11 +1337,15 @@ public class SearchIT {
         Response uploadFile = UtilIT.uploadFile(datasetPersistentId, "trees.zip", apiToken);
         uploadFile.prettyPrint();
 
-        String imageFile = "src/main/webapp/resources/images/cc0.png";
-        Response overrideThumbnail = UtilIT.overrideDatasetThumbnail(datasetPersistentId, imageFile, apiToken);
+        String datasetLogo = "src/main/webapp/resources/images/cc0.png";
+        Response overrideThumbnail = UtilIT.uploadDatasetLogo(datasetPersistentId, datasetLogo, apiToken);
         overrideThumbnail.prettyPrint();
         overrideThumbnail.then().assertThat()
                 .statusCode(200);
+
+        if (true) {
+            return;
+        }
 
         Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
         publishDataverse.prettyPrint();
