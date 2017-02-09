@@ -80,56 +80,20 @@
                                                 File Thumbnails
                                             </span>
                                         </label>
-                                        <ui:remove>
-                                            <p:selectOneRadio id="customRadio" value="#{radioView.color}" layout="custom" columns="3">
-                                                <f:selectItems value="#{radioView.cities}" var="c" itemLabel="#{city}" itemValue="#{city}" />
+                                        <p:outputPanel id="customPanel">
+                                            <p:selectOneRadio id="selectDatasetThumbnail" value="#{DatasetWidgetsPage.datasetThumbnail}" layout="custom">
+                                                <f:selectItems value="#{DatasetWidgetsPage.datasetThumbnails}" var="thumb" itemLabel="#{thumb.filename}" itemValue="#{thumb.filename}"/>
                                             </p:selectOneRadio>
-
-                                            <h:panelGrid columns="3" cellpadding="5">
-                                                <p:radioButton id="opt1" for="customRadio" itemIndex="0" />
-                                                <h:outputLabel for="opt1" value="file_name1.ext" />
-                                                <h:graphicImage value="#{DatasetWidgetsPage.dataset.altThumbnail}"/>
-                                            </h:panelGrid>
-                                        </ui:remove>
-                                        <p:selectOneRadio id="selectOneRadioDatasetThumbnail" value="#{DatasetWidgetsPage.datasetThumbnail}" layout="responsive" columns="3">
-                                            <f:selectItems value="#{DatasetWidgetsPage.datasetThumbnails}" var="thumb" itemLabel="#{thumb.filename}" itemValue="#{thumb.filename}"/>
-                                        </p:selectOneRadio>
-                                        <p:dataTable value="#{DatasetWidgetsPage.datasetThumbnails}" var="thumbnail">
-                                            <p:column>
-                                                <h:outputText value="#{thumbnail.filename}"/>
-                                            </p:column>
-                                            <p:column>
-                                                <h:graphicImage value="#{thumbnail.base64image}"/>
-                                            </p:column>
-                                        </p:dataTable>
-
-                                        <!-- TODO REMOVE THIS PLACEHOLDER TABLE -->
-                                        <table id="j_idt88:city" role="presentation" class="ui-selectoneradio ui-widget" jsf:rendered="#{false}">
-                                            <tbody>
-                                                <tr>
-                                                    <td>
-                                                        <div class="" style="display: inline-block;width:16px;">
-                                                            <input id="j_idt88:city:0" name="j_idt88:city" value="file_name1.ext" data-p-label="City" data-p-hl="oneradio" data-p-grouped="true" type="radio"/>
-                                                        </div>
-                                                        <label style="display: inline-block;" for="j_idt88:city:0">file_name1.ext</label>
-                                                    </td>
-                                                    <td>
-                                                        <div class="" style="display: inline-block;width:16px;">
-                                                            <input id="j_idt88:city:1" name="j_idt88:city" value="file_name2.ext" data-p-label="City" data-p-hl="oneradio" data-p-grouped="true" type="radio"/>
-                                                        </div>
-                                                        <label style="display: inline-block;" for="j_idt88:city:0">file_name2.ext</label>
-                                                    </td>
-                                                    <td>
-                                                        <div class="" style="display: inline-block;width:16px;">
-                                                            <input id="j_idt88:city:2" name="j_idt88:city" value="file_name3.ext" data-p-label="City" data-p-hl="oneradio" data-p-grouped="true" type="radio"/>
-                                                        </div>
-                                                        <label style="display: inline-block;" for="j_idt88:city:0">file_name3.ext</label>
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                        <!-- TODO REMOVE THIS PLACEHOLDER TABLE -->
-
+                                            <c:forEach items="#{DatasetWidgetsPage.datasetThumbnails}" var="thumbnail" varStatus="loop">
+                                                <div class="col-xs-4 text-center radio">
+                                                    <p:radioButton for="selectDatasetThumbnail" id="opt#{loop.index}" itemIndex="#{loop.index}" />
+                                                    <h:outputLabel for="opt#{loop.index}" style="padding:4px;">
+                                                        <div style="height:48px;"><img src="#{thumbnail.base64image}" alt="#{thumbnail.filename}"/></div>
+                                                        <h:outputText value="#{thumbnail.filename}"/>
+                                                    </h:outputLabel>
+                                                </div>
+                                            </c:forEach>
+                                        </p:outputPanel>
                                     </div>
                                 </div>
                                 <div class="button-block">
