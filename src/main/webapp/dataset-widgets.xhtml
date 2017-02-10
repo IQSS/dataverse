@@ -45,7 +45,7 @@
                                         </div>
                                     </div>
                                     <div class="col-sm-8">
-                                        <div class="form-group">
+                                        <div class="form-group"  jsf:rendered="#{not empty DatasetWidgetsPage.datasetThumbnails}">
                                             <label for="selectThumbnail" class="control-label">
                                                 <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataverse.theme.linkColor.title']}">
                                                     Select Available File
@@ -63,6 +63,11 @@
                                             <p:fileUpload invalidFileMessage="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.upload.invalidMsg']}" id="changelogo" allowTypes="/(\.|\/)(jpg|jpeg|tff|png|gif)$/" update="@all" oncomplete="bind_bsui_components();" dragDropSupport="true" auto="true" multiple="false"
                                                           fileUploadListener="#{DatasetWidgetsPage.handleImageFileUpload}" label="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.upload']}"/>
                                         </div>
+                                    </div>
+                                    <div class="col-sm-8" jsf:rendered="#{empty DatasetWidgetsPage.datasetThumbnails}">
+                                        <p class="help-block"><span class="glyphicon glyphicon-info-sign"/>
+                                            In addition to uploading an image to this page, it's also possible to upload an image as one of the files in your dataset and then use it as a thumbnail for your dataset. To do this, click "Cancel" and then "Upload Files".
+                                        </p>
                                     </div>
                                 </div>
                             </div>
