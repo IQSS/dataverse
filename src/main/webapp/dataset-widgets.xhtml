@@ -70,7 +70,17 @@
                                 <p:commandButton styleClass="btn btn-default" update="@all" value="#{bundle.cancel}" action="#{DatasetWidgetsPage.cancel()}"/>
                             </div>
 
-
+                            <p:dialog header="Remove Thumbnail" widgetVar="confrmRemove" modal="true">
+                                <p class="help-block">
+                                    <span class="glyphicon glyphicon-warning-sign text-danger"/> <span class="text-danger">You are only removing this image as the dataset thumbnail, not removing it from your dataset, to do that, go to the Edit Files pg... or something...</span>
+                                </p>
+                                <div class="button-block">
+                                    <ui:remove><p:commandButton value="#{bundle.continue}" styleClass="btn btn-default" onclick="PF('confrmRemove').hide()" 
+                                                     action="# {}" 
+                                                     update="" /></ui:remove>
+                                    <button type="button" class="btn btn-default" onclick="PF('confrmRemove').hide()" value="#{bundle.cancel}">#{bundle.cancel}</button>
+                                </div>
+                            </p:dialog>
                             <p:dialog id="selectFileThumbnail" header="Select File Thumbnail" widgetVar="selectFileThumbnail" modal="true">
                                 <div class="form-horizontal col-sm-12">
                                     <div class="form-group">
