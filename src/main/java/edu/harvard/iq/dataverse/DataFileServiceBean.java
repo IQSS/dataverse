@@ -134,6 +134,17 @@ public class DataFileServiceBean implements java.io.Serializable {
     
     private static final String MIME_TYPE_UNDETERMINED_DEFAULT = "application/octet-stream";
     private static final String MIME_TYPE_UNDETERMINED_BINARY = "application/binary";
+
+    /**
+     * Per https://en.wikipedia.org/wiki/Media_type#Vendor_tree just "dataverse"
+     * should be fine.
+     *
+     * @todo Consider registering this at http://www.iana.org/form/media-types
+     * or switch to "prs" which "includes media types created experimentally or
+     * as part of products that are not distributed commercially" according to
+     * the page URL above.
+     */
+    public static final String MIME_TYPE_PACKAGE_FILE = "application/vnd.dataverse.file-package";
     
     public DataFile find(Object pk) {
         return (DataFile) em.find(DataFile.class, pk);
@@ -168,7 +179,24 @@ public class DataFileServiceBean implements java.io.Serializable {
         Query query = em.createQuery("select o from DataFile o where o.owner.id = :studyId order by o.id");
         query.setParameter("studyId", studyId);
         return query.getResultList();
-    }  
+    }
+
+    public DataFile findByStorageIdandDatasetVersion(String storageId, DatasetVersion dv) {
+        try {
+            Query query = em.createNativeQuery("select o.id from datafile o, filemetadata m " +
+                    "where o.filesystemname = '" + storageId + "' and o.id = m.datafile_id and m.datasetversion_id = " +
+                    dv.getId() + "");
+            query.setMaxResults(1);
+            if (query.getResultList().size() < 1) {
+                return null;
+            } else {
+                return findCheapAndEasy((Long) query.getSingleResult());
+            }
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error finding datafile by storageID and DataSetVersion: " + e.getMessage());
+            return null;
+        }
+    }
     
     public List<FileMetadata> findFileMetadataByDatasetVersionId(Long datasetVersionId, int maxResults, String userSuppliedSortField, String userSuppliedSortOrder) {
         FileSortFieldAndOrder sortFieldAndOrder = new FileSortFieldAndOrder(userSuppliedSortField, userSuppliedSortOrder);
