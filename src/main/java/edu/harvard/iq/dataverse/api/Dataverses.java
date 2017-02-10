@@ -343,14 +343,29 @@ public class Dataverses extends AbstractApiBean {
     @GET
     @Path("{identifier}/facets/")
     public Response listFacets( @PathParam("identifier") String dvIdtf ) {
+	    /*
         return allowCors(response( req -> ok(
                         execCommand(new ListFacetsCommand(req, findDataverseOrDie(dvIdtf)) )
                             .stream().map(f->json(f)).collect(toJsonArray()))));
+			    */
+	    /*
+            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+	    List<DatasetFieldType> facets = dataverse.getDataverseFacets();
+	    */
+        return response( req -> ok(
+                        execCommand(new ListFacetsCommand(req, findDataverseOrDie(dvIdtf)) )
+                            .stream().map(f->json(f)).collect(toJsonArray())));
     }
 
     @POST
     @Path("{identifier}/facets")
     @Produces(MediaType.APPLICATION_JSON)
+    /**
+     * (not publicly documented) API endpoint for assigning facets to a dataverse.
+     * `curl -X POST -H "X-Dataverse-key: $ADMIN_KEY" http://localhost:8088/api/dataverses/$dv/facets --upload-file foo.json`; where foo.json contains a list of datasetField names, 
+     * works as expected (judging by the UI).
+     * This triggers a 500 when '-d @foo.json' is used.
+     */
     public Response setFacets( @PathParam("identifier")String dvIdtf, String facetIds ) {
         
         List<DatasetFieldType> facets = new LinkedList<>();
