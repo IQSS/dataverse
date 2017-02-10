@@ -1,15 +1,14 @@
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
+import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
-import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
@@ -31,9 +30,22 @@ public class DatasetWidgetsPage implements java.io.Serializable {
     private Dataset dataset;
     private List<DatasetThumbnail> datasetThumbnails;
     private DatasetThumbnail datasetThumbnail;
+    /**
+     * @todo Remove this if we can't get it working.
+     */
+    private DatasetThumbnail datasetFileThumbnailToSwitchTo;
+
+    public DatasetThumbnail getDatasetFileThumbnailToSwitchTo() {
+        return datasetFileThumbnailToSwitchTo;
+    }
+
+    public void setDatasetFileThumbnailToSwitchTo(DatasetThumbnail datasetFileThumbnailToSwitchTo) {
+        this.datasetFileThumbnailToSwitchTo = datasetFileThumbnailToSwitchTo;
+    }
 
     @Inject
     PermissionsWrapper permissionsWrapper;
+    private boolean considerDatasetLogoAsCandidate = false;
 
     public String init() {
         if (datasetId == null || datasetId.intValue() <= 0) {
@@ -46,20 +58,8 @@ public class DatasetWidgetsPage implements java.io.Serializable {
         if (!permissionsWrapper.canIssueCommand(dataset, UpdateDatasetCommand.class)) {
             return permissionsWrapper.notAuthorized();
         }
-        datasetThumbnails = new ArrayList<>();
-        String altThumbnail = dataset.getAltThumbnail();
-        if (altThumbnail != null) {
-            DatasetThumbnail datasetThumbnail = new DatasetThumbnail(BundleUtil.getStringFromBundle("dataset.thumbnailsAndWidget.thumbnailImage.nonDatasetFile"), altThumbnail);
-            datasetThumbnails.add(datasetThumbnail);
-        }
-        for (FileMetadata fileMetadata : dataset.getLatestVersion().getFileMetadatas()) {
-            DataFile dataFile = fileMetadata.getDataFile();
-            if (dataFile != null && dataFile.isImage()) {
-                String imageSourceBase64 = ImageThumbConverter.getImageThumbAsBase64(dataFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
-                DatasetThumbnail datasetThumbnail = new DatasetThumbnail(fileMetadata.getLabel(), imageSourceBase64);
-                datasetThumbnails.add(datasetThumbnail);
-            }
-        }
+        datasetThumbnails = DatasetUtil.getThumbnailCandidates(dataset, considerDatasetLogoAsCandidate);
+        datasetThumbnail = DatasetUtil.getThumbnail(dataset);
         return null;
     }
 
@@ -94,25 +94,59 @@ public class DatasetWidgetsPage implements java.io.Serializable {
     public void handleImageFileUpload(FileUploadEvent event) {
         logger.fine("handleImageFileUpload clicked");
         UploadedFile uploadedFile = event.getFile();
+        InputStream fileInputStream = null;
         try {
-            InputStream fileInputStream = uploadedFile.getInputstream();
-            File file = FileUtil.inputStreamToFile(fileInputStream);
-            String rescaledThumbnail = FileUtil.rescaleImage(file);
-            logger.fine("rescaledThumbnail: " + rescaledThumbnail);
-            dataset.setAltThumbnail(rescaledThumbnail);
+            fileInputStream = uploadedFile.getInputstream();
         } catch (IOException ex) {
-            logger.info("Problem uploading thumbnail to dataset id " + dataset.getId() + ": " + ex);
+            Logger.getLogger(DatasetWidgetsPage.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        File file = null;
+        try {
+            file = FileUtil.inputStreamToFile(fileInputStream);
+        } catch (IOException ex) {
+            Logger.getLogger(DatasetWidgetsPage.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        DatasetUtil.writeDatasetLogoToDisk(dataset, file);
+        datasetThumbnail = DatasetUtil.getThumbnail(dataset);
+        datasetThumbnails = DatasetUtil.getThumbnailCandidates(dataset, considerDatasetLogoAsCandidate);
+    }
+
+    public void deleteDatasetLogo() {
+        logger.info("deleteDatasetLogo clicked");
+        boolean deleted = DatasetUtil.deleteDatasetLogo(dataset);
+        logger.info("deleteDatasetLogo returned with " + deleted);
+        datasetThumbnails = DatasetUtil.getThumbnailCandidates(dataset, considerDatasetLogoAsCandidate);
+        logger.info("number of thumbnail candidates update to " + datasetThumbnails.size());
+        datasetThumbnail = DatasetUtil.getThumbnail(dataset);
+    }
+
+    public void stopUsingAnyDatasetFileAsThumbnail() {
+        logger.info("stopUsingAnyDatasetFileAsThumbnail clicked... this is new functionality that hasn't been implemented yet.");
+        /**
+         * @todo Implement stopUsingAnyDatasetFileAsThumbnail!
+         */
+        datasetThumbnail = DatasetUtil.getThumbnail(dataset);
+    }
+
+    public void setDataFileAsThumbnail() {
+        logger.info("setDataFileAsThumbnail clicked.");
+        if (datasetThumbnail != null) {
+            logger.info("in setDataFileAsThumbnail, datasetThumbnail filename: " + datasetThumbnail.getFilename());
+        }
+        if (datasetFileThumbnailToSwitchTo != null) {
+            logger.info("in setDataFileAsThumbnail, datasetFileThumbnailToSwitchTo filename: " + datasetFileThumbnailToSwitchTo.getFilename());
+            // then, set the dataset thumbnail to this one
+        } else {
+            /**
+             * @todo Need JSF help to get this working.
+             */
+            logger.info("Why is datasetFileThumbnailToSwitchTo null? How do I pass the selection to this method?");
         }
     }
 
-    public void removeThumbnail() {
-        logger.fine("removeThumbnail clicked");
-        dataset.setAltThumbnail(null);
-    }
-
     public void save() {
-        Dataset merged = datasetService.merge(dataset);
-        logger.fine("Save clicked. Alternative thumbnail is now: " + merged.getAltThumbnail());
+//        Dataset merged = datasetService.merge(dataset);
+        logger.info("Save clicked. Alternative thumbnail is now... FIXME: persist selection somehow");
     }
 
     public String cancel() {

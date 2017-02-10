@@ -35,13 +35,13 @@
 
                                     <div class="col-sm-2 text-center">
                                         <p>
-                                            <span class="icon-dataset text-info" style="font-size: 2.8em;" jsf:rendered="#{DatasetWidgetsPage.dataset.altThumbnail == null}"/>
-                                            <!--FIXME: remove all the backend logic and image file for this default view -->
-                                            <h:graphicImage value="#{DatasetWidgetsPage.dataset.defaultThumbnail}" rendered="#{false}"/>
-                                            <h:graphicImage value="#{DatasetWidgetsPage.dataset.altThumbnail}" rendered="#{DatasetWidgetsPage.dataset.altThumbnail != null}"/>
+                                            <span class="icon-dataset text-info" style="font-size: 2.8em;" jsf:rendered="#{DatasetWidgetsPage.datasetThumbnail == null}"/>
+                                            <h:graphicImage value="#{DatasetWidgetsPage.datasetThumbnail.base64image}" rendered="#{DatasetWidgetsPage.datasetThumbnail != null}"/>
                                         </p>
-                                        <span class="text-muted" jsf:rendered="#{DatasetWidgetsPage.dataset.altThumbnail == null}"><em>Default Icon</em></span>
-                                        <p:commandButton update="@all" value="#{bundle.remove}" action="#{DatasetWidgetsPage.removeThumbnail()}" rendered="#{DatasetWidgetsPage.dataset.altThumbnail != null}" oncomplete="bind_bsui_components();"/>
+                                        <span class="text-muted" jsf:rendered="#{DatasetWidgetsPage.datasetThumbnail == null}"><em>Default Icon</em></span>
+                                        <p:commandButton update="@all" value="#{bundle.remove}" action="#{DatasetWidgetsPage.deleteDatasetLogo()}" rendered="#{DatasetWidgetsPage.datasetThumbnail.fromDataFile != true}" oncomplete="bind_bsui_components();"/>
+                                        <!--FIXME: uncomment this once stopUsingAnyDatasetFileAsThumbnail has been implemented-->
+                                        <!--<p:commandButton update="@all" value="#{bundle.remove}" action="# {DatasetWidgetsPage.stopUsingAnyDatasetFileAsThumbnail()}" rendered="#{DatasetWidgetsPage.datasetThumbnail.fromDataFile == true}" oncomplete="bind_bsui_components();"/>-->
                                     </div>
                                     <div class="col-sm-8">
                                         <div class="form-group">
@@ -81,7 +81,7 @@
                                             </span>
                                         </label>
                                         <p:outputPanel id="customPanel">
-                                            <p:selectOneRadio id="selectDatasetThumbnail" value="#{DatasetWidgetsPage.datasetThumbnail}" layout="custom">
+                                            <p:selectOneRadio id="selectDatasetThumbnail" value="#{DatasetWidgetsPage.datasetFileThumbnailToSwitchTo}" layout="custom">
                                                 <f:selectItems value="#{DatasetWidgetsPage.datasetThumbnails}" var="thumb" itemLabel="#{thumb.filename}" itemValue="#{thumb.filename}"/>
                                             </p:selectOneRadio>
                                             <c:forEach items="#{DatasetWidgetsPage.datasetThumbnails}" var="thumbnail" varStatus="loop">
@@ -97,10 +97,9 @@
                                     </div>
                                 </div>
                                 <div class="button-block">
-                                    <!-- TODO WIRE THIS BUTTON UP -->
-                                    <button type="button" onclick="PF('selectFileThumbnail').hide()" class="btn btn-default" value="#{bundle.continue}">
-                                        #{bundle.continue}
-                                    </button>
+                                    <!--FIXME: setDataFileAsThumbnail is set to log that it has been clicked but it never gets called. Why?-->
+                                    Note: this "Continue" button doesn't work so for now go to the "Edit Files" page to select one of the dataset files as the thumbnail for the dataset. You will also need to remove any files you uploaded from this page because files uploaded to this page override thumbnails from dataset files.<br/>
+                                    <p:commandButton styleClass="btn btn-default" update="@all" value="#{bundle.continue}" action="#{DatasetWidgetsPage.setDataFileAsThumbnail()}"/>
                                     <!-- TODO WIRE THIS BUTTON UP -->
                                     <button type="button" onclick="PF('selectFileThumbnail').hide()" class="btn btn-default" value="#{bundle.cancel}">
                                         #{bundle.cancel}

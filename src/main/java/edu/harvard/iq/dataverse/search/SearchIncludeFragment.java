@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.SettingsWrapper;
 import edu.harvard.iq.dataverse.WidgetWrapper;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1076,14 +1077,14 @@ public class SearchIncludeFragment implements java.io.Serializable {
             } else if (result.getType().equals("datasets") /*&& result.getEntity() instanceof Dataset*/) {
                 result.setImageUrl(getDatasetCardImageUrl(result));
                 /**
-                 * @todo Improve this inefficient hack to show the alternate
-                 * thumbnail on the dataset.
+                 * @todo Improve this inefficient hack. We don't want to have to
+                 * look up the dataset each time.
                  */
                 Dataset dataset = datasetService.find(result.getEntityId());
                 if (dataset != null) {
-                    String altThumbnail = dataset.getAltThumbnail();
-                    if (altThumbnail != null) {
-                        result.setImageUrl(altThumbnail);
+                    DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail();
+                    if (datasetThumbnail != null) {
+                        result.setImageUrl(datasetThumbnail.getBase64image());
                     }
                 }
                 valueSet = true;

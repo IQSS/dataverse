@@ -38,8 +38,14 @@ import org.junit.Test;
 import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.path.json.JsonPath.with;
 import static com.jayway.restassured.path.xml.XmlPath.from;
+import edu.harvard.iq.dataverse.dataset.DatasetUtil;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import static junit.framework.Assert.assertEquals;
 import static java.lang.Thread.sleep;
+import javax.json.JsonArray;
+import org.hamcrest.CoreMatchers;
+import static org.hamcrest.CoreMatchers.nullValue;
+import org.hamcrest.Matchers;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import org.junit.Ignore;
@@ -1334,13 +1340,33 @@ public class SearchIT {
         String identifier = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.identifier");
         String datasetPersistentId = protocol + ":" + authority + "/" + identifier;
 
+        Response thumbnailCandidates1 = UtilIT.showDatasetThumbnailCandidates(datasetPersistentId, apiToken);
+        thumbnailCandidates1.prettyPrint();
+        JsonArray emptyArray = Json.createArrayBuilder().build();
+        thumbnailCandidates1.then().assertThat()
+                .body("data", CoreMatchers.equalTo(emptyArray))
+                .statusCode(200);
+
         Response uploadFile = UtilIT.uploadFile(datasetPersistentId, "trees.zip", apiToken);
         uploadFile.prettyPrint();
+
+        Response thumbnailCandidates2 = UtilIT.showDatasetThumbnailCandidates(datasetPersistentId, apiToken);
+        thumbnailCandidates2.prettyPrint();
+        thumbnailCandidates2.then().assertThat()
+                .body("data[0]", CoreMatchers.equalTo("trees.png"))
+                .statusCode(200);
 
         String datasetLogo = "src/main/webapp/resources/images/cc0.png";
         Response overrideThumbnail = UtilIT.uploadDatasetLogo(datasetPersistentId, datasetLogo, apiToken);
         overrideThumbnail.prettyPrint();
         overrideThumbnail.then().assertThat()
+                .statusCode(200);
+
+        Response thumbnailCandidates3 = UtilIT.showDatasetThumbnailCandidates(datasetPersistentId, apiToken);
+        thumbnailCandidates3.prettyPrint();
+        thumbnailCandidates3.then().assertThat()
+                .body("data[0]", CoreMatchers.equalTo(BundleUtil.getStringFromBundle("dataset.thumbnailsAndWidget.thumbnailImage.nonDatasetFile")))
+                .body("data[1]", CoreMatchers.equalTo("trees.png"))
                 .statusCode(200);
 
         if (true) {

@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
@@ -766,6 +767,11 @@ public class DatasetServiceBean implements java.io.Serializable {
     public void updateLastExportTimeStamp(Long datasetId) {
         Date now = new Date();
         em.createNativeQuery("UPDATE Dataset SET lastExportTime='"+now.toString()+"' WHERE id="+datasetId).executeUpdate();
+    }
+
+    public Dataset writeDatasetLogoToDisk(Dataset dataset, File file) {
+        Dataset datasetThatMayHaveChanged = DatasetUtil.writeDatasetLogoToDisk(dataset, file);
+        return datasetThatMayHaveChanged;
     }
     
 }

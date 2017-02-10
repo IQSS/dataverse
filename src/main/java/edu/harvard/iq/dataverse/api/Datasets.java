@@ -19,6 +19,8 @@ import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
+import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
 import edu.harvard.iq.dataverse.datasetutility.DataFileTagException;
 import edu.harvard.iq.dataverse.datasetutility.NoFilesException;
@@ -63,6 +65,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -571,8 +574,29 @@ public class Datasets extends AbstractApiBean {
      * @todo Should we call this a logo or a thumbnail?
      */
     @GET
-    @Path("{id}/logo")
-    public Response getDatasetLogo(@PathParam("id") String idSupplied) {
+    @Path("{id}/thumbnail/candidates")
+    public Response getDatasetThumbnailCandidates(@PathParam("id") String idSupplied) {
+        try {
+            Dataset dataset = findDatasetOrDie(idSupplied);
+            JsonArrayBuilder data = Json.createArrayBuilder();
+            boolean considerDatasetLogoAsCandidate = true;
+            for (DatasetThumbnail datasetThumbnail : DatasetUtil.getThumbnailCandidates(dataset, considerDatasetLogoAsCandidate)) {
+                data.add(datasetThumbnail.getFilename());
+            }
+            return ok(data);
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.NOT_FOUND, "Could not find dataset based on id supplied: " + idSupplied + ".");
+        }
+    }
+
+    /**
+     * @todo Comment out or delete if not needed. Enforce permissions.
+     *
+     * @todo Should we call this a logo or a thumbnail?
+     */
+    @GET
+    @Path("{id}/thumbnail")
+    public Response getDatasetThumbnail(@PathParam("id") String idSupplied) {
         try {
             Dataset dataset = findDatasetOrDie(idSupplied);
             return ok("All good, got dataset id: " + dataset.getId());
@@ -597,10 +621,8 @@ public class Datasets extends AbstractApiBean {
             } catch (IOException ex) {
                 return error(Response.Status.BAD_REQUEST, "Problem uploading file: " + ex);
             }
-            String datasetLogo = ImageThumbConverter.getImageAsBase64FromFile(file);
-            dataset.setAltThumbnail(datasetLogo);
-            Dataset merged = datasetService.merge(dataset);
-            return ok("Thumbnail overridden for dataset id: " + merged.getId());
+            Dataset datasetThatMayHaveChanged = datasetService.writeDatasetLogoToDisk(dataset, file);
+            return ok("Thumbnail is now " + datasetThatMayHaveChanged.getDatasetThumbnail().getFilename());
         } catch (WrappedResponse ex) {
             return error(Response.Status.NOT_FOUND, "Could not find dataset based on id supplied: " + idSupplied + ".");
         }

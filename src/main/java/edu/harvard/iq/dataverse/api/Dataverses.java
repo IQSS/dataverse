@@ -6,10 +6,12 @@ import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseContact;
+import edu.harvard.iq.dataverse.DataverseTheme;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.RoleAssignment;
+import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.api.dto.ExplicitGroupDTO;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
@@ -42,6 +44,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.RemoveRoleAssigneesFromExpli
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseMetadataBlocksCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseThemeCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateExplicitGroupCommand;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.brief;
@@ -80,6 +83,14 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.glassfish.jersey.media.multipart.FormDataParam;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 
 /**
  * A REST API for dataverses.
@@ -89,8 +100,17 @@ import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
 @Path("dataverses")
 public class Dataverses extends AbstractApiBean {
        
-	private static final Logger LOGGER = Logger.getLogger(Dataverses.class.getName());
-    
+    /**
+     * @deprecated switch to lower case "logger".
+     */
+    @Deprecated
+    private static final Logger LOGGER = Logger.getLogger(Dataverses.class.getName());
+    private static final Logger logger = Logger.getLogger(Dataverses.class.getCanonicalName());
+    static final String DEFAULT_LOGO_BACKGROUND_COLOR = "F5F5F5";
+    static final String DEFAULT_BACKGROUND_COLOR = "F5F5F5";
+    static final String DEFAULT_LINK_COLOR = "428BCA";
+    static final String DEFAULT_TEXT_COLOR = "888888";
+
     @EJB
     ExplicitGroupServiceBean explicitGroupSvc;
     
@@ -430,7 +450,85 @@ public class Dataverses extends AbstractApiBean {
                 .collect(toJsonArray())
         ));
 	}
-	
+
+    File tempDir;
+
+    private void createTempDir(Dataverse editDv) {
+        try {
+            File tempRoot = java.nio.file.Files.createDirectories(Paths.get("../docroot/logos/temp")).toFile();
+            tempDir = java.nio.file.Files.createTempDirectory(tempRoot.toPath(), editDv.getId().toString()).toFile();
+        } catch (IOException e) {
+            throw new RuntimeException("Error creating temp directory", e); // improve error handling
+        }
+    }
+
+    private DataverseTheme initDataverseTheme(Dataverse editDv) {
+        DataverseTheme dvt = new DataverseTheme();
+        dvt.setLinkColor(DEFAULT_LINK_COLOR);
+        dvt.setLogoBackgroundColor(DEFAULT_LOGO_BACKGROUND_COLOR);
+        dvt.setBackgroundColor(DEFAULT_BACKGROUND_COLOR);
+        dvt.setTextColor(DEFAULT_TEXT_COLOR);
+        dvt.setDataverse(editDv);
+        return dvt;
+    }
+
+    @PUT
+    @Path("{identifier}/logo")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    public Response setDataverseLogo(@PathParam("identifier") String dvIdtf,
+            @FormDataParam("file") InputStream fileInputStream,
+            @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
+            @QueryParam("key") String apiKey) {
+        boolean disabled = true;
+        if (disabled) {
+            return error(Status.FORBIDDEN, "Setting the dataverse logo via API needs more work.");
+        }
+        try {
+            final DataverseRequest req = createDataverseRequest(findUserOrDie());
+            final Dataverse editDv = findDataverseOrDie(dvIdtf);
+
+            logger.finer("entering fileUpload");
+            if (tempDir == null) {
+                createTempDir(editDv);
+                logger.finer("created tempDir");
+            }
+            File uploadedFile;
+            try {
+                String fileName = contentDispositionHeader.getFileName();
+
+                uploadedFile = new File(tempDir, fileName);
+                if (!uploadedFile.exists()) {
+                    uploadedFile.createNewFile();
+                }
+                logger.finer("created file");
+                java.nio.file.Files.copy(fileInputStream, uploadedFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                logger.finer("copied inputstream to file");
+                editDv.setDataverseTheme(initDataverseTheme(editDv));
+                editDv.getDataverseTheme().setLogo(fileName);
+
+            } catch (IOException e) {
+                logger.finer("caught IOException");
+                logger.throwing("ThemeWidgetFragment", "handleImageFileUpload", e);
+                throw new RuntimeException("Error uploading logo file", e); // improve error handling
+            }
+            // If needed, set the default values for the logo
+            if (editDv.getDataverseTheme().getLogoFormat() == null) {
+                editDv.getDataverseTheme().setLogoFormat(DataverseTheme.ImageFormat.SQUARE);
+            }
+            logger.finer("end handelImageFileUpload");
+            UpdateDataverseThemeCommand cmd = new UpdateDataverseThemeCommand(editDv, uploadedFile, req);
+            Dataverse saved = execCommand(cmd);
+
+            /**
+             * @todo delete the temp file:
+             * docroot/logos/temp/1148114212463761832421/cc0.png
+             */
+            return ok("logo uploaded: " + saved.getDataverseTheme().getLogo());
+        } catch (WrappedResponse ex) {
+            return error(Status.BAD_REQUEST, "problem uploading logo: " + ex);
+        }
+    }
+
 	@POST
 	@Path("{identifier}/assignments")
 	public Response createAssignment( RoleAssignmentDTO ra, @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey ) {

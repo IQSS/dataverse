@@ -638,6 +638,12 @@ public class UtilIT {
         return response;
     }
 
+    static Response showDatasetThumbnailCandidates(String datasetPersistentId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/:persistentId/thumbnail/candidates" + "?persistentId=" + datasetPersistentId);
+    }
+
     static Response downloadDatasetThumbnail(String datasetPersistentId, String imageFile, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
@@ -726,6 +732,13 @@ public class UtilIT {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("api/admin/assignee/" + roleAssignee);
+    }
+
+    static Response setDataverseLogo(String dataverseAlias, String pathToImageFile, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .multiPart("file", new File(pathToImageFile))
+                .put("/api/dataverses/" + dataverseAlias + "/logo");
     }
 
     @Test
