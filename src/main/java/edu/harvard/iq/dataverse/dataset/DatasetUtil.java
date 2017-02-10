@@ -14,7 +14,6 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class DatasetUtil {
@@ -76,7 +75,7 @@ public class DatasetUtil {
                 if (dataFile.equals(dataset.getThumbnailFile())) {
                     String imageSourceBase64 = ImageThumbConverter.getImageThumbAsBase64(dataFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
                     String filename = fileMetadata.getLabel();
-                    logger.info("dataset.getThumbnailFile() is equal to " + filename);
+                    logger.fine("dataset.getThumbnailFile() is equal to " + filename);
                     DatasetThumbnail datasetThumbnail = new DatasetThumbnail(filename, imageSourceBase64, dataFile);
                     return datasetThumbnail;
                 }

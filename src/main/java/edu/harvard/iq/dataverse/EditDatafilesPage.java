@@ -1,25 +1,20 @@
-
 package edu.harvard.iq.dataverse;
-
-// TODO: 
-// clean up the imports. -- L.A. 4.2
 
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
-import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
 import edu.harvard.iq.dataverse.datasetutility.FileReplaceException;
 import edu.harvard.iq.dataverse.datasetutility.FileReplacePageHelper;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
+import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
-import edu.harvard.iq.dataverse.search.FileView;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.ingest.IngestUtil;
 import edu.harvard.iq.dataverse.search.FileView;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -62,7 +57,6 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import java.text.DateFormat;
 import java.util.Arrays;
 import java.util.ResourceBundle;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import javax.faces.event.AjaxBehaviorEvent;
@@ -2195,7 +2189,38 @@ public class EditDatafilesPage implements java.io.Serializable {
         // And reset the selected fileMetadata:
         fileMetadataSelectedForThumbnailPopup = null;
     }
-    
+
+    public void deleteDatasetLogoAndUseThisDataFileAsThumbnailInstead() {
+        logger.info("In deleteDatasetLogoAndUseThisDataFileAsThumbnailInstead, fileMetadataSelectedForThumbnailPopup: " + fileMetadataSelectedForThumbnailPopup);
+        if (fileMetadataSelectedForThumbnailPopup != null) {
+            if (isThumbnailIsFromDatasetLogoRatherThanDatafile()) {
+                logger.info("current thumbnail is from a dataset logo rather than a dataset file, blowing away the logo");
+                /**
+                 * @todo Rather than deleting and merging right away, try to
+                 * respect how this page seems to stage actions and giving the
+                 * user a chance to review before clicking "Save Changes".
+                 */
+                DatasetUtil.deleteDatasetLogo(dataset);
+                DataFile dataFile = fileMetadataSelectedForThumbnailPopup.getDataFile();
+                if (dataFile != null) {
+                    dataset.setThumbnailFile(dataFile);
+                    dataset = datasetService.merge(dataset);
+                }
+//                logger.info("about to call saveAsDesignatedThumbnail. fileMetadataSelectedForThumbnailPopup is " + fileMetadataSelectedForThumbnailPopup.getLabel());
+//                saveAsDesignatedThumbnail();
+            } else {
+                logger.info("unexpected... should never get here");
+            }
+        }
+    }
+
+    public boolean isThumbnailIsFromDatasetLogoRatherThanDatafile() {
+        DatasetThumbnail datasetThumbnail = DatasetUtil.getThumbnail(dataset);
+        if (datasetThumbnail != null && !datasetThumbnail.isFromDataFile()) {
+            return true;
+        }
+        return false;
+    }
 
     /* 
      * Items for the "Tags (Categories)" popup.

@@ -232,11 +232,18 @@
                                 <span class="glyphicon glyphicon-tag"/> #{bundle['file.editTags']}
                             </p:commandLink>
                             <p:commandLink id="fileSetThumbnailBtn"
-                                           rendered="#{!empty fileMetadata.dataFile.id and fileMetadata.dataFile.image}"
+                                           rendered="#{!empty fileMetadata.dataFile.id and fileMetadata.dataFile.image and not EditDatafilesPage.thumbnailIsFromDatasetLogoRatherThanDatafile}"
                                            type="button" styleClass="btn btn-default"
                                            actionListener="#{EditDatafilesPage.setFileMetadataSelectedForThumbnailPopup(fileMetadata)}"
                                            update=":datasetForm:fileSetThumbnail"
                                            oncomplete="PF('fileSetThumbnail').show()">
+                                <span class="glyphicon glyphicon-file"/> #{bundle['file.setThumbnail']}
+                            </p:commandLink>
+                            <p:commandLink id="fileSetThumbnailBtn2"
+                                           rendered="#{!empty fileMetadata.dataFile.id and fileMetadata.dataFile.image and EditDatafilesPage.thumbnailIsFromDatasetLogoRatherThanDatafile}"
+                                           type="button" styleClass="btn btn-default"
+                                           actionListener="#{EditDatafilesPage.setFileMetadataSelectedForThumbnailPopup(fileMetadata)}"
+                                           oncomplete="PF('fileThumbnailConfirm').show()">
                                 <span class="glyphicon glyphicon-file"/> #{bundle['file.setThumbnail']}
                             </p:commandLink>
                             <p:commandLink id="advancedIngestOptionsButton"
@@ -516,10 +523,8 @@
             </p>
         </div>
         <div class="button-block">
-            <ui:remove>
-            <p:commandButton id="fileThumbnailConfirmCntBtn" value="#{bundle.continue}" oncomplete="PF('fileThumbnailConfirm').hide()" update=":datasetForm:filesTable,:messagePanel" actionListener="#{}"/>
-            <p:commandButton id="fileThumbnailConfirmCancelBtn" value="#{bundle.cancel}" onclick="PF('fileThumbnailConfirm').hide();PF('blockFileForm').hide();" actionListener="#{}"/>
-            </ui:remove>
+            <p:commandButton id="fileThumbnailConfirmCntBtn" value="#{bundle.continue}" oncomplete="PF('fileThumbnailConfirm').hide()" update=":datasetForm:filesTable,:messagePanel" actionListener="#{EditDatafilesPage.deleteDatasetLogoAndUseThisDataFileAsThumbnailInstead()}"/>
+            <p:commandButton id="fileThumbnailConfirmCancelBtn" value="#{bundle.cancel}" onclick="PF('fileThumbnailConfirm').hide();PF('blockFileForm').hide();"/>
         </div>
     </p:dialog>
     <p:dialog id="editFileTagsPopup" styleClass="smallPopUp" header="#{bundle['file.editTags']}" widgetVar="editFileTagsPopup" modal="true">
