@@ -39,7 +39,7 @@
                                             <h:graphicImage value="#{DatasetWidgetsPage.datasetThumbnail.base64image}" rendered="#{DatasetWidgetsPage.datasetThumbnail != null}"/>
                                         </p>
                                         <span class="text-muted" jsf:rendered="#{DatasetWidgetsPage.datasetThumbnail == null}"><em>Default Icon</em></span>
-                                        <p:commandButton update="@all" value="#{bundle.remove}" action="#{DatasetWidgetsPage.deleteDatasetLogo()}" rendered="#{DatasetWidgetsPage.datasetThumbnail.fromDataFile != true}" oncomplete="bind_bsui_components();"/>
+                                        <p:commandButton update="@all" value="#{bundle.remove}" action="#{DatasetWidgetsPage.deleteDatasetLogo()}" rendered="#{DatasetWidgetsPage.datasetThumbnail != null and DatasetWidgetsPage.datasetThumbnail.fromDataFile != true}" oncomplete="bind_bsui_components();"/>
                                         <div jsf:rendered="#{DatasetWidgetsPage.datasetThumbnail.fromDataFile == true}">
                                             <button type="button" class="btn btn-default" onclick="PF('confrmRemove').show()" value="Select Thumbnail">#{bundle.remove}</button>
                                         </div>
