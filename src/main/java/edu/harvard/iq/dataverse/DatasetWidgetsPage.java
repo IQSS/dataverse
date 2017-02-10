@@ -122,9 +122,13 @@ public class DatasetWidgetsPage implements java.io.Serializable {
 
     public void stopUsingAnyDatasetFileAsThumbnail() {
         logger.info("stopUsingAnyDatasetFileAsThumbnail clicked... this is new functionality that hasn't been implemented yet.");
-        /**
-         * @todo Implement stopUsingAnyDatasetFileAsThumbnail!
-         */
+        datasetThumbnail = DatasetUtil.getThumbnail(dataset);
+        DataFile dataFileAsThumbnailBefore = dataset.getThumbnailFile();
+        logger.info("dataFileAsThumbnailBefore: " + dataFileAsThumbnailBefore);
+        dataset.setThumbnailFile(null);
+        datasetService.merge(dataset);
+        DataFile dataFileAsThumbnailAfter = dataset.getThumbnailFile();
+        logger.info("dataFileAsThumbnailAfter: " + dataFileAsThumbnailAfter);
         datasetThumbnail = DatasetUtil.getThumbnail(dataset);
     }
 

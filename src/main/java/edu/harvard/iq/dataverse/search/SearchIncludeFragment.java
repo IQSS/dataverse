@@ -1085,6 +1085,9 @@ public class SearchIncludeFragment implements java.io.Serializable {
                     DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail();
                     if (datasetThumbnail != null) {
                         result.setImageUrl(datasetThumbnail.getBase64image());
+                    } else {
+                        logger.info("No dataset thumbnail should be shown.");
+                        result.setImageUrl(null);
                     }
                 }
                 valueSet = true;
