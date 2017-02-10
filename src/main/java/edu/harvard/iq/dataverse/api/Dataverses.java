@@ -355,7 +355,7 @@ public class Dataverses extends AbstractApiBean {
 		    {
 			    fs.add( f.getDatasetFieldType().getName() );
 		    }
-		    return ok( fs );
+		    return allowCors( ok( fs ) );
 	    }
 	    catch( WrappedResponse e )
 	    {
