@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseFacet;
 import edu.harvard.iq.dataverse.DataverseContact;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.DvObject;
@@ -342,19 +343,24 @@ public class Dataverses extends AbstractApiBean {
     
     @GET
     @Path("{identifier}/facets/")
+    /**
+     * return list of facets for the dataverse with alias `dvIdtf`
+     */
     public Response listFacets( @PathParam("identifier") String dvIdtf ) {
-	    /*
-        return allowCors(response( req -> ok(
-                        execCommand(new ListFacetsCommand(req, findDataverseOrDie(dvIdtf)) )
-                            .stream().map(f->json(f)).collect(toJsonArray()))));
-			    */
-	    /*
-            Dataverse dataverse = findDataverseOrDie(dvIdtf);
-	    List<DatasetFieldType> facets = dataverse.getDataverseFacets();
-	    */
-        return response( req -> ok(
-                        execCommand(new ListFacetsCommand(req, findDataverseOrDie(dvIdtf)) )
-                            .stream().map(f->json(f)).collect(toJsonArray())));
+	    try
+	    {
+		    Dataverse dataverse = findDataverseOrDie(dvIdtf);
+		    JsonArrayBuilder fs = Json.createArrayBuilder();
+		    for( DataverseFacet f : dataverse.getDataverseFacets() )
+		    {
+			    fs.add( f.getDatasetFieldType().getName() );
+		    }
+		    return ok( fs );
+	    }
+	    catch( WrappedResponse e )
+	    {
+		    return e.getResponse();
+	    }
     }
 
     @POST
