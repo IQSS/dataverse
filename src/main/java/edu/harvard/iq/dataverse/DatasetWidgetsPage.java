@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
@@ -33,15 +34,16 @@ public class DatasetWidgetsPage implements java.io.Serializable {
     /**
      * @todo Remove this if we can't get it working.
      */
-    private DatasetThumbnail datasetFileThumbnailToSwitchTo;
+    private DataFile datasetFileThumbnailToSwitchTo;
 
-    public DatasetThumbnail getDatasetFileThumbnailToSwitchTo() {
+    public DataFile getDatasetFileThumbnailToSwitchTo() {
         return datasetFileThumbnailToSwitchTo;
     }
 
-    public void setDatasetFileThumbnailToSwitchTo(DatasetThumbnail datasetFileThumbnailToSwitchTo) {
+    public void setDatasetFileThumbnailToSwitchTo(DataFile datasetFileThumbnailToSwitchTo) {
         this.datasetFileThumbnailToSwitchTo = datasetFileThumbnailToSwitchTo;
     }
+
 
     @Inject
     PermissionsWrapper permissionsWrapper;
@@ -133,18 +135,10 @@ public class DatasetWidgetsPage implements java.io.Serializable {
     }
 
     public void setDataFileAsThumbnail() {
-        logger.info("setDataFileAsThumbnail clicked.");
-        if (datasetThumbnail != null) {
-            logger.info("in setDataFileAsThumbnail, datasetThumbnail filename: " + datasetThumbnail.getFilename());
-        }
         if (datasetFileThumbnailToSwitchTo != null) {
-            logger.info("in setDataFileAsThumbnail, datasetFileThumbnailToSwitchTo filename: " + datasetFileThumbnailToSwitchTo.getFilename());
-            // then, set the dataset thumbnail to this one
-        } else {
-            /**
-             * @todo Need JSF help to get this working.
-             */
-            logger.info("Why is datasetFileThumbnailToSwitchTo null? How do I pass the selection to this method?");
+            deleteDatasetLogo();
+            dataset.setThumbnailFile(datasetFileThumbnailToSwitchTo);
+            datasetService.merge(dataset);
         }
     }
 

@@ -85,8 +85,8 @@
                                                      action="#{DatasetWidgetsPage.stopUsingAnyDatasetFileAsThumbnail()}"
                                                      update="@all"/>
                                     <button type="button" class="btn btn-default" onclick="PF('confrmRemove').hide()" value="#{bundle.cancel}">#{bundle.cancel}</button>
-                                </div>
-                            </p:dialog>
+                                </div> 
+                           </p:dialog>
                             <p:dialog id="selectFileThumbnail" header="Select File Thumbnail" widgetVar="selectFileThumbnail" modal="true">
                                 <div class="form-horizontal col-sm-12">
                                     <div class="form-group">
@@ -97,8 +97,8 @@
                                             </span>
                                         </label>
                                         <p:outputPanel id="customPanel">
-                                            <p:selectOneRadio id="selectDatasetThumbnail" value="#{DatasetWidgetsPage.datasetFileThumbnailToSwitchTo}" layout="custom">
-                                                <f:selectItems value="#{DatasetWidgetsPage.datasetThumbnails}" var="thumb" itemLabel="#{thumb.filename}" itemValue="#{thumb.filename}"/>
+                                            <p:selectOneRadio id="selectDatasetThumbnail" value="#{DatasetWidgetsPage.datasetFileThumbnailToSwitchTo}" layout="custom" converter="dataFileConverter">
+                                                <f:selectItems value="#{DatasetWidgetsPage.datasetThumbnails}" var="thumb" itemLabel="#{thumb.filename}" itemValue="#{thumb.dataFile}"/>
                                             </p:selectOneRadio>
                                             <c:forEach items="#{DatasetWidgetsPage.datasetThumbnails}" var="thumbnail" varStatus="loop">
                                                 <div class="col-xs-4 text-center radio">
@@ -113,8 +113,6 @@
                                     </div>
                                 </div>
                                 <div class="button-block">
-                                    <!--FIXME: setDataFileAsThumbnail is set to log that it has been clicked but it never gets called. Why?-->
-                                    Note: this "Continue" button doesn't work so for now go to the "Edit Files" page to select one of the dataset files as the thumbnail for the dataset. You will also need to remove any files you uploaded from this page because files uploaded to this page override thumbnails from dataset files.<br/>
                                     <p:commandButton styleClass="btn btn-default" update="@all" value="#{bundle.continue}" action="#{DatasetWidgetsPage.setDataFileAsThumbnail()}"/>
                                     <!-- TODO WIRE THIS BUTTON UP -->
                                     <button type="button" onclick="PF('selectFileThumbnail').hide()" class="btn btn-default" value="#{bundle.cancel}">
