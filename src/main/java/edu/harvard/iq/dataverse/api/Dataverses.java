@@ -349,9 +349,11 @@ public class Dataverses extends AbstractApiBean {
     public Response listFacets( @PathParam("identifier") String dvIdtf ) {
 	    try
 	    {
+		    User u = findUserOrDie();
+		    DataverseRequest r = createDataverseRequest( u );
 		    Dataverse dataverse = findDataverseOrDie(dvIdtf);
 		    JsonArrayBuilder fs = Json.createArrayBuilder();
-		    for( DataverseFacet f : dataverse.getDataverseFacets() )
+		    for( DataverseFacet f : execCommand( new ListFacetsCommand( r, dataverse ) ) )
 		    {
 			    fs.add( f.getDatasetFieldType().getName() );
 		    }
