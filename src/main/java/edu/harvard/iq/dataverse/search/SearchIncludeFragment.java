@@ -1075,7 +1075,8 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 result.setImageUrl(getDataverseCardImageUrl(result));
                 valueSet = true;
             } else if (result.getType().equals("datasets") /*&& result.getEntity() instanceof Dataset*/) {
-                result.setImageUrl(getDatasetCardImageUrl(result));
+                String imageFoundBygetDatasetCardImageUrl = getDatasetCardImageUrl(result);
+                result.setImageUrl(imageFoundBygetDatasetCardImageUrl);
                 /**
                  * @todo Improve this inefficient hack. We don't want to have to
                  * look up the dataset each time.
@@ -1086,8 +1087,13 @@ public class SearchIncludeFragment implements java.io.Serializable {
                     if (datasetThumbnail != null) {
                         result.setImageUrl(datasetThumbnail.getBase64image());
                     } else {
-                        logger.info("No dataset thumbnail should be shown.");
-                        result.setImageUrl(null);
+                        if (imageFoundBygetDatasetCardImageUrl != null) {
+                            logger.info("dataset file thumbnail found by imageFoundBygetDatasetCardImageUrl method, using it because dataset.getDatasetThumbnail() was null");
+                            result.setImageUrl(imageFoundBygetDatasetCardImageUrl);
+                        } else {
+                            logger.info("No dataset thumbnail should be shown.");
+                            result.setImageUrl(null);
+                        }
                     }
                 }
                 valueSet = true;

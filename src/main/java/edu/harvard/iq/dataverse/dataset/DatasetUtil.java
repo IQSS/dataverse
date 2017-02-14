@@ -56,6 +56,7 @@ public class DatasetUtil {
         if (dataset == null) {
             return null;
         }
+        String title = dataset.getLatestVersion().getTitle();
         Path datasetLogo = Paths.get(dataset.getFileSystemDirectory() + File.separator + DatasetUtil.datasetLogoFilename);
         if (Files.exists(datasetLogo)) {
             File file = datasetLogo.toFile();
@@ -64,23 +65,31 @@ public class DatasetUtil {
             try {
                 imageSourceBase64 = FileUtil.rescaleImage(file);
                 DatasetThumbnail datasetThumbnail = new DatasetThumbnail(DatasetUtil.datasetLogoNameInGUI, imageSourceBase64, null);
+                logger.info(title + " will get thumbnail from dataset logo.");
                 return datasetThumbnail;
             } catch (IOException ex) {
                 logger.info("Unable to rescale image: " + ex);
                 return null;
             }
         } else {
+            DataFile thumbnailFile = dataset.getThumbnailFile();
+            if (thumbnailFile == null) {
+                logger.info(title + " does not have a thumbnail file.");
+                return null;
+            }
             for (FileMetadata fileMetadata : dataset.getLatestVersion().getFileMetadatas()) {
                 DataFile dataFile = fileMetadata.getDataFile();
-                if (dataFile.equals(dataset.getThumbnailFile())) {
+                logger.info(title + " has datafile id of " + dataFile.getId() + " and " + thumbnailFile + " id is " + thumbnailFile.getId() + ".");
+                if (dataFile.equals(thumbnailFile)) {
                     String imageSourceBase64 = ImageThumbConverter.getImageThumbAsBase64(dataFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
                     String filename = fileMetadata.getLabel();
                     logger.fine("dataset.getThumbnailFile() is equal to " + filename);
                     DatasetThumbnail datasetThumbnail = new DatasetThumbnail(filename, imageSourceBase64, dataFile);
+                    logger.info(title + " will get thumbnail from dataset file " + filename);
                     return datasetThumbnail;
                 }
             }
-            logger.info("No dataset logo and no dataset file as a thumbnail. Returning null");
+            logger.info(title + " will get the default dataset icon.");
             return null;
         }
     }

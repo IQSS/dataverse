@@ -272,6 +272,7 @@
         <!-- Message Panel -->
         <p:fragment id="messagePanel" rendered="#{showMessagePanel}">
             <div class="container messagePanel">
+                <!--change this to <h:messages id="messages"/> to see otherwise hidden errors such as `Conversion Error setting value 'foo.jpg' for 'null Converter'`-->
                 <iqbs:messages id="messages" collapsible="true" />
             </div>
         </p:fragment>
