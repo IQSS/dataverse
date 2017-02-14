@@ -25,10 +25,10 @@ public class FileVersionDifference {
     public String getDisplay() {
         String retval = "";
         if (this.newFileMetadata == null){
-           return ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.fileRemoved") + ".";
+           return ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.fileRemoved");
         }
         if (this.originalFileMetadata == null){
-           return ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.fileAdded")+ ".";
+           return ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.fileAdded");
         }
         //Check to see if File replaced
         if (!this.originalFileMetadata.getDataFile().equals(this.newFileMetadata.getDataFile())){
@@ -36,9 +36,9 @@ public class FileVersionDifference {
         }
         //append replaced message with all other changes
         if (this.differenceSummaryGroups.isEmpty()){
-            return retval + ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.noChanges")+ ".";      
+            return retval + ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.noChanges");      
         } else {                
-            return retval + trimResult(getSummaryGroupsDisplay())+ ".";
+            return retval + trimResult(getSummaryGroupsDisplay());
         }
 
     }

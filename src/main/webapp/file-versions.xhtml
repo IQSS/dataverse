@@ -47,7 +47,7 @@
         <p:column selectionMode="multiple" class="col-select-width text-center" rendered="#{DatasetPage.compareVersionsCount > 2}"/><!-- end: checkbox column -->
         </ui:remove>
         <!-- start: version number column -->
-        <p:column>
+        <p:column class="col-sm-1 text-center">
             <ui:fragment rendered="#{versionTab.datasetVersion.released or ((versionTab.datasetVersion.deaccessioned or versionTab.datasetVersion.draft) 
                                      and permissionServiceBean.on(versionTab.datasetVersion.dataset).has('ViewUnpublishedDataset'))}">
                 <ui:fragment rendered="#{!(versionTab.datasetVersion.released or versionTab.datasetVersion.deaccessioned) and versionTab.dataFile != null }">
@@ -69,7 +69,7 @@
         
         <!-- start: description column -->
         <p:column>
-            <h:outputText value="#{versionTab.defaultVersionDifferencesSummary}"/>
+            <h:outputText value="#{versionTab.defaultVersionDifferencesSummary}" escape="false"/>
             <ui:remove>
                         <p:commandLink rendered="#{(!empty(versionTab.defaultVersionDifference)) and DatasetPage.versionTabListForPostLoad.size() > (rowNum + 1)}"
                            actionListener="#{DatasetPage.updateVersionDifferences(versionTab, null)}"

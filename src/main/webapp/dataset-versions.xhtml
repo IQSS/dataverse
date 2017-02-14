@@ -53,7 +53,7 @@
         <p:column selectionMode="multiple" class="col-select-width text-center" rendered="#{DatasetPage.compareVersionsCount > 2}"/><!-- end: checkbox column -->
 
         <!-- start: version number column -->
-        <p:column>
+        <p:column class="col-sm-1 text-center">
             <ui:fragment rendered="#{versionTab.released 
                                      or ((versionTab.deaccessioned or versionTab.draft) and permissionServiceBean.on(DatasetPage.dataset).has('ViewUnpublishedDataset'))}">
                 <ui:fragment rendered="#{!(versionTab.released or versionTab.deaccessioned)}">
