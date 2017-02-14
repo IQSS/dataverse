@@ -677,7 +677,16 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         if (versionId == null) {
             return null;
         }
-        
+
+        DatasetVersion datasetVersion = find(versionId);
+        if (datasetVersion != null) {
+            Dataset dataset = datasetVersion.getDataset();
+            if (dataset.isUseGenericThumbnail()) {
+                logger.info("Bypassing logic to find a thumbnail because a generic icon for the dataset is desired.");
+                return null;
+            }
+        }
+
         Long thumbnailFileId;
         
         // First, let's see if there are thumbnails that have already been 

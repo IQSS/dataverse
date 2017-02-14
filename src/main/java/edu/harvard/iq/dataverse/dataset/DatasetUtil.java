@@ -74,7 +74,7 @@ public class DatasetUtil {
         } else {
             DataFile thumbnailFile = dataset.getThumbnailFile();
             if (thumbnailFile == null) {
-                logger.info(title + " does not have a thumbnail file.");
+                logger.info(title + " does not have a thumbnail file set but the search card might have one");
                 return null;
             }
             for (FileMetadata fileMetadata : dataset.getLatestVersion().getFileMetadatas()) {

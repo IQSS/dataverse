@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
@@ -26,22 +27,18 @@ public class DatasetWidgetsPage implements java.io.Serializable {
     @EJB
     DatasetServiceBean datasetService;
 
+    @EJB
+    DatasetVersionServiceBean datasetVersionService;
+
+    @EJB
+    DataFileServiceBean dataFileService;
+
     private Long datasetId;
     private Dataset dataset;
     private List<DatasetThumbnail> datasetThumbnails;
     private DatasetThumbnail datasetThumbnail;
-    /**
-     * @todo Remove this if we can't get it working.
-     */
     private DataFile datasetFileThumbnailToSwitchTo;
-
-    public DataFile getDatasetFileThumbnailToSwitchTo() {
-        return datasetFileThumbnailToSwitchTo;
-    }
-
-    public void setDatasetFileThumbnailToSwitchTo(DataFile datasetFileThumbnailToSwitchTo) {
-        this.datasetFileThumbnailToSwitchTo = datasetFileThumbnailToSwitchTo;
-    }
+    private String randomlySelectedThumbnail;
 
     @Inject
     PermissionsWrapper permissionsWrapper;
@@ -91,6 +88,41 @@ public class DatasetWidgetsPage implements java.io.Serializable {
         this.datasetThumbnail = datasetThumbnail;
     }
 
+    public DataFile getDatasetFileThumbnailToSwitchTo() {
+        return datasetFileThumbnailToSwitchTo;
+    }
+
+    public void setDatasetFileThumbnailToSwitchTo(DataFile datasetFileThumbnailToSwitchTo) {
+        this.datasetFileThumbnailToSwitchTo = datasetFileThumbnailToSwitchTo;
+    }
+
+    public String getRandomlySelectedThumbnail() {
+        return randomlySelectedThumbnail;
+    }
+
+    public boolean isDefaultIconShouldBeShown() {
+        if (datasetThumbnail == null) {
+            if (isUnspecifiedThumbnailFromDatafileShouldBeShown()) {
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    public boolean isUnspecifiedThumbnailFromDatafileShouldBeShown() {
+        String thumbnailFromUnspecifiedDataFile = findThumnailThatMightBeShowingOnTheSearchCards();
+        if (thumbnailFromUnspecifiedDataFile == null) {
+            return false;
+        } else if (datasetThumbnail == null) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     public void handleImageFileUpload(FileUploadEvent event) {
         logger.fine("handleImageFileUpload clicked");
         UploadedFile uploadedFile = event.getFile();
@@ -120,15 +152,28 @@ public class DatasetWidgetsPage implements java.io.Serializable {
         datasetThumbnail = DatasetUtil.getThumbnail(dataset);
     }
 
+    public void useGenericThumbnail() {
+        dataset.setUseGenericThumbnail(true);
+        datasetService.merge(dataset);
+        datasetThumbnail = DatasetUtil.getThumbnail(dataset);
+    }
+
     public void stopUsingAnyDatasetFileAsThumbnail() {
         logger.info("stopUsingAnyDatasetFileAsThumbnail clicked... this is new functionality that hasn't been implemented yet.");
         datasetThumbnail = DatasetUtil.getThumbnail(dataset);
         DataFile dataFileAsThumbnailBefore = dataset.getThumbnailFile();
         logger.info("dataFileAsThumbnailBefore: " + dataFileAsThumbnailBefore);
         dataset.setThumbnailFile(null);
+        dataset.setUseGenericThumbnail(true);
         datasetService.merge(dataset);
         DataFile dataFileAsThumbnailAfter = dataset.getThumbnailFile();
         logger.info("dataFileAsThumbnailAfter: " + dataFileAsThumbnailAfter);
+        datasetThumbnail = DatasetUtil.getThumbnail(dataset);
+    }
+
+    public void letDataversePickThumbnail() {
+        dataset.setUseGenericThumbnail(false);
+        datasetService.merge(dataset);
         datasetThumbnail = DatasetUtil.getThumbnail(dataset);
     }
 
@@ -136,6 +181,7 @@ public class DatasetWidgetsPage implements java.io.Serializable {
         if (datasetFileThumbnailToSwitchTo != null) {
             deleteDatasetLogo();
             dataset.setThumbnailFile(datasetFileThumbnailToSwitchTo);
+            dataset.setUseGenericThumbnail(false);
             datasetService.merge(dataset);
             datasetThumbnail = DatasetUtil.getThumbnail(dataset);
         }
@@ -149,6 +195,22 @@ public class DatasetWidgetsPage implements java.io.Serializable {
     public String cancel() {
         logger.fine("cancel clicked");
         return "/dataset.xhtml?persistentId=" + dataset.getGlobalId() + "&faces-redirect=true";
+    }
+
+    // copied and modified from SearchIncludeFragment.java
+    public String findThumnailThatMightBeShowingOnTheSearchCards() {
+        Long randomThumbnail = datasetVersionService.getThumbnailByVersionId(dataset.getLatestVersion().getId());
+        if (randomThumbnail != null) {
+            DataFile thumbnailImageFile = null;
+            thumbnailImageFile = dataFileService.findCheapAndEasy(randomThumbnail);
+            if (dataFileService.isThumbnailAvailable(thumbnailImageFile)) {
+                randomlySelectedThumbnail = ImageThumbConverter.getImageThumbAsBase64(
+                        thumbnailImageFile,
+                        ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
+                return randomlySelectedThumbnail;
+            }
+        }
+        return null;
     }
 
 }

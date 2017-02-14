@@ -35,11 +35,14 @@
 
                                     <div id="thumbnailPreview" class="col-sm-2 text-center">
                                         <p>
-                                            <span class="icon-dataset text-info" style="font-size: 2.8em;" jsf:rendered="#{DatasetWidgetsPage.datasetThumbnail == null}"/>
+                                            <span class="icon-dataset text-info" style="font-size: 2.8em;" jsf:rendered="#{DatasetWidgetsPage.defaultIconShouldBeShown}"/>
                                             <h:graphicImage value="#{DatasetWidgetsPage.datasetThumbnail.base64image}" rendered="#{DatasetWidgetsPage.datasetThumbnail != null}"/>
+                                            <h:graphicImage value="#{DatasetWidgetsPage.randomlySelectedThumbnail}" rendered="#{DatasetWidgetsPage.unspecifiedThumbnailFromDatafileShouldBeShown}"/>
                                         </p>
-                                        <span class="text-muted" jsf:rendered="#{DatasetWidgetsPage.datasetThumbnail == null}"><em>Default Icon</em></span>
+                                        <span class="text-muted" jsf:rendered="#{DatasetWidgetsPage.defaultIconShouldBeShown}"><em>Default Icon</em></span>
+                                        <span class="text-muted" jsf:rendered="#{DatasetWidgetsPage.unspecifiedThumbnailFromDatafileShouldBeShown}"><em>Automatically Selected Thumbnail</em></span>
                                         <p:commandButton update="@all" value="#{bundle.remove}" action="#{DatasetWidgetsPage.deleteDatasetLogo()}" rendered="#{DatasetWidgetsPage.datasetThumbnail != null and DatasetWidgetsPage.datasetThumbnail.fromDataFile != true}" oncomplete="bind_bsui_components();"/>
+                                        <p:commandButton update="@all" value="#{bundle.remove}" action="#{DatasetWidgetsPage.useGenericThumbnail()}" rendered="#{DatasetWidgetsPage.unspecifiedThumbnailFromDatafileShouldBeShown}" oncomplete="bind_bsui_components();"/>
                                         <div jsf:rendered="#{DatasetWidgetsPage.datasetThumbnail.fromDataFile == true}">
                                             <button type="button" class="btn btn-default" onclick="PF('confrmRemove').show()" value="Select Thumbnail">#{bundle.remove}</button>
                                         </div>
@@ -118,6 +121,7 @@
                                     <button type="button" onclick="PF('selectFileThumbnail').hide()" class="btn btn-default" value="#{bundle.cancel}">
                                         #{bundle.cancel}
                                     </button>
+                                    <p:commandButton update="@all" value="Pick One For Me" action="#{DatasetWidgetsPage.letDataversePickThumbnail()}" rendered="#{false and DatasetWidgetsPage.dataset.useGenericThumbnail}" oncomplete="bind_bsui_components();"/>
                                 </div>
                             </p:dialog>
 
