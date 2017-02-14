@@ -131,6 +131,11 @@ public class DatasetVersion implements Serializable {
     @Column(length = VERSION_NOTE_MAX_LENGTH)
     private String versionNote;
     
+    /**
+     * @todo versionState should never be null so when we are ready, uncomment
+     * the `nullable = false` below.
+     */
+//    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private VersionState versionState;
 

@@ -655,6 +655,12 @@ Execute all saved searches and make links to dataverses and datasets that are fo
 
   PUT http://$SERVER/api/admin/savedsearches/makelinks/all?debug=true
 
+Dataset Integrity
+^^^^^^^^^^^^^^^^^
+
+Add a UNF value for a dataset version, if it's missing, by supplying the dataset version database id::
+
+  POST http://$SERVER/api/admin/datasets/integrity/{datasetVersionId}/fixunf
 
 .. |CORS| raw:: html 
       
