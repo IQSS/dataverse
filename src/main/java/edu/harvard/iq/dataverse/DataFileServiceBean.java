@@ -159,6 +159,19 @@ public class DataFileServiceBean implements java.io.Serializable {
             return null;
         }
     }
+
+    
+    public DataFile findPreviousFile(DataFile df){
+        TypedQuery query = em.createQuery("select o from DataFile o" +
+                    " WHERE o.id = :dataFileId", DataFile.class);
+        query.setParameter("dataFileId", df.getPreviousDataFileId());
+        try {
+            DataFile retVal = (DataFile)query.getSingleResult();
+            return retVal;
+        } catch(Exception ex) {
+            return null;
+        }
+    }
     
     public List<DataFile> findByDatasetId(Long studyId) {
         /* 
@@ -247,17 +260,6 @@ public class DataFileServiceBean implements java.io.Serializable {
                 + ";").getSingleResult();
     }
 
-    public FileMetadata findFileMetadataByFileAndVersionId(Long dataFileId, Long datasetVersionId) {
-        Query query = em.createQuery("select object(o) from FileMetadata as o where o.dataFile.id = :dataFileId and o.datasetVersion.id = :datasetVersionId");
-        query.setParameter("dataFileId", dataFileId);
-        query.setParameter("datasetVersionId", datasetVersionId);
-        try {
-            FileMetadata retVal = (FileMetadata)query.getSingleResult();
-            return retVal;
-        } catch(Exception ex) {
-            return null;
-        }
-    }
     
     public FileMetadata findFileMetadataByDatasetVersionIdAndDataFileId(Long datasetVersionId, Long dataFileId) {
 

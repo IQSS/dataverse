@@ -6,6 +6,8 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -45,6 +47,9 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
     
     @EJB
     SettingsServiceBean settingsService;
+    
+    @EJB
+    AuthenticationServiceBean authService;
     
     @EJB
     SystemConfig systemConfig;
@@ -299,6 +304,21 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         
     }
     
+    public String getContributorsNames(DatasetVersion version) {
+        String contNames = "";
+        for (String id : version.getVersionContributorIdentifiers()) {
+            id = id.startsWith("@") ? id.substring(1) : id;
+            AuthenticatedUser au = authService.getAuthenticatedUser(id);
+            if (au != null) {
+                if (contNames.isEmpty()) {
+                    contNames = au.getName();
+                } else {
+                    contNames = contNames + ", " + au.getName();
+                }
+            }
+        }
+        return contNames;
+    }   
 
     /**
      * Query to return the last Released DatasetVersion by Persistent ID

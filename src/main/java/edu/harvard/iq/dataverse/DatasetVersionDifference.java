@@ -12,7 +12,7 @@ import java.util.ResourceBundle;
  *
  * @author skraffmiller
  */
-public class DatasetVersionDifference {
+public final class DatasetVersionDifference {
 
     private DatasetVersion newVersion;
     private DatasetVersion originalVersion;
@@ -27,6 +27,16 @@ public class DatasetVersionDifference {
     private List<Object[]> summaryDataForNote = new ArrayList();
     private List<Object[]> blockDataForNote = new ArrayList();
     String noFileDifferencesFoundLabel = "";
+    
+    private List<DifferenceSummaryGroup> differenceSummaryGroups = new ArrayList();
+
+    public List<DifferenceSummaryGroup> getDifferenceSummaryGroups() {
+        return differenceSummaryGroups;
+    }
+
+    public void setDifferenceSummaryGroups(List<DifferenceSummaryGroup> differenceSummaryGroups) {
+        this.differenceSummaryGroups = differenceSummaryGroups;
+    }
 
     public DatasetVersionDifference(DatasetVersion newVersion, DatasetVersion originalVersion) {
         setOriginalVersion(originalVersion);
@@ -48,7 +58,15 @@ public class DatasetVersionDifference {
                 }
             }
             if (deleted && !dsfo.isEmpty()) {
-                updateBlockSummary(dsfo, 0, dsfo.getDatasetFieldValues().size(), 0);
+                if (dsfo.getDatasetFieldType().isPrimitive()) {
+                    if (dsfo.getDatasetFieldType().isControlledVocabulary()) {
+                        updateBlockSummary(dsfo, 0, dsfo.getControlledVocabularyValues().size(), 0);
+                    } else {
+                        updateBlockSummary(dsfo, 0, dsfo.getDatasetFieldValues().size(), 0);
+                    }
+                } else {
+                    updateBlockSummary(dsfo, 0, dsfo.getDatasetFieldCompoundValues().size(), 0);
+                }
                 addToSummary(dsfo, null);
             }
         }
@@ -63,7 +81,11 @@ public class DatasetVersionDifference {
 
             if (added && !dsfn.isEmpty()) {
                 if (dsfn.getDatasetFieldType().isPrimitive()){
-                   updateBlockSummary(dsfn, dsfn.getDatasetFieldValues().size(), 0, 0);
+                   if (dsfn.getDatasetFieldType().isControlledVocabulary()) {
+                       updateBlockSummary(dsfn, dsfn.getControlledVocabularyValues().size(), 0, 0);
+                   } else {
+                       updateBlockSummary(dsfn, dsfn.getDatasetFieldValues().size(), 0, 0);
+                   }                  
                 } else {
                    updateBlockSummary(dsfn, dsfn.getDatasetFieldCompoundValues().size(), 0, 0);
                 }
@@ -405,6 +427,15 @@ public class DatasetVersionDifference {
             }            
         }               
     }
+    
+    private DifferenceSummaryItem createSummaryItem(){
+        return null;
+    }
+    
+    private List addToSummaryGroup(String displayName, DifferenceSummaryItem differenceSummaryItem){
+        
+        return null;
+    }
 
     private List addToTermsChangedList(List listIn, String label, String origVal, String newVal) {
         String[] diffArray;
@@ -450,7 +481,7 @@ public class DatasetVersionDifference {
     }
 
     private void updateBlockSummary(DatasetField dsf, int added, int deleted, int changed) {
-
+        
         boolean addedToAll = false;
         for (Object[] blockList : blockDataForNote) {
             DatasetField dsft = (DatasetField) blockList[0];
@@ -1108,6 +1139,99 @@ public class DatasetVersionDifference {
             }
         }
         return fdi;
+    }
+    
+    public class DifferenceSummaryGroup{
+        
+        private String displayName;
+        private String type;
+        private List<DifferenceSummaryItem> differenceSummaryItems;
+
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        public void setDisplayName(String displayName) {
+            this.displayName = displayName;
+        }
+
+        public String getType() {
+            return type;
+        }
+
+        public void setType(String type) {
+            this.type = type;
+        }
+
+        public List<DifferenceSummaryItem> getDifferenceSummaryItems() {
+            return differenceSummaryItems;
+        }
+
+        public void setDifferenceSummaryItems(List<DifferenceSummaryItem> differenceSummaryItems) {
+            this.differenceSummaryItems = differenceSummaryItems;
+        }
+
+        
+    }
+    
+    public class DifferenceSummaryItem {
+        private String displayName;
+        private int changed;
+        private int added;
+        private int deleted;
+        private int replaced;
+        private boolean multiple;
+
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        public void setDisplayName(String displayName) {
+            this.displayName = displayName;
+        }
+
+        public int getChanged() {
+            return changed;
+        }
+
+        public void setChanged(int changed) {
+            this.changed = changed;
+        }
+
+        public int getAdded() {
+            return added;
+        }
+
+        public void setAdded(int added) {
+            this.added = added;
+        }
+
+        public int getDeleted() {
+            return deleted;
+        }
+
+        public void setDeleted(int deleted) {
+            this.deleted = deleted;
+        }
+
+        public int getReplaced() {
+            return replaced;
+        }
+
+        public void setReplaced(int replaced) {
+            this.replaced = replaced;
+        }
+
+        public boolean isMultiple() {
+            return multiple;
+        }
+
+        public void setMultiple(boolean multiple) {
+            this.multiple = multiple;
+        }
+
+        
+        
     }
     
     public class datasetReplaceFileItem {

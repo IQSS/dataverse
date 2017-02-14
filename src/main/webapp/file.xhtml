@@ -390,17 +390,17 @@
                                     </div>
                                 </div>
                             </p:tab>
-                            <ui:remove>
+                            
                                 <p:tab id="provenanceTab" title="Provenance" rendered="#{(!FilePage.fileMetadata.datasetVersion.deaccessioned or 
                                                               (FilePage.fileMetadata.datasetVersion.deaccessioned and FilePage.canUpdateDataset()))}">
                                     <!-- Placeholder -->
                                     <em>Coming soon...</em>
                                 </p:tab>
-                                <p:tab id="verionsTab" title="#{bundle['file.dataFilesTab.versions']}">
+                                <p:tab id="versionsTab" title="#{bundle['file.dataFilesTab.versions']}">
                                     <!-- Placeholder -->
-                                    <em>Coming soon...</em>
+                                     <ui:include src="file-versions.xhtml"></ui:include>
                                 </p:tab>
-                            </ui:remove>
+                            
                         </p:tabView>
                     </div>
 

@@ -382,6 +382,7 @@ public class DatasetVersion implements Serializable {
         }
         return null;
     }
+    
 
     public VersionState getPriorVersionState() {
         int index = 0;

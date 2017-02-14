@@ -407,6 +407,55 @@ public class FileMetadata implements Serializable {
         this.restrictedUI = restrictedUI;
     }
     
+    @Transient
+    private String defaultVersionDifferencesSummary;
+
+    public String getDefaultVersionDifferencesSummary() {
+        return defaultVersionDifferencesSummary;
+    }
+
+    public void setDefaultVersionDifferencesSummary(String defaultVersionDifferencesSummary) {
+        this.defaultVersionDifferencesSummary = defaultVersionDifferencesSummary;
+    }
+    
+    @Transient
+    private String contributorNames;
+
+    public String getContributorNames() {
+        return contributorNames;
+    }
+
+    public void setContributorNames(String contributorNames) {
+        this.contributorNames = contributorNames;
+    }
+    
+    public String getFileVersionDifferenceSummary() {
+        // if version is deaccessioned ignore it for differences purposes
+        int index = 0;
+        
+        int size = this.datasetVersion.getDataset().getVersions().size();
+        if (this.datasetVersion.isDeaccessioned()) {
+            return null;
+        }
+        for (DatasetVersion dsv : this.datasetVersion.getDataset().getVersions()) {
+            if (this.datasetVersion.equals(dsv)) {
+                if ((index + 1) <= (size - 1)) {
+                    for (DatasetVersion dvTest : this.datasetVersion.getDataset().getVersions().subList(index + 1, size)) {
+                        if (!dvTest.isDeaccessioned()) {
+                            for (FileMetadata fmTest: dvTest.getFileMetadatas()){
+                                if (fmTest.getDataFile().equals(this.dataFile)){
+                                    FileVersionDifference dvd = new FileVersionDifference(this, fmTest );
+                                    return dvd.getDisplay();
+                                }
+                            }                                               
+                        }
+                    }
+                }
+            }
+            index++;
+        }
+        return  "no hits";
+    }
     
 
     @Override
