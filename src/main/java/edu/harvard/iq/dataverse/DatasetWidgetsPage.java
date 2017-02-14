@@ -4,7 +4,9 @@ import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.JsfHelper;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -187,9 +189,11 @@ public class DatasetWidgetsPage implements java.io.Serializable {
         }
     }
 
-    public void save() {
+    public String save() {
 //        Dataset merged = datasetService.merge(dataset);
         logger.info("Save clicked. Alternative thumbnail is now... FIXME: persist selection somehow");
+        JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.thumbnailsAndWidget.success"));
+        return "/dataset.xhtml?persistentId=" + dataset.getGlobalId() + "&faces-redirect=true";
     }
 
     public String cancel() {
