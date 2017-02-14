@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
@@ -43,7 +42,6 @@ public class DatasetWidgetsPage implements java.io.Serializable {
     public void setDatasetFileThumbnailToSwitchTo(DataFile datasetFileThumbnailToSwitchTo) {
         this.datasetFileThumbnailToSwitchTo = datasetFileThumbnailToSwitchTo;
     }
-
 
     @Inject
     PermissionsWrapper permissionsWrapper;
@@ -139,6 +137,7 @@ public class DatasetWidgetsPage implements java.io.Serializable {
             deleteDatasetLogo();
             dataset.setThumbnailFile(datasetFileThumbnailToSwitchTo);
             datasetService.merge(dataset);
+            datasetThumbnail = DatasetUtil.getThumbnail(dataset);
         }
     }
 

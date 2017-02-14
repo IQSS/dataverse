@@ -33,7 +33,7 @@
                                 <div class="col-sm-9">
                                     <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataset.thumbnailsAndWidget.thumbnailImage.tip']}</p>
 
-                                    <div class="col-sm-2 text-center">
+                                    <div id="thumbnailPreview" class="col-sm-2 text-center">
                                         <p>
                                             <span class="icon-dataset text-info" style="font-size: 2.8em;" jsf:rendered="#{DatasetWidgetsPage.datasetThumbnail == null}"/>
                                             <h:graphicImage value="#{DatasetWidgetsPage.datasetThumbnail.base64image}" rendered="#{DatasetWidgetsPage.datasetThumbnail != null}"/>
