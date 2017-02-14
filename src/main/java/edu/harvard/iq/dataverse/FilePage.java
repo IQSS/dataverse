@@ -305,7 +305,6 @@ public class FilePage implements java.io.Serializable {
             
             if (versionLoop.isReleased() || versionLoop.isDeaccessioned() || permissionService.on(fileMetadata.getDatasetVersion().getDataset()).has(Permission.ViewUnpublishedDataset)) {
                 foundFmd = false;
-                System.out.print(versionLoop.getVersionNumber()+"."+ versionLoop.getMinorVersionNumber());
                 for (DataFile df : allfiles) {
                     FileMetadata fmd = datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(versionLoop.getId(), df.getId());
                     if (fmd != null) {
@@ -330,7 +329,6 @@ public class FilePage implements java.io.Serializable {
    
                     retList.add(dummy);
                 } 
-                System.out.print("foundFmd "+ foundFmd);
             }
         }
         return retList;

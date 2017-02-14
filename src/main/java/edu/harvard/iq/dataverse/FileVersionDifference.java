@@ -38,9 +38,22 @@ public class FileVersionDifference {
         if (this.differenceSummaryGroups.isEmpty()){
             return retval + ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.noChanges")+ ".";      
         } else {                
-            return retval + getSummaryGroupsDisplay()+ ".";
+            return retval + trimResult(getSummaryGroupsDisplay())+ ".";
         }
 
+    }
+    
+    
+    private String trimResult(String str){
+        
+            if (str.endsWith(" ")) {
+                str = str.substring(0, str.length() - 1);
+            }
+            if (str.endsWith(";")) {
+                str = str.substring(0, str.length() - 1);
+            }
+            return str;
+        
     }
 
     private List<FileDifferenceSummaryGroup> differenceSummaryGroups = new ArrayList();
@@ -119,7 +132,22 @@ public class FileVersionDifference {
                 }
                 updateDifferenceSummary("File Metadata", "Description", 0, 0, 1, 0);
             }
-        }       
+        }  
+        if (newFileMetadata != null && originalFileMetadata != null) {
+
+            String value1 = originalFileMetadata.getCategoriesByName().toString();
+            String value2 = newFileMetadata.getCategoriesByName().toString();
+            if (value1 == null || value1.equals("") || value1.equals(" ")) {
+                value1 = "";
+            }
+            if (value2 == null || value2.equals("") || value2.equals(" ")) {
+                value2 = "";
+            }
+
+            if (!value1.equals(value2)) {
+                updateDifferenceSummary("File Tags", "", 1, 0, 0, 0);
+            }
+        }
     }
     
     
