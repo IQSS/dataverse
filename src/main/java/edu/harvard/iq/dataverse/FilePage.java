@@ -377,6 +377,18 @@ public class FilePage implements java.io.Serializable {
              }
         } 
         
+        List<DataFile> allfiles = allRelatedFiles();
+        
+        if (dvPrevious != null && dvPrevious.getFileMetadatasSorted() != null) {
+            for (FileMetadata fmdTest : dvPrevious.getFileMetadatasSorted()) {
+                for (DataFile fileTest : allfiles) {
+                    if (fmdTest.getDataFile().equals(fileTest)) {
+                        return fmdTest;
+                    }
+                }
+            }
+        }
+        
         Long dfId = fmdIn.getDataFile().getId();
         if (dfPrevious != null){
             dfId = dfPrevious.getId();
@@ -385,6 +397,7 @@ public class FilePage implements java.io.Serializable {
         if (dvPrevious !=null){
             versionId = dvPrevious.getId();
         }
+        
         FileMetadata fmd = datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(versionId, dfId);
         
         return fmd;
