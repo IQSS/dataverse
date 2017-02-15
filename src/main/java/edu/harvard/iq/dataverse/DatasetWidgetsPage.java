@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
@@ -40,11 +39,10 @@ public class DatasetWidgetsPage implements java.io.Serializable {
     private List<DatasetThumbnail> datasetThumbnails;
     private DatasetThumbnail datasetThumbnail;
     private DataFile datasetFileThumbnailToSwitchTo;
-    private String randomlySelectedThumbnail;
 
     @Inject
     PermissionsWrapper permissionsWrapper;
-    private boolean considerDatasetLogoAsCandidate = false;
+    private final boolean considerDatasetLogoAsCandidate = false;
 
     public String init() {
         if (datasetId == null || datasetId.intValue() <= 0) {
@@ -58,7 +56,7 @@ public class DatasetWidgetsPage implements java.io.Serializable {
             return permissionsWrapper.notAuthorized();
         }
         datasetThumbnails = DatasetUtil.getThumbnailCandidates(dataset, considerDatasetLogoAsCandidate);
-        datasetThumbnail = DatasetUtil.getThumbnail(dataset);
+        datasetThumbnail = DatasetUtil.getThumbnail(dataset, datasetVersionService, dataFileService);
         return null;
     }
 
@@ -98,33 +96,6 @@ public class DatasetWidgetsPage implements java.io.Serializable {
         this.datasetFileThumbnailToSwitchTo = datasetFileThumbnailToSwitchTo;
     }
 
-    public String getRandomlySelectedThumbnail() {
-        return randomlySelectedThumbnail;
-    }
-
-    public boolean isDefaultIconShouldBeShown() {
-        if (datasetThumbnail == null) {
-            if (isUnspecifiedThumbnailFromDatafileShouldBeShown()) {
-                return false;
-            } else {
-                return true;
-            }
-        } else {
-            return false;
-        }
-    }
-
-    public boolean isUnspecifiedThumbnailFromDatafileShouldBeShown() {
-        String thumbnailFromUnspecifiedDataFile = findThumnailThatMightBeShowingOnTheSearchCards();
-        if (thumbnailFromUnspecifiedDataFile == null) {
-            return false;
-        } else if (datasetThumbnail == null) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
     public void handleImageFileUpload(FileUploadEvent event) {
         logger.fine("handleImageFileUpload clicked");
         UploadedFile uploadedFile = event.getFile();
@@ -140,52 +111,28 @@ public class DatasetWidgetsPage implements java.io.Serializable {
         } catch (IOException ex) {
             Logger.getLogger(DatasetWidgetsPage.class.getName()).log(Level.SEVERE, null, ex);
         }
-        DatasetUtil.writeDatasetLogoToDisk(dataset, file);
-        datasetThumbnail = DatasetUtil.getThumbnail(dataset);
+        dataset = datasetService.writeDatasetLogoToDisk(dataset, file);
+        datasetThumbnail = DatasetUtil.getThumbnail(dataset, datasetVersionService, dataFileService);
         datasetThumbnails = DatasetUtil.getThumbnailCandidates(dataset, considerDatasetLogoAsCandidate);
     }
 
     public void deleteDatasetLogo() {
         logger.info("deleteDatasetLogo clicked");
-        boolean deleted = DatasetUtil.deleteDatasetLogo(dataset);
-        logger.info("deleteDatasetLogo returned with " + deleted);
+        dataset = datasetService.deleteDatasetLogo(dataset);
         datasetThumbnails = DatasetUtil.getThumbnailCandidates(dataset, considerDatasetLogoAsCandidate);
         logger.info("number of thumbnail candidates update to " + datasetThumbnails.size());
-        datasetThumbnail = DatasetUtil.getThumbnail(dataset);
-    }
-
-    public void useGenericThumbnail() {
-        dataset.setUseGenericThumbnail(true);
-        datasetService.merge(dataset);
-        datasetThumbnail = DatasetUtil.getThumbnail(dataset);
+        datasetThumbnail = DatasetUtil.getThumbnail(dataset, datasetVersionService, dataFileService);
     }
 
     public void stopUsingAnyDatasetFileAsThumbnail() {
-        logger.info("stopUsingAnyDatasetFileAsThumbnail clicked... this is new functionality that hasn't been implemented yet.");
-        datasetThumbnail = DatasetUtil.getThumbnail(dataset);
-        DataFile dataFileAsThumbnailBefore = dataset.getThumbnailFile();
-        logger.info("dataFileAsThumbnailBefore: " + dataFileAsThumbnailBefore);
-        dataset.setThumbnailFile(null);
-        dataset.setUseGenericThumbnail(true);
-        datasetService.merge(dataset);
-        DataFile dataFileAsThumbnailAfter = dataset.getThumbnailFile();
-        logger.info("dataFileAsThumbnailAfter: " + dataFileAsThumbnailAfter);
-        datasetThumbnail = DatasetUtil.getThumbnail(dataset);
-    }
-
-    public void letDataversePickThumbnail() {
-        dataset.setUseGenericThumbnail(false);
-        datasetService.merge(dataset);
-        datasetThumbnail = DatasetUtil.getThumbnail(dataset);
+        dataset = datasetService.stopUsingAnyDatasetFileAsThumbnail(dataset);
+        datasetThumbnail = DatasetUtil.getThumbnail(dataset, datasetVersionService, dataFileService);
     }
 
     public void setDataFileAsThumbnail() {
         if (datasetFileThumbnailToSwitchTo != null) {
-            deleteDatasetLogo();
-            dataset.setThumbnailFile(datasetFileThumbnailToSwitchTo);
-            dataset.setUseGenericThumbnail(false);
-            datasetService.merge(dataset);
-            datasetThumbnail = DatasetUtil.getThumbnail(dataset);
+            dataset = datasetService.setDataFileAsThumbnail(dataset, datasetFileThumbnailToSwitchTo);
+            datasetThumbnail = DatasetUtil.getThumbnail(dataset, datasetVersionService, dataFileService);
         }
     }
 
@@ -199,22 +146,6 @@ public class DatasetWidgetsPage implements java.io.Serializable {
     public String cancel() {
         logger.fine("cancel clicked");
         return "/dataset.xhtml?persistentId=" + dataset.getGlobalId() + "&faces-redirect=true";
-    }
-
-    // copied and modified from SearchIncludeFragment.java
-    public String findThumnailThatMightBeShowingOnTheSearchCards() {
-        Long randomThumbnail = datasetVersionService.getThumbnailByVersionId(dataset.getLatestVersion().getId());
-        if (randomThumbnail != null) {
-            DataFile thumbnailImageFile = null;
-            thumbnailImageFile = dataFileService.findCheapAndEasy(randomThumbnail);
-            if (dataFileService.isThumbnailAvailable(thumbnailImageFile)) {
-                randomlySelectedThumbnail = ImageThumbConverter.getImageThumbAsBase64(
-                        thumbnailImageFile,
-                        ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
-                return randomlySelectedThumbnail;
-            }
-        }
-        return null;
     }
 
 }

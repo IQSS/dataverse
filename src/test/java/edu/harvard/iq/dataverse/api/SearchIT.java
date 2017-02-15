@@ -1340,6 +1340,14 @@ public class SearchIT {
         String identifier = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.identifier");
         String datasetPersistentId = protocol + ":" + authority + "/" + identifier;
 
+        Response getThumbnail1 = UtilIT.getDatasetThumbnail(datasetPersistentId, apiToken);
+        getThumbnail1.prettyPrint();
+        JsonObject emptyObject = Json.createObjectBuilder().build();
+        getThumbnail1.then().assertThat()
+                //                .body("data", CoreMatchers.equalTo(emptyObject))
+                .body("data.isUseGenericThumbnail", CoreMatchers.equalTo(false))
+                .statusCode(200);
+
         Response thumbnailCandidates1 = UtilIT.showDatasetThumbnailCandidates(datasetPersistentId, apiToken);
         thumbnailCandidates1.prettyPrint();
         JsonArray emptyArray = Json.createArrayBuilder().build();
@@ -1350,23 +1358,98 @@ public class SearchIT {
         Response uploadFile = UtilIT.uploadFile(datasetPersistentId, "trees.zip", apiToken);
         uploadFile.prettyPrint();
 
+        Response getDatasetJson1 = UtilIT.nativeGetUsingPersistentId(datasetPersistentId, apiToken);
+        long dataFileId1 = JsonPath.from(getDatasetJson1.getBody().asString()).getLong("data.latestVersion.files[0].dataFile.id");
+        System.out.println("datafileId: " + dataFileId1);
+        getDatasetJson1.then().assertThat()
+                .statusCode(200);
+
+        Response getThumbnail2 = UtilIT.getDatasetThumbnail(datasetPersistentId, apiToken);
+        getThumbnail2.prettyPrint();
+        getThumbnail2.then().assertThat()
+                .body("data.datasetThumbnail", CoreMatchers.equalTo("randomFromDataFile" + dataFileId1))
+                .body("data.isUseGenericThumbnail", CoreMatchers.equalTo(false))
+                .statusCode(200);
+
+        String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
+        Response uploadSecondImage = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
+        uploadSecondImage.prettyPrint();
+        uploadSecondImage.then().assertThat()
+                .statusCode(200);
+
+        Response getDatasetJson2 = UtilIT.nativeGetUsingPersistentId(datasetPersistentId, apiToken);
+        //odd that [0] gets the second uploaded file... replace with a find for dataverseproject.png
+        long dataFileId2 = JsonPath.from(getDatasetJson2.getBody().asString()).getLong("data.latestVersion.files[0].dataFile.id");
+        System.out.println("datafileId2: " + dataFileId2);
+        getDatasetJson2.then().assertThat()
+                .statusCode(200);
+
+        Response switchToSecondDataFileThumbnail = UtilIT.useThumbnailFromDataFile(datasetPersistentId, dataFileId2, apiToken);
+        switchToSecondDataFileThumbnail.prettyPrint();
+        switchToSecondDataFileThumbnail.then().assertThat()
+                .body("data.message", CoreMatchers.equalTo("Thumbnail set to dataverseproject.png"))
+                .statusCode(200);
+
         Response thumbnailCandidates2 = UtilIT.showDatasetThumbnailCandidates(datasetPersistentId, apiToken);
         thumbnailCandidates2.prettyPrint();
         thumbnailCandidates2.then().assertThat()
-                .body("data[0]", CoreMatchers.equalTo("trees.png"))
+                .body("data[0]", CoreMatchers.equalTo("dataverseproject.png"))
+                .body("data[1]", CoreMatchers.equalTo("trees.png"))
                 .statusCode(200);
 
         String datasetLogo = "src/main/webapp/resources/images/cc0.png";
         Response overrideThumbnail = UtilIT.uploadDatasetLogo(datasetPersistentId, datasetLogo, apiToken);
         overrideThumbnail.prettyPrint();
         overrideThumbnail.then().assertThat()
+                .body("data.message", CoreMatchers.equalTo("Thumbnail is now " + BundleUtil.getStringFromBundle("dataset.thumbnailsAndWidget.thumbnailImage.nonDatasetFile")))
+                .statusCode(200);
+
+        Response getThumbnail3 = UtilIT.getDatasetThumbnail(datasetPersistentId, apiToken);
+        getThumbnail3.prettyPrint();
+        getThumbnail3.then().assertThat()
+                .body("data.datasetThumbnail", CoreMatchers.equalTo(BundleUtil.getStringFromBundle("dataset.thumbnailsAndWidget.thumbnailImage.nonDatasetFile")))
+                .body("data.isUseGenericThumbnail", CoreMatchers.equalTo(false))
                 .statusCode(200);
 
         Response thumbnailCandidates3 = UtilIT.showDatasetThumbnailCandidates(datasetPersistentId, apiToken);
         thumbnailCandidates3.prettyPrint();
         thumbnailCandidates3.then().assertThat()
                 .body("data[0]", CoreMatchers.equalTo(BundleUtil.getStringFromBundle("dataset.thumbnailsAndWidget.thumbnailImage.nonDatasetFile")))
+                .body("data[1]", CoreMatchers.equalTo("dataverseproject.png"))
+                .body("data[2]", CoreMatchers.equalTo("trees.png"))
+                .statusCode(200);
+
+        Response deleteDatasetLogo = UtilIT.deleteDatasetLogo(datasetPersistentId, apiToken);
+        deleteDatasetLogo.prettyPrint();
+        deleteDatasetLogo.then().assertThat()
+                .body("data.message", CoreMatchers.equalTo("Dataset logo deleted. Thumbnail is now null"))
+                .statusCode(200);
+
+        System.out.println("getThumbnail4...");
+        Response getThumbnail4 = UtilIT.getDatasetThumbnail(datasetPersistentId, apiToken);
+        getThumbnail4.prettyPrint();
+        getThumbnail4.then().assertThat()
+                .body("data.datasetThumbnail", CoreMatchers.equalTo(null))
+                .body("data.isUseGenericThumbnail", CoreMatchers.equalTo(true))
+                .statusCode(200);
+
+        Response thumbnailCandidates4 = UtilIT.showDatasetThumbnailCandidates(datasetPersistentId, apiToken);
+        thumbnailCandidates4.prettyPrint();
+        thumbnailCandidates4.then().assertThat()
+                .body("data[0]", CoreMatchers.equalTo("dataverseproject.png"))
                 .body("data[1]", CoreMatchers.equalTo("trees.png"))
+                .statusCode(200);
+
+        Response switchtoFirstDataFileThumbnail = UtilIT.useThumbnailFromDataFile(datasetPersistentId, dataFileId1, apiToken);
+        switchtoFirstDataFileThumbnail.prettyPrint();
+        switchtoFirstDataFileThumbnail.then().assertThat()
+                .body("data.message", CoreMatchers.equalTo("Thumbnail set to trees.png"))
+                .statusCode(200);
+
+        Response stopUsingAnyDataFile = UtilIT.stopUsingAnyDatasetFileAsThumbnail(datasetPersistentId, apiToken);
+        stopUsingAnyDataFile.prettyPrint();
+        stopUsingAnyDataFile.then().assertThat()
+                .body("data.message", CoreMatchers.equalTo("stopUsingAnyDatasetFileAsThumbnail called. Thumbnail is now null"))
                 .statusCode(200);
 
         if (true) {

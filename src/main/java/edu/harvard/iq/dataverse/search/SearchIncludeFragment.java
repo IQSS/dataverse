@@ -1083,7 +1083,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                  */
                 Dataset dataset = datasetService.find(result.getEntityId());
                 if (dataset != null) {
-                    DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail();
+                    DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail(datasetVersionService, dataFileService);
                     if (datasetThumbnail != null) {
                         result.setImageUrl(datasetThumbnail.getBase64image());
                     } else {

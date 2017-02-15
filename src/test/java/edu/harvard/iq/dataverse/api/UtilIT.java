@@ -644,10 +644,16 @@ public class UtilIT {
                 .get("/api/datasets/:persistentId/thumbnail/candidates" + "?persistentId=" + datasetPersistentId);
     }
 
-    static Response downloadDatasetThumbnail(String datasetPersistentId, String imageFile, String apiToken) {
+    static Response getDatasetThumbnail(String datasetPersistentId, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/api/datasets/:persistentId/thumbnail" + "?persistentId=" + datasetPersistentId);
+    }
+
+    static Response useThumbnailFromDataFile(String datasetPersistentId, long dataFileId1, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .post("/api/datasets/:persistentId/thumbnail/" + dataFileId1 + "?persistentId=" + datasetPersistentId);
     }
 
     static Response uploadDatasetLogo(String datasetPersistentId, String pathToImageFile, String apiToken) {
@@ -655,6 +661,18 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .multiPart("file", new File(pathToImageFile))
                 .post("/api/datasets/:persistentId/logo" + "?persistentId=" + datasetPersistentId);
+    }
+
+    static Response deleteDatasetLogo(String datasetPersistentId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/datasets/:persistentId/logo" + "?persistentId=" + datasetPersistentId);
+    }
+
+    static Response stopUsingAnyDatasetFileAsThumbnail(String datasetPersistentId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .post("/api/datasets/:persistentId/stopUsingAnyDatasetFileAsThumbnail" + "?persistentId=" + datasetPersistentId);
     }
 
     static Response search(String query, String apiToken) {

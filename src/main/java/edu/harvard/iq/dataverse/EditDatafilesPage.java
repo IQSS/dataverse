@@ -2215,7 +2215,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
 
     public boolean isThumbnailIsFromDatasetLogoRatherThanDatafile() {
-        DatasetThumbnail datasetThumbnail = DatasetUtil.getThumbnail(dataset);
+        DatasetThumbnail datasetThumbnail = DatasetUtil.getThumbnail(dataset, datasetVersionService, datafileService);
         if (datasetThumbnail != null && !datasetThumbnail.isFromDataFile()) {
             return true;
         }

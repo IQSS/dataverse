@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DOIEZIdServiceBean;
+import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
@@ -599,7 +600,34 @@ public class Datasets extends AbstractApiBean {
     public Response getDatasetThumbnail(@PathParam("id") String idSupplied) {
         try {
             Dataset dataset = findDatasetOrDie(idSupplied);
-            return ok("All good, got dataset id: " + dataset.getId());
+            JsonObjectBuilder data = Json.createObjectBuilder();
+            DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail(datasetVersionService, fileService);
+            if (datasetThumbnail != null) {
+                data.add("datasetThumbnail", datasetThumbnail.getFilename());
+                data.add("isUseGenericThumbnail", dataset.isUseGenericThumbnail());
+            } else {
+                data.add("isUseGenericThumbnail", dataset.isUseGenericThumbnail());
+            }
+            return ok(data);
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.NOT_FOUND, "Could not find dataset based on id supplied: " + idSupplied + ".");
+        }
+    }
+
+    /**
+     * @todo Enforce permissions. Make into a Command?
+     */
+    @POST
+    @Path("{id}/thumbnail/{dataFileId}")
+    public Response setDataFileAsThumbnail(@PathParam("id") String idSupplied, @PathParam("dataFileId") long dataFileIdSupplied) {
+        try {
+            Dataset dataset = findDatasetOrDie(idSupplied);
+            DataFile datasetFileThumbnailToSwitchTo = fileService.find(dataFileIdSupplied);
+            if (datasetFileThumbnailToSwitchTo == null) {
+                return error(Response.Status.NOT_FOUND, "Could not find file based on id supplied: " + dataFileIdSupplied + ".");
+            }
+            Dataset datasetThatMayHaveChanged = datasetService.setDataFileAsThumbnail(dataset, datasetFileThumbnailToSwitchTo);
+            return ok("Thumbnail set to " + datasetThatMayHaveChanged.getDatasetThumbnail(datasetVersionService, fileService).getFilename());
         } catch (WrappedResponse ex) {
             return error(Response.Status.NOT_FOUND, "Could not find dataset based on id supplied: " + idSupplied + ".");
         }
@@ -622,7 +650,37 @@ public class Datasets extends AbstractApiBean {
                 return error(Response.Status.BAD_REQUEST, "Problem uploading file: " + ex);
             }
             Dataset datasetThatMayHaveChanged = datasetService.writeDatasetLogoToDisk(dataset, file);
-            return ok("Thumbnail is now " + datasetThatMayHaveChanged.getDatasetThumbnail().getFilename());
+            return ok("Thumbnail is now " + datasetThatMayHaveChanged.getDatasetThumbnail(datasetVersionService, fileService).getFilename());
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.NOT_FOUND, "Could not find dataset based on id supplied: " + idSupplied + ".");
+        }
+    }
+
+    /**
+     * @todo Enforce permissions. Make into a Command?
+     */
+    @DELETE
+    @Path("{id}/logo")
+    public Response deleteDatasetLogo(@PathParam("id") String idSupplied) {
+        try {
+            Dataset dataset = findDatasetOrDie(idSupplied);
+            Dataset datasetThatMayHaveChanged = datasetService.deleteDatasetLogo(dataset);
+            return ok("Dataset logo deleted. Thumbnail is now " + datasetThatMayHaveChanged.getDatasetThumbnail(datasetVersionService, fileService));
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.NOT_FOUND, "Could not find dataset based on id supplied: " + idSupplied + ".");
+        }
+    }
+
+    /**
+     * @todo Enforce permissions. Make into a Command?
+     */
+    @POST
+    @Path("{id}/stopUsingAnyDatasetFileAsThumbnail")
+    public Response stopUsingAnyDatasetFileAsThumbnail(@PathParam("id") String idSupplied) {
+        try {
+            Dataset dataset = findDatasetOrDie(idSupplied);
+            Dataset datasetThatMayHaveChanged = datasetService.stopUsingAnyDatasetFileAsThumbnail(dataset);
+            return ok("stopUsingAnyDatasetFileAsThumbnail called. Thumbnail is now " + datasetThatMayHaveChanged.getDatasetThumbnail(datasetVersionService, fileService));
         } catch (WrappedResponse ex) {
             return error(Response.Status.NOT_FOUND, "Could not find dataset based on id supplied: " + idSupplied + ".");
         }

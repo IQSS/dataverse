@@ -1,7 +1,9 @@
 package edu.harvard.iq.dataverse.dataset;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -52,7 +54,7 @@ public class DatasetUtil {
         return thumbnails;
     }
 
-    public static DatasetThumbnail getThumbnail(Dataset dataset) {
+    public static DatasetThumbnail getThumbnail(Dataset dataset, DatasetVersionServiceBean datasetVersionService, DataFileServiceBean dataFileService) {
         if (dataset == null) {
             return null;
         }
@@ -75,7 +77,15 @@ public class DatasetUtil {
             DataFile thumbnailFile = dataset.getThumbnailFile();
             if (thumbnailFile == null) {
                 logger.info(title + " does not have a thumbnail file set but the search card might have one");
-                return null;
+                DatasetThumbnail thumbnailThatMightBeOnSearchCard = findThumbnailThatMightBeShowingOnTheSearchCards(dataset, datasetVersionService, dataFileService);
+                if (thumbnailThatMightBeOnSearchCard != null) {
+                    logger.info(title + " does not have a thumbnail file set but a thumbnail was found as a search card thumbnail. Returning " + thumbnailThatMightBeOnSearchCard.getFilename());
+                    return thumbnailThatMightBeOnSearchCard;
+                } else {
+                    logger.info(title + " does not have a thumbnail file set but and couldn't find one in use on the search card.");
+                    // returning null because dataFile.equals(thumbnailFile) will never match since thumbnailFile is null and there's no point in interating through the files
+                    return null;
+                }
             }
             for (FileMetadata fileMetadata : dataset.getLatestVersion().getFileMetadatas()) {
                 DataFile dataFile = fileMetadata.getDataFile();
@@ -92,6 +102,30 @@ public class DatasetUtil {
             logger.info(title + " will get the default dataset icon.");
             return null;
         }
+    }
+
+    public static DatasetThumbnail findThumbnailThatMightBeShowingOnTheSearchCards(Dataset dataset, DatasetVersionServiceBean datasetVersionService, DataFileServiceBean dataFileService) {
+        if (dataset == null) {
+            logger.info("Dataset is null so returning null.");
+            return null;
+        }
+        if (datasetVersionService == null || dataFileService == null) {
+            logger.info("Without service beans, can't determine if search cards have a thumbnail or not for dataset id " + dataset.getId());
+            return null;
+        }
+        Long randomThumbnail = datasetVersionService.getThumbnailByVersionId(dataset.getLatestVersion().getId());
+        if (randomThumbnail != null) {
+            DataFile thumbnailImageFile = null;
+            thumbnailImageFile = dataFileService.findCheapAndEasy(randomThumbnail);
+            if (dataFileService.isThumbnailAvailable(thumbnailImageFile)) {
+                String randomlySelectedThumbnail = ImageThumbConverter.getImageThumbAsBase64(
+                        thumbnailImageFile,
+                        ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
+                DatasetThumbnail datasetThumbnail = new DatasetThumbnail("randomFromDataFile" + thumbnailImageFile.getId(), randomlySelectedThumbnail, thumbnailImageFile);
+                return datasetThumbnail;
+            }
+        }
+        return null;
     }
 
     public static Dataset writeDatasetLogoToDisk(Dataset dataset, File file) {

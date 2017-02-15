@@ -773,5 +773,40 @@ public class DatasetServiceBean implements java.io.Serializable {
         Dataset datasetThatMayHaveChanged = DatasetUtil.writeDatasetLogoToDisk(dataset, file);
         return datasetThatMayHaveChanged;
     }
-    
+
+    public Dataset setDataFileAsThumbnail(Dataset dataset, DataFile datasetFileThumbnailToSwitchTo) {
+        if (dataset == null) {
+            logger.info("In setDataFileAsThumbnail but dataset is null! Returning null.");
+            return null;
+        }
+        if (datasetFileThumbnailToSwitchTo != null) {
+            DatasetUtil.deleteDatasetLogo(dataset);
+            dataset.setThumbnailFile(datasetFileThumbnailToSwitchTo);
+            dataset.setUseGenericThumbnail(false);
+            return merge(dataset);
+        }
+        return dataset;
+    }
+
+    public Dataset deleteDatasetLogo(Dataset dataset) {
+        if (dataset == null) {
+            logger.info("In deleteDatasetLogo but dataset is null! Returning null.");
+            return null;
+        }
+        DatasetUtil.deleteDatasetLogo(dataset);
+        dataset.setThumbnailFile(null);
+        dataset.setUseGenericThumbnail(true);
+        return merge(dataset);
+    }
+
+    public Dataset stopUsingAnyDatasetFileAsThumbnail(Dataset dataset) {
+        if (dataset == null) {
+            logger.info("stopUsingAnyDatasetFileAsThumbnail but dataset is null! Returning null.");
+            return null;
+        }
+        dataset.setThumbnailFile(null);
+        dataset.setUseGenericThumbnail(true);
+        return merge(dataset);
+    }
+
 }
