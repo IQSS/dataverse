@@ -183,19 +183,14 @@ public class FileVersionDifference {
     
     
     private void updateDifferenceSummary(String groupLabel, String itemLabel, int changed, int added, int deleted, int replaced, boolean multiple) {
-        System.out.print("updateDifferenceSummary " +  groupLabel + " " + itemLabel);
         FileDifferenceSummaryGroup summaryGroup = new FileDifferenceSummaryGroup(groupLabel);
         FileDifferenceSummaryItem summaryItem = new FileDifferenceSummaryItem(itemLabel, changed, added, deleted, replaced, multiple);
         
         if (!this.differenceSummaryGroups.contains(summaryGroup)) {    
-            System.out.print("adding item to new group " + summaryGroup.getName());
-            System.out.print("adding item to new group " + summaryItem.getName());
             summaryGroup.getFileDifferenceSummaryItems().add(summaryItem);
             this.differenceSummaryGroups.add(summaryGroup);
         } else {
             this.differenceSummaryGroups.stream().filter((test) -> (test.equals(summaryGroup))).forEach((test) -> {
-             System.out.print("adding item to Existing group " + summaryGroup.getName());
-            System.out.print("adding item to existing group " + summaryItem.getName());
                 test.getFileDifferenceSummaryItems().add(summaryItem);
             });
         }
