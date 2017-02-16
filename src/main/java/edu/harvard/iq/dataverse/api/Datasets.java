@@ -649,7 +649,8 @@ public class Datasets extends AbstractApiBean {
             } catch (IOException ex) {
                 return error(Response.Status.BAD_REQUEST, "Problem uploading file: " + ex);
             }
-            Dataset datasetThatMayHaveChanged = datasetService.writeDatasetLogoToDisk(dataset, file);
+            Dataset datasetThatMayHaveChanged = datasetService.writeDatasetLogoToStagingArea(dataset, file);
+            datasetThatMayHaveChanged = datasetService.moveDatasetLogoFromStagingToFinal(dataset);
             return ok("Thumbnail is now " + datasetThatMayHaveChanged.getDatasetThumbnail(datasetVersionService, fileService).getFilename());
         } catch (WrappedResponse ex) {
             return error(Response.Status.NOT_FOUND, "Could not find dataset based on id supplied: " + idSupplied + ".");

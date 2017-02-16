@@ -1,7 +1,9 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
+import static edu.harvard.iq.dataverse.dataset.DatasetUtil.datasetLogoFilenameStaging;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -37,8 +39,13 @@ public class DatasetWidgetsPage implements java.io.Serializable {
     private Long datasetId;
     private Dataset dataset;
     private List<DatasetThumbnail> datasetThumbnails;
+    /**
+     * A preview image of either the current or (potentially unsaved) future
+     * thumbnail.
+     */
     private DatasetThumbnail datasetThumbnail;
     private DataFile datasetFileThumbnailToSwitchTo;
+    private boolean userWantsToRemoveThumbnail;
 
     @Inject
     PermissionsWrapper permissionsWrapper;
@@ -96,6 +103,10 @@ public class DatasetWidgetsPage implements java.io.Serializable {
         this.datasetFileThumbnailToSwitchTo = datasetFileThumbnailToSwitchTo;
     }
 
+    public boolean isUserWantsToRemoveThumbnail() {
+        return userWantsToRemoveThumbnail;
+    }
+
     public void handleImageFileUpload(FileUploadEvent event) {
         logger.fine("handleImageFileUpload clicked");
         UploadedFile uploadedFile = event.getFile();
@@ -111,34 +122,65 @@ public class DatasetWidgetsPage implements java.io.Serializable {
         } catch (IOException ex) {
             Logger.getLogger(DatasetWidgetsPage.class.getName()).log(Level.SEVERE, null, ex);
         }
-        dataset = datasetService.writeDatasetLogoToDisk(dataset, file);
-        datasetThumbnail = DatasetUtil.getThumbnail(dataset, datasetVersionService, dataFileService);
-        datasetThumbnails = DatasetUtil.getThumbnailCandidates(dataset, considerDatasetLogoAsCandidate);
+        dataset = datasetService.writeDatasetLogoToStagingArea(dataset, file);
+        String base64image = null;
+        try {
+            base64image = FileUtil.rescaleImage(file);
+            datasetThumbnail = new DatasetThumbnail("staged", base64image, datasetFileThumbnailToSwitchTo);
+        } catch (IOException ex) {
+            Logger.getLogger(DatasetWidgetsPage.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        userWantsToRemoveThumbnail = false;
     }
 
     public void deleteDatasetLogo() {
-        logger.info("deleteDatasetLogo clicked");
-        dataset = datasetService.deleteDatasetLogo(dataset);
-        datasetThumbnails = DatasetUtil.getThumbnailCandidates(dataset, considerDatasetLogoAsCandidate);
-        logger.info("number of thumbnail candidates update to " + datasetThumbnails.size());
-        datasetThumbnail = DatasetUtil.getThumbnail(dataset, datasetVersionService, dataFileService);
+        logger.fine("deleteDatasetLogo");
+        userWantsToRemoveThumbnail = true;
+        datasetFileThumbnailToSwitchTo = null;
+        datasetThumbnail = null;
     }
 
     public void stopUsingAnyDatasetFileAsThumbnail() {
-        dataset = datasetService.stopUsingAnyDatasetFileAsThumbnail(dataset);
-        datasetThumbnail = DatasetUtil.getThumbnail(dataset, datasetVersionService, dataFileService);
+        logger.fine("stopUsingAnyDatasetFileAsThumbnail clicked");
+        userWantsToRemoveThumbnail = true;
+        datasetThumbnail = null;
+        datasetFileThumbnailToSwitchTo = null;
     }
 
     public void setDataFileAsThumbnail() {
+        logger.fine("setDataFileAsThumbnail clicked");
         if (datasetFileThumbnailToSwitchTo != null) {
-            dataset = datasetService.setDataFileAsThumbnail(dataset, datasetFileThumbnailToSwitchTo);
-            datasetThumbnail = DatasetUtil.getThumbnail(dataset, datasetVersionService, dataFileService);
+            String base64image = ImageThumbConverter.getImageThumbAsBase64(datasetFileThumbnailToSwitchTo, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
+            datasetThumbnail = new DatasetThumbnail("staged", base64image, datasetFileThumbnailToSwitchTo);
+            userWantsToRemoveThumbnail = false;
         }
     }
 
     public String save() {
-//        Dataset merged = datasetService.merge(dataset);
-        logger.info("Save clicked. Alternative thumbnail is now... FIXME: persist selection somehow");
+        logger.fine("save clicked");
+        File stagingFile = new File(dataset.getFileSystemDirectory().toString(), datasetLogoFilenameStaging);
+        if (stagingFile.exists()) {
+            logger.fine("Copying dataset logo from staging area to final location.");
+            dataset = datasetService.moveDatasetLogoFromStagingToFinal(dataset);
+        } else {
+            logger.fine("No dataset logo in staging area to copy.");
+        }
+        if (datasetFileThumbnailToSwitchTo != null) {
+            logger.fine("switching thumbnail to DataFile id " + datasetFileThumbnailToSwitchTo.getId());
+            dataset = datasetService.setDataFileAsThumbnail(dataset, datasetFileThumbnailToSwitchTo);
+        } else {
+            logger.fine("not switching to a DataFile thumbnail");
+        }
+        if (userWantsToRemoveThumbnail) {
+            logger.fine("user doesn't want a thumbnail, blowing them away");
+            dataset = datasetService.stopUsingAnyDatasetFileAsThumbnail(dataset);
+            /**
+             * @todo Delete staging file too?
+             */
+            dataset = datasetService.deleteDatasetLogo(dataset);
+        } else {
+            logger.fine("user doesn't want to remove the thumbnail");
+        }
         JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.thumbnailsAndWidget.success"));
         return "/dataset.xhtml?persistentId=" + dataset.getGlobalId() + "&faces-redirect=true";
     }

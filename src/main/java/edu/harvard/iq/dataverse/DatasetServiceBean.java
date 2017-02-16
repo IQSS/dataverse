@@ -769,8 +769,13 @@ public class DatasetServiceBean implements java.io.Serializable {
         em.createNativeQuery("UPDATE Dataset SET lastExportTime='"+now.toString()+"' WHERE id="+datasetId).executeUpdate();
     }
 
-    public Dataset writeDatasetLogoToDisk(Dataset dataset, File file) {
-        Dataset datasetThatMayHaveChanged = DatasetUtil.writeDatasetLogoToDisk(dataset, file);
+    public Dataset writeDatasetLogoToStagingArea(Dataset dataset, File file) {
+        Dataset datasetThatMayHaveChanged = DatasetUtil.writeDatasetLogoToStagingArea(dataset, file);
+        return datasetThatMayHaveChanged;
+    }
+
+    public Dataset moveDatasetLogoFromStagingToFinal(Dataset dataset) {
+        Dataset datasetThatMayHaveChanged = DatasetUtil.moveDatasetLogoFromStagingToFinal(dataset);
         return datasetThatMayHaveChanged;
     }
 

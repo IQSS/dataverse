@@ -21,7 +21,8 @@ import java.util.logging.Logger;
 public class DatasetUtil {
 
     private static final Logger logger = Logger.getLogger(DatasetUtil.class.getCanonicalName());
-    public static String datasetLogoFilename = "dataset_logo";
+    public static String datasetLogoFilenameFinal = "dataset_logo_final";
+    public static String datasetLogoFilenameStaging = "dataset_logo_staging";
     public static String datasetLogoNameInGUI = BundleUtil.getStringFromBundle("dataset.thumbnailsAndWidget.thumbnailImage.nonDatasetFile");
 
     public static List<DatasetThumbnail> getThumbnailCandidates(Dataset dataset, boolean considerDatasetLogoAsCandidate) {
@@ -30,7 +31,7 @@ public class DatasetUtil {
             return thumbnails;
         }
         if (considerDatasetLogoAsCandidate) {
-            Path datasetLogo = Paths.get(dataset.getFileSystemDirectory() + File.separator + DatasetUtil.datasetLogoFilename);
+            Path datasetLogo = Paths.get(dataset.getFileSystemDirectory() + File.separator + DatasetUtil.datasetLogoFilenameFinal);
             if (Files.exists(datasetLogo)) {
                 File file = datasetLogo.toFile();
                 String imageSourceBase64 = null;
@@ -59,10 +60,9 @@ public class DatasetUtil {
             return null;
         }
         String title = dataset.getLatestVersion().getTitle();
-        Path datasetLogo = Paths.get(dataset.getFileSystemDirectory() + File.separator + DatasetUtil.datasetLogoFilename);
+        Path datasetLogo = Paths.get(dataset.getFileSystemDirectory() + File.separator + DatasetUtil.datasetLogoFilenameFinal);
         if (Files.exists(datasetLogo)) {
             File file = datasetLogo.toFile();
-//            String imageSourceBase64 = ImageThumbConverter.getImageAsBase64FromFile(file);
             String imageSourceBase64 = null;
             try {
                 imageSourceBase64 = FileUtil.rescaleImage(file);
@@ -128,18 +128,13 @@ public class DatasetUtil {
         return null;
     }
 
-    public static Dataset writeDatasetLogoToDisk(Dataset dataset, File file) {
+    public static Dataset writeDatasetLogoToStagingArea(Dataset dataset, File file) {
         if (dataset == null) {
             return null;
         }
         if (file == null) {
             return dataset;
         }
-//        String base64image = ImageThumbConverter.getImageAsBase64FromFile(file);
-//        DatasetThumbnail datasetThumbnail = new DatasetThumbnail(file.getName(), base64image);
-//        DatasetThumbnail datasetThumbnail = new DatasetThumbnail(datasetLogoNameInGUI, base64image, null);
-//        dataset.setDatasetThumbnail(datasetThumbnail);
-        // copied from IngestServiceBean.addFiles
         try {
             if (dataset.getFileSystemDirectory() != null && !Files.exists(dataset.getFileSystemDirectory())) {
                 /**
@@ -154,18 +149,33 @@ public class DatasetUtil {
             logger.severe("Failed to create dataset directory " + dataset.getFileSystemDirectory() + " - " + ex);
             return dataset;
         }
-        File newFile = new File(dataset.getFileSystemDirectory().toString(), datasetLogoFilename);
+        File newFile = new File(dataset.getFileSystemDirectory().toString(), datasetLogoFilenameStaging);
         try {
             Files.copy(file.toPath(), newFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException ex) {
-            logger.severe("Failed to copy file to " + dataset.getFileSystemDirectory() + ": " + ex);
+            logger.severe("Failed to copy file to " + newFile.toPath() + ": " + ex);
             return dataset;
         }
         return dataset;
     }
 
+    public static Dataset moveDatasetLogoFromStagingToFinal(Dataset dataset) {
+        if (dataset == null) {
+            return null;
+        }
+        File stagingFile = new File(dataset.getFileSystemDirectory().toString(), datasetLogoFilenameStaging);
+        File finalFile = new File(dataset.getFileSystemDirectory().toString(), datasetLogoFilenameFinal);
+        try {
+            Files.copy(stagingFile.toPath(), finalFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException ex) {
+            logger.severe("Failed to copy file from " + stagingFile.getAbsolutePath() + " to " + finalFile.getAbsolutePath() + ": " + ex);
+        }
+        boolean stagingFileDeleted = stagingFile.delete();
+        return dataset;
+    }
+
     public static boolean deleteDatasetLogo(Dataset dataset) {
-        File doomed = new File(dataset.getFileSystemDirectory().toString(), datasetLogoFilename);
+        File doomed = new File(dataset.getFileSystemDirectory().toString(), datasetLogoFilenameFinal);
         return doomed.delete();
     }
 
