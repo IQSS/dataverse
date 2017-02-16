@@ -64,7 +64,8 @@
                                                           fileUploadListener="#{DatasetWidgetsPage.handleImageFileUpload}" label="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.upload']}"/>
                                         </div>
                                     </div>
-                                    <div class="col-sm-8" jsf:rendered="#{empty DatasetWidgetsPage.datasetThumbnails}">
+                                    <!-- TO-DO: Review help text, remove this block if unnecessary -->
+                                    <div class="col-sm-8" jsf:rendered="#{false and empty DatasetWidgetsPage.datasetThumbnails}">
                                         <p class="help-block"><span class="glyphicon glyphicon-info-sign"/>
                                             In addition to uploading an image to this page, it's also possible to upload an image as one of the files in your dataset and then use it as a thumbnail for your dataset. To do this, click "Cancel" and then "Upload Files".
                                         </p>
@@ -81,7 +82,7 @@
                                     <span class="glyphicon glyphicon-warning-sign text-danger"/> <span class="text-danger">You are only removing this image as the dataset thumbnail, not removing it from your dataset. To do that, go to the Edit Files page.</span>
                                 </p>
                                 <div class="button-block">
-                                    <p:commandButton value="#{bundle.continue}" styleClass="btn btn-default" onclick="PF('confrmRemove').hide()"
+                                    <p:commandLink value="#{bundle.continue}" styleClass="btn btn-default" onclick="PF('confrmRemove').hide()"
                                                      action="#{DatasetWidgetsPage.stopUsingAnyDatasetFileAsThumbnail()}"
                                                      update="@all"/>
                                     <button type="button" class="btn btn-default" onclick="PF('confrmRemove').hide()" value="#{bundle.cancel}">#{bundle.cancel}</button>
@@ -113,7 +114,7 @@
                                     </div>
                                 </div>
                                 <div class="button-block">
-                                    <p:commandButton styleClass="btn btn-default" update="@all" value="#{bundle.continue}" action="#{DatasetWidgetsPage.setDataFileAsThumbnail()}"/>
+                                    <p:commandLink styleClass="btn btn-default" update="@all" value="#{bundle.continue}" action="#{DatasetWidgetsPage.setDataFileAsThumbnail()}"/>
                                     <!-- TODO WIRE THIS BUTTON UP -->
                                     <button type="button" onclick="PF('selectFileThumbnail').hide()" class="btn btn-default" value="#{bundle.cancel}">
                                         #{bundle.cancel}
