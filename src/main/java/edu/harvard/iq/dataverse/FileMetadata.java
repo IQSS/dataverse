@@ -419,6 +419,17 @@ public class FileMetadata implements Serializable {
     }
     
     @Transient
+    private FileVersionDifference fileVersionDifference ;
+
+    public FileVersionDifference getFileVersionDifference() {
+        return fileVersionDifference;
+    }
+
+    public void setFileVersionDifference(FileVersionDifference fileVersionDifference) {
+        this.fileVersionDifference = fileVersionDifference;
+    }
+    
+    @Transient
     private String contributorNames;
 
     public String getContributorNames() {

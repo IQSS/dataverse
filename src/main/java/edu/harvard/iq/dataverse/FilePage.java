@@ -311,6 +311,7 @@ public class FilePage implements java.io.Serializable {
                         fmd.setContributorNames(datasetVersionService.getContributorsNames(versionLoop));
                         FileVersionDifference fvd = new FileVersionDifference(fmd, getPreviousFileMetadata(fmd));
                         fmd.setDefaultVersionDifferencesSummary(fvd.getDisplay());
+                        fmd.setFileVersionDifference(fvd);
                         retList.add(fmd);
                         foundFmd = true;
                         break;
@@ -326,6 +327,9 @@ public class FilePage implements java.io.Serializable {
                     } else {
                         dummy.setDefaultVersionDifferencesSummary(ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.fileRemoved"));
                     }
+                    FileVersionDifference fvd = new FileVersionDifference(dummy, getPreviousFileMetadata(versionLoop));
+                        dummy.setDefaultVersionDifferencesSummary(fvd.getDisplay());
+                        dummy.setFileVersionDifference(fvd);
    
                     retList.add(dummy);
                 } 
