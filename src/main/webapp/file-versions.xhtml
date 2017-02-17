@@ -73,26 +73,26 @@
         <!-- start: description column -->
         <p:column>
             <ui:fragment rendered="#{!versionTab.datasetVersion.deaccessioned}">
-            <ui:fragment rendered="#{versionTab.fileVersionDifference.newFileMetadata.getDataFile() == null and versionTab.fileVersionDifference.originalFileMetadata == null }" >
-                <h:outputText value="#{bundle['file.versionDifferences.fileNotInVersion']}" escape="false"/>
-            </ui:fragment>
-            <ui:fragment rendered="#{empty versionTab.fileVersionDifference.differenceSummaryGroups 
+                <ui:fragment rendered="#{versionTab.fileVersionDifference.newFileMetadata.getDataFile() == null and versionTab.fileVersionDifference.originalFileMetadata == null }" >
+                    <h:outputText value="#{bundle['file.versionDifferences.fileNotInVersion']}" escape="false"/>
+                </ui:fragment>
+                <ui:fragment rendered="#{empty versionTab.fileVersionDifference.differenceSummaryGroups 
                                      and !(versionTab.fileVersionDifference.newFileMetadata.getDataFile() == null and versionTab.fileVersionDifference.originalFileMetadata == null) }" >
-                <h:outputText value="#{bundle['file.versionDifferences.noChanges']}" escape="false"/>
-            </ui:fragment>
-            <ui:repeat value="#{versionTab.fileVersionDifference.differenceSummaryGroups }" var="groupSummary">
-                <h:outputText value="#{groupSummary.name}: " escape="false"/>
-                <ui:repeat value="#{groupSummary.fileDifferenceSummaryItems}" var="item">
-                 <h:outputText value="#{item}" escape="false"/>  
-                 </ui:repeat>
-            </ui:repeat>
-            <ui:remove>
-                <p:commandLink rendered="#{(!empty(versionTab.defaultVersionDifference)) and DatasetPage.versionTabListForPostLoad.size() > (rowNum + 1)}"
-                               actionListener="#{DatasetPage.updateVersionDifferences(versionTab, null)}"
-                               oncomplete="PF('detailsBlocks').show();post_differences();"
-                               update=":datasetForm"
-                               value="#{bundle['file.dataFilesTab.versions.viewDetails.btn']}"></p:commandLink>
-            </ui:remove>
+                    <h:outputText value="#{bundle['file.versionDifferences.noChanges']}" escape="false"/>
+                </ui:fragment>
+                <ui:repeat value="#{versionTab.fileVersionDifference.differenceSummaryGroups }" var="groupSummary">
+                    <h:outputText value="#{groupSummary.name}: " escape="false"/>
+                    <ui:repeat value="#{groupSummary.fileDifferenceSummaryItems}" var="item">
+                        <h:outputText value="#{item}" escape="false"/>  
+                    </ui:repeat>
+                </ui:repeat>
+                <ui:remove>
+                    <p:commandLink rendered="#{(!empty(versionTab.defaultVersionDifference)) and DatasetPage.versionTabListForPostLoad.size() > (rowNum + 1)}"
+                                   actionListener="#{DatasetPage.updateVersionDifferences(versionTab, null)}"
+                                   oncomplete="PF('detailsBlocks').show();post_differences();"
+                                   update=":datasetForm"
+                                   value="#{bundle['file.dataFilesTab.versions.viewDetails.btn']}"></p:commandLink>
+                </ui:remove>
             </ui:fragment>  
             <ui:fragment rendered="#{versionTab.datasetVersion.deaccessioned}">
                 <h:outputText value="#{versionTab.datasetVersion.versionNote}" escape="false"/>
