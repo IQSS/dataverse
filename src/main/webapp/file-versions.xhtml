@@ -81,7 +81,10 @@
                 <h:outputText value="#{bundle['file.versionDifferences.noChanges']}" escape="false"/>
             </ui:fragment>
             <ui:repeat value="#{versionTab.fileVersionDifference.differenceSummaryGroups }" var="groupSummary">
-                <h:outputText value="#{groupSummary}" escape="false"/>
+                <h:outputText value="#{groupSummary.name}: " escape="false"/>
+                <ui:repeat value="#{groupSummary.fileDifferenceSummaryItems}" var="item">
+                 <h:outputText value="#{item}" escape="false"/>  
+                 </ui:repeat>
             </ui:repeat>
             <ui:remove>
                 <p:commandLink rendered="#{(!empty(versionTab.defaultVersionDifference)) and DatasetPage.versionTabListForPostLoad.size() > (rowNum + 1)}"
