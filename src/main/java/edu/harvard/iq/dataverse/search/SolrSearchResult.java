@@ -33,6 +33,7 @@ public class SolrSearchResult {
     private String downloadUrl;
     private String apiUrl;
     private String imageUrl;
+    private String thumbnailFilename;
     private boolean displayImage;
     private String query;
     private String name;
@@ -385,8 +386,8 @@ public class SolrSearchResult {
         return matchedFieldsArray;
     }
 
-    public JsonObject toJsonObject(boolean showRelevance, boolean showEntityIds, boolean showApiUrls) {
-        return json(showRelevance, showEntityIds, showApiUrls).build();
+    public JsonObject toJsonObject(boolean showRelevance, boolean showEntityIds, boolean showApiUrls, boolean showThumbnails) {
+        return json(showRelevance, showEntityIds, showApiUrls, showThumbnails).build();
     }
 
     /**
@@ -396,7 +397,7 @@ public class SolrSearchResult {
      */
     public JsonObjectBuilder getJsonForMyData() {
 
-        JsonObjectBuilder myDataJson = json(true, true, true);//boolean showRelevance, boolean showEntityIds, boolean showApiUrls) 
+        JsonObjectBuilder myDataJson = json(true, true, true, false);//boolean showRelevance, boolean showEntityIds, boolean showApiUrls)
 
         myDataJson.add("publication_statuses", this.getPublicationStatusesAsJSON())
                 .add("is_draft_state", this.isDraftState())
@@ -428,7 +429,7 @@ public class SolrSearchResult {
         return myDataJson;
     } //getJsonForMydata
 
-    public JsonObjectBuilder json(boolean showRelevance, boolean showEntityIds, boolean showApiUrls) {
+    public JsonObjectBuilder json(boolean showRelevance, boolean showEntityIds, boolean showApiUrls, boolean showThumbnails) {
 
         if (this.type == null) {
             return jsonObjectBuilder();
@@ -537,6 +538,9 @@ public class SolrSearchResult {
                 nullSafeJsonBuilder.add("api_url", getApiUrl());
             }
         }
+        if (showThumbnails) {
+            nullSafeJsonBuilder.add("thumbnailFilename", getThumbnailFilename());
+        }
         // NullSafeJsonBuilder is awesome but can't build null safe arrays. :(
         if (!datasetAuthors.isEmpty()) {
             JsonArrayBuilder authors = Json.createArrayBuilder();
@@ -634,6 +638,14 @@ public class SolrSearchResult {
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    public String getThumbnailFilename() {
+        return thumbnailFilename;
+    }
+
+    public void setThumbnailFilename(String thumbnailFilename) {
+        this.thumbnailFilename = thumbnailFilename;
     }
 
     public boolean isDisplayImage() {

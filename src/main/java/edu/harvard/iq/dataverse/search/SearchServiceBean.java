@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.search;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
@@ -17,6 +18,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -496,6 +498,17 @@ public class SearchServiceBean {
                 List<String> authors = (ArrayList) solrDocument.getFieldValues(DatasetFieldConstant.authorName);
                 if (authors != null) {
                     solrSearchResult.setDatasetAuthors(authors);
+                }
+                /**
+                 * @todo For better performance, index the DatasetThumbnail into
+                 * Solr rather than looking up a dataset
+                 */
+                Dataset dataset = datasetService.find(entityid);
+                if (dataset != null) {
+                    DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail(datasetVersionService, dataFileService);
+                    if (datasetThumbnail != null) {
+                        solrSearchResult.setThumbnailFilename(datasetThumbnail.getFilename());
+                    }
                 }
             } else if (type.equals("files")) {
                 String parentGlobalId = null;

@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
 import com.google.common.base.Stopwatch;
+import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.internal.path.xml.NodeChildrenImpl;
 import com.jayway.restassured.path.json.JsonPath;
@@ -102,6 +103,20 @@ public class SearchIT {
 
     @BeforeClass
     public static void setUpClass() {
+
+        RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
+
+        Response setSearchApiNonPublicAllowed = UtilIT.setSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed, "true");
+        setSearchApiNonPublicAllowed.prettyPrint();
+        setSearchApiNonPublicAllowed.then().assertThat()
+                //                .body(":SearchApiNonPublicAllowed", CoreMatchers.equalTo("true")) // Invalid JSON expression?
+                .statusCode(200);
+
+        Response getSearchApiNonPublicAllowed = UtilIT.getSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed);
+        getSearchApiNonPublicAllowed.prettyPrint();
+        getSearchApiNonPublicAllowed.then().assertThat()
+                .body("data.message", CoreMatchers.equalTo("true"))
+                .statusCode(200);
 
         boolean enabled = false;
         if (!enabled) {
@@ -740,6 +755,19 @@ public class SearchIT {
     @AfterClass
     public static void cleanup() {
 
+        Response enableNonPublicSearch = UtilIT.enableSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed);
+        assertEquals(200, enableNonPublicSearch.getStatusCode());
+
+        Response deleteSearchApiNonPublicAllowed = UtilIT.deleteSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed);
+        deleteSearchApiNonPublicAllowed.then().assertThat()
+                .statusCode(200);
+
+        Response getSearchApiNonPublicAllowed = UtilIT.getSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed);
+        getSearchApiNonPublicAllowed.prettyPrint();
+        getSearchApiNonPublicAllowed.then().assertThat()
+                .body("message", CoreMatchers.equalTo("Setting " + SettingsServiceBean.Key.SearchApiNonPublicAllowed + " not found"))
+                .statusCode(404);
+
         boolean enabled = false;
         if (!enabled) {
             return;
@@ -1321,6 +1349,14 @@ public class SearchIT {
     @Test
     public void testDatasetThumbnail() {
 
+//        Response setSearchApiNonPublicAllowed = UtilIT.setSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed, "true");
+//        setSearchApiNonPublicAllowed.prettyPrint();
+//
+//        assertEquals("foo", "foo");
+//        if (true) {
+//            return;
+//        }
+//
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
         String username = UtilIT.getUsernameFromResponse(createUser);
@@ -1333,6 +1369,12 @@ public class SearchIT {
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
         createDatasetResponse.prettyPrint();
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        Response search1 = UtilIT.search("id:dataset_" + datasetId + "_draft", apiToken);
+        search1.prettyPrint();
+        search1.then().assertThat()
+                .body("data.items[0].name", CoreMatchers.equalTo("Darwin's Finches"))
+                .body("data.items[0].thumbnailFilename", CoreMatchers.equalTo(null))
+                .statusCode(200);
 
         Response datasetAsJson = UtilIT.nativeGet(datasetId, apiToken);
         String protocol = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.protocol");
@@ -1371,6 +1413,13 @@ public class SearchIT {
                 .body("data.isUseGenericThumbnail", CoreMatchers.equalTo(false))
                 .statusCode(200);
 
+        Response search2 = UtilIT.search("id:dataset_" + datasetId + "_draft", apiToken);
+        search2.prettyPrint();
+        search2.then().assertThat()
+                .body("data.items[0].name", CoreMatchers.equalTo("Darwin's Finches"))
+                .body("data.items[0].thumbnailFilename", CoreMatchers.equalTo("randomFromDataFile" + dataFileId1))
+                .statusCode(200);
+
         String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
         Response uploadSecondImage = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
         uploadSecondImage.prettyPrint();
@@ -1390,6 +1439,20 @@ public class SearchIT {
                 .body("data.message", CoreMatchers.equalTo("Thumbnail set to dataverseproject.png"))
                 .statusCode(200);
 
+        Response getThumbnail3 = UtilIT.getDatasetThumbnail(datasetPersistentId, apiToken);
+        getThumbnail3.prettyPrint();
+        getThumbnail3.then().assertThat()
+                .body("data.datasetThumbnail", CoreMatchers.equalTo("dataverseproject.png"))
+                .body("data.isUseGenericThumbnail", CoreMatchers.equalTo(false))
+                .statusCode(200);
+
+        Response search3 = UtilIT.search("id:dataset_" + datasetId + "_draft", apiToken);
+        search3.prettyPrint();
+        search3.then().assertThat()
+                .body("data.items[0].name", CoreMatchers.equalTo("Darwin's Finches"))
+                .body("data.items[0].thumbnailFilename", CoreMatchers.equalTo("dataverseproject.png"))
+                .statusCode(200);
+
         Response thumbnailCandidates2 = UtilIT.showDatasetThumbnailCandidates(datasetPersistentId, apiToken);
         thumbnailCandidates2.prettyPrint();
         thumbnailCandidates2.then().assertThat()
@@ -1404,11 +1467,18 @@ public class SearchIT {
                 .body("data.message", CoreMatchers.equalTo("Thumbnail is now " + BundleUtil.getStringFromBundle("dataset.thumbnailsAndWidget.thumbnailImage.nonDatasetFile")))
                 .statusCode(200);
 
-        Response getThumbnail3 = UtilIT.getDatasetThumbnail(datasetPersistentId, apiToken);
-        getThumbnail3.prettyPrint();
-        getThumbnail3.then().assertThat()
+        Response getThumbnail4 = UtilIT.getDatasetThumbnail(datasetPersistentId, apiToken);
+        getThumbnail4.prettyPrint();
+        getThumbnail4.then().assertThat()
                 .body("data.datasetThumbnail", CoreMatchers.equalTo(BundleUtil.getStringFromBundle("dataset.thumbnailsAndWidget.thumbnailImage.nonDatasetFile")))
                 .body("data.isUseGenericThumbnail", CoreMatchers.equalTo(false))
+                .statusCode(200);
+
+        Response search4 = UtilIT.search("id:dataset_" + datasetId + "_draft", apiToken);
+        search4.prettyPrint();
+        search4.then().assertThat()
+                .body("data.items[0].name", CoreMatchers.equalTo("Darwin's Finches"))
+                .body("data.items[0].thumbnailFilename", CoreMatchers.equalTo(BundleUtil.getStringFromBundle("dataset.thumbnailsAndWidget.thumbnailImage.nonDatasetFile")))
                 .statusCode(200);
 
         Response thumbnailCandidates3 = UtilIT.showDatasetThumbnailCandidates(datasetPersistentId, apiToken);
@@ -1425,12 +1495,18 @@ public class SearchIT {
                 .body("data.message", CoreMatchers.equalTo("Dataset logo deleted. Thumbnail is now null"))
                 .statusCode(200);
 
-        System.out.println("getThumbnail4...");
-        Response getThumbnail4 = UtilIT.getDatasetThumbnail(datasetPersistentId, apiToken);
-        getThumbnail4.prettyPrint();
-        getThumbnail4.then().assertThat()
+        Response getThumbnail5 = UtilIT.getDatasetThumbnail(datasetPersistentId, apiToken);
+        getThumbnail5.prettyPrint();
+        getThumbnail5.then().assertThat()
                 .body("data.datasetThumbnail", CoreMatchers.equalTo(null))
                 .body("data.isUseGenericThumbnail", CoreMatchers.equalTo(true))
+                .statusCode(200);
+
+        Response search5 = UtilIT.search("id:dataset_" + datasetId + "_draft", apiToken);
+        search5.prettyPrint();
+        search5.then().assertThat()
+                .body("data.items[0].name", CoreMatchers.equalTo("Darwin's Finches"))
+                .body("data.items[0].thumbnailFilename", CoreMatchers.equalTo(null))
                 .statusCode(200);
 
         Response thumbnailCandidates4 = UtilIT.showDatasetThumbnailCandidates(datasetPersistentId, apiToken);
