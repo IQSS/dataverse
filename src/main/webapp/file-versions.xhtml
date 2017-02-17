@@ -95,7 +95,7 @@
                 </ui:remove>
             </ui:fragment>  
             <ui:fragment rendered="#{versionTab.datasetVersion.deaccessioned}">
-                <h:outputText value="#{versionTab.datasetVersion.versionNote}" escape="false"/>
+                <h:outputText value="#{bundle['file.dataFilesTab.versions.description.deaccessionedReason']} #{versionTab.datasetVersion.versionNote}" escape="false"/>
             </ui:fragment>
         </p:column>
 
