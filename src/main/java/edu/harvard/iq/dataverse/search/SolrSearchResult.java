@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.api.Util;
+import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.util.ArrayList;
@@ -33,7 +34,12 @@ public class SolrSearchResult {
     private String downloadUrl;
     private String apiUrl;
     private String imageUrl;
+    /**
+     * @todo consider removing thumbnailFilename since it's available in
+     * DatasetThumbnail.
+     */
     private String thumbnailFilename;
+    private DatasetThumbnail datasetThumbnail;
     private boolean displayImage;
     private String query;
     private String name;
@@ -646,6 +652,14 @@ public class SolrSearchResult {
 
     public void setThumbnailFilename(String thumbnailFilename) {
         this.thumbnailFilename = thumbnailFilename;
+    }
+
+    public DatasetThumbnail getDatasetThumbnail() {
+        return datasetThumbnail;
+    }
+
+    public void setDatasetThumbnail(DatasetThumbnail datasetThumbnail) {
+        this.datasetThumbnail = datasetThumbnail;
     }
 
     public boolean isDisplayImage() {

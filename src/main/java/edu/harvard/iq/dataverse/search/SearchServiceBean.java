@@ -508,6 +508,7 @@ public class SearchServiceBean {
                     DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail(datasetVersionService, dataFileService);
                     if (datasetThumbnail != null) {
                         solrSearchResult.setThumbnailFilename(datasetThumbnail.getFilename());
+                        solrSearchResult.setDatasetThumbnail(datasetThumbnail);
                     }
                 }
             } else if (type.equals("files")) {

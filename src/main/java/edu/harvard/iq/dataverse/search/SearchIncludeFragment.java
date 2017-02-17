@@ -1078,12 +1078,14 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 String imageFoundBygetDatasetCardImageUrl = getDatasetCardImageUrl(result);
                 result.setImageUrl(imageFoundBygetDatasetCardImageUrl);
                 /**
-                 * @todo Improve this inefficient hack. We don't want to have to
-                 * look up the dataset each time.
+                 * @todo: remove this "true". Still working on centralizing the
+                 * business logic of the GUI and the Search API. Investigate
+                 * more how getDatasetCardImageUrl above works and what the
+                 * implications are of no longer calling it. Can it be moved to
+                 * SearchServiceBean or some other central bean?
                  */
-                Dataset dataset = datasetService.find(result.getEntityId());
-                if (dataset != null) {
-                    DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail(datasetVersionService, dataFileService);
+                if (true) {
+                    DatasetThumbnail datasetThumbnail = result.getDatasetThumbnail();
                     if (datasetThumbnail != null) {
                         result.setImageUrl(datasetThumbnail.getBase64image());
                     } else {
