@@ -1,89 +1,79 @@
 <ui:composition
     xmlns="http://www.w3.org/1999/xhtml"
-     xmlns:h="http://java.sun.com/jsf/html"
-     xmlns:f="http://java.sun.com/jsf/core"
-     xmlns:ui="http://java.sun.com/jsf/facelets"
-     xmlns:c="http://java.sun.com/jsp/jstl/core"
-     xmlns:p="http://primefaces.org/ui"
-     xmlns:o="http://omnifaces.org/ui"
-     xmlns:jsf="http://xmlns.jcp.org/jsf">
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:o="http://omnifaces.org/ui"
+    xmlns:jsf="http://xmlns.jcp.org/jsf">
 
-<!-- VERSIONS -->
-   <script type="text/javascript">
-       /* Version tab: Retrieve data after page load */
+    <!-- VERSIONS -->
+    <script type="text/javascript">
+        /* Version tab: Retrieve data after page load */
         $(document).ready(function () {
             preload_message = "(Loading versions...)";
             $('#datasetForm\\:tabView\\:versionsTable_data tr.ui-datatable-empty-message td').text(preload_message);
             postLoadVersionTabList();
-       });
-   </script>
-
-   <ui:remove> 
-     <!-- 
-     Details are for a later version
-     -->
-    <div class="text-right margin-bottom">
-        <p:commandLink type="button" styleClass="btn btn-default" onclick="testCheckBoxes();"
-                         rendered="#{FilePage.compareVersionsCount > 2}">
-            <span class="glyphicon glyphicon-transfer"/> #{bundle['file.dataFilesTab.versions.viewDiffBtn']}
-        </p:commandLink>
-        <p:commandButton value="Direct" id="compareVersions"
-                         style="display:none"
-                         update=":datasetForm"
-                         oncomplete="PF('detailsBlocks').show();post_differences();"
-                         actionListener="#{FilePage.compareVersionDifferences()}">
-        </p:commandButton>
-    </div>
-       </ui:remove>
-
-
-    <p:dataTable id="versionsTableObj" value="#{FilePage.fileMetadatasForTab}" var="versionTab" widgetVar="versionsTableObj"
-                   rowKey="#{versionTab}">
-        <!-- start: checkbox column -->
+        });
+    </script>
+    <ui:remove>
+        <!--
+        Details are for a later version
+        -->
+        <div class="text-right margin-bottom">
+            <p:commandLink type="button" styleClass="btn btn-default" onclick="testCheckBoxes();"
+                           rendered="#{FilePage.compareVersionsCount > 2}">
+                <span class="glyphicon glyphicon-transfer"/> #{bundle['file.dataFilesTab.versions.viewDiffBtn']}
+            </p:commandLink>
+            <p:commandButton value="Direct" id="compareVersions"
+                             style="display:none"
+                             update=":datasetForm"
+                             oncomplete="PF('detailsBlocks').show();post_differences();"
+                             actionListener="#{FilePage.compareVersionDifferences()}">
+            </p:commandButton>
+        </div>
+    </ui:remove>
+    <p:dataTable id="versionsTable" value="#{FilePage.fileMetadatasForTab}" var="versionTab" widgetVar="versionsTable"
+                 rowKey="#{versionTab}">
         <ui:remove>
-        <p:column selectionMode="multiple" class="col-select-width text-center" rendered="#{DatasetPage.compareVersionsCount > 2}"/><!-- end: checkbox column -->
+            <!-- start: checkbox column -->
+            <p:column selectionMode="multiple" class="col-select-width text-center" rendered="#{DatasetPage.compareVersionsCount > 2}"/>
+            <!-- end: checkbox column -->
         </ui:remove>
         <!-- start: version number column -->
         <p:column class="col-sm-1 text-center">
-            <ui:fragment rendered="#{versionTab.datasetVersion.released or ((versionTab.datasetVersion.deaccessioned or versionTab.datasetVersion.draft) 
+            <ui:fragment rendered="#{versionTab.datasetVersion.released or ((versionTab.datasetVersion.deaccessioned or versionTab.datasetVersion.draft)
                                      and permissionServiceBean.on(versionTab.datasetVersion.dataset).has('ViewUnpublishedDataset'))}">
-                <ui:fragment rendered="#{!(versionTab.datasetVersion.released or versionTab.datasetVersion.deaccessioned) and versionTab.dataFile != null }">
-                    <a id="fileNameLink" href="/file.xhtml?fileId=#{versionTab.dataFile.id}&#38;version=#{versionTab.datasetVersion.versionState}" class="ui-commandlink ui-widget">
-                        <h:outputText value="#{versionTab.datasetVersion.versionState}" /></a>
-                </ui:fragment>
-                <ui:fragment rendered="#{!(versionTab.datasetVersion.released or versionTab.datasetVersion.deaccessioned) and versionTab.dataFile == null}">                    
+                <h:outputLink rendered="#{!(versionTab.datasetVersion.released or versionTab.datasetVersion.deaccessioned) and versionTab.dataFile != null }"
+                              value="/file.xhtml?fileId=#{versionTab.dataFile.id}&#38;version=#{versionTab.datasetVersion.versionState}" styleClass="ui-commandlink ui-widget">
                     <h:outputText value="#{versionTab.datasetVersion.versionState}" />
-                </ui:fragment>
-                <ui:fragment rendered="#{(versionTab.datasetVersion.released or versionTab.datasetVersion.deaccessioned) and versionTab.dataFile != null}">
-                    <a id="fileNameLink" href="/file.xhtml?fileId=#{versionTab.dataFile.id}&#38;version=#{versionTab.datasetVersion.versionNumber}.#{versionTab.datasetVersion.minorVersionNumber}" class="ui-commandlink ui-widget">
-                        <h:outputText value="#{versionTab.datasetVersion.versionNumber}.#{versionTab.datasetVersion.minorVersionNumber}" /></a>
-                </ui:fragment>
-                <ui:fragment rendered="#{(versionTab.datasetVersion.released or versionTab.datasetVersion.deaccessioned)and versionTab.dataFile == null}">
+                </h:outputLink>
+                <h:outputText rendered="#{!(versionTab.datasetVersion.released or versionTab.datasetVersion.deaccessioned) and versionTab.dataFile == null}"                   
+                              value="#{versionTab.datasetVersion.versionState}" />
+                <h:outputLink rendered="#{(versionTab.datasetVersion.released or versionTab.datasetVersion.deaccessioned) and versionTab.dataFile != null}"
+                              value="/file.xhtml?fileId=#{versionTab.dataFile.id}&#38;version=#{versionTab.datasetVersion.versionNumber}.#{versionTab.datasetVersion.minorVersionNumber}" class="ui-commandlink ui-widget">
                     <h:outputText value="#{versionTab.datasetVersion.versionNumber}.#{versionTab.datasetVersion.minorVersionNumber}" />
-                </ui:fragment>
+                </h:outputLink>
+                <h:outputText rendered="#{(versionTab.datasetVersion.released or versionTab.datasetVersion.deaccessioned)and versionTab.dataFile == null}"
+                              value="#{versionTab.datasetVersion.versionNumber}.#{versionTab.datasetVersion.minorVersionNumber}" />
             </ui:fragment>
-            <ui:fragment rendered="#{versionTab.datasetVersion.deaccessioned 
-                                     and !permissionServiceBean.on(versionTab.datasetVersion.dataset).has('ViewUnpublishedDataset')}">
-                <ui:fragment rendered="#{(versionTab.datasetVersion.released or versionTab.datasetVersion.deaccessioned)}">
-                    <h:outputText value="#{versionTab.datasetVersion.versionNumber}.#{versionTab.datasetVersion.minorVersionNumber}" />
-                </ui:fragment>
-            </ui:fragment>
+            <h:outputText rendered="#{versionTab.datasetVersion.deaccessioned
+                                     and !permissionServiceBean.on(versionTab.datasetVersion.dataset).has('ViewUnpublishedDataset')}"
+                          value="#{versionTab.datasetVersion.versionNumber}.#{versionTab.datasetVersion.minorVersionNumber}" />
         </p:column>
-        
         <!-- start: description column -->
         <p:column>
             <ui:fragment rendered="#{!versionTab.datasetVersion.deaccessioned}">
-                <ui:fragment rendered="#{versionTab.fileVersionDifference.newFileMetadata.getDataFile() == null and versionTab.fileVersionDifference.originalFileMetadata == null }" >
-                    <h:outputText value="#{bundle['file.versionDifferences.fileNotInVersion']}" escape="false"/>
-                </ui:fragment>
-                <ui:fragment rendered="#{empty versionTab.fileVersionDifference.differenceSummaryGroups 
-                                     and !(versionTab.fileVersionDifference.newFileMetadata.getDataFile() == null and versionTab.fileVersionDifference.originalFileMetadata == null) }" >
-                    <h:outputText value="#{bundle['file.versionDifferences.noChanges']}" escape="false"/>
-                </ui:fragment>
+                <h:outputText rendered="#{versionTab.fileVersionDifference.newFileMetadata.getDataFile() == null and versionTab.fileVersionDifference.originalFileMetadata == null }"
+                    value="#{bundle['file.versionDifferences.fileNotInVersion']}" styleClass="italic text-muted"/>
+                <h:outputText rendered="#{empty versionTab.fileVersionDifference.differenceSummaryGroups
+                                     and !(versionTab.fileVersionDifference.newFileMetadata.getDataFile() == null and versionTab.fileVersionDifference.originalFileMetadata == null) }"
+                    value="#{bundle['file.versionDifferences.noChanges']}" styleClass="italic text-muted"/>
                 <ui:repeat value="#{versionTab.fileVersionDifference.differenceSummaryGroups }" var="groupSummary">
-                    <h:outputText value="#{groupSummary.name}: " escape="false"/>
+                    <h:outputText value="#{groupSummary.name}: " styleClass="highlightBold" escape="false"/>
                     <ui:repeat value="#{groupSummary.fileDifferenceSummaryItems}" var="item">
-                        <h:outputText value="#{item}" escape="false"/>  
+                        <h:outputText value="#{item}" escape="false"/>
                     </ui:repeat>
                 </ui:repeat>
                 <ui:remove>
@@ -93,35 +83,20 @@
                                    update=":datasetForm"
                                    value="#{bundle['file.dataFilesTab.versions.viewDetails.btn']}"></p:commandLink>
                 </ui:remove>
-            </ui:fragment>  
-            <ui:fragment rendered="#{versionTab.datasetVersion.deaccessioned}">
-                <h:outputText value="#{bundle['file.dataFilesTab.versions.description.deaccessionedReason']} #{versionTab.datasetVersion.versionNote}" escape="false"/>
             </ui:fragment>
+            <h:outputText rendered="#{versionTab.datasetVersion.deaccessioned}"
+                value="#{bundle['file.dataFilesTab.versions.description.deaccessionedReason']} #{versionTab.datasetVersion.versionNote}" escape="false"/>
         </p:column>
-
         <!-- contributor column -->
         <p:column class="col-sm-3">
-            <ui:fragment rendered="#{!empty(versionTab.contributorNames)}">
-                <h:outputText value="#{versionTab.contributorNames}" />
-            </ui:fragment>
-        </p:column><!-- end: contributor column -->
-
+            <h:outputText value="#{versionTab.contributorNames}" />
+        </p:column>
+        <!-- end: contributor column -->
         <!-- date column -->
-        
         <p:column class="col-sm-2">
-            <ui:fragment><!-- rendered="#{ !empty(versionTab) and !empty(versionTab.datasetVersion.versionDate) }"-->
-                    <h:outputText id="versionDate" value="#{versionTab.datasetVersion.versionDate}" />
-            </ui:fragment>
-        </p:column><!-- end: date column -->
-        
+            <h:outputText id="versionDate" value="#{versionTab.datasetVersion.versionDate}" />
+        </p:column>
+        <!-- end: date column -->
     </p:dataTable>
-<!-- / VERSIONS -->
-
-    
-    
-    
-    
-    
-    
-    
+    <!-- / VERSIONS -->
 </ui:composition>
