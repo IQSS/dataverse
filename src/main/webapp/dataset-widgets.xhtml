@@ -61,7 +61,7 @@
                                             </label>
                                             <!--FIXME: consider supporting SVG: https://github.com/IQSS/dataverse/issues/2843-->
                                             <p:fileUpload invalidFileMessage="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.upload.invalidMsg']}" id="changelogo" allowTypes="/(\.|\/)(jpg|jpeg|tff|png|gif)$/" update="@all" 
-                                                          sizeLimit="500000"
+                                                          sizeLimit="#{systemConfig.thumbnailSizeLimitImage}"
                                                           oncomplete="bind_bsui_components();" dragDropSupport="true" auto="true" multiple="false"
                                                           fileUploadListener="#{DatasetWidgetsPage.handleImageFileUpload}" label="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.upload']}"/>
                                         </div>

@@ -649,6 +649,9 @@ public class Datasets extends AbstractApiBean {
             } catch (IOException ex) {
                 return error(Response.Status.BAD_REQUEST, "Problem uploading file: " + ex);
             }
+            if(file.length() > systemConfig.getThumbnailSizeLimitImage()){
+                return error(Response.Status.BAD_REQUEST, "File is larger than maximum size: " + systemConfig.getThumbnailSizeLimitImage() + ".");
+            }
             Dataset datasetThatMayHaveChanged = datasetService.writeDatasetLogoToStagingArea(dataset, file);
             datasetThatMayHaveChanged = datasetService.moveDatasetLogoFromStagingToFinal(dataset);
             return ok("Thumbnail is now " + datasetThatMayHaveChanged.getDatasetThumbnail(datasetVersionService, fileService).getFilename());

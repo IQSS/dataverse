@@ -411,7 +411,7 @@ public class SystemConfig {
     // create sensible defaults for these things? -- 4.2.2
     public long getThumbnailSizeLimitImage() {
         long limit = getThumbnailSizeLimit("Image");
-        return limit == 0 ? 5000000 : limit;
+        return limit == 0 ? 500000 : limit;
     } 
     
     public long getThumbnailSizeLimitPDF() {
@@ -423,10 +423,8 @@ public class SystemConfig {
         String option = null; 
         if ("Image".equals(type)) {
             option = settingsService.getValueForKey(SettingsServiceBean.Key.ThumbnailSizeLimitImage);
-            option = System.getProperty("dataverse.dataAccess.thumbnail.image.limit");
         } else if ("PDF".equals(type)) {
             option = settingsService.getValueForKey(SettingsServiceBean.Key.ThumbnailSizeLimitPDF);
-            option = System.getProperty("dataverse.dataAccess.thumbnail.pdf.limit");
         }
         Long limit = null; 
         

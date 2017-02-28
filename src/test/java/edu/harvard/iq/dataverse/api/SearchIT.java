@@ -1459,14 +1459,28 @@ public class SearchIT {
                 .body("data[0]", CoreMatchers.equalTo("dataverseproject.png"))
                 .body("data[1]", CoreMatchers.equalTo("trees.png"))
                 .statusCode(200);
-
+        
         String datasetLogo = "src/main/webapp/resources/images/cc0.png";
         Response overrideThumbnail = UtilIT.uploadDatasetLogo(datasetPersistentId, datasetLogo, apiToken);
         overrideThumbnail.prettyPrint();
         overrideThumbnail.then().assertThat()
                 .body("data.message", CoreMatchers.equalTo("Thumbnail is now " + BundleUtil.getStringFromBundle("dataset.thumbnailsAndWidget.thumbnailImage.nonDatasetFile")))
                 .statusCode(200);
+     
+        //Add Failing Test logo file too big
+        String smallFile = "10";
+        Response setThumbnailSizeLimitImage = UtilIT.setSetting(SettingsServiceBean.Key.ThumbnailSizeLimitImage, smallFile);
 
+        Response overrideThumbnailFail = UtilIT.uploadDatasetLogo(datasetPersistentId, datasetLogo, apiToken);
+        
+        overrideThumbnailFail.prettyPrint();
+        overrideThumbnailFail.then().assertThat()
+                .body("message", CoreMatchers.equalTo("File is larger than maximum size: " + smallFile + "."))
+                .statusCode(400);
+        
+        setThumbnailSizeLimitImage = UtilIT.setSetting(SettingsServiceBean.Key.ThumbnailSizeLimitImage, "500000");
+        
+        
         Response getThumbnail4 = UtilIT.getDatasetThumbnail(datasetPersistentId, apiToken);
         getThumbnail4.prettyPrint();
         getThumbnail4.then().assertThat()
