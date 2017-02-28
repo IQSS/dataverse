@@ -126,7 +126,7 @@ public class DatasetWidgetsPage implements java.io.Serializable {
         String base64image = null;
         try {
             base64image = FileUtil.rescaleImage(file);
-            datasetThumbnail = new DatasetThumbnail("staged", base64image, datasetFileThumbnailToSwitchTo);
+            datasetThumbnail = new DatasetThumbnail(base64image, datasetFileThumbnailToSwitchTo);
         } catch (IOException ex) {
             Logger.getLogger(DatasetWidgetsPage.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -151,7 +151,7 @@ public class DatasetWidgetsPage implements java.io.Serializable {
         logger.fine("setDataFileAsThumbnail clicked");
         if (datasetFileThumbnailToSwitchTo != null) {
             String base64image = ImageThumbConverter.getImageThumbAsBase64(datasetFileThumbnailToSwitchTo, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
-            datasetThumbnail = new DatasetThumbnail("staged", base64image, datasetFileThumbnailToSwitchTo);
+            datasetThumbnail = new DatasetThumbnail(base64image, datasetFileThumbnailToSwitchTo);
             userWantsToRemoveThumbnail = false;
         }
     }

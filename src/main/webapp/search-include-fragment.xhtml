@@ -504,7 +504,8 @@
                         </div>
                         <div class="card-preview-icon-block text-center">
                             <a href="#{!SearchIncludeFragment.rootDv and !result.isInTree ? result.datasetUrl : widgetWrapper.wrapURL(result.datasetUrl)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">
-                                <h:graphicImage value="#{result.imageUrl}" rendered="#{result.displayImage}"/>
+                                <!--FIXME: Double check permissions... are people able to see an image from a restricted file when they shouldn't? What about harvested datasets?-->
+                                <h:graphicImage value="#{result.datasetThumbnailBase64image}" rendered="#{result.displayImage}"/>
                                 <span class="icon-dataset text-info" jsf:rendered="#{!result.displayImage}"/>
                             </a>
                         </div>

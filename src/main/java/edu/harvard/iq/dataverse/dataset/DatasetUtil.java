@@ -6,7 +6,6 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
-import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.io.File;
 import java.io.IOException;
@@ -23,7 +22,6 @@ public class DatasetUtil {
     private static final Logger logger = Logger.getLogger(DatasetUtil.class.getCanonicalName());
     public static String datasetLogoFilenameFinal = "dataset_logo_final";
     public static String datasetLogoFilenameStaging = "dataset_logo_staging";
-    public static String datasetLogoNameInGUI = BundleUtil.getStringFromBundle("dataset.thumbnailsAndWidget.thumbnailImage.nonDatasetFile");
 
     public static List<DatasetThumbnail> getThumbnailCandidates(Dataset dataset, boolean considerDatasetLogoAsCandidate) {
         List<DatasetThumbnail> thumbnails = new ArrayList<>();
@@ -37,7 +35,7 @@ public class DatasetUtil {
                 String imageSourceBase64 = null;
                 try {
                     imageSourceBase64 = FileUtil.rescaleImage(file);
-                    DatasetThumbnail datasetThumbnail = new DatasetThumbnail(DatasetUtil.datasetLogoNameInGUI, imageSourceBase64, null);
+                    DatasetThumbnail datasetThumbnail = new DatasetThumbnail(imageSourceBase64, null);
                     thumbnails.add(datasetThumbnail);
                 } catch (IOException ex) {
                     logger.info("Unable to rescale image: " + ex);
@@ -48,7 +46,7 @@ public class DatasetUtil {
             DataFile dataFile = fileMetadata.getDataFile();
             if (dataFile != null && dataFile.isImage()) {
                 String imageSourceBase64 = ImageThumbConverter.getImageThumbAsBase64(dataFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
-                DatasetThumbnail datasetThumbnail = new DatasetThumbnail(fileMetadata.getLabel(), imageSourceBase64, dataFile);
+                DatasetThumbnail datasetThumbnail = new DatasetThumbnail(imageSourceBase64, dataFile);
                 thumbnails.add(datasetThumbnail);
             }
         }
@@ -66,7 +64,7 @@ public class DatasetUtil {
             String imageSourceBase64 = null;
             try {
                 imageSourceBase64 = FileUtil.rescaleImage(file);
-                DatasetThumbnail datasetThumbnail = new DatasetThumbnail(DatasetUtil.datasetLogoNameInGUI, imageSourceBase64, null);
+                DatasetThumbnail datasetThumbnail = new DatasetThumbnail(imageSourceBase64, null);
                 logger.info(title + " will get thumbnail from dataset logo.");
                 return datasetThumbnail;
             } catch (IOException ex) {
@@ -79,7 +77,7 @@ public class DatasetUtil {
                 logger.info(title + " does not have a thumbnail file set but the search card might have one");
                 DatasetThumbnail thumbnailThatMightBeOnSearchCard = findThumbnailThatMightBeShowingOnTheSearchCards(dataset, datasetVersionService, dataFileService);
                 if (thumbnailThatMightBeOnSearchCard != null) {
-                    logger.info(title + " does not have a thumbnail file set but a thumbnail was found as a search card thumbnail. Returning " + thumbnailThatMightBeOnSearchCard.getFilename());
+                    logger.info(title + " does not have a thumbnail file set but a thumbnail was found as a search card thumbnail. Returning " + thumbnailThatMightBeOnSearchCard.getBase64image());
                     return thumbnailThatMightBeOnSearchCard;
                 } else {
                     logger.info(title + " does not have a thumbnail file set but and couldn't find one in use on the search card.");
@@ -87,24 +85,18 @@ public class DatasetUtil {
                     return null;
                 }
             }
-            for (FileMetadata fileMetadata : dataset.getLatestVersion().getFileMetadatas()) {
-                DataFile dataFile = fileMetadata.getDataFile();
-                logger.info(title + " has datafile id of " + dataFile.getId() + " and " + thumbnailFile + " id is " + thumbnailFile.getId() + ".");
-                if (dataFile.equals(thumbnailFile)) {
-                    String imageSourceBase64 = ImageThumbConverter.getImageThumbAsBase64(dataFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
-                    String filename = fileMetadata.getLabel();
-                    logger.fine("dataset.getThumbnailFile() is equal to " + filename);
-                    DatasetThumbnail datasetThumbnail = new DatasetThumbnail(filename, imageSourceBase64, dataFile);
-                    logger.info(title + " will get thumbnail from dataset file " + filename);
-                    return datasetThumbnail;
-                }
-            }
-            logger.info(title + " will get the default dataset icon.");
-            return null;
+            String imageSourceBase64 = ImageThumbConverter.getImageThumbAsBase64(thumbnailFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
+            DatasetThumbnail datasetThumbnail = new DatasetThumbnail(imageSourceBase64, thumbnailFile);
+            logger.info(title + " will get thumbnail from dataset file " + datasetThumbnail.getBase64image());
+            return datasetThumbnail;
         }
     }
 
     public static DatasetThumbnail findThumbnailThatMightBeShowingOnTheSearchCards(Dataset dataset, DatasetVersionServiceBean datasetVersionService, DataFileServiceBean dataFileService) {
+        boolean disableThisMethodToSeeIfWeCanDeleteIt = false;
+        if (disableThisMethodToSeeIfWeCanDeleteIt) {
+            return null;
+        }
         if (dataset == null) {
             logger.info("Dataset is null so returning null.");
             return null;
@@ -121,7 +113,7 @@ public class DatasetUtil {
                 String randomlySelectedThumbnail = ImageThumbConverter.getImageThumbAsBase64(
                         thumbnailImageFile,
                         ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
-                DatasetThumbnail datasetThumbnail = new DatasetThumbnail("randomFromDataFile" + thumbnailImageFile.getId(), randomlySelectedThumbnail, thumbnailImageFile);
+                DatasetThumbnail datasetThumbnail = new DatasetThumbnail(randomlySelectedThumbnail, thumbnailImageFile);
                 return datasetThumbnail;
             }
         }

@@ -17,8 +17,6 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
-import java.math.BigDecimal;
-import javax.json.JsonValue;
 
 public class SolrSearchResult {
 
@@ -33,13 +31,17 @@ public class SolrSearchResult {
     private String persistentUrl;
     private String downloadUrl;
     private String apiUrl;
-    private String imageUrl;
     /**
-     * @todo consider removing thumbnailFilename since it's available in
-     * DatasetThumbnail.
+     * This is called "imageUrl" because it used to really be a URL. While
+     * performance improvements were being made in the 4.2 timeframe, we started
+     * putting base64 representations of images in this String instead, which
+     * broke the Search API and probably things built on top of it such as
+     * MyData. See "`image_url` from Search API results no longer yields a
+     * downloadable image" at https://github.com/IQSS/dataverse/issues/3616
      */
-    private String thumbnailFilename;
+    private String imageUrl;
     private DatasetThumbnail datasetThumbnail;
+    private String datasetThumbnailBase64image;
     private boolean displayImage;
     private String query;
     private String name;
@@ -545,7 +547,9 @@ public class SolrSearchResult {
             }
         }
         if (showThumbnails) {
-            nullSafeJsonBuilder.add("thumbnailFilename", getThumbnailFilename());
+            if (datasetThumbnailBase64image != null) {
+                nullSafeJsonBuilder.add("datasetThumbnailBase64image", datasetThumbnailBase64image);
+            }
         }
         // NullSafeJsonBuilder is awesome but can't build null safe arrays. :(
         if (!datasetAuthors.isEmpty()) {
@@ -646,20 +650,20 @@ public class SolrSearchResult {
         this.imageUrl = imageUrl;
     }
 
-    public String getThumbnailFilename() {
-        return thumbnailFilename;
-    }
-
-    public void setThumbnailFilename(String thumbnailFilename) {
-        this.thumbnailFilename = thumbnailFilename;
-    }
-
     public DatasetThumbnail getDatasetThumbnail() {
         return datasetThumbnail;
     }
 
     public void setDatasetThumbnail(DatasetThumbnail datasetThumbnail) {
         this.datasetThumbnail = datasetThumbnail;
+    }
+
+    public String getDatasetThumbnailBase64image() {
+        return datasetThumbnailBase64image;
+    }
+
+    public void setDatasetThumbnailBase64image(String datasetThumbnailBase64image) {
+        this.datasetThumbnailBase64image = datasetThumbnailBase64image;
     }
 
     public boolean isDisplayImage() {

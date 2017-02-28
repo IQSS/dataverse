@@ -41,6 +41,8 @@ import static com.jayway.restassured.path.json.JsonPath.with;
 import static com.jayway.restassured.path.xml.XmlPath.from;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.FileUtil;
+import java.io.File;
 import static junit.framework.Assert.assertEquals;
 import static java.lang.Thread.sleep;
 import javax.json.JsonArray;
@@ -116,6 +118,10 @@ public class SearchIT {
         getSearchApiNonPublicAllowed.prettyPrint();
         getSearchApiNonPublicAllowed.then().assertThat()
                 .body("data.message", CoreMatchers.equalTo("true"))
+                .statusCode(200);
+
+        Response remove = UtilIT.deleteSetting(SettingsServiceBean.Key.ThumbnailSizeLimitImage);
+        remove.then().assertThat()
                 .statusCode(200);
 
         boolean enabled = false;
@@ -763,7 +769,7 @@ public class SearchIT {
                 .statusCode(200);
 
         Response getSearchApiNonPublicAllowed = UtilIT.getSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed);
-        getSearchApiNonPublicAllowed.prettyPrint();
+//        getSearchApiNonPublicAllowed.prettyPrint();
         getSearchApiNonPublicAllowed.then().assertThat()
                 .body("message", CoreMatchers.equalTo("Setting " + SettingsServiceBean.Key.SearchApiNonPublicAllowed + " not found"))
                 .statusCode(404);
@@ -1348,6 +1354,7 @@ public class SearchIT {
 
     @Test
     public void testDatasetThumbnail() {
+        logger.info("BEGIN testDatasetThumbnail");
 
 //        Response setSearchApiNonPublicAllowed = UtilIT.setSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed, "true");
 //        setSearchApiNonPublicAllowed.prettyPrint();
@@ -1382,6 +1389,7 @@ public class SearchIT {
         String identifier = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.identifier");
         String datasetPersistentId = protocol + ":" + authority + "/" + identifier;
 
+        logger.info("Dataset created, no thumbnail expected:");
         Response getThumbnail1 = UtilIT.getDatasetThumbnail(datasetPersistentId, apiToken);
         getThumbnail1.prettyPrint();
         JsonObject emptyObject = Json.createObjectBuilder().build();
@@ -1406,18 +1414,29 @@ public class SearchIT {
         getDatasetJson1.then().assertThat()
                 .statusCode(200);
 
-        Response getThumbnail2 = UtilIT.getDatasetThumbnail(datasetPersistentId, apiToken);
-        getThumbnail2.prettyPrint();
-        getThumbnail2.then().assertThat()
-                .body("data.datasetThumbnail", CoreMatchers.equalTo("randomFromDataFile" + dataFileId1))
-                .body("data.isUseGenericThumbnail", CoreMatchers.equalTo(false))
-                .statusCode(200);
+        logger.info("DataFile uploaded, should automatically become the thumbnail:");
 
+        File trees = new File("scripts/search/data/binary/trees.png");
+        String treesAsBase64 = null;
+        try {
+            treesAsBase64 = FileUtil.rescaleImage(trees);
+        } catch (IOException ex) {
+            Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, null, ex);
+        }
         Response search2 = UtilIT.search("id:dataset_" + datasetId + "_draft", apiToken);
         search2.prettyPrint();
         search2.then().assertThat()
                 .body("data.items[0].name", CoreMatchers.equalTo("Darwin's Finches"))
-                .body("data.items[0].thumbnailFilename", CoreMatchers.equalTo("randomFromDataFile" + dataFileId1))
+                //                .body("data.items[0].thumbnailFilename", CoreMatchers.equalTo("randomFromDataFile" + dataFileId1))
+                .body("data.items[0].datasetThumbnailBase64image", CoreMatchers.equalTo(treesAsBase64))
+                .statusCode(200);
+
+        Response getThumbnail2 = UtilIT.getDatasetThumbnail(datasetPersistentId, apiToken);
+        getThumbnail2.prettyPrint();
+        getThumbnail2.then().assertThat()
+                //                .body("data.datasetThumbnail", CoreMatchers.equalTo("randomFromDataFile" + dataFileId1))
+                .body("data.datasetThumbnailBase64image", CoreMatchers.equalTo(treesAsBase64))
+                .body("data.isUseGenericThumbnail", CoreMatchers.equalTo(false))
                 .statusCode(200);
 
         String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
@@ -1433,16 +1452,26 @@ public class SearchIT {
         getDatasetJson2.then().assertThat()
                 .statusCode(200);
 
+        File dataverseProjectLogo = new File(pathToFile);
+        String dataverseProjectLogoAsBase64 = null;
+        try {
+            dataverseProjectLogoAsBase64 = FileUtil.rescaleImage(dataverseProjectLogo);
+        } catch (IOException ex) {
+            Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
         Response switchToSecondDataFileThumbnail = UtilIT.useThumbnailFromDataFile(datasetPersistentId, dataFileId2, apiToken);
         switchToSecondDataFileThumbnail.prettyPrint();
         switchToSecondDataFileThumbnail.then().assertThat()
-                .body("data.message", CoreMatchers.equalTo("Thumbnail set to dataverseproject.png"))
+                .body("data.message", CoreMatchers.equalTo("Thumbnail set to " + dataverseProjectLogoAsBase64))
                 .statusCode(200);
 
+        logger.info("Second DataFile has been uploaded and switched to as the thumbnail:");
         Response getThumbnail3 = UtilIT.getDatasetThumbnail(datasetPersistentId, apiToken);
         getThumbnail3.prettyPrint();
         getThumbnail3.then().assertThat()
-                .body("data.datasetThumbnail", CoreMatchers.equalTo("dataverseproject.png"))
+                //                .body("data.datasetThumbnail", CoreMatchers.equalTo("dataverseproject.png"))
+                .body("data.datasetThumbnailBase64image", CoreMatchers.equalTo(dataverseProjectLogoAsBase64))
                 .body("data.isUseGenericThumbnail", CoreMatchers.equalTo(false))
                 .statusCode(200);
 
@@ -1450,57 +1479,81 @@ public class SearchIT {
         search3.prettyPrint();
         search3.then().assertThat()
                 .body("data.items[0].name", CoreMatchers.equalTo("Darwin's Finches"))
-                .body("data.items[0].thumbnailFilename", CoreMatchers.equalTo("dataverseproject.png"))
+                //                .body("data.items[0].thumbnailFilename", CoreMatchers.equalTo("dataverseproject.png"))
+                //                .body("data.items[0].datasetThumbnailBase64image", CoreMatchers.equalTo(dataverseProjectLogoAsBase64))
+                //                /**
+                //                 * @todo Remove this. Just checking if it matches treesAsBase64,
+                //                 * which is the wrong logo!
+                //                 */
+                //                .body("data.items[0].datasetThumbnailBase64image", CoreMatchers.equalTo(treesAsBase64))
+                .body("data.items[0].datasetThumbnailBase64image", CoreMatchers.equalTo(dataverseProjectLogoAsBase64))
                 .statusCode(200);
 
         Response thumbnailCandidates2 = UtilIT.showDatasetThumbnailCandidates(datasetPersistentId, apiToken);
         thumbnailCandidates2.prettyPrint();
         thumbnailCandidates2.then().assertThat()
-                .body("data[0]", CoreMatchers.equalTo("dataverseproject.png"))
-                .body("data[1]", CoreMatchers.equalTo("trees.png"))
+                //                .body("data[0]", CoreMatchers.equalTo("dataverseproject.png"))
+                .body("data[0]", CoreMatchers.equalTo(dataverseProjectLogoAsBase64))
+                .body("data[1]", CoreMatchers.equalTo(treesAsBase64))
                 .statusCode(200);
-        
+
         String datasetLogo = "src/main/webapp/resources/images/cc0.png";
+        File datasetLogoFile = new File(datasetLogo);
+        String datasetLogoAsBase64 = null;
+        try {
+            datasetLogoAsBase64 = FileUtil.rescaleImage(datasetLogoFile);
+        } catch (IOException ex) {
+            Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, null, ex);
+        }
         Response overrideThumbnail = UtilIT.uploadDatasetLogo(datasetPersistentId, datasetLogo, apiToken);
         overrideThumbnail.prettyPrint();
         overrideThumbnail.then().assertThat()
-                .body("data.message", CoreMatchers.equalTo("Thumbnail is now " + BundleUtil.getStringFromBundle("dataset.thumbnailsAndWidget.thumbnailImage.nonDatasetFile")))
+                .body("data.message", CoreMatchers.equalTo("Thumbnail is now " + datasetLogoAsBase64))
                 .statusCode(200);
-     
+
         //Add Failing Test logo file too big
         String smallFile = "10";
         Response setThumbnailSizeLimitImage = UtilIT.setSetting(SettingsServiceBean.Key.ThumbnailSizeLimitImage, smallFile);
+        setThumbnailSizeLimitImage.then().assertThat()
+                .statusCode(200);
 
         Response overrideThumbnailFail = UtilIT.uploadDatasetLogo(datasetPersistentId, datasetLogo, apiToken);
-        
+
         overrideThumbnailFail.prettyPrint();
         overrideThumbnailFail.then().assertThat()
                 .body("message", CoreMatchers.equalTo("File is larger than maximum size: " + smallFile + "."))
                 .statusCode(400);
-        
-        setThumbnailSizeLimitImage = UtilIT.setSetting(SettingsServiceBean.Key.ThumbnailSizeLimitImage, "500000");
-        
-        
+
+        Response setThumbnailSizeLimitImageHigher = UtilIT.setSetting(SettingsServiceBean.Key.ThumbnailSizeLimitImage, "500000");
+        setThumbnailSizeLimitImageHigher.then().assertThat()
+                .statusCode(200);
+
+        logger.info("Dataset logo has been uploaded and becomes the thumbnail:");
         Response getThumbnail4 = UtilIT.getDatasetThumbnail(datasetPersistentId, apiToken);
         getThumbnail4.prettyPrint();
         getThumbnail4.then().assertThat()
-                .body("data.datasetThumbnail", CoreMatchers.equalTo(BundleUtil.getStringFromBundle("dataset.thumbnailsAndWidget.thumbnailImage.nonDatasetFile")))
+                //                .body("data.datasetThumbnail", CoreMatchers.equalTo(null))
                 .body("data.isUseGenericThumbnail", CoreMatchers.equalTo(false))
+                .body("data.datasetThumbnailBase64image", CoreMatchers.equalTo(datasetLogoAsBase64))
                 .statusCode(200);
 
         Response search4 = UtilIT.search("id:dataset_" + datasetId + "_draft", apiToken);
         search4.prettyPrint();
         search4.then().assertThat()
                 .body("data.items[0].name", CoreMatchers.equalTo("Darwin's Finches"))
-                .body("data.items[0].thumbnailFilename", CoreMatchers.equalTo(BundleUtil.getStringFromBundle("dataset.thumbnailsAndWidget.thumbnailImage.nonDatasetFile")))
+                //                .body("data.items[0].thumbnailFilename", CoreMatchers.equalTo(null))
+                .body("data.items[0].datasetThumbnailBase64image", CoreMatchers.equalTo(datasetLogoAsBase64))
                 .statusCode(200);
 
         Response thumbnailCandidates3 = UtilIT.showDatasetThumbnailCandidates(datasetPersistentId, apiToken);
         thumbnailCandidates3.prettyPrint();
+        logger.fine("datasetLogoAsBase64:          " + datasetLogoAsBase64);
+        logger.fine("dataverseProjectLogoAsBase64: " + dataverseProjectLogoAsBase64);
+        logger.fine("treesAsBase64:                " + treesAsBase64);
         thumbnailCandidates3.then().assertThat()
-                .body("data[0]", CoreMatchers.equalTo(BundleUtil.getStringFromBundle("dataset.thumbnailsAndWidget.thumbnailImage.nonDatasetFile")))
-                .body("data[1]", CoreMatchers.equalTo("dataverseproject.png"))
-                .body("data[2]", CoreMatchers.equalTo("trees.png"))
+                .body("data[0]", CoreMatchers.equalTo(datasetLogoAsBase64))
+                .body("data[1]", CoreMatchers.equalTo(dataverseProjectLogoAsBase64))
+                .body("data[2]", CoreMatchers.equalTo(treesAsBase64))
                 .statusCode(200);
 
         Response deleteDatasetLogo = UtilIT.deleteDatasetLogo(datasetPersistentId, apiToken);
@@ -1509,10 +1562,11 @@ public class SearchIT {
                 .body("data.message", CoreMatchers.equalTo("Dataset logo deleted. Thumbnail is now null"))
                 .statusCode(200);
 
+        logger.info("Deleting the dataset logo means that the thumbnail is not set. It should be the generic icon:");
         Response getThumbnail5 = UtilIT.getDatasetThumbnail(datasetPersistentId, apiToken);
         getThumbnail5.prettyPrint();
         getThumbnail5.then().assertThat()
-                .body("data.datasetThumbnail", CoreMatchers.equalTo(null))
+                //                .body("data.datasetThumbnail", CoreMatchers.equalTo(null))
                 .body("data.isUseGenericThumbnail", CoreMatchers.equalTo(true))
                 .statusCode(200);
 
@@ -1526,14 +1580,14 @@ public class SearchIT {
         Response thumbnailCandidates4 = UtilIT.showDatasetThumbnailCandidates(datasetPersistentId, apiToken);
         thumbnailCandidates4.prettyPrint();
         thumbnailCandidates4.then().assertThat()
-                .body("data[0]", CoreMatchers.equalTo("dataverseproject.png"))
-                .body("data[1]", CoreMatchers.equalTo("trees.png"))
+                .body("data[0]", CoreMatchers.equalTo(dataverseProjectLogoAsBase64))
+                .body("data[1]", CoreMatchers.equalTo(treesAsBase64))
                 .statusCode(200);
 
         Response switchtoFirstDataFileThumbnail = UtilIT.useThumbnailFromDataFile(datasetPersistentId, dataFileId1, apiToken);
         switchtoFirstDataFileThumbnail.prettyPrint();
         switchtoFirstDataFileThumbnail.then().assertThat()
-                .body("data.message", CoreMatchers.equalTo("Thumbnail set to trees.png"))
+                .body("data.message", CoreMatchers.equalTo("Thumbnail set to " + treesAsBase64))
                 .statusCode(200);
 
         Response stopUsingAnyDataFile = UtilIT.stopUsingAnyDatasetFileAsThumbnail(datasetPersistentId, apiToken);
@@ -1555,6 +1609,7 @@ public class SearchIT {
         searchResponse.prettyPrint();
         String imageUrl = JsonPath.from(searchResponse.body().asString()).getString("data.items[0].image_url");
         System.out.println("imageUrl: " + imageUrl);
+        logger.info("END testDatasetThumbnail");
 
     }
 }

@@ -582,7 +582,7 @@ public class Datasets extends AbstractApiBean {
             JsonArrayBuilder data = Json.createArrayBuilder();
             boolean considerDatasetLogoAsCandidate = true;
             for (DatasetThumbnail datasetThumbnail : DatasetUtil.getThumbnailCandidates(dataset, considerDatasetLogoAsCandidate)) {
-                data.add(datasetThumbnail.getFilename());
+                data.add(datasetThumbnail.getBase64image());
             }
             return ok(data);
         } catch (WrappedResponse ex) {
@@ -602,11 +602,9 @@ public class Datasets extends AbstractApiBean {
             Dataset dataset = findDatasetOrDie(idSupplied);
             JsonObjectBuilder data = Json.createObjectBuilder();
             DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail(datasetVersionService, fileService);
+            data.add("isUseGenericThumbnail", dataset.isUseGenericThumbnail());
             if (datasetThumbnail != null) {
-                data.add("datasetThumbnail", datasetThumbnail.getFilename());
-                data.add("isUseGenericThumbnail", dataset.isUseGenericThumbnail());
-            } else {
-                data.add("isUseGenericThumbnail", dataset.isUseGenericThumbnail());
+                data.add("datasetThumbnailBase64image", datasetThumbnail.getBase64image());
             }
             return ok(data);
         } catch (WrappedResponse ex) {
@@ -627,7 +625,7 @@ public class Datasets extends AbstractApiBean {
                 return error(Response.Status.NOT_FOUND, "Could not find file based on id supplied: " + dataFileIdSupplied + ".");
             }
             Dataset datasetThatMayHaveChanged = datasetService.setDataFileAsThumbnail(dataset, datasetFileThumbnailToSwitchTo);
-            return ok("Thumbnail set to " + datasetThatMayHaveChanged.getDatasetThumbnail(datasetVersionService, fileService).getFilename());
+            return ok("Thumbnail set to " + datasetThatMayHaveChanged.getDatasetThumbnail(datasetVersionService, fileService).getBase64image());
         } catch (WrappedResponse ex) {
             return error(Response.Status.NOT_FOUND, "Could not find dataset based on id supplied: " + idSupplied + ".");
         }
@@ -654,7 +652,7 @@ public class Datasets extends AbstractApiBean {
             }
             Dataset datasetThatMayHaveChanged = datasetService.writeDatasetLogoToStagingArea(dataset, file);
             datasetThatMayHaveChanged = datasetService.moveDatasetLogoFromStagingToFinal(dataset);
-            return ok("Thumbnail is now " + datasetThatMayHaveChanged.getDatasetThumbnail(datasetVersionService, fileService).getFilename());
+            return ok("Thumbnail is now " + datasetThatMayHaveChanged.getDatasetThumbnail(datasetVersionService, fileService).getBase64image());
         } catch (WrappedResponse ex) {
             return error(Response.Status.NOT_FOUND, "Could not find dataset based on id supplied: " + idSupplied + ".");
         }

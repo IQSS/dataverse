@@ -1075,29 +1075,22 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 result.setImageUrl(getDataverseCardImageUrl(result));
                 valueSet = true;
             } else if (result.getType().equals("datasets") /*&& result.getEntity() instanceof Dataset*/) {
-                String imageFoundBygetDatasetCardImageUrl = getDatasetCardImageUrl(result);
-                result.setImageUrl(imageFoundBygetDatasetCardImageUrl);
                 /**
-                 * @todo: remove this "true". Still working on centralizing the
-                 * business logic of the GUI and the Search API. Investigate
-                 * more how getDatasetCardImageUrl above works and what the
-                 * implications are of no longer calling it. Can it be moved to
-                 * SearchServiceBean or some other central bean?
+                 * @todo Someday we should probably revert this setImageUrl to
+                 * the original meaning "image_url" to address this issue:
+                 * `image_url` from Search API results no longer yields a
+                 * downloadable image -
+                 * https://github.com/IQSS/dataverse/issues/3616
+                 *
+                 * Note that for datasets, search-include-fragment.xhtml now
+                 * uses the new getDatasetThumbnailBase64image rather than the
+                 * old getImageUrl. This means that we might be able to comment
+                 * out the `result.setImageUrl(getDatasetCardImageUrl` line
+                 * below and all the code it calls.
                  */
-                if (true) {
-                    DatasetThumbnail datasetThumbnail = result.getDatasetThumbnail();
-                    if (datasetThumbnail != null) {
-                        result.setImageUrl(datasetThumbnail.getBase64image());
-                    } else {
-                        if (imageFoundBygetDatasetCardImageUrl != null) {
-                            logger.info("dataset file thumbnail found by imageFoundBygetDatasetCardImageUrl method, using it because dataset.getDatasetThumbnail() was null");
-                            result.setImageUrl(imageFoundBygetDatasetCardImageUrl);
-                        } else {
-                            logger.info("No dataset thumbnail should be shown.");
-                            result.setImageUrl(null);
-                        }
-                    }
-                }
+                result.setImageUrl(getDatasetCardImageUrl(result));
+                result.setDatasetThumbnailBase64image(result.getDatasetThumbnailBase64image());
+
                 valueSet = true;
                 if (result.isHarvested()) {
                     if (harvestedDatasetIds == null) {
@@ -1121,6 +1114,9 @@ public class SearchIncludeFragment implements java.io.Serializable {
 
             if (valueSet) {
                 if (result.getImageUrl() != null) {
+                    result.setDisplayImage(true);
+                }
+                if (result.getDatasetThumbnailBase64image() != null) {
                     result.setDisplayImage(true);
                 }
             } else {
