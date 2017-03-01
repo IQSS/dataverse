@@ -16,8 +16,6 @@ import java.util.ResourceBundle;
  */
 public class FileVersionDifference {
     
-    private final DatasetVersion newVersion;
-    private final DatasetVersion originalVersion;
     private  FileMetadata newFileMetadata;
     private  FileMetadata originalFileMetadata;   
     private boolean details = false;
@@ -36,17 +34,6 @@ public class FileVersionDifference {
         this.newFileMetadata = newFileMetadata;
         this.originalFileMetadata = originalFileMetadata;
         this.details = details;
-        
-        if (newFileMetadata == null) {
-            this.newVersion = null;
-        } else {
-            this.newVersion = newFileMetadata.getDatasetVersion();
-        }
-        if (originalFileMetadata == null) {
-            this.originalVersion = null;
-        } else {
-            this.originalVersion = originalFileMetadata.getDatasetVersion();
-        }
 
         compareMetadata(newFileMetadata, originalFileMetadata);
         //Compare versions - File Metadata first
@@ -130,13 +117,40 @@ public class FileVersionDifference {
             }
 
             if (!value1.equals(value2)) {
-                int added = newFileMetadata.getCategoriesByName().size() - originalFileMetadata.getCategoriesByName().size();
-                added = added < 0 ? 0 : added;
-                int deleted = originalFileMetadata.getCategoriesByName().size() - newFileMetadata.getCategoriesByName().size();
-                deleted = deleted < 0 ? 0 : deleted;
-                if (originalFileMetadata.getCategoriesByName().size() == newFileMetadata.getCategoriesByName().size());
-                int changed = originalFileMetadata.getCategoriesByName().size();
-                updateDifferenceSummary(ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.fileTagsGroupTitle"), "", added, changed, deleted, 0, true);
+                
+                int added = 0;
+                int deleted = 0;
+                
+                added = newFileMetadata.getCategoriesByName().stream().map((tag) -> {
+                    boolean found = false;
+                    for (String tagOld : originalFileMetadata.getCategoriesByName() ){
+                        if (tag.equals(tagOld)){
+                            found = true;
+                            break;
+                        }
+                    }
+                    return found;
+                }).filter((found) -> (!found)).map((_item) -> 1).reduce(added, Integer::sum);
+                
+                for (String tag : originalFileMetadata.getCategoriesByName()) {
+                    boolean found = false;
+                    for (String tagNew : newFileMetadata.getCategoriesByName() ){
+                        if (tag.equals(tagNew)){
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found){
+                        deleted++;
+                    }
+                }
+                if (added > 0){
+                    updateDifferenceSummary(ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.fileTagsGroupTitle"), "", added, 0, 0, 0, true);
+                }
+                if (deleted > 0){
+                    updateDifferenceSummary(ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.fileTagsGroupTitle"), "", 0, 0, deleted, 0, true);
+                }
+                
             }
             
             /*
