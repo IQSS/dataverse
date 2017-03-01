@@ -70,19 +70,21 @@
                 <h:outputText rendered="#{empty versionTab.fileVersionDifference.differenceSummaryGroups
                                      and !(versionTab.fileVersionDifference.newFileMetadata.getDataFile() == null and versionTab.fileVersionDifference.originalFileMetadata == null) }"
                     value="#{bundle['file.versionDifferences.noChanges']}" styleClass="italic text-muted"/>
-                <ui:repeat value="#{versionTab.fileVersionDifference.differenceSummaryGroups }" var="groupSummary">
-                    <h:outputText value="#{groupSummary.name}: " styleClass="highlightBold" escape="false"/>
-                    <ui:repeat value="#{groupSummary.fileDifferenceSummaryItems}" var="item">                       
-                        <h:outputText value="#{item.name}" escape="false"/>
-                        <h:outputText value="#{item.added}" rendered="#{item.added > 0 and item.multiple}" escape="false"/>
-                        <h:outputText value="#{bundle['file.versionDifferences.actionAdded']}" rendered="#{item.added > 0}" escape="false"/>
-                        <h:outputText value="#{item.deleted}" rendered="#{item.deleted > 0 and item.multiple}" escape="false"/>
-                        <h:outputText value="#{bundle['file.versionDifferences.actionRemoved']}" rendered="#{item.deleted > 0}" escape="false"/>
-                        <h:outputText value="#{item.changed}" rendered="#{item.changed > 0 and item.multiple}" escape="false"/>
-                        <h:outputText value="#{bundle['file.versionDifferences.actionChanged']}" rendered="#{item.changed > 0}" escape="false"/>
-                        <h:outputText value="#{item.replaced}" rendered="#{item.replaced > 0 and item.multiple}" escape="false"/>
-                        <h:outputText value="#{bundle['file.versionDifferences.actionReplaced']}" rendered="#{item.replaced > 0}" escape="false"/>
+                <ui:repeat value="#{versionTab.fileVersionDifference.differenceSummaryGroups}" var="groupSummary" varStatus="grp_status">
+                    <h:outputText value="#{groupSummary.name}:" styleClass="highlightBold" escape="false"/>
+                    <ui:repeat value="#{groupSummary.fileDifferenceSummaryItems}" var="item" varStatus="itm_status">                       
+                        <h:outputText value=" #{item.name}" escape="false"/>
+                        <h:outputText value=" #{item.added}" rendered="#{item.added > 0 and item.multiple}" escape="false"/>
+                        <h:outputText value=" #{bundle['file.versionDifferences.actionAdded']}" rendered="#{item.added > 0}" escape="false"/>
+                        <h:outputText value=" #{item.deleted}" rendered="#{item.deleted > 0 and item.multiple}" escape="false"/>
+                        <h:outputText value=" #{bundle['file.versionDifferences.actionRemoved']}" rendered="#{item.deleted > 0}" escape="false"/>
+                        <h:outputText value=" #{item.changed}" rendered="#{item.changed > 0 and item.multiple}" escape="false"/>
+                        <h:outputText value=" #{bundle['file.versionDifferences.actionChanged']}" rendered="#{item.changed > 0}" escape="false"/>
+                        <h:outputText value=" #{item.replaced}" rendered="#{item.replaced > 0 and item.multiple}" escape="false"/>
+                        <h:outputText value=" #{bundle['file.versionDifferences.actionReplaced']}" rendered="#{item.replaced > 0}" escape="false"/>
+                        <h:outputText rendered="#{! itm_status.last}" value=", "/>
                     </ui:repeat>
+                    <h:outputText value="; "/>
                 </ui:repeat>
                 <ui:remove>
                     <p:commandLink rendered="#{(!empty(versionTab.defaultVersionDifference)) and DatasetPage.versionTabListForPostLoad.size() > (rowNum + 1)}"
