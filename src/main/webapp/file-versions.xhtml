@@ -13,7 +13,7 @@
         /* Version tab: Retrieve data after page load */
         $(document).ready(function () {
             preload_message = "(Loading versions...)";
-            $('#datasetForm\\:tabView\\:versionsTable_data tr.ui-datatable-empty-message td').text(preload_message);
+            $('#fileForm\\:tabView\\:versionsTable_data tr.ui-datatable-empty-message td').text(preload_message);
             postLoadVersionTabList();
         });
     </script>
@@ -72,8 +72,16 @@
                     value="#{bundle['file.versionDifferences.noChanges']}" styleClass="italic text-muted"/>
                 <ui:repeat value="#{versionTab.fileVersionDifference.differenceSummaryGroups }" var="groupSummary">
                     <h:outputText value="#{groupSummary.name}: " styleClass="highlightBold" escape="false"/>
-                    <ui:repeat value="#{groupSummary.fileDifferenceSummaryItems}" var="item">
-                        <h:outputText value="#{item}" escape="false"/>
+                    <ui:repeat value="#{groupSummary.fileDifferenceSummaryItems}" var="item">                       
+                        <h:outputText value="#{item.name}" escape="false"/>
+                        <h:outputText value="#{item.added}" rendered="#{item.added > 0 and item.multiple}" escape="false"/>
+                        <h:outputText value="#{bundle['file.versionDifferences.actionAdded']}" rendered="#{item.added > 0}" escape="false"/>
+                        <h:outputText value="#{item.deleted}" rendered="#{item.deleted > 0 and item.multiple}" escape="false"/>
+                        <h:outputText value="#{bundle['file.versionDifferences.actionRemoved']}" rendered="#{item.deleted > 0}" escape="false"/>
+                        <h:outputText value="#{item.changed}" rendered="#{item.changed > 0 and item.multiple}" escape="false"/>
+                        <h:outputText value="#{bundle['file.versionDifferences.actionChanged']}" rendered="#{item.changed > 0}" escape="false"/>
+                        <h:outputText value="#{item.replaced}" rendered="#{item.replaced > 0 and item.multiple}" escape="false"/>
+                        <h:outputText value="#{bundle['file.versionDifferences.actionReplaced']}" rendered="#{item.replaced > 0}" escape="false"/>
                     </ui:repeat>
                 </ui:repeat>
                 <ui:remove>

@@ -408,17 +408,6 @@ public class FileMetadata implements Serializable {
     }
     
     @Transient
-    private String defaultVersionDifferencesSummary;
-
-    public String getDefaultVersionDifferencesSummary() {
-        return defaultVersionDifferencesSummary;
-    }
-
-    public void setDefaultVersionDifferencesSummary(String defaultVersionDifferencesSummary) {
-        this.defaultVersionDifferencesSummary = defaultVersionDifferencesSummary;
-    }
-    
-    @Transient
     private FileVersionDifference fileVersionDifference ;
 
     public FileVersionDifference getFileVersionDifference() {

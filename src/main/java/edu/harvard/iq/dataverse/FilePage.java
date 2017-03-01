@@ -36,6 +36,8 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.validation.ConstraintViolation;
+import org.primefaces.component.tabview.TabView;
+import org.primefaces.event.TabChangeEvent;
 
 /**
  *
@@ -141,7 +143,7 @@ public class FilePage implements java.io.Serializable {
             }         
            
            this.guestbookResponse = this.guestbookResponseService.initGuestbookResponseForFragment(fileMetadata, session);
-           setFileMetadatasForTab(resetFileMetadataTabList());
+           
         } else {
 
             return permissionsWrapper.notFound();
@@ -296,8 +298,28 @@ public class FilePage implements java.io.Serializable {
         
     }
     
+    private int activeTabIndex;
+
+    public int getActiveTabIndex() {
+        return activeTabIndex;
+    }
+
+    public void setActiveTabIndex(int activeTabIndex) {
+        this.activeTabIndex = activeTabIndex;
+    }
     
-    private List<FileMetadata> resetFileMetadataTabList() {
+    public void tabChanged(TabChangeEvent event) {
+        TabView tv = (TabView) event.getComponent();
+        this.activeTabIndex = tv.getActiveIndex();
+        if (this.activeTabIndex == 1) {
+            setFileMetadatasForTab(loadFileMetadataTabList());
+        } else {
+            setFileMetadatasForTab( new ArrayList());         
+        }
+    }
+    
+    
+    private List<FileMetadata> loadFileMetadataTabList() {
         List<DataFile> allfiles = allRelatedFiles();
         List<FileMetadata> retList = new ArrayList();
         for (DatasetVersion versionLoop : fileMetadata.getDatasetVersion().getDataset().getVersions()) {
@@ -310,7 +332,6 @@ public class FilePage implements java.io.Serializable {
                     if (fmd != null) {
                         fmd.setContributorNames(datasetVersionService.getContributorsNames(versionLoop));
                         FileVersionDifference fvd = new FileVersionDifference(fmd, getPreviousFileMetadata(fmd));
-                        fmd.setDefaultVersionDifferencesSummary(fvd.getDisplay());
                         fmd.setFileVersionDifference(fvd);
                         retList.add(fmd);
                         foundFmd = true;
@@ -318,21 +339,14 @@ public class FilePage implements java.io.Serializable {
                     }
                 }
                 //no File metadata found make dummy one
-                if (!foundFmd){
+                if (!foundFmd) {
                     FileMetadata dummy = new FileMetadata();
                     dummy.setDatasetVersion(versionLoop);
                     dummy.setDataFile(null);
-                    if (getPreviousFileMetadata(versionLoop) == null){
-                        dummy.setDefaultVersionDifferencesSummary(ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.fileNotInVersion"));
-                    } else {
-                        dummy.setDefaultVersionDifferencesSummary(ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.fileRemoved"));
-                    }
                     FileVersionDifference fvd = new FileVersionDifference(dummy, getPreviousFileMetadata(versionLoop));
-                        dummy.setDefaultVersionDifferencesSummary(fvd.getDisplay());
-                        dummy.setFileVersionDifference(fvd);
-   
+                    dummy.setFileVersionDifference(fvd);
                     retList.add(dummy);
-                } 
+                }
             }
         }
         return retList;
