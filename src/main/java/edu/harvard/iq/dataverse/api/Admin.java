@@ -57,6 +57,7 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.Future;
+import javax.ws.rs.QueryParam;
 /**
  * Where the secure, setup API calls live.
  * @author michael
@@ -867,10 +868,11 @@ public class Admin extends AbstractApiBean {
                 : ok(json(ra.getDisplayInfo()));
     }
 
-    @Path("datasets/integrity/{datasetVersionId}/fixunf")
+    @Path("datasets/integrity/{datasetVersionId}/fixmissingunf")
     @POST
-    public Response fixUnf(@PathParam("datasetVersionId") String datasetVersionId) {
-        JsonObjectBuilder info = datasetVersionSvc.fixUnf(datasetVersionId);
+    public Response fixUnf(@PathParam("datasetVersionId") String datasetVersionId, 
+                           @QueryParam("forceRecalculate") boolean forceRecalculate) {
+        JsonObjectBuilder info = datasetVersionSvc.fixMissingUnf(datasetVersionId, forceRecalculate);
         return ok(info);
     }
 
