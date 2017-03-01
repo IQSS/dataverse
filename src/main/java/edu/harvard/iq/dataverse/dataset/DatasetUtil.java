@@ -151,12 +151,13 @@ public class DatasetUtil {
             jsonObjectBuilder.add(stagingFileErrorKey, msg);
             return jsonObjectBuilder;
         }
-//        File newFile = new File(dataset.getFileSystemDirectory().toString(), datasetLogoFilenameStaging);
         File newFile = null;
         String stagingFilePath = null;
         try {
             newFile = File.createTempFile(datasetLogoFilenameStaging, ".png");
             stagingFilePath = newFile.toPath().toString();
+            // goes to some place like this: /var/folders/c2/qts2_6zn7cl5h8g8x7r7xcbr0000gn/T/dataset_logo_staging5070333955726753809.png
+            logger.fine("Uploaded file written to staging area: " + newFile.getAbsolutePath());
             jsonObjectBuilder.add(stagingFilePathKey, stagingFilePath);
         } catch (IOException ex) {
             Logger.getLogger(DatasetUtil.class.getName()).log(Level.SEVERE, null, ex);
