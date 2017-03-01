@@ -161,14 +161,16 @@ public class DatasetWidgetsPage implements java.io.Serializable {
 
     public String save() {
         logger.fine("save clicked");
-        JsonObject resultFromAttemptToStageDatasetLogoObject = resultFromAttemptToStageDatasetLogoObjectBuilder.build();
-        String stagingFilePath = resultFromAttemptToStageDatasetLogoObject.getString(DatasetUtil.stagingFilePathKey);
-        File stagingFile = new File(stagingFilePath);
-        if (stagingFile.exists()) {
-            logger.fine("Copying dataset logo from staging area to final location.");
-            dataset = datasetService.moveDatasetLogoFromStagingToFinal(dataset, stagingFile.getAbsolutePath());
-        } else {
-            logger.fine("No dataset logo in staging area to copy.");
+        if (resultFromAttemptToStageDatasetLogoObjectBuilder != null) {
+            JsonObject resultFromAttemptToStageDatasetLogoObject = resultFromAttemptToStageDatasetLogoObjectBuilder.build();
+            String stagingFilePath = resultFromAttemptToStageDatasetLogoObject.getString(DatasetUtil.stagingFilePathKey);
+            File stagingFile = new File(stagingFilePath);
+            if (stagingFile.exists()) {
+                logger.fine("Copying dataset logo from staging area to final location.");
+                dataset = datasetService.moveDatasetLogoFromStagingToFinal(dataset, stagingFile.getAbsolutePath());
+            } else {
+                logger.fine("No dataset logo in staging area to copy.");
+            }
         }
         if (datasetFileThumbnailToSwitchTo != null) {
             logger.fine("switching thumbnail to DataFile id " + datasetFileThumbnailToSwitchTo.getId());
