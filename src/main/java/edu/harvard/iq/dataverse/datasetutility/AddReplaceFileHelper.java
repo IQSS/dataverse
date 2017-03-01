@@ -41,6 +41,7 @@ import javax.ejb.EJBException;
 import javax.json.JsonObjectBuilder;
 import javax.validation.ConstraintViolation;
 import javax.ws.rs.core.Response;
+import org.codehaus.plexus.util.StringUtils;
 import org.ocpsoft.common.util.Strings;
 
 /**
@@ -1473,22 +1474,27 @@ public class AddReplaceFileHelper{
         msgt("Clear file to replace");
         int cnt = 0;
         while (fmIt.hasNext()) {
-           cnt++;
-          
-           FileMetadata fm = fmIt.next();
-           msg(cnt + ") next file: " + fm);
-           msg("   getDataFile().getId(): " + fm.getDataFile().getId());
-           if (fm.getDataFile().getId() != null){
-               if (Objects.equals(fm.getDataFile().getId(), fileToReplace.getId())){
-                   msg("Let's remove it!");
-                   
+            cnt++;
+
+            FileMetadata fm = fmIt.next();
+            msg(cnt + ") next file: " + fm);
+            msg("   getDataFile().getId(): " + fm.getDataFile().getId());
+            if (fm.getDataFile().getId() != null) {
+                if (Objects.equals(fm.getDataFile().getId(), fileToReplace.getId())) {
+                    msg("Let's remove it!");
+
+                    // If this is a tabular data file with a UNF, we'll need 
+                    // to recalculate the version UNF, once the file is removed: 
+                    
+                    boolean recalculateUNF = !StringUtils.isEmpty(fm.getDataFile().getUnf());
+
                     if (workingVersion.getId() != null) {
                         // If this is an existing draft (i.e., this draft version 
                         // is already saved in the dataset, we'll also need to remove this filemetadata 
                         // explicitly:
                         msg(" this is an existing draft version...");
                         fileService.removeFileMetadata(fm);
-                       
+
                         // remove the filemetadata from the list of filemetadatas
                         // attached to the datafile object as well, for a good 
                         // measure: 
@@ -1499,14 +1505,17 @@ public class AddReplaceFileHelper{
                         // has the id, and can be identified unambiguously. 
                     }
 
-                    
                     // and remove it from the list of filemetadatas attached
                     // to the version object, via the iterator:
                     fmIt.remove();
 
+                    if (recalculateUNF) {
+                        ingestService.recalculateDatasetVersionUNF(workingVersion);
+                    }
+                    
                     return true;
-               }
-           }
+                }
+            }
         }
         
         msg("No matches found!");
