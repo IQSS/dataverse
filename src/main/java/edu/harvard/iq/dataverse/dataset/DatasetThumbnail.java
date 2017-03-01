@@ -28,4 +28,11 @@ public class DatasetThumbnail {
         }
     }
 
+    public String getFilename() {
+        if (dataFile != null) {
+            return dataFile.getDisplayName();
+        } else {
+            return null;
+        }
+    }
 }
