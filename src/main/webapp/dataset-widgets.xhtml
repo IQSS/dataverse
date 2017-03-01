@@ -101,14 +101,17 @@
                                         </label>
                                         <p:outputPanel id="customPanel">
                                             <p:selectOneRadio id="selectDatasetThumbnail" value="#{DatasetWidgetsPage.datasetFileThumbnailToSwitchTo}" layout="custom" converter="dataFileConverter">
-                                                <f:selectItems value="#{DatasetWidgetsPage.datasetThumbnails}" var="thumb" itemLabel="#{thumb.filename}" itemValue="#{thumb.dataFile}"/>
+                                                <f:selectItems value="#{DatasetWidgetsPage.datasetThumbnails}" var="thumb" itemLabel="#{thumb}" itemValue="#{thumb.dataFile}"/>
                                             </p:selectOneRadio>
                                             <c:forEach items="#{DatasetWidgetsPage.datasetThumbnails}" var="thumbnail" varStatus="loop">
                                                 <div class="col-xs-4 text-center radio">
                                                     <p:radioButton for="selectDatasetThumbnail" id="opt#{loop.index}" itemIndex="#{loop.index}" />
                                                     <h:outputLabel for="opt#{loop.index}" style="padding:4px;">
-                                                        <div style="height:48px;"><img src="#{thumbnail.base64image}" alt="#{thumbnail.filename}"/></div>
-                                                        <h:outputText value="#{thumbnail.filename}"/>
+                                                        <div style="height:48px;"><img src="#{thumbnail.base64image}" alt="#{thumb}"/></div>
+                                                        <!--FIXME: We used to show the filename (label) here but we took the filename field
+                                                        out of the DatasetThumbnail object in a56829b. Should we add it back? We're now using
+                                                        a number instead so there's something at least. Why doesn't thumb.dataFile.displayName work? -->
+                                                        <h:outputText value="#{loop.index + 1} #{thumb.dataFile.displayName}"/>
                                                     </h:outputLabel>
                                                 </div>
                                             </c:forEach>
