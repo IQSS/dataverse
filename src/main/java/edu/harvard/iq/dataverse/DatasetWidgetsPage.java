@@ -18,6 +18,8 @@ import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.UploadedFile;
 
@@ -50,6 +52,7 @@ public class DatasetWidgetsPage implements java.io.Serializable {
     @Inject
     PermissionsWrapper permissionsWrapper;
     private final boolean considerDatasetLogoAsCandidate = false;
+    private JsonObjectBuilder resultFromAttemptToStageDatasetLogoObjectBuilder;
 
     public String init() {
         if (datasetId == null || datasetId.intValue() <= 0) {
@@ -122,7 +125,7 @@ public class DatasetWidgetsPage implements java.io.Serializable {
         } catch (IOException ex) {
             Logger.getLogger(DatasetWidgetsPage.class.getName()).log(Level.SEVERE, null, ex);
         }
-        dataset = datasetService.writeDatasetLogoToStagingArea(dataset, file);
+        resultFromAttemptToStageDatasetLogoObjectBuilder = datasetService.writeDatasetLogoToStagingArea(dataset, file);
         String base64image = null;
         try {
             base64image = FileUtil.rescaleImage(file);
@@ -158,10 +161,12 @@ public class DatasetWidgetsPage implements java.io.Serializable {
 
     public String save() {
         logger.fine("save clicked");
-        File stagingFile = new File(dataset.getFileSystemDirectory().toString(), datasetLogoFilenameStaging);
+        JsonObject resultFromAttemptToStageDatasetLogoObject = resultFromAttemptToStageDatasetLogoObjectBuilder.build();
+        String stagingFilePath = resultFromAttemptToStageDatasetLogoObject.getString(DatasetUtil.stagingFilePathKey);
+        File stagingFile = new File(stagingFilePath);
         if (stagingFile.exists()) {
             logger.fine("Copying dataset logo from staging area to final location.");
-            dataset = datasetService.moveDatasetLogoFromStagingToFinal(dataset);
+            dataset = datasetService.moveDatasetLogoFromStagingToFinal(dataset, stagingFile.getAbsolutePath());
         } else {
             logger.fine("No dataset logo in staging area to copy.");
         }

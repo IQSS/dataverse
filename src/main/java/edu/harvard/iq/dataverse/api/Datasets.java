@@ -650,9 +650,23 @@ public class Datasets extends AbstractApiBean {
             if(file.length() > systemConfig.getThumbnailSizeLimitImage()){
                 return error(Response.Status.BAD_REQUEST, "File is larger than maximum size: " + systemConfig.getThumbnailSizeLimitImage() + ".");
             }
-            Dataset datasetThatMayHaveChanged = datasetService.writeDatasetLogoToStagingArea(dataset, file);
-            datasetThatMayHaveChanged = datasetService.moveDatasetLogoFromStagingToFinal(dataset);
-            return ok("Thumbnail is now " + datasetThatMayHaveChanged.getDatasetThumbnail(datasetVersionService, fileService).getBase64image());
+            JsonObjectBuilder jsonObjectBuilder = datasetService.writeDatasetLogoToStagingArea(dataset, file);
+            JsonObject jsonObject = jsonObjectBuilder.build();
+            logger.fine("jsonObject: " + jsonObject);
+            String stagingFilePath = null;
+            try {
+                stagingFilePath = jsonObject.getString(DatasetUtil.stagingFilePathKey);
+            } catch (NullPointerException ex1) {
+                String errorDetails = null;
+                try {
+                    errorDetails = jsonObject.getString(DatasetUtil.stagingFileErrorKey);
+                } catch (NullPointerException ex2) {
+                }
+                String error = "Could not move thumbnail from staging area to final destination: " + errorDetails;
+                return error(Response.Status.BAD_REQUEST, error);
+            }
+            dataset = datasetService.moveDatasetLogoFromStagingToFinal(dataset, stagingFilePath);
+            return ok("Thumbnail is now " + dataset.getDatasetThumbnail(datasetVersionService, fileService).getBase64image());
         } catch (WrappedResponse ex) {
             return error(Response.Status.NOT_FOUND, "Could not find dataset based on id supplied: " + idSupplied + ".");
         }

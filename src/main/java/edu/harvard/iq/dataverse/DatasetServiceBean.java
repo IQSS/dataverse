@@ -36,6 +36,7 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.inject.Named;
+import javax.json.JsonObjectBuilder;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
@@ -769,14 +770,14 @@ public class DatasetServiceBean implements java.io.Serializable {
         em.createNativeQuery("UPDATE Dataset SET lastExportTime='"+now.toString()+"' WHERE id="+datasetId).executeUpdate();
     }
 
-    public Dataset writeDatasetLogoToStagingArea(Dataset dataset, File file) {
-        Dataset datasetThatMayHaveChanged = DatasetUtil.writeDatasetLogoToStagingArea(dataset, file);
-        return datasetThatMayHaveChanged;
+    public JsonObjectBuilder writeDatasetLogoToStagingArea(Dataset dataset, File file) {
+        JsonObjectBuilder resultFromAttemptToStageDatasetLogo = DatasetUtil.writeDatasetLogoToStagingArea(dataset, file);
+        return resultFromAttemptToStageDatasetLogo;
     }
 
-    public Dataset moveDatasetLogoFromStagingToFinal(Dataset dataset) {
-        Dataset datasetThatMayHaveChanged = DatasetUtil.moveDatasetLogoFromStagingToFinal(dataset);
-        return datasetThatMayHaveChanged;
+    public Dataset moveDatasetLogoFromStagingToFinal(Dataset dataset, String stagingFilePath) {
+        dataset = DatasetUtil.moveDatasetLogoFromStagingToFinal(dataset, stagingFilePath);
+        return dataset;
     }
 
     public Dataset setDataFileAsThumbnail(Dataset dataset, DataFile datasetFileThumbnailToSwitchTo) {
