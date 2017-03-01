@@ -542,22 +542,16 @@ public class FilePage implements java.io.Serializable {
     }
     
     
-    private List<DataFile> allRelatedFiles(){
+    private List<DataFile> allRelatedFiles() {
         List<DataFile> dataFiles = new ArrayList();
-        DataFile dataFileToTest = fileMetadata.getDataFile();       
-        dataFiles.add(dataFileToTest);
-        
-        while (datafileService.findReplacementFile(dataFileToTest.getId()) != null ){
-            dataFiles.add(datafileService.findReplacementFile(dataFileToTest.getId()));
-            dataFileToTest = datafileService.findReplacementFile(dataFileToTest.getId());
+        DataFile dataFileToTest = fileMetadata.getDataFile();
+        Long rootDataFileId = dataFileToTest.getRootDataFileId();
+        if (rootDataFileId < 0) {
+            dataFiles.add(dataFileToTest);
+        } else {
+            dataFiles.addAll(datafileService.findAllRelatedByRootDatafileId(rootDataFileId));
         }
-        
-        dataFileToTest = fileMetadata.getDataFile();
-        while (datafileService.findPreviousFile(dataFileToTest) != null ){
-            dataFiles.add(datafileService.findPreviousFile(dataFileToTest));
-            dataFileToTest = datafileService.findPreviousFile(dataFileToTest);
-        }       
-        
+
         return dataFiles;
     }
     

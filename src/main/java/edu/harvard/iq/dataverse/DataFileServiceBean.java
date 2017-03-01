@@ -193,6 +193,16 @@ public class DataFileServiceBean implements java.io.Serializable {
         query.setParameter("studyId", studyId);
         return query.getResultList();
     }
+    
+    public List<DataFile> findAllRelatedByRootDatafileId(Long datafileId) {
+        /* 
+         Get all files with the same root datafile id
+         the first file has its own id as root so only one query needed.
+        */
+        Query query = em.createQuery("select o from DataFile o where o.rootDataFileId = :datafileId order by o.id");
+        query.setParameter("datafileId", datafileId);
+        return query.getResultList();
+    }
 
     public DataFile findByStorageIdandDatasetVersion(String storageId, DatasetVersion dv) {
         try {
