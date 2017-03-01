@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
+import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -3524,6 +3525,15 @@ public class DatasetPage implements java.io.Serializable {
 
     public void setTwoRavensHelper(TwoRavensHelper twoRavensHelper) {
         this.twoRavensHelper = twoRavensHelper;
+    }
+
+    public String getThumbnail() {
+        DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail(datasetVersionService, datafileService);
+        if (datasetThumbnail != null) {
+            return datasetThumbnail.getBase64image();
+        } else {
+            return null;
+        }
     }
 
 }
