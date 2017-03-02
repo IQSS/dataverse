@@ -34,7 +34,7 @@
             </p:commandButton>
         </div>
     </ui:remove>
-    <p:dataTable id="versionsTable" value="#{FilePage.fileMetadatasForTab}" var="versionTab" widgetVar="versionsTable"  
+    <p:dataTable id="versionsTable" styleClass="" value="#{FilePage.fileMetadatasForTab}" var="versionTab" widgetVar="versionsTable"  
                  rowKey="#{versionTab}">
         <ui:remove>
             <!-- start: checkbox column -->
@@ -42,7 +42,7 @@
             <!-- end: checkbox column -->
         </ui:remove>
         <!-- start: version number column -->
-        <p:column class="col-sm-1 text-center">
+        <p:column headerText="#{bundle['file.dataFilesTab.versions.headers.dataset']}" class="col-sm-1 text-center">
             <ui:fragment rendered="#{versionTab.datasetVersion != FilePage.fileMetadata.datasetVersion }">
                 <ui:fragment rendered="#{versionTab.datasetVersion.released or ((versionTab.datasetVersion.deaccessioned or versionTab.datasetVersion.draft)
                                      and permissionServiceBean.on(versionTab.datasetVersion.dataset).has('ViewUnpublishedDataset'))}">
@@ -71,7 +71,7 @@
             </ui:fragment>    
         </p:column>
         <!-- start: description column -->
-        <p:column>
+        <p:column headerText="#{bundle['file.dataFilesTab.versions.headers.summary']}">
             <ui:fragment rendered="#{!versionTab.datasetVersion.deaccessioned}">
                 <h:outputText rendered="#{versionTab.fileVersionDifference.newFileMetadata.getDataFile() == null and versionTab.fileVersionDifference.originalFileMetadata == null }"
                     value="#{bundle['file.versionDifferences.fileNotInVersion']}" styleClass="italic text-muted"/>
@@ -106,12 +106,12 @@
                 value="#{bundle['file.dataFilesTab.versions.description.deaccessionedReason']} #{versionTab.datasetVersion.versionNote}" escape="false"/>
         </p:column>
         <!-- contributor column -->
-        <p:column class="col-sm-3">
+        <p:column headerText="#{bundle['file.dataFilesTab.versions.headers.contributors']}" class="col-sm-3">
             <h:outputText value="#{versionTab.contributorNames}" />
         </p:column>
         <!-- end: contributor column -->
         <!-- date column -->
-        <p:column class="col-sm-2">
+        <p:column headerText="#{bundle['file.dataFilesTab.versions.headers.published']}" class="col-sm-2">
             <h:outputText id="versionDate" value="#{versionTab.datasetVersion.versionDate}" />
         </p:column>
         <!-- end: date column -->
