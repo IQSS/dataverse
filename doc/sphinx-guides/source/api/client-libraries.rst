@@ -22,6 +22,6 @@ It was created by `Thomas Leeper <http://thomasleeper.com>`_ whose dataverse can
 Java
 ----
 
-https://github.com/IQSS/dataverse-client-java is the offical Java library for Dataverse APIs.
+https://github.com/IQSS/dataverse-client-java is the official Java library for Dataverse APIs.
 
 `Richard Adams <http://www.researchspace.com/electronic-lab-notebook/about_us_team.html>`_ from `ResearchSpace <http://www.researchspace.com>`_ created and maintains this library.
