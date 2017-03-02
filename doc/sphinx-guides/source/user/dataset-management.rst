@@ -144,11 +144,11 @@ File tags are comprised of custom, category (i.e. Documentation, Data, Code) and
 Replace Files
 =============
 
-In cases where you would like to revise an existing file rather than add a new one, you can do so using our Replace File feature. This will allow you to track the history of this file across versions of your dataset. This could be useful for updating your data or fixing mistakes in your data.
+In cases where you would like to revise an existing file rather than add a new one, you can do so using our Replace File feature. This will allow you to track the history of this file across versions of your dataset, both before and after replacing it. This could be useful for updating your data or fixing mistakes in your data.
 
 Go to the file page for the file you would like to replace, click on the "Edit" button, and from the dropdown list select "Replace". This will bring you to the Replace File page, where you can see the metadata for the most recently published version of the file and you can upload your replacement file. Once you have uploaded the replacement file, you can edit its name, description, and tags. When you're finished, click the "Save Changes" button.
 
-After successfully replacing a file, a new dataset draft version will be created, and the action summary will be recorded in the dataset Version Details.
+After successfully replacing a file, a new dataset draft version will be created. A summary of your actions will be recorded in the dataset Version Details table in the "Versions" tab on that dataset's page, and in the file Version Details table on the file's page. Both tables allow you to access all previous versions of the file across all previous versions of your dataset, including the old version of the file before you replaced it.
 
 .. _license-terms:
 
