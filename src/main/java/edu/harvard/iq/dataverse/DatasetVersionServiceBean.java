@@ -32,8 +32,6 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import org.apache.commons.lang.StringUtils;
-//import org.jsoup.helper.StringUtil;
-
     
 /**
  *
@@ -1003,7 +1001,7 @@ w
         }
             
         List<String> fileUnfsInVersion = getFileUnfsInVersion(datasetVersion);
-        if (fileUnfsInVersion.size() < 1) {
+        if (fileUnfsInVersion.isEmpty()) {
             info.add("message", "Dataset version (id=" + datasetVersionId + ") has no tabular data files with UNF signatures. The version UNF will remain blank.");
             return info;
         }
