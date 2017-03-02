@@ -34,7 +34,7 @@
             </p:commandButton>
         </div>
     </ui:remove>
-    <p:dataTable id="versionsTable" value="#{FilePage.fileMetadatasForTab}" var="versionTab" widgetVar="versionsTable"
+    <p:dataTable id="versionsTable" value="#{FilePage.fileMetadatasForTab}" var="versionTab" widgetVar="versionsTable"  
                  rowKey="#{versionTab}">
         <ui:remove>
             <!-- start: checkbox column -->
@@ -43,24 +43,31 @@
         </ui:remove>
         <!-- start: version number column -->
         <p:column class="col-sm-1 text-center">
-            <ui:fragment rendered="#{versionTab.datasetVersion.released or ((versionTab.datasetVersion.deaccessioned or versionTab.datasetVersion.draft)
+                <ui:fragment rendered="#{versionTab.datasetVersion.released or ((versionTab.datasetVersion.deaccessioned or versionTab.datasetVersion.draft)
                                      and permissionServiceBean.on(versionTab.datasetVersion.dataset).has('ViewUnpublishedDataset'))}">
-                <h:outputLink rendered="#{!(versionTab.datasetVersion.released or versionTab.datasetVersion.deaccessioned) and versionTab.dataFile != null }"
-                              value="/file.xhtml?fileId=#{versionTab.dataFile.id}&#38;version=#{versionTab.datasetVersion.versionState}" styleClass="ui-commandlink ui-widget">
-                    <h:outputText value="#{versionTab.datasetVersion.versionState}" />
-                </h:outputLink>
-                <h:outputText rendered="#{!(versionTab.datasetVersion.released or versionTab.datasetVersion.deaccessioned) and versionTab.dataFile == null}"                   
-                              value="#{versionTab.datasetVersion.versionState}" />
-                <h:outputLink rendered="#{(versionTab.datasetVersion.released or versionTab.datasetVersion.deaccessioned) and versionTab.dataFile != null}"
-                              value="/file.xhtml?fileId=#{versionTab.dataFile.id}&#38;version=#{versionTab.datasetVersion.versionNumber}.#{versionTab.datasetVersion.minorVersionNumber}" class="ui-commandlink ui-widget">
-                    <h:outputText value="#{versionTab.datasetVersion.versionNumber}.#{versionTab.datasetVersion.minorVersionNumber}" />
-                </h:outputLink>
-                <h:outputText rendered="#{(versionTab.datasetVersion.released or versionTab.datasetVersion.deaccessioned)and versionTab.dataFile == null}"
+                    <h:outputLink rendered="#{!(versionTab.datasetVersion.released or versionTab.datasetVersion.deaccessioned) and versionTab.dataFile != null }"
+                                  value="/file.xhtml?fileId=#{versionTab.dataFile.id}&#38;version=#{versionTab.datasetVersion.versionState}" styleClass="ui-commandlink ui-widget">
+                        <h:outputText value="#{versionTab.datasetVersion.versionState}" />
+                    </h:outputLink>
+                    <h:outputText rendered="#{!(versionTab.datasetVersion.released or versionTab.datasetVersion.deaccessioned) and versionTab.dataFile == null}"                   
+                                  value="#{versionTab.datasetVersion.versionState}" />
+                    <h:outputLink rendered="#{(versionTab.datasetVersion.released or versionTab.datasetVersion.deaccessioned) and versionTab.dataFile != null}"
+                                  value="/file.xhtml?fileId=#{versionTab.dataFile.id}&#38;version=#{versionTab.datasetVersion.versionNumber}.#{versionTab.datasetVersion.minorVersionNumber}" class="ui-commandlink ui-widget">
+                        <h:outputText value="#{versionTab.datasetVersion.versionNumber}.#{versionTab.datasetVersion.minorVersionNumber}" />
+                    </h:outputLink>
+                    <h:outputText rendered="#{(versionTab.datasetVersion.released or versionTab.datasetVersion.deaccessioned)and versionTab.dataFile == null}"
+                                  value="#{versionTab.datasetVersion.versionNumber}.#{versionTab.datasetVersion.minorVersionNumber}" />
+                </ui:fragment>
+                <h:outputText rendered="#{versionTab.datasetVersion.deaccessioned
+                                     and !permissionServiceBean.on(versionTab.datasetVersion.dataset).has('ViewUnpublishedDataset')}"
                               value="#{versionTab.datasetVersion.versionNumber}.#{versionTab.datasetVersion.minorVersionNumber}" />
             </ui:fragment>
-            <h:outputText rendered="#{versionTab.datasetVersion.deaccessioned
-                                     and !permissionServiceBean.on(versionTab.datasetVersion.dataset).has('ViewUnpublishedDataset')}"
-                          value="#{versionTab.datasetVersion.versionNumber}.#{versionTab.datasetVersion.minorVersionNumber}" />
+            <ui:fragment rendered="#{versionTab.datasetVersion == FilePage.fileMetadata.datasetVersion }">
+                <h:outputText rendered="#{versionTab.datasetVersion.released}" styleClass="highlightBold"
+                              value="#{versionTab.datasetVersion.versionNumber}.#{versionTab.datasetVersion.minorVersionNumber}" /> 
+                <h:outputText rendered="#{!versionTab.datasetVersion.released}" styleClass="highlightBold"
+                              value="#{versionTab.datasetVersion.versionState}"/> 
+            </ui:fragment>   
         </p:column>
         <!-- start: description column -->
         <p:column>

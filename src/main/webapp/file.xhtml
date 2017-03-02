@@ -208,6 +208,13 @@
                                     </div>
                                 </div>
                             </div>
+                            <div id="versionNumber" class="col-xs-12">
+                                <h:outputText rendered="#{FilePage.fileMetadata.datasetVersion.released}" styleClass="highlightBold"
+                                              value="#{bundle['file.DatasetVersion']}: #{FilePage.fileMetadata.datasetVersion.versionNumber}.#{FilePage.fileMetadata.datasetVersion.minorVersionNumber}" /> 
+                                <h:outputText rendered="#{!FilePage.fileMetadata.datasetVersion.released}" styleClass="highlightBold"
+                                              value="#{bundle['file.DatasetVersion']}: #{FilePage.fileMetadata.datasetVersion.versionState}"/> 
+                            </div>
+                                
                             <div id="deaccession-reason-block" class="col-xs-12" jsf:rendered="#{FilePage.fileMetadata.datasetVersion.deaccessioned}">
                                 <div class="col-xs-12 bg-danger">
                                     <h5 class="margin-top-half">#{bundle['dataset.deaccession.reason']}</h5>
