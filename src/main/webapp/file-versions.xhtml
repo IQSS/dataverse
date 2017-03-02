@@ -43,6 +43,7 @@
         </ui:remove>
         <!-- start: version number column -->
         <p:column class="col-sm-1 text-center">
+            <ui:fragment rendered="#{versionTab.datasetVersion != FilePage.fileMetadata.datasetVersion }">
                 <ui:fragment rendered="#{versionTab.datasetVersion.released or ((versionTab.datasetVersion.deaccessioned or versionTab.datasetVersion.draft)
                                      and permissionServiceBean.on(versionTab.datasetVersion.dataset).has('ViewUnpublishedDataset'))}">
                     <h:outputLink rendered="#{!(versionTab.datasetVersion.released or versionTab.datasetVersion.deaccessioned) and versionTab.dataFile != null }"
@@ -67,7 +68,7 @@
                               value="#{versionTab.datasetVersion.versionNumber}.#{versionTab.datasetVersion.minorVersionNumber}" /> 
                 <h:outputText rendered="#{!versionTab.datasetVersion.released}" styleClass="highlightBold"
                               value="#{versionTab.datasetVersion.versionState}"/> 
-            </ui:fragment>   
+            </ui:fragment>    
         </p:column>
         <!-- start: description column -->
         <p:column>
