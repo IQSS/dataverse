@@ -1487,7 +1487,6 @@ public class AddReplaceFileHelper{
                     // to recalculate the version UNF, once the file is removed: 
                     
                     boolean recalculateUNF = !StringUtils.isEmpty(fm.getDataFile().getUnf());
-                    msg("recalculate unf: "+recalculateUNF);
 
                     if (workingVersion.getId() != null) {
                         // If this is an existing draft (i.e., this draft version 
