@@ -48,6 +48,7 @@ public class DatasetWidgetsPage implements java.io.Serializable {
     private DatasetThumbnail datasetThumbnail;
     private DataFile datasetFileThumbnailToSwitchTo;
     private boolean userWantsToRemoveThumbnail;
+    private boolean userHasSelectedDataFileAsThumbnail;
 
     @Inject
     PermissionsWrapper permissionsWrapper;
@@ -67,6 +68,12 @@ public class DatasetWidgetsPage implements java.io.Serializable {
         }
         datasetThumbnails = DatasetUtil.getThumbnailCandidates(dataset, considerDatasetLogoAsCandidate);
         datasetThumbnail = DatasetUtil.getThumbnail(dataset, datasetVersionService, dataFileService);
+        if (datasetThumbnail != null) {
+            DataFile dataFile = datasetThumbnail.getDataFile();
+            if (dataFile != null) {
+                datasetFileThumbnailToSwitchTo = dataFile;
+            }
+        }
         return null;
     }
 
@@ -134,11 +141,13 @@ public class DatasetWidgetsPage implements java.io.Serializable {
             Logger.getLogger(DatasetWidgetsPage.class.getName()).log(Level.SEVERE, null, ex);
         }
         userWantsToRemoveThumbnail = false;
+        userHasSelectedDataFileAsThumbnail = false;
     }
 
     public void deleteDatasetLogo() {
         logger.fine("deleteDatasetLogo");
         userWantsToRemoveThumbnail = true;
+        userHasSelectedDataFileAsThumbnail = false;
         datasetFileThumbnailToSwitchTo = null;
         datasetThumbnail = null;
     }
@@ -146,6 +155,7 @@ public class DatasetWidgetsPage implements java.io.Serializable {
     public void stopUsingAnyDatasetFileAsThumbnail() {
         logger.fine("stopUsingAnyDatasetFileAsThumbnail clicked");
         userWantsToRemoveThumbnail = true;
+        userHasSelectedDataFileAsThumbnail = false;
         datasetThumbnail = null;
         datasetFileThumbnailToSwitchTo = null;
     }
@@ -156,6 +166,7 @@ public class DatasetWidgetsPage implements java.io.Serializable {
             String base64image = ImageThumbConverter.getImageThumbAsBase64(datasetFileThumbnailToSwitchTo, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
             datasetThumbnail = new DatasetThumbnail(base64image, datasetFileThumbnailToSwitchTo);
             userWantsToRemoveThumbnail = false;
+            userHasSelectedDataFileAsThumbnail = true;
         }
     }
 
@@ -172,7 +183,7 @@ public class DatasetWidgetsPage implements java.io.Serializable {
                 logger.fine("No dataset logo in staging area to copy.");
             }
         }
-        if (datasetFileThumbnailToSwitchTo != null) {
+        if (userHasSelectedDataFileAsThumbnail) {
             logger.fine("switching thumbnail to DataFile id " + datasetFileThumbnailToSwitchTo.getId());
             dataset = datasetService.setDataFileAsThumbnail(dataset, datasetFileThumbnailToSwitchTo);
         } else {
