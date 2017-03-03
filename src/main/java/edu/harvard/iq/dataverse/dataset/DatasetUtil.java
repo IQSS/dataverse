@@ -79,10 +79,10 @@ public class DatasetUtil {
         } else {
             DataFile thumbnailFile = dataset.getThumbnailFile();
             if (thumbnailFile == null) {
-                logger.info(title + " does not have a thumbnail file set but the search card might have one");
+                logger.fine(title + " does not have a thumbnail file set but the search card might have one");
                 DatasetThumbnail thumbnailThatMightBeOnSearchCard = findThumbnailThatMightBeShowingOnTheSearchCards(dataset, datasetVersionService, dataFileService);
                 if (thumbnailThatMightBeOnSearchCard != null) {
-                    logger.info(title + " does not have a thumbnail file set but a thumbnail was found as a search card thumbnail.");
+                    logger.fine(title + " does not have a thumbnail file set but a thumbnail was found as a search card thumbnail.");
                     return thumbnailThatMightBeOnSearchCard;
                 } else {
                     logger.info(title + " does not have a thumbnail file set but and couldn't find one in use on the search card.");

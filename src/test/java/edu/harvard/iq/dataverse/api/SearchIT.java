@@ -39,12 +39,23 @@ import org.junit.Test;
 import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.path.json.JsonPath.with;
 import static com.jayway.restassured.path.xml.XmlPath.from;
+import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
+import com.mashape.unirest.request.GetRequest;
+import com.mashape.unirest.request.body.Body;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import static junit.framework.Assert.assertEquals;
 import static java.lang.Thread.sleep;
+import java.nio.file.OpenOption;
+import java.nio.file.StandardCopyOption;
+import java.util.Base64;
 import javax.json.JsonArray;
 import org.hamcrest.CoreMatchers;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -1390,7 +1401,7 @@ public class SearchIT {
         String datasetPersistentId = protocol + ":" + authority + "/" + identifier;
 
         logger.info("Dataset created, no thumbnail expected:");
-        Response getThumbnail1 = UtilIT.getDatasetThumbnail(datasetPersistentId, apiToken);
+        Response getThumbnail1 = UtilIT.getDatasetThumbnailMetadata(datasetPersistentId, apiToken);
         getThumbnail1.prettyPrint();
         JsonObject emptyObject = Json.createObjectBuilder().build();
         getThumbnail1.then().assertThat()
@@ -1431,12 +1442,106 @@ public class SearchIT {
                 .body("data.items[0].datasetThumbnailBase64image", CoreMatchers.equalTo(treesAsBase64))
                 .statusCode(200);
 
-        Response getThumbnail2 = UtilIT.getDatasetThumbnail(datasetPersistentId, apiToken);
+        Response getThumbnail2 = UtilIT.getDatasetThumbnailMetadata(datasetPersistentId, apiToken);
         getThumbnail2.prettyPrint();
         getThumbnail2.then().assertThat()
                 //                .body("data.datasetThumbnail", CoreMatchers.equalTo("randomFromDataFile" + dataFileId1))
                 .body("data.datasetThumbnailBase64image", CoreMatchers.equalTo(treesAsBase64))
                 .body("data.isUseGenericThumbnail", CoreMatchers.equalTo(false))
+                .statusCode(200);
+
+        String leadingStringToRemove = FileUtil.rfc2397dataUrlSchemeBase64Png;
+        System.out.println("before: " + treesAsBase64);
+        String encodedImg = treesAsBase64.substring(leadingStringToRemove.length());
+        System.out.println("after: " + encodedImg);
+        byte[] decodedImg = null;
+        try {
+            decodedImg = Base64.getDecoder().decode(encodedImg.getBytes("UTF-8"));
+        } catch (UnsupportedEncodingException ex) {
+        }
+
+        Response getThumbnailImage2 = UtilIT.getDatasetThumbnail(datasetPersistentId, apiToken);
+        getThumbnailImage2.prettyPrint();
+
+        String url = RestAssured.baseURI + "/api/datasets/" + datasetId + "/thumbnail";
+        logger.info("Using unirest to get " + url);
+        GetRequest unirestOut = Unirest.get(url);
+        InputStream unirestInputStream = null;
+        try {
+            unirestInputStream = unirestOut.asBinary().getBody();
+        } catch (UnirestException ex) {
+            Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        ByteArrayInputStream decodedImgByteArrayInputStream = new ByteArrayInputStream(decodedImg);
+
+        int bytesAvailableFromTestSide = decodedImgByteArrayInputStream.available();
+        int bytesAvailableFromApiSide = 0;
+        try {
+            bytesAvailableFromApiSide = unirestInputStream.available();
+        } catch (IOException ex) {
+            Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        logger.info("bytesAvailableFromTestSide: " + bytesAvailableFromTestSide);
+        logger.info("bytesAvailableFromApiSide:  " + bytesAvailableFromApiSide);
+        assertEquals(bytesAvailableFromTestSide, bytesAvailableFromApiSide);
+
+        boolean writeFilesToDisk = true;
+        if (writeFilesToDisk) {
+            File fromUnirest = new File("/tmp/unirest.png");
+            try {
+//            Files.copy(unirestOut.asBinary().getBody(), fromUnirest.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                Files.copy(unirestInputStream, fromUnirest.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException ex) {
+                Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (UnsupportedOperationException ex) {
+                Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            File fromRestAssured = new File("/tmp/api.png");
+            try {
+//            Files.copy(getThumbnailImage2.asInputStream(), fromApi.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                Files.copy(getThumbnailImage2.body().asInputStream(), fromRestAssured.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException ex) {
+                Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            File fromTest = new File("/tmp/test.png");
+            FileOutputStream stream = null;
+            try {
+                stream = new FileOutputStream(fromTest.getPath());
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            try {
+                try {
+                    stream.write(decodedImg);
+                } catch (IOException ex) {
+                    Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            } finally {
+                try {
+                    stream.close();
+                } catch (IOException ex) {
+                    Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+            System.out.println("fromTest.length():  " + fromTest.length());
+            System.out.println("fromRestAssured.length():   " + fromRestAssured.length());
+            System.out.println("fromUnirest.length():   " + fromUnirest.length());
+            assertEquals(fromTest.length(), fromUnirest.length());
+        }
+
+//        System.out.println("decodedImg.length:                                 " + decodedImg.length);
+//        System.out.println("getThumbnailImage2.getBody().asByteArray().length: " + getThumbnailImage2.getBody().asByteArray().length);
+//        assertEquals(decodedImg.length, getThumbnailImage2.getBody().asByteArray().length);
+        getThumbnailImage2.then().assertThat()
+                //                .body(CoreMatchers.equalTo(decodedImg))
+                .contentType("image/png")
+                /**
+                 * @todo Why can't we assert the content here? Why do we have to
+                 * use Unirest instead? How do you download the bytes of the
+                 * image using REST Assured?
+                 */
+                //                .content(CoreMatchers.equalTo(decodedImg))
                 .statusCode(200);
 
         String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
@@ -1467,7 +1572,7 @@ public class SearchIT {
                 .statusCode(200);
 
         logger.info("Second DataFile has been uploaded and switched to as the thumbnail:");
-        Response getThumbnail3 = UtilIT.getDatasetThumbnail(datasetPersistentId, apiToken);
+        Response getThumbnail3 = UtilIT.getDatasetThumbnailMetadata(datasetPersistentId, apiToken);
         getThumbnail3.prettyPrint();
         getThumbnail3.then().assertThat()
                 //                .body("data.datasetThumbnail", CoreMatchers.equalTo("dataverseproject.png"))
@@ -1522,7 +1627,7 @@ public class SearchIT {
                 .statusCode(400);
 
         logger.info("Dataset logo has been uploaded and becomes the thumbnail:");
-        Response getThumbnail4 = UtilIT.getDatasetThumbnail(datasetPersistentId, apiToken);
+        Response getThumbnail4 = UtilIT.getDatasetThumbnailMetadata(datasetPersistentId, apiToken);
         getThumbnail4.prettyPrint();
         getThumbnail4.then().assertThat()
                 //                .body("data.datasetThumbnail", CoreMatchers.equalTo(null))
@@ -1556,7 +1661,7 @@ public class SearchIT {
                 .statusCode(200);
 
         logger.info("Deleting the dataset logo means that the thumbnail is not set. It should be the generic icon:");
-        Response getThumbnail5 = UtilIT.getDatasetThumbnail(datasetPersistentId, apiToken);
+        Response getThumbnail5 = UtilIT.getDatasetThumbnailMetadata(datasetPersistentId, apiToken);
         getThumbnail5.prettyPrint();
         getThumbnail5.then().assertThat()
                 //                .body("data.datasetThumbnail", CoreMatchers.equalTo(null))

@@ -127,7 +127,15 @@ public class FileUtil implements java.io.Serializable  {
     public static final String MIME_TYPE_UNDETERMINED_BINARY = "application/binary";
     
     public static final String SAVED_ORIGINAL_FILENAME_EXTENSION = "orig";
-    
+
+
+    /**
+     * This string can be prepended to a Base64-encoded representation of a PNG
+     * file in order to imbed an image directly into an HTML page using the
+     * "img" tag. See also https://en.wikipedia.org/wiki/Data_URI_scheme
+     */
+    public static String rfc2397dataUrlSchemeBase64Png = "data:image/png;base64,";
+
     public FileUtil() {
     }
     

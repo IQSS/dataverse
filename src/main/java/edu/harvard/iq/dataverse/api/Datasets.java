@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
+import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -59,6 +60,7 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -66,7 +68,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
 import java.nio.file.Paths;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -590,14 +594,44 @@ public class Datasets extends AbstractApiBean {
         }
     }
 
+    @GET
+    @Produces({"image/png"})
+    @Path("{id}/thumbnail")
+    public InputStream getDatasetThumbnail(@PathParam("id") String idSupplied) {
+        Dataset dataset = null;
+        try {
+            dataset = findDatasetOrDie(idSupplied);
+        } catch (WrappedResponse ex) {
+            return null;
+        }
+        DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail(datasetVersionService, fileService);
+        if (datasetThumbnail == null) {
+            logger.info("dataset could not be found for dataset id " + dataset.getId());
+            return null;
+        }
+        String base64Image = datasetThumbnail.getBase64image();
+        String leadingStringToRemove = FileUtil.rfc2397dataUrlSchemeBase64Png;
+        String encodedImg = base64Image.substring(leadingStringToRemove.length());
+        byte[] decodedImg = null;
+        try {
+            decodedImg = Base64.getDecoder().decode(encodedImg.getBytes("UTF-8"));
+        } catch (UnsupportedEncodingException ex) {
+            logger.info("dataset thumbnail could not be decoded for dataset id " + dataset.getId() + ": " + ex);
+            return null;
+        }
+        logger.fine("returning this many bytes for  " + "dataset id: " + dataset.getId() + ", persistentId: " + dataset.getIdentifier() + " :" + decodedImg.length);
+        InputStream inputStream = new ByteArrayInputStream(decodedImg);
+        return inputStream;
+    }
+
     /**
      * @todo Comment out or delete if not needed. Enforce permissions.
      *
      * @todo Should we call this a logo or a thumbnail?
      */
     @GET
-    @Path("{id}/thumbnail")
-    public Response getDatasetThumbnail(@PathParam("id") String idSupplied) {
+    @Path("{id}/thumbnailMetadata")
+    public Response getDatasetThumbnailMetadata(@PathParam("id") String idSupplied) {
         try {
             Dataset dataset = findDatasetOrDie(idSupplied);
             JsonObjectBuilder data = Json.createObjectBuilder();
@@ -647,8 +681,8 @@ public class Datasets extends AbstractApiBean {
             } catch (IOException ex) {
                 return error(Response.Status.BAD_REQUEST, "Problem uploading file: " + ex);
             }
-            if(file.length() > systemConfig.getUploadLogoSizeLimit()){
-                return error(Response.Status.BAD_REQUEST, "File is larger than maximum size: " + systemConfig.getUploadLogoSizeLimit() + ".");
+            if (file.length() > systemConfig.getThumbnailSizeLimitImage()) {
+                return error(Response.Status.BAD_REQUEST, "File is larger than maximum size: " + systemConfig.getThumbnailSizeLimitImage() + ".");
             }
             JsonObjectBuilder jsonObjectBuilder = datasetService.writeDatasetLogoToStagingArea(dataset, file);
             JsonObject jsonObject = jsonObjectBuilder.build();
