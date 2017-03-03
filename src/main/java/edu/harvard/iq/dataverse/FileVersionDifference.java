@@ -50,19 +50,19 @@ public class FileVersionDifference {
         
         if (newFileMetadata.getDataFile() == null && originalFileMetadata != null){
             //File Deleted
-            updateDifferenceSummary(ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.fileGroupTitle"), "", 0, 0, 1, 0);
+            updateDifferenceSummary("", ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.fileGroupTitle"),  0, 0, 1, 0);
             return;
         }
         
         if (this.originalFileMetadata == null && this.newFileMetadata.getDataFile() != null ){
             //File Added
-            updateDifferenceSummary(ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.fileGroupTitle"), "", 1, 0, 0, 0);
+            updateDifferenceSummary( "", ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.fileGroupTitle"), 1, 0, 0, 0);
         }
         
         //Check to see if File replaced
         if (originalFileMetadata != null &&
                  newFileMetadata.getDataFile() != null && originalFileMetadata.getDataFile() != null &&!this.originalFileMetadata.getDataFile().equals(this.newFileMetadata.getDataFile())){
-            updateDifferenceSummary(ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.fileGroupTitle"), "", 0, 0, 0, 1);
+            updateDifferenceSummary( "", ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.fileGroupTitle"), 0, 0, 0, 1);
         }
         
         if ( originalFileMetadata != null) {

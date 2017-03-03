@@ -79,6 +79,7 @@
                                      and !(versionTab.fileVersionDifference.newFileMetadata.getDataFile() == null and versionTab.fileVersionDifference.originalFileMetadata == null) }"
                     value="#{bundle['file.versionDifferences.noChanges']}" styleClass="italic text-muted"/>
                 <ui:repeat value="#{versionTab.fileVersionDifference.differenceSummaryGroups}" var="groupSummary" varStatus="grp_status">
+                    <ui:fragment rendered="#{!empty groupSummary.name }">
                     <h:outputText value="#{groupSummary.name}:" styleClass="highlightBold" escape="false"/>
                     <ui:repeat value="#{groupSummary.fileDifferenceSummaryItems}" var="item" varStatus="itm_status">                       
                         <h:outputText value=" #{item.name}" escape="false"/>
@@ -92,7 +93,17 @@
                         <h:outputText value=" #{bundle['file.versionDifferences.actionReplaced']}" rendered="#{item.replaced > 0}" escape="false"/>
                         <h:outputText rendered="#{! itm_status.last}" value=", "/>
                     </ui:repeat>
-                    <h:outputText value="; "/>
+                    <h:outputText rendered="#{! grp_status.last}" value="; "/>
+                    </ui:fragment>
+                    <ui:fragment rendered="#{empty groupSummary.name }">                   
+                    <ui:repeat value="#{groupSummary.fileDifferenceSummaryItems}" var="item" varStatus="itm_status"> 
+                        <h:outputText value="[#{item.name} #{item.added > 0 ? 
+                                bundle['file.versionDifferences.actionAdded']: item.deleted > 0 ? bundle['file.versionDifferences.actionRemoved']
+                                : item.replaced > 0 ? bundle['file.versionDifferences.actionReplaced']: '' }]"  
+                                escape="false" styleClass="highlightBold"/>
+                    </ui:repeat>
+                    <h:outputText rendered="#{! grp_status.last}" value="; "/>
+                    </ui:fragment>
                 </ui:repeat>
                 <ui:remove>
                     <p:commandLink rendered="#{(!empty(versionTab.defaultVersionDifference)) and DatasetPage.versionTabListForPostLoad.size() > (rowNum + 1)}"
