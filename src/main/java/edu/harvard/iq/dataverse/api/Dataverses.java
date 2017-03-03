@@ -46,6 +46,8 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseMetadataBlocksCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseThemeCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateExplicitGroupCommand;
+import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.brief;
 import java.io.StringReader;
@@ -113,6 +115,8 @@ public class Dataverses extends AbstractApiBean {
 
     @EJB
     ExplicitGroupServiceBean explicitGroupSvc;
+    @EJB
+    SystemConfig systemConfig;
     
 	@POST
 	public Response addRoot( String body ) {
@@ -501,6 +505,11 @@ public class Dataverses extends AbstractApiBean {
                     uploadedFile.createNewFile();
                 }
                 logger.finer("created file");
+                File file = null;
+                file = FileUtil.inputStreamToFile(fileInputStream);
+                if (file.length() > systemConfig.getUploadLogoSizeLimit()) {
+                    return error(Response.Status.BAD_REQUEST, "File is larger than maximum size: " + systemConfig.getUploadLogoSizeLimit() + ".");
+                }
                 java.nio.file.Files.copy(fileInputStream, uploadedFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
                 logger.finer("copied inputstream to file");
                 editDv.setDataverseTheme(initDataverseTheme(editDv));

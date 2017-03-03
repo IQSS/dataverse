@@ -681,8 +681,8 @@ public class Datasets extends AbstractApiBean {
             } catch (IOException ex) {
                 return error(Response.Status.BAD_REQUEST, "Problem uploading file: " + ex);
             }
-            if (file.length() > systemConfig.getThumbnailSizeLimitImage()) {
-                return error(Response.Status.BAD_REQUEST, "File is larger than maximum size: " + systemConfig.getThumbnailSizeLimitImage() + ".");
+            if (file.length() > systemConfig.getUploadLogoSizeLimit()) {
+                return error(Response.Status.BAD_REQUEST, "File is larger than maximum size: " + systemConfig.getUploadLogoSizeLimit() + ".");
             }
             JsonObjectBuilder jsonObjectBuilder = datasetService.writeDatasetLogoToStagingArea(dataset, file);
             JsonObject jsonObject = jsonObjectBuilder.build();
