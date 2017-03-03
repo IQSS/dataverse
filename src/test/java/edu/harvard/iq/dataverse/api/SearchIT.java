@@ -1512,21 +1512,14 @@ public class SearchIT {
                 .statusCode(200);
 
         //Add Failing Test logo file too big
-        String smallFile = "10";
-        Response setThumbnailSizeLimitImage = UtilIT.setSetting(SettingsServiceBean.Key.ThumbnailSizeLimitImage, smallFile);
-        setThumbnailSizeLimitImage.then().assertThat()
-                .statusCode(200);
-
+        //Size limit hardcoded in systemConfig.getUploadLogoSizeLimit
+        datasetLogo = "src/test/resources/images/coffeeshop.png";
         Response overrideThumbnailFail = UtilIT.uploadDatasetLogo(datasetPersistentId, datasetLogo, apiToken);
 
         overrideThumbnailFail.prettyPrint();
         overrideThumbnailFail.then().assertThat()
-                .body("message", CoreMatchers.equalTo("File is larger than maximum size: " + smallFile + "."))
+                .body("message", CoreMatchers.equalTo("File is larger than maximum size: 500000."))
                 .statusCode(400);
-
-        Response setThumbnailSizeLimitImageHigher = UtilIT.setSetting(SettingsServiceBean.Key.ThumbnailSizeLimitImage, "500000");
-        setThumbnailSizeLimitImageHigher.then().assertThat()
-                .statusCode(200);
 
         logger.info("Dataset logo has been uploaded and becomes the thumbnail:");
         Response getThumbnail4 = UtilIT.getDatasetThumbnail(datasetPersistentId, apiToken);

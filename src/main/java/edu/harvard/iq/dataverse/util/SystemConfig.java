@@ -405,7 +405,9 @@ public class SystemConfig {
         return defaultMultipleUploadFilesLimit; 
     }
     
-    
+    public long getUploadLogoSizeLimit(){
+        return 500000;
+    }
 
     // TODO: (?)
     // create sensible defaults for these things? -- 4.2.2
@@ -421,10 +423,13 @@ public class SystemConfig {
     
     public long getThumbnailSizeLimit(String type) {
         String option = null; 
+        
+        //get options via jvm options
+        
         if ("Image".equals(type)) {
-            option = settingsService.getValueForKey(SettingsServiceBean.Key.ThumbnailSizeLimitImage);
+            option = System.getProperty("dataverse.dataAccess.thumbnail.image.limit");
         } else if ("PDF".equals(type)) {
-            option = settingsService.getValueForKey(SettingsServiceBean.Key.ThumbnailSizeLimitPDF);
+            option = System.getProperty("dataverse.dataAccess.thumbnail.pdf.limit");
         }
         Long limit = null; 
         
