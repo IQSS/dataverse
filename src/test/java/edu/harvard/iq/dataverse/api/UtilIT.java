@@ -669,16 +669,10 @@ public class UtilIT {
                 .post("/api/datasets/:persistentId/logo" + "?persistentId=" + datasetPersistentId);
     }
 
-    static Response deleteDatasetLogo(String datasetPersistentId, String apiToken) {
+    static Response removeDatasetThumbnail(String datasetPersistentId, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .delete("/api/datasets/:persistentId/logo" + "?persistentId=" + datasetPersistentId);
-    }
-
-    static Response stopUsingAnyDatasetFileAsThumbnail(String datasetPersistentId, String apiToken) {
-        return given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .post("/api/datasets/:persistentId/stopUsingAnyDatasetFileAsThumbnail" + "?persistentId=" + datasetPersistentId);
+                .delete("/api/datasets/:persistentId/thumbnail" + "?persistentId=" + datasetPersistentId);
     }
 
     static Response search(String query, String apiToken) {

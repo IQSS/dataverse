@@ -794,22 +794,12 @@ public class DatasetServiceBean implements java.io.Serializable {
         return dataset;
     }
 
-    public Dataset deleteDatasetLogo(Dataset dataset) {
+    public Dataset removeDatasetThumbnail(Dataset dataset) {
         if (dataset == null) {
-            logger.info("In deleteDatasetLogo but dataset is null! Returning null.");
+            logger.info("In removeDatasetThumbnail but dataset is null! Returning null.");
             return null;
         }
         DatasetUtil.deleteDatasetLogo(dataset);
-        dataset.setThumbnailFile(null);
-        dataset.setUseGenericThumbnail(true);
-        return merge(dataset);
-    }
-
-    public Dataset stopUsingAnyDatasetFileAsThumbnail(Dataset dataset) {
-        if (dataset == null) {
-            logger.info("stopUsingAnyDatasetFileAsThumbnail but dataset is null! Returning null.");
-            return null;
-        }
         dataset.setThumbnailFile(null);
         dataset.setUseGenericThumbnail(true);
         return merge(dataset);

@@ -47,6 +47,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.ListVersionsCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.SetDatasetCitationDateCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetTargetURLCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetThumbnailCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import edu.harvard.iq.dataverse.export.ExportService;
@@ -574,9 +575,7 @@ public class Datasets extends AbstractApiBean {
     }
 
     /**
-     * @todo Comment out or delete if not needed. Enforce permissions.
-     *
-     * @todo Should we call this a logo or a thumbnail?
+     * @todo Enforce permissions.
      */
     @GET
     @Path("{id}/thumbnail/candidates")
@@ -594,6 +593,9 @@ public class Datasets extends AbstractApiBean {
         }
     }
 
+    /**
+     * @todo Enforce permissions.
+     */
     @GET
     @Produces({"image/png"})
     @Path("{id}/thumbnail")
@@ -646,93 +648,42 @@ public class Datasets extends AbstractApiBean {
         }
     }
 
-    /**
-     * @todo Enforce permissions. Make into a Command?
-     */
     @POST
     @Path("{id}/thumbnail/{dataFileId}")
     public Response setDataFileAsThumbnail(@PathParam("id") String idSupplied, @PathParam("dataFileId") long dataFileIdSupplied) {
         try {
-            Dataset dataset = findDatasetOrDie(idSupplied);
-            DataFile datasetFileThumbnailToSwitchTo = fileService.find(dataFileIdSupplied);
-            if (datasetFileThumbnailToSwitchTo == null) {
-                return error(Response.Status.NOT_FOUND, "Could not find file based on id supplied: " + dataFileIdSupplied + ".");
-            }
-            Dataset datasetThatMayHaveChanged = datasetService.setDataFileAsThumbnail(dataset, datasetFileThumbnailToSwitchTo);
-            return ok("Thumbnail set to " + datasetThatMayHaveChanged.getDatasetThumbnail(datasetVersionService, fileService).getBase64image());
-        } catch (WrappedResponse ex) {
-            return error(Response.Status.NOT_FOUND, "Could not find dataset based on id supplied: " + idSupplied + ".");
+            DatasetThumbnail datasetThumbnail = execCommand(new UpdateDatasetThumbnailCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(idSupplied), UpdateDatasetThumbnailCommand.UserIntent.userHasSelectedDataFileAsThumbnail, dataFileIdSupplied, null, null));
+            return ok("Thumbnail set to " + datasetThumbnail.getBase64image());
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
         }
     }
 
     /**
-     * @todo Enforce permissions. Make into a Command?
+     * @todo Should we call this a logo? Maybe we should just call it a
+     * thumbnail.
      */
     @POST
     @Path("{id}/logo")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public Response uploadDatasetLogo(@PathParam("id") String idSupplied, @FormDataParam("file") InputStream fileInputStream
+    public Response uploadDatasetLogo(@PathParam("id") String idSupplied, @FormDataParam("file") InputStream inputStream
     ) {
         try {
-            Dataset dataset = findDatasetOrDie(idSupplied);
-            File file = null;
-            try {
-                file = FileUtil.inputStreamToFile(fileInputStream);
-            } catch (IOException ex) {
-                return error(Response.Status.BAD_REQUEST, "Problem uploading file: " + ex);
-            }
-            if (file.length() > systemConfig.getUploadLogoSizeLimit()) {
-                return error(Response.Status.BAD_REQUEST, "File is larger than maximum size: " + systemConfig.getUploadLogoSizeLimit() + ".");
-            }
-            JsonObjectBuilder jsonObjectBuilder = datasetService.writeDatasetLogoToStagingArea(dataset, file);
-            JsonObject jsonObject = jsonObjectBuilder.build();
-            logger.fine("jsonObject: " + jsonObject);
-            String stagingFilePath = null;
-            try {
-                stagingFilePath = jsonObject.getString(DatasetUtil.stagingFilePathKey);
-            } catch (NullPointerException ex1) {
-                String errorDetails = null;
-                try {
-                    errorDetails = jsonObject.getString(DatasetUtil.stagingFileErrorKey);
-                } catch (NullPointerException ex2) {
-                }
-                String error = "Could not move thumbnail from staging area to final destination: " + errorDetails;
-                return error(Response.Status.BAD_REQUEST, error);
-            }
-            dataset = datasetService.moveDatasetLogoFromStagingToFinal(dataset, stagingFilePath);
-            return ok("Thumbnail is now " + dataset.getDatasetThumbnail(datasetVersionService, fileService).getBase64image());
-        } catch (WrappedResponse ex) {
-            return error(Response.Status.NOT_FOUND, "Could not find dataset based on id supplied: " + idSupplied + ".");
+            DatasetThumbnail datasetThumbnail = execCommand(new UpdateDatasetThumbnailCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(idSupplied), UpdateDatasetThumbnailCommand.UserIntent.userWantsToUseNonDatasetFile, null, inputStream, null));
+            return ok("Thumbnail is now " + datasetThumbnail.getBase64image());
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
         }
     }
 
-    /**
-     * @todo Enforce permissions. Make into a Command?
-     */
     @DELETE
-    @Path("{id}/logo")
-    public Response deleteDatasetLogo(@PathParam("id") String idSupplied) {
+    @Path("{id}/thumbnail")
+    public Response removeDatasetLogo(@PathParam("id") String idSupplied) {
         try {
-            Dataset dataset = findDatasetOrDie(idSupplied);
-            Dataset datasetThatMayHaveChanged = datasetService.deleteDatasetLogo(dataset);
-            return ok("Dataset logo deleted. Thumbnail is now " + datasetThatMayHaveChanged.getDatasetThumbnail(datasetVersionService, fileService));
-        } catch (WrappedResponse ex) {
-            return error(Response.Status.NOT_FOUND, "Could not find dataset based on id supplied: " + idSupplied + ".");
-        }
-    }
-
-    /**
-     * @todo Enforce permissions. Make into a Command?
-     */
-    @POST
-    @Path("{id}/stopUsingAnyDatasetFileAsThumbnail")
-    public Response stopUsingAnyDatasetFileAsThumbnail(@PathParam("id") String idSupplied) {
-        try {
-            Dataset dataset = findDatasetOrDie(idSupplied);
-            Dataset datasetThatMayHaveChanged = datasetService.stopUsingAnyDatasetFileAsThumbnail(dataset);
-            return ok("stopUsingAnyDatasetFileAsThumbnail called. Thumbnail is now " + datasetThatMayHaveChanged.getDatasetThumbnail(datasetVersionService, fileService));
-        } catch (WrappedResponse ex) {
-            return error(Response.Status.NOT_FOUND, "Could not find dataset based on id supplied: " + idSupplied + ".");
+            DatasetThumbnail datasetThumbnail = execCommand(new UpdateDatasetThumbnailCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(idSupplied), UpdateDatasetThumbnailCommand.UserIntent.userWantsToRemoveThumbnail, null, null, null));
+            return ok("Dataset thumbnail removed.");
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
         }
     }
 

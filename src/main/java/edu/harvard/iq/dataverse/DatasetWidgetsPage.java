@@ -3,8 +3,9 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
-import static edu.harvard.iq.dataverse.dataset.DatasetUtil.datasetLogoFilenameStaging;
+import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetThumbnailCommand;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
@@ -38,6 +39,12 @@ public class DatasetWidgetsPage implements java.io.Serializable {
     @EJB
     DataFileServiceBean dataFileService;
 
+    @EJB
+    EjbDataverseEngine commandEngine;
+
+    @Inject
+    DataverseRequestServiceBean dvRequestService;
+
     private Long datasetId;
     private Dataset dataset;
     private List<DatasetThumbnail> datasetThumbnails;
@@ -47,13 +54,13 @@ public class DatasetWidgetsPage implements java.io.Serializable {
      */
     private DatasetThumbnail datasetThumbnail;
     private DataFile datasetFileThumbnailToSwitchTo;
-    private boolean userWantsToRemoveThumbnail;
-    private boolean userHasSelectedDataFileAsThumbnail;
+    private Long datasetFileIdToSwitchThumbnailTo;
 
     @Inject
     PermissionsWrapper permissionsWrapper;
     private final boolean considerDatasetLogoAsCandidate = false;
-    private JsonObjectBuilder resultFromAttemptToStageDatasetLogoObjectBuilder;
+    private String stagingFilePath;
+    UpdateDatasetThumbnailCommand.UserIntent thumbnailUpdateIntent;
 
     public String init() {
         if (datasetId == null || datasetId.intValue() <= 0) {
@@ -63,6 +70,11 @@ public class DatasetWidgetsPage implements java.io.Serializable {
         if (dataset == null) {
             return permissionsWrapper.notFound();
         }
+        /**
+         * @todo Consider changing this to "can issue"
+         * UpdateDatasetThumbnailCommand since it's really the only update you
+         * can do from this page.
+         */
         if (!permissionsWrapper.canIssueCommand(dataset, UpdateDatasetCommand.class)) {
             return permissionsWrapper.notAuthorized();
         }
@@ -113,12 +125,9 @@ public class DatasetWidgetsPage implements java.io.Serializable {
         this.datasetFileThumbnailToSwitchTo = datasetFileThumbnailToSwitchTo;
     }
 
-    public boolean isUserWantsToRemoveThumbnail() {
-        return userWantsToRemoveThumbnail;
-    }
-
     public void handleImageFileUpload(FileUploadEvent event) {
         logger.fine("handleImageFileUpload clicked");
+        thumbnailUpdateIntent = UpdateDatasetThumbnailCommand.UserIntent.userWantsToUseNonDatasetFile;
         UploadedFile uploadedFile = event.getFile();
         InputStream fileInputStream = null;
         try {
@@ -132,7 +141,9 @@ public class DatasetWidgetsPage implements java.io.Serializable {
         } catch (IOException ex) {
             Logger.getLogger(DatasetWidgetsPage.class.getName()).log(Level.SEVERE, null, ex);
         }
-        resultFromAttemptToStageDatasetLogoObjectBuilder = datasetService.writeDatasetLogoToStagingArea(dataset, file);
+        JsonObjectBuilder resultFromAttemptToStageDatasetLogoObjectBuilder = datasetService.writeDatasetLogoToStagingArea(dataset, file);
+        JsonObject resultFromAttemptToStageDatasetLogoObject = resultFromAttemptToStageDatasetLogoObjectBuilder.build();
+        stagingFilePath = resultFromAttemptToStageDatasetLogoObject.getString(DatasetUtil.stagingFilePathKey);
         String base64image = null;
         try {
             base64image = FileUtil.rescaleImage(file);
@@ -140,67 +151,52 @@ public class DatasetWidgetsPage implements java.io.Serializable {
         } catch (IOException ex) {
             Logger.getLogger(DatasetWidgetsPage.class.getName()).log(Level.SEVERE, null, ex);
         }
-        userWantsToRemoveThumbnail = false;
-        userHasSelectedDataFileAsThumbnail = false;
+        datasetFileIdToSwitchThumbnailTo = null;
     }
 
+    /**
+     * @todo Rename and consolidate the following two methods (deleteDatasetLogo
+     * and stopUsingAnyDatasetFileAsThumbnail) into a single method called
+     * something like flagDatasetThumbnailForRemoval.
+     */
     public void deleteDatasetLogo() {
         logger.fine("deleteDatasetLogo");
-        userWantsToRemoveThumbnail = true;
-        userHasSelectedDataFileAsThumbnail = false;
+        thumbnailUpdateIntent = UpdateDatasetThumbnailCommand.UserIntent.userWantsToRemoveThumbnail;
         datasetFileThumbnailToSwitchTo = null;
         datasetThumbnail = null;
+        datasetFileIdToSwitchThumbnailTo = null;
     }
 
     public void stopUsingAnyDatasetFileAsThumbnail() {
         logger.fine("stopUsingAnyDatasetFileAsThumbnail clicked");
-        userWantsToRemoveThumbnail = true;
-        userHasSelectedDataFileAsThumbnail = false;
+        thumbnailUpdateIntent = UpdateDatasetThumbnailCommand.UserIntent.userWantsToRemoveThumbnail;
         datasetThumbnail = null;
         datasetFileThumbnailToSwitchTo = null;
+        datasetFileIdToSwitchThumbnailTo = null;
     }
 
     public void setDataFileAsThumbnail() {
         logger.fine("setDataFileAsThumbnail clicked");
+        thumbnailUpdateIntent = UpdateDatasetThumbnailCommand.UserIntent.userHasSelectedDataFileAsThumbnail;
         if (datasetFileThumbnailToSwitchTo != null) {
             String base64image = ImageThumbConverter.getImageThumbAsBase64(datasetFileThumbnailToSwitchTo, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
             datasetThumbnail = new DatasetThumbnail(base64image, datasetFileThumbnailToSwitchTo);
-            userWantsToRemoveThumbnail = false;
-            userHasSelectedDataFileAsThumbnail = true;
+            datasetFileIdToSwitchThumbnailTo = datasetFileThumbnailToSwitchTo.getId();
         }
     }
 
     public String save() {
         logger.fine("save clicked");
-        if (resultFromAttemptToStageDatasetLogoObjectBuilder != null) {
-            JsonObject resultFromAttemptToStageDatasetLogoObject = resultFromAttemptToStageDatasetLogoObjectBuilder.build();
-            String stagingFilePath = resultFromAttemptToStageDatasetLogoObject.getString(DatasetUtil.stagingFilePathKey);
-            File stagingFile = new File(stagingFilePath);
-            if (stagingFile.exists()) {
-                logger.fine("Copying dataset logo from staging area to final location.");
-                dataset = datasetService.moveDatasetLogoFromStagingToFinal(dataset, stagingFile.getAbsolutePath());
-            } else {
-                logger.fine("No dataset logo in staging area to copy.");
-            }
+        try {
+            DatasetThumbnail datasetThumbnailFromCommand = commandEngine.submit(new UpdateDatasetThumbnailCommand(dvRequestService.getDataverseRequest(), dataset, thumbnailUpdateIntent, datasetFileIdToSwitchThumbnailTo, null, stagingFilePath));
+            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.thumbnailsAndWidget.success"));
+            return "/dataset.xhtml?persistentId=" + dataset.getGlobalId() + "&faces-redirect=true";
+        } catch (CommandException ex) {
+            String error = ex.getLocalizedMessage();
+            logger.info(error);
+            JsfHelper.addErrorMessage(error);
+            return null;
         }
-        if (userHasSelectedDataFileAsThumbnail) {
-            logger.fine("switching thumbnail to DataFile id " + datasetFileThumbnailToSwitchTo.getId());
-            dataset = datasetService.setDataFileAsThumbnail(dataset, datasetFileThumbnailToSwitchTo);
-        } else {
-            logger.fine("not switching to a DataFile thumbnail");
-        }
-        if (userWantsToRemoveThumbnail) {
-            logger.fine("user doesn't want a thumbnail, blowing them away");
-            dataset = datasetService.stopUsingAnyDatasetFileAsThumbnail(dataset);
-            /**
-             * @todo Delete staging file too?
-             */
-            dataset = datasetService.deleteDatasetLogo(dataset);
-        } else {
-            logger.fine("user doesn't want to remove the thumbnail");
-        }
-        JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.thumbnailsAndWidget.success"));
-        return "/dataset.xhtml?persistentId=" + dataset.getGlobalId() + "&faces-redirect=true";
     }
 
     public String cancel() {
