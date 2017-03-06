@@ -111,7 +111,7 @@ Advanced Options
 
 There are several advanced options available for certain file types.
 
-- Image files: jpgs, pngs, and tiff files are able to be selected as the default thumbnail for a dataset. The selected thumbnail will appear on the search result card for that dataset.
+- Image files: .jpg, .png, and .tif files are able to be selected as the default thumbnail for a dataset. The selected thumbnail will appear on the search result card for that dataset.
 - SPSS files: SPSS files can be tagged with the language they were originally coded in. This is found by clicking on Advanced Options and selecting the language from the list provided.
 
 Edit Files
@@ -207,12 +207,28 @@ To give someone access to your restricted files, click on the Grant Access to Us
 
 .. _dataset-widgets:
 
+Thumbnails + Widgets
+====================
+
+Thumbnails
+----------
+
+The thumbnail for a dataset will appear on the search result card for that dataset. Thumbnail images are generated for data files that are recognized as image file type. By default, a thumbnail is automatically selected from one of these automatically generated thumbnails.
+
+If you would like to select the dateset thumbnail, you have two options. Select the image file from your dataset, and click the "Edit Files" button, and select "Metadata" from the dropdown menu. Then you will be brought to the Edit Files page, where you will see the "Set Thumbnail" button.
+
+Your second option is to upload a new thumbnail image. This will be an image file that is separate from your data files stored as part of your dataset. You can upload this new file by clicking the "Edit" button on your dataset, and selecting "Thumbnails + Widgets" from the dropdown menu.
+
+In the Thumnbail tab, you will see the current thumbnail, an option to Select Available File from your dataset files, as well as an option to Upload New File. Click the "Upload File" button to add a file from your computer. Click the "Save Changes" button to apply your changes.
+
+If you click the "Remove" button under the thumbnail image, you will revert your dataset back to using the default blue file icon.
+
 Widgets
-=======
+-------
 
-The Widgets feature provides you with code for your personal website so your dataset can be displayed. There are two types of Widgets for a dataset: the Dataset Widget and the Dataset Citation Widget. The Widgets are found by going to your dataset page, clicking the Edit button (the one with the pencil icon) and selecting Widgets from the dropdown menu.
+The Widgets feature provides you with code for your personal website so your dataset can be displayed. There are two types of Widgets for a dataset: the Dataset Widget and the Dataset Citation Widget. Widgets are found by going to your dataset page, clicking the "Edit" button (the one with the pencil icon) and selecting "Thumbnails + Widgets" from the dropdown menu.
 
-On the Widgets page, you can copy and paste the code snippets for the widget you would like to add to your website. If you need to adjust the height of the widget on your website, you may do so by editing the `heightPx=500` parameter in the code snippet.
+In the Widgets tab, you can copy and paste the code snippets for the widget you would like to add to your website. If you need to adjust the height of the widget on your website, you may do so by editing the `heightPx=500` parameter in the code snippet.
 
 Dataset Widget
 --------------
