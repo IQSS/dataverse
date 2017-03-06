@@ -23,15 +23,15 @@ Adding a New Dataset
 
 #. Navigate to the dataverse in which you want to add a dataset. 
 #. Click on the "Add Data" button and select "New Dataset" in the dropdown menu.
-#. To quickly get started, enter at minimum all the required fields with an asterisk to get a Data Citation with a DOI (e.g., the Dataset Title, Author, 
-   Description, Contact Email and Subject).
+#. To quickly get started, enter at minimum all the required fields with an asterisk (e.g., the Dataset Title, Author, 
+   Description, Contact Email and Subject) to get a Data Citation with a DOI.
 #. Scroll down to the "Files" section and click on "Select Files to Add" to add all the relevant files to your Dataset. 
    You can also upload your files directly from your Dropbox. **Tip:** You can drag and drop or select multiple files at a time from your desktop,
    directly into the upload widget. Your files will appear below the "Select Files to Add" button where you can add a
    description and tags (via the "Edit Tag" button) for each file. Additionally, an MD5 checksum will be added for each file. If you upload a tabular file a :ref:`Universal Numerical Fingerprint (UNF) <unf>` will be added to this file.
 #. Click the "Save Dataset" button when you are done. Your unpublished dataset is now created. 
 
-Note 1: You can add additional metadata once you have completed the initial dataset creation by going to Edit Dataset > Metadata. 
+Note: You can add additional metadata once you have completed the initial dataset creation by going to Edit Dataset > Metadata. 
 
 Supported HTML Fields
 ------------------------
@@ -213,15 +213,21 @@ Thumbnails + Widgets
 Thumbnails
 ----------
 
-The thumbnail for a dataset will appear on the search result card for that dataset. Thumbnail images are generated for data files that are recognized as image file type. By default, a thumbnail is automatically selected from one of these automatically generated thumbnails.
+Thumbnail images can be assigned to a dataset manually or automatically. The thumbnail for a dataset appears on the search result card for that dataset and on the dataset page itself. If a dataset contains one or more data files that Dataverse recognizes as an image, then one of those images is automatically selected as the dataset thumbnail. 
 
-If you would like to select the dateset thumbnail, you have two options. Select the image file from your dataset, and click the "Edit Files" button, and select "Metadata" from the dropdown menu. Then you will be brought to the Edit Files page, where you will see the "Set Thumbnail" button.
+If you would like to manually select your dataset's thumbnail, you can do so by clicking the "Edit" button on your dataset, and selecting "Thumbnails + Widgets" from the dropdown menu.
 
-Your second option is to upload a new thumbnail image. This will be an image file that is separate from your data files stored as part of your dataset. You can upload this new file by clicking the "Edit" button on your dataset, and selecting "Thumbnails + Widgets" from the dropdown menu.
+On this page, under the Thumbnail tab you will see three possible actions.
 
-In the Thumnbail tab, you will see the current thumbnail, an option to Select Available File from your dataset files, as well as an option to Upload New File. Click the "Upload File" button to add a file from your computer. Click the "Save Changes" button to apply your changes.
+**Select Available File:** Click the "Select Thumbnail" button to choose an image from your dataset to use as the dataset thumbnail.
 
-If you click the "Remove" button under the thumbnail image, you will revert your dataset back to using the default blue file icon.
+**Upload New File:** Upload an image file from your computer to use as the dataset thumbnail. While by default your thumbnail image is drawn from a file in your dataset, this will allow you to upload a separate image file to use as your dataset thumbnail. This uploaded image file will only be used as the dataset thumbnail; it will not be stored as a data file in your dataset.
+
+**Remove Thumbnail:** If you click the "Remove" button under the thumbnail image, you will remove the dataset's current thumbnail. The Dataset will then revert to displaying a basic default icon as the dataset thumbnail.
+
+When you're finished on this page, be sure to click "Save Changes" to save what you've done.
+
+Note: If you prefer, it is also possible to set an image file in your dataset as your thumbnail by selecting the file, going to Edit Files -> Metadata, and using the "Set Thumbnail" button.
 
 Widgets
 -------
@@ -304,7 +310,7 @@ If you have more than two versions of a dataset, you can select any two versions
 
 .. _deaccession:
 
-Deaccession Your Dataset [not recommended]
+Deaccessioning a Dataset [not recommended]
 ==========================================
 
 Deaccessioning a dataset or a version of a dataset is a very serious action that should only occur if there is a legal or valid reason for the dataset to no longer be accessible to the public. If you absolutely must deaccession, you can deaccession a version of a dataset or an entire dataset. To deaccession, go to a dataset you’ve already published (or add a new one and publish it), click on Edit Dataset, then Deaccession Dataset. If you have multiple versions of a dataset, you can select here which versions you want to deaccession or choose to deaccession the entire dataset. You must also include a reason as to why this dataset was deaccessioned from a dropdown list of options. There is also a free-text box to add more details as to why this was deaccessioned. If the dataset has moved to a different repository or site you are encouraged to include a URL (preferably persistent) for users to continue to be able to access this dataset in the future.
