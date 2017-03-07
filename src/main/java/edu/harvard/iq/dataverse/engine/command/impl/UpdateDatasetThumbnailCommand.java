@@ -48,6 +48,9 @@ public class UpdateDatasetThumbnailCommand extends AbstractCommand<DatasetThumbn
 
     @Override
     public DatasetThumbnail execute(CommandContext ctxt) throws CommandException {
+//        if (true) {
+//            throw new CommandException("Just testing what an error would look like in the GUI.", this);
+//        }
         if (userIntent == null) {
             throw new IllegalCommandException("No changes to save.", this);
         }
