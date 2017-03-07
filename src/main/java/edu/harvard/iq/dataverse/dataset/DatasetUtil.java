@@ -70,7 +70,7 @@ public class DatasetUtil {
             try {
                 imageSourceBase64 = FileUtil.rescaleImage(file);
                 DatasetThumbnail datasetThumbnail = new DatasetThumbnail(imageSourceBase64, null);
-                logger.info(title + " will get thumbnail from dataset logo.");
+                logger.fine(title + " will get thumbnail from dataset logo.");
                 return datasetThumbnail;
             } catch (IOException ex) {
                 logger.info("Unable to rescale image: " + ex);
@@ -85,7 +85,7 @@ public class DatasetUtil {
                     logger.fine(title + " does not have a thumbnail file set but a thumbnail was found as a search card thumbnail.");
                     return thumbnailThatMightBeOnSearchCard;
                 } else {
-                    logger.info(title + " does not have a thumbnail file set but and couldn't find one in use on the search card.");
+                    logger.fine(title + " does not have a thumbnail file set but and couldn't find one in use on the search card.");
                     // returning null because dataFile.equals(thumbnailFile) will never match since thumbnailFile is null and there's no point in interating through the files
                     return null;
                 }

@@ -125,6 +125,24 @@ public class DatasetWidgetsPage implements java.io.Serializable {
         this.datasetFileThumbnailToSwitchTo = datasetFileThumbnailToSwitchTo;
     }
 
+    public void setDataFileAsThumbnail() {
+        logger.fine("setDataFileAsThumbnail clicked");
+        thumbnailUpdateIntent = UpdateDatasetThumbnailCommand.UserIntent.userHasSelectedDataFileAsThumbnail;
+        if (datasetFileThumbnailToSwitchTo != null) {
+            String base64image = ImageThumbConverter.getImageThumbAsBase64(datasetFileThumbnailToSwitchTo, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
+            datasetThumbnail = new DatasetThumbnail(base64image, datasetFileThumbnailToSwitchTo);
+            datasetFileIdToSwitchThumbnailTo = datasetFileThumbnailToSwitchTo.getId();
+        }
+    }
+
+    public void flagDatasetThumbnailForRemoval() {
+        logger.fine("flagDatasetThumbnailForRemoval");
+        thumbnailUpdateIntent = UpdateDatasetThumbnailCommand.UserIntent.userWantsToRemoveThumbnail;
+        datasetFileThumbnailToSwitchTo = null;
+        datasetThumbnail = null;
+        datasetFileIdToSwitchThumbnailTo = null;
+    }
+
     public void handleImageFileUpload(FileUploadEvent event) {
         logger.fine("handleImageFileUpload clicked");
         thumbnailUpdateIntent = UpdateDatasetThumbnailCommand.UserIntent.userWantsToUseNonDatasetFile;
@@ -152,37 +170,6 @@ public class DatasetWidgetsPage implements java.io.Serializable {
             Logger.getLogger(DatasetWidgetsPage.class.getName()).log(Level.SEVERE, null, ex);
         }
         datasetFileIdToSwitchThumbnailTo = null;
-    }
-
-    /**
-     * @todo Rename and consolidate the following two methods (deleteDatasetLogo
-     * and stopUsingAnyDatasetFileAsThumbnail) into a single method called
-     * something like flagDatasetThumbnailForRemoval.
-     */
-    public void deleteDatasetLogo() {
-        logger.fine("deleteDatasetLogo");
-        thumbnailUpdateIntent = UpdateDatasetThumbnailCommand.UserIntent.userWantsToRemoveThumbnail;
-        datasetFileThumbnailToSwitchTo = null;
-        datasetThumbnail = null;
-        datasetFileIdToSwitchThumbnailTo = null;
-    }
-
-    public void stopUsingAnyDatasetFileAsThumbnail() {
-        logger.fine("stopUsingAnyDatasetFileAsThumbnail clicked");
-        thumbnailUpdateIntent = UpdateDatasetThumbnailCommand.UserIntent.userWantsToRemoveThumbnail;
-        datasetThumbnail = null;
-        datasetFileThumbnailToSwitchTo = null;
-        datasetFileIdToSwitchThumbnailTo = null;
-    }
-
-    public void setDataFileAsThumbnail() {
-        logger.fine("setDataFileAsThumbnail clicked");
-        thumbnailUpdateIntent = UpdateDatasetThumbnailCommand.UserIntent.userHasSelectedDataFileAsThumbnail;
-        if (datasetFileThumbnailToSwitchTo != null) {
-            String base64image = ImageThumbConverter.getImageThumbAsBase64(datasetFileThumbnailToSwitchTo, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
-            datasetThumbnail = new DatasetThumbnail(base64image, datasetFileThumbnailToSwitchTo);
-            datasetFileIdToSwitchThumbnailTo = datasetFileThumbnailToSwitchTo.getId();
-        }
     }
 
     public String save() {

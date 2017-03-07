@@ -42,7 +42,7 @@
                                             <h:graphicImage value="#{DatasetWidgetsPage.datasetThumbnail.base64image}" rendered="#{DatasetWidgetsPage.datasetThumbnail != null}"/>
                                         </p>
                                         <span class="text-muted" jsf:rendered="#{DatasetWidgetsPage.datasetThumbnail == null}"><em>#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.default']}</em></span>
-                                        <p:commandButton update="@all" value="#{bundle.remove}" action="#{DatasetWidgetsPage.deleteDatasetLogo()}" rendered="#{DatasetWidgetsPage.datasetThumbnail != null and DatasetWidgetsPage.datasetThumbnail.fromDataFile != true}" oncomplete="bind_bsui_components();"/>
+                                        <p:commandButton update="@all" value="#{bundle.remove}" action="#{DatasetWidgetsPage.flagDatasetThumbnailForRemoval()}" rendered="#{DatasetWidgetsPage.datasetThumbnail != null and DatasetWidgetsPage.datasetThumbnail.fromDataFile != true}" oncomplete="bind_bsui_components();"/>
                                         <div jsf:rendered="#{DatasetWidgetsPage.datasetThumbnail.fromDataFile == true}">
                                             <button type="button" class="btn btn-default" onclick="PF('confrmRemove').show()">#{bundle.remove}</button>
                                         </div>
@@ -84,8 +84,8 @@
                                 </p>
                                 <div class="button-block">
                                     <p:commandLink value="#{bundle.continue}" styleClass="btn btn-default" onclick="PF('confrmRemove').hide()"
-                                                     action="#{DatasetWidgetsPage.stopUsingAnyDatasetFileAsThumbnail()}"
-                                                     update="@all"/>
+                                                   action="#{DatasetWidgetsPage.flagDatasetThumbnailForRemoval()}"
+                                                   update="@all"/>
                                     <button type="button" class="btn btn-default" onclick="PF('confrmRemove').hide()" value="#{bundle.cancel}">#{bundle.cancel}</button>
                                 </div> 
                             </p:dialog>
