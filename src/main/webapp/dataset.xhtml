@@ -403,6 +403,13 @@
                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="#{DatasetPage.editMode == 'METADATA' ? 1 : DatasetPage.selectedTabIndex}"/>
                         </p:commandButton>
                     </div>
+                    
+                    <div id="versionNumber" class="col-xs-12">
+                                <h:outputText rendered="#{DatasetPage.workingVersion.released}" styleClass="highlightBold"
+                                              value="#{bundle['file.DatasetVersion']}: #{DatasetPage.workingVersion.versionNumber}.#{DatasetPage.workingVersion.minorVersionNumber}" /> 
+                                <h:outputText rendered="#{!DatasetPage.workingVersion.released}" styleClass="highlightBold"
+                                              value="#{bundle['file.DatasetVersion']}: #{DatasetPage.workingVersion.versionState}"/> 
+                    </div>
                     <!-- END Header / Button Panel -->
                     <!-- View/Tabs infoMode -->
                     <!-- Tabs -->

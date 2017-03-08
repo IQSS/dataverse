@@ -80,7 +80,7 @@ tr.ui-state-highlight a:not(.btn), .ui-widget-content tr.ui-state-highlight a:no
 tr.ui-state-highlight .ui-icon {
     background-image: url("/javax.faces.resource/images/ui-icons_333333_256x240.png.xhtml?ln=primefaces-bootstrap");
 }
-td.col-select-width {width:36px;}
+td.col-select-width, th.col-select-width {width:36px;}
 
 #ajaxStatusPanel_start {width:31px;height:31px;position:fixed;right:50%;bottom:50%;z-index:111111;}
 #ajaxStatusPanel_complete {position:absolute;top:-9999px;left:-9999px;}
@@ -656,7 +656,8 @@ div.popover.fade.top.in div.popover-content {text-align:center; vertical-align: 
 span.text-info.popoverHTML {display:inline-block;}
 
 /*div[id$="filesTable"] .ui-datatable-tablewrapper thead {display:none;}*/
-div[id$="versionsTable"] .ui-datatable-tablewrapper thead {display:none;}
+/*div[id$="versionsTable"] .ui-datatable-tablewrapper thead {display:none;}*/
+div[id$="versionsTable"] th.col-select-width * {display:none;}
 
 div[id$="filesTable"].ui-datatable.ui-widget {margin-bottom:20px;}
 div[id$="filesTable"].ui-datatable.ui-widget table {table-layout: fixed;}
