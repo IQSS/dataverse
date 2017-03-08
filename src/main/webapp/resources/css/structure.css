@@ -768,6 +768,13 @@ div.ui-widget-overlay {background:#ccc; opacity:.6;}
 .ui-autocomplete-panel {z-index:100002 !important;}
 .ui-autocomplete input.ui-autocomplete-input {width:calc(100% - 34px);}
 
+/* Overwrite Bootstrap */
+@media print {
+  a[href]:after {
+    content: none;
+  }
+}
+
 /* CITATION-FRAME */
 #citation-banner {width:100%; height:45px; position: absolute; z-index: 999999; border-radius: 0; border-width: 0 0 1px 0;}
 #citation-banner a.close, #citation-banner a.close span.glyphicon {line-height:.2;}
