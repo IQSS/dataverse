@@ -660,7 +660,7 @@ Dataset Integrity
 
 Add a UNF value for a dataset version, if it's missing, by supplying the dataset version database id::
 
-  POST http://$SERVER/api/admin/datasets/integrity/{datasetVersionId}/fixunf
+  POST http://$SERVER/api/admin/datasets/integrity/{datasetVersionId}/fixmissingunf
 
 .. |CORS| raw:: html 
       
