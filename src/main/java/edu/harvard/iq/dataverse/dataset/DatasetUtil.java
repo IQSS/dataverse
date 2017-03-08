@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -17,16 +18,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.json.Json;
-import javax.json.JsonObjectBuilder;
 
 public class DatasetUtil {
 
     private static final Logger logger = Logger.getLogger(DatasetUtil.class.getCanonicalName());
     public static String datasetLogoFilenameFinal = "dataset_logo_final";
-    public static String datasetLogoFilenameStaging = "dataset_logo_staging";
-    public static String stagingFilePathKey = "stagingFilePath";
-    public static String stagingFileErrorKey = "error";
 
     public static List<DatasetThumbnail> getThumbnailCandidates(Dataset dataset, boolean considerDatasetLogoAsCandidate) {
         List<DatasetThumbnail> thumbnails = new ArrayList<>();
@@ -125,75 +121,28 @@ public class DatasetUtil {
         return null;
     }
 
-    public static JsonObjectBuilder writeDatasetLogoToStagingArea(Dataset dataset, File file) {
-        JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
-        if (dataset == null) {
-            jsonObjectBuilder.add(stagingFileErrorKey, "Dataset is null.");
-            return jsonObjectBuilder;
-        }
-        if (file == null) {
-            jsonObjectBuilder.add(stagingFileErrorKey, "Dataset is id " + dataset.getId() + " but file is null.");
-            return jsonObjectBuilder;
-        }
-        try {
-            if (dataset.getFileSystemDirectory() != null && !Files.exists(dataset.getFileSystemDirectory())) {
-                /**
-                 * Note that "createDirectories()" must be used - not
-                 * "createDirectory()", to make sure all the parent directories
-                 * that may not yet exist are created as well.
-                 */
-                Path directoryCreated = Files.createDirectories(dataset.getFileSystemDirectory());
-                logger.fine("Dataset directory created: " + directoryCreated);
-            }
-        } catch (IOException ex) {
-            String msg = "Failed to create dataset directory " + dataset.getFileSystemDirectory() + " - " + ex;
-            logger.severe(msg);
-            jsonObjectBuilder.add(stagingFileErrorKey, msg);
-            return jsonObjectBuilder;
-        }
-        File newFile = null;
-        String stagingFilePath = null;
-        try {
-            newFile = File.createTempFile(datasetLogoFilenameStaging, ".png");
-            stagingFilePath = newFile.toPath().toString();
-            // goes to some place like this: /var/folders/c2/qts2_6zn7cl5h8g8x7r7xcbr0000gn/T/dataset_logo_staging5070333955726753809.png
-            logger.fine("Uploaded file written to staging area: " + newFile.getAbsolutePath());
-            jsonObjectBuilder.add(stagingFilePathKey, stagingFilePath);
-        } catch (IOException ex) {
-            Logger.getLogger(DatasetUtil.class.getName()).log(Level.SEVERE, null, ex);
-            jsonObjectBuilder.add(stagingFileErrorKey, "Problem creating temp file: " + ex);
-            return jsonObjectBuilder;
-        }
-
-        try {
-            Files.copy(file.toPath(), newFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            return jsonObjectBuilder;
-        } catch (IOException ex) {
-            String msg = "Failed to copy file to " + newFile.toPath() + ": " + ex;
-            logger.severe(msg);
-            jsonObjectBuilder.add(stagingFileErrorKey, msg);
-            return jsonObjectBuilder;
-        }
-    }
-
-    public static Dataset moveDatasetLogoFromStagingToFinal(Dataset dataset, String stagingFilePath) {
-        if (dataset == null) {
-            return null;
-        }
-        File stagingFile = new File(stagingFilePath);
-        File finalFile = new File(dataset.getFileSystemDirectory().toString(), datasetLogoFilenameFinal);
-        try {
-            Files.copy(stagingFile.toPath(), finalFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException ex) {
-            logger.severe("Failed to copy file from " + stagingFile.getAbsolutePath() + " to " + finalFile.getAbsolutePath() + ": " + ex);
-        }
-        boolean stagingFileDeleted = stagingFile.delete();
-        return dataset;
-    }
-
     public static boolean deleteDatasetLogo(Dataset dataset) {
         File doomed = new File(dataset.getFileSystemDirectory().toString(), datasetLogoFilenameFinal);
         return doomed.delete();
+    }
+
+    public static Dataset persistDatasetLogoToDisk(Dataset dataset, InputStream inputStream) {
+        if (dataset == null) {
+            return null;
+        }
+        File tmpFile = null;
+        try {
+            tmpFile = FileUtil.inputStreamToFile(inputStream);
+        } catch (IOException ex) {
+            Logger.getLogger(DatasetUtil.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        File finalFile = new File(dataset.getFileSystemDirectory().toString(), datasetLogoFilenameFinal);
+        try {
+            Files.copy(tmpFile.toPath(), finalFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException ex) {
+            logger.severe("Failed to copy file from " + tmpFile.getAbsolutePath() + " to " + finalFile.getAbsolutePath() + ": " + ex);
+        }
+        return dataset;
     }
 
 }

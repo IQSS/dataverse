@@ -1325,8 +1325,16 @@ public class FileUtil implements java.io.Serializable  {
     }
 
     public static String rescaleImage(File file) throws IOException {
+        if (file == null) {
+            logger.info("file was null!!");
+            return null;
+        }
         File tmpFile = File.createTempFile("tempFileToRescale", ".tmp");
         BufferedImage fullSizeImage = ImageIO.read(file);
+        if (fullSizeImage == null) {
+            logger.info("fullSizeImage was null!");
+            return null;
+        }
         int width = fullSizeImage.getWidth();
         int height = fullSizeImage.getHeight();
         FileChannel src = new FileInputStream(file).getChannel();

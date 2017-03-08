@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DOIEZIdServiceBean;
-import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
@@ -18,9 +17,7 @@ import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
-import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
@@ -60,17 +57,12 @@ import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
-import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
@@ -652,7 +644,7 @@ public class Datasets extends AbstractApiBean {
     @Path("{id}/thumbnail/{dataFileId}")
     public Response setDataFileAsThumbnail(@PathParam("id") String idSupplied, @PathParam("dataFileId") long dataFileIdSupplied) {
         try {
-            DatasetThumbnail datasetThumbnail = execCommand(new UpdateDatasetThumbnailCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(idSupplied), UpdateDatasetThumbnailCommand.UserIntent.userHasSelectedDataFileAsThumbnail, dataFileIdSupplied, null, null));
+            DatasetThumbnail datasetThumbnail = execCommand(new UpdateDatasetThumbnailCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(idSupplied), UpdateDatasetThumbnailCommand.UserIntent.userHasSelectedDataFileAsThumbnail, dataFileIdSupplied, null));
             return ok("Thumbnail set to " + datasetThumbnail.getBase64image());
         } catch (WrappedResponse wr) {
             return wr.getResponse();
@@ -669,7 +661,7 @@ public class Datasets extends AbstractApiBean {
     public Response uploadDatasetLogo(@PathParam("id") String idSupplied, @FormDataParam("file") InputStream inputStream
     ) {
         try {
-            DatasetThumbnail datasetThumbnail = execCommand(new UpdateDatasetThumbnailCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(idSupplied), UpdateDatasetThumbnailCommand.UserIntent.userWantsToUseNonDatasetFile, null, inputStream, null));
+            DatasetThumbnail datasetThumbnail = execCommand(new UpdateDatasetThumbnailCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(idSupplied), UpdateDatasetThumbnailCommand.UserIntent.userWantsToUseNonDatasetFile, null, inputStream));
             return ok("Thumbnail is now " + datasetThumbnail.getBase64image());
         } catch (WrappedResponse wr) {
             return wr.getResponse();
@@ -680,7 +672,7 @@ public class Datasets extends AbstractApiBean {
     @Path("{id}/thumbnail")
     public Response removeDatasetLogo(@PathParam("id") String idSupplied) {
         try {
-            DatasetThumbnail datasetThumbnail = execCommand(new UpdateDatasetThumbnailCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(idSupplied), UpdateDatasetThumbnailCommand.UserIntent.userWantsToRemoveThumbnail, null, null, null));
+            DatasetThumbnail datasetThumbnail = execCommand(new UpdateDatasetThumbnailCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(idSupplied), UpdateDatasetThumbnailCommand.UserIntent.userWantsToRemoveThumbnail, null, null));
             return ok("Dataset thumbnail removed.");
         } catch (WrappedResponse wr) {
             return wr.getResponse();

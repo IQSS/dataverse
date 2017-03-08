@@ -11,13 +11,13 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
-import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -36,7 +36,6 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.inject.Named;
-import javax.json.JsonObjectBuilder;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
@@ -770,13 +769,8 @@ public class DatasetServiceBean implements java.io.Serializable {
         em.createNativeQuery("UPDATE Dataset SET lastExportTime='"+now.toString()+"' WHERE id="+datasetId).executeUpdate();
     }
 
-    public JsonObjectBuilder writeDatasetLogoToStagingArea(Dataset dataset, File file) {
-        JsonObjectBuilder resultFromAttemptToStageDatasetLogo = DatasetUtil.writeDatasetLogoToStagingArea(dataset, file);
-        return resultFromAttemptToStageDatasetLogo;
-    }
-
-    public Dataset moveDatasetLogoFromStagingToFinal(Dataset dataset, String stagingFilePath) {
-        dataset = DatasetUtil.moveDatasetLogoFromStagingToFinal(dataset, stagingFilePath);
+    public Dataset persistDatasetLogoToDisk(Dataset dataset, InputStream inputStream) {
+        dataset = DatasetUtil.persistDatasetLogoToDisk(dataset, inputStream);
         return dataset;
     }
 

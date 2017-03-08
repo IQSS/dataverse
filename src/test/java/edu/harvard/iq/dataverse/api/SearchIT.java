@@ -1604,24 +1604,10 @@ public class SearchIT {
                 .body("data[1]", CoreMatchers.equalTo(treesAsBase64))
                 .statusCode(200);
 
-        String datasetLogo = "src/main/webapp/resources/images/cc0.png";
-        File datasetLogoFile = new File(datasetLogo);
-        String datasetLogoAsBase64 = null;
-        try {
-            datasetLogoAsBase64 = FileUtil.rescaleImage(datasetLogoFile);
-        } catch (IOException ex) {
-            Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        Response overrideThumbnail = UtilIT.uploadDatasetLogo(datasetPersistentId, datasetLogo, apiToken);
-        overrideThumbnail.prettyPrint();
-        overrideThumbnail.then().assertThat()
-                .body("data.message", CoreMatchers.equalTo("Thumbnail is now " + datasetLogoAsBase64))
-                .statusCode(200);
-
         //Add Failing Test logo file too big
         //Size limit hardcoded in systemConfig.getUploadLogoSizeLimit
-        datasetLogo = "src/test/resources/images/coffeeshop.png";
-        Response overrideThumbnailFail = UtilIT.uploadDatasetLogo(datasetPersistentId, datasetLogo, apiToken);
+        String tooBigLogo = "src/test/resources/images/coffeeshop.png";
+        Response overrideThumbnailFail = UtilIT.uploadDatasetLogo(datasetPersistentId, tooBigLogo, apiToken);
 
         overrideThumbnailFail.prettyPrint();
         overrideThumbnailFail.then().assertThat()
@@ -1632,6 +1618,21 @@ public class SearchIT {
                  */
                 //                .statusCode(400);
                 .statusCode(FORBIDDEN.getStatusCode());
+
+        String datasetLogo = "src/main/webapp/resources/images/cc0.png";
+        File datasetLogoFile = new File(datasetLogo);
+        String datasetLogoAsBase64 = null;
+        try {
+            datasetLogoAsBase64 = FileUtil.rescaleImage(datasetLogoFile);
+        } catch (IOException ex) {
+            Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        Response overrideThumbnail = UtilIT.uploadDatasetLogo(datasetPersistentId, datasetLogo, apiToken);
+        overrideThumbnail.prettyPrint();
+        overrideThumbnail.then().assertThat()
+                .body("data.message", CoreMatchers.equalTo("Thumbnail is now " + datasetLogoAsBase64))
+                .statusCode(200);
 
         logger.info("Dataset logo has been uploaded and becomes the thumbnail:");
         Response getThumbnail4 = UtilIT.getDatasetThumbnailMetadata(datasetPersistentId, apiToken);
@@ -1721,4 +1722,5 @@ public class SearchIT {
         logger.info("END testDatasetThumbnail");
 
     }
+
 }

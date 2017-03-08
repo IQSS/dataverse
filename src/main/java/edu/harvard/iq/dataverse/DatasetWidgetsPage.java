@@ -11,7 +11,6 @@ import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -19,8 +18,6 @@ import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.UploadedFile;
 
@@ -125,14 +122,14 @@ public class DatasetWidgetsPage implements java.io.Serializable {
 
     public void setDataFileAsThumbnail() {
         logger.fine("setDataFileAsThumbnail clicked");
-        updateDatasetThumbnailCommand = new UpdateDatasetThumbnailCommand(dvRequestService.getDataverseRequest(), dataset, UpdateDatasetThumbnailCommand.UserIntent.userHasSelectedDataFileAsThumbnail, datasetFileThumbnailToSwitchTo.getId(), null, null);
+        updateDatasetThumbnailCommand = new UpdateDatasetThumbnailCommand(dvRequestService.getDataverseRequest(), dataset, UpdateDatasetThumbnailCommand.UserIntent.userHasSelectedDataFileAsThumbnail, datasetFileThumbnailToSwitchTo.getId(), null);
         String base64image = ImageThumbConverter.getImageThumbAsBase64(datasetFileThumbnailToSwitchTo, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
         datasetThumbnail = new DatasetThumbnail(base64image, datasetFileThumbnailToSwitchTo);
     }
 
     public void flagDatasetThumbnailForRemoval() {
         logger.fine("flagDatasetThumbnailForRemoval");
-        updateDatasetThumbnailCommand = new UpdateDatasetThumbnailCommand(dvRequestService.getDataverseRequest(), dataset, UpdateDatasetThumbnailCommand.UserIntent.userWantsToRemoveThumbnail, null, null, null);
+        updateDatasetThumbnailCommand = new UpdateDatasetThumbnailCommand(dvRequestService.getDataverseRequest(), dataset, UpdateDatasetThumbnailCommand.UserIntent.userWantsToRemoveThumbnail, null, null);
         datasetFileThumbnailToSwitchTo = null;
         datasetThumbnail = null;
     }
@@ -140,24 +137,22 @@ public class DatasetWidgetsPage implements java.io.Serializable {
     public void handleImageFileUpload(FileUploadEvent event) {
         logger.fine("handleImageFileUpload clicked");
         UploadedFile uploadedFile = event.getFile();
-        InputStream fileInputStream = null;
         try {
-            fileInputStream = uploadedFile.getInputstream();
+            updateDatasetThumbnailCommand = new UpdateDatasetThumbnailCommand(dvRequestService.getDataverseRequest(), dataset, UpdateDatasetThumbnailCommand.UserIntent.userWantsToUseNonDatasetFile, null, uploadedFile.getInputstream());
         } catch (IOException ex) {
-            Logger.getLogger(DatasetWidgetsPage.class.getName()).log(Level.SEVERE, null, ex);
+            String error = "Unexpected error while uploading file.";
+            logger.info("Problem uploading dataset thumbnail to dataset id " + dataset.getId() + ". " + error + " . Exception: " + ex);
+            updateDatasetThumbnailCommand = null;
+            return;
         }
-        File file = null;
-        try {
-            file = FileUtil.inputStreamToFile(fileInputStream);
-        } catch (IOException ex) {
-            Logger.getLogger(DatasetWidgetsPage.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        JsonObjectBuilder resultFromAttemptToStageDatasetLogoObjectBuilder = datasetService.writeDatasetLogoToStagingArea(dataset, file);
-        JsonObject resultFromAttemptToStageDatasetLogoObject = resultFromAttemptToStageDatasetLogoObjectBuilder.build();
-        String stagingFilePath = resultFromAttemptToStageDatasetLogoObject.getString(DatasetUtil.stagingFilePathKey);
-        updateDatasetThumbnailCommand = new UpdateDatasetThumbnailCommand(dvRequestService.getDataverseRequest(), dataset, UpdateDatasetThumbnailCommand.UserIntent.userWantsToUseNonDatasetFile, null, fileInputStream, stagingFilePath);
         String base64image = null;
         try {
+            File file = null;
+            try {
+                file = FileUtil.inputStreamToFile(uploadedFile.getInputstream());
+            } catch (IOException ex) {
+                Logger.getLogger(DatasetWidgetsPage.class.getName()).log(Level.SEVERE, null, ex);
+            }
             base64image = FileUtil.rescaleImage(file);
             datasetThumbnail = new DatasetThumbnail(base64image, datasetFileThumbnailToSwitchTo);
         } catch (IOException ex) {
