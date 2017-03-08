@@ -135,8 +135,7 @@ public class FilePage implements java.io.Serializable {
 
             
             Boolean authorized = (fileMetadata.getDatasetVersion().isReleased()) ||
-                    (!fileMetadata.getDatasetVersion().isReleased() && this.canViewUnpublishedDataset()) 
-                    || fileMetadata.getDatasetVersion().isDeaccessioned();
+                    (!fileMetadata.getDatasetVersion().isReleased() && this.canViewUnpublishedDataset());
             
             if (!authorized ) {
                 return permissionsWrapper.notAuthorized();
