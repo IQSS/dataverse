@@ -21,7 +21,7 @@ We still don't know what's causing this issue. But here's a known workaround:
 - Start Glassfish
 
 The shell script below performs the steps above. 
-Note that it may or may not work on your system, so it is provided as an example only. Aside from the configuration values that need to be changed to reflect your environment (the Glassfish directory, name of the databaset, etc.) the script relies on the database being configured in a certain way for access. (See the comments in the script for more information)
+Note that it may or may not work on your system, so it is provided as an example only. Aside from the configuration values that need to be changed to reflect your environment (the Glassfish directory, name of the database, etc.) the script relies on the database being configured in a certain way for access. (See the comments in the script for more information)
 
 .. literalinclude:: ../_static/util/clear_timer.sh
 
