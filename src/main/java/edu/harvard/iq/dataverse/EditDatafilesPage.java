@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetThumbnailCommand;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.ingest.IngestUtil;
@@ -2200,14 +2201,18 @@ public class EditDatafilesPage implements java.io.Serializable {
                  * respect how this page seems to stage actions and giving the
                  * user a chance to review before clicking "Save Changes".
                  */
-                DatasetUtil.deleteDatasetLogo(dataset);
                 DataFile dataFile = fileMetadataSelectedForThumbnailPopup.getDataFile();
                 if (dataFile != null) {
-                    dataset.setThumbnailFile(dataFile);
-                    dataset = datasetService.merge(dataset);
+                    try {
+                        DatasetThumbnail datasetThumbnail = commandEngine.submit(new UpdateDatasetThumbnailCommand(dvRequestService.getDataverseRequest(), dataset, UpdateDatasetThumbnailCommand.UserIntent.setDatasetFileAsThumbnail, dataFile.getId(), null));
+                        // look up the dataset again because the UpdateDatasetThumbnailCommand mutates (merges) the dataset
+                        dataset = datasetService.find(dataset.getId());
+                    } catch (CommandException ex) {
+                        String error = "Problem setting thumbnail.";
+                        // show this error to the user?
+                        logger.info(error);
+                    }
                 }
-//                logger.info("about to call saveAsDesignatedThumbnail. fileMetadataSelectedForThumbnailPopup is " + fileMetadataSelectedForThumbnailPopup.getLabel());
-//                saveAsDesignatedThumbnail();
             } else {
                 logger.info("unexpected... should never get here");
             }

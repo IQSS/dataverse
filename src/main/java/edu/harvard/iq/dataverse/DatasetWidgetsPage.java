@@ -122,14 +122,14 @@ public class DatasetWidgetsPage implements java.io.Serializable {
 
     public void setDataFileAsThumbnail() {
         logger.fine("setDataFileAsThumbnail clicked");
-        updateDatasetThumbnailCommand = new UpdateDatasetThumbnailCommand(dvRequestService.getDataverseRequest(), dataset, UpdateDatasetThumbnailCommand.UserIntent.userHasSelectedDataFileAsThumbnail, datasetFileThumbnailToSwitchTo.getId(), null);
+        updateDatasetThumbnailCommand = new UpdateDatasetThumbnailCommand(dvRequestService.getDataverseRequest(), dataset, UpdateDatasetThumbnailCommand.UserIntent.setDatasetFileAsThumbnail, datasetFileThumbnailToSwitchTo.getId(), null);
         String base64image = ImageThumbConverter.getImageThumbAsBase64(datasetFileThumbnailToSwitchTo, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
         datasetThumbnail = new DatasetThumbnail(base64image, datasetFileThumbnailToSwitchTo);
     }
 
     public void flagDatasetThumbnailForRemoval() {
         logger.fine("flagDatasetThumbnailForRemoval");
-        updateDatasetThumbnailCommand = new UpdateDatasetThumbnailCommand(dvRequestService.getDataverseRequest(), dataset, UpdateDatasetThumbnailCommand.UserIntent.userWantsToRemoveThumbnail, null, null);
+        updateDatasetThumbnailCommand = new UpdateDatasetThumbnailCommand(dvRequestService.getDataverseRequest(), dataset, UpdateDatasetThumbnailCommand.UserIntent.removeThumbnail, null, null);
         datasetFileThumbnailToSwitchTo = null;
         datasetThumbnail = null;
     }
@@ -138,14 +138,13 @@ public class DatasetWidgetsPage implements java.io.Serializable {
         logger.fine("handleImageFileUpload clicked");
         UploadedFile uploadedFile = event.getFile();
         try {
-            updateDatasetThumbnailCommand = new UpdateDatasetThumbnailCommand(dvRequestService.getDataverseRequest(), dataset, UpdateDatasetThumbnailCommand.UserIntent.userWantsToUseNonDatasetFile, null, uploadedFile.getInputstream());
+            updateDatasetThumbnailCommand = new UpdateDatasetThumbnailCommand(dvRequestService.getDataverseRequest(), dataset, UpdateDatasetThumbnailCommand.UserIntent.setNonDatasetFileAsThumbnail, null, uploadedFile.getInputstream());
         } catch (IOException ex) {
             String error = "Unexpected error while uploading file.";
             logger.info("Problem uploading dataset thumbnail to dataset id " + dataset.getId() + ". " + error + " . Exception: " + ex);
             updateDatasetThumbnailCommand = null;
             return;
         }
-        String base64image = null;
         try {
             File file = null;
             try {
@@ -153,7 +152,7 @@ public class DatasetWidgetsPage implements java.io.Serializable {
             } catch (IOException ex) {
                 Logger.getLogger(DatasetWidgetsPage.class.getName()).log(Level.SEVERE, null, ex);
             }
-            base64image = FileUtil.rescaleImage(file);
+            String base64image = FileUtil.rescaleImage(file);
             datasetThumbnail = new DatasetThumbnail(base64image, datasetFileThumbnailToSwitchTo);
         } catch (IOException ex) {
             Logger.getLogger(DatasetWidgetsPage.class.getName()).log(Level.SEVERE, null, ex);

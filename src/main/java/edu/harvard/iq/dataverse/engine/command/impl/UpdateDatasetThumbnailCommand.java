@@ -33,7 +33,9 @@ public class UpdateDatasetThumbnailCommand extends AbstractCommand<DatasetThumbn
     private final InputStream inputStream;
 
     public enum UserIntent {
-        userHasSelectedDataFileAsThumbnail, userWantsToRemoveThumbnail, userWantsToUseNonDatasetFile
+        setDatasetFileAsThumbnail,
+        setNonDatasetFileAsThumbnail,
+        removeThumbnail
     };
 
     public UpdateDatasetThumbnailCommand(DataverseRequest aRequest, Dataset theDataset, UserIntent theUserIntent, Long theDataFileIdSupplied, InputStream theInputStream) {
@@ -54,7 +56,7 @@ public class UpdateDatasetThumbnailCommand extends AbstractCommand<DatasetThumbn
         }
         switch (userIntent) {
 
-            case userHasSelectedDataFileAsThumbnail:
+            case setDatasetFileAsThumbnail:
                 if (dataFileIdSupplied == null) {
                     throw new CommandException("A file was not selected to be the new dataset thumbnail.", this);
                 }
@@ -62,7 +64,7 @@ public class UpdateDatasetThumbnailCommand extends AbstractCommand<DatasetThumbn
                 if (datasetFileThumbnailToSwitchTo == null) {
                     throw new CommandException("Could not find file based on id supplied: " + dataFileIdSupplied + ".", this);
                 }
-                Dataset ds1 = ctxt.datasets().setDataFileAsThumbnail(dataset, datasetFileThumbnailToSwitchTo);
+                Dataset ds1 = ctxt.datasets().setDatasetFileAsThumbnail(dataset, datasetFileThumbnailToSwitchTo);
                 DatasetThumbnail datasetThumbnail = ds1.getDatasetThumbnail(ctxt.datasetVersion(), ctxt.files());
                 if (datasetThumbnail != null) {
                     DataFile dataFile = datasetThumbnail.getDataFile();
@@ -77,7 +79,7 @@ public class UpdateDatasetThumbnailCommand extends AbstractCommand<DatasetThumbn
                     throw new CommandException("Dataset thumnail is unexpectedly absent.", this);
                 }
 
-            case userWantsToUseNonDatasetFile:
+            case setNonDatasetFileAsThumbnail:
                 File uploadedFile;
                 try {
                     uploadedFile = FileUtil.inputStreamToFile(inputStream);
@@ -94,14 +96,14 @@ public class UpdateDatasetThumbnailCommand extends AbstractCommand<DatasetThumbn
                 } catch (FileNotFoundException ex) {
                     Logger.getLogger(UpdateDatasetThumbnailCommand.class.getName()).log(Level.SEVERE, null, ex);
                 }
-                Dataset datasetWithNewThumbnail = ctxt.datasets().persistDatasetLogoToDisk(dataset, fileAsStream);
+                Dataset datasetWithNewThumbnail = ctxt.datasets().setNonDatasetFileAsThumbnail(dataset, fileAsStream);
                 if (datasetWithNewThumbnail != null) {
                     return datasetWithNewThumbnail.getDatasetThumbnail(ctxt.datasetVersion(), ctxt.files());
                 } else {
                     return null;
                 }
 
-            case userWantsToRemoveThumbnail:
+            case removeThumbnail:
                 Dataset ds2 = ctxt.datasets().removeDatasetThumbnail(dataset);
                 DatasetThumbnail datasetThumbnail2 = ds2.getDatasetThumbnail(ctxt.datasetVersion(), ctxt.files());
                 if (datasetThumbnail2 == null) {

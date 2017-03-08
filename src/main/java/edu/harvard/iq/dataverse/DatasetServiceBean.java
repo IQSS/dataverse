@@ -769,23 +769,33 @@ public class DatasetServiceBean implements java.io.Serializable {
         em.createNativeQuery("UPDATE Dataset SET lastExportTime='"+now.toString()+"' WHERE id="+datasetId).executeUpdate();
     }
 
-    public Dataset persistDatasetLogoToDisk(Dataset dataset, InputStream inputStream) {
-        dataset = DatasetUtil.persistDatasetLogoToDisk(dataset, inputStream);
-        return dataset;
-    }
-
-    public Dataset setDataFileAsThumbnail(Dataset dataset, DataFile datasetFileThumbnailToSwitchTo) {
+    public Dataset setNonDatasetFileAsThumbnail(Dataset dataset, InputStream inputStream) {
         if (dataset == null) {
-            logger.info("In setDataFileAsThumbnail but dataset is null! Returning null.");
+            logger.info("In setNonDatasetFileAsThumbnail but dataset is null! Returning null.");
             return null;
         }
-        if (datasetFileThumbnailToSwitchTo != null) {
-            DatasetUtil.deleteDatasetLogo(dataset);
-            dataset.setThumbnailFile(datasetFileThumbnailToSwitchTo);
-            dataset.setUseGenericThumbnail(false);
-            return merge(dataset);
+        if (inputStream == null) {
+            logger.info("In setNonDatasetFileAsThumbnail but inputStream is null! Returning null.");
+            return null;
         }
-        return dataset;
+        dataset = DatasetUtil.persistDatasetLogoToDisk(dataset, inputStream);
+        dataset.setThumbnailFile(null);
+        return merge(dataset);
+    }
+
+    public Dataset setDatasetFileAsThumbnail(Dataset dataset, DataFile datasetFileThumbnailToSwitchTo) {
+        if (dataset == null) {
+            logger.info("In setDatasetFileAsThumbnail but dataset is null! Returning null.");
+            return null;
+        }
+        if (datasetFileThumbnailToSwitchTo == null) {
+            logger.info("In setDatasetFileAsThumbnail but dataset is null! Returning null.");
+            return null;
+        }
+        DatasetUtil.deleteDatasetLogo(dataset);
+        dataset.setThumbnailFile(datasetFileThumbnailToSwitchTo);
+        dataset.setUseGenericThumbnail(false);
+        return merge(dataset);
     }
 
     public Dataset removeDatasetThumbnail(Dataset dataset) {

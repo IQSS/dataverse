@@ -644,7 +644,7 @@ public class Datasets extends AbstractApiBean {
     @Path("{id}/thumbnail/{dataFileId}")
     public Response setDataFileAsThumbnail(@PathParam("id") String idSupplied, @PathParam("dataFileId") long dataFileIdSupplied) {
         try {
-            DatasetThumbnail datasetThumbnail = execCommand(new UpdateDatasetThumbnailCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(idSupplied), UpdateDatasetThumbnailCommand.UserIntent.userHasSelectedDataFileAsThumbnail, dataFileIdSupplied, null));
+            DatasetThumbnail datasetThumbnail = execCommand(new UpdateDatasetThumbnailCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(idSupplied), UpdateDatasetThumbnailCommand.UserIntent.setDatasetFileAsThumbnail, dataFileIdSupplied, null));
             return ok("Thumbnail set to " + datasetThumbnail.getBase64image());
         } catch (WrappedResponse wr) {
             return wr.getResponse();
@@ -661,7 +661,7 @@ public class Datasets extends AbstractApiBean {
     public Response uploadDatasetLogo(@PathParam("id") String idSupplied, @FormDataParam("file") InputStream inputStream
     ) {
         try {
-            DatasetThumbnail datasetThumbnail = execCommand(new UpdateDatasetThumbnailCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(idSupplied), UpdateDatasetThumbnailCommand.UserIntent.userWantsToUseNonDatasetFile, null, inputStream));
+            DatasetThumbnail datasetThumbnail = execCommand(new UpdateDatasetThumbnailCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(idSupplied), UpdateDatasetThumbnailCommand.UserIntent.setNonDatasetFileAsThumbnail, null, inputStream));
             return ok("Thumbnail is now " + datasetThumbnail.getBase64image());
         } catch (WrappedResponse wr) {
             return wr.getResponse();
@@ -672,7 +672,7 @@ public class Datasets extends AbstractApiBean {
     @Path("{id}/thumbnail")
     public Response removeDatasetLogo(@PathParam("id") String idSupplied) {
         try {
-            DatasetThumbnail datasetThumbnail = execCommand(new UpdateDatasetThumbnailCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(idSupplied), UpdateDatasetThumbnailCommand.UserIntent.userWantsToRemoveThumbnail, null, null));
+            DatasetThumbnail datasetThumbnail = execCommand(new UpdateDatasetThumbnailCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(idSupplied), UpdateDatasetThumbnailCommand.UserIntent.removeThumbnail, null, null));
             return ok("Dataset thumbnail removed.");
         } catch (WrappedResponse wr) {
             return wr.getResponse();
