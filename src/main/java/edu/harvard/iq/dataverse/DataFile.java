@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.persistence.Entity;
@@ -61,6 +62,7 @@ import org.hibernate.validator.constraints.NotBlank;
 		, @Index(columnList="contenttype")
 		, @Index(columnList="restricted")})
 public class DataFile extends DvObject implements Comparable {
+    private static final Logger logger = Logger.getLogger(DatasetPage.class.getCanonicalName());
     private static final long serialVersionUID = 1L;
     
     public static final char INGEST_STATUS_NONE = 65;
@@ -799,7 +801,14 @@ public class DataFile extends DvObject implements Comparable {
     public String getDisplayName() {
         // @todo should we show the published version label instead?
         // currently this method is not being used
-        return getLatestFileMetadata().getLabel();
+        //return getLatestFileMetadata().getLabel(); 
+
+        if (getLatestFileMetadata() != null) {
+           return getLatestFileMetadata().getLabel(); 
+        }
+        logger.fine("DataFile getLatestFileMetadata is null for DataFile id = " + this.getId());
+        return "";
+
     }
     
     @Override
