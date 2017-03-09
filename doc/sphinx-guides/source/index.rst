@@ -4,7 +4,7 @@
    contain the root `toctree` directive.
 
 Dataverse 4.6.1 Guides
-====================
+======================
 
 These guides are for the most recent version of Dataverse. For the guides for **version 4.6** please go `here <http://guides.dataverse.org/en/4.6/>`_.
 
