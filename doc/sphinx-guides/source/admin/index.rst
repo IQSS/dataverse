@@ -18,3 +18,4 @@ Contents:
    harvestserver
    metadataexport
    timers
+   troubleshooting

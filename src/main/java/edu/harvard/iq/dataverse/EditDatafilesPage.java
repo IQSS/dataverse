@@ -2614,7 +2614,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 // by the file and version ids:
                 for (Long fileId : selectedFileIdsList) {
                     logger.fine("attempting to retrieve file metadata for version id " + datasetVersionId + " and file id " + fileId);
-                    FileMetadata fileMetadata = datafileService.findFileMetadataByFileAndVersionId(fileId, datasetVersionId);
+                    FileMetadata fileMetadata =  datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(datasetVersionId, fileId);
                     if (fileMetadata != null) {
                         logger.fine("Success!");
                         fileMetadatas.add(fileMetadata);

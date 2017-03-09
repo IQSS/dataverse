@@ -208,6 +208,13 @@
                                     </div>
                                 </div>
                             </div>
+                            <div id="versionNumber" class="col-xs-12">
+                                <h:outputText rendered="#{FilePage.fileMetadata.datasetVersion.released}" styleClass="highlightBold"
+                                              value="#{bundle['file.DatasetVersion']}: #{FilePage.fileMetadata.datasetVersion.versionNumber}.#{FilePage.fileMetadata.datasetVersion.minorVersionNumber}" /> 
+                                <h:outputText rendered="#{!FilePage.fileMetadata.datasetVersion.released}" styleClass="highlightBold"
+                                              value="#{bundle['file.DatasetVersion']}: #{FilePage.fileMetadata.datasetVersion.versionState}"/> 
+                            </div>
+                                
                             <div id="deaccession-reason-block" class="col-xs-12" jsf:rendered="#{FilePage.fileMetadata.datasetVersion.deaccessioned}">
                                 <div class="col-xs-12 bg-danger">
                                     <h5 class="margin-top-half">#{bundle['dataset.deaccession.reason']}</h5>
@@ -251,6 +258,7 @@
                     <div id="contentTabs">
                         <!-- Metadata -->
                         <p:tabView id="tabView" widgetVar="content" activeIndex="#{FilePage.selectedTabIndex}">
+                            <p:ajax event="tabChange" listener="#{FilePage.tabChanged}" oncomplete="bind_bsui_components();" update="@this" />
                             <p:tab id="metadataMapTab" class="padding-none" title="#{bundle['file.dataFilesTab.metadata.header']}"
                                    rendered="#{(!FilePage.fileMetadata.datasetVersion.deaccessioned or 
                                                               (FilePage.fileMetadata.datasetVersion.deaccessioned and FilePage.canUpdateDataset()))}">
@@ -386,11 +394,10 @@
                                     <!-- Placeholder -->
                                     <em>Coming soon...</em>
                                 </p:tab>
-                                <p:tab id="verionsTab" title="#{bundle['file.dataFilesTab.versions']}">
-                                    <!-- Placeholder -->
-                                    <em>Coming soon...</em>
-                                </p:tab>
                             </ui:remove>
+                            <p:tab id="versionsTab" title="#{bundle['file.dataFilesTab.versions']}">
+                                <ui:include src="file-versions.xhtml"></ui:include>
+                            </p:tab>
                         </p:tabView>
                     </div>
 
