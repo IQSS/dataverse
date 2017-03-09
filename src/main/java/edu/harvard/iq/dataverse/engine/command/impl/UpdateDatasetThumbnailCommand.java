@@ -84,7 +84,10 @@ public class UpdateDatasetThumbnailCommand extends AbstractCommand<DatasetThumbn
                 try {
                     uploadedFile = FileUtil.inputStreamToFile(inputStream);
                 } catch (IOException ex) {
-                    throw new CommandException("Problem uploading file: " + ex, this);
+                    throw new CommandException("In setNonDatasetFileAsThumbnail caught exception calling inputStreamToFile: " + ex, this);
+                }
+                if (uploadedFile == null) {
+                    throw new CommandException("In setNonDatasetFileAsThumbnail uploadedFile was null.", this);
                 }
                 long uploadLogoSizeLimit = ctxt.systemConfig().getUploadLogoSizeLimit();
                 if (uploadedFile.length() > uploadLogoSizeLimit) {

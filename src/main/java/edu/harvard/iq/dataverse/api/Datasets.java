@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DOIEZIdServiceBean;
+import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
@@ -577,7 +578,13 @@ public class Datasets extends AbstractApiBean {
             JsonArrayBuilder data = Json.createArrayBuilder();
             boolean considerDatasetLogoAsCandidate = true;
             for (DatasetThumbnail datasetThumbnail : DatasetUtil.getThumbnailCandidates(dataset, considerDatasetLogoAsCandidate)) {
-                data.add(datasetThumbnail.getBase64image());
+                String base64image = datasetThumbnail.getBase64image();
+                if (base64image != null) {
+                    logger.info("found a candidate!");
+                    data.add(base64image);
+                } else {
+                    logger.info("found a candidate but base64image was null!");
+                }
             }
             return ok(data);
         } catch (WrappedResponse ex) {
@@ -600,7 +607,7 @@ public class Datasets extends AbstractApiBean {
         }
         DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail(datasetVersionService, fileService);
         if (datasetThumbnail == null) {
-            logger.info("dataset could not be found for dataset id " + dataset.getId());
+            logger.info("dataset could not be found for dataset id " + dataset.getId() + ". Returning null.");
             return null;
         }
         String base64Image = datasetThumbnail.getBase64image();
@@ -633,6 +640,13 @@ public class Datasets extends AbstractApiBean {
             data.add("isUseGenericThumbnail", dataset.isUseGenericThumbnail());
             if (datasetThumbnail != null) {
                 data.add("datasetThumbnailBase64image", datasetThumbnail.getBase64image());
+                DataFile dataFile = datasetThumbnail.getDataFile();
+                if (dataFile != null) {
+                    /**
+                     * @todo Change this from a String to a long.
+                     */
+                    data.add("dataFileId", dataFile.getId().toString());
+                }
             }
             return ok(data);
         } catch (WrappedResponse ex) {

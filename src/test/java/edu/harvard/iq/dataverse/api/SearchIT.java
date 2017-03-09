@@ -58,6 +58,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.Base64;
 import javax.json.JsonArray;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import org.hamcrest.CoreMatchers;
 import static org.hamcrest.CoreMatchers.nullValue;
 import org.hamcrest.Matchers;
@@ -1408,6 +1409,7 @@ public class SearchIT {
         getThumbnail1.then().assertThat()
                 //                .body("data", CoreMatchers.equalTo(emptyObject))
                 .body("data.isUseGenericThumbnail", CoreMatchers.equalTo(false))
+                .body("data.dataFileId", CoreMatchers.equalTo(null))
                 .statusCode(200);
 
         Response thumbnailCandidates1 = UtilIT.showDatasetThumbnailCandidates(datasetPersistentId, apiToken);
@@ -1421,7 +1423,7 @@ public class SearchIT {
         uploadFile.prettyPrint();
 
         Response getDatasetJson1 = UtilIT.nativeGetUsingPersistentId(datasetPersistentId, apiToken);
-        long dataFileId1 = JsonPath.from(getDatasetJson1.getBody().asString()).getLong("data.latestVersion.files[0].dataFile.id");
+        Long dataFileId1 = JsonPath.from(getDatasetJson1.getBody().asString()).getLong("data.latestVersion.files[0].dataFile.id");
         System.out.println("datafileId: " + dataFileId1);
         getDatasetJson1.then().assertThat()
                 .statusCode(200);
@@ -1449,6 +1451,8 @@ public class SearchIT {
                 //                .body("data.datasetThumbnail", CoreMatchers.equalTo("randomFromDataFile" + dataFileId1))
                 .body("data.datasetThumbnailBase64image", CoreMatchers.equalTo(treesAsBase64))
                 .body("data.isUseGenericThumbnail", CoreMatchers.equalTo(false))
+                // This dataFileId is null because of automatic thumbnail selection.
+                .body("data.dataFileId", CoreMatchers.equalTo(dataFileId1.toString()))
                 .statusCode(200);
 
         String leadingStringToRemove = FileUtil.rfc2397dataUrlSchemeBase64Png;
@@ -1464,6 +1468,16 @@ public class SearchIT {
 
         Response getThumbnailImage2 = UtilIT.getDatasetThumbnail(datasetPersistentId, apiToken);
         getThumbnailImage2.prettyPrint();
+        getThumbnailImage2.then().assertThat()
+                //                .body(CoreMatchers.equalTo(decodedImg))
+                .contentType("image/png")
+                /**
+                 * @todo Why can't we assert the content here? Why do we have to
+                 * use Unirest instead? How do you download the bytes of the
+                 * image using REST Assured?
+                 */
+                //                .content(CoreMatchers.equalTo(decodedImg))
+                .statusCode(200);
 
         String url = RestAssured.baseURI + "/api/datasets/" + datasetId + "/thumbnail";
         logger.info("Using unirest to get " + url);
@@ -1531,21 +1545,12 @@ public class SearchIT {
             System.out.println("fromUnirest.length():   " + fromUnirest.length());
             assertEquals(fromTest.length(), fromUnirest.length());
         }
+//        }
 
+        //  */
 //        System.out.println("decodedImg.length:                                 " + decodedImg.length);
 //        System.out.println("getThumbnailImage2.getBody().asByteArray().length: " + getThumbnailImage2.getBody().asByteArray().length);
 //        assertEquals(decodedImg.length, getThumbnailImage2.getBody().asByteArray().length);
-        getThumbnailImage2.then().assertThat()
-                //                .body(CoreMatchers.equalTo(decodedImg))
-                .contentType("image/png")
-                /**
-                 * @todo Why can't we assert the content here? Why do we have to
-                 * use Unirest instead? How do you download the bytes of the
-                 * image using REST Assured?
-                 */
-                //                .content(CoreMatchers.equalTo(decodedImg))
-                .statusCode(200);
-
         String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
         Response uploadSecondImage = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
         uploadSecondImage.prettyPrint();
@@ -1554,7 +1559,7 @@ public class SearchIT {
 
         Response getDatasetJson2 = UtilIT.nativeGetUsingPersistentId(datasetPersistentId, apiToken);
         //odd that [0] gets the second uploaded file... replace with a find for dataverseproject.png
-        long dataFileId2 = JsonPath.from(getDatasetJson2.getBody().asString()).getLong("data.latestVersion.files[0].dataFile.id");
+        Long dataFileId2 = JsonPath.from(getDatasetJson2.getBody().asString()).getLong("data.latestVersion.files[0].dataFile.id");
         System.out.println("datafileId2: " + dataFileId2);
         getDatasetJson2.then().assertThat()
                 .statusCode(200);
@@ -1580,6 +1585,7 @@ public class SearchIT {
                 //                .body("data.datasetThumbnail", CoreMatchers.equalTo("dataverseproject.png"))
                 .body("data.datasetThumbnailBase64image", CoreMatchers.equalTo(dataverseProjectLogoAsBase64))
                 .body("data.isUseGenericThumbnail", CoreMatchers.equalTo(false))
+                .body("data.dataFileId", CoreMatchers.equalTo(dataFileId2.toString()))
                 .statusCode(200);
 
         Response search3 = UtilIT.search("id:dataset_" + datasetId + "_draft", apiToken);

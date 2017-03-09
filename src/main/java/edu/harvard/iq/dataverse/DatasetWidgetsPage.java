@@ -74,7 +74,7 @@ public class DatasetWidgetsPage implements java.io.Serializable {
             return permissionsWrapper.notAuthorized();
         }
         datasetThumbnails = DatasetUtil.getThumbnailCandidates(dataset, considerDatasetLogoAsCandidate);
-        datasetThumbnail = DatasetUtil.getThumbnail(dataset, datasetVersionService, dataFileService);
+        datasetThumbnail = dataset.getDatasetThumbnail(datasetVersionService, dataFileService);
         if (datasetThumbnail != null) {
             DataFile dataFile = datasetThumbnail.getDataFile();
             if (dataFile != null) {

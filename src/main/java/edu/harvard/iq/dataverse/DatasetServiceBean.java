@@ -778,7 +778,7 @@ public class DatasetServiceBean implements java.io.Serializable {
             logger.info("In setNonDatasetFileAsThumbnail but inputStream is null! Returning null.");
             return null;
         }
-        dataset = DatasetUtil.persistDatasetLogoToDisk(dataset, inputStream);
+        dataset = DatasetUtil.persistDatasetLogoToDiskAndCreateThumbnail(dataset, inputStream);
         dataset.setThumbnailFile(null);
         return merge(dataset);
     }
