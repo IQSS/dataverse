@@ -97,8 +97,8 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
                         }
                     }
                 } catch (Throwable e) {
-                    // TODO add a variant for EZId
-                    throw new CommandException(ResourceBundle.getBundle("Bundle").getString("dataset.publish.error.datacite"), this);
+                    String exceptionName=e.getClass().getSimpleName();
+                    throw new CommandException(ResourceBundle.getBundle("Bundle").getString("dataset.publish.error."+exceptionName), this);
                 }
             } else {
                 throw new IllegalCommandException("This dataset may not be published because its id registry service is not supported.", this);
@@ -220,9 +220,12 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
         }
 
         if (idServiceBean!= null && !idServiceBean.registerWhenPublished())
-            if (!idServiceBean.publicizeIdentifier(savedDataset))
-                throw new CommandException(ResourceBundle.getBundle("Bundle").getString("dataset.publish.error.datacite"), this);
-
+            try{
+                idServiceBean.publicizeIdentifier(savedDataset);
+            }catch (Throwable e) {
+                String exceptionName=e.getClass().getSimpleName();
+                throw new CommandException(ResourceBundle.getBundle("Bundle").getString("dataset.publish.error."+exceptionName), this);
+            }
         PrivateUrl privateUrl = ctxt.engine().submit(new GetPrivateUrlCommand(getRequest(), savedDataset));
         if (privateUrl != null) {
             logger.fine("Deleting Private URL for dataset id " + savedDataset.getId());
