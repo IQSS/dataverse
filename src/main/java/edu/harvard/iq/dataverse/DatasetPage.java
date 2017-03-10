@@ -3514,7 +3514,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public String getThumbnail() {
-        DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail(datasetVersionService, datafileService);
+        DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail();
         if (datasetThumbnail != null) {
             return datasetThumbnail.getBase64image();
         } else {

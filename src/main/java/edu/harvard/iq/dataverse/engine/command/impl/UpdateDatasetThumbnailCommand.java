@@ -65,7 +65,7 @@ public class UpdateDatasetThumbnailCommand extends AbstractCommand<DatasetThumbn
                     throw new CommandException("Could not find file based on id supplied: " + dataFileIdSupplied + ".", this);
                 }
                 Dataset ds1 = ctxt.datasets().setDatasetFileAsThumbnail(dataset, datasetFileThumbnailToSwitchTo);
-                DatasetThumbnail datasetThumbnail = ds1.getDatasetThumbnail(ctxt.datasetVersion(), ctxt.files());
+                DatasetThumbnail datasetThumbnail = ds1.getDatasetThumbnail();
                 if (datasetThumbnail != null) {
                     DataFile dataFile = datasetThumbnail.getDataFile();
                     if (dataFile != null) {
@@ -101,14 +101,14 @@ public class UpdateDatasetThumbnailCommand extends AbstractCommand<DatasetThumbn
                 }
                 Dataset datasetWithNewThumbnail = ctxt.datasets().setNonDatasetFileAsThumbnail(dataset, fileAsStream);
                 if (datasetWithNewThumbnail != null) {
-                    return datasetWithNewThumbnail.getDatasetThumbnail(ctxt.datasetVersion(), ctxt.files());
+                    return datasetWithNewThumbnail.getDatasetThumbnail();
                 } else {
                     return null;
                 }
 
             case removeThumbnail:
                 Dataset ds2 = ctxt.datasets().removeDatasetThumbnail(dataset);
-                DatasetThumbnail datasetThumbnail2 = ds2.getDatasetThumbnail(ctxt.datasetVersion(), ctxt.files());
+                DatasetThumbnail datasetThumbnail2 = ds2.getDatasetThumbnail();
                 if (datasetThumbnail2 == null) {
                     return null;
                 } else {

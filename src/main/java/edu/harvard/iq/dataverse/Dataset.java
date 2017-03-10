@@ -690,8 +690,8 @@ public class Dataset extends DvObjectContainer {
         return equals(other) || equals(other.getOwner());
     }
 
-    public DatasetThumbnail getDatasetThumbnail(DatasetVersionServiceBean datasetVersionService, DataFileServiceBean dataFileService) {
-        return DatasetUtil.getThumbnail(this, datasetVersionService, dataFileService);
+    public DatasetThumbnail getDatasetThumbnail() {
+        return DatasetUtil.getThumbnail(this);
     }
 
 }

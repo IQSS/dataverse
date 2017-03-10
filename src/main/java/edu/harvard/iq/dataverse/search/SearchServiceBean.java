@@ -77,10 +77,6 @@ public class SearchServiceBean {
     @EJB
     DatasetServiceBean datasetService;
     @EJB
-    DatasetVersionServiceBean datasetVersionService;
-    @EJB
-    DataFileServiceBean dataFileService;
-    @EJB
     DatasetFieldServiceBean datasetFieldService;
     @EJB
     GroupServiceBean groupService;
@@ -505,7 +501,7 @@ public class SearchServiceBean {
                  */
                 Dataset dataset = datasetService.find(entityid);
                 if (dataset != null) {
-                    DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail(datasetVersionService, dataFileService);
+                    DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail();
                     if (datasetThumbnail != null) {
                         solrSearchResult.setDatasetThumbnailBase64image(datasetThumbnail.getBase64image());
                         solrSearchResult.setDatasetThumbnail(datasetThumbnail);

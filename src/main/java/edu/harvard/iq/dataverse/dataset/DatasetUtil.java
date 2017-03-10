@@ -69,7 +69,7 @@ public class DatasetUtil {
         return thumbnails;
     }
 
-    public static DatasetThumbnail getThumbnail(Dataset dataset, DatasetVersionServiceBean datasetVersionService, DataFileServiceBean dataFileService) {
+    public static DatasetThumbnail getThumbnail(Dataset dataset) {
         if (dataset == null) {
             return null;
         }
@@ -94,50 +94,14 @@ public class DatasetUtil {
         } else {
             DataFile thumbnailFile = dataset.getThumbnailFile();
             if (thumbnailFile == null) {
-                logger.fine(title + " does not have a thumbnail file set but the search card might have one");
-                DatasetThumbnail thumbnailThatMightBeOnSearchCard = findThumbnailThatMightBeShowingOnTheSearchCards(dataset, datasetVersionService, dataFileService);
-                if (thumbnailThatMightBeOnSearchCard != null) {
-                    logger.fine(title + " does not have a thumbnail file set but a thumbnail was found as a search card thumbnail.");
-                    return thumbnailThatMightBeOnSearchCard;
-                } else {
-                    logger.fine(title + " does not have a thumbnail file set but and couldn't find one in use on the search card.");
-                    // returning null because dataFile.equals(thumbnailFile) will never match since thumbnailFile is null and there's no point in interating through the files
-                    return null;
-                }
+                logger.fine(title + " does not have a thumbnail.");
+                return null;
             }
             String imageSourceBase64 = ImageThumbConverter.getImageThumbAsBase64(thumbnailFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
             DatasetThumbnail datasetThumbnail = new DatasetThumbnail(imageSourceBase64, thumbnailFile);
             logger.fine(title + " will get thumbnail from DataFile id " + thumbnailFile.getId());
             return datasetThumbnail;
         }
-    }
-
-    public static DatasetThumbnail findThumbnailThatMightBeShowingOnTheSearchCards(Dataset dataset, DatasetVersionServiceBean datasetVersionService, DataFileServiceBean dataFileService) {
-        boolean disableThisMethodToSeeIfWeCanDeleteIt = false;
-        if (disableThisMethodToSeeIfWeCanDeleteIt) {
-            return null;
-        }
-        if (dataset == null) {
-            logger.info("Dataset is null so returning null.");
-            return null;
-        }
-        if (datasetVersionService == null || dataFileService == null) {
-            logger.info("Without service beans, can't determine if search cards have a thumbnail or not for dataset id " + dataset.getId());
-            return null;
-        }
-        Long randomThumbnail = datasetVersionService.getThumbnailByVersionId(dataset.getLatestVersion().getId());
-        if (randomThumbnail != null) {
-            DataFile thumbnailImageFile = null;
-            thumbnailImageFile = dataFileService.findCheapAndEasy(randomThumbnail);
-            if (dataFileService.isThumbnailAvailable(thumbnailImageFile)) {
-                String randomlySelectedThumbnail = ImageThumbConverter.getImageThumbAsBase64(
-                        thumbnailImageFile,
-                        ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
-                DatasetThumbnail datasetThumbnail = new DatasetThumbnail(randomlySelectedThumbnail, thumbnailImageFile);
-                return datasetThumbnail;
-            }
-        }
-        return null;
     }
 
     public static boolean deleteDatasetLogo(Dataset dataset) {

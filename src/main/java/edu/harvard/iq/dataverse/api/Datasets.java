@@ -124,9 +124,6 @@ public class Datasets extends AbstractApiBean {
     
     @EJB
     DataFileServiceBean fileService;
-    
-    @EJB
-    DatasetVersionServiceBean datasetVersionService;
 
     @EJB
     IngestServiceBean ingestService;
@@ -605,7 +602,7 @@ public class Datasets extends AbstractApiBean {
         } catch (WrappedResponse ex) {
             return null;
         }
-        DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail(datasetVersionService, fileService);
+        DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail();
         if (datasetThumbnail == null) {
             logger.info("dataset could not be found for dataset id " + dataset.getId() + ". Returning null.");
             return null;
@@ -636,7 +633,7 @@ public class Datasets extends AbstractApiBean {
         try {
             Dataset dataset = findDatasetOrDie(idSupplied);
             JsonObjectBuilder data = Json.createObjectBuilder();
-            DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail(datasetVersionService, fileService);
+            DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail();
             data.add("isUseGenericThumbnail", dataset.isUseGenericThumbnail());
             if (datasetThumbnail != null) {
                 data.add("datasetThumbnailBase64image", datasetThumbnail.getBase64image());

@@ -31,12 +31,6 @@ public class DatasetWidgetsPage implements java.io.Serializable {
     DatasetServiceBean datasetService;
 
     @EJB
-    DatasetVersionServiceBean datasetVersionService;
-
-    @EJB
-    DataFileServiceBean dataFileService;
-
-    @EJB
     EjbDataverseEngine commandEngine;
 
     @Inject
@@ -74,7 +68,7 @@ public class DatasetWidgetsPage implements java.io.Serializable {
             return permissionsWrapper.notAuthorized();
         }
         datasetThumbnails = DatasetUtil.getThumbnailCandidates(dataset, considerDatasetLogoAsCandidate);
-        datasetThumbnail = dataset.getDatasetThumbnail(datasetVersionService, dataFileService);
+        datasetThumbnail = dataset.getDatasetThumbnail();
         if (datasetThumbnail != null) {
             DataFile dataFile = datasetThumbnail.getDataFile();
             if (dataFile != null) {
