@@ -57,12 +57,15 @@ import java.nio.file.OpenOption;
 import java.nio.file.StandardCopyOption;
 import java.util.Base64;
 import javax.json.JsonArray;
+import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import org.hamcrest.CoreMatchers;
 import static org.hamcrest.CoreMatchers.nullValue;
 import org.hamcrest.Matchers;
+import org.hamcrest.core.IsNull;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.Ignore;
 
@@ -1415,8 +1418,39 @@ public class SearchIT {
         Response getThumbnailImage1 = UtilIT.getDatasetThumbnail(datasetPersistentId, apiToken);
         getThumbnailImage1.prettyPrint();
         getThumbnailImage1.then().assertThat()
-                .contentType("")
-                .statusCode(NO_CONTENT.getStatusCode());
+                .contentType("image/png")
+                .statusCode(OK.getStatusCode());
+
+        String url = RestAssured.baseURI + "/api/datasets/" + datasetId + "/thumbnail";
+        GetRequest unirestOut1 = Unirest.get(url);
+        InputStream unirestInputStream1 = null;
+        try {
+            unirestInputStream1 = unirestOut1.asBinary().getBody();
+        } catch (UnirestException ex) {
+            Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        String defaultDatasetIconAsBase64 = DatasetUtil.defaultIconAsBase64;
+        byte[] bytesForDefaultDatasetIcon = null;
+        try {
+
+            bytesForDefaultDatasetIcon = Base64.getDecoder().decode(defaultDatasetIconAsBase64.getBytes("UTF-8"));
+        } catch (UnsupportedEncodingException ex) {
+        }
+
+        assertEquals(ByteArrayInputStream.class, unirestInputStream1.getClass());
+        ByteArrayInputStream decodedDefaultDatasetIcon = new ByteArrayInputStream(bytesForDefaultDatasetIcon);
+
+        int bytesAvailableFromDefaultDatasetIcon = decodedDefaultDatasetIcon.available();
+        int bytesAvailableFromApiForDefaultDatasetIcon = 0;
+        try {
+            bytesAvailableFromApiForDefaultDatasetIcon = unirestInputStream1.available();
+        } catch (IOException ex) {
+            Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        logger.info("bytesAvailableFromDefaultDatasetIcon: " + bytesAvailableFromDefaultDatasetIcon);
+        logger.info("bytesAvailableFromApiForDefaultDatasetIcon:  " + bytesAvailableFromApiForDefaultDatasetIcon);
+        assertEquals(bytesAvailableFromDefaultDatasetIcon, bytesAvailableFromApiForDefaultDatasetIcon);
 
         Response thumbnailCandidates1 = UtilIT.showDatasetThumbnailCandidates(datasetPersistentId, apiToken);
         thumbnailCandidates1.prettyPrint();
@@ -1485,7 +1519,6 @@ public class SearchIT {
                 //                .content(CoreMatchers.equalTo(decodedImg))
                 .statusCode(200);
 
-        String url = RestAssured.baseURI + "/api/datasets/" + datasetId + "/thumbnail";
         logger.info("Using unirest to get " + url);
         GetRequest unirestOut = Unirest.get(url);
         InputStream unirestInputStream = null;
@@ -1494,6 +1527,7 @@ public class SearchIT {
         } catch (UnirestException ex) {
             Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, null, ex);
         }
+        assertEquals(ByteArrayInputStream.class, unirestInputStream.getClass());
 
         ByteArrayInputStream decodedImgByteArrayInputStream = new ByteArrayInputStream(decodedImg);
 

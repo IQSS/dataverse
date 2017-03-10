@@ -604,8 +604,11 @@ public class Datasets extends AbstractApiBean {
         }
         DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail();
         if (datasetThumbnail == null) {
-            logger.info("dataset could not be found for dataset id " + dataset.getId() + ". Returning null.");
-            return null;
+            String defaultIconAsBase64 = DatasetUtil.defaultIconAsBase64;
+            byte[] decodedImg = Base64.getDecoder().decode(defaultIconAsBase64);
+            InputStream inputStream = new ByteArrayInputStream(decodedImg);
+            logger.fine("Thumbnail could not be found for dataset id " + dataset.getId() + ". Returning default icon: " + defaultIconAsBase64);
+            return inputStream;
         }
         String base64Image = datasetThumbnail.getBase64image();
         String leadingStringToRemove = FileUtil.rfc2397dataUrlSchemeBase64Png;
