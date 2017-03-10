@@ -126,6 +126,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
     private boolean rootDv = false;
     private Map<Long, String> harvestedDatasetDescriptions = null;
     
+    
     /**
      * @todo:
      *
@@ -928,21 +929,52 @@ public class SearchIncludeFragment implements java.io.Serializable {
         return IndexServiceBean.getDEACCESSIONED_STRING();
     }
 
+    
+    /**
+     * A bit of redundant effort for error checking in the .xhtml
+     * 
+     * Specifically for searches with bad facets in query string--
+     * incorrect quoting, etc.
+     * 
+     * Note: An empty or null filterQuery array is OK
+     * Values within the array that can't be split are NOT ok
+     * (This is quick "downstream" fix--not necessarily efficient)
+     * 
+     * @return 
+     */
+    public boolean hasValidFilterQueries(){
+               
+        if (this.filterQueries.isEmpty()){   
+            return true;        // empty is valid!
+        }
+        
+        for (String fq : this.filterQueries){
+            if (this.getFriendlyNamesFromFilterQuery(fq) == null){
+                return false;   // not parseable is bad!
+            }
+        }
+        return true;
+    }
+    
+    
     public List<String> getFriendlyNamesFromFilterQuery(String filterQuery) {
         
-        if (filterQuery == null){
-            logger.info("filterQuery is null");
+        if ((filterQuery == null)||
+            (datasetfieldFriendlyNamesBySolrField == null)||
+            (staticSolrFieldFriendlyNamesBySolrField==null)){
             return null;
         }
-
+        
         String[] parts = filterQuery.split(":");
         if (parts.length != 2){
-            logger.log(Level.INFO, "String array has {0} part(s).  Should have 2", parts.length);
+            //logger.log(Level.INFO, "String array has {0} part(s).  Should have 2: {1}", new Object[]{parts.length, filterQuery});
             return null;
         }
         String key = parts[0];
         String value = parts[1];
+
         List<String> friendlyNames = new ArrayList<>();
+
         String datasetfieldFriendyName = datasetfieldFriendlyNamesBySolrField.get(key);
         if (datasetfieldFriendyName != null) {
             friendlyNames.add(datasetfieldFriendyName);
