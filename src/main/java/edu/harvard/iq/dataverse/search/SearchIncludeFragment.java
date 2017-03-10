@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.context.FacesContext;
@@ -928,7 +929,17 @@ public class SearchIncludeFragment implements java.io.Serializable {
     }
 
     public List<String> getFriendlyNamesFromFilterQuery(String filterQuery) {
+        
+        if (filterQuery == null){
+            logger.info("filterQuery is null");
+            return null;
+        }
+
         String[] parts = filterQuery.split(":");
+        if (parts.length != 2){
+            logger.log(Level.INFO, "String array has {0} part(s).  Should have 2", parts.length);
+            return null;
+        }
         String key = parts[0];
         String value = parts[1];
         List<String> friendlyNames = new ArrayList<>();

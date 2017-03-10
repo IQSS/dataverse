@@ -313,7 +313,17 @@
             <div id="resultsFacetsTopBlock" jsf:rendered="#{!empty SearchIncludeFragment.filterQueries}">
                 <ui:repeat value="#{SearchIncludeFragment.filterQueries}" var="filterQuery">
                     <ui:param name="friendlyNames" value="#{SearchIncludeFragment.getFriendlyNamesFromFilterQuery(filterQuery)}"/>
-                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}" styleClass="facetLink facetSelected">
+                    <ui:fragment rendered="#{friendlyNames==null}">
+
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <div class="bg-danger padding-12 margin-top margin-bottom">
+                                   <p><h:outputFormat value="#{bundle['dataverse.search.facet.error']}" escape="false" /></p>
+                                </div>
+                            </div>
+                        </div>   
+                    </ui:fragment>
+                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}" styleClass="facetLink facetSelected" rendered="#{not empty friendlyNames}">
                         <h:outputText value="#{friendlyNames.get(0)}: #{friendlyNames.get(1)}"/> <span class="glyphicon glyphicon-remove"></span>
                         <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                         <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -479,8 +489,6 @@
                                 <div>
                                     <h:outputText value="#{highlight.solrField.nameSearchable}: #{snippet}" escape="false"/>
                                     <ui:param value="#{highlight.solrField.nameFacetable}:intentional" name="unfriendly"/>
-                                    <!--<h:outputText value="#{SearchIncludeFragment.getFriendlyNamesFromFilterQuery('name:intentional').get(0)}"/>-->
-                                    <!--<h:outputText value="#{SearchIncludeFragment.getFriendlyNamesFromFilterQuery(unfriendly).get(0)}: "/>-->
                                 </div>
                             </ui:repeat>
                         </ui:repeat>
@@ -541,9 +549,6 @@
                             <ui:repeat value="#{highlight.snippets}" var="snippet">
                                 <div>
                                     <h:outputText value="#{highlight.displayName}: #{snippet}" escape="false"/>
-                                    <!--<ui:param value="#{highlight.solrField.nameFacetable}:intentional" name="unfriendly"/>-->
-                                    <!--<h:outputText value="#{SearchIncludeFragment.getFriendlyNamesFromFilterQuery('name:intentional').get(0)}"/>-->
-                                    <!--<h:outputText value="#{SearchIncludeFragment.getFriendlyNamesFromFilterQuery(unfriendly).get(0)}: "/>-->
                                 </div>
                             </ui:repeat>
                         </ui:repeat>
