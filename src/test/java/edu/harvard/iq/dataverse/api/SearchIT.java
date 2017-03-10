@@ -1412,6 +1412,12 @@ public class SearchIT {
                 .body("data.dataFileId", CoreMatchers.equalTo(null))
                 .statusCode(200);
 
+        Response getThumbnailImage1 = UtilIT.getDatasetThumbnail(datasetPersistentId, apiToken);
+        getThumbnailImage1.prettyPrint();
+        getThumbnailImage1.then().assertThat()
+                .contentType("")
+                .statusCode(NO_CONTENT.getStatusCode());
+
         Response thumbnailCandidates1 = UtilIT.showDatasetThumbnailCandidates(datasetPersistentId, apiToken);
         thumbnailCandidates1.prettyPrint();
         JsonArray emptyArray = Json.createArrayBuilder().build();
@@ -1502,49 +1508,46 @@ public class SearchIT {
         logger.info("bytesAvailableFromApiSide:  " + bytesAvailableFromApiSide);
         assertEquals(bytesAvailableFromTestSide, bytesAvailableFromApiSide);
 
-        boolean writeFilesToDisk = true;
-        if (writeFilesToDisk) {
-            File fromUnirest = new File("/tmp/unirest.png");
-            try {
+        File fromUnirest = new File("/tmp/unirest.png");
+        try {
 //            Files.copy(unirestOut.asBinary().getBody(), fromUnirest.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                Files.copy(unirestInputStream, fromUnirest.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            } catch (IOException ex) {
-                Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (UnsupportedOperationException ex) {
-                Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            File fromRestAssured = new File("/tmp/api.png");
-            try {
-//            Files.copy(getThumbnailImage2.asInputStream(), fromApi.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                Files.copy(getThumbnailImage2.body().asInputStream(), fromRestAssured.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            } catch (IOException ex) {
-                Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            File fromTest = new File("/tmp/test.png");
-            FileOutputStream stream = null;
-            try {
-                stream = new FileOutputStream(fromTest.getPath());
-            } catch (FileNotFoundException ex) {
-                Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            try {
-                try {
-                    stream.write(decodedImg);
-                } catch (IOException ex) {
-                    Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            } finally {
-                try {
-                    stream.close();
-                } catch (IOException ex) {
-                    Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-            System.out.println("fromTest.length():  " + fromTest.length());
-            System.out.println("fromRestAssured.length():   " + fromRestAssured.length());
-            System.out.println("fromUnirest.length():   " + fromUnirest.length());
-            assertEquals(fromTest.length(), fromUnirest.length());
+            Files.copy(unirestInputStream, fromUnirest.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException ex) {
+            Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (UnsupportedOperationException ex) {
+            Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, null, ex);
         }
+        File fromRestAssured = new File("/tmp/api.png");
+        try {
+//            Files.copy(getThumbnailImage2.asInputStream(), fromApi.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(getThumbnailImage2.body().asInputStream(), fromRestAssured.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException ex) {
+            Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        File fromTest = new File("/tmp/test.png");
+        FileOutputStream stream = null;
+        try {
+            stream = new FileOutputStream(fromTest.getPath());
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        try {
+            try {
+                stream.write(decodedImg);
+            } catch (IOException ex) {
+                Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } finally {
+            try {
+                stream.close();
+            } catch (IOException ex) {
+                Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        System.out.println("fromTest.length():  " + fromTest.length());
+        System.out.println("fromRestAssured.length():   " + fromRestAssured.length());
+        System.out.println("fromUnirest.length():   " + fromUnirest.length());
+        assertEquals(fromTest.length(), fromUnirest.length());
 //        }
 
         //  */
