@@ -145,6 +145,15 @@ function show_search_panels(){
 }
 
 /*
+ * Called via link in msg text as a result of query parameter formatting error
+ */
+function clearQueryString() {
+  split_url = window.location.href.split('?')[0]
+  window.location = split_url;
+  return false;
+}
+
+/*
  * Called after "Upload + Edit Files"
  */
 function post_edit_files(){
