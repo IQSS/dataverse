@@ -125,7 +125,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
     private SearchException searchException;
     private boolean rootDv = false;
     private Map<Long, String> harvestedDatasetDescriptions = null;
-    
+    private boolean solrErrorEncountered = false;
     
     /**
      * @todo:
@@ -302,6 +302,9 @@ public class SearchIncludeFragment implements java.io.Serializable {
          *
          */
 
+        // reset the solr error flag
+        setSolrErrorEncountered(false);
+        
         try {
             logger.fine("query from user:   " + query);
             logger.fine("queryToPassToSolr: " + queryToPassToSolr);
@@ -315,9 +318,18 @@ public class SearchIncludeFragment implements java.io.Serializable {
             HttpServletRequest httpServletRequest = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
             DataverseRequest dataverseRequest = new DataverseRequest(session.getUser(), httpServletRequest);
             solrQueryResponse = searchService.search(dataverseRequest, dataverse, queryToPassToSolr, filterQueriesFinal, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows, false);
+            if (solrQueryResponse.hasError()){
+                logger.info(solrQueryResponse.getError());
+                setSolrErrorEncountered(true);
+            }
             // This 2nd search() is for populating the facets: -- L.A. 
             // TODO: ...
             solrQueryResponseAllTypes = searchService.search(dataverseRequest, dataverse, queryToPassToSolr, filterQueriesFinalAllTypes, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows, false);
+            if (solrQueryResponse.hasError()){
+                logger.info(solrQueryResponse.getError());
+                setSolrErrorEncountered(true);
+            }
+            
         } catch (SearchException ex) {
             Throwable cause = ex;
             StringBuilder sb = new StringBuilder();
@@ -432,6 +444,33 @@ public class SearchIncludeFragment implements java.io.Serializable {
 //        friendlyName.put(SearchFields.DISTRIBUTION_DATE_YEAR_ONLY, "Distribution Date");
     }
 
+  
+    /**
+     * Used for capturing errors that happen during solr query
+     * Added to catch exceptions when parsing the solr query string
+     * 
+     * @return 
+     */
+    public boolean wasSolrErrorEncountered(){
+  
+        if (this.solrErrorEncountered){
+            return true;
+        }
+        if (!this.hasValidFilterQueries()){
+            setSolrErrorEncountered(true);
+            return true;
+        }
+        return solrErrorEncountered;
+    }
+    
+    /**
+     * Set the solrErrorEncountered flag
+     * @param val 
+     */
+    public void setSolrErrorEncountered(boolean val){
+        this.solrErrorEncountered = val;
+    }
+    
 //    public boolean isShowUnpublished() {
 //        return showUnpublished;
 //    }
@@ -930,24 +969,25 @@ public class SearchIncludeFragment implements java.io.Serializable {
     }
 
     
-    /**
-     * A bit of redundant effort for error checking in the .xhtml
-     * 
-     * Specifically for searches with bad facets in query string--
-     * incorrect quoting, etc.
-     * 
-     * Note: An empty or null filterQuery array is OK
-     * Values within the array that can't be split are NOT ok
-     * (This is quick "downstream" fix--not necessarily efficient)
-     * 
-     * @return 
-     */
+   /**
+    * A bit of redundant effort for error checking in the .xhtml
+    * 
+    * Specifically for searches with bad facets in query string--
+    * incorrect quoting.  These searches don't always throw an explicit
+    * solr error.
+    * 
+    * Note: An empty or null filterQuery array is OK
+    * Values within the array that can't be split are NOT ok
+    * (This is quick "downstream" fix--not necessarily efficient)
+    * 
+    * @return 
+    */
     public boolean hasValidFilterQueries(){
-               
+             
         if (this.filterQueries.isEmpty()){   
             return true;        // empty is valid!
         }
-        
+
         for (String fq : this.filterQueries){
             if (this.getFriendlyNamesFromFilterQuery(fq) == null){
                 return false;   // not parseable is bad!
@@ -956,8 +996,8 @@ public class SearchIncludeFragment implements java.io.Serializable {
         return true;
     }
     
-    
     public List<String> getFriendlyNamesFromFilterQuery(String filterQuery) {
+        
         
         if ((filterQuery == null)||
             (datasetfieldFriendlyNamesBySolrField == null)||

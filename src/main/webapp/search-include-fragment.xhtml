@@ -237,7 +237,7 @@
             </p>
 
             <!-- Message for zero results -->
-            <div id="emptyResults" class="emptyResults bg-warning" jsf:rendered="#{(SearchIncludeFragment.searchResultsList.size() == 0) and (SearchIncludeFragment.hasValidFilterQueries())}">
+            <div id="emptyResults" class="emptyResults bg-warning" jsf:rendered="#{(SearchIncludeFragment.searchResultsList.size() == 0) and (!SearchIncludeFragment.wasSolrErrorEncountered())}">
                 <ui:fragment rendered="#{SearchIncludeFragment.mode == SearchIncludeFragment.searchModeString}">
                     <!--THIS IS EMPTY / SEARCH-->
                     <ui:fragment rendered="#{SearchIncludeFragment.facetCountDataverses eq 0 and SearchIncludeFragment.facetCountDatasets eq 0 and SearchIncludeFragment.facetCountFiles eq 0}">
@@ -312,7 +312,7 @@
             </div>
 
             <div id="resultsFacetsTopBlock" jsf:rendered="#{!empty SearchIncludeFragment.filterQueries}">
-                <ui:fragment rendered="#{!SearchIncludeFragment.hasValidFilterQueries()}">
+                <ui:fragment rendered="#{(SearchIncludeFragment.wasSolrErrorEncountered())}">
                     <div class="row">
                         <div class="col-sm-12">
                             <div class="bg-danger padding-12 margin-top margin-bottom">
@@ -322,7 +322,7 @@
                     </div>   
                 </ui:fragment>
 
-                <ui:repeat value="#{SearchIncludeFragment.filterQueries}" var="filterQuery" rendered="#{SearchIncludeFragment.hasValidFilterQueries()}">
+                <ui:repeat value="#{SearchIncludeFragment.filterQueries}" var="filterQuery" rendered="#{!SearchIncludeFragment.wasSolrErrorEncountered()}">
                     <ui:param name="friendlyNames" value="#{SearchIncludeFragment.getFriendlyNamesFromFilterQuery(filterQuery)}"/>
                     <h:outputLink value="#{widgetWrapper.wrapURL(page)}" styleClass="facetLink facetSelected" rendered="#{not empty friendlyNames}">
                         <h:outputText value="#{friendlyNames.get(0)}: #{friendlyNames.get(1)}"/> <span class="glyphicon glyphicon-remove"></span>
