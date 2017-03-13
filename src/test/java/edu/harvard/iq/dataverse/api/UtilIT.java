@@ -650,10 +650,10 @@ public class UtilIT {
                 .get("/api/datasets/:persistentId/thumbnail" + "?persistentId=" + datasetPersistentId);
     }
 
-    static Response getDatasetThumbnailMetadata(String datasetPersistentId, String apiToken) {
+    static Response getDatasetThumbnailMetadata(Integer datasetId, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/datasets/:persistentId/thumbnailMetadata" + "?persistentId=" + datasetPersistentId);
+                .get("/api/admin/datasets/thumbnailMetadata/"+ datasetId);
     }
 
     static Response useThumbnailFromDataFile(String datasetPersistentId, long dataFileId1, String apiToken) {

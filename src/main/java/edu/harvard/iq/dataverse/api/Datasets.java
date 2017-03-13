@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DOIEZIdServiceBean;
-import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
@@ -9,7 +8,6 @@ import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
@@ -623,35 +621,6 @@ public class Datasets extends AbstractApiBean {
         logger.fine("returning this many bytes for  " + "dataset id: " + dataset.getId() + ", persistentId: " + dataset.getIdentifier() + " :" + decodedImg.length);
         InputStream inputStream = new ByteArrayInputStream(decodedImg);
         return inputStream;
-    }
-
-    /**
-     * @todo Comment out or delete if not needed. Enforce permissions.
-     *
-     * @todo Should we call this a logo or a thumbnail?
-     */
-    @GET
-    @Path("{id}/thumbnailMetadata")
-    public Response getDatasetThumbnailMetadata(@PathParam("id") String idSupplied) {
-        try {
-            Dataset dataset = findDatasetOrDie(idSupplied);
-            JsonObjectBuilder data = Json.createObjectBuilder();
-            DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail();
-            data.add("isUseGenericThumbnail", dataset.isUseGenericThumbnail());
-            if (datasetThumbnail != null) {
-                data.add("datasetThumbnailBase64image", datasetThumbnail.getBase64image());
-                DataFile dataFile = datasetThumbnail.getDataFile();
-                if (dataFile != null) {
-                    /**
-                     * @todo Change this from a String to a long.
-                     */
-                    data.add("dataFileId", dataFile.getId().toString());
-                }
-            }
-            return ok(data);
-        } catch (WrappedResponse ex) {
-            return error(Response.Status.NOT_FOUND, "Could not find dataset based on id supplied: " + idSupplied + ".");
-        }
     }
 
     @POST

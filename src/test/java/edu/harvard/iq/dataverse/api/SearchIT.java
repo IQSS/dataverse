@@ -1406,7 +1406,7 @@ public class SearchIT {
         String datasetPersistentId = protocol + ":" + authority + "/" + identifier;
 
         logger.info("Dataset created, no thumbnail expected:");
-        Response getThumbnail1 = UtilIT.getDatasetThumbnailMetadata(datasetPersistentId, apiToken);
+        Response getThumbnail1 = UtilIT.getDatasetThumbnailMetadata(datasetId, apiToken);
         getThumbnail1.prettyPrint();
         JsonObject emptyObject = Json.createObjectBuilder().build();
         getThumbnail1.then().assertThat()
@@ -1485,7 +1485,7 @@ public class SearchIT {
                 .body("data.items[0].datasetThumbnailBase64image", CoreMatchers.equalTo(treesAsBase64))
                 .statusCode(200);
 
-        Response getThumbnail2 = UtilIT.getDatasetThumbnailMetadata(datasetPersistentId, apiToken);
+        Response getThumbnail2 = UtilIT.getDatasetThumbnailMetadata(datasetId, apiToken);
         getThumbnail2.prettyPrint();
         getThumbnail2.then().assertThat()
                 //                .body("data.datasetThumbnail", CoreMatchers.equalTo("randomFromDataFile" + dataFileId1))
@@ -1616,7 +1616,7 @@ public class SearchIT {
                 .statusCode(200);
 
         logger.info("Second DataFile has been uploaded and switched to as the thumbnail:");
-        Response getThumbnail3 = UtilIT.getDatasetThumbnailMetadata(datasetPersistentId, apiToken);
+        Response getThumbnail3 = UtilIT.getDatasetThumbnailMetadata(datasetId, apiToken);
         getThumbnail3.prettyPrint();
         getThumbnail3.then().assertThat()
                 //                .body("data.datasetThumbnail", CoreMatchers.equalTo("dataverseproject.png"))
@@ -1678,7 +1678,7 @@ public class SearchIT {
                 .statusCode(200);
 
         logger.info("Dataset logo has been uploaded and becomes the thumbnail:");
-        Response getThumbnail4 = UtilIT.getDatasetThumbnailMetadata(datasetPersistentId, apiToken);
+        Response getThumbnail4 = UtilIT.getDatasetThumbnailMetadata(datasetId, apiToken);
         getThumbnail4.prettyPrint();
         getThumbnail4.then().assertThat()
                 //                .body("data.datasetThumbnail", CoreMatchers.equalTo(null))
@@ -1712,7 +1712,7 @@ public class SearchIT {
                 .statusCode(200);
 
         logger.info("Deleting the dataset logo means that the thumbnail is not set. It should be the generic icon:");
-        Response getThumbnail5 = UtilIT.getDatasetThumbnailMetadata(datasetPersistentId, apiToken);
+        Response getThumbnail5 = UtilIT.getDatasetThumbnailMetadata(datasetId, apiToken);
         getThumbnail5.prettyPrint();
         getThumbnail5.then().assertThat()
                 //                .body("data.datasetThumbnail", CoreMatchers.equalTo(null))
