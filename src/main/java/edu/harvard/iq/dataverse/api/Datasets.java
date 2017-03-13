@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DOIEZIdServiceBean;
+import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
@@ -52,17 +53,13 @@ import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
-import java.io.UnsupportedEncodingException;
-import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -562,24 +559,34 @@ public class Datasets extends AbstractApiBean {
         });
     }
 
-    /**
-     * @todo Enforce permissions.
-     */
     @GET
     @Path("{id}/thumbnail/candidates")
     public Response getDatasetThumbnailCandidates(@PathParam("id") String idSupplied) {
         try {
             Dataset dataset = findDatasetOrDie(idSupplied);
+            boolean canUpdateThumbnail = false;
+            try {
+                canUpdateThumbnail = permissionSvc.requestOn(createDataverseRequest(findUserOrDie()), dataset).canIssue(UpdateDatasetThumbnailCommand.class);
+            } catch (WrappedResponse ex) {
+                logger.info("Exception thrown while trying to figure out permissions while getting thumbnail for dataset id " + dataset.getId() + ": " + ex.getLocalizedMessage());
+            }
+            if (!canUpdateThumbnail) {
+                return error(Response.Status.FORBIDDEN, "You are not permitted to list dataset thumbnail candidates.");
+            }
             JsonArrayBuilder data = Json.createArrayBuilder();
             boolean considerDatasetLogoAsCandidate = true;
             for (DatasetThumbnail datasetThumbnail : DatasetUtil.getThumbnailCandidates(dataset, considerDatasetLogoAsCandidate)) {
+                JsonObjectBuilder candidate = Json.createObjectBuilder();
                 String base64image = datasetThumbnail.getBase64image();
                 if (base64image != null) {
                     logger.info("found a candidate!");
-                    data.add(base64image);
-                } else {
-                    logger.info("found a candidate but base64image was null!");
+                    candidate.add("base64image", base64image);
                 }
+                DataFile dataFile = datasetThumbnail.getDataFile();
+                if (dataFile != null) {
+                    candidate.add("dataFileId", dataFile.getId());
+                }
+                data.add(candidate);
             }
             return ok(data);
         } catch (WrappedResponse ex) {
@@ -638,10 +645,6 @@ public class Datasets extends AbstractApiBean {
         }
     }
 
-    /**
-     * @todo Should we call this a logo? Maybe we should just call it a
-     * thumbnail.
-     */
     @POST
     @Path("{id}/logo")
     @Consumes(MediaType.MULTIPART_FORM_DATA)

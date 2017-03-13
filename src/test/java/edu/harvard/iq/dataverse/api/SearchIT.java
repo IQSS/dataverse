@@ -1456,17 +1456,23 @@ public class SearchIT {
         logger.info("bytesAvailableFromApiForDefaultDatasetIcon:  " + bytesAvailableFromApiForDefaultDatasetIcon);
         assertEquals(bytesAvailableFromDefaultDatasetIcon, bytesAvailableFromApiForDefaultDatasetIcon);
 
+        Response createNoSpecialAccessUser = UtilIT.createRandomUser();
+        createNoSpecialAccessUser.prettyPrint();
+        String noSpecialAccessUsername = UtilIT.getUsernameFromResponse(createNoSpecialAccessUser);
+        String noSpecialAcessApiToken = UtilIT.getApiTokenFromResponse(createNoSpecialAccessUser);
+
+        Response attemptToGetThumbnailCandidates = UtilIT.showDatasetThumbnailCandidates(datasetPersistentId, noSpecialAcessApiToken);
+        attemptToGetThumbnailCandidates.prettyPrint();
+        attemptToGetThumbnailCandidates.then().assertThat()
+                .body("message", CoreMatchers.equalTo("You are not permitted to list dataset thumbnail candidates."))
+                .statusCode(FORBIDDEN.getStatusCode());
+
         Response thumbnailCandidates1 = UtilIT.showDatasetThumbnailCandidates(datasetPersistentId, apiToken);
         thumbnailCandidates1.prettyPrint();
         JsonArray emptyArray = Json.createArrayBuilder().build();
         thumbnailCandidates1.then().assertThat()
                 .body("data", CoreMatchers.equalTo(emptyArray))
                 .statusCode(200);
-
-        Response createNoSpecialAccessUser = UtilIT.createRandomUser();
-        createNoSpecialAccessUser.prettyPrint();
-        String noSpecialAccessUsername = UtilIT.getUsernameFromResponse(createNoSpecialAccessUser);
-        String noSpecialAcessApiToken = UtilIT.getApiTokenFromResponse(createNoSpecialAccessUser);
 
         Response getThumbnailImageNoAccess1 = UtilIT.getDatasetThumbnail(datasetPersistentId, noSpecialAcessApiToken);
         getThumbnailImageNoAccess1.prettyPrint();
@@ -1659,9 +1665,10 @@ public class SearchIT {
         Response thumbnailCandidates2 = UtilIT.showDatasetThumbnailCandidates(datasetPersistentId, apiToken);
         thumbnailCandidates2.prettyPrint();
         thumbnailCandidates2.then().assertThat()
-                //                .body("data[0]", CoreMatchers.equalTo("dataverseproject.png"))
-                .body("data[0]", CoreMatchers.equalTo(dataverseProjectLogoAsBase64))
-                .body("data[1]", CoreMatchers.equalTo(treesAsBase64))
+                .body("data[0].base64image", CoreMatchers.equalTo(dataverseProjectLogoAsBase64))
+                .body("data[0].dataFileId", CoreMatchers.equalTo(dataFileId2.intValue()))
+                .body("data[1].base64image", CoreMatchers.equalTo(treesAsBase64))
+                .body("data[1].dataFileId", CoreMatchers.equalTo(dataFileId1.intValue()))
                 .statusCode(200);
 
         //Add Failing Test logo file too big
@@ -1718,9 +1725,12 @@ public class SearchIT {
         logger.fine("dataverseProjectLogoAsBase64: " + dataverseProjectLogoAsBase64);
         logger.fine("treesAsBase64:                " + treesAsBase64);
         thumbnailCandidates3.then().assertThat()
-                .body("data[0]", CoreMatchers.equalTo(datasetLogoAsBase64))
-                .body("data[1]", CoreMatchers.equalTo(dataverseProjectLogoAsBase64))
-                .body("data[2]", CoreMatchers.equalTo(treesAsBase64))
+                .body("data[0].base64image", CoreMatchers.equalTo(datasetLogoAsBase64))
+                .body("data[0].dataFileId", CoreMatchers.equalTo(null))
+                .body("data[1].base64image", CoreMatchers.equalTo(dataverseProjectLogoAsBase64))
+                .body("data[1].dataFileId", CoreMatchers.equalTo(dataFileId2.intValue()))
+                .body("data[2].base64image", CoreMatchers.equalTo(treesAsBase64))
+                .body("data[2].dataFileId", CoreMatchers.equalTo(dataFileId1.intValue()))
                 .statusCode(200);
 
         Response deleteDatasetLogo = UtilIT.removeDatasetThumbnail(datasetPersistentId, apiToken);
@@ -1749,8 +1759,10 @@ public class SearchIT {
         Response thumbnailCandidates4 = UtilIT.showDatasetThumbnailCandidates(datasetPersistentId, apiToken);
         thumbnailCandidates4.prettyPrint();
         thumbnailCandidates4.then().assertThat()
-                .body("data[0]", CoreMatchers.equalTo(dataverseProjectLogoAsBase64))
-                .body("data[1]", CoreMatchers.equalTo(treesAsBase64))
+                .body("data[0].base64image", CoreMatchers.equalTo(dataverseProjectLogoAsBase64))
+                .body("data[0].dataFileId", CoreMatchers.equalTo(dataFileId2.intValue()))
+                .body("data[1].base64image", CoreMatchers.equalTo(treesAsBase64))
+                .body("data[1].dataFileId", CoreMatchers.equalTo(dataFileId1.intValue()))
                 .statusCode(200);
 
         Response switchtoFirstDataFileThumbnail = UtilIT.useThumbnailFromDataFile(datasetPersistentId, dataFileId1, apiToken);
