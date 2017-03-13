@@ -16,6 +16,7 @@ import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.endsWith;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
@@ -202,6 +203,14 @@ public class SwordIT {
         Response uploadFile1 = UtilIT.uploadRandomFile(persistentId, apiToken);
         uploadFile1.prettyPrint();
         assertEquals(CREATED.getStatusCode(), uploadFile1.getStatusCode());
+
+        Response getDatasetJson = UtilIT.nativeGetUsingPersistentId(persistentId, apiToken);
+        getDatasetJson.prettyPrint();
+        getDatasetJson.then().assertThat()
+                .body("data.latestVersion.files[0].dataFile.filename", equalTo("trees.png"))
+                .body("data.latestVersion.files[0].dataFile.rootDataFileId", equalTo(-1))
+                .body("data.latestVersion.files[0].dataFile.previousDataFileId", nullValue())
+                .statusCode(OK.getStatusCode());
 
         Response swordStatementUnAuth = UtilIT.getSwordStatement(persistentId, apiTokenNoPrivs);
         swordStatementUnAuth.prettyPrint();

@@ -15,6 +15,8 @@ import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -23,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.Asynchronous;
@@ -74,7 +77,9 @@ public class DatasetServiceBean implements java.io.Serializable {
     
     @EJB
     OAIRecordServiceBean recordService;
-
+    
+    private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
+    
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
 
@@ -201,7 +206,9 @@ public class DatasetServiceBean implements java.io.Serializable {
             query.setParameter("authority", authority);
             foundDataset = (Dataset) query.getSingleResult();
         } catch (javax.persistence.NoResultException e) {
-            logger.info("no ds found: " + globalId);
+            // (set to .info, this can fill the log file with thousands of 
+            // these messages during a large harvest run)
+            logger.fine("no ds found: " + globalId);
             // DO nothing, just return null.
         }
         return foundDataset;
@@ -659,33 +666,101 @@ public class DatasetServiceBean implements java.io.Serializable {
         return false;
     }
     
+    
+    // reExportAll *forces* a reexport on all published datasets; whether they 
+    // have the "last export" time stamp set or not. 
     @Asynchronous 
+    public void reExportAllAsync() {
+        exportAllDatasets(true);
+    }
+    
+    public void reExportAll() {
+        exportAllDatasets(true);
+    }
+    
+    
+    // exportAll() will try to export the yet unexported datasets (it will honor
+    // and trust the "last export" time stamp).
+    
+    @Asynchronous
+    public void exportAllAsync() {
+        exportAllDatasets(false);
+    }
+    
     public void exportAll() {
-        logger.info("Starting an export all job asynchronously");
-        
+        exportAllDatasets(false);
+    }
+    
+    public void exportAllDatasets(boolean forceReExport) {
+        Integer countAll = 0;
+        Integer countSuccess = 0;
+        Integer countError = 0;
+        String logTimestamp = logFormatter.format(new Date());
+        Logger exportLogger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.client.DatasetServiceBean." + "ExportAll" + logTimestamp);
+        String logFileName = "../logs" + File.separator + "export_" + logTimestamp + ".log";
+        FileHandler fileHandler = null;
+        boolean fileHandlerSuceeded = false;
+        try {
+            fileHandler = new FileHandler(logFileName);
+            exportLogger.setUseParentHandlers(false);
+            fileHandlerSuceeded = true;
+        } catch (IOException ex) {
+            Logger.getLogger(DatasetServiceBean.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SecurityException ex) {
+            Logger.getLogger(DatasetServiceBean.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        if (fileHandlerSuceeded) {
+            exportLogger.addHandler(fileHandler);
+        } else {
+            exportLogger = null;
+            exportLogger = logger;
+        }
+
+        exportLogger.info("Starting an export all job");
+
         for (Long datasetId : findAllLocalDatasetIds()) {
             // Potentially, there's a godzillion datasets in this Dataverse. 
             // This is why we go through the list of ids here, and instantiate 
-            // only one dtaset at a time. 
-            //logger.info("found dataset id="+datasetId);
+            // only one dataset at a time. 
             Dataset dataset = this.find(datasetId);
             if (dataset != null) {
-                //logger.info("checking dataset "+dataset.getGlobalId());
-                // Accurate "is published?" test:
-                if (dataset.isReleased() && !dataset.isDeaccessioned() 
-                        ) {
-                    logger.fine("exporting dataset "+dataset.getGlobalId());
-                    try {
-                        recordService.exportAllFormatsInNewTransaction(dataset);
-                    } catch (Exception ex) {
-                        logger.info("caught an exception in exportAllFormatsInNewTransaction");
+                // Accurate "is published?" test - ?
+                // Answer: Yes, it is! We can't trust dataset.isReleased() alone; because it is a dvobject method 
+                // that returns (publicationDate != null). And "publicationDate" is essentially
+                // "the first publication date"; that stays the same as versions get 
+                // published and/or deaccessioned. But in combination with !isDeaccessioned() 
+                // it is indeed an accurate test.
+                if (dataset.isReleased() && dataset.getReleasedVersion() != null && !dataset.isDeaccessioned()) {
+
+                    // can't trust dataset.getPublicationDate(), no. 
+                    Date publicationDate = dataset.getReleasedVersion().getReleaseTime(); // we know this dataset has a non-null released version! Maybe not - SEK 8/19 (We do now! :)
+                    if (forceReExport || (publicationDate != null
+                            && (dataset.getLastExportTime() == null
+                            || dataset.getLastExportTime().before(publicationDate)))) {
+                        countAll++;
+                        try {
+                            recordService.exportAllFormatsInNewTransaction(dataset);
+                            exportLogger.info("Success exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId());
+                            countSuccess++;
+                        } catch (Exception ex) {
+                            exportLogger.info("Error exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId() + "; " + ex.getMessage());
+                            countError++;
+                        }
                     }
                 }
-                dataset = null; 
+                dataset = null;
             }
         }
+        exportLogger.info("Datasets processed: " + countAll.toString());
+        exportLogger.info("Datasets exported successfully: " + countSuccess.toString());
+        exportLogger.info("Datasets failures: " + countError.toString());
+        exportLogger.info("Finished export-all job.");
         
-        logger.info("Finished export all job.");
+        if (fileHandlerSuceeded) {
+            fileHandler.close();
+        }
+
     }
     
     public void updateLastExportTimeStamp(Long datasetId) {

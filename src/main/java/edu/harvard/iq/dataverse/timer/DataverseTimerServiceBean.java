@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse.timer;
 
+import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
@@ -16,6 +17,8 @@ import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.harvest.client.HarvestTimerInfo;
 import edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClientServiceBean;
+import edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.InetAddress;
@@ -25,8 +28,11 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
+import javax.ejb.Singleton;
+import javax.ejb.Startup;
 import javax.ejb.Stateless;
 import javax.ejb.Timeout;
 import javax.ejb.Timer;
@@ -45,7 +51,10 @@ import javax.servlet.http.HttpServletRequest;
  * ported by 
  * @author Leonid Andreev
  */
-@Stateless
+//@Stateless
+
+@Singleton
+@Startup
 public class DataverseTimerServiceBean implements Serializable {
     @Resource
     javax.ejb.TimerService timerService;
@@ -60,6 +69,35 @@ public class DataverseTimerServiceBean implements Serializable {
     HarvestingClientServiceBean harvestingClientService;
     @EJB 
     AuthenticationServiceBean authSvc;
+    @EJB
+    DatasetServiceBean datasetService;
+    @EJB
+    OAISetServiceBean oaiSetService;
+    @EJB
+    SystemConfig systemConfig;
+    
+    
+    // The init method that wipes and recreates all the timers on startup
+    //@PostConstruct
+
+    @PostConstruct
+    public void init() {
+        logger.info("PostConstruct timer check.");
+        
+        
+        if (systemConfig.isTimerServer()) {
+            logger.info("I am the dedicated timer server. Initializing mother timer.");
+            
+            removeAllTimers();
+            // create mother timer:
+            createMotherTimer();
+            // And the export timer (there is only one)
+            createExportTimer();
+            
+        } else {
+            logger.info("Skipping timer server init (I am not the dedicated timer server)");
+        }
+    }
     
     public void createTimer(Date initialExpiration, long intervalDuration, Serializable info) {
         try {
@@ -69,7 +107,6 @@ public class DataverseTimerServiceBean implements Serializable {
         }
         timerService.createTimer(initialExpiration, intervalDuration, info);
     }
-
 
     /**
      * This method is called whenever an EJB Timer goes off.
@@ -84,12 +121,24 @@ public class DataverseTimerServiceBean implements Serializable {
         // if an exception is thrown from this method, Glassfish will automatically
         // call the method a second time. (The minimum number of re-tries for a Timer method is 1)
 
+        if (!systemConfig.isTimerServer()) {
+            //logger.info("I am not the timer server! - bailing out of handleTimeout()");
+            Logger.getLogger(DataverseTimerServiceBean.class.getName()).log(Level.WARNING, null, "I am not the timer server! - but handleTimeout() got called. Please investigate!");
+        }
+        
         try {
             logger.log(Level.INFO,"Handling timeout on " + InetAddress.getLocalHost().getCanonicalHostName());
         } catch (UnknownHostException ex) {
             Logger.getLogger(DataverseTimerServiceBean.class.getName()).log(Level.SEVERE, null, ex);
         }
-        if (timer.getInfo() instanceof HarvestTimerInfo) {
+        
+        if (timer.getInfo() instanceof MotherTimerInfo) {
+            logger.info("Behold! I am the Master Timer, king of all timers! I'm here to create all the lesser timers!");
+            removeHarvestTimers();
+            for (HarvestingClient client : harvestingClientService.getAllHarvestingClients()) {
+                createHarvestTimer(client);
+            }
+        } else if (timer.getInfo() instanceof HarvestTimerInfo) {
             HarvestTimerInfo info = (HarvestTimerInfo) timer.getInfo();
             try {
 
@@ -120,23 +169,40 @@ public class DataverseTimerServiceBean implements Serializable {
                 //dataverseService.setHarvestResult(info.getHarvestingDataverseId(), harvesterService.HARVEST_RESULT_FAILED);
                 //mailService.sendHarvestErrorNotification(dataverseService.find().getSystemEmail(), dataverseService.find().getName());
                 logException(e, logger);
-            }
-        }
-        /* Export timers: (not yet implemented!) -- L.A.
-        if (timer.getInfo() instanceof ExportTimerInfo) {
+            } 
+        } else if (timer.getInfo() instanceof ExportTimerInfo) {
             try {
                 ExportTimerInfo info = (ExportTimerInfo) timer.getInfo();
-                logger.info("handling timeout");
-                studyService.exportUpdatedStudies();
+                logger.info("Timer Service: Running a scheduled export job.");
+               
+                // try to export all unexported datasets:
+                datasetService.exportAll();
+                 // and update all oai sets:
+                oaiSetService.exportAllSets();
             } catch (Throwable e) {
-                mailService.sendExportErrorNotification(vdcNetworkService.find().getSystemEmail(), vdcNetworkService.find().getName());
                 logException(e, logger);
             }
         }
-        */
 
     }
 
+    public void removeAllTimers() {
+        logger.info("Removing ALL existing timers.");
+
+        int i = 0;
+
+        for (Iterator it = timerService.getTimers().iterator(); it.hasNext();) {
+
+            Timer timer = (Timer) it.next();
+
+            logger.info("Removing timer " + i + ";");
+            timer.cancel();
+
+            i++;
+        }
+        logger.info("Done!");
+    }
+    
     public void removeHarvestTimers() {
         // Remove all the harvest timers, if exist: 
         //
@@ -161,6 +227,23 @@ public class DataverseTimerServiceBean implements Serializable {
         }
     }
 
+    public void createMotherTimer() {
+        MotherTimerInfo info = new MotherTimerInfo();
+        Calendar initExpiration = Calendar.getInstance();
+        long intervalDuration = 60 * 60 * 1000; // every hour
+        initExpiration.set(Calendar.MINUTE, 50);
+        initExpiration.set(Calendar.SECOND, 0);
+        
+        Date initExpirationDate = initExpiration.getTime();
+        Date currTime = new Date();
+        if (initExpirationDate.before(currTime)) {
+            initExpirationDate.setTime(initExpiration.getTimeInMillis() + intervalDuration);
+        }
+        
+        logger.info("Setting the \"Mother Timer\", initial expiration: " + initExpirationDate);
+        createTimer(initExpirationDate, intervalDuration, info);
+    }
+    
     public void createHarvestTimer(HarvestingClient harvestingClient) {       
         
         if (harvestingClient.isScheduled()) {
@@ -216,8 +299,22 @@ public class DataverseTimerServiceBean implements Serializable {
     }
 
     public void createExportTimer() {
-            /* Not yet implemented. The DVN 3 implementation can be used as a model */
-
+        ExportTimerInfo info = new ExportTimerInfo();
+        Calendar initExpiration = Calendar.getInstance();
+        long intervalDuration = 24 * 60 * 60 * 1000; // every day
+        initExpiration.set(Calendar.MINUTE, 0);
+        initExpiration.set(Calendar.SECOND, 0);
+        initExpiration.set(Calendar.HOUR_OF_DAY, 2); // 2AM, fixed.
+        
+        
+        Date initExpirationDate = initExpiration.getTime();
+        Date currTime = new Date();
+        if (initExpirationDate.before(currTime)) {
+            initExpirationDate.setTime(initExpiration.getTimeInMillis() + intervalDuration);
+        }
+        
+        logger.info("Setting the Export Timer, initial expiration: " + initExpirationDate);
+        createTimer(initExpirationDate, intervalDuration, info);
     }
 
     public void createExportTimer(Dataverse dataverse) {

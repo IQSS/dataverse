@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="/subset/css/app.css"/>
     <script type="text/javascript" src="/subset/javascript/d3.v3.min.js"></script>
     <script type="text/javascript" src="/subset/javascript/plots.js"></script>
-
+    
     <div id="leftpanel" class="sidepanel clearfix">
         <div class="panel-heading text-center" id="leftpaneltitle">
             <h3 class="panel-title"><!-- Data File Name -->&#160;</h3>
@@ -61,7 +61,7 @@
         if (cindex > 0) {
             hostname=myurl.substring(0,cindex);
         };
-        var fileid = #{!empty DatasetPage.fileMetadataSelected ? DatasetPage.fileMetadataSelected.dataFile.id : 0};
+        var fileid = #{!empty dataFile  ? dataFile.id : 0};
     </script>
 
     <script src="/subset/javascript/app_subset.js">

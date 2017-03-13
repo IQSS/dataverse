@@ -74,7 +74,12 @@ public class DataCitation {
                 || HarvestingClient.HARVEST_STYLE_ICPSR.equals(dsv.getDataset().getHarvestedFrom().getHarvestStyle())
                 || HarvestingClient.HARVEST_STYLE_DATAVERSE.equals(dsv.getDataset().getHarvestedFrom().getHarvestStyle())) {
             if (!StringUtils.isEmpty(dsv.getDataset().getIdentifier())) {
-                persistentId = new GlobalId(dsv.getDataset().getGlobalId());
+                // creating a global id like this:
+                // persistentId = new GlobalId(dsv.getDataset().getGlobalId());
+                // you end up doing new GlobalId((New GlobalId(dsv.getDataset())).toString())
+                // - doing an extra formatting-and-parsing-again
+                // This achieves the same thing:
+                persistentId = new GlobalId(dsv.getDataset());
             }
         }
 
@@ -83,9 +88,7 @@ public class DataCitation {
             distributors = dsv.getRootDataverseNameforCitation();
         } else {
             distributors = dsv.getDistributorName();
-            if (!StringUtils.isEmpty(distributors)) {
-                distributors += " [distributor]";
-            }
+            //remove += [distributor] SEK 8-18-2016
         }
 
         // version
@@ -156,7 +159,9 @@ public class DataCitation {
         citationList.add(formatString(authors, html));
         citationList.add(year);
         citationList.add(formatString(title, html, "\""));
-        citationList.add(formatURL(persistentId.toString(), persistentId.toURL().toString(), html));
+        if (persistentId != null) {
+            citationList.add(formatURL(persistentId.toString(), persistentId.toURL().toString(), html));
+        }
         citationList.add(formatString(distributors, html));
         citationList.add(version);
 
@@ -167,7 +172,7 @@ public class DataCitation {
 
         // append UNF
         if (!StringUtils.isEmpty(UNF)) {
-            citation.append(" [").append(UNF).append("]");
+            citation.append(", ").append(UNF);
         }
 
         for (DatasetField dsf : optionalValues) {

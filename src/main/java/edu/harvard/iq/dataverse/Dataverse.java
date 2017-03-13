@@ -32,7 +32,6 @@ import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
-import org.hibernate.validator.constraints.URL;
 
 /**
  *
@@ -46,8 +45,7 @@ import org.hibernate.validator.constraints.URL;
     @NamedQuery(name = "Dataverse.filterByAliasNameAffiliation", query="SELECT dv FROM Dataverse dv WHERE (LOWER(dv.alias) LIKE :alias) OR (LOWER(dv.name) LIKE :name) OR (LOWER(dv.affiliation) LIKE :affiliation) order by dv.alias")
 })
 @Entity
-@Table(indexes = {@Index(columnList="fk_dataverse_id")
-		, @Index(columnList="defaultcontributorrole_id")
+@Table(indexes = {@Index(columnList="defaultcontributorrole_id")
 		, @Index(columnList="defaulttemplate_id")
 		, @Index(columnList="alias")
 		, @Index(columnList="affiliation")
@@ -734,6 +732,14 @@ public class Dataverse extends DvObjectContainer {
     public void setPermissionRoot(boolean permissionRoot) {
         this.permissionRoot = permissionRoot;
     }
-       
+      
+    @Override
+    public boolean isAncestorOf( DvObject other ) {
+        while ( other != null ) {
+            if ( equals(other) ) return true;
+            other = other.getOwner();
+        }
+        return false;
+    }
 
 }

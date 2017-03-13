@@ -20,6 +20,7 @@ import org.junit.Test;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.path.xml.XmlPath.from;
+import com.jayway.restassured.specification.RequestSpecification;
 import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -72,6 +73,30 @@ public class UtilIT {
         return userAsJson;
     }
 
+    public static Response createRandomAuthenticatedUser(String authenticationProviderId) {
+        String randomString = getRandomUsername();
+        String userAsJson = getAuthenticatedUserAsJsonString(randomString, randomString, randomString, authenticationProviderId, "@" + randomString);
+        logger.fine("createRandomAuthenticatedUser: " + userAsJson);
+        Response response = given()
+                .body(userAsJson)
+                .contentType(ContentType.JSON)
+                .post("/api/admin/authenticatedUsers");
+        return response;
+    }
+
+    private static String getAuthenticatedUserAsJsonString(String persistentUserId, String firstName, String lastName, String authenticationProviderId, String identifier) {
+        JsonObjectBuilder builder = Json.createObjectBuilder();
+        builder.add("authenticationProviderId", authenticationProviderId);
+        builder.add("persistentUserId", persistentUserId);
+        builder.add("identifier", identifier);
+        builder.add("firstName", firstName);
+        builder.add("lastName", lastName);
+        builder.add(EMAIL_KEY, getEmailFromUserName(persistentUserId));
+        String userAsJson = builder.build().toString();
+        logger.fine("User to create: " + userAsJson);
+        return userAsJson;
+    }
+
     private static String getEmailFromUserName(String username) {
         return username + "@mailinator.com";
     }
@@ -85,7 +110,7 @@ public class UtilIT {
         return "user" + getRandomIdentifier().substring(0, 8);
     }
 
-    private static String getRandomIdentifier() {
+    public static String getRandomIdentifier() {
         return UUID.randomUUID().toString().substring(0, 8);
     }
 
@@ -133,7 +158,7 @@ public class UtilIT {
         return response;
     }
 
-    static Response createDataverse(String alias, String apiToken) {
+    static Response createDataverse(String alias, String category, String apiToken) {
         JsonArrayBuilder contactArrayBuilder = Json.createArrayBuilder();
         contactArrayBuilder.add(Json.createObjectBuilder().add("contactEmail", getEmailFromUserName(getRandomIdentifier())));
         JsonArrayBuilder subjectArrayBuilder = Json.createArrayBuilder();
@@ -143,6 +168,8 @@ public class UtilIT {
                 .add("name", alias)
                 .add("dataverseContacts", contactArrayBuilder)
                 .add("dataverseSubjects", subjectArrayBuilder)
+                // don't send "dataverseType" if category is null, must be a better way
+                .add(category != null ? "dataverseType" : "notTheKeyDataverseType", category != null ? category : "whatever")
                 .build();
         Response createDataverseResponse = given()
                 .body(dvData.toString()).contentType(ContentType.JSON)
@@ -150,9 +177,18 @@ public class UtilIT {
         return createDataverseResponse;
     }
 
+    static Response createDataverse(JsonObject dvData, String apiToken) {
+        Response createDataverseResponse = given()
+                .body(dvData.toString()).contentType(ContentType.JSON)
+                .when().post("/api/dataverses/:root?key=" + apiToken);
+        return createDataverseResponse;
+    }
+
     static Response createRandomDataverse(String apiToken) {
-        String alias = getRandomIdentifier();
-        return createDataverse(alias, apiToken);
+        // Add any string (i.e. "dv") to avoid possibility of "Alias should not be a number" https://github.com/IQSS/dataverse/issues/211
+        String alias = "dv" + getRandomIdentifier();
+        String category = null;
+        return createDataverse(alias, category, apiToken);
     }
 
     static Response showDataverseContents(String alias, String apiToken) {
@@ -257,6 +293,54 @@ public class UtilIT {
                 .post(swordConfiguration.getBaseUrlPathCurrent() + "/edit-media/study/" + persistentId);
         return swordStatementResponse;
 
+    }
+
+    /**
+     * For test purposes, datasetId can be non-numeric
+     * 
+     * @param datasetId
+     * @param pathToFile
+     * @param apiToken
+     * @return 
+     */
+    static Response uploadFileViaNative(String datasetId, String pathToFile, String apiToken) {
+        String jsonAsString = null;
+        return uploadFileViaNative(datasetId, pathToFile, jsonAsString, apiToken);
+    }
+
+    static Response uploadFileViaNative(String datasetId, String pathToFile, JsonObject jsonObject, String apiToken) {
+        return uploadFileViaNative(datasetId, pathToFile, jsonObject.toString(), apiToken);
+    }
+
+    static Response uploadFileViaNative(String datasetId, String pathToFile, String jsonAsString, String apiToken) {
+        RequestSpecification requestSpecification = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .multiPart("datasetId", datasetId)
+                .multiPart("file", new File(pathToFile));
+        if (jsonAsString != null) {
+            requestSpecification.multiPart("jsonData", jsonAsString);
+        }
+        return requestSpecification.post("/api/datasets/" + datasetId + "/add");
+    }
+
+    static Response replaceFile(long fileId, String pathToFile, String apiToken) {
+        String jsonAsString = null;
+        return replaceFile(fileId, pathToFile, jsonAsString, apiToken);
+    }
+
+    static Response replaceFile(long fileId, String pathToFile, JsonObject jsonObject, String apiToken) {
+        return replaceFile(fileId, pathToFile, jsonObject.toString(), apiToken);
+    }
+
+    static Response replaceFile(long fileId, String pathToFile, String jsonAsString, String apiToken) {
+        RequestSpecification requestSpecification = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .multiPart("file", new File(pathToFile));
+        if (jsonAsString != null) {
+            requestSpecification.multiPart("jsonData", jsonAsString);
+        }
+        return requestSpecification
+                .post("/api/files/" + fileId + "/replace");
     }
 
     static Response downloadFile(Integer fileId) {
@@ -414,13 +498,28 @@ public class UtilIT {
                 .post(swordConfiguration.getBaseUrlPathCurrent() + "/edit/study/" + persistentId);
     }
 
+    static Response publishDatasetViaNativeApi(String persistentId, String majorOrMinor, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .urlEncodingEnabled(false)
+                .post("/api/datasets/:persistentId/actions/:publish?type=" + majorOrMinor + "&persistentId=" + persistentId);
+    }
+
+    static Response publishDatasetViaNativeApiDeprecated(String persistentId, String majorOrMinor, String apiToken) {
+        /**
+         * @todo This should be a POST rather than a GET:
+         * https://github.com/IQSS/dataverse/issues/2431
+         */
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .urlEncodingEnabled(false)
+                .get("/api/datasets/:persistentId/actions/:publish?type=" + majorOrMinor + "&persistentId=" + persistentId);
+    }
+
     static Response publishDatasetViaNativeApi(Integer datasetId, String majorOrMinor, String apiToken) {
         /**
          * @todo This should be a POST rather than a GET:
          * https://github.com/IQSS/dataverse/issues/2431
-         *
-         * @todo Prevent version less than v1.0 to be published (i.e. v0.1):
-         * https://github.com/IQSS/dataverse/issues/2461
          */
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
@@ -467,6 +566,13 @@ public class UtilIT {
         return response;
     }
 
+    static Response getAuthProviders(String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/admin/authenticationProviders");
+        return response;
+    }
+
     static Response migrateShibToBuiltin(Long userIdToConvert, String newEmailAddress, String apiToken) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
@@ -475,11 +581,27 @@ public class UtilIT {
         return response;
     }
 
+    static Response migrateOAuthToBuiltin(Long userIdToConvert, String newEmailAddress, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(newEmailAddress)
+                .put("/api/admin/authenticatedUsers/id/" + userIdToConvert + "/convertRemoteToBuiltIn");
+        return response;
+    }
+
     static Response migrateBuiltinToShib(String data, String apiToken) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .body(data)
                 .put("/api/admin/authenticatedUsers/convert/builtin2shib");
+        return response;
+    }
+
+    static Response migrateBuiltinToOAuth(String data, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(data)
+                .put("/api/admin/authenticatedUsers/convert/builtin2oauth");
         return response;
     }
 
@@ -537,6 +659,16 @@ public class UtilIT {
         return response;
     }
 
+    static Response getSetting(SettingsServiceBean.Key settingKey) {
+        Response response = given().when().get("/api/admin/settings/" + settingKey);
+        return response;
+    }
+
+    static Response setSetting(SettingsServiceBean.Key settingKey, String value) {
+        Response response = given().body(value).when().put("/api/admin/settings/" + settingKey);
+        return response;
+    }
+
     static Response getRoleAssignmentsOnDataverse(String dataverseAliasOrId, String apiToken) {
         String url = "/api/dataverses/" + dataverseAliasOrId + "/assignments";
         System.out.println("URL: " + url);
@@ -564,6 +696,18 @@ public class UtilIT {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .delete("api/dataverses/" + definitionPoint + "/assignments/" + doomed);
+    }
+
+    static Response findPermissionsOn(String dvObject, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("api/admin/permissions/" + dvObject);
+    }
+
+    static Response findRoleAssignee(String roleAssignee, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("api/admin/assignee/" + roleAssignee);
     }
 
     @Test

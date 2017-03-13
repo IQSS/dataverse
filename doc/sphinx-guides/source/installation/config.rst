@@ -6,19 +6,24 @@ Now that you've successfully logged into Dataverse with a superuser account afte
 
 Settings within Dataverse itself are managed via JVM options or by manipulating values in the ``setting`` table directly or through API calls. Configuring Solr requires manipulating XML files.
 
-Once you have finished securing and configuring your Dataverse installation, proceed to the :doc:`administration` section. Advanced configuration topics are covered in the :doc:`r-rapache-tworavens` and :doc:`shibboleth` sections.
+Once you have finished securing and configuring your Dataverse installation, proceed to the :doc:`administration` section. Advanced configuration topics are covered in the :doc:`r-rapache-tworavens`, :doc:`shibboleth` and :doc:`oauth2` sections.
 
 .. contents:: :local:
 
 Securing Your Installation
 --------------------------
 
+Changing the Superuser Password
++++++++++++++++++++++++++++++++
+
+The default password for the "dataverseAdmin" superuser account is "admin", as mentioned in the :doc:`installation-main` section, and you should change it, of course.
+
 Blocking API Endpoints
 ++++++++++++++++++++++
 
-The :doc:`/api/native-api` contains a useful but potentially dangerous API endpoint called "admin" that allows you to change system settings, make ordinary users into superusers, and more. There is a "test" API endpoint used for development and troubleshooting that has some potentially dangerous methods. The ``builtin-users`` endpoint lets people create a local/builtin user account if they know the ``BuiltinUsers.KEY`` value described below.
+The :doc:`/api/native-api` contains a useful but potentially dangerous API endpoint called "admin" that allows you to change system settings, make ordinary users into superusers, and more. The ``builtin-users`` endpoint lets people create a local/builtin user account if they know the ``BuiltinUsers.KEY`` value described below.
 
-By default, all APIs can be operated on remotely and without the need for any authentication. https://github.com/IQSS/dataverse/issues/1886 was opened to explore changing these defaults, but until then it is very important to block both the "admin" and "test" endpoint (and at least consider blocking ``builtin-users``). For details please see also the section on ``:BlockedApiPolicy`` below.
+By default, all APIs can be operated on remotely and a number of endpoints do not require authentication. https://github.com/IQSS/dataverse/issues/1886 was opened to explore changing these defaults, but until then it is very important to block both the "admin" endpoint (and at least consider blocking ``builtin-users``). For details please see also the section on ``:BlockedApiPolicy`` below.
 
 Forcing HTTPS
 +++++++++++++
@@ -90,7 +95,7 @@ Persistent identifiers are a required and integral part of the Dataverse platfor
 
 JVM Options: :ref:`doi.baseurlstring`, :ref:`doi.username`, :ref:`doi.password`
 
-Database Settings: :ref:`:DoiProvider`, :ref:`:Protocol`, :ref:`:Authority`, :ref:`:DoiSeparator`
+Database Settings: :ref:`:DoiProvider <:DoiProvider>`, :ref:`:Protocol <:Protocol>`, :ref:`:Authority <:Authority>`, :ref:`:DoiSeparator <:DoiSeparator>`
 
 Please note that any datasets creating using the test configuration cannot be directly migrated and would need to be created again once a valid DOI namespace is configured.
 
@@ -101,11 +106,35 @@ As the person installing Dataverse you may or may not be local metadata expert. 
 
 Once this configuration is complete, your Dataverse installation should be ready for users to start playing with it. That said, there are many more configuration options available, which will be explained below.
 
+Auth Modes: Local vs. Remote vs. Both
+-------------------------------------
+
+There are three valid configurations or modes for authenticating users to Dataverse:
+
+- Local only (also known as "builtin" or "Username/Email").
+- Both local and remote (Shibboleth and/or OAuth).
+- Remote (Shibboleth and/or OAuth) only.
+
+Out of the box, Dataverse is configured in "local only" mode. The "dataverseAdmin" superuser account mentioned in the :doc:`/installation/installation-main` section is an example of a local account. Internally, these accounts are called "builtin" because they are built in to the Dataverse application itself.
+
+To configure Shibboleth see the :doc:`shibboleth` section and to configure OAuth see the :doc:`oauth2` section.
+
+The ``authenticationproviderrow`` database table controls which "authentication providers" are available within Dataverse. Out of the box, a single row with an id of "builtin" will be present. For each user in Dataverse, the ``authenticateduserlookup`` table will have a value under ``authenticationproviderid`` that matches this id. For example, the default "dataverseAdmin" user will have the value "builtin" under  ``authenticationproviderid``. Why is this important? Users are tied to a specific authentication provider but conversion mechanisms are available to switch a user from one authentication provider to the other. As explained in the :doc:`/user/account` section of the User Guide, a graphical workflow is provided for end users to convert from the "builtin" authentication provider to a remote provider. Conversion from a remote authentication provider to the builtin provider can be performed by a sysadmin with access to the "admin" API. See the :doc:`/api/native-api` section of the API Guide for how to list users and authentication providers as JSON.
+
+Enabling a second authentication provider will result in the Log In page showing additional providers for your users to choose from. By default, the Log In page will show the "builtin" provider, but you can adjust this via the ``:DefaultAuthProvider`` configuration option. 
+
+"Remote only" mode should be considered experimental until https://github.com/IQSS/dataverse/issues/2974 is resolved. For now, "remote only" means:
+
+- Shibboleth or OAuth has been enabled.
+- ``:AllowSignUp`` is set to "false" per the :doc:`config` section to prevent users from creating local accounts via the web interface. Please note that local accounts can also be created via API, and the way to prevent this is to block the ``builtin-users`` endpoint or scramble (or remove) the ``BuiltinUsers.KEY`` database setting per the :doc:`config` section. 
+- The "builtin" authentication provider has been disabled. Note that disabling the builting auth provider means that the API endpoint for converting an account from a remote auth provider will not work. This is the main reason why https://github.com/IQSS/dataverse/issues/2974 is still open. Converting directly from one remote authentication provider to another (i.e. from GitHub to Google) is not supported. Conversion from remote is always to builtin. Then the user initiates a conversion from builtin to remote. Note that longer term, the plan is to permit multiple login options to the same Dataverse account per https://github.com/IQSS/dataverse/issues/3487 (so all this talk of conversion will be moot) but for now users can only use a single login option, as explained in the :doc:`/user/account` section of the User Guide. In short, "remote only" might work for you if you only plan to use a single remote authentication provider such that no conversion between remote authentication providers will be necessary.
+
 JVM Options
 -----------
 
-JVM stands Java Virtual Machine and as a Java application, Glassfish can read JVM options when it is started. A number of JVM options are configured by the installer below is a complete list of the Dataverse-specific JVM options. You can inspect the configured options by running ``asadmin list-jvm-options | egrep 'dataverse|doi'
-``.
+JVM stands Java Virtual Machine and as a Java application, Glassfish can read JVM options when it is started. A number of JVM options are configured by the installer below is a complete list of the Dataverse-specific JVM options. You can inspect the configured options by running:
+
+``asadmin list-jvm-options | egrep 'dataverse|doi'``
 
 When changing values these values with ``asadmin``, you'll need to delete the old value before adding a new one, like this:
 
@@ -118,11 +147,11 @@ It's also possible to change these values by stopping Glassfish, editing ``glass
 dataverse.fqdn
 ++++++++++++++
 
-If the Dataverse server has multiple DNS names, this option specifies the one to be used as the "official" host name. For example, you may want to have dataverse.foobar.edu, and not the less appealling server-123.socsci.foobar.edu to appear exclusively in all the registered global identifiers, Data Deposit API records, etc. 
+If the Dataverse server has multiple DNS names, this option specifies the one to be used as the "official" host name. For example, you may want to have dataverse.foobar.edu, and not the less appealling server-123.socsci.foobar.edu to appear exclusively in all the registered global identifiers, Data Deposit API records, etc.
 
 The password reset feature requires ``dataverse.fqdn`` to be configured.
 
-| Do note that whenever the system needs to form a service URL, by default, it will be formed with ``https://`` and port 443. I.e., 
+| Do note that whenever the system needs to form a service URL, by default, it will be formed with ``https://`` and port 443. I.e.,
 | ``https://{dataverse.fqdn}/``
 | If that does not suit your setup, you can define an additional option, ``dataverse.siteUrl``, explained below.
 
@@ -188,9 +217,11 @@ dataverse.dataAccess.thumbnail.pdf.limit
 
 For limiting the size of thumbnail images generated from files.
 
+.. _doi.baseurlstring:
+
 doi.baseurlstring
 +++++++++++++++++
-.. _doi.baseurlstring:
+
 As of this writing "https://ezid.cdlib.org" and "https://mds.datacite.org" are the only valid values. See also these related database settings below:
 
 - :DoiProvider
@@ -198,14 +229,18 @@ As of this writing "https://ezid.cdlib.org" and "https://mds.datacite.org" are t
 - :Authority
 - :DoiSeparator
 
+.. _doi.username:
+
 doi.username
 ++++++++++++
-.. _doi.username:
+
 Used in conjuction with ``doi.baseurlstring``.
+
+.. _doi.password:
 
 doi.password
 ++++++++++++
-.. _doi.password:
+
 Used in conjuction with ``doi.baseurlstring``.
 
 dataverse.handlenet.admcredfile
@@ -238,9 +273,9 @@ Out of the box, all API endpoints are completely open as mentioned in the sectio
 :BlockedApiEndpoints
 ++++++++++++++++++++
 
-A comma separated list of API endpoints to be blocked. For a production installation, "admin" and "test" should be blocked (and perhaps "builtin-users" as well), as mentioned in the section on security above:
+A comma separated list of API endpoints to be blocked. For a production installation, "admin" should be blocked (and perhaps "builtin-users" as well), as mentioned in the section on security above:
 
-``curl -X PUT -d "admin,test,builtin-users" http://localhost:8080/api/admin/settings/:BlockedApiEndpoints``
+``curl -X PUT -d "admin,builtin-users" http://localhost:8080/api/admin/settings/:BlockedApiEndpoints``
 
 See the :doc:`/api/index` for a list of API endpoints.
 
@@ -256,7 +291,7 @@ BuiltinUsers.KEY
 
 The key required to create users via API as documented at :doc:`/api/native-api`. Unlike other database settings, this one doesn't start with a colon.
 
-``curl -X PUT -d builtInS3kretKey http://localhost:8080/api/admin/settings/:BuiltinUsers.KEY``
+``curl -X PUT -d builtInS3kretKey http://localhost:8080/api/admin/settings/BuiltinUsers.KEY``
 
 :SystemEmail
 ++++++++++++
@@ -265,30 +300,45 @@ This is the email address that "system" emails are sent from such as password re
 
 ``curl -X PUT -d "Support <support@example.edu>" http://localhost:8080/api/admin/settings/:SystemEmail``
 
+:FooterCopyright
+++++++++++++++++
+
+By default the footer says "Copyright © [YYYY]" but you can add text after the year, as in the example below.
+
+``curl -X PUT -d ", The President &#38; Fellows of Harvard College" http://localhost:8080/api/admin/settings/:FooterCopyright``
+
+.. _:DoiProvider:
+
 :DoiProvider
 ++++++++++++
-.. _:DoiProvider:
+
 As of this writing "EZID" and "DataCite" are the only valid options.
 
 ``curl -X PUT -d EZID http://localhost:8080/api/admin/settings/:DoiProvider``
 
+.. _:Protocol:
+
 :Protocol
 +++++++++
-.. _:Protocol:
+
 As of this writing "doi" is the only valid option for the protocol for a persistent ID.
 
 ``curl -X PUT -d doi http://localhost:8080/api/admin/settings/:Protocol``
 
+.. _:Authority:
+
 :Authority
 ++++++++++
-.. _:Authority:
+
 Use the DOI authority assigned to you by your DoiProvider.
 
 ``curl -X PUT -d 10.xxxx http://localhost:8080/api/admin/settings/:Authority``
 
+.. _:DoiSeparator:
+
 :DoiSeparator
 +++++++++++++
-.. _:DoiSeparator:
+
 It is recommended that you keep this as a slash ("/").
 
 ``curl -X PUT -d "/" http://localhost:8080/api/admin/settings/:DoiSeparator``
@@ -323,6 +373,20 @@ Set ``GuidesBaseUrl`` to override the default value "http://guides.dataverse.org
 
 ``curl -X PUT -d http://dataverse.example.edu http://localhost:8080/api/admin/settings/:GuidesBaseUrl``
 
+:GuidesVersion
+++++++++++++++
+
+Set ``:GuidesVersion`` to override the version number in the URL of guides. For example, rather than http://guides.dataverse.org/en/4.6/user/account.html the version is overriden to http://guides.dataverse.org/en/1234-new-feature/user/account.html in the example below:
+
+``curl -X PUT -d 1234-new-feature http://localhost:8080/api/admin/settings/:GuidesVersion``
+
+:MetricsUrl
++++++++++++
+
+Make the metrics component on the root dataverse a clickable link to a website where you present metrics on your Dataverse installation. This could perhaps be an installation of https://github.com/IQSS/miniverse or any site.
+
+``curl -X PUT -d http://metrics.dataverse.example.edu http://localhost:8080/api/admin/settings/:MetricsUrl``
+
 :StatusMessageHeader
 ++++++++++++++++++++
 
@@ -333,7 +397,7 @@ For dynamically adding information to the top of every page. For example, "For t
 :MaxFileUploadSizeInBytes
 +++++++++++++++++++++++++
 
-Set `MaxFileUploadSizeInBytes` to "2147483648", for example, to limit the size of files uploaded to 2 GB. 
+Set `MaxFileUploadSizeInBytes` to "2147483648", for example, to limit the size of files uploaded to 2 GB.
 Notes:
 - For SWORD, this size is limited by the Java Integer.MAX_VALUE of 2,147,483,647. (see: https://github.com/IQSS/dataverse/issues/2169)
 - If the MaxFileUploadSizeInBytes is NOT set, uploads, including SWORD may be of unlimited size.
@@ -370,12 +434,14 @@ Limit the number of files in a zip that Dataverse will accept.
 :GoogleAnalyticsCode
 ++++++++++++++++++++
 
-For setting up Google Analytics for your Dataverse installation.
+Set your Google Analytics Tracking ID thusly:
+
+``curl -X PUT -d 'trackingID' http://localhost:8080/api/admin/settings/:GoogleAnalyticsCode``
 
 :SolrHostColonPort
 ++++++++++++++++++
 
-By default Dataverse will attempt to connect to Solr on port 8983 on localhost. Use this setting to change the hostname or port.
+By default Dataverse will attempt to connect to Solr on port 8983 on localhost. Use this setting to change the hostname or port. You must restart Glassfish after making this change.
 
 ``curl -X PUT -d localhost:8983 http://localhost:8080/api/admin/settings/:SolrHostColonPort``
 
@@ -384,7 +450,7 @@ By default Dataverse will attempt to connect to Solr on port 8983 on localhost. 
 
 The relative path URL to which users will be sent after signup. The default setting is below.
 
-``curl -X PUT -d true /dataverseuser.xhtml?editMode=CREATE http://localhost:8080/api/admin/settings/:SignUpUrl``
+``curl -X PUT -d '/dataverseuser.xhtml?editMode=CREATE' http://localhost:8080/api/admin/settings/:SignUpUrl``
 
 :TwoRavensUrl
 +++++++++++++
@@ -392,7 +458,7 @@ The relative path URL to which users will be sent after signup. The default sett
 The location of your TwoRavens installation.  Activation of TwoRavens also requires the setting below, ``TwoRavensTabularView``
 
 :TwoRavensTabularView
-+++++++++++++++++++
++++++++++++++++++++++
 
 Set ``TwoRavensTabularView`` to true to allow a user to view tabular files via the TwoRavens application. This boolean affects whether a user will see the "Explore" button.
 
@@ -422,7 +488,7 @@ For Development only.  Set ``GeoconnectDebug`` to true to allow a user to see SQ
 :DatasetPublishPopupCustomText
 ++++++++++++++++++++++++++++++
 
-Set custom text a user will view when publishing a dataset.
+Set custom text a user will view when publishing a dataset. Note that this text is exposed via the "Info" endpoint of the :doc:`/api/native-api`.
 
 ``curl -X PUT -d "Deposit License Requirements" http://localhost:8080/api/admin/settings/:DatasetPublishPopupCustomText``
 
@@ -445,12 +511,52 @@ Set ``SearchHighlightFragmentSize`` to override the default value of 100 from ht
 
 Allow for migration of non-conformant data (especially dates) from DVN 3.x to Dataverse 4.
 
-:ShibEnabled
-++++++++++++
+:MinutesUntilConfirmEmailTokenExpires
++++++++++++++++++++++++++++++++++++++
 
-This setting is experimental per :doc:`/installation/shibboleth`.
+The duration in minutes before "Confirm Email" URLs expire. The default is 1440 minutes (24 hours).  See also :doc:`/installation/administration`.
+
+:DefaultAuthProvider
+++++++++++++++++++++
+
+If you have enabled Shibboleth and/or one or more OAuth providers, you may wish to make one of these authentication providers the default when users visit the Log In page. If unset, this will default to ``builtin`` but thes valid options (depending if you've done the setup described in the :doc:`shibboleth` or doc:`oauth2` sections) are:
+
+- ``builtin``
+- ``shib``
+- ``orcid``
+- ``github``
+- ``google``
+
+Here is an example of setting the default auth provider back to ``builtin``:
+
+``curl -X PUT -d builtin http://localhost:8080/api/admin/settings/:DefaultAuthProvider``
 
 :AllowSignUp
 ++++++++++++
 
-Set to false to disallow local accounts to be created if you are using :doc:`shibboleth` but not for production use until https://github.com/IQSS/dataverse/issues/2838 has been fixed.
+Set to false to disallow local accounts to be created. See also the sections on :doc:`shibboleth` and :doc:`oauth2`.
+
+:PiwikAnalyticsId
+++++++++++++++++++++
+
+Site identifier created in your Piwik instance. Example:
+
+``curl -X PUT -d 42 http://localhost:8080/api/admin/settings/:PiwikAnalyticsId``
+
+:PiwikAnalyticsHost
+++++++++++++++++++++
+
+Host FQDN or URL of your Piwik instance before the ``/piwik.php``. Examples:
+
+``curl -X PUT -d stats.domain.tld http://localhost:8080/api/admin/settings/:PiwikAnalyticsHost``
+
+or
+
+``curl -X PUT -d hostname.domain.tld/stats http://localhost:8080/api/admin/settings/:PiwikAnalyticsHost``
+
+:FileFixityChecksumAlgorithm
+++++++++++++++++++++++++++++
+
+Dataverse calculates checksums for uploaded files so that users can determine if their file was corrupted via upload or download. This is sometimes called "file fixity": https://en.wikipedia.org/wiki/File_Fixity
+
+The default checksum algorithm used is MD5 and should be sufficient for establishing file fixity. "SHA-1" is an experimental alternate value for this setting.

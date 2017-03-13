@@ -6,21 +6,31 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
+import edu.harvard.iq.dataverse.ingest.IngestUtil;
+import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.inject.Named;
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
+import org.apache.commons.lang.StringUtils;
+import org.jsoup.helper.StringUtil;
 
     
 /**
@@ -44,6 +54,9 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
     
     @EJB
     SystemConfig systemConfig;
+
+    @EJB
+    IndexServiceBean indexService;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -817,6 +830,181 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
                 }
             }
         }
+    }
+    
+    /**
+     * Return a list of the checksum Strings for files in the specified DatasetVersion
+     * 
+     * This is used to help check for duplicate files within a DatasetVersion
+     * 
+     * @param datasetVersion
+     * @return a list of checksum Strings for files in the specified DatasetVersion
+     */
+    public List<String> getChecksumListForDatasetVersion(DatasetVersion datasetVersion) {
+
+        if (datasetVersion == null){
+            throw new NullPointerException("datasetVersion cannot be null");
+        }
+
+        String query = "SELECT df.md5 FROM datafile df, filemetadata fm WHERE fm.datasetversion_id = " + datasetVersion.getId() + " AND fm.datafile_id = df.id;";
+
+        logger.log(Level.FINE, "query: {0}", query);
+        Query nativeQuery = em.createNativeQuery(query);
+        List<String> checksumList = nativeQuery.getResultList();
+
+        return checksumList;
+    }
+    
+        
+    /**
+     * Check for the existence of a single checksum value within a DatasetVersion's files
+     * 
+     * @param datasetVersion
+     * @param selectedChecksum
+     * @return 
+     */
+    public boolean doesChecksumExistInDatasetVersion(DatasetVersion datasetVersion, String selectedChecksum) {
+        if (datasetVersion == null){
+            throw new NullPointerException("datasetVersion cannot be null");
+        }
+        
+        String query = "SELECT df.md5 FROM datafile df, filemetadata fm" 
+                + " WHERE fm.datasetversion_id = " + datasetVersion.getId() 
+                + " AND fm.datafile_id = df.id"
+                + " AND df.md5 = '" + selectedChecksum + "';";
+        
+        Query nativeQuery = em.createNativeQuery(query);
+        List<String> checksumList = nativeQuery.getResultList();
+
+        if (checksumList.size() > 0){
+            return true;
+        }
+        return false;
+    }
+        
+    
+    public List<HashMap> getBasicDatasetVersionInfo(Dataset dataset){
+        
+        if (dataset == null){
+            throw new NullPointerException("dataset cannot be null");
+        }
+        
+        String query = "SELECT id, dataset_id, releasetime, versionnumber,"
+                    + " minorversionnumber, versionstate, versionnote" 
+                    + " FROM datasetversion"
+                    + " WHERE dataset_id = " + dataset.getId()
+                    + " ORDER BY versionnumber DESC,"
+                    + " minorversionnumber DESC," 
+                    + " versionstate;";
+        msg("query: " + query);
+        Query nativeQuery = em.createNativeQuery(query);
+        List<Object[]> datasetVersionInfoList = nativeQuery.getResultList();
+
+        List<HashMap> hashList = new ArrayList<>();
+        
+        HashMap mMap;
+        for (Object[] dvInfo : datasetVersionInfoList) {
+            
+            mMap = new HashMap();
+            mMap.put("datasetVersionId", dvInfo[0]);
+            mMap.put("datasetId", dvInfo[1]);
+            mMap.put("releaseTime", dvInfo[2]);
+            mMap.put("versionnumber", dvInfo[3]);
+            mMap.put("minorversionnumber", dvInfo[4]);
+            mMap.put("versionstate", dvInfo[5]);
+            mMap.put("versionnote", dvInfo[6]);
+            hashList.add(mMap);
+        }
+        return hashList;
+    } // end getBasicDatasetVersionInfo
+    
+    
+    
+    public HashMap getFileMetadataHistory(DataFile df){
+        
+        if (df == null){
+            throw new NullPointerException("DataFile 'df' cannot be null");
+        }
+        
+        String rootFileIdClause = "";
+        if (df.getRootDataFileId() != null){
+            rootFileIdClause = " OR rootdatafileid = " + df.getRootDataFileId();
+        }
+        
+        List<String> colsToRetrieve = Arrays.asList("df.id", "df.contenttype" 
+                 , "df.filesize", "df.checksumtype", "df.checksumvalue"
+                 , "fm.label", "fm.description", "fm.version"        
+        );
+                
+        String colsToRetrieveString = StringUtils.join(colsToRetrieve, ",");
+                
+        
+        String query = "SELECT " + colsToRetrieveString
+                    + " FROM datafile df, filemetadata fm"
+                    + " WHERE (df.id = " + df.getId()
+                    + "    OR rootdatafileid = "  + df.getId()
+                    + rootFileIdClause + ")"
+                    + " AND fm.datafile_id = df.id"
+                    + " ORDER BY df.id;";
+        
+        Query nativeQuery = em.createNativeQuery(query);
+        List<Object[]> infoList = nativeQuery.getResultList();
+
+        List<HashMap> hashList = new ArrayList<>();
+        
+        /*
+        HashMap mMap;
+        List<String> hashKeys = colsToRetrieve.stream()
+                                  .map(String :: trim)  
+          */                              
+
+        /*
+                                                        .map(x -> x.getTypeLabel())
+w
+                 return tagsToCheck.stream()
+                        .filter(p -> p != null)         // no nulls
+                        .map(String :: trim)            // strip strings
+                        .filter(p -> p.length() > 0 )   // no empty strings
+                        .distinct()                     // distinct
+                        .collect(Collectors.toList());
+                */        
+        return null;/*
+        for (Object[] dvInfo : infoList) {
+                        
+            mMap = new HashMap();
+            for(int idx=0; idx < colsToRetrieve.size(); idx++){
+                String keyName = colsToRetrieve.get(idx);
+                if ()
+                mMap.put(colsToRetrieve.get(idx), dvInfo[idx]);
+            }
+            hashList.add(mMap);
+        }
+        return hashList;
+        */
+    }
+
+    public JsonObjectBuilder fixUnf(String datasetVersionId) {
+        JsonObjectBuilder info = Json.createObjectBuilder();
+        if (datasetVersionId == null || datasetVersionId.isEmpty()) {
+            info.add("message", "datasetVersionId was null or empty!");
+            return info;
+        }
+        long dsvId = Long.parseLong(datasetVersionId);
+        DatasetVersion datasetVersion = find(dsvId);
+        if (datasetVersion == null) {
+            info.add("message", "Could not find a dataset version based on datasetVersionId " + datasetVersionId + ".");
+            return info;
+        }
+        if (!StringUtil.isBlank(datasetVersion.getUNF())) {
+            info.add("message", "Dataset version (id=" + datasetVersionId + ") already has a UNF. Blank the UNF value in the database if you must change it.");
+            return info;
+        }
+        IngestUtil.recalculateDatasetVersionUNF(datasetVersion);
+        DatasetVersion saved = em.merge(datasetVersion);
+        info.add("message", "New UNF value saved (" + saved.getUNF() + "). Reindexing dataset.");
+        boolean doNormalSolrDocCleanUp = true;
+        Future<String> indexingResult = indexService.indexDataset(datasetVersion.getDataset(), doNormalSolrDocCleanUp);
+        return info;
     }
     
 } // end class

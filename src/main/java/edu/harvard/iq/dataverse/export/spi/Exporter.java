@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse.export.spi;
 
+import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.export.ExportException;
 import java.io.OutputStream;
 import javax.json.JsonObject;
@@ -22,13 +23,19 @@ public interface Exporter {
        of an OAI response, where more XML needs to be written, for the outer 
        OAI-PMH record). -- L.A.  4.5
     */
-    public void exportDataset(JsonObject json, OutputStream outputStream) throws ExportException;
+    //public void exportDataset(JsonObject json, OutputStream outputStream) throws ExportException;
     
-    public String getProvider();
+    public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream) throws ExportException;
+    
+    public String getProviderName();
     
     public String getDisplayName();
     
     public Boolean isXMLFormat();
+    
+    public Boolean isHarvestable();
+    
+    public Boolean isAvailableToUsers();
     
     /* These should throw an ExportException if called on an Exporter that is not isXMLFormat(): */
     public String getXMLNameSpace() throws ExportException;

@@ -3,12 +3,10 @@ package edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.GroupProvider;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Logger;
 
 /**
  * Creates {@link IpGroup}s.
@@ -16,8 +14,6 @@ import java.util.logging.Logger;
  */
 public class IpGroupProvider implements GroupProvider<IpGroup> {
     
-    private static final Logger logger = Logger.getLogger(IpGroupProvider.class.getCanonicalName());
-
     private final IpGroupsServiceBean ipGroupsService;
     
     public IpGroupProvider(IpGroupsServiceBean ipGroupsService) {
@@ -63,23 +59,48 @@ public class IpGroupProvider implements GroupProvider<IpGroup> {
     }
     
     private IpGroup setProvider( IpGroup g ) {
-        g.setProvider(this);
+        if ( g != null ) {
+            g.setGroupProvider(this);
+        }
         return g;
     }
     
     private Set<IpGroup> updateProvider( Set<IpGroup> groups ) {
-        for ( IpGroup g : groups ) {
-            g.setProvider(this);
-        }
+        groups.forEach( g -> g.setGroupProvider(this) );
         return groups;
     }
     
     public IpGroup store(IpGroup grp) {
-        grp.setProvider(this);
-        return ipGroupsService.store(grp);
+        grp.setGroupProvider(this);
+        final IpGroup storedGroup = ipGroupsService.store(grp);
+        storedGroup.setGroupProvider(this); // The storage might un-set the provider, e.g. for when a group is updated.
+        return storedGroup;
     }
 
     public void deleteGroup(IpGroup grp) {
         ipGroupsService.deleteGroup(grp);
+    }
+    
+    /**
+     * Finds an available name for an IP group. The name is based on the {@code base}
+     * parameter, but may be changed in case there's already a group with that name.
+     * 
+     * <strong>
+     * Note: This method might fail under very heavy loads. But we do not expect
+     * heavy creation of IP groups at this point.
+     * </strong>
+     *      
+     * @param base A base name.
+     * @return An available group name.
+     */
+    public String findAvailableName( String base ) {
+        if ( ipGroupsService.getByGroupName(base) == null ) {
+            return base;
+        }
+        int i=1;
+        while ( ipGroupsService.getByGroupName(base + "-" + i) != null ) {
+            i++;
+        }
+        return base + "-" + i;
     }
 }

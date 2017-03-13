@@ -167,6 +167,7 @@ public class DatasetFieldConstant implements java.io.Serializable  {
     public final static String relatedDatasets="relatedDatasets";
     public final static String otherReferences="otherReferences";
     public final static String notesText="notesText";
+    public final static String language="language";
     public final static String noteInformationType="noteInformationType";
     public final static String notesInformationSubject="notesInformationSubject";
     public final static String subject="subject";

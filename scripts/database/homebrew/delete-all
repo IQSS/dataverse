@@ -1,5 +1,6 @@
 #!/bin/sh
 /Applications/NetBeans/glassfish4/glassfish/bin/asadmin stop-domain
+rm -rf /Applications/NetBeans/glassfish4/glassfish/domains/domain1/generated
 scripts/database/homebrew/drop-database
 scripts/search/clear
 rm -rf ~/dataverse/files

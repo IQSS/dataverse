@@ -28,15 +28,23 @@
                                     <h4 class="header-title">#{bundle['dashboard.card.harvestingclients.header']}</h4>
                                     <div class="row text-center">
                                         <div class="col-xs-12" jsf:rendered="#{dashboardPage.numberOfConfiguredHarvestClients lt 1}">
-                                            <p class="small text-muted">#{bundle['harvestclients.noClients.label']}</p> <!-- # {dashboardPage.harvestClientsInfoLabel} -->
+                                            <p class="small text-muted">#{bundle['harvestclients.noClients.label']}</p>
                                         </div>
                                         <div class="col-xs-6" jsf:rendered="#{dashboardPage.numberOfConfiguredHarvestClients gt 0}">
                                             #{dashboardPage.numberOfConfiguredHarvestClients}
-                                            <p class="small text-muted">Clients</p>
+                                            <p class="small text-muted">
+                                                <h:outputFormat value="#{bundle['dashboard.card.harvestingclients.clients']}">
+                                                    <f:param value="#{dashboardPage.numberOfConfiguredHarvestClients}"/>
+                                                </h:outputFormat>
+                                            </p>
                                         </div>
                                         <div class="col-xs-6" jsf:rendered="#{dashboardPage.numberOfConfiguredHarvestClients gt 0}">
                                             #{dashboardPage.numberOfHarvestedDatasets}
-                                            <p class="small text-muted">Datasets</p>
+                                            <p class="small text-muted">
+                                                <h:outputFormat value="#{bundle['dashboard.card.harvestingclients.datasets']}">
+                                                    <f:param value="#{dashboardPage.numberOfOaiSets}"/>
+                                                </h:outputFormat>
+                                            </p>
                                         </div>
                                     </div>
                                     <div class="row text-center">
@@ -53,15 +61,19 @@
                                     <h4 class="header-title">#{bundle['dashboard.card.harvestingserver.header']}</h4>
                                     <div class="row text-center">
                                         <div class="col-xs-12" jsf:rendered="#{dashboardPage.numberOfOaiSets lt 1}">
-                                            <p class="small text-muted">#{bundle['harvestserver.service.empty']}</p> <!-- # {dashboardPage.harvestServerInfoLabel} -->
+                                            <p class="small text-muted">#{bundle['harvestserver.service.empty']}</p>
                                         </div>
                                         <div class="col-xs-6" jsf:rendered="#{dashboardPage.numberOfOaiSets gt 0}">
                                             <h:outputText value="#{dashboardPage.harvestServerEnabled ? 'Enabled' : 'Disabled'}"/>
-                                            <p class="small text-muted">Status</p>
+                                            <p class="small text-muted">#{bundle['dashboard.card.harvestingserver.status']}</p>
                                         </div>
                                         <div class="col-xs-6" jsf:rendered="#{dashboardPage.numberOfOaiSets gt 0}">
                                             #{dashboardPage.numberOfOaiSets}
-                                            <p class="small text-muted">Sets</p>
+                                            <p class="small text-muted">
+                                                <h:outputFormat value="#{bundle['dashboard.card.harvestingserver.sets']}">
+                                                    <f:param value="#{dashboardPage.numberOfOaiSets}"/>
+                                                </h:outputFormat>
+                                            </p>
                                         </div>
                                     </div>
                                     <div class="row text-center">
@@ -82,7 +94,7 @@
                                                 <span class="glyphicon glyphicon-info-sign"/>
                                                 <h:outputFormat value=" #{bundle['dashboard.card.metadataexport.message']}" escape="false">
                                                     <f:param value="#{dataverseServiceBean.findRootDataverse().displayName}"/>
-                                                    <f:param value="&lt;a href=&#34;#{systemConfig.guidesBaseUrl}/#{systemConfig.version}/api&#34; target=&#34;_blank&#34;&gt;"/>
+                                                    <f:param value="&lt;a href=&#34;#{systemConfig.guidesBaseUrl}/#{systemConfig.guidesVersion}/api&#34; target=&#34;_blank&#34;&gt;"/>
                                                     <f:param value="&lt;/a&gt;"/>
                                                 </h:outputFormat>
                                             </p>
@@ -93,6 +105,12 @@
                         </div>
                     </div>
                 </div>
+                
+                <script type="text/javascript">
+                    $(document).ready(function () {
+                        $('#dashboard-block div.row > div.col-md-4 > div.card-box').matchHeight();
+                    });
+                </script>
             </ui:define>
         </ui:composition>
     </h:body>

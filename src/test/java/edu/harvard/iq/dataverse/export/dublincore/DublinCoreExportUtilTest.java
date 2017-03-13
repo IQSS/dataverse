@@ -71,7 +71,7 @@ public class DublinCoreExportUtilTest {
         logger.info(datasetAsDdi);
         
         OutputStream output = new ByteArrayOutputStream();
-        DublinCoreExportUtil.datasetJson2dublincore(obj, output);
+        DublinCoreExportUtil.datasetJson2dublincore(obj, output, DublinCoreExportUtil.DC_FLAVOR_DCTERMS);
         String result = XmlPrinter.prettyPrintXml(output.toString());
         
         logger.info(result);

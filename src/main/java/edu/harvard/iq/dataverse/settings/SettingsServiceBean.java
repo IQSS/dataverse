@@ -33,6 +33,11 @@ public class SettingsServiceBean {
      * So there.
      */
     public enum Key {
+        OAuth2CallbackUrl,
+        DefaultAuthProvider,
+        FooterCopyright,
+        FileFixityChecksumAlgorithm,
+        MinutesUntilConfirmEmailTokenExpires,
         /**
          * Override Solr highlighting "fragsize"
          * https://wiki.apache.org/solr/HighlightingParameters#hl.fragsize
@@ -87,6 +92,7 @@ public class SettingsServiceBean {
          * of possible account types.
          */
         DebugShibAccountType,
+        DebugOAuthAccountType,
         /** Application-wide Terms of Use per installation. */
         ApplicationTermsOfUse,
         /** Terms of Use specific to API per installation. */
@@ -125,8 +131,6 @@ public class SettingsServiceBean {
          * Experimental: Key for if DDI export is enabled or disabled.
          */
         DdiExportEnabled,
-        /** Key for if Shibboleth is enabled or disabled. */
-        ShibEnabled,
         /** Key for if ScrubMigrationData is enabled or disabled. */
         ScrubMigrationData,
         /** Key for the url to send users who want to sign up to. */
@@ -149,10 +153,20 @@ public class SettingsServiceBean {
         TwoRavensUrl,
         /** Optionally override http://guides.dataverse.org . */
         GuidesBaseUrl,
+        /**
+         * A link to an installation of https://github.com/IQSS/miniverse or
+         * some other metrics app.
+         */
+        MetricsUrl,
         /* zip download size limit */
+        /** Optionally override version number in guides. */
+        GuidesVersion,
         ZipDownloadLimit,
         /* zip upload number of files limit */
         ZipUploadFilesLimit,
+        /* the number of files the GUI user is allowed to upload in one batch, 
+            via drag-and-drop, or through the file select dialog */
+        MultipleUploadFilesLimit,
         /* Size limits for generating thumbnails on the fly */
         /* (i.e., we'll attempt to generate a thumbnail on the fly if the 
          * size of the file is less than this)

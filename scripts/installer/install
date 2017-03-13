@@ -452,7 +452,7 @@ chomp( $cwd = `pwd` );
 
 # 2b. CHECK IF THE SQL TEMPLATE IS IN PLACE AND CREATE THE SQL FILE
 
-my $SQL_REFERENCE_DATA     = "reference_data_filtered.sql";
+#my $SQL_REFERENCE_DATA     = "reference_data_filtered.sql";
 my $SQL_REFERENCE_TEMPLATE = "../database/reference_data.sql";
 
 unless ( -f $SQL_REFERENCE_TEMPLATE ) {
@@ -466,16 +466,16 @@ unless ( -f $SQL_REFERENCE_TEMPLATE ) {
     exit 0;
 }
 
-open DATATEMPLATEIN, $SQL_REFERENCE_TEMPLATE   || die $@;
-open SQLDATAOUT,     '>' . $SQL_REFERENCE_DATA || die $@;
+#open DATATEMPLATEIN, $SQL_REFERENCE_TEMPLATE   || die $@;
+#open SQLDATAOUT,     '>' . $SQL_REFERENCE_DATA || die $@;
+#
+#while (<DATATEMPLATEIN>) {
+#    s/dvnapp/$CONFIG_DEFAULTS{'POSTGRES_USER'}/g;
+#    print SQLDATAOUT $_;
+#}
 
-while (<DATATEMPLATEIN>) {
-    s/dvnapp/$CONFIG_DEFAULTS{'POSTGRES_USER'}/g;
-    print SQLDATAOUT $_;
-}
-
-close DATATEMPLATEIN;
-close SQLDATAOUT;
+#close DATATEMPLATEIN;
+#close SQLDATAOUT;
 
 # 3. CHECK POSTGRES AND JQ AVAILABILITY:
 
@@ -807,7 +807,7 @@ else
 	print TMPCMD $sql_command;
 	close TMPCMD;
 	    
-	my $psql_commandline = $psql_exec . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U postgres -d postgres -f /tmp/pgcmd.$$.tmp >/dev/null 2>&1";
+	my $psql_commandline = $psql_admin_exec . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U postgres -d postgres -f /tmp/pgcmd.$$.tmp >/dev/null 2>&1";
 
 	my $out      = qx($psql_commandline 2>&1);
 	my $exitcode = $?;
@@ -829,8 +829,8 @@ else
     print "\nCreating Postgres database:\n";
     
     my $psql_command =
-	$psql_admin_exec
-	. "/createdb -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U postgres "
+	$psql_exec
+	. "/createdb -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U $CONFIG_DEFAULTS{'POSTGRES_USER'} "
 	. $CONFIG_DEFAULTS{'POSTGRES_DATABASE'}
         . " --owner="
 	. $CONFIG_DEFAULTS{'POSTGRES_USER'};
@@ -1082,7 +1082,7 @@ unless ((
 
 print "\nPre-populating the database:\n\n";
 
-my $psql_command = $psql_exec . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U " . $CONFIG_DEFAULTS{'POSTGRES_USER'} . " -d $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} -f $SQL_REFERENCE_DATA";
+my $psql_command = $psql_exec . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U " . $CONFIG_DEFAULTS{'POSTGRES_USER'} . " -d $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} -f $SQL_REFERENCE_TEMPLATE";
 
 unless ( ( my $exitcode = system("$psql_command") ) == 0 ) 
 {
@@ -1093,7 +1093,7 @@ unless ( ( my $exitcode = system("$psql_command") ) == 0 )
     print "new Dataverse to be available. \n";
     print "\n";
     print "You can try this again, by executing the following on the command line:\n";
-    print "   psql -U $CONFIG_DEFAULTS{'POSTGRES_USER'} -d $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} -f $SQL_REFERENCE_DATA\n";
+    print "   psql -U $CONFIG_DEFAULTS{'POSTGRES_USER'} -d $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} -f $SQL_REFERENCE_TEMPLATE\n";
     print "then re-start glassfish with \n\n";
     print "   " . $glassfish_dir . "/bin/asadmin stop-domain domain1\n\n";
     print "   " . $glassfish_dir . "/bin/asadmin start-domain domain1\n\n";

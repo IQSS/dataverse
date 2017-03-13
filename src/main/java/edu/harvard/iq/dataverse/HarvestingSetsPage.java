@@ -247,6 +247,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
             OAISet savedSet = oaiSetService.findBySpec(getNewSetSpec());
             if (savedSet != null) {
                 runSetExport(savedSet);
+                configuredHarvestingSets = oaiSetService.findAll(); 
             }
         }
         
@@ -288,6 +289,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
             OAISet createdSet = oaiSetService.findBySpec(getNewSetSpec());
             if (createdSet != null) {
                 runSetExport(createdSet);
+                configuredHarvestingSets = oaiSetService.findAll(); 
             }
         }
         
@@ -300,10 +302,12 @@ public class HarvestingSetsPage implements java.io.Serializable {
         if (selectedSet != null) {
             logger.info("proceeding to delete harvesting set "+ selectedSet.getSpec());
             try {
-                oaiSetService.remove(selectedSet);
-                configuredHarvestingSets = oaiSetService.findAll();
+                oaiSetService.setDeleteInProgress(selectedSet.getId());
+                oaiSetService.remove(selectedSet.getId());
                 selectedSet = null; 
-                JsfHelper.addFlashMessage("Selected harvesting set has been deleted.");
+
+                configuredHarvestingSets = oaiSetService.findAll();
+                JsfHelper.addInfoMessage(JH.localize("harvestserver.tab.header.action.delete.infomessage"));
             } catch (Exception ex) {
                 String failMessage = "Failed to delete harvesting set; unknown exception: "+ex.getMessage();
                 JH.addMessage(FacesMessage.SEVERITY_FATAL, failMessage);
@@ -505,7 +509,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
     
     // this will re-export the set in the background, asynchronously:
     public void startSetExport(OAISet oaiSet) {
-        try {
+        try {          
             runSetExport(oaiSet);
         } catch (Exception ex) {
             String failMessage = "Sorry, could not start re-export on selected OAI set (unknown server error).";
@@ -516,11 +520,12 @@ public class HarvestingSetsPage implements java.io.Serializable {
         String successMessage = JH.localize("harvestserver.actions.runreexport.success");
         successMessage = successMessage.replace("{0}", oaiSet.getSpec());
         JsfHelper.addSuccessMessage(successMessage);
+        configuredHarvestingSets = oaiSetService.findAll(); 
     }
     
     public void runSetExport(OAISet oaiSet) {
-        
-        oaiSetService.exportOaiSet(oaiSet);
+        oaiSetService.setUpdateInProgress(oaiSet.getId());
+        oaiSetService.exportOaiSetAsync(oaiSet);
     }
     
     public boolean isSuperUser() {

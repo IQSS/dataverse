@@ -15,8 +15,7 @@ import edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClientServiceBean;
 import edu.harvard.iq.dataverse.harvest.client.oai.OaiHandler;
-import edu.harvard.iq.dataverse.search.IndexResponse;
-import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
+import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.timer.DataverseTimerServiceBean;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
@@ -62,7 +61,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
     @EJB
     DatasetServiceBean datasetService;
     @EJB
-    SolrIndexServiceBean solrIndexService;
+    IndexServiceBean indexService;
     @EJB
     EjbDataverseEngine engineService;
     @EJB
@@ -77,11 +76,11 @@ public class HarvestingClientsPage implements java.io.Serializable {
     private Long dataverseId = null;
     private HarvestingClient selectedClient;
     
-    private static final String solrDocIdentifierDataset = "dataset_";
+    //private static final String solrDocIdentifierDataset = "dataset_";
     
     public enum PageMode {
 
-        VIEW, CREATE, EDIT
+        VIEW, CREATE, EDIT, DELETE
     }  
     private PageMode pageMode = PageMode.VIEW; 
     
@@ -156,6 +155,11 @@ public class HarvestingClientsPage implements java.io.Serializable {
         selectedClient = harvestingClient; 
     }
     
+    public void setClientForDelete(HarvestingClient harvestingClient) {
+        selectedClient = harvestingClient;
+        this.pageMode = PageMode.DELETE;
+    }
+    
     public HarvestingClient getSelectedClient() {
         return selectedClient; 
     }
@@ -178,6 +182,10 @@ public class HarvestingClientsPage implements java.io.Serializable {
     
     public boolean isViewMode() {
         return PageMode.VIEW == this.pageMode;
+    }
+    
+    public boolean isDeleteMode() {
+        return PageMode.DELETE == this.pageMode;
     }
     
     public boolean isCreateStepOne() {
@@ -210,6 +218,18 @@ public class HarvestingClientsPage implements java.io.Serializable {
         String successMessage = JH.localize("harvestclients.actions.runharvest.success");
         successMessage = successMessage.replace("{0}", harvestingClient.getName());
         JsfHelper.addSuccessMessage(successMessage);
+        
+        // refresh the harvesting clients list - we want this one to be showing
+        // "inprogress"; and we want to be able to disable all the actions buttons
+        // for it:
+        // (looks like we need to sleep for a few milliseconds here, to make sure 
+        // it has already been updated with the "inprogress" setting)
+        try{Thread.sleep(500L);}catch(Exception e){}
+        
+        
+        configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();
+        
+        
     }
     
     public void editClient(HarvestingClient harvestingClient) {
@@ -259,6 +279,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
             this.harvestingScheduleRadioAMPM = harvestingScheduleRadioAM;
         }        
         
+        this.createStep = CreateStep.ONE;
         this.pageMode = PageMode.EDIT;
         
     }
@@ -266,32 +287,20 @@ public class HarvestingClientsPage implements java.io.Serializable {
     
     public void deleteClient() {
         if (selectedClient != null) {
+            
             //configuredHarvestingClients.remove(selectedClient);
+            
             logger.info("proceeding to delete harvesting client "+selectedClient.getName());
             try {
-                // TODO: 
-                // separate the code for deleting the datasets from the index
-                // into cleaner helper methods, move it out of here... -- L.A. - 4.5
-                // (think of where to move this code - the OAIRecordServiceBean, 
-                // or the DeleteHarvestingClientCommand? (I think - it should be the latter...)
-                List<String> solrIdsOfDatasetsToDelete = new ArrayList<>();
+                harvestingClientService.setDeleteInProgress(selectedClient.getId());
                 
-                for (Dataset harvestedDataset : selectedClient.getHarvestedDatasets()) {
-                    solrIdsOfDatasetsToDelete.add(solrDocIdentifierDataset + harvestedDataset.getId());
-                }
-                // if this was a scheduled harvester, make sure the timer is deleted:
-                dataverseTimerService.removeHarvestTimer(selectedClient);
-                engineService.submit(new DeleteHarvestingClientCommand(dvRequestService.getDataverseRequest(), selectedClient));
-                configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();
-                JsfHelper.addFlashMessage("Selected harvesting client has been deleted.");
+                //engineService.submit(new DeleteHarvestingClientCommand(dvRequestService.getDataverseRequest(), selectedClient));
+                harvestingClientService.deleteClient(selectedClient.getId());
+                JsfHelper.addInfoMessage(JH.localize("harvestclients.tab.header.action.delete.infomessage"));
                 
-                logger.info("attempting to delete the following datasets from the index: "+StringUtils.join(solrIdsOfDatasetsToDelete, ","));
-                IndexResponse resultOfAttemptToDeleteDatasets = solrIndexService.deleteMultipleSolrIds(solrIdsOfDatasetsToDelete);
-                logger.info("result of attempt to premptively deleted published files before reindexing: " + resultOfAttemptToDeleteDatasets + "\n");
-                
-            } catch (CommandException ex) {
-                String failMessage = "Selected harvesting client cannot be deleted.";
-                JH.addMessage(FacesMessage.SEVERITY_FATAL, failMessage);
+            //} catch (CommandException ex) {
+            //    String failMessage = "Selected harvesting client cannot be deleted.";
+            //    JH.addMessage(FacesMessage.SEVERITY_FATAL, failMessage);
             } catch (Exception ex) {
                 String failMessage = "Selected harvesting client cannot be deleted; unknown exception: "+ex.getMessage();
                 JH.addMessage(FacesMessage.SEVERITY_FATAL, failMessage);
@@ -299,6 +308,10 @@ public class HarvestingClientsPage implements java.io.Serializable {
         } else {
             logger.warning("Delete called, with a null selected harvesting client");
         }
+        
+        selectedClient = null; 
+        configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();
+        this.pageMode = PageMode.VIEW;
         
     }
     
@@ -362,7 +375,8 @@ public class HarvestingClientsPage implements java.io.Serializable {
             
             configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();
             
-            dataverseTimerService.createHarvestTimer(newHarvestingClient);
+            // NO, we no longer create timers here. It is the job of the Mother Timer!
+            //dataverseTimerService.createHarvestTimer(newHarvestingClient);
             
             String successMessage = JH.localize("harvestclients.newClientDialog.success");
             successMessage = successMessage.replace("{0}", newHarvestingClient.getName());
@@ -437,7 +451,9 @@ public class HarvestingClientsPage implements java.io.Serializable {
             
             configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();
             
-            dataverseTimerService.updateHarvestTimer(harvestingClient);
+            if (!harvestingClient.isScheduled()) {
+                dataverseTimerService.removeHarvestTimer(harvestingClient);
+            }
             JsfHelper.addSuccessMessage("Succesfully updated harvesting client " + harvestingClient.getName());
 
         } catch (CommandException ex) {
@@ -477,7 +493,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
 
         if ( !StringUtils.isEmpty(getNewNickname()) ) {
 
-            if (! Pattern.matches("^[a-zA-Z0-9\\_\\-]+$", getNewNickname()) ) {
+            if (getNewNickname().length() > 30 || (!Pattern.matches("^[a-zA-Z0-9\\_\\-]+$", getNewNickname())) ) {
                 //input.setValid(false);
                 FacesContext.getCurrentInstance().addMessage(getNewClientNicknameInputField().getClientId(),
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "", JH.localize("harvestclients.newClientDialog.nickname.invalid")));

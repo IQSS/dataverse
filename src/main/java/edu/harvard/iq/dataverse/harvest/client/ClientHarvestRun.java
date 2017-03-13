@@ -45,6 +45,7 @@ public class ClientHarvestRun implements Serializable {
     private static String RESULT_LABEL_SUCCESS = "SUCCESS";
     private static String RESULT_LABEL_FAILURE = "FAILED";
     private static String RESULT_LABEL_INPROGRESS = "INPROGRESS";
+    private static String RESULT_DELETE_IN_PROGRESS = "DELETE IN PROGRESS";
     
     @ManyToOne
     @JoinColumn(nullable = false)
@@ -65,6 +66,10 @@ public class ClientHarvestRun implements Serializable {
     }
     
     public String getResultLabel() {
+        if (harvestingClient != null && harvestingClient.isDeleteInProgress()) {
+            return RESULT_DELETE_IN_PROGRESS;
+        }
+        
         if (isSuccess()) {
             return RESULT_LABEL_SUCCESS;
         } else if (isFailed()) {
@@ -76,6 +81,9 @@ public class ClientHarvestRun implements Serializable {
     }
     
     public String getDetailedResultLabel() {
+        if (harvestingClient != null && harvestingClient.isDeleteInProgress()) {
+            return RESULT_DELETE_IN_PROGRESS;
+        }
         if (isSuccess()) {
             String resultLabel = RESULT_LABEL_SUCCESS;
             

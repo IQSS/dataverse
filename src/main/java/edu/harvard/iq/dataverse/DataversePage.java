@@ -58,12 +58,10 @@ public class DataversePage implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(DataversePage.class.getCanonicalName());
 
     public enum EditMode {
-
         CREATE, INFO, FEATURED
     }
     
     public enum LinkMode {
-
         SAVEDSEARCH,  LINKDATAVERSE
     }
 
@@ -111,8 +109,8 @@ public class DataversePage implements java.io.Serializable {
     private LinkMode linkMode;
 
     private Long ownerId;
-    private DualListModel<DatasetFieldType> facets = new DualListModel<>(new ArrayList<DatasetFieldType>(), new ArrayList<DatasetFieldType>());
-    private DualListModel<Dataverse> featuredDataverses = new DualListModel<>(new ArrayList<Dataverse>(), new ArrayList<Dataverse>());
+    private DualListModel<DatasetFieldType> facets = new DualListModel<>(new ArrayList<>(), new ArrayList<>());
+    private DualListModel<Dataverse> featuredDataverses = new DualListModel<>(new ArrayList<>(), new ArrayList<>());
     private List<Dataverse> dataversesForLinking;
     private Long linkingDataverseId;
     private List<SelectItem> linkingDVSelectItems;
@@ -173,9 +171,7 @@ public class DataversePage implements java.io.Serializable {
     private void updateDataverseSubjectSelectItems() {
         DatasetFieldType subjectDatasetField = datasetFieldService.findByName(DatasetFieldConstant.subject);
         setDataverseSubjectControlledVocabularyValues(controlledVocabularyValueServiceBean.findByDatasetFieldTypeId(subjectDatasetField.getId()));
-
     }
-    
     
     public LinkMode getLinkMode() {
         return linkMode;
@@ -184,7 +180,6 @@ public class DataversePage implements java.io.Serializable {
     public void setLinkMode(LinkMode linkMode) {
         this.linkMode = linkMode;
     }
-    
     
     public void setupLinkingPopup (String popupSetting){
         if (popupSetting.equals("link")){
@@ -242,7 +237,6 @@ public class DataversePage implements java.io.Serializable {
     public void updateSelectedLinkingDV(ValueChangeEvent event) {
         linkingDataverseId = (Long) event.getNewValue();
     }
-//    private TreeNode treeWidgetRootNode = new DefaultTreeNode("Root", null);
 
     public Dataverse getDataverse() {
         return dataverse;
@@ -268,13 +262,6 @@ public class DataversePage implements java.io.Serializable {
         this.ownerId = ownerId;
     }
 
-//    public TreeNode getTreeWidgetRootNode() {
-//        return treeWidgetRootNode;
-//    }
-//
-//    public void setTreeWidgetRootNode(TreeNode treeWidgetRootNode) {
-//        this.treeWidgetRootNode = treeWidgetRootNode;
-//    }
     public String init() {
         if (dataverse.getAlias() != null || dataverse.getId() != null || ownerId == null) {// view mode for a dataverse
             if (dataverse.getAlias() != null) {
@@ -641,7 +628,7 @@ public class DataversePage implements java.io.Serializable {
             if (editMode != null && editMode.equals(EditMode.FEATURED)) {
                 message = "The featured dataverses for this dataverse have been updated.";
             } else {
-                message = (create) ? BundleUtil.getStringFromBundle("dataverse.create.success", Arrays.asList(settingsWrapper.getGuidesBaseUrl(), systemConfig.getVersion())) : BundleUtil.getStringFromBundle("dataverse.update.success");
+                message = (create) ? BundleUtil.getStringFromBundle("dataverse.create.success", Arrays.asList(settingsWrapper.getGuidesBaseUrl(), systemConfig.getGuidesVersion())) : BundleUtil.getStringFromBundle("dataverse.update.success");
             }
             JsfHelper.addSuccessMessage(message);
             

@@ -93,8 +93,8 @@ public class HarvestingClient implements Serializable {
     public static final String HARVEST_STYLE_DESCRIPTION_DEFAULT="Generic OAI resource (DC)";
     
     
-    public static final List<String> HARVEST_STYLE_LIST = Arrays.asList(HARVEST_STYLE_DATAVERSE, HARVEST_STYLE_VDC, HARVEST_STYLE_NESSTAR, HARVEST_STYLE_ROPER, HARVEST_STYLE_HGL, HARVEST_STYLE_DEFAULT);
-    public static final List<String> HARVEST_STYLE_DESCRIPTION_LIST = Arrays.asList(HARVEST_STYLE_DESCRIPTION_DATAVERSE, HARVEST_STYLE_DESCRIPTION_VDC, HARVEST_STYLE_DESCRIPTION_NESSTAR, HARVEST_STYLE_DESCRIPTION_ROPER, HARVEST_STYLE_DESCRIPTION_HGL, HARVEST_STYLE_DESCRIPTION_DEFAULT);
+    public static final List<String> HARVEST_STYLE_LIST = Arrays.asList(HARVEST_STYLE_DATAVERSE, HARVEST_STYLE_VDC, HARVEST_STYLE_ICPSR, HARVEST_STYLE_NESSTAR, HARVEST_STYLE_ROPER, HARVEST_STYLE_HGL, HARVEST_STYLE_DEFAULT);
+    public static final List<String> HARVEST_STYLE_DESCRIPTION_LIST = Arrays.asList(HARVEST_STYLE_DESCRIPTION_DATAVERSE, HARVEST_STYLE_DESCRIPTION_VDC, HARVEST_STYLE_DESCRIPTION_ICPSR, HARVEST_STYLE_DESCRIPTION_NESSTAR, HARVEST_STYLE_DESCRIPTION_ROPER, HARVEST_STYLE_DESCRIPTION_HGL, HARVEST_STYLE_DESCRIPTION_DEFAULT);
     
     public static final Map<String, String> HARVEST_STYLE_INFOMAP = new LinkedHashMap<String, String>();
     
@@ -491,7 +491,6 @@ public class HarvestingClient implements Serializable {
         }
         return desc;
     }
-    
     private boolean harvestingNow;
 
     public boolean isHarvestingNow() {
@@ -500,6 +499,17 @@ public class HarvestingClient implements Serializable {
 
     public void setHarvestingNow(boolean harvestingNow) {
         this.harvestingNow = harvestingNow;
+    }
+    
+    private boolean deleted;
+
+    
+    public boolean isDeleteInProgress() {
+        return this.deleted;
+    }
+
+    public void setDeleteInProgress(boolean deleteInProgress) {
+        this.deleted = deleteInProgress; 
     }
     
     @Override

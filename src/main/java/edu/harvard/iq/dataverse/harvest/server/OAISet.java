@@ -75,6 +75,26 @@ public class OAISet implements Serializable {
     @Version
     private Long version;
     
+    private boolean updateInProgress;
+    
+    private boolean deleted;
+
+    public boolean isUpdateInProgress() {
+        return this.updateInProgress;
+    }
+
+    public void setUpdateInProgress(boolean updateInProgress) {
+        this.updateInProgress = updateInProgress; 
+    }
+    
+    public boolean isDeleteInProgress() {
+        return this.deleted;
+    }
+
+    public void setDeleteInProgress(boolean deleteInProgress) {
+        this.deleted = deleteInProgress; 
+    }
+    
     public String getName() {
         return name;
     }

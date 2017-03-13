@@ -201,7 +201,7 @@ public class CreateDataverseCommandTest {
         dv.setCreator(null);
         dv.setDefaultContributorRole(null);
         dv.setOwner( makeDataverse() );
-        final DataverseRequest request = makeRequest();
+        final DataverseRequest request = makeRequest(makeAuthenticatedUser("jk", "rollin'"));
         
         CreateDataverseCommand sut = new CreateDataverseCommand(dv, request, null, null);
         Dataverse result = engine.submit(sut);

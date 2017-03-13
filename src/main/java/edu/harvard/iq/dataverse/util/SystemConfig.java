@@ -1,12 +1,21 @@
 package edu.harvard.iq.dataverse.util;
 
 import com.ocpsoft.pretty.PrettyContext;
+import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
+import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.time.Year;
+import java.util.Arrays;
 import java.util.MissingResourceException;
 import java.util.Properties;
 import java.util.ResourceBundle;
@@ -26,6 +35,12 @@ public class SystemConfig {
 
     @EJB
     SettingsServiceBean settingsService;
+
+    @EJB
+    DataverseServiceBean dataverseService;
+
+    @EJB
+    AuthenticationServiceBean authenticationService;
 
     /**
      * A JVM option for the advertised fully qualified domain name (hostname) of
@@ -65,9 +80,12 @@ public class SystemConfig {
      * zip file upload.
      */
     private static final int defaultZipUploadFilesLimit = 1000; 
+    private static final int defaultMultipleUploadFilesLimit = 1000;
 
     private static String appVersionString = null; 
     private static String buildNumberString = null; 
+    
+    private static final String JVM_TIMER_SERVER_OPTION = "dataverse.timerServer";
     
     public String getVersion() {
         return getVersion(false);
@@ -199,9 +217,28 @@ public class SystemConfig {
         String solrHostColonPort = settingsService.getValueForKey(SettingsServiceBean.Key.SolrHostColonPort, saneDefaultForSolrHostColonPort);
         return solrHostColonPort;
     }
-    
-    
-    
+
+    public int getMinutesUntilConfirmEmailTokenExpires() {
+        final int minutesInOneDay = 1440;
+        final int reasonableDefault = minutesInOneDay;
+        SettingsServiceBean.Key key = SettingsServiceBean.Key.MinutesUntilConfirmEmailTokenExpires;
+        String valueFromDatabase = settingsService.getValueForKey(key);
+        if (valueFromDatabase != null) {
+            try {
+                int intFromDatabase = Integer.parseInt(valueFromDatabase);
+                if (intFromDatabase > 0) {
+                    return intFromDatabase;
+                } else {
+                    logger.info("Returning " + reasonableDefault + " for " + key + " because value must be greater than zero, not \"" + intFromDatabase + "\".");
+                }
+            } catch (NumberFormatException ex) {
+                logger.info("Returning " + reasonableDefault + " for " + key + " because value must be an integer greater than zero, not \"" + valueFromDatabase + "\".");
+            }
+        }
+        logger.fine("Returning " + reasonableDefault + " for " + key);
+        return reasonableDefault;
+    }
+
     /**
      * The number of minutes for which a password reset token is valid. Can be
      * overridden by {@link #PASSWORD_RESET_TIMEOUT_IN_MINUTES}.
@@ -285,6 +322,21 @@ public class SystemConfig {
         return saneDefault;
     }
 
+    public String getGuidesVersion() {
+        String saneDefault = getVersion();
+        String guidesVersion = settingsService.getValueForKey(SettingsServiceBean.Key.GuidesVersion, saneDefault);
+        if (guidesVersion != null) {
+            return guidesVersion;
+        }
+        return saneDefault;
+    }
+
+    public String getMetricsUrl() {
+        String saneDefault = null;
+        String metricsUrl = settingsService.getValueForKey(SettingsServiceBean.Key.MetricsUrl, saneDefault);
+        return metricsUrl;
+    }
+
     /**
      * Download-as-zip size limit.
      * returns 0 if not specified; 
@@ -324,11 +376,36 @@ public class SystemConfig {
         }
         
         if (limit != null) {
-            return limit.intValue();
+            return limit;
         }
         
         return defaultZipUploadFilesLimit; 
     }
+    
+    /*
+    `   the number of files the GUI user is allowed to upload in one batch, 
+        via drag-and-drop, or through the file select dialog
+    */
+    public int getMultipleUploadFilesLimit() {
+        String limitOption = settingsService.getValueForKey(SettingsServiceBean.Key.MultipleUploadFilesLimit);
+        Integer limit = null; 
+        
+        if (limitOption != null && !limitOption.equals("")) {
+            try {
+                limit = new Integer(limitOption);
+            } catch (NumberFormatException nfe) {
+                limit = null; 
+            }
+        }
+        
+        if (limit != null) {
+            return limit;
+        }
+        
+        return defaultMultipleUploadFilesLimit; 
+    }
+    
+    
 
     // TODO: (?)
     // create sensible defaults for these things? -- 4.2.2
@@ -404,11 +481,6 @@ public class SystemConfig {
     public boolean isDdiExportEnabled() {
         boolean safeDefaultIfKeyNotFound = false;
         return settingsService.isTrueForKey(SettingsServiceBean.Key.DdiExportEnabled, safeDefaultIfKeyNotFound);
-    }
-
-    public boolean isShibEnabled() {
-        boolean safeDefaultIfKeyNotFound = false;
-        return settingsService.isTrueForKey(SettingsServiceBean.Key.ShibEnabled, safeDefaultIfKeyNotFound);
     }
 
     public boolean myDataDoesNotUsePermissionDocs() {
@@ -498,5 +570,74 @@ public class SystemConfig {
     
     public void disableOAIServer() {
         settingsService.deleteValueForKey(SettingsServiceBean.Key.OAIServerEnabled);
-    }    
+    }   
+    
+    public boolean isTimerServer() {
+        String optionValue = System.getProperty(JVM_TIMER_SERVER_OPTION);
+        if ("true".equalsIgnoreCase(optionValue)) {
+            return true;
+        }
+        return false;
+    }
+
+    public String getFooterCopyrightAndYear() {
+        return BundleUtil.getStringFromBundle("footer.copyright", Arrays.asList(Year.now().getValue() + ""));
+    }
+
+    public DataFile.ChecksumType getFileFixityChecksumAlgorithm() {
+        DataFile.ChecksumType saneDefault = DataFile.ChecksumType.MD5;
+        String checksumStringFromDatabase = settingsService.getValueForKey(SettingsServiceBean.Key.FileFixityChecksumAlgorithm, saneDefault.toString());
+        try {
+            DataFile.ChecksumType checksumTypeFromDatabase = DataFile.ChecksumType.fromString(checksumStringFromDatabase);
+            return checksumTypeFromDatabase;
+        } catch (IllegalArgumentException ex) {
+            logger.info("The setting " + SettingsServiceBean.Key.FileFixityChecksumAlgorithm + " is misconfigured. " + ex.getMessage() + " Returning sane default: " + saneDefault + ".");
+            return saneDefault;
+        }
+    }
+
+    public String getDefaultAuthProvider() {
+        String saneDefault = BuiltinAuthenticationProvider.PROVIDER_ID;
+        String settingInDatabase = settingsService.getValueForKey(SettingsServiceBean.Key.DefaultAuthProvider, saneDefault);
+        if (settingInDatabase != null && !settingInDatabase.isEmpty()) {
+            /**
+             * @todo Add more sanity checking.
+             */
+            return settingInDatabase;
+        }
+        return saneDefault;
+    }
+
+    public String getNameOfInstallation() {
+        return dataverseService.findRootDataverse().getName() + " Dataverse";
+    }
+
+    public AbstractOAuth2AuthenticationProvider.DevOAuthAccountType getDevOAuthAccountType() {
+        AbstractOAuth2AuthenticationProvider.DevOAuthAccountType saneDefault = AbstractOAuth2AuthenticationProvider.DevOAuthAccountType.PRODUCTION;
+        String settingReturned = settingsService.getValueForKey(SettingsServiceBean.Key.DebugOAuthAccountType);
+        logger.fine("setting returned: " + settingReturned);
+        if (settingReturned != null) {
+            try {
+                AbstractOAuth2AuthenticationProvider.DevOAuthAccountType parsedValue = AbstractOAuth2AuthenticationProvider.DevOAuthAccountType.valueOf(settingReturned);
+                return parsedValue;
+            } catch (IllegalArgumentException ex) {
+                logger.info("Couldn't parse value: " + ex + " - returning a sane default: " + saneDefault);
+                return saneDefault;
+            }
+        } else {
+            logger.fine("OAuth dev mode has not been configured. Returning a sane default: " + saneDefault);
+            return saneDefault;
+        }
+    }
+
+    public String getOAuth2CallbackUrl() {
+        String saneDefault = getDataverseSiteUrl() + "/oauth2/callback.xhtml";
+        String settingReturned = settingsService.getValueForKey(SettingsServiceBean.Key.OAuth2CallbackUrl);
+        logger.fine("getOAuth2CallbackUrl setting returned: " + settingReturned);
+        if (settingReturned != null) {
+            return settingReturned;
+        }
+        return saneDefault;
+    }
+
 }

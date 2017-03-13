@@ -2,9 +2,11 @@ package edu.harvard.iq.dataverse.api;
 
 import java.io.StringReader;
 import java.text.SimpleDateFormat;
+import java.util.List;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonReader;
@@ -107,6 +109,24 @@ public class Util {
         return DATE_FORMAT_TL.get();
     }
     
-   
-
+    /**
+     * Takes in a list of strings and returns a list stripped of nulls, empty strings and duplicates
+     * @param stringsToCheck
+     * @return 
+     */
+    
+    public static List<String> removeDuplicatesNullsEmptyStrings(List<String> stringsToCheck){
+        
+        if (stringsToCheck == null){
+            throw new NullPointerException("stringsToCheck cannot be null");
+        }
+             
+        return stringsToCheck.stream()
+                        .filter(p -> p != null)         // no nulls
+                        .map(String :: trim)            // strip strings
+                        .filter(p -> p.length() > 0 )   // no empty strings
+                        .distinct()                     // distinct
+                        .collect(Collectors.toList());     
+    }
+    
 }
