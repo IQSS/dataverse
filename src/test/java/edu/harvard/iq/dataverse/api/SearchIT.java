@@ -1413,6 +1413,7 @@ public class SearchIT {
                 //                .body("data", CoreMatchers.equalTo(emptyObject))
                 .body("data.isUseGenericThumbnail", CoreMatchers.equalTo(false))
                 .body("data.dataFileId", CoreMatchers.equalTo(null))
+                .body("data.datasetLogoPresent", CoreMatchers.equalTo(false))
                 .statusCode(200);
 
         Response getThumbnailImage1 = UtilIT.getDatasetThumbnail(datasetPersistentId, apiToken);
@@ -1493,6 +1494,7 @@ public class SearchIT {
                 .body("data.isUseGenericThumbnail", CoreMatchers.equalTo(false))
                 // This dataFileId is null because of automatic thumbnail selection.
                 .body("data.dataFileId", CoreMatchers.equalTo(dataFileId1.toString()))
+                .body("data.datasetLogoPresent", CoreMatchers.equalTo(false))
                 .statusCode(200);
 
         String leadingStringToRemove = FileUtil.rfc2397dataUrlSchemeBase64Png;
@@ -1623,6 +1625,7 @@ public class SearchIT {
                 .body("data.datasetThumbnailBase64image", CoreMatchers.equalTo(dataverseProjectLogoAsBase64))
                 .body("data.isUseGenericThumbnail", CoreMatchers.equalTo(false))
                 .body("data.dataFileId", CoreMatchers.equalTo(dataFileId2.toString()))
+                .body("data.datasetLogoPresent", CoreMatchers.equalTo(false))
                 .statusCode(200);
 
         Response search3 = UtilIT.search("id:dataset_" + datasetId + "_draft", apiToken);
@@ -1684,6 +1687,7 @@ public class SearchIT {
                 //                .body("data.datasetThumbnail", CoreMatchers.equalTo(null))
                 .body("data.isUseGenericThumbnail", CoreMatchers.equalTo(false))
                 .body("data.datasetThumbnailBase64image", CoreMatchers.equalTo(datasetLogoAsBase64))
+                .body("data.datasetLogoPresent", CoreMatchers.equalTo(false))
                 .statusCode(200);
 
         Response search4 = UtilIT.search("id:dataset_" + datasetId + "_draft", apiToken);
@@ -1717,6 +1721,7 @@ public class SearchIT {
         getThumbnail5.then().assertThat()
                 //                .body("data.datasetThumbnail", CoreMatchers.equalTo(null))
                 .body("data.isUseGenericThumbnail", CoreMatchers.equalTo(true))
+                .body("data.datasetLogoPresent", CoreMatchers.equalTo(false))
                 .statusCode(200);
 
         Response search5 = UtilIT.search("id:dataset_" + datasetId + "_draft", apiToken);

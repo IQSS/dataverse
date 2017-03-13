@@ -1,9 +1,7 @@
 package edu.harvard.iq.dataverse.dataset;
 
 import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -192,8 +190,19 @@ public class DatasetUtil {
             return null;
         }
         String thumbFileLocation = ImageThumbConverter.rescaleImage(fullSizeImage, width, height, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE, fileLocation);
-        logger.info("Thumbnail saved to " + thumbFileLocation);
+        boolean originalFileWasDeleted = originalFile.delete();
+        logger.info("Thumbnail saved to " + thumbFileLocation + ". Original file was deleted: " + originalFileWasDeleted);
         return dataset;
+    }
+
+    /**
+     * The dataset logo is the file that a user uploads which is *not* one of
+     * the data files. Compare to the datavese logo. We do not save the original
+     * file that is uploaded. Rather, we delete it after first creating at least
+     * one thumbnail from it.
+     */
+    public static boolean isDatasetLogoPresent(Dataset dataset) {
+        return Files.exists(Paths.get(dataset.getFileSystemDirectory() + File.separator + datasetLogoFilenameFinal));
     }
 
 }

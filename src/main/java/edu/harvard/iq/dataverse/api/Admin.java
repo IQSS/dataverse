@@ -56,6 +56,7 @@ import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
+import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import javax.ws.rs.QueryParam;
 /**
  * Where the secure, setup API calls live.
@@ -888,6 +889,7 @@ public class Admin extends AbstractApiBean {
         JsonObjectBuilder data = Json.createObjectBuilder();
         DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail();
         data.add("isUseGenericThumbnail", dataset.isUseGenericThumbnail());
+        data.add("datasetLogoPresent", DatasetUtil.isDatasetLogoPresent(dataset));
         if (datasetThumbnail != null) {
             data.add("datasetThumbnailBase64image", datasetThumbnail.getBase64image());
             DataFile dataFile = datasetThumbnail.getDataFile();
