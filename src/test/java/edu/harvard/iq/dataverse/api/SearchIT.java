@@ -1397,13 +1397,16 @@ public class SearchIT {
         search1.then().assertThat()
                 .body("data.items[0].name", CoreMatchers.equalTo("Darwin's Finches"))
                 .body("data.items[0].thumbnailFilename", CoreMatchers.equalTo(null))
+                .body("data.items[0].datasetThumbnailBase64image", CoreMatchers.equalTo(null))
                 .statusCode(200);
 
         Response datasetAsJson = UtilIT.nativeGet(datasetId, apiToken);
+        datasetAsJson.prettyPrint();
         String protocol = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.protocol");
         String authority = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.authority");
         String identifier = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.identifier");
         String datasetPersistentId = protocol + ":" + authority + "/" + identifier;
+        long datasetVersionId = JsonPath.from(datasetAsJson.getBody().asString()).getLong("data.latestVersion.id");
 
         logger.info("Dataset created, no thumbnail expected:");
         Response getThumbnail1 = UtilIT.getDatasetThumbnailMetadata(datasetId, apiToken);
@@ -1416,14 +1419,14 @@ public class SearchIT {
                 .body("data.datasetLogoPresent", CoreMatchers.equalTo(false))
                 .statusCode(200);
 
-        Response getThumbnailImage1 = UtilIT.getDatasetThumbnail(datasetPersistentId, apiToken);
+        Response getThumbnailImage1 = UtilIT.getDatasetThumbnail(datasetPersistentId, apiToken); //
         getThumbnailImage1.prettyPrint();
         getThumbnailImage1.then().assertThat()
                 .contentType("image/png")
                 .statusCode(OK.getStatusCode());
 
-        String url = RestAssured.baseURI + "/api/datasets/" + datasetId + "/thumbnail";
-        GetRequest unirestOut1 = Unirest.get(url);
+        String unirestUrlForDatasetCreator = RestAssured.baseURI + "/api/datasets/" + datasetId + "/thumbnail?key=" + apiToken;
+        GetRequest unirestOut1 = Unirest.get(unirestUrlForDatasetCreator);
         InputStream unirestInputStream1 = null;
         try {
             unirestInputStream1 = unirestOut1.asBinary().getBody();
@@ -1459,6 +1462,17 @@ public class SearchIT {
         thumbnailCandidates1.then().assertThat()
                 .body("data", CoreMatchers.equalTo(emptyArray))
                 .statusCode(200);
+
+        Response createNoSpecialAccessUser = UtilIT.createRandomUser();
+        createNoSpecialAccessUser.prettyPrint();
+        String noSpecialAccessUsername = UtilIT.getUsernameFromResponse(createNoSpecialAccessUser);
+        String noSpecialAcessApiToken = UtilIT.getApiTokenFromResponse(createNoSpecialAccessUser);
+
+        Response getThumbnailImageNoAccess1 = UtilIT.getDatasetThumbnail(datasetPersistentId, noSpecialAcessApiToken);
+        getThumbnailImageNoAccess1.prettyPrint();
+        getThumbnailImageNoAccess1.then().assertThat()
+                .contentType("")
+                .statusCode(NO_CONTENT.getStatusCode());
 
         Response uploadFile = UtilIT.uploadFile(datasetPersistentId, "trees.zip", apiToken);
         uploadFile.prettyPrint();
@@ -1521,8 +1535,8 @@ public class SearchIT {
                 //                .content(CoreMatchers.equalTo(decodedImg))
                 .statusCode(200);
 
-        logger.info("Using unirest to get " + url);
-        GetRequest unirestOut = Unirest.get(url);
+        logger.info("Using unirest to get " + unirestUrlForDatasetCreator);
+        GetRequest unirestOut = Unirest.get(unirestUrlForDatasetCreator);
         InputStream unirestInputStream = null;
         try {
             unirestInputStream = unirestOut.asBinary().getBody();
@@ -1729,6 +1743,7 @@ public class SearchIT {
         search5.then().assertThat()
                 .body("data.items[0].name", CoreMatchers.equalTo("Darwin's Finches"))
                 .body("data.items[0].thumbnailFilename", CoreMatchers.equalTo(null))
+                .body("data.items[0].datasetThumbnailBase64image", CoreMatchers.equalTo(null))
                 .statusCode(200);
 
         Response thumbnailCandidates4 = UtilIT.showDatasetThumbnailCandidates(datasetPersistentId, apiToken);
@@ -1744,30 +1759,37 @@ public class SearchIT {
                 .body("data.message", CoreMatchers.equalTo("Thumbnail set to " + treesAsBase64))
                 .statusCode(200);
 
-        Response stopUsingAnyDataFile = UtilIT.removeDatasetThumbnail(datasetPersistentId, apiToken);
-        stopUsingAnyDataFile.prettyPrint();
-        stopUsingAnyDataFile.then().assertThat()
-                .body("data.message", CoreMatchers.equalTo("Dataset thumbnail removed."))
-                .statusCode(200);
-
-        /**
-         * @todo What happens when you delete a dataset? Does the logo get
-         * deleted too? Should it?
-         */
-        if (true) {
-            return;
-        }
-
         Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
         publishDataverse.prettyPrint();
+        publishDataverse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
         Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
         publishDataset.prettyPrint();
+        publishDataset.then().assertThat()
+                .statusCode(OK.getStatusCode());
 
-        Response searchResponse = UtilIT.search("id:dataset_" + datasetId, apiToken);
+        Response getThumbnailImageNoSpecialAccess99 = UtilIT.getDatasetThumbnail(datasetPersistentId, noSpecialAcessApiToken);
+//        getThumbnailImageNoSpecialAccess99.prettyPrint();
+        getThumbnailImageNoSpecialAccess99.then().assertThat()
+                .contentType("image/png")
+                /**
+                 * @todo Write test to assert that the right logo was downloaded
+                 * (the one from dataFileId1.
+                 */
+                .statusCode(OK.getStatusCode());
+
+        Response searchResponse = UtilIT.search("id:dataset_" + datasetId, noSpecialAcessApiToken);
         searchResponse.prettyPrint();
-        String imageUrl = JsonPath.from(searchResponse.body().asString()).getString("data.items[0].image_url");
-        System.out.println("imageUrl: " + imageUrl);
-        logger.info("END testDatasetThumbnail");
+        searchResponse.then().assertThat()
+                .body("data.items[0].image_url", CoreMatchers.equalTo(RestAssured.baseURI + "/api/access/dsCardImage/" + datasetVersionId))
+                .body("data.items[0].image_url", CoreMatchers.equalTo(RestAssured.baseURI + "/api/access/dsCardImage/" + datasetVersionId))
+                .body("data.items[0].datasetThumbnailBase64image", CoreMatchers.equalTo(treesAsBase64))
+                .statusCode(OK.getStatusCode());
+        /**
+         * @todo What happens when you delete a dataset? Does the thumbnail
+         * created based on the logo get deleted too? Should it?
+         */
 
     }
 

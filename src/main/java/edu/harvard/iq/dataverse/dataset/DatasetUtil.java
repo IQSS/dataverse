@@ -6,12 +6,14 @@ import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -193,6 +195,28 @@ public class DatasetUtil {
         boolean originalFileWasDeleted = originalFile.delete();
         logger.info("Thumbnail saved to " + thumbFileLocation + ". Original file was deleted: " + originalFileWasDeleted);
         return dataset;
+    }
+
+    public static InputStream getThumbnailAsInputStream(Dataset dataset) {
+        DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail();
+        if (datasetThumbnail == null) {
+            byte[] decodedImg = Base64.getDecoder().decode(defaultIconAsBase64);
+            logger.fine("Thumbnail could not be found for dataset id " + dataset.getId() + ". Returning default icon: " + defaultIconAsBase64);
+            return new ByteArrayInputStream(decodedImg);
+        } else {
+            String base64Image = datasetThumbnail.getBase64image();
+            String leadingStringToRemove = FileUtil.rfc2397dataUrlSchemeBase64Png;
+            String encodedImg = base64Image.substring(leadingStringToRemove.length());
+            byte[] decodedImg = null;
+            try {
+                decodedImg = Base64.getDecoder().decode(encodedImg.getBytes("UTF-8"));
+            } catch (UnsupportedEncodingException ex) {
+                logger.info("dataset thumbnail could not be decoded for dataset id " + dataset.getId() + ": " + ex);
+                return null;
+            }
+            logger.fine("returning this many bytes for  " + "dataset id: " + dataset.getId() + ", persistentId: " + dataset.getIdentifier() + " :" + decodedImg.length);
+            return new ByteArrayInputStream(decodedImg);
+        }
     }
 
     /**

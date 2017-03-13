@@ -588,7 +588,17 @@ public class Datasets extends AbstractApiBean {
     }
 
     /**
-     * @todo Enforce permissions.
+     * Before a dataset has been published, unprivileged users (Guest and users
+     * without any special access) should not know that the dataset exists so
+     * will get back null when they attempt to visit this API endpoint that
+     * provides the thumbnail image.
+     *
+     * After a dataset has been published, we return the generic dataset icon to
+     * unprivileged users if the thumbnail has been set to a restricted file, if
+     * the dataset owner has opted out of having a thumbnail for their dataset,
+     * if there is no suitable DataFile from which a thumbnail can be generated
+     * (image or PDF), or if a separate dataset logo (non DataFile) has not been
+     * uploaded.
      */
     @GET
     @Produces({"image/png"})
@@ -600,27 +610,21 @@ public class Datasets extends AbstractApiBean {
         } catch (WrappedResponse ex) {
             return null;
         }
-        DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail();
-        if (datasetThumbnail == null) {
-            String defaultIconAsBase64 = DatasetUtil.defaultIconAsBase64;
-            byte[] decodedImg = Base64.getDecoder().decode(defaultIconAsBase64);
-            InputStream inputStream = new ByteArrayInputStream(decodedImg);
-            logger.fine("Thumbnail could not be found for dataset id " + dataset.getId() + ". Returning default icon: " + defaultIconAsBase64);
-            return inputStream;
-        }
-        String base64Image = datasetThumbnail.getBase64image();
-        String leadingStringToRemove = FileUtil.rfc2397dataUrlSchemeBase64Png;
-        String encodedImg = base64Image.substring(leadingStringToRemove.length());
-        byte[] decodedImg = null;
+        boolean canUpdateThumbnail = false;
         try {
-            decodedImg = Base64.getDecoder().decode(encodedImg.getBytes("UTF-8"));
-        } catch (UnsupportedEncodingException ex) {
-            logger.info("dataset thumbnail could not be decoded for dataset id " + dataset.getId() + ": " + ex);
+            canUpdateThumbnail = permissionSvc.requestOn(createDataverseRequest(findUserOrDie()), dataset).canIssue(UpdateDatasetThumbnailCommand.class);
+        } catch (WrappedResponse ex) {
+            logger.info("Exception thrown while trying to figure out permissions while getting thumbnail for dataset id " + dataset.getId() + ": " + ex.getLocalizedMessage());
+        }
+        InputStream inputStreamToReturn = DatasetUtil.getThumbnailAsInputStream(dataset);
+        if (dataset.isReleased()) {
+            return inputStreamToReturn;
+        } else if (canUpdateThumbnail) {
+            return inputStreamToReturn;
+        } else {
+            // unprivileged users shouldn't get the thumbnail if the dataset hasn't been released.
             return null;
         }
-        logger.fine("returning this many bytes for  " + "dataset id: " + dataset.getId() + ", persistentId: " + dataset.getIdentifier() + " :" + decodedImg.length);
-        InputStream inputStream = new ByteArrayInputStream(decodedImg);
-        return inputStream;
     }
 
     @POST
