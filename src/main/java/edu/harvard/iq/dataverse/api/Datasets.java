@@ -17,6 +17,7 @@ import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
+import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
@@ -619,7 +620,14 @@ public class Datasets extends AbstractApiBean {
         }
         boolean canUpdateThumbnail = false;
         try {
-            canUpdateThumbnail = permissionSvc.requestOn(createDataverseRequest(findUserOrDie()), dataset).canIssue(UpdateDatasetThumbnailCommand.class);
+            User user = findUserOrDie();
+            if (user instanceof GuestUser) {
+                User sessionUser = session.getUser();
+                if (!(sessionUser instanceof GuestUser)) {
+                    user = sessionUser;
+                }
+            }
+            canUpdateThumbnail = permissionSvc.requestOn(createDataverseRequest(user), dataset).canIssue(UpdateDatasetThumbnailCommand.class);
         } catch (WrappedResponse ex) {
             logger.info("Exception thrown while trying to figure out permissions while getting thumbnail for dataset id " + dataset.getId() + ": " + ex.getLocalizedMessage());
         }
