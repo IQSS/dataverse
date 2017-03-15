@@ -2,6 +2,12 @@ package edu.harvard.iq.dataverse.util;
 
 import com.ocpsoft.pretty.PrettyContext;
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
+import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -29,6 +35,12 @@ public class SystemConfig {
 
     @EJB
     SettingsServiceBean settingsService;
+
+    @EJB
+    DataverseServiceBean dataverseService;
+
+    @EJB
+    AuthenticationServiceBean authenticationService;
 
     /**
      * A JVM option for the advertised fully qualified domain name (hostname) of
@@ -310,6 +322,21 @@ public class SystemConfig {
         return saneDefault;
     }
 
+    public String getGuidesVersion() {
+        String saneDefault = getVersion();
+        String guidesVersion = settingsService.getValueForKey(SettingsServiceBean.Key.GuidesVersion, saneDefault);
+        if (guidesVersion != null) {
+            return guidesVersion;
+        }
+        return saneDefault;
+    }
+
+    public String getMetricsUrl() {
+        String saneDefault = null;
+        String metricsUrl = settingsService.getValueForKey(SettingsServiceBean.Key.MetricsUrl, saneDefault);
+        return metricsUrl;
+    }
+
     /**
      * Download-as-zip size limit.
      * returns 0 if not specified; 
@@ -456,11 +483,6 @@ public class SystemConfig {
         return settingsService.isTrueForKey(SettingsServiceBean.Key.DdiExportEnabled, safeDefaultIfKeyNotFound);
     }
 
-    public boolean isShibEnabled() {
-        boolean safeDefaultIfKeyNotFound = false;
-        return settingsService.isTrueForKey(SettingsServiceBean.Key.ShibEnabled, safeDefaultIfKeyNotFound);
-    }
-
     public boolean myDataDoesNotUsePermissionDocs() {
         boolean safeDefaultIfKeyNotFound = false;
         return settingsService.isTrueForKey(SettingsServiceBean.Key.MyDataDoesNotUseSolrPermissionDocs, safeDefaultIfKeyNotFound);
@@ -573,4 +595,49 @@ public class SystemConfig {
             return saneDefault;
         }
     }
+
+    public String getDefaultAuthProvider() {
+        String saneDefault = BuiltinAuthenticationProvider.PROVIDER_ID;
+        String settingInDatabase = settingsService.getValueForKey(SettingsServiceBean.Key.DefaultAuthProvider, saneDefault);
+        if (settingInDatabase != null && !settingInDatabase.isEmpty()) {
+            /**
+             * @todo Add more sanity checking.
+             */
+            return settingInDatabase;
+        }
+        return saneDefault;
+    }
+
+    public String getNameOfInstallation() {
+        return dataverseService.findRootDataverse().getName() + " Dataverse";
+    }
+
+    public AbstractOAuth2AuthenticationProvider.DevOAuthAccountType getDevOAuthAccountType() {
+        AbstractOAuth2AuthenticationProvider.DevOAuthAccountType saneDefault = AbstractOAuth2AuthenticationProvider.DevOAuthAccountType.PRODUCTION;
+        String settingReturned = settingsService.getValueForKey(SettingsServiceBean.Key.DebugOAuthAccountType);
+        logger.fine("setting returned: " + settingReturned);
+        if (settingReturned != null) {
+            try {
+                AbstractOAuth2AuthenticationProvider.DevOAuthAccountType parsedValue = AbstractOAuth2AuthenticationProvider.DevOAuthAccountType.valueOf(settingReturned);
+                return parsedValue;
+            } catch (IllegalArgumentException ex) {
+                logger.info("Couldn't parse value: " + ex + " - returning a sane default: " + saneDefault);
+                return saneDefault;
+            }
+        } else {
+            logger.fine("OAuth dev mode has not been configured. Returning a sane default: " + saneDefault);
+            return saneDefault;
+        }
+    }
+
+    public String getOAuth2CallbackUrl() {
+        String saneDefault = getDataverseSiteUrl() + "/oauth2/callback.xhtml";
+        String settingReturned = settingsService.getValueForKey(SettingsServiceBean.Key.OAuth2CallbackUrl);
+        logger.fine("getOAuth2CallbackUrl setting returned: " + settingReturned);
+        if (settingReturned != null) {
+            return settingReturned;
+        }
+        return saneDefault;
+    }
+
 }

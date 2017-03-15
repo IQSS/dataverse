@@ -1,9 +1,10 @@
-================================
-R, rApache and TwoRavens
-================================
+TwoRavens Tabular Data Exploration Tool
+=======================================
 
-Eventually, this document may be split into several parts, dedicated to individual components - 
-such as R, rApache and the TwoRavens applications. Particularly, if the TwoRavens team creates an "official" distribution with their own installation manual. 
+**Important:** TwoRavens is an *optional* component. The software was created here at IQSS, as a standalone tool, by an independent developers team (outside of the main Dataverse development team). TwoRavens was successfully integrated with Dataverse and made available to the users of the production Dataverse cluster at Harvard. However, the original developers have since left IQSS. Plans for the future of this collaboration are still being worked out. As the result, the support for TwoRavens is somewhat limited at the moment (as of Dataverse release 4.6.1). Though it is possible to try and contact the developers via the `TwoRavens project on GitHub <https://github.com/IQSS/TwoRavens>`_. The Dataverse project has however invested into improving the installation process; specifically, the notoriously tricky part of getting the correct versions of the required third party R packages installed. We are expecting to release the new installation scripts (and update this guide) within a few days of the 4.6.1 release.  
+
+Be warned that the installation process for TwoRavens has proven to be tricky and complicated. Besides the application proper, several required components need to be installed and configured. Specifically, R, rApache and, most importantly, a collection of required third-party R packages. The installation steps for these components are described in the individual sections of the document below. 
+
 
 0. PREREQUISITES
 ++++++++++++++++
@@ -13,14 +14,13 @@ a. httpd (Apache):
 
 ``yum install httpd``
 
-Disable SELinux on httpd: 
+Disable SELinux: 
 
 ``setenforce permissive``
 
 ``getenforce``
 
 (Note: a pull request to get rApache working with SELinux is welcome! Please see the :doc:`/developers/selinux` section of the Developer Guide to get started.)
-
 
 https strongly recommended; signed certificate (as opposed to self-signed) is recommended. 
 
@@ -63,7 +63,7 @@ install rApache as follows::
 	yum install libapreq2
 	rpm -ivh http://mirror.hmdc.harvard.edu/HMDC-Public/RedHat-6/rapache-1.2.6-rpm0.x86_64.rpm
 
-If you are using RHEL/CentOS 7, you can `download an experimental rapache-1.2.7-rpm0.x86_64.rpm <../_static/installation/files/home/rpmbuild/rpmbuild/RPMS/x86_64/rapache-1.2.7-rpm0.x86_64.rpm>`_ and install it with::
+If you are using RHEL/CentOS 7, you can download an experimental :download:`rapache-1.2.7-rpm0.x86_64.rpm <../_static/installation/files/home/rpmbuild/rpmbuild/RPMS/x86_64/rapache-1.2.7-rpm0.x86_64.rpm>` and install it with::
 
 	rpm -ivh rapache-1.2.7-rpm0.x86_64.rpm
 
@@ -78,7 +78,6 @@ Make sure you have the standard GNU compilers installed (needed for 3rd-party R 
 
 Again, without these rpms, R package devtools was failing to install, silently or with a non-informative error message. 
 Note: this package ``devtools`` has proven to be very flaky; it is being very actively maintained, new dependencies are being constantly added and new bugs introduced... however, it is only needed to install the package ``Zelig``, the main R workhorse behind TwoRavens. It cannot be installed from CRAN, like all the other 3rd party packages we use - becase TwoRavens requires version 5, which is still in beta. So devtools is needed to build it from sources downloaded directly from github. Once Zelig 5 is released, we'll be able to drop the requirement for devtools - and that will make this process much simpler. For now, be prepared for it to be somewhat of an adventure. 
-
 
 1. Set Up R
 +++++++++++
@@ -160,9 +159,8 @@ configuration that is different still. Under this arrangement
 Glassfish instance is running on a high local port unaccessible from
 the outside, and is "hidden" behind Apache. With the latter running on
 the default https port, accepting and proxying the incoming
-connections to the former. This is described in the `Shibboleth <shibboleth.html>`_
-section of the Installation Guide (please note that, at the moment,
-this functionality is offered as "experimental"). With this proxying
+connections to the former. This is described in the :doc:`shibboleth`
+section of the Installation Guide. With this proxying
 setup in place, the TwoRavens and rApache configuration actually
 becomes simpler. As both the Dataverse and TwoRavens will be served on
 the same port - 443 (the default port for https). So when running the

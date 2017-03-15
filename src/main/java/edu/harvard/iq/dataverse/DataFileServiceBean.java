@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.datasetutility.FileReplaceException;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.search.SortBy;
@@ -23,6 +24,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -31,6 +33,7 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
@@ -131,6 +134,17 @@ public class DataFileServiceBean implements java.io.Serializable {
     
     private static final String MIME_TYPE_UNDETERMINED_DEFAULT = "application/octet-stream";
     private static final String MIME_TYPE_UNDETERMINED_BINARY = "application/binary";
+
+    /**
+     * Per https://en.wikipedia.org/wiki/Media_type#Vendor_tree just "dataverse"
+     * should be fine.
+     *
+     * @todo Consider registering this at http://www.iana.org/form/media-types
+     * or switch to "prs" which "includes media types created experimentally or
+     * as part of products that are not distributed commercially" according to
+     * the page URL above.
+     */
+    public static final String MIME_TYPE_PACKAGE_FILE = "application/vnd.dataverse.file-package";
     
     public DataFile find(Object pk) {
         return (DataFile) em.find(DataFile.class, pk);
@@ -146,6 +160,30 @@ public class DataFileServiceBean implements java.io.Serializable {
         
     }*/
     
+    public DataFile findReplacementFile(Long previousFileId){
+        Query query = em.createQuery("select object(o) from DataFile as o where o.previousDataFileId = :previousFileId");
+        query.setParameter("previousFileId", previousFileId);
+        try {
+            DataFile retVal = (DataFile)query.getSingleResult();
+            return retVal;
+        } catch(Exception ex) {
+            return null;
+        }
+    }
+
+    
+    public DataFile findPreviousFile(DataFile df){
+        TypedQuery query = em.createQuery("select o from DataFile o" +
+                    " WHERE o.id = :dataFileId", DataFile.class);
+        query.setParameter("dataFileId", df.getPreviousDataFileId());
+        try {
+            DataFile retVal = (DataFile)query.getSingleResult();
+            return retVal;
+        } catch(Exception ex) {
+            return null;
+        }
+    }
+    
     public List<DataFile> findByDatasetId(Long studyId) {
         /* 
            Sure, we don't have *studies* any more, in 4.0; it's a tribute 
@@ -154,7 +192,34 @@ public class DataFileServiceBean implements java.io.Serializable {
         Query query = em.createQuery("select o from DataFile o where o.owner.id = :studyId order by o.id");
         query.setParameter("studyId", studyId);
         return query.getResultList();
-    }  
+    }
+    
+    public List<DataFile> findAllRelatedByRootDatafileId(Long datafileId) {
+        /* 
+         Get all files with the same root datafile id
+         the first file has its own id as root so only one query needed.
+        */
+        Query query = em.createQuery("select o from DataFile o where o.rootDataFileId = :datafileId order by o.id");
+        query.setParameter("datafileId", datafileId);
+        return query.getResultList();
+    }
+
+    public DataFile findByStorageIdandDatasetVersion(String storageId, DatasetVersion dv) {
+        try {
+            Query query = em.createNativeQuery("select o.id from datafile o, filemetadata m " +
+                    "where o.filesystemname = '" + storageId + "' and o.id = m.datafile_id and m.datasetversion_id = " +
+                    dv.getId() + "");
+            query.setMaxResults(1);
+            if (query.getResultList().size() < 1) {
+                return null;
+            } else {
+                return findCheapAndEasy((Long) query.getSingleResult());
+            }
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error finding datafile by storageID and DataSetVersion: " + e.getMessage());
+            return null;
+        }
+    }
     
     public List<FileMetadata> findFileMetadataByDatasetVersionId(Long datasetVersionId, int maxResults, String userSuppliedSortField, String userSuppliedSortOrder) {
         FileSortFieldAndOrder sortFieldAndOrder = new FileSortFieldAndOrder(userSuppliedSortField, userSuppliedSortOrder);
@@ -233,20 +298,18 @@ public class DataFileServiceBean implements java.io.Serializable {
                 + ";").getSingleResult();
     }
 
-    public FileMetadata findFileMetadataByFileAndVersionId(Long dataFileId, Long datasetVersionId) {
-        Query query = em.createQuery("select object(o) from FileMetadata as o where o.dataFile.id = :dataFileId and o.datasetVersion.id = :datasetVersionId");
-        query.setParameter("dataFileId", dataFileId);
-        query.setParameter("datasetVersionId", datasetVersionId);
-        return (FileMetadata)query.getSingleResult();
-    }
     
     public FileMetadata findFileMetadataByDatasetVersionIdAndDataFileId(Long datasetVersionId, Long dataFileId) {
 
         Query query = em.createQuery("select o from FileMetadata o where o.datasetVersion.id = :datasetVersionId  and o.dataFile.id = :dataFileId");
         query.setParameter("datasetVersionId", datasetVersionId);
         query.setParameter("dataFileId", dataFileId);
-
-        return (FileMetadata) query.getSingleResult();
+        try {
+            FileMetadata retVal = (FileMetadata) query.getSingleResult();
+            return retVal;
+        } catch(Exception ex) {
+            return null;
+        }
     }
 
     public DataFile findCheapAndEasy(Long id) {
@@ -255,7 +318,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         Object[] result = null;
 
         try {
-            result = (Object[]) em.createNativeQuery("SELECT t0.ID, t0.CREATEDATE, t0.INDEXTIME, t0.MODIFICATIONTIME, t0.PERMISSIONINDEXTIME, t0.PERMISSIONMODIFICATIONTIME, t0.PUBLICATIONDATE, t0.CREATOR_ID, t0.RELEASEUSER_ID, t0.PREVIEWIMAGEAVAILABLE, t1.CONTENTTYPE, t1.FILESYSTEMNAME, t1.FILESIZE, t1.INGESTSTATUS, t1.CHECKSUMVALUE, t1.RESTRICTED, t3.ID, t3.AUTHORITY, t3.IDENTIFIER, t1.CHECKSUMTYPE FROM DVOBJECT t0, DATAFILE t1, DVOBJECT t2, DATASET t3 WHERE ((t0.ID = " + id + ") AND (t0.OWNER_ID = t2.ID) AND (t2.ID = t3.ID) AND (t1.ID = t0.ID))").getSingleResult();
+            result = (Object[]) em.createNativeQuery("SELECT t0.ID, t0.CREATEDATE, t0.INDEXTIME, t0.MODIFICATIONTIME, t0.PERMISSIONINDEXTIME, t0.PERMISSIONMODIFICATIONTIME, t0.PUBLICATIONDATE, t0.CREATOR_ID, t0.RELEASEUSER_ID, t0.PREVIEWIMAGEAVAILABLE, t1.CONTENTTYPE, t1.FILESYSTEMNAME, t1.FILESIZE, t1.INGESTSTATUS, t1.CHECKSUMVALUE, t1.RESTRICTED, t3.ID, t3.AUTHORITY, t3.IDENTIFIER, t1.CHECKSUMTYPE, t1.PREVIOUSDATAFILEID, t1.ROOTDATAFILEID FROM DVOBJECT t0, DATAFILE t1, DVOBJECT t2, DATASET t3 WHERE ((t0.ID = " + id + ") AND (t0.OWNER_ID = t2.ID) AND (t2.ID = t3.ID) AND (t1.ID = t0.ID))").getSingleResult();
         } catch (Exception ex) {
             return null;
         }
@@ -374,6 +437,16 @@ public class DataFileServiceBean implements java.io.Serializable {
                 logger.info("Exception trying to convert " + checksumType + " to enum: " + ex);
             }
         }
+        
+        Long previousDataFileId = (Long) result[20];
+        if (previousDataFileId != null){
+            dataFile.setPreviousDataFileId(previousDataFileId);
+        }
+        
+        Long rootDataFileId = (Long) result[21];
+        if (rootDataFileId != null){
+            dataFile.setRootDataFileId(rootDataFileId);
+        } 
                 
         dataFile.setOwner(owner);
 
@@ -477,7 +550,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         
         i = 0; 
         
-        List<Object[]> fileResults = em.createNativeQuery("SELECT t0.ID, t0.CREATEDATE, t0.INDEXTIME, t0.MODIFICATIONTIME, t0.PERMISSIONINDEXTIME, t0.PERMISSIONMODIFICATIONTIME, t0.PUBLICATIONDATE, t0.CREATOR_ID, t0.RELEASEUSER_ID, t1.CONTENTTYPE, t1.FILESYSTEMNAME, t1.FILESIZE, t1.INGESTSTATUS, t1.CHECKSUMVALUE, t1.RESTRICTED, t1.CHECKSUMTYPE FROM DVOBJECT t0, DATAFILE t1 WHERE ((t0.OWNER_ID = " + owner.getId() + ") AND ((t1.ID = t0.ID) AND (t0.DTYPE = 'DataFile'))) ORDER BY t0.ID").getResultList(); 
+        List<Object[]> fileResults = em.createNativeQuery("SELECT t0.ID, t0.CREATEDATE, t0.INDEXTIME, t0.MODIFICATIONTIME, t0.PERMISSIONINDEXTIME, t0.PERMISSIONMODIFICATIONTIME, t0.PUBLICATIONDATE, t0.CREATOR_ID, t0.RELEASEUSER_ID, t1.CONTENTTYPE, t1.FILESYSTEMNAME, t1.FILESIZE, t1.INGESTSTATUS, t1.CHECKSUMVALUE, t1.RESTRICTED, t1.CHECKSUMTYPE, t1.PREVIOUSDATAFILEID, t1.ROOTDATAFILEID FROM DVOBJECT t0, DATAFILE t1 WHERE ((t0.OWNER_ID = " + owner.getId() + ") AND ((t1.ID = t0.ID) AND (t0.DTYPE = 'DataFile'))) ORDER BY t0.ID").getResultList(); 
     
         for (Object[] result : fileResults) {
             Integer file_id = (Integer) result[0];
@@ -575,6 +648,16 @@ public class DataFileServiceBean implements java.io.Serializable {
                     logger.info("Exception trying to convert " + checksumType + " to enum: " + ex);
                 }
             }
+
+            Long previousDataFileId = (Long) result[16];
+            if (previousDataFileId != null) {
+                dataFile.setPreviousDataFileId(previousDataFileId);
+            }
+            
+            Long rootDataFileId = (Long) result[17];
+            if (rootDataFileId != null) {
+                dataFile.setRootDataFileId(rootDataFileId);
+            }
             
             // TODO: 
             // - if ingest status is "bad", look up the ingest report; 
@@ -611,7 +694,7 @@ public class DataFileServiceBean implements java.io.Serializable {
             categoryMap.put(fileCategory.getId(), i++);
         }
         
-        logger.fine("Retreived "+i+" file categories attached to the dataset.");
+        logger.fine("Retrieved "+i+" file categories attached to the dataset.");
         
         if (requestedVersion != null) {
             requestedVersion.setFileMetadatas(retrieveFileMetadataForVersion(owner, requestedVersion, dataFiles, filesMap, categoryMap));
@@ -750,7 +833,14 @@ public class DataFileServiceBean implements java.io.Serializable {
     public DataTable findDataTableByFileId(Long fileId) {
         Query query = em.createQuery("select object(o) from DataTable as o where o.dataFile.id =:fileId order by o.id");
         query.setParameter("fileId", fileId);
-        return (DataTable)query.getSingleResult();
+        
+        Object singleResult;
+        
+        try{
+            return (DataTable)query.getSingleResult();
+        }catch(NoResultException ex){
+            return null;
+        }
     }
     
     public List<DataFile> findAll() {
@@ -758,6 +848,7 @@ public class DataFileServiceBean implements java.io.Serializable {
     }
     
     public DataFile save(DataFile dataFile) {
+
         if (dataFile.isMergeable()) {   
             DataFile savedDataFile = em.merge(dataFile);
             return savedDataFile;
@@ -765,6 +856,46 @@ public class DataFileServiceBean implements java.io.Serializable {
             throw new IllegalArgumentException("This DataFile object has been set to NOT MERGEABLE; please ensure a MERGEABLE object is passed to the save method.");
         } 
     }
+    
+    private void msg(String m){
+        System.out.println(m);
+    }
+    private void dashes(){
+        msg("----------------");
+    }
+    private void msgt(String m){
+        dashes(); msg(m); dashes();
+    }
+    
+    /*
+        Make sure the file replace ids are set for a initial version 
+        of a file
+    
+    */
+    public DataFile setAndCheckFileReplaceAttributes(DataFile savedDataFile){
+               
+        // Is this the initial version of a file?
+        
+        if ((savedDataFile.getRootDataFileId() == null)||
+                (savedDataFile.getRootDataFileId().equals(DataFile.ROOT_DATAFILE_ID_DEFAULT))){
+            msg("yes, initial version");
+ 
+           // YES!  Set the RootDataFileId to the Id
+           savedDataFile.setRootDataFileId(savedDataFile.getId());
+           
+           // SAVE IT AGAIN!!!
+           msg("yes, save again");
+        
+            return em.merge(savedDataFile);   
+           
+        }else{       
+            // Looking Good Billy Ray! Feeling Good Louis!    
+            msg("nope, looks ok");
+
+            return savedDataFile;
+        }
+    }
+    
     
     public Boolean isPreviouslyPublished(Long fileId){
         Query query = em.createQuery("select object(o) from FileMetadata as o where o.dataFile.id =:fileId");
@@ -785,10 +916,19 @@ public class DataFileServiceBean implements java.io.Serializable {
     */
     
     public FileMetadata mergeFileMetadata(FileMetadata fileMetadata) {
-        return em.merge(fileMetadata);
+        
+        FileMetadata newFileMetadata = em.merge(fileMetadata);
+        em.flush();
+        
+        // Set the initial value of the rootDataFileId
+        //    (does nothing if it's already set)
+        //DataFile updatedDataFile = setAndCheckFileReplaceAttributes(newFileMetadata.getDataFile());
+               
+        return newFileMetadata;
     }
     
     public void removeFileMetadata(FileMetadata fileMetadata) {
+        msgt("removeFileMetadata: fileMetadata");
         FileMetadata mergedFM = em.merge(fileMetadata);
         em.remove(mergedFM);
     }
@@ -926,7 +1066,7 @@ public class DataFileServiceBean implements java.io.Serializable {
        if (ImageThumbConverter.isThumbnailAvailable(file)) {
            file = this.find(file.getId());
            file.setPreviewImageAvailable(true);
-           file = em.merge(file);
+           file = this.save(file); //em.merge(file);
            // (should this be done here? - TODO:)
            return true;
        }
@@ -1239,4 +1379,85 @@ public class DataFileServiceBean implements java.io.Serializable {
         solrSearchResult.setEntity(this.findCheapAndEasy(solrSearchResult.getEntityId()));
     }
         
+    
+    /**
+     * Does this file have a replacement.  
+     * Any file should have AT MOST 1 replacement
+     * 
+     * @param df
+     * @return 
+     */
+    public boolean hasReplacement(DataFile df) throws Exception{
+        
+        if (df.getId() == null){
+            // An unsaved file cannot have a replacment
+            return false;
+        }
+       
+        
+        TypedQuery query = em.createQuery("select o from DataFile o" +
+                    " WHERE o.previousDataFileId = :dataFileId", DataFile.class);
+        query.setParameter("dataFileId", df.getId());
+        //query.setMaxResults(maxResults);
+        
+        List<DataFile> dataFiles = query.getResultList();
+        
+        if (dataFiles.size() == 0){
+            return false;
+        }
+        
+         if (!df.isReleased()){
+            // An unpublished SHOULD NOT have a replacment
+            String errMsg = "DataFile with id: [" + df.getId() + "] is UNPUBLISHED with a REPLACEMENT.  This should NOT happen.";
+            logger.severe(errMsg);
+            
+            throw new Exception(errMsg);
+        }
+
+        
+        
+        else if (dataFiles.size() == 1){
+            return true;
+        }else{
+        
+            String errMsg = "DataFile with id: [" + df.getId() + "] has more than one replacment!";
+            logger.severe(errMsg);
+
+            throw new Exception(errMsg);
+        }
+        
+    }
+    
+    public boolean hasBeenDeleted(DataFile df){
+        Dataset dataset = df.getOwner();
+        DatasetVersion dsv = dataset.getLatestVersion();
+        
+        return findFileMetadataByDatasetVersionIdAndDataFileId(dsv.getId(), df.getId()) == null;
+        
+    }
+    
+    /**
+     * Is this a replacement file??
+     * 
+     * The indication of a previousDataFileId says that it is
+     * 
+     * @param df
+     * @return
+     * @throws Exception 
+     */
+    public boolean isReplacementFile(DataFile df) {
+
+        if (df.getPreviousDataFileId() == null){
+            return false;
+        }else if (df.getPreviousDataFileId() < 1){
+            String errMSg = "Stop! previousDataFileId should either be null or a number greater than 0";
+            logger.severe(errMSg);
+            return false;
+            // blow up -- this shouldn't happen!
+            //throw new FileReplaceException(errMSg);
+        }else if (df.getPreviousDataFileId() > 0){
+            return true;
+        }
+        return false;
+    }  // end: isReplacementFile
 }

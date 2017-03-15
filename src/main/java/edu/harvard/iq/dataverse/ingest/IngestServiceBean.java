@@ -41,6 +41,8 @@ import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
 import edu.harvard.iq.dataverse.dataaccess.FileAccessIO;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.TabularSubsetGenerator;
+import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
+import edu.harvard.iq.dataverse.datasetutility.FileSizeChecker;
 import edu.harvard.iq.dataverse.datavariable.SummaryStatistic;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.ingest.metadataextraction.FileMetadataExtractor;
@@ -133,10 +135,13 @@ public class IngestServiceBean {
     @Resource(mappedName = "jms/IngestQueueConnectionFactory")
     QueueConnectionFactory factory;
     
+
     private static String timeFormat_hmsS = "HH:mm:ss.SSS";
     private static String dateTimeFormat_ymdhmsS = "yyyy-MM-dd HH:mm:ss.SSS";
     private static String dateFormat_ymd = "yyyy-MM-dd";
     
+   
+
     // addFilesToDataset() takes a list of new DataFiles and attaches them to the parent 
     // Dataset (the files are attached to the dataset, and the fileMetadatas to the
     // supplied version). 
@@ -614,50 +619,11 @@ public class IngestServiceBean {
             dataFile.getDataTable().setUnf(fileUnfValue);
         }
     }
-    
+
     public void recalculateDatasetVersionUNF(DatasetVersion version) {
-        String[] unfValues = new String[0];
-        String datasetUnfValue = null; 
-        List<String> unfValueList = new ArrayList<>();
-        
-        logger.fine("recalculating UNF for dataset version.");
-        Iterator<FileMetadata> itfm = version.getFileMetadatas().iterator();
-        while (itfm.hasNext()) {            
-            FileMetadata fileMetadata = itfm.next();
-            if (fileMetadata != null &&
-                    fileMetadata.getDataFile() != null &&
-                    fileMetadata.getDataFile().isTabularData() &&
-                    fileMetadata.getDataFile().getUnf() != null) {
-                String varunf = fileMetadata.getDataFile().getUnf();
-                unfValueList.add(varunf);
-            }
-        }
-        
-        if (unfValueList.size() > 0) {
-            unfValues = unfValueList.toArray(unfValues);
-        
-            logger.fine("Attempting to calculate new UNF from total of " + unfValueList.size() + " file-level signatures.");
-            try {
-                datasetUnfValue = UNFUtil.calculateUNF(unfValues);
-            } catch (IOException ex) {
-                logger.warning("IO Exception: Failed to recalculate the UNF for the dataset version id="+version.getId());
-            } catch (UnfException uex) {
-                logger.warning("UNF Exception: Failed to recalculate the UNF for the dataset version id="+version.getId());
-            }        
-        
-            if (datasetUnfValue != null) {
-                version.setUNF(datasetUnfValue);
-                logger.fine("Recalculated the UNF for the dataset version id="+version.getId()+", new signature: "+datasetUnfValue);
-            }
-        } else {
-            // Of course if no files in the version have UNFs, we need to make sure
-            // that the version has the NULL UNF too.
-            // Otherwise, the version will still have a UNF if the user deletes
-            // all the tabular files from the version!
-            version.setUNF(null);
-        }
+        IngestUtil.recalculateDatasetVersionUNF(version);
     }
-    
+
     public void sendFailNotification(Long dataset_id) {
         FacesMessage facesMessage = new FacesMessage("ingest failed");
         /* commented out push channel message:

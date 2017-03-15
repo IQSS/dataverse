@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseFacet;
 import edu.harvard.iq.dataverse.DataverseContact;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.DvObject;
@@ -240,8 +241,8 @@ public class Dataverses extends AbstractApiBean {
 	@GET
 	@Path("{identifier}")
 	public Response viewDataverse( @PathParam("identifier") String idtf ) {
-        return response( req -> ok(json(execCommand(
-                                    new GetDataverseCommand(req, findDataverseOrDie(idtf))))));
+        return allowCors(response( req -> ok(json(execCommand(
+                                    new GetDataverseCommand(req, findDataverseOrDie(idtf)))))));
 	}
 	
 	@DELETE
@@ -262,7 +263,7 @@ public class Dataverses extends AbstractApiBean {
             for ( MetadataBlock mdb : blocks) {
                 arr.add( brief.json(mdb) );
             }
-            return ok(arr);
+            return allowCors(ok(arr));
         } catch (WrappedResponse we ){
             return we.getResponse();
         }
@@ -342,15 +343,37 @@ public class Dataverses extends AbstractApiBean {
     
     @GET
     @Path("{identifier}/facets/")
+    /**
+     * return list of facets for the dataverse with alias `dvIdtf`
+     */
     public Response listFacets( @PathParam("identifier") String dvIdtf ) {
-        return response( req -> ok(
-                        execCommand(new ListFacetsCommand(req, findDataverseOrDie(dvIdtf)) )
-                            .stream().map(f->json(f)).collect(toJsonArray())));
+	    try
+	    {
+		    User u = findUserOrDie();
+		    DataverseRequest r = createDataverseRequest( u );
+		    Dataverse dataverse = findDataverseOrDie(dvIdtf);
+		    JsonArrayBuilder fs = Json.createArrayBuilder();
+		    for( DataverseFacet f : execCommand( new ListFacetsCommand( r, dataverse ) ) )
+		    {
+			    fs.add( f.getDatasetFieldType().getName() );
+		    }
+		    return allowCors( ok( fs ) );
+	    }
+	    catch( WrappedResponse e )
+	    {
+		    return e.getResponse();
+	    }
     }
 
     @POST
     @Path("{identifier}/facets")
     @Produces(MediaType.APPLICATION_JSON)
+    /**
+     * (not publicly documented) API endpoint for assigning facets to a dataverse.
+     * `curl -X POST -H "X-Dataverse-key: $ADMIN_KEY" http://localhost:8088/api/dataverses/$dv/facets --upload-file foo.json`; where foo.json contains a list of datasetField names, 
+     * works as expected (judging by the UI).
+     * This triggers a 500 when '-d @foo.json' is used.
+     */
     public Response setFacets( @PathParam("identifier")String dvIdtf, String facetIds ) {
         
         List<DatasetFieldType> facets = new LinkedList<>();
@@ -396,11 +419,11 @@ public class Dataverses extends AbstractApiBean {
 			public JsonObjectBuilder visit(DataFile df) { throw new UnsupportedOperationException("Files don't live directly in Dataverses"); }
 		};
         
-        return response( req -> ok(
+        return allowCors(response( req -> ok(
             execCommand(new ListDataverseContentCommand(req, findDataverseOrDie(dvIdtf)))
                 .stream()
                 .map( dvo->(JsonObjectBuilder)dvo.accept(ser))
-                .collect(toJsonArray())
+                .collect(toJsonArray()))
         ));
 	}
 	

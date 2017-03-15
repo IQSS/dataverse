@@ -1,0 +1,604 @@
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+    xmlns:jsf="http://xmlns.jcp.org/jsf"
+    xmlns:pt="http://java.sun.com/jsf/passthrough"
+    xmlns:cc="http://java.sun.com/jsf/composite"
+    xmlns:o="http://omnifaces.org/ui"
+    xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
+
+    <!-- Static Tab Layout -->
+    <div data-widget="content" class="ui-tabs ui-widget ui-widget-content ui-corner-all ui-hidden-container ui-tabs-top" id="datasetForm:tabView">
+        <ul role="tablist" class="ui-tabs-nav ui-helper-reset ui-helper-clearfix ui-widget-header ui-corner-all">
+            <li aria-expanded="true" role="tab" class="ui-state-default ui-tabs-selected ui-state-active ui-corner-top">
+                <a href="#datasetForm:tabView:dataFilesTab">Files</a>
+            </li>
+        </ul>
+        <div class="ui-tabs-panels">
+            <div aria-hidden="false" role="tabpanel" class="ui-tabs-panel ui-widget-content ui-corner-bottom" id="datasetForm:tabView:dataFilesTab">
+                <!-- Upload -->
+                <ui:fragment rendered="#{datasetPage || EditDatafilesPage.showFileUploadFragment()}">
+                    <script>
+                        function uploadWidgetDropMsg() {
+                            var fileUpload = $('div[id$="fileUpload"] div.ui-fileupload-content');
+                            if ($(fileUpload).children('#dragdropMsg').length) {
+                                // do nothing
+                            } else {
+                                $(fileUpload).prepend('<div id="dragdropMsg">#{bundle['file.fromDropbox.description']}</div>');
+                            }
+                        }
+                        function uploadWidgetDropRemoveMsg() {
+                            $('div[id$="fileUpload"] div.ui-fileupload-content div.dropMsg').remove();
+                        }
+                        $(document).ready(function () {
+                            uploadWidgetDropMsg();
+                        });
+                    </script>
+                    <p class="help-block">
+                        <span class="glyphicon glyphicon-info-sign"/>
+                        <ui:fragment rendered="#{systemConfig.maxFileUploadSize !=null and !empty systemConfig.maxFileUploadSize}">
+                        <h:outputFormat value=" #{bundle['file.selectToAdd.tipLimit']}" escape="false">
+                            <f:param value="#{systemConfig.maxFileUploadSize}"/>
+                        </h:outputFormat>                      
+                        </ui:fragment>  
+                        <ui:fragment rendered="true">
+                        <h:outputFormat value=" #{bundle['file.selectToAdd.tipMoreInformation']}" escape="false">
+                            <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                            <f:param value="#{systemConfig.version}"/>
+                        </h:outputFormat>                      
+                        </ui:fragment> 
+                    </p>
+                    <p:fileUpload id="fileUpload" styleClass="margin-bottom" dragDropSupport="true" auto="true" multiple="true" rendered="#{datasetPage || EditDatafilesPage.showFileUploadComponent()}"
+                                  fileUploadListener="#{EditDatafilesPage.handleFileUpload}" process="filesTable" update="filesTable,uploadMessage" label="#{bundle['file.selectToAddBtn']}"
+                                  oncomplete="javascript:dataset_fileupload_rebind();uploadWidgetDropMsg();" onstart="javascript:uploadWidgetDropRemoveMsg();"
+                                  sizeLimit="#{EditDatafilesPage.getMaxFileUploadSizeInBytes()}" invalidSizeMessage="File exceeds our limits. Please contact support. " />
+                    <!-- Dropbox Upload -->
+                    <div id="dropboxUploadBlock" class="panel panel-default margin-bottom" jsf:rendered="#{!empty EditDatafilesPage.dropBoxKey}">
+                        <div class="panel-body">
+                            <h:inputText id="dropBoxSelectionInput" style="display:none" value="#{EditDatafilesPage.dropBoxSelection}"/>
+                            <p:commandButton  id="dropBoxButton" actionListener="#{EditDatafilesPage.handleDropBoxUpload}" update="filesTable,dropBoxUploadMessage" style="display:none;" />
+                            <p:commandButton value="#{bundle['file.fromDropbox']}" onclick="openDropboxChooser();" icon="dropin-btn-status" />
+                            <p class="help-block">#{bundle['file.fromDropbox.tip']}</p>
+                        </div>
+                        <p:message for="dropBoxButton" id="dropBoxUploadMessage" display="text" />
+                    </div>
+                    <p:message for="fileUpload" id="uploadMessage" display="text" />
+                </ui:fragment>
+
+                <!-- Files Table -->
+                <!-- _{dataverseSession.user.authenticated and ( ? permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset) : permissionsWrapper.canIssueUpdateDatasetCommand(EditDatafilesPage.dataset))}" -->
+
+                <p:dataTable id="filesTable" value="#{datasetPage ? DatasetPage.workingVersion.fileMetadatas : EditDatafilesPage.fileMetadatas}"
+                             rendered="#{datasetPage or (dataverseSession.user.authenticated and permissionsWrapper.canIssueUpdateDatasetCommand(EditDatafilesPage.dataset) 
+                                         )}"
+                             rowIndexVar="rowNum" rowKey="#{fileMetadata.dataFile.storageIdentifier}"
+                             selection="#{EditDatafilesPage.selectedFiles}" var="fileMetadata" widgetVar="filesTable"
+                             emptyMessage="#{datasetPage || EditDatafilesPage.showFileUploadFragment() ? bundle['file.noUploadedFiles.tip'] : bundle['file.noSelectedFiles.tip']}">
+                    <f:facet name="header">
+                        <div jsf:id="filesHeaderBlock" class="row">
+                            <h:inputHidden id="showAccessPopup" value="#{EditDatafilesPage.showAccessPopup}"/>
+                            <div id="filesHeaderCount" class="col-xs-6 text-left">
+                                <!-- Files Count -->
+                                <h:outputFormat value="#{datasetPage ? bundle['file.count'] : bundle['file.count.selected']}" styleClass="highlightBold" rendered="#{!empty EditDatafilesPage.fileMetadatas}">
+                                    <f:param value="#{EditDatafilesPage.fileMetadatas.size()}"/>
+                                </h:outputFormat>
+                            </div>
+                            <div class="col-xs-6">
+                                <!-- Button Panels -->
+                                <div jsf:id="editFilesRestrictDeletePanel" class="button-block pull-right text-right"
+                                     jsf:rendered="#{!empty EditDatafilesPage.fileMetadatas}">
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                            <span class="glyphicon glyphicon-lock"/> #{bundle['file.restrict']} <span class="caret"></span>
+                                        </button>
+                                        <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
+                                            <li>
+                                                <p:commandLink update="filesTable,:messagePanel" oncomplete="toggle_dropdown();" actionListener="#{EditDatafilesPage.restrictFiles(true)}">
+                                                    <h:outputText value="#{bundle['file.restrict']}"/>
+                                                </p:commandLink>
+                                            </li>
+                                            <li>
+                                                <p:commandLink update="filesTable,:messagePanel" oncomplete="toggle_dropdown();" actionListener="#{EditDatafilesPage.restrictFiles(false)}">
+                                                    <h:outputText value="#{bundle['file.unrestrict']}"/>
+                                                </p:commandLink>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <p:commandLink type="button" styleClass="btn btn-default" title="#{bundle['file.delete']}" onclick="checkFilesSelected();">
+                                        <span class="glyphicon glyphicon-remove"/> #{bundle['file.delete']}
+                                    </p:commandLink>
+                                </div>
+                            </div>
+                        </div>
+                    </f:facet>
+                    <!-- TODO: do we still need the selection at all?? or is it all going to be handled on the "view" page?? -->
+                    <p:column selectionMode="multiple" class="col-select-width text-center" style="width:40px !important;"/>
+                    <p:column class="col-file-thumb text-center" style="width:73px !important;padding:4px 10px;">
+                        <div class="thumbnail-block">
+                            <!-- Thumbnail Preview -->
+                            <span class="file-thumbnail-preview-img" jsf:rendered="#{!empty fileMetadata.dataFile.id and dataFileServiceBean.isThumbnailAvailable(fileMetadata.dataFile)}"
+                                  data-container="body" data-toggle="popover" data-placement="top" data-trigger="hover" data-html="true" data-content="&lt;img src=&#34;/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=400&#34; alt=&#34; #{bundle['file.preview']} #{fileMetadata.label}&#34; /&gt;">
+                                <p:graphicImage value="/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=true"/>
+                            </span>
+                            <!-- Default Icon -->
+                            <span class="icon-#{dataFileServiceBean.getFileClass(fileMetadata.dataFile)} file-thumbnail-icon text-muted" jsf:rendered="#{(!empty fileMetadata.dataFile.id and !dataFileServiceBean.isThumbnailAvailable(fileMetadata.dataFile)) or (empty fileMetadata.dataFile.id and !dataFileServiceBean.isTemporaryPreviewAvailable(fileMetadata.dataFile.storageIdentifier, fileMetadata.dataFile.contentType))}"/>
+                            <ui:fragment rendered="#{empty fileMetadata.dataFile.id and !empty fileMetadata.dataFile.storageIdentifier and dataFileServiceBean.isTemporaryPreviewAvailable(fileMetadata.dataFile.storageIdentifier, fileMetadata.dataFile.contentType)}">
+                                <p:graphicImage value="/api/access/tempPreview/#{fileMetadata.dataFile.storageIdentifier}?mimetype=#{fileMetadata.dataFile.contentType}"/>
+                                <h:outputText id="imgPreview" value="Preview" styleClass="bg-info text-info text-center show"/>
+                            </ui:fragment>
+                            <!-- Restricted File Icon -->
+                            <div class="file-icon-restricted-block" jsf:rendered="#{fileMetadata.restricted}">
+                                <span class="icon-unlock text-success"/>
+                            </div>
+                            <!-- Dataset Thumbnail -->
+                            <span id="datasetThumbnail" class="bg-info text-info text-center small show"
+                                  jsf:rendered="#{EditDatafilesPage.isDesignatedDatasetThumbnail(fileMetadata)}"
+                                  data-toggle="tooltip" data-placement="bottom" title="#{bundle['file.selectedThumbnail.tip']}">
+                                #{bundle['file.selectedThumbnail']}
+                            </span>
+                        </div>
+                    </p:column>
+                    <p:column class="col-file-metadata">
+                        <ui:fragment>
+                            <label class="control-label" for="fileName" style="margin-right:1em;margin-bottom:.5em;">
+                                #{bundle['file.fileName']}
+                            </label>
+                            <p:inputText id="fileName" value="#{fileMetadata.label}" style="width:60%; margin-bottom:.5em;"/>
+                            <p:message for="fileName"/>
+                        </ui:fragment>
+                        <!-- TYPE + SIZE + DATE + CHECKSUM -->
+                        <div class="text-muted small">
+                            <h:outputText id="fileTypeOutputRegular" value="#{fileMetadata.dataFile.friendlyType}" rendered="#{!(fileMetadata.dataFile.tabularData)}"/>
+                            <h:outputText id="fileTypeOutputTabular" value="#{bundle['file.type.tabularData']}" rendered="#{fileMetadata.dataFile.tabularData}"/>
+                            <h:outputText id="fileCreatePublishDate" value=" - #{fileMetadata.getFileDateToDisplay()}" rendered="#{!(empty fileMetadata.id)}"/>
+                            <div class="checksum-block">
+                                <h:outputText id="fileChecksum" value="#{fileMetadata.dataFile.tabularData ? fileMetadata.dataFile.originalChecksumType : fileMetadata.dataFile.checksumType}: #{fileMetadata.dataFile.checksumValue};" rendered="#{!(empty fileMetadata.dataFile.checksumValue) and (!EditDatafilesPage.isDuplicate(fileMetadata))}"/>
+                                <h:outputText id="duplicateFileChecksum" styleClass="text-danger" value="#{fileMetadata.dataFile.tabularData ? fileMetadata.dataFile.originalChecksumType: fileMetadata.dataFile.checksumType}: #{fileMetadata.dataFile.checksumValue}" rendered="#{!(empty fileMetadata.dataFile.checksumValue) and EditDatafilesPage.isDuplicate(fileMetadata)}"/>
+                                <ui:fragment rendered="#{EditDatafilesPage.isDuplicate(fileMetadata) and (empty fileMetadata.id)}">
+                                    <div style="display:inline-block;" class="ui-message ui-message-error ui-widget ui-corner-all fileDuplicateWarning"><span class="ui-message-error-detail">#{bundle['file.checksum.exists.tip']}</span></div>
+                                </ui:fragment>
+                            </div>
+                        </div>
+                        <!-- UNF + Variables, Obsersvations -->
+                        <div class="text-muted small" jsf:rendered="#{fileMetadata.dataFile.tabularData}">
+                            <h:outputText id="fileNumVars" value="#{fileMetadata.dataFile.dataTable.varQuantity} #{bundle['file.metaData.dataFile.dataTab.variables']}, " rendered="#{fileMetadata.dataFile.tabularData}"/>
+                            <h:outputText id="fileNumObs" value="#{fileMetadata.dataFile.dataTable.caseQuantity} #{bundle['file.metaData.dataFile.dataTab.observations']} #{!empty fileMetadata.dataFile.unf ? ' - ' : ''}" rendered="#{fileMetadata.dataFile.tabularData}"/>
+                            <h:outputText id="fileUNF" value="#{fileMetadata.dataFile.unf}" rendered="#{!empty fileMetadata.dataFile.unf}"/>
+                        </div>
+                        <div class="fileDescription">
+                            <ui:fragment>
+                                <label class="control-label" for="fileDescription" style="margin-right:1em; margin-top:.5em; vertical-align:top;">
+                                    #{bundle.description}
+                                </label>
+                                <p:inputTextarea id="fileDescription" immediate="true" rows="2" cols="40" value="#{fileMetadata.description}" style="width:60%; margin-top:.5em;"/>
+                                <p:watermark for="fileDescription" value="#{bundle['file.addDescription']}"/>
+                                <p:message for="fileDescription"/>
+                            </ui:fragment>
+                        </div>
+                        <div class="file-tags-block margin-top-half">
+                            <ui:fragment rendered="#{!(empty fileMetadata.categories)}">
+                                <ui:repeat value="#{fileMetadata.categories}" var="cat">
+                                    <h:outputText value="#{cat.name}" styleClass="label label-default"/>
+                                </ui:repeat>
+                            </ui:fragment>
+                            <ui:fragment rendered="#{!(empty fileMetadata.dataFile.tags)}">
+                                <ui:repeat value="#{fileMetadata.dataFile.tags}" var="tag">
+                                    <h:outputText value="#{tag.typeLabel}" styleClass="label label-info"/>
+                                </ui:repeat>
+                            </ui:fragment>
+                        </div>
+                    </p:column>
+                    <p:column class="col-file-action text-right">
+                        <div class="button-block">
+                            <p:commandLink id="fileCategoriesButton"
+                                           type="button" styleClass="btn btn-default btn-sm"
+                                           actionListener="#{EditDatafilesPage.refreshTagsPopUp(fileMetadata)}"
+                                           update=":datasetForm:editFileTagsPopup"
+                                           oncomplete="PF('editFileTagsPopup').show();bind_bsui_components();">
+                                <span class="glyphicon glyphicon-tag"/> #{bundle['file.editTags']}
+                            </p:commandLink>
+                            <p:commandLink id="fileSetThumbnailBtn"
+                                           rendered="#{!empty fileMetadata.dataFile.id and fileMetadata.dataFile.image}"
+                                           type="button" styleClass="btn btn-default"
+                                           actionListener="#{EditDatafilesPage.setFileMetadataSelectedForThumbnailPopup(fileMetadata)}"
+                                           update=":datasetForm:fileSetThumbnail"
+                                           oncomplete="PF('fileSetThumbnail').show()">
+                                <span class="glyphicon glyphicon-file"/> #{bundle['file.setThumbnail']}
+                            </p:commandLink>
+                            <p:commandLink id="advancedIngestOptionsButton"
+                                           rendered="#{((empty fileMetadata.dataFile.id) and dataFileServiceBean.isSpssPorFile(fileMetadata.dataFile))
+                                                       or ((empty fileMetadata.dataFile.id) and dataFileServiceBean.isSpssSavFile(fileMetadata.dataFile))}"
+                                           type="button" styleClass="btn btn-default"
+                                           actionListener="#{EditDatafilesPage.setFileMetadataSelectedForIngestOptionsPopup(fileMetadata)}"
+                                           update=":datasetForm:fileAdvancedOptions"
+                                           oncomplete="PF('fileAdvancedOptions').show()">
+                                <span class="glyphicon glyphicon-cog"/> #{bundle['file.advancedIngestOptions']}
+                            </p:commandLink>
+                        </div>
+                    </p:column>
+                </p:dataTable>
+            </div>
+        </div>
+    </div>
+    <!-- END: Static Tab Layout -->
+
+    <!-- TODO: a message panel informing the unauthorized, or unauthenticated user that they don't have permission - should it be here? L.A. 4.2 -->
+    <!-- authentication and authorization: #dataverseSession.user.authenticated and permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset) -->
+
+    <!-- Popups -->
+    <p:dialog styleClass="smallPopUp" header="#{bundle['file.deleteFileDialog.header']}" widgetVar="deleteFileConfirmation" modal="true">
+        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.tip']}</p>
+        <ui:fragment rendered="#{EditDatafilesPage.dataset.released}">
+            <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.failed.tip']}</p>
+        </ui:fragment>
+        <div class="button-block">
+            <p:commandButton value="#{bundle.continue}" onclick="PF('deleteFileConfirmation').hide()" oncomplete="window.scrollTo(0, 0);"
+                             update=":#{p:component('filesTable')},:messagePanel" action="#{EditDatafilesPage.deleteFiles()}" />
+            <p:commandButton value="#{bundle.cancel}" onclick="PF('deleteFileConfirmation').hide()" type="button" />
+        </div>
+    </p:dialog>
+    <p:dialog id="editFileAccessPopup" header="File Restrictions" widgetVar="editFileAccessPopup" modal="true">
+        <div class="form-horizontal">
+            <div class="form-group">
+                <label for="metadata_TermsAccess" class="col-sm-3 control-label">
+                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess.title']}">
+                        #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
+                    </span>
+                </label>
+                <div class="col-sm-9" jsf:rendered="#{!empty EditDatafilesPage.workingVersion.termsOfUseAndAccess}">
+                    <p:inputTextarea value="#{EditDatafilesPage.workingVersion.termsOfUseAndAccess.termsOfAccess}" autoResize="false" rows="5" styleClass="form-control" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="metadata_RequestAccess" class="col-sm-3 control-label">
+                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.title']}">
+                        #{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess']}
+                    </span>
+                </label>
+                <div class="col-sm-9" jsf:rendered="#{!empty EditDatafilesPage.workingVersion.termsOfUseAndAccess}">
+                    <p:selectBooleanCheckbox id="editFileRequestAccess" itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.enableBtn']}" value="#{EditDatafilesPage.workingVersion.termsOfUseAndAccess.fileAccessRequest}"/>
+                </div>
+            </div>
+        </div>
+        <div class="button-block">
+            <p:commandButton value="#{bundle.continue}" onclick="PF('editFileAccessPopup').hide()" update=":datasetForm,:messagePanel" action="#{EditDatafilesPage.saveWithTermsOfUse()}" />
+            <p:commandButton value="#{bundle.cancel}" onclick="PF('editFileAccessPopup').hide();PF('blockFileForm').hide();" type="button" />
+        </div>
+    </p:dialog>
+    <p:dialog id="fileAdvancedOptions" styleClass="dialog-submenu smallPopUp" header="#{bundle['file.advancedIngestOptions']}" widgetVar="fileAdvancedOptions" modal="true">
+        <div class="form-horizontal">
+            <!-- select text encoding, for SPSS-SAV (and, and possibly, other) (this option is only available during ingest) data files; not implemented yet -->
+            <div class="form-group" jsf:rendered="#{!(empty EditDatafilesPage.fileMetadataSelectedForIngestOptionsPopup) and (empty EditDatafilesPage.fileMetadataSelectedForIngestOptionsPopup.id) and dataFileServiceBean.isSpssSavFile(EditDatafilesPage.fileMetadataSelectedForIngestOptionsPopup.dataFile)}">
+                <label for="spssSavEncodingLanguage" class="col-sm-4 control-label">
+                    #{bundle['file.spss-savEncoding']}
+                </label>
+                <div class="col-sm-8">
+                    <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['file.spss-savEncoding.title']}</p>
+                    <p class="form-control-static"><h:outputText id="selectedEncoding" value="#{bundle['file.spss-savEncoding.current']} #{EditDatafilesPage.ingestLanguageEncoding}"/></p>
+                    <p:tieredMenu id="spssSavEncodingLanguage" styleClass="form-control">
+                        <p:submenu label="Select Language Encoding...">
+                            <p:submenu label="West European">
+                                <p:menuitem value="Western (ISO-8859-1)" update="selectedEncoding"
+                                            actionListener="#{EditDatafilesPage.setIngestEncoding('iso-8859-1')}">
+                                </p:menuitem>
+                                <p:menuitem value="Western (ISO-8859-15)" update="selectedEncoding"
+                                            actionListener="#{EditDatafilesPage.setIngestEncoding('iso-8859-15')}">
+                                </p:menuitem>
+                                <p:menuitem value="Western (Windows-1252)" update="selectedEncoding"
+                                            actionListener="#{EditDatafilesPage.setIngestEncoding('windows-1252')}">
+                                </p:menuitem>
+                                <p:menuitem value="Western (MacRoman)" update="selectedEncoding"
+                                            actionListener="#{EditDatafilesPage.setIngestEncoding('macintosh')}">
+                                </p:menuitem>
+                                <p:menuitem value="Western (IBM-850)" update="selectedEncoding"
+                                            actionListener="#{EditDatafilesPage.setIngestEncoding('ibm850')}">
+                                </p:menuitem>
+                                <p:menuitem value="Celtic (ISO-8859-14)" update="selectedEncoding"
+                                            actionListener="#{EditDatafilesPage.setIngestEncoding('iso-8859-14')}">
+                                </p:menuitem>
+                                <p:menuitem value="Greek (ISO-8859-7)" update="selectedEncoding"
+                                            actionListener="#{EditDatafilesPage.setIngestEncoding('iso-8859-7')}">
+                                </p:menuitem>
+                                <p:menuitem value="Greek (Windows-1253)" update="selectedEncoding"
+                                            actionListener="#{EditDatafilesPage.setIngestEncoding('windows-1253')}">
+                                </p:menuitem>
+                                <p:menuitem value="Greek (MacGreek)" update="selectedEncoding"
+                                            actionListener="#{EditDatafilesPage.setIngestEncoding('x-mac-greek')}">
+                                </p:menuitem>
+                                <p:menuitem value="Icelandic (MacIcelandic)" update="selectedEncoding"
+                                            actionListener="#{EditDatafilesPage.setIngestEncoding('x-mac-icelandic')}">
+                                </p:menuitem>
+                                <p:menuitem value="Nordic (ISO-8859-10)" update="selectedEncoding"
+                                            actionListener="#{EditDatafilesPage.setIngestEncoding('iso-8859-10')}">
+                                </p:menuitem>
+                                <p:menuitem value="South European (ISO-8859-3)" update="selectedEncoding"
+                                            actionListener="#{EditDatafilesPage.setIngestEncoding('iso-8859-3')}">
+                                </p:menuitem>
+                            </p:submenu>
+                            <p:submenu label="East European">
+                                <p:menuitem value="Baltic (ISO-8859-4)" update="selectedEncoding"
+                                            actionListener="#{EditDatafilesPage.setIngestEncoding('iso-8859-4')}">
+                                </p:menuitem>
+                                <p:menuitem value="Baltic (ISO-8859-13)" update="selectedEncoding"
+                                            actionListener="#{EditDatafilesPage.setIngestEncoding('iso-8859-13')}">
+                                </p:menuitem>
+                                <p:menuitem value="Baltic (Windows-1257)" update="selectedEncoding"
+                                            actionListener="#{EditDatafilesPage.setIngestEncoding('windows-1257')}">
+                                </p:menuitem>
+                                <p:menuitem value="Cyrillic (ISO-8859-5)" update="selectedEncoding"
+                                            actionListener="#{EditDatafilesPage.setIngestEncoding('iso-8859-5')}">
+                                </p:menuitem>
+                                <p:menuitem value="Cyrillic (ISO-IR-111)" update="selectedEncoding"
+                                            actionListener="#{EditDatafilesPage.setIngestEncoding('iso-ir-111')}">
+                                </p:menuitem>
+                                <p:menuitem value="Cyrillic (Windows-1251)" update="selectedEncoding"
+                                            actionListener="#{EditDatafilesPage.setIngestEncoding('windows-1251')}">
+                                </p:menuitem>
+                                <p:menuitem value="Cyrillic (MacCyrillic)" update="selectedEncoding"
+                                            actionListener="#{EditDatafilesPage.setIngestEncoding('x-mac-cyrillic')}">
+                                </p:menuitem>
+                                <p:menuitem value="Cyrillic/Ukrainian (MacUkrainian)" update="selectedEncoding"
+                                            actionListener="#{EditDatafilesPage.setIngestEncoding('x-mac-ukrainian')}">
+                                </p:menuitem>
+                                <p:menuitem value="Cyrillic (KOI8-R)" update="selectedEncoding"
+                                            actionListener="#{EditDatafilesPage.setIngestEncoding('koi8-r')}">
+                                </p:menuitem>
+                                <p:menuitem value="Cyrillic/Ukrainian (KOI8-U)" update="selectedEncoding"
+                                            actionListener="#{EditDatafilesPage.setIngestEncoding('koi8-u')}">
+                                </p:menuitem>
+                                <p:menuitem value="Croatian (MacCroatian)" update="selectedEncoding"
+                                            actionListener="#{EditDatafilesPage.setIngestEncoding('x-mac-croatian')}">
+                                </p:menuitem>
+                                <p:menuitem value="Romanian (MacRomanian)" update="selectedEncoding"
+                                            actionListener="#{EditDatafilesPage.setIngestEncoding('x-mac-romanian')}">
+                                </p:menuitem>
+                                <p:menuitem value="Romanian (ISO-8859-16)" update="selectedEncoding"
+                                            actionListener="#{EditDatafilesPage.setIngestEncoding('iso-8859-16')}">
+                                </p:menuitem>
+                                <p:menuitem value="Central European (ISO-8859-2)" update="selectedEncoding"
+                                            actionListener="#{EditDatafilesPage.setIngestEncoding('iso-8859-2')}">
+                                </p:menuitem>
+                                <p:menuitem value="Central European (Windows-1250)" update="selectedEncoding"
+                                            actionListener="#{EditDatafilesPage.setIngestEncoding('windows-1250')}">
+                                </p:menuitem>
+                                <p:menuitem value="Central European (MacCE)" update="selectedEncoding"
+                                            actionListener="#{EditDatafilesPage.setIngestEncoding('x-mac-ce')}">
+                                </p:menuitem>
+                                <p:menuitem value="Cyrillic (IBM-855)" update="selectedEncoding"
+                                            actionListener="#{EditDatafilesPage.setIngestEncoding('ibm855')}">
+                                </p:menuitem>
+                            </p:submenu>
+                            <p:submenu label="East Asian">
+                                <p:menuitem value="Japanese (ISO-2022-JP)" update="selectedEncoding"
+                                            actionListener="#{EditDatafilesPage.setIngestEncoding('iso-2022-jp')}">
+                                </p:menuitem>
+                                <p:menuitem value="Japanese (Shift_JIS)" update="selectedEncoding"
+                                            actionListener="#{EditDatafilesPage.setIngestEncoding('shift_jis')}">
+                                </p:menuitem>
+                                <p:menuitem value="Japanese (EUC-JP)" update="selectedEncoding"
+                                            actionListener="#{EditDatafilesPage.setIngestEncoding('euc-jp')}">
+                                </p:menuitem>
+                                <p:menuitem value="Chinese Traditional (Big5)" update="selectedEncoding"
+                                            actionListener="#{EditDatafilesPage.setIngestEncoding('big5')}">
+                                </p:menuitem>
+                                <p:menuitem value="Chinese Traditional (Big5-HKSCS)" update="selectedEncoding"
+                                            actionListener="#{EditDatafilesPage.setIngestEncoding('big5-hkscs')}">
+                                </p:menuitem>
+                                <p:menuitem value="Chinese Traditional (EUC-TW)" update="selectedEncoding"
+                                            actionListener="#{EditDatafilesPage.setIngestEncoding('x-euc-tw')}">
+                                </p:menuitem>
+                                <p:menuitem value="Chinese Simplified (GB2312)" update="selectedEncoding"
+                                            actionListener="#{EditDatafilesPage.setIngestEncoding('gb2312')}">
+                                </p:menuitem>
+                                <p:menuitem value="Chinese Simplified (HZ)" update="selectedEncoding"
+                                            actionListener="#{EditDatafilesPage.setIngestEncoding('hz-gb-2312')}">
+                                </p:menuitem>
+                                <p:menuitem value="Chinese Simplified (GBK)" update="selectedEncoding"
+                                            actionListener="#{EditDatafilesPage.setIngestEncoding('gbk')}">
+                                </p:menuitem>
+                                <p:menuitem value="Chinese Simplified (ISO-2022-CN)" update="selectedEncoding"
+                                            actionListener="#{EditDatafilesPage.setIngestEncoding('iso-2022-cn')}">
+                                </p:menuitem>
+                                <p:menuitem value="Korean (EUC-KR)" update="selectedEncoding"
+                                            actionListener="#{EditDatafilesPage.setIngestEncoding('euc-kr')}">
+                                </p:menuitem>
+                                <p:menuitem value="Korean (JOHAB)" update="selectedEncoding"
+                                            actionListener="#{EditDatafilesPage.setIngestEncoding('x-johab')}">
+                                </p:menuitem>
+                                <p:menuitem value="Korean (ISO-2022-KR)" update="selectedEncoding"
+                                            actionListener="#{EditDatafilesPage.setIngestEncoding('iso-2022-kr')}">
+                                </p:menuitem>
+                            </p:submenu>
+                            <p:submenu label="Unicode">
+                                <p:menuitem value="Unicode (UTF-8)" update="selectedEncoding"
+                                            actionListener="#{EditDatafilesPage.setIngestEncoding('utf-8')}">
+                                </p:menuitem>
+                                <p:menuitem value="Unicode (UTF-16LE)" update="selectedEncoding"
+                                            actionListener="#{EditDatafilesPage.setIngestEncoding('utf-16le')}">
+                                </p:menuitem>
+                                <p:menuitem value="Unicode (UTF-16BE)" update="selectedEncoding"
+                                            actionListener="#{EditDatafilesPage.setIngestEncoding('utf-16be')}">
+                                </p:menuitem>
+                            </p:submenu>
+                            <p:separator />
+                            <p:menuitem value="US-ASCII" update="selectedEncoding"
+                                        actionListener="#{EditDatafilesPage.setIngestEncoding('US-ASCII')}">
+                            </p:menuitem>
+                        </p:submenu>
+                    </p:tieredMenu>
+                    <p:message for="spssSavEncodingLanguage" display="text" />
+                </div>
+            </div>
+            <!-- ODUM-style extra variable labels for SPSS-POR files (this option is only available during ingest) -->
+            <div class="form-group" jsf:rendered="#{!(empty EditDatafilesPage.fileMetadataSelectedForIngestOptionsPopup) and (empty EditDatafilesPage.fileMetadataSelectedForIngestOptionsPopup.id) and dataFileServiceBean.isSpssPorFile(EditDatafilesPage.fileMetadataSelectedForIngestOptionsPopup.dataFile)}">
+                <label for="labelsFileUpload" class="col-sm-4 control-label">
+                    #{bundle['file.spss-porExtraLabels']}
+                </label>
+                <div class="col-sm-8">
+                    <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['file.spss-porExtraLabels.title']}</p>
+                    <p:growl id="messageForLabelsFileUpload" showDetail="true" />
+                    <p:fileUpload id="labelsFileUpload" label="#{bundle['file.spss-porExtraLabels.selectToAddBtn']}" update="messageForLabelsFileUpload" mode="advanced" auto="true" fileUploadListener="#{EditDatafilesPage.handleLabelsFileUpload}"/>
+                </div>
+            </div>
+        </div>
+        <div class="button-block">
+            <p:commandButton id="fileAdvancedOptionsSaveButton" value="#{bundle.saveChanges}" oncomplete="PF('fileAdvancedOptions').hide()" update=":datasetForm:filesTable,:messagePanel" actionListener="#{EditDatafilesPage.saveAdvancedOptions()}"/>
+            <p:commandButton id="fileAdvancedOptionsCancelButton" value="#{bundle.cancel}" onclick="PF('fileAdvancedOptions').hide();PF('blockFileForm').hide();" actionListener="#{EditDatafilesPage.clearFileMetadataSelectedForIngestOptionsPopup()}"/>        </div>
+    </p:dialog>
+    <!-- end of "advanced options" dialogue -->
+    <p:dialog id="fileSetThumbnail" styleClass="smallPopUp" header="#{bundle['file.setThumbnail.header']}" widgetVar="fileSetThumbnail" modal="true">
+        <div class="form-horizontal">
+            <div class="form-group">
+                <label for="datasetThumbnailImage" class="col-sm-4 control-label">
+                    #{bundle['file.datasetThumbnail']}
+                </label>
+                <div class="col-sm-8">
+                    <p class="help-block">#{bundle['file.datasetThumbnail.tip']}</p>
+                    <p:selectBooleanCheckbox id="datasetThumbnailImage"
+                                             itemLabel="#{bundle['file.useThisIamge']}" value="#{EditDatafilesPage.useAsDatasetThumbnail}"/>
+                    <p:message for="datasetThumbnailImage" display="text" />
+                </div>
+            </div>
+        </div>
+        <div class="button-block">
+            <p:commandButton id="fileSetThumbnailSaveBtn" value="#{bundle.saveChanges}" oncomplete="PF('fileSetThumbnail').hide()" update=":datasetForm:filesTable,:messagePanel" actionListener="#{EditDatafilesPage.saveAsDesignatedThumbnail()}"/>
+            <p:commandButton id="fileSetThumbnailCancelBtn" value="#{bundle.cancel}" onclick="PF('fileSetThumbnail').hide();PF('blockFileForm').hide();" actionListener="#{EditDatafilesPage.clearFileMetadataSelectedForThumbnailPopup()}"/>
+        </div>
+    </p:dialog>
+    <p:dialog id="editFileTagsPopup" styleClass="smallPopUp" header="#{bundle['file.editTags']}" widgetVar="editFileTagsPopup" modal="true">
+        <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['file.editTagsDialog.tip']}</p>
+
+        <div class="form-horizontal" jsf:rendered="#{!(empty EditDatafilesPage.fileMetadataSelectedForTagsPopup)}">
+            <div class="form-group text-left">
+                <label for="selectedTagsListEFF" class="col-sm-4 control-label">
+                    #{bundle['file.editTagsDialog.selectedTags']}
+                </label>
+                <div class="col-sm-8">
+                    <p:outputPanel id="selectedTagsListEFF" style="padding-top:.5em;">
+                        <h:outputText value="#{bundle['file.editTagsDialog.selectedTags.none']}" rendered="#{(empty EditDatafilesPage.selectedTags) and (empty EditDatafilesPage.selectedTabFileTags)}" />
+
+                        <ui:repeat value="#{EditDatafilesPage.selectedTags}" var="tags" rendered="#{!empty EditDatafilesPage.selectedTags}">
+                            <h:outputText value="#{tags}" styleClass="label label-default" style="margin-right:.5em;display:inline-block;"/>
+                        </ui:repeat>
+                        <ui:repeat value="#{EditDatafilesPage.selectedTabFileTags}" var="tags" rendered="#{!empty EditDatafilesPage.selectedTabFileTags}">
+                            <h:outputText value="#{tags}" styleClass="label label-info" style="margin-right:.5em;display:inline-block;"/>
+                        </ui:repeat>
+                    </p:outputPanel>
+                </div>
+            </div>
+            <div class="form-group text-left">
+                <label for="fileTagsMenu" class="col-sm-4 control-label">
+                    #{bundle['file.editTagsDialog.select']}
+                </label>
+                <div class="col-sm-8">
+                    <p:selectCheckboxMenu id="fileTagsMenu" styleClass="form-control"
+                                          value="#{EditDatafilesPage.selectedTags}" label="#{bundle.select}">
+                        <f:selectItems value="#{EditDatafilesPage.categoriesByName}"/>
+                        <p:ajax event="toggleSelect" listener="#{EditDatafilesPage.handleSelection}" update="selectedTagsListEFF" />
+                        <p:ajax event="change" listener="#{EditDatafilesPage.handleSelection}" update="selectedTagsListEFF" />
+                    </p:selectCheckboxMenu>
+                    <p:message for="fileTagsMenu" display="text" />
+                </div>
+            </div>
+            <div class="form-group text-left">
+                <label for="fileTagAddNew" class="col-sm-4 control-label">
+                    #{bundle['file.editTagsDialog.add']}
+                </label>
+                <div class="col-sm-8">
+                    <div class="row form-inline">
+                        <div class="col-sm-12">
+                            <p class="help-block">#{bundle['file.editTagsDialog.add.tip']}</p>
+                            <p:inputText id="fileTagAddNew" styleClass="form-control"
+                                         type="text" value="#{EditDatafilesPage.newCategoryName}"
+                                         placeholder="#{bundle['file.editTagsDialog.newName']}"
+                                         onkeypress="if (event.keyCode == 13) {
+                                                     return false;
+                                                 }" />
+                            <p:commandLink styleClass="btn btn-default" style="margin-left:.5em;" value="#{bundle.apply}" action="#{EditDatafilesPage.saveNewCategory}" update="selectedTagsListEFF, fileTagAddNew, fileTagsMenu"/>
+                            <p:message for="fileTagAddNew" display="text" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group text-left" jsf:rendered="#{EditDatafilesPage.fileMetadataSelectedForTagsPopup.dataFile.tabularData}">
+                <label for="tabularDataTags" class="col-sm-4 control-label">
+                    #{bundle['file.tabularDataTags']}
+                </label>
+                <div class="col-sm-8">
+                    <p class="help-block">#{bundle['file.tabularDataTags.tip']}</p>
+                    <p:selectCheckboxMenu id="tabularDataTags" styleClass="form-control"
+                                          value="#{EditDatafilesPage.selectedTabFileTags}" label="#{bundle.select}"
+                                          filter="false">
+                        <f:selectItems value="#{EditDatafilesPage.tabFileTags}" />
+                        <p:ajax event="toggleSelect" listener="#{EditDatafilesPage.handleSelection}" update="selectedTagsListEFF" />
+                        <p:ajax event="change" listener="#{EditDatafilesPage.handleSelection}" update="selectedTagsListEFF" />
+                    </p:selectCheckboxMenu>
+                    <p:message for="tabularDataTags" display="text" />
+                </div>
+            </div>
+            <!-- <div class="form-group text-left"> REMOVED DELETE CHECKBOX FOR NOW
+                <label class="col-sm-4 control-label">
+                    # {bundle['dataset.removeUnusedFileTags.label']}
+                </label>
+                <div class="col-sm-8">
+                    <p class="help-block"># {bundle['dataset.removeUnusedFileTags.tip']}</p>
+                    <p:selectBooleanCheckbox id="removeUnused" itemLabel="# {bundle['dataset.removeUnusedFileTags.check']}" value="# {EditDatafilesPage.removeUnusedTags}" widgetVar="removeUnused"/>
+                </div>
+            </div> -->
+        </div>
+        <div class="button-block">
+            <p:commandButton styleClass="btn btn-default" id="editFileTagsPopupSaveButton" value="#{bundle.saveChanges}" oncomplete="PF('editFileTagsPopup').hide()" update=":datasetForm:filesTable" actionListener="#{EditDatafilesPage.saveFileTagsAndCategories()}"/>
+            <p:commandButton styleClass="btn btn-default" id="editFileTagsPopupCancelButton" value="#{bundle.cancel}" onclick="PF('editFileTagsPopup').hide();PF('blockFileForm').hide();"  update=":datasetForm:filesTable" actionListener="#{EditDatafilesPage.clearFileMetadataSelectedForTagsPopup()}"/>
+        </div>
+    </p:dialog>
+    <script type="text/javascript" src="/resources/js/dropins.js" id="dropboxjs" data-app-key="#{EditDatafilesPage.dropBoxKey}"/>
+    <script type="text/javascript">
+        function openDialog() {
+            PF('details').show();
+        }
+        function testCheckBoxes() {
+            var count = PF('versionsTable').getSelectedRowsCount();
+            if (count !== 2) {
+                PF('compareTwo').show();
+            } else {
+                $('button[id$="compareVersions"]').trigger('click');
+            }
+        }
+        function checkFilesSelected() {
+            var count = PF('filesTable').getSelectedRowsCount();
+            if (count > 0) {
+                PF('deleteFileConfirmation').show();
+            }
+        }
+        function checkNewlyRestricted() {
+            if ($('input[id$="showAccessPopup"]').val() === 'true') {
+                PF('editFileAccessPopup').show();
+            }
+            else {
+                $('button[id$="datasetSave"]').trigger('click');
+            }
+        }
+        function openDropboxChooser() {
+            options = {
+                // Required. Called when a user selects an item in the Chooser.
+                success: function (files) {
+                    // Pass the JSON-ized output of the Chooser to the backing bean,
+                    // via a hidden input field:
+                    $('input[id$="dropBoxSelectionInput"]').val(JSON.stringify(files));
+                    //alert(JSON.stringify(files));
+                    // Trigger the upload processing method in the backing
+                    // bean, via an invisible commandButton:
+                    $('button[id$="dropBoxButton"]').trigger('click');
+
+                },
+                linkType: "direct",
+                multiselect: true,
+            };
+            Dropbox.choose(options);
+        }
+    </script>
+</ui:composition>

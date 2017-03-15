@@ -1,24 +1,5 @@
 package edu.harvard.iq.dataverse.api;
 
-/*
-   Copyright (C) 2005-2016, by the President and Fellows of Harvard College.
-
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-         http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-
-   Dataverse Network - A web application to share, preserve and analyze research data.
-   Developed at the Institute for Quantitative Social Science, Harvard University.
-*/
-
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.response.Response;
@@ -37,11 +18,6 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.fail;
 import static org.hamcrest.CoreMatchers.equalTo;
 
-/**
- * FileMetadata Integration Tests
- * 
- * @author bmckinney 
- */
 public class FileMetadataIT {
 
     private static ClassLoader classLoader = FileMetadataIT.class.getClassLoader();
@@ -54,7 +30,7 @@ public class FileMetadataIT {
 
     // dataset properties
     private static int dsId;
-    
+
     @BeforeClass
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
@@ -67,12 +43,12 @@ public class FileMetadataIT {
             testName = UUID.randomUUID().toString().substring(0, 8);
             // create user and set token
             token = given()
-                    .body("{" +
-                            "   \"userName\": \"" + testName + "\"," +
-                            "   \"firstName\": \"" + testName + "\"," +
-                            "   \"lastName\": \"" + testName + "\"," +
-                            "   \"email\": \"" + testName + "@mailinator.com\"" +
-                            "}")
+                    .body("{"
+                            + "   \"userName\": \"" + testName + "\","
+                            + "   \"firstName\": \"" + testName + "\","
+                            + "   \"lastName\": \"" + testName + "\","
+                            + "   \"email\": \"" + testName + "@mailinator.com\""
+                            + "}")
                     .contentType(ContentType.JSON)
                     .request()
                     .post("/api/builtin-users/secret/" + builtinUserKey)
@@ -80,21 +56,21 @@ public class FileMetadataIT {
                     .extract().jsonPath().getString("data.apiToken");
             System.out.println("TOKEN: " + token);
             // create dataverse
-            given().body("{" +
-                    "    \"name\": \"" + testName + "\"," +
-                    "    \"alias\": \"" + testName + "\"," +
-                    "    \"affiliation\": \"Test-Driven University\"," +
-                    "    \"dataverseContacts\": [" +
-                    "        {" +
-                    "            \"contactEmail\": \"test@example.com\"" +
-                    "        }," +
-                    "        {" +
-                    "            \"contactEmail\": \"test@example.org\"" +
-                    "        }" +
-                    "    ]," +
-                    "    \"permissionRoot\": true," +
-                    "    \"description\": \"test Description.\"" +
-                    "}")
+            given().body("{"
+                    + "    \"name\": \"" + testName + "\","
+                    + "    \"alias\": \"" + testName + "\","
+                    + "    \"affiliation\": \"Test-Driven University\","
+                    + "    \"dataverseContacts\": ["
+                    + "        {"
+                    + "            \"contactEmail\": \"test@example.com\""
+                    + "        },"
+                    + "        {"
+                    + "            \"contactEmail\": \"test@example.org\""
+                    + "        }"
+                    + "    ],"
+                    + "    \"permissionRoot\": true,"
+                    + "    \"description\": \"test Description.\""
+                    + "}")
                     .contentType(ContentType.JSON).request()
                     .post("/api/dataverses/:root?key=" + token)
                     .then().assertThat().statusCode(201);
@@ -123,7 +99,7 @@ public class FileMetadataIT {
                     .then().assertThat().statusCode(200);
             // delete user
             given().header(keyString, token)
-                    .delete("/api/admin/authenticatedUsers/"+testName+"/")
+                    .delete("/api/admin/authenticatedUsers/" + testName + "/")
                     .then().assertThat().statusCode(200);
         } catch (Exception e) {
             System.out.println("Error tearing down test Dataverse: " + e.getMessage());
@@ -169,13 +145,15 @@ public class FileMetadataIT {
                     .extract().jsonPath().getString("data.latestVersion.files[0].directoryLabel");
             System.out.println("directoryLabel 1: " + dirLabel1);
             assertEquals("data/subdir1", dirLabel1);
-            String dirLabel2 = given()
+
+            Response response = given()
                     .header(keyString, token)
-                    .get("/api/datasets/" + dsId)
-                    .then().assertThat().statusCode(200)
-                    .extract().jsonPath().getString("data.latestVersion.files[1].directoryLabel");
-            System.out.println("directoryLabel 2: " + dirLabel2);
-            assertEquals("data/subdir2", dirLabel2);
+                    .get("/api/datasets/" + dsId);
+            response.prettyPrint();
+            response.then().assertThat()
+                    .body("data.latestVersion.files[1].directoryLabel", equalTo("data/subdir2"))
+                    .body("data.latestVersion.files[1].categories[0]", equalTo("Data"))
+                    .statusCode(200);
 
         } catch (Exception e) {
             System.out.println("Error testJsonParserWithDirectoryLabels: " + e.getMessage());
@@ -183,5 +161,5 @@ public class FileMetadataIT {
             fail();
         }
     }
-    
+
 }

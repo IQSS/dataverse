@@ -10,33 +10,54 @@
 
     <cc:interface>
         <cc:attribute name="collapsible" default="false" />
-    </cc:interface>
+     </cc:interface>
 
     <cc:implementation>
         <ui:fragment rendered="#{not empty flash['successMsg']}">
             <div class="alert alert-success">
-                <span class="glyphicon glyphicon glyphicon-ok-sign"></span>&#160;<strong>Success!</strong> – <h:outputText escape="false" value="#{flash['successMsg']}"/>
+                <span class="glyphicon glyphicon glyphicon-ok-sign"></span>&#160;<strong>#{bundle['messages.success']}</strong> – <h:outputText escape="false" value="#{flash['successMsg']}"/>
             </div>
         </ui:fragment>
         <ui:fragment rendered="#{not empty flash['errorMsg']}">
             <div class="alert alert-danger">
-                <span class="glyphicon glyphicon-exclamation-sign"></span>&#160;<strong>Error</strong> – <h:outputText escape="false" value="#{flash['errorMsg']} "/>
-                Please contact <a href="#" onclick="event.preventDefault();PF('contactForm').show();" title="Contact Dataverse Support">Dataverse Support</a> for assistance.
+                
+                <!-- <h:outputText escape="false" value="# {flash['errorMsg']} "/>
+                Please contact <a href="#" onclick="event.preventDefault();PF('contactForm').show();" title="Contact Dataverse Support">Dataverse Support</a> for assistance. -->
+                
+                <o:form useRequestURI="true">
+            
+               <span class="glyphicon glyphicon-exclamation-sign"></span>&#160;<strong>#{bundle['messages.error']}</strong> – 
+                
+                <h:outputText value="#{flash['errorMsg']} " escape="false"/>
+                
+                <h:outputFormat value="#{bundle['error.support.message']}" escape="false">
+                    <o:param>
+                        <p:commandLink value="#{bundle['contact.support']}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
+                            <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
+                            <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
+                            <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
+                            <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
+                        </p:commandLink>                                
+                    </o:param>
+                </h:outputFormat>
+                
+                </o:form>
+                
             </div>
         </ui:fragment>
         <ui:fragment rendered="#{not empty flash['infoMsg']}">
             <div class="alert alert-info">
-                <span class="glyphicon glyphicon-exclamation-sign"></span>&#160;<strong>Info</strong> – <h:outputText escape="false" value="#{flash['infoMsg']} "/>
+                <span class="glyphicon glyphicon-exclamation-sign"></span>&#160;<strong>#{bundle['messages.info']}</strong> – <h:outputText escape="false" value="#{flash['infoMsg']} "/>
             </div>
         </ui:fragment>
         <ui:fragment rendered="#{not empty flash['warningMsg']}">
             <div class="alert alert-warning">
-                <span class="glyphicon glyphicon-exclamation-sign"></span>&#160;<strong>Info</strong> – <h:outputText escape="false" value="#{flash['warningMsg']} "/>
+                <span class="glyphicon glyphicon-exclamation-sign"></span>&#160;<strong>#{bundle['messages.info']}</strong> – <h:outputText escape="false" value="#{flash['warningMsg']} "/>
             </div>
         </ui:fragment>
         <ui:fragment rendered="#{facesContext.validationFailed}">
             <div class="alert alert-danger">
-                <span class="glyphicon glyphicon-exclamation-sign"></span>&#160;<strong>Validation Error</strong> – Required fields were missed or there was a validation error. Please scroll down to see details.
+                <span class="glyphicon glyphicon-exclamation-sign"></span>&#160;<strong>#{bundle['messages.validation']}</strong> – #{bundle['messages.validation.msg']}
             </div>
         </ui:fragment>
         <ui:repeat rendered="#{!facesContext.validationFailed}" value="#{facesContext.messageList}" var="msg">
@@ -48,6 +69,7 @@
                 </ui:fragment>
                 <span class="glyphicon glyphicon-info-sign"></span>&#160;<strong>#{msg.summary}</strong>&#160;<h:outputText value="#{msg.detail}" rendered="#{!empty msg.detail and (msg.detail != msg.summary)}"/>
                 <ui:fragment rendered="#{level eq 'FATAL'}">
+                    <!-- FIXME: Dataverse Support -->
                     Please contact <a href="#" onclick="event.preventDefault();PF('contactForm').show();" title="Contact Dataverse Support">Dataverse Support</a> for assistance.
                     <strong>Date/Time: </strong>
                     <h:outputText value="#{now}">

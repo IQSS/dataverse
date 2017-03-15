@@ -16,6 +16,7 @@ ehthumbs.db
 Thumbs.db
 .vagrant
 *.pyc
+*.swp
 scripts/api/py_api_wrapper/demo-data/*
 scripts/api/py_api_wrapper/test_data/*
 scripts/api/py_api_wrapper/local-data/*
@@ -23,3 +24,6 @@ doc/sphinx-guides/build
 faces-config.NavData
 src/main/java/BuildNumber.properties
 /nbproject/
+oauth-credentials.md
+
+/src/main/webapp/oauth2/newAccount.html

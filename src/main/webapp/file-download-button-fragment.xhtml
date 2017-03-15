@@ -82,7 +82,7 @@
             <!-- WorldMap Explore button ONLY ... not TwoRavens -->
             <h:commandLink pt:role="button" rendered="#{!downloadPopupRequired}"
                           type="button" styleClass="btn btn-default #{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" disabled="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" 
-                          title="Explore" action="#{ worldMapPermissionHelper.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }" target="_blank">
+                          title="Explore" action="#{fileDownloadService.startWorldMapDownloadLink(guestbookResponse, fileMetadata )}" target="_blank">
                 <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore}
             </h:commandLink>
             <p:commandLink rendered="#{downloadPopupRequired}"
@@ -245,7 +245,7 @@
         <p:commandLink type="button" styleClass="btn btn-default" rendered="#{fileDownloadHelper.session.user.authenticated 
                                                                               and !fileMetadata.datasetVersion.deaccessioned
                                                                               and fileMetadata.dataFile.owner.fileAccessRequest and !(fileDownloadHelper.canDownloadFile(fileMetadata))}"
-                       actionListener="#{fileDownloadService.requestAccess(fileMetadata.dataFile)}"
+                       actionListener="#{fileDownloadHelper.requestAccess(fileMetadata.dataFile)}"
                        update="@this"
                        disabled="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user)}">
             <!-- Request Access -->

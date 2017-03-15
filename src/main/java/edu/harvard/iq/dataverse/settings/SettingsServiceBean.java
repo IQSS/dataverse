@@ -33,6 +33,8 @@ public class SettingsServiceBean {
      * So there.
      */
     public enum Key {
+        OAuth2CallbackUrl,
+        DefaultAuthProvider,
         FooterCopyright,
         FileFixityChecksumAlgorithm,
         MinutesUntilConfirmEmailTokenExpires,
@@ -90,6 +92,7 @@ public class SettingsServiceBean {
          * of possible account types.
          */
         DebugShibAccountType,
+        DebugOAuthAccountType,
         /** Application-wide Terms of Use per installation. */
         ApplicationTermsOfUse,
         /** Terms of Use specific to API per installation. */
@@ -128,8 +131,6 @@ public class SettingsServiceBean {
          * Experimental: Key for if DDI export is enabled or disabled.
          */
         DdiExportEnabled,
-        /** Key for if Shibboleth is enabled or disabled. */
-        ShibEnabled,
         /** Key for if ScrubMigrationData is enabled or disabled. */
         ScrubMigrationData,
         /** Key for the url to send users who want to sign up to. */
@@ -152,7 +153,14 @@ public class SettingsServiceBean {
         TwoRavensUrl,
         /** Optionally override http://guides.dataverse.org . */
         GuidesBaseUrl,
+        /**
+         * A link to an installation of https://github.com/IQSS/miniverse or
+         * some other metrics app.
+         */
+        MetricsUrl,
         /* zip download size limit */
+        /** Optionally override version number in guides. */
+        GuidesVersion,
         ZipDownloadLimit,
         /* zip upload number of files limit */
         ZipUploadFilesLimit,
