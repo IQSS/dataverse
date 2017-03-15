@@ -118,6 +118,20 @@ public class DatasetUtil {
             return false;
         }
     }
+    
+    public static DataFile getDefaultThumbnailFile(Dataset dataset) {
+        if (dataset.isUseGenericThumbnail()) {
+            logger.info("Bypassing logic to find a thumbnail because a generic icon for the dataset is desired.");
+            return null;
+        }
+        for (FileMetadata fmd : dataset.getLatestVersion().getFileMetadatas()) {
+            DataFile testFile = fmd.getDataFile();
+            if (testFile.isPreviewImageAvailable() && !testFile.isRestricted()) {
+                return testFile;
+            }
+        }
+        return null;
+    }
 
     public static Dataset persistDatasetLogoToDiskAndCreateThumbnail(Dataset dataset, InputStream inputStream) {
         if (dataset == null) {
