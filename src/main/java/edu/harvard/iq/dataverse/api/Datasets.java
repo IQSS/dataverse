@@ -631,7 +631,7 @@ public class Datasets extends AbstractApiBean {
         } catch (WrappedResponse ex) {
             logger.info("Exception thrown while trying to figure out permissions while getting thumbnail for dataset id " + dataset.getId() + ": " + ex.getLocalizedMessage());
         }
-        InputStream inputStreamToReturn = DatasetUtil.getThumbnailAsInputStream(dataset);
+        InputStream inputStreamToReturn = DatasetUtil.getThumbnailAsInputStream(dataset, canUpdateThumbnail);
         if (dataset.isReleased()) {
             return inputStreamToReturn;
         } else if (canUpdateThumbnail) {

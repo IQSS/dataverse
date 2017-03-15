@@ -118,7 +118,7 @@ public class DatasetUtil {
             return false;
         }
     }
-    
+
     public static DataFile getDefaultThumbnailFile(Dataset dataset) {
         if (dataset.isUseGenericThumbnail()) {
             logger.info("Bypassing logic to find a thumbnail because a generic icon for the dataset is desired.");
@@ -211,12 +211,13 @@ public class DatasetUtil {
         return dataset;
     }
 
-    public static InputStream getThumbnailAsInputStream(Dataset dataset) {
+    public static InputStream getThumbnailAsInputStream(Dataset dataset, boolean canUpdateThumbnail) {
+        byte[] defaultDatasetIconBytes = Base64.getDecoder().decode(defaultIconAsBase64);
+        logger.fine("Thumbnail could not be found for dataset id " + dataset.getId() + ". Returning default icon: " + defaultIconAsBase64);
+        ByteArrayInputStream defaultDatasetIconInputStream = new ByteArrayInputStream(defaultDatasetIconBytes);
         DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail();
         if (datasetThumbnail == null) {
-            byte[] decodedImg = Base64.getDecoder().decode(defaultIconAsBase64);
-            logger.fine("Thumbnail could not be found for dataset id " + dataset.getId() + ". Returning default icon: " + defaultIconAsBase64);
-            return new ByteArrayInputStream(decodedImg);
+            return defaultDatasetIconInputStream;
         } else {
             String base64Image = datasetThumbnail.getBase64image();
             String leadingStringToRemove = FileUtil.rfc2397dataUrlSchemeBase64Png;
@@ -224,12 +225,26 @@ public class DatasetUtil {
             byte[] decodedImg = null;
             try {
                 decodedImg = Base64.getDecoder().decode(encodedImg.getBytes("UTF-8"));
+                logger.fine("returning this many bytes for  " + "dataset id: " + dataset.getId() + ", persistentId: " + dataset.getIdentifier() + " :" + decodedImg.length);
             } catch (UnsupportedEncodingException ex) {
                 logger.info("dataset thumbnail could not be decoded for dataset id " + dataset.getId() + ": " + ex);
                 return null;
             }
-            logger.fine("returning this many bytes for  " + "dataset id: " + dataset.getId() + ", persistentId: " + dataset.getIdentifier() + " :" + decodedImg.length);
-            return new ByteArrayInputStream(decodedImg);
+            ByteArrayInputStream nonDefaultDatasetThumbnail = new ByteArrayInputStream(decodedImg);
+            DataFile dataFile = datasetThumbnail.getDataFile();
+            if (dataFile == null) {
+                logger.info("For dataset id " + dataset.getId() + " the thumbnail isn't restricted since it's not from a DataFile.");
+                return nonDefaultDatasetThumbnail;
+            } else if (canUpdateThumbnail) {
+                logger.info("For dataset id " + dataset.getId() + " privileged users can see the thumbnail no matter what.");
+                return nonDefaultDatasetThumbnail;
+            } else if (dataFile.isRestricted()) {
+                logger.info("For dataset id " + dataset.getId() + " unprivileged users get the default dataset icon when the thumbnail came from a restricted file.");
+                return defaultDatasetIconInputStream;
+            } else {
+                logger.info("For dataset id " + dataset.getId() + " unprivileged users can see the thumbnail if it's from a unrestricted file");
+                return nonDefaultDatasetThumbnail;
+            }
         }
     }
 
