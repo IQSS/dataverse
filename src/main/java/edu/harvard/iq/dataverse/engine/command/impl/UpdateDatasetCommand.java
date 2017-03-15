@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -128,31 +129,14 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
         Timestamp updateTime = new Timestamp(new Date().getTime());
         theDataset.getEditVersion().setLastUpdateTime(updateTime);
         theDataset.setModificationTime(updateTime);
-        boolean userWantsGenericThumbnail = theDataset.isUseGenericThumbnail();
-        DataFile thumbnailFile = theDataset.getThumbnailFile();
-        boolean hasThumbnailFile = thumbnailFile != null;
         for (DataFile dataFile : theDataset.getFiles()) {
-            if (!userWantsGenericThumbnail && !hasThumbnailFile) {
-                /**
-                 * @todo What if this file isn't in the current version? What
-                 * should happen? Probably the user shouldn't be allowed to use
-                 * it as a thumbnail? We shouldn't allow restricted files,
-                 * right? If we do, later we'll need to do expensive permission
-                 * checks just to show the thumbnail and we won't be able to
-                 * simply serve static images on a CDN as suggested by
-                 * https://github.com/IQSS/dataverse/issues/2647
-                 */
-                if (dataFile.isImage() && !dataFile.isRestricted()) {
-                    theDataset.setThumbnailFile(dataFile);
-                    hasThumbnailFile = true;
-                }
-            }
             if (dataFile.getCreateDate() == null) {
                 dataFile.setCreateDate(updateTime);
                 dataFile.setCreator((AuthenticatedUser) getUser());
             }
             dataFile.setModificationTime(updateTime);
         }
+        theDataset.setThumbnailFile(DatasetUtil.getDefaultThumbnailFile(theDataset));
         
         // Remove / delete any files that were removed
         
