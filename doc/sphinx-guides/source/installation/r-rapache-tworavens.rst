@@ -1,8 +1,10 @@
-R, rApache and TwoRavens
-========================
+TwoRavens Tabular Data Exploration Tool
+=======================================
 
-Eventually, this document may be split into several parts, dedicated to individual components - 
-such as R, rApache and the TwoRavens applications. Particularly, if the TwoRavens team creates an "official" distribution with their own installation manual. 
+**Important:** TwoRavens is an *optional* component. The software was created here at IQSS, as a standalone tool, by an independent developers team (outside of the main Dataverse development team). TwoRavens was successfully integrated with Dataverse and made available to the users of the production Dataverse cluster at Harvard. However, the original developers have since left IQSS. Plans for the future of this collaboration are still being worked out. As the result, the support for TwoRavens is somewhat limited at the moment (as of Dataverse release 4.6.1). Though it is possible to try and contact the developers via the `TwoRavens project on GitHub <https://github.com/IQSS/TwoRavens>`_. The Dataverse project has however invested into improving the installation process; specifically, the notoriously tricky part of getting the correct versions of the required third party R packages installed. We are expecting to release the new installation scripts (and update this guide) within a few days of the 4.6.1 release.  
+
+Be warned that the installation process for TwoRavens has proven to be tricky and complicated. Besides the application proper, several required components need to be installed and configured. Specifically, R, rApache and, most importantly, a collection of required third-party R packages. The installation steps for these components are described in the individual sections of the document below. 
+
 
 0. PREREQUISITES
 ++++++++++++++++
@@ -12,7 +14,7 @@ a. httpd (Apache):
 
 ``yum install httpd``
 
-Disable SELinux on httpd: 
+Disable SELinux: 
 
 ``setenforce permissive``
 
