@@ -136,7 +136,6 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
             }
             dataFile.setModificationTime(updateTime);
         }
-        theDataset.setThumbnailFile(DatasetUtil.getDefaultThumbnailFile(theDataset));
         
         // Remove / delete any files that were removed
         

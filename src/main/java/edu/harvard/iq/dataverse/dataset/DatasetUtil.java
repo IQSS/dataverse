@@ -93,10 +93,18 @@ public class DatasetUtil {
                 return null;
             }
         } else {
-            DataFile thumbnailFile = dataset.getThumbnailFile();
-            if (thumbnailFile == null) {
-                logger.fine(title + " does not have a thumbnail.");
-                return null;
+            DataFile thumbnailFile = dataset.getThumbnailFile();           
+            if (thumbnailFile == null ) {
+                if (dataset.isUseGenericThumbnail()){
+                    logger.fine(title + " does not have a thumbnail and is 'Use Generic'.");
+                    return null; 
+                } else {
+                    thumbnailFile = dataset.getDefaultDatasetThumbnailFile();
+                    if (thumbnailFile == null ){
+                        logger.fine(title + " does not have a default thumbnail available.");
+                        return null;                        
+                    }
+                }
             }
             String imageSourceBase64 = ImageThumbConverter.getImageThumbAsBase64(thumbnailFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
             DatasetThumbnail datasetThumbnail = new DatasetThumbnail(imageSourceBase64, thumbnailFile);

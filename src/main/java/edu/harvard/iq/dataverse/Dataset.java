@@ -693,5 +693,9 @@ public class Dataset extends DvObjectContainer {
     public DatasetThumbnail getDatasetThumbnail() {
         return DatasetUtil.getThumbnail(this);
     }
+    
+    public DataFile getDefaultDatasetThumbnailFile() {
+        return DatasetUtil.getDefaultThumbnailFile(this);
+    }
 
 }
