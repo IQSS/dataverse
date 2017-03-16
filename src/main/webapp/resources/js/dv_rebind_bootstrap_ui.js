@@ -144,48 +144,6 @@ function show_search_panels(){
    }
 }
 
-/**
- * reference: http://stackoverflow.com/questions/901115/how-can-i-get-query-string-values-in-javascript/21152762#21152762
- * 
- * @param {type} name
- * @returns {getParameterByName.match}
- */
-function getParameterByName(name) {
-    var match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
-    return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
-}
-
-/**
- * reference: http://stackoverflow.com/questions/14636536/how-to-check-if-a-variable-is-an-integer-in-javascript
- * @param {type} value
- * @returns {Number|Boolean}
- */
-function isValueAnInt(value) {
-  var x;
-  if (isNaN(value)) {
-    return false;
-  }
-  x = parseInt(value);
-  return (x | 0) === x;
-}
-
-/*
- * Called via link in msg text as a result of query parameter formatting error
- */
-function clearQueryString() {
-  var idVal = getParameterByName("id");
-  var qStr = '';
-  if (isValueAnInt(idVal)){
-      qStr = "?id=" + idVal;    // idVal is an integer
-  }
-
-  split_url = window.location.href.split('?')[0] + qStr;
-
-  window.location = split_url;
-  
-  return false;
-}
-
 
 /*
  * Called after "Upload + Edit Files"
