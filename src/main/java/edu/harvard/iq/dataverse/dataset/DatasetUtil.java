@@ -61,7 +61,7 @@ public class DatasetUtil {
         }
         for (FileMetadata fileMetadata : dataset.getLatestVersion().getFileMetadatas()) {
             DataFile dataFile = fileMetadata.getDataFile();
-            if (dataFile != null && dataFile.isImage()) {
+            if (dataFile != null && dataFile.isImage() && !dataFile.isRestricted()) {
                 String imageSourceBase64 = ImageThumbConverter.getImageThumbAsBase64(dataFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
                 DatasetThumbnail datasetThumbnail = new DatasetThumbnail(imageSourceBase64, dataFile);
                 thumbnails.add(datasetThumbnail);
@@ -103,13 +103,23 @@ public class DatasetUtil {
                     if (thumbnailFile == null) {
                         logger.fine(title + " does not have a default thumbnail available.");
                         return null;
+                    } else {
+                        String imageSourceBase64 = ImageThumbConverter.getImageThumbAsBase64(thumbnailFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
+                        DatasetThumbnail defaultDatasetThumbnail = new DatasetThumbnail(imageSourceBase64, thumbnailFile);
+                        logger.fine(title + " will get thumbnail through automatic selection from DataFile id " + thumbnailFile.getId());
+                        return defaultDatasetThumbnail;
                     }
                 }
+            } else if (thumbnailFile.isRestricted()) {
+                logger.fine(title + " has a thumbnail the user selected but the file must have later been restricted. Returning null.");
+                return null;
+            } else {
+                String imageSourceBase64 = ImageThumbConverter.getImageThumbAsBase64(thumbnailFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
+                DatasetThumbnail userSpecifiedDatasetThumbnail = new DatasetThumbnail(imageSourceBase64, thumbnailFile);
+                logger.fine(title + " will get thumbnail the user specified from DataFile id " + thumbnailFile.getId());
+                return userSpecifiedDatasetThumbnail;
+
             }
-            String imageSourceBase64 = ImageThumbConverter.getImageThumbAsBase64(thumbnailFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
-            DatasetThumbnail datasetThumbnail = new DatasetThumbnail(imageSourceBase64, thumbnailFile);
-            logger.fine(title + " will get thumbnail from DataFile id " + thumbnailFile.getId());
-            return datasetThumbnail;
         }
     }
 

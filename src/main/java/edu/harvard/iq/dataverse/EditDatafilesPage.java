@@ -2138,6 +2138,13 @@ public class EditDatafilesPage implements java.io.Serializable {
     
     private FileMetadata fileMetadataSelectedForThumbnailPopup = null; 
 
+    /**
+     * @todo For consistency, we should disallow users from setting the
+     * thumbnail to a restricted file. We enforce this rule in the newer
+     * workflow in dataset-widgets.xhtml. The logic to show the "Set Thumbnail"
+     * button is in editFilesFragment.xhtml and it would be nice to move it to
+     * Java since it's getting long and a bit complicated.
+     */
     public void  setFileMetadataSelectedForThumbnailPopup(FileMetadata fm){
        fileMetadataSelectedForThumbnailPopup = fm; 
        alreadyDesignatedAsDatasetThumbnail = getUseAsDatasetThumbnail();
