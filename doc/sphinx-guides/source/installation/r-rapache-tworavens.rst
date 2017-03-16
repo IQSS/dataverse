@@ -1,9 +1,40 @@
-TwoRavens Tabular Data Exploration Tool
-=======================================
+TwoRavens Application 
+=====================
 
-**Important:** TwoRavens is an *optional* component. The software was created here at IQSS, as a standalone tool, by an independent developers team (outside of the main Dataverse development team). TwoRavens was successfully integrated with Dataverse and made available to the users of the production Dataverse cluster at Harvard. However, the original developers have since left IQSS. Plans for the future of this collaboration are still being worked out. As the result, the support for TwoRavens is somewhat limited at the moment (as of Dataverse release 4.6.1). Though it is possible to try and contact the developers via the `TwoRavens project on GitHub <https://github.com/IQSS/TwoRavens>`_. The Dataverse project has however invested into improving the installation process; specifically, the notoriously tricky part of getting the correct versions of the required third party R packages installed. We are expecting to release the new installation scripts (and update this guide) within a few days of the 4.6.1 release.  
+TwoRavens is a web application for tabular data exploration and statistical analysis.
+It can be integrated with Dataverse, as an **optional** component.  The
+software was created as a standalone tool, by an independent
+development team at IQSS (outside of the main Dataverse
+development). TwoRavens was successfully integrated with Dataverse and
+made available to the users of the production Dataverse cluster at
+Harvard. However, the original developers have since left IQSS. Plans
+for the future of this collaboration are still being worked out. As
+the result, **the support for TwoRavens is somewhat limited at the
+moment (as of Spring of 2017).**
 
-Be warned that the installation process for TwoRavens has proven to be tricky and complicated. Besides the application proper, several required components need to be installed and configured. Specifically, R, rApache and, most importantly, a collection of required third-party R packages. The installation steps for these components are described in the individual sections of the document below. 
+Any questions regarding the features of TwoRavens, bug reports and
+such, should be addressed directly to the developers of the
+application.  The `TwoRavens GitHub repository
+<https://github.com/IQSS/TwoRavens>`_ and the `TwoRavens project page
+<http://2ra.vn/community/index.html>`_ are good places to start.
+
+At the same time the Dataverse project will try to provide support for
+the integration of TwoRavens with Dataverse. We have crated a new (as
+of Dataverse v.4.6.1) version of the installer scripts and updated the
+guide, below. We have tried to improve and somewhat simplify the
+installation process. Specifically, the notoriously tricky part of getting the
+correct versions of the required third party R packages installed.
+
+Please be warned: 
+
+- The process may still require some system administration skills. 
+- The guide below is very Linux-specific. This process has been tested on RedHat/CentOS servers only. In some ways it *may* actually be easier to get it all installed on MacOS X (specifically because MacOS X versions of third party R packages are available pre-compiled), or even on Windows. But it hasn't been attempted, and is not supported by the Dataverse team. 
+
+Besides the TwoRavens web application proper, several required
+components need to be installed and configured. This includes R,
+rApache and a collection of required third-party R packages. The
+installation steps for these components are described in the
+individual sections of the document below.
 
 
 0. PREREQUISITES
