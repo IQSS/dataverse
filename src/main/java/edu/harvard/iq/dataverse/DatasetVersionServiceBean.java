@@ -693,6 +693,10 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         return null;          
     } // end: retrieveDatasetVersionByVersionId
 
+    /**
+     * This is the method that performs automatic thumbnail selection if a
+     * suitable file can be found among DataFiles.
+     */
     public Long getThumbnailByVersionId(Long versionId) {
         if (versionId == null) {
             return null;
