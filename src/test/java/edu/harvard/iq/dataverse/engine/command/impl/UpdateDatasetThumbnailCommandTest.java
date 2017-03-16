@@ -19,6 +19,7 @@ public class UpdateDatasetThumbnailCommandTest {
 
     private TestDataverseEngine testEngine;
     private Dataset dataset;
+    private Long unfindableFile = 1l;
 
     public UpdateDatasetThumbnailCommandTest() {
     }
@@ -41,7 +42,10 @@ public class UpdateDatasetThumbnailCommandTest {
                 return new DataFileServiceBean() {
 
                     @Override
-                    public DataFile find(Object alias) {
+                    public DataFile find(Object object) {
+                        if (object == unfindableFile) {
+                            return null;
+                        }
                         return new DataFile();
                     }
 
@@ -77,6 +81,48 @@ public class UpdateDatasetThumbnailCommandTest {
         DatasetThumbnail datasetThumbnail = null;
         try {
             datasetThumbnail = testEngine.submit(new UpdateDatasetThumbnailCommand(null, dataset, UpdateDatasetThumbnailCommand.UserIntent.setDatasetFileAsThumbnail, Long.MIN_VALUE, null));
+        } catch (CommandException ex) {
+            actual = ex.getMessage();
+        }
+        assertEquals(expected, actual);
+        assertNull(datasetThumbnail);
+    }
+
+    @Test
+    public void testIntentNull() {
+        String expected = "No changes to save.";
+        String actual = null;
+        DatasetThumbnail datasetThumbnail = null;
+        try {
+            datasetThumbnail = testEngine.submit(new UpdateDatasetThumbnailCommand(null, dataset, null, Long.MIN_VALUE, null));
+        } catch (CommandException ex) {
+            actual = ex.getMessage();
+        }
+        assertEquals(expected, actual);
+        assertNull(datasetThumbnail);
+    }
+
+    @Test
+    public void testSetDatasetFileAsThumbnailFileNull() {
+        String expected = "A file was not selected to be the new dataset thumbnail.";
+        String actual = null;
+        DatasetThumbnail datasetThumbnail = null;
+        try {
+            datasetThumbnail = testEngine.submit(new UpdateDatasetThumbnailCommand(null, dataset, UpdateDatasetThumbnailCommand.UserIntent.setDatasetFileAsThumbnail, null, null));
+        } catch (CommandException ex) {
+            actual = ex.getMessage();
+        }
+        assertEquals(expected, actual);
+        assertNull(datasetThumbnail);
+    }
+
+    @Test
+    public void testSetDatasetFileAsThumbnailFileNotFound() {
+        String expected = "Could not find file based on id supplied: 1.";
+        String actual = null;
+        DatasetThumbnail datasetThumbnail = null;
+        try {
+            datasetThumbnail = testEngine.submit(new UpdateDatasetThumbnailCommand(null, dataset, UpdateDatasetThumbnailCommand.UserIntent.setDatasetFileAsThumbnail, unfindableFile, null));
         } catch (CommandException ex) {
             actual = ex.getMessage();
         }
