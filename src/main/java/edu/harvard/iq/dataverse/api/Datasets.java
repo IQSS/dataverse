@@ -627,19 +627,15 @@ public class Datasets extends AbstractApiBean {
                     user = sessionUser;
                 }
             }
+            /**
+             * @todo There was a suggestion to change this to
+             * Permission.ViewUnpublishedDataset
+             */
             canUpdateThumbnail = permissionSvc.requestOn(createDataverseRequest(user), dataset).canIssue(UpdateDatasetThumbnailCommand.class);
         } catch (WrappedResponse ex) {
             logger.info("Exception thrown while trying to figure out permissions while getting thumbnail for dataset id " + dataset.getId() + ": " + ex.getLocalizedMessage());
         }
-        InputStream inputStreamToReturn = DatasetUtil.getThumbnailAsInputStream(dataset, canUpdateThumbnail);
-        if (dataset.isReleased()) {
-            return inputStreamToReturn;
-        } else if (canUpdateThumbnail) {
-            return inputStreamToReturn;
-        } else {
-            // unprivileged users shouldn't get the thumbnail if the dataset hasn't been released.
-            return null;
-        }
+        return DatasetUtil.getThumbnailAsInputStream(dataset, canUpdateThumbnail);
     }
 
     @POST

@@ -93,16 +93,16 @@ public class DatasetUtil {
                 return null;
             }
         } else {
-            DataFile thumbnailFile = dataset.getThumbnailFile();           
-            if (thumbnailFile == null ) {
-                if (dataset.isUseGenericThumbnail()){
+            DataFile thumbnailFile = dataset.getThumbnailFile();
+            if (thumbnailFile == null) {
+                if (dataset.isUseGenericThumbnail()) {
                     logger.fine(title + " does not have a thumbnail and is 'Use Generic'.");
-                    return null; 
+                    return null;
                 } else {
                     thumbnailFile = dataset.getDefaultDatasetThumbnailFile();
-                    if (thumbnailFile == null ){
+                    if (thumbnailFile == null) {
                         logger.fine(title + " does not have a default thumbnail available.");
-                        return null;                        
+                        return null;
                     }
                 }
             }
@@ -225,7 +225,13 @@ public class DatasetUtil {
         ByteArrayInputStream defaultDatasetIconInputStream = new ByteArrayInputStream(defaultDatasetIconBytes);
         DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail();
         if (datasetThumbnail == null) {
-            return defaultDatasetIconInputStream;
+            if (!canUpdateThumbnail && !dataset.isReleased()) {
+                logger.info("For dataset id " + dataset.getId() + " unprivileged users get null (204 NO CONTENT) because the dataset is unpublished so the user shouldn't be able to find it.");
+                return null;
+            } else {
+                logger.info("For dataset id " + dataset.getId() + " privileged users get the default dataset icon because no thumbnail could be found.");
+                return defaultDatasetIconInputStream;
+            }
         } else {
             String base64Image = datasetThumbnail.getBase64image();
             String leadingStringToRemove = FileUtil.rfc2397dataUrlSchemeBase64Png;
