@@ -229,19 +229,14 @@ public class DatasetUtil {
         return dataset;
     }
 
-    public static InputStream getThumbnailAsInputStream(Dataset dataset, boolean canUpdateThumbnail) {
+    public static InputStream getThumbnailAsInputStream(Dataset dataset) {
         byte[] defaultDatasetIconBytes = Base64.getDecoder().decode(defaultIconAsBase64);
         logger.fine("Thumbnail could not be found for dataset id " + dataset.getId() + ". Returning default icon: " + defaultIconAsBase64);
         ByteArrayInputStream defaultDatasetIconInputStream = new ByteArrayInputStream(defaultDatasetIconBytes);
         DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail();
         if (datasetThumbnail == null) {
-            if (!canUpdateThumbnail && !dataset.isReleased()) {
-                logger.info("For dataset id " + dataset.getId() + " unprivileged users get null (204 NO CONTENT) because the dataset is unpublished so the user shouldn't be able to find it.");
-                return null;
-            } else {
-                logger.info("For dataset id " + dataset.getId() + " privileged users get the default dataset icon because no thumbnail could be found.");
-                return defaultDatasetIconInputStream;
-            }
+            logger.info("For dataset id " + dataset.getId() + " returning the default dataset icon because no thumbnail could be found.");
+            return defaultDatasetIconInputStream;
         } else {
             String base64Image = datasetThumbnail.getBase64image();
             String leadingStringToRemove = FileUtil.rfc2397dataUrlSchemeBase64Png;
@@ -255,20 +250,8 @@ public class DatasetUtil {
                 return null;
             }
             ByteArrayInputStream nonDefaultDatasetThumbnail = new ByteArrayInputStream(decodedImg);
-            DataFile dataFile = datasetThumbnail.getDataFile();
-            if (dataFile == null) {
-                logger.info("For dataset id " + dataset.getId() + " the thumbnail isn't restricted since it's not from a DataFile.");
-                return nonDefaultDatasetThumbnail;
-            } else if (canUpdateThumbnail) {
-                logger.info("For dataset id " + dataset.getId() + " privileged users can see the thumbnail no matter what.");
-                return nonDefaultDatasetThumbnail;
-            } else if (dataFile.isRestricted()) {
-                logger.info("For dataset id " + dataset.getId() + " unprivileged users get the default dataset icon when the thumbnail came from a restricted file.");
-                return defaultDatasetIconInputStream;
-            } else {
-                logger.info("For dataset id " + dataset.getId() + " unprivileged users can see the thumbnail if it's from a unrestricted file");
-                return nonDefaultDatasetThumbnail;
-            }
+            logger.info("For dataset id " + dataset.getId() + " a thumbnail was found and is being returned.");
+            return nonDefaultDatasetThumbnail;
         }
     }
 

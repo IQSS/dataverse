@@ -595,47 +595,16 @@ public class Datasets extends AbstractApiBean {
         }
     }
 
-    /**
-     * Before a dataset has been published, unprivileged users (Guest and users
-     * without any special access) should not know that the dataset exists so
-     * will get back null when they attempt to visit this API endpoint that
-     * provides the thumbnail image.
-     *
-     * After a dataset has been published, we return the generic dataset icon to
-     * unprivileged users if the thumbnail has been set to a restricted file, if
-     * the dataset owner has opted out of having a thumbnail for their dataset,
-     * if there is no suitable DataFile from which a thumbnail can be generated
-     * (image or PDF), or if a separate dataset logo (non DataFile) has not been
-     * uploaded.
-     */
     @GET
     @Produces({"image/png"})
     @Path("{id}/thumbnail")
     public InputStream getDatasetThumbnail(@PathParam("id") String idSupplied) {
-        Dataset dataset = null;
         try {
-            dataset = findDatasetOrDie(idSupplied);
+            Dataset dataset = findDatasetOrDie(idSupplied);
+            return DatasetUtil.getThumbnailAsInputStream(dataset);
         } catch (WrappedResponse ex) {
             return null;
         }
-        boolean canUpdateThumbnail = false;
-        try {
-            User user = findUserOrDie();
-            if (user instanceof GuestUser) {
-                User sessionUser = session.getUser();
-                if (!(sessionUser instanceof GuestUser)) {
-                    user = sessionUser;
-                }
-            }
-            /**
-             * @todo There was a suggestion to change this to
-             * Permission.ViewUnpublishedDataset
-             */
-            canUpdateThumbnail = permissionSvc.requestOn(createDataverseRequest(user), dataset).canIssue(UpdateDatasetThumbnailCommand.class);
-        } catch (WrappedResponse ex) {
-            logger.info("Exception thrown while trying to figure out permissions while getting thumbnail for dataset id " + dataset.getId() + ": " + ex.getLocalizedMessage());
-        }
-        return DatasetUtil.getThumbnailAsInputStream(dataset, canUpdateThumbnail);
     }
 
     @POST

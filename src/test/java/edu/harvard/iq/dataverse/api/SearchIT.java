@@ -1478,7 +1478,7 @@ public class SearchIT {
         getThumbnailImageNoAccess1.prettyPrint();
         getThumbnailImageNoAccess1.then().assertThat()
                 .contentType("")
-                .statusCode(NO_CONTENT.getStatusCode());
+                .statusCode(OK.getStatusCode());
 
         Response uploadFile = UtilIT.uploadFile(datasetPersistentId, "trees.zip", apiToken);
         uploadFile.prettyPrint();
