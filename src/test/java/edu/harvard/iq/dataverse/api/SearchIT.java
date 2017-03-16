@@ -1502,8 +1502,6 @@ public class SearchIT {
         search2.prettyPrint();
         search2.then().assertThat()
                 .body("data.items[0].name", CoreMatchers.equalTo("Darwin's Finches"))
-                //                .body("data.items[0].thumbnailFilename", CoreMatchers.equalTo("randomFromDataFile" + dataFileId1))
-                .body("data.items[0].datasetThumbnailBase64image", CoreMatchers.equalTo(treesAsBase64))
                 .statusCode(200);
 
         Response getThumbnail2 = UtilIT.getDatasetThumbnailMetadata(datasetId, apiToken);
@@ -1652,14 +1650,6 @@ public class SearchIT {
         search3.prettyPrint();
         search3.then().assertThat()
                 .body("data.items[0].name", CoreMatchers.equalTo("Darwin's Finches"))
-                //                .body("data.items[0].thumbnailFilename", CoreMatchers.equalTo("dataverseproject.png"))
-                //                .body("data.items[0].datasetThumbnailBase64image", CoreMatchers.equalTo(dataverseProjectLogoAsBase64))
-                //                /**
-                //                 * @todo Remove this. Just checking if it matches treesAsBase64,
-                //                 * which is the wrong logo!
-                //                 */
-                //                .body("data.items[0].datasetThumbnailBase64image", CoreMatchers.equalTo(treesAsBase64))
-                .body("data.items[0].datasetThumbnailBase64image", CoreMatchers.equalTo(dataverseProjectLogoAsBase64))
                 .statusCode(200);
 
         Response thumbnailCandidates2 = UtilIT.showDatasetThumbnailCandidates(datasetPersistentId, apiToken);
@@ -1715,8 +1705,6 @@ public class SearchIT {
         search4.prettyPrint();
         search4.then().assertThat()
                 .body("data.items[0].name", CoreMatchers.equalTo("Darwin's Finches"))
-                //                .body("data.items[0].thumbnailFilename", CoreMatchers.equalTo(null))
-                .body("data.items[0].datasetThumbnailBase64image", CoreMatchers.equalTo(datasetLogoAsBase64))
                 .statusCode(200);
 
         Response thumbnailCandidates3 = UtilIT.showDatasetThumbnailCandidates(datasetPersistentId, apiToken);
@@ -1796,7 +1784,6 @@ public class SearchIT {
         searchResponse.then().assertThat()
                 .body("data.items[0].image_url", CoreMatchers.equalTo(RestAssured.baseURI + "/api/access/dsCardImage/" + datasetVersionId))
                 .body("data.items[0].image_url", CoreMatchers.equalTo(RestAssured.baseURI + "/api/access/dsCardImage/" + datasetVersionId))
-                .body("data.items[0].datasetThumbnailBase64image", CoreMatchers.equalTo(treesAsBase64))
                 .statusCode(OK.getStatusCode());
         /**
          * @todo What happens when you delete a dataset? Does the thumbnail

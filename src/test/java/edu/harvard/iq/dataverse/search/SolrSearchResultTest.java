@@ -14,11 +14,10 @@ public class SolrSearchResultTest {
         boolean showRelevance = false;
         boolean showEntityIds = false;
         boolean showApiUrls = false;
-        boolean showThumbnails = false;
 
         SolrSearchResult result01 = new SolrSearchResult("myQuery", "myName");
         result01.setType(SearchConstants.DATAVERSES);
-        JsonObjectBuilder actual01 = result01.json(showRelevance, showEntityIds, showApiUrls, showThumbnails);
+        JsonObjectBuilder actual01 = result01.json(showRelevance, showEntityIds, showApiUrls);
         JsonObject actual = actual01.build();
         System.out.println("actual: " + actual);
 

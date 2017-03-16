@@ -68,7 +68,6 @@ public class Search extends AbstractApiBean {
             @QueryParam("show_entity_ids") boolean showEntityIds,
             @QueryParam("show_api_urls") boolean showApiUrls,
             @QueryParam("show_my_data") boolean showMyData,
-            @QueryParam("show_thumbnails") boolean showThumbnails,
             @Context HttpServletResponse response
     ) {
 
@@ -139,7 +138,7 @@ public class Search extends AbstractApiBean {
             JsonArrayBuilder itemsArrayBuilder = Json.createArrayBuilder();
             List<SolrSearchResult> solrSearchResults = solrQueryResponse.getSolrSearchResults();
             for (SolrSearchResult solrSearchResult : solrSearchResults) {
-                itemsArrayBuilder.add(solrSearchResult.toJsonObject(showRelevance, showEntityIds, showApiUrls, showThumbnails));
+                itemsArrayBuilder.add(solrSearchResult.toJsonObject(showRelevance, showEntityIds, showApiUrls));
             }
 
             JsonObjectBuilder spelling_alternatives = Json.createObjectBuilder();

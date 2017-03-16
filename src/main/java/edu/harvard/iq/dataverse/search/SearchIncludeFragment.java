@@ -1112,9 +1112,6 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 if (result.getImageUrl() != null) {
                     result.setDisplayImage(true);
                 }
-                if (result.getDatasetThumbnailBase64image() != null) {
-                    result.setDisplayImage(true);
-                }
             } else {
                 logger.warning("Index result / entity mismatch (id:resultType) - " + result.getId() + ":" + result.getType());
             }

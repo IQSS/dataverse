@@ -4,7 +4,6 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.api.Util;
-import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.util.ArrayList;
@@ -40,8 +39,6 @@ public class SolrSearchResult {
      * downloadable image" at https://github.com/IQSS/dataverse/issues/3616
      */
     private String imageUrl;
-    private DatasetThumbnail datasetThumbnail;
-    private String datasetThumbnailBase64image;
     private boolean displayImage;
     private String query;
     private String name;
@@ -394,8 +391,8 @@ public class SolrSearchResult {
         return matchedFieldsArray;
     }
 
-    public JsonObject toJsonObject(boolean showRelevance, boolean showEntityIds, boolean showApiUrls, boolean showThumbnails) {
-        return json(showRelevance, showEntityIds, showApiUrls, showThumbnails).build();
+    public JsonObject toJsonObject(boolean showRelevance, boolean showEntityIds, boolean showApiUrls) {
+        return json(showRelevance, showEntityIds, showApiUrls).build();
     }
 
     /**
@@ -405,7 +402,7 @@ public class SolrSearchResult {
      */
     public JsonObjectBuilder getJsonForMyData() {
 
-        JsonObjectBuilder myDataJson = json(true, true, true, false);//boolean showRelevance, boolean showEntityIds, boolean showApiUrls)
+        JsonObjectBuilder myDataJson = json(true, true, true);//boolean showRelevance, boolean showEntityIds, boolean showApiUrls)
 
         myDataJson.add("publication_statuses", this.getPublicationStatusesAsJSON())
                 .add("is_draft_state", this.isDraftState())
@@ -437,7 +434,7 @@ public class SolrSearchResult {
         return myDataJson;
     } //getJsonForMydata
 
-    public JsonObjectBuilder json(boolean showRelevance, boolean showEntityIds, boolean showApiUrls, boolean showThumbnails) {
+    public JsonObjectBuilder json(boolean showRelevance, boolean showEntityIds, boolean showApiUrls) {
 
         if (this.type == null) {
             return jsonObjectBuilder();
@@ -546,11 +543,6 @@ public class SolrSearchResult {
                 nullSafeJsonBuilder.add("api_url", getApiUrl());
             }
         }
-        if (showThumbnails) {
-            if (datasetThumbnailBase64image != null) {
-                nullSafeJsonBuilder.add("datasetThumbnailBase64image", datasetThumbnailBase64image);
-            }
-        }
         // NullSafeJsonBuilder is awesome but can't build null safe arrays. :(
         if (!datasetAuthors.isEmpty()) {
             JsonArrayBuilder authors = Json.createArrayBuilder();
@@ -648,22 +640,6 @@ public class SolrSearchResult {
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
-    }
-
-    public DatasetThumbnail getDatasetThumbnail() {
-        return datasetThumbnail;
-    }
-
-    public void setDatasetThumbnail(DatasetThumbnail datasetThumbnail) {
-        this.datasetThumbnail = datasetThumbnail;
-    }
-
-    public String getDatasetThumbnailBase64image() {
-        return datasetThumbnailBase64image;
-    }
-
-    public void setDatasetThumbnailBase64image(String datasetThumbnailBase64image) {
-        this.datasetThumbnailBase64image = datasetThumbnailBase64image;
     }
 
     public boolean isDisplayImage() {

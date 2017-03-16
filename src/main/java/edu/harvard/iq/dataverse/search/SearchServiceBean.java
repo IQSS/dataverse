@@ -1,16 +1,11 @@
 package edu.harvard.iq.dataverse.search;
 
 import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.DataFileServiceBean;
-import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
-import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseFacet;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
@@ -18,7 +13,6 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
-import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -72,10 +66,6 @@ public class SearchServiceBean {
      */
     @EJB
     DvObjectServiceBean dvObjectService;
-    @EJB
-    DataverseServiceBean dataverseService;
-    @EJB
-    DatasetServiceBean datasetService;
     @EJB
     DatasetFieldServiceBean datasetFieldService;
     @EJB
@@ -494,18 +484,6 @@ public class SearchServiceBean {
                 List<String> authors = (ArrayList) solrDocument.getFieldValues(DatasetFieldConstant.authorName);
                 if (authors != null) {
                     solrSearchResult.setDatasetAuthors(authors);
-                }
-                /**
-                 * @todo For better performance, index the DatasetThumbnail into
-                 * Solr rather than looking up a dataset
-                 */
-                Dataset dataset = datasetService.find(entityid);
-                if (dataset != null) {
-                    DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail();
-                    if (datasetThumbnail != null) {
-                        solrSearchResult.setDatasetThumbnailBase64image(datasetThumbnail.getBase64image());
-                        solrSearchResult.setDatasetThumbnail(datasetThumbnail);
-                    }
                 }
             } else if (type.equals("files")) {
                 String parentGlobalId = null;

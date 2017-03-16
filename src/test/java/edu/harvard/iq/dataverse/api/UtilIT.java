@@ -678,7 +678,7 @@ public class UtilIT {
     static Response search(String query, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/search?q=" + query + "&show_thumbnails=true");
+                .get("/api/search?q=" + query);
     }
 
     static Response indexClear() {
