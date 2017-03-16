@@ -770,9 +770,16 @@ div.ui-widget-overlay {background:#ccc; opacity:.6;}
 
 /* Overwrite Bootstrap */
 @media print {
-  a[href]:after {
-    content: none;
-  }
+    a[href]:after {
+      content: none;
+    }
+    .navbar {
+        display: block;
+        border-width:0 !important;
+    }
+    .navbar-toggle {
+        display:none;
+    }
 }
 
 /* CITATION-FRAME */
