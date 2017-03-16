@@ -124,6 +124,9 @@ public class DatasetUtil {
     }
 
     public static boolean deleteDatasetLogo(Dataset dataset) {
+        if (dataset == null) {
+            return false;
+        }
         File originalFile = new File(dataset.getFileSystemDirectory().toString(), datasetLogoFilenameFinal);
         boolean originalFileDeleted = originalFile.delete();
 //        File thumb48 = new File(dataset.getFileSystemDirectory().toString(), File.separator + "FIXME.thumb48");
@@ -138,6 +141,9 @@ public class DatasetUtil {
     }
 
     public static DataFile getDefaultThumbnailFile(Dataset dataset) {
+        if (dataset == null) {
+            return null;
+        }
         if (dataset.isUseGenericThumbnail()) {
             logger.info("Bypassing logic to find a thumbnail because a generic icon for the dataset is desired.");
             return null;
@@ -230,6 +236,9 @@ public class DatasetUtil {
     }
 
     public static InputStream getThumbnailAsInputStream(Dataset dataset) {
+        if (dataset == null) {
+            return null;
+        }
         byte[] defaultDatasetIconBytes = Base64.getDecoder().decode(defaultIconAsBase64);
         logger.fine("Thumbnail could not be found for dataset id " + dataset.getId() + ". Returning default icon: " + defaultIconAsBase64);
         ByteArrayInputStream defaultDatasetIconInputStream = new ByteArrayInputStream(defaultDatasetIconBytes);
@@ -262,6 +271,9 @@ public class DatasetUtil {
      * one thumbnail from it.
      */
     public static boolean isDatasetLogoPresent(Dataset dataset) {
+        if (dataset == null) {
+            return false;
+        }
         return Files.exists(Paths.get(dataset.getFileSystemDirectory() + File.separator + datasetLogoFilenameFinal));
     }
 
