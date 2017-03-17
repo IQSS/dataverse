@@ -504,8 +504,9 @@
                             <h:outputText value="#{result.userRole}" styleClass="label label-primary" rendered="#{!empty result.userRole}"/>
                         </div>
                         <div class="card-preview-icon-block text-center">
-                            <a href="#{!SearchIncludeFragment.rootDv and !result.isInTree ? result.datasetUrl : widgetWrapper.wrapURL(result.datasetUrl)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">
-                                <h:graphicImage url="/api/datasets/#{result.entityId}/thumbnail"/>
+                            <a href="#{!SearchIncludeFragment.rootDv and !result.isInTree ? result.datasetUrl : widgetWrapper.wrapURL(result.datasetUrl)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">                               
+                                <h:graphicImage value="#{result.imageUrl}" rendered="#{result.displayImage}"/>                               
+                                <span class="icon-dataset" jsf:rendered="#{!result.displayImage}"/>
                             </a>
                         </div>
 

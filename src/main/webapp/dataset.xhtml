@@ -267,7 +267,10 @@
                             </div>
                         <div id="datasetVersionBlock" class="container-fluid">
                             <div id="title-block" class="row" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.title.value}">
-                                <span><h:graphicImage url="/api/datasets/#{DatasetPage.dataset.id}/thumbnail"/></span>
+                              
+                                <h:graphicImage value="#{DatasetPage.thumbnailString}" rendered="#{!empty DatasetPage.thumbnailString}"/>                               
+                                <span class="icon-dataset" jsf:rendered="#{empty DatasetPage.thumbnailString}"/> 
+                                
                                 <span id="title">#{DatasetPage.datasetVersionUI.title.value}</span>
                                 <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-primary" rendered="#{DatasetPage.workingVersion.draft}"/>
                                 <h:outputText value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-success" rendered="#{DatasetPage.workingVersion.inReview}"/>

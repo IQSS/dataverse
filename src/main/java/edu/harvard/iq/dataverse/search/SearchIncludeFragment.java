@@ -16,8 +16,9 @@ import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.SettingsWrapper;
 import edu.harvard.iq.dataverse.WidgetWrapper;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
-import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
+import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -62,7 +63,9 @@ public class SearchIncludeFragment implements java.io.Serializable {
     @Inject
     PermissionsWrapper permissionsWrapper;
     @Inject
-    WidgetWrapper widgetWrapper;    
+    WidgetWrapper widgetWrapper;  
+    @EJB
+    SystemConfig systemConfig;
 
     private String browseModeString = "browse";
     private String searchModeString = "search";
@@ -1083,17 +1086,17 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 valueSet = true;
             } else if (result.getType().equals("datasets") /*&& result.getEntity() instanceof Dataset*/) {
                 /**
-                 * As part of https://github.com/IQSS/dataverse/issues/3559 we
-                 * switched datasets (but not dataverses or files) from
-                 * "h:graphicImage value=" to "h:graphicImage url=" which means
-                 * that datasets no longer use values from result.getImageUrl
-                 * nor result.setDisplayImage. "url" contains a path to a new
-                 * API endpoint that returns an InputStream of a PNG.
-                 *
-                 * @todo For consistency, consider switching dataverses and
-                 * files from "h:graphicImage value=" to "h:graphicImage url=" as
-                 * well.
-                 */
+                 * Getting the dataset thumbnail via api
+                 * the api returns an input stream which must be converted to a string;  
+                 */ 
+
+
+                String imageUrl = DatasetUtil.getThumbnailImageString(systemConfig.getDataverseSiteUrl(), result.getEntityId());
+                if (imageUrl != null) {
+                    result.setImageUrl(imageUrl);
+                    valueSet = true;
+                } 
+                    
             } else if (result.getType().equals("files") /*&& result.getEntity() instanceof DataFile*/) {
                 // TODO: 
                 // use permissionsWrapper?  -- L.A. 4.2.1

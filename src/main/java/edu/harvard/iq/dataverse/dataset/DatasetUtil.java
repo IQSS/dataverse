@@ -1,5 +1,8 @@
 package edu.harvard.iq.dataverse.dataset;
 
+import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
+import com.mashape.unirest.request.GetRequest;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.FileMetadata;
@@ -25,6 +28,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.Base64;
 import javax.imageio.ImageIO;
+import org.apache.commons.io.IOUtils;
 
 public class DatasetUtil {
 
@@ -234,18 +238,41 @@ public class DatasetUtil {
         logger.info("Thumbnail saved to " + thumbFileLocation + ". Original file was deleted: " + originalFileWasDeleted);
         return dataset;
     }
+    
+    public static String rfc2397dataUrlSchemeBase64Png = "data:image/png;base64,";
+    
+    public static String getThumbnailImageString(String siteUrl, Long datasetId) {
+        String unirestUrlForThumbAPI = siteUrl + "/api/datasets/" + datasetId + "/thumbnail";
+        GetRequest unirestOut1 = Unirest.get(unirestUrlForThumbAPI);
+        InputStream unirestInputStream1 = null;
+        try {
+            unirestInputStream1 = unirestOut1.asBinary().getBody();
+        } catch (UnirestException ex) {
+            
+        }
+        
+        if (unirestInputStream1 == null){
+            return null;
+        }
+        try {
+            byte[] bytes = IOUtils.toByteArray(unirestInputStream1);
+            String base64image = Base64.getEncoder().encodeToString(bytes);
+            DatasetThumbnail datasetThumbnail = new DatasetThumbnail(rfc2397dataUrlSchemeBase64Png + base64image, null);
+            return datasetThumbnail.getBase64image();
+        } catch (IOException e) {
+           logger.fine("input Stream could not be converted to Image String for dataset id " + datasetId );
+        }
+        return null;
+
+    }
 
     public static InputStream getThumbnailAsInputStream(Dataset dataset) {
         if (dataset == null) {
             return null;
         }
-        byte[] defaultDatasetIconBytes = Base64.getDecoder().decode(defaultIconAsBase64);
-        logger.fine("Thumbnail could not be found for dataset id " + dataset.getId() + ". Returning default icon: " + defaultIconAsBase64);
-        ByteArrayInputStream defaultDatasetIconInputStream = new ByteArrayInputStream(defaultDatasetIconBytes);
         DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail();
         if (datasetThumbnail == null) {
-            logger.info("For dataset id " + dataset.getId() + " returning the default dataset icon because no thumbnail could be found.");
-            return defaultDatasetIconInputStream;
+            return null;
         } else {
             String base64Image = datasetThumbnail.getBase64image();
             String leadingStringToRemove = FileUtil.rfc2397dataUrlSchemeBase64Png;
@@ -259,7 +286,7 @@ public class DatasetUtil {
                 return null;
             }
             ByteArrayInputStream nonDefaultDatasetThumbnail = new ByteArrayInputStream(decodedImg);
-            logger.info("For dataset id " + dataset.getId() + " a thumbnail was found and is being returned.");
+            logger.fine("For dataset id " + dataset.getId() + " a thumbnail was found and is being returned.");
             return nonDefaultDatasetThumbnail;
         }
     }

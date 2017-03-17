@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServi
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
+import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -221,6 +222,15 @@ public class DatasetPage implements java.io.Serializable {
     private String dataverseSiteUrl = ""; 
     
     private boolean removeUnusedTags;
+    
+
+    public String getThumbnailString() {
+        return DatasetUtil.getThumbnailImageString(systemConfig.getDataverseSiteUrl(), dataset.getId());
+    }
+
+    public void setThumbnailString(String thumbnailString) {
+        //Dummy method
+    }
 
     public boolean isRemoveUnusedTags() {
         return removeUnusedTags;
@@ -391,7 +401,7 @@ public class DatasetPage implements java.io.Serializable {
         setReleasedVersionTabList(resetReleasedVersionTabList());
         
     }
-
+    
     public void updateLinkableDataverses() {
         dataversesForLinking = new ArrayList();
         linkingDVSelectItems = new ArrayList();
@@ -1187,7 +1197,6 @@ public class DatasetPage implements java.io.Serializable {
         } else {
             return permissionsWrapper.notFound();
         }
-
         try {
             privateUrl = commandEngine.submit(new GetPrivateUrlCommand(dvRequestService.getDataverseRequest(), dataset));
             if (privateUrl != null) {
