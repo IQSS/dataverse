@@ -317,10 +317,12 @@
                         <div class="col-sm-12">
                             <div class="bg-danger padding-12 margin-top margin-bottom">
                                 <p><h:outputFormat value=" #{bundle['dataverse.search.facet.error']}" escape="false">
-                                    <f:param value="#{SearchIncludeFragment.dataverse.alias}"/>
-                                    <!--f:param value="#{SearchIncludeFragment.dataverseAlias}"/-->
-                                </h:outputFormat>
-                                </p>
+                                    <f:param value="#{SearchIncludeFragment.dataverse.alias}"/>                                    
+                                </h:outputFormat></p>
+                                <ui:remove><!--
+                                    Note: For f:param above "SearchIncludeFragment.dataverseAlias" does 
+                                    not always work as a replacement for "SearchIncludeFragment.dataverse.alias" 
+                                --></ui:remove>
                             </div>
                         </div>
                     </div>   
