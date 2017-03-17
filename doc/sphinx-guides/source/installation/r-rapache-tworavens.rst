@@ -59,7 +59,7 @@ When a user requests to run
 a statistical model on a datafile, TwoRavens will instruct the R code on the 
 server to download the file **directly from the Dataverse application**. Access 
 URLs need to be configured for this to work properly (this is done by the TwoRavens 
-installer script in step ...)  
+installer script in step ``3.``)  
 
 The application itself will need to obtain some tabular data-specific metadata from 
 the Dataverse - the DDI fragment that describes the variables and some pre-processed
@@ -68,8 +68,8 @@ application also needs to be able to execute some R code on the server. Unlike t
 TwoRavens application, Dataverse uses `Rserve <https://rforge.net/Rserve/>`_ to 
 communicate to R. Rserve is installed as a "contributor" R package. It runs as a 
 daemon process on the server accepting network connections on a dedicated port. 
-Dataverse project supplies an :fixedwidthplain:`init.d`-style startup file. The R setup script in 
-step ... will install this script and configure it so that the daemon gets started
+Dataverse project supplies an :fixedwidthplain:`init.d`-style startup file. The R setup in
+step ``2.`` will install the script and configure it so that the daemon gets started
 automatically when the system boots. 
 
 In addition to Rserve, there are 14 more R library packages that the TwoRavens R 
@@ -78,13 +78,15 @@ So the total of 45 packages must be installed. "Installed" in the
 context of an R package means R must download the **source code** from the `CRAN 
 <https://cran.r-project.org/>`_ code repository and compile it locally. This
 historically has been the trickiest, least stable part of the installation process, 
-since the packages in question are being constantly (and independently) developed; 
-meaning that 2 attempts to install these packages, 6 months apart, will be building 
-them from different versions of the code. An incompatibility introduced between 
-any 2 of the packages breaks the process - which happens fairly often in real life. 
-In this release we have attempted to resolve this by installing the **specific 
-versions of the R packages that have been proven** to work together. 
-
+since the packages in question are being constantly (and independently) developed. 
+Which means that every time you attempt to install these packages, you are building  
+from potentially different versions of the source code. An incompatibility introduced 
+between any two of the packages can result in a failure to install. In this release 
+we have attempted to resolve this by installing the **specific  versions of the R 
+packages that have been proven** to work together. If you have attempted to 
+install TwoRavens in the past, and it didn't quite work, please see the part of 
+section ``1.b.`` where we explain how to completely erase all the previously 
+built packages.
  
 
 1. PREREQUISITES
@@ -126,13 +128,13 @@ change it to
 b. R:
 -----
 
-Can be installed with yum::
+Can be installed with :fixedwidthplain:`yum`::
 
        yum install R R-devel
 
 EPEL distribution recommended; version 3.3.2 is **strongly** recommended.
 
-If yum isn't configured to use EPEL repositories: 
+If :fixedwidthplain:`yum` isn't configured to use EPEL repositories: 
 
 CentOS users can install the RPM :fixedwidthplain:`epel-release`.
 
@@ -154,7 +156,7 @@ Wipe clean any R packages that were left behind::
         rm -rf /usr/lib64/R/library/*
         rm -rf /usr/share/R/library/*
 
-... then install R with yum.  
+... then install R with :fixedwidthplain:`yum`.  
 
 c. rApache: 
 -----------
@@ -169,7 +171,7 @@ If you are using RHEL/CentOS 7, you can download our experimental :download:`rap
 
 	rpm -ivh rapache-1.2.7-rpm0.x86_64.rpm
 
-Both distributions require libapreq2. You should be able to install it with yum::
+Both distributions require libapreq2. You should be able to install it with :fixedwidthplain:`yum`::
 
         yum install libapreq2 
 
@@ -178,16 +180,18 @@ d. Install the build environment for R:
 
 Once again, extra R packages will need to be built from sources. Make sure you have the standard GNU compilers installed: ``gcc``, ``gcc-c++`` and ``gcc-fortran``. 
 
-One of the required packages needed :fixedwidthplain:`/bin/ed`. It can be installed with::
+One of the required packages needed :fixedwidthplain:`/bin/ed`. The R package build script needs :fixedwidthplain:`/usr/bin/wget`. If these are missing, the rpms can be installed with::
 
-        yum install ed
+        yum install ed wget
 
-Depending on how your system was originally set up, you may end up needing to install some other missing rpms. We'll explain how to troubleshoot compiler errors caused by missing libraries and such. 
+Depending on how your system was originally set up, you may end up needing to install some other missing rpms. We'll explain how to troubleshoot compiler errors caused by missing libraries and/or executables. 
 
 2. Install Extra R Packages
 +++++++++++++++++++++++++++
 
 We provide a shell script (``r-setup.sh``) that will try to install all the needed packages. **Note:** the script is now part of the TwoRavens distribution (it **used to be** in the Dataverse source tree). 
+
+The script will attempt to download the packages from CRAN (or a mirror), so the system must have access to the Internet.
 
 In order to run the script: 
 
@@ -200,10 +204,8 @@ Unpack the zip file, then run the script::
         ./r-setup.sh
 
 
-In addition to downloading, compiling and installing the packages, the script will also create a system user :fixedwidthplain:`rserve`, and install the startup script for the daemon (``/etc/init.d/rserve``). 
+For the Rserve package the setup script will also create a system user :fixedwidthplain:`rserve`, and install the startup script for the daemon (``/etc/init.d/rserve``). 
 The script will skip this part, if this has already been done on this system (i.e., it should be safe to run it multiple times). 
-
-The script will attempt to download the packages from CRAN (or a mirror), so the system must have access to the Internet.
 
 
 3. Install the TwoRavens Application
@@ -259,22 +261,22 @@ https://server.dataverse.edu/dataexplore/gui.html
 d. Enable TwoRavens' Explore Button in Dataverse
 ------------------------------------------------
 
-Now that you have installed TwoRavens, you can integrate it with your Dataverse. Once enabled, 
-the 'Explore' button will appear next to ingested tabular data files; clicking it will redirect
+Now that you have installed TwoRavens, the following must be done in order to 
+integrate it with your Dataverse. 
+
+First, enable the Data Explore option:: 
+
+        curl -X PUT -d true http://localhost:8080/api/admin/settings/:TwoRavensTabularView
+ 
+Once enabled, the 'Explore' button will appear next to ingested tabular data files; clicking it will redirect
 the user to the instance of TwoRavens, initialized with the data variables from the selected file. 
 
-
-The TwoRavens URL **must** be configured in the settings of your Dataverse application - so that it knows where to redirect the user. 
+Then, the TwoRavens URL must be configured in the settings of your Dataverse application - so that it knows where to redirect the user. 
 This can be done by issuing the following API call::
 
         curl -X PUT -d {TWORAVENS_URL} http://localhost:8080/api/admin/settings/:TwoRavensUrl
 
 where :fixedwidthplain:`{TWORAVENS_URL}` is the URL reported by the installer script (as in the example at the end of step ``c.``, above).
-
-Then, enable the Data Explore option:: 
-
-        curl -X PUT -d true http://localhost:8080/api/admin/settings/:TwoRavensTabularView
-
 
 Appendix
 ++++++++
@@ -286,8 +288,8 @@ Ports configuration discussion
 By default, Glassfish will install itself on ports 8080 and 8181 (for
 http and https, respectively), and Apache - on port 80 (the default
 port for http). Under this configuration, your Dataverse will be
-accessible at http://{your host}:8080 and https://{your host}:8181;
-and rApache - at http://{your host}/. The TwoRavens installer, above,
+accessible at ``http://{your host}:8080``,
+and rApache - at ``http://{your host}/``. The TwoRavens installer, above,
 will default to these values (and assume you are running both the
 Dataverse and TwoRavens/rApache on the same host).
 
