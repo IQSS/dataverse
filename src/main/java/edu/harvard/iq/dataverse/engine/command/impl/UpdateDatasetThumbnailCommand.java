@@ -77,11 +77,11 @@ public class UpdateDatasetThumbnailCommand extends AbstractCommand<DatasetThumbn
                         if (dataFile.getId().equals(dataFileIdSupplied)) {
                             return datasetThumbnail;
                         } else {
-                            throw new CommandException("Dataset thumnail is should be based on file id " + dataFile.getId() + " but instead it is " + dataFileIdSupplied + ".", this);
+                            throw new CommandException("Dataset thumbnail is should be based on file id " + dataFile.getId() + " but instead it is " + dataFileIdSupplied + ".", this);
                         }
                     }
                 } else {
-                    throw new CommandException("Dataset thumnail is unexpectedly absent.", this);
+                    throw new CommandException("Dataset thumbnail is unexpectedly absent.", this);
                 }
 
             case setNonDatasetFileAsThumbnail:

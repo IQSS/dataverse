@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.engine.TestCommandContext;
 import edu.harvard.iq.dataverse.engine.TestDataverseEngine;
@@ -20,6 +21,7 @@ public class UpdateDatasetThumbnailCommandTest {
     private TestDataverseEngine testEngine;
     private Dataset dataset;
     private Long unfindableFile = 1l;
+    private Long thumbnailUnexpectedlyAbsent = 2l;
 
     public UpdateDatasetThumbnailCommandTest() {
     }
@@ -45,8 +47,23 @@ public class UpdateDatasetThumbnailCommandTest {
                     public DataFile find(Object object) {
                         if (object == unfindableFile) {
                             return null;
+                        } else if (object == thumbnailUnexpectedlyAbsent) {
+                            return new DataFile();
+                        } else {
+                            return null;
                         }
-                        return new DataFile();
+                    }
+
+                };
+            }
+
+            @Override
+            public DatasetServiceBean datasets() {
+                return new DatasetServiceBean() {
+
+                    @Override
+                    public Dataset setDatasetFileAsThumbnail(Dataset dataset, DataFile datasetFileThumbnailToSwitchTo) {
+                        return dataset;
                     }
 
                 };
@@ -123,6 +140,20 @@ public class UpdateDatasetThumbnailCommandTest {
         DatasetThumbnail datasetThumbnail = null;
         try {
             datasetThumbnail = testEngine.submit(new UpdateDatasetThumbnailCommand(null, dataset, UpdateDatasetThumbnailCommand.UserIntent.setDatasetFileAsThumbnail, unfindableFile, null));
+        } catch (CommandException ex) {
+            actual = ex.getMessage();
+        }
+        assertEquals(expected, actual);
+        assertNull(datasetThumbnail);
+    }
+
+    @Test
+    public void testSetDatasetFileAsThumbnailFileThumbnailUnexpectedlyAbsent() {
+        String expected = "Dataset thumbnail is unexpectedly absent.";
+        String actual = null;
+        DatasetThumbnail datasetThumbnail = null;
+        try {
+            datasetThumbnail = testEngine.submit(new UpdateDatasetThumbnailCommand(null, dataset, UpdateDatasetThumbnailCommand.UserIntent.setDatasetFileAsThumbnail, thumbnailUnexpectedlyAbsent, null));
         } catch (CommandException ex) {
             actual = ex.getMessage();
         }
