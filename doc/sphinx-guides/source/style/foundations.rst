@@ -1,32 +1,21 @@
 Foundations
 +++++++++++
 
-Words words words words. Words words words words.
-
-|image1|
+Foundational elements are the very basic elements to create a page in Dataverse. These basic elements have been broken down to Grid Layout, Color pPalette, Typography, Logos, Icons.
 
 
 Grid Layout
 ===========
 
-Words words words words. Words words words words.
+`Bootstrap <http://getbootstrap.com/css/#grid>`_ provides a responsive, fluid, 12-column grid system.
 
-* .container (fixed-width)
-* .col-md-* Medium devices Desktops (≥992px)
+``.container (fixed-width)``
 
-
-Typography
-==========
-
-Words words words words. Words words words words.
-
-* font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
-* font-size: 14px;
-* line-height: 1.42857143;
+``.col-md-* Medium devices Desktops (≥992px)``
 
 
-Colors
-======
+Color Palette
+=============
 
 Words words words words. Words words words words.
 
@@ -35,25 +24,41 @@ Primary/Brand
 
 Words words words words. Words words words words.
 
-* .text-brand {color:#C55B28;}
-* .bg-brand {background:#C55B28;}
+``.text-brand {color:#C55B28;}``
+
+``.bg-brand {background:#C55B28;}``
 
 Text
 ----
 
 Words words words words. Words words words words.
 
-* {color: #333;}
+``{color: #333;}``
 
 Links
 -----
 
 Words words words words. Words words words words.
 
-* a {color: #337AB7;}
-* a:hover {color: #23527C;}
-* .ui-widget-content a {color: #428BCA;}
-* .ui-widget-content a:hover, .ui-widget-content a:focus {color: #2A6496;}
+``a {color: #337AB7;}``
+
+``a:hover {color: #23527C;}``
+
+``.ui-widget-content a {color: #428BCA;}``
+
+``.ui-widget-content a:hover, .ui-widget-content a:focus {color: #2A6496;}``
+
+
+Typography
+==========
+
+Words words words words. Words words words words.
+
+``font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;``
+
+``font-size: 14px;``
+
+``line-height: 1.42857143;``
 
 
 Logos
@@ -100,6 +105,3 @@ Words words words words. Words words words words.
 * Footer icons Twitter, Github
 * Sharrre icons Facebook, Twitter, Google Plus
 
-
-.. |image1| image:: ./img/dataverse-page.png
-   :class: img-responsive

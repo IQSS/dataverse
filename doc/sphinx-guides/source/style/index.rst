@@ -11,4 +11,4 @@ Contents:
 .. toctree::
 
    foundations
-   ui-components
+   patterns

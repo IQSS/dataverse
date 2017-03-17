@@ -1,7 +1,11 @@
-UI Components
-+++++++++++++
+Patterns
+++++++++
 
-Words words words words. Words words words words.
+"A pattern is any self-contained set of markup and styles to make some of your site’s basic objects, like a call-out box used repeatedly, buttons, or the way you lay out a list of links horizontally."
+
+Code samples can be found on the `Bootstrap <http://getbootstrap.com/css/>`_ and `PrimeFaces <https://www.primefaces.org/showcase/>`_ sites.
+
+"Go through your site and add in patterns as you see them; you may use particular layouts over and over, or a media-object pattern, or a vertical list pattern. Below is an example for feature blocks. Look for similar things on your own site to document in your guide."
 
 |image1|
 
