@@ -142,6 +142,14 @@ public class UtilIT {
         return alias;
     }
 
+    static Integer getDataverseIdFromResponse(Response createDataverseResponse) {
+        JsonPath createdDataverse = JsonPath.from(createDataverseResponse.body().asString());
+        int dataverseId = createdDataverse.getInt("data.id");
+        logger.info("Id found in create dataverse response: " + createdDataverse);
+        return dataverseId;
+    }
+
+    
     static Integer getDatasetIdFromResponse(Response createDatasetResponse) {
         JsonPath createdDataset = JsonPath.from(createDatasetResponse.body().asString());
         int datasetId = createdDataset.getInt("data.id");
@@ -512,6 +520,7 @@ public class UtilIT {
                 .post("/api/datasets/:persistentId/actions/:publish?type=" + majorOrMinor + "&persistentId=" + persistentId);
     }
 
+    
     static Response publishDatasetViaNativeApiDeprecated(String persistentId, String majorOrMinor, String apiToken) {
         /**
          * @todo This should be a POST rather than a GET:
@@ -752,6 +761,45 @@ public class UtilIT {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("api/admin/assignee/" + roleAssignee);
+    }
+    
+    
+    /**
+     * Used to test Dataverse page query parameters
+     * 
+     * @param alias
+     * @param queryParamString - do not include the "?"
+     * @return 
+     */
+    static Response testDataverseQueryParamWithAlias(String alias, String queryParamString) {
+
+        System.out.println("testDataverseQueryParamWithAlias");
+        String testUrl;
+        if (alias.isEmpty()){
+            testUrl = " ?" + queryParamString;          
+        }else{
+            testUrl = "/dataverse/" + alias + "?" + queryParamString;
+        }
+        System.out.println("testUrl: " + testUrl);
+        
+        return given()
+                .urlEncodingEnabled(false)
+                .get(testUrl);
+    }
+    
+    /**
+     * Used to test Dataverse page query parameters
+     * 
+     * The parameters may include "id={dataverse id}
+     * 
+     * @param queryParamString
+     * @return 
+     */
+    static Response testDataverseXhtmlQueryParam(String queryParamString) {
+
+        return given()
+                //.urlEncodingEnabled(false)
+                .get("dataverse.xhtml?" + queryParamString);
     }
 
     static Response setDataverseLogo(String dataverseAlias, String pathToImageFile, String apiToken) {
