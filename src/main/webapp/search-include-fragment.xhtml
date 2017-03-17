@@ -444,7 +444,6 @@
                         </div>
                         <div class="card-preview-icon-block text-center">
                             <h:outputLink value="#{!SearchIncludeFragment.rootDv and !result.isInTree ? dvUrl : widgetWrapper.wrapURL(dvUrl)}" target="#{!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView ? '_blank' : ''}">
-                                <!--FIXME: for consistency, consider switching from "h:graphicImage value=" to "h:graphicImage url=" like we do for datasets-->
                                 <h:graphicImage value="#{result.imageUrl}" rendered="#{result.displayImage}"/>
                                 <span class="icon-dataverse text-brand" jsf:rendered="#{!result.displayImage}"/>
                             </h:outputLink>
@@ -582,7 +581,6 @@
 
                         <div class="card-preview-icon-block text-center" jsf:rendered="#{settingsWrapper.isTrueForKey(':ShowFileLandingPage', false)}">
                             <a href="#{!SearchIncludeFragment.rootDv and !result.isInTree ? result.fileUrl : widgetWrapper.wrapURL(result.fileUrl)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">
-                                <!--FIXME: for consistency, consider switching from "h:graphicImage value=" to "h:graphicImage url=" like we do for datasets-->
                                 <h:graphicImage value="#{result.imageUrl}" rendered="#{result.displayImage}"/>
                                 <span class="icon-#{dataFileServiceBean.getFileClass(result.entity)} text-muted h1"
                                       jsf:rendered="#{!result.displayImage}"/>

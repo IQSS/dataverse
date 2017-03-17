@@ -36,38 +36,26 @@ import junit.framework.Assert;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static com.jayway.restassured.RestAssured.given;
-import static com.jayway.restassured.path.json.JsonPath.with;
-import static com.jayway.restassured.path.xml.XmlPath.from;
-import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.http.exceptions.UnirestException;
-import com.mashape.unirest.request.GetRequest;
-import com.mashape.unirest.request.body.Body;
-import edu.harvard.iq.dataverse.dataset.DatasetUtil;
-import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
-import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import static junit.framework.Assert.assertEquals;
-import static java.lang.Thread.sleep;
-import java.nio.file.OpenOption;
-import java.nio.file.StandardCopyOption;
 import java.util.Base64;
 import javax.json.JsonArray;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import org.hamcrest.CoreMatchers;
-import static org.hamcrest.CoreMatchers.nullValue;
-import org.hamcrest.Matchers;
-import org.hamcrest.core.IsNull;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.Ignore;
+import static com.jayway.restassured.RestAssured.given;
+import static com.jayway.restassured.path.json.JsonPath.with;
+import static com.jayway.restassured.path.xml.XmlPath.from;
+import static junit.framework.Assert.assertEquals;
+import static java.lang.Thread.sleep;
 
 /**
  * @todo These tests are in need of attention for a few reasons:
@@ -1408,6 +1396,11 @@ public class SearchIT {
         String datasetPersistentId = protocol + ":" + authority + "/" + identifier;
         long datasetVersionId = JsonPath.from(datasetAsJson.getBody().asString()).getLong("data.latestVersion.id");
 
+        Response createNoSpecialAccessUser = UtilIT.createRandomUser();
+        createNoSpecialAccessUser.prettyPrint();
+        String noSpecialAccessUsername = UtilIT.getUsernameFromResponse(createNoSpecialAccessUser);
+        String noSpecialAcessApiToken = UtilIT.getApiTokenFromResponse(createNoSpecialAccessUser);
+
         logger.info("Dataset created, no thumbnail expected:");
         Response getThumbnail1 = UtilIT.getDatasetThumbnailMetadata(datasetId, apiToken);
         getThumbnail1.prettyPrint();
@@ -1419,47 +1412,18 @@ public class SearchIT {
                 .body("data.datasetLogoPresent", CoreMatchers.equalTo(false))
                 .statusCode(200);
 
+        String thumbnailUrl = RestAssured.baseURI + "/api/datasets/" + datasetId + "/thumbnail";
+        InputStream inputStream1creator = UtilIT.getInputStreamFromUnirest(thumbnailUrl, apiToken);
+        assertNull(inputStream1creator);
+
+        InputStream inputStream1guest = UtilIT.getInputStreamFromUnirest(thumbnailUrl, noSpecialAcessApiToken);
+        assertNull(inputStream1guest);
+
         Response getThumbnailImage1 = UtilIT.getDatasetThumbnail(datasetPersistentId, apiToken); //
         getThumbnailImage1.prettyPrint();
         getThumbnailImage1.then().assertThat()
-                .contentType("image/png")
-                .statusCode(OK.getStatusCode());
-
-        String unirestUrlForDatasetCreator = RestAssured.baseURI + "/api/datasets/" + datasetId + "/thumbnail?key=" + apiToken;
-        GetRequest unirestOut1 = Unirest.get(unirestUrlForDatasetCreator);
-        InputStream unirestInputStream1 = null;
-        try {
-            unirestInputStream1 = unirestOut1.asBinary().getBody();
-        } catch (UnirestException ex) {
-            Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        String defaultDatasetIconAsBase64 = DatasetUtil.defaultIconAsBase64;
-        byte[] bytesForDefaultDatasetIcon = null;
-        try {
-
-            bytesForDefaultDatasetIcon = Base64.getDecoder().decode(defaultDatasetIconAsBase64.getBytes("UTF-8"));
-        } catch (UnsupportedEncodingException ex) {
-        }
-
-        assertEquals(ByteArrayInputStream.class, unirestInputStream1.getClass());
-        ByteArrayInputStream decodedDefaultDatasetIcon = new ByteArrayInputStream(bytesForDefaultDatasetIcon);
-
-        int bytesAvailableFromDefaultDatasetIcon = decodedDefaultDatasetIcon.available();
-        int bytesAvailableFromApiForDefaultDatasetIcon = 0;
-        try {
-            bytesAvailableFromApiForDefaultDatasetIcon = unirestInputStream1.available();
-        } catch (IOException ex) {
-            Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        logger.info("bytesAvailableFromDefaultDatasetIcon: " + bytesAvailableFromDefaultDatasetIcon);
-        logger.info("bytesAvailableFromApiForDefaultDatasetIcon:  " + bytesAvailableFromApiForDefaultDatasetIcon);
-        assertEquals(bytesAvailableFromDefaultDatasetIcon, bytesAvailableFromApiForDefaultDatasetIcon);
-
-        Response createNoSpecialAccessUser = UtilIT.createRandomUser();
-        createNoSpecialAccessUser.prettyPrint();
-        String noSpecialAccessUsername = UtilIT.getUsernameFromResponse(createNoSpecialAccessUser);
-        String noSpecialAcessApiToken = UtilIT.getApiTokenFromResponse(createNoSpecialAccessUser);
+                .contentType("")
+                .statusCode(NO_CONTENT.getStatusCode());
 
         Response attemptToGetThumbnailCandidates = UtilIT.showDatasetThumbnailCandidates(datasetPersistentId, noSpecialAcessApiToken);
         attemptToGetThumbnailCandidates.prettyPrint();
@@ -1478,7 +1442,7 @@ public class SearchIT {
         getThumbnailImageNoAccess1.prettyPrint();
         getThumbnailImageNoAccess1.then().assertThat()
                 .contentType("")
-                .statusCode(OK.getStatusCode());
+                .statusCode(NO_CONTENT.getStatusCode());
 
         Response uploadFile = UtilIT.uploadFile(datasetPersistentId, "trees.zip", apiToken);
         uploadFile.prettyPrint();
@@ -1498,6 +1462,7 @@ public class SearchIT {
         } catch (IOException ex) {
             Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, null, ex);
         }
+
         Response search2 = UtilIT.search("id:dataset_" + datasetId + "_draft", apiToken);
         search2.prettyPrint();
         search2.then().assertThat()
@@ -1514,6 +1479,13 @@ public class SearchIT {
                 .body("data.dataFileId", CoreMatchers.equalTo(dataFileId1.toString()))
                 .body("data.datasetLogoPresent", CoreMatchers.equalTo(false))
                 .statusCode(200);
+
+        InputStream inputStream2creator = UtilIT.getInputStreamFromUnirest(thumbnailUrl, apiToken);
+        assertNotNull(inputStream2creator);
+        assertEquals(treesAsBase64, UtilIT.inputStreamToDataUrlSchemeBase64Png(inputStream2creator));
+
+        InputStream inputStream2guest = UtilIT.getInputStreamFromUnirest(thumbnailUrl, noSpecialAcessApiToken);
+        assertEquals(treesAsBase64, UtilIT.inputStreamToDataUrlSchemeBase64Png(inputStream2guest));
 
         String leadingStringToRemove = FileUtil.rfc2397dataUrlSchemeBase64Png;
         System.out.println("before: " + treesAsBase64);
@@ -1539,75 +1511,6 @@ public class SearchIT {
                 //                .content(CoreMatchers.equalTo(decodedImg))
                 .statusCode(200);
 
-        logger.info("Using unirest to get " + unirestUrlForDatasetCreator);
-        GetRequest unirestOut = Unirest.get(unirestUrlForDatasetCreator);
-        InputStream unirestInputStream = null;
-        try {
-            unirestInputStream = unirestOut.asBinary().getBody();
-        } catch (UnirestException ex) {
-            Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        assertEquals(ByteArrayInputStream.class, unirestInputStream.getClass());
-
-        ByteArrayInputStream decodedImgByteArrayInputStream = new ByteArrayInputStream(decodedImg);
-
-        int bytesAvailableFromTestSide = decodedImgByteArrayInputStream.available();
-        int bytesAvailableFromApiSide = 0;
-        try {
-            bytesAvailableFromApiSide = unirestInputStream.available();
-        } catch (IOException ex) {
-            Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        logger.info("bytesAvailableFromTestSide: " + bytesAvailableFromTestSide);
-        logger.info("bytesAvailableFromApiSide:  " + bytesAvailableFromApiSide);
-        assertEquals(bytesAvailableFromTestSide, bytesAvailableFromApiSide);
-
-        File fromUnirest = new File("/tmp/unirest.png");
-        try {
-//            Files.copy(unirestOut.asBinary().getBody(), fromUnirest.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            Files.copy(unirestInputStream, fromUnirest.toPath(), StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException ex) {
-            Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (UnsupportedOperationException ex) {
-            Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        File fromRestAssured = new File("/tmp/api.png");
-        try {
-//            Files.copy(getThumbnailImage2.asInputStream(), fromApi.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            Files.copy(getThumbnailImage2.body().asInputStream(), fromRestAssured.toPath(), StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException ex) {
-            Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        File fromTest = new File("/tmp/test.png");
-        FileOutputStream stream = null;
-        try {
-            stream = new FileOutputStream(fromTest.getPath());
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        try {
-            try {
-                stream.write(decodedImg);
-            } catch (IOException ex) {
-                Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        } finally {
-            try {
-                stream.close();
-            } catch (IOException ex) {
-                Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-        System.out.println("fromTest.length():  " + fromTest.length());
-        System.out.println("fromRestAssured.length():   " + fromRestAssured.length());
-        System.out.println("fromUnirest.length():   " + fromUnirest.length());
-        assertEquals(fromTest.length(), fromUnirest.length());
-//        }
-
-        //  */
-//        System.out.println("decodedImg.length:                                 " + decodedImg.length);
-//        System.out.println("getThumbnailImage2.getBody().asByteArray().length: " + getThumbnailImage2.getBody().asByteArray().length);
-//        assertEquals(decodedImg.length, getThumbnailImage2.getBody().asByteArray().length);
         String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
         Response uploadSecondImage = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
         uploadSecondImage.prettyPrint();
@@ -1645,6 +1548,12 @@ public class SearchIT {
                 .body("data.dataFileId", CoreMatchers.equalTo(dataFileId2.toString()))
                 .body("data.datasetLogoPresent", CoreMatchers.equalTo(false))
                 .statusCode(200);
+
+        InputStream inputStream3creator = UtilIT.getInputStreamFromUnirest(thumbnailUrl, apiToken);
+        assertEquals(dataverseProjectLogoAsBase64, UtilIT.inputStreamToDataUrlSchemeBase64Png(inputStream3creator));
+
+        InputStream inputStream3guest = UtilIT.getInputStreamFromUnirest(thumbnailUrl, noSpecialAcessApiToken);
+        assertEquals(dataverseProjectLogoAsBase64, UtilIT.inputStreamToDataUrlSchemeBase64Png(inputStream3guest));
 
         Response search3 = UtilIT.search("id:dataset_" + datasetId + "_draft", apiToken);
         search3.prettyPrint();
@@ -1701,6 +1610,12 @@ public class SearchIT {
                 .body("data.datasetLogoPresent", CoreMatchers.equalTo(false))
                 .statusCode(200);
 
+        InputStream inputStream4creator = UtilIT.getInputStreamFromUnirest(thumbnailUrl, apiToken);
+        assertEquals(datasetLogoAsBase64, UtilIT.inputStreamToDataUrlSchemeBase64Png(inputStream4creator));
+
+        InputStream inputStream4guest = UtilIT.getInputStreamFromUnirest(thumbnailUrl, noSpecialAcessApiToken);
+        assertEquals(datasetLogoAsBase64, UtilIT.inputStreamToDataUrlSchemeBase64Png(inputStream4guest));
+
         Response search4 = UtilIT.search("id:dataset_" + datasetId + "_draft", apiToken);
         search4.prettyPrint();
         search4.then().assertThat()
@@ -1735,6 +1650,12 @@ public class SearchIT {
                 .body("data.isUseGenericThumbnail", CoreMatchers.equalTo(true))
                 .body("data.datasetLogoPresent", CoreMatchers.equalTo(false))
                 .statusCode(200);
+
+        InputStream inputStream5creator = UtilIT.getInputStreamFromUnirest(thumbnailUrl, apiToken);
+        assertNull(inputStream5creator);
+
+        InputStream inputStream5guest = UtilIT.getInputStreamFromUnirest(thumbnailUrl, noSpecialAcessApiToken);
+        assertNull(inputStream5guest);
 
         Response search5 = UtilIT.search("id:dataset_" + datasetId + "_draft", apiToken);
         search5.prettyPrint();
@@ -1773,11 +1694,13 @@ public class SearchIT {
 //        getThumbnailImageNoSpecialAccess99.prettyPrint();
         getThumbnailImageNoSpecialAccess99.then().assertThat()
                 .contentType("image/png")
-                /**
-                 * @todo Write test to assert that the right logo was downloaded
-                 * (the one from dataFileId1.
-                 */
                 .statusCode(OK.getStatusCode());
+
+        InputStream inputStream99creator = UtilIT.getInputStreamFromUnirest(thumbnailUrl, apiToken);
+        assertEquals(treesAsBase64, UtilIT.inputStreamToDataUrlSchemeBase64Png(inputStream99creator));
+
+        InputStream inputStream99guest = UtilIT.getInputStreamFromUnirest(thumbnailUrl, noSpecialAcessApiToken);
+        assertEquals(treesAsBase64, UtilIT.inputStreamToDataUrlSchemeBase64Png(inputStream99guest));
 
         Response searchResponse = UtilIT.search("id:dataset_" + datasetId, noSpecialAcessApiToken);
         searchResponse.prettyPrint();
