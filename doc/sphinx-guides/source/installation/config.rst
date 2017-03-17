@@ -30,6 +30,16 @@ Forcing HTTPS
 
 To avoid having your users send credentials in the clear, it's strongly recommended to force all web traffic to go through HTTPS (port 443) rather than HTTP (port 80). The ease with which one can install a valid SSL cert into Apache compared with the same operation in Glassfish might be a compelling enough reason to front Glassfish with Apache. In addition, Apache can be configured to rewrite HTTP to HTTPS with rules such as those found at https://wiki.apache.org/httpd/RewriteHTTPToHTTPS or in the section on :doc:`shibboleth`.
 
+Additional Recommendations
+++++++++++++++++++++++++++
+
+To further enhance the security of your installation, we recommend taking the following specific actions:
+
+- Configure Glassfish to run as a user other than root.
+- Remove /root/.glassfish/pass password files.
+- Store passwords as a hash rather than base64 encoded. Ideally this will be a salted hash, and use a strong hashing algorithm.
+- Use a strong administrator password so the hash cannot easily be cracked through dictionary attacks.
+
 Solr
 ----
 
