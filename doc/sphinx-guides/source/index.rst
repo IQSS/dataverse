@@ -17,6 +17,7 @@ These guides are for the most recent version of Dataverse. For the guides for **
   installation/index
   api/index
   developers/index
+  style/index
   admin/index
 
 How the Guides Are Organized
