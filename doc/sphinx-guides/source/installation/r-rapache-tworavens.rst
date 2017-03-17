@@ -51,7 +51,7 @@ TwoRavens is itself a compact JavaScript application that **runs on the user's
 browser**. These JavaScript files, and the accompanying HTML, CSS, etc. files 
 are served by an HTTP server (Apache) as static objects. 
 
-The statistical calculations are performed by R code that runs **on the server**. 
+The statistical calculations are performed by R programs that run **on the server**. 
 `rApache <http://rapache.net/>`_ is used as the web front for R on the server, so 
 that the browser application can talk to R over HTTP. 
 
@@ -64,12 +64,12 @@ installer script in step ``3.``)
 The application itself will need to obtain some tabular data-specific metadata from 
 the Dataverse - the DDI fragment that describes the variables and some pre-processed
 summary statistics for the data vectors. In order to produce the latter, the Dataverse
-application also needs to be able to execute some R code on the server. Unlike the 
-TwoRavens application, Dataverse uses `Rserve <https://rforge.net/Rserve/>`_ to 
+application also needs to be able to execute some R code on the server. Instead of 
+``rApache``, Dataverse uses `Rserve <https://rforge.net/Rserve/>`_ to 
 communicate to R. Rserve is installed as a "contributor" R package. It runs as a 
 daemon process on the server accepting network connections on a dedicated port. 
-Dataverse project supplies an :fixedwidthplain:`init.d`-style startup file. The R setup in
-step ``2.`` will install the script and configure it so that the daemon gets started
+Dataverse project supplies an :fixedwidthplain:`init.d`-style startup file for the 
+daemon. The R setup in step ``2.`` will set it up so that the daemon gets started
 automatically when the system boots. 
 
 In addition to Rserve, there are 14 more R library packages that the TwoRavens R 
@@ -204,8 +204,21 @@ Unpack the zip file, then run the script::
         ./r-setup.sh
 
 
+See the section ``II.`` of the Appendix for trouble-shooting tips. 
+
 For the Rserve package the setup script will also create a system user :fixedwidthplain:`rserve`, and install the startup script for the daemon (``/etc/init.d/rserve``). 
-The script will skip this part, if this has already been done on this system (i.e., it should be safe to run it multiple times). 
+The script will skip this part, if this has already been done on this system (i.e., it should be safe to run it repeatedly). 
+
+Note that the setup will set the Rserve password to :fixedwidthplain:`"rserve"`. 
+Rserve daemon runs under a non-privileged user id, and there appears to be a 
+very limited potential for security damage through unauthorized access. It is however 
+still a good idea **to change the it**. The password is specified in ``/etc/Rserve.pwd``. 
+Please see `Rserve documentation <https://rforge.net/Rserve/doc.html>`_ for more 
+information on password encryption and access security. 
+ 
+Make sure the rserve password is correctly specified in the ``domain.xml`` of your Dataverse::
+
+        <jvm-options>-Ddataverse.rserve.password=...</jvm-options>
 
 
 3. Install the TwoRavens Application
@@ -278,12 +291,12 @@ This can be done by issuing the following API call::
 
 where :fixedwidthplain:`{TWORAVENS_URL}` is the URL reported by the installer script (as in the example at the end of step ``c.``, above).
 
-Appendix
-++++++++
+4. Appendix
++++++++++++
 
 
-Ports configuration discussion
-++++++++++++++++++++++++++++++
+I. Ports configuration discussion
+---------------------------------
 
 By default, Glassfish will install itself on ports 8080 and 8181 (for
 http and https, respectively), and Apache - on port 80 (the default
@@ -345,92 +358,87 @@ simply https://{your host name}/.
 
 
 
-Explained below are the steps needed to manually install and configure
-the required R packages, and to configure TwoRavens to run under
-rApache (these are performed by the ``r-setup.sh`` and ``install.pl``
-scripts above).  **Provided for reference**.
+II. What the r-setup.sh script does:
+------------------------------------
 
-r-setup.sh script:
-++++++++++++++++++
+The script uses the list of 45 R library packages and specified
+package versions, supplied in ``TwoRavens/r-setup/package-versions.txt`` to 
+replicate the library environment that has been proven to work on the Dataverse
+servers. 
+
+If any packages fail to build, the script will alert the user. 
+
+For every package, the (potentially verbose) output of the build process is saved in 
+its own file, ``RINSTALL.{PACKAGE NAME}.LOG``. So if, for example, the package 
+Zelig fails to install, the log file :fixedwidthplain:`RINSTALL.Zelig.LOG` should 
+be consulted for any error messages that may explain the reason for the failure; 
+such as a missing library, or a missing compiler, etc. Be aware that diagnosing 
+compiler errors will require at least some programming and/or system administration 
+skills. 
 
 
+III. What the install.pl script does:
+-------------------------------------
 
-install.pl script:
-++++++++++++++++++
+The steps below are performed by the ``install.pl`` script. **Provided for reference only!** 
+The instruction below could be used to configure it all by hand, if necessary, or 
+to verify that the installer has done it correctly. 
+Once again: normally you **would NOT need to individually perform the steps below**!
 
-Once again, this is only provided for reference! Normally, you **would not need to perform the steps below**!
-This will all be done by the :fixedwidthplain:`install.pl` script, normally. 
-The instruction below explains how to configure it all by hand, if for whatever reason necessary. 
+TwoRavens is distributed with a few hard-coded host and directory names. So these 
+need to be replaced with  the values specific to your system. 
 
-I. Configure the TwoRavens web (Javascript) application
--------------------------------------------------------
 
-Edit the file ``/var/www/html/dataexplore/app_ddi.js``.
-
-find and edit the following 3 lines:
+**In the file** ``/var/www/html/dataexplore/app_ddi.js`` **the following 3 lines need to be 
+edited:**
 
 1. ``var production=false;``
 
-   and change it to ``true``;
+   changed to ``true``;
 
 2. ``hostname="localhost:8080";``
 
-   so that it points to the dataverse app, from which TwoRavens will be obtaining the metadata and data files. (don't forget to change 8080 to the correct port number!)
-
-   and
+   changed to point to the dataverse app, from which TwoRavens will be obtaining the metadata and data files. (don't forget to change 8080 to the correct port number!)
 
 3. ``var rappURL = "http://0.0.0.0:8000/custom/";``
 
-   set this to the URL of your rApache server, i.e.
+   changed to the URL of your rApache server, i.e.
 
-   ``"https://<rapacheserver>:<rapacheport>/custom/";``
+   ``"http(s)://<rapacheserver>:<rapacheport>/custom/";``
 
-II. Configure the R applications to run under rApache
------------------------------------------------------
-
-rApache is a loadable httpd module that provides a link between Apache and R. 
-When you installed the rApache rpm, under 0., it placed the module in the Apache library directory and added a configuration entry to the config file (``/etc/httpd/conf/httpd.conf``). 
-
-Now we need to configure rApache to serve several R "mini-apps", from the R sources provided with TwoRavens. 
-
-a. Edit the following files:
-****************************
-in ``dataexplore/rook``:
+**In** ``dataexplore/rook`` **the following files need to be edited:**
 
 ``rookdata.R, rookzelig.R, rooksubset.R, rooktransform.R, rookselector.R, rooksource.R``
 
-and replace *every* instance of ``production<-FALSE`` line with ``production<-TRUE``.
+replacing *every* instance of ``production<-FALSE`` line with ``production<-TRUE``.
  
 (yeah, that's why we provide that installer script...)
 
-b. Edit dataexplore/rook/rooksource.R
-*****************************************
 
-
-and change the following line: 
+**In** ``dataexplore/rook/rooksource.R`` **the following line:**
 
 ``setwd("/usr/local/glassfish4/glassfish/domains/domain1/docroot/dataexplore/rook")``
 
-to 
+needs to be changed to: 
 
 ``setwd("/var/www/html/dataexplore/rook")``
 
-(or your dataexplore directory, if different from the above)
+(or your :fixedwidthplain:`dataexplore` directory, if different from the above)
 
-c. Edit the following lines in dataexplore/rook/rookutils.R: 
-************************************************************
+**In** ``dataexplore/rook/rookutils.R`` **the following lines need to be edited:**
 
-``url <- paste("https://demo.dataverse.org/custom/preprocess_dir/preprocessSubset_",sessionid,".txt",sep="")``
+``url <- paste("https://beta.dataverse.org/custom/preprocess_dir/preprocessSubset_",sessionid,".txt",sep="")``
 
 and 
 
-``imageVector[[qicount]]<<-paste("https://dataverse-demo.iq.harvard.edu/custom/pic_dir/", mysessionid,"_",mymodelcount,qicount,".png", sep = "")``
+``imageVector[[qicount]]<<-paste("https://beta.dataverse.org/custom/pic_dir/", mysessionid,"_",mymodelcount,qicount,".png", sep = "")``
 
-and change the URL to reflect the correct location of your rApache instance - make sure that the protocol and the port number are correct too, not just the host name!
+changing the URL to reflect the correct location of your rApache instance. make sure that the protocol (http vs. https) and the port number are correct too, not just the host name!
 
-d. Add the following lines to /etc/httpd/conf/httpd.conf: 
-*********************************************************
-(This configuration is now supplied in its own config file ``tworavens-rapache.conf``, it can be dropped into the Apache's ``/etc/httpd/conf.d``. Again, the scripted installer will do this for you automatically.)
+
+**Next, in order to configure rApache to serve several TwoRavens "mini-apps",** 
+
+the installer creates the file ``tworavens-rapache.conf`` in the Apache's ``/etc/httpd/conf.d`` directory with the following configuration:
 
 .. code-block:: none
 
@@ -452,9 +460,7 @@ d. Add the following lines to /etc/httpd/conf/httpd.conf:
       RFileEval /var/www/html/dataexplore/rook/rookdata.R:Rook::Server$call(data.app)
    </Location>
 
-e. Create the following directories and chown them user apache: 
-***************************************************************
-
+**The following directories are created by the installer to store various output files produced by TwoRavens:**
 
 .. code-block:: none
 
@@ -464,15 +470,14 @@ e. Create the following directories and chown them user apache:
    
    mkdir --parents /var/www/html/custom/log_dir
 
+**The ownership of the TwoRavens directories is changed to user** ``apache``:
+
+.. code-block:: none
+
    chown -R apache.apache /var/www/html/custom
 
-f. chown the dataexplore directory 
-**********************************
-to user apache: 
+   chown -R apache /var/www/html/dataexplore
 
-``chown -R apache /var/www/html/dataexplore``
-
-g. restart httpd
-****************
+**Finally, the installer restarts Apache, for all the changes to take effect:**
 
 ``service httpd restart``
