@@ -335,7 +335,7 @@ Then select ``ls`` from the list of models on the right:
 |tworavens_test_select_model|
 
 Then click the ``Estimate`` button, above. If the model is successfully executed, 
-you will see results with generated graph images, shown in a new popup panel: 
+the results will appear in a new popup panel, with some generated graph images, as shown below:
 
 |tworavens_test_output|
 
