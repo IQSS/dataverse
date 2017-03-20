@@ -253,9 +253,9 @@ Dataverse URL         ``http://{local hostname}:8080``    URL of the Dataverse f
 ===================== ================================    =========== 
 
 
-Once everything is installed and configured, the installer script will print out a confirmation message with the URL of the TwoRavens application. For example: 
+Once everything is installed and configured, the installer script will print out a confirmation message with the URL of the TwoRavens application. For example:: 
 
-The application URL is https://server.dataverse.edu/dataexplore/gui.html
+        The application URL is https://server.dataverse.edu/dataexplore/gui.html
 
 d. Version conflict check  (preprocess.R)
 -----------------------------------------
@@ -297,6 +297,89 @@ This can be done by issuing the following API call::
         curl -X PUT -d {TWORAVENS_URL} http://localhost:8080/api/admin/settings/:TwoRavensUrl
 
 where :fixedwidthplain:`{TWORAVENS_URL}` is the URL reported by the installer script (as in the example at the end of step ``c.``, above).
+
+f. Perform a quick test of TwoRavens functionality
+--------------------------------------------------
+
+Ingest the dummy data file ``50by1000.dta`` (supplied in the Dataverse source tree in 
+``dataverse/scripts/search/data/tabular``). If successfully ingested as tabular data, 
+the file should appear on the Dataset page as follows: 
+
+|tworavens_test_file_ingested|
+
+
+If the file does NOT appear as Tabular Data - if it is shown as Stata/dta, 
+and no tabular attributes - the numbers of Variables and Observations and the UNF - 
+are being displayed, try to refresh the page a couple of times. If that doesn't 
+change the view to Tabular, it likely means that something went very wrong with the 
+tabular ingest. Consult the Glassfish server log for any error messages that may 
+explain the failure. 
+
+If the file is showing as Tabular Data, but the ``Explore`` button isn't present, 
+double-check that the steps in ``e.``, above, were correctly performed. 
+
+Otherwise, click on the ``Explore`` button. This will open TwoRavens in a new browser window.
+If the application initializes successfully, you should see the "data pebbles" representing 
+the first 3 variables in the file: 
+
+|tworavens_test_init| 
+
+If instead TwoRavens opens with an empty view - no variables listed on the left, and/or no "data pebbles" in the middle panel, we'll provide some diagnostics tip further below.
+
+Otherwise, mouse over ``var1``, and click on ``Dep Var``, selecting the variable as "dependent": 
+
+|tworavens_test_select_var| 
+
+Then select ``ls`` from the list of models on the right: 
+
+|tworavens_test_select_model|
+
+Then click the ``Estimate`` button, above. If the model is successfully executed, 
+you will see results with generated graph images, shown in a new popup panel: 
+
+|tworavens_test_output|
+
+**Troubleshooting:**
+
+If TwoRavens fails to initialize properly: 
+
+Symptom: instead of the "data pebbles" display shown in the second image, above, you are getting an empty view: 
+
+|tworavens_test_empty|
+
+A very likely cause of this condition is TwoRavens not being able to obtain the metadata describing the variables from your Dataverse. 
+Specifically, the "preprocessed summary statistics". 
+
+To diagnose: note the value of the ``dfId`` URL parameter in the view above. 
+Try to request the preprocessed fragment by going to the API end point directly:: 
+
+        <YOUR DATAVERSE URL>/api/access/datafile/<FILE ID>?format=prep
+
+Where the :fixedwidthplain:`<FILE ID>` is the value of the :fixedwidthplain:`dfId` parameter from the previous view. 
+You should get the output that looks like this::
+
+        {"dataset":{"private":false},"variables":{"var1":{"plottype":"bar","plotvalues":{"1":100,"2":100,"3":100,"4":100,"5":100,"6":100,"7":100,"8":100,"9":100,"10":100},"varnamesSumStat":"var1","median":5.5,"mean":5.5,"mode":"1","max":10,"min":1,"invalid":0,"valid":1000,"sd":2.87371854193452,"uniques":10,"herfindahl":0.1,"freqmode":100,"fewest":"1","mid":"1","freqfewest":"100","freqmid":"100","numchar":"numeric","nature":"ordinal","binary":"no","interval":"discrete","varnamesTypes":"var1","defaultInterval":"discrete","defaultNumchar":"numeric","defaultNature":"ordinal","defaultBinary":"no"},"var3":{"plottype":"bar","plotvalues":
+        ...
+
+If you are getting an error message instead, this is likely an Rserve connection problem. 
+Consult the Glassfish server log for any Rserve-related "connection refused" messages. 
+See if Rserve is running, and start it with ``service rserve start``, if necessary. 
+Check if the Rserve host name, username and password in the Glassfish configuration match 
+the actual Rserve configuration. (this is discussed in the section ``2.`` of the guide). 
+Correct this, if necessary, then try again. 
+
+If you ARE getting JSON output, but the TwoRavens view is still broken: 
+
+- Look closely at the very beginning of the JSON fragment. Does it have the ``{"prvate":false}`` entry, as shown in the example above? If not, this likely an R code version mismatch, described in section ``3.d.``, above. Correct the problem as described there, then try again. 
+
+- If the JSON looks *exactly* as the fragment above, yet still no data pebbles - enable the JavaScript error console in the TwoRavens window, and try again. Look for any error messages; and, specifically, for any URLs that TwoRavens is failing to access. Look for the debugging entry that shows TwoRavens attempting to download the ``format=prep`` fragment. Does the URL have the correct host name, port and/or the protocol (http vs. https)? If not, re-run the installer, specifying the correct Dataverse URL, and try again. 
+
+Symptom: the variables view is initialized properly, but no model output appears when you click ``Estimate``, with or without error messages. 
+
+- Make sure you properly selected the dependent variable (:fixedwidthplain:`var1`) and the model (:fixedwidthplain:`ls`). 
+
+- Consult the Apache error log files (``error_log`` and/or ``ssl_error_log``, in ``/var/log/httpd``) for any error messages. Possible error condition may include: missing R packages (double-check that the R setup, in step ``2.`` completed without errors); ``selinux`` ("Secure Linux") errors related to the rApache shared libraries, or directory permissions (disable Selinux, as described in ``1.a.``)
+
 
 4. Appendix
 +++++++++++
@@ -487,3 +570,21 @@ the installer creates the file ``tworavens-rapache.conf`` in the Apache's ``/etc
 **Finally, the installer restarts Apache, for all the changes to take effect:**
 
 ``service httpd restart``
+
+.. |tworavens_test_file_ingested| image:: ./img/tworavens_test_file_ingested.png
+   :class: img-responsive
+
+.. |tworavens_test_init| image:: ./img/tworavens_test_init.png
+   :class: img-responsive
+
+.. |tworavens_test_select_var| image:: ./img/tworavens_test_select_var.png
+   :class: img-responsive
+
+.. |tworavens_test_select_model| image:: ./img/tworavens_test_select_model.png
+   :class: img-responsive
+
+.. |tworavens_test_output| image:: ./img/tworavens_test_output.png
+   :class: img-responsive
+
+.. |tworavens_test_empty| image:: ./img/tworavens_test_empty.png
+   :class: img-responsive
