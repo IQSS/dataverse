@@ -271,7 +271,28 @@ Once everything is installed and configured, the installer script will print out
 The application URL is 
 https://server.dataverse.edu/dataexplore/gui.html
 
-d. Enable TwoRavens' Explore Button in Dataverse
+d. Version conflict check  (preprocess.R)
+-----------------------------------------
+
+One of the R files in the distribution, ``rook/preprocess/preprocess.R`` is used by both TwoRavens and 
+Dataverse. Dataverse application maintains its own copy of the file, ``<DOMAIN DIRECTORY>/applications/dataverse-<VERSION>/WEB-INF/classes/edu/harvard/iq/dataverse/rserve/scripts/preprocess.R``. 
+(Why not share the file from the same location? - because the two applications 
+can potentially be installed on 2 different servers).
+Compare the two files, **it is important that the two copies are identical**. 
+
+**If different**: 
+
+- the **TwoRavens version wins**. Meaning, you need to copy the version supplied with this TwoRavens distribution and overwrite the Glassfish version (above); then restart Glassfish. 
+
+- unless this is a brand new Dataverse installation, it may have cached summary statistics fragments that were produced with the older version of this R code. You **must remove** all such cached files::
+
+        cd <DATAVERSE FILES DIRECTORY>
+        find . -name '*.prep' | while read file; do /bin/rm $f; done
+
+*(We are working on finding a better way to ensure this compatibility between 
+TwoRavens and Dataverse.)*
+
+e. Enable TwoRavens' Explore Button in Dataverse
 ------------------------------------------------
 
 Now that you have installed TwoRavens, the following must be done in order to 
