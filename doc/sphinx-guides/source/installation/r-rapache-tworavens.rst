@@ -4,14 +4,9 @@ TwoRavens Application
 =====================
 
 TwoRavens is a web application for tabular data exploration and statistical analysis.
-It can be integrated with Dataverse, as an **optional** component.  The
-software was created as a standalone tool, by an independent
-development team at IQSS (outside of the main Dataverse
-development). TwoRavens was successfully integrated with Dataverse and
-made available to the users of the production Dataverse cluster at
-Harvard. However, the original developers have since left IQSS. Plans
-for the future of this collaboration are still being worked out. As
-the result, **the support for TwoRavens is somewhat limited at the
+It can be integrated with Dataverse, as an **optional** component.  While TwoRavens was originally created at IQSS, its developers have since left the organization. Plans
+for the future of the Dataverse/TwoRavens collaboration are still being worked out. As
+such, **support for TwoRavens is somewhat limited at the
 moment (as of Spring of 2017).**
 
 Any questions regarding the features of TwoRavens, bug reports and
@@ -20,24 +15,23 @@ application.  The `TwoRavens GitHub repository
 <https://github.com/IQSS/TwoRavens>`_ and the `TwoRavens project page
 <http://2ra.vn/community/index.html>`_ are good places to start.
 
-At the same time the Dataverse project will try to continue providing the 
+For now, the Dataverse project will continue providing 
 installation and integration support. We have created a new (as
-of Dataverse v.4.6.1) version of the installer scripts and updated the
-guide, below. We have tried to improve and somewhat simplify the
-installation process. Specifically, the notoriously tricky part of getting the
-correct versions of the required third party R packages installed.
+of Dataverse v.4.6.1) version of the installer scripts and updated this guide. We have tried to improve and simplify the
+installation process, particularly the difficult process of installing
+correct versions of the required third party R packages.
 
 Please be warned: 
 
-- The process may still require some system administration skills. 
+- This process may still require some system administration skills. 
 - The guide below is very Linux-specific. This process has been tested
   on RedHat/CentOS servers only. In some ways it *may* actually be
-  easier to get it all installed on MacOS X (specifically because
+  easier to get it all installed on MacOS X (because
   MacOS X versions of third party R packages are available
   pre-compiled), or even on Windows. But it hasn't been attempted, and
   is not supported by the Dataverse team.
 
-Besides the TwoRavens web application proper, several required
+In addition to the TwoRavens web application proper, several required
 components need to be installed and configured. This includes R,
 rApache and a collection of required third-party R packages. The
 installation steps for these components are described in the
@@ -52,39 +46,38 @@ browser**. These JavaScript files, and the accompanying HTML, CSS, etc. files
 are served by an HTTP server (Apache) as static objects. 
 
 The statistical calculations are performed by R programs that run **on the server**. 
-`rApache <http://rapache.net/>`_ is used as the web front for R on the server, so 
+`rApache <http://rapache.net/>`_ is used as the web front end for R on the server, so 
 that the browser application can talk to R over HTTP. 
 
 When a user requests to run 
-a statistical model on a datafile, TwoRavens will instruct the R code on the 
+a statistical model on a data file, TwoRavens will instruct the R code on the 
 server to download the file **directly from the Dataverse application**. Access 
 URLs need to be configured for this to work properly (this is done by the TwoRavens 
 installer script in step ``3.``)  
 
-The application itself will need to obtain some tabular data-specific metadata from 
-the Dataverse - the DDI fragment that describes the variables and some pre-processed
+The application itself will need to obtain some tabular-data-specific metadata from 
+the Dataverse -- the DDI fragment that describes the variables and some pre-processed
 summary statistics for the data vectors. In order to produce the latter, the Dataverse
 application also needs to be able to execute some R code on the server. Instead of 
 ``rApache``, Dataverse uses `Rserve <https://rforge.net/Rserve/>`_ to 
 communicate to R. Rserve is installed as a "contributor" R package. It runs as a 
-daemon process on the server accepting network connections on a dedicated port. 
+daemon process on the server, accepting network connections on a dedicated port. 
 Dataverse project supplies an :fixedwidthplain:`init.d`-style startup file for the 
 daemon. The R setup in step ``2.`` will set it up so that the daemon gets started
 automatically when the system boots. 
 
 In addition to Rserve, there are 14 more R library packages that the TwoRavens R 
-code requires in order to run. These in turn require 30 more as their own dependencies. 
-So the total of 45 packages must be installed. "Installed" in the 
+code requires in order to run. These in turn require 30 more as their own dependencies, so a total of 45 packages must be installed. "Installed" in the 
 context of an R package means R must download the **source code** from the `CRAN 
 <https://cran.r-project.org/>`_ code repository and compile it locally. This
 historically has been the trickiest, least stable part of the installation process, 
 since the packages in question are being constantly (and independently) developed. 
-Which means that every time you attempt to install these packages, you are building  
+This means that every time you attempt to install these packages, you are building  
 from potentially different versions of the source code. An incompatibility introduced 
 between any two of the packages can result in a failure to install. In this release 
 we have attempted to resolve this by installing the **specific  versions of the R 
 packages that have been proven** to work together. If you have attempted to 
-install TwoRavens in the past, and it didn't quite work, please see the part of 
+install TwoRavens in the past, and it didn't work, please see the part of 
 section ``1.b.`` where we explain how to completely erase all the previously 
 built packages.
  
@@ -99,7 +92,7 @@ It's probably installed already, but if not:
 
 ``yum install httpd``
 
-This rApache configuration does not work SELinux. Execute the following commands 
+This rApache configuration does not work with SELinux. Execute the following commands 
 to disable SELinux: 
 
 ``setenforce permissive``
@@ -108,7 +101,7 @@ to disable SELinux:
 
 (Note: If you can get rApache to work with SELinux, we encourage you to make a pull request! Please see the :doc:`/developers/selinux` section of the Developer Guide to get started.)
 
-If you choose to to serve TwoRavens and run rApache under :fixedwidthplain:`https`, a "real", signed certificate (as opposed to self-signed) is recommended. 
+If you choose to to serve TwoRavens and run rApache under :fixedwidthplain:`https`, a "real" signed certificate (as opposed to self-signed) is recommended. 
 
 Directory listing needs to be disabled on the web documents folder served by Apache: 
 
@@ -143,8 +136,8 @@ RHEL users will want to log in to their organization's respective RHN interface,
 • click on "Subscribed Channels: Alter Channel Subscriptions"
 • enable EPEL, Server Extras, Server Optional
 
-If you are upgrading an existing installation of TwoRavens; or if you have attempted to 
-install it in the past, and it didn't quite work, **we strongly recommend reinstalling 
+If you are upgrading an existing installation of TwoRavens, or if you have attempted to 
+install it in the past and it didn't work, **we strongly recommend reinstalling 
 R completely**, erasing all the extra R packages that may have been already built. 
 
 Uninstall R::
@@ -212,7 +205,7 @@ The script will skip this part, if this has already been done on this system (i.
 Note that the setup will set the Rserve password to :fixedwidthplain:`"rserve"`. 
 Rserve daemon runs under a non-privileged user id, and there appears to be a 
 very limited potential for security damage through unauthorized access. It is however 
-still a good idea **to change the it**. The password is specified in ``/etc/Rserve.pwd``. 
+still a good idea **to change the password**. The password is specified in ``/etc/Rserve.pwd``. 
 Please see `Rserve documentation <https://rforge.net/Rserve/doc.html>`_ for more 
 information on password encryption and access security. 
  
@@ -227,7 +220,7 @@ Make sure the rserve password is correctly specified in the ``domain.xml`` of yo
 a. download the application:
 ----------------------------
 
-(though you may have already done so, in step 2., above). 
+(though you may have already done so, in step ``2.`` above). 
 
 For example::
 
@@ -246,7 +239,7 @@ Place it in the web root directory of your apache server. We'll assume ``/var/ww
 c. run the installer
 --------------------
 
-a scripted, interactive installer is provided at the top level of the TwoRavens 
+A scripted, interactive installer is provided at the top level of the TwoRavens 
 distribution. Run it as::
 
    cd /var/www/html/dataexplore
@@ -261,14 +254,14 @@ Setting               default                             Comment
 TwoRavens directory   ``/var/www/html/dataexplore``       File directory where TwoRavens is installed.
 Apache config dir.    ``/etc/httpd``                      rApache config file for TwoRavens will be placed under ``conf.d/`` there.
 Apache web dir.       ``/var/www/html``                   
-rApache/TwoRavens URL ``http://{local hostname}:80``      (**see the Appendix for the discussion on ports!**)
+rApache/TwoRavens URL ``http://{local hostname}:80``      (**see Appendix ``I.``for the discussion on ports!**)
 Dataverse URL         ``http://{local hostname}:8080``    URL of the Dataverse from which TwoRavens will be receiving metadata and data files.
 ===================== ================================    =========== 
 
 
 Once everything is installed and configured, the installer script will print out a confirmation message with the URL of the TwoRavens application. For example: 
 
-The application URL is 
+        The application URL is 
 https://server.dataverse.edu/dataexplore/gui.html
 
 d. Version conflict check  (preprocess.R)
@@ -320,15 +313,15 @@ I. Ports configuration discussion
 ---------------------------------
 
 By default, Glassfish will install itself on ports 8080 and 8181 (for
-http and https, respectively), and Apache - on port 80 (the default
+http and https, respectively). Apache will install itself on port 80 (the default
 port for http). Under this configuration, your Dataverse will be
 accessible at ``http://{your host}:8080``,
-and rApache - at ``http://{your host}/``. The TwoRavens installer, above,
+and rApache at ``http://{your host}/``. The TwoRavens installer, above,
 will default to these values (and assume you are running both the
 Dataverse and TwoRavens/rApache on the same host).
 
 This configuration may be the easiest to set up if you are simply
-trying out/testing the Dataverse and TwoRavens. Accept all the
+trying out/testing the Dataverse and TwoRavens integration. Accept all the
 defaults, and you should have a working installation in no
 time. However, if you are planning to use this installation to
 actually serve data to real users, you'll probably want to run
@@ -345,32 +338,31 @@ Furthermore, while the default setup assumes http as the default
 protocol for both the Dataverse and TwoRavens, https is strongly
 recommended for a real production system. Again, this will be your
 responsibility, to configure https in both Glassfish and
-Apache. Glassfih comes pre-configured to run https on port 8181, with
-a *self-signed certificiate*. For a production system, you will most
-certainly will want to obtain a properly signed certificate and
+Apache. Glassfish comes pre-configured to run https on port 8181, with
+a *self-signed certificate*. For a production system, you will most
+certainly want to obtain a properly signed certificate and
 configure Glassfish to use it. Apache does not use https out of the
-box at all. Again, it is the responsibility of the installing user, to
+box at all. Again, it is the responsibility of the installing user to
 configure Apache to run https, and, providing you are planning to run
 rApache on the same host as the Dataverse, use the same SSL
 certificate as your Glassfish instance. Again, it will need to be done
 before you run the installer script above. All of this may involve
 some non-trivial steps and will most likely require help from your
-local network administrator - unless you happen to be your local
+local network administrator -- unless you happen to be your local
 sysadmin. Unfortunately, we cannot provide step-by-step instructions
 for these tasks. As the actual steps required will likely depend on
 the specifics of how your institution obtains signed SSL certificates,
-the format in which you receive these certificates, etc. **Good
-luck!**
+the format in which you receive these certificates, etc. 
 
 Finally: If you choose to have your Dataverse support secure
-**Shibboleth authentication**, this require an arrangement Glassfish
+**Shibboleth authentication**, this requires an arrangement wherein your Glassfish
 instance is running on a high local port unaccessible from the
-outside, and is "hidden" behind Apache. With the latter running on the
+outside, and is "hidden" behind Apache, with the latter running on the
 default https port, accepting and proxying the incoming connections to
 the former. This is described in the :doc:`shibboleth` section of the
 Installation Guide. It is possible to have TwoRavens hosted on the
-same APache server. In fact, with this proxying setup in place, the
-TwoRavens and rApache configuration becomes somewhat simpler. As both
+same Apache server. In fact, with this proxying setup in place, the
+TwoRavens and rApache configuration becomes somewhat simpler, as both
 the Dataverse and TwoRavens will be served on the same port - 443 (the
 default port for https). So when running the installer script above,
 enter "https", your host name and "443" for the rApache protocol, host
@@ -404,7 +396,7 @@ III. What the install.pl script does:
 The steps below are performed by the ``install.pl`` script. **Provided for reference only!** 
 The instruction below could be used to configure it all by hand, if necessary, or 
 to verify that the installer has done it correctly. 
-Once again: normally you **would NOT need to individually perform the steps below**!
+Once again: **normally you would NOT need to individually perform the steps below**!
 
 TwoRavens is distributed with a few hard-coded host and directory names. So these 
 need to be replaced with  the values specific to your system. 
