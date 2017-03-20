@@ -8,12 +8,16 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.ingest.IngestUtil;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
@@ -30,8 +34,6 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import org.apache.commons.lang.StringUtils;
-import org.jsoup.helper.StringUtil;
-
     
 /**
  *
@@ -51,6 +53,9 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
     
     @EJB
     SettingsServiceBean settingsService;
+    
+    @EJB
+    AuthenticationServiceBean authService;
     
     @EJB
     SystemConfig systemConfig;
@@ -308,6 +313,21 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         
     }
     
+    public String getContributorsNames(DatasetVersion version) {
+        String contNames = "";
+        for (String id : version.getVersionContributorIdentifiers()) {
+            id = id.startsWith("@") ? id.substring(1) : id;
+            AuthenticatedUser au = authService.getAuthenticatedUser(id);
+            if (au != null) {
+                if (contNames.isEmpty()) {
+                    contNames = au.getName();
+                } else {
+                    contNames = contNames + ", " + au.getName();
+                }
+            }
+        }
+        return contNames;
+    }   
 
     /**
      * Query to return the last Released DatasetVersion by Persistent ID
@@ -969,7 +989,7 @@ w
                         .collect(Collectors.toList());
                 */        
         return null;/*
-        for (Object[] dvInfo : infoList) {
+        for (Object[] dvInf: infoList) {
                         
             mMap = new HashMap();
             for(int idx=0; idx < colsToRetrieve.size(); idx++){
@@ -983,7 +1003,7 @@ w
         */
     }
 
-    public JsonObjectBuilder fixUnf(String datasetVersionId) {
+    public JsonObjectBuilder fixMissingUnf(String datasetVersionId, boolean forceRecalculate) {
         JsonObjectBuilder info = Json.createObjectBuilder();
         if (datasetVersionId == null || datasetVersionId.isEmpty()) {
             info.add("message", "datasetVersionId was null or empty!");
@@ -995,16 +1015,102 @@ w
             info.add("message", "Could not find a dataset version based on datasetVersionId " + datasetVersionId + ".");
             return info;
         }
-        if (!StringUtil.isBlank(datasetVersion.getUNF())) {
+        if (!StringUtils.isBlank(datasetVersion.getUNF())) {
             info.add("message", "Dataset version (id=" + datasetVersionId + ") already has a UNF. Blank the UNF value in the database if you must change it.");
             return info;
         }
-        IngestUtil.recalculateDatasetVersionUNF(datasetVersion);
-        DatasetVersion saved = em.merge(datasetVersion);
-        info.add("message", "New UNF value saved (" + saved.getUNF() + "). Reindexing dataset.");
+            
+        List<String> fileUnfsInVersion = getFileUnfsInVersion(datasetVersion);
+        if (fileUnfsInVersion.isEmpty()) {
+            info.add("message", "Dataset version (id=" + datasetVersionId + ") has no tabular data files with UNF signatures. The version UNF will remain blank.");
+            return info;
+        }
+        
+        if (!forceRecalculate) {
+            DatasetVersion previousDatasetVersion = getPreviousVersionWithUnf(datasetVersion);
+            if (previousDatasetVersion != null) {
+                List<String> fileUnfsInPreviousVersion = getFileUnfsInVersion(previousDatasetVersion);
+                
+                if (isFileUnfsIdentical(fileUnfsInVersion, fileUnfsInPreviousVersion)) {
+                    datasetVersion.setUNF(previousDatasetVersion.getUNF());
+                    DatasetVersion saved = em.merge(datasetVersion);
+                    info.add("message", "Dataset version (id=" + datasetVersionId + ") has the same tabular file UNFs as a previous version. Assigned the UNF of the previous version without recalculation (" + previousDatasetVersion.getUNF() + "). Use the --forceRecalculate option if you insist on recalculating this UNF.");
+                }
+            }
+        }
+        
+        // is the UNF still unset? 
+        if (StringUtils.isBlank(datasetVersion.getUNF())) {
+            IngestUtil.recalculateDatasetVersionUNF(datasetVersion);
+            DatasetVersion saved = em.merge(datasetVersion);
+            info.add("message", "New UNF value saved (" + saved.getUNF() + "). Reindexing dataset.");
+        }
+
+        // reindexing the dataset, to make sure the new UNF is in SOLR:
         boolean doNormalSolrDocCleanUp = true;
         Future<String> indexingResult = indexService.indexDataset(datasetVersion.getDataset(), doNormalSolrDocCleanUp);
+        
         return info;
+    }
+    
+    private boolean isFileUnfsIdentical(List<String> fileUnfs1, List<String> fileUnfs2) {
+        if (fileUnfs1.size() != fileUnfs2.size()) {
+            return false;
+        }
+        
+        for (int i = 0; i < fileUnfs1.size(); i++) {
+            if (!fileUnfs1.get(i).equalsIgnoreCase(fileUnfs2.get(i))) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
+    private List<String> getFileUnfsInVersion(DatasetVersion datasetVersion) {
+        ArrayList<String> fileUnfs = new ArrayList<>();
+        
+        Iterator<FileMetadata> fileMetadataIterator = datasetVersion.getFileMetadatas().iterator();
+        
+        while (fileMetadataIterator.hasNext()) {
+            FileMetadata fileMetadata = fileMetadataIterator.next();
+            
+            String fileUnf = fileMetadata.getDataFile().getUnf();
+            
+            if (fileUnf != null && !StringUtils.isBlank(fileUnf)) {
+                fileUnfs.add(fileUnf);
+            }
+        }
+        
+        if (fileUnfs.size() > 0) {
+            Collections.sort(fileUnfs, String.CASE_INSENSITIVE_ORDER);
+        }
+        
+        return fileUnfs;
+    }
+    
+    private DatasetVersion getPreviousVersionWithUnf(DatasetVersion datasetVersion) {
+        if (datasetVersion.getDataset().getVersions().size() < 2) {
+            // this is the only version - so there's no previous version.
+            return null;
+        }
+        
+        Iterator<DatasetVersion> versionIterator = datasetVersion.getDataset().getVersions().iterator();
+        boolean returnNext = false; 
+        
+        while (versionIterator.hasNext()) {
+            DatasetVersion iteratedVersion = versionIterator.next();
+            
+            if (returnNext) {
+                if (!StringUtils.isBlank(iteratedVersion.getUNF())) {
+                    return iteratedVersion;
+                }
+            } else if (DatasetVersion.compareByVersion.compare(datasetVersion, iteratedVersion) == 0) {
+                returnNext = true;
+            }
+        }
+        
+        return null;
     }
     
 } // end class

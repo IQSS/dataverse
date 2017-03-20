@@ -170,6 +170,19 @@ public class DataFileServiceBean implements java.io.Serializable {
             return null;
         }
     }
+
+    
+    public DataFile findPreviousFile(DataFile df){
+        TypedQuery query = em.createQuery("select o from DataFile o" +
+                    " WHERE o.id = :dataFileId", DataFile.class);
+        query.setParameter("dataFileId", df.getPreviousDataFileId());
+        try {
+            DataFile retVal = (DataFile)query.getSingleResult();
+            return retVal;
+        } catch(Exception ex) {
+            return null;
+        }
+    }
     
     public List<DataFile> findByDatasetId(Long studyId) {
         /* 
@@ -178,6 +191,16 @@ public class DataFileServiceBean implements java.io.Serializable {
         */
         Query query = em.createQuery("select o from DataFile o where o.owner.id = :studyId order by o.id");
         query.setParameter("studyId", studyId);
+        return query.getResultList();
+    }
+    
+    public List<DataFile> findAllRelatedByRootDatafileId(Long datafileId) {
+        /* 
+         Get all files with the same root datafile id
+         the first file has its own id as root so only one query needed.
+        */
+        Query query = em.createQuery("select o from DataFile o where o.rootDataFileId = :datafileId order by o.id");
+        query.setParameter("datafileId", datafileId);
         return query.getResultList();
     }
 
@@ -275,17 +298,6 @@ public class DataFileServiceBean implements java.io.Serializable {
                 + ";").getSingleResult();
     }
 
-    public FileMetadata findFileMetadataByFileAndVersionId(Long dataFileId, Long datasetVersionId) {
-        Query query = em.createQuery("select object(o) from FileMetadata as o where o.dataFile.id = :dataFileId and o.datasetVersion.id = :datasetVersionId");
-        query.setParameter("dataFileId", dataFileId);
-        query.setParameter("datasetVersionId", datasetVersionId);
-        try {
-            FileMetadata retVal = (FileMetadata)query.getSingleResult();
-            return retVal;
-        } catch(Exception ex) {
-            return null;
-        }
-    }
     
     public FileMetadata findFileMetadataByDatasetVersionIdAndDataFileId(Long datasetVersionId, Long dataFileId) {
 

@@ -1,4 +1,4 @@
-/*!
+*!
  * Start Bootstrap - Heroic Features HTML Template (http://startbootstrap.com)
  * Code licensed under the Apache License v2.0.
  * For details, see http://www.apache.org/licenses/LICENSE-2.0.
@@ -53,6 +53,13 @@ a.headerlink {
     border-right: 1px solid #dbd8e0;
     text-decoration: none;
 }
+
+.fixedwidthplain {
+    color:#606060; 
+    font-family: Menlo, Monaco, Consolas, "Courier New", monospace; 
+}
+
+/* alternative formattings:  font-weight: bold; font-size: 110%; etc. */
 
 /* #sidebar.bs-sidenav.affix {
 	position: static;

@@ -8,8 +8,6 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean.RetrieveDatasetVersionResponse;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.users.GuestUser;
-import edu.harvard.iq.dataverse.datasetutility.FileReplaceException;
 import edu.harvard.iq.dataverse.datasetutility.TwoRavensHelper;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
 import edu.harvard.iq.dataverse.engine.command.Command;
@@ -26,6 +24,7 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -37,6 +36,8 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.validation.ConstraintViolation;
+import org.primefaces.component.tabview.TabView;
+import org.primefaces.event.TabChangeEvent;
 
 /**
  *
@@ -55,7 +56,11 @@ public class FilePage implements java.io.Serializable {
     private GuestbookResponse guestbookResponse;
     private int selectedTabIndex;
     private Dataset editDataset;
-    
+    private Dataset dataset;
+    private List<DatasetVersion> datasetVersionsForTab;
+    private List<FileMetadata> fileMetadatasForTab;
+
+
     @EJB
     DataFileServiceBean datafileService;
     
@@ -130,14 +135,14 @@ public class FilePage implements java.io.Serializable {
 
             
             Boolean authorized = (fileMetadata.getDatasetVersion().isReleased()) ||
-                    (!fileMetadata.getDatasetVersion().isReleased() && this.canViewUnpublishedDataset()) 
-                    || fileMetadata.getDatasetVersion().isDeaccessioned();
+                    (!fileMetadata.getDatasetVersion().isReleased() && this.canViewUnpublishedDataset());
             
             if (!authorized ) {
                 return permissionsWrapper.notAuthorized();
             }         
            
            this.guestbookResponse = this.guestbookResponseService.initGuestbookResponseForFragment(fileMetadata, session);
+           
         } else {
 
             return permissionsWrapper.notFound();
@@ -292,6 +297,146 @@ public class FilePage implements java.io.Serializable {
         
     }
     
+    private int activeTabIndex;
+
+    public int getActiveTabIndex() {
+        return activeTabIndex;
+    }
+
+    public void setActiveTabIndex(int activeTabIndex) {
+        this.activeTabIndex = activeTabIndex;
+    }
+    
+    public void tabChanged(TabChangeEvent event) {
+        TabView tv = (TabView) event.getComponent();
+        this.activeTabIndex = tv.getActiveIndex();
+        if (this.activeTabIndex == 1) {
+            setFileMetadatasForTab(loadFileMetadataTabList());
+        } else {
+            setFileMetadatasForTab( new ArrayList());         
+        }
+    }
+    
+    
+    private List<FileMetadata> loadFileMetadataTabList() {
+        List<DataFile> allfiles = allRelatedFiles();
+        List<FileMetadata> retList = new ArrayList();
+        for (DatasetVersion versionLoop : fileMetadata.getDatasetVersion().getDataset().getVersions()) {
+            boolean foundFmd = false;
+            
+            if (versionLoop.isReleased() || versionLoop.isDeaccessioned() || permissionService.on(fileMetadata.getDatasetVersion().getDataset()).has(Permission.ViewUnpublishedDataset)) {
+                foundFmd = false;
+                for (DataFile df : allfiles) {
+                    FileMetadata fmd = datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(versionLoop.getId(), df.getId());
+                    if (fmd != null) {
+                        fmd.setContributorNames(datasetVersionService.getContributorsNames(versionLoop));
+                        FileVersionDifference fvd = new FileVersionDifference(fmd, getPreviousFileMetadata(fmd));
+                        fmd.setFileVersionDifference(fvd);
+                        retList.add(fmd);
+                        foundFmd = true;
+                        break;
+                    }
+                }
+                //no File metadata found make dummy one
+                if (!foundFmd) {
+                    FileMetadata dummy = new FileMetadata();
+                    dummy.setDatasetVersion(versionLoop);
+                    dummy.setDataFile(null);
+                    FileVersionDifference fvd = new FileVersionDifference(dummy, getPreviousFileMetadata(versionLoop));
+                    dummy.setFileVersionDifference(fvd);
+                    retList.add(dummy);
+                }
+            }
+        }
+        return retList;
+    }
+    
+    private FileMetadata getPreviousFileMetadata(DatasetVersion currentversion) {
+        List<DataFile> allfiles = allRelatedFiles();
+        boolean foundCurrent = false;
+        DatasetVersion priorVersion = null;
+        for (DatasetVersion versionLoop : fileMetadata.getDatasetVersion().getDataset().getVersions()) {
+            if (foundCurrent) {
+                priorVersion = versionLoop;
+                break;
+            }
+            if (versionLoop.equals(currentversion)) {
+                foundCurrent = true;
+            }
+
+        }
+        if (priorVersion != null && priorVersion.getFileMetadatasSorted() != null) {
+            for (FileMetadata fmdTest : priorVersion.getFileMetadatasSorted()) {
+                for (DataFile fileTest : allfiles) {
+                    if (fmdTest.getDataFile().equals(fileTest)) {
+                        return fmdTest;
+                    }
+                }
+            }
+        }
+
+        return null;
+
+    }
+    
+    private FileMetadata getPreviousFileMetadata(FileMetadata fmdIn){
+        
+        DataFile dfPrevious = datafileService.findPreviousFile(fmdIn.getDataFile());
+        DatasetVersion dvPrevious = null;
+        boolean gotCurrent = false;
+        for (DatasetVersion dvloop: fileMetadata.getDatasetVersion().getDataset().getVersions()){
+            if(gotCurrent){
+                dvPrevious  = dvloop;
+                break;
+            }
+             if(dvloop.equals(fmdIn.getDatasetVersion())){
+                 gotCurrent = true;
+             }
+        } 
+        
+        List<DataFile> allfiles = allRelatedFiles();
+        
+        if (dvPrevious != null && dvPrevious.getFileMetadatasSorted() != null) {
+            for (FileMetadata fmdTest : dvPrevious.getFileMetadatasSorted()) {
+                for (DataFile fileTest : allfiles) {
+                    if (fmdTest.getDataFile().equals(fileTest)) {
+                        return fmdTest;
+                    }
+                }
+            }
+        }
+        
+        Long dfId = fmdIn.getDataFile().getId();
+        if (dfPrevious != null){
+            dfId = dfPrevious.getId();
+        }
+        Long versionId = null;       
+        if (dvPrevious !=null){
+            versionId = dvPrevious.getId();
+        }
+        
+        FileMetadata fmd = datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(versionId, dfId);
+        
+        return fmd;
+    }
+    
+    public List<FileMetadata> getFileMetadatasForTab() {
+        return fileMetadatasForTab;
+    }
+
+    public void setFileMetadatasForTab(List<FileMetadata> fileMetadatasForTab) {
+        this.fileMetadatasForTab = fileMetadatasForTab;
+    }
+    
+    
+    public List<DatasetVersion> getDatasetVersionsForTab() {
+        return datasetVersionsForTab;
+    }
+
+    public void setDatasetVersionsForTab(List<DatasetVersion> datasetVersionsForTab) {
+        this.datasetVersionsForTab = datasetVersionsForTab;
+    }
+    
     public String save() {
         // Validate
         Set<ConstraintViolation> constraintViolations = this.fileMetadata.getDatasetVersion().validate();
@@ -395,22 +540,36 @@ public class FilePage implements java.io.Serializable {
         this.selectedTabIndex = selectedTabIndex;
     }
     
+    
+    private List<DataFile> allRelatedFiles() {
+        List<DataFile> dataFiles = new ArrayList();
+        DataFile dataFileToTest = fileMetadata.getDataFile();
+        Long rootDataFileId = dataFileToTest.getRootDataFileId();
+        if (rootDataFileId < 0) {
+            dataFiles.add(dataFileToTest);
+        } else {
+            dataFiles.addAll(datafileService.findAllRelatedByRootDatafileId(rootDataFileId));
+        }
+
+        return dataFiles;
+    }
+    
     public boolean isDraftReplacementFile(){
         /*
         This method tests to see if the file has been replaced in a draft version of the dataset
         Since it must must work when you are on prior versions of the dataset 
         it must accrue all replacement files that may have been created
         */
-        Dataset dataset = fileMetadata.getDataFile().getOwner();
+        Dataset datasetToTest = fileMetadata.getDataFile().getOwner();
         DataFile dataFileToTest = fileMetadata.getDataFile();
         
-        DatasetVersion currentVersion = dataset.getLatestVersion();
+        DatasetVersion currentVersion = datasetToTest.getLatestVersion();
         
         if (!currentVersion.isDraft()){
             return false;
         }
         
-        if (dataset.getReleasedVersion() == null){
+        if (datasetToTest.getReleasedVersion() == null){
             return false;
         }
         
@@ -431,9 +590,9 @@ public class FilePage implements java.io.Serializable {
         
         DataFile current = dataFiles.get(numFiles - 1 );       
         
-        DatasetVersion publishedVersion = dataset.getReleasedVersion();
+        DatasetVersion publishedVersion = datasetToTest.getReleasedVersion();
         
-        if( datafileService.findFileMetadataByFileAndVersionId(current.getId(), publishedVersion.getId()) == null){
+        if( datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(publishedVersion.getId(), current.getId()) == null){
             return true;
         }
         

@@ -407,7 +407,28 @@ public class FileMetadata implements Serializable {
         this.restrictedUI = restrictedUI;
     }
     
+    @Transient
+    private FileVersionDifference fileVersionDifference ;
+
+    public FileVersionDifference getFileVersionDifference() {
+        return fileVersionDifference;
+    }
+
+    public void setFileVersionDifference(FileVersionDifference fileVersionDifference) {
+        this.fileVersionDifference = fileVersionDifference;
+    }
     
+    @Transient
+    private String contributorNames;
+
+    public String getContributorNames() {
+        return contributorNames;
+    }
+
+    public void setContributorNames(String contributorNames) {
+        this.contributorNames = contributorNames;
+    }
+        
 
     @Override
     public int hashCode() {
