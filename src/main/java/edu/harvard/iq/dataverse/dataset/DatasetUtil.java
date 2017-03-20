@@ -43,14 +43,11 @@ public class DatasetUtil {
             return thumbnails;
         }
         if (considerDatasetLogoAsCandidate) {
-//            Path path = Paths.get(dataset.getFileSystemDirectory() + File.separator + DatasetUtil.datasetLogoFilenameFinal);
             Path path = Paths.get(dataset.getFileSystemDirectory() + File.separator + datasetLogoThumbnail + thumb48addedByImageThumbConverter);
             if (Files.exists(path)) {
                 logger.fine("Thumbnail created from dataset logo exists!");
                 File file = path.toFile();
                 try {
-//                    String base64image = FileUtil.rescaleImage(file);
-//                    DatasetThumbnail datasetThumbnail = new DatasetThumbnail(base64image, null);
                     byte[] bytes = Files.readAllBytes(file.toPath());
                     String base64image = Base64.getEncoder().encodeToString(bytes);
                     DatasetThumbnail datasetThumbnail = new DatasetThumbnail(FileUtil.rfc2397dataUrlSchemeBase64Png + base64image, null);
@@ -78,14 +75,10 @@ public class DatasetUtil {
             return null;
         }
         String title = dataset.getLatestVersion().getTitle();
-//        Path path = Paths.get(dataset.getFileSystemDirectory() + File.separator + DatasetUtil.datasetLogoFilenameFinal);
 
         Path path = Paths.get(dataset.getFileSystemDirectory() + File.separator + datasetLogoThumbnail + thumb48addedByImageThumbConverter);
         if (Files.exists(path)) {
             try {
-//                File file = path.toFile();
-//                String base64image = FileUtil.rescaleImage(file);
-//                DatasetThumbnail datasetThumbnail = new DatasetThumbnail(base64image, null);
                 byte[] bytes = Files.readAllBytes(path);
                 String base64image = Base64.getEncoder().encodeToString(bytes);
                 DatasetThumbnail datasetThumbnail = new DatasetThumbnail(FileUtil.rfc2397dataUrlSchemeBase64Png + base64image, null);
@@ -132,7 +125,6 @@ public class DatasetUtil {
         }
         File originalFile = new File(dataset.getFileSystemDirectory().toString(), datasetLogoFilenameFinal);
         boolean originalFileDeleted = originalFile.delete();
-//        File thumb48 = new File(dataset.getFileSystemDirectory().toString(), File.separator + "FIXME.thumb48");
         File thumb48 = new File(dataset.getFileSystemDirectory().toString(), File.separator + datasetLogoThumbnail + thumb48addedByImageThumbConverter);
         boolean thumb48Deleted = thumb48.delete();
         if (originalFileDeleted && thumb48Deleted) {
@@ -180,11 +172,6 @@ public class DatasetUtil {
                 return null;
             }
         }
-        /**
-         * *
-         * @todo Somehow the dataset logo becomes zero bytes. Do we want the
-         * original file to be written to disk? Should we blow it away?
-         */
         File originalFile = new File(datasetDirectory.toString(), datasetLogoFilenameFinal);
         try {
             Files.copy(tmpFile.toPath(), originalFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
@@ -192,12 +179,6 @@ public class DatasetUtil {
             logger.severe("Failed to original file from " + tmpFile.getAbsolutePath() + " to " + originalFile.getAbsolutePath() + ": " + ex);
         }
         String fileLocation = dataset.getFileSystemDirectory() + File.separator + datasetLogoThumbnail;
-//                File tmpFile = null;
-//        try {
-//            tmpFile = File.createTempFile("tempFileToRescale", ".tmp");
-//        } catch (IOException ex) {
-//            Logger.getLogger(ImageThumbConverter.class.getName()).log(Level.SEVERE, null, ex);
-//        }
         BufferedImage fullSizeImage = null;
         try {
             fullSizeImage = ImageIO.read(originalFile);
@@ -220,7 +201,6 @@ public class DatasetUtil {
         }
         FileChannel dest = null;
         try {
-//            dest = new FileOutputStream(tmpFile).getChannel();
             dest = new FileOutputStream(originalFile).getChannel();
         } catch (FileNotFoundException ex) {
             Logger.getLogger(ImageThumbConverter.class.getName()).log(Level.SEVERE, null, ex);
