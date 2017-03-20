@@ -8,7 +8,6 @@ import edu.harvard.iq.dataverse.datasetutility.FileReplaceException;
 import edu.harvard.iq.dataverse.datasetutility.FileReplacePageHelper;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
-import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataFileCommand;
@@ -2202,7 +2201,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         logger.info("In deleteDatasetLogoAndUseThisDataFileAsThumbnailInstead, fileMetadataSelectedForThumbnailPopup: " + fileMetadataSelectedForThumbnailPopup);
         if (fileMetadataSelectedForThumbnailPopup != null) {
             if (isThumbnailIsFromDatasetLogoRatherThanDatafile()) {
-                logger.info("current thumbnail is from a dataset logo rather than a dataset file, blowing away the logo");
+                logger.fine("current thumbnail is from a dataset logo rather than a dataset file, blowing away the logo");
                 /**
                  * @todo Rather than deleting and merging right away, try to
                  * respect how this page seems to stage actions and giving the

@@ -46,7 +46,7 @@ public class DatasetUtil {
 //            Path path = Paths.get(dataset.getFileSystemDirectory() + File.separator + DatasetUtil.datasetLogoFilenameFinal);
             Path path = Paths.get(dataset.getFileSystemDirectory() + File.separator + datasetLogoThumbnail + thumb48addedByImageThumbConverter);
             if (Files.exists(path)) {
-                logger.info("Thumbnail created from dataset logo exists!");
+                logger.fine("Thumbnail created from dataset logo exists!");
                 File file = path.toFile();
                 try {
 //                    String base64image = FileUtil.rescaleImage(file);
@@ -59,7 +59,7 @@ public class DatasetUtil {
                     logger.info("Unable to rescale image: " + ex);
                 }
             } else {
-                logger.info("There is no thumbnail created from a dataset logo");
+                logger.fine("There is no thumbnail created from a dataset logo");
             }
         }
         for (FileMetadata fileMetadata : dataset.getLatestVersion().getFileMetadatas()) {
@@ -92,7 +92,7 @@ public class DatasetUtil {
                 logger.fine(title + " will get thumbnail from dataset logo.");
                 return datasetThumbnail;
             } catch (IOException ex) {
-                logger.info("Unable to rescale image: " + ex);
+                logger.fine("Unable to rescale image: " + ex);
                 return null;
             }
         } else {
@@ -148,7 +148,7 @@ public class DatasetUtil {
             return null;
         }
         if (dataset.isUseGenericThumbnail()) {
-            logger.info("Bypassing logic to find a thumbnail because a generic icon for the dataset is desired.");
+            logger.fine("Bypassing logic to find a thumbnail because a generic icon for the dataset is desired.");
             return null;
         }
         for (FileMetadata fmd : dataset.getLatestVersion().getFileMetadatas()) {
@@ -206,7 +206,7 @@ public class DatasetUtil {
             return null;
         }
         if (fullSizeImage == null) {
-            logger.info("fullSizeImage was null!");
+            logger.fine("fullSizeImage was null!");
             return null;
         }
         int width = fullSizeImage.getWidth();
@@ -234,7 +234,7 @@ public class DatasetUtil {
         }
         String thumbFileLocation = ImageThumbConverter.rescaleImage(fullSizeImage, width, height, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE, fileLocation);
         boolean originalFileWasDeleted = originalFile.delete();
-        logger.info("Thumbnail saved to " + thumbFileLocation + ". Original file was deleted: " + originalFileWasDeleted);
+        logger.fine("Thumbnail saved to " + thumbFileLocation + ". Original file was deleted: " + originalFileWasDeleted);
         return dataset;
     }
 

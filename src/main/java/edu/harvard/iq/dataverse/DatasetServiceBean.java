@@ -771,11 +771,11 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     public Dataset setNonDatasetFileAsThumbnail(Dataset dataset, InputStream inputStream) {
         if (dataset == null) {
-            logger.info("In setNonDatasetFileAsThumbnail but dataset is null! Returning null.");
+            logger.fine("In setNonDatasetFileAsThumbnail but dataset is null! Returning null.");
             return null;
         }
         if (inputStream == null) {
-            logger.info("In setNonDatasetFileAsThumbnail but inputStream is null! Returning null.");
+            logger.fine("In setNonDatasetFileAsThumbnail but inputStream is null! Returning null.");
             return null;
         }
         dataset = DatasetUtil.persistDatasetLogoToDiskAndCreateThumbnail(dataset, inputStream);
@@ -785,11 +785,11 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     public Dataset setDatasetFileAsThumbnail(Dataset dataset, DataFile datasetFileThumbnailToSwitchTo) {
         if (dataset == null) {
-            logger.info("In setDatasetFileAsThumbnail but dataset is null! Returning null.");
+            logger.fine("In setDatasetFileAsThumbnail but dataset is null! Returning null.");
             return null;
         }
         if (datasetFileThumbnailToSwitchTo == null) {
-            logger.info("In setDatasetFileAsThumbnail but dataset is null! Returning null.");
+            logger.fine("In setDatasetFileAsThumbnail but dataset is null! Returning null.");
             return null;
         }
         DatasetUtil.deleteDatasetLogo(dataset);
@@ -800,7 +800,7 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     public Dataset removeDatasetThumbnail(Dataset dataset) {
         if (dataset == null) {
-            logger.info("In removeDatasetThumbnail but dataset is null! Returning null.");
+            logger.fine("In removeDatasetThumbnail but dataset is null! Returning null.");
             return null;
         }
         DatasetUtil.deleteDatasetLogo(dataset);

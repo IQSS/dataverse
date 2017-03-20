@@ -580,7 +580,7 @@ public class Datasets extends AbstractApiBean {
                 JsonObjectBuilder candidate = Json.createObjectBuilder();
                 String base64image = datasetThumbnail.getBase64image();
                 if (base64image != null) {
-                    logger.info("found a candidate!");
+                    logger.fine("found a candidate!");
                     candidate.add("base64image", base64image);
                 }
                 DataFile dataFile = datasetThumbnail.getDataFile();
