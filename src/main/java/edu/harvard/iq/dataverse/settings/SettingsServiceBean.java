@@ -149,6 +149,11 @@ public class SettingsServiceBean {
         DoiPassword,
         DoiBaseurlstring,
         */
+        /**
+         * Instead of a six-character alphanumeric string, use the database id
+         * of the dataset as the identifier in the DOI.
+         */
+        DoiIdentifierGetsDatasetDatabaseId,
         /* TwoRavens location */
         TwoRavensUrl,
         /** Optionally override http://guides.dataverse.org . */
