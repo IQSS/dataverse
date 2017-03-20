@@ -154,19 +154,13 @@ Wipe clean any R packages that were left behind::
 c. rApache: 
 -----------
 
-For RHEL/CentOS 6, we recommend the rpm built by the HMDC systems group:: 
+For RHEL/CentOS 6, we recommend that you download :download:`rapache-1.2.6-rpm0.x86_64.rpm <../_static/installation/files/home/rpmbuild/rpmbuild/RPMS/x86_64/rapache-1.2.6-rpm0.x86_64.rpm>` and install it with::
 
-install rApache as follows:: 
-
-	rpm -ivh http://mirror.hmdc.harvard.edu/HMDC-Public/RedHat-6/rapache-1.2.6-rpm0.x86_64.rpm
+	yum install rapache-1.2.6-rpm0.x86_64.rpm
 
 If you are using RHEL/CentOS 7, you can download our experimental :download:`rapache-1.2.7-rpm0.x86_64.rpm <../_static/installation/files/home/rpmbuild/rpmbuild/RPMS/x86_64/rapache-1.2.7-rpm0.x86_64.rpm>` and install it with::
 
-	rpm -ivh rapache-1.2.7-rpm0.x86_64.rpm
-
-Both distributions require libapreq2. You should be able to install it with :fixedwidthplain:`yum`::
-
-        yum install libapreq2 
+	yum install apache-1.2.7-rpm0.x86_64.rpm
 
 d. Install the build environment for R:
 ---------------------------------------
@@ -261,8 +255,7 @@ Dataverse URL         ``http://{local hostname}:8080``    URL of the Dataverse f
 
 Once everything is installed and configured, the installer script will print out a confirmation message with the URL of the TwoRavens application. For example: 
 
-        The application URL is 
-https://server.dataverse.edu/dataexplore/gui.html
+The application URL is https://server.dataverse.edu/dataexplore/gui.html
 
 d. Version conflict check  (preprocess.R)
 -----------------------------------------

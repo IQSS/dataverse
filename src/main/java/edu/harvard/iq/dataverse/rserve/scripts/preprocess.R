@@ -71,7 +71,13 @@ preprocess<-function(hostname=NULL, fileid=NULL, testdata=NULL, types=NULL, file
         hold[[i]] <- c(hold[[i]],lapply(mySumStats, `[[`,which(mySumStats$varnamesSumStat==varnames[i])),lapply(types, `[[`,which(types$varnamesTypes==varnames[i])))
     }
     names(hold)<-varnames
-    jsonHold<-rjson:::toJSON(hold)
+    
+    datasetLevelInfo<-list(private=FALSE)    # This signifies that that the metadata summaries are not privacy protecting
+    
+    ## Construct Metadata file that at highest level has list of dataset-level, and variable-level information
+    largehold<- list(dataset=datasetLevelInfo, variables=hold)
+    
+    jsonHold<-rjson:::toJSON(largehold)
     
     return(jsonHold)
 }
