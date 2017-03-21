@@ -198,7 +198,7 @@ public class ImageThumbConverter {
                 if (rawImageData != null) {
                     String imageDataBase64 = Base64.encodeToString(rawImageData, false);
                     //return FILE_CARD_IMAGE_URL + assignedThumbnailFileId;
-                    return FileUtil.rfc2397dataUrlSchemeBase64Png + imageDataBase64;
+                    return FileUtil.DATA_URI_SCHEME + imageDataBase64;
                 }
             }
         } catch (IOException ex) {

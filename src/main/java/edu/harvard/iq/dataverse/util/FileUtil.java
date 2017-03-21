@@ -134,7 +134,7 @@ public class FileUtil implements java.io.Serializable  {
      * file in order to imbed an image directly into an HTML page using the
      * "img" tag. See also https://en.wikipedia.org/wiki/Data_URI_scheme
      */
-    public static String rfc2397dataUrlSchemeBase64Png = "data:image/png;base64,";
+    public static String DATA_URI_SCHEME = "data:image/png;base64,";
 
     public FileUtil() {
     }

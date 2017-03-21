@@ -56,6 +56,7 @@ import static com.jayway.restassured.path.json.JsonPath.with;
 import static com.jayway.restassured.path.xml.XmlPath.from;
 import static junit.framework.Assert.assertEquals;
 import static java.lang.Thread.sleep;
+import static java.lang.Thread.sleep;
 
 /**
  * @todo These tests are in need of attention for a few reasons:
@@ -1487,7 +1488,7 @@ public class SearchIT {
         InputStream inputStream2guest = UtilIT.getInputStreamFromUnirest(thumbnailUrl, noSpecialAcessApiToken);
         assertEquals(treesAsBase64, UtilIT.inputStreamToDataUrlSchemeBase64Png(inputStream2guest));
 
-        String leadingStringToRemove = FileUtil.rfc2397dataUrlSchemeBase64Png;
+        String leadingStringToRemove = FileUtil.DATA_URI_SCHEME;
         System.out.println("before: " + treesAsBase64);
         String encodedImg = treesAsBase64.substring(leadingStringToRemove.length());
         System.out.println("after: " + encodedImg);

@@ -50,7 +50,7 @@ public class DatasetUtil {
                 try {
                     byte[] bytes = Files.readAllBytes(file.toPath());
                     String base64image = Base64.getEncoder().encodeToString(bytes);
-                    DatasetThumbnail datasetThumbnail = new DatasetThumbnail(FileUtil.rfc2397dataUrlSchemeBase64Png + base64image, null);
+                    DatasetThumbnail datasetThumbnail = new DatasetThumbnail(FileUtil.DATA_URI_SCHEME + base64image, null);
                     thumbnails.add(datasetThumbnail);
                 } catch (IOException ex) {
                     logger.info("Unable to rescale image: " + ex);
@@ -81,7 +81,7 @@ public class DatasetUtil {
             try {
                 byte[] bytes = Files.readAllBytes(path);
                 String base64image = Base64.getEncoder().encodeToString(bytes);
-                DatasetThumbnail datasetThumbnail = new DatasetThumbnail(FileUtil.rfc2397dataUrlSchemeBase64Png + base64image, null);
+                DatasetThumbnail datasetThumbnail = new DatasetThumbnail(FileUtil.DATA_URI_SCHEME + base64image, null);
                 logger.fine(title + " will get thumbnail from dataset logo.");
                 return datasetThumbnail;
             } catch (IOException ex) {
@@ -233,7 +233,7 @@ public class DatasetUtil {
         try {
             byte[] bytes = IOUtils.toByteArray(unirestInputStream1);
             String base64image = Base64.getEncoder().encodeToString(bytes);
-            DatasetThumbnail datasetThumbnail = new DatasetThumbnail(FileUtil.rfc2397dataUrlSchemeBase64Png + base64image, null);
+            DatasetThumbnail datasetThumbnail = new DatasetThumbnail(FileUtil.DATA_URI_SCHEME + base64image, null);
             return datasetThumbnail.getBase64image();
         } catch (IOException e) {
             logger.fine("input Stream could not be converted to Image String for dataset id " + datasetId);
@@ -250,7 +250,7 @@ public class DatasetUtil {
             return null;
         } else {
             String base64Image = datasetThumbnail.getBase64image();
-            String leadingStringToRemove = FileUtil.rfc2397dataUrlSchemeBase64Png;
+            String leadingStringToRemove = FileUtil.DATA_URI_SCHEME;
             String encodedImg = base64Image.substring(leadingStringToRemove.length());
             byte[] decodedImg = null;
             try {

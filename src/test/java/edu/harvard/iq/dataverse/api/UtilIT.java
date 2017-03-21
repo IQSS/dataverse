@@ -833,7 +833,7 @@ public class UtilIT {
             return null;
         }
         String base64image = Base64.getEncoder().encodeToString(bytes);
-        return FileUtil.rfc2397dataUrlSchemeBase64Png + base64image;
+        return FileUtil.DATA_URI_SCHEME + base64image;
     }
 
     /**
