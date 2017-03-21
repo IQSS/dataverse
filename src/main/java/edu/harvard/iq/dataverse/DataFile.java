@@ -801,13 +801,20 @@ public class DataFile extends DvObject implements Comparable {
     public String getDisplayName() {
         // @todo should we show the published version label instead?
         // currently this method is not being used
-        //return getLatestFileMetadata().getLabel(); 
-
-        if (getLatestFileMetadata() != null) {
+       return getLatestFileMetadata().getLabel(); 
+       /*
+       Taking out null check to see if npe persists.
+       Really shouldn't need it 
+       a file should always have a latest metadata
+       
+               ////if (getLatestFileMetadata() != null) {
            return getLatestFileMetadata().getLabel(); 
-        }
-        logger.fine("DataFile getLatestFileMetadata is null for DataFile id = " + this.getId());
-        return "";
+       // }
+       // logger.fine("DataFile getLatestFileMetadata is null for DataFile id = " + this.getId());
+       // return "";
+       
+       */
+
 
     }
     
