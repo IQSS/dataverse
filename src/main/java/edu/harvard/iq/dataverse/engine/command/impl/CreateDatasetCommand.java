@@ -137,7 +137,18 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         if (theDataset.getDoiSeparator()==null) theDataset.setDoiSeparator(doiSeparator);
        
         if (theDataset.getIdentifier()==null) {
-            theDataset.setIdentifier(ctxt.datasets().generateIdentifierSequence(theDataset.getProtocol(), theDataset.getAuthority(), theDataset.getDoiSeparator()));
+            String doiIdentifierType = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiIdentifierType, "randomString");
+            switch (doiIdentifierType) {
+                case "randomString":
+                    theDataset.setIdentifier(ctxt.datasets().generateIdentifierSequence(theDataset.getProtocol(), theDataset.getAuthority(), theDataset.getDoiSeparator()));
+                    break;
+                case "sequentialNumber":
+                    theDataset.setIdentifier(ctxt.datasets().generateIdentifierSequenceSequentialNumber(theDataset.getProtocol(), theDataset.getAuthority(), theDataset.getDoiSeparator()));
+                    break;
+                default:
+                    theDataset.setIdentifier(ctxt.datasets().generateIdentifierSequence(theDataset.getProtocol(), theDataset.getAuthority(), theDataset.getDoiSeparator()));
+                    break;
+            }
         }
         // Attempt the registration if importing dataset through the API, or the app (but not harvest or migrate)
         if ((importType == null || importType.equals(ImportType.NEW))

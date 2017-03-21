@@ -224,6 +224,11 @@ public class DatasetServiceBean implements java.io.Serializable {
         return identifier;
     }
 
+    public String generateIdentifierSequenceSequentialNumber(String protocol, String authority, String separator) {
+        Long id = ((Long) em.createNativeQuery("select nextval('datasetid_seq')").getSingleResult());
+        return id.toString();
+    }
+
     /**
      * Check that a identifier entered by the user is unique (not currently used
      * for any other study in this Dataverse Network) alos check for duplicate
