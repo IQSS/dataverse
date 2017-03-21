@@ -1156,7 +1156,6 @@ public class SearchIncludeFragment implements java.io.Serializable {
         Set<Long> harvestedDatasetIds = null;
         for (SolrSearchResult result : searchResultsList) {
             //logger.info("checking DisplayImage for the search result " + i++);
-            boolean valueSet = false;
             if (result.getType().equals("dataverses") /*&& result.getEntity() instanceof Dataverse*/) {
                 /**
                  * @todo Someday we should probably revert this setImageUrl to
@@ -1166,7 +1165,6 @@ public class SearchIncludeFragment implements java.io.Serializable {
                  * https://github.com/IQSS/dataverse/issues/3616
                  */
                 result.setImageUrl(getDataverseCardImageUrl(result));
-                valueSet = true;
             } else if (result.getType().equals("datasets") /*&& result.getEntity() instanceof Dataset*/) {
                 /**
                  * Getting the dataset thumbnail via api
@@ -1177,7 +1175,6 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 String imageUrl = DatasetUtil.getThumbnailImageString(systemConfig.getDataverseSiteUrl(), result.getEntityId());
                 if (imageUrl != null) {
                     result.setImageUrl(imageUrl);
-                    valueSet = true;
                 } 
                     
             } else if (result.getType().equals("files") /*&& result.getEntity() instanceof DataFile*/) {
@@ -1185,21 +1182,12 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 // use permissionsWrapper?  -- L.A. 4.2.1
                 // OK, done! (4.2.2; in the getFileCardImageUrl() method, below)
                 result.setImageUrl(getFileCardImageUrl(result));
-                valueSet = true;
                 if (result.isHarvested()) {
                     if (harvestedDatasetIds == null) {
                         harvestedDatasetIds = new HashSet<>();
                     }
                     harvestedDatasetIds.add(result.getParentIdAsLong());
                 }
-            }
-
-            if (valueSet) {
-                if (result.getImageUrl() != null) {
-                    result.setDisplayImage(true);
-                }
-            } else {
-                logger.warning("Index result / entity mismatch (id:resultType) - " + result.getId() + ":" + result.getType());
             }
         }
         dvobjectThumbnailsMap = null;

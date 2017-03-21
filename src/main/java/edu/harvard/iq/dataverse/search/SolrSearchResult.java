@@ -642,14 +642,6 @@ public class SolrSearchResult {
         this.imageUrl = imageUrl;
     }
 
-    public boolean isDisplayImage() {
-        return displayImage;
-    }
-
-    public void setDisplayImage(boolean displayImage) {
-        this.displayImage = displayImage;
-    }
-
     public String getQuery() {
         return query;
     }

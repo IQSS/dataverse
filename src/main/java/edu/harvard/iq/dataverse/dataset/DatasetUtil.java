@@ -219,6 +219,10 @@ public class DatasetUtil {
     }
 
     public static String getThumbnailImageString(String siteUrl, Long datasetId) {
+        /* 
+            Calls getThumbnailAsInputStream via API  then converts to image string  
+            Allows SolrSeardhResult to get image w/o having dataset in hand.
+        */
         String unirestUrlForThumbAPI = siteUrl + "/api/datasets/" + datasetId + "/thumbnail";
         GetRequest unirestOut1 = Unirest.get(unirestUrlForThumbAPI);
         InputStream unirestInputStream1 = null;

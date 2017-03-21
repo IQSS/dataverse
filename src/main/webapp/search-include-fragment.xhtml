@@ -457,8 +457,8 @@
                         </div>
                         <div class="card-preview-icon-block text-center">
                             <h:outputLink value="#{!SearchIncludeFragment.rootDv and !result.isInTree ? dvUrl : widgetWrapper.wrapURL(dvUrl)}" target="#{!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView ? '_blank' : ''}">
-                                <h:graphicImage value="#{result.imageUrl}" rendered="#{result.displayImage}"/>
-                                <span class="icon-dataverse text-brand" jsf:rendered="#{!result.displayImage}"/>
+                                <h:graphicImage value="#{result.imageUrl}" rendered="#{!empty result.imageUrl}"/>
+                                <span class="icon-dataverse text-brand" jsf:rendered="#{empty result.imageUrl}"/>
                             </h:outputLink>
                         </div>
 
@@ -515,8 +515,8 @@
                         </div>
                         <div class="card-preview-icon-block text-center">
                             <a href="#{!SearchIncludeFragment.rootDv and !result.isInTree ? result.datasetUrl : widgetWrapper.wrapURL(result.datasetUrl)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">                               
-                                <h:graphicImage value="#{result.imageUrl}" rendered="#{result.displayImage}"/>                               
-                                <span class="icon-dataset" jsf:rendered="#{!result.displayImage}"/>
+                                <h:graphicImage value="#{result.imageUrl}" rendered="#{!empty result.imageUrl}"/>                               
+                                <span class="icon-dataset" jsf:rendered="#{empty result.imageUrl}"/>
                             </a>
                         </div>
 
@@ -589,17 +589,17 @@
 
                         <div class="card-preview-icon-block text-center" jsf:rendered="#{settingsWrapper.isTrueForKey(':ShowFileLandingPage', false)}">
                             <a href="#{!SearchIncludeFragment.rootDv and !result.isInTree ? result.fileUrl : widgetWrapper.wrapURL(result.fileUrl)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">
-                                <h:graphicImage value="#{result.imageUrl}" rendered="#{result.displayImage}"/>
+                                <h:graphicImage value="#{result.imageUrl}" rendered="#{!empty result.imageUrl}"/>
                                 <span class="icon-#{dataFileServiceBean.getFileClass(result.entity)} text-muted h1"
-                                      jsf:rendered="#{!result.displayImage}"/>
+                                      jsf:rendered="#{empty result.imageUrl}"/>
                             </a>
                         </div>
 
                         <div class="card-preview-icon-block text-center" jsf:rendered="#{!settingsWrapper.isTrueForKey(':ShowFileLandingPage', false)}">
                             <a href="#{!SearchIncludeFragment.rootDv and !result.isInTree ? result.fileDatasetUrl : widgetWrapper.wrapURL(result.fileDatasetUrl)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">
-                                <h:graphicImage value="#{result.imageUrl}" rendered="#{result.displayImage}"/>
+                                <h:graphicImage value="#{result.imageUrl}" rendered="#{!empty result.imageUrl}"/>
                                 <span class="icon-#{dataFileServiceBean.getFileClass(result.entity)} text-muted h1"
-                                      jsf:rendered="#{!result.displayImage}"/>
+                                      jsf:rendered="#{empty result.imageUrl}"/>
                             </a>
                         </div>
 

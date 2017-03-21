@@ -459,7 +459,8 @@ public class SearchServiceBean {
             } else if (type.equals("datasets")) {
                 solrSearchResult.setHtmlUrl(baseUrl + "/dataset.xhtml?globalId=" + identifier);
                 solrSearchResult.setApiUrl(baseUrl + "/api/datasets/" + entityid);
-                solrSearchResult.setImageUrl(baseUrl + "/api/access/dsCardImage/" + datasetVersionId);
+                //Image url now set via thumbnail api
+                //solrSearchResult.setImageUrl(baseUrl + "/api/access/dsCardImage/" + datasetVersionId);
                 /**
                  * @todo Could use getFieldValues (plural) here.
                  */
