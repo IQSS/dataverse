@@ -619,7 +619,7 @@ public class Datasets extends AbstractApiBean {
     }
 
     @POST
-    @Path("{id}/logo")
+    @Path("{id}/thumbnail")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     public Response uploadDatasetLogo(@PathParam("id") String idSupplied, @FormDataParam("file") InputStream inputStream
     ) {

@@ -677,7 +677,7 @@ public class UtilIT {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .multiPart("file", new File(pathToImageFile))
-                .post("/api/datasets/:persistentId/logo" + "?persistentId=" + datasetPersistentId);
+                .post("/api/datasets/:persistentId/thumbnail" + "?persistentId=" + datasetPersistentId);
     }
 
     static Response removeDatasetThumbnail(String datasetPersistentId, String apiToken) {
