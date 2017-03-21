@@ -165,7 +165,7 @@ If you are using RHEL/CentOS 7, you can download our experimental :download:`rap
 d. Install the build environment for R:
 ---------------------------------------
 
-Once again, extra R packages will need to be built from sources. Make sure you have the standard GNU compilers installed: ``gcc``, ``gcc-c++`` and ``gcc-fortran``. 
+Once again, extra R packages will need to be built from sources. Make sure you have the standard GNU compilers installed: ``gcc``, ``gcc-c++`` and ``gcc-gfortran``. 
 
 One of the required packages needed :fixedwidthplain:`/bin/ed`. The R package build script needs :fixedwidthplain:`/usr/bin/wget`. If these are missing, the rpms can be installed with::
 
