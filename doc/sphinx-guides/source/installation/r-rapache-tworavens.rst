@@ -1,7 +1,9 @@
 .. role:: fixedwidthplain
 
-TwoRavens Application
-=====================
+TwoRavens
+=========
+
+.. contents:: :local:
 
 TwoRavens is a web application for tabular data exploration and statistical analysis.
 It can be integrated with Dataverse, as an **optional** component.  While TwoRavens was originally created at IQSS, its developers have since left the organization. Plans
@@ -49,14 +51,20 @@ The statistical calculations are performed by R programs that run **on the serve
 `rApache <http://rapache.net/>`_ is used as the web front end for R on the server, so 
 that the browser application can talk to R over HTTP. 
 
+If you install all components on a single server and front Glassfish with Apache (see "Network Ports" under the :doc:`config` section), it might looks something like this:
+
+|tworavens_components|
+
+See the "Advanced Installation" section of the :doc:`prep` section for an example of running various components on more than one server.
+
 When a user requests to run 
 a statistical model on a data file, TwoRavens will instruct the R code on the 
 server to download the file **directly from the Dataverse application**. Access 
 URLs need to be configured for this to work properly (this is done by the TwoRavens 
 installer script in step ``3.``)  
 
-The application itself will need to obtain some tabular-data-specific metadata from 
-the Dataverse -- the DDI fragment that describes the variables and some pre-processed
+TwoRavens will need to obtain some tabular-data-specific metadata from 
+Dataverse -- the DDI fragment that describes the variables and some pre-processed
 summary statistics for the data vectors. In order to produce the latter, the Dataverse
 application also needs to be able to execute some R code on the server. Instead of 
 ``rApache``, Dataverse uses `Rserve <https://rforge.net/Rserve/>`_ to 
@@ -101,9 +109,9 @@ to disable SELinux:
 
 (Note: If you can get rApache to work with SELinux, we encourage you to make a pull request! Please see the :doc:`/developers/selinux` section of the Developer Guide to get started.)
 
-If you choose to to serve TwoRavens and run rApache under :fixedwidthplain:`https`, a "real" signed certificate (as opposed to self-signed) is recommended. 
+If you choose to serve TwoRavens and run rApache under :fixedwidthplain:`https`, a "real" signed certificate (as opposed to self-signed) is recommended. 
 
-Directory listing needs to be disabled on the web documents folder served by Apache: 
+For security reasons, directory listing needs to be disabled on the web documents folder served by Apache: 
 
 In the main Apache configuration file (``/etc/httpd/conf/httpd.conf`` in the default setup), find the section that configures your web directory. For example, if the ``DocumentRoot``, defined elsewhere in the file, is set to the default ``"/var/www/html"``, the opening line of the section will look like this:
 
@@ -127,9 +135,11 @@ Can be installed with :fixedwidthplain:`yum`::
 
 EPEL distribution recommended; version 3.3.2 is **strongly** recommended.
 
-If :fixedwidthplain:`yum` isn't configured to use EPEL repositories: 
+If :fixedwidthplain:`yum` isn't configured to use EPEL repositories ( https://fedoraproject.org/wiki/EPEL ): 
 
-CentOS users can install the RPM :fixedwidthplain:`epel-release`.
+CentOS users can install the RPM :fixedwidthplain:`epel-release`. For RHEL/CentOS 6::
+
+       yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm
 
 RHEL users will want to log in to their organization's respective RHN interface, find the particular machine in question and:
 
@@ -587,4 +597,7 @@ the installer creates the file ``tworavens-rapache.conf`` in the Apache's ``/etc
    :class: img-responsive
 
 .. |tworavens_test_empty| image:: ./img/tworavens_test_empty.png
+   :class: img-responsive
+
+.. |tworavens_components| image:: ./img/tworavens_components.png
    :class: img-responsive

@@ -1,0 +1,23 @@
+//http://plantuml.com/component.html#Component
+@startuml
+
+node "Server" {
+  component "Apache" {
+    component "rApache" {
+    }
+  }
+  component "Glassfish" {
+  }
+  Apache --> Glassfish
+  database "Rserve" {
+  }
+  component "Zelig" {
+  }
+}
+
+Browser --> Apache
+rApache --> Zelig
+
+Glassfish --> Rserve
+
+@enduml
