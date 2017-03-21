@@ -2198,30 +2198,20 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
 
     public void deleteDatasetLogoAndUseThisDataFileAsThumbnailInstead() {
-        logger.info("In deleteDatasetLogoAndUseThisDataFileAsThumbnailInstead, fileMetadataSelectedForThumbnailPopup: " + fileMetadataSelectedForThumbnailPopup);
-        if (fileMetadataSelectedForThumbnailPopup != null) {
-            if (isThumbnailIsFromDatasetLogoRatherThanDatafile()) {
-                logger.fine("current thumbnail is from a dataset logo rather than a dataset file, blowing away the logo");
-                /**
-                 * @todo Rather than deleting and merging right away, try to
-                 * respect how this page seems to stage actions and giving the
-                 * user a chance to review before clicking "Save Changes".
-                 */
-                DataFile dataFile = fileMetadataSelectedForThumbnailPopup.getDataFile();
-                if (dataFile != null) {
-                    try {
-                        DatasetThumbnail datasetThumbnail = commandEngine.submit(new UpdateDatasetThumbnailCommand(dvRequestService.getDataverseRequest(), dataset, UpdateDatasetThumbnailCommand.UserIntent.setDatasetFileAsThumbnail, dataFile.getId(), null));
-                        // look up the dataset again because the UpdateDatasetThumbnailCommand mutates (merges) the dataset
-                        dataset = datasetService.find(dataset.getId());
-                    } catch (CommandException ex) {
-                        String error = "Problem setting thumbnail.";
-                        // show this error to the user?
-                        logger.info(error);
-                    }
-                }
-            } else {
-                logger.info("unexpected... should never get here");
-            }
+        logger.fine("For dataset id " + dataset.getId() + " the current thumbnail is from a dataset logo rather than a dataset file, blowing away the logo and using this FileMetadata id instead: " + fileMetadataSelectedForThumbnailPopup);
+        /**
+         * @todo Rather than deleting and merging right away, try to respect how
+         * this page seems to stage actions and giving the user a chance to
+         * review before clicking "Save Changes".
+         */
+        try {
+            DatasetThumbnail datasetThumbnail = commandEngine.submit(new UpdateDatasetThumbnailCommand(dvRequestService.getDataverseRequest(), dataset, UpdateDatasetThumbnailCommand.UserIntent.setDatasetFileAsThumbnail, fileMetadataSelectedForThumbnailPopup.getDataFile().getId(), null));
+            // look up the dataset again because the UpdateDatasetThumbnailCommand mutates (merges) the dataset
+            dataset = datasetService.find(dataset.getId());
+        } catch (CommandException ex) {
+            String error = "Problem setting thumbnail for dataset id " + dataset.getId() + ".: " + ex;
+            // show this error to the user?
+            logger.info(error);
         }
     }
 
