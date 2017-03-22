@@ -1706,8 +1706,6 @@ public class SearchIT {
         Response searchResponse = UtilIT.search("id:dataset_" + datasetId, noSpecialAcessApiToken);
         searchResponse.prettyPrint();
         searchResponse.then().assertThat()
-                .body("data.items[0].image_url", CoreMatchers.equalTo(RestAssured.baseURI + "/api/access/dsCardImage/" + datasetVersionId))
-                .body("data.items[0].image_url", CoreMatchers.equalTo(RestAssured.baseURI + "/api/access/dsCardImage/" + datasetVersionId))
                 .statusCode(OK.getStatusCode());
         /**
          * @todo What happens when you delete a dataset? Does the thumbnail
