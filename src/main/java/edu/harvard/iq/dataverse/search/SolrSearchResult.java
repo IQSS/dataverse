@@ -39,7 +39,6 @@ public class SolrSearchResult {
      * downloadable image" at https://github.com/IQSS/dataverse/issues/3616
      */
     private String imageUrl;
-    private boolean displayImage;
     private String query;
     private String name;
     private String nameSort;
