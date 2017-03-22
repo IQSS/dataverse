@@ -219,23 +219,31 @@ public class DatasetUtil {
     }
 
     public static String getThumbnailImageString(String siteUrl, Long datasetId) {
-        /* 
-            Calls getThumbnailAsInputStream via API  then converts to image string  
-            Allows SolrSeardhResult to get image w/o having dataset in hand.
-        */
+        /**
+         * Calls getThumbnailAsInputStream via API then converts to image
+         * string. Allows SolrSearchResult to get image w/o having dataset in
+         * hand.
+         */
         String unirestUrlForThumbAPI = siteUrl + "/api/datasets/" + datasetId + "/thumbnail";
-        GetRequest unirestOut1 = Unirest.get(unirestUrlForThumbAPI);
-        InputStream unirestInputStream1 = null;
+        logger.fine("In getThumbnailImageString and about to operation on this URL: " + unirestUrlForThumbAPI);
+        GetRequest unirestOut = Unirest.get(unirestUrlForThumbAPI);
+        InputStream unirestInputStream = null;
         try {
-            unirestInputStream1 = unirestOut1.asBinary().getBody();
+            unirestInputStream = unirestOut.asBinary().getBody();
         } catch (UnirestException ex) {
-
+            logger.info("UnirestException caught attempting to GET " + unirestUrlForThumbAPI + " and exception was: " + ex);
+            return null;
         }
-        if (unirestInputStream1 == null) {
+        if (unirestInputStream == null) {
             return null;
         }
         try {
-            byte[] bytes = IOUtils.toByteArray(unirestInputStream1);
+            /**
+             * @todo When Java 9 comes out, switch to from IOUtils to
+             * InputStream.readAllBytes
+             * http://download.java.net/java/jdk9/docs/api/java/io/InputStream.html#readAllBytes--
+             */
+            byte[] bytes = IOUtils.toByteArray(unirestInputStream);
             String base64image = Base64.getEncoder().encodeToString(bytes);
             DatasetThumbnail datasetThumbnail = new DatasetThumbnail(FileUtil.DATA_URI_SCHEME + base64image, null);
             return datasetThumbnail.getBase64image();
