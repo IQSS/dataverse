@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.api.Util;
+import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.util.ArrayList;
@@ -39,6 +40,7 @@ public class SolrSearchResult {
      * downloadable image" at https://github.com/IQSS/dataverse/issues/3616
      */
     private String imageUrl;
+    private DatasetThumbnail datasetThumbnail;
     private String query;
     private String name;
     private String nameSort;
@@ -639,6 +641,14 @@ public class SolrSearchResult {
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    public DatasetThumbnail getDatasetThumbnail() {
+        return datasetThumbnail;
+    }
+
+    public void setDatasetThumbnail(DatasetThumbnail datasetThumbnail) {
+        this.datasetThumbnail = datasetThumbnail;
     }
 
     public String getQuery() {

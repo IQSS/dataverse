@@ -6,7 +6,6 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServi
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
-import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -225,7 +224,11 @@ public class DatasetPage implements java.io.Serializable {
     
 
     public String getThumbnailString() {
-        return DatasetUtil.getThumbnailImageString(systemConfig.getDataverseSiteUrl(), dataset.getId());
+        DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail();
+        if (datasetThumbnail == null) {
+            return null;
+        }
+        return datasetThumbnail.getBase64image();
     }
 
     public void setThumbnailString(String thumbnailString) {

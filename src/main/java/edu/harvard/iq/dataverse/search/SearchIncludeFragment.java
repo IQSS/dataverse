@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.SettingsWrapper;
 import edu.harvard.iq.dataverse.WidgetWrapper;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -1166,17 +1167,10 @@ public class SearchIncludeFragment implements java.io.Serializable {
                  */
                 result.setImageUrl(getDataverseCardImageUrl(result));
             } else if (result.getType().equals("datasets") /*&& result.getEntity() instanceof Dataset*/) {
-                /**
-                 * Getting the dataset thumbnail via api
-                 * the api returns an input stream which must be converted to a string;  
-                 */ 
-
-
-                String imageUrl = DatasetUtil.getThumbnailImageString(systemConfig.getDataverseSiteUrl(), result.getEntityId());
-                if (imageUrl != null) {
-                    result.setImageUrl(imageUrl);
-                } 
-                    
+                DatasetThumbnail datasetThumbnail = result.getDatasetThumbnail();
+                if (datasetThumbnail != null) {
+                    result.setImageUrl(datasetThumbnail.getBase64image());
+                }
             } else if (result.getType().equals("files") /*&& result.getEntity() instanceof DataFile*/) {
                 // TODO: 
                 // use permissionsWrapper?  -- L.A. 4.2.1
