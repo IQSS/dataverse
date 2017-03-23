@@ -450,7 +450,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
         // Dataverse URLs to this server 
         //------------------------------------
         String serverName =  this.getServerNamePort(request);
-        jsonData.add("return_to_dataverse_url", dset_version.getReturnToDatasetURL(serverName, dset));
+        jsonData.add("return_to_dataverse_url", dset_version.getReturnToFilePageURL(serverName, dset, dfile));
         jsonData.add("datafile_download_url", dfile.getMapItFileDownloadURL(serverName));
 
         //------------------------------------

@@ -944,9 +944,20 @@ public class DatasetVersion implements Serializable {
             }
         }
         return serverName + "/dataset.xhtml?id=" + dset.getId() + "&versionId" + this.getId();
+    }   
+    
+    public String getReturnToFilePageURL (String serverName, Dataset dset, DataFile dataFile){
+        if (serverName == null || dataFile == null) {
+            return null;
+        }
+        if (dset == null) {
+            dset = this.getDataset();
+            if (dset == null) {
+                return null;
+            }
+        }
+        return serverName + "/file.xhtml?fileId=" + dataFile.getId() + "&version=" + this.getSemanticVersion();        
     }
-
-    ;
     
     public List<DatasetField> copyDatasetFields(List<DatasetField> copyFromList) {
         List<DatasetField> retList = new ArrayList();
