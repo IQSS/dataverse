@@ -78,7 +78,7 @@ public class DatasetUtilTest {
         System.out.println("getDefaultThumbnailFile");
         Dataset dataset = null;
         DataFile expResult = null;
-        DataFile result = DatasetUtil.getDefaultThumbnailFile(dataset);
+        DataFile result = DatasetUtil.attemptToAutomaticallySelectThumbnailFromDataFiles(dataset);
         assertEquals(expResult, result);
     }
 

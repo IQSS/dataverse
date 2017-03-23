@@ -93,9 +93,9 @@ public class DatasetUtil {
                     logger.fine(title + " does not have a thumbnail and is 'Use Generic'.");
                     return null;
                 } else {
-                    thumbnailFile = dataset.getDefaultDatasetThumbnailFile();
+                    thumbnailFile = attemptToAutomaticallySelectThumbnailFromDataFiles(dataset);
                     if (thumbnailFile == null) {
-                        logger.fine(title + " does not have a default thumbnail available.");
+                        logger.fine(title + " does not have a thumbnail available that could be selected automatically.");
                         return null;
                     } else {
                         String imageSourceBase64 = ImageThumbConverter.getImageThumbAsBase64(thumbnailFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
@@ -133,7 +133,7 @@ public class DatasetUtil {
         }
     }
 
-    public static DataFile getDefaultThumbnailFile(Dataset dataset) {
+    public static DataFile attemptToAutomaticallySelectThumbnailFromDataFiles(Dataset dataset) {
         if (dataset == null) {
             return null;
         }
@@ -143,10 +143,12 @@ public class DatasetUtil {
         }
         for (FileMetadata fmd : dataset.getLatestVersion().getFileMetadatas()) {
             DataFile testFile = fmd.getDataFile();
-            if (testFile.isPreviewImageAvailable() && !testFile.isRestricted()) {
+            String imageSourceBase64 = ImageThumbConverter.getImageThumbAsBase64(testFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
+            if (imageSourceBase64 != null && !testFile.isRestricted()) {
                 return testFile;
             }
         }
+        logger.fine("In attemptToAutomaticallySelectThumbnailFromDataFiles and interated through all the files but couldn't find a thumbnail.");
         return null;
     }
 
