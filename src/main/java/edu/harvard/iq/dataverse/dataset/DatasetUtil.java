@@ -33,6 +33,25 @@ public class DatasetUtil {
     public static String datasetLogoThumbnail = "dataset_logo";
     public static String thumb48addedByImageThumbConverter = ".thumb48";
 
+    public static boolean hasAtLeastOneThumbnailFromDataFile(Dataset dataset) {
+        if (dataset == null) {
+            logger.fine("In hasAtLeastOneThumbnailFromDataFile for dataset id " + dataset.getId() + " but dataset was null! Returning false.");
+            return false;
+        }
+        for (FileMetadata fileMetadata : dataset.getLatestVersion().getFileMetadatas()) {
+            DataFile dataFile = fileMetadata.getDataFile();
+            if (dataFile != null && dataFile.isImage() && !dataFile.isRestricted()) {
+                String imageSourceBase64 = ImageThumbConverter.getImageThumbAsBase64(dataFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
+                if (imageSourceBase64 != null) {
+                    DatasetThumbnail datasetThumbnail = new DatasetThumbnail(imageSourceBase64, dataFile);
+                    return true;
+                }
+            }
+        }
+        logger.fine("In hasAtLeastOneThumbnailFromDataFile for dataset id " + dataset.getId() + " and iterated through all files but no thumbnails from DataFiles were found. Returning false.");
+        return false;
+    }
+
     public static List<DatasetThumbnail> getThumbnailCandidates(Dataset dataset, boolean considerDatasetLogoAsCandidate) {
         List<DatasetThumbnail> thumbnails = new ArrayList<>();
         if (dataset == null) {

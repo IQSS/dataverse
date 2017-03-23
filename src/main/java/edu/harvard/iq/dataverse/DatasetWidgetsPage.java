@@ -39,6 +39,7 @@ public class DatasetWidgetsPage implements java.io.Serializable {
     private Long datasetId;
     private Dataset dataset;
     private List<DatasetThumbnail> datasetThumbnails;
+    private boolean hasAtLeastOneThumbnailFromDataFile;
     /**
      * A preview image of either the current or (potentially unsaved) future
      * thumbnail.
@@ -67,7 +68,7 @@ public class DatasetWidgetsPage implements java.io.Serializable {
         if (!permissionsWrapper.canIssueCommand(dataset, UpdateDatasetCommand.class)) {
             return permissionsWrapper.notAuthorized();
         }
-        datasetThumbnails = DatasetUtil.getThumbnailCandidates(dataset, considerDatasetLogoAsCandidate);
+        hasAtLeastOneThumbnailFromDataFile = DatasetUtil.hasAtLeastOneThumbnailFromDataFile(dataset);
         datasetThumbnail = dataset.getDatasetThumbnail();
         if (datasetThumbnail != null) {
             DataFile dataFile = datasetThumbnail.getDataFile();
@@ -98,6 +99,10 @@ public class DatasetWidgetsPage implements java.io.Serializable {
         return datasetThumbnails;
     }
 
+    public boolean isHasAtLeastOneThumbnailFromDataFile() {
+        return hasAtLeastOneThumbnailFromDataFile;
+    }
+
     public DatasetThumbnail getDatasetThumbnail() {
         return datasetThumbnail;
     }
@@ -116,6 +121,7 @@ public class DatasetWidgetsPage implements java.io.Serializable {
 
     public void setDataFileAsThumbnail() {
         logger.fine("setDataFileAsThumbnail clicked");
+        datasetThumbnails = DatasetUtil.getThumbnailCandidates(dataset, considerDatasetLogoAsCandidate);
         updateDatasetThumbnailCommand = new UpdateDatasetThumbnailCommand(dvRequestService.getDataverseRequest(), dataset, UpdateDatasetThumbnailCommand.UserIntent.setDatasetFileAsThumbnail, datasetFileThumbnailToSwitchTo.getId(), null);
         String base64image = ImageThumbConverter.getImageThumbAsBase64(datasetFileThumbnailToSwitchTo, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
         datasetThumbnail = new DatasetThumbnail(base64image, datasetFileThumbnailToSwitchTo);
