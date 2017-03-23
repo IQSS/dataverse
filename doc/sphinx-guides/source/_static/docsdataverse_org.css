@@ -59,6 +59,15 @@ a.headerlink {
     font-family: Menlo, Monaco, Consolas, "Courier New", monospace; 
 }
 
+div.panel.panel-default.code-example {
+    margin-bottom: 0 !important;
+    border-bottom: 0 !important;
+    border-radius: 4px 4px 0 0 !important;
+}
+div.panel.panel-default.code-example + div.highlight-html pre {
+    border-radius: 0 0 4px 4px !important;
+}
+
 /* alternative formattings:  font-weight: bold; font-size: 110%; etc. */
 
 /* #sidebar.bs-sidenav.affix {

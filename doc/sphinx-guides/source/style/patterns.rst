@@ -81,6 +81,7 @@ Words words words words. Words words words words.
 * Citation
 * Citation Summary Metadata
 * Metrics
+* "Why?" Manage Pg Default Text
 
 Images
 ------
@@ -101,6 +102,46 @@ Words words words words. Words words words words.
 * Form Buttons
 * Textless-Icon-Only Buttons
 
+.. raw:: html
+
+	<div class="panel panel-default code-example">
+	  <div class="panel-body">
+
+		<!-- Single button -->
+		<div class="btn-group">
+		  <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+		  	<span class="glyphicon glyphicon-star"></span> 
+		    Action <span class="caret"></span>
+		  </button>
+		  <ul class="dropdown-menu">
+		    <li><a href="#">Action</a></li>
+		    <li><a href="#">Another action</a></li>
+		    <li><a href="#">Something else here</a></li>
+		    <li role="separator" class="divider"></li>
+		    <li><a href="#">Separated link</a></li>
+		  </ul>
+		</div>
+
+	  </div>
+	</div>
+
+.. code-block:: html
+
+	<!-- Single button -->
+	<div class="btn-group">
+	  <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+	  	<span class="glyphicon glyphicon-star"></span> 
+	    Action <span class="caret"></span>
+	  </button>
+	  <ul class="dropdown-menu">
+	    <li><a href="#">Action</a></li>
+	    <li><a href="#">Another action</a></li>
+	    <li><a href="#">Something else here</a></li>
+	    <li role="separator" class="divider"></li>
+	    <li><a href="#">Separated link</a></li>
+	  </ul>
+	</div>
+
 Forms
 -----
 
@@ -120,6 +161,29 @@ Words words words words. Words words words words.
 * Help
 * Error
 * Validation
+
+.. raw:: html
+
+	<div class="panel panel-default code-example">
+	  <div class="panel-body">
+		<div class="col-sm-12">
+			<div style="height:100px" class="col-sm-2 bg-primary">bg-primary</div>
+			<div style="height:100px" class="col-sm-2 bg-success">bg-success</div>
+			<div style="height:100px" class="col-sm-2 bg-info">bg-info</div>
+			<div style="height:100px" class="col-sm-2 bg-warning">bg-warning</div>
+			<div style="height:100px" class="col-sm-2 bg-danger">bg-danger</div>
+		</div>
+	  </div>
+	  <div class="panel-footer">CODE HERE</div>
+	</div>
+
+.. code-block:: html
+
+	<p class="bg-primary">...</p>
+	<p class="bg-success">...</p>
+	<p class="bg-info">...</p>
+	<p class="bg-warning">...</p>
+	<p class="bg-danger">...</p>
 
 Popups
 ------

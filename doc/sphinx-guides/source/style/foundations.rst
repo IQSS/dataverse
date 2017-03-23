@@ -9,36 +9,75 @@ Grid Layout
 
 `Bootstrap <http://getbootstrap.com/css/#grid>`_ provides a responsive, fluid, 12-column grid system.
 
-``.container (fixed-width)``
+We use the fixed-width ``.container`` class which provides repsonive widths (i.e. auto, 750px, 970px or 1170px) based on media queries for the page layout, with a series of rows and columns for the content.
 
-``.col-md-* Medium devices Desktops (≥992px)``
+The grid layout uses ``.col-sm-*`` classes for horizontal groups of columns, inside a containing element with a ``.row`` class. Content should be placed within columns, and only columns may be immediate children of rows.
 
+Code Sample:
+
+.. code-block:: html
+
+    <div class="container">
+        <div class="row">
+        	<div class="col-sm-1">.col-sm-1</div>
+        	<div class="col-sm-1">.col-sm-1</div>
+        	<div class="col-sm-1">.col-sm-1</div>
+        	<div class="col-sm-1">.col-sm-1</div>
+        	<div class="col-sm-1">.col-sm-1</div>
+        	<div class="col-sm-1">.col-sm-1</div>
+        	<div class="col-sm-1">.col-sm-1</div>
+        	<div class="col-sm-1">.col-sm-1</div>
+        	<div class="col-sm-1">.col-sm-1</div>
+        	<div class="col-sm-1">.col-sm-1</div>
+        	<div class="col-sm-1">.col-sm-1</div>
+        	<div class="col-sm-1">.col-sm-1</div>
+        </div>
+        <div class="row">
+        	<div class="col-sm-8">.col-sm-8</div>
+        	<div class="col-sm-4">.col-sm-4</div>
+        </div>
+    </div>
 
 Color Palette
 =============
 
-Words words words words. Words words words words.
+The color palette is set in the `Bootstrap CSS <http://getbootstrap.com/css/#less-variables-colors>`_.
 
 Primary/Brand
 -------------
 
-Words words words words. Words words words words.
+Colors from `Bootstrap CSS <http://getbootstrap.com/css/#less-variables-colors>`_.
 
 ``.text-brand {color:#C55B28;}``
 
 ``.bg-brand {background:#C55B28;}``
 
+.. raw:: html
+
+	<div class="row">
+		<div style="height:100px" class="col-sm-2 bg-primary">bg-primary</div>
+		<div style="height:100px" class="col-sm-2 bg-success">bg-success</div>
+		<div style="height:100px" class="col-sm-2 bg-info">bg-info</div>
+		<div style="height:100px" class="col-sm-2 bg-warning">bg-warning</div>
+		<div style="height:100px" class="col-sm-2 bg-danger">bg-danger</div>
+	</div>
+
 Text
 ----
 
-Words words words words. Words words words words.
+Text color from `Bootstrap CSS <http://getbootstrap.com/css/#less-variables-scaffolding>`_.
 
 ``{color: #333;}``
+``@text-color: @black-50;``
 
 Links
 -----
 
-Words words words words. Words words words words.
+Link color from `Bootstrap CSS <http://getbootstrap.com/css/#less-variables-links>`_.
+
+``@link-color: @brand-primary;``
+
+``@link-hover-color: darken(@link-color, 15%);``
 
 ``a {color: #337AB7;}``
 
@@ -52,7 +91,7 @@ Words words words words. Words words words words.
 Typography
 ==========
 
-Words words words words. Words words words words.
+The typeface, text size, line-height are set in the `Bootstrap CSS <http://getbootstrap.com/css/#less-variables-typography>`_.
 
 ``font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;``
 
@@ -64,22 +103,21 @@ Words words words words. Words words words words.
 Logos
 =====
 
-Words words words words. Words words words words.
+There are two logos that we use in the application. There is the Dataverse logo and the Dataverse Project logo.
 
-* Dataverse (app)
-* Dataverse (repository)
+* Dataverse
 * Dataverse Project
 
 
 Icons
 =====
 
-Words words words words. Words words words words.
+We use various icons across the application, in buttons, and as default thumbnails for repositories, dataset and files.
 
 Bootstrap
 ---------
 
-Words words words words. Words words words words.
+There are over 250 glyphs in font format from the Glyphicon Halflings set provided by `Bootstrap <http://getbootstrap.com/components/#glyphicons>`_.
 
 * Search
 * Buttons
@@ -87,21 +125,80 @@ Words words words words. Words words words words.
 * Info
 * Message block Help/Error/Success
 
+.. raw:: html
+
+	<div class="panel panel-default code-example">
+	  <div class="panel-body">
+
+   <span class="glyphicon glyphicon-search"></span>
+   <span class="glyphicon glyphicon-user"></span>
+   <span class="glyphicon glyphicon-ok"></span>
+   <span class="glyphicon glyphicon-warning-sign"></span>
+
+	  </div>
+	</div>
+
+.. code-block:: html
+
+   <span class="glyphicon glyphicon-search"></span>
+   <span class="glyphicon glyphicon-user"></span>
+   <span class="glyphicon glyphicon-ok"></span>
+   <span class="glyphicon glyphicon-warning-sign"></span>
 
 Font Custom
 -----------
 
-Words words words words. Words words words words.
+With the use of `FontCustom <https://github.com/FontCustom/fontcustom>`_ we were able to generate our own custom icon webfonts.
 
 * Default dataverse, dataset
 * File type
+
+.. raw:: html
+
+	<div class="panel panel-default code-example">
+	  <div class="panel-body">
+
+   <span class="glyphicon glyphicon-search"></span>
+   <span class="glyphicon glyphicon-user"></span>
+   <span class="glyphicon glyphicon-ok"></span>
+   <span class="glyphicon glyphicon-warning-sign"></span>
+
+	  </div>
+	</div>
+
+.. code-block:: html
+
+   <span class="glyphicon glyphicon-search"></span>
+   <span class="glyphicon glyphicon-user"></span>
+   <span class="glyphicon glyphicon-ok"></span>
+   <span class="glyphicon glyphicon-warning-sign"></span>
 
 
 Socicon Font
 ------------
 
-Words words words words. Words words words words.
+We use `Socicon <http://www.socicon.com>`_ for the custom social icons. 
 
 * Footer icons Twitter, Github
 * Sharrre icons Facebook, Twitter, Google Plus
+
+.. raw:: html
+
+	<div class="panel panel-default code-example">
+	  <div class="panel-body">
+
+   <span class="glyphicon glyphicon-search"></span>
+   <span class="glyphicon glyphicon-user"></span>
+   <span class="glyphicon glyphicon-ok"></span>
+   <span class="glyphicon glyphicon-warning-sign"></span>
+
+	  </div>
+	</div>
+
+.. code-block:: html
+
+   <span class="glyphicon glyphicon-search"></span>
+   <span class="glyphicon glyphicon-user"></span>
+   <span class="glyphicon glyphicon-ok"></span>
+   <span class="glyphicon glyphicon-warning-sign"></span>
 
