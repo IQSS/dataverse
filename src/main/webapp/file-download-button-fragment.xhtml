@@ -39,9 +39,9 @@
                 </div>
             </div>
         </div>
-        <a data-target="#map-modal-#{fileMetadata.id}" data-toggle="modal" class="small bg-info text-center" style="margin-top:5px;display:block;">
+        <button type="button" class="btn btn-default" data-target="#map-modal-#{fileMetadata.id}" data-toggle="modal"  >
             <span class="glyphicon glyphicon-map-marker"/> Preview
-        </a>
+        </button>
     </div>
 
         <div class="btn-group" jsf:rendered="#{twoRavensHelper.canSeeTwoRavensExploreButtonFromPage(fileMetadata) and worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata)}">           
