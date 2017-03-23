@@ -57,12 +57,6 @@ If you install all components on a single server and front Glassfish with Apache
 
 See the "Advanced Installation" section of the :doc:`prep` section for an example of running various components on more than one server.
 
-When a user requests to run 
-a statistical model on a data file, TwoRavens will instruct the R code on the 
-server to download the file **directly from the Dataverse application**. Access 
-URLs need to be configured for this to work properly (this is done by the TwoRavens 
-installer script in step ``3.``)  
-
 TwoRavens will need to obtain some tabular-data-specific metadata from 
 Dataverse -- the DDI fragment that describes the variables and some pre-processed
 summary statistics for the data vectors. In order to produce the latter, the Dataverse
@@ -74,8 +68,15 @@ Dataverse project supplies an :fixedwidthplain:`init.d`-style startup file for t
 daemon. The R setup in step ``2.`` will set it up so that the daemon gets started
 automatically when the system boots. 
 
+When a user requests to run 
+a statistical model on a data file, TwoRavens will instruct the R code on the 
+server to download the file **directly from the Dataverse application**. Access 
+URLs need to be configured for this to work properly (this is done by the TwoRavens 
+installer script in step ``3.``)  
+
 In addition to Rserve, there are 14 more R library packages that the TwoRavens R 
-code requires in order to run. These in turn require 30 more as their own dependencies, so a total of 45 packages must be installed. "Installed" in the 
+code requires in order to run. These in turn require 30 more as their own dependencies, 
+so a total of 45 packages must be installed. "Installed" in the 
 context of an R package means R must download the **source code** from the `CRAN 
 <https://cran.r-project.org/>`_ code repository and compile it locally. This
 historically has been the trickiest, least stable part of the installation process, 
@@ -229,7 +230,7 @@ a. download and unzip the application
 (though you may have already done so, in step ``2.`` above - see the instructions there). 
 
 
-b. **Rename the resulting directory** ``dataexplore``...
+b. Rename the resulting directory ``dataexplore``...
 --------------------------------------------------------
 
 ...and place it in the web root directory of your apache server. We'll assume ``/var/www/html/dataexplore`` in the examples below::

@@ -3,21 +3,24 @@
 
 node "Server" {
   component "Apache" {
+    component "TwoRavens (static content)" as Static {
+    }   
     component "rApache" {
     }
   }
-  component "Glassfish" {
+  component "Glassfish" as Glassfish {
+    component "Dataverse" {
+    }
   }
-  Apache --> Glassfish
-  database "Rserve" {
-  }
-  component "Zelig" {
+  rApache <-- Dataverse
+  component "Rserve" {
   }
 }
 
-Browser --> Apache
-rApache --> Zelig
+Browser <-- Static
+Browser <--> rApache
+Browser <-- Dataverse
 
-Glassfish --> Rserve
+Dataverse <--> Rserve
 
 @enduml
