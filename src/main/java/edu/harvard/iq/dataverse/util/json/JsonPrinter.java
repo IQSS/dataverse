@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.DataverseTheme;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.MapLayerMetadata;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
@@ -33,11 +34,10 @@ import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderRo
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
-import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.util.DatasetFieldWalker;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
-import java.math.BigDecimal;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Set;
 import javax.json.Json;
@@ -53,7 +53,6 @@ import java.util.Deque;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -786,6 +785,21 @@ public class JsonPrinter {
         } else {
             return null;
         }
+    }
+
+    public static JsonObjectBuilder json(MapLayerMetadata mapLayerMetadata) {
+        return jsonObjectBuilder()
+                .add("id", mapLayerMetadata.getId())
+                .add("embedMapLink", mapLayerMetadata.getEmbedMapLink())
+                .add("joinDescription", mapLayerMetadata.getJoinDescription())
+                .add("layerLink", mapLayerMetadata.getLayerLink())
+                .add("layerName", mapLayerMetadata.getLayerName())
+                .add("mapImageLink", mapLayerMetadata.getMapImageLink())
+                .add("mapLayerLinks", Json.createReader(new StringReader(mapLayerMetadata.getMapLayerLinks())).readObject())
+                .add("worldmapUsername", mapLayerMetadata.getWorldmapUsername())
+                .add("isJoinLayer", mapLayerMetadata.isJoinLayer())
+                .add("dataFileId", mapLayerMetadata.getDataFile().getId())
+                .add("datasetID", mapLayerMetadata.getDataset().getId());
     }
 
 }

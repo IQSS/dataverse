@@ -308,5 +308,12 @@ public class MapLayerMetadataServiceBean {
         logger.info("Done");
         return true;
     }   
+
+    public List<MapLayerMetadata> findAll() {
+        TypedQuery<MapLayerMetadata> typedQuery = em.createNamedQuery("MapLayerMetadata.findAll", MapLayerMetadata.class);
+        List<MapLayerMetadata> mapLayerMetadatas = typedQuery.getResultList();
+        return mapLayerMetadatas;
+    }
+
 }
 
