@@ -59,8 +59,10 @@ public class DatasetUtil {
             DataFile dataFile = fileMetadata.getDataFile();
             if (dataFile != null && dataFile.isImage() && !dataFile.isRestricted()) {
                 String imageSourceBase64 = ImageThumbConverter.getImageThumbAsBase64(dataFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
-                DatasetThumbnail datasetThumbnail = new DatasetThumbnail(imageSourceBase64, dataFile);
-                thumbnails.add(datasetThumbnail);
+                if (imageSourceBase64 != null) {
+                    DatasetThumbnail datasetThumbnail = new DatasetThumbnail(imageSourceBase64, dataFile);
+                    thumbnails.add(datasetThumbnail);
+                }
             }
         }
         return thumbnails;
