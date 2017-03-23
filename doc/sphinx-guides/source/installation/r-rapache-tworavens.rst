@@ -266,7 +266,7 @@ and TwoRavens. Accept all the defaults, and you should have a working installati
 in no time.
 
 However, if you are planning to use this installation to actually serve data to 
-users, you'll most likely want to run under https. This makes the setup more complex, 
+users, you'll most likely want to run under https. This makes the setup more complex; 
 please refer to the discussion in the Appendix, ``I.`` for more information. 
 
 Run the installer as::
@@ -287,9 +287,9 @@ d. Version conflict check  (preprocess.R)
 
 One of the R files in the distribution, ``rook/preprocess/preprocess.R`` is used by both TwoRavens and 
 Dataverse. Dataverse application maintains its own copy of the file, ``<DOMAIN DIRECTORY>/applications/dataverse-<VERSION>/WEB-INF/classes/edu/harvard/iq/dataverse/rserve/scripts/preprocess.R``. 
-(Why not share the file from the same location? - because the two applications 
+(Why not share the file from the same location? Because the two applications 
 can potentially be installed on 2 different servers).
-Compare the two files, **it is important that the two copies are identical**. 
+Compare the two files. **It is important that the two copies are identical**. 
 
 **If different**: 
 
