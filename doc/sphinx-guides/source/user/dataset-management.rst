@@ -23,15 +23,15 @@ Adding a New Dataset
 
 #. Navigate to the dataverse in which you want to add a dataset. 
 #. Click on the "Add Data" button and select "New Dataset" in the dropdown menu.
-#. To quickly get started, enter at minimum all the required fields with an asterisk to get a Data Citation with a DOI (e.g., the Dataset Title, Author, 
-   Description, Contact Email and Subject).
+#. To quickly get started, enter at minimum all the required fields with an asterisk (e.g., the Dataset Title, Author, 
+   Description, Contact Email and Subject) to get a Data Citation with a DOI.
 #. Scroll down to the "Files" section and click on "Select Files to Add" to add all the relevant files to your Dataset. 
    You can also upload your files directly from your Dropbox. **Tip:** You can drag and drop or select multiple files at a time from your desktop,
    directly into the upload widget. Your files will appear below the "Select Files to Add" button where you can add a
    description and tags (via the "Edit Tag" button) for each file. Additionally, an MD5 checksum will be added for each file. If you upload a tabular file a :ref:`Universal Numerical Fingerprint (UNF) <unf>` will be added to this file.
 #. Click the "Save Dataset" button when you are done. Your unpublished dataset is now created. 
 
-Note 1: You can add additional metadata once you have completed the initial dataset creation by going to Edit Dataset > Metadata. 
+Note: You can add additional metadata once you have completed the initial dataset creation by going to Edit Dataset > Metadata. 
 
 Supported HTML Fields
 ---------------------
@@ -115,7 +115,7 @@ Advanced Options
 
 There are several advanced options available for certain file types.
 
-- Image files: jpgs, pngs, and tiff files are able to be selected as the default thumbnail for a dataset. The selected thumbnail will appear on the search result card for that dataset.
+- Image files: .jpg, .png, and .tif files are able to be selected as the default thumbnail for a dataset. The selected thumbnail will appear on the search result card for that dataset.
 - SPSS files: SPSS files can be tagged with the language they were originally coded in. This is found by clicking on Advanced Options and selecting the language from the list provided.
 
 Edit Files
@@ -202,7 +202,42 @@ The panel below that is "Roles" where you can find all the roles set up in your 
 File-Level
 ----------
 
-If you have restricted specific files the file-level permissions is where you will need to go to grant users/groups access to specific restricted files. Dataset file permissions are located under Permissions in the Edit button on a dataset page. The file permissions page has two sections: Users/Groups and Files.
+If you have restricted specific files the file-level permissions is where you will need to go to grant users/groups access to
+specific restricted files. Dataset file permissions are located under Permissions in the Edit button on a dataset page. 
+The file permissions page has two sections: Users/Groups and Files.
+
+To give someone access to your restricted files, click on the Grant Access to Users/Groups button in the Users/Groups section. 
+
+.. _dataset-widgets:
+
+Thumbnails + Widgets
+====================
+
+Thumbnails
+----------
+
+Thumbnail images can be assigned to a dataset manually or automatically. The thumbnail for a dataset appears on the search result card for that dataset and on the dataset page itself. If a dataset contains one or more data files that Dataverse recognizes as an image, then one of those images is automatically selected as the dataset thumbnail. 
+
+If you would like to manually select your dataset's thumbnail, you can do so by clicking the "Edit" button on your dataset, and selecting "Thumbnails + Widgets" from the dropdown menu.
+
+On this page, under the Thumbnail tab you will see three possible actions.
+
+**Select Available File:** Click the "Select Thumbnail" button to choose an image from your dataset to use as the dataset thumbnail.
+
+**Upload New File:** Upload an image file from your computer to use as the dataset thumbnail. While by default your thumbnail image is drawn from a file in your dataset, this will allow you to upload a separate image file to use as your dataset thumbnail. This uploaded image file will only be used as the dataset thumbnail; it will not be stored as a data file in your dataset.
+
+**Remove Thumbnail:** If you click the "Remove" button under the thumbnail image, you will remove the dataset's current thumbnail. The Dataset will then revert to displaying a basic default icon as the dataset thumbnail.
+
+When you're finished on this page, be sure to click "Save Changes" to save what you've done.
+
+Note: If you prefer, it is also possible to set an image file in your dataset as your thumbnail by selecting the file, going to Edit Files -> Metadata, and using the "Set Thumbnail" button.
+
+Widgets
+-------
+
+The Widgets feature provides you with code for your personal website so your dataset can be displayed. There are two types of Widgets for a dataset: the Dataset Widget and the Dataset Citation Widget. Widgets are found by going to your dataset page, clicking the "Edit" button (the one with the pencil icon) and selecting "Thumbnails + Widgets" from the dropdown menu.
+
+In the Widgets tab, you can copy and paste the code snippets for the widget you would like to add to your website. If you need to adjust the height of the widget on your website, you may do so by editing the `heightPx=500` parameter in the code snippet.
 
 To give someone access to your restricted files, click on the "Grant Access to Users/Groups" button in the Users/Groups section. 
 

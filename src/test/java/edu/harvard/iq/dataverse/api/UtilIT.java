@@ -18,10 +18,17 @@ import edu.harvard.iq.dataverse.api.datadeposit.SwordConfigurationImpl;
 import com.jayway.restassured.path.xml.XmlPath;
 import org.junit.Test;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import static com.jayway.restassured.RestAssured.given;
-import static com.jayway.restassured.path.xml.XmlPath.from;
 import com.jayway.restassured.specification.RequestSpecification;
 import java.util.List;
+import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
+import com.mashape.unirest.request.GetRequest;
+import java.io.InputStream;
+import static com.jayway.restassured.RestAssured.given;
+import static com.jayway.restassured.path.xml.XmlPath.from;
+import edu.harvard.iq.dataverse.util.FileUtil;
+import java.util.Base64;
+import org.apache.commons.io.IOUtils;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -642,6 +649,43 @@ public class UtilIT {
         return response;
     }
 
+    static Response showDatasetThumbnailCandidates(String datasetPersistentId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/:persistentId/thumbnail/candidates" + "?persistentId=" + datasetPersistentId);
+    }
+
+    static Response getDatasetThumbnail(String datasetPersistentId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/:persistentId/thumbnail" + "?persistentId=" + datasetPersistentId);
+    }
+
+    static Response getDatasetThumbnailMetadata(Integer datasetId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/admin/datasets/thumbnailMetadata/"+ datasetId);
+    }
+
+    static Response useThumbnailFromDataFile(String datasetPersistentId, long dataFileId1, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .post("/api/datasets/:persistentId/thumbnail/" + dataFileId1 + "?persistentId=" + datasetPersistentId);
+    }
+
+    static Response uploadDatasetLogo(String datasetPersistentId, String pathToImageFile, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .multiPart("file", new File(pathToImageFile))
+                .post("/api/datasets/:persistentId/thumbnail" + "?persistentId=" + datasetPersistentId);
+    }
+
+    static Response removeDatasetThumbnail(String datasetPersistentId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/datasets/:persistentId/thumbnail" + "?persistentId=" + datasetPersistentId);
+    }
+
     static Response search(String query, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
@@ -756,6 +800,53 @@ public class UtilIT {
         return given()
                 //.urlEncodingEnabled(false)
                 .get("dataverse.xhtml?" + queryParamString);
+    }
+
+    static Response setDataverseLogo(String dataverseAlias, String pathToImageFile, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .multiPart("file", new File(pathToImageFile))
+                .put("/api/dataverses/" + dataverseAlias + "/logo");
+    }
+
+    /**
+     * @todo figure out how to get an InputStream from REST Assured instead.
+     */
+    static InputStream getInputStreamFromUnirest(String url, String apiToken) {
+        GetRequest unirestOut = Unirest.get(url);
+        try {
+            InputStream unirestInputStream = unirestOut.asBinary().getBody();
+            return unirestInputStream;
+        } catch (UnirestException ex) {
+            return null;
+        }
+    }
+
+    public static String inputStreamToDataUrlSchemeBase64Png(InputStream inputStream) {
+        if (inputStream == null) {
+            logger.fine("In inputStreamToDataUrlSchemeBase64Png but InputStream was null. Returning null.");
+            return null;
+        }
+        byte[] bytes = inputStreamToBytes(inputStream);
+        if (bytes == null) {
+            logger.fine("In inputStreamToDataUrlSchemeBase64Png but bytes was null. Returning null.");
+            return null;
+        }
+        String base64image = Base64.getEncoder().encodeToString(bytes);
+        return FileUtil.DATA_URI_SCHEME + base64image;
+    }
+
+    /**
+     * @todo When Java 9 comes out, switch to
+     * http://download.java.net/java/jdk9/docs/api/java/io/InputStream.html#readAllBytes--
+     */
+    private static byte[] inputStreamToBytes(InputStream inputStream) {
+        try {
+            return IOUtils.toByteArray(inputStream);
+        } catch (IOException ex) {
+            logger.fine("In inputStreamToBytes but caught an IOUtils.toByteArray Returning null.");
+            return null;
+        }
     }
 
     @Test

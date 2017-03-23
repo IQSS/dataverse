@@ -41,6 +41,7 @@ import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.util.FileUtil;
 import java.util.logging.Logger;
 import org.primefaces.util.Base64;
 
@@ -174,6 +175,12 @@ public class ImageThumbConverter {
         return null;
     }
     
+    /**
+     * This method is suitable for returning a string to embed in an HTML img
+     * tag (or JSF h:graphicImage tag) because the string begins with
+     * "data:image/png;base64," but it is not suitable for returning a
+     * downloadable image via an API call.
+     */
     public static String getImageAsBase64FromFile(File imageFile) {
         InputStream imageThumbInputStream = null;
         try {
@@ -191,7 +198,7 @@ public class ImageThumbConverter {
                 if (rawImageData != null) {
                     String imageDataBase64 = Base64.encodeToString(rawImageData, false);
                     //return FILE_CARD_IMAGE_URL + assignedThumbnailFileId;
-                    return "data:image/png;base64," + imageDataBase64;
+                    return FileUtil.DATA_URI_SCHEME + imageDataBase64;
                 }
             }
         } catch (IOException ex) {
@@ -321,7 +328,7 @@ public class ImageThumbConverter {
 
     }
     
-    private static String rescaleImage(BufferedImage fullSizeImage, int width, int height, int size, String fileLocation) {
+    public static String rescaleImage(BufferedImage fullSizeImage, int width, int height, int size, String fileLocation) {
         String thumbFileLocation = fileLocation + ".thumb" + size;
         
         double scaleFactor = 0.0;

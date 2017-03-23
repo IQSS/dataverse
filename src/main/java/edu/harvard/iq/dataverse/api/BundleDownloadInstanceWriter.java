@@ -128,7 +128,7 @@ public class BundleDownloadInstanceWriter implements MessageBodyWriter<BundleDow
                     if (!"application/x-rlang-transport".equals(origFormat)) {
                         try {
                             DataFileIO accessObjectRdata
-                                    = DataFileConverter.performFormatConversion(
+                                    = DataConverter.performFormatConversion(
                                             sf,
                                             (FileAccessIO) accessObject,
                                             "RData", "application/x-rlang-transport");

@@ -452,6 +452,11 @@ span.search-term-match {font-weight: bold;}
 [id$='resultsTable'] div.card-preview-icon-block span[class^='icon'],
 [id$='resultsTable'] div.card-preview-icon-block span[class^='glyphicon'] {font-size:2.8em;}
 
+[id$='title-block'] div[class^='col'].vcenter {display:inline-block; vertical-align:middle; float:none; padding:0;}
+[id$='title-block'] div.title-preview-icon-block {width:48px; font-size:110%; color:#428BCA;}
+[id$='title-block'] div.title-preview-icon-block img {margin:6px 0;}
+[id$='title-block'] div.title-preview-icon-block span[class^='icon'] {font-size:2.8em;}
+
 form[id$='facetType'] > div.clearfix {margin-bottom:4px;}
 form[id$='facetType'] > div.clearfix:last-child {margin-bottom:0;}
 form[id$='facetType'] > div.clearfix .facetTypeChBox {display:block; float:left;}
@@ -565,6 +570,9 @@ div[id$='roleDisplay'] span.label, div[id$='roleDetails'] span.label {display:in
 #sharrre-block a.sharrre-facebook {background:#3a5795;}
 #sharrre-block a.sharrre-twitter {background:#55acee;}
 #sharrre-block a.sharrre-google {background:#d73d32;}
+
+/* -------- THEME/THUMBNAIL UPLOAD -------- */
+.uploadNewLogo {width: 85%;}
 
 /* -------- DATASET -------- */
 #datasetVersionBlock span.label {vertical-align:text-top; line-height:normal; margin-left: .5em;}
@@ -760,9 +768,9 @@ button.btn-default.ui-button-text-only .ui-button-text {padding:0; font-size:14p
 div.ui-widget-overlay {background:#ccc; opacity:.6;}
 .ui-confirm-dialog-severity {margin-top:3px;}
 .ui-widget-content a.btn-default {color:#333;}
-.ui-messages-info-detail, .ui-messages-warn-detail, .ui-messages-error-detail, .ui-messages-fatal-detail, .ui-message-info-detail, .ui-message-warn-detail, .ui-message-error-detail, .ui-message-fatal-detail {
+/* .ui-messages-info-detail, .ui-messages-warn-detail, .ui-messages-error-detail, .ui-messages-fatal-detail, .ui-message-info-detail, .ui-message-warn-detail, .ui-message-error-detail, .ui-message-fatal-detail {
     margin-left: 0px;
-}
+} */
 .ui-state-disabled, .ui-widget-content .ui-state-disabled, .ui-widget-header .ui-state-disabled {background: #e0e0e0; border-color: #ccc; opacity: 0.65;}
 .ui-autocomplete-input-token input, .ui-autocomplete-input-token {width:100%;}
 .ui-autocomplete-panel {z-index:100002 !important;}

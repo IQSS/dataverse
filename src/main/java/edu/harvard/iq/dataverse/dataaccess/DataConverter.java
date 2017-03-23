@@ -51,10 +51,10 @@ import java.nio.file.Path;
  * 
  * @author Leonid Andreev
  */
-public class DataFileConverter {
-    private static Logger dbgLog = Logger.getLogger(DataFileConverter.class.getPackage().getName());
+public class DataConverter {
+    private static Logger dbgLog = Logger.getLogger(DataConverter.class.getPackage().getName());
     
-    public DataFileConverter() {
+    public DataConverter() {
     }
     
     public static String FILE_TYPE_TAB = "tab";

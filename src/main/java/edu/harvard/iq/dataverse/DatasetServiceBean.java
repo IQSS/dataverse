@@ -10,13 +10,14 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
-import edu.harvard.iq.dataverse.export.ExportService;
+import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -767,5 +768,45 @@ public class DatasetServiceBean implements java.io.Serializable {
         Date now = new Date();
         em.createNativeQuery("UPDATE Dataset SET lastExportTime='"+now.toString()+"' WHERE id="+datasetId).executeUpdate();
     }
-    
+
+    public Dataset setNonDatasetFileAsThumbnail(Dataset dataset, InputStream inputStream) {
+        if (dataset == null) {
+            logger.fine("In setNonDatasetFileAsThumbnail but dataset is null! Returning null.");
+            return null;
+        }
+        if (inputStream == null) {
+            logger.fine("In setNonDatasetFileAsThumbnail but inputStream is null! Returning null.");
+            return null;
+        }
+        dataset = DatasetUtil.persistDatasetLogoToDiskAndCreateThumbnail(dataset, inputStream);
+        dataset.setThumbnailFile(null);
+        return merge(dataset);
+    }
+
+    public Dataset setDatasetFileAsThumbnail(Dataset dataset, DataFile datasetFileThumbnailToSwitchTo) {
+        if (dataset == null) {
+            logger.fine("In setDatasetFileAsThumbnail but dataset is null! Returning null.");
+            return null;
+        }
+        if (datasetFileThumbnailToSwitchTo == null) {
+            logger.fine("In setDatasetFileAsThumbnail but dataset is null! Returning null.");
+            return null;
+        }
+        DatasetUtil.deleteDatasetLogo(dataset);
+        dataset.setThumbnailFile(datasetFileThumbnailToSwitchTo);
+        dataset.setUseGenericThumbnail(false);
+        return merge(dataset);
+    }
+
+    public Dataset removeDatasetThumbnail(Dataset dataset) {
+        if (dataset == null) {
+            logger.fine("In removeDatasetThumbnail but dataset is null! Returning null.");
+            return null;
+        }
+        DatasetUtil.deleteDatasetLogo(dataset);
+        dataset.setThumbnailFile(null);
+        dataset.setUseGenericThumbnail(true);
+        return merge(dataset);
+    }
+
 }
