@@ -48,7 +48,7 @@
                                         </div>
                                     </div>
                                     <div class="col-sm-8">
-                                        <div class="form-group" jsf:rendered="#{DatasetWidgetsPage.hasAtLeastOneThumbnailFromDataFile}">
+                                        <div class="form-group" jsf:rendered="#{not empty DatasetWidgetsPage.datasetThumbnails}">
                                             <label for="selectThumbnail" class="control-label">
                                                 <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.selectAvailable.title']}">
                                                     #{bundle['dataset.thumbnailsAndWidget.thumbnailImage.selectAvailable']}
