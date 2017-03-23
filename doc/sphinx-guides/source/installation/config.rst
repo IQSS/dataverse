@@ -230,12 +230,12 @@ For overriding the default path to the ``convert`` binary from ImageMagick (``/u
 dataverse.dataAccess.thumbnail.image.limit
 ++++++++++++++++++++++++++++++++++++++++++
 
-For limiting the size of thumbnail images generated from files.
+For limiting the size (in bytes) of thumbnail images generated from files.
 
 dataverse.dataAccess.thumbnail.pdf.limit
 ++++++++++++++++++++++++++++++++++++++++
 
-For limiting the size of thumbnail images generated from files.
+For limiting the size (in bytes) of thumbnail images generated from files.
 
 .. _doi.baseurlstring:
 

@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DOIEZIdServiceBean;
+import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
@@ -8,16 +9,18 @@ import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
+import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
+import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
 import edu.harvard.iq.dataverse.datasetutility.DataFileTagException;
 import edu.harvard.iq.dataverse.datasetutility.NoFilesException;
@@ -42,6 +45,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.ListVersionsCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.SetDatasetCitationDateCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetTargetURLCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetThumbnailCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import edu.harvard.iq.dataverse.export.ExportService;
@@ -116,9 +120,6 @@ public class Datasets extends AbstractApiBean {
     
     @EJB
     DataFileServiceBean fileService;
-    
-    @EJB
-    DatasetVersionServiceBean datasetVersionService;
 
     @EJB
     IngestServiceBean ingestService;
@@ -558,9 +559,89 @@ public class Datasets extends AbstractApiBean {
             }
         });
     }
-    
-    
-    
+
+    @GET
+    @Path("{id}/thumbnail/candidates")
+    public Response getDatasetThumbnailCandidates(@PathParam("id") String idSupplied) {
+        try {
+            Dataset dataset = findDatasetOrDie(idSupplied);
+            boolean canUpdateThumbnail = false;
+            try {
+                canUpdateThumbnail = permissionSvc.requestOn(createDataverseRequest(findUserOrDie()), dataset).canIssue(UpdateDatasetThumbnailCommand.class);
+            } catch (WrappedResponse ex) {
+                logger.info("Exception thrown while trying to figure out permissions while getting thumbnail for dataset id " + dataset.getId() + ": " + ex.getLocalizedMessage());
+            }
+            if (!canUpdateThumbnail) {
+                return error(Response.Status.FORBIDDEN, "You are not permitted to list dataset thumbnail candidates.");
+            }
+            JsonArrayBuilder data = Json.createArrayBuilder();
+            boolean considerDatasetLogoAsCandidate = true;
+            for (DatasetThumbnail datasetThumbnail : DatasetUtil.getThumbnailCandidates(dataset, considerDatasetLogoAsCandidate)) {
+                JsonObjectBuilder candidate = Json.createObjectBuilder();
+                String base64image = datasetThumbnail.getBase64image();
+                if (base64image != null) {
+                    logger.fine("found a candidate!");
+                    candidate.add("base64image", base64image);
+                }
+                DataFile dataFile = datasetThumbnail.getDataFile();
+                if (dataFile != null) {
+                    candidate.add("dataFileId", dataFile.getId());
+                }
+                data.add(candidate);
+            }
+            return ok(data);
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.NOT_FOUND, "Could not find dataset based on id supplied: " + idSupplied + ".");
+        }
+    }
+
+    @GET
+    @Produces({"image/png"})
+    @Path("{id}/thumbnail")
+    public InputStream getDatasetThumbnail(@PathParam("id") String idSupplied) {
+        try {
+            Dataset dataset = findDatasetOrDie(idSupplied);
+            return DatasetUtil.getThumbnailAsInputStream(dataset);
+        } catch (WrappedResponse ex) {
+            return null;
+        }
+    }
+
+    @POST
+    @Path("{id}/thumbnail/{dataFileId}")
+    public Response setDataFileAsThumbnail(@PathParam("id") String idSupplied, @PathParam("dataFileId") long dataFileIdSupplied) {
+        try {
+            DatasetThumbnail datasetThumbnail = execCommand(new UpdateDatasetThumbnailCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(idSupplied), UpdateDatasetThumbnailCommand.UserIntent.setDatasetFileAsThumbnail, dataFileIdSupplied, null));
+            return ok("Thumbnail set to " + datasetThumbnail.getBase64image());
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
+
+    @POST
+    @Path("{id}/thumbnail")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    public Response uploadDatasetLogo(@PathParam("id") String idSupplied, @FormDataParam("file") InputStream inputStream
+    ) {
+        try {
+            DatasetThumbnail datasetThumbnail = execCommand(new UpdateDatasetThumbnailCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(idSupplied), UpdateDatasetThumbnailCommand.UserIntent.setNonDatasetFileAsThumbnail, null, inputStream));
+            return ok("Thumbnail is now " + datasetThumbnail.getBase64image());
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
+
+    @DELETE
+    @Path("{id}/thumbnail")
+    public Response removeDatasetLogo(@PathParam("id") String idSupplied) {
+        try {
+            DatasetThumbnail datasetThumbnail = execCommand(new UpdateDatasetThumbnailCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(idSupplied), UpdateDatasetThumbnailCommand.UserIntent.removeThumbnail, null, null));
+            return ok("Dataset thumbnail removed.");
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
+
     /**
      * Add a File to an existing Dataset
      * 

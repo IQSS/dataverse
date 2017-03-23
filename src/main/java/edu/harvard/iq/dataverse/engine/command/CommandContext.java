@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.HandlenetServiceBean;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DatasetLinkingServiceBean;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.DataverseFacetServiceBean;
 import edu.harvard.iq.dataverse.DataverseFieldTypeInputLevelServiceBean;
 import edu.harvard.iq.dataverse.DataverseLinkingServiceBean;
@@ -111,4 +112,6 @@ public interface CommandContext {
     public SystemConfig systemConfig();
 
     public PrivateUrlServiceBean privateUrl();
+
+    public DatasetVersionServiceBean datasetVersion();
 }

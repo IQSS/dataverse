@@ -236,7 +236,8 @@
               <button type="button" class="btn btn-primary btn-xs" data-toggle="offcanvas"><i class="glyphicon glyphicon-chevron-left"></i> Filter Results</button>
             </p>
 
-            <div id="emptyResults" class="emptyResults bg-warning" jsf:rendered="#{SearchIncludeFragment.searchResultsList.size() == 0}">
+            <!-- Message for zero results -->
+            <div id="emptyResults" class="emptyResults bg-warning" jsf:rendered="#{(SearchIncludeFragment.searchResultsList.size() == 0) and (!SearchIncludeFragment.wasSolrErrorEncountered())}">
                 <ui:fragment rendered="#{SearchIncludeFragment.mode == SearchIncludeFragment.searchModeString}">
                     <!--THIS IS EMPTY / SEARCH-->
                     <ui:fragment rendered="#{SearchIncludeFragment.facetCountDataverses eq 0 and SearchIncludeFragment.facetCountDatasets eq 0 and SearchIncludeFragment.facetCountFiles eq 0}">
@@ -311,9 +312,21 @@
             </div>
 
             <div id="resultsFacetsTopBlock" jsf:rendered="#{!empty SearchIncludeFragment.filterQueries}">
-                <ui:repeat value="#{SearchIncludeFragment.filterQueries}" var="filterQuery">
+                <ui:fragment rendered="#{(SearchIncludeFragment.wasSolrErrorEncountered())}">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="bg-danger padding-12 margin-top margin-bottom">
+                                <p><h:outputFormat value=" #{bundle['dataverse.search.facet.error']}" escape="false">
+                                    <f:param value="#{SearchIncludeFragment.dataverse.alias}"/>                                    
+                                </h:outputFormat></p>
+                            </div>
+                        </div>
+                    </div>   
+                </ui:fragment>
+
+                <ui:repeat value="#{SearchIncludeFragment.filterQueries}" var="filterQuery" rendered="#{!SearchIncludeFragment.wasSolrErrorEncountered()}">
                     <ui:param name="friendlyNames" value="#{SearchIncludeFragment.getFriendlyNamesFromFilterQuery(filterQuery)}"/>
-                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}" styleClass="facetLink facetSelected">
+                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}" styleClass="facetLink facetSelected" rendered="#{not empty friendlyNames}">
                         <h:outputText value="#{friendlyNames.get(0)}: #{friendlyNames.get(1)}"/> <span class="glyphicon glyphicon-remove"></span>
                         <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                         <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -444,8 +457,8 @@
                         </div>
                         <div class="card-preview-icon-block text-center">
                             <h:outputLink value="#{!SearchIncludeFragment.rootDv and !result.isInTree ? dvUrl : widgetWrapper.wrapURL(dvUrl)}" target="#{!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView ? '_blank' : ''}">
-                                <h:graphicImage value="#{result.imageUrl}" rendered="#{result.displayImage}"/>
-                                <span class="icon-dataverse text-brand" jsf:rendered="#{!result.displayImage}"/>
+                                <h:graphicImage value="#{result.imageUrl}" rendered="#{!empty result.imageUrl}"/>
+                                <span class="icon-dataverse text-brand" jsf:rendered="#{empty result.imageUrl}"/>
                             </h:outputLink>
                         </div>
 
@@ -479,8 +492,6 @@
                                 <div>
                                     <h:outputText value="#{highlight.solrField.nameSearchable}: #{snippet}" escape="false"/>
                                     <ui:param value="#{highlight.solrField.nameFacetable}:intentional" name="unfriendly"/>
-                                    <!--<h:outputText value="#{SearchIncludeFragment.getFriendlyNamesFromFilterQuery('name:intentional').get(0)}"/>-->
-                                    <!--<h:outputText value="#{SearchIncludeFragment.getFriendlyNamesFromFilterQuery(unfriendly).get(0)}: "/>-->
                                 </div>
                             </ui:repeat>
                         </ui:repeat>
@@ -503,9 +514,9 @@
                             <h:outputText value="#{result.userRole}" styleClass="label label-primary" rendered="#{!empty result.userRole}"/>
                         </div>
                         <div class="card-preview-icon-block text-center">
-                            <a href="#{!SearchIncludeFragment.rootDv and !result.isInTree ? result.datasetUrl : widgetWrapper.wrapURL(result.datasetUrl)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">
-                                <h:graphicImage value="#{result.imageUrl}" rendered="#{result.displayImage}"/>
-                                <span class="icon-dataset text-info" jsf:rendered="#{!result.displayImage}"/>
+                            <a href="#{!SearchIncludeFragment.rootDv and !result.isInTree ? result.datasetUrl : widgetWrapper.wrapURL(result.datasetUrl)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">                               
+                                <h:graphicImage value="#{result.imageUrl}" rendered="#{!empty result.imageUrl}"/>                               
+                                <span class="icon-dataset" jsf:rendered="#{empty result.imageUrl}"/>
                             </a>
                         </div>
 
@@ -541,9 +552,6 @@
                             <ui:repeat value="#{highlight.snippets}" var="snippet">
                                 <div>
                                     <h:outputText value="#{highlight.displayName}: #{snippet}" escape="false"/>
-                                    <!--<ui:param value="#{highlight.solrField.nameFacetable}:intentional" name="unfriendly"/>-->
-                                    <!--<h:outputText value="#{SearchIncludeFragment.getFriendlyNamesFromFilterQuery('name:intentional').get(0)}"/>-->
-                                    <!--<h:outputText value="#{SearchIncludeFragment.getFriendlyNamesFromFilterQuery(unfriendly).get(0)}: "/>-->
                                 </div>
                             </ui:repeat>
                         </ui:repeat>
@@ -581,17 +589,17 @@
 
                         <div class="card-preview-icon-block text-center" jsf:rendered="#{settingsWrapper.isTrueForKey(':ShowFileLandingPage', false)}">
                             <a href="#{!SearchIncludeFragment.rootDv and !result.isInTree ? result.fileUrl : widgetWrapper.wrapURL(result.fileUrl)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">
-                                <h:graphicImage value="#{result.imageUrl}" rendered="#{result.displayImage}"/>
+                                <h:graphicImage value="#{result.imageUrl}" rendered="#{!empty result.imageUrl}"/>
                                 <span class="icon-#{dataFileServiceBean.getFileClass(result.entity)} text-muted h1"
-                                      jsf:rendered="#{!result.displayImage}"/>
+                                      jsf:rendered="#{empty result.imageUrl}"/>
                             </a>
                         </div>
 
                         <div class="card-preview-icon-block text-center" jsf:rendered="#{!settingsWrapper.isTrueForKey(':ShowFileLandingPage', false)}">
                             <a href="#{!SearchIncludeFragment.rootDv and !result.isInTree ? result.fileDatasetUrl : widgetWrapper.wrapURL(result.fileDatasetUrl)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">
-                                <h:graphicImage value="#{result.imageUrl}" rendered="#{result.displayImage}"/>
+                                <h:graphicImage value="#{result.imageUrl}" rendered="#{!empty result.imageUrl}"/>
                                 <span class="icon-#{dataFileServiceBean.getFileClass(result.entity)} text-muted h1"
-                                      jsf:rendered="#{!result.displayImage}"/>
+                                      jsf:rendered="#{empty result.imageUrl}"/>
                             </a>
                         </div>
 
