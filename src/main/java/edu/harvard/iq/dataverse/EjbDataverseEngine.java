@@ -140,6 +140,9 @@ public class EjbDataverseEngine {
     @EJB
     PrivateUrlServiceBean privateUrlService;
 
+    @EJB
+    DatasetVersionServiceBean datasetVersionService;
+
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
     
@@ -402,6 +405,11 @@ public class EjbDataverseEngine {
                 @Override
                 public PrivateUrlServiceBean privateUrl() {
                     return privateUrlService;
+                }
+
+                @Override
+                public DatasetVersionServiceBean datasetVersion() {
+                    return datasetVersionService;
                 }
 
             };
