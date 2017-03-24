@@ -30,8 +30,8 @@
                     <iframe id="id_iframe_map" height="300" width="100%" src="#{ worldMapPermissionHelper.getMapLayerMetadata(fileMetadata.dataFile).getEmbedMapLink() }"></iframe>
                 </div>
                 <div class="modal-footer clearfix">
-                    <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }" target="_blank"><img src="https://worldmap.harvard.edu/static/theme/img/WorldMap-Logo_26px.png" alt="#{bundle['file.mapData.worldMap']}" class="pull-left" style="margin-top:5px;" /></a>
-                    <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }" class="btn btn-default" target="_blank"><span class="glyphicon glyphicon-equalizer"/> #{bundle['file.metaData.viewOnWorldMap']}</a>
+                    <a href="#{ worldMapPermissionHelper.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }" target="_blank"><img src="https://worldmap.harvard.edu/static/theme/img/WorldMap-Logo_26px.png" alt="#{bundle['file.mapData.worldMap']}" class="pull-left" style="margin-top:5px;" /></a>
+                    <a href="#{ worldMapPermissionHelper.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }" class="btn btn-default" target="_blank"><span class="glyphicon glyphicon-equalizer"/> #{bundle['file.metaData.viewOnWorldMap']}</a>
                     <button type="button" class="btn btn-default" data-dismiss="modal">#{bundle['close']}</button>
                 </div>
             </div>
