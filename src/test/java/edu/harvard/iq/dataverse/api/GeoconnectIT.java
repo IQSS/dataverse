@@ -16,7 +16,7 @@ public class GeoconnectIT {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }
 
-//    @Ignore
+    @Ignore
     @Test
     public void testMapLayerMetadatas() {
         Response response = given().get("/api/admin/geoconnect/mapLayerMetadatas");
@@ -25,7 +25,7 @@ public class GeoconnectIT {
                 .statusCode(OK.getStatusCode());
     }
 
-//    @Ignore
+    @Ignore
     @Test
     public void checkMapLayerMetadatas() {
         Response createSuperuser = UtilIT.createRandomUser();
@@ -38,6 +38,32 @@ public class GeoconnectIT {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, superuserApiToken)
                 .post("/api/admin/geoconnect/mapLayerMetadatas/check");
+        response.prettyPrint();
+        response.then().assertThat()
+                .statusCode(OK.getStatusCode());
+    }
+
+    @Ignore
+    @Test
+    public void getMapFromFile() {
+        String apiToken = "b5a144d8-b3a3-452b-9543-131360884281";
+        long fileId = 2661;
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/files/" + fileId + "/map");
+        response.prettyPrint();
+        response.then().assertThat()
+                .statusCode(OK.getStatusCode());
+    }
+
+    @Ignore
+    @Test
+    public void delectMapFromFile() {
+        String apiToken = "b5a144d8-b3a3-452b-9543-131360884281";
+        long fileId = 2661;
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/files/" + fileId + "/map?key=" + apiToken);
         response.prettyPrint();
         response.then().assertThat()
                 .statusCode(OK.getStatusCode());
