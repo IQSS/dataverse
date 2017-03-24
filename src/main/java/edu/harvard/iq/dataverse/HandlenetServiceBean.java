@@ -251,7 +251,7 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
                 + "/" + dataset.getIdentifier();  
         return targetUrl;
     }
-    
+ 
     public String getSiteUrl() {
         logger.log(Level.FINE,"getSiteUrl");
         String hostUrl = System.getProperty("dataverse.siteUrl");
@@ -405,6 +405,16 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
     private String getAuthHandle(Dataset datasetIn) {
         // TODO hack: GNRSServiceBean retrieved this from vdcNetworkService
         return "0.NA/" + datasetIn.getAuthority();
+    }
+    
+    @Override
+    public List<String> getProviderInformation(){
+        ArrayList <String> providerInfo = new ArrayList<>();
+        String providerName = "Handle";
+        String providerLink = "https://hdl.handle.net";
+        providerInfo.add(providerName);
+        providerInfo.add(providerLink);
+        return providerInfo;
     }
 }
 
