@@ -38,6 +38,7 @@ import edu.harvard.iq.dataverse.util.DatasetFieldWalker;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import java.io.StringReader;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Set;
 import javax.json.Json;
@@ -788,6 +789,11 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(MapLayerMetadata mapLayerMetadata) {
+        Timestamp lastVerifiedTimestamp = mapLayerMetadata.getLastVerifiedTime();
+        String lastVerifiedString = null;
+        if (lastVerifiedTimestamp != null) {
+            lastVerifiedString = Util.getDateTimeFormat().format(lastVerifiedTimestamp);
+        }
         return jsonObjectBuilder()
                 .add("id", mapLayerMetadata.getId())
                 .add("embedMapLink", mapLayerMetadata.getEmbedMapLink())
@@ -799,7 +805,9 @@ public class JsonPrinter {
                 .add("worldmapUsername", mapLayerMetadata.getWorldmapUsername())
                 .add("isJoinLayer", mapLayerMetadata.isJoinLayer())
                 .add("dataFileId", mapLayerMetadata.getDataFile().getId())
-                .add("datasetID", mapLayerMetadata.getDataset().getId());
+                .add("datasetID", mapLayerMetadata.getDataset().getId())
+                .add("getLastVerifiedStatus", mapLayerMetadata.getLastVerifiedStatus())
+                .add("getLastVerifiedTime", lastVerifiedString);
     }
 
 }

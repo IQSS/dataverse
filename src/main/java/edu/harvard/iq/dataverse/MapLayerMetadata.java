@@ -7,6 +7,7 @@
 package edu.harvard.iq.dataverse;
 
 import java.io.Serializable;
+import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.List;
 import javax.persistence.Column;
@@ -102,8 +103,19 @@ public class MapLayerMetadata implements Serializable {
     @Column(columnDefinition = "TEXT")
     private String mapLayerLinks;
 
-    
-    
+    /**
+     * The HTTP Status code (200, 404, etc.) returned when you check to see if
+     * the map/layer exists on the WorldMap side.
+     */
+    @Column(nullable=true)
+    private int lastVerifiedStatus;
+
+    /**
+     * The time that lastVerifiedStatus was last recorded.
+     */
+    @Column(nullable=true)
+    private static Timestamp lastVerifiedTime;
+
     /**
      * Get property layerName.
      * @return value of property layerName.
@@ -266,7 +278,21 @@ public class MapLayerMetadata implements Serializable {
         this.id = id;
     }
 
+    public Timestamp getLastVerifiedTime() {
+        return lastVerifiedTime;
+    }
 
+    public void setLastVerifiedTime(Timestamp lastVerifiedTime) {
+        MapLayerMetadata.lastVerifiedTime = lastVerifiedTime;
+    }
+
+    public int getLastVerifiedStatus() {
+        return lastVerifiedStatus;
+    }
+
+    public void setLastVerifiedStatus(int lastVerifiedStatus) {
+        this.lastVerifiedStatus = lastVerifiedStatus;
+    }
     
     @Override
     public String toString() {
@@ -274,6 +300,5 @@ public class MapLayerMetadata implements Serializable {
 
         //return "WorldMap Layer: " + this.layerName + " for DataFile: " + this.dataFile.toString();
     }
-
 
 }

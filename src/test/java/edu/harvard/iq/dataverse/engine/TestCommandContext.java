@@ -187,4 +187,9 @@ public class TestCommandContext implements CommandContext {
         return null;
     }
 
+    @Override
+    public MapLayerMetadataServiceBean mapLayerMetadata() {
+        return null;
+    }
+
 }
