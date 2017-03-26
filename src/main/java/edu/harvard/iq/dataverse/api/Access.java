@@ -135,7 +135,7 @@ public class Access extends AbstractApiBean {
         if (df == null) {
             logger.warning("Access: datafile service could not locate a DataFile object for id "+fileId+"!");
             throw new WebApplicationException(Response.Status.NOT_FOUND);
-        }
+        }   
         
         if (apiToken == null || apiToken.equals("")) {
             apiToken = headers.getHeaderString(API_KEY_HEADER);

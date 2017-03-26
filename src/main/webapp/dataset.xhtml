@@ -226,7 +226,7 @@
                                 </div>
                             </p:dialog>
                             <!-- END: Email/Link/Share Button Group -->
-
+                            
                             <!-- View Dataset Versions Button -->
                             <!-- 4.2.1: replaced permissionServiceBean.on(DatasetPage.dataset).has('ViewUnpublishedDataset') with DatasetPage.canViewUnpublishedDataset() -->
                             <div class="btn-group pull-left" jsf:rendered="#{DatasetPage.releasedVersionTabList.size() > 1 or (DatasetPage.releasedVersionTabList.size() == 1 and DatasetPage.dataset.latestVersion.draft and DatasetPage.canViewUnpublishedDataset())}">

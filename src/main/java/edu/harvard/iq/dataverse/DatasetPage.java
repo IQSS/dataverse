@@ -390,6 +390,12 @@ public class DatasetPage implements java.io.Serializable {
         setReleasedVersionTabList(resetReleasedVersionTabList());
         
     }
+    
+    //@author anuj
+    public void changeCloudDataset(ValueChangeEvent e) {
+    logger.info("Dataset id: "+dataset.getDisplayName());
+        datasetService.toggleCloudDataset(dataset.getId());
+    }
 
     public void updateLinkableDataverses() {
         dataversesForLinking = new ArrayList();
@@ -1086,21 +1092,27 @@ public class DatasetPage implements java.io.Serializable {
             if (dataset.isHarvested()) {
                 // if so, we'll simply forward to the remote URL for the original
                 // source of this harvested dataset:
-                String originalSourceURL = dataset.getRemoteArchiveURL();
-                if (originalSourceURL != null && !originalSourceURL.equals("")) {
-                    logger.fine("redirecting to "+originalSourceURL);
+                originalSourceUrl = dataset.getRemoteArchiveURL();
+                /*
+                if (originalSourceUrl != null && !originalSourceUrl.equals("")) {
+                    logger.fine("redirecting to "+originalSourceUrl);
                     try {
-                        FacesContext.getCurrentInstance().getExternalContext().redirect(originalSourceURL);
+                        FacesContext.getCurrentInstance().getExternalContext().redirect(originalSourceUrl);
                     } catch (IOException ioex) {
                         // must be a bad URL...
                         // we don't need to do anything special here - we'll redirect
                         // to the local 404 page, below.
-                        logger.warning("failed to issue a redirect to "+originalSourceURL);
+                        logger.warning("failed to issue a redirect to "+originalSourceUrl);
                     }
-                    return originalSourceURL;
+                    return originalSourceUrl;
                 }
 
                 return permissionsWrapper.notFound();
+                */
+                datafileService.findFileMetadataOptimizedExperimental(dataset);
+                fileMetadatasSearch = workingVersion.getFileMetadatas();
+                
+                JsfHelper.addWarningMessage(dataset.getHarvestedFrom().getArchiveDescription()+" <b>Note that the physical files have been cached locally</b>, and can be downloaded from THIS dataverse node. You can see the dataset at the original source here: <A HREF=\""+originalSourceUrl+"\">"+originalSourceUrl+"</A>");
             }
 
             // Check permisisons           

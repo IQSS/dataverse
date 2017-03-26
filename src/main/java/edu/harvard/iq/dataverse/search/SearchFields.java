@@ -183,7 +183,7 @@ public class SearchFields {
     public static final String TYPE = "dvObjectType";
     public static final String NAME_SORT = "nameSort";
     public static final String PUBLICATION_DATE = "publicationDate";
-    public static final String RELEASE_OR_CREATE_DATE = "dateSort";
+    public static final String RELEASE_OR_CREATE_DATE = "dateSort"; 
     /**
      * i.e. "Mar 17, 2015"
      */
@@ -233,4 +233,5 @@ public class SearchFields {
     public static final String VARIABLE_NAME = "variableName";
     public static final String VARIABLE_LABEL = "variableLabel";
 
+    public static final String CLOUD_DATASET = "cloudDataset";
 }

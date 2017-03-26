@@ -1381,22 +1381,14 @@ sub validate_smtp_server {
     unless ( $mail_server_iaddr = inet_aton( $CONFIG_DEFAULTS{'MAIL_SERVER'} ) ) {
 	print STDERR "Could not look up $CONFIG_DEFAULTS{'MAIL_SERVER'},\n";
 	print STDERR "the host you specified as your mail server\n";
-	$mail_server_status = 0;
+	$mail_server_status = 1;
     }
 
     if ($mail_server_status) {
 	my $mail_server_paddr = sockaddr_in( 25, $mail_server_iaddr );
 	$mail_server_proto = getprotobyname('tcp');
 
-	unless ( socket( SOCK, PF_INET, SOCK_STREAM, $mail_server_proto )
-		 && connect( SOCK, $mail_server_paddr ) )
-	{
-	    print STDERR "Could not establish connection to $CONFIG_DEFAULTS{'MAIL_SERVER'},\n";
-	    print STDERR "the address you provided for your Mail server.\n";
-	    print STDERR "Please select a valid mail server, and try again.\n\n";
 
-	    $mail_server_status = 0;
-	}
 
 	close(SOCK);
     }

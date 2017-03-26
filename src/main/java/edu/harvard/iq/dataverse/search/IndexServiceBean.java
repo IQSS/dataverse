@@ -633,6 +633,8 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.IDENTIFIER, dataset.getGlobalId());
         solrInputDocument.addField(SearchFields.DATASET_PERSISTENT_ID, dataset.getGlobalId());
         solrInputDocument.addField(SearchFields.PERSISTENT_URL, dataset.getPersistentURL());
+        //@author - Anuj - Added the new field so that a dataset can marked cloud dataset
+        solrInputDocument.addField(SearchFields.CLOUD_DATASET, dataset.isCloudDataset());
         solrInputDocument.addField(SearchFields.TYPE, "datasets");
 
         Date datasetSortByDate = new Date();

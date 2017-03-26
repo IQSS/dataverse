@@ -40,8 +40,11 @@ import org.xml.sax.SAXException;
 
 import com.lyncode.xoai.model.oaipmh.Header;
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.api.imports.ImportServiceBean;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
@@ -52,8 +55,16 @@ import edu.harvard.iq.dataverse.harvest.client.oai.OaiHandlerException;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import java.io.FileWriter;
 import java.io.PrintWriter;
+
+import edu.harvard.iq.dataverse.harvest.client.datafiletransfer.DataFileDownload;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.LinkedList;
+import java.util.concurrent.Semaphore;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceContextType;
 
 /**
  *
@@ -79,6 +90,8 @@ public class HarvesterServiceBean {
     @EJB
     ImportServiceBean importService;
     @EJB
+    DataFileServiceBean fileService;
+    @EJB
     EjbDataverseEngine engineService;
     @EJB
     IndexServiceBean indexService;
@@ -87,6 +100,8 @@ public class HarvesterServiceBean {
     private static final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
     private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
     
+    private static final int MAX_AVAILABLE = 10;
+    private final Semaphore available = new Semaphore(MAX_AVAILABLE, true);
     public static final String HARVEST_RESULT_SUCCESS="success";
     public static final String HARVEST_RESULT_FAILED="failed";
     private static final Long  INDEXING_CONTENT_BATCH_SIZE = 10000000L;
@@ -142,6 +157,8 @@ public class HarvesterServiceBean {
      * @throws IOException
      */
     public void doHarvest(DataverseRequest dataverseRequest, Long harvestingClientId) throws IOException {
+       
+        double metadataHarvestingStart = System.currentTimeMillis();
         HarvestingClient harvestingClientConfig = harvestingClientService.find(harvestingClientId);
         
         if (harvestingClientConfig == null) {
@@ -188,10 +205,116 @@ public class HarvesterServiceBean {
                 } else {
                     throw new IOException("Unsupported harvest type");
                 }
-                harvestingClientService.setHarvestSuccess(harvestingClientId, new Date(), harvestedDatasetIds.size(), failedIdentifiers.size(), deletedIdentifiers.size());
-                hdLogger.log(Level.INFO, "COMPLETED HARVEST, server=" + harvestingClientConfig.getArchiveUrl() + ", metadataPrefix=" + harvestingClientConfig.getMetadataPrefix());
-                hdLogger.log(Level.INFO, "Datasets created/updated: " + harvestedDatasetIds.size() + ", datasets deleted: " + deletedIdentifiers.size() + ", datasets failed: " + failedIdentifiers.size());
+             
+                
+                 
+                //Adding code for caching data file.
+                /*
+                @author Anuj, Leonid
+                * This part of the code caches the data file on Object store
+                * service endpoint of MOC's Openstack production infrastructure.
+                * For ever datafile in every harvested dataset the following steps
+                * are repeated.
+                * 1. Download the data file under /tmp directory.
+                * 2. New DataFileIO object is created and the file is copied
+                *    to it's permanent location. This is 'Swift' by default.
+                *    This can be changed by changing the DEFAULT_STORAGE_DRIVER_IDENTIFIER
+                *    static variable in DataAccess file.
+                * 3. EntityManager is updated with the new harvestedFile and it's 
+                *    updated information.
+                * 4. The file is deleted from the /tmp directory.
+                * After completion of this process the Harvesting is marked successful.
+                *
+                */
+                
+                //Checking time
+               double metadataHarvestingStop = System.currentTimeMillis();
+               double datafileHarvestingStart = System.currentTimeMillis();
+               //This above section should be removed.
+                       
+               String dirName = "/tmp";
+               
+               hdLogger.log(Level.INFO, "Downloading data files to Swift");
+               
+               
+               LinkedList<Object> cacheDataFileList = new LinkedList<Object>();
+               
+               for (Long datasetId : harvestedDatasetIds) {
+                    Dataset harvestedDataset = datasetService.find(datasetId);
 
+                    for (DataFile harvestedFile : harvestedDataset.getFiles()) {
+                        
+                        
+                        //hdLogger.log(Level.INFO, "Before: "+harvestedFile.getStorageIdentifier());
+                        cacheDataFileList.add(new CacheDataFile(harvestedDataset, harvestedFile, fileService, available));
+                        ((CacheDataFile)cacheDataFileList.getLast()).start();
+                        //hdLogger.log(Level.INFO, "After: "+harvestedFile.getStorageIdentifier());
+                        //em.merge(harvestedFile);
+                        //hdLogger.log(Level.INFO, available.getQueueLength() + " " +available.availablePermits());
+                        
+                        /*
+                        String fileUrl = harvestedFile.getStorageIdentifier();
+                        String fileName = harvestedFile.getFileMetadata().getLabel();
+
+                        DataFileDownload dfd = new DataFileDownload(fileUrl, dirName + "/" + fileName);
+                        dfd.saveDataFile(fileUrl, dirName + "/" + fileName);
+                        
+                        fileService.generateStorageIdentifier(harvestedFile);
+                            
+                        DataFileIO dataAccess = DataAccess.createNewDataFileIO(harvestedFile, harvestedFile.getStorageIdentifier());
+                        Path tempFilePath = Paths.get(dirName, fileName);
+                                                
+                        try {
+                            if (harvestedDataset.getFileSystemDirectory() != null
+                                    && !Files.exists(harvestedDataset.getFileSystemDirectory())) {
+                                /* Note that "createDirectories()" must be used - not 
+                                 * "createDirectory()", to make sure all the parent 
+                                 * directories that may not yet exist are created as well. 
+                                 */ /*
+                                Files.createDirectories(harvestedDataset.getFileSystemDirectory());
+                            }
+                        } catch (IOException dirEx) {
+                            logger.severe("Failed to create study directory " + 
+                                    harvestedDataset.getFileSystemDirectory().toString());
+                            return;
+                            // TODO:
+                            // Decide how we are communicating failure information back to 
+                            // the page, and what the page should be doing to communicate
+                            // it to the user - if anything. 
+                            // -- L.A. 
+                        }
+                       
+                        // Copies the file from tmp location to the permanent 
+                        // directory i.e swift service endpoint.
+                        dataAccess.copyPath(tempFilePath);
+                        em.merge(harvestedFile);
+                        
+                        // Deleting the Data File from the /tmp directory.
+                        //if(harvestedFile.getStorageIdentifier().startsWith(DataAccess.DEFAULT_SWIFT_ENDPOINT_START_CHARACTERS))
+                        //Files.delete(tempFilePath);
+                  
+                        */
+                    }
+                }
+               
+               for(Object cachedDatafile : cacheDataFileList) {
+                    ((CacheDataFile)cachedDatafile).join();
+               }
+               
+               for(Object cachedDatafile : cacheDataFileList) {
+                   //hdLogger.log(Level.INFO, "After: "+((CacheDataFile)cachedDatafile).harvestedFile.getStorageIdentifier());
+                   em.merge(((CacheDataFile)cachedDatafile).harvestedFile);
+                }
+               double datafileHarvestingStop = System.currentTimeMillis();
+               
+               hdLogger.log(Level.INFO,"Time for metadata harvesting: "+(metadataHarvestingStop - metadataHarvestingStart)/60000);
+               hdLogger.log(Level.INFO,"Time for metadata harvesting: "+(datafileHarvestingStop - datafileHarvestingStart)/60000);        
+               harvestingClientService.setHarvestSuccess(harvestingClientId, new Date(), harvestedDatasetIds.size(), failedIdentifiers.size(), deletedIdentifiers.size());
+               hdLogger.log(Level.INFO, "COMPLETED HARVEST, server=" + harvestingClientConfig.getArchiveUrl() + ", metadataPrefix=" + harvestingClientConfig.getMetadataPrefix());
+               hdLogger.log(Level.INFO, "Datasets created/updated: " + harvestedDatasetIds.size() + ", datasets deleted: " + deletedIdentifiers.size() + ", datasets failed: " + failedIdentifiers.size());
+
+               
+               
                 // now index all the datasets we have harvested - created, modified or deleted:
                 /* (TODO: may not be needed at all. In Dataverse4, we may be able to get away with the normal 
                     reindexing after every import. See the rest of the comments about batch indexing throughout 
@@ -207,8 +330,9 @@ public class HarvesterServiceBean {
                     } else {
                         hdLogger.log(Level.INFO, "(All harvested content already reindexed)");
                     }
-                 */
+                 //*/
             }
+                        
             //mailService.sendHarvestNotification(...getSystemEmail(), harvestingDataverse.getName(), logFileName, logTimestamp, harvestErrorOccurred.booleanValue(), harvestedDatasetIds.size(), failedIdentifiers);
         } catch (Throwable e) {
             harvestErrorOccurred.setValue(true);
