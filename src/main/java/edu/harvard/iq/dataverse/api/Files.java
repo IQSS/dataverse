@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.MapLayerMetadata;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
+import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
 import edu.harvard.iq.dataverse.datasetutility.DataFileTagException;
@@ -23,6 +24,7 @@ import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import java.io.InputStream;
+import java.sql.Timestamp;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -37,6 +39,8 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -217,15 +221,76 @@ public class Files extends AbstractApiBean {
             
     } // end: replaceFileInDataset
 
-    /**
-     * @todo Enforce permissions!
-     */
     @GET
     @Path("{id}/map")
     public Response getMapFromFile(@PathParam("id") Long idSupplied) {
         DataFile dataFile = fileService.find(idSupplied);
+        if (dataFile == null) {
+            return error(NOT_FOUND, "File not found based on id " + idSupplied + ".");
+        }
+        User user = null;
+        try {
+            user = findAuthenticatedUserOrDie();
+        } catch (WrappedResponse ex) {
+            return error(BAD_REQUEST, "You must supply an API token.");
+        }
+        boolean hasPermission = permissionSvc.userOn(user, dataFile.getOwner()).has(Permission.EditDataset);
+        if (!hasPermission) {
+            return error(FORBIDDEN, "You are not permitted to check the map for file id " + dataFile.getId() + ".");
+        }
         MapLayerMetadata mapLayerMetadata = mapLayerMetadataSrv.findMetadataByDatafile(dataFile);
+        if (mapLayerMetadata == null) {
+            return error(NOT_FOUND, "MapLayerMetadata not found based on file id " + dataFile.getId());
+        }
         return ok(json(mapLayerMetadata));
+    }
+
+    @GET
+    @Path("{id}/map/check")
+    public Response checkMapFromFile(@PathParam("id") Long idSupplied) {
+        DataFile dataFile = fileService.find(idSupplied);
+        if (dataFile == null) {
+            return error(NOT_FOUND, "File not found based on id " + idSupplied + ".");
+        }
+        User user = null;
+        try {
+            user = findAuthenticatedUserOrDie();
+        } catch (WrappedResponse ex) {
+            return error(BAD_REQUEST, "You must supply an API token.");
+        }
+        boolean hasPermission = permissionSvc.userOn(user, dataFile.getOwner()).has(Permission.EditDataset);
+        if (!hasPermission) {
+            return error(FORBIDDEN, "You are not permitted to check the map for file id " + dataFile.getId() + ".");
+        }
+        MapLayerMetadata mapLayerMetadata = mapLayerMetadataSrv.findMetadataByDatafile(dataFile);
+        if (mapLayerMetadata == null) {
+            return error(NOT_FOUND, "MapLayerMetadata not found based on file id " + dataFile.getId());
+        }
+        int lastVerifiedStatus = mapLayerMetadata.getLastVerifiedStatus();
+        Timestamp lastVerifiedTimestamp = mapLayerMetadata.getLastVerifiedTime();
+        String lastVerifiedString = null;
+        if (lastVerifiedTimestamp != null) {
+            lastVerifiedString = Util.getDateTimeFormat().format(lastVerifiedTimestamp);
+        }
+        String msg = null;
+        switch (lastVerifiedStatus) {
+            case 0:
+                msg = "The map from file id " + dataFile.getId() + " does not have a status recorded (" + lastVerifiedStatus + "). The link was last checked at " + lastVerifiedString + ".";
+                break;
+            case 200:
+                msg = "The map from file id " + dataFile.getId() + " is ok (" + lastVerifiedStatus + "). The link was last checked at " + lastVerifiedString + ".";
+                break;
+            case 404:
+                msg = "The map from file id " + dataFile.getId() + " was not found (" + lastVerifiedStatus + "). The link was last checked at " + lastVerifiedString + ".";
+                break;
+            case 500:
+                msg = "The map from file id " + dataFile.getId() + " has an unknown status (" + lastVerifiedStatus + ") and should be rechecked. The link was last checked at " + lastVerifiedString + ".";
+                break;
+            default:
+                msg = "The map from file id " + dataFile.getId() + " has an unexpected status (" + lastVerifiedStatus + "). The link was last checked at " + lastVerifiedString + ".";
+                break;
+        }
+        return ok(msg);
     }
 
     @DELETE

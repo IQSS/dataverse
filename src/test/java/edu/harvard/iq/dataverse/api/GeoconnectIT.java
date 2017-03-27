@@ -1,10 +1,11 @@
 package edu.harvard.iq.dataverse.api;
 
 import com.jayway.restassured.RestAssured;
-import static com.jayway.restassured.RestAssured.given;
 import com.jayway.restassured.response.Response;
-import static edu.harvard.iq.dataverse.api.UtilIT.API_TOKEN_HTTP_HEADER;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import org.hamcrest.CoreMatchers;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -16,16 +17,16 @@ public class GeoconnectIT {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }
 
-    @Ignore
+//    @Ignore
     @Test
     public void testMapLayerMetadatas() {
-        Response response = given().get("/api/admin/geoconnect/mapLayerMetadatas");
-        response.prettyPrint();
-        response.then().assertThat()
+        Response listMapLayerMetadatas = UtilIT.listMapLayerMetadatas();
+        listMapLayerMetadatas.prettyPrint();
+        listMapLayerMetadatas.then().assertThat()
                 .statusCode(OK.getStatusCode());
     }
 
-    @Ignore
+//    @Ignore
     @Test
     public void checkMapLayerMetadatas() {
         Response createSuperuser = UtilIT.createRandomUser();
@@ -35,37 +36,77 @@ public class GeoconnectIT {
         toggleSuperuser.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        Response response = given()
-                .header(API_TOKEN_HTTP_HEADER, superuserApiToken)
-                .post("/api/admin/geoconnect/mapLayerMetadatas/check");
-        response.prettyPrint();
-        response.then().assertThat()
+        Response checkMapLayerMetadatas = UtilIT.checkMapLayerMetadatas(superuserApiToken);
+
+        checkMapLayerMetadatas.prettyPrint();
+        checkMapLayerMetadatas.then().assertThat()
                 .statusCode(OK.getStatusCode());
     }
 
-    @Ignore
+//    @Ignore
     @Test
     public void getMapFromFile() {
+
+        Response createUnprivilegedUser = UtilIT.createRandomUser();
+        String unprivilegedUserApiToken = UtilIT.getApiTokenFromResponse(createUnprivilegedUser);
+        long fileId = 2663;
+
+        Response forbidden = UtilIT.getMapFromFile(fileId, unprivilegedUserApiToken);
+        forbidden.prettyPrint();
+        forbidden.then().assertThat()
+                .body("message", CoreMatchers.equalTo("You are not permitted to check the map for file id " + fileId + "."))
+                .statusCode(FORBIDDEN.getStatusCode());
+
         String apiToken = "b5a144d8-b3a3-452b-9543-131360884281";
-        long fileId = 2661;
-        Response response = given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/files/" + fileId + "/map");
-        response.prettyPrint();
-        response.then().assertThat()
+
+        Response fileDoesNotExist = UtilIT.getMapFromFile(Long.MAX_VALUE, apiToken);
+        fileDoesNotExist.prettyPrint();
+        fileDoesNotExist.then().assertThat()
+                .body("message", CoreMatchers.equalTo("File not found based on id " + Long.MAX_VALUE + "."))
+                .statusCode(NOT_FOUND.getStatusCode());
+
+        Response getMapFromFile = UtilIT.getMapFromFile(fileId, apiToken);
+        getMapFromFile.prettyPrint();
+        getMapFromFile.then().assertThat()
                 .statusCode(OK.getStatusCode());
     }
 
-    @Ignore
+//    @Ignore
     @Test
-    public void delectMapFromFile() {
+    public void checkMapFromFile() {
+
+        Response createUnprivilegedUser = UtilIT.createRandomUser();
+        String unprivilegedUserApiToken = UtilIT.getApiTokenFromResponse(createUnprivilegedUser);
+        long fileId = 2663;
+
+        Response forbidden = UtilIT.checkMapFromFile(fileId, unprivilegedUserApiToken);
+        forbidden.prettyPrint();
+        forbidden.then().assertThat()
+                .body("message", CoreMatchers.equalTo("You are not permitted to check the map for file id " + fileId + "."))
+                .statusCode(FORBIDDEN.getStatusCode());
+
+        String apiToken = "b5a144d8-b3a3-452b-9543-131360884281";
+
+        Response fileDoesNotExist = UtilIT.checkMapFromFile(Long.MAX_VALUE, apiToken);
+        fileDoesNotExist.prettyPrint();
+        fileDoesNotExist.then().assertThat()
+                .body("message", CoreMatchers.equalTo("File not found based on id " + Long.MAX_VALUE + "."))
+                .statusCode(NOT_FOUND.getStatusCode());
+
+        Response checkMapFromFile = UtilIT.checkMapFromFile(fileId, apiToken);
+        checkMapFromFile.prettyPrint();
+        checkMapFromFile.then().assertThat()
+                .statusCode(OK.getStatusCode());
+    }
+
+//    @Ignore
+    @Test
+    public void deleteMapFromFile() {
         String apiToken = "b5a144d8-b3a3-452b-9543-131360884281";
         long fileId = 2661;
-        Response response = given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .delete("/api/files/" + fileId + "/map?key=" + apiToken);
-        response.prettyPrint();
-        response.then().assertThat()
+        Response deleteMapFromFile = UtilIT.deleteMapFromFile(fileId, apiToken);
+        deleteMapFromFile.prettyPrint();
+        deleteMapFromFile.then().assertThat()
                 .statusCode(OK.getStatusCode());
     }
 
