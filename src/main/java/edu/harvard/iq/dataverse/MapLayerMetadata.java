@@ -114,7 +114,7 @@ public class MapLayerMetadata implements Serializable {
      * The time that lastVerifiedStatus was last recorded.
      */
     @Column(nullable=true)
-    private static Timestamp lastVerifiedTime;
+    private Timestamp lastVerifiedTime;
 
     /**
      * Get property layerName.
@@ -283,7 +283,7 @@ public class MapLayerMetadata implements Serializable {
     }
 
     public void setLastVerifiedTime(Timestamp lastVerifiedTime) {
-        MapLayerMetadata.lastVerifiedTime = lastVerifiedTime;
+        this.lastVerifiedTime = lastVerifiedTime;
     }
 
     public int getLastVerifiedStatus() {

@@ -43,11 +43,8 @@ public class CheckMapLayerMetadataCommand extends AbstractCommand<MapLayerMetada
             int statusCode = getRequest.asBinary().getStatus();
             mapLayerMetadata.setLastVerifiedStatus(statusCode);
             Timestamp now = new Timestamp(new Date().getTime());
-            /**
-             * @todo Figure out why this timestamp isn't being persisted.
-             */
             mapLayerMetadata.setLastVerifiedTime(now);
-            logger.info("Setting status code to " + statusCode + " and timestamp to " + now + " for MapLayerMetadata id " + mapLayerMetadata.getId() + " from DataFile id " + dataFile.getId());
+            logger.fine("Setting status code to " + statusCode + " and timestamp to " + now + " for MapLayerMetadata id " + mapLayerMetadata.getId() + " from DataFile id " + dataFile.getId());
             return ctxt.mapLayerMetadata().save(mapLayerMetadata);
         } catch (UnirestException ex) {
             logger.info("Couldn't update last verfied status code or timestamp: " + ex.getLocalizedMessage());

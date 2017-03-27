@@ -6,6 +6,7 @@ import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.Matchers;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -67,7 +68,9 @@ public class GeoconnectIT {
 
         Response getMapFromFile = UtilIT.getMapFromFile(fileId, apiToken);
         getMapFromFile.prettyPrint();
+
         getMapFromFile.then().assertThat()
+                //                .body("data.lastVerifiedTime", Matchers.startsWith("2"))
                 .statusCode(OK.getStatusCode());
     }
 

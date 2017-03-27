@@ -806,8 +806,8 @@ public class JsonPrinter {
                 .add("isJoinLayer", mapLayerMetadata.isJoinLayer())
                 .add("dataFileId", mapLayerMetadata.getDataFile().getId())
                 .add("datasetID", mapLayerMetadata.getDataset().getId())
-                .add("getLastVerifiedStatus", mapLayerMetadata.getLastVerifiedStatus())
-                .add("getLastVerifiedTime", lastVerifiedString);
+                .add("lastVerifiedStatus", mapLayerMetadata.getLastVerifiedStatus())
+                .add("lastVerifiedTime", lastVerifiedString);
     }
 
 }
