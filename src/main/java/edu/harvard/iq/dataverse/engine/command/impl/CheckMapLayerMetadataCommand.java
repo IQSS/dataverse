@@ -5,7 +5,6 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mashape.unirest.request.GetRequest;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.MapLayerMetadata;
-import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -15,7 +14,8 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.logging.Logger;
 
-@RequiredPermissions(Permission.EditDataset)
+// Change this to "@RequiredPermissions(Permission.EditDataset)" if this is every exposed beyond the "admin" API.
+@RequiredPermissions({})
 public class CheckMapLayerMetadataCommand extends AbstractCommand<MapLayerMetadata> {
 
     private static final Logger logger = Logger.getLogger(CheckMapLayerMetadataCommand.class.getCanonicalName());

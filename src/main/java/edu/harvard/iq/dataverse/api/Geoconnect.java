@@ -42,14 +42,15 @@ public class Geoconnect extends AbstractApiBean {
         JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
         for (MapLayerMetadata unmodified : mapLayerMetadataSrv.findAll()) {
             JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+            jsonObjectBuilder.add("fileId", unmodified.getDataFile().getId());
+            jsonObjectBuilder.add("mapLayerMetadataId", unmodified.getId());
+            jsonObjectBuilder.add("layerLink", unmodified.getLayerLink());
+            jsonObjectBuilder.add("fileLandingPage", systemConfig.getDataverseSiteUrl() + "/file.xhtml?fileId=" + unmodified.getDataFile().getId());
             try {
                 MapLayerMetadata modified = engineSvc.submit(new CheckMapLayerMetadataCommand(dataverseRequest, unmodified.getDataFile()));
-                jsonObjectBuilder.add("status", "success");
-                jsonObjectBuilder.add("mapLayerMetadata", json(modified));
+                jsonObjectBuilder.add("lastVerifiedStatus", modified.getLastVerifiedStatus());
             } catch (CommandException ex) {
-                jsonObjectBuilder.add("failure", "success");
-                jsonObjectBuilder.add("exception", ex.getLocalizedMessage());
-                jsonObjectBuilder.add("mapLayerMetadata", json(unmodified));
+                jsonObjectBuilder.add("Could not check status: ", ex.getLocalizedMessage());
             }
             jsonArrayBuilder.add(jsonObjectBuilder);
         }
