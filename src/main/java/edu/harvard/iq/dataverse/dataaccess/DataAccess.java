@@ -21,8 +21,12 @@
 package edu.harvard.iq.dataverse.dataaccess;
 
 import edu.harvard.iq.dataverse.DataFile;
-
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+// import javax.ejb.EJB;
+// import javax.ejb.EJBException;
 import java.io.IOException;
+// import javax.ejb.Stateless;
+
 
 /**
  *
@@ -30,13 +34,17 @@ import java.io.IOException;
  */
 
 public class DataAccess {
+
     public DataAccess() {
 
-    }
+    };
 
-    public static String DEFAULT_STORAGE_DRIVER_IDENTIFIER = "swift";
-    // updating to MOC swift
-    public static String DEFAULT_SWIFT_ENDPOINT_START_CHARACTERS = "http://rdgw";
+    public static final String DEFAULT_STORAGE_DRIVER_IDENTIFIER = System.getProperty("dataverse.files.storage-driver-id");
+    public static final String SWIFT_DIRECTORY = System.getProperty("dataverse.files.swift-directory");
+    public static final String DEFAULT_AUTHENTICATION_METHOD = System.getProperty("dataverse.files.auth-type");
+    public static final String DEFAULT_SWIFT_ENDPOINT_START_CHARACTERS = System.getProperty("dataverse.files.swift-endpoint-start");
+
+
     
     // The getDataFileIO() methods initialize DataFileIO objects for
     // datafiles that are already saved using one of the supported Dataverse
@@ -57,8 +65,8 @@ public class DataAccess {
         if (df.getStorageIdentifier().startsWith("file://")
                 || (!df.getStorageIdentifier().matches("^[a-z][a-z]*://.*"))) {
             return new FileAccessIO (df, req);
-        //} else if (df.getStorageIdentifier().startsWith("swift://")) {
-        } else if (df.getStorageIdentifier().startsWith(DEFAULT_SWIFT_ENDPOINT_START_CHARACTERS)) { //Changing this to the rados gate url
+        } else if (df.getStorageIdentifier().startsWith("swift://") || 
+            df.getStorageIdentifier().startsWith(DEFAULT_SWIFT_ENDPOINT_START_CHARACTERS)){ 
             return new SwiftAccessIO (df, req);
         } else if (df.getStorageIdentifier().startsWith("tmp://")) {
             throw new IOException("DataAccess IO attempted on a temporary file that hasn't been permanently saved yet.");
@@ -77,7 +85,10 @@ public class DataAccess {
     // createDataAccessObject() methods create a *new*, empty DataAccess objects,
     // for saving new, not yet saved datafiles.
     
+
+
     public static DataFileIO createNewDataFileIO (DataFile df, String storageTag) throws IOException {
+
         return createNewDataFileIO(df, storageTag, DEFAULT_STORAGE_DRIVER_IDENTIFIER);
     }
     
@@ -97,7 +108,7 @@ public class DataAccess {
         } else if (driverIdentifier.equals("swift")) {
             dataFileIO =  new SwiftAccessIO (df, null);
         } else { 
-            throw new IOException ("createDataAccessObject: Unsupported storage method.");
+            throw new IOException ("createDataAccessObject: Unsupported storage method " + driverIdentifier);
         }
         
         dataFileIO.open(DataAccessOption.WRITE_ACCESS);

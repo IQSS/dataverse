@@ -74,9 +74,7 @@ public class SwiftAccessIO extends DataFileIO {
     
     private String swiftFolderPath;
     private String swiftFileName = null;
-    
-    private final static String SWIFT_ENDPOINT = "http://rdgw.kaizen.massopencloud.org/swift/v1";
-    
+        
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO");
 
     public SwiftAccessIO () throws IOException {
@@ -182,7 +180,7 @@ public class SwiftAccessIO extends DataFileIO {
             swiftFileObject.uploadObject(inputFile);
             //After the files object is uploaded the identifier is changed.
             logger.info(this.swiftFileName+" "+this.swiftFolderPath);
-            this.getDataFile().setStorageIdentifier(SWIFT_ENDPOINT+"/"+this.swiftFolderPath+"/"+this.swiftFileName);
+            this.getDataFile().setStorageIdentifier(DataAccess.SWIFT_DIRECTORY+"/"+this.swiftFolderPath+"/"+this.swiftFileName);
                  
             newFileSize = inputFile.length();
 
@@ -274,6 +272,7 @@ public class SwiftAccessIO extends DataFileIO {
                 throw new IOException("SwiftAccessIO: invalid swift storage token: " + storageIdentifier);
             }
             
+            //not sure if this stuff is MOC unique or not
             
             Properties p = getSwiftProperties();
             swiftEndPoint = p.getProperty("swift.default.endpoint");
@@ -396,24 +395,34 @@ public class SwiftAccessIO extends DataFileIO {
         Account account = null; 
         
         /*
-        This try { } now authenticates using the KEYSTONE mechanism and uses
-        the tenant name in addition to the Username Password and AuthUrl
+        This try { } now authenticates using either the KEYSTONE mechanism which uses
+        the tenant name in addition to the Username Password and AuthUrl OR the BASIC method
         Also, the AuthUrl is now the identity service endpoint of MOC Openstack
         environment instead of the Object store service endpoint.
         */
+
+        // Keystone vs. Basic
         
         try {
-            account = new AccountFactory()
-                .setTenantName(swiftEndPointTenantName)
-                .setUsername(swiftEndPointUsername)
-                .setPassword(swiftEndPointSecretKey)
-                .setAuthUrl(swiftEndPointAuthUrl)
-                //.setAuthenticationMethod(BASIC)
-                .createAccount();
+            if (DataAccess.DEFAULT_AUTHENTICATION_METHOD.equals("keystone")) {
+                account = new AccountFactory()
+                    .setTenantName(swiftEndPointTenantName)
+                    .setUsername(swiftEndPointUsername)
+                    .setPassword(swiftEndPointSecretKey)
+                    .setAuthUrl(swiftEndPointAuthUrl)
+                    .createAccount();
+            } else { // assume BASIC
+                account = new AccountFactory()
+                    .setUsername(swiftEndPointUsername)
+                    .setPassword(swiftEndPointSecretKey)
+                    .setAuthUrl(swiftEndPointAuthUrl)
+                    .setAuthenticationMethod(BASIC)
+                    .createAccount();
+            }  
             
         } catch (Exception ex) {
             ex.printStackTrace();
-            throw new IOException("SwiftAccessIO: failed to authenticate for the end point "+swiftEndPoint);
+            throw new IOException("SwiftAccessIO: failed to authenticate" + DataAccess.DEFAULT_AUTHENTICATION_METHOD + "for the end point "+swiftEndPoint);
         }
         
         return account;

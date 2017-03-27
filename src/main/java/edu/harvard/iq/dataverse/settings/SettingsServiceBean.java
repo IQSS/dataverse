@@ -221,7 +221,12 @@ public class SettingsServiceBean {
         Default is false;
         */
         TwoRavensTabularView,
-                
+
+        /**
+         Whether to save data files locally in files or store them in swift storage,
+         default is file.
+        */
+        Driver,
 
         /**
          The message added to a popup upon dataset publish
