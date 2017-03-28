@@ -81,9 +81,9 @@ Colors from `Bootstrap CSS <http://getbootstrap.com/css/#less-variables-colors>`
 .. code-block:: html
   
   <!-- code comments -->
-   <span class="icon-dataverse text-brand"></span>
-   <span class="icon-dataset text-info"></span>
-   <span class="icon-other text-muted"></span>
+   <span class="text-brand"></span>
+   <span class="text-info"></span>
+   <span class="text-muted"></span>
 
 Text
 ----
@@ -110,15 +110,17 @@ Text color from `Bootstrap CSS <http://getbootstrap.com/css/#less-variables-scaf
 
 .. code-block:: html
 
-   <span class="icon-dataverse text-brand"></span>
-   <span class="icon-dataset text-info"></span>
-   <span class="icon-other text-muted"></span>
+   <span class="text-brand"></span>
+   <span class="text-info"></span>
+   <span class="text-muted"></span>
 
 
 Links
 -----
 
 Link color from `Bootstrap CSS <http://getbootstrap.com/css/#less-variables-links>`_.
+
+Hover state is 15% darker. There is an override in our stylesheet for ``.ui-widget-content a`` which I believe is because of PrimeFaces.
 
 .. code-block:: css
 
@@ -144,8 +146,6 @@ Link color from `Bootstrap CSS <http://getbootstrap.com/css/#less-variables-link
       color: #2A6496;
     }
 
-Hover state is 15% darker. There is an override in our stylesheet for ``.ui-widget-content a`` which I believe is because of PrimeFaces.
-
 .. raw:: html
 
   <div class="panel panel-default code-example">
@@ -168,10 +168,10 @@ Hover state is 15% darker. There is an override in our stylesheet for ``.ui-widg
   </span>
 
 
-Alerts/Contextual
------------------
+Contextual Classes
+------------------
 
-Alert/Contextual text and background colors from `Bootstrap CSS <http://getbootstrap.com/css/#helper-classes>`_.
+Contextual classes can be used to style text and background colors from `Bootstrap CSS <http://getbootstrap.com/css/#helper-classes>`_.
 
 .. raw:: html
 
@@ -189,9 +189,11 @@ Alert/Contextual text and background colors from `Bootstrap CSS <http://getboots
 
 .. code-block:: html
 
-   <span class="icon-dataverse text-brand"></span>
-   <span class="icon-dataset text-info"></span>
-   <span class="icon-other text-muted"></span>
+   <div class="bg-primary"></div>
+   <div class="bg-success"></div>
+   <div class="bg-info"></div>
+   <div class="bg-warning"></div>
+   <div class="bg-danger"></div>
 
 
 Typography
