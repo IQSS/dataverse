@@ -3,6 +3,8 @@ Foundations
 
 Foundational elements are the very basic elements to create a page in Dataverse. These basic elements have been broken down to Grid Layout, Color pPalette, Typography, Logos, Icons.
 
+Due to the use of Bootstrap and PrimeFaces, we have to do some tweeking and overriding in order to get everything as consistent as possible.
+
 
 Grid Layout
 ===========
@@ -12,8 +14,6 @@ Grid Layout
 We use the fixed-width ``.container`` class which provides repsonive widths (i.e. auto, 750px, 970px or 1170px) based on media queries for the page layout, with a series of rows and columns for the content.
 
 The grid layout uses ``.col-sm-*`` classes for horizontal groups of columns, inside a containing element with a ``.row`` class. Content should be placed within columns, and only columns may be immediate children of rows.
-
-Code Sample:
 
 .. code-block:: html
 
@@ -41,73 +41,186 @@ Code Sample:
 Color Palette
 =============
 
-The color palette is set in the `Bootstrap CSS <http://getbootstrap.com/css/#less-variables-colors>`_.
+The color palette is set in the `Bootstrap CSS <http://getbootstrap.com/css/#less-variables-colors>`_. There were some additions and some changes here and there.
+
+Semantic include various colors assigned to meaningful contextual values. Convey meaning through color with a handful of emphasis utility classes. These may also be applied to links and will darken on hover just like our default link styles.
 
 Primary/Brand
 -------------
 
-Colors from `Bootstrap CSS <http://getbootstrap.com/css/#less-variables-colors>`_.
+Colors from `Bootstrap CSS <http://getbootstrap.com/css/#less-variables-colors>`_. For the primary/brand color used in the Bootstrap stylesheet, we override (?) their blue with our orange `#C55B28` which comes from the Dataverse Project logo.
 
-``.text-brand {color:#C55B28;}``
+.. code-block:: css
 
-``.bg-brand {background:#C55B28;}``
+    .text-brand {
+      color:#C55B28;
+      /* dataverse icon, search-include, mydata-cards_min */
+    }
+    .bg-brand {
+      background:#C55B28;
+      /* not used anywhere */
+    }
+    .bg-muted {
+      background:#f5f5f5;
+      /* header, roles-assign */
+    }
 
 .. raw:: html
 
-	<div class="row">
-		<div style="height:100px" class="col-sm-2 bg-primary">bg-primary</div>
-		<div style="height:100px" class="col-sm-2 bg-success">bg-success</div>
-		<div style="height:100px" class="col-sm-2 bg-info">bg-info</div>
-		<div style="height:100px" class="col-sm-2 bg-warning">bg-warning</div>
-		<div style="height:100px" class="col-sm-2 bg-danger">bg-danger</div>
-	</div>
+  <div class="panel panel-default code-example">
+    <div class="panel-body">
+      <div class="color-swatches">
+        <div class="color-swatch" style="background-color:#C55B28;">bg-brand dataverse</div>
+        <div class="color-swatch" style="background-color:#428BCA;">dataset</div>
+        <div class="color-swatch" style="background-color:grey;">file</div>
+        <div class="color-swatch" style="background-color:#f5f5f5;">bg-muted</div>
+      </div>
+    </div>
+  </div>
+
+.. code-block:: html
+  
+  <!-- code comments -->
+   <span class="icon-dataverse text-brand"></span>
+   <span class="icon-dataset text-info"></span>
+   <span class="icon-other text-muted"></span>
 
 Text
 ----
 
 Text color from `Bootstrap CSS <http://getbootstrap.com/css/#less-variables-scaffolding>`_.
 
-``{color: #333;}``
-``@text-color: @black-50;``
+.. code-block:: css
+
+    body {
+      color: #333;
+    }
+    
+    @text-color: @black-50;
+
+.. raw:: html
+
+  <div class="panel panel-default code-example">
+    <div class="panel-body">
+      <p style="color:#333;">Nullam id dolor id nibh ultricies vehicula ut id elit.</p>
+      <p style="color:#7f7f7f;">Duis mollis, est non commodo luctus, nisi erat porttitor ligula.</p>
+      <p style="color:#777;">Maecenas sed diam eget risus varius blandit sit amet non magna.</p>
+    </div>
+  </div>
+
+.. code-block:: html
+
+   <span class="icon-dataverse text-brand"></span>
+   <span class="icon-dataset text-info"></span>
+   <span class="icon-other text-muted"></span>
+
 
 Links
 -----
 
 Link color from `Bootstrap CSS <http://getbootstrap.com/css/#less-variables-links>`_.
 
-``@link-color: @brand-primary;``
+.. code-block:: css
 
-``@link-hover-color: darken(@link-color, 15%);``
+    @brand-primary: darken(#428bca, 6.5%)
 
-``a {color: #337AB7;}``
+    @link-color: @brand-primary;
 
-``a:hover {color: #23527C;}``
+    @link-hover-color: darken(@link-color, 15%);
 
-``.ui-widget-content a {color: #428BCA;}``
+    a {
+      color: #337AB7;
+    }
 
-``.ui-widget-content a:hover, .ui-widget-content a:focus {color: #2A6496;}``
+    a:hover {
+      color: #23527C;
+    }
+
+    .ui-widget-content a {
+      color: #428BCA;
+    }
+
+    .ui-widget-content a:hover, .ui-widget-content a:focus {
+      color: #2A6496;
+    }
+
+Hover state is 15% darker. There is an override in our stylesheet for ``.ui-widget-content a`` which I believe is because of PrimeFaces.
+
+.. raw:: html
+
+  <div class="panel panel-default code-example">
+    <div class="panel-body">
+      <div class="color-swatches">
+        <div class="color-swatch" style="background-color:#337AB7;">a</div>
+        <div class="color-swatch" style="background-color:#23527C;">a:hover</div>
+        <div class="color-swatch" style="background-color:#428BCA;">.ui-widget-content a</div>
+        <div class="color-swatch" style="background-color:#2A6496;">.ui-widget-content a:hover/focus</div>
+      </div>
+    </div>
+  </div>
+
+.. code-block:: html
+
+  <a>...</a>
+
+  <span class="ui-widget-content">
+    <a>...</a>
+  </span>
+
+
+Alerts/Contextual
+-----------------
+
+Alert/Contextual text and background colors from `Bootstrap CSS <http://getbootstrap.com/css/#helper-classes>`_.
+
+.. raw:: html
+
+  <div class="panel panel-default code-example">
+    <div class="panel-body">
+      <div class="color-swatches">
+        <div class="color-swatch bg-primary">bg-primary</div>
+        <div class="color-swatch bg-success">bg-success</div>
+        <div class="color-swatch bg-info">bg-info</div>
+        <div class="color-swatch bg-warning">bg-warning</div>
+        <div class="color-swatch bg-danger">bg-danger</div>
+      </div>
+    </div>
+  </div>
+
+.. code-block:: html
+
+   <span class="icon-dataverse text-brand"></span>
+   <span class="icon-dataset text-info"></span>
+   <span class="icon-other text-muted"></span>
 
 
 Typography
 ==========
 
-The typeface, text size, line-height are set in the `Bootstrap CSS <http://getbootstrap.com/css/#less-variables-typography>`_.
+The typeface, text size, line-height are set in the `Bootstrap CSS <http://getbootstrap.com/css/#type>`_. Bootstrap's global default ``font-size`` is **14px**, with a ``line-height`` of **1.428**, which is applied to the ``<body>`` and all paragraphs.
 
-``font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;``
+.. code-block:: css
 
-``font-size: 14px;``
-
-``line-height: 1.42857143;``
-
+   body {
+     font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+     font-size: 14px;
+     line-height: 1.42857143;
+   }
 
 Logos
 =====
 
-There are two logos that we use in the application. There is the Dataverse logo and the Dataverse Project logo.
+The Dataverse Project logo is diplayed in the footer, and was the base for the creation of the favicon for the application as well as the dataverse icons.
 
-* Dataverse
-* Dataverse Project
+.. raw:: html
 
+  <div class="panel panel-default">
+    <div class="panel-body text-center">
+
+      <img alt="image1" src="../_images/dataverse-project.png">
+
+    </div>
+  </div>
 
 Icons
 =====
@@ -117,23 +230,21 @@ We use various icons across the application, in buttons, and as default thumbnai
 Bootstrap
 ---------
 
-There are over 250 glyphs in font format from the Glyphicon Halflings set provided by `Bootstrap <http://getbootstrap.com/components/#glyphicons>`_.
-
-* Search
-* Buttons
-* Account
-* Info
-* Message block Help/Error/Success
+There are over 250 glyphs in font format from the Glyphicon Halflings set provided by `Bootstrap <http://getbootstrap.com/components/#glyphicons>`_. We utilize these mainly as icons inside of buttons and in message blocks.
 
 .. raw:: html
 
 	<div class="panel panel-default code-example">
 	  <div class="panel-body">
-
-   <span class="glyphicon glyphicon-search"></span>
-   <span class="glyphicon glyphicon-user"></span>
-   <span class="glyphicon glyphicon-ok"></span>
-   <span class="glyphicon glyphicon-warning-sign"></span>
+      <div>
+         <span class="glyphicon glyphicon-search h1"></span>
+         <span class="glyphicon glyphicon-user h1"></span>
+         <span class="glyphicon glyphicon-ok h1"></span>
+         <span class="glyphicon glyphicon-warning-sign h1"></span>
+      </div>
+      <button type="button" class="btn btn-default">
+         <span class="glyphicon glyphicon-star" aria-hidden="true"></span> Star
+      </button>
 
 	  </div>
 	</div>
@@ -148,57 +259,52 @@ There are over 250 glyphs in font format from the Glyphicon Halflings set provid
 Font Custom
 -----------
 
-With the use of `FontCustom <https://github.com/FontCustom/fontcustom>`_ we were able to generate our own custom icon webfonts.
-
-* Default dataverse, dataset
-* File type
+With the use of `FontCustom <https://github.com/FontCustom/fontcustom>`_ we were able to generate our own custom icon webfonts. We use these in the result cards to help distinguish the dataverse, dateset and file results.
 
 .. raw:: html
 
 	<div class="panel panel-default code-example">
 	  <div class="panel-body">
 
-   <span class="glyphicon glyphicon-search"></span>
-   <span class="glyphicon glyphicon-user"></span>
-   <span class="glyphicon glyphicon-ok"></span>
-   <span class="glyphicon glyphicon-warning-sign"></span>
+     <span class="icon-dataverse text-brand h1" style="color:#C55B28;"></span>
+     <span class="icon-dataset text-info h1"></span>
+     <span class="icon-other text-muted h1"></span>
 
 	  </div>
 	</div>
 
 .. code-block:: html
 
-   <span class="glyphicon glyphicon-search"></span>
-   <span class="glyphicon glyphicon-user"></span>
-   <span class="glyphicon glyphicon-ok"></span>
-   <span class="glyphicon glyphicon-warning-sign"></span>
+   <span class="icon-dataverse text-brand"></span>
+   <span class="icon-dataset text-info"></span>
+   <span class="icon-other text-muted"></span>
 
 
 Socicon Font
 ------------
 
-We use `Socicon <http://www.socicon.com>`_ for the custom social icons. 
-
-* Footer icons Twitter, Github
-* Sharrre icons Facebook, Twitter, Google Plus
+We use `Socicon <http://www.socicon.com>`_ for the custom social icons. In the footer we use icons for Twitter, Github as well as icons in the share feature to select social media channels.
 
 .. raw:: html
 
 	<div class="panel panel-default code-example">
 	  <div class="panel-body">
 
-   <span class="glyphicon glyphicon-search"></span>
-   <span class="glyphicon glyphicon-user"></span>
-   <span class="glyphicon glyphicon-ok"></span>
-   <span class="glyphicon glyphicon-warning-sign"></span>
+      <span class="socicon socicon-github h1" title="Dataverse On GitHub"></span>
+      <span class="socicon socicon-twitter h1" title="Dataverse On Twitter"></span>
+      <span class="socicon socicon-facebook h1" title="Dataverse On Facebook"></span>
 
 	  </div>
 	</div>
 
 .. code-block:: html
 
-   <span class="glyphicon glyphicon-search"></span>
-   <span class="glyphicon glyphicon-user"></span>
-   <span class="glyphicon glyphicon-ok"></span>
-   <span class="glyphicon glyphicon-warning-sign"></span>
+   <span class="socicon socicon-github" title="Dataverse On GitHub"></span>
+   <span class="socicon socicon-twitter" title="Dataverse On Twitter"></span>
+   <span class="socicon socicon-facebook" title="Dataverse On Facebook"></span>
 
+.. |image1| image:: ./img/dataverse-project.png
+   :class: img-responsive
+
+.. |image2| image:: ./img/dataverse-icon.jpg
+   :class: img-responsive

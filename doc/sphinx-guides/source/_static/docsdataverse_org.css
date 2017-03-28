@@ -67,6 +67,17 @@ div.panel.panel-default.code-example {
 div.panel.panel-default.code-example + div.highlight-html pre {
     border-radius: 0 0 4px 4px !important;
 }
+div.code-example .color-swatches {
+    margin: 0 5px;
+    overflow: hidden;
+}
+div.code-example .color-swatch {
+    float: left;
+    width: 100px;
+    height: 100px;
+    margin: 0 5px;
+    border-radius: 3px
+}
 
 /* alternative formattings:  font-weight: bold; font-size: 110%; etc. */
 

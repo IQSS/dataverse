@@ -153,6 +153,36 @@ Words words words words. Words words words words.
 * Inputs
 * Validation
 
+Labels
+------
+
+Used for publication status and file tags...
+
+.. raw:: html
+
+  <div class="panel panel-default code-example">
+    <div class="panel-body">
+
+      <span class="label label-default">Default</span>
+      <span class="label label-primary">Primary</span>
+      <span class="label label-success">Success</span>
+      <span class="label label-info">Info</span>
+      <span class="label label-warning">Warning</span>
+      <span class="label label-danger">Danger</span>
+
+    </div>
+  </div>
+
+.. code-block:: html
+
+  <span class="label label-default">Default</span>
+  <span class="label label-primary">Primary</span>
+  <span class="label label-success">Success</span>
+  <span class="label label-info">Info</span>
+  <span class="label label-warning">Warning</span>
+  <span class="label label-danger">Danger</span>
+
+
 Alerts
 ------
 
