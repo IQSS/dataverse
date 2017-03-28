@@ -1,17 +1,17 @@
 Foundations
 +++++++++++
 
-Foundational elements are the very basic elements to create a page in Dataverse. These basic elements have been broken down to Grid Layout, Color pPalette, Typography, Logos, Icons.
+Foundational elements are the very basic building blocks to create a page in Dataverse. This page will go over some of these basic elements. Dataverse uses both Bootstrap and PrimeFaces, and conflicts between the two occasionally emerge. It takes some tweaking and overriding in order to get everything working as consistently as possible. 
 
-Due to the use of Bootstrap and PrimeFaces, we have to do some tweeking and overriding in order to get everything as consistent as possible.
+For this guide, we will focus in particular on areas where our implementation differs from the default settings of Bootstrap and PrimeFaces. Each section includes links to relevant parts of the official Bootstrap guides, where you can find more details.
 
 
 Grid Layout
 ===========
 
-`Bootstrap <http://getbootstrap.com/css/#grid>`_ provides a responsive, fluid, 12-column grid system.
+`Bootstrap <http://getbootstrap.com/css/#grid>`_ provides a responsive, fluid, 12-column grid system that we use to organize our page layouts.
 
-We use the fixed-width ``.container`` class which provides repsonive widths (i.e. auto, 750px, 970px or 1170px) based on media queries for the page layout, with a series of rows and columns for the content.
+We use the fixed-width ``.container`` class which provides responsive widths (i.e. auto, 750px, 970px or 1170px) based on media queries for the page layout, with a series of rows and columns for the content.
 
 The grid layout uses ``.col-sm-*`` classes for horizontal groups of columns, inside a containing element with a ``.row`` class. Content should be placed within columns, and only columns may be immediate children of rows.
 
@@ -43,7 +43,7 @@ Color Palette
 
 The color palette is set in the `Bootstrap CSS <http://getbootstrap.com/css/#less-variables-colors>`_. There were some additions and some changes here and there.
 
-Semantic include various colors assigned to meaningful contextual values. Convey meaning through color with a handful of emphasis utility classes. These may also be applied to links and will darken on hover just like our default link styles.
+Semantic colors include various colors assigned to meaningful contextual values. We convey meaning through color with a handful of emphasis utility classes. These may also be applied to links and will darken on hover just like our default link styles.
 
 Primary/Brand
 -------------
