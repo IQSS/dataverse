@@ -212,7 +212,7 @@ The script will skip this part, if this has already been done on this system (i.
 Note that the setup will set the Rserve password to :fixedwidthplain:`"rserve"`. 
 Rserve daemon runs under a non-privileged user id, and there appears to be a 
 very limited potential for security damage through unauthorized access. It is however 
-still a good idea **to change the password**. The password is specified in ``/etc/Rserve.pwd``. 
+still a good idea **to change the password**. The password is specified in ``/etc/Rserv.pwd``. 
 Please see `Rserve documentation <https://rforge.net/Rserve/doc.html>`_ for more 
 information on password encryption and access security. 
  
