@@ -1,6 +1,7 @@
 
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -19,6 +20,7 @@ import javax.persistence.OrderBy;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.hibernate.validator.constraints.NotBlank;
 
 /**
@@ -186,94 +188,63 @@ public class Guestbook implements Serializable {
 
     public void setDeletable(boolean deletable) {
         this.deletable = deletable;
+    }    
+    
+    public List<String> getRequiredAccountInformation() {
+        List<String> retList = new ArrayList();
+        if (nameRequired) {
+            retList.add(BundleUtil.getStringFromBundle("name"));
+        }
+        if (emailRequired) {
+            retList.add(BundleUtil.getStringFromBundle("email"));
+        }
+        if (institutionRequired) {
+            retList.add(BundleUtil.getStringFromBundle("institution"));
+        }
+        if (positionRequired) {
+            retList.add(BundleUtil.getStringFromBundle("position"));
+        }
+        return retList;
     }
     
-    public String getRequiredCustomQuestionsString(){
-        String retVal = "";
-        for (CustomQuestion cq : this.getCustomQuestions()){
-            if(cq.isRequired()){
-            if(retVal.isEmpty()){
-               retVal = "Required Custom Questions<br/>&#160; &#8226; " + cq.getQuestionString(); 
-            } else { 
-               retVal += "<br/>&#160; &#8226; " + cq.getQuestionString();
-            }
-        }
-        }
-        return retVal;        
-    }
-    
-    public String getOptionalCustomQuestionsString(){
-        String retVal = "";
-        for (CustomQuestion cq : this.getCustomQuestions()){
-            if(!cq.isRequired()){
-            if(retVal.isEmpty()){
-               retVal = "Optional Custom Questions<br/>&#160; &#8226; " + cq.getQuestionString(); 
-            } else { 
-               retVal += "<br/>&#160; &#8226; " + cq.getQuestionString();
-            }
-        }
-        }
-        return retVal;        
-    }
-    
-    public String getRequiredAccountInformationString(){
-        String retVal = "";
-        if(nameRequired){
-            retVal = "Required Account Information<br/>&#160; &#8226; Name";
-        }
-        if(emailRequired){
-            if(retVal.isEmpty()){
-               retVal = "Required Account Information<br/>&#160; &#8226; Email"; 
-            } else { 
-               retVal += "<br/>&#160; &#8226; Email";  
-            }
-        }
-        if(institutionRequired){
-            if(retVal.isEmpty()){
-               retVal = "Required Account Information<br/>&#160; &#8226; Institution"; 
-            } else { 
-               retVal += "<br/>&#160; &#8226; Institution";  
-            }
-        }
-        if(positionRequired){
-            if(retVal.isEmpty()){
-               retVal = "Required Account Information<br/>&#160; &#8226; Position"; 
-            } else { 
-               retVal += "<br/>&#160; &#8226; Position";  
-            }
-        }
-        return retVal;
-    }
-    
-    public String getOptionalAccountInformationString(){
-        String retVal = "";
+    public List<String> getOptionalAccountInformation(){
+                List <String> retList = new ArrayList();
         if(!nameRequired){
-            retVal = "Optional Account Information<br/>&#160; &#8226; Name";
+           retList.add(BundleUtil.getStringFromBundle("name"));
         }
         if(!emailRequired){
-            if(retVal.isEmpty()){
-               retVal = "Optional Account Information<br/>&#160; &#8226; Email"; 
-            } else { 
-               retVal += "<br/>&#160; &#8226; Email";  
-            }
+            retList.add(BundleUtil.getStringFromBundle("email"));
         }
         if(!institutionRequired){
-            if(retVal.isEmpty()){
-               retVal = "Optional Account Information<br/>&#160; &#8226; Institution"; 
-            } else { 
-               retVal += "<br/>&#160; &#8226; Institution";  
-            }
+            retList.add(BundleUtil.getStringFromBundle("institution"));
         }
         if(!positionRequired){
-            if(retVal.isEmpty()){
-               retVal = "Optional Account Information<br/>&#160; &#8226; Position"; 
-            } else { 
-               retVal += "<br/>&#160; &#8226; Position";  
-            }
+            retList.add(BundleUtil.getStringFromBundle("position"));
         }
-        return retVal;
+        return retList;
+        
     }
     
+    public List<String> getRequiredQuestionsList(){
+        List <String> retList = new ArrayList();
+                for (CustomQuestion cq : this.getCustomQuestions()){
+                    if(cq.isRequired()){
+                        retList.add(cq.getQuestionString());
+                    }
+                }
+        return retList;
+    }
+    
+    public List<String> getOptionalQuestionsList(){
+        List <String> retList = new ArrayList();
+                for (CustomQuestion cq : this.getCustomQuestions()){
+                    if(!cq.isRequired()){
+                        retList.add(cq.getQuestionString());
+                    }
+                }
+        return retList;
+    }
+        
     public void removeCustomQuestion(int index){
         customQuestions.remove(index);
     }
@@ -293,6 +264,17 @@ public class Guestbook implements Serializable {
         this.usageCount = usageCount;
     }
     
+    @Transient
+    private Long usageCountDataverse;
+
+    public Long getUsageCountDataverse() {
+        return usageCountDataverse;
+    }
+    
+    public void setUsageCountDataverse(Long usageCountDataverse) {
+        this.usageCountDataverse = usageCountDataverse;
+    }
+    
     @Transient 
     private Long responseCount;
 
@@ -302,6 +284,17 @@ public class Guestbook implements Serializable {
 
     public void setResponseCount(Long responseCount) {
         this.responseCount = responseCount;
+    }
+    
+    @Transient 
+    private Long responseCountDataverse;
+
+    public Long getResponseCountDataverse() {
+        return responseCountDataverse;
+    }
+
+    public void setResponseCountDataverse(Long responseCountDataverse) {
+        this.responseCountDataverse = responseCountDataverse;
     }
     
     

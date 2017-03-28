@@ -1,6 +1,6 @@
 {
   "alias": "root",
-  "name": "Phoenix",
+  "name": "Root",
   "permissionRoot": false,
   "facetRoot": true,
   "description": "Welcome! phoenix.dataverse.org is so named because data here is deleted on every build of the latest Dataverse code: <a href=\"http://guides.dataverse.org/en/latest/developers\">http://guides.dataverse.org/en/latest/developers</a>",

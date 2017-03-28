@@ -7,6 +7,7 @@ package edu.harvard.iq.dataverse.api.imports;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
@@ -19,6 +20,7 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseContact;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
+import edu.harvard.iq.dataverse.ForeignMetadataFormatMapping;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.imports.ImportUtil.ImportType;
@@ -30,10 +32,13 @@ import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
+import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
+import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringReader;
@@ -49,11 +54,14 @@ import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
@@ -71,6 +79,9 @@ import org.apache.commons.lang.StringUtils;
  */
 @Stateless
 public class ImportServiceBean {
+    @PersistenceContext(unitName="VDCNet-ejbPU")
+    private EntityManager em;
+    
     private static final Logger logger = Logger.getLogger(ImportServiceBean.class.getCanonicalName());
 
     @EJB
@@ -87,8 +98,13 @@ public class ImportServiceBean {
     @EJB
     SettingsServiceBean settingsService;
     
-    @EJB ImportDDIServiceBean importDDIService;
+    @EJB 
+    ImportDDIServiceBean importDDIService;
+    @EJB
+    ImportGenericServiceBean importGenericService;
     
+    @EJB
+    IndexServiceBean indexService;
     /**
      * This is just a convenience method, for testing migration.  It creates 
      * a dummy dataverse with the directory name as dataverse name & alias.
@@ -185,6 +201,196 @@ public class ImportServiceBean {
         }
     }
 
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public Dataset doImportHarvestedDataset(DataverseRequest dataverseRequest, HarvestingClient harvestingClient, String harvestIdentifier, String metadataFormat, File metadataFile, PrintWriter cleanupLog) throws ImportException, IOException {
+        if (harvestingClient == null || harvestingClient.getDataverse() == null) {
+            throw new ImportException("importHarvestedDataset called wiht a null harvestingClient, or an invalid harvestingClient.");
+        }
+        Dataverse owner = harvestingClient.getDataverse();
+        Dataset importedDataset = null;
+
+        DatasetDTO dsDTO = null;
+        String json = null;
+        
+        // TODO: 
+        // At the moment (4.5; the first official "export/harvest release"), there
+        // are 3 supported metadata formats: DDI, DC and native Dataverse metadata 
+        // encoded in JSON. The 2 XML formats are handled by custom implementations;
+        // each of the 2 implementations uses its own parsing approach. (see the 
+        // ImportDDIServiceBean and ImportGenerciServiceBean for details). 
+        // TODO: Need to create a system of standardized import plugins - similar to Stephen
+        // Kraffmiller's export modules; replace the logic below with clean
+        // programmatic lookup of the import plugin needed. 
+
+        if ("ddi".equalsIgnoreCase(metadataFormat) || "oai_ddi".equals(metadataFormat) 
+                || metadataFormat.toLowerCase().matches("^oai_ddi.*")) {
+            try {
+                String xmlToParse = new String(Files.readAllBytes(metadataFile.toPath()));
+                // TODO: 
+                // import type should be configurable - it should be possible to 
+                // select whether you want to harvest with or without files, 
+                // ImportType.HARVEST vs. ImportType.HARVEST_WITH_FILES
+                logger.fine("importing DDI "+metadataFile.getAbsolutePath());
+                dsDTO = importDDIService.doImport(ImportType.HARVEST_WITH_FILES, xmlToParse);
+            } catch (Exception e) {
+                throw new ImportException("Failed to process DDI XML record: "+ e.getClass() + " (" + e.getMessage() + ")");
+            }
+        } else if ("dc".equalsIgnoreCase(metadataFormat) || "oai_dc".equals(metadataFormat)) {
+            logger.fine("importing DC "+metadataFile.getAbsolutePath());
+            try {
+                String xmlToParse = new String(Files.readAllBytes(metadataFile.toPath()));
+                dsDTO = importGenericService.processOAIDCxml(xmlToParse);
+            } catch (Exception e) {
+                throw new ImportException("Failed to process Dublin Core XML record: "+ e.getClass() + " (" + e.getMessage() + ")");
+            }
+        } else if ("dataverse_json".equals(metadataFormat)) {
+            // This is Dataverse metadata already formatted in JSON. 
+            // Simply read it into a string, and pass to the final import further down:
+            logger.fine("Attempting to import custom dataverse metadata from file "+metadataFile.getAbsolutePath());
+            json = new String(Files.readAllBytes(metadataFile.toPath())); 
+        } else {
+            throw new ImportException("Unsupported import metadata format: " + metadataFormat);
+        }
+
+        if (json == null) {
+            if (dsDTO != null ) {
+                // convert DTO to Json, 
+                Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                json = gson.toJson(dsDTO);
+                logger.fine("JSON produced for the metadata harvested: "+json);
+            } else {
+                throw new ImportException("Failed to transform XML metadata format "+metadataFormat+" into a DatasetDTO");
+            }
+        }
+        
+        JsonReader jsonReader = Json.createReader(new StringReader(json));
+        JsonObject obj = jsonReader.readObject();
+        //and call parse Json to read it into a dataset   
+        try {
+            JsonParser parser = new JsonParser(datasetfieldService, metadataBlockService, settingsService);
+            parser.setLenient(true);
+            Dataset ds = parser.parseDataset(obj);
+
+            // For ImportType.NEW, if the metadata contains a global identifier, and it's not a protocol
+            // we support, it should be rejected.
+            // (TODO: ! - add some way of keeping track of supported protocols!)
+            //if (ds.getGlobalId() != null && !ds.getProtocol().equals(settingsService.getValueForKey(SettingsServiceBean.Key.Protocol, ""))) {
+            //    throw new ImportException("Could not register id " + ds.getGlobalId() + ", protocol not supported");
+            //}
+            ds.setOwner(owner);
+            ds.getLatestVersion().setDatasetFields(ds.getLatestVersion().initDatasetFields());
+
+            // Check data against required contraints
+            List<ConstraintViolation> violations = ds.getVersions().get(0).validateRequired();
+            if (!violations.isEmpty()) {
+                // For migration and harvest, add NA for missing required values
+                for (ConstraintViolation v : violations) {
+                    DatasetField f = ((DatasetField) v.getRootBean());
+                    f.setSingleValue(DatasetField.NA_VALUE);
+                }
+            }
+
+            // Check data against validation constraints
+            // If we are migrating and "scrub migration data" is true we attempt to fix invalid data
+            // if the fix fails stop processing of this file by throwing exception
+            Set<ConstraintViolation> invalidViolations = ds.getVersions().get(0).validate();
+            ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+            Validator validator = factory.getValidator();
+            if (!invalidViolations.isEmpty()) {
+                for (ConstraintViolation v : invalidViolations) {
+                    DatasetFieldValue f = ((DatasetFieldValue) v.getRootBean());
+                    boolean fixed = false;
+                    boolean converted = false;
+                    // TODO: Is this scrubbing something we want to continue doing? 
+                    if (settingsService.isTrueForKey(SettingsServiceBean.Key.ScrubMigrationData, false)) {
+                        fixed = processMigrationValidationError(f, cleanupLog, metadataFile.getName());
+                        converted = true;
+                        if (fixed) {
+                            Set<ConstraintViolation<DatasetFieldValue>> scrubbedViolations = validator.validate(f);
+                            if (!scrubbedViolations.isEmpty()) {
+                                fixed = false;
+                            }
+                        }
+                    }
+                    if (!fixed) {
+                        String msg = "Data modified - File: " + metadataFile.getName() + "; Field: " + f.getDatasetField().getDatasetFieldType().getDisplayName() + "; "
+                                + "Invalid value:  '" + f.getValue() + "'" + " Converted Value:'" + DatasetField.NA_VALUE + "'";
+                        cleanupLog.println(msg);
+                        f.setValue(DatasetField.NA_VALUE);
+
+                    }
+                }
+            }
+            
+            // A Global ID is required, in order for us to be able to harvest and import
+            // this dataset:
+            if (StringUtils.isEmpty(ds.getGlobalId())) {
+                throw new ImportException("The harvested metadata record with the OAI server identifier "+harvestIdentifier+" does not contain a global unique identifier that we could recognize, skipping.");
+            }
+
+            ds.setHarvestedFrom(harvestingClient);
+            ds.setHarvestIdentifier(harvestIdentifier);
+            
+            Dataset existingDs = datasetService.findByGlobalId(ds.getGlobalId());
+
+            if (existingDs != null) {
+                // If this dataset already exists IN ANOTHER DATAVERSE
+                // we are just going to skip it!
+                if (existingDs.getOwner() != null && !owner.getId().equals(existingDs.getOwner().getId())) {
+                    throw new ImportException("The dataset with the global id "+ds.getGlobalId()+" already exists, in the dataverse "+existingDs.getOwner().getAlias()+", skipping.");
+                }
+                // And if we already have a dataset with this same id, in this same
+                // dataverse, but it is  LOCAL dataset (can happen!), we're going to 
+                // skip it also: 
+                if (!existingDs.isHarvested()) {
+                    throw new ImportException("A LOCAL dataset with the global id "+ds.getGlobalId()+" already exists in this dataverse; skipping.");
+                }
+                // For harvested datasets, there should always only be one version.
+                // We will replace the current version with the imported version.
+                if (existingDs.getVersions().size() != 1) {
+                    throw new ImportException("Error importing Harvested Dataset, existing dataset has " + existingDs.getVersions().size() + " versions");
+                }
+                // Purge all the SOLR documents associated with this client from the 
+                // index server: 
+                indexService.deleteHarvestedDocuments(existingDs);
+                // files from harvested datasets are removed unceremoniously, 
+                // directly in the database. no need to bother calling the 
+                // DeleteFileCommand on them.
+                for (DataFile harvestedFile : existingDs.getFiles()) {
+                    DataFile merged = em.merge(harvestedFile);
+                    em.remove(merged);
+                    harvestedFile = null; 
+                }
+                // TODO: 
+                // Verify what happens with the indexed files in SOLR? 
+                // are they going to be overwritten by the reindexing of the dataset?
+                existingDs.setFiles(null);
+                Dataset merged = em.merge(existingDs);
+                engineSvc.submit(new DestroyDatasetCommand(merged, dataverseRequest));
+                importedDataset = engineSvc.submit(new CreateDatasetCommand(ds, dataverseRequest, false, ImportType.HARVEST));
+
+            } else {
+                importedDataset = engineSvc.submit(new CreateDatasetCommand(ds, dataverseRequest, false, ImportType.HARVEST));
+            }
+
+        } catch (Exception ex) {
+            logger.fine("Failed to import harvested dataset: " + ex.getClass() + ": " + ex.getMessage());
+            FileOutputStream savedJsonFileStream = new FileOutputStream(new File(metadataFile.getAbsolutePath() + ".json"));
+            byte[] jsonBytes = json.getBytes();
+            int i = 0;
+            while (i < jsonBytes.length) {
+                int chunkSize = i + 8192 <= jsonBytes.length ? 8192 : jsonBytes.length - i;
+                savedJsonFileStream.write(jsonBytes, i, chunkSize);
+                i += chunkSize;
+                savedJsonFileStream.flush();
+            }
+            savedJsonFileStream.close();
+            logger.info("JSON produced saved in " + metadataFile.getAbsolutePath() + ".json");
+            throw new ImportException("Failed to import harvested dataset: " + ex.getClass() + " (" + ex.getMessage() + ")", ex);
+        }
+        return importedDataset;
+    }
+    
     public JsonObjectBuilder doImport(DataverseRequest dataverseRequest, Dataverse owner, String xmlToParse, String fileName, ImportType importType, PrintWriter cleanupLog) throws ImportException, IOException {
 
         String status = "";

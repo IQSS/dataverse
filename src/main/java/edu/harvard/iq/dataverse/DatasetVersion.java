@@ -1,8 +1,11 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.util.MarkupChecker;
+import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,6 +15,8 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -36,6 +41,7 @@ import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
+import org.apache.commons.lang.StringEscapeUtils;
 
 /**
  *
@@ -45,6 +51,8 @@ import javax.validation.ValidatorFactory;
 @Table(indexes = {@Index(columnList="dataset_id")},
         uniqueConstraints = @UniqueConstraint(columnNames = {"dataset_id,versionnumber,minorversionnumber"}))
 public class DatasetVersion implements Serializable {
+
+    private static final Logger logger = Logger.getLogger(DatasetVersion.class.getCanonicalName());
 
     /**
      * Convenience comparator to compare dataset versions by their version number.
@@ -123,6 +131,11 @@ public class DatasetVersion implements Serializable {
     @Column(length = VERSION_NOTE_MAX_LENGTH)
     private String versionNote;
     
+    /**
+     * @todo versionState should never be null so when we are ready, uncomment
+     * the `nullable = false` below.
+     */
+//    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private VersionState versionState;
 
@@ -374,6 +387,7 @@ public class DatasetVersion implements Serializable {
         }
         return null;
     }
+    
 
     public VersionState getPriorVersionState() {
         int index = 0;
@@ -596,14 +610,92 @@ public class DatasetVersion implements Serializable {
         //todo get "Production Date" from datasetfieldvalue table
         return "Production Date";
     }
+    
+    public String getDescription() {
+        for (DatasetField dsf : this.getDatasetFields()) {
+            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.description)) {
+                String descriptionString = "";
+                if (dsf.getDatasetFieldCompoundValues() != null && dsf.getDatasetFieldCompoundValues().get(0) != null) {
+                    DatasetFieldCompoundValue descriptionValue = dsf.getDatasetFieldCompoundValues().get(0);
+                    for (DatasetField subField : descriptionValue.getChildDatasetFields()) {
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.descriptionText) && !subField.isEmptyForDisplay()) {
+                            descriptionString = subField.getValue();
+                        }
+                    }
+                }
+                return MarkupChecker.sanitizeBasicHTML(descriptionString);
+            }
+        }
+        return "";
+    }
+    
+    public List<String[]> getDatasetContacts(){
+        List <String[]> retList = new ArrayList<>();
+        for (DatasetField dsf : this.getDatasetFields()) {
+            Boolean addContributor = true;
+            String contributorName = "";
+            String contributorAffiliation = "";
+            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContact)) {
+                for (DatasetFieldCompoundValue authorValue : dsf.getDatasetFieldCompoundValues()) {
+                    for (DatasetField subField : authorValue.getChildDatasetFields()) {
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContactName)) {
+                            if (subField.isEmptyForDisplay()) {
+                                addContributor = false;
+                            }
+                            contributorName = subField.getDisplayValue();
+                        }
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContactAffiliation)) {
+                            contributorAffiliation = subField.getDisplayValue();
+                        }
+
+                    }
+                    if (addContributor) {
+                        String[] datasetContributor = new String[] {contributorName, contributorAffiliation};
+                        retList.add(datasetContributor);
+                    }
+                }
+            }
+        }       
+        return retList;        
+    }
+    
+    public List<String[]> getDatasetProducers(){
+        List <String[]> retList = new ArrayList<>();
+        for (DatasetField dsf : this.getDatasetFields()) {
+            Boolean addContributor = true;
+            String contributorName = "";
+            String contributorAffiliation = "";
+            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.producer)) {
+                for (DatasetFieldCompoundValue authorValue : dsf.getDatasetFieldCompoundValues()) {
+                    for (DatasetField subField : authorValue.getChildDatasetFields()) {
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.producerName)) {
+                            if (subField.isEmptyForDisplay()) {
+                                addContributor = false;
+                            }
+                            contributorName = subField.getDisplayValue();
+                        }
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.producerAffiliation)) {
+                            contributorAffiliation = subField.getDisplayValue();
+                        }
+
+                    }
+                    if (addContributor) {
+                        String[] datasetContributor = new String[] {contributorName, contributorAffiliation};
+                        retList.add(datasetContributor);
+                    }
+                }
+            }
+        }       
+        return retList;        
+    }
 
     public List<DatasetAuthor> getDatasetAuthors() {
         //todo get "List of Authors" from datasetfieldvalue table
-        List retList = new ArrayList();
+        List <DatasetAuthor> retList = new ArrayList<>();
         for (DatasetField dsf : this.getDatasetFields()) {
             Boolean addAuthor = true;
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.author)) {
-                for (DatasetFieldCompoundValue authorValue : dsf.getDatasetFieldCompoundValues()) {
+                for (DatasetFieldCompoundValue authorValue : dsf.getDatasetFieldCompoundValues()) {                   
                     DatasetAuthor datasetAuthor = new DatasetAuthor();
                     for (DatasetField subField : authorValue.getChildDatasetFields()) {
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorName)) {
@@ -615,8 +707,14 @@ public class DatasetVersion implements Serializable {
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorAffiliation)) {
                             datasetAuthor.setAffiliation(subField);
                         }
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorIdType)){
+                             datasetAuthor.setIdType(subField.getDisplayValue());
+                        }
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorIdValue)){
+                            datasetAuthor.setIdValue(subField.getDisplayValue());
+                        }
                     }
-                    if (addAuthor) {
+                    if (addAuthor) {                       
                         retList.add(datasetAuthor);
                     }
                 }
@@ -653,132 +751,33 @@ public class DatasetVersion implements Serializable {
         return getCitation(false);
     }
 
-    public String getCitation(boolean isOnlineVersion) {
-
-        String str = "";
-
-        boolean includeAffiliation = false;
-        String authors = this.getAuthorsStr(includeAffiliation);
-        if (!StringUtil.isEmpty(authors)) {
-            str += authors;
-        } else {
-            str += getDatasetProducersString();
-        }
-
-        if (this.getDataset().getPublicationDate() == null || StringUtil.isEmpty(this.getDataset().getPublicationDate().toString())) {
-            
-            if (!this.getDataset().isHarvested()) {
-                //if not released use current year
-                if (!StringUtil.isEmpty(str)) {
-                    str += ", ";
-                }
-                str += new SimpleDateFormat("yyyy").format(new Timestamp(new Date().getTime()));
-            } else {
-                String distDate = getDistributionDate();
-                if (distDate != null) {
-                    if (!StringUtil.isEmpty(str)) {
-                        str += ", ";
-                    }
-                    str += distDate;
-                }
-            }
-        } else {
-            if (!StringUtil.isEmpty(str)) {
-                str += ", ";
-            }
-            str += new SimpleDateFormat("yyyy").format(new Timestamp(this.getDataset().getPublicationDate().getTime()));
-        }
-        if (this.getTitle() != null) {
-            if (!StringUtil.isEmpty(this.getTitle())) {
-                if (!StringUtil.isEmpty(str)) {
-                    str += ", ";
-                }
-                str += "\"" + this.getTitle() + "\"";
-            }
-        }
-        
-        if (this.getDataset().isHarvested()) {
-            String distributorName = getDistributorName();
-            if (distributorName != null && distributorName.trim().length() > 0) {
-                if (!StringUtil.isEmpty(str)) {
-                    str += ". ";
-                }
-                str += " " + distributorName;
-                str += " [distributor]";
-            }
-        }
-        
-        // The Global Identifier: 
-        // It is always part of the citation for the local datasets; 
-        // And for *some* harvested datasets. 
-        if (!this.getDataset().isHarvested()
-                || HarvestingDataverseConfig.HARVEST_STYLE_VDC.equals(this.getDataset().getOwner().getHarvestingDataverseConfig().getHarvestStyle())
-                || HarvestingDataverseConfig.HARVEST_STYLE_ICPSR.equals(this.getDataset().getOwner().getHarvestingDataverseConfig().getHarvestStyle())
-                || HarvestingDataverseConfig.HARVEST_STYLE_DATAVERSE.equals(this.getDataset().getOwner().getHarvestingDataverseConfig().getHarvestStyle())) {
-            if (!StringUtil.isEmpty(this.getDataset().getIdentifier())) {
-                if (!StringUtil.isEmpty(str)) {
-                    str += ", ";
-                }
-                if (isOnlineVersion) {
-                    str += "<a href=\"" + this.getDataset().getPersistentURL() + "\">" + this.getDataset().getPersistentURL() + "</a>";
-                } else {
-                    str += this.getDataset().getPersistentURL();
-                }
+    public String getCitation(boolean html) {
+        return new DataCitation(this).toString(html);
+    }
+    
+    public Date getCitationDate() {
+        DatasetField citationDate = getDatasetField(this.getDataset().getCitationDateDatasetFieldType());        
+        if (citationDate != null && citationDate.getDatasetFieldType().getFieldType().equals(FieldType.DATE)){          
+            try {  
+                return new SimpleDateFormat("yyyy").parse( citationDate.getValue() );
+            } catch (ParseException ex) {
+                Logger.getLogger(DatasetVersion.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
 
-        // Get root dataverse name for Citation
-        // (only for non-harvested datasets):
-        if (!this.getDataset().isHarvested()) {
-            String dataverseName = getRootDataverseNameforCitation();
-            if (!StringUtil.isEmpty(dataverseName)) {
-                if (!StringUtil.isEmpty(str)) {
-                    str += ", ";
+        return null;
+    }
+    
+    public DatasetField getDatasetField(DatasetFieldType dsfType) {
+        if (dsfType != null) {
+            for (DatasetField dsf : this.getFlatDatasetFields()) {
+                if (dsf.getDatasetFieldType().equals(dsfType)) {
+                    return dsf;
                 }
-                str += " " + dataverseName;
             }
         }
+        return null;
 
-        // Version status:
-        // Again, this is needed for non-harvested stuff only:
-        // (the check may be redundant - we may already be dropping version 
-        // numbers when harvesting -- L.A. 4.0 beta15)
-        if (!this.getDataset().isHarvested()) {
-            if (this.isDraft()) {
-                if (!StringUtil.isEmpty(str)) {
-                    str += ", ";
-                }
-                str += " DRAFT VERSION ";
-
-            } else if (this.getVersionNumber() != null) {
-                if (!StringUtil.isEmpty(str)) {
-                    str += ", ";
-                }
-                str += " V" + this.getVersionNumber();
-
-            }
-            if (this.isDeaccessioned()) {
-                if (!StringUtil.isEmpty(str)) {
-                    str += ", ";
-                }
-                str += " DEACCESSIONED VERSION ";
-
-            }
-        }
-        
-        if (!StringUtil.isEmpty(getUNF())) {
-            if (!StringUtil.isEmpty(str)) {
-                str += " ";
-            }
-            str += "[" + getUNF() + "]";
-        }
-         /*
-         String distributorNames = getDistributorNames();
-         if (distributorNames.trim().length() > 0) {
-         str += " " + distributorNames;
-         str += " [Distributor]";
-         }*/
-        return str;
     }
 
     public String getDistributionDate() {
@@ -794,7 +793,7 @@ public class DatasetVersion implements Serializable {
     }
 
     public String getDistributorName() {
-        for (DatasetField dsf : this.getDatasetFields()) {
+        for (DatasetField dsf : this.getFlatDatasetFields()) {
             if (DatasetFieldConstant.distributorName.equals(dsf.getDatasetFieldType().getName())) {
                 return dsf.getValue();
             }
@@ -1040,6 +1039,26 @@ public class DatasetVersion implements Serializable {
                     dsfv.setValidationMessage(constraintViolation.getMessage());
                     returnSet.add(constraintViolation);
                     break; // currently only support one message, so we can break out of the loop after the first constraint violation                    
+                }
+            }
+        }
+        List<FileMetadata> dsvfileMetadatas = this.getFileMetadatas();
+        if (dsvfileMetadatas != null) {
+            for (FileMetadata fileMetadata : dsvfileMetadatas) {
+                Set<ConstraintViolation<FileMetadata>> constraintViolations = validator.validate(fileMetadata);
+                if (constraintViolations.size() > 0) {
+                    // currently only support one message
+                    ConstraintViolation<FileMetadata> violation = constraintViolations.iterator().next();
+                    /**
+                     * @todo How can we expose this more detailed message
+                     * containing the invalid value to the user?
+                     */
+                    String message = "Constraint violation found in FileMetadata. "
+                            + violation.getMessage() + " "
+                            + "The invalid value is \"" + violation.getInvalidValue().toString() + "\".";
+                    logger.info(message);
+                    returnSet.add(violation);
+                    break; // currently only support one message, so we can break out of the loop after the first constraint violation
                 }
             }
         }

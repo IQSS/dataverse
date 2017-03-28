@@ -32,7 +32,8 @@ function bind_bsui_components(){
     popoverHTML();
     
     //Metrics
-    metricsTabs();
+    //DISABLED TOGGLE UNTIL FURTHER DEVELOPMENT ON METRICS IS COMPLETED
+    //metricsTabs();
     
     // Dialog Listener For Calling handleResizeDialog
     PrimeFaces.widget.Dialog.prototype.postShow = function() {
@@ -122,10 +123,10 @@ function post_cancel_edit_dv(){
  * Hide search panels when editing a dv
  */
 function hide_search_panels(){
-    if($(".panelSerchForm").length>0){
-       $(".panelSerchForm").hide();
-        if($(".panelSerchForm").next().length>0){
-            $(".panelSerchForm").next().hide();
+    if($(".panelSearchForm").length>0){
+       $(".panelSearchForm").hide();
+        if($(".panelSearchForm").next().length>0){
+            $(".panelSearchForm").next().hide();
         }
    }
 }
@@ -135,13 +136,14 @@ function hide_search_panels(){
  */
 
 function show_search_panels(){
-    if($(".panelSerchForm").length>0){
-        if($(".panelSerchForm").next().length>0){
-            $(".panelSerchForm").next().show();
+    if($(".panelSearchForm").length>0){
+        if($(".panelSearchForm").next().length>0){
+            $(".panelSearchForm").next().show();
         }
-       $(".panelSerchForm").show();
+       $(".panelSearchForm").show();
    }
 }
+
 
 /*
  * Called after "Upload + Edit Files"
@@ -221,9 +223,9 @@ function sharrre(){
 
 /*
  * Metrics Tabs
- * DISABLED HOVER-TOGGLE UNTIL FURTHER DEVELOPMENT ON METRICS IS COMPLETED
+ * DISABLED TOGGLE UNTIL FURTHER DEVELOPMENT ON METRICS IS COMPLETED
  */
-function metricsTabs() {
+// function metricsTabs() {
     // $('#metrics-tabs a[data-toggle="tab"]').on('shown', function (e) {
         // e.target // activated tab
         // e.relatedTarget // previous tab
@@ -231,8 +233,8 @@ function metricsTabs() {
     // $('#metrics-tabs a[data-toggle="tab"]').mouseover(function(){
         // $(this).click();
     // });
-    $('#metrics-tabs a.first[data-toggle="tab"]').tab('show');
-}
+    // $('#metrics-tabs a.first[data-toggle="tab"]').tab('show');
+// }
 
 function selectText(ele) {
     try {

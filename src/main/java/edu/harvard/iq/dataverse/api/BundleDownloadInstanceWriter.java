@@ -128,7 +128,7 @@ public class BundleDownloadInstanceWriter implements MessageBodyWriter<BundleDow
                     if (!"application/x-rlang-transport".equals(origFormat)) {
                         try {
                             DataFileIO accessObjectRdata
-                                    = DataFileConverter.performFormatConversion(
+                                    = DataConverter.performFormatConversion(
                                             sf,
                                             (FileAccessIO) accessObject,
                                             "RData", "application/x-rlang-transport");
@@ -183,6 +183,14 @@ public class BundleDownloadInstanceWriter implements MessageBodyWriter<BundleDow
 
                         zout.putNextEntry(e);
                         zout.write(di.getFileCitationRIS().getBytes());
+                        zout.closeEntry();
+                    }
+
+                    if (di.getFileCitationBibtex() != null) {
+                        e = new ZipEntry(fileName.replaceAll("\\.tab$","citation-bib.bib"));
+
+                        zout.putNextEntry(e);
+                        zout.write(di.getFileCitationBibtex().getBytes());
                         zout.closeEntry();
                     }
 

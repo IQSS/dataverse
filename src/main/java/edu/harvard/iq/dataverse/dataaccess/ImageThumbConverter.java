@@ -41,6 +41,7 @@ import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.util.FileUtil;
 import java.util.logging.Logger;
 import org.primefaces.util.Base64;
 
@@ -174,6 +175,12 @@ public class ImageThumbConverter {
         return null;
     }
     
+    /**
+     * This method is suitable for returning a string to embed in an HTML img
+     * tag (or JSF h:graphicImage tag) because the string begins with
+     * "data:image/png;base64," but it is not suitable for returning a
+     * downloadable image via an API call.
+     */
     public static String getImageAsBase64FromFile(File imageFile) {
         InputStream imageThumbInputStream = null;
         try {
@@ -191,7 +198,7 @@ public class ImageThumbConverter {
                 if (rawImageData != null) {
                     String imageDataBase64 = Base64.encodeToString(rawImageData, false);
                     //return FILE_CARD_IMAGE_URL + assignedThumbnailFileId;
-                    return "data:image/png;base64," + imageDataBase64;
+                    return FileUtil.DATA_URI_SCHEME + imageDataBase64;
                 }
             }
         } catch (IOException ex) {
@@ -233,7 +240,7 @@ public class ImageThumbConverter {
             logger.fine("obtained non-null imageThumbFileName: "+imageThumbFileName);
             File imageThumbFile = new File(imageThumbFileName);
 
-            if (imageThumbFile != null && imageThumbFile.exists()) {
+            if (imageThumbFile.exists()) {
                 return imageThumbFile;
                 
             }
@@ -280,7 +287,7 @@ public class ImageThumbConverter {
             } catch (Exception ex) {
                 // 
             }
-            
+                        
             if (fileSize == 0 || fileSize > sizeLimit) {
                 // this file is too large, exiting.
                 return null; 
@@ -292,7 +299,7 @@ public class ImageThumbConverter {
             BufferedImage fullSizeImage = ImageIO.read(new File(fileLocation));
             
             if (fullSizeImage == null) {
-                logger.fine("could not read image with ImageIO.read()");
+                logger.warning("could not read image with ImageIO.read()");
                 return null;                
             }
             
@@ -321,7 +328,7 @@ public class ImageThumbConverter {
 
     }
     
-    private static String rescaleImage(BufferedImage fullSizeImage, int width, int height, int size, String fileLocation) {
+    public static String rescaleImage(BufferedImage fullSizeImage, int width, int height, int size, String fileLocation) {
         String thumbFileLocation = fileLocation + ".thumb" + size;
         
         double scaleFactor = 0.0;
@@ -488,39 +495,49 @@ public class ImageThumbConverter {
             // belongs. :)
             //          -- L.A. June 2014
             
-            String ImageMagickCmd = null;
             String previewFileLocation = null;
-            
-            if (size != DEFAULT_PREVIEW_SIZE) {
-                // check if the "preview size" image is already available - and 
-                // if not, generate it. this 400 pixel image will be used to 
-                // generate smaller-size thumbnails.
-                
-                previewFileLocation = fileLocation + ".thumb" + DEFAULT_PREVIEW_SIZE;
 
-                if (new File(previewFileLocation).exists()) {
-                    fileLocation = previewFileLocation;
-                } else {
-                    previewFileLocation = runImageMagick(imageMagickExec, fileLocation, DEFAULT_PREVIEW_SIZE, "pdf");
-                    if (previewFileLocation != null) {
-                        fileLocation = previewFileLocation;
-                    }
-                }
+            // check if the "preview size" image is already available - and 
+            // if not, generate it. this 400 pixel image will be used to 
+            // generate smaller-size thumbnails.
+            previewFileLocation = fileLocation + ".thumb" + DEFAULT_PREVIEW_SIZE;
+
+            if (!((new File(previewFileLocation)).exists())) {
+                previewFileLocation = runImageMagick(imageMagickExec, fileLocation, DEFAULT_PREVIEW_SIZE, "pdf");
             }
             
-            thumbFileLocation = runImageMagick(imageMagickExec, fileLocation, size, "pdf");
-            if (thumbFileLocation != null) {
-                // While we are at it, let's make sure both thumbnail sizes are generated:
-                if (size == DEFAULT_PREVIEW_SIZE || fileLocation.equals(previewFileLocation)) {
-                    
-                    for (int s : (new int[] {DEFAULT_THUMBNAIL_SIZE, DEFAULT_CARDIMAGE_SIZE})) {
-                        if (size != s && !thumbnailFileExists(fileLocation, s)) {
-                            runImageMagick(imageMagickExec, fileLocation, s, "pdf");
-                        }
-                    }
-                }
-                return thumbFileLocation;
+            if (previewFileLocation == null) {
+                return null;
             }
+            
+            if (size == DEFAULT_PREVIEW_SIZE) {
+                return previewFileLocation;
+            }
+
+            // generate the thumbnail for the requested size, *using the already scaled-down
+            // 400x400 png version, above*:
+
+            if (!((new File(thumbFileLocation)).exists())) {
+                thumbFileLocation = runImageMagick(imageMagickExec, previewFileLocation, thumbFileLocation, size, "png");
+            }
+                    
+            return thumbFileLocation;
+            
+            
+            /*
+             An alternative way of handling it: 
+             while we are at it, let's generate *all* the smaller thumbnail sizes:
+            for (int s : (new int[]{DEFAULT_THUMBNAIL_SIZE, DEFAULT_CARDIMAGE_SIZE})) {
+                String thisThumbLocation = fileLocation + ".thumb" + s;
+                if (!(new File(thisThumbLocation).exists())) {
+                    thisThumbLocation = runImageMagick(imageMagickExec, previewFileLocation, thisThumbLocation, s, "png");
+                }
+            }
+                    
+            // return the location of the thumbnail for the requested size:
+            if (new File(thumbFileLocation).exists()) {
+                return thumbFileLocation;
+            }*/
         }
 
         logger.fine("returning null");
@@ -534,8 +551,12 @@ public class ImageThumbConverter {
     }
     
     private static String runImageMagick(String imageMagickExec, String fileLocation, int size, String format) {
-        String imageMagickCmd = null;
         String thumbFileLocation = fileLocation + ".thumb" + size;
+        return runImageMagick(imageMagickExec, fileLocation, thumbFileLocation, size, format);
+    }
+    
+    private static String runImageMagick(String imageMagickExec, String fileLocation, String thumbFileLocation, int size, String format) {
+        String imageMagickCmd = null;
         
         if ("pdf".equals(format)) {
             imageMagickCmd = imageMagickExec + " pdf:" + fileLocation + "[0] -thumbnail "+ size + "x" + size + " -flatten -strip png:" + thumbFileLocation;

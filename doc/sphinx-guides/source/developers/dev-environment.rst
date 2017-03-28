@@ -7,7 +7,7 @@ Development Environment
 Assumptions
 -----------
 
-This guide assumes you are using a Mac but we do have pages for :doc:`/developers/windows` and :doc:`/developers/ubuntu`.
+This guide assumes you are using a Mac. If you are using Windows or Linux, please reach out to other developers at https://groups.google.com/forum/#!forum/dataverse-dev
 
 Requirements
 ------------
@@ -150,16 +150,26 @@ The script is a variation of the old installer from DVN 3.x that calls another s
 
 All the future changes to the configuration that are Glassfish-specific and can be done through ``asadmin`` should now go into ``scripts/install/glassfish-setup.sh``.
 
-Shibboleth
-----------
+Shibboleth and OAuth
+--------------------
 
-If you are working on anything related to users, please keep in mind that your changes will likely affect Shibboleth users. Rather than setting up Shibboleth on your laptop, developers are advised to simply add a value to their database to enable Shibboleth "dev mode" like this:
+If you are working on anything related to users, please keep in mind that your changes will likely affect Shibboleth and OAuth users. Rather than setting up Shibboleth on your laptop, developers are advised to simply add a value to their database to enable Shibboleth "dev mode" like this:
 
 ``curl http://localhost:8080/api/admin/settings/:DebugShibAccountType -X PUT -d RANDOM``
 
 For a list of possible values, please "find usages" on the settings key above and look at the enum.
 
 Now when you go to http://localhost:8080/shib.xhtml you should be prompted to create a Shibboleth account.
+
+OAuth is much more straightforward to get working on your laptop than Shibboleth. GitHub is a good identity provider to test with because you can easily request a Client ID and Client Secret that works against localhost. Follow the instructions in the :doc:`/installation/oauth2` section of the installation Guide and use "http://localhost:8080/oauth2/callback.xhtml" as the callback URL.
+
+In addition to setting up OAuth on your laptop for real per above, you can also use a dev/debug mode:
+
+``curl http://localhost:8080/api/admin/settings/:DebugOAuthAccountType -X PUT -d RANDOM_EMAIL2``
+
+For a list of possible values, please "find usages" on the settings key above and look at the enum.
+
+Now when you go to http://localhost:8080/oauth2/firstLogin.xhtml you should be prompted to create a Shibboleth account.
 
 Rebuilding your dev environment
 -------------------------------

@@ -3,17 +3,22 @@ package edu.harvard.iq.dataverse.authorization.providers.shib;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.servlet.http.HttpServletRequest;
 import org.junit.After;
 import org.junit.AfterClass;
+import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
 
 public class ShibUtilTest {
+
+    private HttpServletRequest request = mock(HttpServletRequest.class);
 
     public ShibUtilTest() {
     }
@@ -118,17 +123,63 @@ public class ShibUtilTest {
         ShibUserNameFields actual8 = ShibUtil.findBestFirstAndLastName("Antoni", "Gaudí i Cornet;Gaudí", null);
         assertEquals(expected8.getFirstName(), actual8.getFirstName());
         assertEquals(expected8.getLastName(), actual8.getLastName());
+
+        ShibUserNameFields expected9 = new ShibUserNameFields("Jane", "Doe");
+        ShibUserNameFields actual9 = ShibUtil.findBestFirstAndLastName(null, null, "Jane Doe");
+        assertEquals(expected9.getFirstName(), actual9.getFirstName());
+        assertEquals(expected9.getLastName(), actual9.getLastName());
+
+        ShibUserNameFields expected10 = new ShibUserNameFields("Philip", "Seymour");
+        ShibUserNameFields actual10 = ShibUtil.findBestFirstAndLastName(null, null, "Philip Seymour Hoffman");
+        assertEquals(expected10.getFirstName(), actual10.getFirstName());
+        /**
+         * @todo Make findBestFirstAndLastName smart enough to know that the
+         * last name should be "Hoffman" rather than "Seymour".
+         */
+        assertEquals(expected10.getLastName(), actual10.getLastName());
+
+        ShibUserNameFields expected11 = new ShibUserNameFields(null, null);
+        ShibUserNameFields actual11 = ShibUtil.findBestFirstAndLastName(null, null, "");
+        assertEquals(expected11.getFirstName(), actual11.getFirstName());
+        assertEquals(expected11.getLastName(), actual11.getLastName());
+
+    }
+
+    @Test
+    public void testFindSingleValue() {
+        assertEquals(null, ShibUtil.findSingleValue(null));
+        assertEquals("foo", ShibUtil.findSingleValue("foo"));
+        assertEquals("bar", ShibUtil.findSingleValue("foo;bar"));
     }
 
     @Test
     public void testGenerateFriendlyLookingUserIdentifer() {
         int lengthOfUuid = UUID.randomUUID().toString().length();
         assertEquals("uid1", ShibUtil.generateFriendlyLookingUserIdentifer("uid1", null));
+        assertEquals(" leadingWhiteSpace", ShibUtil.generateFriendlyLookingUserIdentifer(" leadingWhiteSpace", null));
         assertEquals("uid1", ShibUtil.generateFriendlyLookingUserIdentifer("uid1", "email1@example.com"));
         assertEquals("email1", ShibUtil.generateFriendlyLookingUserIdentifer(null, "email1@example.com"));
         assertEquals(lengthOfUuid, ShibUtil.generateFriendlyLookingUserIdentifer(null, null).length());
         assertEquals(lengthOfUuid, ShibUtil.generateFriendlyLookingUserIdentifer(null, "").length());
         assertEquals(lengthOfUuid, ShibUtil.generateFriendlyLookingUserIdentifer("", null).length());
         assertEquals(lengthOfUuid, ShibUtil.generateFriendlyLookingUserIdentifer(null, "junkEmailAddress").length());
+    }
+
+    @Test
+    public void testDevMutations() {
+        ShibUtil.mutateRequestForDevConstantHarvard1(request);
+        ShibUtil.mutateRequestForDevConstantHarvard2(request);
+        ShibUtil.mutateRequestForDevConstantInvalidEmail(request);
+        ShibUtil.mutateRequestForDevConstantMissingRequiredAttributes(request);
+        ShibUtil.mutateRequestForDevConstantTestShib1(request);
+        ShibUtil.mutateRequestForDevConstantTwoEmails(request);
+        ShibUtil.printAttributes(request);
+        ShibUtil.printAttributes(null);
+    }
+
+    @Test
+    public void testGetRandomUserStatic() {
+        Map<String, String> randomUser = ShibUtil.getRandomUserStatic();
+        assertEquals(8, randomUser.get("firstName").length());
     }
 }

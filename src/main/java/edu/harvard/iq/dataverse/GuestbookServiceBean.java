@@ -24,15 +24,19 @@ public class GuestbookServiceBean implements java.io.Serializable {
     private EntityManager em;
     
     
-    public Long findCountUsages(Long guestbookId) {
+    public Long findCountUsages(Long guestbookId, Long dataverseId) {
         String queryString = "";
-        if (guestbookId != null) {
+        if (guestbookId != null && dataverseId != null) {
+            queryString = "select count(o.id) from Dataset  o, DvObject obj  where o.id = obj.id and  o.guestbook_id  = " + guestbookId + " and obj.owner_id = " + dataverseId + ";";
+            Query query = em.createNativeQuery(queryString);
+            return (Long) query.getSingleResult();
+        } else if (guestbookId != null && dataverseId == null) {
             queryString = "select count(o.id) from Dataset  o  where o.guestbook_id  = " + guestbookId + " ";
+            Query query = em.createNativeQuery(queryString);
+            return (Long) query.getSingleResult();
         } else {
-            return new Long(0) ;
+            return new Long(0);
         }
-        Query query = em.createNativeQuery(queryString);
-        return (Long) query.getSingleResult();
     }
     
     

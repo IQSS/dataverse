@@ -221,17 +221,6 @@ public class DataverseServiceBean implements java.io.Serializable {
     
     public List<DataverseFacet> findAllDataverseFacets() {
         return em.createQuery("select object(o) from DataverseFacet as o order by o.display").getResultList();
-    }  
-   
-    private String appVersionString;
-
-    /**
-     * @todo Remove this method, and make all the (a couple of) xhtml pages 
-     * call the SystemConfig.getVersion method directly 
-     * (I don't have time to do it now -- L.A. 4.0.2)
-     */
-    public String getApplicationVersion() { 
-        return systemConfig.getVersion(true);
     }
     
     public String getDataverseLogoThumbnailAsBase64(Dataverse dataverse, User user) {
@@ -422,13 +411,30 @@ public class DataverseServiceBean implements java.io.Serializable {
         return datasetLinkingService.findLinkingDataverses(datasetId);
     }
     
+    public List<Dataverse> filterByAliasQuery(String filterQuery) {
+        //Query query = em.createNativeQuery("select o from Dataverse o where o.alias LIKE '" + filterQuery + "%' order by o.alias");
+        //Query query = em.createNamedQuery("Dataverse.filterByAlias", Dataverse.class).setParameter("alias", filterQuery.toLowerCase() + "%");
+        Query query = em.createNamedQuery("Dataverse.filterByAliasNameAffiliation", Dataverse.class)
+                .setParameter("alias", filterQuery.toLowerCase() + "%")
+                .setParameter("name", "%" + filterQuery.toLowerCase() + "%")
+                .setParameter("affiliation", "%" + filterQuery.toLowerCase() + "%");
+        //logger.info("created native query: select o from Dataverse o where o.alias LIKE '" + filterQuery + "%' order by o.alias");
+        logger.info("created named query");
+        List<Dataverse> ret = query.getResultList();
+        if (ret != null) {
+            logger.info("results list: "+ret.size()+" results.");
+        }
+        return ret;
+    }
+    
     /**
      * Used to identify and properly display Harvested objects on the dataverse page.
      * 
-     */
+     *//*
+    @Deprecated
     public Map<Long, String> getAllHarvestedDataverseDescriptions(){
         
-        String qstr = "SELECT dataverse_id, archiveDescription FROM harvestingDataverseConfig;";
+        String qstr = "SELECT dataverse_id, archiveDescription FROM harvestingClient;";
         List<Object[]> searchResults = null;
         
         try {
@@ -460,7 +466,7 @@ public class DataverseServiceBean implements java.io.Serializable {
         }
         
         return ret;        
-    }
+    }*/
 
     public void populateDvSearchCard(SolrSearchResult solrSearchResult) {
   

@@ -17,6 +17,8 @@ INSERT INTO foreignmetadatafieldmapping (id, foreignfieldxpath, datasetfieldname
 INSERT INTO foreignmetadatafieldmapping (id, foreignfieldxpath, datasetfieldname, isattribute, parentfieldmapping_id, foreignmetadataformatmapping_id) VALUES (15, 'affiliation', 'authorAffiliation', TRUE, 3, 1 );
 INSERT INTO foreignmetadatafieldmapping (id, foreignfieldxpath, datasetfieldname, isattribute, parentfieldmapping_id, foreignmetadataformatmapping_id) VALUES (16, ':contributor', 'contributorName', FALSE, NULL, 1 );
 INSERT INTO foreignmetadatafieldmapping (id, foreignfieldxpath, datasetfieldname, isattribute, parentfieldmapping_id, foreignmetadataformatmapping_id) VALUES (17, 'type', 'contributorType', TRUE, 16, 1 );
+INSERT INTO foreignmetadatafieldmapping (id, foreignfieldxpath, datasetfieldname, isattribute, parentfieldmapping_id, foreignmetadataformatmapping_id) VALUES (18, ':publisher', 'producerName', FALSE, NULL, 1 );
+INSERT INTO foreignmetadatafieldmapping (id, foreignfieldxpath, datasetfieldname, isattribute, parentfieldmapping_id, foreignmetadataformatmapping_id) VALUES (19, ':language', 'language', FALSE, NULL, 1 );
 
 INSERT INTO guestbook(
              emailrequired, enabled, institutionrequired, createtime,
@@ -27,6 +29,8 @@ INSERT INTO guestbook(
 -- TODO: Remove if http://stackoverflow.com/questions/25743191/how-to-add-a-case-insensitive-jpa-unique-constraint
 -- gets an answer. See also https://github.com/IQSS/dataverse/issues/2598#issuecomment-158219334
 CREATE UNIQUE INDEX dataverse_alias_unique_idx on dataverse (LOWER(alias));
+CREATE UNIQUE INDEX index_authenticateduser_lower_email ON authenticateduser (lower(email));
+CREATE UNIQUE INDEX index_builtinuser_lower_email ON builtinuser (lower(email));
 
 --Edit Dataset: Investigate and correct multiple draft issue: https://github.com/IQSS/dataverse/issues/2132
 --This unique index will prevent the multiple draft issue

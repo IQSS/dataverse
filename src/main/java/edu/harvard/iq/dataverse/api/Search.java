@@ -27,9 +27,11 @@ import javax.ejb.EJB;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import org.apache.commons.lang.StringUtils;
 
@@ -65,7 +67,8 @@ public class Search extends AbstractApiBean {
             @QueryParam("fq") final List<String> filterQueries,
             @QueryParam("show_entity_ids") boolean showEntityIds,
             @QueryParam("show_api_urls") boolean showApiUrls,
-            @QueryParam("show_my_data") boolean showMyData
+            @QueryParam("show_my_data") boolean showMyData,
+            @Context HttpServletResponse response
     ) {
 
         User user;
@@ -98,7 +101,7 @@ public class Search extends AbstractApiBean {
                     filterQueries.add(filterDownToSubtree);
                 }
             } catch (Exception ex) {
-                return errorResponse(Response.Status.BAD_REQUEST, ex.getLocalizedMessage());
+                return error(Response.Status.BAD_REQUEST, ex.getLocalizedMessage());
             }
 
             // users can't change these (yet anyway)
@@ -107,7 +110,7 @@ public class Search extends AbstractApiBean {
             SolrQueryResponse solrQueryResponse;
             try {
                 solrQueryResponse = searchService.search(
-                        user,
+                        createDataverseRequest(user),
                         subtree,
                         query,
                         filterQueries,
@@ -129,7 +132,7 @@ public class Search extends AbstractApiBean {
                 }
                 String message = "Exception running search for [" + query + "] with filterQueries " + filterQueries + " and paginationStart [" + paginationStart + "]: " + sb.toString();
                 logger.info(message);
-                return errorResponse(Response.Status.INTERNAL_SERVER_ERROR, message);
+                return error(Response.Status.INTERNAL_SERVER_ERROR, message);
             }
 
             JsonArrayBuilder itemsArrayBuilder = Json.createArrayBuilder();
@@ -180,11 +183,12 @@ public class Search extends AbstractApiBean {
                  * @todo You get here if you pass only ":" as a query, for
                  * example. Should we return more or better information?
                  */
-                return errorResponse(Response.Status.BAD_REQUEST, solrQueryResponse.getError());
+                return error(Response.Status.BAD_REQUEST, solrQueryResponse.getError());
             }
-            return okResponse(value);
+            response.setHeader("Access-Control-Allow-Origin", "*");
+            return allowCors(ok(value));
         } else {
-            return errorResponse(Response.Status.BAD_REQUEST, "q parameter is missing");
+            return allowCors(error(Response.Status.BAD_REQUEST, "q parameter is missing"));
         }
     }
 

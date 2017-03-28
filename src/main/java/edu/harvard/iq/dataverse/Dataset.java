@@ -1,5 +1,8 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
+import edu.harvard.iq.dataverse.dataset.DatasetUtil;
+import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
@@ -8,11 +11,13 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.logging.Logger;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
@@ -21,6 +26,7 @@ import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 import org.hibernate.validator.constraints.NotBlank;
 
@@ -38,10 +44,14 @@ import org.hibernate.validator.constraints.NotBlank;
     @Index(columnList = "thumbnailfile_id")},
         uniqueConstraints = @UniqueConstraint(columnNames = {"authority,protocol,identifier,doiseparator"}))
 public class Dataset extends DvObjectContainer {
+    private static final Logger logger = Logger.getLogger(Dataset.class.getCanonicalName());
 
+//    public static final String REDIRECT_URL = "/dataset.xhtml?persistentId=";
+    public static final String TARGET_URL = "/citation?persistentId=";
     private static final long serialVersionUID = 1L;
 
     @OneToMany(mappedBy = "owner", cascade = CascadeType.MERGE)
+    @OrderBy("id")
     private List<DataFile> files = new ArrayList();
 
     private String protocol;
@@ -50,6 +60,8 @@ public class Dataset extends DvObjectContainer {
 
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date globalIdCreateTime;
+    @Temporal(value = TemporalType.TIMESTAMP)
+    private Date lastExportTime;
 
     @NotBlank(message = "Please enter an identifier for your dataset.")
     @Column(nullable = false)
@@ -62,6 +74,12 @@ public class Dataset extends DvObjectContainer {
     @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     @JoinColumn(name = "thumbnailfile_id")
     private DataFile thumbnailFile;
+    /**
+     * By default, Dataverse will attempt to show unique thumbnails for datasets
+     * based on images that have been uploaded to them. Setting this to true
+     * will result in a generic dataset thumbnail appearing instead.
+     */
+    private boolean useGenericThumbnail;
 
     @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     @JoinColumn(name = "guestbook_id", unique = false, nullable = true, insertable = true, updatable = true)
@@ -81,6 +99,18 @@ public class Dataset extends DvObjectContainer {
     private boolean fileAccessRequest;
     @OneToMany(mappedBy = "dataset", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<DataFileCategory> dataFileCategories = null;
+    
+    @ManyToOne
+    @JoinColumn(name = "citationDateDatasetFieldType_id")
+    private DatasetFieldType citationDateDatasetFieldType;
+    
+    public DatasetFieldType getCitationDateDatasetFieldType() {
+        return citationDateDatasetFieldType;
+    }
+
+    public void setCitationDateDatasetFieldType(DatasetFieldType citationDateDatasetFieldType) {
+        this.citationDateDatasetFieldType = citationDateDatasetFieldType;
+    }    
 
     public Dataset() {
         //this.versions = new ArrayList();
@@ -133,6 +163,14 @@ public class Dataset extends DvObjectContainer {
         this.globalIdCreateTime = globalIdCreateTime;
     }
 
+    public Date getLastExportTime() {
+        return lastExportTime;
+    }
+
+    public void setLastExportTime(Date lastExportTime) {
+        this.lastExportTime = lastExportTime;
+    }
+    
     public Guestbook getGuestbook() {
         return guestbook;
     }
@@ -158,10 +196,12 @@ public class Dataset extends DvObjectContainer {
     }
 
     public List<DataFile> getFiles() {
+        //logger.info("getFiles() on dataset "+this.getId());
         return files;
     }
 
     public void setFiles(List<DataFile> files) {
+        logger.info("setFiles() on dataset "+this.getId());
         this.files = files;
     }
 
@@ -185,6 +225,10 @@ public class Dataset extends DvObjectContainer {
         boolean hasDeaccessionedVersions = false;
         for (DatasetVersion testDsv : getVersions()) {
             if (testDsv.isReleased()) {
+                return false;
+            }
+            //Also check for draft version
+            if (testDsv.isDraft()) {
                 return false;
             }
             if (testDsv.isDeaccessioned()) {
@@ -226,6 +270,11 @@ public class Dataset extends DvObjectContainer {
             dsv.updateDefaultValuesFromTemplate(template);
         } else {
             latestVersion = getLatestVersionForCopy();
+            
+            if (latestVersion.getUNF() != null){
+                dsv.setUNF(latestVersion.getUNF());
+            }
+            
             if (latestVersion.getDatasetFields() != null && !latestVersion.getDatasetFields().isEmpty()) {
                 dsv.setDatasetFields(dsv.copyDatasetFields(latestVersion.getDatasetFields()));
             }
@@ -250,6 +299,7 @@ public class Dataset extends DvObjectContainer {
                 newFm.setCategories(fm.getCategories());
                 newFm.setDescription(fm.getDescription());
                 newFm.setLabel(fm.getLabel());
+                newFm.setDirectoryLabel(fm.getDirectoryLabel());
                 newFm.setRestricted(fm.isRestricted());
                 newFm.setDataFile(fm.getDataFile());
                 newFm.setDatasetVersion(dsv);
@@ -286,10 +336,14 @@ public class Dataset extends DvObjectContainer {
         }
     }
 
- public DatasetVersion getCreateVersion() {
+    /**
+     * @todo Investigate if this method should be deprecated in favor of
+     * createNewDatasetVersion.
+     */
+    public DatasetVersion getCreateVersion() {
         DatasetVersion dsv = new DatasetVersion();
         dsv.setVersionState(DatasetVersion.VersionState.DRAFT);
-        dsv.setDataset(this);        
+        dsv.setDataset(this);
         dsv.initDefaultValues();
         this.setVersions(new ArrayList());
         getVersions().add(0, dsv);
@@ -400,13 +454,15 @@ public class Dataset extends DvObjectContainer {
     }
 
     private Collection<String> getCategoryNames() {
-        ArrayList<String> ret = new ArrayList<>();
         if (dataFileCategories != null) {
-            for (int i = 0; i < dataFileCategories.size(); i++) {
-                ret.add(dataFileCategories.get(i).getName());
+            ArrayList<String> ret = new ArrayList<>(dataFileCategories.size());
+            for ( DataFileCategory dfc : dataFileCategories ) {
+                ret.add( dfc.getName() );
             }
+            return ret;
+        } else {
+            return new ArrayList<>();
         }
-        return ret;
     }
 
     public Path getFileSystemDirectory() {
@@ -482,7 +538,10 @@ public class Dataset extends DvObjectContainer {
     }
 
     public String getPublicationDateFormattedYYYYMMDD() {
-        return new SimpleDateFormat("yyyy-MM-dd").format(getPublicationDate());
+        if (getPublicationDate() != null){
+                   return new SimpleDateFormat("yyyy-MM-dd").format(getPublicationDate()); 
+        }
+        return null;
     }
 
     public DataFile getThumbnailFile() {
@@ -493,39 +552,61 @@ public class Dataset extends DvObjectContainer {
         this.thumbnailFile = thumbnailFile;
     }
 
+    public boolean isUseGenericThumbnail() {
+        return useGenericThumbnail;
+    }
+
+    public void setUseGenericThumbnail(boolean useGenericThumbnail) {
+        this.useGenericThumbnail = useGenericThumbnail;
+    }
+
+    @ManyToOne
+    @JoinColumn(name="harvestingClient_id")
+    private  HarvestingClient harvestedFrom;
+
+    public HarvestingClient getHarvestedFrom() {
+        return this.harvestedFrom;
+    }
+
+    public void setHarvestedFrom(HarvestingClient harvestingClientConfig) {
+        this.harvestedFrom = harvestingClientConfig;
+    }
+    
+    
     public boolean isHarvested() {
-        // TODO: 
-        // eventually, this will be more complex: 
-        // A dataverse owner will be able to harvest some datasets into 
-        // any dataverse, in addition to any local datasets there. 
-        // -- L.A. 4.0 
-        Dataverse ownerDataverse = this.getOwner();
-        if (ownerDataverse != null) {
-            return ownerDataverse.isHarvested();
-        }
-        return false;
+        return this.harvestedFrom != null;
+    }
+
+    private String harvestIdentifier;
+     
+    public String getHarvestIdentifier() {
+	return harvestIdentifier;
+    }
+
+    public void setHarvestIdentifier(String harvestIdentifier) {
+	this.harvestIdentifier = harvestIdentifier;
     }
 
     public String getRemoteArchiveURL() {
         if (isHarvested()) {
-            if (HarvestingDataverseConfig.HARVEST_STYLE_DATAVERSE.equals(this.getOwner().getHarvestingDataverseConfig().getHarvestStyle())) {
-                return this.getOwner().getHarvestingDataverseConfig().getArchiveUrl() + "/dataset.xhtml?persistentId=" + getGlobalId();
-            } else if (HarvestingDataverseConfig.HARVEST_STYLE_VDC.equals(this.getOwner().getHarvestingDataverseConfig().getHarvestStyle())) {
-                String rootArchiveUrl = this.getOwner().getHarvestingDataverseConfig().getHarvestingUrl();
+            if (HarvestingClient.HARVEST_STYLE_DATAVERSE.equals(this.getHarvestedFrom().getHarvestStyle())) {
+                return this.getHarvestedFrom().getArchiveUrl() + "/dataset.xhtml?persistentId=" + getGlobalId();
+            } else if (HarvestingClient.HARVEST_STYLE_VDC.equals(this.getHarvestedFrom().getHarvestStyle())) {
+                String rootArchiveUrl = this.getHarvestedFrom().getHarvestingUrl();
                 int c = rootArchiveUrl.indexOf("/OAIHandler");
                 if (c > 0) {
                     rootArchiveUrl = rootArchiveUrl.substring(0, c);
                     return rootArchiveUrl + "/faces/study/StudyPage.xhtml?globalId=" + getGlobalId();
                 }
-            } else if (HarvestingDataverseConfig.HARVEST_STYLE_ICPSR.equals(this.getOwner().getHarvestingDataverseConfig().getHarvestStyle())) {
+            } else if (HarvestingClient.HARVEST_STYLE_ICPSR.equals(this.getHarvestedFrom().getHarvestStyle())) {
                 // For the ICPSR, it turns out that the best thing to do is to 
                 // rely on the DOI to send the user to the right landing page for 
                 // the study: 
                 //String icpsrId = identifier;
-                //return this.getOwner().getHarvestingDataverseConfig().getArchiveUrl() + "/icpsrweb/ICPSR/studies/"+icpsrId+"?q="+icpsrId+"&amp;searchSource=icpsr-landing";
+                //return this.getOwner().getHarvestingClient().getArchiveUrl() + "/icpsrweb/ICPSR/studies/"+icpsrId+"?q="+icpsrId+"&amp;searchSource=icpsr-landing";
                 return "http://doi.org/" + authority + "/" + identifier;
-            } else if (HarvestingDataverseConfig.HARVEST_STYLE_NESSTAR.equals(this.getOwner().getHarvestingDataverseConfig().getHarvestStyle())) {
-                String nServerURL = this.getOwner().getHarvestingDataverseConfig().getArchiveUrl();
+            } else if (HarvestingClient.HARVEST_STYLE_NESSTAR.equals(this.getHarvestedFrom().getHarvestStyle())) {
+                String nServerURL = this.getHarvestedFrom().getArchiveUrl();
                 // chop any trailing slashes in the server URL - or they will result
                 // in multiple slashes in the final URL pointing to the study 
                 // on server of origin; Nesstar doesn't like it, apparently. 
@@ -543,9 +624,9 @@ public class Dataset extends DvObjectContainer {
                         + "&top=yes";
 
                 return NesstarWebviewPage;
-            } else if (HarvestingDataverseConfig.HARVEST_STYLE_ROPER.equals(this.getOwner().getHarvestingDataverseConfig().getHarvestStyle())) {
-                return this.getOwner().getHarvestingDataverseConfig().getArchiveUrl() + "/CFIDE/cf/action/catalog/abstract.cfm?archno=" + identifier;
-            } else if (HarvestingDataverseConfig.HARVEST_STYLE_HGL.equals(this.getOwner().getHarvestingDataverseConfig().getHarvestStyle())) {
+            } else if (HarvestingClient.HARVEST_STYLE_ROPER.equals(this.getHarvestedFrom().getHarvestStyle())) {
+                return this.getHarvestedFrom().getArchiveUrl() + "/CFIDE/cf/action/catalog/abstract.cfm?archno=" + identifier;
+            } else if (HarvestingClient.HARVEST_STYLE_HGL.equals(this.getHarvestedFrom().getHarvestStyle())) {
                 // a bit of a hack, true. 
                 // HGL documents, when turned into Dataverse studies/datasets
                 // all 1 datafile; the location ("storage identifier") of the file
@@ -561,9 +642,9 @@ public class Dataset extends DvObjectContainer {
                         }
                     }
                 }
-                return this.getOwner().getHarvestingDataverseConfig().getArchiveUrl();
+                return this.getHarvestedFrom().getArchiveUrl();
             }else {
-                return this.getOwner().getHarvestingDataverseConfig().getArchiveUrl();
+                return this.getHarvestedFrom().getArchiveUrl();
             }
         }
 
@@ -572,7 +653,7 @@ public class Dataset extends DvObjectContainer {
 
     public String getHarvestingDescription() {
         if (isHarvested()) {
-            return this.getOwner().getHarvestingDataverseConfig().getArchiveDescription();
+            return this.getHarvestedFrom().getArchiveDescription();
         }
 
         return null;
@@ -602,6 +683,15 @@ public class Dataset extends DvObjectContainer {
     @Override
     protected boolean isPermissionRoot() {
         return false;
+    }
+    
+    @Override
+    public boolean isAncestorOf( DvObject other ) {
+        return equals(other) || equals(other.getOwner());
+    }
+
+    public DatasetThumbnail getDatasetThumbnail() {
+        return DatasetUtil.getThumbnail(this);
     }
 
 }

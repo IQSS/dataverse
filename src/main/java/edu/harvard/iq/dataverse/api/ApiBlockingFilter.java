@@ -158,7 +158,15 @@ public class ApiBlockingFilter implements javax.servlet.Filter {
                 return;
             }
         }
-        fc.doFilter(sr, sr1);
+        try {
+            fc.doFilter(sr, sr1);
+        } catch ( ServletException se ) {
+            logger.log(Level.WARNING, "Error processing " + requestURI +": " + se.getMessage(), se);
+            HttpServletResponse resp = (HttpServletResponse) sr1;
+            resp.setStatus(500);
+            resp.setHeader("PROCUDER", "ApiBlockingFilter");
+            resp.getWriter().append("Error: " + se.getMessage());
+        }
     }
     
     @Override

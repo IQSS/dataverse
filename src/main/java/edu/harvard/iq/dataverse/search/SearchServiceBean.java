@@ -1,21 +1,21 @@
 package edu.harvard.iq.dataverse.search;
 
-import edu.harvard.iq.dataverse.DataFileServiceBean;
+import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
-import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseFacet;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.lang.reflect.Field;
@@ -69,14 +69,6 @@ public class SearchServiceBean {
     @EJB
     DvObjectServiceBean dvObjectService;
     @EJB
-    DataverseServiceBean dataverseService;
-    @EJB
-    DatasetServiceBean datasetService;
-    @EJB
-    DatasetVersionServiceBean datasetVersionService;
-    @EJB
-    DataFileServiceBean dataFileService;
-    @EJB
     DatasetFieldServiceBean datasetFieldService;
     @EJB
     GroupServiceBean groupService;
@@ -107,7 +99,7 @@ public class SearchServiceBean {
      * related to permissions
      *
      *
-     * @param user
+     * @param dataverseRequest
      * @param dataverse
      * @param query
      * @param filterQueries
@@ -119,8 +111,8 @@ public class SearchServiceBean {
      * @return
      * @throws SearchException
      */
-    public SolrQueryResponse search(User user, Dataverse dataverse, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, boolean onlyDatatRelatedToMe, int numResultsPerPage) throws SearchException {
-        return search(user, dataverse, query, filterQueries, sortField, sortOrder, paginationStart, onlyDatatRelatedToMe, numResultsPerPage, true);
+    public SolrQueryResponse search(DataverseRequest dataverseRequest, Dataverse dataverse, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, boolean onlyDatatRelatedToMe, int numResultsPerPage) throws SearchException {
+        return search(dataverseRequest, dataverse, query, filterQueries, sortField, sortOrder, paginationStart, onlyDatatRelatedToMe, numResultsPerPage, true);
     }
     
     /**
@@ -144,7 +136,7 @@ public class SearchServiceBean {
      * @return
      * @throws SearchException
      */
-    public SolrQueryResponse search(User user, Dataverse dataverse, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, boolean onlyDatatRelatedToMe, int numResultsPerPage, boolean retrieveEntities) throws SearchException {
+    public SolrQueryResponse search(DataverseRequest dataverseRequest, Dataverse dataverse, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, boolean onlyDatatRelatedToMe, int numResultsPerPage, boolean retrieveEntities) throws SearchException {
 
         if (paginationStart < 0) {
             throw new IllegalArgumentException("paginationStart must be 0 or greater");
@@ -220,7 +212,7 @@ public class SearchServiceBean {
         // -----------------------------------
         // PERMISSION FILTER QUERY
         // -----------------------------------
-        String permissionFilterQuery = this.getPermissionFilterQuery(user, solrQuery, dataverse, onlyDatatRelatedToMe);
+        String permissionFilterQuery = this.getPermissionFilterQuery(dataverseRequest, solrQuery, dataverse, onlyDatatRelatedToMe);
         if (permissionFilterQuery != null) {
             solrQuery.addFilterQuery(permissionFilterQuery);
         }
@@ -231,6 +223,7 @@ public class SearchServiceBean {
 //        solrQuery.addFacetField(SearchFields.HOST_DATAVERSE);
 //        solrQuery.addFacetField(SearchFields.AUTHOR_STRING);
         solrQuery.addFacetField(SearchFields.DATAVERSE_CATEGORY);
+        solrQuery.addFacetField(SearchFields.METADATA_SOURCE);
 //        solrQuery.addFacetField(SearchFields.AFFILIATION);
         solrQuery.addFacetField(SearchFields.PUBLICATION_DATE);
 //        solrQuery.addFacetField(SearchFields.CATEGORY);
@@ -371,6 +364,7 @@ public class SearchServiceBean {
             logger.fine("score for " + id + ": " + score);
             String identifier = (String) solrDocument.getFieldValue(SearchFields.IDENTIFIER);
             String citation = (String) solrDocument.getFieldValue(SearchFields.DATASET_CITATION);
+            String citationPlainHtml = (String) solrDocument.getFieldValue(SearchFields.DATASET_CITATION_HTML);
             String persistentUrl = (String) solrDocument.getFieldValue(SearchFields.PERSISTENT_URL);
             String name = (String) solrDocument.getFieldValue(SearchFields.NAME);
             String nameSort = (String) solrDocument.getFieldValue(SearchFields.NAME_SORT);
@@ -445,6 +439,12 @@ public class SearchServiceBean {
             solrSearchResult.setDescriptionNoSnippet(description);
             solrSearchResult.setDeaccessionReason(deaccessionReason);
             solrSearchResult.setDvTree(dvTree);
+            
+            String originSource = (String) solrDocument.getFieldValue(SearchFields.METADATA_SOURCE);
+            if (IndexServiceBean.HARVESTED.equals(originSource)) {
+                solrSearchResult.setHarvested(true);
+            }
+            
             /**
              * @todo start using SearchConstants class here
              */
@@ -461,7 +461,13 @@ public class SearchServiceBean {
             } else if (type.equals("datasets")) {
                 solrSearchResult.setHtmlUrl(baseUrl + "/dataset.xhtml?globalId=" + identifier);
                 solrSearchResult.setApiUrl(baseUrl + "/api/datasets/" + entityid);
-                solrSearchResult.setImageUrl(baseUrl + "/api/access/dsCardImage/" + datasetVersionId);
+                //Image url now set via thumbnail api
+                //solrSearchResult.setImageUrl(baseUrl + "/api/access/dsCardImage/" + datasetVersionId);
+                DvObject dvObject = dvObjectService.findDvObject(entityid);
+                if (dvObject != null) {
+                    Dataset dataset = (Dataset) dvObject;
+                    solrSearchResult.setDatasetThumbnail(dataset.getDatasetThumbnail());
+                }
                 /**
                  * @todo Could use getFieldValues (plural) here.
                  */
@@ -475,6 +481,7 @@ public class SearchServiceBean {
                 solrSearchResult.setDatasetVersionId(datasetVersionId);
 
                 solrSearchResult.setCitation(citation);
+                solrSearchResult.setCitationHtml(citationPlainHtml);
                 if (title != null) {
 //                    solrSearchResult.setTitle((String) titles.get(0));
                     solrSearchResult.setTitle((String) title);
@@ -517,6 +524,12 @@ public class SearchServiceBean {
                     }
                 }
                 solrSearchResult.setFileMd5((String) solrDocument.getFieldValue(SearchFields.FILE_MD5));
+                try {
+                    solrSearchResult.setFileChecksumType((DataFile.ChecksumType) DataFile.ChecksumType.fromString((String) solrDocument.getFieldValue(SearchFields.FILE_CHECKSUM_TYPE)));
+                } catch (IllegalArgumentException ex) {
+                    logger.info("Exception setting setFileChecksumType: " + ex);
+                }
+                solrSearchResult.setFileChecksumValue((String) solrDocument.getFieldValue(SearchFields.FILE_CHECKSUM_VALUE));
                 solrSearchResult.setUnf((String) solrDocument.getFieldValue(SearchFields.UNF));
                 solrSearchResult.setDatasetVersionId(datasetVersionId);
                 List<String> fileCategories = (ArrayList) solrDocument.getFieldValues(SearchFields.FILE_TAG);
@@ -553,9 +566,11 @@ public class SearchServiceBean {
         boolean draftsAvailable = false;
         boolean unpublishedAvailable = false;
         boolean deaccessionedAvailable = false;
+        boolean hideMetadataSourceFacet = true;
         for (FacetField facetField : queryResponse.getFacetFields()) {
             FacetCategory facetCategory = new FacetCategory();
             List<FacetLabel> facetLabelList = new ArrayList<>();
+            int numMetadataSources = 0;
             for (FacetField.Count facetFieldCount : facetField.getValues()) {
                 /**
                  * @todo we do want to show the count for each facet
@@ -575,7 +590,13 @@ public class SearchServiceBean {
                             deaccessionedAvailable = true;
                         }
                     }
+                    if (facetField.getName().equals(SearchFields.METADATA_SOURCE)) {
+                        numMetadataSources++;
+                    }
                 }
+            }
+            if (numMetadataSources > 1) {
+                hideMetadataSourceFacet = false;
             }
             facetCategory.setName(facetField.getName());
             // hopefully people will never see the raw facetField.getName() because it may well have an _s at the end
@@ -643,6 +664,10 @@ public class SearchServiceBean {
                         hidePublicationStatusFacet = false;
                     }
                     if (!hidePublicationStatusFacet) {
+                        facetCategoryList.add(facetCategory);
+                    }
+                } else if (facetCategory.getName().equals(SearchFields.METADATA_SOURCE)) {
+                    if (!hideMetadataSourceFacet) {
                         facetCategoryList.add(facetCategory);
                     }
                 } else {
@@ -728,8 +753,9 @@ public class SearchServiceBean {
      *
      * @return
      */
-    private String getPermissionFilterQuery(User user, SolrQuery solrQuery, Dataverse dataverse, boolean onlyDatatRelatedToMe) {
+    private String getPermissionFilterQuery(DataverseRequest dataverseRequest, SolrQuery solrQuery, Dataverse dataverse, boolean onlyDatatRelatedToMe) {
 
+        User user = dataverseRequest.getUser();
         if (user == null) {
             throw new NullPointerException("user cannot be null");
         }
@@ -748,12 +774,32 @@ public class SearchServiceBean {
         // initialize to public only to be safe
         String dangerZoneNoSolrJoin = null;
 
+        if (user instanceof PrivateUrlUser) {
+            user = GuestUser.get();
+        }
+
         // ----------------------------------------------------
         // (1) Is this a GuestUser?  
-        // Yes, all set, give back "publicOnly" filter string
+        // Yes, see if GuestUser is part of any groups such as IP Groups.
         // ----------------------------------------------------
         if (user instanceof GuestUser) {
-            return publicOnly;
+            String groupsFromProviders = "";
+            Set<Group> groups = groupService.collectAncestors(groupService.groupsFor(dataverseRequest));
+            StringBuilder sb = new StringBuilder();
+            for (Group group : groups) {
+                logger.fine("found group " + group.getIdentifier() + " with alias " + group.getAlias());
+                String groupAlias = group.getAlias();
+                if (groupAlias != null && !groupAlias.isEmpty()) {
+                    sb.append(" OR ");
+                    // i.e. group_builtIn/all-users, ip/ipGroup3
+                    sb.append(IndexServiceBean.getGroupPrefix()).append(groupAlias);
+                }
+            }
+            groupsFromProviders = sb.toString();
+            logger.fine("groupsFromProviders:" + groupsFromProviders);
+            String guestWithGroups = "{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" + SearchFields.DISCOVERABLE_BY + ":(" + IndexServiceBean.getPublicGroupString() + groupsFromProviders + ")";
+            logger.fine(guestWithGroups);
+            return guestWithGroups;
         }
 
         // ----------------------------------------------------
@@ -818,48 +864,28 @@ public class SearchServiceBean {
 //             * @todo add onlyDatatRelatedToMe option into the experimental JOIN
 //             * before enabling it.
 //             */
+        /**
+         * From a search perspective, we don't care about if the group was
+         * created within one dataverse or another. We just want a list of *all*
+         * the groups the user is part of. We are greedy. We want all BuiltIn
+         * Groups, Shibboleth Groups, IP Groups, "system" groups, everything.
+         *
+         * A JOIN on "permission documents" will determine if the user can find
+         * a given "content document" (dataset version, etc) in Solr.
+         */
         String groupsFromProviders = "";
-        /**
-         * @todo What should the value be? Is null ok? From a search
-         * perspective, we don't care about if the group was created within one
-         * dataverse or another. We just want a list of all the groups the user
-         * is part of. A JOIN on "permission documents" will determine if the
-         * user can find a given "content document" (dataset version, etc) in
-         * Solr.
-         */
-//            DvObject groupsForDvObjectParamNull = null;
-//            Set<Group> groups = groupService.groupsFor(au, groupsForDvObjectParamNull);
-        /**
-         * @todo What is the expected behavior when you pass in a dataverse? It
-         * seems like no matter what you pass in you always get the following
-         * types of groups:
-         *
-         * - BuiltIn Groups
-         *
-         * - IP Groups
-         *
-         * - Shibboleth Groups
-         *
-         * If you pass in the root dataverse it seems like you get all groups
-         * that you're part of.
-         *
-         * If you pass in a non-root dataverse, it seems like you get groups
-         * that you're part of for that dataverse. It's unclear if there is any
-         * inheritance of groups.
-         */
-        DvObject groupsForDvObjectParamCurrentDataverse = dataverse;
-        Set<Group> groups = groupService.groupsFor(au, groupsForDvObjectParamCurrentDataverse);
+        Set<Group> groups = groupService.collectAncestors(groupService.groupsFor(dataverseRequest));
         StringBuilder sb = new StringBuilder();
         for (Group group : groups) {
             logger.fine("found group " + group.getIdentifier() + " with alias " + group.getAlias());
             String groupAlias = group.getAlias();
             if (groupAlias != null && !groupAlias.isEmpty()) {
                 sb.append(" OR ");
-                // i.e. group_shib/2
+                // i.e. group_builtIn/all-users, group_builtIn/authenticated-users, group_1-explictGroup1, group_shib/2
                 sb.append(IndexServiceBean.getGroupPrefix() + groupAlias);
             }
-            groupsFromProviders = sb.toString();
         }
+        groupsFromProviders = sb.toString();
 
         logger.fine(groupsFromProviders);
         if (true) {

@@ -20,6 +20,7 @@
 
 package edu.harvard.iq.dataverse.ingest;
 
+import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
@@ -37,10 +38,11 @@ import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
-import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
 import edu.harvard.iq.dataverse.dataaccess.FileAccessIO;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.TabularSubsetGenerator;
+import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
+import edu.harvard.iq.dataverse.datasetutility.FileSizeChecker;
 import edu.harvard.iq.dataverse.datavariable.SummaryStatistic;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.ingest.metadataextraction.FileMetadataExtractor;
@@ -62,36 +64,27 @@ import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.sav.SAVFileReade
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.por.PORFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.por.PORFileReaderSpi;
 import edu.harvard.iq.dataverse.util.FileUtil;
-import edu.harvard.iq.dataverse.util.MD5Checksum;
-import edu.harvard.iq.dataverse.util.ShapefileHandler;
 import edu.harvard.iq.dataverse.util.SumStatCalculator;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 //import edu.harvard.iq.dvn.unf.*;
 import org.dataverse.unf.*;
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
-import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
-import java.nio.charset.Charset;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -99,7 +92,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -114,17 +106,6 @@ import javax.jms.QueueSession;
 import javax.jms.Message;
 import javax.faces.bean.ManagedBean;
 import javax.faces.application.FacesMessage;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipException;
-import java.util.zip.ZipInputStream;
-import javax.annotation.PostConstruct;
-import javax.ejb.EJBException;
-import javax.ejb.Singleton;
-import javax.ejb.Startup;
-import org.apache.commons.io.FileUtils;
-import org.primefaces.push.EventBus;
-import org.primefaces.push.EventBusFactory;
 
 /**
  *
@@ -154,720 +135,42 @@ public class IngestServiceBean {
     @Resource(mappedName = "jms/IngestQueueConnectionFactory")
     QueueConnectionFactory factory;
     
-    // TODO: [in process!]
-    // move all the type-related lookups into the file service (L.A.)
-    
-    private static final String MIME_TYPE_STATA = "application/x-stata";
-    private static final String MIME_TYPE_STATA13 = "application/x-stata-13";
-    private static final String MIME_TYPE_RDATA = "application/x-rlang-transport";
-    
-    private static final String MIME_TYPE_CSV   = "text/csv";
-    private static final String MIME_TYPE_CSV_ALT = "text/comma-separated-values";
-    
-    private static final String MIME_TYPE_XLSX  = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-    private static final String MIME_TYPE_SPSS_SAV = "application/x-spss-sav";
-    private static final String MIME_TYPE_SPSS_POR = "application/x-spss-por";
-    
-    private static final String MIME_TYPE_TAB   = "text/tab-separated-values";
-    
-    private static final String MIME_TYPE_FITS  = "application/fits";
-    
-    private static final String MIME_TYPE_ZIP   = "application/zip";
-    
-    private static final String MIME_TYPE_UNDETERMINED_DEFAULT = "application/octet-stream";
-    private static final String MIME_TYPE_UNDETERMINED_BINARY = "application/binary";
-    
-    private static final String SAVED_ORIGINAL_FILENAME_EXTENSION = "orig";
-    
+
     private static String timeFormat_hmsS = "HH:mm:ss.SSS";
     private static String dateTimeFormat_ymdhmsS = "yyyy-MM-dd HH:mm:ss.SSS";
     private static String dateFormat_ymd = "yyyy-MM-dd";
     
    
-    /* 
-        Commenting out the @PostConstruct/init method. 
-        This was going through the datasets on startup and looking for ingests
-        in progress, un-marking the progress status. 
-        This was before we realized that the JMS queue survived glassfish 
-        restarts. 
-        It appears that any purging of the queue will need to be done outside 
-        the application. 
-        -- L.A. May 4 2015
-        
-    @PostConstruct
-    public void init() {
-        logger.info("Initializing the Ingest Service.");
-        try {
-            List<DataFile> ingestsInProgress = fileService.findIngestsInProgress();
-            if (ingestsInProgress != null && ingestsInProgress.size() > 0) {
-                logger.log(Level.INFO, "Ingest Service: {0} files are in the queue.", ingestsInProgress.size());
-                // go through the queue, remove the "ingest in progress" flags and the 
-                // any dataset locks found:
-                Iterator dfit = ingestsInProgress.iterator();
-                while (dfit.hasNext()) {
-                    DataFile datafile = (DataFile)dfit.next();
-                    logger.log(Level.INFO, "Ingest Service: removing ingest-in-progress status on datafile {0}", datafile.getId());
-                    datafile.setIngestDone();
-                    datafile = fileService.save(datafile);
 
-                    if (datafile.getOwner() != null && datafile.getOwner().isLocked()) {
-                        if (datafile.getOwner().getId() != null) {
-                            logger.log(Level.FINE, "Ingest Servioce: removing lock on dataset {0}", datafile.getOwner().getId());
-                            datasetService.removeDatasetLock(datafile.getOwner().getId());
-                        }
-                    }
-                }
-            } else {
-                logger.info("Ingest Service: zero files in the ingest queue.");
-            }
-        } catch ( EJBException ex ) {
-            logger.log(Level.WARNING, "Error initing the IngestServiceBean: {0}", ex.getMessage());
-        }
-    }
-    */
-    
-    @Deprecated
-    // All the parts of the app should use the createDataFiles() method instead, 
-    // that returns a list of DataFiles. 
-    public DataFile createDataFile(DatasetVersion version, InputStream inputStream, String fileName, String contentType) throws IOException {
-        List<DataFile> fileList = createDataFiles(version, inputStream, fileName, contentType);
-        
-        if (fileList == null) {
-            return null; 
-        }
-        
-        return fileList.get(0);
-    }
-    
-    public List<DataFile> createDataFiles(DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType) throws IOException {
-        List<DataFile> datafiles = new ArrayList<DataFile>(); 
-        
-        String warningMessage = null; 
-        
-        // save the file, in the temporary location for now: 
-        Path tempFile = null; 
-        
-        
-        if (getFilesTempDirectory() != null) {
-            tempFile = Files.createTempFile(Paths.get(getFilesTempDirectory()), "tmp", "upload");
-            // "temporary" location is the key here; this is why we are not using 
-            // the DataStore framework for this - the assumption is that 
-            // temp files will always be stored on the local filesystem. 
-            //          -- L.A. Jul. 2014
-            logger.fine("Will attempt to save the file as: " + tempFile.toString());
-            Files.copy(inputStream, tempFile, StandardCopyOption.REPLACE_EXISTING);
-        } else {
-            throw new IOException ("Temp directory is not configured.");
-        }
-        logger.fine("mime type supplied: "+suppliedContentType);
-        // Let's try our own utilities (Jhove, etc.) to determine the file type 
-        // of the uploaded file. (We may already have a mime type supplied for this
-        // file - maybe the type that the browser recognized on upload; or, if 
-        // it's a harvest, maybe the remote server has already given us the type
-        // for this file... with our own type utility we may or may not do better 
-        // than the type supplied:
-        //  -- L.A. 
-        String recognizedType = null;
-        String finalType = null; 
-        try {
-            recognizedType = FileUtil.determineFileType(tempFile.toFile(), fileName);
-            logger.fine("File utility recognized the file as " + recognizedType);
-            if (recognizedType != null && !recognizedType.equals("")) {
-                // is it any better than the type that was supplied to us,
-                // if any?
-                // This is not as trivial a task as one might expect... 
-                // We may need a list of "good" mime types, that should always
-                // be chosen over other choices available. Maybe it should 
-                // even be a weighed list... as in, "application/foo" should 
-                // be chosen over "application/foo-with-bells-and-whistles".
-                
-                // For now the logic will be as follows: 
-                //
-                // 1. If the contentType supplied (by the browser, most likely) 
-                // is some form of "unknown", we always discard it in favor of 
-                // whatever our own utilities have determined; 
-                // 2. We should NEVER trust the browser when it comes to the 
-                // following "ingestable" types: Stata, SPSS, R;
-                // 2a. We are willing to TRUST the browser when it comes to
-                //  the CSV and XSLX ingestable types.
-                // 3. We should ALWAYS trust our utilities when it comes to 
-                // ingestable types. 
-                
-                if (suppliedContentType == null
-                        || suppliedContentType.equals("")
-                        || suppliedContentType.equalsIgnoreCase(MIME_TYPE_UNDETERMINED_DEFAULT)
-                        || suppliedContentType.equalsIgnoreCase(MIME_TYPE_UNDETERMINED_BINARY)
-                        || (ingestableAsTabular(suppliedContentType)
-                            && !suppliedContentType.equalsIgnoreCase(MIME_TYPE_CSV)
-                            && !suppliedContentType.equalsIgnoreCase(MIME_TYPE_CSV_ALT)
-                            && !suppliedContentType.equalsIgnoreCase(MIME_TYPE_XLSX))
-                        || ingestableAsTabular(recognizedType)
-                        || recognizedType.equals("application/fits-gzipped")
-                        || recognizedType.equalsIgnoreCase(ShapefileHandler.SHAPEFILE_FILE_TYPE)
-                        || recognizedType.equals(MIME_TYPE_ZIP)) {
-                    finalType = recognizedType;
-                }
-            }
-            
-        } catch (Exception ex) {
-            logger.warning("Failed to run the file utility mime type check on file " + fileName);
-        }
-        
-        if (finalType == null) {
-            finalType = (suppliedContentType == null || suppliedContentType.equals("")) 
-                ? MIME_TYPE_UNDETERMINED_DEFAULT
-                : suppliedContentType;
-        }
-                
-        // A few special cases: 
-        
-        // if this is a gzipped FITS file, we'll uncompress it, and ingest it as
-        // a regular FITS file:
-        
-        if (finalType.equals("application/fits-gzipped")) {
+    // addFilesToDataset() takes a list of new DataFiles and attaches them to the parent 
+    // Dataset (the files are attached to the dataset, and the fileMetadatas to the
+    // supplied version). 
+    public void addFilesToDataset(DatasetVersion version, List<DataFile> newFiles) {
+        if (newFiles != null && newFiles.size() > 0) {
 
-            InputStream uncompressedIn = null;
-            String finalFileName = fileName;
-            // if the file name had the ".gz" extension, remove it, 
-            // since we are going to uncompress it:
-            if (fileName != null && fileName.matches(".*\\.gz$")) {
-                finalFileName = fileName.replaceAll("\\.gz$", "");
-            }
-            
-            DataFile datafile = null; 
-            try {                
-                uncompressedIn = new GZIPInputStream(new FileInputStream(tempFile.toFile()));  
-                datafile = createSingleDataFile(version, uncompressedIn, finalFileName, MIME_TYPE_UNDETERMINED_DEFAULT);
-            } catch (IOException ioex) {
-                datafile = null;
-            } finally {
-                if (uncompressedIn != null) {
-                    try {uncompressedIn.close();} catch (IOException e) {}
-                }
-            }
-            
-            // If we were able to produce an uncompressed file, we'll use it 
-            // to create and return a final DataFile; if not, we're not going
-            // to do anything - and then a new DataFile will be created further 
-            // down, from the original, uncompressed file.
-            if (datafile != null) {
-                // remove the compressed temp file: 
-                try {
-                    tempFile.toFile().delete();
-                } catch (SecurityException ex) {
-                    // (this is very non-fatal)
-                    logger.warning("Failed to delete temporary file "+tempFile.toString());
-                }
-                
-                datafiles.add(datafile);
-                return datafiles;
-            }
-                
-        // If it's a ZIP file, we are going to unpack it and create multiple 
-        // DataFile objects from its contents:
-          } else if (finalType.equals("application/zip")) {   
-            
-            ZipInputStream unZippedIn = null; 
-            ZipEntry zipEntry = null; 
-            
-            int fileNumberLimit = systemConfig.getZipUploadFilesLimit();
-            
-            try {
-                Charset charset = null;
-                /*
-                TODO: (?)
-                We may want to investigate somehow letting the user specify 
-                the charset for the filenames in the zip file...
-                - otherwise, ZipInputStream bails out if it encounteres a file 
-                name that's not valid in the current charest (i.e., UTF-8, in 
-                our case). It would be a bit trickier than what we're doing for 
-                SPSS tabular ingests - with the lang. encoding pulldown menu - 
-                because this encoding needs to be specified *before* we upload and
-                attempt to unzip the file. 
-                        -- L.A. 4.0 beta12
-                logger.info("default charset is "+Charset.defaultCharset().name());
-                if (Charset.isSupported("US-ASCII")) {
-                    logger.info("charset US-ASCII is supported.");
-                    charset = Charset.forName("US-ASCII");
-                    if (charset != null) {
-                        logger.info("was able to obtain charset for US-ASCII");
-                    }
-                    
-                }
-                */
-                
-                if (charset != null) {
-                    unZippedIn = new ZipInputStream(new FileInputStream(tempFile.toFile()), charset);
-                } else {
-                    unZippedIn = new ZipInputStream(new FileInputStream(tempFile.toFile()));
-                } 
-                                                                
-                while (true) { 
-                    try {
-                        zipEntry = unZippedIn.getNextEntry();
-                    } catch (IllegalArgumentException iaex) {
-                        // Note: 
-                        // ZipInputStream documentation doesn't even mention that 
-                        // getNextEntry() throws an IllegalArgumentException!
-                        // but that's what happens if the file name of the next
-                        // entry is not valid in the current CharSet. 
-                        //      -- L.A.
-                        warningMessage = "Failed to unpack Zip file. (Unknown Character Set used in a file name?) Saving the file as is.";
-                        logger.warning(warningMessage);
-                        throw new IOException();
-                    } 
-                    
-                    if (zipEntry == null) {
-                        break;
-                    }
-                    // Note that some zip entries may be directories - we 
-                    // simply skip them:
-                    
-                    if (!zipEntry.isDirectory()) {
-                        if (datafiles.size() > fileNumberLimit) {
-                            logger.warning("Zip upload - too many files.");
-                            warningMessage = "The number of files in the zip archive is over the limit (" + fileNumberLimit + 
-                                "); please upload a zip archive with fewer files, if you want them to be ingested " +
-                                "as individual DataFiles.";
-                            throw new IOException();
-                        }
+            Dataset dataset = version.getDataset();
 
-                        String fileEntryName = zipEntry.getName();
-                        logger.fine("ZipEntry, file: "+fileEntryName);
+            for (DataFile dataFile : newFiles) {
 
-                        if (fileEntryName != null && !fileEntryName.equals("")) {
+                // These are all brand new files, so they should all have 
+                // one filemetadata total. -- L.A. 
+                FileMetadata fileMetadata = dataFile.getFileMetadatas().get(0);
+                String fileName = fileMetadata.getLabel();
 
-                            String shortName = fileEntryName.replaceFirst("^.*[\\/]", "");
+                // Attach the file to the dataset and to the version: 
+                dataFile.setOwner(dataset);
 
-                            // Check if it's a "fake" file - a zip archive entry 
-                            // created for a MacOS X filesystem element: (these 
-                            // start with "._")
-                            if (!shortName.startsWith("._") && !shortName.startsWith(".DS_Store") && !"".equals(shortName)) {
-                                // OK, this seems like an OK file entry - we'll try 
-                                // to read it and create a DataFile with it:
-
-                                DataFile datafile = createSingleDataFile(version, unZippedIn, shortName, MIME_TYPE_UNDETERMINED_DEFAULT, false);
-
-                                if (!fileEntryName.equals(shortName)) {
-                                    String categoryName = fileEntryName.replaceFirst("[\\/][^\\/]*$", "");
-                                    if (!"".equals(categoryName)) {
-                                        logger.fine("setting category to " + categoryName);
-                                        //datafile.getFileMetadata().setCategory(categoryName.replaceAll("[\\/]", "-"));
-                                        datafile.getFileMetadata().addCategoryByName(categoryName.replaceAll("[\\/]", "-"));
-                                    }
-                                }
-                                
-                                if (datafile != null) {
-                                    // We have created this datafile with the mime type "unknown";
-                                    // Now that we have it saved in a temporary location, 
-                                    // let's try and determine its real type:
-                                    
-                                    String tempFileName = getFilesTempDirectory() + "/" + datafile.getStorageIdentifier();
-                                    
-                                    try {
-                                        recognizedType = FileUtil.determineFileType(new File(tempFileName), shortName);
-                                        logger.fine("File utility recognized unzipped file as " + recognizedType);
-                                        if (recognizedType != null && !recognizedType.equals("")) {
-                                             datafile.setContentType(recognizedType);
-                                        }
-                                    } catch (Exception ex) {
-                                        logger.warning("Failed to run the file utility mime type check on file " + fileName);
-                                    }
-                                    
-                                    datafiles.add(datafile);
-                                }
-                            }
-                        }
-                    } 
-                    unZippedIn.closeEntry(); 
-                    
-                }
-                
-            } catch (IOException ioex) {
-                // just clear the datafiles list and let 
-                // ingest default to creating a single DataFile out
-                // of the unzipped file. 
-                logger.warning("Unzipping failed; rolling back to saving the file as is.");
-                if (warningMessage == null) {
-                    warningMessage = "Failed to unzip the file. Saving the file as is.";
-                }
-                
-                datafiles.clear();
-            } finally {
-                if (unZippedIn != null) {
-                    try {unZippedIn.close();} catch (Exception zEx) {}
-                }
-            }
-            if (datafiles.size() > 0) {
-                // link the data files to the dataset/version: 
-                Iterator<DataFile> itf = datafiles.iterator();
-                while (itf.hasNext()) {
-                    DataFile datafile = itf.next();
-                    datafile.setOwner(version.getDataset());
-                    if (version.getFileMetadatas() == null) {
-                        version.setFileMetadatas(new ArrayList());
-                    }
-                    version.getFileMetadatas().add(datafile.getFileMetadata());
-                    datafile.getFileMetadata().setDatasetVersion(version);
-                    
-                    /* TODO!!
-                    // re-implement this in some way that does not use the 
-                    // deprecated .getCategory() on FileMeatadata:
-                    if (datafile.getFileMetadata().getCategory() != null) {
-                        datafile.getFileMetadata().addCategoryByName(datafile.getFileMetadata().getCategory());
-                        datafile.getFileMetadata().setCategory(null);
-                        -- done? see above?
-                    }
-                    */
-                    version.getDataset().getFiles().add(datafile);
-                }
-                // remove the uploaded zip file: 
-                try {
-                    Files.delete(tempFile);
-                } catch (IOException ioex) {
-                    // do nothing - it's just a temp file.
-                    logger.warning("Could not remove temp file "+tempFile.getFileName().toString());
-                }
-                // and return:
-                return datafiles;
-            }
-            
-        } else if (finalType.equalsIgnoreCase(ShapefileHandler.SHAPEFILE_FILE_TYPE)) {
-            // Shape files may have to be split into multiple files, 
-            // one zip archive per each complete set of shape files:
-                       
-            //File rezipFolder = new File(this.getFilesTempDirectory());
-            File rezipFolder = this.getShapefileUnzipTempDirectory();
-            
-            IngestServiceShapefileHelper shpIngestHelper;
-            shpIngestHelper = new IngestServiceShapefileHelper(tempFile.toFile(), rezipFolder);
-
-            boolean didProcessWork = shpIngestHelper.processFile();
-            if (!(didProcessWork)){            
-                logger.severe("Processing of zipped shapefile failed.");
-                return null;
-            }
-            for (File finalFile : shpIngestHelper.getFinalRezippedFiles()){
-                FileInputStream finalFileInputStream = new FileInputStream(finalFile);
-                finalType = this.getContentType(finalFile);
-                if (finalType==null){
-                    logger.warning("Content type is null; but should default to 'MIME_TYPE_UNDETERMINED_DEFAULT'");
-                    continue; 
-                }               
-                DataFile new_datafile = createSingleDataFile(version, finalFileInputStream, finalFile.getName(), finalType);
-                if (new_datafile != null) {
-                  datafiles.add(new_datafile);
-                }else{
-                  logger.severe("Could not add part of rezipped shapefile. new_datafile was null: " + finalFile.getName());
-                }
-                finalFileInputStream.close();                
-             
-            }
-            
-            // Delete the temp directory used for unzipping
-            /*
-            logger.fine("Delete temp shapefile unzip directory: " + rezipFolder.getAbsolutePath());
-            FileUtils.deleteDirectory(rezipFolder);
-
-            // Delete rezipped files
-            for (File finalFile : shpIngestHelper.getFinalRezippedFiles()){
-                if (finalFile.isFile()){
-                    finalFile.delete();
-                }
-            }
-            */
-             
-            if (datafiles.size() > 0) {
-                return datafiles;
-            }else{
-                logger.severe("No files added from directory of rezipped shapefiles");
-            }
-            return null;
-           
-        }
-
-        
-        // Finally, if none of the special cases above were applicable (or 
-        // if we were unable to unpack an uploaded file, etc.), we'll just 
-        // create and return a single DataFile:
-        // (Note that we are passing null for the InputStream; that's because
-        // we already have the file saved; we'll just need to rename it, below)
-        
-        DataFile datafile = createSingleDataFile(version, null, fileName, finalType);
-        
-        if (datafile != null) {
-            fileService.generateStorageIdentifier(datafile);
-            if (!tempFile.toFile().renameTo(new File(getFilesTempDirectory() + "/" + datafile.getStorageIdentifier()))) {
-                return null; 
-            }
-            
-            // MD5:
-            MD5Checksum md5Checksum = new MD5Checksum();
-            try {
-                datafile.setmd5(md5Checksum.CalculateMD5(getFilesTempDirectory() + "/" + datafile.getStorageIdentifier()));
-            } catch (Exception md5ex) {
-                logger.warning("Could not calculate MD5 signature for new file " + fileName);
-            }
-        
-            if (warningMessage != null) {
-                createIngestFailureReport(datafile, warningMessage);
-                datafile.SetIngestProblem();
-            }
-            datafiles.add(datafile);
-            
-            return datafiles;
-        }
-        
-        return null;
-    }   // end createDataFiles
-    
-    // TODO: 
-    // add comments explaining what's going on in the 2 methods below. 
-    // -- L.A. 4.0 beta
-    private String checkForDuplicateFileNames(DatasetVersion version, String fileName) {
-        Set<String> fileNamesExisting = new HashSet<String>();
-
-        Iterator<FileMetadata> fmIt = version.getFileMetadatas().iterator();
-        while (fmIt.hasNext()) {
-            FileMetadata fm = fmIt.next();
-            String existingName = fm.getLabel();
-            
-            if (existingName != null) {
-                // if it's a tabular file, we need to restore the original file name; 
-                // otherwise, we may miss a match. e.g. stata file foobar.dta becomes
-                // foobar.tab once ingested! 
-                if (fm.getDataFile().isTabularData()) {
-                    String originalMimeType = fm.getDataFile().getDataTable().getOriginalFileFormat();
-                    if ( originalMimeType != null) {
-                        String origFileExtension = generateOriginalExtension(originalMimeType);
-                        fileNamesExisting.add(existingName.replaceAll(".tab$", origFileExtension));
-                    } else {
-                        fileNamesExisting.add(existingName.replaceAll(".tab$", ""));
-                    }
-                }
-                fileNamesExisting.add(existingName);
-            }
-        }
-
-        while (fileNamesExisting.contains(fileName)) {
-            fileName = generateNewFileName(fileName);
-        }
-
-        return fileName;
-    }
-    
-    private void checkForDuplicateFileNamesFinal(DatasetVersion version, List<DataFile> newFiles) {
-        Set<String> fileNamesExisting = new HashSet<String>();
-
-        Iterator<FileMetadata> fmIt = version.getFileMetadatas().iterator();
-        while (fmIt.hasNext()) {
-            FileMetadata fm = fmIt.next();
-            if (fm.getId() != null) {
-                String existingName = fm.getLabel();
-            
-                if (existingName != null) {
-                    // if it's a tabular file, we need to restore the original file name; 
-                    // otherwise, we may miss a match. e.g. stata file foobar.dta becomes
-                    // foobar.tab once ingested! 
-                    if (fm.getDataFile().isTabularData()) {
-                        String originalMimeType = fm.getDataFile().getDataTable().getOriginalFileFormat();
-                        if ( originalMimeType != null) {
-                            String origFileExtension = generateOriginalExtension(originalMimeType);
-                            existingName = existingName.replaceAll(".tab$", origFileExtension);
-                        } else {
-                            existingName = existingName.replaceAll(".tab$", "");
-                        }
-                    }
-                    fileNamesExisting.add(existingName);
-                }
-            }
-        }
-
-        Iterator<DataFile> dfIt = newFiles.iterator();
-        while (dfIt.hasNext()) {
-            FileMetadata fm = dfIt.next().getFileMetadata();
-            String fileName = fm.getLabel(); 
-            while (fileNamesExisting.contains(fileName)) {
-                fileName = generateNewFileName(fileName);
-            }
-            if (!fm.getLabel().equals(fileName)) {
-                fm.setLabel(fileName);
-                fileNamesExisting.add(fileName);
+                version.getFileMetadatas().add(dataFile.getFileMetadata());
+                dataFile.getFileMetadata().setDatasetVersion(version);
+                dataset.getFiles().add(dataFile);
             }
         }
     }
     
-    // TODO: 
-    // Move this method (duplicated in StoredOriginalFile.java) to 
-    // FileUtil.java. 
-    // -- L.A. 4.0 beta
-    
-    private static String generateOriginalExtension(String fileType) {
-
-        if (fileType.equalsIgnoreCase("application/x-spss-sav")) {
-            return ".sav";
-        } else if (fileType.equalsIgnoreCase("application/x-spss-por")) {
-            return ".por";
-        } else if (fileType.equalsIgnoreCase("application/x-stata")) {
-            return ".dta";
-        } else if (fileType.equalsIgnoreCase( "application/x-rlang-transport")) {
-            return ".RData";
-        } else if (fileType.equalsIgnoreCase("text/csv")) {
-            return ".csv";
-        } else if (fileType.equalsIgnoreCase( "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")) {
-            return ".xlsx";
-        }
-
-       return "";
-    }
-
-    
-    private String generateNewFileName(String fileName) {
-        String newName = null;
-        String baseName = null; 
-        String extension = null; 
-        
-        int extensionIndex = fileName.lastIndexOf(".");
-        if (extensionIndex != -1 ) {
-            extension = fileName.substring(extensionIndex+1);
-            baseName = fileName.substring(0, extensionIndex);
-        } else {
-            baseName = fileName; 
-        }
-        
-        if (baseName.matches(".*-[0-9][0-9]*$")) {
-            int dashIndex = baseName.lastIndexOf("-");
-            String numSuffix = baseName.substring(dashIndex+1);
-            String basePrefix = baseName.substring(0,dashIndex);
-            int numSuffixValue = new Integer(numSuffix).intValue();
-            numSuffixValue++; 
-            baseName = basePrefix + "-" + numSuffixValue;
-        } else {
-            baseName = baseName + "-1"; 
-        }
-        
-        newName = baseName; 
-        if (extension != null) {
-            newName = newName + "." + extension; 
-        }
-        
-        return newName;
-    }
-    
-    /**
-     *  Returns a content type string for a FileObject
-     * 
-     */
-    private String getContentType(File fileObject){
-        if (fileObject==null){
-            return null;
-        }
-        String contentType;
-        try {
-            contentType = FileUtil.determineFileType(fileObject, fileObject.getName());
-        } catch (Exception ex) {
-            logger.warning("FileUtil.determineFileType failed for file with name: " + fileObject.getName());
-            contentType = null;
-        }
-
-       if ((contentType==null)||(contentType.equals(""))){
-            contentType = MIME_TYPE_UNDETERMINED_DEFAULT;
-       }
-       return contentType;
-        
-    }
-    /* 
-     * This method creates a DataFile, and also saves the bytes from the suppplied 
-     * InputStream in the temporary location. 
-     * This method should only be called by the upper-level methods that handle 
-     * file upload and creation for individual use cases - a single file upload, 
-     * an upload of a zip archive that needs to be unpacked and turned into 
-     * individual files, etc., and once the file name and mime type have already 
-     * been figured out. 
-    */
-    
-    private DataFile createSingleDataFile(DatasetVersion version, InputStream inputStream, String fileName, String contentType) {
-        return createSingleDataFile(version, inputStream, fileName, contentType, true);
-    }
-    
-    private DataFile createSingleDataFile(DatasetVersion version, InputStream inputStream, String fileName, String contentType, boolean addToDataset) {
-
-        DataFile datafile = new DataFile(contentType);
-        datafile.setModificationTime(new Timestamp(new Date().getTime()));
-        /**
-         * @todo Think more about when permissions on files are modified.
-         * Obviously, here at create time files have some sort of permissions,
-         * even if these permissions are *implied*, by ViewUnpublishedDataset at
-         * the dataset level, for example.
-         */
-        datafile.setPermissionModificationTime(new Timestamp(new Date().getTime()));
-        FileMetadata fmd = new FileMetadata();
-        
-        fmd.setLabel(checkForDuplicateFileNames(version,fileName));
-
-        if (addToDataset) {
-            datafile.setOwner(version.getDataset());
-        }
-        fmd.setDataFile(datafile);
-        datafile.getFileMetadatas().add(fmd);
-        if (addToDataset) {
-            if (version.getFileMetadatas() == null) {
-                version.setFileMetadatas(new ArrayList());
-            }
-            version.getFileMetadatas().add(fmd);
-            fmd.setDatasetVersion(version);
-            version.getDataset().getFiles().add(datafile);
-        }
-
-        // And save the file - but only if the InputStream is not null; 
-        // (the temp file may be saved already - if this is a single
-        // file upload case - and in that case this method gets called 
-        // with null for the inputStream)
-        
-        if (inputStream != null) {
-        
-            fileService.generateStorageIdentifier(datafile);
-            BufferedOutputStream outputStream = null;
-
-            // Once again, at this point we are dealing with *temp*
-            // files only; these are always stored on the local filesystem, 
-            // so we are using FileInput/Output Streams to read and write
-            // these directly, instead of going through the Data Access 
-            // framework. 
-            //      -- L.A.
-            
-            try {
-                outputStream = new BufferedOutputStream(new FileOutputStream(getFilesTempDirectory() + "/" + datafile.getStorageIdentifier()));
-
-                byte[] dataBuffer = new byte[8192];
-                int i = 0;
-
-                while ((i = inputStream.read(dataBuffer)) > 0) {
-                    outputStream.write(dataBuffer, 0, i);
-                    outputStream.flush();
-                }
-            } catch (IOException ioex) {
-                datafile = null; 
-            } finally {
-                try {
-                    outputStream.close();
-                } catch (IOException ioex) {}
-            }
-            
-            // MD5:
-            if (datafile != null) {
-                MD5Checksum md5Checksum = new MD5Checksum();
-                try {
-                    datafile.setmd5(md5Checksum.CalculateMD5(getFilesTempDirectory() + "/" + datafile.getStorageIdentifier()));
-                } catch (Exception md5ex) {
-                    logger.warning("Could not calculate MD5 signature for new file " + fileName);
-                }
-            }
-        }
-        
-        return datafile;
-    }
-    
+    // This method tries to permanently store the files on the filesystem. 
+    // It should be called before we attempt to permanently save the files in 
+    // the database by calling the Save command on the dataset and/or version. 
+    // TODO: rename the method finalizeFiles()? or something like that?
     public void addFiles (DatasetVersion version, List<DataFile> newFiles) {
         if (newFiles != null && newFiles.size() > 0) {
             // final check for duplicate file names; 
@@ -875,7 +178,7 @@ public class IngestServiceBean {
             // the user may have edited them on the "add files" page, and 
             // renamed FOOBAR-1.txt back to FOOBAR.txt...
             
-            checkForDuplicateFileNamesFinal(version, newFiles);
+            IngestUtil.checkForDuplicateFileNamesFinal(version, newFiles);
             
             Dataset dataset = version.getDataset();
             
@@ -889,7 +192,7 @@ public class IngestServiceBean {
                     Files.createDirectories(dataset.getFileSystemDirectory());
                 }
             } catch (IOException dirEx) {
-                logger.severe("Failed to create study directory " + dataset.getFileSystemDirectory().toString());
+                logger.severe("Failed to create dataset directory " + dataset.getFileSystemDirectory().toString());
                 return; 
                 // TODO:
                 // Decide how we are communicating failure information back to 
@@ -900,19 +203,29 @@ public class IngestServiceBean {
 
             if (dataset.getFileSystemDirectory() != null && Files.exists(dataset.getFileSystemDirectory())) {
                 for (DataFile dataFile : newFiles) {
-                    String tempFileLocation = getFilesTempDirectory() + "/" + dataFile.getStorageIdentifier();
+                    String tempFileLocation = FileUtil.getFilesTempDirectory() + "/" + dataFile.getStorageIdentifier();
 
+                    // These are all brand new files, so they should all have 
+                    // one filemetadata total. -- L.A. 
                     FileMetadata fileMetadata = dataFile.getFileMetadatas().get(0);
                     String fileName = fileMetadata.getLabel();
                     
                     // temp dbug line
-                    System.out.println("ADDING FILE: " + fileName + "; for dataset: " + dataset.getGlobalId());                    
+                    //System.out.println("ADDING FILE: " + fileName + "; for dataset: " + dataset.getGlobalId());                    
                     
-                    // These are all brand new files, so they should all have 
-                    // one filemetadata total. -- L.A. 
+                    // Make sure the file is attached to the dataset and to the version, if this 
+                    // hasn't been done yet:
+                    if (dataFile.getOwner() == null) {
+                        dataFile.setOwner(dataset);
+                    
+                        version.getFileMetadatas().add(dataFile.getFileMetadata());
+                        dataFile.getFileMetadata().setDatasetVersion(version);
+                        dataset.getFiles().add(dataFile);
+                    }
+                    
                     boolean metadataExtracted = false;
                     
-                    if (ingestableAsTabular(dataFile)) {
+                    if (FileUtil.ingestableAsTabular(dataFile)) {
                         /*
                          * Note that we don't try to ingest the file right away - 
                          * instead we mark it as "scheduled for ingest", then at 
@@ -945,13 +258,20 @@ public class IngestServiceBean {
                     String storageId = dataFile.getStorageIdentifier().replaceFirst("^tmp://", "");
                     
                     
-                    Path tempLocationPath = Paths.get(getFilesTempDirectory() + "/" + storageId);
+                    Path tempLocationPath = Paths.get(FileUtil.getFilesTempDirectory() + "/" + storageId);
                     WritableByteChannel writeChannel = null;
                     FileChannel readChannel = null;
+                    
+                    boolean localFile = false;
+                    boolean savedSuccess = false; 
                     
                     try {
 
                         DataFileIO dataAccess = dataFile.getAccessObject();
+                        
+                        if (dataAccess.isLocalFile()) {
+                            localFile = true; 
+                        }
      
                         /* 
                          This commented-out code demonstrates how to copy bytes
@@ -988,6 +308,7 @@ public class IngestServiceBean {
                         // Set filesize in bytes
                         // 
                         dataFile.setFilesize(dataAccess.getSize());
+                        savedSuccess = true;
                         
                     } catch (IOException ioex) {
                         logger.warning("Failed to save the file, storage id " + dataFile.getStorageIdentifier());
@@ -996,21 +317,39 @@ public class IngestServiceBean {
                         if (writeChannel != null) {try{writeChannel.close();}catch(IOException e){}}
                     }
 
-                    // delete the temporary file: 
+                    // Since we may have already spent some CPU cycles scaling down image thumbnails, 
+                    // we may as well save them, by moving these generated images to the permanent 
+                    // dataset directory. We should also remember to delete any such files in the
+                    // temp directory:
+                    
+                    List<Path> generatedTempFiles = listGeneratedTempFiles(Paths.get(FileUtil.getFilesTempDirectory()), dataFile.getStorageIdentifier());
+                    if (generatedTempFiles != null) {
+                        for (Path generated : generatedTempFiles) {
+                            if (savedSuccess && localFile) {
+                                logger.fine("Will try to permanently save generated file "+generated.toString());
+                                try {
+                                    Files.copy(generated, Paths.get(dataset.getFileSystemDirectory().toString(), generated.getFileName().toString()));
+                                } catch (IOException ioex) {
+                                    logger.warning("Failed to save generated file "+generated.toString());
+                                }
+                                
+                                try {
+                                    Files.delete(generated);
+                                } catch (IOException ioex) {
+                                    logger.warning("Failed to delete generated file "+generated.toString());
+                                }
+                            }
+                        }
+                    }
+                    
                     try {
                         logger.fine("Will attempt to delete the temp file "+tempLocationPath.toString());
-                        // also, delete a temporary thumbnail image file, if exists:
-                        // (TODO: probably not a very good style, that the size of the thumbnail 
-                        // is hard-coded here; it may change in the future...)
-                        Path tempThumbnailPath = Paths.get(tempLocationPath.toString() + ".thumb64");
                         Files.delete(tempLocationPath);
-                        if (tempThumbnailPath.toFile().exists()) {
-                            Files.delete(tempThumbnailPath);
-                        }
                     } catch (IOException ex) {
                         // (non-fatal - it's just a temp file.)
                         logger.warning("Failed to delete temp file "+tempLocationPath.toString());
                     }
+                    
                     // Any necessary post-processing: 
                     performPostProcessingTasks(dataFile);
                 }
@@ -1018,65 +357,36 @@ public class IngestServiceBean {
         }
     }
     
-    /**
-        For the restructuring of zipped shapefiles, create a timestamped directory.
-        This directory is deleted after successful restructuring.
-    
-        Naming convention: getFilesTempDirectory() + "shp_" + "yyyy-MM-dd-hh-mm-ss-SSS"
-    */
-    private File getShapefileUnzipTempDirectory(){
-        
-        String tempDirectory = this.getFilesTempDirectory();
-        if (tempDirectory == null){
-            logger.severe("Failed to retrieve tempDirectory, null was returned" );
+    private List<Path> listGeneratedTempFiles(Path tempDirectory, String baseName) {
+        List<Path> generatedFiles = new ArrayList<>();
+
+        // for example, <filename>.thumb64 or <filename>.thumb400.
+
+        if (baseName == null || baseName.equals("")) {
             return null;
         }
-        String datestampedFileName =  "shp_" + new SimpleDateFormat("yyyy-MM-dd-hh-mm-ss-SSS").format(new Date());
-        String datestampedFolderName = tempDirectory + "/" + datestampedFileName;
-        
-        File datestampedFolder = new File(datestampedFolderName);
-        if (!datestampedFolder.isDirectory()) {
-            /* Note that "createDirectories()" must be used - not 
-             * "createDirectory()", to make sure all the parent 
-             * directories that may not yet exist are created as well. 
-             */
-            try {
-                Files.createDirectories(Paths.get(datestampedFolderName));
-            } catch (IOException ex) {
-                logger.severe("Failed to create temp. directory to unzip shapefile: " + datestampedFolderName );
-                return null;
+
+        DirectoryStream.Filter<Path> filter = new DirectoryStream.Filter<Path>() {
+            @Override
+            public boolean accept(Path file) throws IOException {
+                return (file.getFileName() != null
+                        && file.getFileName().toString().startsWith(baseName + ".thumb"));
             }
-        }
-        return datestampedFolder;        
-    }
-    
-    public String getFilesTempDirectory() {
-        String filesRootDirectory = System.getProperty("dataverse.files.directory");
-        if (filesRootDirectory == null || filesRootDirectory.equals("")) {
-            filesRootDirectory = "/tmp/files";
-        }
+        };
 
-        String filesTempDirectory = filesRootDirectory + "/temp";
-
-        if (!Files.exists(Paths.get(filesTempDirectory))) {
-            /* Note that "createDirectories()" must be used - not 
-             * "createDirectory()", to make sure all the parent 
-             * directories that may not yet exist are created as well. 
-             */
-            try {
-                Files.createDirectories(Paths.get(filesTempDirectory));
-            } catch (IOException ex) {
-                logger.severe("Failed to create filesTempDirectory: " + filesTempDirectory );
-                return null;
+        try (DirectoryStream<Path> dirStream = Files.newDirectoryStream(tempDirectory, filter)) {
+            for (Path filePath : dirStream) {
+                generatedFiles.add(filePath);
             }
+        } catch (IOException ex) {
         }
 
-        return filesTempDirectory;
+        return generatedFiles;
     }
     
     // TODO: consider creating a version of this method that would take 
     // datasetversion as the argument. 
-    // -- L.A. 4.0 post-beta. 
+    // -- L.A. 4.6
     public void startIngestJobs(Dataset dataset, AuthenticatedUser user) {
         int count = 0;
         List<DataFile> scheduledFiles = new ArrayList<>();
@@ -1309,44 +619,11 @@ public class IngestServiceBean {
             dataFile.getDataTable().setUnf(fileUnfValue);
         }
     }
-    
+
     public void recalculateDatasetVersionUNF(DatasetVersion version) {
-        String[] unfValues = new String[0];
-        String datasetUnfValue = null; 
-        List<String> unfValueList = new ArrayList<>();
-        
-        logger.fine("recalculating UNF for dataset version.");
-        Iterator<FileMetadata> itfm = version.getFileMetadatas().iterator();
-        while (itfm.hasNext()) {            
-            FileMetadata fileMetadata = itfm.next();
-            if (fileMetadata != null &&
-                    fileMetadata.getDataFile() != null &&
-                    fileMetadata.getDataFile().isTabularData() &&
-                    fileMetadata.getDataFile().getUnf() != null) {
-                String varunf = fileMetadata.getDataFile().getUnf();
-                unfValueList.add(varunf);
-            }
-        }
-        
-        if (unfValueList.size() > 0) {
-            unfValues = unfValueList.toArray(unfValues);
-        
-            logger.fine("Attempting to calculate new UNF from total of " + unfValueList.size() + " file-level signatures.");
-            try {
-                datasetUnfValue = UNFUtil.calculateUNF(unfValues);
-            } catch (IOException ex) {
-                logger.warning("IO Exception: Failed to recalculate the UNF for the dataset version id="+version.getId());
-            } catch (UnfException uex) {
-                logger.warning("UNF Exception: Failed to recalculate the UNF for the dataset version id="+version.getId());
-            }        
-        
-            if (datasetUnfValue != null) {
-                version.setUNF(datasetUnfValue);
-                logger.fine("Recalculated the UNF for the dataset version id="+version.getId()+", new signature: "+datasetUnfValue);
-            }
-        }
+        IngestUtil.recalculateDatasetVersionUNF(version);
     }
-    
+
     public void sendFailNotification(Long dataset_id) {
         FacesMessage facesMessage = new FacesMessage("ingest failed");
         /* commented out push channel message:
@@ -1378,11 +655,9 @@ public class IngestServiceBean {
 
         if (ingestPlugin == null) {
             dataFile.SetIngestProblem();
-            createIngestFailureReport(dataFile, "No ingest plugin found for file type "+dataFile.getContentType());
+            FileUtil.createIngestFailureReport(dataFile, "No ingest plugin found for file type "+dataFile.getContentType());
             dataFile = fileService.save(dataFile);
-            FacesMessage facesMessage = new FacesMessage("ingest failed");
-            sendStatusNotification(dataFile.getOwner().getId(), facesMessage);
-            logger.info("Ingest failure: Sent push notification to the page.");
+            logger.info("Ingest failure.");
             //throw new IOException("Could not find ingest plugin for the file " + fileName);
             return false; 
         }
@@ -1397,12 +672,10 @@ public class IngestServiceBean {
         } catch (IOException ioEx) {
             dataFile.SetIngestProblem();
             
-            createIngestFailureReport(dataFile, "IO Exception occured while trying to open the file for reading.");
+            FileUtil.createIngestFailureReport(dataFile, "IO Exception occured while trying to open the file for reading.");
             dataFile = fileService.save(dataFile);
             
-            FacesMessage facesMessage = new FacesMessage("ingest failed");
-            sendStatusNotification(dataFile.getOwner().getId(), facesMessage);
-            logger.info("Ingest failure (No file produced); Sent push notification to the page.");
+            logger.info("Ingest failure (No file produced).");
             return false; 
         }
         
@@ -1427,25 +700,21 @@ public class IngestServiceBean {
             }
         } catch (IOException ingestEx) {
             dataFile.SetIngestProblem();
-            createIngestFailureReport(dataFile, ingestEx.getMessage());
+            FileUtil.createIngestFailureReport(dataFile, ingestEx.getMessage());
             dataFile = fileService.save(dataFile);
             
             dataFile = fileService.save(dataFile);
-            FacesMessage facesMessage = new FacesMessage("ingest failed");
-            sendStatusNotification(dataFile.getOwner().getId(), facesMessage);
-            logger.info("Ingest failure (IO Exception): "+ingestEx.getMessage()+ "; Sent push notification to the page.");
+            logger.info("Ingest failure (IO Exception): "+ingestEx.getMessage()+ ".");
             return false;
         } catch (Exception unknownEx) {
             // this is a bit of a kludge, to make sure no unknown exceptions are
             // left uncaught.
             dataFile.SetIngestProblem();
-            createIngestFailureReport(dataFile, unknownEx.getMessage());
+            FileUtil.createIngestFailureReport(dataFile, unknownEx.getMessage());
             dataFile = fileService.save(dataFile);
             
             dataFile = fileService.save(dataFile);
-            FacesMessage facesMessage = new FacesMessage("ingest failed");
-            sendStatusNotification(dataFile.getOwner().getId(), facesMessage);
-            logger.info("Ingest failure (Unknown Exception): "+unknownEx.getMessage()+"; Sent push notification to the page.");
+            logger.info("Ingest failure (Unknown Exception): "+unknownEx.getMessage()+".");
             return false;
             
         }
@@ -1463,8 +732,8 @@ public class IngestServiceBean {
 
                     logger.info("Tab-delimited file produced: " + tabFile.getAbsolutePath());
 
-                    if (MIME_TYPE_CSV_ALT.equals(dataFile.getContentType())) {
-                        tabDataIngest.getDataTable().setOriginalFileFormat(MIME_TYPE_CSV);
+                    if (FileUtil.MIME_TYPE_CSV_ALT.equals(dataFile.getContentType())) {
+                        tabDataIngest.getDataTable().setOriginalFileFormat(FileUtil.MIME_TYPE_CSV);
                     } else {
                         tabDataIngest.getDataTable().setOriginalFileFormat(dataFile.getContentType());
                     }
@@ -1474,7 +743,7 @@ public class IngestServiceBean {
                     
                     // and we want to save the original of the ingested file: 
                     try {
-                        dataAccess.backupAsAux(SAVED_ORIGINAL_FILENAME_EXTENSION);
+                        dataAccess.backupAsAux(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
                     } catch (IOException iox) {
                         logger.info("Failed to save the ingested original! " + iox.getMessage());
                     }
@@ -1490,8 +759,8 @@ public class IngestServiceBean {
 
                     // and change the mime type to "tabular" on the final datafile, 
                     // and replace (or add) the extension ".tab" to the filename: 
-                    dataFile.setContentType(MIME_TYPE_TAB);
-                    dataFile.getFileMetadata().setLabel(checkForDuplicateFileNames(dataFile.getOwner().getLatestVersion(), FileUtil.replaceExtension(fileName, "tab")));
+                    dataFile.setContentType(FileUtil.MIME_TYPE_TAB);
+                    IngestUtil.modifyExistingFilename(dataFile.getOwner().getLatestVersion(), dataFile.getFileMetadata(), FileUtil.replaceExtension(fileName, "tab"));
 
                     dataFile.setDataTable(tabDataIngest.getDataTable());
                     tabDataIngest.getDataTable().setDataFile(dataFile);
@@ -1505,14 +774,7 @@ public class IngestServiceBean {
                         dataFile.setIngestRequest(null);
                     }
                     dataFile = fileService.save(dataFile);
-                    logger.fine("Saved datafile "+dataFile.getId()+", attempting to send push notification;");
-                    FacesMessage facesMessage = new FacesMessage("Success " + dataFile.getFileMetadata().getLabel());
-                    try {
-                        sendStatusNotification(dataFile.getOwner().getId(), facesMessage);
-                        logger.fine("Ingest (" + dataFile.getFileMetadata().getLabel() + "); Sent push notification to the page.");
-                    } catch (Exception ex) {
-                        logger.warning("Failed to send push notification to the page!");
-                    }
+                    logger.fine("Ingest (" + dataFile.getFileMetadata().getLabel() + ".");
 
                     if (additionalData != null) {
                         // remove the extra tempfile, if there was one:
@@ -1521,7 +783,7 @@ public class IngestServiceBean {
                     ingestSuccessful = true;
                 }
             } else {
-                logger.info("Ingest failed to produce data obect; notification NOT sent to the page.");
+                logger.info("Ingest failed to produce data obect.");
             }
         } catch (IOException postIngestEx) {
             // TODO: 
@@ -1529,11 +791,11 @@ public class IngestServiceBean {
             // from file save errors;
             // -- L.A. Aug. 2014
             dataFile.SetIngestProblem();
-            createIngestFailureReport(dataFile, "Ingest failed to produce Summary Statistics and/or UNF signatures; "+postIngestEx.getMessage());
+            FileUtil.createIngestFailureReport(dataFile, "Ingest failed to produce Summary Statistics and/or UNF signatures; "+postIngestEx.getMessage());
             
             dataFile = fileService.save(dataFile);
             
-            logger.info("Ingest failure: post-ingest tasks. Sent push notification to the page.");
+            logger.info("Ingest failure: post-ingest tasks.");
         } catch (Exception unknownEx) {
             // this probably means that an error occurred while saving the datafile
             // in the database. 
@@ -1544,7 +806,7 @@ public class IngestServiceBean {
             
             if (dataFile != null) {
                 dataFile.SetIngestProblem();
-                createIngestFailureReport(dataFile, "Ingest produced tabular data, but failed to save it in the database; " + unknownEx.getMessage() + " No further information is available.");
+                FileUtil.createIngestFailureReport(dataFile, "Ingest produced tabular data, but failed to save it in the database; " + unknownEx.getMessage() + " No further information is available.");
 
                 // blank the datatable that may have already been attached to the
                 // datafile (it may have something "unsave-able" in it!)
@@ -1554,9 +816,7 @@ public class IngestServiceBean {
                 }
 
                 dataFile = fileService.save(dataFile);
-                FacesMessage facesMessage = new FacesMessage("ingest failed");
-                sendStatusNotification(dataFile.getOwner().getId(), facesMessage);
-                logger.info("Unknown excepton saving ingested file; Sent push notification to the page.");
+                logger.info("Unknown excepton saving ingested file.");
             } else {
                 // ??
             }
@@ -1566,11 +826,15 @@ public class IngestServiceBean {
         return ingestSuccessful;
     }
 
-    private void createIngestFailureReport(DataFile dataFile, String message) {
-        createIngestReport(dataFile, IngestReport.INGEST_STATUS_FAILURE, message);
-    }
     
-    private void sendStatusNotification(Long datasetId, FacesMessage message) {
+    // TODO: Further move the code that doesn't really need to be in an EJB bean
+    // (i.e., the code that doesn't need to persist anything in the database) into
+    // outside static utilities and/or helpers; so that unit tests could be written
+    // easily. -- L.A. 4.6
+    
+    /* not needed anymore, but keeping it around, as a demo of how Push 
+       notifications work
+    private void sendStatusNotification(Long datasetId, FacesMessage message) {*/
         /*
         logger.fine("attempting to send push notification to channel /ingest/dataset/"+datasetId+"; "+message.getDetail());
         EventBus eventBus = EventBusFactory.getDefault().eventBus();
@@ -1582,54 +846,7 @@ public class IngestServiceBean {
         // add more diagnostics here! 4.2.3 -- L.A. 
         eventBus.publish("/ingest/dataset/" + datasetId, message);
         */
-    }
-    
-    private void createIngestReport (DataFile dataFile, int status, String message) {
-        IngestReport errorReport = new IngestReport();
-        if (status == IngestReport.INGEST_STATUS_FAILURE) {
-                errorReport.setFailure();
-                errorReport.setReport(message);
-                errorReport.setDataFile(dataFile);
-                dataFile.setIngestReport(errorReport);
-        }
-    }
-    public boolean ingestableAsTabular(DataFile dataFile) {
-        String mimeType = dataFile.getContentType();
-        
-        return ingestableAsTabular(mimeType);
-    } 
-    
-    public boolean ingestableAsTabular(String mimeType) {
-        /* 
-         * In the final 4.0 we'll be doing real-time checks, going through the 
-         * available plugins and verifying the lists of mime types that they 
-         * can handle. In 4.0 beta, the ingest plugins are still built into the 
-         * main code base, so we can just go through a hard-coded list of mime 
-         * types. -- L.A. 
-         */
-        
-        if (mimeType == null) {
-            return false;
-        }
-        
-        if (mimeType.equals(MIME_TYPE_STATA)) {
-            return true;
-        } else if (mimeType.equals(MIME_TYPE_STATA13)) {
-            return true;
-        } else if (mimeType.equals(MIME_TYPE_RDATA)) {
-            return true;
-        } else if (mimeType.equals(MIME_TYPE_CSV) || mimeType.equals(MIME_TYPE_CSV_ALT)) {
-            return true;
-        } else if (mimeType.equals(MIME_TYPE_XLSX)) {
-            return true;
-        } else if (mimeType.equals(MIME_TYPE_SPSS_SAV)) {
-            return true;
-        } else if (mimeType.equals(MIME_TYPE_SPSS_POR)) {
-            return true;
-        }
-
-        return false;
-    }
+   /* }*/
     
     public static TabularDataFileReader getTabDataReaderByMimeType(String mimeType) { //DataFile dataFile) {
         /* 
@@ -1646,19 +863,19 @@ public class IngestServiceBean {
 
         TabularDataFileReader ingestPlugin = null;
 
-        if (mimeType.equals(MIME_TYPE_STATA)) {
+        if (mimeType.equals(FileUtil.MIME_TYPE_STATA)) {
             ingestPlugin = new DTAFileReader(new DTAFileReaderSpi());
-        } else if (mimeType.equals(MIME_TYPE_STATA13)) {
+        } else if (mimeType.equals(FileUtil.MIME_TYPE_STATA13)) {
             ingestPlugin = new DTA117FileReader(new DTAFileReaderSpi());
-        } else if (mimeType.equals(MIME_TYPE_RDATA)) {
+        } else if (mimeType.equals(FileUtil.MIME_TYPE_RDATA)) {
             ingestPlugin = new RDATAFileReader(new RDATAFileReaderSpi());
-        } else if (mimeType.equals(MIME_TYPE_CSV) || mimeType.equals(MIME_TYPE_CSV_ALT)) {
+        } else if (mimeType.equals(FileUtil.MIME_TYPE_CSV) || mimeType.equals(FileUtil.MIME_TYPE_CSV_ALT)) {
             ingestPlugin = new CSVFileReader(new CSVFileReaderSpi());
-        } else if (mimeType.equals(MIME_TYPE_XLSX)) {
+        } else if (mimeType.equals(FileUtil.MIME_TYPE_XLSX)) {
             ingestPlugin = new XLSXFileReader(new XLSXFileReaderSpi());
-        } else if (mimeType.equals(MIME_TYPE_SPSS_SAV)) {
+        } else if (mimeType.equals(FileUtil.MIME_TYPE_SPSS_SAV)) {
             ingestPlugin = new SAVFileReader(new SAVFileReaderSpi());
-        } else if (mimeType.equals(MIME_TYPE_SPSS_POR)) {
+        } else if (mimeType.equals(FileUtil.MIME_TYPE_SPSS_POR)) {
             ingestPlugin = new PORFileReader(new PORFileReaderSpi());
         }
 
@@ -1672,7 +889,7 @@ public class IngestServiceBean {
          * for now - just a hardcoded list of mime types:
          *  -- L.A. 4.0 beta
          */
-        if (dataFile.getContentType() != null && dataFile.getContentType().equals(MIME_TYPE_FITS)) {
+        if (dataFile.getContentType() != null && dataFile.getContentType().equals(FileUtil.MIME_TYPE_FITS)) {
             return true;
         }
         return false;

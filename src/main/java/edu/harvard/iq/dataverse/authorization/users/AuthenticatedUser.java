@@ -4,8 +4,8 @@ import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.ValidateEmail;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserLookup;
-import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
+import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.List;
@@ -22,6 +22,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
+import org.hibernate.validator.constraints.NotBlank;
 
 @NamedQueries({
     @NamedQuery( name="AuthenticatedUser.findAll",
@@ -31,9 +32,18 @@ import javax.validation.constraints.NotNull;
     @NamedQuery( name="AuthenticatedUser.findByIdentifier",
                 query="select au from AuthenticatedUser au WHERE au.userIdentifier=:identifier"),
     @NamedQuery( name="AuthenticatedUser.findByEmail",
-                query="select au from AuthenticatedUser au WHERE au.email=:email"),
+                query="select au from AuthenticatedUser au WHERE LOWER(au.email)=LOWER(:email)"),
     @NamedQuery( name="AuthenticatedUser.countOfIdentifier",
-                query="SELECT COUNT(a) FROM AuthenticatedUser a WHERE a.userIdentifier=:identifier")
+                query="SELECT COUNT(a) FROM AuthenticatedUser a WHERE a.userIdentifier=:identifier"),
+    @NamedQuery( name="AuthenticatedUser.filter",
+                query="select au from AuthenticatedUser au WHERE ("
+                        + "au.userIdentifier like :query OR "
+                        + "lower(concat(au.firstName,' ',au.lastName)) like lower(:query))"),
+    @NamedQuery( name="AuthenticatedUser.findAdminUser",
+                query="select au from AuthenticatedUser au WHERE "
+                        + "au.superuser = true "
+                        + "order by au.id")
+    
 })
 @Entity
 public class AuthenticatedUser implements User, Serializable {
@@ -44,22 +54,31 @@ public class AuthenticatedUser implements User, Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
+    /**
+     * @todo Shouldn't there be some constraints on what the userIdentifier is
+     * allowed to be? It can't be as restrictive as the "userName" field on
+     * BuiltinUser because we can't predict what Shibboleth Identity Providers
+     * (IdPs) will send (typically in the "eppn" SAML assertion) but perhaps
+     * spaces, for example, should be disallowed. Right now "elisah.da mota" can
+     * be persisted as a userIdentifier per
+     * https://github.com/IQSS/dataverse/issues/2945
+     */
     @NotNull
     @Column(nullable = false, unique=true)
     private String userIdentifier;
 
-    /**
-     * @todo Uncomment the ValidateEmail annotation below for consistency with
-     * the annotation on BuiltinUser.
-     */
-//    @ValidateEmail(message = "Please enter a valid email address.")
+    @ValidateEmail(message = "Please enter a valid email address.")
     @NotNull
     @Column(nullable = false, unique=true)
     private String email;
     private String affiliation;
     private String position;
+    @NotBlank(message = "Please enter your last name.")
     private String lastName;
+    @NotBlank(message = "Please enter your first name.")
     private String firstName;
+    @Column(nullable = true)
+    private Timestamp emailConfirmed;
     private boolean superuser;
 
     /**
@@ -80,8 +99,6 @@ public class AuthenticatedUser implements User, Serializable {
         return IDENTIFIER_PREFIX + userIdentifier;
     }
     
-    
-    
     @OneToMany(mappedBy = "user", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<DatasetLock> datasetLocks;
 	
@@ -94,7 +111,7 @@ public class AuthenticatedUser implements User, Serializable {
     }
     
     @Override
-    public RoleAssigneeDisplayInfo getDisplayInfo() {
+    public AuthenticatedUserDisplayInfo getDisplayInfo() {
         return new AuthenticatedUserDisplayInfo(firstName, lastName, email, affiliation, position);
     }
     
@@ -105,10 +122,15 @@ public class AuthenticatedUser implements User, Serializable {
     public void applyDisplayInfo( AuthenticatedUserDisplayInfo inf ) {
         setFirstName(inf.getFirstName());
         setLastName(inf.getLastName());
-        setEmail(inf.getEmailAddress());
-        setAffiliation( inf.getAffiliation() );
-        setPosition( inf.getPosition());
-
+        if ( nonEmpty(inf.getEmailAddress()) ) {
+            setEmail(inf.getEmailAddress());
+        }
+        if ( nonEmpty(inf.getAffiliation()) ) {
+            setAffiliation( inf.getAffiliation() );
+        }
+        if ( nonEmpty(inf.getPosition()) ) {
+            setPosition( inf.getPosition());
+        }
     }
     
     @Override
@@ -174,6 +196,14 @@ public class AuthenticatedUser implements User, Serializable {
         this.firstName = firstName;
     }
 
+    public Timestamp getEmailConfirmed() {
+        return emailConfirmed;
+    }
+
+    public void setEmailConfirmed(Timestamp emailConfirmed) {
+        this.emailConfirmed = emailConfirmed;
+    }
+
     @Override
     public boolean isSuperuser() {
         return superuser;
@@ -185,15 +215,6 @@ public class AuthenticatedUser implements User, Serializable {
 
     public void setModificationTime(Timestamp modificationTime) {
         this.modificationTime = modificationTime;
-    }
-
-    public boolean isBuiltInUser() {
-        String authProviderString = authenticatedUserLookup.getAuthenticationProviderId();
-        if (authProviderString != null && authProviderString.equals(BuiltinAuthenticationProvider.PROVIDER_ID)) {
-            return true;
-        }
-        
-        return false;
     }
 
     @OneToOne(mappedBy = "authenticatedUser")
@@ -230,6 +251,15 @@ public class AuthenticatedUser implements User, Serializable {
 
     public void setShibIdentityProvider(String shibIdentityProvider) {
         this.shibIdentityProvider = shibIdentityProvider;
+    }
+    
+    @Override
+    public String toString() {
+        return "[AuthenticatedUser identifier:" + getIdentifier() + "]";
+    }
+    
+    public String getSortByString() {
+        return this.getLastName() + " " + this.getFirstName() + " " + this.getUserIdentifier();
     }
     
 }

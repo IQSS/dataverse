@@ -100,6 +100,7 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
             String validationFailedString = "Validation failed:";
             for (ConstraintViolation constraintViolation : constraintViolations) {
                 validationFailedString += " " + constraintViolation.getMessage();
+                validationFailedString += " Invalid value: '" + constraintViolation.getInvalidValue() + "'.";
             }
             throw new IllegalCommandException(validationFailedString, this);
         }
@@ -139,21 +140,32 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
             theDataset.setIdentifier(ctxt.datasets().generateIdentifierSequence(theDataset.getProtocol(), theDataset.getAuthority(), theDataset.getDoiSeparator()));
         }
         // Attempt the registration if importing dataset through the API, or the app (but not harvest or migrate)
-        if ((importType==null || importType.equals(ImportType.NEW)) 
-            && protocol.equals("doi") 
-            && doiProvider.equals("EZID") 
-            && theDataset.getGlobalIdCreateTime() == null) {
-            String doiRetString = ctxt.doiEZId().createIdentifier(theDataset); 
-            // Check return value to make sure registration succeeded
-            if (doiRetString.contains(theDataset.getIdentifier())) {
-                theDataset.setGlobalIdCreateTime(createDate);
-            } 
-        } else {
-            // If harvest or migrate, and this is a released dataset, we don't need to register,
-            // so set the globalIdCreateTime to now
-            if (theDataset.getLatestVersion().getVersionState().equals(VersionState.RELEASED) ){
-                theDataset.setGlobalIdCreateTime(new Date());
+        if ((importType == null || importType.equals(ImportType.NEW))
+                && theDataset.getGlobalIdCreateTime() == null) {
+            if (protocol.equals("doi")) {
+                String doiRetString = "";
+                if (doiProvider.equals("EZID")) {
+                    doiRetString = ctxt.doiEZId().createIdentifier(theDataset);
+                }
+                if (doiProvider.equals("DataCite")) {
+                    try{
+                        doiRetString = ctxt.doiDataCite().createIdentifier(theDataset);
+                    } catch (Exception e){
+                         logger.log(Level.WARNING, "Exception while creating Identifier:" + e.getMessage(), e);
+                    }
+                }
+
+                // Check return value to make sure registration succeeded
+                if (doiProvider.equals("EZID") && doiRetString.contains(theDataset.getIdentifier())) {
+                    theDataset.setGlobalIdCreateTime(createDate);
+                }
+
             }
+
+        } else // If harvest or migrate, and this is a released dataset, we don't need to register,
+        // so set the globalIdCreateTime to now
+        if (theDataset.getLatestVersion().getVersionState().equals(VersionState.RELEASED)) {
+            theDataset.setGlobalIdCreateTime(new Date());
         }
         
         if (registrationRequired && theDataset.getGlobalIdCreateTime() == null) {
@@ -164,7 +176,8 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
          logger.log(Level.FINE, "after db update {0}", formatter.format(new Date().getTime()));       
         // set the role to be default contributor role for its dataverse
         if (importType==null || importType.equals(ImportType.NEW)) {
-            ctxt.roles().save(new RoleAssignment(savedDataset.getOwner().getDefaultContributorRole(),  getRequest().getUser(), savedDataset));
+            String privateUrlToken = null;
+            ctxt.roles().save(new RoleAssignment(savedDataset.getOwner().getDefaultContributorRole(), getRequest().getUser(), savedDataset, privateUrlToken));
          }
         
         savedDataset.setPermissionModificationTime(new Timestamp(new Date().getTime()));
@@ -180,11 +193,27 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
              */
             boolean doNormalSolrDocCleanUp = true;
             ctxt.index().indexDataset(savedDataset, doNormalSolrDocCleanUp);
-
-        } catch ( RuntimeException e ) {
-            logger.log(Level.WARNING, "Exception while indexing:" + e.getMessage(), e);
+        
+        } catch ( Exception e ) { // RuntimeException e ) {
+            logger.log(Level.WARNING, "Exception while indexing:" + e.getMessage()); //, e);
+            /**
+             * Even though the original intention appears to have been to allow the 
+             * dataset to be successfully created, even if an exception is thrown during 
+             * the indexing - in reality, a runtime exception there, even caught, 
+             * still forces the EJB transaction to be rolled back; hence the 
+             * dataset is NOT created... but the command completes and exits as if
+             * it has been successful. 
+             * So I am going to throw a Command Exception here, to avoid this. 
+             * If we DO want to be able to create datasets even if they cannot 
+             * be immediately indexed, we'll have to figure out how to do that. 
+             * (Note that import is still possible when Solr is down - because indexDataset() 
+             * does NOT throw an exception if it is.
+             * -- L.A. 4.5
+             */
+            throw new CommandException("Dataset could not be created. Indexing failed", this);
+            
         }
-          logger.log(Level.FINE, "after index {0}", formatter.format(new Date().getTime()));      
+        logger.log(Level.FINE, "after index {0}", formatter.format(new Date().getTime()));      
         
         // if we are not migrating, assign the user to this version
         if (importType==null || importType.equals(ImportType.NEW)) {  

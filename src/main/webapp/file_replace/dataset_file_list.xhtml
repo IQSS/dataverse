@@ -1,0 +1,39 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+     xmlns:h="http://java.sun.com/jsf/html"
+     xmlns:f="http://java.sun.com/jsf/core"
+     xmlns:ui="http://java.sun.com/jsf/facelets"
+     xmlns:c="http://java.sun.com/jsp/jstl/core"
+     xmlns:p="http://primefaces.org/ui"
+     xmlns:o="http://omnifaces.org/ui"
+     xmlns:jsf="http://xmlns.jcp.org/jsf">
+
+ <!-- START: DATA TABLE -->
+    <hr />
+    <h2>Dataset file listing (test)</h2>
+    <p:dataTable id="dtFileList" var="fm2" value="#{FileUploadTestPage.getDatasetFileMetadatas()}">
+        <p:column headerText="Name">
+            <h:outputLink value="/file_upload_test.xhtml?ds_id=#{FileUploadTestPage.dataset.id}&#38;fid=#{fm2.dataFile.id}">
+                <h:outputText value="#{fm2.label}" />
+            </h:outputLink>
+
+        </p:column>
+        <p:column headerText="Content type">
+            <h:outputText value="#{fm2.dataFile.contentType}" />
+        </p:column>
+        <p:column headerText="Checksum">
+            <h:outputText value="#{fm2.dataFile.checksumValue}" />
+        </p:column>
+        <p:column headerText="Released">
+            <ui:fragment rendered="#{fm2.dataFile.released}">
+                <span class="label label-success">replaceable</span>
+            </ui:fragment>  
+            <ui:fragment rendered="#{!fm2.dataFile.released}">
+                <span class="label label-warning">nope</span>
+            </ui:fragment>  
+       </p:column>                    
+    </p:dataTable>
+    <hr />
+
+    <!-- END: DATA TABLE -->
+
+</ui:composition>

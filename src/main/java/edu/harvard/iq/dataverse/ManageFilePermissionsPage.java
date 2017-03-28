@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -37,6 +38,9 @@ import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import org.apache.commons.lang.StringUtils;
+import org.primefaces.event.SelectEvent;
+import org.primefaces.event.ToggleSelectEvent;
+import org.primefaces.event.UnselectEvent;
 
 /**
  *
@@ -70,6 +74,8 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     EjbDataverseEngine commandEngine;
     @Inject
     DataverseRequestServiceBean dvRequestService;
+    @Inject
+    PermissionsWrapper permissionsWrapper;
     
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     EntityManager em;
@@ -78,9 +84,9 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     DataverseSession session;
 
     Dataset dataset = new Dataset(); 
-    private final Map<RoleAssignee,List<RoleAssignmentRow>> roleAssigneeMap = new HashMap();
-    private final Map<DataFile,List<RoleAssignmentRow>> fileMap = new HashMap();
-    private final Map<AuthenticatedUser,List<DataFile>> fileAccessRequestMap = new HashMap();    
+    private final TreeMap<RoleAssignee,List<RoleAssignmentRow>> roleAssigneeMap = new TreeMap<>();
+    private final TreeMap<DataFile,List<RoleAssignmentRow>> fileMap = new TreeMap<>();
+    private final TreeMap<AuthenticatedUser,List<DataFile>> fileAccessRequestMap = new TreeMap<>();    
 
     public Dataset getDataset() {
         return dataset;
@@ -90,19 +96,19 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         this.dataset = dataset;
     }
     
-    public Map<RoleAssignee, List<RoleAssignmentRow>> getRoleAssigneeMap() {
+    public TreeMap<RoleAssignee, List<RoleAssignmentRow>> getRoleAssigneeMap() {
         return roleAssigneeMap;
     }
 
-    public Map<DataFile, List<RoleAssignmentRow>> getFileMap() {
+    public TreeMap<DataFile, List<RoleAssignmentRow>> getFileMap() {
         return fileMap;
     }
 
-    public Map<AuthenticatedUser, List<DataFile>> getFileAccessRequestMap() {
+    public TreeMap<AuthenticatedUser, List<DataFile>> getFileAccessRequestMap() {
         return fileAccessRequestMap;
     }
-   
-
+    
+    
     public String init() {
         if (dataset.getId() != null) {
             dataset = datasetService.find(dataset.getId());
@@ -110,15 +116,13 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
 
         // check if dvObject exists and user has permission
         if (dataset == null) {
-            return "/404.xhtml";
+            return permissionsWrapper.notFound();
         }
 
         if (!permissionService.on(dataset).has(Permission.ManageDatasetPermissions)) {
-            return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
+            return permissionsWrapper.notAuthorized();
         }
-        
         initMaps();
-        
         return "";
     }
     
@@ -134,7 +138,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
                 if (file.getFileMetadata() != null && (file.isRestricted() || file.getFileMetadata().isRestricted())) {
                 // we get the direct role assignments assigned to the file
                 List<RoleAssignment> ras = roleService.directRoleAssignments(file);
-                List raList = new ArrayList<>(ras.size());
+                List<RoleAssignmentRow> raList = new ArrayList<>(ras.size());
                 for (RoleAssignment ra : ras) {
                     // for files, only show role assignments which can download
                     if (ra.getRole().permissions().contains(Permission.DownloadFile)) {
@@ -149,7 +153,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
                 for (AuthenticatedUser au : file.getFileAccessRequesters()) {
                         List<DataFile> requestedFiles = fileAccessRequestMap.get(au);
                         if (requestedFiles == null) {
-                            requestedFiles = new ArrayList();
+                            requestedFiles = new ArrayList<>();
                             fileAccessRequestMap.put(au, requestedFiles);
                         }
 
@@ -165,7 +169,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         RoleAssignee ra = roleAssigneeService.getRoleAssignee(assignment.getAssigneeIdentifier());
         List<RoleAssignmentRow> assignments = roleAssigneeMap.get(ra);
         if (assignments == null) {
-            assignments = new ArrayList();
+            assignments = new ArrayList<>();
             roleAssigneeMap.put(ra, assignments);
         }
         
@@ -227,6 +231,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     }
     
     public void initViewRemoveDialogByFile(DataFile file, List<RoleAssignmentRow> raRows) {
+        setSelectedRoleAssignmentRows(new ArrayList());
         this.selectedFile = file;
         this.selectedRoleAssignee = null;
         this.roleAssignments = raRows;
@@ -234,6 +239,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     }
     
     public void initViewRemoveDialogByRoleAssignee(RoleAssignee ra, List<RoleAssignmentRow> raRows) {
+        setSelectedRoleAssignmentRows(new ArrayList());
         this.selectedFile = null;
         this.selectedRoleAssignee = ra;
         this.roleAssignments = raRows;
@@ -267,8 +273,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
      grant access dialog
      */
     private List<RoleAssignee> selectedRoleAssignees;
-    private List<DataFile> selectedFiles = new ArrayList();
-    private final List<RoleAssignee> roleAssigneeList = new ArrayList();
+    private List<DataFile> selectedFiles = new ArrayList<>();
     private AuthenticatedUser fileRequester;
     
     public List<RoleAssignee> getSelectedRoleAssignees() {
@@ -310,32 +315,13 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         fileRequester = au;
         selectedRoleAssignees = null;
         selectedFiles.clear();
-        selectedFiles.addAll(fileAccessRequestMap.get(au));       
+        selectedFiles.addAll(fileAccessRequestMap.get(au));    
         showUserGroupMessages();
     }     
     
 
     public List<RoleAssignee> completeRoleAssignee(String query) {
-        if (roleAssigneeList.isEmpty()) {
-            for (AuthenticatedUser au : authenticationService.findAllAuthenticatedUsers()) {
-                roleAssigneeList.add(au);
-            }
-            for ( Group g : groupService.findGlobalGroups() ) {
-                roleAssigneeList.add( g );
-            }
-            roleAssigneeList.addAll( explicitGroupService.findAvailableFor(dataset) );            
-            
-        }
-        List<RoleAssignee> returnList = new ArrayList();
-        for (RoleAssignee ra : roleAssigneeList) {
-            // @todo unsure if containsIgnore case will work for all locales
-            if ((StringUtils.containsIgnoreCase(ra.getDisplayInfo().getTitle(), query) 
-                    || StringUtils.containsIgnoreCase(ra.getIdentifier(), query))
-                    && (selectedRoleAssignees == null || !selectedRoleAssignees.contains(ra))) {
-                returnList.add(ra);
-            }
-        }
-        return returnList;
+        return roleAssigneeService.filterRoleAssignees(query, dataset, selectedRoleAssignees); 
     }
     
     public void grantAccess(ActionEvent evt) {
@@ -387,7 +373,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         }
         if (actionPerformed) {
             JsfHelper.addSuccessMessage("File Access request by " + au.getDisplayInfo().getTitle() + " was granted.");                        
-            userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.GRANTFILEACCESS, dataset.getId());        
+            userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.GRANTFILEACCESS, dataset.getId()); 
             initMaps();
         }
 
@@ -419,13 +405,16 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
 
     private boolean assignRole(RoleAssignee ra,  DataFile file, DataverseRole r) {
         try {
-            commandEngine.submit(new AssignRoleCommand(ra, r, file, dvRequestService.getDataverseRequest()));
+            String privateUrlToken = null;
+            commandEngine.submit(new AssignRoleCommand(ra, r, file, dvRequestService.getDataverseRequest(), privateUrlToken));
             JsfHelper.addSuccessMessage(r.getName() + " role assigned to " + ra.getDisplayInfo().getTitle() + " for " + file.getDisplayName() + ".");
         } catch (PermissionException ex) {
             JH.addMessage(FacesMessage.SEVERITY_ERROR, "The role was not able to be assigned.", "Permissions " + ex.getRequiredPermissions().toString() + " missing.");
             return false;
         } catch (CommandException ex) {
-            JH.addMessage(FacesMessage.SEVERITY_FATAL, "The role was not able to be assigned.");
+            //JH.addMessage(FacesMessage.SEVERITY_FATAL, "The role was not able to be assigned.");
+            String message = r.getName() + " role could NOT be assigned to " + ra.getDisplayInfo().getTitle() + " for " + file.getDisplayName() + ".";
+            JsfHelper.addErrorMessage(message);
             logger.log(Level.SEVERE, "Error assiging role: " + ex.getMessage(), ex);
             return false;
         }
@@ -462,7 +451,6 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     public void setRenderFileMessages(boolean renderFileMessages) {
         this.renderFileMessages = renderFileMessages;
     }
-
 
 
 

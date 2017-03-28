@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
+import edu.harvard.iq.dataverse.authorization.groups.GroupUtil;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
@@ -25,7 +26,10 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import static edu.harvard.iq.dataverse.engine.command.CommandHelper.CH;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.logging.Level;
+import java.util.stream.Collectors;
 import javax.persistence.Query;
 
 /**
@@ -42,15 +46,10 @@ public class PermissionServiceBean {
 
     private static final Logger logger = Logger.getLogger(PermissionServiceBean.class.getName());
     
-    private static final EnumSet<Permission> PERMISSIONS_FOR_AUTHENTICATED_USERS_ONLY = EnumSet.noneOf( Permission.class );
-    
-    static {
-        for ( Permission p : Permission.values() ) {
-            if ( p.requiresAuthenticatedUser() ) {
-                PERMISSIONS_FOR_AUTHENTICATED_USERS_ONLY.add(p);
-            }
-        }
-    }
+    private static final Set<Permission> PERMISSIONS_FOR_AUTHENTICATED_USERS_ONLY = 
+           EnumSet.copyOf(Arrays.asList(Permission.values()).stream()
+                    .filter( Permission::requiresAuthenticatedUser )
+                    .collect( Collectors.toList() ));
     
     @EJB
     BuiltinUserServiceBean userService;
@@ -206,11 +205,16 @@ public class PermissionServiceBean {
         
         // Add permissions specifically given to the user
         permissions.addAll( permissionsForSingleRoleAssignee(req.getUser(),dvo) );
+        
+        /*
         Set<Group> groups = groupService.groupsFor(req,dvo);
+        
         // Add permissions gained from groups
         for ( Group g : groups ) {
-            permissions.addAll( permissionsForSingleRoleAssignee(g,dvo) );
+            final Set<Permission> groupPremissions = permissionsForSingleRoleAssignee(g,dvo);
+            permissions.addAll(groupPremissions);
         }
+        */
         
         if ( ! req.getUser().isAuthenticated() ) {
             permissions.removeAll( PERMISSIONS_FOR_AUTHENTICATED_USERS_ONLY );
@@ -250,14 +254,16 @@ public class PermissionServiceBean {
     
     private Set<Permission> permissionsForSingleRoleAssignee(RoleAssignee ra, DvObject d) {
         // super user check
-        // @todo for 4.0, we are allowing superusers all permissions
+        // for 4.0, we are allowing superusers all permissions
         // for secure data, we may need to restrict some of the permissions
         if (ra instanceof AuthenticatedUser && ((AuthenticatedUser) ra).isSuperuser()) {
             return EnumSet.allOf(Permission.class);
         }
-
+        
+        // Start with no permissions, build from there.
         Set<Permission> retVal = EnumSet.noneOf(Permission.class);
 
+        // File special case.
         if (d instanceof DataFile) {
             // unrestricted files that are part of a release dataset 
             // automatically get download permission for everybody:
@@ -271,6 +277,7 @@ public class PermissionServiceBean {
                         for (FileMetadata fm : df.getOwner().getReleasedVersion().getFileMetadatas()) {
                             if (df.equals(fm.getDataFile())) {
                                 retVal.add(Permission.DownloadFile);
+                                break;
                             }
                         }
                     }
@@ -278,10 +285,14 @@ public class PermissionServiceBean {
             }
         }
         
-        for (RoleAssignment asmnt : assignmentsFor(ra, d)) {
-            retVal.addAll(asmnt.getRole().permissions());
-        }
+        // Direct assignments to ra on d
+        assignmentsFor(ra, d).forEach( 
+                asmnt -> retVal.addAll(asmnt.getRole().permissions())
+        );
         
+        // Recurse up the group containment hierarchy.
+        groupService.groupsFor(ra, d).forEach(
+                grp -> retVal.addAll(permissionsForSingleRoleAssignee(grp, d)));
         return retVal;
     }
 
@@ -375,11 +386,16 @@ public class PermissionServiceBean {
      * @param permission
      * @return The list of dataverses {@code user} has permission {@code permission} on.
      */
-    public List<Dataverse> getDataversesUserHasPermissionOn(User user, Permission permission) {
+    public List<Dataverse> getDataversesUserHasPermissionOn(AuthenticatedUser user, Permission permission) {
+        Set<Group> groups = groupService.groupsFor(user);
+        String identifiers = GroupUtil.getAllIdentifiersForUser(user, groups);
         /**
-         * @todo What about groups? And how can we make this more performant?
+         * @todo Are there any strings in identifiers that would break this SQL
+         * query?
          */
-        Query nativeQuery = em.createNativeQuery("SELECT id FROM dvobject WHERE dtype = 'Dataverse' and id in (select definitionpoint_id from roleassignment where assigneeidentifier in ('" + user.getIdentifier() + "'));");
+        String query = "SELECT id FROM dvobject WHERE dtype = 'Dataverse' and id in (select definitionpoint_id from roleassignment where assigneeidentifier in (" + identifiers + "));";
+        logger.log(Level.FINE, "query: {0}", query);
+        Query nativeQuery = em.createNativeQuery(query);
         List<Integer> dataverseIdsToCheck = nativeQuery.getResultList();
         List<Dataverse> dataversesUserHasPermissionOn = new LinkedList<>();
         for (int dvIdAsInt : dataverseIdsToCheck) {

@@ -10,6 +10,8 @@ import static edu.harvard.iq.dataverse.DvObject.DATASET_DTYPE_STRING;
 import static edu.harvard.iq.dataverse.DvObject.DATAVERSE_DTYPE_STRING;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import java.util.ArrayList;
@@ -73,6 +75,8 @@ public class MyDataFilterParams {
     // -----------------------------------
     // Filter parameters
     // -----------------------------------
+    private DataverseRequest dataverseRequest;
+    private AuthenticatedUser authenticatedUser;
     private String userIdentifier;
     private List<String> dvObjectTypes;    
     private List<String> publicationStatuses;
@@ -94,16 +98,20 @@ public class MyDataFilterParams {
     /**
      * Constructor used to get total counts
      * 
+     * @param authenticatedUser
      * @param userIdentifier 
      */
-    public MyDataFilterParams(String userIdentifier, DataverseRolePermissionHelper roleHelper){
-         if ((userIdentifier==null)||(userIdentifier.isEmpty())){
-            throw new NullPointerException("MyDataFilterParams constructor: userIdentifier cannot be null or an empty string");
+    public MyDataFilterParams(DataverseRequest dataverseRequest, DataverseRolePermissionHelper roleHelper){
+        if (dataverseRequest==null){
+            throw new NullPointerException("MyDataFilterParams constructor: dataverseRequest cannot be null ");
         }
-         if (roleHelper==null){
+        this.dataverseRequest = dataverseRequest;
+        this.setAuthenticatedUserFromDataverseRequest(dataverseRequest);
+        this.userIdentifier = authenticatedUser.getIdentifier();
+
+        if (roleHelper==null){
             throw new NullPointerException("MyDataFilterParams constructor: roleHelper cannot be null");
         }
-        this.userIdentifier = userIdentifier;
         this.dvObjectTypes = MyDataFilterParams.allDvObjectTypes;
         this.publicationStatuses = MyDataFilterParams.allPublishedStates;
         this.searchTerm = MyDataFilterParams.defaultSearchTerm;
@@ -116,16 +124,18 @@ public class MyDataFilterParams {
      * @param publicationStatuses 
      * @param searchTerm 
      */    
-    public MyDataFilterParams(String userIdentifier, List<String> dvObjectTypes, List<String> publicationStatuses, List<Long> roleIds, String searchTerm){
-        if ((userIdentifier==null)||(userIdentifier.isEmpty())){
-            throw new NullPointerException("MyDataFilterParams constructor: userIdentifier cannot be null or an empty string");
+    public MyDataFilterParams(DataverseRequest dataverseRequest, List<String> dvObjectTypes, List<String> publicationStatuses, List<Long> roleIds, String searchTerm){
+        if (dataverseRequest==null){
+            throw new NullPointerException("MyDataFilterParams constructor: dataverseRequest cannot be null ");
         }
+        this.dataverseRequest = dataverseRequest;
+        this.setAuthenticatedUserFromDataverseRequest(dataverseRequest);
+        this.userIdentifier = authenticatedUser.getIdentifier();
 
         if (dvObjectTypes==null){
             throw new NullPointerException("MyDataFilterParams constructor: dvObjectTypes cannot be null");
         }
 
-        this.userIdentifier = userIdentifier;
         this.dvObjectTypes = dvObjectTypes;
 
         if (publicationStatuses == null){
@@ -145,6 +155,20 @@ public class MyDataFilterParams {
         
         this.checkParams();
     }
+    
+    
+    private void setAuthenticatedUserFromDataverseRequest(DataverseRequest dvRequest){
+        
+        if (dvRequest == null){
+            throw new NullPointerException("MyDataFilterParams getAuthenticatedUserFromDataverseRequest: dvRequest cannot be null");
+        }
+        
+        this.authenticatedUser = dvRequest.getAuthenticatedUser();
+        
+        if (this.authenticatedUser == null){
+            throw new NullPointerException("MyDataFilterParams getAuthenticatedUserFromDataverseRequest: Hold on! dvRequest must be associated with an AuthenticatedUser be null");
+        }
+    }  
     
     
     public List<Long> getRoleIds(){
@@ -190,6 +214,11 @@ public class MyDataFilterParams {
     
     public String getUserIdentifier(){
         return this.userIdentifier;
+    }
+    
+    
+    public AuthenticatedUser getAuthenticatedUser() {
+        return authenticatedUser;
     }
     
     public String getErrorMessage(){
@@ -333,5 +362,8 @@ public class MyDataFilterParams {
         return publicationStateInfoList;
     }
   
+    public DataverseRequest getDataverseRequest(){
+        return this.dataverseRequest;
+    }
   
 }

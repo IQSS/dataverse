@@ -43,7 +43,8 @@
     '_static/js/jquery-1.11.0.min.js',
     '_static/js/jquery-fix.js',
     '_static/bootstrap-' + bootstrap_version + '/js/bootstrap.min.js',
-    '_static/bootstrap-sphinx.js'
+    '_static/bootstrap-sphinx.js',
+    '_static/navbarscroll.js'
   ]
 %}
 
@@ -54,6 +55,18 @@
 {%- block doctype -%}
 <!DOCTYPE html>
 {%- endblock %}
+
+{%- block linktags %}
+<link type="text/css" rel="stylesheet" href="{{pathto("_static/docsdataverse_org.css", 1)}}" />
+{%- endblock %}
+
+{%- block extrahead %}
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link type="image/png" rel="icon" href="../_static/images/favicondataverse.png" />
+{% endblock %}
 
 {# Sidebar: Rework into our Bootstrap nav section. #}
 {% macro navBar() %}
@@ -85,14 +98,6 @@
       {%- endif %}
   {%- endmacro %}
 {% endif %}
-
-{%- block extrahead %}
-<meta charset='utf-8'>
-<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
-<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
-<meta name="apple-mobile-web-app-capable" content="yes">
-<link type="image/png" rel="icon" href="../_static/images/favicondataverse.png" />
-{% endblock %}
 
 {# Silence the sidebar's, relbar's #}
 {% block header %}{% endblock %}
@@ -128,7 +133,7 @@
       {%- if hasdoc('copyright') %}
         {% trans path=pathto('copyright'), copyright=copyright|e %}&copy; <a href="{{ path }}">Copyright</a> {{ copyright }}.{% endtrans %}<br/>
       {%- else %}
-        {% trans copyright=copyright|e %}<a href="http://datascience.iq.harvard.edu/" target="_blank">Data Science</a> at <a href="http://www.iq.harvard.edu/" target="_blank">The Institute for Quantitative Social Science</a>  &nbsp;|&nbsp;  Code available at <a href="https://github.com/IQSS/dataverse.org" title="Dataverse.org on GitHub" target="_blank"><img src="../_static/images/githubicon.png" width="20" alt="Dataverse.org on GitHub"/></a> &nbsp;|&nbsp; Created using <a href="http://sphinx.pocoo.org/" target="_blank">Sphinx</a> {{ sphinx_version }}<br/>Version {{ version }} &nbsp;|&nbsp; Last updated on {{ last_updated }}<br/>&copy; Copyright {{ copyright }} {% endtrans %}<br/>
+        {% trans copyright=copyright|e %}<a href="http://datascience.iq.harvard.edu/" target="_blank">Data Science</a> at <a href="http://www.iq.harvard.edu/" target="_blank">The Institute for Quantitative Social Science</a>  &nbsp;|&nbsp;  Code available at <a href="https://github.com/IQSS/dataverse" title="Dataverse on GitHub" target="_blank"><img src="/en/latest/_static/images/githubicon.png" width="20" alt="Dataverse on GitHub"/></a> &nbsp;|&nbsp; Created using <a href="http://sphinx.pocoo.org/" target="_blank">Sphinx</a> {{ sphinx_version }}<br/>Version {{ version }} &nbsp;|&nbsp; Last updated on {{ last_updated }}<br/>&copy; Copyright {{ copyright }} {% endtrans %}<br/>
       {%- endif %}
     {%- endif %}
     </p>

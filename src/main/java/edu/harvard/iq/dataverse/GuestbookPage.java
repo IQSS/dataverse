@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.faces.application.FacesMessage;
@@ -32,6 +33,8 @@ import org.apache.commons.lang.StringUtils;
 @Named("GuestbookPage")
 public class GuestbookPage implements java.io.Serializable {
 
+    private static final Logger logger = Logger.getLogger(GuestbookPage.class.getCanonicalName());
+    
     @EJB
     GuestbookServiceBean guestbookService;
 
@@ -50,6 +53,9 @@ public class GuestbookPage implements java.io.Serializable {
     @Inject
     DataverseRequestServiceBean dvRequestService;
 
+    @Inject
+    PermissionsWrapper permissionsWrapper;
+        
     public enum EditMode {
 
         CREATE, METADATA, CLONE
@@ -120,9 +126,17 @@ public class GuestbookPage implements java.io.Serializable {
         this.ownerId = ownerId;
     }
 
-    public void init() {
-        if (guestbookId != null && editMode.equals(GuestbookPage.EditMode.METADATA)) { // edit or view existing for a template  
-            dataverse = dataverseService.find(ownerId);
+    public String init() {
+    
+        dataverse = dataverseService.find(ownerId);
+        if (dataverse == null) {
+            return permissionsWrapper.notFound();
+        }
+        if (!permissionsWrapper.canIssueCommand(dataverse, UpdateDataverseCommand.class)) {
+            return permissionsWrapper.notAuthorized();
+        }
+        
+        if (guestbookId != null) { // edit or view existing for a template  
             for (Guestbook dvGb : dataverse.getGuestbooks()) {
                 if (dvGb.getId().longValue() == guestbookId) {
                     guestbook = dvGb;
@@ -133,16 +147,17 @@ public class GuestbookPage implements java.io.Serializable {
                 guestbook.setCustomQuestions(new ArrayList<CustomQuestion>());
                 initCustomQuestion();
             }
-        } else if (ownerId != null && editMode.equals(GuestbookPage.EditMode.CREATE)) {
+            editMode = EditMode.METADATA;
+        } else if (ownerId != null && sourceId == null) {
             // create mode for a new template
-            dataverse = dataverseService.find(ownerId);
             guestbook = new Guestbook();
-            guestbook.setDataverse(dataverse);            
+            guestbook.setDataverse(dataverse);
             guestbook.setCustomQuestions(new ArrayList<CustomQuestion>());
             initCustomQuestion();
-        } else if (ownerId != null && sourceId != null && editMode.equals(GuestbookPage.EditMode.CLONE)) {
-            // create mode for a new template
-            dataverse = dataverseService.find(ownerId);
+            editMode = EditMode.CREATE;
+        } else if (ownerId != null && sourceId != null ) {
+            // Clone mode for a new template from source
+            editMode = EditMode.CLONE;
             sourceGB = guestbookService.find(sourceId);
             guestbook = sourceGB.copyGuestbook(sourceGB, dataverse);
             String name = "Copy of " + sourceGB.getName();
@@ -157,6 +172,9 @@ public class GuestbookPage implements java.io.Serializable {
         } else {
             throw new RuntimeException("On Guestook page without id or ownerid."); // improve error handling
         }
+        
+        return null;
+        
     }
 
     public String removeCustomQuestion(Long index){
@@ -294,13 +312,12 @@ public class GuestbookPage implements java.io.Serializable {
             }
             //
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_FATAL, "Guestbook Save Failed", " - " + error.toString()));
-            System.out.print("dataverse " + dataverse.getName());
-            System.out.print("Ejb exception");
-            System.out.print(error.toString());
+            logger.info("Guestbook Page EJB Exception. Dataverse: " + dataverse.getName());
+            logger.info(error.toString());
             return null;
         } catch (CommandException ex) {
-            System.out.print("command exception");
-            System.out.print(ex.toString());
+            logger.info("Guestbook Page Command Exception. Dataverse: " + dataverse.getName());
+            logger.info(ex.toString());
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_FATAL, "Guestbook Save Failed", " - " + ex.toString()));
             //logger.severe(ex.getMessage());
         }

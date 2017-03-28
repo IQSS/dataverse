@@ -2,7 +2,7 @@ package edu.harvard.iq.dataverse.settings;
 
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
-import edu.harvard.iq.dataverse.api.ApiBlockingFilter;
+//import edu.harvard.iq.dataverse.api.ApiBlockingFilter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -33,6 +33,11 @@ public class SettingsServiceBean {
      * So there.
      */
     public enum Key {
+        OAuth2CallbackUrl,
+        DefaultAuthProvider,
+        FooterCopyright,
+        FileFixityChecksumAlgorithm,
+        MinutesUntilConfirmEmailTokenExpires,
         /**
          * Override Solr highlighting "fragsize"
          * https://wiki.apache.org/solr/HighlightingParameters#hl.fragsize
@@ -87,6 +92,7 @@ public class SettingsServiceBean {
          * of possible account types.
          */
         DebugShibAccountType,
+        DebugOAuthAccountType,
         /** Application-wide Terms of Use per installation. */
         ApplicationTermsOfUse,
         /** Terms of Use specific to API per installation. */
@@ -96,8 +102,6 @@ public class SettingsServiceBean {
          * to from the footer.
          */
         ApplicationPrivacyPolicyUrl,
-        /** Expose debug information in the UI that users shouldn't normally see. */
-        Debug,
         /**
          * A boolean defining if indexing and search should respect the concept
          * of "permission root".
@@ -127,10 +131,6 @@ public class SettingsServiceBean {
          * Experimental: Key for if DDI export is enabled or disabled.
          */
         DdiExportEnabled,
-        /** Key for if Shibboleth is enabled or disabled. */
-        ShibEnabled,
-        /** Key for if Shibboleth is enabled or disabled. */
-        ShibUseHeaders,
         /** Key for if ScrubMigrationData is enabled or disabled. */
         ScrubMigrationData,
         /** Key for the url to send users who want to sign up to. */
@@ -153,10 +153,20 @@ public class SettingsServiceBean {
         TwoRavensUrl,
         /** Optionally override http://guides.dataverse.org . */
         GuidesBaseUrl,
+        /**
+         * A link to an installation of https://github.com/IQSS/miniverse or
+         * some other metrics app.
+         */
+        MetricsUrl,
         /* zip download size limit */
-        ZipDonwloadLimit,
+        /** Optionally override version number in guides. */
+        GuidesVersion,
+        ZipDownloadLimit,
         /* zip upload number of files limit */
         ZipUploadFilesLimit,
+        /* the number of files the GUI user is allowed to upload in one batch, 
+            via drag-and-drop, or through the file select dialog */
+        MultipleUploadFilesLimit,
         /* Size limits for generating thumbnails on the fly */
         /* (i.e., we'll attempt to generate a thumbnail on the fly if the 
          * size of the file is less than this)
@@ -193,7 +203,40 @@ public class SettingsServiceBean {
         Explore World Map Button
         Default is false;
         */
-        GeoconnectViewMaps;
+        GeoconnectViewMaps,
+        /**
+        For DEVELOPMENT ONLY. Generate SQL statements for populating
+        MapLayerMetadata objects when Geoconnect is not available.
+        
+        When files have related MapLayerMetadata objects, the "Explore button
+        will be available to users.
+        */
+        GeoconnectDebug,
+
+        /**
+        Whether to allow a user to view tabular files
+        using the TwoRavens application
+        This boolean effects whether a user may see the 
+        Explore Button that links to TwoRavens
+        Default is false;
+        */
+        TwoRavensTabularView,
+                
+
+        /**
+         The message added to a popup upon dataset publish
+         * 
+         */
+        DatasetPublishPopupCustomText,
+        /*
+        Whether to display the publish text for every published version
+        */
+        DatasetPublishPopupCustomTextOnAllVersions,
+        /*
+        Whether Harvesting (OAI) service is enabled
+        */
+        OAIServerEnabled;
+        
         @Override
         public String toString() {
             return ":" + name();

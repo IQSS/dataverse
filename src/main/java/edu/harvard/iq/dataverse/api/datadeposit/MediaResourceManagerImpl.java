@@ -7,18 +7,22 @@ import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
+import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.engine.command.Command;
+import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -48,11 +52,15 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
     DataFileServiceBean dataFileService;
     @EJB
     IngestServiceBean ingestService;
+    @EJB
+    PermissionServiceBean permissionService;
+    @EJB
+    SystemConfig systemConfig;
     @Inject
     SwordAuth swordAuth;
     @Inject
     UrlManager urlManager;
-    
+
     private HttpServletRequest httpRequest;
 
     @Override
@@ -77,7 +85,12 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                 boolean getMediaResourceRepresentationSupported = false;
                 if (getMediaResourceRepresentationSupported) {
                     Dataverse dvThatOwnsDataset = dataset.getOwner();
-                    if (swordAuth.hasAccessToModifyDataverse(dvReq, dvThatOwnsDataset)) {
+                    /**
+                     * @todo Add Dataverse 4 style permission check here. Is
+                     * there a Command we use for downloading files as zip?
+                     */
+                    boolean authorized = false;
+                    if (authorized) {
                         /**
                          * @todo Zip file download is being implemented in
                          * https://github.com/IQSS/dataverse/issues/338
@@ -123,7 +136,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
     @Override
     public void deleteMediaResource(String uri, AuthCredentials authCredentials, SwordConfiguration swordConfiguration) throws SwordError, SwordServerException, SwordAuthException {
         AuthenticatedUser user = swordAuth.auth(authCredentials);
-        DataverseRequest dvReq = new DataverseRequest(user, httpRequest); 
+        DataverseRequest dvReq = new DataverseRequest(user, httpRequest);
         urlManager.processUrl(uri);
         String targetType = urlManager.getTargetType();
         String fileId = urlManager.getTargetIdentifier();
@@ -145,23 +158,20 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                             SwordUtil.datasetLockCheck(dataset);
                             Dataset datasetThatOwnsFile = fileToDelete.getOwner();
                             Dataverse dataverseThatOwnsFile = datasetThatOwnsFile.getOwner();
-                            if (swordAuth.hasAccessToModifyDataverse(dvReq, dataverseThatOwnsFile)) {
-                                try {
-                                    /**
-                                     * @todo with only one command, should we be
-                                     * falling back on the permissions system to
-                                     * enforce if the user can delete a file or
-                                     * not. If we do, a 403 Forbidden is
-                                     * returned. For now, we'll have belt and
-                                     * suspenders and do our normal sword auth
-                                     * check.
-                                     */
-                                    commandEngine.submit(new UpdateDatasetCommand(dataset, dvReq, fileToDelete));
-                                } catch (CommandException ex) {
-                                    throw SwordUtil.throwSpecialSwordErrorWithoutStackTrace(UriRegistry.ERROR_BAD_REQUEST, "Could not delete file: " + ex);
-                                }
-                            } else {
+                            /**
+                             * @todo it would be nice to have this check higher
+                             * up. Do we really need the file ID? Should the
+                             * last argument to isUserAllowedOn be changed from
+                             * "dataset" to "fileToDelete"?
+                             */
+                            UpdateDatasetCommand updateDatasetCommand = new UpdateDatasetCommand(dataset, dvReq, fileToDelete);
+                            if (!permissionService.isUserAllowedOn(user, updateDatasetCommand, dataset)) {
                                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + user.getDisplayInfo().getTitle() + " is not authorized to modify " + dataverseThatOwnsFile.getAlias());
+                            }
+                            try {
+                                commandEngine.submit(updateDatasetCommand);
+                            } catch (CommandException ex) {
+                                throw SwordUtil.throwSpecialSwordErrorWithoutStackTrace(UriRegistry.ERROR_BAD_REQUEST, "Could not delete file: " + ex);
                             }
                         } else {
                             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to find file id " + fileIdLong + " from URL: " + uri);
@@ -189,7 +199,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
     DepositReceipt replaceOrAddFiles(String uri, Deposit deposit, AuthCredentials authCredentials, SwordConfiguration swordConfiguration, boolean shouldReplace) throws SwordError, SwordAuthException, SwordServerException {
         AuthenticatedUser user = swordAuth.auth(authCredentials);
         DataverseRequest dvReq = new DataverseRequest(user, httpRequest);
-        
+
         urlManager.processUrl(uri);
         String globalId = urlManager.getTargetIdentifier();
         if (urlManager.getTargetType().equals("study") && globalId != null) {
@@ -198,11 +208,11 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
             if (dataset == null) {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not find dataset with global ID of " + globalId);
             }
-            SwordUtil.datasetLockCheck(dataset);
-            Dataverse dvThatOwnsDataset = dataset.getOwner();
-            if (!swordAuth.hasAccessToModifyDataverse(dvReq, dvThatOwnsDataset)) {
+            UpdateDatasetCommand updateDatasetCommand = new UpdateDatasetCommand(dataset, dvReq);
+            if (!permissionService.isUserAllowedOn(user, updateDatasetCommand, dataset)) {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + user.getDisplayInfo().getTitle() + " is not authorized to modify dataset with global ID " + dataset.getGlobalId());
             }
+            SwordUtil.datasetLockCheck(dataset);
 
             // Right now we are only supporting UriRegistry.PACKAGE_SIMPLE_ZIP but
             // in the future maybe we'll support other formats? Rdata files? Stata files?
@@ -252,7 +262,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
             List<DataFile> dataFiles = new ArrayList<>();
             try {
                 try {
-                    dataFiles = ingestService.createDataFiles(editVersion, deposit.getInputStream(), uploadedZipFilename, guessContentTypeForMe);
+                    dataFiles = FileUtil.createDataFiles(editVersion, deposit.getInputStream(), uploadedZipFilename, guessContentTypeForMe, systemConfig);
                 } catch (EJBException ex) {
                     Throwable cause = ex.getCause();
                     if (cause != null) {
@@ -273,20 +283,27 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                     } else {
                         throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Exception caught calling ingestService.createDataFiles. No cause: " + ex.getMessage());
                     }
-                }
+                } /*TODO: L.A. 4.6! catch (FileExceedsMaxSizeException ex) {
+                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Exception caught calling ingestService.createDataFiles: " + ex.getMessage());
+                    //Logger.getLogger(MediaResourceManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                }*/
             } catch (IOException ex) {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to add file(s) to dataset: " + ex.getMessage());
             }
             if (!dataFiles.isEmpty()) {
-                ingestService.addFiles(editVersion, dataFiles);
+                Set<ConstraintViolation> constraintViolations = editVersion.validate();
+                if (constraintViolations.size() > 0) {
+                    ConstraintViolation violation = constraintViolations.iterator().next();
+                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to add file(s) to dataset: " + violation.getMessage() + " The invalid value was \"" + violation.getInvalidValue() + "\".");
+                } else {
+                    ingestService.addFiles(editVersion, dataFiles);
+                }
             } else {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "No files to add to dataset. Perhaps the zip file was empty.");
             }
 
-            Command<Dataset> cmd;
-            cmd = new UpdateDatasetCommand(dataset, dvReq);
             try {
-                dataset = commandEngine.submit(cmd);
+                dataset = commandEngine.submit(updateDatasetCommand);
             } catch (CommandException ex) {
                 throw returnEarly("Couldn't update dataset " + ex);
             } catch (EJBException ex) {
@@ -341,6 +358,5 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
     public void setHttpRequest(HttpServletRequest httpRequest) {
         this.httpRequest = httpRequest;
     }
-    
-    
+
 }

@@ -62,7 +62,8 @@
             <span class="text-muted">{{ card_info.date_to_display_on_card }}
                 - <a href="/dataverse.xhtml?id={{ card_info.parentId }}">{{ card_info.parentName }} Dataverse</a>
             </span>
-            <span class="resultDatasetCitationBlock{%if card_info.is_deaccesioned %} bg-danger{% else %} bg-citation {% endif %}">{{ card_info.citation|safe }}</span>
+            <span class="resultDatasetCitationBlock{%if card_info.is_deaccesioned %} bg-danger{% else %} bg-citation {% endif %}">
+                {%if card_info.citationHtml %}{{ card_info.citationHtml|safe }}{% else %}{{ card_info.citation|safe }}{% endif %}</span>
             
  {% elif card_info.type == "file" %}
             <div class="card-preview-icon-block text-center">
@@ -82,7 +83,7 @@
             </span>
             <br /><span class="text-muted">{{ card_info.file_type }}</span>
             <span class="text-muted"> - {{ card_info.size_in_bytes }} KB - </span>
-            <span class="text-muted"> MD5: {{ card_info.md5 }} </span>
+            <span class="text-muted"> {{ card_info.checksum.type }}: {{ card_info.checksum.value }} </span>
             
 {% endif %}
     <hr style="margin:.5em;border:0;"/>

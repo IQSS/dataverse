@@ -51,6 +51,7 @@ public class CreateDatasetVersionCommand extends AbstractCommand<DatasetVersion>
                 throw new IllegalCommandException("Latest version is already a draft. Cannot add another draft", this);
             }
         }
+        newVersion.setDataset(dataset);
         newVersion.setDatasetFields(newVersion.initDatasetFields());
      
         Set<ConstraintViolation> constraintViolations = newVersion.validate();
@@ -78,7 +79,6 @@ public class CreateDatasetVersionCommand extends AbstractCommand<DatasetVersion>
             FileMetadata fmdCopy = fmd.createCopy();
             fmdCopy.setDatasetVersion(newVersion);
             newVersionMetadatum.add( fmdCopy );
-            logger.info( "added file metadata " + fmdCopy );
         }
         newVersion.setFileMetadatas(newVersionMetadatum);
         
@@ -88,12 +88,16 @@ public class CreateDatasetVersionCommand extends AbstractCommand<DatasetVersion>
         newVersion.setLastUpdateTime(now);
         dataset.setModificationTime(now);
         newVersion.setDataset(dataset);
-        ctxt.em().persist(newVersion);
-
-        // TODO make async
-    //    ctxt.index().indexDataset(dataset);
+        final List<DatasetVersion> currentVersions = dataset.getVersions();
+        ArrayList<DatasetVersion> dsvs = new ArrayList<>(currentVersions.size());
+        dsvs.addAll(currentVersions);
+        dsvs.add(0, newVersion);
+        dataset.setVersions( dsvs );
         
-        return newVersion;
+        // TODO make async
+        // ctxt.index().indexDataset(dataset);
+        return ctxt.datasets().storeVersion(newVersion);
+        
     }
     
 }

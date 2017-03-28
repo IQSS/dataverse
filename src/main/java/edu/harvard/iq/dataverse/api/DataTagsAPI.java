@@ -83,7 +83,7 @@ public class DataTagsAPI extends AbstractApiBean {
         CACHE.put(uniqueCacheId, container);
         
         // return an OK message with the redirect URL for the user to return to Dataverse through postBackTo or unacceptableDataset in DataTags
-        return okResponse( USER_REDIRECT_URL );
+        return ok( USER_REDIRECT_URL );
     }
     
 }
