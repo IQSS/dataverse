@@ -90,8 +90,6 @@ Text
 
 Text color from `Bootstrap CSS <http://getbootstrap.com/css/#less-variables-scaffolding>`__.
 
-MAKE EVEN MORE NEW WERDS
-
 .. code-block:: css
 
     body {
