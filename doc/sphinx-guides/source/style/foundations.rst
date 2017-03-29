@@ -57,8 +57,65 @@ Color Palette
 The default color palette is set in the `Bootstrap CSS <http://getbootstrap.com/css/#less-variables-colors>`__. It provides the background, border, text and link colors used across the application.
 
 
-Text Color
-----------
+Object/Brand
+------------
+
+Dataverse uses a particular color palette to help users identify common types of objects quickly and easily.
+
+The brand color, a "burnt orange" `#C55B28`, is set in our custom CSS stylesheet and applied to the Dataverse logo and brand name in the navbar, as well other Dataverse objects.
+
+The blue "dataset" style is used to help identify dataset related objects in Dataverse. 
+
+The grey "file" style is used to help identify file related objects in Dataverse.
+
+For links, we use the same blue as we use for datasets: `.ui-widget-content a {color: #428BCA;}`
+
+.. code-block:: css
+
+    /* structure.css */
+    .text-brand {
+      color:#C55B28;
+      /* dataverse icon, search-include, mydata-cards_min */
+    }
+    .bg-brand {
+      background:#C55B28;
+      /* not used anywhere */
+    }
+    .bg-muted {
+      background:#f5f5f5;
+      /* header, roles-assign */
+    }
+
+    #navbarFixed .navbar-brand {
+      color: #C55B28;
+    }
+    #navbarFixed .icon-dataverse {
+      color: #C55B28;
+    }
+
+.. raw:: html
+
+  <div class="panel panel-default code-example">
+    <div class="panel-body">
+      <div class="color-swatches">
+        <div class="color-swatch bg-dataverse" style="background-color:#C55B28;"></div>
+        <div class="color-swatch bg-dataset" style="background-color:#428BCA;"></div>
+        <div class="color-swatch bg-file" style="background-color:grey;"></div>
+        <div class="color-swatch bg-muted" style="background-color:#f5f5f5;"></div>
+      </div>
+    </div>
+  </div>
+
+.. code-block:: html
+  
+   <div class="bg-brand"></div>
+   <div class="bg-dataset"></div>
+   <div class="bg-file"></div>
+   <div class="bg-muted"></div>
+
+
+Text
+----
 
 Text color is the default setting from `Bootstrap CSS <http://getbootstrap.com/css/#less-variables-scaffolding>`__.
 
@@ -81,106 +138,28 @@ Text color is the default setting from `Bootstrap CSS <http://getbootstrap.com/c
    <p>...</p>
 
 
-Object Colors
--------------
+Links
+-----
 
-Dataverse uses a particular color palette to help users identify common types of objects quickly and easily.
-
-The brand color, a "burnt orange" `#C55B28`, is set in our custom CSS stylesheet and applied to the Dataverse logo and brand name in the navbar, as well other Dataverse objects.
-
-The blue "dataset" style is used to help identify dataset related objects in Dataverse. 
-
-The grey "file" style is used to help identify file related objects in Dataverse.
-
-For links, we use the same blue as we use for datasets: `.ui-widget-content a {color: #428BCA;}`
+Link color is the default setting from `Bootstrap CSS <http://getbootstrap.com/css/#less-variables-links>`__. The hover state is set to 15% darker using Less variables and functions.
 
 .. code-block:: css
-
-    .text-brand {
-      color:#C55B28;
-      /* dataverse icon, search-include, mydata-cards_min */
-    }
-    .bg-brand {
-      background:#C55B28;
-      /* not used anywhere */
-    }
-    .bg-muted {
-      background:#f5f5f5;
-      /* header, roles-assign */
-    }
-
-    #navbarFixed .navbar-brand {
-      color:#C55B28; padding-left:32px;
-    }
-    #navbarFixed .icon-dataverse {
-      color:#C55B28; font-size:28px; margin: -4px 0 0 -27px; position: absolute;
-    }
-    #navbarFixed .label.status {
-      display:block; float:left; margin-top:16px; background:#C55B28; font-size:14px; font-weight:normal;
-    }
-
-.. raw:: html
-
-  <div class="panel panel-default code-example">
-    <div class="panel-body">
-      <div class="color-swatches">
-        <div class="color-swatch" style="background-color:#C55B28;">bg-brand dataverse</div>
-        <div class="color-swatch" style="background-color:#428BCA;">dataset</div>
-        <div class="color-swatch" style="background-color:grey;">file</div>
-        <div class="color-swatch" style="background-color:#f5f5f5;">bg-muted</div>
-      </div>
-    </div>
-  </div>
-
-.. code-block:: html
-  
-  <!-- code comments -->
-   <div class="bg-brand"></div>
-   <div class="bg-dataset"></div>
-   <div class="bg-file"></div>
-   <div class="bg-muted"></div>
-
-
-Hyperlink Colors
------------
-
-Link color is the default setting from `Bootstrap CSS <http://getbootstrap.com/css/#less-variables-links>`__.
-
-Hover state is 15% darker. There is an override in our stylesheet for ``.ui-widget-content a`` for PrimeFaces compatibility reasons.
-
-.. code-block:: css
-
-    @brand-primary: darken(#428bca, 6.5%)
-
-    @link-color: @brand-primary;
-
-    @link-hover-color: darken(@link-color, 15%);
-
+    
+    /* bootstrap.css */
     a {
       color: #337AB7;
     }
-
     a:hover {
       color: #23527C;
     }
 
-    .ui-widget-content a {
-      color: #428BCA;
-    }
-
-    .ui-widget-content a:hover, .ui-widget-content a:focus {
-      color: #2A6496;
-    }
-
 .. raw:: html
 
   <div class="panel panel-default code-example">
     <div class="panel-body">
       <div class="color-swatches">
-        <div class="color-swatch" style="background-color:#337AB7;">a</div>
-        <div class="color-swatch" style="background-color:#23527C;">a:hover</div>
-        <div class="color-swatch" style="background-color:#428BCA;">.ui-widget-content a</div>
-        <div class="color-swatch" style="background-color:#2A6496;">.ui-widget-content a:hover/focus</div>
+        <div class="color-swatch bg-link" style="background-color:#337AB7;"></div>
+        <div class="color-swatch bg-linkhover" style="background-color:#23527C;"></div>
       </div>
     </div>
   </div>
@@ -189,26 +168,32 @@ Hover state is 15% darker. There is an override in our stylesheet for ``.ui-widg
 
   <a>...</a>
 
-  <span class="ui-widget-content">
-    <a>...</a>
-  </span>
+.. raw:: html
 
+  <div class="panel panel-warning">
+    <div class="panel-heading">
+      <h3 class="panel-title">Warning!</h3>
+    </div>
+    <div class="panel-body bg-warning">
+      <p>There is a CSS override issue with both Bootstrap and PrimeFaces stylesheets over the link color.</p>
+    </div>
+  </div>
 
 Contextual Classes
 ------------------
 
-Contextual classes can be used to style text and background colors from `Bootstrap CSS <http://getbootstrap.com/css/#helper-classes>`__. Semantic colors include various colors assigned to meaningful contextual values. We convey meaning through color with a handful of emphasis utility classes.
+Contextual classes from `Bootstrap CSS <http://getbootstrap.com/css/#helper-classes>`__ can be used to style background and text colors. Semantic colors include various colors assigned to meaningful contextual values. We convey meaning through color with a handful of emphasis utility classes.
 
 .. raw:: html
 
   <div class="panel panel-default code-example">
     <div class="panel-body">
       <div class="color-swatches">
-        <div class="color-swatch bg-primary">bg-primary</div>
-        <div class="color-swatch bg-success">bg-success</div>
-        <div class="color-swatch bg-info">bg-info</div>
-        <div class="color-swatch bg-warning">bg-warning</div>
-        <div class="color-swatch bg-danger">bg-danger</div>
+        <div class="color-swatch bg-primary"></div>
+        <div class="color-swatch bg-success"></div>
+        <div class="color-swatch bg-info"></div>
+        <div class="color-swatch bg-warning"></div>
+        <div class="color-swatch bg-danger"></div>
       </div>
     </div>
   </div>
@@ -225,7 +210,7 @@ Contextual classes can be used to style text and background colors from `Bootstr
 Icons
 =====
 
-We use various icons across the application. They appear in buttons and as default thumbnails for repositories, datasets, and files.
+We use various icons across the application. They appear in buttons and as default thumbnails for dataverses, datasets, and files.
 
 Bootstrap Icons
 ---------------
@@ -236,25 +221,29 @@ There are over 250 glyphs in font format from the Glyphicon Halflings set provid
 
 	<div class="panel panel-default code-example">
 	  <div class="panel-body">
-      <div>
-         <span class="glyphicon glyphicon-search h1"></span>
-         <span class="glyphicon glyphicon-user h1"></span>
-         <span class="glyphicon glyphicon-ok h1"></span>
-         <span class="glyphicon glyphicon-warning-sign h1"></span>
-      </div>
-      <button type="button" class="btn btn-default">
-         <span class="glyphicon glyphicon-star" aria-hidden="true"></span> Star
-      </button>
-
+        <button type="button" class="btn btn-default">
+           <span class="glyphicon glyphicon-star" aria-hidden="true"></span> Star
+        </button>
+        <button type="button" class="btn btn-default">
+           <span class="glyphicon glyphicon-flag" aria-hidden="true"></span> Flag
+        </button>
+        <button type="button" class="btn btn-default">
+           <span class="glyphicon glyphicon-leaf" aria-hidden="true"></span> Leaf
+        </button>
 	  </div>
 	</div>
 
 .. code-block:: html
 
-   <span class="glyphicon glyphicon-search"></span>
-   <span class="glyphicon glyphicon-user"></span>
-   <span class="glyphicon glyphicon-ok"></span>
-   <span class="glyphicon glyphicon-warning-sign"></span>
+   <button type="button" class="btn btn-default">
+       <span class="glyphicon glyphicon-star" aria-hidden="true"></span> Star
+   </button>
+   <button type="button" class="btn btn-default">
+       <span class="glyphicon glyphicon-flag" aria-hidden="true"></span> Flag
+   </button>
+   <button type="button" class="btn btn-default">
+       <span class="glyphicon glyphicon-leaf" aria-hidden="true"></span> Leaf
+   </button>
 
 FontCustom Icons
 ----------------
@@ -265,11 +254,9 @@ With the use of `FontCustom <https://github.com/FontCustom/fontcustom>`__ we wer
 
 	<div class="panel panel-default code-example">
 	  <div class="panel-body">
-
      <span class="icon-dataverse text-brand h1" style="color:#C55B28;"></span>
      <span class="icon-dataset text-info h1"></span>
      <span class="icon-other text-muted h1"></span>
-
 	  </div>
 	</div>
 
@@ -289,11 +276,9 @@ We use `Socicon <http://www.socicon.com>`__ for our custom social icons. In the 
 
 	<div class="panel panel-default code-example">
 	  <div class="panel-body">
-
       <span class="socicon socicon-github h1" title="Dataverse On GitHub"></span>
       <span class="socicon socicon-twitter h1" title="Dataverse On Twitter"></span>
       <span class="socicon socicon-facebook h1" title="Dataverse On Facebook"></span>
-
 	  </div>
 	</div>
 
@@ -313,20 +298,16 @@ The Dataverse Project logo (below) is diplayed in the footer, and was the basis 
 
   <div class="panel panel-default">
     <div class="panel-body text-center">
-
       <img alt="Dataverse Project" src="../_images/dataverse-project.png">
-
     </div>
   </div>
 
-The brand logo (below) was created as a custom icon to represent the concept of a "dataverse." It is used in the navbar and across the application.
+The brand logo (below) was created as a custom icon to represent the concept of a "dataverse." It is used as the brand logo in the Bootstrap navbar component and across the application.
 
 .. raw:: html
 
   <div class="panel panel-default">
     <div class="panel-body text-center">
-
       <img alt="Dataverse Icon" src="../_images/dataverse-icon.jpg" height="175">
-
     </div>
   </div>
