@@ -19,7 +19,14 @@ body {
 
 footer {
     margin: 30px 0;
-    /* margin: 50px 0;*/
+}
+footer p {
+    color: #808080;
+}
+footer span.socicon-github {
+    color: #000;
+    font-size: 1.3em;
+    vertical-align: top;
 }
 
 iframe {

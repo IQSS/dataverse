@@ -9,7 +9,7 @@ For this guide, we will focus in particular on areas where our implementation di
 Grid Layout
 ===========
 
-`Bootstrap <http://getbootstrap.com/css/#grid>`_ provides a responsive, fluid, 12-column grid system that we use to organize our page layouts.
+`Bootstrap <http://getbootstrap.com/css/#grid>`__ provides a responsive, fluid, 12-column grid system that we use to organize our page layouts.
 
 We use the fixed-width ``.container`` class which provides responsive widths (i.e. auto, 750px, 970px or 1170px) based on media queries for the page layout, with a series of rows and columns for the content.
 
@@ -41,14 +41,14 @@ The grid layout uses ``.col-sm-*`` classes for horizontal groups of columns, ins
 Color Palette
 =============
 
-The color palette is set in the `Bootstrap CSS <http://getbootstrap.com/css/#less-variables-colors>`_. There were some additions and some changes here and there.
+The color palette is set in the `Bootstrap CSS <http://getbootstrap.com/css/#less-variables-colors>`__. There were some additions and some changes here and there.
 
 Semantic colors include various colors assigned to meaningful contextual values. We convey meaning through color with a handful of emphasis utility classes. These may also be applied to links and will darken on hover just like our default link styles.
 
 Primary/Brand
 -------------
 
-Colors from `Bootstrap CSS <http://getbootstrap.com/css/#less-variables-colors>`_. For the primary/brand color used in the Bootstrap stylesheet, we override (?) their blue with our orange `#C55B28` which comes from the Dataverse Project logo.
+Colors from `Bootstrap CSS <http://getbootstrap.com/css/#less-variables-colors>`__. For the primary/brand color used in the Bootstrap stylesheet, we override (?) their blue with our orange `#C55B28` which comes from the Dataverse Project logo.
 
 .. code-block:: css
 
@@ -88,7 +88,9 @@ Colors from `Bootstrap CSS <http://getbootstrap.com/css/#less-variables-colors>`
 Text
 ----
 
-Text color from `Bootstrap CSS <http://getbootstrap.com/css/#less-variables-scaffolding>`_.
+Text color from `Bootstrap CSS <http://getbootstrap.com/css/#less-variables-scaffolding>`__.
+
+MAKE EVEN MORE NEW WERDS
 
 .. code-block:: css
 
@@ -118,7 +120,7 @@ Text color from `Bootstrap CSS <http://getbootstrap.com/css/#less-variables-scaf
 Links
 -----
 
-Link color from `Bootstrap CSS <http://getbootstrap.com/css/#less-variables-links>`_.
+Link color from `Bootstrap CSS <http://getbootstrap.com/css/#less-variables-links>`__.
 
 Hover state is 15% darker. There is an override in our stylesheet for ``.ui-widget-content a`` which I believe is because of PrimeFaces.
 
@@ -171,7 +173,7 @@ Hover state is 15% darker. There is an override in our stylesheet for ``.ui-widg
 Contextual Classes
 ------------------
 
-Contextual classes can be used to style text and background colors from `Bootstrap CSS <http://getbootstrap.com/css/#helper-classes>`_.
+Contextual classes can be used to style text and background colors from `Bootstrap CSS <http://getbootstrap.com/css/#helper-classes>`__.
 
 .. raw:: html
 
@@ -199,7 +201,7 @@ Contextual classes can be used to style text and background colors from `Bootstr
 Typography
 ==========
 
-The typeface, text size, line-height are set in the `Bootstrap CSS <http://getbootstrap.com/css/#type>`_. Bootstrap's global default ``font-size`` is **14px**, with a ``line-height`` of **1.428**, which is applied to the ``<body>`` and all paragraphs.
+The typeface, text size, line-height are set in the `Bootstrap CSS <http://getbootstrap.com/css/#type>`__. Bootstrap's global default ``font-size`` is **14px**, with a ``line-height`` of **1.428**, which is applied to the ``<body>`` and all paragraphs.
 
 .. code-block:: css
 
@@ -232,7 +234,7 @@ We use various icons across the application, in buttons, and as default thumbnai
 Bootstrap
 ---------
 
-There are over 250 glyphs in font format from the Glyphicon Halflings set provided by `Bootstrap <http://getbootstrap.com/components/#glyphicons>`_. We utilize these mainly as icons inside of buttons and in message blocks.
+There are over 250 glyphs in font format from the Glyphicon Halflings set provided by `Bootstrap <http://getbootstrap.com/components/#glyphicons>`__. We utilize these mainly as icons inside of buttons and in message blocks.
 
 .. raw:: html
 
@@ -261,7 +263,7 @@ There are over 250 glyphs in font format from the Glyphicon Halflings set provid
 Font Custom
 -----------
 
-With the use of `FontCustom <https://github.com/FontCustom/fontcustom>`_ we were able to generate our own custom icon webfonts. We use these in the result cards to help distinguish the dataverse, dateset and file results.
+With the use of `FontCustom <https://github.com/FontCustom/fontcustom>`__ we were able to generate our own custom icon webfonts. We use these in the result cards to help distinguish the dataverse, dateset and file results.
 
 .. raw:: html
 
@@ -285,7 +287,7 @@ With the use of `FontCustom <https://github.com/FontCustom/fontcustom>`_ we were
 Socicon Font
 ------------
 
-We use `Socicon <http://www.socicon.com>`_ for the custom social icons. In the footer we use icons for Twitter, Github as well as icons in the share feature to select social media channels.
+We use `Socicon <http://www.socicon.com>`__ for the custom social icons. In the footer we use icons for Twitter, Github as well as icons in the share feature to select social media channels.
 
 .. raw:: html
 
