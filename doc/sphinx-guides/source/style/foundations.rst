@@ -1,7 +1,7 @@
 Foundations
 +++++++++++
 
-Foundation elements are the very basic building blocks to create a page in Dataverse. Here we will outline how we've applied the Bootstrap CSS to our UI, and how the CSS settings in our stylesheet meshes with it. Each section includes links to relevant parts of the official Bootstrap guides and other resources the UI utilize, where you can find more detailed documentation.
+Foundation elements are the very basic building blocks to create a page in Dataverse. Here we will outline how we've applied Bootstrap CSS to our UI, and how the CSS settings in our stylesheet mesh with it. Each section includes links to relevant parts of the official Bootstrap guides and other useful resources, where you can find more detailed documentation.
 
 
 Grid Layout
@@ -35,20 +35,64 @@ The grid layout uses ``.col-sm-*`` classes for horizontal groups of columns, ins
         	<div class="col-sm-4">.col-sm-4</div>
         </div>
     </div>
+    
+    
+Typography
+==========
+
+The typeface, text size, and line-height are set in the `Bootstrap CSS <http://getbootstrap.com/css/#type>`__. We use Bootstrap's global default ``font-size`` of **14px**, with a ``line-height`` of **1.428**, which is applied to the ``<body>`` and all paragraphs.
+
+.. code-block:: css
+
+   body {
+     font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+     font-size: 14px;
+     line-height: 1.42857143;
+   }
+
 
 Color Palette
 =============
 
 The default color palette is set in the `Bootstrap CSS <http://getbootstrap.com/css/#less-variables-colors>`__. It provides the background, border, text and link colors used across the application.
 
-Brand
------
 
-The brand color, a "burnt orange" `#C55B28`, is set in our custom CSS stylesheet and applied to the Dataverse logo and brand name in the navbar, as well other dataverse objects...
+Text Color
+----------
 
-There are also the dataset (blue) and file (grey) styles are used to help indentify those object...
+Text color is the default setting from `Bootstrap CSS <http://getbootstrap.com/css/#less-variables-scaffolding>`__.
 
-The dataset-blue is the same blue we use for the links... `.ui-widget-content a  {color: #428BCA;}`...
+.. code-block:: css
+
+    body {
+      color: #333;
+    }
+
+.. raw:: html
+
+  <div class="panel panel-default code-example">
+    <div class="panel-body">
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+    </div>
+  </div>
+
+.. code-block:: html
+
+   <p>...</p>
+
+
+Object Colors
+-------------
+
+Dataverse uses a particular color palette to help users identify common types of objects quickly and easily.
+
+The brand color, a "burnt orange" `#C55B28`, is set in our custom CSS stylesheet and applied to the Dataverse logo and brand name in the navbar, as well other Dataverse objects.
+
+The blue "dataset" style is used to help identify dataset related objects in Dataverse. 
+
+The grey "file" style is used to help identify file related objects in Dataverse.
+
+For links, we use the same blue as we use for datasets: `.ui-widget-content a {color: #428BCA;}`
 
 .. code-block:: css
 
@@ -96,36 +140,13 @@ The dataset-blue is the same blue we use for the links... `.ui-widget-content a 
    <div class="bg-file"></div>
    <div class="bg-muted"></div>
 
-Text
-----
 
-Text color is the default setting from `Bootstrap CSS <http://getbootstrap.com/css/#less-variables-scaffolding>`__.
-
-.. code-block:: css
-
-    body {
-      color: #333;
-    }
-
-.. raw:: html
-
-  <div class="panel panel-default code-example">
-    <div class="panel-body">
-      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-    </div>
-  </div>
-
-.. code-block:: html
-
-   <p>...</p>
-
-
-Links
------
+Hyperlink Colors
+-----------
 
 Link color is the default setting from `Bootstrap CSS <http://getbootstrap.com/css/#less-variables-links>`__.
 
-Hover state is 15% darker. There is an override in our stylesheet for ``.ui-widget-content a`` which I believe is because of PrimeFaces.
+Hover state is 15% darker. There is an override in our stylesheet for ``.ui-widget-content a`` for PrimeFaces compatibility reasons.
 
 .. code-block:: css
 
@@ -201,53 +222,13 @@ Contextual classes can be used to style text and background colors from `Bootstr
    <div class="bg-danger"></div>
 
 
-Typography
-==========
-
-The typeface, text size, line-height are set in the `Bootstrap CSS <http://getbootstrap.com/css/#type>`__. Bootstrap's global default ``font-size`` is **14px**, with a ``line-height`` of **1.428**, which is applied to the ``<body>`` and all paragraphs.
-
-.. code-block:: css
-
-   body {
-     font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
-     font-size: 14px;
-     line-height: 1.42857143;
-   }
-
-Logos
-=====
-
-The Dataverse Project logo is diplayed in the footer, and was the base for the creation of the favicon for the application as well as the dataverse icons.
-
-.. raw:: html
-
-  <div class="panel panel-default">
-    <div class="panel-body text-center">
-
-      <img alt="Dataverse Project" src="../_images/dataverse-project.png">
-
-    </div>
-  </div>
-
-The brand logo used in the navbar was created to be a custom icon that represents a dataverse to be used across the application.
-
-.. raw:: html
-
-  <div class="panel panel-default">
-    <div class="panel-body text-center">
-
-      <img alt="Dataverse Icon" src="../_images/dataverse-icon.jpg" height="175">
-
-    </div>
-  </div>
-
 Icons
 =====
 
-We use various icons across the application, in buttons, and as default thumbnails for repositories, dataset and files.
+We use various icons across the application. They appear in buttons and as default thumbnails for repositories, datasets, and files.
 
-Bootstrap
----------
+Bootstrap Icons
+---------------
 
 There are over 250 glyphs in font format from the Glyphicon Halflings set provided by `Bootstrap <http://getbootstrap.com/components/#glyphicons>`__. We utilize these mainly as icons inside of buttons and in message blocks.
 
@@ -275,10 +256,10 @@ There are over 250 glyphs in font format from the Glyphicon Halflings set provid
    <span class="glyphicon glyphicon-ok"></span>
    <span class="glyphicon glyphicon-warning-sign"></span>
 
-Font Custom
------------
+FontCustom Icons
+----------------
 
-With the use of `FontCustom <https://github.com/FontCustom/fontcustom>`__ we were able to generate our own custom icon webfonts. We use these in the result cards to help distinguish the dataverse, dateset and file results.
+With the use of `FontCustom <https://github.com/FontCustom/fontcustom>`__ we were able to generate our own custom icon webfonts. We use these in the search result cards to help distinguish between dataverse, dataset and file results.
 
 .. raw:: html
 
@@ -299,10 +280,10 @@ With the use of `FontCustom <https://github.com/FontCustom/fontcustom>`__ we wer
    <span class="icon-other text-muted"></span>
 
 
-Socicon Font
-------------
+Socicon Font Icons
+------------------
 
-We use `Socicon <http://www.socicon.com>`__ for the custom social icons. In the footer we use icons for Twitter, Github as well as icons in the share feature to select social media channels.
+We use `Socicon <http://www.socicon.com>`__ for our custom social icons. In the footer we use icons for Twitter and Github. In our Share feature, we also use custom social icons to allow users to select from a list of social media channels.
 
 .. raw:: html
 
@@ -322,3 +303,30 @@ We use `Socicon <http://www.socicon.com>`__ for the custom social icons. In the 
    <span class="socicon socicon-twitter" title="Dataverse On Twitter"></span>
    <span class="socicon socicon-facebook" title="Dataverse On Facebook"></span>
 
+
+Logos
+=====
+
+The Dataverse Project logo (below) is diplayed in the footer, and was the basis for the creation of the application's icons and favicon.
+
+.. raw:: html
+
+  <div class="panel panel-default">
+    <div class="panel-body text-center">
+
+      <img alt="Dataverse Project" src="../_images/dataverse-project.png">
+
+    </div>
+  </div>
+
+The brand logo (below) was created as a custom icon to represent the concept of a "dataverse." It is used in the navbar and across the application.
+
+.. raw:: html
+
+  <div class="panel panel-default">
+    <div class="panel-body text-center">
+
+      <img alt="Dataverse Icon" src="../_images/dataverse-icon.jpg" height="175">
+
+    </div>
+  </div>
