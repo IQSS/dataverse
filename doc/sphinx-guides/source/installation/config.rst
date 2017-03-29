@@ -539,7 +539,7 @@ The duration in minutes before "Confirm Email" URLs expire. The default is 1440 
 :DefaultAuthProvider
 ++++++++++++++++++++
 
-If you have enabled Shibboleth and/or one or more OAuth providers, you may wish to make one of these authentication providers the default when users visit the Log In page. If unset, this will default to ``builtin`` but thes valid options (depending if you've done the setup described in the :doc:`shibboleth` or doc:`oauth2` sections) are:
+If you have enabled Shibboleth and/or one or more OAuth providers, you may wish to make one of these authentication providers the default when users visit the Log In page. If unset, this will default to ``builtin`` but thes valid options (depending if you've done the setup described in the :doc:`shibboleth` or :doc:`oauth2` sections) are:
 
 - ``builtin``
 - ``shib``
