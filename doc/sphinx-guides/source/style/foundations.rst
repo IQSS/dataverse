@@ -1,9 +1,7 @@
 Foundations
 +++++++++++
 
-Foundational elements are the very basic building blocks to create a page in Dataverse. This page will go over some of these basic elements. Dataverse uses both Bootstrap and PrimeFaces, and conflicts between the two occasionally emerge. It takes some tweaking and overriding in order to get everything working as consistently as possible. 
-
-For this guide, we will focus in particular on areas where our implementation differs from the default settings of Bootstrap and PrimeFaces. Each section includes links to relevant parts of the official Bootstrap guides, where you can find more details.
+Foundation elements are the very basic building blocks to create a page in Dataverse. Here we will outline how we've applied the Bootstrap CSS to our UI, and how the CSS settings in our stylesheet meshes with it. Each section includes links to relevant parts of the official Bootstrap guides and other resources the UI utilize, where you can find more detailed documentation.
 
 
 Grid Layout
@@ -41,14 +39,16 @@ The grid layout uses ``.col-sm-*`` classes for horizontal groups of columns, ins
 Color Palette
 =============
 
-The color palette is set in the `Bootstrap CSS <http://getbootstrap.com/css/#less-variables-colors>`__. There were some additions and some changes here and there.
+The default color palette is set in the `Bootstrap CSS <http://getbootstrap.com/css/#less-variables-colors>`__. It provides the background, border, text and link colors used across the application.
 
-Semantic colors include various colors assigned to meaningful contextual values. We convey meaning through color with a handful of emphasis utility classes. These may also be applied to links and will darken on hover just like our default link styles.
+Brand
+-----
 
-Primary/Brand
--------------
+The brand color, a "burnt orange" `#C55B28`, is set in our custom CSS stylesheet and applied to the Dataverse logo and brand name in the navbar, as well other dataverse objects...
 
-Colors from `Bootstrap CSS <http://getbootstrap.com/css/#less-variables-colors>`__. For the primary/brand color used in the Bootstrap stylesheet, we override (?) their blue with our orange `#C55B28` which comes from the Dataverse Project logo.
+There are also the dataset (blue) and file (grey) styles are used to help indentify those object...
+
+The dataset-blue is the same blue we use for the links... `.ui-widget-content a  {color: #428BCA;}`...
 
 .. code-block:: css
 
@@ -63,6 +63,16 @@ Colors from `Bootstrap CSS <http://getbootstrap.com/css/#less-variables-colors>`
     .bg-muted {
       background:#f5f5f5;
       /* header, roles-assign */
+    }
+
+    #navbarFixed .navbar-brand {
+      color:#C55B28; padding-left:32px;
+    }
+    #navbarFixed .icon-dataverse {
+      color:#C55B28; font-size:28px; margin: -4px 0 0 -27px; position: absolute;
+    }
+    #navbarFixed .label.status {
+      display:block; float:left; margin-top:16px; background:#C55B28; font-size:14px; font-weight:normal;
     }
 
 .. raw:: html
@@ -81,44 +91,39 @@ Colors from `Bootstrap CSS <http://getbootstrap.com/css/#less-variables-colors>`
 .. code-block:: html
   
   <!-- code comments -->
-   <span class="text-brand"></span>
-   <span class="text-info"></span>
-   <span class="text-muted"></span>
+   <div class="bg-brand"></div>
+   <div class="bg-dataset"></div>
+   <div class="bg-file"></div>
+   <div class="bg-muted"></div>
 
 Text
 ----
 
-Text color from `Bootstrap CSS <http://getbootstrap.com/css/#less-variables-scaffolding>`__.
+Text color is the default setting from `Bootstrap CSS <http://getbootstrap.com/css/#less-variables-scaffolding>`__.
 
 .. code-block:: css
 
     body {
       color: #333;
     }
-    
-    @text-color: @black-50;
 
 .. raw:: html
 
   <div class="panel panel-default code-example">
     <div class="panel-body">
-      <p style="color:#333;">Nullam id dolor id nibh ultricies vehicula ut id elit.</p>
-      <p style="color:#7f7f7f;">Duis mollis, est non commodo luctus, nisi erat porttitor ligula.</p>
-      <p style="color:#777;">Maecenas sed diam eget risus varius blandit sit amet non magna.</p>
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
     </div>
   </div>
 
 .. code-block:: html
 
-   <span class="text-brand"></span>
-   <span class="text-info"></span>
-   <span class="text-muted"></span>
+   <p>...</p>
 
 
 Links
 -----
 
-Link color from `Bootstrap CSS <http://getbootstrap.com/css/#less-variables-links>`__.
+Link color is the default setting from `Bootstrap CSS <http://getbootstrap.com/css/#less-variables-links>`__.
 
 Hover state is 15% darker. There is an override in our stylesheet for ``.ui-widget-content a`` which I believe is because of PrimeFaces.
 
@@ -171,7 +176,7 @@ Hover state is 15% darker. There is an override in our stylesheet for ``.ui-widg
 Contextual Classes
 ------------------
 
-Contextual classes can be used to style text and background colors from `Bootstrap CSS <http://getbootstrap.com/css/#helper-classes>`__.
+Contextual classes can be used to style text and background colors from `Bootstrap CSS <http://getbootstrap.com/css/#helper-classes>`__. Semantic colors include various colors assigned to meaningful contextual values. We convey meaning through color with a handful of emphasis utility classes.
 
 .. raw:: html
 
@@ -219,7 +224,19 @@ The Dataverse Project logo is diplayed in the footer, and was the base for the c
   <div class="panel panel-default">
     <div class="panel-body text-center">
 
-      <img alt="image1" src="../_images/dataverse-project.png">
+      <img alt="Dataverse Project" src="../_images/dataverse-project.png">
+
+    </div>
+  </div>
+
+The brand logo used in the navbar was created to be a custom icon that represents a dataverse to be used across the application.
+
+.. raw:: html
+
+  <div class="panel panel-default">
+    <div class="panel-body text-center">
+
+      <img alt="Dataverse Icon" src="../_images/dataverse-icon.jpg" height="175">
 
     </div>
   </div>
@@ -305,8 +322,3 @@ We use `Socicon <http://www.socicon.com>`__ for the custom social icons. In the 
    <span class="socicon socicon-twitter" title="Dataverse On Twitter"></span>
    <span class="socicon socicon-facebook" title="Dataverse On Facebook"></span>
 
-.. |image1| image:: ./img/dataverse-project.png
-   :class: img-responsive
-
-.. |image2| image:: ./img/dataverse-icon.jpg
-   :class: img-responsive
