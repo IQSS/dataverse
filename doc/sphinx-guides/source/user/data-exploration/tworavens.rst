@@ -3,6 +3,9 @@
 TwoRavens: Tabular Data Exploration
 +++++++++++++++++++++++++++++++++++
 
+**Please note:** This document is a bit old and may need an update. The TwoRavens
+project has a more recently published user guide on their site: `http://2ra.vn/papers/tworavens-guide.pdf <http://2ra.vn/papers/tworavens-guide.pdf>`_. 
+
 Exploring and Analyzing Tabular files in Dataverse
 ==================================================
 

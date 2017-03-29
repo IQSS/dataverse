@@ -51,10 +51,6 @@ The statistical calculations are performed by R programs that run **on the serve
 `rApache <http://rapache.net/>`_ is used as the web front end for R on the server, so 
 that the browser application can talk to R over HTTP. 
 
-If you install all components on a single server and front Glassfish with Apache (see "Network Ports" under the :doc:`config` section), it might looks something like this:
-
-|tworavens_components|
-
 See the "Advanced Installation" section of the :doc:`prep` section for an example of running various components on more than one server.
 
 TwoRavens will need to obtain some tabular-data-specific metadata from 
@@ -73,6 +69,12 @@ a statistical model on a data file, TwoRavens will instruct the R code on the
 server to download the file **directly from the Dataverse application**. Access 
 URLs need to be configured for this to work properly (this is done by the TwoRavens 
 installer script in step ``3.``)  
+
+If you install all components on a single server and front Glassfish with Apache 
+(see "Network Ports" under the :doc:`config` section), the component and 
+data flow diagram might looks something like this:
+
+|tworavens_components|
 
 In addition to Rserve, there are 14 more R library packages that the TwoRavens R 
 code requires in order to run. These in turn require 30 more as their own dependencies, 
@@ -252,8 +254,8 @@ Setting               default                             Comment
 TwoRavens directory   ``/var/www/html/dataexplore``       File directory where TwoRavens is installed.
 Apache config dir.    ``/etc/httpd``                      rApache config file for TwoRavens will be placed under ``conf.d/`` there.
 Apache web dir.       ``/var/www/html``                   
-rApache/TwoRavens URL ``http://{local hostname}:80``      URL of the Apache server hosting TwoRavens and rApache.
-Dataverse URL         ``http://{local hostname}:8080``    URL of the Dataverse that integrates with this TwoRavens installation.
+rApache/TwoRavens URL ``http://{your hostname}:80``      URL of the Apache server hosting TwoRavens and rApache.
+Dataverse URL         ``http://{your hostname}:8080``    URL of the Dataverse that integrates with this TwoRavens installation.
 ===================== ================================    =========== 
 
 Please note the default values above. The installer assumes 
@@ -267,8 +269,12 @@ and TwoRavens. Accept all the defaults, and you should have a working installati
 in no time.
 
 However, if you are planning to use this installation to actually serve data to 
-users, you'll most likely want to run under https. This makes the setup more complex; 
-please refer to the discussion in the Appendix, ``I.`` for more information. 
+users, you'll most likely want to run under HTTPS. Please refer to the discussion 
+in the Appendix, ``I.`` for more information on setting it up. Configuring HTTPS 
+takes a little extra work. But note that the TwoRavens configuration 
+can actually end up being simpler. If you use our recommended configuration for 
+HTTPS (described in the Appendix), both the "TwoRavens URL" and "Dataverse URL" 
+**will be the same**: ``https://{your hostname}``.
 
 Run the installer as::
 
@@ -286,7 +292,7 @@ Once everything is installed and configured, the installer script will print out
 d. Version conflict check  (preprocess.R)
 -----------------------------------------
 
-One of the R files in the distribution, ``rook/preprocess/preprocess.R`` is used by both TwoRavens and 
+One of the R files in the TwoRavens distribution, ``rook/preprocess/preprocess.R`` is used by both TwoRavens and 
 Dataverse. Dataverse application maintains its own copy of the file, ``<DOMAIN DIRECTORY>/applications/dataverse-<VERSION>/WEB-INF/classes/edu/harvard/iq/dataverse/rserve/scripts/preprocess.R``. 
 (Why not share the file from the same location? Because the two applications 
 can potentially be installed on 2 different servers).
