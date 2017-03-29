@@ -41,6 +41,7 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
     private final Dataset theDataset;
     private final List<FileMetadata> filesToDelete;
     private boolean validateLenient = false;
+    private static final int FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT = 2 ^ 20;
     
     public UpdateDatasetCommand(Dataset theDataset, DataverseRequest aRequest) {
         super(aRequest, theDataset);
@@ -183,31 +184,40 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
         if (theDataset.getProtocol().equals("doi")
                 && doiProvider.equals("EZID") && theDataset.getGlobalIdCreateTime() == null) {
             String doiRetString = ctxt.doiEZId().createIdentifier(theDataset);
+             
+            int attempts = 0; 
+            
+            while (!doiRetString.contains(theDataset.getIdentifier())
+                    && doiRetString.contains("identifier already exists")
+                    && attempts < FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT) {
+
+                // if the identifier exists, we'll generate another one
+                // and try to register again... but only up to some
+                // ridiculously high number of times - so that we don't 
+                // go into an infinite loop here, if EZID is giving us 
+                // these duplicate messages in error. 
+                // 
+                // (and we do want the limit to be "ridiculously high"! 
+                // true, if our identifiers are randomly generated strings, 
+                // then it is highly unlikely that we'll ever run into a 
+                // duplicate race condition repeatedly; but if they are sequential
+                // numeric values, than it is entirely possible that a large
+                // enough number of values will be legitimately registered 
+                // by another entity sharing the same authority...)
+                
+                theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(theDataset.getProtocol(), theDataset.getAuthority(), theDataset.getDoiSeparator()));
+                doiRetString = ctxt.doiEZId().createIdentifier(theDataset);
+
+                attempts++;
+
+            }
+            
+            // And if the registration failed for some reason other that an 
+            // existing duplicate identifier - for example, EZID down --
+            // we simply give up. 
+            
             if (doiRetString.contains(theDataset.getIdentifier())) {
                 theDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
-            } else {
-                //try again if identifier exists
-                if (doiRetString.contains("identifier already exists")) {
-                    /* 
-                        Similarly to what's happening in the PublishDatasetCommand code, 
-                        if the EZID service is telling us that the identifier already exists, 
-                        we try generating a new one, and call doiEZId().createIdentifier() again... 
-                        - but we are only willing to try that once. 
-                        Should probably be a while() loop instead. 
-                            -- L.A. 4.6.2
-                    */
-                
-                    theDataset.setIdentifier(ctxt.datasets().generatePersistentIdentifier(theDataset.getProtocol(), theDataset.getAuthority(), theDataset.getDoiSeparator()));
-                    doiRetString = ctxt.doiEZId().createIdentifier(theDataset);
-                    if (!doiRetString.contains(theDataset.getIdentifier())) {
-                        // didn't register new identifier
-                    } else {
-                        theDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
-                    }
-                } else {
-                    //some reason other that duplicate identifier so don't try again
-                    //EZID down possibly
-                }
             }
         }
 

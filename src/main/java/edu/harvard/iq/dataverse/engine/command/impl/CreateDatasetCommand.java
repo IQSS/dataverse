@@ -151,7 +151,7 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
                         -- L.A. 4.6.2
              */
             
-            theDataset.setIdentifier(ctxt.datasets().generatePersistentIdentifier(theDataset.getProtocol(), theDataset.getAuthority(), theDataset.getDoiSeparator()));
+            theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(theDataset.getProtocol(), theDataset.getAuthority(), theDataset.getDoiSeparator()));
             
         }
         // Attempt the registration if importing dataset through the API, or the app (but not harvest or migrate)

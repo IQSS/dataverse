@@ -220,7 +220,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         return foundDataset;
     }
 
-    public String generatePersistentIdentifier(String protocol, String authority, String separator) {
+    public String generateDatasetIdentifier(String protocol, String authority, String separator) {
         String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
         switch (doiIdentifierType) {
             case "randomString":
