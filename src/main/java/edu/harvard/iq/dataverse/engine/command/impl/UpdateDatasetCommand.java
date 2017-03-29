@@ -188,7 +188,16 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
             } else {
                 //try again if identifier exists
                 if (doiRetString.contains("identifier already exists")) {
-                    theDataset.setIdentifier(ctxt.datasets().generateIdentifierSequence(theDataset.getProtocol(), theDataset.getAuthority(), theDataset.getDoiSeparator()));
+                    /* 
+                        Similarly to what's happening in the PublishDatasetCommand code, 
+                        if the EZID service is telling us that the identifier already exists, 
+                        we try generating a new one, and call doiEZId().createIdentifier() again... 
+                        - but we are only willing to try that once. 
+                        Should probably be a while() loop instead. 
+                            -- L.A. 4.6.2
+                    */
+                
+                    theDataset.setIdentifier(ctxt.datasets().generatePersistentIdentifier(theDataset.getProtocol(), theDataset.getAuthority(), theDataset.getDoiSeparator()));
                     doiRetString = ctxt.doiEZId().createIdentifier(theDataset);
                     if (!doiRetString.contains(theDataset.getIdentifier())) {
                         // didn't register new identifier

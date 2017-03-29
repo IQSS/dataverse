@@ -36,8 +36,12 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
+import javax.persistence.NamedStoredProcedureQuery;
+import javax.persistence.ParameterMode;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.persistence.StoredProcedureParameter;
+import javax.persistence.StoredProcedureQuery;
 import javax.persistence.TypedQuery;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -49,6 +53,8 @@ import org.ocpsoft.common.util.Strings;
  *
  * @author skraffmiller
  */
+
+
 @Stateless
 @Named
 public class DatasetServiceBean implements java.io.Serializable {
@@ -214,19 +220,45 @@ public class DatasetServiceBean implements java.io.Serializable {
         return foundDataset;
     }
 
-    public String generateIdentifierSequence(String protocol, String authority, String separator) {
+    public String generatePersistentIdentifier(String protocol, String authority, String separator) {
+        String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
+        switch (doiIdentifierType) {
+            case "randomString":
+                return generateIdentifierAsRandomString(protocol, authority, separator);
+            case "sequentialNumber":
+                return generateIdentifierAsSequentialNumber(protocol, authority, separator);
+            default:
+                /* Should we throw an exception instead?? -- L.A. 4.6.2 */
+                return generateIdentifierAsRandomString(protocol, authority, separator);
+        }
+    }
+    
+    private String generateIdentifierAsRandomString(String protocol, String authority, String separator) {
 
         String identifier = null;
         do {
             identifier = RandomStringUtils.randomAlphanumeric(6).toUpperCase();  
-        } while (!isUniqueIdentifier(identifier, protocol, authority, separator));
+        } while (!isIdentifierUniqueInDatabase(identifier, protocol, authority, separator));
 
         return identifier;
     }
 
-    public String generateIdentifierSequenceSequentialNumber(String protocol, String authority, String separator) {
-        Long id = ((Long) em.createNativeQuery("select nextval('datasetid_seq')").getSingleResult());
-        return id.toString();
+    private String generateIdentifierAsSequentialNumber(String protocol, String authority, String separator) {
+        
+        String identifier; 
+        do {
+            StoredProcedureQuery query = this.em.createNamedStoredProcedureQuery("Dataset.generateIdentifierAsSequentialNumber");
+            query.execute();
+            Integer identifierNumeric = (Integer) query.getOutputParameterValue(1); 
+            // some diagnostics here maybe - is it possible to determine that it's failing 
+            // because the stored procedure hasn't been created in the database?
+            if (identifierNumeric == null) {
+                return null; 
+            }
+            identifier = identifierNumeric.toString();
+        } while (!isIdentifierUniqueInDatabase(identifier, protocol, authority, separator));
+        
+        return identifier;
     }
 
     /**
@@ -234,7 +266,7 @@ public class DatasetServiceBean implements java.io.Serializable {
      * for any other study in this Dataverse Network) alos check for duplicate
      * in EZID if needed
      */
-    public boolean isUniqueIdentifier(String userIdentifier, String protocol, String authority, String separator) {
+    public boolean isIdentifierUniqueInDatabase(String userIdentifier, String protocol, String authority, String separator) {
         String query = "SELECT d FROM Dataset d WHERE d.identifier = '" + userIdentifier + "'";
         query += " and d.protocol ='" + protocol + "'";
         query += " and d.authority = '" + authority + "'";

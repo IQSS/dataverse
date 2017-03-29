@@ -83,7 +83,7 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
     public Dataset execute(CommandContext ctxt) throws CommandException {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd-hh.mm.ss");
        
-        if ( (importType != ImportType.MIGRATION && importType != ImportType.HARVEST) && !ctxt.datasets().isUniqueIdentifier(theDataset.getIdentifier(), theDataset.getProtocol(), theDataset.getAuthority(), theDataset.getDoiSeparator()) ) {
+        if ( (importType != ImportType.MIGRATION && importType != ImportType.HARVEST) && !ctxt.datasets().isIdentifierUniqueInDatabase(theDataset.getIdentifier(), theDataset.getProtocol(), theDataset.getAuthority(), theDataset.getDoiSeparator()) ) {
             throw new IllegalCommandException(String.format("Dataset with identifier '%s', protocol '%s' and authority '%s' already exists",
                                                              theDataset.getIdentifier(), theDataset.getProtocol(), theDataset.getAuthority()),
                                                 this);
@@ -137,18 +137,22 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         if (theDataset.getDoiSeparator()==null) theDataset.setDoiSeparator(doiSeparator);
        
         if (theDataset.getIdentifier()==null) {
-            String doiIdentifierType = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiIdentifierType, "randomString");
-            switch (doiIdentifierType) {
-                case "randomString":
-                    theDataset.setIdentifier(ctxt.datasets().generateIdentifierSequence(theDataset.getProtocol(), theDataset.getAuthority(), theDataset.getDoiSeparator()));
-                    break;
-                case "sequentialNumber":
-                    theDataset.setIdentifier(ctxt.datasets().generateIdentifierSequenceSequentialNumber(theDataset.getProtocol(), theDataset.getAuthority(), theDataset.getDoiSeparator()));
-                    break;
-                default:
-                    theDataset.setIdentifier(ctxt.datasets().generateIdentifierSequence(theDataset.getProtocol(), theDataset.getAuthority(), theDataset.getDoiSeparator()));
-                    break;
-            }
+            /* 
+                If this command is being executed to save a new dataset initialized
+                by the Dataset page (in CREATE mode), it already has the persistent 
+                identifier. 
+                Same with a new harvested dataset - the imported metadata record
+                must have contained a global identifier, for the harvester to be
+                trying to save it permanently in the database. 
+            
+                In some other cases, such as when a new dataset is created 
+                via the API, the identifier will need to be generated here. 
+            
+                        -- L.A. 4.6.2
+             */
+            
+            theDataset.setIdentifier(ctxt.datasets().generatePersistentIdentifier(theDataset.getProtocol(), theDataset.getAuthority(), theDataset.getDoiSeparator()));
+            
         }
         // Attempt the registration if importing dataset through the API, or the app (but not harvest or migrate)
         if ((importType == null || importType.equals(ImportType.NEW))

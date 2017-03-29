@@ -103,7 +103,15 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
                     if (doiRetString.contains(theDataset.getIdentifier())) {
                         theDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
                     } else if (doiRetString.contains("identifier already exists")) {
-                        theDataset.setIdentifier(ctxt.datasets().generateIdentifierSequence(protocol, authority, theDataset.getDoiSeparator()));
+                        /*
+                          Not sure what's going on with the code below... it appears that if the EZID service
+                          is telling us that the identifier already exists, we try to generate a new 
+                          identifier, and try again... but only once (?) - and throw an 
+                          exception if we get an "already exists" exception again...
+                          Should it be a "while" loop instead? 
+                          -- L.A. 4.6.2
+                        */
+                        theDataset.setIdentifier(ctxt.datasets().generatePersistentIdentifier(protocol, authority, theDataset.getDoiSeparator()));
                         doiRetString = ctxt.doiEZId().createIdentifier(theDataset);
                         if (!doiRetString.contains(theDataset.getIdentifier())) {
                             throw new IllegalCommandException("This dataset may not be published because its identifier is already in use by another dataset. Please contact Dataverse Support for assistance.", this);
@@ -121,7 +129,10 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
                             ctxt.doiDataCite().createIdentifier(theDataset);
                             theDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
                         } else {
-                            theDataset.setIdentifier(ctxt.datasets().generateIdentifierSequence(protocol, authority, theDataset.getDoiSeparator()));
+                            /* 
+                              see my comment above (same here). -- L.A. 4.6.2 
+                            */
+                            theDataset.setIdentifier(ctxt.datasets().generatePersistentIdentifier(protocol, authority, theDataset.getDoiSeparator()));
                             if (!ctxt.doiDataCite().alreadyExists(theDataset)) {
                                 ctxt.doiDataCite().createIdentifier(theDataset);
                                 theDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));

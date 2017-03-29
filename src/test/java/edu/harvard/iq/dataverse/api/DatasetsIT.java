@@ -33,6 +33,10 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import org.junit.Assert;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.nullValue;
 
 public class DatasetsIT {
 
@@ -42,7 +46,7 @@ public class DatasetsIT {
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
 
-        Response remove = UtilIT.deleteSetting(SettingsServiceBean.Key.DoiIdentifierType);
+        Response remove = UtilIT.deleteSetting(SettingsServiceBean.Key.IdentifierGenerationStyle);
         remove.then().assertThat()
                 .statusCode(200);
     }
@@ -158,7 +162,7 @@ public class DatasetsIT {
         createDataverseResponse.prettyPrint();
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
 
-        Response datasetsShouldUseDatabaseIdAsIdentifier = UtilIT.setSetting(SettingsServiceBean.Key.DoiIdentifierType, "sequentialNumber");
+        Response datasetsShouldUseDatabaseIdAsIdentifier = UtilIT.setSetting(SettingsServiceBean.Key.IdentifierGenerationStyle, "sequentialNumber");
         datasetsShouldUseDatabaseIdAsIdentifier.then().assertThat()
                 .statusCode(OK.getStatusCode());
 

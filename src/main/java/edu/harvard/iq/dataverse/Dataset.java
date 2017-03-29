@@ -19,9 +19,12 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.NamedStoredProcedureQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.OrderBy;
+import javax.persistence.ParameterMode;
+import javax.persistence.StoredProcedureParameter;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -35,6 +38,33 @@ import org.hibernate.validator.constraints.NotBlank;
 @NamedQueries(
         @NamedQuery(name = "Dataset.findByIdentifier",
                 query = "SELECT d FROM Dataset d WHERE d.identifier=:identifier")
+)
+
+/*
+    Below is the stored procedure for getting a numeric value from a database 
+    sequence. Used when the Dataverse is (optionally) configured to use 
+    incremental numeric values for dataset ids, instead of the default 
+    random strings. 
+
+    Unfortunately, there's no standard EJB way of handling sequences. So in the 
+    past we would simply use a NativeQuery to call a proprietary Postgres
+    sequence query. A better way of handling this however is to define any 
+    proprietary SQL functionality outside of the application, in the database, 
+    and call it using the standard JPA @StoredProcedureQuery. 
+
+    The identifier sequence and the stored procedure for accessing it are currently 
+    implemented with PostgresQL "CREATE SEQUENCE ..." and "CREATE FUNCTION ..."; 
+    (we explain how to create these in the installation documentation and supply 
+    a script). If necessary, it can be implemented using other SQL flavors -
+    without having to modify the application code. 
+            -- L.A. 4.6.2
+*/ 
+@NamedStoredProcedureQuery(
+        name = "Dataset.generateIdentifierAsSequentialNumber",
+        procedureName = "generateIdentifierAsSequentialNumber",
+        parameters = {
+            @StoredProcedureParameter(mode = ParameterMode.OUT, type = Integer.class, name = "identifier")
+        }
 )
 @Entity
 @Table(indexes = {

@@ -43,6 +43,7 @@ import static java.lang.Thread.sleep;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import org.junit.Ignore;
+import static java.lang.Thread.sleep;
 
 /**
  * @todo These tests are in need of attention for a few reasons:

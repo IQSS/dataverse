@@ -47,6 +47,13 @@ import javax.json.JsonObjectBuilder;
 import org.apache.commons.lang.StringUtils;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.UploadedFile;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 
 /**
  *

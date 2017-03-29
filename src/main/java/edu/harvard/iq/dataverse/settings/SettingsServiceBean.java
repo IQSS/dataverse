@@ -33,7 +33,7 @@ public class SettingsServiceBean {
      * So there.
      */
     public enum Key {
-        DoiIdentifierType,
+        IdentifierGenerationStyle,
         OAuth2CallbackUrl,
         DefaultAuthProvider,
         FooterCopyright,
