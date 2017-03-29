@@ -1,6 +1,6 @@
 # Contributing to Dataverse
 
-Thank you for your interest in contributing to Dataverse! We welcome contributions of ideas, bug reports, documentation, code, and more!
+Thank you for your interest in contributing to Dataverse! We welcome contributions of ideas, bug reports, usability testing, documentation, code, and more!
 
 ## Ideas/Feature Requests
 
@@ -30,7 +30,7 @@ If there is no pre-existing issue, please click on the "New Issue" button, log i
 
 If you do not receive a reply to your new issue or comment in a timely manner, please email support@dataverse.org with a link to the issue.
 
-## Writing an Issue
+### Writing an Issue
 
 For the subject of an issue, please start it by writing the feature or functionality it relates to, i.e. "Create Account:..." or "Dataset Page:...". In the body of the issue, please outline the issue you are reporting with as much detail as possible. In order for the Dataverse development team to best respond to the issue, we need as much information about the issue as you can provide. Include steps to reproduce bugs. Indicate which version you're using. We love screenshots!
 
@@ -49,11 +49,14 @@ The source for the documentation at http://guides.dataverse.org is in the GitHub
 
 ## Code/Pull Requests
 
-To get started developing code for Dataverse, please read our Developer Guide at http://guides.dataverse.org/en/latest/developers
+Before you start coding, please reach out to us either on the [dataverse-community Google Group][], the [dataverse-dev Google Group][], [IRC][] (#dataverse on freenode), or via support@dataverse.org to make sure the effort is well coordinated and we avoid merge conflicts.
 
-Before you start coding, please reach out to us either on our [dataverse-community Google Group][], [IRC][], or via support@dataverse.org to make sure the effort is well coordinated and we avoid merge conflicts.
+We will encourage you to create a GitHub issue (if it doesn't exist already) to associate with your pull request.
+
+We hope you find the Developer Guide at http://guides.dataverse.org/en/latest/developers helpful.
+
+After making your pull request, your goal should be to help it advance through our kanban board at https://waffle.io/IQSS/dataverse . If no one has moved your pull request to the code review column in a timely manner, please reach out. Thanks!
 
 [dataverse-community Google Group]: https://groups.google.com/group/dataverse-community
+[dataverse-dev Google Group]: https://groups.google.com/group/dataverse-dev
 [IRC]: http://chat.dataverse.org
-
-If your pull request is not assigned to anyone in a timely manner, please reach out. The assignee is responsible for evaluating the pull request and deciding whether or not to merge it in. Please try to make it easy to merge in pull requests. Tests are great. :)
