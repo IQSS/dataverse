@@ -175,11 +175,12 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
                     } catch (Exception e){
                          logger.warning("Exception while creating identifier (" + theDataset.getIdentifier() + ") with DataCite:" + e.getMessage());
                     }
+                    // Note that the DataCite service bean doesn't actually try 
+                    // to register the identifier with the naming authority - 
+                    // that's EZID. So even if doiDataCite().createIdentifier() 
+                    // didn't throw an exception, we leave the GlobalIdCreateTime 
+                    // blank here. 
                 }
-
-                // For review: if createIdentifier() was successful, note that 
-                // we are setting GlobalIdCreateTime for EZID only (but not for DataCite) 
-                // -- is this on purpose/by design? - L.A. Mar. 29 2017
             }
 
         } else {
