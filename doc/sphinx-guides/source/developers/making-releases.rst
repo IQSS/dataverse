@@ -36,7 +36,7 @@ Upload the following artifacts to the draft release you created:
 - installer
 - war file
 - database migration script
-- other files as needed, such as an update Solr schema
+- other files as needed, such as an updated Solr schema
 
 Publish Release
 ---------------
