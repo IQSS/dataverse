@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
 import com.jayway.restassured.RestAssured;
-import static com.jayway.restassured.RestAssured.given;
 import com.jayway.restassured.response.Response;
 import java.util.logging.Logger;
 import org.junit.BeforeClass;
@@ -17,7 +16,6 @@ import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static com.jayway.restassured.path.json.JsonPath.with;
 import edu.harvard.iq.dataverse.DataFile;
 import static edu.harvard.iq.dataverse.api.UtilIT.API_TOKEN_HTTP_HEADER;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
@@ -25,17 +23,12 @@ import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.UUID;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
-import static junit.framework.Assert.assertEquals;
 import org.apache.commons.lang.StringUtils;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.nullValue;
 import org.junit.Assert;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.CoreMatchers.not;
+import static com.jayway.restassured.RestAssured.given;
+import static com.jayway.restassured.path.json.JsonPath.with;
+import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.nullValue;
 
 public class DatasetsIT {
@@ -151,7 +144,7 @@ public class DatasetsIT {
     }
 
     @Test
-    public void testDatasetHasDatabaseIdAsIdentifier() {
+    public void testSequentialNumberAsIdentifierGenerationStyle() {
 
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
@@ -162,8 +155,8 @@ public class DatasetsIT {
         createDataverseResponse.prettyPrint();
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
 
-        Response datasetsShouldUseDatabaseIdAsIdentifier = UtilIT.setSetting(SettingsServiceBean.Key.IdentifierGenerationStyle, "sequentialNumber");
-        datasetsShouldUseDatabaseIdAsIdentifier.then().assertThat()
+        Response setSequentialNumberAsIdentifierGenerationStyle = UtilIT.setSetting(SettingsServiceBean.Key.IdentifierGenerationStyle, "sequentialNumber");
+        setSequentialNumberAsIdentifierGenerationStyle.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
@@ -309,6 +302,19 @@ public class DatasetsIT {
 
         assertEquals(tokenForPrivateUrlUser, urlWithToken.substring(urlWithToken.length() - UUID.randomUUID().toString().length()));
 
+        /**
+         * If you're getting a crazy error like this...
+         *
+         * javax.net.ssl.SSLHandshakeException:
+         * sun.security.validator.ValidatorException: PKIX path building failed:
+         * sun.security.provider.certpath.SunCertPathBuilderException: unable to
+         * find valid certification path to requested target
+         *
+         * ... you might do well to set "siteUrl" to localhost:8080 like this:
+         *
+         * asadmin create-jvm-options
+         * "-Ddataverse.siteUrl=http\://localhost\:8080"
+         */
         Response getDatasetAsUserWhoClicksPrivateUrl = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get(urlWithToken);
