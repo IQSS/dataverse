@@ -1,9 +1,13 @@
--- An EXAMPLE script for creating a numeric identifier sequence, and an external 
+-- A script for creating a numeric identifier sequence, and an external 
 -- stored procedure, for accessing the sequence from inside the application, 
 -- in a non-hacky, JPA way. 
--- This will be documented in the guide. 
 
--- This sequence starts with 1, but the MINVALUE may be adjusted, according to the 
+-- NOTE:
+
+-- 1. The database user name "dvnapp" is hard-coded here - they will (may)
+-- need to change it to match their database setup:
+
+-- 2. This sequence starts with 1, but the MINVALUE may be adjusted, according to the 
 -- needs of the specific Dataverse installation. 
 
 CREATE SEQUENCE datasetidentifier_seq
@@ -13,8 +17,6 @@ CREATE SEQUENCE datasetidentifier_seq
   START 1
 CACHE 1;
 
--- Note that the database user name "dvnapp" is hard-coded here - they will (may)
--- need to change it to match their database setup:
 ALTER TABLE datasetidentifier_seq OWNER TO "dvnapp";
 
 -- And now create a PostgresQL FUNCTION, for JPA to 

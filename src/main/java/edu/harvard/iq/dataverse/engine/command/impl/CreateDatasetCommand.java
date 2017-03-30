@@ -161,26 +161,33 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
                 String doiRetString = "";
                 if (doiProvider.equals("EZID")) {
                     doiRetString = ctxt.doiEZId().createIdentifier(theDataset);
+                    
+                    if (doiRetString.contains(theDataset.getIdentifier())) {
+                        theDataset.setGlobalIdCreateTime(createDate);
+                    } else {
+                        logger.warning("Failed to create identifier (" + theDataset.getIdentifier() + ") with EZId: " + doiRetString);
+                    }
+                    
                 }
                 if (doiProvider.equals("DataCite")) {
                     try{
                         doiRetString = ctxt.doiDataCite().createIdentifier(theDataset);
                     } catch (Exception e){
-                         logger.log(Level.WARNING, "Exception while creating Identifier:" + e.getMessage(), e);
+                         logger.warning("Exception while creating identifier (" + theDataset.getIdentifier() + ") with DataCite:" + e.getMessage());
                     }
                 }
 
-                // Check return value to make sure registration succeeded
-                if (doiProvider.equals("EZID") && doiRetString.contains(theDataset.getIdentifier())) {
-                    theDataset.setGlobalIdCreateTime(createDate);
-                }
-
+                // For review: if createIdentifier() was successful, note that 
+                // we are setting GlobalIdCreateTime for EZID only (but not for DataCite) 
+                // -- is this on purpose/by design? - L.A. Mar. 29 2017
             }
 
-        } else // If harvest or migrate, and this is a released dataset, we don't need to register,
-        // so set the globalIdCreateTime to now
-        if (theDataset.getLatestVersion().getVersionState().equals(VersionState.RELEASED)) {
-            theDataset.setGlobalIdCreateTime(new Date());
+        } else {
+            // If harvest or migrate, and this is a released dataset, we don't need to register,
+            // so set the globalIdCreateTime to now
+            if (theDataset.getLatestVersion().getVersionState().equals(VersionState.RELEASED)) {
+                theDataset.setGlobalIdCreateTime(new Date());
+            }
         }
         
         if (registrationRequired && theDataset.getGlobalIdCreateTime() == null) {

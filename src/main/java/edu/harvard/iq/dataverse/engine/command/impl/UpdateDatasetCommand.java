@@ -41,7 +41,7 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
     private final Dataset theDataset;
     private final List<FileMetadata> filesToDelete;
     private boolean validateLenient = false;
-    private static final int FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT = 2 ^ 20;
+    private static final int FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT = 2 ^ 8;
     
     public UpdateDatasetCommand(Dataset theDataset, DataverseRequest aRequest) {
         super(aRequest, theDataset);
@@ -193,11 +193,11 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
 
                 // if the identifier exists, we'll generate another one
                 // and try to register again... but only up to some
-                // ridiculously high number of times - so that we don't 
+                // reasonably high number of times - so that we don't 
                 // go into an infinite loop here, if EZID is giving us 
                 // these duplicate messages in error. 
                 // 
-                // (and we do want the limit to be "ridiculously high"! 
+                // (and we do want the limit to be a "reasonably high" number! 
                 // true, if our identifiers are randomly generated strings, 
                 // then it is highly unlikely that we'll ever run into a 
                 // duplicate race condition repeatedly; but if they are sequential
@@ -218,7 +218,12 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
             
             if (doiRetString.contains(theDataset.getIdentifier())) {
                 theDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
+            } else if (doiRetString.contains("identifier already exists")) {
+                logger.warning("EZID refused registration, requested id(s) already in use; gave up after " + attempts + " attempts. Current (last requested) identifier: " + theDataset.getIdentifier());
+            } else {
+                logger.warning("Failed to create identifier (" + theDataset.getIdentifier() + ") with EZID: " + doiRetString);
             }
+                
         }
 
         Dataset savedDataset = ctxt.em().merge(theDataset);
