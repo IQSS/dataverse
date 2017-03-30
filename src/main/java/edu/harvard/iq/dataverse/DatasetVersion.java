@@ -944,9 +944,29 @@ public class DatasetVersion implements Serializable {
             }
         }
         return serverName + "/dataset.xhtml?id=" + dset.getId() + "&versionId" + this.getId();
+    } 
+    
+    /*
+    Per #3511 we  are returning all users to the File Landing page
+    If we in the future we are going to return them to the referring page we will need the 
+    getReturnToDatasetURL method and add something to the call to the api to
+    pass the referring page and some kind of decision point in  the getWorldMapDatafileInfo method in 
+    WorldMapRelatedData
+    SEK 3/24/2017
+    */
+    
+    public String getReturnToFilePageURL (String serverName, Dataset dset, DataFile dataFile){
+        if (serverName == null || dataFile == null) {
+            return null;
+        }
+        if (dset == null) {
+            dset = this.getDataset();
+            if (dset == null) {
+                return null;
+            }
+        }
+        return serverName + "/file.xhtml?fileId=" + dataFile.getId() + "&version=" + this.getSemanticVersion();        
     }
-
-    ;
     
     public List<DatasetField> copyDatasetFields(List<DatasetField> copyFromList) {
         List<DatasetField> retList = new ArrayList();
