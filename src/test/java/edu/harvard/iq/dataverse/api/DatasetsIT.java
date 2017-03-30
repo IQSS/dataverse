@@ -37,6 +37,10 @@ public class DatasetsIT {
     @BeforeClass
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
+
+        Response remove = UtilIT.deleteSetting(SettingsServiceBean.Key.DoiIdentifierGetsDatasetDatabaseId);
+        remove.then().assertThat()
+                .statusCode(200);
     }
 
     @Test
@@ -54,6 +58,14 @@ public class DatasetsIT {
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
         createDatasetResponse.prettyPrint();
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+
+        Response datasetAsJson = UtilIT.nativeGet(datasetId, apiToken);
+        datasetAsJson.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        String identifier = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.identifier");
+        System.out.println("identifier: " + identifier);
+        assertEquals(6, identifier.length());
 
         Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
         deleteDatasetResponse.prettyPrint();
@@ -117,6 +129,48 @@ public class DatasetsIT {
                 .statusCode(OK.getStatusCode());
 
         Response deleteDatasetResponse = UtilIT.destroyDataset(datasetId, apiToken);
+        deleteDatasetResponse.prettyPrint();
+        assertEquals(200, deleteDatasetResponse.getStatusCode());
+
+        Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        deleteDataverseResponse.prettyPrint();
+        assertEquals(200, deleteDataverseResponse.getStatusCode());
+
+        Response deleteUserResponse = UtilIT.deleteUser(username);
+        deleteUserResponse.prettyPrint();
+        assertEquals(200, deleteUserResponse.getStatusCode());
+
+    }
+
+    @Test
+    public void testDatasetHasDatabaseIdAsIdentifier() {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response datasetsShouldUseDatabaseIdAsIdentifier = UtilIT.setSetting(SettingsServiceBean.Key.DoiIdentifierGetsDatasetDatabaseId, "true");
+        datasetsShouldUseDatabaseIdAsIdentifier.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+
+        Response datasetAsJson = UtilIT.nativeGet(datasetId, apiToken);
+        datasetAsJson.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        String identifier = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.identifier");
+        System.out.println("identifier: " + identifier);
+        assertEquals(datasetId.toString(), identifier);
+
+        Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
         deleteDatasetResponse.prettyPrint();
         assertEquals(200, deleteDatasetResponse.getStatusCode());
 
@@ -486,5 +540,4 @@ public class DatasetsIT {
 
     }
 
-  
 }

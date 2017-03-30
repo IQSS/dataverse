@@ -182,6 +182,10 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         
         savedDataset.setPermissionModificationTime(new Timestamp(new Date().getTime()));
         savedDataset = ctxt.em().merge(savedDataset);
+        if (ctxt.settings().isTrueForKey(SettingsServiceBean.Key.DoiIdentifierGetsDatasetDatabaseId, false)) {
+            savedDataset.setIdentifier(savedDataset.getId().toString());
+            savedDataset = ctxt.em().merge(savedDataset);
+        }
         
         if(template != null){
             ctxt.templates().incrementUsageCount(template.getId());
