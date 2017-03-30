@@ -27,7 +27,7 @@ The "develop" Branch
 
 The "`develop <https://github.com/IQSS/dataverse>`_" branch represents code that was stable enough to merge from a "feature" branch (described below) and that will make it into the next release. Like master, commits are never made to the develop branch. The develop branch is where integration occurs. Your goal is have your code merged into the develop branch after it has been reviewed.
 
-"Feature" Branches
+Feature Branches
 ~~~~~~~~~~~~~~~~
 
 Feature branches are used for both developing features and fixing bugs. They are named after the GitHub issue they are meant to address, which means the branch should not be created until the GitHub issue exists. For example, if https://github.com/IQSS/dataverse/issues/1234 had a title of "Bug fix", you would name your branch "1234-bug-fix" or some other short "slug" with the issue number at the start.
