@@ -119,28 +119,6 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
                 
                 if (doiProvider.equals("EZID")) {
                     doiRetString = ctxt.doiEZId().createIdentifier(theDataset);
-                    if (doiRetString.contains(theDataset.getIdentifier())) {
-                        theDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
-                    } else if (doiRetString.contains("identifier already exists")) {
-                        /*
-                          Not sure what's going on with the code below... it appears that if the EZID service
-                          is telling us that the identifier already exists, we try to generate a new 
-                          identifier, and try again... but only once (?) - and throw an 
-                          exception if we get an "already exists" exception again...
-                          Should it be a "while" loop instead? 
-                          -- L.A. 4.6.2
-                        */
-                        theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(protocol, authority, theDataset.getDoiSeparator()));
-                        doiRetString = ctxt.doiEZId().createIdentifier(theDataset);
-                        if (!doiRetString.contains(theDataset.getIdentifier())) {
-                            throw new IllegalCommandException("This dataset may not be published because its identifier is already in use by another dataset. Please contact Dataverse Support for assistance.", this);
-                        } else {
-                            theDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
-                        }
-                    } else {
-                        throw new IllegalCommandException("This dataset may not be published because it has not been registered. Please contact Dataverse Support for assistance.", this);
-                    }
-                    
                     
                     while (!doiRetString.contains(theDataset.getIdentifier())
                             && doiRetString.contains("identifier already exists")
