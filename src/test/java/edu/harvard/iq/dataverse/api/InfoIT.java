@@ -6,7 +6,6 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import org.junit.Test;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.notNullValue;
 
 public class InfoIT {
 
