@@ -254,8 +254,8 @@ Setting               default                             Comment
 TwoRavens directory   ``/var/www/html/dataexplore``       File directory where TwoRavens is installed.
 Apache config dir.    ``/etc/httpd``                      rApache config file for TwoRavens will be placed under ``conf.d/`` there.
 Apache web dir.       ``/var/www/html``                   
-rApache/TwoRavens URL ``http://{your hostname}:80``      URL of the Apache server hosting TwoRavens and rApache.
-Dataverse URL         ``http://{your hostname}:8080``    URL of the Dataverse that integrates with this TwoRavens installation.
+rApache/TwoRavens URL ``http://{your hostname}:80``       URL of the Apache server hosting TwoRavens and rApache.
+Dataverse URL         ``http://{your hostname}:8080``     URL of the Dataverse that integrates with this TwoRavens installation.
 ===================== ================================    =========== 
 
 Please note the default values above. The installer assumes 
