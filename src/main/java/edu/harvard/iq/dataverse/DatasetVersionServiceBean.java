@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
@@ -19,7 +14,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -693,98 +687,6 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         return null;          
     } // end: retrieveDatasetVersionByVersionId
 
-    public Long getThumbnailByVersionId(Long versionId) {
-        if (versionId == null) {
-            return null;
-        }
-        
-        Long thumbnailFileId;
-        
-        // First, let's see if there are thumbnails that have already been 
-        // generated:
-        
-        try {
-            thumbnailFileId = (Long)em.createNativeQuery("SELECT df.id "
-                + "FROM datafile df, filemetadata fm, datasetversion dv, dvobject o "
-                + "WHERE dv.id = " + versionId + " "
-                + "AND df.id = o.id "
-                + "AND fm.datasetversion_id = dv.id "
-                + "AND fm.datafile_id = df.id "
-                + "AND o.previewImageAvailable = true "
-                + "ORDER BY df.id LIMIT 1;").getSingleResult();
-        } catch (Exception ex) {
-            thumbnailFileId = null;
-        }
-        
-        if (thumbnailFileId != null) {
-            logger.fine("DatasetVersionService,getThumbnailByVersionid(): found already generated thumbnail for version "+versionId+": "+thumbnailFileId);
-            return thumbnailFileId;
-        }
-        
-        if (!systemConfig.isThumbnailGenerationDisabledForImages()) {
-            // OK, let's try and generate an image thumbnail!
-            long imageThumbnailSizeLimit = systemConfig.getThumbnailSizeLimitImage();
-
-            try {
-                thumbnailFileId = (Long) em.createNativeQuery("SELECT df.id "
-                        + "FROM datafile df, filemetadata fm, datasetversion dv, dvobject o "
-                        + "WHERE dv.id = " + versionId + " "
-                        + "AND df.id = o.id "
-                        + "AND fm.datasetversion_id = dv.id "
-                        + "AND fm.datafile_id = df.id "
-                        // + "AND o.previewImageAvailable = false "
-                        + "AND df.contenttype LIKE 'image/%' "
-                        + "AND NOT df.contenttype = 'image/fits' "
-                        + "AND df.filesize < " + imageThumbnailSizeLimit + " "
-                        + "ORDER BY df.filesize ASC LIMIT 1;").getSingleResult();
-            } catch (Exception ex) {
-                thumbnailFileId = null;
-            }
-            
-            if (thumbnailFileId != null) {
-                logger.fine("obtained file id: "+thumbnailFileId);
-                DataFile thumbnailFile = datafileService.find(thumbnailFileId);
-                if (thumbnailFile != null) {
-                    if (datafileService.isThumbnailAvailable(thumbnailFile)) {
-                        return thumbnailFileId;
-                    }
-                }
-            }
-        }
-        
-        // And if that didn't work, try the same thing for PDFs:
-        
-        if (!systemConfig.isThumbnailGenerationDisabledForPDF()) {
-            // OK, let's try and generate an image thumbnail!
-            long imageThumbnailSizeLimit = systemConfig.getThumbnailSizeLimitPDF();
-            try {
-                thumbnailFileId = (Long) em.createNativeQuery("SELECT df.id "
-                        + "FROM datafile df, filemetadata fm, datasetversion dv, dvobject o "
-                        + "WHERE dv.id = " + versionId + " "
-                        + "AND df.id = o.id "
-                        + "AND fm.datasetversion_id = dv.id "
-                        + "AND fm.datafile_id = df.id "
-                        // + "AND o.previewImageAvailable = false "
-                        + "AND df.contenttype = 'application/pdf' "
-                        + "AND df.filesize < " + imageThumbnailSizeLimit + " "
-                        + "ORDER BY df.filesize ASC LIMIT 1;").getSingleResult();
-            } catch (Exception ex) {
-                thumbnailFileId = null;
-            }
-            
-            if (thumbnailFileId != null) {
-                DataFile thumbnailFile = datafileService.find(thumbnailFileId);
-                if (thumbnailFile != null) {
-                    if (datafileService.isThumbnailAvailable(thumbnailFile)) {
-                        return thumbnailFileId;
-                    }
-                }
-            }
-        }
-
-        return null;
-    }
-    
     public void populateDatasetSearchCard(SolrSearchResult solrSearchResult) {
         Long dataverseId = Long.parseLong(solrSearchResult.getParent().get("id"));
         Long datasetVersionId = solrSearchResult.getDatasetVersionId();

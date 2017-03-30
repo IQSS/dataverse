@@ -73,13 +73,23 @@ Without this ``requestHeaderSize`` line in place, which increases the default si
 Network Ports
 -------------
 
-The need to redirect port HTTP (port 80) to HTTPS (port 443) for security has already been mentioned above and the fact that Glassfish puts these services on 8080 and 8181, respectively, was touched on in the :doc:`installation-main` section. You have a few options that basically boil down to if you want to introduce Apache into the mix or not. If you need :doc:`shibboleth` support you need Apache and you should proceed directly to that doc for guidance on fronting Glassfish with Apache.
+Remember how under "Decisions to Make" in the :doc:`prep` section we mentioned you'll need to make a decision about whether or not to introduce a proxy in front of Dataverse such as Apache or nginx? The time has come to make that decision.
 
-If you don't want to front Glassfish with a proxy such as Apache or nginx, you will need to configure Glassfish to run HTTPS on 443 like this:
+The need to redirect port HTTP (port 80) to HTTPS (port 443) for security has already been mentioned above and the fact that Glassfish puts these services on 8080 and 8181, respectively, was touched on in the :doc:`installation-main` section. In production, you don't want to tell your users to use Dataverse on ports 8080 and 8181. You should have them use the stardard HTTPS port, which is 443.
+
+Your decision to proxy or not should primarily be driven by which features of Dataverse you'd like to use. If you'd like to use Shibboleth, the decision is easy because proxying or "fronting" Glassfish with Apache is required. The details are covered in the :doc:`shibboleth` section.
+
+If you'd like to use TwoRavens, you should also consider fronting with Apache because you will be required to install an Apache anyway to make use of the rApache module. For details, see the :doc:`r-rapache-tworavens` section.
+
+Even if you have no interest in Shibboleth nor TwoRavens, you may want to front Dataverse with Apache or nginx to simply the process of installing SSL certificates. There are many tutorials on the Internet for adding certs to Apache, including a some `notes used by the Dataverse team <https://github.com/IQSS/dataverse/blob/v4.6.1/doc/shib/shib.md>`_, but the process of adding a certificate to Glassfish is arduous and not for the faint of heart. The Dataverse team cannot provide much help with adding certificates to Glassfish beyond linking to `tips <http://stackoverflow.com/questions/906402/importing-an-existing-x509-certificate-and-private-key-in-java-keystore-to-use-i>`_ on the web.
+
+Still not convinced you should put Glassfish behind another web server? Even if you manage to get your SSL certificate into Glassfish, how are you going to run Glassfish on low ports such as 80 and 443? Are you going to run Glassfish as root? Bad idea. This is a security risk. Under "Additional Recommendations" under "Securing Your Installation" above you are advised to configure Glassfish to run as a user other than root. (The Dataverse team will close https://github.com/IQSS/dataverse/issues/1934 after updating the Glassfish init script provided in the :doc:`prerequisites` section to not require root.)
+
+If you are convinced you'd like to try fronting Glassfish with Apache, the :doc:`shibboleth` section should be good resource for you.
+
+If you really don't want to front Glassfish with any proxy (not recommended), you can configure Glassfish to run HTTPS on port 443 like this:
 
 ``asadmin set server-config.network-config.network-listeners.network-listener.http-listener-2.port=443``
-
-Most likely you'll want to put a valid cert into Glassfish, which is certainly possible but out of scope for this guide.
 
 What about port 80? Even if you don't front Dataverse with Apache, you may want to let Apache run on port 80 just to rewrite HTTP to HTTPS as described above. You can use a similar command as above to change the HTTP port that Glassfish uses from 8080 to 80 (substitute ``http-listener-1.port=80``). Glassfish can be used to enforce HTTPS on its own without Apache, but configuring this is an exercise for the reader. Answers here may be helpful: http://stackoverflow.com/questions/25122025/glassfish-v4-java-7-port-unification-error-not-able-to-redirect-http-to
 
@@ -220,12 +230,12 @@ For overriding the default path to the ``convert`` binary from ImageMagick (``/u
 dataverse.dataAccess.thumbnail.image.limit
 ++++++++++++++++++++++++++++++++++++++++++
 
-For limiting the size of thumbnail images generated from files.
+For limiting the size (in bytes) of thumbnail images generated from files.
 
 dataverse.dataAccess.thumbnail.pdf.limit
 ++++++++++++++++++++++++++++++++++++++++
 
-For limiting the size of thumbnail images generated from files.
+For limiting the size (in bytes) of thumbnail images generated from files.
 
 .. _doi.baseurlstring:
 
@@ -529,7 +539,7 @@ The duration in minutes before "Confirm Email" URLs expire. The default is 1440 
 :DefaultAuthProvider
 ++++++++++++++++++++
 
-If you have enabled Shibboleth and/or one or more OAuth providers, you may wish to make one of these authentication providers the default when users visit the Log In page. If unset, this will default to ``builtin`` but thes valid options (depending if you've done the setup described in the :doc:`shibboleth` or doc:`oauth2` sections) are:
+If you have enabled Shibboleth and/or one or more OAuth providers, you may wish to make one of these authentication providers the default when users visit the Log In page. If unset, this will default to ``builtin`` but thes valid options (depending if you've done the setup described in the :doc:`shibboleth` or :doc:`oauth2` sections) are:
 
 - ``builtin``
 - ``shib``

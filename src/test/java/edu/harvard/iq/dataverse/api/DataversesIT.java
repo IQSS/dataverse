@@ -1,10 +1,13 @@
 package edu.harvard.iq.dataverse.api;
 
 import com.jayway.restassured.RestAssured;
+import static com.jayway.restassured.RestAssured.given;
 import com.jayway.restassured.response.Response;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.util.Arrays;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -16,6 +19,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertTrue;
 
 public class DataversesIT {
 
@@ -136,4 +140,95 @@ public class DataversesIT {
                 .statusCode(INTERNAL_SERVER_ERROR.getStatusCode());
     }
 
+    
+    /**
+     * Test the Dataverse page error message and link 
+     * when the query string has a malformed url
+     */
+    @Test
+    public void testMalformedFacetQueryString(){
+        
+        Response createUser = UtilIT.createRandomUser();
+        //        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverse1Response = UtilIT.createRandomDataverse(apiToken);
+        if (createDataverse1Response.getStatusCode() != 201) {
+            // purposefully using println here to the error shows under "Test Results" in Netbeans
+            System.out.println("A workspace for testing (a dataverse) couldn't be created in the root dataverse. The output was:\n\n" + createDataverse1Response.body().asString());
+            System.out.println("\nPlease ensure that users can created dataverses in the root in order for this test to run.");
+        } else {
+            createDataverse1Response.prettyPrint();
+        }
+        assertEquals(201, createDataverse1Response.getStatusCode());
+
+        Integer dvId = UtilIT.getDataverseIdFromResponse(createDataverse1Response);
+        String dvAlias = UtilIT.getAliasFromResponse(createDataverse1Response);
+
+        Response publishDataverse = UtilIT.publishDataverseViaSword(dvAlias, apiToken);
+        assertEquals(200, publishDataverse.getStatusCode());
+      
+        
+        String expectedErrMsg = BundleUtil.getStringFromBundle("dataverse.search.facet.error", Arrays.asList("root"));
+
+        // ----------------------------------
+        // Malformed query string 1 
+        //  - From 500 errs in log - No dataverse or dataverse.xhtml
+        //  - expect "clear your search" url to link to root
+        // ----------------------------------
+        String badQuery1 = "/?q=&fq0=authorName_ss%25253A%252522U.S.+Department+of+Commerce%25252C+Bureau+of+the+Census%25252C+Geography+Division%252522&types=dataverses%25253Adatasets&sort=dateSort&order=desc";
+        Response resp1 = given()
+                        .get(badQuery1);
+        
+        String htmlStr = resp1.asString();        
+        assertTrue(htmlStr.contains(expectedErrMsg));
+
+        // ----------------------------------
+        // Malformed query string 2 with Dataverse alias
+        // - From https://github.com/IQSS/dataverse/issues/2605
+        // - expect "clear your search" url to link to sub dataverse
+
+        // ----------------------------------
+        String badQuery2 = "/dataverse/" + dvAlias + "?fq0=authorName_ss:\"Bar,+Foo";
+        Response resp2 = given()
+                        .get(badQuery2);
+        
+        expectedErrMsg = BundleUtil.getStringFromBundle("dataverse.search.facet.error", Arrays.asList(dvAlias));
+
+        String htmlStr2 = resp2.asString();        
+        assertTrue(htmlStr2.contains(expectedErrMsg));
+        
+        
+        // ----------------------------------
+        // Malformed query string 3 with Dataverse alias
+        // - expect "clear your search" url to link to sub dataverse
+        // ----------------------------------
+        String badQuery3 = "/dataverse/" + dvAlias + "?q=&fq0=authorName_ss%3A\"\"Finch%2C+Fiona\"&types=dataverses%3Adatasets&sort=dateSort&order=desc";
+        Response resp3 = given()
+                        .get(badQuery3);
+        
+        String htmlStr3 = resp3.asString();        
+
+        expectedErrMsg = BundleUtil.getStringFromBundle("dataverse.search.facet.error", Arrays.asList(dvAlias));
+        assertTrue(htmlStr3.contains(expectedErrMsg));
+
+    
+        // ----------------------------------
+        // Malformed query string 4 with Dataverse id
+        //  - expect "clear your search" url to link to root
+        // ----------------------------------
+        String badQuery4 = "/dataverse.xhtml?id=" + dvId + "&q=&fq0=authorName_ss%3A\"\"Finch%2C+Fiona\"&types=dataverses%3Adatasets&sort=dateSort&order=desc";
+        Response resp4 = given()
+                        .get(badQuery4);
+        
+        String htmlStr4 = resp4.asString();        
+        System.out.println("------htmlStr4: " + resp4);
+
+        // Solr searches using ?id={id} incorrectly searches the root
+        //
+        expectedErrMsg = BundleUtil.getStringFromBundle("dataverse.search.facet.error", Arrays.asList("root"));
+        assertTrue(htmlStr4.contains(expectedErrMsg));
+
+    }
 }

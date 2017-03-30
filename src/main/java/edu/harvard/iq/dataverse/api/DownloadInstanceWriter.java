@@ -106,7 +106,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                     requestedMimeType = "application/octet-stream";
                                 } 
                                 accessObject = 
-                                        DataFileConverter.performFormatConversion(
+                                        DataConverter.performFormatConversion(
                                         sf, 
                                         (FileAccessIO)accessObject, 
                                         di.getConversionParamValue(), requestedMimeType);
