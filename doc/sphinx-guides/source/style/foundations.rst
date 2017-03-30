@@ -16,24 +16,24 @@ The grid layout uses ``.col-sm-*`` classes for horizontal groups of columns, ins
 .. code-block:: html
 
     <div class="container">
-        <div class="row">
-        	<div class="col-sm-1">.col-sm-1</div>
-        	<div class="col-sm-1">.col-sm-1</div>
-        	<div class="col-sm-1">.col-sm-1</div>
-        	<div class="col-sm-1">.col-sm-1</div>
-        	<div class="col-sm-1">.col-sm-1</div>
-        	<div class="col-sm-1">.col-sm-1</div>
-        	<div class="col-sm-1">.col-sm-1</div>
-        	<div class="col-sm-1">.col-sm-1</div>
-        	<div class="col-sm-1">.col-sm-1</div>
-        	<div class="col-sm-1">.col-sm-1</div>
-        	<div class="col-sm-1">.col-sm-1</div>
-        	<div class="col-sm-1">.col-sm-1</div>
-        </div>
-        <div class="row">
-        	<div class="col-sm-8">.col-sm-8</div>
-        	<div class="col-sm-4">.col-sm-4</div>
-        </div>
+      <div class="row">
+        <div class="col-sm-1">.col-sm-1</div>
+        <div class="col-sm-1">.col-sm-1</div>
+        <div class="col-sm-1">.col-sm-1</div>
+        <div class="col-sm-1">.col-sm-1</div>
+        <div class="col-sm-1">.col-sm-1</div>
+        <div class="col-sm-1">.col-sm-1</div>
+        <div class="col-sm-1">.col-sm-1</div>
+        <div class="col-sm-1">.col-sm-1</div>
+        <div class="col-sm-1">.col-sm-1</div>
+        <div class="col-sm-1">.col-sm-1</div>
+        <div class="col-sm-1">.col-sm-1</div>
+        <div class="col-sm-1">.col-sm-1</div>
+      </div>
+      <div class="row">
+        <div class="col-sm-8">.col-sm-8</div>
+        <div class="col-sm-4">.col-sm-4</div>
+      </div>
     </div>
     
     
@@ -44,11 +44,12 @@ The typeface, text size, and line-height are set in the `Bootstrap CSS <http://g
 
 .. code-block:: css
 
-   body {
-     font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
-     font-size: 14px;
-     line-height: 1.42857143;
-   }
+    /* bootstrap.css */
+    body {
+      font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+      font-size: 14px;
+      line-height: 1.42857143;
+    }
 
 
 Color Palette
@@ -57,33 +58,26 @@ Color Palette
 The default color palette is set in the `Bootstrap CSS <http://getbootstrap.com/css/#less-variables-colors>`__. It provides the background, border, text and link colors used across the application.
 
 
-Object/Brand
+Brand Colors
 ------------
 
-Dataverse uses a particular color palette to help users identify common types of objects quickly and easily.
+Dataverse uses a particular color palette to help users quickly and easily identify the different types of objects: dataverses, datasets, and files.
 
-The brand color, a "burnt orange" `#C55B28`, is set in our custom CSS stylesheet and applied to the Dataverse logo and brand name in the navbar, as well other Dataverse objects.
+We use our brand color, a custom burnt orange ``{color:#C55B28;}``, which is set in our CSS stylesheet and applied to the Dataverse logo and brand name in the navbar, as well as other dataverse objects.
 
-The blue "dataset" style is used to help identify dataset related objects in Dataverse. 
-
-The grey "file" style is used to help identify file related objects in Dataverse.
-
-For links, we use the same blue as we use for datasets: `.ui-widget-content a {color: #428BCA;}`
+There is also a set of blue "dataset" classes and grey "file" classes, used to help identify those objects when searching and navigating the application.
 
 .. code-block:: css
 
     /* structure.css */
-    .text-brand {
-      color:#C55B28;
-      /* dataverse icon, search-include, mydata-cards_min */
-    }
-    .bg-brand {
+    .bg-dataverse {
       background:#C55B28;
-      /* not used anywhere */
     }
-    .bg-muted {
-      background:#f5f5f5;
-      /* header, roles-assign */
+    .bg-dataset {
+      background:#337AB7;
+    }
+    .bg-file {
+      background:#F5F5F5;
     }
 
     #navbarFixed .navbar-brand {
@@ -98,29 +92,57 @@ For links, we use the same blue as we use for datasets: `.ui-widget-content a {c
   <div class="panel panel-default code-example">
     <div class="panel-body">
       <div class="color-swatches">
-        <div class="color-swatch bg-dataverse" style="background-color:#C55B28;"></div>
-        <div class="color-swatch bg-dataset" style="background-color:#428BCA;"></div>
-        <div class="color-swatch bg-file" style="background-color:grey;"></div>
-        <div class="color-swatch bg-muted" style="background-color:#f5f5f5;"></div>
+        <div class="color-swatch bg-dataverse"></div>
+        <div class="color-swatch bg-dataset"></div>
+        <div class="color-swatch bg-file"></div>
       </div>
     </div>
   </div>
 
 .. code-block:: html
   
-   <div class="bg-brand"></div>
-   <div class="bg-dataset"></div>
-   <div class="bg-file"></div>
-   <div class="bg-muted"></div>
+   <div class="bg-dataverse">...</div>
+   <div class="bg-dataset">...</div>
+   <div class="bg-file">...</div>
+
+.. code-block:: css
+
+    /* structure.css */
+    .text-dataverse {
+      color:#C55B28;
+    }
+    .text-dataset {
+      color:#31708F;
+    }
+    .text-file {
+      color:#F5F5F5;
+    }
+
+.. raw:: html
+
+  <div class="panel panel-default code-example">
+    <div class="panel-body">
+      <p class="text-dataverse">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+      <p class="text-dataset">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+      <p class="text-file">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+    </div>
+  </div>
+
+.. code-block:: html
+  
+   <p class="text-dataverse">...</p>
+   <p class="text-dataset">...</p>
+   <p class="text-file">...</p>
 
 
-Text
-----
+Text Colors
+-----------
 
 Text color is the default setting from `Bootstrap CSS <http://getbootstrap.com/css/#less-variables-scaffolding>`__.
 
 .. code-block:: css
 
+    /* bootstrap.css */
     body {
       color: #333;
     }
@@ -138,8 +160,8 @@ Text color is the default setting from `Bootstrap CSS <http://getbootstrap.com/c
    <p>...</p>
 
 
-Links
------
+Link Colors
+-----------
 
 Link color is the default setting from `Bootstrap CSS <http://getbootstrap.com/css/#less-variables-links>`__. The hover state is set to 15% darker using Less variables and functions.
 
@@ -150,6 +172,14 @@ Link color is the default setting from `Bootstrap CSS <http://getbootstrap.com/c
       color: #337AB7;
     }
     a:hover {
+      color: #23527C;
+    }
+
+    /* structure.css */
+    .ui-widget-content a {
+      color: #337AB7;
+    }
+    .ui-widget-content a:hover, .ui-widget-content a:focus {
       color: #23527C;
     }
 
@@ -175,7 +205,7 @@ Link color is the default setting from `Bootstrap CSS <http://getbootstrap.com/c
       <h3 class="panel-title">Warning!</h3>
     </div>
     <div class="panel-body bg-warning">
-      <p>There is a CSS override issue with both Bootstrap and PrimeFaces stylesheets over the link color.</p>
+      <p>There is a CSS override issue with the link color due to the use of both a Bootstrap and a PrimeFaces stylesheet in the UI. We've added CSS settings like <code>.ui-widget-content a {color: #428BCA;}</code> to our stylesheet to keep the link color consistent.</p>
     </div>
   </div>
 
@@ -200,11 +230,33 @@ Contextual classes from `Bootstrap CSS <http://getbootstrap.com/css/#helper-clas
 
 .. code-block:: html
 
-   <div class="bg-primary"></div>
-   <div class="bg-success"></div>
-   <div class="bg-info"></div>
-   <div class="bg-warning"></div>
-   <div class="bg-danger"></div>
+   <div class="bg-primary">...</div>
+   <div class="bg-success">...</div>
+   <div class="bg-info">...</div>
+   <div class="bg-warning">...</div>
+   <div class="bg-danger">...</div>
+
+.. raw:: html
+
+  <div class="panel panel-default code-example">
+    <div class="panel-body">
+      <p class="text-muted">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+      <p class="text-primary">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+      <p class="text-success">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+      <p class="text-info">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+      <p class="text-warning">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+      <p class="text-danger">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+    </div>
+  </div>
+
+.. code-block:: html
+
+   <p class="text-muted">...</p>
+   <p class="text-primary">...</p>
+   <p class="text-success">...</p>
+   <p class="text-info">...</p>
+   <p class="text-warning">...</p>
+   <p class="text-danger">...</p>
 
 
 Icons
@@ -212,8 +264,8 @@ Icons
 
 We use various icons across the application. They appear in buttons and as default thumbnails for dataverses, datasets, and files.
 
-Bootstrap Icons
----------------
+Bootstrap Glyphicons
+--------------------
 
 There are over 250 glyphs in font format from the Glyphicon Halflings set provided by `Bootstrap <http://getbootstrap.com/components/#glyphicons>`__. We utilize these mainly as icons inside of buttons and in message blocks.
 
@@ -245,8 +297,8 @@ There are over 250 glyphs in font format from the Glyphicon Halflings set provid
        <span class="glyphicon glyphicon-leaf" aria-hidden="true"></span> Leaf
    </button>
 
-FontCustom Icons
-----------------
+FontCustom Icon Font
+--------------------
 
 With the use of `FontCustom <https://github.com/FontCustom/fontcustom>`__ we were able to generate our own custom icon webfonts. We use these in the search result cards to help distinguish between dataverse, dataset and file results.
 
@@ -254,21 +306,21 @@ With the use of `FontCustom <https://github.com/FontCustom/fontcustom>`__ we wer
 
 	<div class="panel panel-default code-example">
 	  <div class="panel-body">
-     <span class="icon-dataverse text-brand h1" style="color:#C55B28;"></span>
-     <span class="icon-dataset text-info h1"></span>
-     <span class="icon-other text-muted h1"></span>
+     <span class="icon-dataverse text-dataverse h1"></span>
+     <span class="icon-dataset text-dataset h1"></span>
+     <span class="icon-file text-file h1"></span>
 	  </div>
 	</div>
 
 .. code-block:: html
 
-   <span class="icon-dataverse text-brand"></span>
-   <span class="icon-dataset text-info"></span>
-   <span class="icon-other text-muted"></span>
+   <span class="icon-dataverse text-dataverse"></span>
+   <span class="icon-dataset text-dataset"></span>
+   <span class="icon-file text-file"></span>
 
 
-Socicon Font Icons
-------------------
+Socicon Icon Font 
+-----------------
 
 We use `Socicon <http://www.socicon.com>`__ for our custom social icons. In the footer we use icons for Twitter and Github. In our Share feature, we also use custom social icons to allow users to select from a list of social media channels.
 

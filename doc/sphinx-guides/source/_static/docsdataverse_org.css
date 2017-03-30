@@ -36,6 +36,13 @@ iframe {
 .navbar-default a.navbar-brand, .navbar-default a.navbar-brand:hover {
     color: #c55b28;
 }
+.bg-dataverse, bg-brand {background:#C55B28;}
+.bg-dataset {background:#337AB7;}
+.bg-file {background:#777777;}
+.bg-muted {background:#F5F5F5;}
+.text-dataverse, .text-brand {color:#C55B28;}
+.text-dataset {color:#31708F;}
+.text-file {color:#777777;}
 
 #dataverse-org-homepage-url {
     height: 50px;
