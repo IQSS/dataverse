@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.search.IndexResponse;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.jsonAsDatasetDto;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -97,8 +98,7 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
                         }
                     }
                 } catch (Throwable e) {
-                    String exceptionName=e.getClass().getSimpleName();
-                    throw new CommandException(ResourceBundle.getBundle("Bundle").getString("dataset.publish.error."+exceptionName), this);
+                    throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", idServiceBean.getProviderInformation()),this); 
                 }
             } else {
                 throw new IllegalCommandException("This dataset may not be published because its id registry service is not supported.", this);
@@ -223,8 +223,7 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
             try{
                 idServiceBean.publicizeIdentifier(savedDataset);
             }catch (Throwable e) {
-                String exceptionName=e.getClass().getSimpleName();
-                throw new CommandException(ResourceBundle.getBundle("Bundle").getString("dataset.publish.error."+exceptionName), this);
+                throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", idServiceBean.getProviderInformation()),this); 
             }
         PrivateUrl privateUrl = ctxt.engine().submit(new GetPrivateUrlCommand(getRequest(), savedDataset));
         if (privateUrl != null) {
@@ -248,6 +247,6 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
         IndexResponse indexResponse = ctxt.solrIndex().indexPermissionsForOneDvObject(savedDataset);
 
         return savedDataset;
-    }
+    }    
 
 }

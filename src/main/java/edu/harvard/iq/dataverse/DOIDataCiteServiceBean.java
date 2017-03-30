@@ -5,7 +5,9 @@
  */
 package edu.harvard.iq.dataverse;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -237,5 +239,15 @@ public class DOIDataCiteServiceBean extends AbstractIdServiceBean {
             logger.log(Level.WARNING, "message {0}", e.getMessage());
             return false;
         }
+    }
+    
+    @Override
+    public List<String> getProviderInformation(){
+        ArrayList <String> providerInfo = new ArrayList<>();
+        String providerName = "DataCite";
+        String providerLink = "http://status.datacite.org";
+        providerInfo.add(providerName);
+        providerInfo.add(providerLink);
+        return providerInfo;
     }
 }

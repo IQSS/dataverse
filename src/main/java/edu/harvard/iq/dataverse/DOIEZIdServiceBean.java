@@ -7,8 +7,10 @@ package edu.harvard.iq.dataverse;
 
 import edu.ucsb.nceas.ezid.EZIDException;
 import edu.ucsb.nceas.ezid.EZIDService;
+import java.util.ArrayList;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -228,4 +230,15 @@ public class DOIEZIdServiceBean extends AbstractIdServiceBean {
         }
         
     }
+    
+    @Override
+    public List<String> getProviderInformation(){
+        ArrayList <String> providerInfo = new ArrayList<>();
+        String providerName = "EZID";
+        String providerLink = baseURLString;
+        providerInfo.add(providerName);
+        providerInfo.add(providerLink);
+        return providerInfo;
+    }
 }
+

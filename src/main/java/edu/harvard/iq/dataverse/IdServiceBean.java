@@ -15,6 +15,8 @@ public interface IdServiceBean {
     boolean alreadyExists(Dataset dataset) throws Exception;
 
     boolean registerWhenPublished();
+    
+    List<String> getProviderInformation();
 
     String createIdentifier(Dataset dataset) throws Throwable;
 
