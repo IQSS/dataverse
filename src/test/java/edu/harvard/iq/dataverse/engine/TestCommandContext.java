@@ -181,5 +181,10 @@ public class TestCommandContext implements CommandContext {
     public PrivateUrlServiceBean privateUrl() {
         return null;
     }
-	
+
+    @Override
+    public DatasetVersionServiceBean datasetVersion() {
+        return null;
+    }
+
 }

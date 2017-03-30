@@ -106,7 +106,12 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
     private Timestamp permissionModificationTime;
 
     private Timestamp permissionIndexTime;
-    
+
+    /**
+     * previewImageAvailable could also be thought of as "thumbnail has been
+     * generated. However, were all three thumbnails generated? We might need a
+     * boolean per thumbnail size.
+     */
     private boolean previewImageAvailable;
     
     public boolean isPreviewImageAvailable() {

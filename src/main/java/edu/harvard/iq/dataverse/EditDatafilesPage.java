@@ -1,25 +1,20 @@
-
 package edu.harvard.iq.dataverse;
-
-// TODO: 
-// clean up the imports. -- L.A. 4.2
 
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
-import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
 import edu.harvard.iq.dataverse.datasetutility.FileReplaceException;
 import edu.harvard.iq.dataverse.datasetutility.FileReplacePageHelper;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetThumbnailCommand;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
-import edu.harvard.iq.dataverse.search.FileView;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.ingest.IngestUtil;
 import edu.harvard.iq.dataverse.search.FileView;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -62,7 +57,6 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import java.text.DateFormat;
 import java.util.Arrays;
 import java.util.ResourceBundle;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import javax.faces.event.AjaxBehaviorEvent;
@@ -2143,6 +2137,13 @@ public class EditDatafilesPage implements java.io.Serializable {
     
     private FileMetadata fileMetadataSelectedForThumbnailPopup = null; 
 
+    /**
+     * @todo For consistency, we should disallow users from setting the
+     * thumbnail to a restricted file. We enforce this rule in the newer
+     * workflow in dataset-widgets.xhtml. The logic to show the "Set Thumbnail"
+     * button is in editFilesFragment.xhtml and it would be nice to move it to
+     * Java since it's getting long and a bit complicated.
+     */
     public void  setFileMetadataSelectedForThumbnailPopup(FileMetadata fm){
        fileMetadataSelectedForThumbnailPopup = fm; 
        alreadyDesignatedAsDatasetThumbnail = getUseAsDatasetThumbnail();
@@ -2195,7 +2196,32 @@ public class EditDatafilesPage implements java.io.Serializable {
         // And reset the selected fileMetadata:
         fileMetadataSelectedForThumbnailPopup = null;
     }
-    
+
+    public void deleteDatasetLogoAndUseThisDataFileAsThumbnailInstead() {
+        logger.fine("For dataset id " + dataset.getId() + " the current thumbnail is from a dataset logo rather than a dataset file, blowing away the logo and using this FileMetadata id instead: " + fileMetadataSelectedForThumbnailPopup);
+        /**
+         * @todo Rather than deleting and merging right away, try to respect how
+         * this page seems to stage actions and giving the user a chance to
+         * review before clicking "Save Changes".
+         */
+        try {
+            DatasetThumbnail datasetThumbnail = commandEngine.submit(new UpdateDatasetThumbnailCommand(dvRequestService.getDataverseRequest(), dataset, UpdateDatasetThumbnailCommand.UserIntent.setDatasetFileAsThumbnail, fileMetadataSelectedForThumbnailPopup.getDataFile().getId(), null));
+            // look up the dataset again because the UpdateDatasetThumbnailCommand mutates (merges) the dataset
+            dataset = datasetService.find(dataset.getId());
+        } catch (CommandException ex) {
+            String error = "Problem setting thumbnail for dataset id " + dataset.getId() + ".: " + ex;
+            // show this error to the user?
+            logger.info(error);
+        }
+    }
+
+    public boolean isThumbnailIsFromDatasetLogoRatherThanDatafile() {
+        DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail();
+        if (datasetThumbnail != null && !datasetThumbnail.isFromDataFile()) {
+            return true;
+        }
+        return false;
+    }
 
     /* 
      * Items for the "Tags (Categories)" popup.

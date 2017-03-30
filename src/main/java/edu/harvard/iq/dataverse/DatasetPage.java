@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
+import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -220,6 +221,19 @@ public class DatasetPage implements java.io.Serializable {
     private String dataverseSiteUrl = ""; 
     
     private boolean removeUnusedTags;
+    
+
+    public String getThumbnailString() {
+        DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail();
+        if (datasetThumbnail == null) {
+            return null;
+        }
+        return datasetThumbnail.getBase64image();
+    }
+
+    public void setThumbnailString(String thumbnailString) {
+        //Dummy method
+    }
 
     public boolean isRemoveUnusedTags() {
         return removeUnusedTags;
@@ -390,7 +404,7 @@ public class DatasetPage implements java.io.Serializable {
         setReleasedVersionTabList(resetReleasedVersionTabList());
         
     }
-
+    
     public void updateLinkableDataverses() {
         dataversesForLinking = new ArrayList();
         linkingDVSelectItems = new ArrayList();
@@ -1186,7 +1200,6 @@ public class DatasetPage implements java.io.Serializable {
         } else {
             return permissionsWrapper.notFound();
         }
-
         try {
             privateUrl = commandEngine.submit(new GetPrivateUrlCommand(dvRequestService.getDataverseRequest(), dataset));
             if (privateUrl != null) {
@@ -3510,6 +3523,15 @@ public class DatasetPage implements java.io.Serializable {
 
     public void setTwoRavensHelper(TwoRavensHelper twoRavensHelper) {
         this.twoRavensHelper = twoRavensHelper;
+    }
+
+    public String getThumbnail() {
+        DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail();
+        if (datasetThumbnail != null) {
+            return datasetThumbnail.getBase64image();
+        } else {
+            return null;
+        }
     }
 
 }
