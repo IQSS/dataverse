@@ -3,7 +3,6 @@ package edu.harvard.iq.dataverse.dataset;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.awt.image.BufferedImage;
@@ -57,8 +56,9 @@ public class DatasetUtil {
             }
         }
         for (FileMetadata fileMetadata : dataset.getLatestVersion().getFileMetadatas()) {
-            DataFile dataFile = fileMetadata.getDataFile();
-            if (dataFile != null && (dataFile.isImage() || dataFile.getContentType().equalsIgnoreCase("application/zipped-shapefile"))
+            DataFile dataFile = fileMetadata.getDataFile();  
+            
+            if (dataFile != null && ImageThumbConverter.isThumbnailAvailable(dataFile)
                     && !dataFile.isRestricted()) {                
                 String imageSourceBase64 = null;
                 imageSourceBase64 = ImageThumbConverter.getImageThumbAsBase64(dataFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
