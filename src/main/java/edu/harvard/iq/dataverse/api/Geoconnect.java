@@ -28,7 +28,7 @@ public class Geoconnect extends AbstractApiBean {
     @Path("mapLayerMetadatas/check")
     public Response checkMapLayerMetadatas() {
         JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
-        mapLayerMetadataSrv.findAll().stream().map((unmodified) -> doTheThing(unmodified)).forEach((jsonObjectBuilder) -> {
+        mapLayerMetadataSrv.findAll().stream().map((unmodified) -> checkStatus(unmodified)).forEach((jsonObjectBuilder) -> {
             jsonArrayBuilder.add(jsonObjectBuilder);
         });
         return ok(jsonArrayBuilder);
@@ -41,10 +41,10 @@ public class Geoconnect extends AbstractApiBean {
         if (mapLayerMetadata == null) {
             return error(NOT_FOUND, "Could not find MapLayerMetadata based on id " + idSupplied);
         }
-        return ok(doTheThing(mapLayerMetadata));
+        return ok(checkStatus(mapLayerMetadata));
     }
 
-    private JsonObjectBuilder doTheThing(MapLayerMetadata unmodified) {
+    private JsonObjectBuilder checkStatus(MapLayerMetadata unmodified) {
         JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
         jsonObjectBuilder.add("fileId", unmodified.getDataFile().getId());
         jsonObjectBuilder.add("mapLayerMetadataId", unmodified.getId());
