@@ -344,7 +344,7 @@ We use `Socicon <http://www.socicon.com>`__ for our custom social icons. In the 
 Logos
 =====
 
-The Dataverse Project logo (below) is diplayed in the footer, and was the basis for the creation of the application's icons and favicon.
+The Dataverse Project logo (below) is displayed in the footer, and was the basis for the creation of the application's icons and favicon.
 
 .. raw:: html
 
