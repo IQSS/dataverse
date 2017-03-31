@@ -1,18 +1,20 @@
 package edu.harvard.iq.dataverse.api;
 
+import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
+import com.mashape.unirest.request.GetRequest;
 import edu.harvard.iq.dataverse.MapLayerMetadata;
-import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.CheckMapLayerMetadataCommand;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import java.sql.Timestamp;
+import java.util.Date;
+import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
-import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 
 /**
  * @todo consolidate with WorldMapRelatedData (/api/worldmap)?
@@ -20,41 +22,57 @@ import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 @Path("admin/geoconnect")
 public class Geoconnect extends AbstractApiBean {
 
-    @GET
-    @Path("mapLayerMetadatas")
-    public Response getMapLayerMetadatas() {
+    private static final Logger logger = Logger.getLogger(Geoconnect.class.getCanonicalName());
+
+    @POST
+    @Path("mapLayerMetadatas/check")
+    public Response checkMapLayerMetadatas() {
         JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
-        mapLayerMetadataSrv.findAll().stream().forEach((mapLayerMetadata) -> {
-            jsonArrayBuilder.add(json(mapLayerMetadata));
+        mapLayerMetadataSrv.findAll().stream().map((unmodified) -> doTheThing(unmodified)).forEach((jsonObjectBuilder) -> {
+            jsonArrayBuilder.add(jsonObjectBuilder);
         });
         return ok(jsonArrayBuilder);
     }
 
     @POST
-    @Path("mapLayerMetadatas/check")
-    public Response checkMapLayerMetadatas() {
-        DataverseRequest dataverseRequest = null;
+    @Path("mapLayerMetadatas/check/{id}")
+    public Response checkMapLayerMetadatas(@PathParam("id") Long idSupplied) {
+        MapLayerMetadata mapLayerMetadata = mapLayerMetadataSrv.find(idSupplied);
+        if (mapLayerMetadata == null) {
+            return error(NOT_FOUND, "Could not find MapLayerMetadata based on id " + idSupplied);
+        }
+        return ok(doTheThing(mapLayerMetadata));
+    }
+
+    private JsonObjectBuilder doTheThing(MapLayerMetadata unmodified) {
+        JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        jsonObjectBuilder.add("fileId", unmodified.getDataFile().getId());
+        jsonObjectBuilder.add("mapLayerMetadataId", unmodified.getId());
+        jsonObjectBuilder.add("layerLink", unmodified.getLayerLink());
+        jsonObjectBuilder.add("fileLandingPage", systemConfig.getDataverseSiteUrl() + "/file.xhtml?fileId=" + unmodified.getDataFile().getId());
+        MapLayerMetadata modified = updateLastVerifiedTimeAndStatusCode(unmodified);
+        if (modified != null) {
+            jsonObjectBuilder.add("lastVerifiedStatus", modified.getLastVerifiedStatus());
+        } else {
+            jsonObjectBuilder.add("error", "Could not check status of map associate with file id " + unmodified.getDataFile().getId());
+        }
+        return jsonObjectBuilder;
+    }
+
+    private MapLayerMetadata updateLastVerifiedTimeAndStatusCode(MapLayerMetadata mapLayerMetadata) {
+        String layerLink = mapLayerMetadata.getLayerLink();
+        GetRequest getRequest = Unirest.get(layerLink);
         try {
-            dataverseRequest = createDataverseRequest(findUserOrDie());
-        } catch (WrappedResponse wr) {
-            return error(BAD_REQUEST, "Couldn't find user to execute command: " + wr.getLocalizedMessage());
+            int statusCode = getRequest.asBinary().getStatus();
+            mapLayerMetadata.setLastVerifiedStatus(statusCode);
+            Timestamp now = new Timestamp(new Date().getTime());
+            mapLayerMetadata.setLastVerifiedTime(now);
+            logger.fine("Setting status code to " + statusCode + " and timestamp to " + now + " for MapLayerMetadata id " + mapLayerMetadata.getId() + ".");
+            return mapLayerMetadataSrv.save(mapLayerMetadata);
+        } catch (UnirestException ex) {
+            logger.info("Couldn't update last verfied status code or timestamp: " + ex.getLocalizedMessage());
+            return null;
         }
-        JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
-        for (MapLayerMetadata unmodified : mapLayerMetadataSrv.findAll()) {
-            JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
-            jsonObjectBuilder.add("fileId", unmodified.getDataFile().getId());
-            jsonObjectBuilder.add("mapLayerMetadataId", unmodified.getId());
-            jsonObjectBuilder.add("layerLink", unmodified.getLayerLink());
-            jsonObjectBuilder.add("fileLandingPage", systemConfig.getDataverseSiteUrl() + "/file.xhtml?fileId=" + unmodified.getDataFile().getId());
-            try {
-                MapLayerMetadata modified = engineSvc.submit(new CheckMapLayerMetadataCommand(dataverseRequest, unmodified.getDataFile()));
-                jsonObjectBuilder.add("lastVerifiedStatus", modified.getLastVerifiedStatus());
-            } catch (CommandException ex) {
-                jsonObjectBuilder.add("Could not check status: ", ex.getLocalizedMessage());
-            }
-            jsonArrayBuilder.add(jsonObjectBuilder);
-        }
-        return ok(jsonArrayBuilder);
     }
 
 }

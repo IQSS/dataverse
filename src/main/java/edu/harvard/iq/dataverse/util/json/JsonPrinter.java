@@ -18,7 +18,6 @@ import edu.harvard.iq.dataverse.DataverseTheme;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.MapLayerMetadata;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
@@ -37,8 +36,6 @@ import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.util.DatasetFieldWalker;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
-import java.io.StringReader;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Set;
 import javax.json.Json;
@@ -786,28 +783,6 @@ public class JsonPrinter {
         } else {
             return null;
         }
-    }
-
-    public static JsonObjectBuilder json(MapLayerMetadata mapLayerMetadata) {
-        Timestamp lastVerifiedTimestamp = mapLayerMetadata.getLastVerifiedTime();
-        String lastVerifiedString = null;
-        if (lastVerifiedTimestamp != null) {
-            lastVerifiedString = Util.getDateTimeFormat().format(lastVerifiedTimestamp);
-        }
-        return jsonObjectBuilder()
-                .add("id", mapLayerMetadata.getId())
-                .add("embedMapLink", mapLayerMetadata.getEmbedMapLink())
-                .add("joinDescription", mapLayerMetadata.getJoinDescription())
-                .add("layerLink", mapLayerMetadata.getLayerLink())
-                .add("layerName", mapLayerMetadata.getLayerName())
-                .add("mapImageLink", mapLayerMetadata.getMapImageLink())
-                .add("mapLayerLinks", Json.createReader(new StringReader(mapLayerMetadata.getMapLayerLinks())).readObject())
-                .add("worldmapUsername", mapLayerMetadata.getWorldmapUsername())
-                .add("isJoinLayer", mapLayerMetadata.isJoinLayer())
-                .add("dataFileId", mapLayerMetadata.getDataFile().getId())
-                .add("datasetID", mapLayerMetadata.getDataset().getId())
-                .add("lastVerifiedStatus", mapLayerMetadata.getLastVerifiedStatus())
-                .add("lastVerifiedTime", lastVerifiedString);
     }
 
 }
