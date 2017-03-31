@@ -187,7 +187,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         if (fmd != null){
             file  = fmd.getDataFile();
         }
-        if (guestbookResponse != null && guestbookResponse.getDataFile() != null){
+        if (guestbookResponse != null && guestbookResponse.getDataFile() != null && file == null){
             file  = guestbookResponse.getDataFile();
         }
         

@@ -2,46 +2,34 @@
 Branching Strategy
 ==================
 
-Please note! The text below reflects the branching strategy for Dataverse 4.2.3 and below but this is under review. For updates please follow https://github.com/IQSS/dataverse/issues/2863
+.. contents:: :local:
 
 Goals
 -----
 
-The goals of the Dataverse branching strategy are twofold:
+The goals of the Dataverse branching strategy are:
 
-- have developers "stay together" in the same release branch (i.e. 4.0.1), resolving conflicts early
+- allow for concurrent development
+- only ship stable code
 
-- allow for concurrent development in multiple branches, for example:
+We follow a simplified "git flow" model described at http://nvie.com/posts/a-successful-git-branching-model/ involving a "master" branch, a "develop" branch, and feature branches such as "1234-bug-fix".
 
-  - hot fix branch created from 4.0 tag (i.e. 4.0-patch.1)
-  - bug fixes in an unreleased 4.0.1 release branch found in QA
-  - feature development in an upcoming 4.0.2 release branch
+Branches
+--------
 
-Release branches that match milestones and future version numbers (i.e. 4.0.1, 4.0.2) are used to achieve these goals. Think of release branches as trains. If you miss the 4.0.1 train, hopefully you'll catch the 4.0.2! The goal is always to get the best code into each release.
+The "master" Branch
+~~~~~~~~~~~~~~~~~~~
 
-Persistent Branches
--------------------
+The "`master <https://github.com/IQSS/dataverse/tree/master>`_" branch represents released versions of Dataverse. As mentioned in the :doc:`making-releases` section, at release time we update the master branch to include all the code for that release. Commits are never made directly to master. Rather, master is updated only when we merge code into it from the "develop" branch.
 
-The "master" branch is the only persistent branch. Commits should never be made directly to master. Commits are only made to release branches. Release branches are merged in "master" just before tagging per :doc:`/developers/making-releases`.
+The "develop" Branch
+~~~~~~~~~~~~~~~~~~~~
 
-Release Branches
-----------------
+The "`develop <https://github.com/IQSS/dataverse>`_" branch represents code that was stable enough to merge from a "feature" branch (described below) and that will make it into the next release. Like master, commits are never made to the develop branch. The develop branch is where integration occurs. Your goal is have your code merged into the develop branch after it has been reviewed.
 
-When developers feel the code in a release branch (i.e. 4.0.1) is ready, it is passed to QA. At this point feature development in that release branch (i.e. 4.0.1) is frozen and a new release branch (i.e. 4.0.2) is created from that commit. The frozen release branch is sent to QA for testing.
+Feature Branches
+~~~~~~~~~~~~~~~~
 
-Feature Development
--------------------
+Feature branches are used for both developing features and fixing bugs. They are named after the GitHub issue they are meant to address, which means the branch should not be created until the GitHub issue exists. For example, if https://github.com/IQSS/dataverse/issues/1234 had a title of "Bug fix", you would name your branch "1234-bug-fix" or some other short "slug" with the issue number at the start.
 
-Developers who have push access to https://github.com/IQSS/dataverse are welcome to push commits directly to the branch corresponding to the milestone the issue tracking the feature has been assigned. For example, if you are working on https://github.com/IQSS/dataverse/issues/2088 and the issue has been assigned to milestone 4.0.1, you are welcome to push directly to the 4.0.1 branch.
-
-Developers who do not have push access should first read https://github.com/IQSS/dataverse/blob/master/CONTRIBUTING.md for general guidelines about contributing code and contacting developers who have the ability to (hopefully!) merge in your contribution. You will likely be advised to submit a pull request against the current release branch that is not yet frozen. For example, if 4.0.1 is frozen (i.e. in QA) the pull request should be made against 4.0.2.
-
-Fixing Bugs in Unreleased Code
-------------------------------
-
-Bugs in the release branch currently in QA (i.e. 4.0.1) will be fixed in that branch referencing an issue number. Assuming the fix is good and passes QA, the release branch in QA (i.e. 4.0.1) will be merged into the release branch currently under feature development (i.e. 4.0.2) to get the bug fix.
-
-Fixing Bugs in Released code
-----------------------------
-
-Bugs found in released code will (like features) be assigned to milestones visible at https://github.com/IQSS/dataverse/milestones
+Always create your feature branch from the latest code in develop, pulling if necessary. Push your feature branch either to your fork of Dataverse or to the main repo at IQSS if you have write access. Create a pull request based on the feature branch you pushed. As mentioned in https://github.com/IQSS/dataverse/blob/develop/CONTRIBUTING.md if you do not have access to advance your pull request into the "Code Review" column at https://waffle.io/IQSS/dataverse you should reach out to ask for it to be moved on your behalf.
