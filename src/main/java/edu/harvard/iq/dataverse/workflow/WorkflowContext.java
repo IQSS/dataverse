@@ -1,6 +1,8 @@
-package edu.harvard.iq.dataverse.workflow.step;
+package edu.harvard.iq.dataverse.workflow;
 
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
 
 /**
  * The context in which the workflow is performed. Contains information steps might
@@ -13,14 +15,16 @@ import edu.harvard.iq.dataverse.Dataset;
  */
 public class WorkflowContext {
     
+    private final DataverseRequest request;
     private final Dataset dataset;
     private final long nextVersionNumber;
     private final long nextMinorVersionNumber;
 
-    public WorkflowContext(Dataset dataset, long nextVersionNumber, long nextMinorVersionNumber) {
-        this.dataset = dataset;
-        this.nextVersionNumber = nextVersionNumber;
-        this.nextMinorVersionNumber = nextMinorVersionNumber;
+    public WorkflowContext(DataverseRequest aRequest, Dataset aDataset, long aNextVersionNumber, long aNextMinorVersionNumber) {
+        request = aRequest;
+        dataset = aDataset;
+        nextVersionNumber = aNextVersionNumber;
+        nextMinorVersionNumber = aNextMinorVersionNumber;       
     }
 
     public Dataset getDataset() {
@@ -33,6 +37,10 @@ public class WorkflowContext {
 
     public long getNextVersionNumber() {
         return nextVersionNumber;
+    }
+
+    public DataverseRequest getRequest() {
+        return request;
     }
     
     public boolean isMinorRelease() {

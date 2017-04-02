@@ -1,0 +1,102 @@
+@startuml
+
+class DvObject <<entity>>
+class DvObjectContainer <<entity>>
+class Dataverse <<entity>>
+class Dataset <<entity>>
+
+Dataset --|> DvObjectContainer
+DvObjectContainer --|>DvObject
+Dataverse -up-|> DvObjectContainer
+DvObject o--> DvObjectContainer: parent
+
+class Workflow <<entity>> {
+  id
+  name
+  description
+}
+
+class WorkflowStepData <<entity>> {
+  providerId: String
+  stepId: String
+  parameters: String
+}
+
+class WorkflowBean <<bean>> {
+  getWorkflows()
+  getWorkflow(id)
+  getStepProvider(id)
+}
+
+class WorkflowContext<OK> {
+  r:DataverseRequest
+  d:Dataset
+  versionData
+  isMinorRelease()
+}
+
+class PendingWorkflow <<entity>> {
+  externalId: UUID
+  workflow: Workflow
+  pendingStep: WorkflowStepData
+  localData: DATA
+  request: DataverseRequest
+  dataset: Dataset
+}
+
+interface WorkflowStepSPI {
+  id
+  getStep(stepId, parameters):Step
+}
+
+interface WorkflowStep<OK> {
+  run( WorkflowContext ): WorkflowStepResult
+  resume( WorkflowContext ): WorkflowStepResult
+  rollback( WorkflowContext  )
+}
+
+class WorkflowStepResult<OK> <<abstract>>
+class OK<OK> <<singleton>>
+class Pending<OK>{
+  localData
+}
+class Failure<OK> {
+  reason:Throwable
+}
+
+package engine.command {
+  class PublishDatasetCommand
+  class ResumeWorkflowCommand
+}
+
+package api {
+  class WorkflowStepResponse <<endpoint>> {
+    POST /step/${externalId}
+  }
+}
+
+OK -up-|> WorkflowStepResult
+Pending -up-|> WorkflowStepResult
+Failure -up-|> WorkflowStepResult
+
+PendingWorkflow o--> Workflow
+PendingWorkflow o--> WorkflowStepData
+PendingWorkflow o--> Dataset
+Workflow "1" *--> "1..*" WorkflowStepData: <<ordered>>
+WorkflowStepSPI ..> WorkflowStep: creates
+WorkflowStep ..> WorkflowStepResult: creates
+WorkflowStepResponse ..> PendingWorkflow : invokes
+WorkflowBean *--> WorkflowStepSPI
+WorkflowBean *--> Workflow
+
+PublishDatasetCommand ..> Workflow : uses
+PublishDatasetCommand ..> Dataset : uses
+PublishDatasetCommand ..> WorkflowBean : uses
+
+ResumeWorkflowCommand ..> Workflow : uses
+ResumeWorkflowCommand ..> Dataset : uses
+ResumeWorkflowCommand ..> WorkflowBean : uses
+
+PendingWorkflow  ..> WorkflowContext: <<contains>>
+
+@enduml
