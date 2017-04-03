@@ -409,7 +409,7 @@ You may need to make some changes to suit your system setup, see the comments fo
       select nextval('datasetidentifier_seq') into identifier;
   END;
   $BODY$
-    LANGUAGE plpgsql
+    LANGUAGE plpgsql;
 
 Note that the SQL above is very Postgres-specific. If necessary, it can be reimplemented 
 in any other SQL flavor - the standard JPA code in the application simply expects 
