@@ -166,6 +166,10 @@ public class SwiftAccessIO extends DataFileIO {
     @Override
     public void copyPath(Path fileSystemPath) throws IOException {
         long newFileSize = -1;
+        Properties p = getSwiftProperties();
+        String swiftEndPoint = p.getProperty("swift.default.endpoint");
+        String swiftDirectory = p.getProperty("swift.swift_endpoint."+swiftEndPoint);
+
         
         if (swiftFileObject == null || !this.canWrite()) {
             open(DataAccessOption.WRITE_ACCESS);
@@ -180,7 +184,7 @@ public class SwiftAccessIO extends DataFileIO {
             swiftFileObject.uploadObject(inputFile);
             //After the files object is uploaded the identifier is changed.
             logger.info(this.swiftFileName+" "+this.swiftFolderPath);
-            this.getDataFile().setStorageIdentifier(DataAccess.SWIFT_DIRECTORY+"/"+this.swiftFolderPath+"/"+this.swiftFileName);
+            this.getDataFile().setStorageIdentifier(swiftDirectory+"/"+this.swiftFolderPath+"/"+this.swiftFileName);
                  
             newFileSize = inputFile.length();
 
@@ -236,6 +240,7 @@ public class SwiftAccessIO extends DataFileIO {
         throw new IOException("SwiftAccessIO: backupAsAux() not yet implemented in this storage driver.");
     }
     
+
     @Override
     public String getStorageLocation() {
         // What should this be, for a Swift file? 
@@ -245,9 +250,10 @@ public class SwiftAccessIO extends DataFileIO {
         return null; 
     }
     
-    @Override
+
+    @Override 
     public Path getFileSystemPath() throws IOException {
-         throw new IOException("SwiftAccessIO: this is a remote AccessIO object, it has no local filesystem path associated with it.");
+        throw new IOException("SwiftAccessIO: this is a remote AccessIO object, it has no local filesystem path associated with it.");
     }
     
     // Auxilary helper methods, Swift-specific:
@@ -295,9 +301,9 @@ public class SwiftAccessIO extends DataFileIO {
             Properties p = getSwiftProperties();
             swiftEndPoint = p.getProperty("swift.default.endpoint");
             swiftFolderPath = this.getDataFile().getOwner().getDisplayName();
-            //swiftContainer = this.getDataFile().getOwner().getIdentifier(); /* TODO: ? */
-            //swiftFileName = storageIdentifier;
-            swiftFileName = this.getDataFile().getDisplayName();
+            //swiftFolderPath = this.getDataFile().getOwner().getIdentifier(); /* TODO: ? */
+            swiftFileName = storageIdentifier;
+            //swiftFileName = this.getDataFile().getDisplayName();
             //Storage Identifier is now updated after the object is uploaded on Swift.
             // this.getDataFile().setStorageIdentifier("swift://"+swiftEndPoint+":"+swiftContainer+":"+swiftFileName);
         } else {
@@ -338,7 +344,14 @@ public class SwiftAccessIO extends DataFileIO {
         }
         
         StoredObject fileObject = dataContainer.getObject(swiftFileName);
+        //file download url for public files
+        String swiftFileUri = getSwiftFileURI(fileObject);
+        logger.info(swiftFileUri + " success");
+        //shows contents of container for public containers
+        String swiftContainerUri = getSwiftContainerURI(fileObject);
+        logger.info(swiftContainerUri + " success");
         
+
         if (!writeAccess && !fileObject.exists()) {
             throw new IOException("SwiftAccessIO: File object "+swiftFileName+" does not exist (Dataverse datafile id: "+this.getDataFile().getId());
         }
@@ -349,8 +362,7 @@ public class SwiftAccessIO extends DataFileIO {
     private InputStream openSwiftFileAsInputStream () throws IOException {
         InputStream in = null;
         
-        swiftFileObject = initializeSwiftFileObject(false);
-        
+        swiftFileObject = initializeSwiftFileObject(false);        
         
         in = swiftFileObject.downloadObjectAsInputStream();
         this.setSize(swiftFileObject.getContentLength());
@@ -369,6 +381,25 @@ public class SwiftAccessIO extends DataFileIO {
         
         return swiftProperties;
     }
+
+    private String getSwiftFileURI(StoredObject fileObject) throws IOException {
+        String fileUri;
+        try {
+            fileUri = fileObject.getPublicURL();
+        }
+        catch (Exception ex){
+            ex.printStackTrace();
+            throw new IOException("SwiftAccessIO: failed to get file storage location");
+        }
+        return fileUri;
+    }
+
+    private String getSwiftContainerURI(StoredObject fileObject) throws IOException {
+        String containerUri;
+        containerUri = getSwiftFileURI(fileObject);
+        containerUri = containerUri.substring(0, containerUri.lastIndexOf('/'));
+        return containerUri;
+    }
     
     Account authenticateWithSwift(String swiftEndPoint) throws IOException {
         
@@ -381,6 +412,7 @@ public class SwiftAccessIO extends DataFileIO {
         String swiftEndPointUsername = p.getProperty("swift.username."+swiftEndPoint);
         String swiftEndPointSecretKey = p.getProperty("swift.password."+swiftEndPoint);
         String swiftEndPointTenantName = p.getProperty("swift.tenant."+swiftEndPoint);
+        String swiftEndPointAuthMethod = p.getProperty("swift.auth_type."+swiftEndPoint);
         
         if (swiftEndPointAuthUrl == null || swiftEndPointUsername == null || swiftEndPointSecretKey == null ||
                 "".equals(swiftEndPointAuthUrl) || "".equals(swiftEndPointUsername) || "".equals(swiftEndPointSecretKey)) {
@@ -404,7 +436,7 @@ public class SwiftAccessIO extends DataFileIO {
         // Keystone vs. Basic
         
         try {
-            if (DataAccess.DEFAULT_AUTHENTICATION_METHOD.equals("keystone")) {
+            if (swiftEndPointAuthMethod.equals("keystone")) {
                 account = new AccountFactory()
                     .setTenantName(swiftEndPointTenantName)
                     .setUsername(swiftEndPointUsername)
@@ -422,7 +454,7 @@ public class SwiftAccessIO extends DataFileIO {
             
         } catch (Exception ex) {
             ex.printStackTrace();
-            throw new IOException("SwiftAccessIO: failed to authenticate" + DataAccess.DEFAULT_AUTHENTICATION_METHOD + "for the end point "+swiftEndPoint);
+            throw new IOException("SwiftAccessIO: failed to authenticate " + swiftEndPointAuthMethod + " for the end point "+swiftEndPoint);
         }
         
         return account;

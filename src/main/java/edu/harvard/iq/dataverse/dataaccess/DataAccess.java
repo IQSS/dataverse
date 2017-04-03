@@ -22,10 +22,8 @@ package edu.harvard.iq.dataverse.dataaccess;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-// import javax.ejb.EJB;
-// import javax.ejb.EJBException;
 import java.io.IOException;
-// import javax.ejb.Stateless;
+
 
 
 /**
@@ -39,12 +37,9 @@ public class DataAccess {
 
     };
 
+    // set by the user in glassfish-setup.sh if DEFFAULT_STORAGE_DRIVER_IDENTIFIER = swift
     public static final String DEFAULT_STORAGE_DRIVER_IDENTIFIER = System.getProperty("dataverse.files.storage-driver-id");
-    public static final String SWIFT_DIRECTORY = System.getProperty("dataverse.files.swift-directory");
-    public static final String DEFAULT_AUTHENTICATION_METHOD = System.getProperty("dataverse.files.auth-type");
     public static final String DEFAULT_SWIFT_ENDPOINT_START_CHARACTERS = System.getProperty("dataverse.files.swift-endpoint-start");
-
-
     
     // The getDataFileIO() methods initialize DataFileIO objects for
     // datafiles that are already saved using one of the supported Dataverse
@@ -84,8 +79,6 @@ public class DataAccess {
     
     // createDataAccessObject() methods create a *new*, empty DataAccess objects,
     // for saving new, not yet saved datafiles.
-    
-
 
     public static DataFileIO createNewDataFileIO (DataFile df, String storageTag) throws IOException {
 

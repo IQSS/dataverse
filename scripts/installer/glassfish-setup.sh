@@ -200,10 +200,8 @@ fi
 # (defaults to dataverse/files in the users home directory)
 ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.directory=${FILES_DIR}"
 #Swift related JVM options:
-./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.swift-directory=http://rdgw.kaizen.massopencloud.org/swift/v1"
 ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.storage-driver-id=swift"
-./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.auth-type=keystone"
-./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.swift-endpoint-start=http://rdgw"
+./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.swift-endpoint-start='http://rdgw'"
 # Rserve-related JVM options: 
 ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.rserve.host=${RSERVE_HOST}"
 ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.rserve.port=${RSERVE_PORT}"
