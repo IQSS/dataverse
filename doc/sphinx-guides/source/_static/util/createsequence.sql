@@ -30,4 +30,4 @@ BEGIN
     select nextval('datasetidentifier_seq') into identifier;
 END;
 $BODY$
-  LANGUAGE plpgsql
+  LANGUAGE plpgsql;
