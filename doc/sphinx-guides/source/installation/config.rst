@@ -372,7 +372,7 @@ By default, Dataverse generates a random 6 character string to use as the identi
 for a Dataset. Set this to "``sequentialNumber``" to use sequential numeric values 
 instead. (the assumed default setting is "``randomString``"). 
 In addition to this setting, a database sequence must be created in the database. 
-We provide the script below (downloadable :download:`here </_static/util/createsequence.sql>`) in the Dataverse source tree (in ``scripts/database/createsequence.sql``).
+We provide the script below (downloadable :download:`here </_static/util/createsequence.sql>`).
 You may need to make some changes to suit your system setup, see the comments for more information: 
 
 .. literalinclude:: ../_static/util/createsequence.sql
