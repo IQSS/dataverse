@@ -21,8 +21,11 @@
 package edu.harvard.iq.dataverse.dataaccess;
 
 import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.IOException;
+
+// javaswift imports
+import org.javaswift.joss.model.Container;
+import org.javaswift.joss.model.StoredObject;
 
 
 
@@ -40,7 +43,9 @@ public class DataAccess {
     // set by the user in glassfish-setup.sh if DEFFAULT_STORAGE_DRIVER_IDENTIFIER = swift
     public static final String DEFAULT_STORAGE_DRIVER_IDENTIFIER = System.getProperty("dataverse.files.storage-driver-id");
     public static final String DEFAULT_SWIFT_ENDPOINT_START_CHARACTERS = System.getProperty("dataverse.files.swift-endpoint-start");
-    
+    public static String swiftFileUri;
+    public static String swiftContainerUri;
+
     // The getDataFileIO() methods initialize DataFileIO objects for
     // datafiles that are already saved using one of the supported Dataverse
     // DataAccess IO drivers.
@@ -106,6 +111,25 @@ public class DataAccess {
         
         dataFileIO.open(DataAccessOption.WRITE_ACCESS);
         return dataFileIO;
+    }
+
+    public static String getSwiftFileURI(StoredObject fileObject) throws IOException {
+        String fileUri;
+        try {
+            fileUri = fileObject.getPublicURL();
+        }
+        catch (Exception ex){
+            ex.printStackTrace();
+            throw new IOException("SwiftAccessIO: failed to get file storage location");
+        }
+        return fileUri;
+    }
+
+    public static String getSwiftContainerURI(StoredObject fileObject) throws IOException {
+        String containerUri;
+        containerUri = getSwiftFileURI(fileObject);
+        containerUri = containerUri.substring(0, containerUri.lastIndexOf('/'));
+        return containerUri;
     }
     
 }

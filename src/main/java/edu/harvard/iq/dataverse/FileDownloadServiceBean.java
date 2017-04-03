@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateGuestbookResponseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RequestAccessCommand;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -103,11 +104,8 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             //if an error occurs here then download won't happen no need for response recs...
 
         }
-
     }
-
     public void callDownloadServlet(String multiFileString, Boolean gbRecordsWritten){
-
         String fileDownloadUrl = "/api/access/datafiles/" + multiFileString;
         if (gbRecordsWritten){
             fileDownloadUrl += "?gbrecs=true";
@@ -121,16 +119,18 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         //return fileDownloadUrl;
     }
 
-    public void callDownloadServlet(String downloadType, Long fileId, boolean gbRecordsWritten) {
+    public void callDownloadServlet(String downloadType, Long fileId, boolean gbRecordsWritten) {        
         String fileDownloadUrl = FileUtil.getFileDownloadUrlPath(downloadType, fileId, gbRecordsWritten);
+      
         logger.fine("Redirecting to file download url: " + fileDownloadUrl);
         try {
             FacesContext.getCurrentInstance().getExternalContext().redirect(fileDownloadUrl);
         } catch (IOException ex) {
             logger.info("Failed to issue a redirect to file download url (" + fileDownloadUrl + "): " + ex);
         }
+        
     }
-    
+
         //public String startFileDownload(FileMetadata fileMetadata, String format) {
     public void startFileDownload(GuestbookResponse guestbookResponse, FileMetadata fileMetadata, String format) {
         boolean recordsWritten = false;

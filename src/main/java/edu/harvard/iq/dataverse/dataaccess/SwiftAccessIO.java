@@ -277,9 +277,7 @@ public class SwiftAccessIO extends DataFileIO {
                 // bad storage identifier
                 throw new IOException("SwiftAccessIO: invalid swift storage token: " + storageIdentifier);
             }
-            
-            //not sure if this stuff is MOC unique or not
-            
+                        
             Properties p = getSwiftProperties();
             swiftEndPoint = p.getProperty("swift.default.endpoint");
             
@@ -345,13 +343,14 @@ public class SwiftAccessIO extends DataFileIO {
         
         StoredObject fileObject = dataContainer.getObject(swiftFileName);
         //file download url for public files
-        String swiftFileUri = getSwiftFileURI(fileObject);
-        logger.info(swiftFileUri + " success");
-        //shows contents of container for public containers
-        String swiftContainerUri = getSwiftContainerURI(fileObject);
-        logger.info(swiftContainerUri + " success");
-        
+        DataAccess.swiftFileUri = DataAccess.getSwiftFileURI(fileObject);
+        setRemoteUrl(DataAccess.getSwiftFileURI(fileObject));
 
+        logger.info(DataAccess.swiftFileUri + " success");
+        //shows contents of container for public containers
+        DataAccess.swiftContainerUri = DataAccess.getSwiftContainerURI(fileObject);
+        logger.info(DataAccess.swiftContainerUri + " success");
+        
         if (!writeAccess && !fileObject.exists()) {
             throw new IOException("SwiftAccessIO: File object "+swiftFileName+" does not exist (Dataverse datafile id: "+this.getDataFile().getId());
         }
@@ -380,25 +379,6 @@ public class SwiftAccessIO extends DataFileIO {
         }
         
         return swiftProperties;
-    }
-
-    private String getSwiftFileURI(StoredObject fileObject) throws IOException {
-        String fileUri;
-        try {
-            fileUri = fileObject.getPublicURL();
-        }
-        catch (Exception ex){
-            ex.printStackTrace();
-            throw new IOException("SwiftAccessIO: failed to get file storage location");
-        }
-        return fileUri;
-    }
-
-    private String getSwiftContainerURI(StoredObject fileObject) throws IOException {
-        String containerUri;
-        containerUri = getSwiftFileURI(fileObject);
-        containerUri = containerUri.substring(0, containerUri.lastIndexOf('/'));
-        return containerUri;
     }
     
     Account authenticateWithSwift(String swiftEndPoint) throws IOException {

@@ -534,15 +534,6 @@ public class DataFile extends DvObject implements Comparable {
     public void setRestricted(boolean restricted) {
         this.restricted = restricted;
     }
-
-
-
-
-
-
-
-
-
      
     public ChecksumType getChecksumType() {
         return checksumType;
@@ -573,7 +564,25 @@ public class DataFile extends DvObject implements Comparable {
         
         return dataAccess; 
     }
-    
+
+    // public static String getSwiftFileURI() throws IOException {
+    //     String fileURI = DataAccess.swiftFileUri;
+        
+    //     if (fileURI == null) {
+    //         throw new IOException("Failed to get swift file URI.");
+    //     }
+    //     return fileURI; 
+    // }
+
+    // public static String getSwiftContainerURI() throws IOException {
+    //     String containerURI = DataAccess.swiftContainerUri;
+        
+    //     if (containerURI == null) {
+    //         throw new IOException("Failed to get swift container URI.");
+    //     }
+    //     return containerURI; 
+    // }
+
     
     // The 2 methods below - TODO: 
     // remove everything filesystem-specific; 
@@ -705,7 +714,8 @@ public class DataFile extends DvObject implements Comparable {
     public String getMapItFileDownloadURL(String serverName){
         if ((this.getId() == null)||(serverName == null)){
             return null;
-        }        
+        }
+    
         return serverName + "/api/access/datafile/" + this.getId();
     }
     

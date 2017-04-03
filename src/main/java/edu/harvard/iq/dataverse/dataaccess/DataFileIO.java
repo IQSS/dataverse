@@ -132,7 +132,7 @@ public abstract class DataFileIO {
 
     
     // For HTTP-based downloads:
-    private String remoteUrl;
+    protected String remoteUrl;
     private GetMethod method = null;
     private Header[] responseHeaders;
     
@@ -266,7 +266,7 @@ public abstract class DataFileIO {
     public String getErrorMessage() {
         return errorMessage;
     }
-
+ 
     public String getRemoteUrl() {
         return remoteUrl;
     }
