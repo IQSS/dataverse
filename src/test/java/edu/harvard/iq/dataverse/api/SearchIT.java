@@ -56,10 +56,9 @@ import static com.jayway.restassured.path.json.JsonPath.with;
 import static com.jayway.restassured.path.xml.XmlPath.from;
 import static junit.framework.Assert.assertEquals;
 import static java.lang.Thread.sleep;
-import static java.lang.Thread.sleep;
 
 /**
- * @todo These tests are in need of attention for a few reasons:
+ * @todo Many of these tests are in need of attention for a few reasons:
  *
  * - They won't execute on phoenix.dataverse.org because they some tests assume
  * Solr on localhost.
