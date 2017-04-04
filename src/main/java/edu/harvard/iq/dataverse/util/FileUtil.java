@@ -303,7 +303,10 @@ public class FileUtil implements java.io.Serializable  {
         // step 3: check the mime type of this file with Jhove
         if (fileType == null){
             JhoveFileType jw = new JhoveFileType();
-            fileType = jw.getFileMimeType(f);
+            String mimeType = jw.getFileMimeType(f);
+            if (mimeType != null) {
+                fileType = mimeType;
+            }
         }
         
         // step 4: 
@@ -315,7 +318,7 @@ public class FileUtil implements java.io.Serializable  {
             logger.fine("fileExtension="+fileExtension);
 
             if (fileType == null || fileType.startsWith("text/plain") || "application/octet-stream".equals(fileType)) {
-                if (fileType.startsWith("text/plain") && STATISTICAL_FILE_EXTENSION.containsKey(fileExtension)) {
+                if (fileType != null && fileType.startsWith("text/plain") && STATISTICAL_FILE_EXTENSION.containsKey(fileExtension)) {
                     fileType = STATISTICAL_FILE_EXTENSION.get(fileExtension);
                 } else {
                     fileType = determineFileTypeByExtension(fileName);
