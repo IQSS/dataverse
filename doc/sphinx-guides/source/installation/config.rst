@@ -377,7 +377,7 @@ You may need to make some changes to suit your system setup, see the comments fo
 
 .. literalinclude:: ../_static/util/createsequence.sql
 
-Note that the SQL above is very Postgres-specific. If necessary, it can be reimplemented 
+Note that the SQL above is Postgres-specific. If necessary, it can be reimplemented 
 in any other SQL flavor - the standard JPA code in the application simply expects 
 the database to have a saved function ("stored procedure") named ``generateIdentifierAsSequentialNumber``
 with the single return argument ``identifier``. 
