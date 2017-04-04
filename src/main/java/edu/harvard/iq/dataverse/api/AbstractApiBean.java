@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
+import edu.harvard.iq.dataverse.MapLayerMetadataServiceBean;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
@@ -33,6 +34,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.validation.BeanValidationServiceBean;
@@ -190,9 +192,15 @@ public abstract class AbstractApiBean {
     @EJB
     protected DatasetVersionServiceBean datasetVersionSvc;
 
-	@PersistenceContext(unitName = "VDCNet-ejbPU")
-	protected EntityManager em;
-    
+    @EJB
+    protected MapLayerMetadataServiceBean mapLayerMetadataSrv;
+
+    @EJB
+    protected SystemConfig systemConfig;
+
+    @PersistenceContext(unitName = "VDCNet-ejbPU")
+    protected EntityManager em;
+
     @Context
     protected HttpServletRequest httpRequest;
 	

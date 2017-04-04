@@ -143,6 +143,9 @@ public class EjbDataverseEngine {
     @EJB
     DatasetVersionServiceBean datasetVersionService;
 
+    @EJB
+    MapLayerMetadataServiceBean mapLayerMetadata;
+
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
     
@@ -410,6 +413,11 @@ public class EjbDataverseEngine {
                 @Override
                 public DatasetVersionServiceBean datasetVersion() {
                     return datasetVersionService;
+                }
+
+                @Override
+                public MapLayerMetadataServiceBean mapLayerMetadata() {
+                    return mapLayerMetadata;
                 }
 
             };
