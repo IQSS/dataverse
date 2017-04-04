@@ -1,7 +1,7 @@
 Foundations
 +++++++++++
 
-Foundation elements are the very basic building blocks to create a page in Dataverse. Here we will outline how we've applied Bootstrap CSS to our UI, and how the CSS settings in our stylesheet mesh with it. Each section includes links to relevant parts of the official Bootstrap guides and other useful resources, where you can find more detailed documentation.
+Foundation elements are the very basic building blocks to create a page in Dataverse. Here we will outline how we've applied Bootstrap CSS to our UI, and how the CSS settings in our stylesheet mesh with it. Each section includes links to relevant parts of the official Bootstrap guides and other useful resources, where you can find more detailed documentation. We will also outline other UI resources like FontCustom and Socicon and how they are utilized.
 
 
 Grid Layout
@@ -63,9 +63,7 @@ Brand Colors
 
 Dataverse uses a particular color palette to help users quickly and easily identify the different types of objects: dataverses, datasets, and files.
 
-We use our brand color, a custom burnt orange ``{color:#C55B28;}``, which is set in our CSS stylesheet and applied to the Dataverse logo and brand name in the navbar, as well as other dataverse objects.
-
-There is also a set of blue "dataset" classes and grey "file" classes, used to help identify those objects when searching and navigating the application.
+We use our brand color, a custom burnt orange ``{color:#C55B28;}``, which is set in our CSS stylesheet, "structure.css". There is also a set of blue "dataset" classes and grey "file" classes, used to help identify those objects when searching and navigating the application.
 
 .. code-block:: css
 
@@ -163,7 +161,9 @@ Text color is the default setting from `Bootstrap CSS <http://getbootstrap.com/c
 Link Colors
 -----------
 
-Link color is the default setting from `Bootstrap CSS <http://getbootstrap.com/css/#less-variables-links>`__. The hover state is set to 15% darker using Less variables and functions.
+Link color is the default setting from `Bootstrap CSS <http://getbootstrap.com/css/#less-variables-links>`__. The hover state color is set to 15% darker.
+
+**Please note**, there is a CSS override issue with the link color due to the use of both a Bootstrap stylesheet and a PrimeFaces stylesheet in the UI. We've added CSS such as ``.ui-widget-content a {color: #428BCA;}`` to our stylesheet to keep the link color consistent.
 
 .. code-block:: css
     
@@ -198,16 +198,6 @@ Link color is the default setting from `Bootstrap CSS <http://getbootstrap.com/c
 
   <a>...</a>
 
-.. raw:: html
-
-  <div class="panel panel-warning">
-    <div class="panel-heading">
-      <h3 class="panel-title">Warning!</h3>
-    </div>
-    <div class="panel-body bg-warning">
-      <p>There is a CSS override issue with the link color due to the use of both a Bootstrap and a PrimeFaces stylesheet in the UI. We've added CSS settings like <code>.ui-widget-content a {color: #428BCA;}</code> to our stylesheet to keep the link color consistent.</p>
-    </div>
-  </div>
 
 Contextual Classes
 ------------------
@@ -262,7 +252,7 @@ Contextual classes from `Bootstrap CSS <http://getbootstrap.com/css/#helper-clas
 Icons
 =====
 
-We use various icons across the application. They appear in buttons and as default thumbnails for dataverses, datasets, and files.
+We use various icons across the application, which we get from Bootstrap, FontCustom and Socicon. They appear in buttons, in message blocks or as default thumbnails for dataverses, datasets, and files.
 
 Bootstrap Glyphicons
 --------------------
@@ -273,29 +263,17 @@ There are over 250 glyphs in font format from the Glyphicon Halflings set provid
 
 	<div class="panel panel-default code-example">
 	  <div class="panel-body">
-        <button type="button" class="btn btn-default">
-           <span class="glyphicon glyphicon-star" aria-hidden="true"></span> Star
-        </button>
-        <button type="button" class="btn btn-default">
-           <span class="glyphicon glyphicon-flag" aria-hidden="true"></span> Flag
-        </button>
-        <button type="button" class="btn btn-default">
-           <span class="glyphicon glyphicon-leaf" aria-hidden="true"></span> Leaf
-        </button>
+        <span class="glyphicon glyphicon-search h1"></span>
+        <span class="glyphicon glyphicon-user h1"></span>
+        <span class="glyphicon glyphicon-lock h1"></span>
 	  </div>
 	</div>
 
 .. code-block:: html
 
-   <button type="button" class="btn btn-default">
-       <span class="glyphicon glyphicon-star" aria-hidden="true"></span> Star
-   </button>
-   <button type="button" class="btn btn-default">
-       <span class="glyphicon glyphicon-flag" aria-hidden="true"></span> Flag
-   </button>
-   <button type="button" class="btn btn-default">
-       <span class="glyphicon glyphicon-leaf" aria-hidden="true"></span> Leaf
-   </button>
+   <span class="glyphicon glyphicon-search"></span>
+   <span class="glyphicon glyphicon-user"></span>
+   <span class="glyphicon glyphicon-lock"></span>
 
 FontCustom Icon Font
 --------------------
