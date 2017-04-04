@@ -17,6 +17,7 @@ import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.FeaturedDataverseServiceBean;
 import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
 import edu.harvard.iq.dataverse.GuestbookServiceBean;
+import edu.harvard.iq.dataverse.MapLayerMetadataServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
@@ -114,4 +115,6 @@ public interface CommandContext {
     public PrivateUrlServiceBean privateUrl();
 
     public DatasetVersionServiceBean datasetVersion();
+
+    public MapLayerMetadataServiceBean mapLayerMetadata();
 }

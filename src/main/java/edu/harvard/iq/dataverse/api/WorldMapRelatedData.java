@@ -56,6 +56,10 @@ import javax.ws.rs.core.Response;
  * 
  *  https://github.com/IQSS/shared-dataverse-information
  * 
+ * @todo Audit these methods to ensure they don't pose a security risk. Consider
+ * changing the installer so that like "admin" this "worldmap" endpoint is
+ * blocked out of the box. See
+ * http://guides.dataverse.org/en/4.6.1/installation/config.html#blocking-api-endpoints
  */
 @Path("worldmap")
 public class WorldMapRelatedData extends AbstractApiBean {

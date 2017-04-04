@@ -24,11 +24,11 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mashape.unirest.request.GetRequest;
 import java.io.InputStream;
-import static com.jayway.restassured.RestAssured.given;
-import static com.jayway.restassured.path.xml.XmlPath.from;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.util.Base64;
 import org.apache.commons.io.IOUtils;
+import static com.jayway.restassured.RestAssured.given;
+import static com.jayway.restassured.path.xml.XmlPath.from;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -149,7 +149,6 @@ public class UtilIT {
         return dataverseId;
     }
 
-    
     static Integer getDatasetIdFromResponse(Response createDatasetResponse) {
         JsonPath createdDataset = JsonPath.from(createDatasetResponse.body().asString());
         int datasetId = createdDataset.getInt("data.id");
@@ -312,11 +311,11 @@ public class UtilIT {
 
     /**
      * For test purposes, datasetId can be non-numeric
-     * 
+     *
      * @param datasetId
      * @param pathToFile
      * @param apiToken
-     * @return 
+     * @return
      */
     static Response uploadFileViaNative(String datasetId, String pathToFile, String apiToken) {
         String jsonAsString = null;
@@ -520,7 +519,6 @@ public class UtilIT {
                 .post("/api/datasets/:persistentId/actions/:publish?type=" + majorOrMinor + "&persistentId=" + persistentId);
     }
 
-    
     static Response publishDatasetViaNativeApiDeprecated(String persistentId, String majorOrMinor, String apiToken) {
         /**
          * @todo This should be a POST rather than a GET:
@@ -664,7 +662,7 @@ public class UtilIT {
     static Response getDatasetThumbnailMetadata(Integer datasetId, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/admin/datasets/thumbnailMetadata/"+ datasetId);
+                .get("/api/admin/datasets/thumbnailMetadata/" + datasetId);
     }
 
     static Response useThumbnailFromDataFile(String datasetPersistentId, long dataFileId1, String apiToken) {
@@ -762,38 +760,37 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("api/admin/assignee/" + roleAssignee);
     }
-    
-    
+
     /**
      * Used to test Dataverse page query parameters
-     * 
+     *
      * @param alias
      * @param queryParamString - do not include the "?"
-     * @return 
+     * @return
      */
     static Response testDataverseQueryParamWithAlias(String alias, String queryParamString) {
 
         System.out.println("testDataverseQueryParamWithAlias");
         String testUrl;
-        if (alias.isEmpty()){
-            testUrl = " ?" + queryParamString;          
-        }else{
+        if (alias.isEmpty()) {
+            testUrl = " ?" + queryParamString;
+        } else {
             testUrl = "/dataverse/" + alias + "?" + queryParamString;
         }
         System.out.println("testUrl: " + testUrl);
-        
+
         return given()
                 .urlEncodingEnabled(false)
                 .get(testUrl);
     }
-    
+
     /**
      * Used to test Dataverse page query parameters
-     * 
+     *
      * The parameters may include "id={dataverse id}
-     * 
+     *
      * @param queryParamString
-     * @return 
+     * @return
      */
     static Response testDataverseXhtmlQueryParam(String queryParamString) {
 
@@ -847,6 +844,40 @@ public class UtilIT {
             logger.fine("In inputStreamToBytes but caught an IOUtils.toByteArray Returning null.");
             return null;
         }
+    }
+
+    static Response listMapLayerMetadatas() {
+        return given().get("/api/admin/geoconnect/mapLayerMetadatas");
+    }
+
+    static Response checkMapLayerMetadatas(String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .post("/api/admin/geoconnect/mapLayerMetadatas/check");
+    }
+
+    static Response checkMapLayerMetadatas(Long mapLayerMetadataId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .post("/api/admin/geoconnect/mapLayerMetadatas/check/" + mapLayerMetadataId);
+    }
+
+    static Response getMapFromFile(long fileId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/files/" + fileId + "/map");
+    }
+
+    static Response checkMapFromFile(long fileId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/files/" + fileId + "/map/check");
+    }
+
+    static Response deleteMapFromFile(long fileId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/files/" + fileId + "/map?key=" + apiToken);
     }
 
     @Test
