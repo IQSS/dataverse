@@ -51,10 +51,8 @@ public class WorkflowServiceBean {
     }
     
     public List<PendingWorkflowInvocation> listPendingInvocations() {
-        return null;
+        return em.createNamedQuery("PendingWorkflowInvocation.listAll")
+                 .getResultList();
     }
     
-    public void resumeWorkflow( String invocationId, String response ) {
-        
-    }
 }

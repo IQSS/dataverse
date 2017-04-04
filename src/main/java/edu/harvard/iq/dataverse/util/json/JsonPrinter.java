@@ -37,6 +37,7 @@ import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.util.DatasetFieldWalker;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
+import edu.harvard.iq.dataverse.workflow.Workflow;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Set;
@@ -53,7 +54,6 @@ import java.util.Deque;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -90,12 +90,7 @@ public class JsonPrinter {
                         .add("email", displayInfo.getEmailAddress()));
     }
 
-    /**
-     * @todo Rename this to just "json" to match the other methods once "json(
-     * Dataverse dv )" is reviewed since in calls the "json( User u )" version
-     * and we want to keep it that way rather than calling this method.
-     */
-    public static JsonObjectBuilder jsonForAuthUser(AuthenticatedUser authenticatedUser) {
+    public static JsonObjectBuilder json(AuthenticatedUser authenticatedUser) {
         return jsonObjectBuilder()
                 .add("id", authenticatedUser.getId())
                 .add("identifier", authenticatedUser.getIdentifier())
@@ -123,9 +118,7 @@ public class JsonPrinter {
 	
 	public static JsonArrayBuilder json( Set<Permission> permissions ) {
 		JsonArrayBuilder bld = Json.createArrayBuilder();
-		for ( Permission p : permissions ) {
-			bld.add( p.name() );
-		}
+        permissions.forEach(p ->bld.add(p.name()));
 		return bld;
 	}
     
@@ -177,7 +170,7 @@ public class JsonPrinter {
     public static JsonArrayBuilder rolesToJson(List<DataverseRole> role) {
         JsonArrayBuilder bld = Json.createArrayBuilder();
         for (DataverseRole r : role) {
-            bld.add(json(r));
+            bld.add(JsonPrinter.json(r));
         }
         return bld;
     }
@@ -186,7 +179,7 @@ public class JsonPrinter {
         JsonObjectBuilder bld = jsonObjectBuilder()
                 .add("alias", role.getAlias())
                 .add("name", role.getName())
-                .add("permissions", json(role.permissions()))
+                .add("permissions", JsonPrinter.json(role.permissions()))
                 .add("description", role.getDescription());
         if (role.getId() != null) {
             bld.add("id", role.getId());
@@ -197,6 +190,25 @@ public class JsonPrinter {
 
         return bld;
     }
+    
+    public static JsonObjectBuilder json(Workflow wf){
+        JsonObjectBuilder bld = jsonObjectBuilder();
+        bld.add("name", wf.getName());
+        if ( wf.getId() != null ) {
+            bld.add("id", wf.getId());
+        }
+        
+        if ( wf.getSteps()!=null && !wf.getSteps().isEmpty()) {
+            bld.add("steps", 
+                    wf.getSteps().stream().map( stp->
+                jsonObjectBuilder().add("stepType", stp.getStepType())
+                                   .add("provider", stp.getProviderId())
+                                   .add("parameters", mapToObject(stp.getStepParameters()))
+                ).collect(toJsonArray()));
+        }
+        
+        return bld;
+    }
 
     public static JsonObjectBuilder json(Dataverse dv) {
         JsonObjectBuilder bld = jsonObjectBuilder()
@@ -204,7 +216,7 @@ public class JsonPrinter {
                 .add("alias", dv.getAlias())
                 .add("name", dv.getName())
                 .add("affiliation", dv.getAffiliation())
-                .add("dataverseContacts", json(dv.getDataverseContacts()))
+                .add("dataverseContacts", JsonPrinter.json(dv.getDataverseContacts()))
                 .add("permissionRoot", dv.isPermissionRoot())
                 .add("description", dv.getDescription())
                 .add("dataverseType", dv.getDataverseType().name());
@@ -215,10 +227,10 @@ public class JsonPrinter {
             bld.add("creationDate", Util.getDateTimeFormat().format(dv.getCreateDate()));
         }
         if (dv.getCreator() != null) {
-            bld.add("creator", json(dv.getCreator()));
+            bld.add("creator", JsonPrinter.json(dv.getCreator()));
         }
         if (dv.getDataverseTheme() != null) {
-            bld.add("theme", json(dv.getDataverseTheme()));
+            bld.add("theme", JsonPrinter.json(dv.getDataverseTheme()));
         }
 
         return bld;
@@ -361,7 +373,7 @@ public class JsonPrinter {
      * Unit tests for that method could not be found.
      */
     public static JsonObjectBuilder jsonWithCitation(DatasetVersion dsv) {
-        JsonObjectBuilder dsvWithCitation = json(dsv);
+        JsonObjectBuilder dsvWithCitation = JsonPrinter.json(dsv);
         dsvWithCitation.add("citation", dsv.getCitation());
         return dsvWithCitation;
     }
@@ -379,7 +391,7 @@ public class JsonPrinter {
      * should the method be renamed?
      */
     public static JsonObjectBuilder jsonAsDatasetDto(DatasetVersion dsv) {
-        JsonObjectBuilder datasetDtoAsJson = json(dsv.getDataset());
+        JsonObjectBuilder datasetDtoAsJson = JsonPrinter.json(dsv.getDataset());
         datasetDtoAsJson.add("datasetVersion", jsonWithCitation(dsv));
         return datasetDtoAsJson;
     }
@@ -387,7 +399,7 @@ public class JsonPrinter {
     public static JsonArrayBuilder jsonFileMetadatas(Collection<FileMetadata> fmds) {
         JsonArrayBuilder filesArr = Json.createArrayBuilder();
         for (FileMetadata fmd : fmds) {
-            filesArr.add(json(fmd));
+            filesArr.add(JsonPrinter.json(fmd));
         }
 
         return filesArr;
@@ -397,11 +409,11 @@ public class JsonPrinter {
         return jsonObjectBuilder()
                 .add("displayOrder", dist.getDisplayOrder())
                 .add("version", dist.getVersion())
-                .add("abbreviation", json(dist.getAbbreviation()))
-                .add("affiliation", json(dist.getAffiliation()))
-                .add("logo", json(dist.getLogo()))
-                .add("name", json(dist.getName()))
-                .add("url", json(dist.getUrl()));
+                .add("abbreviation", JsonPrinter.json(dist.getAbbreviation()))
+                .add("affiliation", JsonPrinter.json(dist.getAffiliation()))
+                .add("logo", JsonPrinter.json(dist.getLogo()))
+                .add("name", JsonPrinter.json(dist.getName()))
+                .add("url", JsonPrinter.json(dist.getUrl()));
     }
 
     public static JsonObjectBuilder jsonByBlocks(List<DatasetField> fields) {
@@ -409,7 +421,7 @@ public class JsonPrinter {
 
         for (Map.Entry<MetadataBlock, List<DatasetField>> blockAndFields : DatasetField.groupByBlock(fields).entrySet()) {
             MetadataBlock block = blockAndFields.getKey();
-            blocksBld.add(block.getName(), json(block, blockAndFields.getValue()));
+            blocksBld.add(block.getName(), JsonPrinter.json(block, blockAndFields.getValue()));
         }
         return blocksBld;
     }
@@ -463,7 +475,7 @@ public class JsonPrinter {
 
         JsonObjectBuilder fieldsBld = jsonObjectBuilder();
         for (DatasetFieldType df : new TreeSet<>(blk.getDatasetFieldTypes())) {
-            fieldsBld.add(df.getName(), json(df));
+            fieldsBld.add(df.getName(), JsonPrinter.json(df));
         }
 
         bld.add("fields", fieldsBld);
@@ -482,7 +494,7 @@ public class JsonPrinter {
         if (!fld.getChildDatasetFieldTypes().isEmpty()) {
             JsonObjectBuilder subFieldsBld = jsonObjectBuilder();
             for (DatasetFieldType subFld : fld.getChildDatasetFieldTypes()) {
-                subFieldsBld.add(subFld.getName(), json(subFld));
+                subFieldsBld.add(subFld.getName(), JsonPrinter.json(subFld));
             }
             fieldsBld.add("childFields", subFieldsBld);
         }
@@ -503,11 +515,11 @@ public class JsonPrinter {
                 .add("version", fmd.getVersion())
                 .add("datasetVersionId", fmd.getDatasetVersion().getId())
                 .add("categories", getFileCategories(fmd))
-                .add("dataFile", json(fmd.getDataFile(), fmd));
+                .add("dataFile", JsonPrinter.json(fmd.getDataFile(), fmd));
     }
 
     public static JsonObjectBuilder json(DataFile df) {
-        return json(df, null);
+        return JsonPrinter.json(df, null);
     }
     
     public static JsonObjectBuilder json(DataFile df, FileMetadata fileMetadata) {
@@ -787,5 +799,10 @@ public class JsonPrinter {
             return null;
         }
     }
-
+    
+    public static JsonObjectBuilder mapToObject(Map<String,String> in) {
+        JsonObjectBuilder b = jsonObjectBuilder();
+        in.keySet().forEach( k->b.add(k, in.get(k)) );
+        return b;
+    }
 }

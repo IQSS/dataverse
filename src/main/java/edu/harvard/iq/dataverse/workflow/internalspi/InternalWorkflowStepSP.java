@@ -11,9 +11,9 @@ import java.util.Map;
 public class InternalWorkflowStepSP implements WorkflowStepSPI {
 
     @Override
-    public WorkflowStep getStep(String stepId, Map<String, String> stepParameters) {
-        switch (stepId) {
-            case "logging":
+    public WorkflowStep getStep(String stepType, Map<String, String> stepParameters) {
+        switch (stepType) {
+            case "log":
                 return new LoggingWorkflowStep(stepParameters);
             case "pause":
                 return new PauseStep(stepParameters);

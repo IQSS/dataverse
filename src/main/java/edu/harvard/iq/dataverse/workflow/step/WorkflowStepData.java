@@ -33,8 +33,6 @@ public class WorkflowStepData implements Serializable {
     @ManyToOne
     private Workflow parent;
     
-    private int stepNumber;
-    
     private String providerId;
     
     private String stepType;
@@ -48,14 +46,6 @@ public class WorkflowStepData implements Serializable {
 
     public void setParent(Workflow parent) {
         this.parent = parent;
-    }
-
-    public int getStepNumber() {
-        return stepNumber;
-    }
-
-    public void setStepNumber(int stepNumber) {
-        this.stepNumber = stepNumber;
     }
 
     public String getProviderId() {
@@ -92,7 +82,7 @@ public class WorkflowStepData implements Serializable {
 
     @Override
     public String toString() {
-        return "WorkflowStepData{" + "parent=" + parent + ", stepNumber=" + stepNumber + ", providerId=" + providerId + ", stepType=" + stepType + ", parameters=" + stepParameters + '}';
+        return "WorkflowStepData{" + "parent=" + parent + ", providerId=" + providerId + ", stepType=" + stepType + ", parameters=" + stepParameters + '}';
     }
     
     

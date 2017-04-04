@@ -18,11 +18,11 @@ import javax.persistence.OrderColumn;
  * A list of steps that can be executed with a given context. 
  * @author michael
  */
-@Entity
 @NamedQueries({
     @NamedQuery(name="Workflow.listAll", query="Select w from Workflow w"),
     @NamedQuery(name="Workflow.deleteById", query="Delete from Workflow w WHERE w.id=:id")
 })
+@Entity
 public class Workflow implements Serializable {
     
     @Id
@@ -57,6 +57,9 @@ public class Workflow implements Serializable {
 
     public void setSteps(List<WorkflowStepData> steps) {
         this.steps = steps;
+        for ( WorkflowStepData s : steps ) {
+            s.setParent(this);
+        }
     }
 
     @Override
@@ -74,7 +77,7 @@ public class Workflow implements Serializable {
         if (obj == null) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
+        if ( !(obj instanceof Workflow) ) {
             return false;
         }
         final Workflow other = (Workflow) obj;
@@ -84,10 +87,7 @@ public class Workflow implements Serializable {
         if (!Objects.equals(this.id, other.id)) {
             return false;
         }
-        if (!Objects.equals(this.steps, other.steps)) {
-            return false;
-        }
-        return true;
+        return Objects.deepEquals(this.steps, other.steps);
     }
     
     
