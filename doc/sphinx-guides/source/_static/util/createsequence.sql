@@ -4,11 +4,11 @@
 
 -- NOTE:
 
--- 1. The database user name "dvnapp" is hard-coded here - they will (may)
--- need to change it to match their database setup:
-
--- 2. This sequence starts with 1, but the MINVALUE may be adjusted, according to the 
--- needs of the specific Dataverse installation. 
+-- 1. The database user name "dvnapp" is hard-coded here - it may
+-- need to be changed to match your database user name;
+  
+-- 2. In the code below, the sequence starts with 1, but it can be adjusted by
+-- changing the MINVALUE as needed. 
 
 CREATE SEQUENCE datasetidentifier_seq
   INCREMENT 1
@@ -30,4 +30,4 @@ BEGIN
     select nextval('datasetidentifier_seq') into identifier;
 END;
 $BODY$
-  LANGUAGE plpgsql
+  LANGUAGE plpgsql;
