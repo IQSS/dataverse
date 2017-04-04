@@ -86,10 +86,12 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                 accessObject = ImageThumbConverter.getImageThumb((FileAccessIO)accessObject);
                             }
                         }
-                    }
-                    
-                    
-                    if (sf.isTabularData()) {
+                    } else if (sf.isTabularData()) {
+                        // We can now generate thumbnails for some tabular data files (specifically, 
+                        // tab files tagged as "geospatial"). We are going to assume that you can 
+                        // do only ONE thing at a time - request the thumbnail for the file, or 
+                        // request any tabular-specific services. 
+                        
                         if (di.getConversionParam().equals("noVarHeader")) {
                             accessObject.setNoVarHeader(Boolean.TRUE);
                             accessObject.setVarHeader(null);
@@ -219,9 +221,12 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                     
                     // before writing out any bytes from the input stream, flush
                     // any extra content, such as the variable header for the 
-                    // subsettable files: (??)4
+                    // subsettable files: 
+                    // (also, note that we now have tabular data files that can 
+                    // have thumbnail previews... obviously, we don't want to 
+                    // add the variable header to the image stream!
                     
-                    if (accessObject.getVarHeader() != null) {
+                    if (!di.getConversionParam().equals("imageThumb") && accessObject.getVarHeader() != null) {
                         if (accessObject.getVarHeader().getBytes().length > 0) {
                             if (useChunkedTransfer) {
                                 String chunkSizeLine = String.format("%x\r\n", accessObject.getVarHeader().getBytes().length);
