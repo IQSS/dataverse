@@ -11,4 +11,5 @@ if [ ! -f $WAR ]; then
 fi
 cd /dataverse/scripts/installer
 ./install --hostname localhost $MAILSERVER_ARG --gfdir /home/glassfish/glassfish4 -y --force
+cp /dataverse/conf/jhove/jhove.conf /home/glassfish/glassfish4/glassfish/domains/domain1/config/jhove.conf
 echo "If "vagrant up" was successful (check output above) Dataverse is running on port 8080 of the Linux machine running within Vagrant, but this port has been forwarded to port 8888 of the computer you ran "vagrant up" on. For this reason you should go to http://localhost:8888 to see the Dataverse app running."
