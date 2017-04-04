@@ -363,6 +363,26 @@ It is recommended that you keep this as a slash ("/").
 
 ``curl -X PUT -d "/" http://localhost:8080/api/admin/settings/:DoiSeparator``
 
+.. _:IdentifierGenerationStyle:
+
+:IdentifierGenerationStyle
+++++++++++++++++++++++++++
+
+By default, Dataverse generates a random 6 character string to use as the identifier
+for a Dataset. Set this to "``sequentialNumber``" to use sequential numeric values 
+instead. (the assumed default setting is "``randomString``"). 
+In addition to this setting, a database sequence must be created in the database. 
+We provide the script below (downloadable :download:`here </_static/util/createsequence.sql>`).
+You may need to make some changes to suit your system setup, see the comments for more information: 
+
+.. literalinclude:: ../_static/util/createsequence.sql
+
+Note that the SQL above is Postgres-specific. If necessary, it can be reimplemented 
+in any other SQL flavor - the standard JPA code in the application simply expects 
+the database to have a saved function ("stored procedure") named ``generateIdentifierAsSequentialNumber``
+with the single return argument ``identifier``. 
+
+
 :ApplicationTermsOfUse
 ++++++++++++++++++++++
 

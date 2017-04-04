@@ -1,6 +1,6 @@
 ## New Contributors
 
-Welcome! New contributors should at least glance at [CONTRIBUTING.md](/CONTRIBUTING.md), especially the section on pull requests where we encourage you to reach out to other developers **before** you start coding.  Also, please note that we measure code coverage and while we'd love it if you write unit tests, but we're happy to review your pull request even if you don't write tests or complete all of the checklist items below! Thanks for making a pull request!
+Welcome! New contributors should at least glance at [CONTRIBUTING.md](/CONTRIBUTING.md), especially the section on pull requests where we encourage you to reach out to other developers before you start coding. Also, please note that we measure code coverage and prefer you write unit tests. Pull requests can still be reviewed without tests or completion of the checklist outlined below. Thanks!
 
 ## Related Issues
 

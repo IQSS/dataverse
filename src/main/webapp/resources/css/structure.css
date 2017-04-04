@@ -683,8 +683,8 @@ div[id$="filesTable"] .col-file-thumb div.thumbnail-block {position:relative;wid
 div[id$="filesTable"] .col-file-thumb div.thumbnail-block span.file-thumbnail-icon {font-size:62px;line-height:1.05;}
 div[id$="filesTable"] .col-file-thumb div.thumbnail-block span.file-thumbnail-preview-img {display:block;}
 div[id$="filesTable"] .col-file-thumb div.thumbnail-block div.file-icon-restricted-block {display:block;position:absolute;bottom:-4px;right:-1px;}
-div[id$="filesTable"] .col-file-metadata {/*width: 33.3333% !important;*/ padding-left:0; border-left:0; border-right:0; text-align:left; font-weight:normal;}
-div[id$="filesTable"] td.col-file-action {/*width:320px !important;*/ border-left:0; overflow:visible;}
+div[id$="filesTable"] .col-file-metadata {padding-left:0; padding-right:0; border-left:0; border-right:0; text-align:left; font-weight:normal;}
+div[id$="filesTable"] td.col-file-action {padding-left:0; border-left:0; overflow:visible;}
 div[id$="filesTable"] div.file-tags-block {padding-bottom:2px;}
 div[id$="filesTable"] div.file-tags-block a.ui-commandlink {font-size:12px;}
 div[id$="filesTable"] div.file-tags-block span.label {display:inline-block;}
@@ -708,8 +708,8 @@ div[id$="filesTable"].ui-datatable.ui-datatable-scrollable {padding-right:12px;}
 #file-replace-original-block div[id$="filesTable"] .col-file-thumb {width:74px !important;padding:4px 10px;}
 #file-replace-original-block div[id$="filesTable"] .col-file-metadata {padding:4px 10px;}
 
-span.ingest-warning {display:inline-block; font-size:30px; line-height:1.42857; vertical-align: middle;}
-span.ingest-warning span.glyphicon {top:5px;} 
+span.ingest-warning {display:inline-block; font-size:24px; line-height:1; vertical-align: middle;}
+span.ingest-warning span.glyphicon {top:3px} 
 
 #version-details-block > div {width:35%; padding:4px 10px; border: 1px solid #DDDDDD;}
 #version-details-block > div:first-of-type {width:30%; border:0;}
