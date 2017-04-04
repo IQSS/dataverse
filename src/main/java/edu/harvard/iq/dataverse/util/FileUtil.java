@@ -26,6 +26,7 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
 import edu.harvard.iq.dataverse.ingest.IngestReport;
 import edu.harvard.iq.dataverse.ingest.IngestServiceShapefileHelper;
@@ -1347,6 +1348,14 @@ public class FileUtil implements java.io.Serializable  {
         String pathToResizedFile = ImageThumbConverter.rescaleImage(fullSizeImage, width, height, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE, tmpFile.getAbsolutePath());
         File resizedFile = new File(pathToResizedFile);
         return ImageThumbConverter.getImageAsBase64FromFile(resizedFile);
+    }
+    
+    public static DatasetThumbnail getThumbnail(DataFile file) {
+
+        String imageSourceBase64 = ImageThumbConverter.getImageThumbAsBase64(file, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
+        DatasetThumbnail defaultDatasetThumbnail = new DatasetThumbnail(imageSourceBase64, file);
+        return defaultDatasetThumbnail;
+
     }
 
 }
