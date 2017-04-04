@@ -19,7 +19,14 @@ body {
 
 footer {
     margin: 30px 0;
-    /* margin: 50px 0;*/
+}
+footer p {
+    color: #808080;
+}
+footer span.socicon-github {
+    color: #000;
+    font-size: 1.3em;
+    vertical-align: top;
 }
 
 iframe {
@@ -29,6 +36,13 @@ iframe {
 .navbar-default a.navbar-brand, .navbar-default a.navbar-brand:hover {
     color: #c55b28;
 }
+.bg-dataverse, bg-brand {background:#C55B28;}
+.bg-dataset {background:#337AB7;}
+.bg-file {background:#777777;}
+.bg-muted {background:#F5F5F5;}
+.text-dataverse, .text-brand {color:#C55B28;}
+.text-dataset {color:#31708F;}
+.text-file {color:#777777;}
 
 #dataverse-org-homepage-url {
     height: 50px;
@@ -57,6 +71,26 @@ a.headerlink {
 .fixedwidthplain {
     color:#606060; 
     font-family: Menlo, Monaco, Consolas, "Courier New", monospace; 
+}
+
+div.panel.panel-default.code-example {
+    margin-bottom: 0 !important;
+    border-bottom: 0 !important;
+    border-radius: 4px 4px 0 0 !important;
+}
+div.panel.panel-default.code-example + div.highlight-html pre {
+    border-radius: 0 0 4px 4px !important;
+}
+div.code-example .color-swatches {
+    margin: 0 5px;
+    overflow: hidden;
+}
+div.code-example .color-swatch {
+    float: left;
+    width: 100px;
+    height: 100px;
+    margin: 0 5px;
+    border-radius: 3px
 }
 
 /* alternative formattings:  font-weight: bold; font-size: 110%; etc. */
