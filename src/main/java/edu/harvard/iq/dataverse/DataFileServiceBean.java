@@ -1015,7 +1015,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         return (contentType != null && 
                 (contentType.startsWith("image/") || 
                 contentType.equalsIgnoreCase("application/pdf") ||
-                contentType.equalsIgnoreCase("text/tab-separated-values") ||
+                (file.isTabularData() && file.hasGeospatialTag()) ||
                 contentType.equalsIgnoreCase(MIME_TYPE_GEO_SHAPE)));
     }
     

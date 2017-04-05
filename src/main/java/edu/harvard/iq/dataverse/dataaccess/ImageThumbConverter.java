@@ -87,7 +87,7 @@ public class ImageThumbConverter {
                 imageThumbFileName = generatePDFThumb(dataAccess.getFileSystemPath().toString(), size);
             } else if (file.getContentType().equalsIgnoreCase("application/zipped-shapefile")) {
                 imageThumbFileName = generateWorldMapThumb(dataAccess.getFileSystemPath().toString(), size);
-            } else if (file.getContentType().equalsIgnoreCase("text/tab-separated-values")) {
+            } else if (file.isTabularData() && file.hasGeospatialTag()) {
                 imageThumbFileName = generateWorldMapThumb(dataAccess.getFileSystemPath().toString(), size);
             }
         } catch (IOException ioEx) {
@@ -230,7 +230,7 @@ public class ImageThumbConverter {
             } else if (fileAccess.getDataFile() != null && fileAccess.getDataFile().getContentType().equalsIgnoreCase("application/zipped-shapefile")) {
                 imageThumbFileName = generateWorldMapThumb(fileAccess.getFileSystemPath().toString(), size);
             
-            } else if (fileAccess.getDataFile() != null && fileAccess.getDataFile().getContentType().equalsIgnoreCase("text/tab-separated-values")) {
+            } else if (fileAccess.getDataFile() != null && fileAccess.getDataFile().isTabularData() && fileAccess.getDataFile().hasGeospatialTag()) {
                 imageThumbFileName = generateWorldMapThumb(fileAccess.getFileSystemPath().toString(), size);
 
             } else {
