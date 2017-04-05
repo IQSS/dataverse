@@ -183,6 +183,10 @@ public class DatasetsIT {
         deleteUserResponse.prettyPrint();
         assertEquals(200, deleteUserResponse.getStatusCode());
 
+        Response remove = UtilIT.deleteSetting(SettingsServiceBean.Key.IdentifierGenerationStyle);
+        remove.then().assertThat()
+                .statusCode(200);
+
     }
 
     @Test
