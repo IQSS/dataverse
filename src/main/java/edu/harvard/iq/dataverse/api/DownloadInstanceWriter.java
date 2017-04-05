@@ -226,7 +226,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                     // have thumbnail previews... obviously, we don't want to 
                     // add the variable header to the image stream!
                     
-                    if (!di.getConversionParam().equals("imageThumb") && accessObject.getVarHeader() != null) {
+                    if (!"imageThumb".equals(di.getConversionParam()) && accessObject.getVarHeader() != null) {
                         if (accessObject.getVarHeader().getBytes().length > 0) {
                             if (useChunkedTransfer) {
                                 String chunkSizeLine = String.format("%x\r\n", accessObject.getVarHeader().getBytes().length);
