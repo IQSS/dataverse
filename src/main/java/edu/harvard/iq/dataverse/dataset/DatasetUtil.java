@@ -56,14 +56,18 @@ public class DatasetUtil {
             }
         }
         for (FileMetadata fileMetadata : dataset.getLatestVersion().getFileMetadatas()) {
-            DataFile dataFile = fileMetadata.getDataFile();
-            if (dataFile != null && dataFile.isImage() && !dataFile.isRestricted()) {
-                String imageSourceBase64 = ImageThumbConverter.getImageThumbAsBase64(dataFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
+            DataFile dataFile = fileMetadata.getDataFile();  
+            
+            if (dataFile != null && ImageThumbConverter.isThumbnailAvailable(dataFile)
+                    && !dataFile.isRestricted()) {                
+                String imageSourceBase64 = null;
+                imageSourceBase64 = ImageThumbConverter.getImageThumbAsBase64(dataFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
+
                 if (imageSourceBase64 != null) {
                     DatasetThumbnail datasetThumbnail = new DatasetThumbnail(imageSourceBase64, dataFile);
                     thumbnails.add(datasetThumbnail);
                 }
-            }
+            }           
         }
         return thumbnails;
     }
@@ -88,6 +92,7 @@ public class DatasetUtil {
             }
         } else {
             DataFile thumbnailFile = dataset.getThumbnailFile();
+
             if (thumbnailFile == null) {
                 if (dataset.isUseGenericThumbnail()) {
                     logger.fine(title + " does not have a thumbnail and is 'Use Generic'.");
