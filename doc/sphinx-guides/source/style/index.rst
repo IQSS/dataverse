@@ -13,3 +13,4 @@ Contents:
 .. toctree::
 
    foundations
+   patterns
