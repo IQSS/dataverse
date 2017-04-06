@@ -230,7 +230,7 @@ public class ImageThumbConverter {
             } else if (fileAccess.getDataFile() != null && fileAccess.getDataFile().getContentType().equalsIgnoreCase("application/zipped-shapefile")) {
                 imageThumbFileName = generateWorldMapThumb(fileAccess.getFileSystemPath().toString(), size);
             
-            } else if (fileAccess.getDataFile() != null && fileAccess.getDataFile().isTabularData() && fileAccess.getDataFile().hasGeospatialTag()) {
+            } else if (fileAccess.getDataFile() != null && fileAccess.getDataFile().isTabularData()) {
                 imageThumbFileName = generateWorldMapThumb(fileAccess.getFileSystemPath().toString(), size);
 
             } else {
