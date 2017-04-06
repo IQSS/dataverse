@@ -81,6 +81,14 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                 int size = new Integer(di.getConversionParamValue()).intValue();
                                 if (size > 0) {
                                     accessObject = ImageThumbConverter.getImageThumb((FileAccessIO)accessObject, size);
+                                    
+                                    // Modify the filename, to reflect that it's a PNG file now. 
+                                    // (we are now generating thumbnails for tabular files - 
+                                    // and the original .tab extension may be confusing some browsers!)
+                                    
+                                    String fileName = accessObject.getFileName();
+                                    fileName = fileName.replaceAll("\\.[^\\.]*$", ".png");
+                                    accessObject.setFileName(fileName);
                                 }
                             } catch (java.lang.NumberFormatException ex) {
                                 accessObject = ImageThumbConverter.getImageThumb((FileAccessIO)accessObject);
