@@ -93,6 +93,10 @@ public class DataAccess {
 
         df.setStorageIdentifier(storageTag);
 
+        if (driverIdentifier == null) {
+            driverIdentifier = "file";
+        }
+
         if (driverIdentifier.equals("file")) {
             dataFileIO = new FileAccessIO(df, null);
         } else if (driverIdentifier.equals("swift")) {
