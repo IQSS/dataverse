@@ -87,6 +87,8 @@ public class ImageThumbConverter {
                 imageThumbFileName = generatePDFThumb(dataAccess.getFileSystemPath().toString(), size);
             } else if (file.getContentType().equalsIgnoreCase("application/zipped-shapefile")) {
                 imageThumbFileName = generateWorldMapThumb(dataAccess.getFileSystemPath().toString(), size);
+            } else if (file.isTabularData() && file.hasGeospatialTag()) {
+                imageThumbFileName = generateWorldMapThumb(dataAccess.getFileSystemPath().toString(), size);
             }
         } catch (IOException ioEx) {
             return false;
@@ -216,24 +218,27 @@ public class ImageThumbConverter {
         return null;
     }
     
-    public static File getImageThumbAsFile(FileAccessIO fileAccess, int size ) {
+    public static File getImageThumbAsFile(FileAccessIO fileAccess, int size) {
         String imageThumbFileName = null;
         try {
             if (fileAccess.getDataFile() != null && fileAccess.getDataFile().getContentType().substring(0, 6).equalsIgnoreCase("image/")) {
                 imageThumbFileName = generateImageThumb(fileAccess.getFileSystemPath().toString(), size);
-                
+
             } else if (fileAccess.getDataFile() != null && fileAccess.getDataFile().getContentType().equalsIgnoreCase("application/pdf")) {
                 imageThumbFileName = generatePDFThumb(fileAccess.getFileSystemPath().toString(), size);
-                
+
             } else if (fileAccess.getDataFile() != null && fileAccess.getDataFile().getContentType().equalsIgnoreCase("application/zipped-shapefile")) {
                 imageThumbFileName = generateWorldMapThumb(fileAccess.getFileSystemPath().toString(), size);
-                
+            
+            } else if (fileAccess.getDataFile() != null && fileAccess.getDataFile().isTabularData()) {
+                imageThumbFileName = generateWorldMapThumb(fileAccess.getFileSystemPath().toString(), size);
+
             } else {
                 return null;
             }
-            
+
         } catch (IOException ioEx) {
-            return null; 
+            return null;
         }
         
         if (imageThumbFileName != null) {
