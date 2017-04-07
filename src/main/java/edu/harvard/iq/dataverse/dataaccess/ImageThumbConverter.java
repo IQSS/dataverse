@@ -152,6 +152,9 @@ public class ImageThumbConverter {
         try {
 
             fileAccess = (FileAccessIO) file.getAccessObject();
+        } catch (ClassCastException ex) {
+            logger.warning("Unable to cast file id " + file.getId() + " from DataFileIO to FileAccessIO.");
+            return null;
         } catch (IOException ex) {
             // too bad - but not fatal
             logger.warning("getImageThumbAsBase64: Failed to obtain FileAccess object for DataFile id " + file.getId());
