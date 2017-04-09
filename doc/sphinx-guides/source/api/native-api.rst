@@ -662,6 +662,29 @@ Recalculate the UNF value of a dataset version, if it's missing, by supplying th
 
   POST http://$SERVER/api/admin/datasets/integrity/{datasetVersionId}/fixmissingunf
 
+Workflows
+^^^^^^^^^
+
+List all available workflows in the system::
+
+   GET http://$SERVER/api/admin/workflows
+
+Get details of a workflow with a given id::
+
+   GET http://$SERVER/api/admin/workflows/$id
+
+Add a new workflow. Request body specifies the workflow properties and steps in JSON format.
+Sample ``json`` files are available at ``scripts/api/data/workflows/``::
+
+   POST http://$SERVER/api/admin/workflows
+    
+Delete a workflow with a specific id::
+
+    DELETE http://$SERVER/api/admin/workflows/$id
+
+
+
+
 .. |CORS| raw:: html 
       
       <span class="label label-success pull-right">

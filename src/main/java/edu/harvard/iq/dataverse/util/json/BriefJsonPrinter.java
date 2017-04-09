@@ -4,6 +4,8 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
+import edu.harvard.iq.dataverse.workflow.Workflow;
+import java.math.BigDecimal;
 import javax.json.JsonObjectBuilder;
 
 /**
@@ -41,4 +43,9 @@ public class BriefJsonPrinter {
 					.add("name", blk.getName())
 					;
 	}
+    
+    public JsonObjectBuilder json( Workflow wf ) {
+        return jsonObjectBuilder().add("id", wf.getId())
+                                  .add("name", wf.getName() );
+    }
 }

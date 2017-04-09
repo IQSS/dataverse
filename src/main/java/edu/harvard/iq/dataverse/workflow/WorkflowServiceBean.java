@@ -10,7 +10,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 /**
- *
+ * Service bean for managing {@link Workflow}s.
  * @author michael
  */
 @Stateless

@@ -2,13 +2,11 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.brief;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
-import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
-import java.util.Optional;
-import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.json.JsonObject;
@@ -26,7 +24,6 @@ import javax.ws.rs.core.Response;
 @Path("admin/workflows")
 @Stateless
 public class Workflows extends AbstractApiBean {
-    private static final Logger logger = Logger.getLogger(Workflows.class.getName());
     
     @EJB
     WorkflowServiceBean workflows;
@@ -47,7 +44,7 @@ public class Workflows extends AbstractApiBean {
     @GET
     public Response listWorkflows() {
         return ok( workflows.listWorkflows().stream()
-                            .map(wf->json(wf)).collect(toJsonArray()) );
+                            .map(wf->brief.json(wf)).collect(toJsonArray()) );
     }
     
     @Path("/{identifier}")
