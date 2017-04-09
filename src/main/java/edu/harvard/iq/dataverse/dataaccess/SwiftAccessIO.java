@@ -300,8 +300,8 @@ public class SwiftAccessIO extends DataFileIO {
             swiftEndPoint = p.getProperty("swift.default.endpoint");
             swiftFolderPath = this.getDataFile().getOwner().getDisplayName();
             //swiftFolderPath = this.getDataFile().getOwner().getIdentifier(); /* TODO: ? */
-            swiftFileName = storageIdentifier;
-            //swiftFileName = this.getDataFile().getDisplayName();
+//            swiftFileName = storageIdentifier;
+            swiftFileName = this.getDataFile().getDisplayName();
             //Storage Identifier is now updated after the object is uploaded on Swift.
             // this.getDataFile().setStorageIdentifier("swift://"+swiftEndPoint+":"+swiftContainer+":"+swiftFileName);
         } else {
