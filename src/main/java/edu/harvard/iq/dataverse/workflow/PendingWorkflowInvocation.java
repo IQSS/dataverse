@@ -1,8 +1,13 @@
 package edu.harvard.iq.dataverse.workflow;
 
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.workflow.step.Pending;
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
@@ -32,6 +37,10 @@ public class PendingWorkflowInvocation implements Serializable {
     long nextVersionNumber;
     long nextMinorVersionNumber;
     
+    @ElementCollection( fetch=FetchType.EAGER )
+    private Map<String,String> localData;
+
+    
     String userId;
     String ipAddress;
 
@@ -40,7 +49,7 @@ public class PendingWorkflowInvocation implements Serializable {
         
     }
     
-    public PendingWorkflowInvocation(Workflow wf, WorkflowContext ctxt) {
+    public PendingWorkflowInvocation(Workflow wf, WorkflowContext ctxt, Pending result) {
         invocationId = ctxt.getInvocationId();
         workflow = wf;
         dataset = ctxt.getDataset();
@@ -48,6 +57,7 @@ public class PendingWorkflowInvocation implements Serializable {
         nextMinorVersionNumber = ctxt.getNextMinorVersionNumber();
         userId = ctxt.getRequest().getUser().getIdentifier();
         ipAddress = ctxt.getRequest().getSourceAddress().toString();
+        localData = new HashMap<>(result.getData());
     }
     
     public String getInvocationId() {
@@ -105,7 +115,13 @@ public class PendingWorkflowInvocation implements Serializable {
     public void setIpAddress(String ipAddress) {
         this.ipAddress = ipAddress;
     }
-    
-    
+
+    public Map<String, String> getLocalData() {
+        return localData;
+    }
+
+    public void setLocalData(Map<String, String> localData) {
+        this.localData = localData;
+    }
     
 }

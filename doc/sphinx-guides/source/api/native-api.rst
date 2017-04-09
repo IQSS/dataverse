@@ -682,17 +682,17 @@ Delete a workflow with a specific id::
 
     DELETE http://$SERVER/api/admin/workflows/$id
 
-.. note:: If this is the default workflow, a 403 FORBIDDEN response will be returned, and the deletion will be canceled.
+.. warning:: If this is the default workflow, a 403 FORBIDDEN response will be returned, and the deletion will be canceled.
 
 Set the default workflow. This workflow is run when a dataset is published. The body of the PUT request is the id of the workflow that will become public.::
 
   PUT http://$SERVER/api/admin/workflows/default
 
-Get the default workflow. Returns a JSON representation of the workflow, if present, or 404 NOT FOUND.
+Get the default workflow. Returns a JSON representation of the workflow, if present, or 404 NOT FOUND. ::
 
   GET http://$SERVER/api/admin/workflows/default
 
-Unset the default workflow. After this call, dataset releases are done with no workflow.
+Unset the default workflow. After this call, dataset releases are done with no workflow. ::
 
   DELETE http://$SERVER/api/admin/workflows/default
 
