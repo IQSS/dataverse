@@ -1334,7 +1334,7 @@ sub setup_glassfish {
     $ENV{'SMTP_SERVER'}  = $CONFIG_DEFAULTS{'MAIL_SERVER'};
     $ENV{'FILES_DIR'} =
       $CONFIG_DEFAULTS{'GLASSFISH_DIRECTORY'} . "/glassfish/domains/" . $ENV{'GLASSFISH_DOMAIN'} . "/files";
-
+    
     system("./glassfish-setup.sh");
 
     if ($?) {

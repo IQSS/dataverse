@@ -159,7 +159,7 @@ fi
 
 # undeploy the app, if running: 
 
-./asadmin $ASADMIN_OPTS undeploy dataverse-4.0
+./asadmin $ASADMIN_OPTS undeploy dataverse-4.6.1
 
 # avoid OutOfMemoryError: PermGen per http://eugenedvorkin.com/java-lang-outofmemoryerror-permgen-space-error-during-deployment-to-glassfish/
 #./asadmin $ASADMIN_OPTS list-jvm-options
@@ -199,6 +199,9 @@ fi
 # location of the datafiles directory: 
 # (defaults to dataverse/files in the users home directory)
 ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.directory=${FILES_DIR}"
+#Swift related JVM options:
+./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.storage-driver-id=swift"
+./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.swift-endpoint-start='http://rdgw'"
 # Rserve-related JVM options: 
 ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.rserve.host=${RSERVE_HOST}"
 ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.rserve.port=${RSERVE_PORT}"
@@ -217,6 +220,7 @@ fi
 ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.baseurlstring=https\://ezid.cdlib.org"
 # "I am the timer server" option:
 ./asadmin $ASADMIN_OPTS create-jvm-options "-Ddataverse.timerServer=true"
+
 
 # enable comet support
 ./asadmin $ASADMIN_OPTS set server-config.network-config.protocols.protocol.http-listener-1.http.comet-support-enabled="true"
