@@ -1,8 +1,10 @@
 @startuml
+' Macro to mark classes you've already implemented
+!define DONE(NAME) "NAME ✅" as NAME
 
-class DvObject<OK> <<entity>>
-class DvObjectContainer<OK> <<entity>>
-class Dataverse<OK> <<entity>>
+class DONE(DvObject) <<entity>>
+class DONE(DvObjectContainer) <<entity>>
+class DONE(Dataverse) <<entity>>
 class Dataset <<entity>>
 
 Dataset --|> DvObjectContainer
@@ -10,13 +12,13 @@ DvObjectContainer --|>DvObject
 Dataverse -up-|> DvObjectContainer
 DvObject o--> DvObjectContainer: parent
 
-class Workflow<OK> <<entity>> {
+class DONE(Workflow) <<entity>> {
   id
   name
   description
 }
 
-class WorkflowStepData<OK> <<entity>> {
+class DONE(WorkflowStepData) <<entity>> {
   providerId: String
   stepId: String
   parameters: Map<String,String>
@@ -32,7 +34,7 @@ class WorkflowBean<In Progress> <<bean>> {
   getStepProvider(id)
 }
 
-class WorkflowContext<OK> {
+class DONE(WorkflowContext) {
   r:DataverseRequest
   d:Dataset
   invocationId:UUID
@@ -40,7 +42,7 @@ class WorkflowContext<OK> {
   isMinorRelease()
 }
 
-class PendingWorkflow<OK> <<entity>> {
+class DONE(PendingWorkflow) <<entity>> {
   externalId: UUID
   workflow: Workflow
   pendingStep: WorkflowStepData
@@ -49,23 +51,23 @@ class PendingWorkflow<OK> <<entity>> {
   dataset: Dataset
 }
 
-interface WorkflowStepSPI<OK> {
+interface DONE(WorkflowStepSPI) {
   id
   getStep(stepId, parameters):Step
 }
 
-interface WorkflowStep<OK> {
+interface DONE(WorkflowStep) {
   run( WorkflowContext ): WorkflowStepResult
   resume( WorkflowContext ): WorkflowStepResult
   rollback( WorkflowContext  )
 }
 
-class WorkflowStepResult<OK> <<abstract>>
-class OK<OK> <<singleton>>
-class Pending<OK>{
+class DONE(WorkflowStepResult) <<abstract>>
+class DONE(OK) <<singleton>>
+class DONE(Pending){
   localData
 }
-class Failure<OK> {
+class DONE(Failure) {
   reason:Throwable
 }
 

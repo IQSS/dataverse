@@ -38,7 +38,7 @@ import edu.harvard.iq.dataverse.util.DatasetFieldWalker;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import edu.harvard.iq.dataverse.workflow.Workflow;
-import java.math.BigDecimal;
+import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
 import java.util.ArrayList;
 import java.util.Set;
 import javax.json.Json;
@@ -199,12 +199,13 @@ public class JsonPrinter {
         }
         
         if ( wf.getSteps()!=null && !wf.getSteps().isEmpty()) {
-            bld.add("steps", 
-                    wf.getSteps().stream().map( stp->
-                jsonObjectBuilder().add("stepType", stp.getStepType())
+            JsonArrayBuilder arr = Json.createArrayBuilder();
+            for ( WorkflowStepData stp : wf.getSteps() ) {
+                arr.add( jsonObjectBuilder().add("stepType", stp.getStepType())
                                    .add("provider", stp.getProviderId())
-                                   .add("parameters", mapToObject(stp.getStepParameters()))
-                ).collect(toJsonArray()));
+                                   .add("parameters", mapToObject(stp.getStepParameters())) );
+            }
+            bld.add("steps", arr );
         }
         
         return bld;

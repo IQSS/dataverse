@@ -5,12 +5,11 @@ import java.io.Serializable;
 import java.util.Map;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Index;
 import javax.persistence.ManyToOne;
-import javax.persistence.Table;
 
 /**
  * A database row describing a step in a workflow. Actual steps can be instantiated
@@ -21,9 +20,6 @@ import javax.persistence.Table;
  * @author michael
  */
 @Entity
-@Table( indexes = {
-    @Index( columnList = "parent_id, providerId", unique = true)
-})
 public class WorkflowStepData implements Serializable {
     
     @Id
@@ -37,7 +33,7 @@ public class WorkflowStepData implements Serializable {
     
     private String stepType;
     
-    @ElementCollection
+    @ElementCollection( fetch=FetchType.EAGER )
     private Map<String,String> stepParameters;
 
     public Workflow getParent() {

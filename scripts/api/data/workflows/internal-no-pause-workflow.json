@@ -1,5 +1,5 @@
 {
-    "name": "Internal steps with pause",
+    "name": "Internal steps only, no with pause",
     "steps": [
         {
             "provider":":internal",

@@ -38,16 +38,22 @@ public class WorkflowServiceBean {
     public Workflow save( Workflow workflow ) {
         if ( workflow.getId()==null ) {
             em.persist(workflow);
+            em.flush();
             return workflow;
         } else {
             return em.merge(workflow);
         }
     }
     
-    public void deleteWorkflow( long workflowId ) {
-        em.createNamedQuery("Workflow.deleteById")
-                .setParameter("id", workflowId)
-                .executeUpdate();
+    public int deleteWorkflow( long workflowId ) {
+        // TODO check that the workflow is not the default WF.
+        Optional<Workflow> doomedOpt = getWorkflow(workflowId);
+        if ( doomedOpt.isPresent() ) {
+            em.remove(doomedOpt.get());
+            return 1;
+        } else {
+            return 0;
+        }
     }
     
     public List<PendingWorkflowInvocation> listPendingInvocations() {
