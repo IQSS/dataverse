@@ -81,7 +81,7 @@ package api {
     POST /step/${externalId}
   }
 
-  class WorkflowManagementEndpoint<In Progress> <<endpoint>> {
+  class DONE(WorkflowManagementEndpoint) <<endpoint>> {
     POST add
     GET list
     DELETE id

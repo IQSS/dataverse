@@ -1,10 +1,12 @@
 package edu.harvard.iq.dataverse.workflow;
 
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.workflow.internalspi.InternalWorkflowStepSP;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -15,16 +17,21 @@ import javax.persistence.PersistenceContext;
  */
 @Stateless
 public class WorkflowServiceBean {
+        
+    private static final String WORKFLOW_ID_KEY="WorkflowServiceBean.defaultWorkflowId";
     
     @PersistenceContext
     EntityManager em;
+    
+    @EJB
+    SettingsServiceBean settings;
     
     final Map<String, WorkflowStepSPI> providers = new HashMap<>();
     
     public WorkflowServiceBean() {
         providers.put(":internal", new InternalWorkflowStepSP() );
         
-        // TODO (next phase) scan SPIs, load.
+        // TODO scan SPIs, load.
     }
     
     public List<Workflow> listWorkflows() {
@@ -46,9 +53,15 @@ public class WorkflowServiceBean {
     }
     
     public int deleteWorkflow( long workflowId ) {
-        // TODO check that the workflow is not the default WF.
         Optional<Workflow> doomedOpt = getWorkflow(workflowId);
         if ( doomedOpt.isPresent() ) {
+            // validate that this is not the default workflow
+            String defaultWorkflowId = settings.get(WORKFLOW_ID_KEY);
+            if ( defaultWorkflowId != null &&
+                    Long.parseLong(defaultWorkflowId)==doomedOpt.get().getId() ) {
+                throw new IllegalArgumentException("Cannot delete the deafult workflow id");
+            }
+            
             em.remove(doomedOpt.get());
             return 1;
         } else {
@@ -61,4 +74,17 @@ public class WorkflowServiceBean {
                  .getResultList();
     }
     
+    public Optional<Workflow> getDefaultWorkflow() {
+        String defaultWorkflowId = settings.get(WORKFLOW_ID_KEY);
+        if ( defaultWorkflowId==null ) return Optional.empty();
+        return getWorkflow(Long.parseLong(defaultWorkflowId));
+    }
+    
+    public void setDefaultWorkflowId( Long id ) {
+        if ( id == null ) {
+            settings.delete(WORKFLOW_ID_KEY);
+        } else {
+            settings.set(WORKFLOW_ID_KEY, id.toString());
+        }
+    }
 }

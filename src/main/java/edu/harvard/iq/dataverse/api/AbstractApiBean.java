@@ -403,7 +403,7 @@ public abstract class AbstractApiBean {
             return engineSvc.submit(cmd);
             
         } catch (IllegalCommandException ex) {
-            throw new WrappedResponse( ex, error(Response.Status.FORBIDDEN, ex.getMessage() ) );
+            throw new WrappedResponse( ex, forbidden(ex.getMessage() ) );
           
         } catch (PermissionException ex) {
             /**
@@ -530,6 +530,10 @@ public abstract class AbstractApiBean {
     
     protected Response badRequest( String msg ) {
         return error( Status.BAD_REQUEST, msg );
+    }
+    
+    protected Response forbidden( String msg ) {
+        return error( Status.FORBIDDEN, msg );
     }
     
     protected Response badApiKey( String apiKey ) {
