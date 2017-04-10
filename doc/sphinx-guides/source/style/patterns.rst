@@ -1,15 +1,15 @@
 Patterns
 ++++++++
 
-Patters are what emerge when using the foundation elements together with basic objects, like buttons and alerts, as well as more complex Javascript components from `Bootstrap <http://getbootstrap.com/components/>`__ like tooltips and dropdowns and AJAX components from `PrimeFaces <https://www.primefaces.org/showcase/>`__ like datatables and commandlinks.
+Patterns are what emerge when using the foundation elements together with basic objects like buttons and alerts, as well as more complex Javascript components from `Bootstrap <http://getbootstrap.com/components/>`__ like tooltips and dropdowns, and AJAX components from `PrimeFaces <https://www.primefaces.org/showcase/>`__ like datatables and commandlinks.
 
 
 Navbar
 ======
 
-The navbar is a component from `Bootstrap <http://getbootstrap.com/components/#navbar>`__, which spans the top of the application, and contains the logo/branding, aligned to the left, plus search form and links, aligned to the right.
+The navbar is a component from `Bootstrap <http://getbootstrap.com/components/#navbar>`__, which spans the top of the application and contains the logo/branding, aligned to the left, plus search form and links, aligned to the right.
 
-When logged in, the account name is a dropdown menu, linking the user to account specific content, as well as the log out link.
+When logged in, the account name is a dropdown menu, linking the user to account-specific content, as well as the log out link.
 
 *TO-DO...* This UI example isn't working here. Should UI example be a screenshot?
 
@@ -157,7 +157,7 @@ The header is the top section of the page, immediately under the navbar, which c
 Breadcrumbs
 ===========
 
-The breadcrumbs are displayed under the header, and provide a trail of links for users to navigate the hierarchy of containing objects from file to dataset to dataverse.
+The breadcrumbs are displayed under the header, and provide a trail of links for users to navigate the hierarchy of containing objects, from file to dataset to dataverse.
 
 * Links
 
@@ -277,7 +277,7 @@ Most tables are DataTable components from `PrimeFaces <https://www.primefaces.or
 Forms
 =====
 
-Forms can take many forms across the site, but we try to style them consistently. We use the `.form-horizontal` layout, which uses `.form-group` to create a grid of rows for the labels and inputs.
+Forms fulfill various different functions across the site, but we try to style them consistently. We use the `.form-horizontal` layout, which uses `.form-group` to create a grid of rows for the labels and inputs.
 
 * Horizontal
 * Labels
@@ -309,7 +309,7 @@ Buttons
 Action Buttons
 --------------
 
-For action buttons on a page, we include an icon and text label, and they are generally aligned to the right side of the page.
+For action buttons on a page, we include an icon and text label. Action buttons are generally aligned to the right side of the page.
 
 * Edit
 * Find
@@ -407,7 +407,7 @@ For action buttons on a page, we include an icon and text label, and they are ge
 Form Buttons
 ------------
 
-Form buttons are typically at the bottom of a form, aligned to the left, and do not have icons, just text labels.
+Form buttons typically appear at the bottom of a form, aligned to the left. They do not have icons, just text labels.
 
 * Save
 * Continue
@@ -443,7 +443,7 @@ Form buttons are typically at the bottom of a form, aligned to the left, and do 
 Icon-Only Buttons
 -----------------
 
-There are a few places we use icon-only buttons with no text label. We do utilize tooltips that display on hover which contain a text label.
+There are a few places where we use icon-only buttons with no text label. For these buttons, we do utilize tooltips that display on hover, containing a text label.
 
 * Search
 * Add
