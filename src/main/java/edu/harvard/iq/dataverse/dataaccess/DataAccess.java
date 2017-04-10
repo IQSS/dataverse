@@ -36,7 +36,6 @@ public class DataAccess {
 
     // set by the user in glassfish-setup.sh if DEFFAULT_STORAGE_DRIVER_IDENTIFIER = swift
     public static final String DEFAULT_STORAGE_DRIVER_IDENTIFIER = System.getProperty("dataverse.files.storage-driver-id");
-    public static final String DEFAULT_SWIFT_ENDPOINT_START_CHARACTERS = System.getProperty("dataverse.files.swift-endpoint-start");
     public static String swiftFileUri;
     public static String swiftContainerUri;
 
@@ -58,8 +57,7 @@ public class DataAccess {
         if (df.getStorageIdentifier().startsWith("file://")
                 || (!df.getStorageIdentifier().matches("^[a-z][a-z]*://.*"))) {
             return new FileAccessIO (df, req);
-        } else if (df.getStorageIdentifier().startsWith("swift://")
-                || df.getStorageIdentifier().startsWith(DEFAULT_SWIFT_ENDPOINT_START_CHARACTERS)) {
+        } else if (df.getStorageIdentifier().startsWith("swift://")){
             return new SwiftAccessIO(df, req);
         } else if (df.getStorageIdentifier().startsWith("tmp://")) {
             throw new IOException("DataAccess IO attempted on a temporary file that hasn't been permanently saved yet.");
