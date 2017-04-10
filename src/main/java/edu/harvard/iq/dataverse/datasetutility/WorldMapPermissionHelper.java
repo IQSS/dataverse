@@ -532,8 +532,17 @@ public class WorldMapPermissionHelper implements java.io.Serializable {
              
             return false;
         }
+        
+        
+        // (3) Is File restricted? if Yes - no button.
+        if (fm.isRestricted() || fm.getDataFile().isRestricted()){
+            
+            return false;
+        }
+        
+        
                      
-        //  (3) Is File released?
+        //  (4) Is File released?
         //
         if (fm.getDataFile().isReleased()){
             
