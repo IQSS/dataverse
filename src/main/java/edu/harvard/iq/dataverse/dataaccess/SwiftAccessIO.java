@@ -115,12 +115,10 @@ public class SwiftAccessIO extends DataFileIO {
 
     // this is a Swift-specific override of the convenience method provided in the 
     // DataFileIO for copying a local Path (for ex., a temp file, into this DataAccess location):
-    @Override
+
+        @Override
     public void copyPath(Path fileSystemPath) throws IOException {
         long newFileSize = -1;
-        Properties p = getSwiftProperties();
-        String swiftEndPoint = p.getProperty("swift.default.endpoint");
-        String swiftDirectory = p.getProperty("swift.swift_endpoint." + swiftEndPoint);
 
         if (swiftFileObject == null || !this.canWrite()) {
             open(DataAccessOption.WRITE_ACCESS);
@@ -131,11 +129,7 @@ public class SwiftAccessIO extends DataFileIO {
         try {
             inputFile = fileSystemPath.toFile();
 
-            //@author Anuj Thakur 
             swiftFileObject.uploadObject(inputFile);
-            //After the files object is uploaded the identifier is changed.
-            logger.info(this.swiftFileName + " " + this.swiftFolderPath);
-            this.getDataFile().setStorageIdentifier(swiftDirectory + "/" + this.swiftFolderPath + "/" + this.swiftFileName);
 
             newFileSize = inputFile.length();
 
@@ -153,6 +147,44 @@ public class SwiftAccessIO extends DataFileIO {
         setSize(newFileSize);
 
     }
+    // @Override
+    // public void copyPath(Path fileSystemPath) throws IOException {
+    //     long newFileSize = -1;
+    //     Properties p = getSwiftProperties();
+    //     String swiftEndPoint = p.getProperty("swift.default.endpoint");
+    //     String swiftDirectory = p.getProperty("swift.swift_endpoint." + swiftEndPoint);
+
+    //     if (swiftFileObject == null || !this.canWrite()) {
+    //         open(DataAccessOption.WRITE_ACCESS);
+    //     }
+
+    //     File inputFile = null;
+
+    //     try {
+    //         inputFile = fileSystemPath.toFile();
+
+    //         //@author Anuj Thakur 
+    //         swiftFileObject.uploadObject(inputFile);
+    //         //After the files object is uploaded the identifier is changed.
+    //         logger.info(this.swiftFileName + " " + this.swiftFolderPath);
+    //         this.getDataFile().setStorageIdentifier(  + this.swiftFolderPath + "/" + this.swiftFileName);
+
+    //         newFileSize = inputFile.length();
+
+    //     } catch (Exception ioex) {
+    //         String failureMsg = ioex.getMessage();
+    //         if (failureMsg == null) {
+    //             failureMsg = "Swift AccessIO: Unknown exception occured while uploading a local file into a Swift StoredObject";
+    //         }
+
+    //         throw new IOException(failureMsg);
+    //     }
+
+    //     // if it has uploaded successfully, we can reset the size
+    //     // of the object:
+    //     setSize(newFileSize);
+
+    // }
 
     @Override
     public void delete() throws IOException {
@@ -212,26 +244,20 @@ public class SwiftAccessIO extends DataFileIO {
         String swiftEndPoint = null;
         String swiftContainer = null;
 
-        //
-        // if (storageIdentifier.startsWith("swift://")) {
-        if (storageIdentifier.startsWith(DataAccess.DEFAULT_SWIFT_ENDPOINT_START_CHARACTERS)) {
+        
+        if (storageIdentifier.startsWith("swift://")) {
             // This is a call on an already existing swift object. 
-
-            //String[] swiftStorageTokens = storageIdentifier.substring(8).split(":", 3);
-            //The Storage identifier now is the Object store service endpoint
-            //followed by the endpoint named container
-            String[] swiftStorageTokens = storageIdentifier.substring(46).split("/", 2);
-
-            if (swiftStorageTokens.length != 2) {
+ 
+            String[] swiftStorageTokens = storageIdentifier.substring(8).split(":", 3);    
+            
+            if (swiftStorageTokens.length != 3) {
                 // bad storage identifier
                 throw new IOException("SwiftAccessIO: invalid swift storage token: " + storageIdentifier);
             }
 
-            Properties p = getSwiftProperties();
-            swiftEndPoint = p.getProperty("swift.default.endpoint");
-
-            swiftContainer = swiftStorageTokens[0];
-            swiftFileName = swiftStorageTokens[1];
+            swiftEndPoint = swiftStorageTokens[0];
+            swiftContainer = swiftStorageTokens[1];
+            swiftFileName = swiftStorageTokens[2];
 
             if (swiftEndPoint == null || swiftContainer == null || swiftFileName == null
                     || "".equals(swiftEndPoint) || "".equals(swiftContainer) || "".equals(swiftFileName)) {
@@ -246,12 +272,15 @@ public class SwiftAccessIO extends DataFileIO {
         } else if (this.isWriteAccess) {
             Properties p = getSwiftProperties();
             swiftEndPoint = p.getProperty("swift.default.endpoint");
-            swiftFolderPath = this.getDataFile().getOwner().getDisplayName();
-            //swiftFolderPath = this.getDataFile().getOwner().getIdentifier(); /* TODO: ? */
+
+            //swiftFolderPath = this.getDataFile().getOwner().getDisplayName();
+            String swiftFolderPathSeparator = "_";
+            swiftFolderPath = this.getDataFile().getOwner().getAuthority().replace(this.getDataFile().getOwner().getDoiSeparator(), swiftFolderPathSeparator) +
+                swiftFolderPathSeparator + this.getDataFile().getOwner().getIdentifier();
             swiftFileName = storageIdentifier;
             //swiftFileName = this.getDataFile().getDisplayName();
             //Storage Identifier is now updated after the object is uploaded on Swift.
-            // this.getDataFile().setStorageIdentifier("swift://"+swiftEndPoint+":"+swiftContainer+":"+swiftFileName);
+            this.getDataFile().setStorageIdentifier("swift://"+swiftEndPoint+":"+swiftFolderPath+":"+swiftFileName);
         } else {
             throw new IOException("SwiftAccessIO: unknown access mode.");
         }
@@ -272,7 +301,7 @@ public class SwiftAccessIO extends DataFileIO {
          */
         Container dataContainer;
 
-        if (storageIdentifier.startsWith(DataAccess.DEFAULT_SWIFT_ENDPOINT_START_CHARACTERS)) {
+        if (storageIdentifier.startsWith("swift://")) {
             dataContainer = account.getContainer(swiftContainer);
         } else {
             dataContainer = account.getContainer(swiftFolderPath); //changed from swiftendpoint
