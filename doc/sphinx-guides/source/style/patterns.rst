@@ -11,7 +11,7 @@ The navbar is a component from `Bootstrap <http://getbootstrap.com/components/#n
 
 When logged in, the account name is a dropdown menu, linking the user to account-specific content, as well as the log out link.
 
-*TO-DO...* This UI example isn't working here. Should UI example be a screenshot?
+*TO-DO...* Removed extra navbar links to make it look a little cleaner. Might add some back. Should UI example be a screenshot?
 
 * Logo/Branding
 * Search
@@ -24,7 +24,7 @@ When logged in, the account name is a dropdown menu, linking the user to account
 	  <div class="panel-body">
 	  	
   		<nav id="navbarFixed" class="navbar navbar-default"><!-- navbar-fixed-top -->
-            <div class="container">
+            <div class="container" style="width:auto !important;">
                 <div class="navbar-header">
                     <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#topNavBar">
                         <span class="sr-only">Toggle navigation</span>
@@ -38,24 +38,6 @@ When logged in, the account name is a dropdown menu, linking the user to account
                 </div>
                 <div class="collapse navbar-collapse" id="topNavBar">
                     <ul class="nav navbar-nav navbar-right">
-                        <li>
-                            <a id="navbar-search-toggle" title="Search all dataverses...">
-                                <span class="glyphicon glyphicon-search"></span>
-                            </a>
-                        </li>
-                        <form class="navbar-form navbar-left" role="search" style="display:none;">
-                            <div class="form-group">
-                                <label class="sr-only" for="navbarsearch">Search</label>
-                                <input id="navbarsearch" type="text" class="search-input ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all" size="28" value="" placeholder="Search all dataverses...">
-                            </div>
-                            <button type="submit" class="btn btn-default" onclick="return false;">
-                                <span class="glyphicon glyphicon-search"></span> Find
-                            </button>
-                        </form>
-                        <li><a href="#" onclick="return false;">
-                                About
-                            </a>
-                        </li>
                         <li class="dropdown">
                             <span id="dataverseSupportLink" class="dropdown-toggle" data-toggle="dropdown">
                                 Guides <b class="caret"></b>
@@ -71,35 +53,6 @@ When logged in, the account name is a dropdown menu, linking the user to account
                                 </li>
                                 <li><a href="#" onclick="return false;">API Guide</a>
                                 </li><li><a href="#" onclick="return false;">Admin Guide</a></li>
-                            </ul>
-                        </li>
-                        <form name="support" method="post" action="#" class="navbar-form navbar-left navbar-form-link">
-							<a href="#" class="ui-commandlink ui-widget" onclick="return false;">Support</a>
-						</form>
-						<li><a href="#" onclick="return false;">Dashboard</a></li>
-                        <li class="dropdown accountName">
-                            <span id="lnk_header_account_dropdown" class="dropdown-toggle" data-toggle="dropdown">
-                                <span class="glyphicon glyphicon-user text-danger"></span>
-                                <span id="userDisplayInfoTitle" class="text-danger">Dataverse Admin</span>
-                                <span class="label label-danger">26</span>
-                                <b class="caret"></b>
-                            </span>
-                            <ul class="dropdown-menu">
-                                <li><a href="#" onclick="return false;">My Data</a>
-                                </li>
-                                <li><a href="#" onclick="return false;">Notifications<span class="label label-danger">26</span></a>
-                                </li>
-                                
-                                <li><a href="#" onclick="return false;">Account Information</a>
-                                </li>
-                                <li><a href="#" onclick="return false;">API Token</a>
-                                </li>
-                                <li class="divider"></li>
-                                <li class="logout">
-									<form id="j_idt98" name="j_idt98" method="post" action="/dataverse.xhtml" class="navbar-form navbar-left" role="logout">
-										<a href="#" onclick="return false">Log Out</a>
-									</form>
-                                </li>
                             </ul>
                         </li>
                     </ul>
@@ -118,41 +71,6 @@ When logged in, the account name is a dropdown menu, linking the user to account
     	</div>
     </nav>
 
-
-Header
-======
-
-???... Maybe this belongs in the next page, "Templates"...
-
-The header is the top section of the page, immediately under the navbar, which contains the dataverse name, as well as configurable content like the logo, tagline and link.
-
-* Name
-* Logo
-* Tagline
-
-*TO-DO...* This UI example isn't working here. Are screenshots better than code examples? PrimeFaces CSS? Custom themes? ...??
-
-.. raw:: html
-
-	<div class="panel panel-default code-example">
-	  <div class="panel-body">
-	  	<div style="background:#F5F5F5;" id="dataverseHeader" class="container bg-muted">
-            <div class="dataverseHeaderBlock">
-            	<div class="dataverseHeaderCell dataverseHeaderName">
-                    <a href="#" class="dataverseHeaderDataverseName" style="color:#428BCA;">Your Name Dataverse</a>
-                </div>
-                <div class="dataverseHeaderCell dataverseHeaderLink">
-                	<a href="#" style="color:#428BCA;" target="_blank">Here is your tagline.</a>
-                </div>
-            </div>
-        </div>
-	  </div>
-	</div>
-
-.. code-block:: html
-
-  <span class="name">...</span>
-  <span class="name">...</span>
 
 Breadcrumbs
 ===========
@@ -187,6 +105,8 @@ The breadcrumbs are displayed under the header, and provide a trail of links for
 
 Tables
 ======
+
+Tables component from `Bootstrap <http://getbootstrap.com/css/#tables>`__.
 
 Most tables are DataTable components from `PrimeFaces <https://www.primefaces.org/showcase/ui/data/datatable/basic.xhtml>`__.
 
@@ -277,6 +197,10 @@ Most tables are DataTable components from `PrimeFaces <https://www.primefaces.or
 Forms
 =====
 
+Forms component from `Bootstrap <http://getbootstrap.com/css/#forms>`__.
+
+InputText component from `PrimeFaces <https://www.primefaces.org/showcase/ui/input/inputText.xhtml>`__.
+
 Forms fulfill various different functions across the site, but we try to style them consistently. We use the `.form-horizontal` layout, which uses `.form-group` to create a grid of rows for the labels and inputs.
 
 * Horizontal
@@ -285,26 +209,103 @@ Forms fulfill various different functions across the site, but we try to style t
 * Inputs
 * Validation
 
-*TO-DO...* Write out a description. Build some examples out.
+*TO-DO...* Fix tooltips. Add real XHTML not the generated HTML. Should more sections talk about the PrimeFaces components?
 
 .. raw:: html
 
   <div class="panel panel-default code-example">
     <div class="panel-body">
 
-      FORMS
+		<div class="form-horizontal">
+			<div class="form-group">
+                <label for="userNameEmail" class="col-sm-3 control-label">
+                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="Between 2-60 characters, and can use &quot;a-z&quot;, &quot;0-9&quot;, &quot;_&quot; for your username.">
+                        Username <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                    </span>
+                </label>
+                <div class="col-sm-4">
+                	<input name="userName" type="text" value="" tabindex="1" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all ui-state-disabled form-control" role="textbox" aria-disabled="true" aria-readonly="false">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="firstName" class="col-sm-3 control-label">
+                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="The first name or name you would like to use for this account.">
+                        Given Name <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                    </span>
+                </label>
+                <div class="col-sm-4">
+                	<input name="firstName" type="text" value="" tabindex="4" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all form-control" role="textbox" aria-disabled="false" aria-readonly="false">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="lastName" class="col-sm-3 control-label">
+                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="The last name you would like to use for this account.">
+                        Family Name <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                    </span>
+                </label>
+                <div class="col-sm-4">
+                	<input name="lastName" type="text" value="" tabindex="5" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all form-control" role="textbox" aria-disabled="false" aria-readonly="false">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="email" class="col-sm-3 control-label">
+                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="" title="">
+                        Email <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                    </span>
+                </label>
+                <div class="col-sm-4">
+                	<input name="email" type="text" value="" tabindex="6" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all form-control" role="textbox" aria-disabled="false" aria-readonly="false">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="affiliation" class="col-sm-3 control-label">
+                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="The organization with which you are affiliated.">
+                        Affiliation
+                    </span>
+                </label>
+                <div class="col-sm-4">
+                	<input name="affiliation" type="text" value="" tabindex="7" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all form-control" role="textbox" aria-disabled="false" aria-readonly="false">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="position" class="col-sm-3 control-label">
+                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="Your role or title at the organization you are affiliated with; such as staff, faculty, student, etc.">
+                        Position
+                    </span>
+                </label>
+                <div class="col-sm-4">
+                	<input name="position" type="text" value="" tabindex="8" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all form-control" role="textbox" aria-disabled="false" aria-readonly="false">
+                </div>
+            </div>
+        </div>
 
     </div>
   </div>
 
 .. code-block:: html
 
-  <span class="name">...</span>
-  <span class="name">...</span>
+  <div class="form-horizontal">
+	<div class="form-group">
+        <label for="userNameEmail" class="col-sm-3 control-label">
+            <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="Between 2-60 characters, and can use &quot;a-z&quot;, &quot;0-9&quot;, &quot;_&quot; for your username.">
+                Username <span class="glyphicon glyphicon-asterisk text-danger"></span>
+            </span>
+        </label>
+        <div class="col-sm-4">
+        	<input name="userName" type="text" value="" tabindex="1" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all ui-state-disabled form-control" role="textbox" aria-disabled="true" aria-readonly="false">
+        </div>
+    </div>
+  </div>
 
 
 Buttons
 =======
+
+Buttons component from `Bootstrap <http://getbootstrap.com/css/#buttons>`__.
+
+Button Groups component from `Bootstrap <http://getbootstrap.com/components/#btn-groups>`__.
+
+Buttons Dropdowns component from `Bootstrap <http://getbootstrap.com/components/#btn-dropdowns>`__.
 
 Action Buttons
 --------------
@@ -482,6 +483,8 @@ There are a few places where we use icon-only buttons with no text label. For th
 Pagination
 ==========
 
+Pagination component from `Bootstrap <http://getbootstrap.com/components/#pagination>`__.
+
 * Search Results
 * Manage pg
 
@@ -528,6 +531,8 @@ Pagination
 Labels
 ======
 
+Labels component from `Bootstrap <http://getbootstrap.com/components/#labels>`__.
+
 * Publication status
 * File tags
 
@@ -560,6 +565,8 @@ Labels
 
 Alerts
 ======
+
+Alerts component from `Bootstrap <http://getbootstrap.com/components/#alerts>`__.
 
 * Help/information, success, warning, error message block
 * Inline validation error
@@ -596,6 +603,8 @@ Alerts
 Images
 ======
 
+GraphicImage  component from `PrimeFaces <https://www.primefaces.org/showcase/ui/multimedia/graphicImage.xhtml>`__.
+
 * Responsive
 * Dataverse Logo
 * Dataset Thumbnail
@@ -621,6 +630,10 @@ Images
 
 Panels
 ======
+
+Panels component from `Bootstrap <http://getbootstrap.com/components/#panels>`__.
+
+These components are basically containers with rounded borders. Good for descriptions or blocks of metadata or forms or whatever you need to have a border and some padding around.
 
 * Citation
 * Citation Summary Metadata
@@ -655,17 +668,43 @@ Panels
 Tabs
 ====
 
+Tab component from `Bootstrap <http://getbootstrap.com/javascript/#tabs>`__.
+
+TabView component from `PrimeFaces <https://www.primefaces.org/showcase/ui/panel/tabView.xhtml>`__.
+
+These are a mix of the Bootstrap CSS and PrimeFaces. More PrimeFaces though... That is why the example below doesn't look like tabs...
+
 * Dataset
 * Files
+* Account
 
-*TO-DO...* Write a description. Build some examples.
+*TO-DO...* Write a description. This needs PrimeFaces CSS to look like tabs.
 
 .. raw:: html
 
   <div class="panel panel-default code-example">
     <div class="panel-body">
       <div class="color-swatches">
-        TABS
+
+      	<div id="datasetForm:tabView" class="ui-tabs ui-widget ui-widget-content ui-corner-all ui-hidden-container ui-tabs-top" data-widget="content">
+        
+	      	<ul class="ui-tabs-nav ui-helper-reset ui-helper-clearfix ui-widget-header ui-corner-all" role="tablist">
+		      	<li class="ui-state-default ui-tabs-selected ui-state-active ui-corner-top" role="tab" aria-expanded="true" aria-selected="true" tabindex="0">
+		      		<a href="#" onclick="return false;" tabindex="-1">Files</a>
+	      		</li>
+		      	<li class="ui-state-default ui-corner-top" role="tab" aria-expanded="false" aria-selected="false" tabindex="-1">
+		      		<a href="#" onclick="return false;" tabindex="-1">Metadata</a>
+	      		</li>
+		      	<li class="ui-state-default ui-corner-top" role="tab" aria-expanded="false" aria-selected="false" tabindex="-1">
+		      		<a href="#" onclick="return false;" tabindex="-1">Terms</a>
+	      		</li>
+		      	<li class="ui-state-default ui-corner-top" role="tab" aria-expanded="false" aria-selected="false" tabindex="-1">
+		      		<a href="#" onclick="return false;" tabindex="-1">Versions</a>
+	      		</li>
+	      	</ul>
+
+      	</div>
+
       </div>
     </div>
   </div>
@@ -676,8 +715,20 @@ Tabs
   <span class="name">...</span>
 
 
-Popovers
-========
+Modals
+======
+
+Modal component from `Bootstrap <http://getbootstrap.com/javascript/#modals>`__.
+
+Dialog component from `PrimeFaces <https://www.primefaces.org/showcase/ui/overlay/dialog/basic.xhtml>`__.
+
+Confirm Dialog component from `PrimeFaces <https://www.primefaces.org/showcase/ui/overlay/confirmDialog.xhtml>`__.
+
+This is the Bootstrap component for a popup window that prompts a user for information, with overlay an a backdrop, then header, content and buttons.
+
+There is are large ``.bs-example-modal-lg`` and small ``.bs-example-modal-sm`` options for the width.
+
+Note: we don't use the ``.fade`` class.
 
 * Small vs Large
 * Confirmation vs Manage/Edit/Add
@@ -689,42 +740,34 @@ Popovers
   <div class="panel panel-default code-example">
     <div class="panel-body">
 
-      POPOVERS
+      <button type="button" class="btn btn-primary" data-toggle="modal" data-target=".bs-example-modal-lg">Large modal</button>
+
+      <div class="modal bs-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel">
+		<div class="modal-dialog modal-lg" role="document">
+		  <div class="modal-content">
+		  	<div class="modal-header">
+		      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+		      <h4 class="modal-title" id="myModalLabel">Modal title</h4>
+		    </div>
+		    <div class="modal-body">
+		      ...
+		    </div>
+		  </div>
+		</div>
+	  </div>
 
     </div>
   </div>
 
 .. code-block:: html
 
-  <span class="name">...</span>
-  <span class="name">...</span>
+  <!-- Large modal -->
+  <button type="button" class="btn btn-primary" data-toggle="modal" data-target=".bs-example-modal-lg">Large modal</button>
 
-
-Footer
-======
-
-???... Maybe this belongs in the next page, "Templates"...
-
-* Copyright
-* Date + Owner
-* Privacy Policy
-* Dataverse Project
-* Version #
-
-*TO-DO...* Write a description. Build some examples. Screenshot?
-
-.. raw:: html
-
-  <div class="panel panel-default code-example">
-    <div class="panel-body">
-
-      FOOTER
-
-    </div>
+  <div class="modal fade bs-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel">
+	<div class="modal-dialog modal-lg" role="document">
+	  <div class="modal-content">
+	    ...
+	  </div>
+	</div>
   </div>
-
-.. code-block:: html
-
-  <span class="name">...</span>
-  <span class="name">...</span>
-
