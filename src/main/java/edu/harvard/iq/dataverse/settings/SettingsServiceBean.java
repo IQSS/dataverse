@@ -236,7 +236,12 @@ public class SettingsServiceBean {
         /*
         Whether Harvesting (OAI) service is enabled
         */
-        OAIServerEnabled;
+        OAIServerEnabled,
+        
+        /**
+        * Whether Shibboleth passive authentication mode is enabled
+        */
+       ShibPassiveLoginEnabled;
         
         @Override
         public String toString() {
