@@ -85,11 +85,25 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                             } catch (java.lang.NumberFormatException ex) {
                                 accessObject = ImageThumbConverter.getImageThumb((FileAccessIO)accessObject);
                             }
+                            
+                            // Modify the filename, to reflect that it's a PNG file now. 
+                            // (we are now generating thumbnails for tabular files - 
+                            // and the original .tab extension may be confusing some browsers!)
+                            String fileName = accessObject.getFileName();
+                            fileName = fileName.replaceAll("\\.[^\\.]*$", ".png");
+                            accessObject.setFileName(fileName);
+                            // (also, now that have tabular data files that can 
+                            // have thumbnail previews... obviously, we don't want to 
+                            // add the variable header to the image stream!
+                            accessObject.setNoVarHeader(Boolean.TRUE);
+                            accessObject.setVarHeader(null);
                         }
-                    }
-                    
-                    
-                    if (sf.isTabularData()) {
+                    } else if (sf.isTabularData()) {
+                        // We can now generate thumbnails for some tabular data files (specifically, 
+                        // tab files tagged as "geospatial"). We are going to assume that you can 
+                        // do only ONE thing at a time - request the thumbnail for the file, or 
+                        // request any tabular-specific services. 
+                        
                         if (di.getConversionParam().equals("noVarHeader")) {
                             accessObject.setNoVarHeader(Boolean.TRUE);
                             accessObject.setVarHeader(null);
@@ -219,7 +233,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                     
                     // before writing out any bytes from the input stream, flush
                     // any extra content, such as the variable header for the 
-                    // subsettable files: (??)4
+                    // subsettable files: 
                     
                     if (accessObject.getVarHeader() != null) {
                         if (accessObject.getVarHeader().getBytes().length > 0) {

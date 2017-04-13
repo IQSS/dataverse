@@ -1015,14 +1015,15 @@ public class DataFileServiceBean implements java.io.Serializable {
         return (contentType != null && 
                 (contentType.startsWith("image/") || 
                 contentType.equalsIgnoreCase("application/pdf") ||
+                (file.isTabularData() && file.hasGeospatialTag()) ||
                 contentType.equalsIgnoreCase(MIME_TYPE_GEO_SHAPE)));
     }
     
-    /* 
+    /*
      * This method will return true if the thumbnail is *actually available* and
      * ready to be downloaded. (it will try to generate a thumbnail for supported
      * file types, if not yet available)
-    */
+     */
     public boolean isThumbnailAvailable (DataFile file) {
         if (file == null) {
             return false; 
