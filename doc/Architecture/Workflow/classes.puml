@@ -45,7 +45,7 @@ class DONE(WorkflowContext) {
 class DONE(PendingWorkflow) <<entity>> {
   externalId: UUID
   workflow: Workflow
-  pendingStep: WorkflowStepData
+  pendingStepIdx: int
   localData: DATA
   request: DataverseRequest
   dataset: Dataset

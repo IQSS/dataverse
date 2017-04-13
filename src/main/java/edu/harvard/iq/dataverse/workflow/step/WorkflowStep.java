@@ -14,6 +14,11 @@ public interface WorkflowStep {
     
     /**
      * Performs the step of the workflow.
+     * 
+     * <em>NOTE:</em> If the step fails (i.e. returns {@link Failure}), it will not
+     * be rolled back as part of the rollback process - the step has to clean up
+     * on its own.
+     * 
      * @param context Contains data about the invocation of this workflow.
      * @return A step result.
      */
@@ -31,7 +36,9 @@ public interface WorkflowStep {
     WorkflowStepResult resume( WorkflowContext context, Map<String,String> internalData, String externalData );
     
     /**
-     * Attempt to roll back this step, if possible. 
+     * Attempt to roll back this step, if possible. The caller of this method assumes
+     * that the step was completed successfully.
+     * 
      * @param context Required information about the workflow.
      * @param reason original reason for rolling back the workflow.
      */

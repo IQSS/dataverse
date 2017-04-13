@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.workflow;
 
 import edu.emory.mathcs.backport.java.util.Collections;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.workflow.internalspi.InternalWorkflowStepSP;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
@@ -38,6 +39,9 @@ public class WorkflowServiceBean {
     @EJB
     SettingsServiceBean settings;
     
+    @EJB
+    RoleAssigneeServiceBean roleAssignees;
+    
     final Map<String, WorkflowStepSPI> providers = new HashMap<>();
     
     public WorkflowServiceBean() {
@@ -63,7 +67,7 @@ public class WorkflowServiceBean {
             if ( res != WorkflowStepResult.OK ) {
                 if ( res instanceof Failure ) {
                     logger.log(Level.WARNING, "Workflow {0} failed: {1}", new Object[]{ctxt.getInvocationId(), ((Failure)res).getReason()});
-                    rollback(wf, ctxt, (Failure)res, idx);
+                    rollback(wf, ctxt, (Failure)res, idx-1);
                     return Boolean.FALSE;
                 } else if ( res instanceof Pending ) {
                     pauseAndAwait(wf, ctxt, (Pending)res, idx);
@@ -75,6 +79,66 @@ public class WorkflowServiceBean {
         return Boolean.TRUE;
     }
     
+    /**
+     * Starting the resume process for a pending workflow. We first delete the pending
+     * workflow to minimize double invocation, and then asynchronously resume the work.
+     * @param pending The workflow to resume.
+     * @param body the response from the remote system.
+     * @see #doResume(edu.harvard.iq.dataverse.workflow.PendingWorkflowInvocation, java.lang.String) 
+     */
+    public void resume(PendingWorkflowInvocation pending, String body) {
+        em.remove(pending);
+        doResume(pending, body);
+    }
+
+    @Asynchronous
+    private void doResume(PendingWorkflowInvocation pending, String body) {
+        Workflow wf = pending.getWorkflow();
+        List<WorkflowStepData> stepsLeft = wf.getSteps().subList(pending.getPendingStepIdx(), wf.getSteps().size());
+        WorkflowStep pendingStep = createStep(stepsLeft.get(0));
+        final WorkflowContext ctxt = pending.reCreateContext(roleAssignees);
+        
+        WorkflowStepResult res = pendingStep.resume(ctxt, pending.getLocalData(), body);
+        if ( res instanceof Failure ) {
+            rollback(wf, ctxt, (Failure)res, pending.getPendingStepIdx()-1);
+        } else if ( res instanceof Pending ) {
+            pauseAndAwait(wf, ctxt, (Pending)res, pending.getPendingStepIdx());
+        }
+        // Step completed successfully, now move on.
+        int idx=pending.getPendingStepIdx()+1;
+        for ( WorkflowStepData wsd : stepsLeft.subList(1, stepsLeft.size()) ) {
+            WorkflowStep curStep = createStep(wsd);
+            res = curStep.run(ctxt);
+            if ( res != WorkflowStepResult.OK ) {
+                if ( res instanceof Failure ) {
+                    logger.log(Level.WARNING, "Workflow {0} failed: {1}", new Object[]{ctxt.getInvocationId(), ((Failure)res).getReason()});
+                    rollback(wf, ctxt, (Failure)res, idx-1);
+                    return;
+                } else if ( res instanceof Pending ) {
+                    pauseAndAwait(wf, ctxt, (Pending)res, idx);
+                    return;
+                }
+            }
+            idx++;
+        }
+        // TODO finalize the dataset release (execute command)
+    }
+    
+    private void rollback(Workflow wf, WorkflowContext ctxt, Failure failure, int idx) {
+        List<WorkflowStepData> toRollBack = wf.getSteps().subList(0, idx+1);
+        Collections.reverse(toRollBack);
+        toRollBack.forEach((WorkflowStepData wsd) -> {
+            logger.log(Level.INFO, "{0} rolling back step {1}", new Object[]{ctxt.getInvocationId(), wsd.toString()});
+            createStep(wsd).rollback(ctxt, failure);
+        });
+        logger.log(Level.INFO, "{0} rollback done", ctxt.getInvocationId());
+    }
+
+    private void pauseAndAwait(Workflow wf, WorkflowContext ctxt, Pending pendingRes, int idx) {
+        PendingWorkflowInvocation pending = new PendingWorkflowInvocation(wf, ctxt, pendingRes);
+        pending.setPendingStepIdx(idx);
+        em.persist(pending);
+    }
     
     public List<Workflow> listWorkflows() {
         return em.createNamedQuery("Workflow.listAll").getResultList();
@@ -116,6 +180,10 @@ public class WorkflowServiceBean {
                  .getResultList();
     }
     
+    public PendingWorkflowInvocation getPendingWorkflow( String invocationId ) {
+        return em.find(PendingWorkflowInvocation.class, invocationId );
+    }
+    
     public Optional<Workflow> getDefaultWorkflow() {
         String defaultWorkflowId = settings.get(WORKFLOW_ID_KEY);
         if ( defaultWorkflowId==null ) return Optional.empty();
@@ -143,18 +211,4 @@ public class WorkflowServiceBean {
         return provider.getStep(wsd.getStepType(), wsd.getStepParameters());
     }
 
-    private void rollback(Workflow wf, WorkflowContext ctxt, Failure failure, int idx) {
-        List<WorkflowStepData> toRollBack = wf.getSteps().subList(0, idx+1);
-        Collections.reverse(toRollBack);
-        toRollBack.forEach((WorkflowStepData wsd) -> {
-            logger.log(Level.INFO, "{0} rolling back step {1}", new Object[]{ctxt.getInvocationId(), wsd.toString()});
-            createStep(wsd).rollback(ctxt, failure);
-        });
-        logger.log(Level.INFO, "{0} rollback done", ctxt.getInvocationId());
-    }
-
-    private void pauseAndAwait(Workflow wf, WorkflowContext ctxt, Pending pendingRes, int idx) {
-        PendingWorkflowInvocation pending = new PendingWorkflowInvocation(wf, ctxt, pendingRes);
-        em.persist(pending);
-    }
 }

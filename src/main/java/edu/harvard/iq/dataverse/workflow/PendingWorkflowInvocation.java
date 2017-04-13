@@ -1,6 +1,10 @@
 package edu.harvard.iq.dataverse.workflow;
 
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
+import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.workflow.step.Pending;
 import java.io.Serializable;
 import java.util.HashMap;
@@ -39,7 +43,8 @@ public class PendingWorkflowInvocation implements Serializable {
     
     @ElementCollection( fetch=FetchType.EAGER )
     private Map<String,String> localData;
-
+    
+    int pendingStepIdx;
     
     String userId;
     String ipAddress;
@@ -58,6 +63,11 @@ public class PendingWorkflowInvocation implements Serializable {
         userId = ctxt.getRequest().getUser().getIdentifier();
         ipAddress = ctxt.getRequest().getSourceAddress().toString();
         localData = new HashMap<>(result.getData());
+    }
+    
+    public WorkflowContext reCreateContext(RoleAssigneeServiceBean roleAssignees) {
+        DataverseRequest aRequest = new DataverseRequest((User)roleAssignees.getRoleAssignee(userId), IpAddress.valueOf(ipAddress));
+        return new WorkflowContext(aRequest, dataset, nextVersionNumber, nextMinorVersionNumber);
     }
     
     public String getInvocationId() {
@@ -122,6 +132,14 @@ public class PendingWorkflowInvocation implements Serializable {
 
     public void setLocalData(Map<String, String> localData) {
         this.localData = localData;
+    }
+
+    public int getPendingStepIdx() {
+        return pendingStepIdx;
+    }
+
+    public void setPendingStepIdx(int pendingStepIdx) {
+        this.pendingStepIdx = pendingStepIdx;
     }
     
 }
