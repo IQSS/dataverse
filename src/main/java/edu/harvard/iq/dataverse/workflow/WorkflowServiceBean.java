@@ -121,7 +121,6 @@ public class WorkflowServiceBean {
             }
             idx++;
         }
-        // TODO finalize the dataset release (execute command)
     }
     
     private void rollback(Workflow wf, WorkflowContext ctxt, Failure failure, int idx) {

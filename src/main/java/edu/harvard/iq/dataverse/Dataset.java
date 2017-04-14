@@ -26,7 +26,6 @@ import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 import org.hibernate.validator.constraints.NotBlank;
 
@@ -336,7 +335,7 @@ public class Dataset extends DvObjectContainer {
         }
     }
 
-    /**
+    /*
      * @todo Investigate if this method should be deprecated in favor of
      * createNewDatasetVersion.
      */
