@@ -168,6 +168,11 @@
                                 <h:outputText value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-success" rendered="#{FilePage.fileMetadata.datasetVersion.inReview}"/>
                                 <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{!FilePage.fileMetadata.datasetVersion.dataset.released}"/>   
                                 <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-danger" rendered="#{FilePage.fileMetadata.datasetVersion.deaccessioned}"/>
+                                <!-- DATASET VERSION NUMBER -->
+                                <h:outputText styleClass="label label-default" rendered="#{FilePage.fileMetadata.datasetVersion.released and !(FilePage.fileMetadata.datasetVersion.draft or FilePage.fileMetadata.datasetVersion.inReview)}"
+                                              value="#{bundle['file.DatasetVersion']} #{FilePage.fileMetadata.datasetVersion.versionNumber}.#{FilePage.fileMetadata.datasetVersion.minorVersionNumber}" /> 
+                                <h:outputText styleClass="label label-default" rendered="#{!FilePage.fileMetadata.datasetVersion.released and !(FilePage.fileMetadata.datasetVersion.draft or FilePage.fileMetadata.datasetVersion.inReview)}"
+                                              value="#{bundle['file.DatasetVersion']} #{FilePage.fileMetadata.datasetVersion.versionState}"/>
                             </div>
                             <div id="citation-block" class="col-xs-12">
                                  <div class="col-xs-12 #{FilePage.fileMetadata.datasetVersion.deaccessioned ? 'alert alert-danger bg-danger' : 'alert alert-info bg-citation'}">
@@ -207,12 +212,6 @@
                                         <!-- END: Cite Data Button -->
                                     </div>
                                 </div>
-                            </div>
-                            <div id="versionNumber" class="col-xs-12">
-                                <h:outputText rendered="#{FilePage.fileMetadata.datasetVersion.released}" styleClass="highlightBold"
-                                              value="#{bundle['file.DatasetVersion']}: #{FilePage.fileMetadata.datasetVersion.versionNumber}.#{FilePage.fileMetadata.datasetVersion.minorVersionNumber}" /> 
-                                <h:outputText rendered="#{!FilePage.fileMetadata.datasetVersion.released}" styleClass="highlightBold"
-                                              value="#{bundle['file.DatasetVersion']}: #{FilePage.fileMetadata.datasetVersion.versionState}"/> 
                             </div>
                                 
                             <div id="deaccession-reason-block" class="col-xs-12" jsf:rendered="#{FilePage.fileMetadata.datasetVersion.deaccessioned}">

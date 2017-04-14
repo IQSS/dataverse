@@ -277,6 +277,11 @@
                                     <h:outputText value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-success" rendered="#{DatasetPage.workingVersion.inReview}"/>
                                     <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{!DatasetPage.dataset.released}"/>
                                     <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-danger" rendered="#{DatasetPage.workingVersion.deaccessioned}"/>
+                                    <!-- DATASET VERSION NUMBER -->
+                                    <h:outputText styleClass="label label-default" rendered="#{DatasetPage.workingVersion.released and !(DatasetPage.workingVersion.draft or DatasetPage.workingVersion.inReview)}"
+                                                  value="#{bundle['file.DatasetVersion']} #{DatasetPage.workingVersion.versionNumber}.#{DatasetPage.workingVersion.minorVersionNumber}" /> 
+                                    <h:outputText styleClass="label label-default" rendered="#{!DatasetPage.workingVersion.released and !(DatasetPage.workingVersion.draft or DatasetPage.workingVersion.inReview)}"
+                                                  value="#{bundle['file.DatasetVersion']} #{DatasetPage.workingVersion.versionState}"/>
                                 </div>
                             </div>
                             <!-- CITATION BLOCK -->
@@ -408,13 +413,6 @@
                         <p:commandButton id="cancelTop" value="#{bundle.cancel}" action="#{DatasetPage.cancel}" process="@this" update="@form" oncomplete="javascript:post_cancel_edit_files_or_metadata()">
                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="#{DatasetPage.editMode == 'METADATA' ? 1 : DatasetPage.selectedTabIndex}"/>
                         </p:commandButton>
-                    </div>
-                    
-                    <div id="versionNumber" class="col-xs-12">
-                                <h:outputText rendered="#{DatasetPage.workingVersion.released}" styleClass="highlightBold"
-                                              value="#{bundle['file.DatasetVersion']}: #{DatasetPage.workingVersion.versionNumber}.#{DatasetPage.workingVersion.minorVersionNumber}" /> 
-                                <h:outputText rendered="#{!DatasetPage.workingVersion.released}" styleClass="highlightBold"
-                                              value="#{bundle['file.DatasetVersion']}: #{DatasetPage.workingVersion.versionState}"/> 
                     </div>
                     <!-- END Header / Button Panel -->
                     <!-- View/Tabs infoMode -->
