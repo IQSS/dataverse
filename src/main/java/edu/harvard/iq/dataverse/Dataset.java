@@ -195,12 +195,10 @@ public class Dataset extends DvObjectContainer {
     }
 
     public List<DataFile> getFiles() {
-        //logger.info("getFiles() on dataset "+this.getId());
         return files;
     }
 
     public void setFiles(List<DataFile> files) {
-        logger.info("setFiles() on dataset "+this.getId());
         this.files = files;
     }
 

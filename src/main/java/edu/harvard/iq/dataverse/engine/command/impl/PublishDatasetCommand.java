@@ -2,11 +2,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetVersionUser;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.UserNotification;
@@ -18,17 +14,11 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
-import edu.harvard.iq.dataverse.export.ExportException;
-import edu.harvard.iq.dataverse.export.ExportService;
-import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -37,7 +27,6 @@ import java.util.logging.Logger;
  */
 @RequiredPermissions(Permission.PublishDataset)
 public class PublishDatasetCommand extends AbstractCommand<Dataset> {
-    private static final Logger logger = Logger.getLogger(PublishDatasetCommand.class.getCanonicalName());
     private static final String DEFAULT_DOI_PROVIDER_KEY = "";
     boolean minorRelease = false;
     Dataset theDataset;
@@ -63,7 +52,7 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
             
             theDataset.setReleaseUser((AuthenticatedUser) getUser());
             theDataset.setPublicationDate(new Timestamp(new Date().getTime()));
-            theDataset.getEditVersion().setVersionNumber(new Long(1)); // minor release is blocked by verifyCommandArguments
+            theDataset.getEditVersion().setVersionNumber(new Long(1)); // minor release is blocked by #verifyCommandArguments
             theDataset.getEditVersion().setMinorVersionNumber(new Long(0));
             
         } else if ( minorRelease ) {
@@ -75,83 +64,47 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
             theDataset.getEditVersion().setMinorVersionNumber(new Long(0));
         }
 
-        //set inReview to False because it is now published
         // update metadata
         Timestamp updateTime = new Timestamp(new Date().getTime());
         theDataset.getEditVersion().setReleaseTime(updateTime);
         theDataset.getEditVersion().setLastUpdateTime(updateTime);
         theDataset.setModificationTime(updateTime);
-        theDataset.getEditVersion().setInReview(false); // replace by updating lock reason
-        theDataset.getEditVersion().setVersionState(DatasetVersion.VersionState.RELEASED); // todo: remove, this will be done later.
+        theDataset.getEditVersion().setInReview(false); // TODO SBG replace by updating lock reason
         theDataset.setFileAccessRequest(theDataset.getLatestVersion().getTermsOfUseAndAccess().isFileAccessRequest());
 
+        updateFiles(updateTime, ctxt);
+        
+        theDataset = ctxt.em().merge(theDataset);
+
+        DatasetVersionUser ddu = ctxt.datasets().getDatasetVersionUser(theDataset.getLatestVersion(), getUser());
+
+        if (ddu == null) {
+            ddu = new DatasetVersionUser();
+            ddu.setDatasetVersion(theDataset.getLatestVersion());
+            ddu.setAuthenticatedUser((AuthenticatedUser) getUser()); // safe, as user is verified as authenticated in #verifyCommandArguments
+        }
+        ddu.setLastUpdateDate((Timestamp) updateTime);
+        ctxt.em().merge(ddu);
+        
+        // -- workflow may go here
+       
+        theDataset = ctxt.engine().submit( new FinalizeDatasetPublicationCommand(theDataset, doiProvider, getRequest()));
+        return ctxt.em().merge(theDataset);
+    }
+
+    private void updateFiles(Timestamp updateTime, CommandContext ctxt) {
         for (DataFile dataFile : theDataset.getFiles()) {
             if (dataFile.getPublicationDate() == null) {
                 // this is a new, previously unpublished file, so publish by setting date
                 dataFile.setPublicationDate(updateTime);
-
+                
                 // check if any prexisting roleassignments have file download and send notifications
                 notifyUsers(ctxt, dataFile, UserNotification.Type.GRANTFILEACCESS);
             }
-
+            
             // set the files restriction flag to the same as the latest version's
             if (dataFile.getFileMetadata() != null && dataFile.getFileMetadata().getDatasetVersion().equals(theDataset.getLatestVersion())) {
                 dataFile.setRestricted(dataFile.getFileMetadata().isRestricted());
-            }
-        }
-        
-        theDataset = ctxt.em().merge(theDataset);
-
-        DatasetVersionUser ddu = ctxt.datasets().getDatasetVersionUser(theDataset.getLatestVersion(), this.getUser());
-
-        if (ddu != null) {
-            ddu.setLastUpdateDate(updateTime);
-        } else {
-            ddu = new DatasetVersionUser();
-            ddu.setDatasetVersion(theDataset.getLatestVersion());
-            ddu.setLastUpdateDate((Timestamp) updateTime);
-            String id = getUser().getIdentifier();
-            id = id.startsWith("@") ? id.substring(1) : id;
-            AuthenticatedUser au = ctxt.authentication().getAuthenticatedUser(id);
-            ddu.setAuthenticatedUser(au);
-        }
-        ctxt.em().merge(ddu);
-        
-        // -- workflow may go here
-        // 
-        // ---> Dataset version is now effectively published, finalize <---
-        
-        updateParentDataversesSubjectsField(theDataset, ctxt);
-        publicizeExternalIdentifier(theDataset, ctxt, doiProvider);
-
-        PrivateUrl privateUrl = ctxt.engine().submit(new GetPrivateUrlCommand(getRequest(), theDataset));
-        if (privateUrl != null) {
-            ctxt.engine().submit(new DeletePrivateUrlCommand(getRequest(), theDataset));
-        }
-        theDataset.getEditVersion().setVersionState(DatasetVersion.VersionState.RELEASED); // todo: change to BEING PUBLISHED or the like
-        
-        exportMetadata();
-        boolean doNormalSolrDocCleanUp = true;
-        ctxt.index().indexDataset(theDataset, doNormalSolrDocCleanUp);
-        ctxt.solrIndex().indexPermissionsForOneDvObject(theDataset);
-
-        return theDataset;
-    }
-
-    private void updateParentDataversesSubjectsField(Dataset savedDataset, CommandContext ctxt) {
-        // add the dataset subjects to all parent dataverses.
-        for (DatasetField dsf : savedDataset.getLatestVersion().getDatasetFields()) {
-            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.subject)) {
-                Dataverse dv = savedDataset.getOwner();
-                while (dv != null) {
-                    if (dv.getDataverseSubjects().addAll(dsf.getControlledVocabularyValues())) {
-                        Dataverse dvWithSubjectJustAdded = ctxt.em().merge(dv);
-                        ctxt.em().flush();
-                        ctxt.index().indexDataverse(dvWithSubjectJustAdded); // need to reindex to capture the new subjects
-                    }
-                    dv = dv.getOwner();
-                }
-                break;
             }
         }
     }
@@ -183,26 +136,12 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
         if (minorRelease && !theDataset.getLatestVersion().isMinorUpdate()) {
             throw new IllegalCommandException("Cannot release as minor version. Re-try as major release.", this);
         }
-    }
-
-    /**
-     * Attempting to run metadata export, for all the formats for which 
-     * we have metadata Exporters.
-     */
-    private void exportMetadata() {
         
-        try {
-            ExportService instance = ExportService.getInstance();
-            instance.exportAllFormats(theDataset);
-            
-        } catch (ExportException ex) {
-            // Something went wrong!
-            // Just like with indexing, a failure to export is not a fatal
-            // condition. We'll just log the error as a warning and keep
-            // going:
-            logger.log(Level.WARNING, "Exception while exporting:" + ex.getMessage());
+        if ( ! getUser().isAuthenticated() ) {
+            throw new IllegalCommandException("Only authenticated users can release a Dataset. Please authenticate and try again.", this);
         }
     }
+
     
     private void notifyUsers(CommandContext ctxt, DvObject subject, UserNotification.Type messageType ) {
         List<RoleAssignment> ras = ctxt.roles().directRoleAssignments(subject);
@@ -263,26 +202,6 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
                 }
             } else {
                 throw new IllegalCommandException("This dataset may not be published because its external ID provider is not supported. Please contact Dataverse Support for assistance.", this);
-            }
-        }
-    }
-
-    private void publicizeExternalIdentifier(Dataset dataset, CommandContext ctxt, String doiProvider) throws CommandException {
-        String protocol = theDataset.getProtocol();
-        if (protocol.equals("doi") ) {
-            switch ( doiProvider ) {
-                case "EZID":
-                    ctxt.doiEZId().publicizeIdentifier(dataset);
-                    break;
-                case "DataCite":
-                    try {
-                        ctxt.doiDataCite().publicizeIdentifier(dataset);
-                    } catch (IOException io) {
-                        throw new CommandException(ResourceBundle.getBundle("Bundle").getString("dataset.publish.error.datacite"), this);
-                    } catch (Exception e) {
-                        throw new CommandException(ResourceBundle.getBundle("Bundle").getString("dataset.publish.error.datacite"), this);
-                    }                    
-                    break;
             }
         }
     }

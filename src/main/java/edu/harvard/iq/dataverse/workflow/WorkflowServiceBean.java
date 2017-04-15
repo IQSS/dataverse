@@ -55,28 +55,9 @@ public class WorkflowServiceBean {
      * 
      * @param wf the workflow to execute.
      * @param ctxt the context in which the workflow is executed.
-     * @return {@code Boolean.TRUE} if the workflow completed successfully. {@code Boolean.FALSE} if it failed. {@code null} if the workflow is waiting for external system.
      */
-    public Boolean start( Workflow wf, WorkflowContext ctxt ) {
-        
-        logger.log(Level.INFO, "Startng workflow {0} over dataset {1} ({2})", new Object[]{wf.getId(), ctxt.getDataset().getIdentifier(), ctxt.getInvocationId()});
-        int idx=0;
-        for ( WorkflowStepData wsd : wf.getSteps() ) {
-            WorkflowStep curStep = createStep(wsd);
-            WorkflowStepResult res = curStep.run(ctxt);
-            if ( res != WorkflowStepResult.OK ) {
-                if ( res instanceof Failure ) {
-                    logger.log(Level.WARNING, "Workflow {0} failed: {1}", new Object[]{ctxt.getInvocationId(), ((Failure)res).getReason()});
-                    rollback(wf, ctxt, (Failure)res, idx-1);
-                    return Boolean.FALSE;
-                } else if ( res instanceof Pending ) {
-                    pauseAndAwait(wf, ctxt, (Pending)res, idx);
-                    return null;
-                }
-            }
-            idx++;
-        }
-        return Boolean.TRUE;
+    public void start( Workflow wf, WorkflowContext ctxt ) {
+        forward(wf, ctxt, 0);
     }
     
     /**
@@ -104,39 +85,52 @@ public class WorkflowServiceBean {
         } else if ( res instanceof Pending ) {
             pauseAndAwait(wf, ctxt, (Pending)res, pending.getPendingStepIdx());
         }
-        // Step completed successfully, now move on.
-        int idx=pending.getPendingStepIdx()+1;
-        for ( WorkflowStepData wsd : stepsLeft.subList(1, stepsLeft.size()) ) {
-            WorkflowStep curStep = createStep(wsd);
-            res = curStep.run(ctxt);
-            if ( res != WorkflowStepResult.OK ) {
-                if ( res instanceof Failure ) {
-                    logger.log(Level.WARNING, "Workflow {0} failed: {1}", new Object[]{ctxt.getInvocationId(), ((Failure)res).getReason()});
-                    rollback(wf, ctxt, (Failure)res, idx-1);
-                    return;
-                } else if ( res instanceof Pending ) {
-                    pauseAndAwait(wf, ctxt, (Pending)res, idx);
-                    return;
-                }
-            }
-            idx++;
-        }
+        forward( wf, ctxt, pending.getPendingStepIdx()+1 );
     }
     
+    @Asynchronous
+    private void forward( Workflow wf, WorkflowContext ctxt, int idx ) {
+        WorkflowStepData wsd = wf.getSteps().get(idx);
+        WorkflowStep step = createStep(wsd);
+        WorkflowStepResult res = step.run(ctxt);
+            if ( res != WorkflowStepResult.OK ) {
+                if ( res == WorkflowStepResult.OK ) {
+                    if ( idx == wf.getSteps().size()-1 ) {
+                        workflowCompleted(wf, ctxt);
+                    } else {
+                        forward(wf, ctxt, ++idx);
+                    }
+                    
+                } else if ( res instanceof Failure ) {
+                    logger.log(Level.WARNING, "Workflow {0} failed: {1}", new Object[]{ctxt.getInvocationId(), ((Failure)res).getReason()});
+                    rollback(wf, ctxt, (Failure)res, idx-1);
+                    
+                } else if ( res instanceof Pending ) {
+                    pauseAndAwait(wf, ctxt, (Pending)res, idx);
+                }
+            }
+    }
+    
+    @Asynchronous
     private void rollback(Workflow wf, WorkflowContext ctxt, Failure failure, int idx) {
-        List<WorkflowStepData> toRollBack = wf.getSteps().subList(0, idx+1);
-        Collections.reverse(toRollBack);
-        toRollBack.forEach((WorkflowStepData wsd) -> {
-            logger.log(Level.INFO, "{0} rolling back step {1}", new Object[]{ctxt.getInvocationId(), wsd.toString()});
-            createStep(wsd).rollback(ctxt, failure);
-        });
+        WorkflowStepData wsd = wf.getSteps().get(idx);
         logger.log(Level.INFO, "{0} rollback done", ctxt.getInvocationId());
+        createStep(wsd).rollback(ctxt, failure);
+        if ( idx > 0 ) {
+            rollback(wf, ctxt, failure, --idx);
+        } 
     }
 
     private void pauseAndAwait(Workflow wf, WorkflowContext ctxt, Pending pendingRes, int idx) {
         PendingWorkflowInvocation pending = new PendingWorkflowInvocation(wf, ctxt, pendingRes);
         pending.setPendingStepIdx(idx);
         em.persist(pending);
+    }
+    
+    
+    @Asynchronous
+    private void workflowCompleted(Workflow wf, WorkflowContext ctxt) {
+        // TODO SBGrid: if this is a "pre-release" workflow, execute the finalize publication command.
     }
     
     public List<Workflow> listWorkflows() {

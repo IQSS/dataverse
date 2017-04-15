@@ -32,21 +32,21 @@ public class PublishDataverseCommand extends AbstractCommand<Dataverse> {
             throw new IllegalCommandException("Dataverse " + dataverse.getAlias() + " has already been published.", this);
         }
         
-            //Before setting dataverse to released send notifications to users with download file
-            List<RoleAssignment> ras = ctxt.roles().directRoleAssignments(dataverse);
-            for (RoleAssignment ra : ras) {
-                if (ra.getRole().permissions().contains(Permission.DownloadFile)) {
-                    for (AuthenticatedUser au : ctxt.roleAssignees().getExplicitUsers(ctxt.roleAssignees().getRoleAssignee(ra.getAssigneeIdentifier()))) {
-                        ctxt.notifications().sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.ASSIGNROLE, dataverse.getId());
-                    }
-                }
-            }
-
         Dataverse parent = dataverse.getOwner();
         // root dataverse doesn't have a parent
         if (parent != null) {
             if (!parent.isReleased()) {
                 throw new IllegalCommandException("Dataverse " + dataverse.getAlias() + " may not be published because its host dataverse (" + parent.getAlias() + ") has not been published.", this);
+            }
+        }
+
+        //Before setting dataverse to released send notifications to users with download file
+        List<RoleAssignment> ras = ctxt.roles().directRoleAssignments(dataverse);
+        for (RoleAssignment ra : ras) {
+            if (ra.getRole().permissions().contains(Permission.DownloadFile)) {
+                for (AuthenticatedUser au : ctxt.roleAssignees().getExplicitUsers(ctxt.roleAssignees().getRoleAssignee(ra.getAssigneeIdentifier()))) {
+                    ctxt.notifications().sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.ASSIGNROLE, dataverse.getId());
+                }
             }
         }
 
