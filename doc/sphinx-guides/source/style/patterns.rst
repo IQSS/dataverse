@@ -307,6 +307,15 @@ Button Groups component from `Bootstrap <http://getbootstrap.com/components/#btn
 
 Buttons Dropdowns component from `Bootstrap <http://getbootstrap.com/components/#btn-dropdowns>`__.
 
+CommandButton component from `PrimeFaces <https://www.primefaces.org/showcase/ui/button/commandButton.xhtml>`__.
+
+CommandLink component from `PrimeFaces <https://www.primefaces.org/showcase/ui/button/commandLink.xhtml>`__.
+
+Link component from `JSF <http://docs.oracle.com/javaee/6/javaserverfaces/2.0/docs/pdldocs/facelets/h/link.html>`__.
+
+OutputLink component from `JSF <http://docs.oracle.com/javaee/6/javaserverfaces/2.0/docs/pdldocs/facelets/h/outputLink.html>`__.
+
+
 Action Buttons
 --------------
 
@@ -486,7 +495,7 @@ Pagination
 Pagination component from `Bootstrap <http://getbootstrap.com/components/#pagination>`__.
 
 * Search Results
-* Manage pg
+* Manage pg (...no ``class="pagination"`` ...??)
 
 *TO-DO...* Write a description. Build some examples.
 
@@ -524,8 +533,82 @@ Pagination component from `Bootstrap <http://getbootstrap.com/components/#pagina
 
 .. code-block:: html
 
-  <span class="name">...</span>
-  <span class="name">...</span>
+  <ul class="pagination">
+    <li class="#{SearchIncludeFragment.page == '1' ? 'disabled' : ''}">
+        <h:outputLink value="#{widgetWrapper.wrapURL(page)}">
+            <h:outputText value="&#171;"/>
+            <f:param name="q" value="#{SearchIncludeFragment.query}"/>
+            <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
+                <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
+            </c:forEach>
+            <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
+            <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
+            <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
+            <f:param name="page" value="1"/>
+        </h:outputLink>
+    </li>
+    <li class="#{SearchIncludeFragment.page == '1' ? 'disabled' : ''}">
+        <h:outputLink value="#{widgetWrapper.wrapURL(page)}">
+            <h:outputText value="&lt; #{bundle.previous}"/>
+            <f:param name="q" value="#{SearchIncludeFragment.query}"/>
+            <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
+                <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
+            </c:forEach>
+            <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
+            <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
+            <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
+            <f:param name="page" value="#{Math:max(1,SearchIncludeFragment.page-1).intValue()}"/>
+        </h:outputLink>
+    </li>
+    <c:forEach begin="#{Math:max(1,SearchIncludeFragment.page-Math:max(2,SearchIncludeFragment.page-SearchIncludeFragment.totalPages+4))}"
+               end="#{Math:min(SearchIncludeFragment.totalPages,SearchIncludeFragment.page+Math:max(2,5-SearchIncludeFragment.page))}"
+               varStatus="pageStatus">
+        <li class="#{SearchIncludeFragment.page == pageStatus.index ? 'active' : ''}">
+            <h:outputLink value="#{widgetWrapper.wrapURL(page)}">
+                <h:outputText value="#{pageStatus.index}">
+                    <f:convertNumber pattern="###,###" />
+                </h:outputText>
+                <span class="#{SearchIncludeFragment.page == pageStatus.index ? 'sr-only' : ''}">
+                    <h:outputText value="#{SearchIncludeFragment.page == pageStatus.index ? bundle['dataverse.results.paginator.current'] : ''}"/>
+                </span>
+                <f:param name="q" value="#{SearchIncludeFragment.query}"/>
+                <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
+                    <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
+                </c:forEach>
+                <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
+                <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
+                <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
+                <f:param name="page" value="#{pageStatus.index}"/>
+            </h:outputLink>
+        </li>
+    </c:forEach>
+    <li class="#{SearchIncludeFragment.page == SearchIncludeFragment.totalPages ? 'disabled' : ''}">
+        <h:outputLink value="#{widgetWrapper.wrapURL(page)}">
+            <h:outputText value="#{bundle.next} &gt;"/>
+            <f:param name="q" value="#{SearchIncludeFragment.query}"/>
+            <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
+                <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
+            </c:forEach>
+            <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
+            <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
+            <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
+            <f:param name="page" value="#{Math:min(SearchIncludeFragment.page+1,SearchIncludeFragment.totalPages).intValue()}"/>
+        </h:outputLink>
+    </li>
+    <li class="#{SearchIncludeFragment.page == SearchIncludeFragment.totalPages ? 'disabled' : ''}">
+        <h:outputLink value="#{widgetWrapper.wrapURL(page)}">
+            <h:outputText value="&#187;"/>
+            <f:param name="q" value="#{SearchIncludeFragment.query}"/>
+            <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
+                <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
+            </c:forEach>
+            <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
+            <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
+            <f:param name="page" value="#{SearchIncludeFragment.totalPages}"/>
+            <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
+        </h:outputLink>
+    </li>
+  </ul>
 
 
 Labels
@@ -533,8 +616,9 @@ Labels
 
 Labels component from `Bootstrap <http://getbootstrap.com/components/#labels>`__.
 
-* Publication status
-* File tags
+* Publication status (DRAFT, In Review, Unpublished, Deaccessioned)
+* Dataset version (Version 2.0, ``4.6.2``)
+* Tabular Data Tags (Survey, Time Series, Panel, Event, Genomics, Network, Geospatial)
 
 *TO-DO...* Write a description. Build some examples.
 
@@ -543,24 +627,24 @@ Labels component from `Bootstrap <http://getbootstrap.com/components/#labels>`__
   <div class="panel panel-default code-example">
     <div class="panel-body">
 
-      <span class="label label-default">Default</span>
-      <span class="label label-primary">Primary</span>
-      <span class="label label-success">Success</span>
-      <span class="label label-info">Info</span>
-      <span class="label label-warning">Warning</span>
-      <span class="label label-danger">Danger</span>
+      <span class="label label-default">Version 2.0</span>
+      <span class="label label-primary">DRAFT</span>
+      <span class="label label-success">In Review</span>
+      <span class="label label-info">Geospatial</span>
+      <span class="label label-warning">Unpublished</span>
+      <span class="label label-danger">Deaccessioned</span>
 
     </div>
   </div>
 
 .. code-block:: html
 
-  <span class="label label-default">Default</span>
-  <span class="label label-primary">Primary</span>
-  <span class="label label-success">Success</span>
-  <span class="label label-info">Info</span>
-  <span class="label label-warning">Warning</span>
-  <span class="label label-danger">Danger</span>
+  <span class="label label-default">Version 2.0</span>
+  <span class="label label-primary">DRAFT</span>
+  <span class="label label-success">In Review</span>
+  <span class="label label-info">Geospatial</span>
+  <span class="label label-warning">Unpublished</span>
+  <span class="label label-danger">Deaccessioned</span>
 
 
 Alerts
@@ -605,7 +689,11 @@ Images
 
 GraphicImage  component from `PrimeFaces <https://www.primefaces.org/showcase/ui/multimedia/graphicImage.xhtml>`__.
 
-* Responsive
+GraphicImage component from `JSF <http://docs.oracle.com/javaee/6/javaserverfaces/2.1/docs/vdldocs/facelets/h/graphicImage.html>`__.
+
+Images CSS from `Bootstrap <http://getbootstrap.com/css/#images>`__.
+
+* Responsive ``class="img-responsive"``
 * Dataverse Logo
 * Dataset Thumbnail
 * File Thumbnail + Preview
@@ -617,15 +705,14 @@ GraphicImage  component from `PrimeFaces <https://www.primefaces.org/showcase/ui
   <div class="panel panel-default code-example">
     <div class="panel-body">
 
-      IMAGES
+      <img alt="image-responsive" class="img-responsive" src="../_images/dataverse-page.png">
 
     </div>
   </div>
 
 .. code-block:: html
 
-  <span class="name">...</span>
-  <span class="name">...</span>
+  <p:graphicImage styleClass="img-responsive" value="/api/access/datafile/#{FilePage.fileId}?imageThumb=400" rendered="#{true}"/>
 
 
 Panels
@@ -633,10 +720,14 @@ Panels
 
 Panels component from `Bootstrap <http://getbootstrap.com/components/#panels>`__.
 
+Collapse javascript from `Bootstrap <http://getbootstrap.com/javascript/#collapse>`__.
+
 These components are basically containers with rounded borders. Good for descriptions or blocks of metadata or forms or whatever you need to have a border and some padding around.
 
+* Advanced Search collapse
 * Citation
 * Citation Summary Metadata
+* Metadata blocks
 * Metrics
 * "Why?" Manage Pg Default Text
 
@@ -659,8 +750,55 @@ These components are basically containers with rounded borders. Good for descrip
 .. code-block:: html
 
   <div class="panel panel-default">
-    <div class="panel-body">
-      Basic panel example
+    <div data-toggle="collapse" data-target="#panelCollapseDataversesFieldList" class="panel-heading">
+        <h:outputText value="#{bundle['advanced.search.header.dataverses']}"/> &#160;<span class="glyphicon glyphicon-chevron-up"/>
+    </div>
+    <div id="panelCollapseDataversesFieldList" class="panel-body form-horizontal collapse in">
+        <div class="form-group">
+            <label class="col-sm-4 control-label">
+                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['advanced.search.dataverses.name.tip']}">
+                    #{bundle.name}
+                </span>
+            </label>
+            <div class="col-sm-6">
+                <p:inputText id="dvFieldName" styleClass="form-control" value="#{AdvancedSearchPage.dvFieldName}"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-4 control-label">
+                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['advanced.search.dataverses.affiliation.tip']}">
+                    #{bundle.affiliation}
+                </span>
+            </label>
+            <div class="col-sm-6">
+                <p:inputText id="dvFieldAffiliation" styleClass="form-control" value="#{AdvancedSearchPage.dvFieldAffiliation}"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-4 control-label">
+                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['advanced.search.dataverses.description.tip']}">
+                    #{bundle.description}
+                </span>
+            </label>
+            <div class="col-sm-6">
+                <p:inputText id="dvFieldDescription" styleClass="form-control" value="#{AdvancedSearchPage.dvFieldDescription}"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-4 control-label">
+                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['advanced.search.dataverses.subject.tip']}">
+                    #{bundle.subject}
+                </span>
+            </label>
+            <div class="col-sm-6">
+                <div class="ui-inputfield form-control select-scroll-block">
+                    <p:selectManyCheckbox value="#{AdvancedSearchPage.dvFieldSubject}" layout="pageDirection">
+                        <f:selectItems value="#{AdvancedSearchPage.dvFieldSubjectValues}" var="cvv"
+                                       itemLabel="#{cvv.strValue}" itemValue="#{cvv.strValue}"/>
+                    </p:selectManyCheckbox>
+                </div>
+            </div>
+        </div>
     </div>
   </div>
 
@@ -711,8 +849,16 @@ These are a mix of the Bootstrap CSS and PrimeFaces. More PrimeFaces though... T
 
 .. code-block:: html
 
-  <span class="name">...</span>
-  <span class="name">...</span>
+  <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}"
+           rendered="#{true}">
+    <p:ajax event="tabChange" listener="#{DatasetPage.tabChanged}" oncomplete="bind_bsui_components();" update="@this" />
+    <p:tab id="dataFilesTab" title="#{bundle.files}" rendered="#{true}">
+        <ui:include src="filesFragment.xhtml">
+            <ui:param name="fileDownloadHelper" value="#{DatasetPage.fileDownloadHelper}"/>
+        </ui:include>
+    </p:tab>
+    ...
+  </p:tabView>
 
 
 Modals
@@ -771,3 +917,4 @@ Note: we don't use the ``.fade`` class.
 	  </div>
 	</div>
   </div>
+
