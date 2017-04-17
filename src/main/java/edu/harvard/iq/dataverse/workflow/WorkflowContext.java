@@ -16,17 +16,26 @@ import java.util.UUID;
  */
 public class WorkflowContext {
     
+    public enum TriggerType {
+        PrePublishDataset, PostPublishDataset
+    }
+    
     private final DataverseRequest request;
     private final Dataset dataset;
-    private final long nextVersionNumber;
-    private final long nextMinorVersionNumber;
-    private final String invocationId = UUID.randomUUID().toString();
+    private final long    nextVersionNumber;
+    private final long    nextMinorVersionNumber;
+    private final TriggerType    type;
+    private final String  doiProvider;
+    
+    private String invocationId = UUID.randomUUID().toString();
 
-    public WorkflowContext(DataverseRequest aRequest, Dataset aDataset, long aNextVersionNumber, long aNextMinorVersionNumber) {
-        request = aRequest;
-        dataset = aDataset;
-        nextVersionNumber = aNextVersionNumber;
-        nextMinorVersionNumber = aNextMinorVersionNumber;       
+    public WorkflowContext(DataverseRequest request, Dataset dataset, long nextVersionNumber, long nextMinorVersionNumber, TriggerType type, String doiProvider) {
+        this.request = request;
+        this.dataset = dataset;
+        this.nextVersionNumber = nextVersionNumber;
+        this.nextMinorVersionNumber = nextMinorVersionNumber;
+        this.type = type;
+        this.doiProvider = doiProvider;
     }
 
     public Dataset getDataset() {
@@ -49,8 +58,21 @@ public class WorkflowContext {
         return getNextMinorVersionNumber()!=0;
     }
 
+    public void setInvocationId(String invocationId) {
+        this.invocationId = invocationId;
+    }
+
     public String getInvocationId() {
         return invocationId;
     }
+
+    public String getDoiProvider() {
+        return doiProvider;
+    }
+
+    public TriggerType getType() {
+        return type;
+    }
+    
     
 }

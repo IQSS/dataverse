@@ -13,7 +13,7 @@ import java.util.Map;
 public interface WorkflowStep {
     
     /**
-     * Performs the step of the workflow.
+     * Performs the step of the workflow. Each step is run in its own transaction.
      * 
      * <em>NOTE:</em> If the step fails (i.e. returns {@link Failure}), it will not
      * be rolled back as part of the rollback process - the step has to clean up
@@ -37,7 +37,7 @@ public interface WorkflowStep {
     
     /**
      * Attempt to roll back this step, if possible. The caller of this method assumes
-     * that the step was completed successfully.
+     * that the step was completed successfully. Each step is rolled back in its own transaction.
      * 
      * @param context Required information about the workflow.
      * @param reason original reason for rolling back the workflow.

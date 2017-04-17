@@ -42,6 +42,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.GetPrivateUrlCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListRoleAssignments;
 import edu.harvard.iq.dataverse.engine.command.impl.ListVersionsCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetResult;
 import edu.harvard.iq.dataverse.engine.command.impl.SetDatasetCitationDateCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetTargetURLCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetThumbnailCommand;
@@ -406,10 +407,10 @@ public class Datasets extends AbstractApiBean {
             }
 
             Dataset ds = findDatasetOrDie(id);
-
-            return ok(json(execCommand(new PublishDatasetCommand(ds,
+            PublishDatasetResult res = execCommand(new PublishDatasetCommand(ds,
                     createDataverseRequest(findAuthenticatedUserOrDie()),
-                    isMinor))));
+                    isMinor));
+            return res.isCompleted() ? ok(json(res.getDataset())) : accepted(json(res.getDataset()));
 
         } catch (WrappedResponse ex) {
             return ex.getResponse();

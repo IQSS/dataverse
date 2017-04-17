@@ -32,6 +32,7 @@ import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
 import javax.persistence.EntityManager;
 
 /**
@@ -114,4 +115,7 @@ public interface CommandContext {
     public PrivateUrlServiceBean privateUrl();
 
     public DatasetVersionServiceBean datasetVersion();
+    
+    public WorkflowServiceBean workflows();
+    
 }

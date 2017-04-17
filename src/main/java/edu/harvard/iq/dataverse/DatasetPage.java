@@ -75,6 +75,7 @@ import javax.faces.model.SelectItem;
 import java.util.logging.Level;
 import edu.harvard.iq.dataverse.datasetutility.TwoRavensHelper;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
+import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetResult;
 
 import javax.faces.event.AjaxBehaviorEvent;
 
@@ -1514,7 +1515,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     private String releaseDataset(boolean minor) {
-        Command<Dataset> cmd;
+        Command<PublishDatasetResult> cmd;
         //SEK we want to notify concerned users if a DS in review has been published.
         boolean notifyPublish = workingVersion.isInReview();
         if (session.getUser() instanceof AuthenticatedUser) {
@@ -1524,7 +1525,7 @@ public class DatasetPage implements java.io.Serializable {
                 } else {
                     cmd = new PublishDatasetCommand(dataset, dvRequestService.getDataverseRequest(), minor);
                 }
-                dataset = commandEngine.submit(cmd);
+                dataset = commandEngine.submit(cmd).getDataset(); // TODO SBGrid: this might need to change to "release workflow in progress.
                 JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.publishSuccess"));
                 if (notifyPublish) {
                     List<AuthenticatedUser> authUsers = permissionService.getUsersWithPermissionOn(Permission.PublishDataset, dataset);

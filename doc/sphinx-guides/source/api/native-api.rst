@@ -682,19 +682,23 @@ Delete a workflow with a specific id::
 
     DELETE http://$SERVER/api/admin/workflows/$id
 
-.. warning:: If this is the default workflow, a 403 FORBIDDEN response will be returned, and the deletion will be canceled.
+.. warning:: If the workflow designated by ``$id`` is a default workflow, a 403 FORBIDDEN response will be returned, and the deletion will be canceled.
 
-Set the default workflow. This workflow is run when a dataset is published. The body of the PUT request is the id of the workflow that will become public.::
+List the default workflow for each trigger type::
 
-  PUT http://$SERVER/api/admin/workflows/default
+  GET http://$SERVER/api/admin/workflows/default/
 
-Get the default workflow. Returns a JSON representation of the workflow, if present, or 404 NOT FOUND. ::
+Set the default workflow for a given trigger. This workflow is run when a dataset is published. The body of the PUT request is the id of the workflow. Trigger types are ``PrePublishDataset, PostPublishDataset``::
 
-  GET http://$SERVER/api/admin/workflows/default
+  PUT http://$SERVER/api/admin/workflows/default/$triggerType
 
-Unset the default workflow. After this call, dataset releases are done with no workflow. ::
+Get the default workflow for ``triggerType``. Returns a JSON representation of the workflow, if present, or 404 NOT FOUND. ::
 
-  DELETE http://$SERVER/api/admin/workflows/default
+  GET http://$SERVER/api/admin/workflows/default/$triggerType
+
+Unset the default workflow for ``triggerType``. After this call, dataset releases are done with no workflow. ::
+
+  DELETE http://$SERVER/api/admin/workflows/default/triggerType
 
 
 

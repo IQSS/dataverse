@@ -330,7 +330,7 @@ public class ContainerManagerImpl implements ContainerManager {
                              */
                             if (!dataset.getLatestVersion().getVersionState().equals(DatasetVersion.VersionState.RELEASED)) {
                                 try {
-                                    dataset = engineSvc.submit(publishDatasetCommand);
+                                    dataset = engineSvc.submit(publishDatasetCommand).getDataset();
                                 } catch (CommandException ex) {
                                     String msg = "Unable to publish dataset: " + ex;
                                     logger.severe(msg + ": " + ex.getMessage());

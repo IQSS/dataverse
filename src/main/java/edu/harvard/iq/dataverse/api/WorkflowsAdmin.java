@@ -6,11 +6,16 @@ import static edu.harvard.iq.dataverse.util.json.JsonPrinter.brief;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
 import edu.harvard.iq.dataverse.workflow.Workflow;
+import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
+import java.util.Arrays;
 import java.util.Optional;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.json.Json;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonValue;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -49,36 +54,60 @@ public class WorkflowsAdmin extends AbstractApiBean {
                             .map(wf->brief.json(wf)).collect(toJsonArray()) );
     }
     
-    @Path("default")
+    @Path("default/{triggerType}")
     @PUT
-    public Response setDefault(String identifier) {
+    public Response setDefault(@PathParam("triggerType") String triggerType, String identifier) {
         try {
             long idtf = Long.parseLong(identifier.trim());
+            TriggerType tt = TriggerType.valueOf(triggerType);
             Optional<Workflow> wf = workflows.getWorkflow(idtf);
             if ( wf.isPresent() ) {
-                workflows.setDefaultWorkflowId(idtf);
+                workflows.setDefaultWorkflowId(tt, idtf);
                 return ok("Default workflow id set to " + idtf);
             } else {
                 return notFound("Can't find workflow with id " + idtf);
             }
         } catch (NumberFormatException nfe) {
             return badRequest("workflow identifier has to be numeric.");
+        } catch ( IllegalArgumentException iae ) {
+            return badRequest("Unknown trigger type '" + triggerType + "'. Available triggers: " + Arrays.toString(TriggerType.values()) );
         }
     }
     
-    @Path("default")
+    @Path("default/")
     @GET
-    public Response getDefault() {
-        return workflows.getDefaultWorkflow()
-                        .map( wf -> ok(json(wf)) )
-                        .orElse( notFound("no default workflow") );
+    public Response listDefaults() {
+        JsonObjectBuilder bld = Json.createObjectBuilder();
+        for ( TriggerType tp : TriggerType.values() ) {
+            bld.add(tp.name(), 
+                    workflows.getDefaultWorkflow(tp)
+                             .map(wf->(JsonValue)brief.json(wf).build())
+                             .orElse(JsonValue.NULL));
+        }
+        return ok(bld);
     }
     
-    @Path("default")
+    @Path("default/{triggerType}")
+    @GET
+    public Response getDefault(@PathParam("triggerType") String triggerType) {
+        try {
+            return workflows.getDefaultWorkflow(TriggerType.valueOf(triggerType))
+                            .map( wf -> ok(json(wf)) )
+                            .orElse( notFound("no default workflow") );
+        } catch ( IllegalArgumentException iae ) {
+            return badRequest("Unknown trigger type '" + triggerType + "'. Available triggers: " + Arrays.toString(TriggerType.values()) );
+        }
+    }
+    
+    @Path("default/{triggerType}")
     @DELETE
-    public Response deleteDefault() {
-        workflows.setDefaultWorkflowId(null);
-        return ok("default workflow unset");
+    public Response deleteDefault(@PathParam("triggerType") String triggerType) {
+        try {
+            workflows.setDefaultWorkflowId(TriggerType.valueOf(triggerType), null);
+            return ok("default workflow unset");
+        } catch ( IllegalArgumentException iae ) {
+            return badRequest("Unknown trigger type '" + triggerType + "'. Available triggers: " + Arrays.toString(TriggerType.values()) );
+        }
     }
     
     @Path("/{identifier}")
@@ -99,8 +128,7 @@ public class WorkflowsAdmin extends AbstractApiBean {
     public Response deleteWorkflow(@PathParam("identifier") String identifier ) {
         try {
             long idtf = Long.parseLong(identifier);
-            int effected = workflows.deleteWorkflow(idtf);
-            return (effected==0) ? notFound("workflow with id " + idtf + " not found") 
+            return workflows.deleteWorkflow(idtf) ? notFound("workflow with id " + idtf + " not found") 
                                  : ok("Workflow " + idtf + " deleted"); 
         } catch (NumberFormatException nfe) {
             return badRequest("workflow identifier has to be numeric.");

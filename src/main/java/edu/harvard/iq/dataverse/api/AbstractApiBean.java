@@ -69,6 +69,7 @@ public abstract class AbstractApiBean {
     private static final String DATAVERSE_KEY_HEADER_NAME = "X-Dataverse-key";
     public static final String STATUS_ERROR = "ERROR";
     public static final String STATUS_OK = "OK";
+    public static final String STATUS_WF_IN_PROGRESS = "WORKFLOW_IN-accPROGRESS";
 
     /**
      * Utility class to convey a proper error response using Java's exceptions.
@@ -517,10 +518,18 @@ public abstract class AbstractApiBean {
                 .build();
     }
     
+    protected Response accepted(JsonObjectBuilder bld) {
+        return Response.accepted()
+                .entity(Json.createObjectBuilder()
+                        .add("status", STATUS_WF_IN_PROGRESS)
+                        .add("data",bld).build()
+                ).build();
+    }
+    
     protected Response accepted() {
         return Response.accepted()
                 .entity(Json.createObjectBuilder()
-                        .add("status", STATUS_OK).build()
+                        .add("status", STATUS_WF_IN_PROGRESS).build()
                 ).build();
     }
     

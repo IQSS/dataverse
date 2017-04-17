@@ -15,9 +15,12 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.workflow.Workflow;
+import edu.harvard.iq.dataverse.workflow.WorkflowContext;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 /**
@@ -26,7 +29,9 @@ import java.util.ResourceBundle;
  * @author michbarsinai
  */
 @RequiredPermissions(Permission.PublishDataset)
-public class PublishDatasetCommand extends AbstractCommand<Dataset> {
+public class PublishDatasetCommand extends AbstractCommand<PublishDatasetResult> {
+    
+    
     private static final String DEFAULT_DOI_PROVIDER_KEY = "";
     boolean minorRelease = false;
     Dataset theDataset;
@@ -38,7 +43,7 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
     }
 
     @Override
-    public Dataset execute(CommandContext ctxt) throws CommandException {
+    public PublishDatasetResult execute(CommandContext ctxt) throws CommandException {
 
         verifyCommandArguments();
 
@@ -86,12 +91,24 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
         ddu.setLastUpdateDate((Timestamp) updateTime);
         ctxt.em().merge(ddu);
         
-        // -- workflow may go here
-       
-        theDataset = ctxt.engine().submit( new FinalizeDatasetPublicationCommand(theDataset, doiProvider, getRequest()));
-        return ctxt.em().merge(theDataset);
+        Optional<Workflow> prePubWf = ctxt.workflows().getDefaultWorkflow(WorkflowContext.TriggerType.PrePublishDataset);
+        if ( prePubWf.isPresent() ) {
+            ctxt.workflows().start(prePubWf.get(), buildContext(doiProvider) );
+            return new PublishDatasetResult(theDataset, false);
+        } else {
+            theDataset = ctxt.engine().submit( new FinalizeDatasetPublicationCommand(theDataset, doiProvider, getRequest()));
+            return new PublishDatasetResult(ctxt.em().merge(theDataset), true);
+        }
     }
-
+    
+    private WorkflowContext buildContext( String doiProvider ) {
+        return new WorkflowContext(getRequest(), theDataset, 
+                theDataset.getEditVersion().getVersionNumber(), 
+                theDataset.getEditVersion().getMinorVersionNumber(),
+                WorkflowContext.TriggerType.PrePublishDataset, 
+                doiProvider);
+    }
+    
     private void updateFiles(Timestamp updateTime, CommandContext ctxt) {
         for (DataFile dataFile : theDataset.getFiles()) {
             if (dataFile.getPublicationDate() == null) {
