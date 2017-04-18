@@ -42,18 +42,32 @@
                             <!-- END: Metrics -->
                             
                             <div class="button-block pull-right">
+                                <!-- Explore/Map Data/Download/Request Button Block -->
+                                <div class="button-container pull-right" jsf:rendered="#{(!FilePage.fileMetadata.datasetVersion.deaccessioned or 
+                                                              (FilePage.fileMetadata.datasetVersion.deaccessioned and FilePage.canUpdateDataset()))}">
+                                    <ui:include src="file-download-button-fragment.xhtml">
+                                        <ui:param name="fileMetadata" value="#{FilePage.fileMetadata}"/>
+                                        <ui:param name="canUpdateDataset" value="#{FilePage.canUpdateDataset()}"/>
+                                        <ui:param name="downloadPopupRequired" value="#{FilePage.downloadPopupRequired}"/>
+                                        <ui:param name="guestbookResponse" value="#{FilePage.guestbookResponse}"/>
+                                        <ui:param name="guestbookResponseService" value="#{FilePage.guestbookResponseService}"/>
+                                        <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
+                                    </ui:include>
+                                </div>
+                                <!-- END: Explore/Map Data/Download/Request Button Block -->
+                                
                                 <!-- Edit Button Group -->
                                 <div class="btn-group pull-right" jsf:rendered="#{dataverseSession.user.authenticated
                                                          and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset) 
                                                          and (dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile) or dataFileServiceBean.hasBeenDeleted(FilePage.fileMetadata.dataFile))}">
-                                    <p:commandLink styleClass="btn btn-default" onclick="PF('fileAlreadyReplacedPrevious').show()">
+                                    <p:commandLink styleClass="btn btn-default btn-access" onclick="PF('fileAlreadyReplacedPrevious').show()">
                                         <span class="glyphicon glyphicon-pencil"/> #{bundle['dataset.editBtn']}
                                     </p:commandLink>
                                 </div>
                                 <div class="btn-group pull-right" jsf:rendered="#{dataverseSession.user.authenticated
                                                          and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset)
                                                          and !(dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile) or dataFileServiceBean.hasBeenDeleted(FilePage.fileMetadata.dataFile))}">
-                                    <button type="button" id="editFile" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                    <button type="button" id="editFile" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown">
                                         <span class="glyphicon glyphicon-pencil"/> #{bundle['dataset.editBtn']} <span class="caret"></span>
                                     </button>
                                     <ul class="dropdown-menu pull-right text-left" role="menu">
@@ -101,34 +115,20 @@
                                 </div>
                                 <!-- END: Edit Button Group -->
 
-                                <!-- Explore/Map Data/Download/Request Button Block -->
-                                <div class="button-container pull-right" jsf:rendered="#{(!FilePage.fileMetadata.datasetVersion.deaccessioned or 
-                                                              (FilePage.fileMetadata.datasetVersion.deaccessioned and FilePage.canUpdateDataset()))}">
-                                    <ui:include src="file-download-button-fragment.xhtml">
-                                        <ui:param name="fileMetadata" value="#{FilePage.fileMetadata}"/>
-                                        <ui:param name="canUpdateDataset" value="#{FilePage.canUpdateDataset()}"/>
-                                        <ui:param name="downloadPopupRequired" value="#{FilePage.downloadPopupRequired}"/>
-                                        <ui:param name="guestbookResponse" value="#{FilePage.guestbookResponse}"/>
-                                        <ui:param name="guestbookResponseService" value="#{FilePage.guestbookResponseService}"/>
-                                        <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
-                                    </ui:include>
-                                </div>
-                                <!-- END: Explore/Map Data/Download/Request Button Block -->
-
                                 <!-- Email/Share Button Group -->
                                 <div class="btn-group pull-right" id="datasetButtonBar" role="group">
-                                    <p:commandLink class="btn btn-default bootstrap-button-tooltip" title="#{bundle['dataset.email.datasetContactBtn']}"
+                                    <p:commandLink class="text-button bootstrap-button-tooltip" title="#{bundle['dataset.email.datasetContactBtn']}"
                                                    update=":contactDialog" oncomplete="PF('contactForm').show()" actionListener="#{sendFeedbackDialog.initUserInput}">
                                         <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
                                         <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
                                         <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
                                         <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{FilePage.fileMetadata.datasetVersion.dataset}"/>
-                                        <span class="glyphicon glyphicon-envelope no-text"/>
+                                        <span class="glyphicon glyphicon-envelope"/> Contact
                                     </p:commandLink>
-                                    <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip" rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}"
+                                    <p:commandLink styleClass="text-button bootstrap-button-tooltip" rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}"
                                                    title="#{bundle['dataset.share.datasetShare']}"
                                                    oncomplete="PF('shareDialog').show();sharrre();">
-                                        <span class="glyphicon glyphicon-share no-text"/>
+                                        <span class="glyphicon glyphicon-share"/> Share
                                     </p:commandLink>
                                 </div>
                                 <p:dialog id="shareDialog" header="#{bundle['dataset.share.datasetShare']}" widgetVar="shareDialog" modal="true"  rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}">
@@ -264,19 +264,19 @@
                                 
                                 <!-- Add + Edit Metadata Button -->
                                 <div class="button-block tab-header margin-bottom text-right">
-                                    <h:outputLink class="btn btn-default" value="/editdatafiles.xhtml?selectedFileIds=#{FilePage.fileMetadata.dataFile.id}&#38;datasetId=#{FilePage.fileMetadata.datasetVersion.dataset.id}&#38;mode=SINGLE"
+                                    <h:outputLink class="btn btn-default btn-access" value="/editdatafiles.xhtml?selectedFileIds=#{FilePage.fileMetadata.dataFile.id}&#38;datasetId=#{FilePage.fileMetadata.datasetVersion.dataset.id}&#38;mode=SINGLE"
                                                   rendered="#{dataverseSession.user.authenticated
                                                      and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset)
                                                      and !(dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile) or dataFileServiceBean.hasBeenDeleted(FilePage.fileMetadata.dataFile))}">
-                                            <span class="glyphicon glyphicon-pencil"/> #{bundle['file.dataFilesTab.metadata.addBtn']}
+                                        <span class="glyphicon glyphicon-pencil"/> #{bundle['file.dataFilesTab.metadata.addBtn']}
                                     </h:outputLink>
-                                <div class="btn-group" jsf:rendered="#{dataverseSession.user.authenticated
+                                    <div class="btn-group" jsf:rendered="#{dataverseSession.user.authenticated
                                                          and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset) 
                                                          and (dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile) or dataFileServiceBean.hasBeenDeleted(FilePage.fileMetadata.dataFile)) }">
-                                    <p:commandLink styleClass="btn btn-default" onclick="PF('fileAlreadyReplacedPrevious').show()">
-                                        <span class="glyphicon glyphicon-pencil"/> #{bundle['dataset.editBtn']}
-                                    </p:commandLink>
-                                </div>
+                                        <p:commandLink styleClass="btn btn-default btn-access" onclick="PF('fileAlreadyReplacedPrevious').show()">
+                                            <span class="glyphicon glyphicon-pencil"/> #{bundle['dataset.editBtn']}
+                                        </p:commandLink>
+                                    </div>
 
                                     <!-- Export Button -->
                                     <div class="btn-group" jsf:rendered="#{FilePage.fileMetadata.datasetVersion.dataset.released}">
@@ -301,16 +301,16 @@
                                     </div>
                                     <div id="panelCollapseFMD" class="collapse in">
                                         <div class="panel-body">
-                                            <div class="form-group" jsf:rendered="#{FilePage.publiclyDownloadable}">
+                                            <!--<div class="form-group" jsf:rendered="# {FilePage.publiclyDownloadable}">
                                                 <label class="col-sm-3 control-label">                                                   
-                                                   #{bundle['file.metadataTab.fileMetadata.downloadUrl.label']}
+                                                   # {bundle['file.metadataTab.fileMetadata.downloadUrl.label']}
                                                 </label>
                                                 <div class="col-sm-9">
-                                                    <a href="#{FilePage.publicDownloadUrl}">
-                                                        <h:outputText value="#{FilePage.publicDownloadUrl}"/>
+                                                    <a href="# {FilePage.publicDownloadUrl}">
+                                                        <h:outputText value="# {FilePage.publicDownloadUrl}"/>
                                                     </a>
                                                 </div>
-                                            </div>
+                                            </div>-->
                                             <div class="form-group" jsf:rendered="#{!(empty FilePage.file.checksumValue)}">
                                                 <label class="col-sm-3 control-label">                                                   
                                                    #{FilePage.file.tabularData ? FilePage.file.originalChecksumType : FilePage.file.checksumType}
