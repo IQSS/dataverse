@@ -222,13 +222,31 @@ public class DatasetPage implements java.io.Serializable {
     
     private boolean removeUnusedTags;
     
+    private String thumbnailString = null; 
 
+    // This is the Dataset-level thumbnail; 
+    // it's either the thumbnail of the designated datafile, 
+    // or scaled down uploaded "logo" file, or randomly selected
+    // image datafile from this dataset. 
     public String getThumbnailString() {
+        // This method gets called 30 (!) times, just to load the page!
+        // - so let's cache that string the first time it's called. 
+    
+        if (thumbnailString != null) {
+            if ("".equals(thumbnailString)) {
+                return null;
+            } 
+            return thumbnailString;
+        }
+
         DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail();
         if (datasetThumbnail == null) {
-            return null;
-        }
-        return datasetThumbnail.getBase64image();
+            thumbnailString = "";
+            return null; 
+        } 
+           
+        thumbnailString = datasetThumbnail.getBase64image();
+        return thumbnailString;
     }
 
     public void setThumbnailString(String thumbnailString) {
@@ -464,6 +482,7 @@ public class DatasetPage implements java.io.Serializable {
 
 
     public boolean isThumbnailAvailable(FileMetadata fileMetadata) {
+        
         // new and optimized logic: 
         // - check download permission here (should be cached - so it's free!)
         // - only then ask the file service if the thumbnail is available/exists.
@@ -3524,7 +3543,8 @@ public class DatasetPage implements java.io.Serializable {
     public void setTwoRavensHelper(TwoRavensHelper twoRavensHelper) {
         this.twoRavensHelper = twoRavensHelper;
     }
-
+    
+    /*
     public String getThumbnail() {
         DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail();
         if (datasetThumbnail != null) {
@@ -3532,6 +3552,6 @@ public class DatasetPage implements java.io.Serializable {
         } else {
             return null;
         }
-    }
+    }*/
 
 }

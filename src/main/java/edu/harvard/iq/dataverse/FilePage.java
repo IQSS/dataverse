@@ -617,10 +617,10 @@ public class FilePage implements java.io.Serializable {
     }
 
     public String getPublicDownloadUrl() {
-        if (System.getProperty("dataverse.files.storage-driver-id").equals("swift")) {
+        if ("swift".equals(System.getProperty("dataverse.files.storage-driver-id"))) {
             String fileDownloadUrl = null;
             try {
-                SwiftAccessIO swiftIO = (SwiftAccessIO) getFile().getAccessObject();
+                SwiftAccessIO swiftIO = (SwiftAccessIO) getFile().getDataFileIO();
                 swiftIO.open();
                 fileDownloadUrl = swiftIO.getRemoteUrl();
                 logger.info("Swift url: " + fileDownloadUrl);

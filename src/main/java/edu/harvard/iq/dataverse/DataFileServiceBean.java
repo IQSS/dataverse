@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.search.SortBy;
 import edu.harvard.iq.dataverse.util.FileSortFieldAndOrder;
+import edu.harvard.iq.dataverse.util.FileUtil;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -118,8 +119,7 @@ public class DataFileServiceBean implements java.io.Serializable {
     // (only FITS at this point)
     
     private static final String MIME_TYPE_FITS  = "application/fits";
-    private static final String MIME_TYPE_FITSIMAGE = "image/fits";
-   
+
     // Network Data files: 
     // (only GRAPHML at this point): 
     
@@ -127,9 +127,7 @@ public class DataFileServiceBean implements java.io.Serializable {
    
     // SHAPE file type: 
     // this is the only supported file type in the GEO DATA class:
-    
-    private static final String MIME_TYPE_GEO_SHAPE = "application/zipped-shapefile";
-    
+        
     private static final String MIME_TYPE_ZIP   = "application/zip";
     
     private static final String MIME_TYPE_UNDETERMINED_DEFAULT = "application/octet-stream";
@@ -984,41 +982,6 @@ public class DataFileServiceBean implements java.io.Serializable {
     }
     */
     
-    
-    /* 
-     * This method tells you if thumbnail generation is *supported* 
-     * on this type of file. i.e., if true, it does not guarantee that a thumbnail 
-     * can/will be generated; but it means that we can try. 
-     */
-    public boolean thumbnailSupported (DataFile file) {
-        if (file == null) {
-            return false;
-        }
-        
-        if (file.isHarvested() || "".equals(file.getStorageIdentifier())) {
-            return false;
-        }
-        
-        String contentType = file.getContentType();
-        
-        // Some browsers (Chrome?) seem to identify FITS files as mime
-        // type "image/fits" on upload; this is both incorrect (the official
-        // mime type for FITS is "application/fits", and problematic: then
-        // the file is identified as an image, and the page will attempt to 
-        // generate a preview - which of course is going to fail...
-        if (MIME_TYPE_FITSIMAGE.equalsIgnoreCase(contentType)) {
-            return false;
-        }
-        // besides most image/* types, we can generate thumbnails for 
-        // pdf and "world map" files:
-        
-        return (contentType != null && 
-                (contentType.startsWith("image/") || 
-                contentType.equalsIgnoreCase("application/pdf") ||
-                (file.isTabularData() && file.hasGeospatialTag()) ||
-                contentType.equalsIgnoreCase(MIME_TYPE_GEO_SHAPE)));
-    }
-    
     /*
      * This method will return true if the thumbnail is *actually available* and
      * ready to be downloaded. (it will try to generate a thumbnail for supported
@@ -1039,7 +1002,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         // If thumbnails are not even supported for this class of files, 
         // there's notthing to talk about: 
         
-        if (!thumbnailSupported(file)) {
+        if (!FileUtil.isThumbnailSupported(file)) {
             return false;
         }
         
@@ -1067,15 +1030,14 @@ public class DataFileServiceBean implements java.io.Serializable {
        if (ImageThumbConverter.isThumbnailAvailable(file)) {
            file = this.find(file.getId());
            file.setPreviewImageAvailable(true);
-           file = this.save(file); //em.merge(file);
-           // (should this be done here? - TODO:)
+           file = this.save(file); 
            return true;
        }
        return false;
     }
 
     
-    // TODO: 
+    /*// TODO: 
     // Document this.
     // -- L.A. 4.0 beta14
     
@@ -1091,9 +1053,9 @@ public class DataFileServiceBean implements java.io.Serializable {
         String imageThumbFileName = null;
         
         if ("application/pdf".equals(mimeType)) {
-            imageThumbFileName = ImageThumbConverter.generatePDFThumb(fileSystemName);
+            imageThumbFileName = ImageThumbConverter.generatePDFThumbnailFromFile(fileSystemName);
         } else if (mimeType != null && mimeType.startsWith("image/")) {
-            imageThumbFileName = ImageThumbConverter.generateImageThumb(fileSystemName);
+            imageThumbFileName = ImageThumbConverter.generateImageThumbnailFromFile(fileSystemName);
         }
         
         if (imageThumbFileName != null) {
@@ -1101,16 +1063,16 @@ public class DataFileServiceBean implements java.io.Serializable {
         }
             
         return false;
-    }
+    }*/
     
     /* 
      * TODO: 
      * similar method, but for non-default thumbnail sizes:
-    */
+    
     
     public boolean isThumbnailAvailableForSize (DataFile file) {
         return false; 
-    }
+    }*/
     
     public boolean ingestableAsTabular(DataFile dataFile) {
         /* 
@@ -1216,7 +1178,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         // the file is identified as an image, and the page will attempt to 
         // generate a preview - which of course is going to fail...
         
-        if (MIME_TYPE_FITSIMAGE.equalsIgnoreCase(contentType)) {
+        if (FileUtil.MIME_TYPE_FITSIMAGE.equalsIgnoreCase(contentType)) {
             return false;
         }
         // besides most image/* types, we can generate thumbnails for 
@@ -1287,7 +1249,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         // The only known/supported "Astro" file type is FITS,
         // so far:
         
-        return (MIME_TYPE_FITS.equalsIgnoreCase(contentType) || MIME_TYPE_FITSIMAGE.equalsIgnoreCase(contentType));
+        return (MIME_TYPE_FITS.equalsIgnoreCase(contentType) || FileUtil.MIME_TYPE_FITSIMAGE.equalsIgnoreCase(contentType));
         
     }
     
@@ -1327,7 +1289,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         // The only known/supported Geo Data type is SHAPE,
         // so far:
         
-        return MIME_TYPE_GEO_SHAPE.equalsIgnoreCase(contentType);
+        return FileUtil.MIME_TYPE_GEO_SHAPE.equalsIgnoreCase(contentType);
     }
     
     public boolean isFileClassTabularData (DataFile file) {

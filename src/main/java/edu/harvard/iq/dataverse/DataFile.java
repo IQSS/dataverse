@@ -538,15 +538,6 @@ public class DataFile extends DvObject implements Comparable {
         this.restricted = restricted;
     }
 
-
-
-
-
-
-
-
-
-     
     public ChecksumType getChecksumType() {
         return checksumType;
     }
@@ -567,14 +558,14 @@ public class DataFile extends DvObject implements Comparable {
         return BundleUtil.getStringFromBundle("file.originalChecksumType", Arrays.asList(this.checksumType.toString()) );
     }
 
-    public DataFileIO getAccessObject() throws IOException {
-        DataFileIO dataAccess =  DataAccess.getDataFileIO(this);
+    public DataFileIO getDataFileIO() throws IOException {
+        DataFileIO dataFileIO =  DataAccess.getDataFileIO(this);
         
-        if (dataAccess == null) {
-            throw new IOException("Failed to create access object for datafile.");
+        if (dataFileIO == null) {
+            throw new IOException("Failed to create DataFileIO for datafile.");
         }
         
-        return dataAccess; 
+        return dataFileIO; 
     }
     
     

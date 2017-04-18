@@ -22,8 +22,8 @@ package edu.harvard.iq.dataverse.dataaccess;
 
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,8 +34,9 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Iterator;
+import java.util.List;
 
 
 import org.apache.commons.httpclient.Header;
@@ -86,6 +87,8 @@ public abstract class DataFileIO {
     // TODO: this method should throw something other than IOException 
     // if delete functionality is not supported by the access driver!
     // -- L.A. 4.0. beta
+    // (there is now a dedicated exception for this purpose: UnsupportedDataAccessOperationException,
+    // that extends IOException -- 4.6.2) 
     public abstract void delete() throws IOException;
     
     // Auxiliary File Management: (new as of 4.0.2!)
@@ -100,10 +103,15 @@ public abstract class DataFileIO {
     
     public abstract long getAuxObjectSize(String auxItemTag) throws IOException; 
     
+    public abstract Path getAuxObjectAsPath(String auxItemTag) throws IOException; 
+    
     public abstract boolean isAuxObjectCached(String auxItemTag) throws IOException; 
     
     public abstract void backupAsAux(String auxItemTag) throws IOException; 
-
+    
+    // this method copies a local filesystem Path into this DataAccess Auxiliary location:
+    public abstract void savePathAsAux(Path fileSystemPath, String auxItemTag) throws IOException;
+    
 
     private DataFile dataFile;
     private DataAccessRequest req;
@@ -139,7 +147,7 @@ public abstract class DataFileIO {
     
     // this is a convenience method for copying a local Path (for ex., a
     // temp file, into this DataAccess location):
-    public void copyPath(Path fileSystemPath) throws IOException {
+    public void savePath(Path fileSystemPath) throws IOException {
         long newFileSize = -1; 
         // if this is a local fileystem file, we'll use a 
         // quick Files.copy method: 
@@ -239,15 +247,11 @@ public abstract class DataFileIO {
         return size;
     }
 
-    //public String getLocation() {
-    //    return location;
-    //}
-
     public InputStream getInputStream() {
         return in;
     }
     
-    public OutputStream getOutputStream() {
+    public OutputStream getOutputStream() throws IOException {
         return out; 
     }
 
@@ -413,5 +417,28 @@ public abstract class DataFileIO {
                 }
             }
         }
+    }
+    
+    public String generateVariableHeader(List dvs) {
+        String varHeader = null;
+
+        if (dvs != null) {
+            Iterator iter = dvs.iterator();
+            DataVariable dv;
+
+            if (iter.hasNext()) {
+                dv = (DataVariable) iter.next();
+                varHeader = dv.getName();
+            }
+
+            while (iter.hasNext()) {
+                dv = (DataVariable) iter.next();
+                varHeader = varHeader + "\t" + dv.getName();
+            }
+
+            varHeader = varHeader + "\n";
+        }
+
+        return varHeader;
     }
 }

@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.search;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
+import edu.harvard.iq.dataverse.DataFileTag;
 import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
@@ -1313,6 +1314,19 @@ public class SearchIncludeFragment implements java.io.Serializable {
             }
 
             String cardImageUrl = null;
+            
+            if (result.getTabularDataTags() != null) {
+                for (String tabularTagLabel : result.getTabularDataTags()) {
+                    DataFileTag tag = new DataFileTag();
+                    try {
+                        tag.setTypeByLabel(tabularTagLabel);
+                        tag.setDataFile((DataFile) result.getEntity());
+                        ((DataFile) result.getEntity()).addTag(tag);
+                    } catch (IllegalArgumentException iax) {
+                        // ignore 
+                    }
+                }
+            }
 
             if ((!((DataFile)result.getEntity()).isRestricted()
                         || permissionsWrapper.hasDownloadFilePermission(result.getEntity()))

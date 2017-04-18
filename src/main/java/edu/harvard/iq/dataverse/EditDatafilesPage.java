@@ -1970,7 +1970,17 @@ public class EditDatafilesPage implements java.io.Serializable {
         return null;
     }
     
+    private Map<String, String> temporaryThumbnailsMap = new HashMap<>();
+    
     public boolean isTemporaryPreviewAvailable(String fileSystemId, String mimeType) {
+        if (temporaryThumbnailsMap.get(fileSystemId) != null && !temporaryThumbnailsMap.get(fileSystemId).equals("")) {
+            return true;
+        }
+        
+        if ("".equals(temporaryThumbnailsMap.get(fileSystemId))) {
+            // we've already looked once - and there's no thumbnail.
+            return false;
+        }
         
         String filesRootDirectory = System.getProperty("dataverse.files.directory");
         if (filesRootDirectory == null || filesRootDirectory.equals("")) {
@@ -1981,17 +1991,31 @@ public class EditDatafilesPage implements java.io.Serializable {
         
         String imageThumbFileName = null;
         
+        // ATTENTION! TODO: the current version of the method below may not be checking if files are already cached!
         if ("application/pdf".equals(mimeType)) {
-            imageThumbFileName = ImageThumbConverter.generatePDFThumb(fileSystemName);
+            imageThumbFileName = ImageThumbConverter.generatePDFThumbnailFromFile(fileSystemName, ImageThumbConverter.DEFAULT_THUMBNAIL_SIZE);
         } else if (mimeType != null && mimeType.startsWith("image/")) {
-            imageThumbFileName = ImageThumbConverter.generateImageThumb(fileSystemName);
+            imageThumbFileName = ImageThumbConverter.generateImageThumbnailFromFile(fileSystemName, ImageThumbConverter.DEFAULT_THUMBNAIL_SIZE);
         }
         
         if (imageThumbFileName != null) {
-            return true; 
+            File imageThumbFile = new File(imageThumbFileName);
+            if (imageThumbFile.exists()) {
+                String previewAsBase64 = ImageThumbConverter.getImageAsBase64FromFile(imageThumbFile); 
+                if (previewAsBase64 != null) {
+                    temporaryThumbnailsMap.put(fileSystemId, previewAsBase64);
+                    return true;
+                } else {
+                    temporaryThumbnailsMap.put(fileSystemId, "");
+                }
+            }
         }
             
         return false;
+    }
+    
+    public String getTemporaryPreviewAsBase64(String fileSystemId) {
+        return temporaryThumbnailsMap.get(fileSystemId);
     }
 
     private Set<String> fileLabelsExisting = null; 

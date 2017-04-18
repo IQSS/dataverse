@@ -83,7 +83,7 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
         DataFileIO dataAccess = null; 
         
         try {
-            dataAccess = doomed.getAccessObject();
+            dataAccess = doomed.getDataFileIO();
         } catch (IOException ioex) {
             throw new CommandExecutionException("Failed to initialize physical access driver.", ioex, this);
         }

@@ -40,6 +40,8 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import java.io.FileNotFoundException;
 import java.nio.channels.Channel;
+import java.nio.channels.FileChannel;
+import java.nio.channels.WritableByteChannel;
 import java.nio.file.StandardCopyOption;
 
 
@@ -144,7 +146,7 @@ public class FileAccessIO extends DataFileIO {
     @Override
     public Channel openAuxChannel(String auxItemTag, DataAccessOption... options) throws IOException {
 
-        Path auxPath = getAuxFilePath(auxItemTag);
+        Path auxPath = getAuxObjectAsPath(auxItemTag);
 
         if (isWriteAccessRequested(options)) {
             FileOutputStream auxOut = new FileOutputStream(auxPath.toFile());
@@ -177,7 +179,7 @@ public class FileAccessIO extends DataFileIO {
     public boolean isAuxObjectCached(String auxItemTag) throws IOException {
         // Check if the file exists:
         
-        Path auxPath = getAuxFilePath(auxItemTag);
+        Path auxPath = getAuxObjectAsPath(auxItemTag);
         
         if (auxPath.toFile().exists()) {
             return true;
@@ -188,7 +190,7 @@ public class FileAccessIO extends DataFileIO {
     
     @Override
     public long getAuxObjectSize(String auxItemTag) throws IOException {
-        Path auxPath = getAuxFilePath(auxItemTag);
+        Path auxPath = getAuxObjectAsPath(auxItemTag);
         
         if (!auxPath.toFile().exists()) {
             throw new FileNotFoundException ("Aux file does not exist.");
@@ -197,9 +199,34 @@ public class FileAccessIO extends DataFileIO {
         return auxPath.toFile().length();
     }
     
+    @Override
+    public Path getAuxObjectAsPath(String auxItemTag) throws IOException {
+
+        if (auxItemTag == null || "".equals(auxItemTag)) {
+            throw new IOException("Null or invalid Auxiliary Object Tag.");
+        }
+
+        String datasetDirectory = getDatasetDirectory();
+
+        if (this.getDataFile().getStorageIdentifier() == null || "".equals(this.getDataFile().getStorageIdentifier())) {
+            throw new IOException("Data Access: No local storage identifier defined for this datafile.");
+        }
+
+        Path auxPath = Paths.get(datasetDirectory, this.getDataFile().getStorageIdentifier() + "." + auxItemTag);
+        
+        if (auxPath == null) {
+            throw new IOException("Invalid Path location for the auxiliary file " + this.getDataFile().getStorageIdentifier() + "." + auxItemTag);
+        }
+        
+        return auxPath;
+    }
+    /*public Path getAuxObjectAsPath(String auxItemTag, DataAccessOption... option) throws IOException {
+        
+    }*/
+    
     @Override 
     public void backupAsAux(String auxItemTag) throws IOException {
-        Path auxPath = getAuxFilePath(auxItemTag);
+        Path auxPath = getAuxObjectAsPath(auxItemTag);
         
         Files.move(getFileSystemPath(), auxPath, StandardCopyOption.REPLACE_EXISTING);
     }
@@ -246,6 +273,22 @@ public class FileAccessIO extends DataFileIO {
             Files.delete(victim);
         } else {
             throw new IOException("Could not locate physical file location for the Filesystem object.");
+        }
+    }
+    
+    @Override
+    // this method copies a local filesystem Path into this DataAccess Auxiliary location:
+    public void savePathAsAux(Path fileSystemPath, String auxItemTag) throws IOException {
+        // quick Files.copy method: 
+        Path auxPath = null;
+        try {
+            auxPath = getAuxObjectAsPath(auxItemTag);
+        } catch (IOException ex) {
+            return;
+        }
+
+        if (auxPath != null) {
+            Files.copy(fileSystemPath, auxPath, StandardCopyOption.REPLACE_EXISTING);
         }
     }
     
@@ -330,27 +373,6 @@ public class FileAccessIO extends DataFileIO {
         return datasetDirectory;
     }
     
-    private Path getAuxFilePath(String auxItemTag) throws IOException {
-
-        if (auxItemTag == null || "".equals(auxItemTag)) {
-            throw new IOException("Null or invalid Auxiliary Object Tag.");
-        }
-
-        String datasetDirectory = getDatasetDirectory();
-
-        if (this.getDataFile().getStorageIdentifier() == null || "".equals(this.getDataFile().getStorageIdentifier())) {
-            throw new IOException("Data Access: No local storage identifier defined for this datafile.");
-        }
-
-        Path auxPath = Paths.get(datasetDirectory, this.getDataFile().getStorageIdentifier() + "." + auxItemTag);
-        
-        if (auxPath == null) {
-            throw new IOException("Invalid Path location for the auxiliary file " + this.getDataFile().getStorageIdentifier() + "." + auxItemTag);
-        }
-        
-        return auxPath;
-    }
-    
     private boolean isWriteAccessRequested (DataAccessOption... options) throws IOException {
 
         
@@ -372,27 +394,6 @@ public class FileAccessIO extends DataFileIO {
         return false; 
     }
     
-    private String generateVariableHeader(List dvs) {
-        String varHeader = null;
-
-        if (dvs != null) {
-            Iterator iter = dvs.iterator();
-            DataVariable dv;
-
-            if (iter.hasNext()) {
-                dv = (DataVariable) iter.next();
-                varHeader = dv.getName();
-            }
-
-            while (iter.hasNext()) {
-                dv = (DataVariable) iter.next();
-                varHeader = varHeader + "\t" + dv.getName();
-            }
-
-            varHeader = varHeader + "\n";
-        }
-
-        return varHeader;
-    }
+    
 
 }

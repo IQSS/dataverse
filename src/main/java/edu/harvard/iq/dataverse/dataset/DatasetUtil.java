@@ -49,7 +49,7 @@ public class DatasetUtil {
                     DatasetThumbnail datasetThumbnail = new DatasetThumbnail(FileUtil.DATA_URI_SCHEME + base64image, null);
                     thumbnails.add(datasetThumbnail);
                 } catch (IOException ex) {
-                    logger.info("Unable to rescale image: " + ex);
+                    logger.warning("Unable to rescale image: " + ex);
                 }
             } else {
                 logger.fine("There is no thumbnail created from a dataset logo");
@@ -87,7 +87,7 @@ public class DatasetUtil {
                 logger.fine(title + " will get thumbnail from dataset logo.");
                 return datasetThumbnail;
             } catch (IOException ex) {
-                logger.fine("Unable to rescale image: " + ex);
+                logger.fine("Unable to read thumbnail image from file: " + ex);
                 return null;
             }
         } else {
@@ -148,8 +148,7 @@ public class DatasetUtil {
         }
         for (FileMetadata fmd : dataset.getLatestVersion().getFileMetadatas()) {
             DataFile testFile = fmd.getDataFile();
-            String imageSourceBase64 = ImageThumbConverter.getImageThumbAsBase64(testFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
-            if (imageSourceBase64 != null && !testFile.isRestricted()) {
+            if (ImageThumbConverter.isThumbnailAvailable(testFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE)) {
                 return testFile;
             }
         }

@@ -161,7 +161,7 @@ public class MapLayerMetadataServiceBean {
         DataFile df = mapLayerMetadata.getDataFile();
         
         try {
-            DataFileIO dataAccess = df.getAccessObject();
+            DataFileIO dataAccess = df.getDataFileIO();
 
             if (dataAccess == null || !dataAccess.isLocalFile()) {
                 return false;
@@ -251,7 +251,7 @@ public class MapLayerMetadataServiceBean {
         
         DataFileIO dataAccess = null;
         try {
-            dataAccess = mapLayerMetadata.getDataFile().getAccessObject();
+            dataAccess = mapLayerMetadata.getDataFile().getDataFileIO();
         } catch (IOException ioEx) {
             dataAccess = null;
         }
