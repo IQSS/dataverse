@@ -65,6 +65,11 @@ public class JsonParserTest {
     
     MockDatasetFieldSvc datasetFieldTypeSvc = null;
     MockSettingsSvc settingsSvc = null;
+    DatasetFieldType titleType;
+    DatasetFieldType authorType;
+    DatasetFieldType authorIdentifierSchemeType;
+    DatasetFieldType datasetContactType;
+    DatasetFieldType dsDescriptionType;
     DatasetFieldType keywordType;
     DatasetFieldType descriptionType;
     DatasetFieldType subjectType;
@@ -86,6 +91,42 @@ public class JsonParserTest {
     @Before
     public void setUp() {
         datasetFieldTypeSvc = new MockDatasetFieldSvc();
+
+        titleType = datasetFieldTypeSvc.add(new DatasetFieldType("title", FieldType.TEXTBOX, false));
+        authorType = datasetFieldTypeSvc.add(new DatasetFieldType("author", FieldType.TEXT, true));
+        Set<DatasetFieldType> authorChildTypes = new HashSet<>();
+        authorChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("authorName", FieldType.TEXT, false)));
+        authorChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("authorAffiliation", FieldType.TEXT, false)));
+        authorChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("authorIdentifier", FieldType.TEXT, false)));
+        authorIdentifierSchemeType = datasetFieldTypeSvc.add(new DatasetFieldType("authorIdentifierScheme", FieldType.TEXT, false));
+        authorIdentifierSchemeType.setAllowControlledVocabulary(true);
+        authorIdentifierSchemeType.setControlledVocabularyValues(Arrays.asList(
+                // Why aren't these enforced? Should be ORCID, etc.
+                new ControlledVocabularyValue(1l, "ark", authorIdentifierSchemeType),
+                new ControlledVocabularyValue(2l, "doi", authorIdentifierSchemeType),
+                new ControlledVocabularyValue(3l, "url", authorIdentifierSchemeType)
+        ));
+        authorChildTypes.add(datasetFieldTypeSvc.add(authorIdentifierSchemeType));
+        for (DatasetFieldType t : authorChildTypes) {
+            t.setParentDatasetFieldType(authorType);
+        }
+        authorType.setChildDatasetFieldTypes(authorChildTypes);
+
+        datasetContactType = datasetFieldTypeSvc.add(new DatasetFieldType("datasetContact", FieldType.TEXT, true));
+        Set<DatasetFieldType> datasetContactTypes = new HashSet<>();
+        datasetContactTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("datasetContactEmail", FieldType.TEXT, false)));
+        for (DatasetFieldType t : datasetContactTypes) {
+            t.setParentDatasetFieldType(datasetContactType);
+        }
+        datasetContactType.setChildDatasetFieldTypes(datasetContactTypes);
+
+        dsDescriptionType = datasetFieldTypeSvc.add(new DatasetFieldType("dsDescription", FieldType.TEXT, true));
+        Set<DatasetFieldType> dsDescriptionTypes = new HashSet<>();
+        dsDescriptionTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("dsDescriptionValue", FieldType.TEXT, false)));
+        for (DatasetFieldType t : dsDescriptionTypes) {
+            t.setParentDatasetFieldType(dsDescriptionType);
+        }
+        dsDescriptionType.setChildDatasetFieldTypes(dsDescriptionTypes);
 
         keywordType = datasetFieldTypeSvc.add(new DatasetFieldType("keyword", FieldType.TEXT, true));
         descriptionType = datasetFieldTypeSvc.add( new DatasetFieldType("description", FieldType.TEXTBOX, false) );
@@ -445,7 +486,21 @@ public class JsonParserTest {
             DatasetVersion actual = sut.parseDatasetVersion(dsJson);
         }
     }
-    
+
+    @Test
+    public void testParseCompleteDatasetVersion() throws JsonParseException, IOException {
+        JsonObject dsJson;
+        String title = null;
+        try (InputStream jsonFile = ClassLoader.getSystemResourceAsStream("json/dataset-finch1.json")) {
+            InputStreamReader reader = new InputStreamReader(jsonFile, "UTF-8");
+            dsJson = Json.createReader(reader).readObject();
+            System.out.println(dsJson != null);
+            DatasetVersion actual = sut.parseDatasetVersion(dsJson.getJsonObject("datasetVersion"));
+            title = actual.getTitle();
+        }
+        assertEquals("Darwin's Finches", title);
+    }
+
     @Test
     public void testIpGroupRoundTrip() {
         
