@@ -115,6 +115,8 @@ public class JsonParserTest {
         datasetContactType = datasetFieldTypeSvc.add(new DatasetFieldType("datasetContact", FieldType.TEXT, true));
         Set<DatasetFieldType> datasetContactTypes = new HashSet<>();
         datasetContactTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("datasetContactEmail", FieldType.TEXT, false)));
+        datasetContactTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("datasetContactName", FieldType.TEXT, false)));
+        datasetContactTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("datasetContactAffiliation", FieldType.TEXT, false)));
         for (DatasetFieldType t : datasetContactTypes) {
             t.setParentDatasetFieldType(datasetContactType);
         }
@@ -499,6 +501,30 @@ public class JsonParserTest {
             title = actual.getTitle();
         }
         assertEquals("Darwin's Finches", title);
+    }
+
+    /**
+     * For now this is expected: JsonParseException: Can't find type
+     * 'publication
+     *
+     * We need to keep working on the fixes in setUp above so that we don't
+     * expect any exceptions.
+     *
+     * Related issues: https://github.com/IQSS/dataverse/issues/3777 and
+     * https://github.com/IQSS/dataverse/issues/3413
+     */
+    @Test(expected = JsonParseException.class)
+    public void testParseCompleteDatasetVersionWithFiles() throws JsonParseException, IOException {
+        JsonObject dsJson;
+        String title = null;
+        try (InputStream jsonFile = ClassLoader.getSystemResourceAsStream("json/complete-dataset-with-files.json")) {
+            InputStreamReader reader = new InputStreamReader(jsonFile, "UTF-8");
+            dsJson = Json.createReader(reader).readObject();
+            System.out.println(dsJson != null);
+            DatasetVersion actual = sut.parseDatasetVersion(dsJson.getJsonObject("datasetVersion"), new DatasetVersion());
+            title = actual.getTitle();
+        }
+         assertEquals("X-Ray Diffraction data from Lin28/let-7d microRNA complex, source of 3TRZ structure", title);
     }
 
     @Test

@@ -222,6 +222,10 @@ public class UtilIT {
     }
 
     private static String getDatasetJson() {
+        /**
+         * FIXME: Switch to src/test/resources/json/dataset-finch1.json which is
+         * used in JsonParserTest
+         */
         File datasetVersionJson = new File("scripts/search/tests/data/dataset-finch1.json");
         try {
             String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
