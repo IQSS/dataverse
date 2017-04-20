@@ -215,6 +215,10 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
             if (dataFile.getFileMetadata() != null && dataFile.getFileMetadata().getDatasetVersion().equals(theDataset.getLatestVersion())) {
                 dataFile.setRestricted(dataFile.getFileMetadata().isRestricted());
             }
+            if (dataFile.isRestricted() && ctxt.mapLayerMetadata().findMetadataByDatafile(dataFile) != null){
+                //method call for deleting map layer from dataverse...
+                //SEK 4/20/2017 
+            }
         }
 
         theDataset.setFileAccessRequest(theDataset.getLatestVersion().getTermsOfUseAndAccess().isFileAccessRequest());

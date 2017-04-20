@@ -448,9 +448,11 @@
                             <p class="help-block">
                                 #{bundle['file.restrictions.description']}
                             </p>
+                            <ui:fragment rendered="#{FilePage.worldMapPermissionHelper.hasMapLayerMetadata(FilePage.fileMetadata)}">
                             <p class="help-block">
                                 <span class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"></span> #{bundle['file.restrictions.worldmap.warning']}</span>
                             </p>
+                            </ui:fragment>
                             <div class="form-horizontal">
                                 <div class="form-group">
                                     <label for="metadata_TermsAccess" class="col-sm-3 control-label">

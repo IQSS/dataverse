@@ -1297,6 +1297,26 @@ public class DatasetPage implements java.io.Serializable {
         readOnly = false;
     }
     
+    public void testSelectedFilesForMapData(){
+        setSelectedFilesHasMapLayer(false); 
+
+        for (FileMetadata fmd : selectedFiles){
+            if(worldMapPermissionHelper.hasMapLayerMetadata(fmd)){
+                setSelectedFilesHasMapLayer(true);
+            }
+        }
+    }
+    
+    private boolean selectedFilesHasMapLayer;
+
+    public boolean isSelectedFilesHasMapLayer() {
+        return selectedFilesHasMapLayer;
+    }
+
+    public void setSelectedFilesHasMapLayer(boolean selectedFilesHasMapLayer) {
+        this.selectedFilesHasMapLayer = selectedFilesHasMapLayer;
+    }
+    
     private Integer chunkSize = 25;
 
     public Integer getChunkSize() {
@@ -1511,6 +1531,18 @@ public class DatasetPage implements java.io.Serializable {
         
         dvIn.setArchiveNote(getDeaccessionForwardURLFor());
         return dvIn;
+    }
+    
+    public boolean isMapLayerToBeDeletedOnPublish(){
+
+        for (FileMetadata fmd : workingVersion.getFileMetadatas()){
+             if (worldMapPermissionHelper.hasMapLayerMetadata(fmd)){
+                 if (fmd.isRestricted() || fmd.isRestrictedUI()){
+                        return true;
+                 }
+             }
+        }      
+        return false;
     }
 
     private String releaseDataset(boolean minor) {
@@ -3508,7 +3540,7 @@ public class DatasetPage implements java.io.Serializable {
         this.guestbookResponseService = guestbookResponseService;
     }
     
-    
+       
     public WorldMapPermissionHelper getWorldMapPermissionHelper() {
         return worldMapPermissionHelper;
     }

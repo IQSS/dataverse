@@ -132,13 +132,14 @@
                                                                                            and DatasetPage.canUpdateDataset()
                                                                                            and !permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset))}">
                                 <!-- Publish Buttons -->
+                                <!--Publish Version 1.0 -->
                                 <p:commandLink type="button" styleClass="btn btn-default #{DatasetPage.locked ? 'disabled' : ''}" onclick="PF('publishConfirm').show()"
                                                rendered="#{!DatasetPage.dataset.released
                                                            and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.owner.released
                                                            and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
                                     <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
                                 </p:commandLink>
-
+                                <!--Re-Publish Dataset -->
                                 <p:commandLink type="button" styleClass="btn btn-default #{DatasetPage.locked ? 'disabled' : ''}" onclick="PF('releaseDraft').show()"
                                                rendered="#{DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.owner.released
                                                            and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
@@ -970,6 +971,11 @@
 
                     <p:remoteCommand  name="refreshTagsCommand" action="#{DatasetPage.refreshTagsPopUp()}" update=":datasetForm:fileTagsPopup"
                                       oncomplete="PF('fileTagsPopup').show();"/>
+                    <p:remoteCommand  name="testSelectedFilesForMapData"
+                            process="@this"
+                            update=":datasetForm:accessPopup"
+                            oncomplete="PF('accessPopup').show();"
+                            actionListener="#{DatasetPage.testSelectedFilesForMapData()}" />
 
                     <!-- We no longer need this remoteCommand; see my comments in the javascript method testFilesSelectedForEditMetadata() -->
                     <!-- for more info. - L.A. 4.2.1 -->
@@ -1169,9 +1175,11 @@
                             <p class="help-block">
                                 #{bundle['file.restrictions.description']}
                             </p>
+                            <ui:fragment rendered="#{DatasetPage.selectedFilesHasMapLayer}">
                             <p class="help-block">
                                 <span class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"></span> #{bundle['file.restrictions.worldmap.warning']}</span>
                             </p>
+                            </ui:fragment>
                             <div class="form-horizontal">
                                 <div class="form-group">
                                     <label for="metadata_TermsAccess" class="col-sm-3 control-label">
@@ -1217,18 +1225,6 @@
                             <p:commandButton value="#{bundle.cancel}" onclick="PF('inreview').hide();PF('blockDatasetForm').hide();" type="button" />
                         </div>
                     </p:dialog>
-                    
-                    <p:dialog width="70%" header="#{bundle['dataset.publish.header']}" widgetVar="confirmWorldMapDelete" modal="true">
-                        <!-- Confirm WorldMap Delete Dialog -->
-                        <p class="text-danger">
-                            <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.publish.worldMap.deleteConfirm']}
-                        </p>
-                        <div class="button-block">
-                            <p:commandButton value="#{bundle.continue}" onclick="PF('confirmWorldMapDelete').hide();
-                                    PF('blockDatasetForm').hide();" action="#{DatasetPage.submitDataset}" />
-                            <p:commandButton value="#{bundle.cancel}" onclick="PF('confirmWorldMapDelete').hide();PF('blockDatasetForm').hide();" type="button" />
-                        </div>
-                    </p:dialog>
 
                     <!-- Publish/Submit for Review Dialogs -->
                     <p:dialog width="70%" header="#{bundle['dataset.publish.header']}" widgetVar="publishConfirm" modal="true">
@@ -1239,7 +1235,7 @@
                             <h:outputText value="#{DatasetPage.datasetPublishCustomText}" escape="false"/>
                         </div>
                         <div class="button-block">
-                            <p:commandButton value="#{bundle.continue}" onclick="PF('publishConfirm').hide();
+                            <p:commandButton value="#{bundle.continue}" onclick="PF('publishConfirm').hide();  
                                     PF('blockDatasetForm').hide();" action="#{DatasetPage.releaseDataset}" />
                             <p:commandButton value="#{bundle.cancel}" onclick="PF('publishConfirm').hide();PF('blockDatasetForm').hide();" type="button" />
                         </div>
@@ -1291,10 +1287,35 @@
                             </h:outputFormat>
                         </p>
                         <div class="button-block">
-                            <p:commandButton value="#{bundle.continue}" onclick="PF('releaseDraft').hide();PF('blockDatasetForm').hide();" rendered="#{DatasetPage.dataset.latestVersion.minorUpdate}" action="#{DatasetPage.releaseDraft}" />
+                            <!-- buttons for when there's no map layer to be deleted-->
+                            <p:commandButton value="#{bundle.continue}" onclick="PF('releaseDraft').hide();PF('blockDatasetForm').hide();" 
+                                             rendered="#{DatasetPage.dataset.latestVersion.minorUpdate and !DatasetPage.mapLayerToBeDeletedOnPublish}" action="#{DatasetPage.releaseDraft}" />
                             <p:commandButton value="#{bundle.continue}" onclick="PF('releaseDraft').hide();
-                                    PF('blockDatasetForm').hide();" rendered="#{!DatasetPage.dataset.latestVersion.minorUpdate}" action="#{DatasetPage.releaseMajor}" />
+                                    PF('blockDatasetForm').hide();" rendered="#{!DatasetPage.dataset.latestVersion.minorUpdate and !DatasetPage.mapLayerToBeDeletedOnPublish}" action="#{DatasetPage.releaseMajor}" />
+                            <!-- buttons for when there's IS map layer to be deleted-->
+                            <p:commandButton value="#{bundle.continue}" onclick="PF('releaseDraft').hide();PF('blockDatasetForm').hide();" 
+                                             rendered="#{DatasetPage.dataset.latestVersion.minorUpdate and DatasetPage.mapLayerToBeDeletedOnPublish}" 
+                                             action="#{DatasetPage.releaseDraft}" />
+                            <p:commandButton value="#{bundle.continue}" onclick="PF('releaseDraft').hide();
+                                    PF('blockDatasetForm').hide();" rendered="#{!DatasetPage.dataset.latestVersion.minorUpdate and DatasetPage.mapLayerToBeDeletedOnPublish}" action="#{DatasetPage.releaseMajor}" />
                             <p:commandButton value="#{bundle.cancel}" onclick="PF('releaseDraft').hide();PF('blockDatasetForm').hide();" type="button" />
+                        </div>
+                    </p:dialog>
+                    
+                    <!-- Additional Dialog for when a map layer will be deleted upon publish -->
+                    <p:dialog width="70%" header="#{bundle['dataset.publish.header']}" widgetVar="confirmWorldMapDelete" modal="true">
+                        <!-- Confirm WorldMap Delete Dialog -->
+                        <p class="text-danger">
+                            <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.publish.worldMap.deleteConfirm']}
+                        </p>
+                        <div class="button-block">
+                            
+                            <p:commandButton value="#{bundle.continue}" onclick="PF('confirmWorldMapDelete').hide(); PF('blockDatasetForm').hide();"  
+                                             rendered="#{DatasetPage.dataset.latestVersion.minorUpdate}" action="#{DatasetPage.releaseDraft}" />
+                            <p:commandButton value="#{bundle.continue}" onclick="PF('confirmWorldMapDelete').hide(); PF('blockDatasetForm').hide();" 
+                                             rendered="#{!DatasetPage.dataset.latestVersion.minorUpdate}" action="#{DatasetPage.releaseMajor}" />        
+                            
+                            <p:commandButton value="#{bundle.cancel}" onclick="PF('confirmWorldMapDelete').hide();PF('blockDatasetForm').hide();" type="button" />
                         </div>
                     </p:dialog>
 
@@ -1369,7 +1390,7 @@
                                     if (count === 0) {
                                         PF('selectFilesForRestrict').show();
                                     } else {
-                                        PF('accessPopup').show();
+                                        testSelectedFilesForMapData();
                                     }
 
                                 }
