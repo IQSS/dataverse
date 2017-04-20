@@ -216,8 +216,11 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
                 dataFile.setRestricted(dataFile.getFileMetadata().isRestricted());
             }
             if (dataFile.isRestricted() && ctxt.mapLayerMetadata().findMetadataByDatafile(dataFile) != null){
-                //method call for deleting map layer from dataverse...
-                //SEK 4/20/2017 
+                //SEK 4/20/2017                
+                //Command to delete from Dataverse side
+                ctxt.engine().submit(new DeleteMapLayerMetadataCommand(this.getRequest(), dataFile));               
+                //Add method call for deleting map layer from World Maps...
+                
             }
         }
 
