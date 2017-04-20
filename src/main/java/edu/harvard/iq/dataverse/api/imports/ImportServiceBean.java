@@ -38,6 +38,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringReader;
@@ -221,7 +222,8 @@ public class ImportServiceBean {
         // Kraffmiller's export modules; replace the logic below with clean
         // programmatic lookup of the import plugin needed. 
 
-        if ("ddi".equalsIgnoreCase(metadataFormat) || "oai_ddi".equals(metadataFormat)) {
+        if ("ddi".equalsIgnoreCase(metadataFormat) || "oai_ddi".equals(metadataFormat) 
+                || metadataFormat.toLowerCase().matches("^oai_ddi.*")) {
             try {
                 String xmlToParse = new String(Files.readAllBytes(metadataFile.toPath()));
                 // TODO: 
@@ -230,16 +232,16 @@ public class ImportServiceBean {
                 // ImportType.HARVEST vs. ImportType.HARVEST_WITH_FILES
                 logger.fine("importing DDI "+metadataFile.getAbsolutePath());
                 dsDTO = importDDIService.doImport(ImportType.HARVEST_WITH_FILES, xmlToParse);
-            } catch (XMLStreamException e) {
-                throw new ImportException("XMLStreamException" + e);
+            } catch (Exception e) {
+                throw new ImportException("Failed to process DDI XML record: "+ e.getClass() + " (" + e.getMessage() + ")");
             }
         } else if ("dc".equalsIgnoreCase(metadataFormat) || "oai_dc".equals(metadataFormat)) {
             logger.fine("importing DC "+metadataFile.getAbsolutePath());
             try {
                 String xmlToParse = new String(Files.readAllBytes(metadataFile.toPath()));
                 dsDTO = importGenericService.processOAIDCxml(xmlToParse);
-            } catch (XMLStreamException e) {
-                throw new ImportException("XMLStreamException processing Dublin Core XML record: "+e.getMessage());
+            } catch (Exception e) {
+                throw new ImportException("Failed to process Dublin Core XML record: "+ e.getClass() + " (" + e.getMessage() + ")");
             }
         } else if ("dataverse_json".equals(metadataFormat)) {
             // This is Dataverse metadata already formatted in JSON. 
@@ -371,12 +373,20 @@ public class ImportServiceBean {
                 importedDataset = engineSvc.submit(new CreateDatasetCommand(ds, dataverseRequest, false, ImportType.HARVEST));
             }
 
-        } catch (JsonParseException ex) {
-            logger.log(Level.INFO, "Error parsing datasetVersion: {0}", ex.getMessage());
-            throw new ImportException("Error parsing datasetVersion: " + ex.getMessage(), ex);
-        } catch (CommandException ex) {
-            logger.log(Level.INFO, "Error excuting Create dataset command: {0}", ex.getMessage());
-            throw new ImportException("Error excuting dataverse command: " + ex.getMessage(), ex);
+        } catch (Exception ex) {
+            logger.fine("Failed to import harvested dataset: " + ex.getClass() + ": " + ex.getMessage());
+            FileOutputStream savedJsonFileStream = new FileOutputStream(new File(metadataFile.getAbsolutePath() + ".json"));
+            byte[] jsonBytes = json.getBytes();
+            int i = 0;
+            while (i < jsonBytes.length) {
+                int chunkSize = i + 8192 <= jsonBytes.length ? 8192 : jsonBytes.length - i;
+                savedJsonFileStream.write(jsonBytes, i, chunkSize);
+                i += chunkSize;
+                savedJsonFileStream.flush();
+            }
+            savedJsonFileStream.close();
+            logger.info("JSON produced saved in " + metadataFile.getAbsolutePath() + ".json");
+            throw new ImportException("Failed to import harvested dataset: " + ex.getClass() + " (" + ex.getMessage() + ")", ex);
         }
         return importedDataset;
     }

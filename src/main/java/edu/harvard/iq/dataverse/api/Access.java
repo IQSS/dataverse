@@ -10,14 +10,16 @@ import edu.harvard.iq.dataverse.BibtexCitation;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
-import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DataverseTheme;
+import edu.harvard.iq.dataverse.GuestbookResponse;
+import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -36,7 +38,6 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.worldmapauth.WorldMapTokenServiceBean;
 
-import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import java.io.InputStream;
@@ -47,6 +48,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Properties;
+import java.util.logging.Level;
 import javax.inject.Inject;
 
 import javax.ws.rs.GET;
@@ -111,7 +113,12 @@ public class Access extends AbstractApiBean {
     DataverseSession session;
     @EJB
     WorldMapTokenServiceBean worldMapTokenServiceBean;
-
+    @Inject
+    DataverseRequestServiceBean dvRequestService;
+    @EJB
+    GuestbookResponseServiceBean guestbookResponseService;
+    
+    
     private static final String API_KEY_HEADER = "X-Dataverse-key";    
 
     //@EJB
@@ -171,10 +178,16 @@ public class Access extends AbstractApiBean {
     @Path("datafile/{fileId}")
     @GET
     @Produces({ "application/xml" })
-    public DownloadInstance datafile(@PathParam("fileId") Long fileId, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {                
-
+    public DownloadInstance datafile(@PathParam("fileId") Long fileId, @QueryParam("gbrecs") Boolean gbrecs, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {                
         DataFile df = dataFileService.find(fileId);
+        GuestbookResponse gbr = null;    
         
+        /*
+        if (gbrecs == null && df.isReleased()){
+            //commenting out for 4.6 SEK
+           // gbr = guestbookResponseService.initDefaultGuestbookResponse(df.getOwner(), df, session);
+        }
+        */
         if (df == null) {
             logger.warning("Access: datafile service could not locate a DataFile object for id "+fileId+"!");
             throw new WebApplicationException(Response.Status.NOT_FOUND);
@@ -203,7 +216,11 @@ public class Access extends AbstractApiBean {
             dInfo.addServiceAvailable(new OptionalAccessService("subset", "text/tab-separated-values", "variables=&lt;LIST&gt;", "Column-wise Subsetting"));
         }
         DownloadInstance downloadInstance = new DownloadInstance(dInfo);
-        
+        if (gbr != null){
+            downloadInstance.setGbr(gbr);
+            downloadInstance.setDataverseRequestService(dvRequestService);
+            downloadInstance.setCommand(engineSvc);
+        }
         for (String key : uriInfo.getQueryParameters().keySet()) {
             String value = uriInfo.getQueryParameters().getFirst(key);
             
@@ -938,7 +955,6 @@ public class Access extends AbstractApiBean {
             }
         }
         
-        
         if (!restricted) {
             // And if they are not published, they can still be downloaded, if the user
             // has the permission to view unpublished versions! (this case will 
@@ -992,7 +1008,7 @@ public class Access extends AbstractApiBean {
                 logger.fine("calling apiTokenUser = findUserOrDie()...");
                 apiTokenUser = findUserOrDie();
             } catch (WrappedResponse wr) {
-                logger.fine("Message from findUserOrDie(): " + wr.getMessage());
+                logger.log(Level.FINE, "Message from findUserOrDie(): {0}", wr.getMessage());
             }
             
             if (apiTokenUser == null) {
@@ -1008,21 +1024,30 @@ public class Access extends AbstractApiBean {
             // If the file is not published, they can still download the file, if the user
             // has the permission to view unpublished versions:
             
-            if (permissionService.userOn(user, df.getOwner()).has(Permission.ViewUnpublishedDataset)) {
-                if (user != null) {
+            if ( user != null ) {
+                // used in JSF context
+                if (permissionService.requestOn(dvRequestService.getDataverseRequest(), df.getOwner()).has(Permission.ViewUnpublishedDataset)) {
                     // it's not unthinkable, that a null user (i.e., guest user) could be given
                     // the ViewUnpublished permission!
-                    logger.fine("Session-based auth: user " + user.getIdentifier() + " has access rights on the non-restricted, unpublished datafile.");
-                }
-                return true;
-            }
-            
-            if (apiTokenUser != null) {
-                if (permissionService.userOn(apiTokenUser, df.getOwner()).has(Permission.ViewUnpublishedDataset)) {
-                    logger.fine("Session-based auth: user " + apiTokenUser.getIdentifier() + " has access rights on the non-restricted, unpublished datafile.");
+                    logger.log(Level.FINE, "Session-based auth: user {0} has access rights on the non-restricted, unpublished datafile.", user.getIdentifier());
                     return true;
                 }
             }
+            
+            if (apiTokenUser != null) {
+                // used in an API context
+                if (permissionService.requestOn( createDataverseRequest(apiTokenUser), df.getOwner()).has(Permission.ViewUnpublishedDataset)) {
+                    logger.log(Level.FINE, "Session-based auth: user {0} has access rights on the non-restricted, unpublished datafile.", apiTokenUser.getIdentifier());
+                    return true;
+                }
+            }
+            
+            // last option - guest user in either contexts
+            // Guset user is impled by the code above.
+            if ( permissionService.requestOn(dvRequestService.getDataverseRequest(), df.getOwner()).has(Permission.ViewUnpublishedDataset) ) {
+                return true;
+            }
+                    
             
             // We don't want to return false just yet. 
             // If all else fails, we'll want to use the special WorldMapAuth 
@@ -1040,7 +1065,7 @@ public class Access extends AbstractApiBean {
             // User from the Session object, just like in the code fragment 
             // above. That's why it's not passed along as an argument.
                 hasAccessToRestrictedBySession = true; 
-            } else if (apiTokenUser != null && permissionService.userOn(apiTokenUser, df).has(Permission.DownloadFile)) {
+            } else if (apiTokenUser != null && permissionService.requestOn(createDataverseRequest(apiTokenUser), df).has(Permission.DownloadFile)) {
                 hasAccessToRestrictedByToken = true; 
             }
             
@@ -1048,33 +1073,34 @@ public class Access extends AbstractApiBean {
                 if (published) {
                     if (hasAccessToRestrictedBySession) {
                         if (user != null) {
-                            logger.fine("Session-based auth: user " + user.getIdentifier() + " is granted access to the restricted, published datafile.");
+                            logger.log(Level.FINE, "Session-based auth: user {0} is granted access to the restricted, published datafile.", user.getIdentifier());
                         } else {
                             logger.fine("Session-based auth: guest user is granted access to the restricted, published datafile.");
                         }
                     } else {
-                        logger.fine("Token-based auth: user " + apiTokenUser.getIdentifier() + " is granted access to the restricted, published datafile.");
+                        logger.log(Level.FINE, "Token-based auth: user {0} is granted access to the restricted, published datafile.", apiTokenUser.getIdentifier());
                     }
                     return true;
                 } else {
                     // if the file is NOT published, we will let them download the 
                     // file ONLY if they also have the permission to view 
-                    // unpublished verions:
+                    // unpublished versions:
                     // Note that the code below does not allow a case where it is the
                     // session user that has the permission on the file, and the API token 
                     // user with the ViewUnpublished permission, or vice versa!
                     if (hasAccessToRestrictedBySession) {
                         if (permissionService.on(df.getOwner()).has(Permission.ViewUnpublishedDataset)) {
                             if (user != null) {
-                                logger.fine("Session-based auth: user " + user.getIdentifier() + " is granted access to the restricted, unpublished datafile.");
+                                logger.log(Level.FINE, "Session-based auth: user {0} is granted access to the restricted, unpublished datafile.", user.getIdentifier());
                             } else {
                                 logger.fine("Session-based auth: guest user is granted access to the restricted, unpublished datafile.");
                             }
                             return true;
                         } 
                     } else {
-                        if (apiTokenUser != null && permissionService.userOn(apiTokenUser, df.getOwner()).has(Permission.ViewUnpublishedDataset)) {
-                            logger.fine("Token-based auth: user " + apiTokenUser.getIdentifier() + " is granted access to the restricted, unpublished datafile.");
+                        if (apiTokenUser != null && permissionService.requestOn(createDataverseRequest(apiTokenUser), df.getOwner()).has(Permission.ViewUnpublishedDataset)) {
+                            logger.log(Level.FINE, "Token-based auth: user {0} is granted access to the restricted, unpublished datafile.", apiTokenUser.getIdentifier());
+                            return true;
                         }
                     }
                 }
@@ -1111,7 +1137,7 @@ public class Access extends AbstractApiBean {
                 logger.fine("calling user = findUserOrDie()...");
                 user = findUserOrDie();
             } catch (WrappedResponse wr) {
-                logger.fine("Message from findUserOrDie(): " + wr.getMessage());
+                logger.log(Level.FINE, "Message from findUserOrDie(): {0}", wr.getMessage());
             }
             
             if (user == null) {
@@ -1119,34 +1145,34 @@ public class Access extends AbstractApiBean {
                 return false;
             } 
             
-            if (permissionService.userOn(user, df).has(Permission.DownloadFile)) { 
+        if (permissionService.requestOn(createDataverseRequest(user), df).has(Permission.DownloadFile)) { 
                 if (published) {
-                    logger.fine("API token-based auth: User " + user.getIdentifier() + " has rights to access the datafile.");
+                    logger.log(Level.FINE, "API token-based auth: User {0} has rights to access the datafile.", user.getIdentifier());
                     return true; 
                 } else {
                     // if the file is NOT published, we will let them download the 
                     // file ONLY if they also have the permission to view 
-                    // unpublished verions:
-                    if (permissionService.userOn(user, df.getOwner()).has(Permission.ViewUnpublishedDataset)) {
-                        logger.fine("API token-based auth: User " + user.getIdentifier() + " has rights to access the (unpublished) datafile.");
+                    // unpublished versions:
+                    if (permissionService.requestOn(createDataverseRequest(user), df.getOwner()).has(Permission.ViewUnpublishedDataset)) {
+                        logger.log(Level.FINE, "API token-based auth: User {0} has rights to access the (unpublished) datafile.", user.getIdentifier());
                         return true;
                     } else {
-                        logger.fine("API token-based auth: User " + user.getIdentifier() + " is not authorized to access the (unpublished) datafile.");
+                        logger.log(Level.FINE, "API token-based auth: User {0} is not authorized to access the (unpublished) datafile.", user.getIdentifier());
                     }
                 }
             } else {
-                logger.fine("API token-based auth: User " + user.getIdentifier() + " is not authorized to access the datafile.");
+                logger.log(Level.FINE, "API token-based auth: User {0} is not authorized to access the datafile.", user.getIdentifier());
             }
             
             return false;
         } 
         
         if (user != null) {
-            logger.fine("Session-based auth: user " + user.getIdentifier() + " has NO access rights on the requested datafile.");
+            logger.log(Level.FINE, "Session-based auth: user {0} has NO access rights on the requested datafile.", user.getIdentifier());
         } 
         
         if (apiTokenUser != null) {
-            logger.fine("Token-based auth: user " + apiTokenUser.getIdentifier() + " has NO access rights on the requested datafile.");
+            logger.log(Level.FINE, "Token-based auth: user {0} has NO access rights on the requested datafile.", apiTokenUser.getIdentifier());
         } 
         
         if (user == null && apiTokenUser == null) {
@@ -1154,7 +1180,6 @@ public class Access extends AbstractApiBean {
         }
         
         return false; 
-    }
-    
+    }   
             
 }

@@ -13,7 +13,7 @@ download.dataverse.file <- function(url) {
   # look up the id of the file. As of this writing the easiest way is via SWORD:
   # https://github.com/IQSS/dataverse/issues/1837#issuecomment-121736332
   #
-  # url.to.download = 'https://apitest.dataverse.org/api/v1/access/datafile/91'
+  # url.to.download = 'https://demo.dataverse.org/api/v1/access/datafile/91'
   url.to.download = url
   tsvfile = 'file.tsv'
   download.file(url = url.to.download, destfile =

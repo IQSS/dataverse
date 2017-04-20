@@ -9,15 +9,14 @@ Installation Guide
 Contents:
 
 .. toctree::
-   :titlesonly:
-   :maxdepth: 2
 
-  intro
-  prep
-  prerequisites
-  installation-main
-  config
-  administration
-  upgrading
-  r-rapache-tworavens
-  shibboleth
+   intro
+   prep
+   prerequisites
+   installation-main
+   config
+   administration
+   upgrading
+   r-rapache-tworavens
+   shibboleth
+   oauth2

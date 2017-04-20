@@ -12,6 +12,7 @@ import javax.ws.rs.core.Response;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.annotation.PostConstruct;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -19,7 +20,9 @@ import javax.json.JsonObject;
 import javax.json.JsonString;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.PathParam;
+
 /**
  *
  * @author michael
@@ -32,43 +35,76 @@ public class Groups extends AbstractApiBean {
     private IpGroupProvider ipGroupPrv;
     private ShibGroupProvider shibGroupPrv;
     
+    Pattern legalGroupName = Pattern.compile("^[-_a-zA-Z0-9]+$");
+    
     @PostConstruct
     void postConstruct() {
         ipGroupPrv = groupSvc.getIpGroupProvider();
         shibGroupPrv = groupSvc.getShibGroupProvider();
     }
     
+    /**
+     * Creates a new {@link IpGroup}. The name of the group is based on the 
+     * {@code alias:} field, but might be changed to ensure uniqueness.
+     * @param dto 
+     * @return Response describing the created group or the error that prevented
+     *         that group from being created.
+     */
     @POST
     @Path("ip")
-    public Response createIpGroups( JsonObject dto ){
+    public Response postIpGroup( JsonObject dto ){
         try {
-           IpGroup grp = new JsonParser(null,null,null).parseIpGroup(dto);
-            
-            if ( grp.getPersistedGroupAlias()== null ) {
-                return errorResponse(Response.Status.BAD_REQUEST, "Must provide valid group alias");
-            }
-            grp.setProvider( groupSvc.getIpGroupProvider() );
+           IpGroup grp = new JsonParser().parseIpGroup(dto);
+            grp.setGroupProvider( ipGroupPrv );
+            grp.setPersistedGroupAlias(
+                    ipGroupPrv.findAvailableName( 
+                            grp.getPersistedGroupAlias()==null ? "ipGroup" : grp.getPersistedGroupAlias()));
             
             grp = ipGroupPrv.store(grp);
-            return createdResponse("/groups/ip/" + grp.getPersistedGroupAlias(), json(grp) );
+            return created("/groups/ip/" + grp.getPersistedGroupAlias(), json(grp) );
         
         } catch ( Exception e ) {
             logger.log( Level.WARNING, "Error while storing a new IP group: " + e.getMessage(), e);
-            return errorResponse(Response.Status.INTERNAL_SERVER_ERROR, "Error: " + e.getMessage() );
+            return error(Response.Status.INTERNAL_SERVER_ERROR, "Error: " + e.getMessage() );
             
         }
     }
     
+    /**
+     * Creates or updates the {@link IpGroup} named {@code groupName}.
+     * @param groupName Name of the group.
+     * @param dto data of the group.
+     * @return Response describing the created group or the error that prevented
+     *         that group from being created.
+     */
+    @PUT
+    @Path("ip/{groupName}")
+    public Response putIpGroups( @PathParam("groupName") String groupName, JsonObject dto ){
+        try {
+            if ( groupName == null || groupName.trim().isEmpty() ) {
+                return badRequest("Group name cannot be empty");
+            }
+            if ( ! legalGroupName.matcher(groupName).matches() ) {
+                return badRequest("Group name can contain only letters, digits, and the chars '-' and '_'");
+            }
+            IpGroup grp = new JsonParser().parseIpGroup(dto);
+            grp.setGroupProvider( ipGroupPrv );
+            grp.setPersistedGroupAlias( groupName );
+            grp = ipGroupPrv.store(grp);
+            return created("/groups/ip/" + grp.getPersistedGroupAlias(), json(grp) );
+        
+        } catch ( Exception e ) {
+            logger.log( Level.WARNING, "Error while storing a new IP group: " + e.getMessage(), e);
+            return error(Response.Status.INTERNAL_SERVER_ERROR, "Error: " + e.getMessage() );
+            
+        }
+    }
     
     @GET
     @Path("ip")
     public Response listIpGroups() {
-         
-        JsonArrayBuilder arrBld = Json.createArrayBuilder();
-        for ( IpGroup g : ipGroupPrv.findGlobalGroups() ) {
-            arrBld.add( json(g) );
-        }
-        return okResponse( arrBld );
+        return ok( ipGroupPrv.findGlobalGroups()
+                             .stream().map(g->json(g)).collect(toJsonArray()) );
     }
     
     @GET
@@ -81,7 +117,7 @@ public class Groups extends AbstractApiBean {
             grp = ipGroupPrv.get(groupIdtf);
         }
         
-        return (grp == null) ? notFound( "Group " + groupIdtf + " not found") : okResponse(json(grp));
+        return (grp == null) ? notFound( "Group " + groupIdtf + " not found") : ok(json(grp));
     }
     
     @DELETE
@@ -98,9 +134,19 @@ public class Groups extends AbstractApiBean {
         
         try {
             ipGroupPrv.deleteGroup(grp);
-            return okResponse("Group " + grp.getAlias() + " deleted.");
-        } catch ( IllegalArgumentException ex ) {
-            return errorResponse(Response.Status.BAD_REQUEST, ex.getMessage());
+            return ok("Group " + grp.getAlias() + " deleted.");
+        } catch ( Exception topExp ) {
+            // get to the cause (unwraps EJB exception wrappers).
+            Throwable e = topExp;
+            while ( e.getCause() != null ) {
+                e = e.getCause();
+            }
+            
+            if ( e instanceof IllegalArgumentException ) {
+                return error(Response.Status.BAD_REQUEST, e.getMessage());
+            } else {
+                throw topExp;
+            }
         }
     }
     
@@ -111,7 +157,7 @@ public class Groups extends AbstractApiBean {
         for (ShibGroup g : shibGroupPrv.findGlobalGroups()) {
             arrBld.add(json(g));
         }
-        return okResponse(arrBld);
+        return ok(arrBld);
     }
 
     @POST
@@ -120,24 +166,24 @@ public class Groups extends AbstractApiBean {
         String expectedNameKey = "name";
         JsonString name = shibGroupInput.getJsonString(expectedNameKey);
         if (name == null) {
-            return errorResponse(Response.Status.BAD_REQUEST, "required field missing: " + expectedNameKey);
+            return error(Response.Status.BAD_REQUEST, "required field missing: " + expectedNameKey);
         }
         String expectedAttributeKey = "attribute";
         JsonString attribute = shibGroupInput.getJsonString(expectedAttributeKey);
         if (attribute == null) {
-            return errorResponse(Response.Status.BAD_REQUEST, "required field missing: " + expectedAttributeKey);
+            return error(Response.Status.BAD_REQUEST, "required field missing: " + expectedAttributeKey);
         }
         String expectedPatternKey = "pattern";
         JsonString pattern = shibGroupInput.getJsonString(expectedPatternKey);
         if (pattern == null) {
-            return errorResponse(Response.Status.BAD_REQUEST, "required field missing: " + expectedPatternKey);
+            return error(Response.Status.BAD_REQUEST, "required field missing: " + expectedPatternKey);
         }
         ShibGroup shibGroupToPersist = new ShibGroup(name.getString(), attribute.getString(), pattern.getString(), shibGroupPrv);
         ShibGroup persitedShibGroup = shibGroupPrv.persist(shibGroupToPersist);
         if (persitedShibGroup != null) {
-            return okResponse("Shibboleth group persisted: " + persitedShibGroup);
+            return ok("Shibboleth group persisted: " + persitedShibGroup);
         } else {
-            return errorResponse(Response.Status.BAD_REQUEST, "Could not persist Shibboleth group");
+            return error(Response.Status.BAD_REQUEST, "Could not persist Shibboleth group");
         }
     }
 
@@ -150,15 +196,15 @@ public class Groups extends AbstractApiBean {
             try {
                 deleted = shibGroupPrv.delete(doomed);
             } catch (Exception ex) {
-                return errorResponse(Response.Status.BAD_REQUEST, ex.getMessage());
+                return error(Response.Status.BAD_REQUEST, ex.getMessage());
             }
             if (deleted) {
-                return okResponse("Shibboleth group " + id + " deleted");
+                return ok("Shibboleth group " + id + " deleted");
             } else {
-                return errorResponse(Response.Status.BAD_REQUEST, "Could not delete Shibboleth group with an id of " + id);
+                return error(Response.Status.BAD_REQUEST, "Could not delete Shibboleth group with an id of " + id);
             }
         } else {
-            return errorResponse(Response.Status.BAD_REQUEST, "Could not find Shibboleth group with an id of " + id);
+            return error(Response.Status.BAD_REQUEST, "Could not find Shibboleth group with an id of " + id);
         }
     }
     

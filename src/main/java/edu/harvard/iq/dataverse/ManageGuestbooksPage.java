@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -160,7 +155,7 @@ public class ManageGuestbooksPage implements java.io.Serializable {
     private String convertResponsesToCommaDelimited(List<Object[]> guestbookResponses) {
 
         StringBuilder sb = new StringBuilder();
-        sb.append("Guestbook, Dataset, Date, Type, File Name, User Name, Email, Institution, Position, Custom Questions");
+        sb.append("Guestbook, Dataset, Date, Type, File Name,  File id, User Name, Email, Institution, Position, Custom Questions");
         sb.append(END_OF_LINE);
         for (Object[] array : guestbookResponses) {
             sb.append(array[0]);
@@ -173,15 +168,17 @@ public class ManageGuestbooksPage implements java.io.Serializable {
             sb.append(SEPARATOR);
             sb.append(array[4]);
             sb.append(SEPARATOR);
-            sb.append(array[5] == null ? "" : array[5]);
+            sb.append(array[5]);
             sb.append(SEPARATOR);
             sb.append(array[6] == null ? "" : array[6]);
             sb.append(SEPARATOR);
             sb.append(array[7] == null ? "" : array[7]);
             sb.append(SEPARATOR);
             sb.append(array[8] == null ? "" : array[8]);
-            if(array[9] != null){
-                List <Object[]> responses = (List<Object[]>) array[9];
+            sb.append(SEPARATOR);
+            sb.append(array[9] == null ? "" : array[9]);
+            if(array[10] != null){
+                List <Object[]> responses = (List<Object[]>) array[10];
                 for (Object[] response: responses){
                     sb.append(SEPARATOR);
                     sb.append(response[0]);

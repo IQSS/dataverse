@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
@@ -8,7 +9,6 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServi
 import edu.harvard.iq.dataverse.authorization.providers.builtin.PasswordEncryption;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.logging.Level;
@@ -24,8 +24,9 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.jsonForAuthUser;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import java.util.Date;
 
 /**
  * REST API bean for managing {@link BuiltinUser}s.
@@ -68,7 +69,7 @@ public class BuiltinUsers extends AbstractApiBean {
         
         ApiToken t = authSvc.findApiTokenByUser(authUser);
         
-        return (t != null ) ? okResponse(t.getTokenString()) : notFound("User " + username + " does not have an API token");
+        return (t != null ) ? ok(t.getTokenString()) : notFound("User " + username + " does not have an API token");
     }
     
     /**
@@ -97,7 +98,7 @@ public class BuiltinUsers extends AbstractApiBean {
         String expectedKey = settingsSvc.get(API_KEY_IN_SETTINGS);
         
         if (expectedKey == null) {
-            return errorResponse(Status.SERVICE_UNAVAILABLE, "Dataverse config issue: No API key defined for built in user management");
+            return error(Status.SERVICE_UNAVAILABLE, "Dataverse config issue: No API key defined for built in user management");
         }
         if (!expectedKey.equals(key)) {
             return badApiKey(key);
@@ -114,7 +115,7 @@ public class BuiltinUsers extends AbstractApiBean {
             // Make sure the identifier is unique
             if ( (builtinUserSvc.findByUserName(user.getUserName()) != null)
                     || ( authSvc.identifierExists(user.getUserName())) ) {
-                return errorResponse(Status.BAD_REQUEST, "username '" + user.getUserName() + "' already exists");
+                return error(Status.BAD_REQUEST, "username '" + user.getUserName() + "' already exists");
             }
             user = builtinUserSvc.save(user);
 
@@ -123,6 +124,15 @@ public class BuiltinUsers extends AbstractApiBean {
                     user.getUserName(), 
                     user.getDisplayInfo(),
                     false);
+
+            /**
+             * @todo Move this to
+             * AuthenticationServiceBean.createAuthenticatedUser
+             */
+            userNotificationSvc.sendNotification(au,
+                    new Timestamp(new Date().getTime()),
+                    UserNotification.Type.CREATEACC, null);
+
             ApiToken token = new ApiToken();
 
             token.setTokenString(java.util.UUID.randomUUID().toString());
@@ -140,23 +150,23 @@ public class BuiltinUsers extends AbstractApiBean {
             resp.add("apiToken", token.getTokenString());
             
             alr.setInfo("builtinUser:" + user.getUserName() + " authenticatedUser:" + au.getIdentifier() );
-            return okResponse(resp);
+            return ok(resp);
             
         } catch ( EJBException ejbx ) {
             alr.setActionResult(ActionLogRecord.Result.InternalError);
             alr.setInfo( alr.getInfo() + "// " + ejbx.getMessage());
             if ( ejbx.getCausedByException() instanceof IllegalArgumentException ) {
-                return errorResponse(Status.BAD_REQUEST, "Bad request: can't save user. " + ejbx.getCausedByException().getMessage());
+                return error(Status.BAD_REQUEST, "Bad request: can't save user. " + ejbx.getCausedByException().getMessage());
             } else {
                 logger.log(Level.WARNING, "Error saving user: ", ejbx);
-                return errorResponse(Status.INTERNAL_SERVER_ERROR, "Can't save user: " + ejbx.getMessage());
+                return error(Status.INTERNAL_SERVER_ERROR, "Can't save user: " + ejbx.getMessage());
             }
             
         } catch (Exception e) {
             logger.log(Level.WARNING, "Error saving user", e);
             alr.setActionResult(ActionLogRecord.Result.InternalError);
             alr.setInfo( alr.getInfo() + "// " + e.getMessage());
-            return errorResponse(Status.INTERNAL_SERVER_ERROR, "Can't save user: " + e.getMessage());
+            return error(Status.INTERNAL_SERVER_ERROR, "Can't save user: " + e.getMessage());
         } finally {
             actionLogSvc.log(alr);
         }

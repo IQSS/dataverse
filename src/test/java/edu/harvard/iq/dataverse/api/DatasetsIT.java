@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
 import com.jayway.restassured.RestAssured;
-import static com.jayway.restassured.RestAssured.given;
 import com.jayway.restassured.response.Response;
 import java.util.logging.Logger;
 import org.junit.BeforeClass;
@@ -17,14 +16,20 @@ import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static com.jayway.restassured.path.json.JsonPath.with;
+import edu.harvard.iq.dataverse.DataFile;
 import static edu.harvard.iq.dataverse.api.UtilIT.API_TOKEN_HTTP_HEADER;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.UUID;
-import static junit.framework.Assert.assertEquals;
-import org.hamcrest.CoreMatchers;
+import static javax.ws.rs.core.Response.Status.NO_CONTENT;
+import org.apache.commons.lang.StringUtils;
 import static org.hamcrest.CoreMatchers.equalTo;
+import org.junit.Assert;
+import static com.jayway.restassured.RestAssured.given;
+import static com.jayway.restassured.path.json.JsonPath.with;
+import static junit.framework.Assert.assertEquals;
+import static org.hamcrest.CoreMatchers.nullValue;
 
 public class DatasetsIT {
 
@@ -33,6 +38,10 @@ public class DatasetsIT {
     @BeforeClass
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
+
+        Response remove = UtilIT.deleteSetting(SettingsServiceBean.Key.IdentifierGenerationStyle);
+        remove.then().assertThat()
+                .statusCode(200);
     }
 
     @Test
@@ -50,6 +59,14 @@ public class DatasetsIT {
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
         createDatasetResponse.prettyPrint();
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+
+        Response datasetAsJson = UtilIT.nativeGet(datasetId, apiToken);
+        datasetAsJson.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        String identifier = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.identifier");
+        System.out.println("identifier: " + identifier);
+        assertEquals(6, identifier.length());
 
         Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
         deleteDatasetResponse.prettyPrint();
@@ -87,10 +104,30 @@ public class DatasetsIT {
         createDatasetResponse.prettyPrint();
         Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
 
+        Response getDatasetJsonBeforePublishing = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetJsonBeforePublishing.prettyPrint();
+        String protocol = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.protocol");
+        String authority = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.authority");
+        String identifier = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.identifier");
+        String datasetPersistentId = protocol + ":" + authority + "/" + identifier;
+
         Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
         assertEquals(200, publishDataverse.getStatusCode());
-        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        Response attemptToPublishZeroDotOne = UtilIT.publishDatasetViaNativeApiDeprecated(datasetPersistentId, "minor", apiToken);
+        attemptToPublishZeroDotOne.prettyPrint();
+        attemptToPublishZeroDotOne.then().assertThat()
+                .body("message", equalTo("Cannot publish as minor version. Re-try as major release."))
+                .statusCode(403);
+
+        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
         assertEquals(200, publishDataset.getStatusCode());
+
+        Response getDatasetJsonAfterPublishing = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetJsonAfterPublishing.prettyPrint();
+        getDatasetJsonAfterPublishing.then().assertThat()
+                .body("data.latestVersion.versionNumber", equalTo(1))
+                .body("data.latestVersion.versionMinorNumber", equalTo(0))
+                .statusCode(OK.getStatusCode());
 
         Response deleteDatasetResponse = UtilIT.destroyDataset(datasetId, apiToken);
         deleteDatasetResponse.prettyPrint();
@@ -103,6 +140,52 @@ public class DatasetsIT {
         Response deleteUserResponse = UtilIT.deleteUser(username);
         deleteUserResponse.prettyPrint();
         assertEquals(200, deleteUserResponse.getStatusCode());
+
+    }
+
+    @Test
+    public void testSequentialNumberAsIdentifierGenerationStyle() {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response setSequentialNumberAsIdentifierGenerationStyle = UtilIT.setSetting(SettingsServiceBean.Key.IdentifierGenerationStyle, "sequentialNumber");
+        setSequentialNumberAsIdentifierGenerationStyle.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+
+        Response datasetAsJson = UtilIT.nativeGet(datasetId, apiToken);
+        datasetAsJson.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        String identifier = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.identifier");
+        System.out.println("identifier: " + identifier);
+        Assert.assertTrue(StringUtils.isNumeric(identifier));
+
+        Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
+        deleteDatasetResponse.prettyPrint();
+        assertEquals(200, deleteDatasetResponse.getStatusCode());
+
+        Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        deleteDataverseResponse.prettyPrint();
+        assertEquals(200, deleteDataverseResponse.getStatusCode());
+
+        Response deleteUserResponse = UtilIT.deleteUser(username);
+        deleteUserResponse.prettyPrint();
+        assertEquals(200, deleteUserResponse.getStatusCode());
+
+        Response remove = UtilIT.deleteSetting(SettingsServiceBean.Key.IdentifierGenerationStyle);
+        remove.then().assertThat()
+                .statusCode(200);
 
     }
 
@@ -223,6 +306,19 @@ public class DatasetsIT {
 
         assertEquals(tokenForPrivateUrlUser, urlWithToken.substring(urlWithToken.length() - UUID.randomUUID().toString().length()));
 
+        /**
+         * If you're getting a crazy error like this...
+         *
+         * javax.net.ssl.SSLHandshakeException:
+         * sun.security.validator.ValidatorException: PKIX path building failed:
+         * sun.security.provider.certpath.SunCertPathBuilderException: unable to
+         * find valid certification path to requested target
+         *
+         * ... you might do well to set "siteUrl" to localhost:8080 like this:
+         *
+         * asadmin create-jvm-options
+         * "-Ddataverse.siteUrl=http\://localhost\:8080"
+         */
         Response getDatasetAsUserWhoClicksPrivateUrl = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get(urlWithToken);
@@ -303,7 +399,7 @@ public class DatasetsIT {
 
         Response tryToCreatePrivateUrlWhenExisting = UtilIT.privateUrlCreate(datasetId, apiToken);
         tryToCreatePrivateUrlWhenExisting.prettyPrint();
-        assertEquals(BAD_REQUEST.getStatusCode(), tryToCreatePrivateUrlWhenExisting.getStatusCode());
+        assertEquals(FORBIDDEN.getStatusCode(), tryToCreatePrivateUrlWhenExisting.getStatusCode());
 
         Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
         assertEquals(OK.getStatusCode(), publishDataverse.getStatusCode());
@@ -322,7 +418,7 @@ public class DatasetsIT {
 
         Response tryToCreatePrivateUrlToPublishedVersion = UtilIT.privateUrlCreate(datasetId, apiToken);
         tryToCreatePrivateUrlToPublishedVersion.prettyPrint();
-        assertEquals(BAD_REQUEST.getStatusCode(), tryToCreatePrivateUrlToPublishedVersion.getStatusCode());
+        assertEquals(FORBIDDEN.getStatusCode(), tryToCreatePrivateUrlToPublishedVersion.getStatusCode());
 
         String newTitle = "I am changing the title";
         Response updatedMetadataResponse = UtilIT.updateDatasetTitleViaSword(dataset1PersistentId, newTitle, apiToken);
@@ -387,6 +483,79 @@ public class DatasetsIT {
         /**
          * @todo Should the Search API work with the Private URL token?
          */
+    }
+
+    @Test
+    public void testFileChecksum() {
+
+        Response createUser = UtilIT.createRandomUser();
+//        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        System.out.println("dataset id: " + datasetId);
+
+        Response getDatasetJsonNoFiles = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetJsonNoFiles.prettyPrint();
+        String protocol1 = JsonPath.from(getDatasetJsonNoFiles.getBody().asString()).getString("data.protocol");
+        String authority1 = JsonPath.from(getDatasetJsonNoFiles.getBody().asString()).getString("data.authority");
+        String identifier1 = JsonPath.from(getDatasetJsonNoFiles.getBody().asString()).getString("data.identifier");
+        String dataset1PersistentId = protocol1 + ":" + authority1 + "/" + identifier1;
+
+        Response makeSureSettingIsDefault = UtilIT.deleteSetting(SettingsServiceBean.Key.FileFixityChecksumAlgorithm);
+        makeSureSettingIsDefault.prettyPrint();
+        makeSureSettingIsDefault.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", equalTo("Setting :FileFixityChecksumAlgorithm deleted."));
+        Response getDefaultSetting = UtilIT.getSetting(SettingsServiceBean.Key.FileFixityChecksumAlgorithm);
+        getDefaultSetting.prettyPrint();
+        getDefaultSetting.then().assertThat()
+                .body("message", equalTo("Setting :FileFixityChecksumAlgorithm not found"));
+
+        Response uploadMd5File = UtilIT.uploadRandomFile(dataset1PersistentId, apiToken);
+        uploadMd5File.prettyPrint();
+        assertEquals(CREATED.getStatusCode(), uploadMd5File.getStatusCode());
+        Response getDatasetJsonAfterMd5File = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetJsonAfterMd5File.prettyPrint();
+        getDatasetJsonAfterMd5File.then().assertThat()
+                .body("data.latestVersion.files[0].dataFile.md5", equalTo("0386269a5acb2c57b4eade587ff4db64"))
+                .body("data.latestVersion.files[0].dataFile.checksum.type", equalTo("MD5"))
+                .body("data.latestVersion.files[0].dataFile.checksum.value", equalTo("0386269a5acb2c57b4eade587ff4db64"));
+
+        int fileId = JsonPath.from(getDatasetJsonAfterMd5File.getBody().asString()).getInt("data.latestVersion.files[0].dataFile.id");
+        Response deleteFile = UtilIT.deleteFile(fileId, apiToken);
+        deleteFile.prettyPrint();
+        deleteFile.then().assertThat()
+                .statusCode(NO_CONTENT.getStatusCode());
+
+        Response setToSha1 = UtilIT.setSetting(SettingsServiceBean.Key.FileFixityChecksumAlgorithm, DataFile.ChecksumType.SHA1.toString());
+        setToSha1.prettyPrint();
+        setToSha1.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        Response getNonDefaultSetting = UtilIT.getSetting(SettingsServiceBean.Key.FileFixityChecksumAlgorithm);
+        getNonDefaultSetting.prettyPrint();
+        getNonDefaultSetting.then().assertThat()
+                .body("data.message", equalTo("SHA-1"))
+                .statusCode(OK.getStatusCode());
+
+        Response uploadSha1File = UtilIT.uploadRandomFile(dataset1PersistentId, apiToken);
+        uploadSha1File.prettyPrint();
+        assertEquals(CREATED.getStatusCode(), uploadSha1File.getStatusCode());
+        Response getDatasetJsonAfterSha1File = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetJsonAfterSha1File.prettyPrint();
+        getDatasetJsonAfterSha1File.then().assertThat()
+                .body("data.latestVersion.files[0].dataFile.md5", nullValue())
+                .body("data.latestVersion.files[0].dataFile.checksum.type", equalTo("SHA-1"))
+                .body("data.latestVersion.files[0].dataFile.checksum.value", equalTo("17ea9225aa0e96ae6ff61c256237d6add6c197d1"))
+                .statusCode(OK.getStatusCode());
+
     }
 
 }

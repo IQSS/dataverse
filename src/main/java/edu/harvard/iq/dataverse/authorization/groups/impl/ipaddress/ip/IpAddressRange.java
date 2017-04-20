@@ -63,6 +63,10 @@ public abstract class IpAddressRange {
                 && Objects.equals(this.getTop(), other.getTop());
     }
 
+    public boolean isSingleAddress() {
+        return getTop().equals(getBottom());
+    }
+    
     @Override
     public String toString() {
         return "[IpAddressRange " + getTop() + "-" + getBottom() + ']';
