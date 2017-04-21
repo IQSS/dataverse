@@ -222,11 +222,8 @@ public class SettingsServiceBean {
         Default is false;
         */
         TwoRavensTabularView,
-        /**
-         * Whether to save data files locally in files or store them in swift
-         * storage, default is file.
-         */
-        Driver,
+                
+
         /**
          The message added to a popup upon dataset publish
          * 
@@ -239,7 +236,12 @@ public class SettingsServiceBean {
         /*
         Whether Harvesting (OAI) service is enabled
         */
-        OAIServerEnabled;
+        OAIServerEnabled,
+        
+        /**
+        * Whether Shibboleth passive authentication mode is enabled
+        */
+       ShibPassiveLoginEnabled;
         
         @Override
         public String toString() {
