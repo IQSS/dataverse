@@ -72,6 +72,8 @@ body .ui-widget {font-size: inherit;}
 .icon-inline-action {margin-left:.3em;}
 .icon-inline-action:first-of-type {margin-left:1em;}
 
+.btn-group .text-button {display:inline-block;padding:6px 12px;}
+
 .text-icon-inline {font-size:1.3em;line-height:1.1em;margin-right:4px;}
 
 #messagePanel div.messagePanel {margin-top:1em;}

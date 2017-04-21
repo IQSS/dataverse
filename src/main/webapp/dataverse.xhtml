@@ -354,7 +354,7 @@
                                                      or permissionsWrapper.canIssuePublishDataverseCommand(DataversePage.dataverse))}">
                                     <!-- Edit Button -->
                                     <div class="btn-group pull-right" jsf:rendered="#{permissionsWrapper.canIssueUpdateDataverseCommand(DataversePage.dataverse)}">
-                                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                        <button type="button" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown">
                                             <span class="glyphicon glyphicon-pencil"/> #{bundle['dataverse.edit']} <span class="caret"></span>
                                         </button>
                                         <ul class="dropdown-menu pull-right text-left" role="menu">
@@ -429,11 +429,11 @@
                                     <!-- END: Edit Button -->
                                     <!-- Publish Button -->
                                     <ui:fragment rendered="#{permissionsWrapper.canIssuePublishDataverseCommand(DataversePage.dataverse)}">
-                                        <button type="button" class="btn btn-default pull-right" onclick="PF('confirmation').show()"
+                                        <button type="button" class="btn btn-default btn-access pull-right" onclick="PF('confirmation').show()"
                                                 jsf:rendered="#{!DataversePage.dataverse.released and (empty DataversePage.dataverse.owner or DataversePage.dataverse.owner.released)}">
                                             <span class="glyphicon glyphicon-globe"/> #{bundle['dataverse.publish.btn']}
                                         </button>
-                                        <button type="button" class="btn btn-default pull-right" onclick="PF('mayNotRelease').show()"
+                                        <button type="button" class="btn btn-default btn-access pull-right" onclick="PF('mayNotRelease').show()"
                                                 jsf:rendered="#{!DataversePage.dataverse.released and (!empty DataversePage.dataverse.owner and !DataversePage.dataverse.owner.released)}">
                                             <span class="glyphicon glyphicon-globe"/> #{bundle['dataverse.publish.btn']}
                                         </button>
@@ -444,20 +444,20 @@
                             <!-- END: Edit/Publish Button Group -->
                             <!-- Email/Link/Share Button Group -->
                             <div class="btn-group pull-right" role="group">
-                                <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip" title="#{bundle['dataverse.contact']}"
+                                <p:commandLink type="button" styleClass="text-button bootstrap-button-tooltip" title="#{bundle['dataverse.contact']}"
                                                update=":contactDialog" oncomplete="PF('contactForm').show()" actionListener="#{sendFeedbackDialog.initUserInput}">   
                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>                                     
                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
                                     <f:param name="DO_VALIDATION" value="false"/>   
                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{DataversePage.dataverse}"/>
-                                        <span class="glyphicon glyphicon-envelope no-text"/>
+                                        <span class="glyphicon glyphicon-envelope"/> Contact
                                 </p:commandLink>
                                 <div class="btn-group" jsf:rendered="#{dataverseSession.user.superuser and (SearchIncludeFragment.mode == 'search' or DataversePage.dataverse.owner != null)}">
-                                    <button type="button" class="btn btn-default dropdown-toggle bootstrap-button-tooltip" data-toggle="dropdown" aria-expanded="false"
+                                    <a href="#" class="text-button dropdown-toggle bootstrap-button-tooltip" data-toggle="dropdown" aria-expanded="false"
                                             title="#{bundle['dataverse.link.btn.tip']}">
-                                        <span class="glyphicon glyphicon-link no-text"/> <span class="caret"></span>
-                                    </button>
+                                        <span class="glyphicon glyphicon-link"/> Link <span class="caret"></span>
+                                    </a>
                                     <ul class="dropdown-menu pull-right text-left" role="menu">
                                         <li class="#{DataversePage.dataverse.owner != null ? '' : 'disabled'}">
                                             <p:commandLink action="#{DataversePage.setupLinkingPopup('link')}"                                                          
@@ -477,10 +477,10 @@
                                         </li>
                                     </ul>
                                 </div>
-                                <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
+                                <p:commandLink type="button" styleClass="text-button bootstrap-button-tooltip"
                                    title="#{bundle['dataverse.share.dataverseShare']}"
                                    oncomplete="PF('shareDialog').show();sharrre();">
-                                    <span class="glyphicon glyphicon-share no-text"/>
+                                    <span class="glyphicon glyphicon-share"/> Share
                                 </p:commandLink>
                             </div>
                             <p:dialog id="shareDialog" header="#{bundle['dataverse.share.dataverseShare']}" widgetVar="shareDialog" modal="true">
