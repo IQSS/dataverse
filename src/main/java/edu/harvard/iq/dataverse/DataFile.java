@@ -568,7 +568,7 @@ public class DataFile extends DvObject implements Comparable {
     }
 
     public DataFileIO getAccessObject() throws IOException {
-        DataFileIO dataAccess =  DataAccess.getDataFileIO(this);
+        DataFileIO dataAccess =  DataAccess.createDataAccessObject(this);
         
         if (dataAccess == null) {
             throw new IOException("Failed to create access object for datafile.");
