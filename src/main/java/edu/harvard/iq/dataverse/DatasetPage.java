@@ -1303,6 +1303,7 @@ public class DatasetPage implements java.io.Serializable {
         for (FileMetadata fmd : selectedFiles){
             if(worldMapPermissionHelper.hasMapLayerMetadata(fmd)){
                 setSelectedFilesHasMapLayer(true);
+                break; //only need one for warning message
             }
         }
     }
