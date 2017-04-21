@@ -6,6 +6,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean.RetrieveDatasetVersionResponse;
+import edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.datasetutility.TwoRavensHelper;
@@ -616,7 +617,20 @@ public class FilePage implements java.io.Serializable {
     }
 
     public String getPublicDownloadUrl() {
-        return FileUtil.getPublicDownloadUrl(systemConfig.getDataverseSiteUrl(), fileId);
+        if (System.getProperty("dataverse.files.storage-driver-id").equals("swift")) {
+            String fileDownloadUrl = null;
+            try {
+                SwiftAccessIO swiftIO = (SwiftAccessIO) getFile().getAccessObject();
+                swiftIO.open();
+                fileDownloadUrl = swiftIO.getRemoteUrl();
+                logger.info("Swift url: " + fileDownloadUrl);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return fileDownloadUrl;
+        } else {
+            return FileUtil.getPublicDownloadUrl(systemConfig.getDataverseSiteUrl(), fileId);
+        }
     }
 
 }

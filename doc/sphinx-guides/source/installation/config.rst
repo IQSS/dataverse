@@ -149,6 +149,29 @@ Enabling a second authentication provider will result in the Log In page showing
 - ``:AllowSignUp`` is set to "false" per the :doc:`config` section to prevent users from creating local accounts via the web interface. Please note that local accounts can also be created via API, and the way to prevent this is to block the ``builtin-users`` endpoint or scramble (or remove) the ``BuiltinUsers.KEY`` database setting per the :doc:`config` section. 
 - The "builtin" authentication provider has been disabled. Note that disabling the builting auth provider means that the API endpoint for converting an account from a remote auth provider will not work. This is the main reason why https://github.com/IQSS/dataverse/issues/2974 is still open. Converting directly from one remote authentication provider to another (i.e. from GitHub to Google) is not supported. Conversion from remote is always to builtin. Then the user initiates a conversion from builtin to remote. Note that longer term, the plan is to permit multiple login options to the same Dataverse account per https://github.com/IQSS/dataverse/issues/3487 (so all this talk of conversion will be moot) but for now users can only use a single login option, as explained in the :doc:`/user/account` section of the User Guide. In short, "remote only" might work for you if you only plan to use a single remote authentication provider such that no conversion between remote authentication providers will be necessary.
 
+Swift Installation
+------------------
+
+On every generic Dataverse installation, datafiles are stored in local storage. You can opt for a experimental dataverse installation with a Swift Object Storage backend instead. Each dataset that you create is saved as a container. Each datafile is saved as a file within the container.
+
+In order to configure a Swift installation, there are two steps you need to complete before running the installer:
+
+First, you need to add a file called swift.properties in ``/glassfish4/glassfish/domains/domain1/config``. It needs to be configured as follows:
+
+.. code-block:: none
+  swift.default.endpoint=endpoint1
+  swift.auth_url.endpoint1=your-auth-url
+  swift.tenant.endpoint1=your-tenant-name
+  swift.username.endpoint1=your-username
+  swift.password.endpoint1=your-password
+  swift.auth_type.endpoint1=your-authentication-type
+  swift.swift_endpoint.endpoint1=your-swift-endpoint
+
+where authentication type can either be "keystone" (without the quotes) or it will assumed to be basic. Additionally, authentication url should be your keystone authentication url which includes the tokens. For example, https://dataverse.org:35357/v2.0/tokens.  
+
+Second, you need to update the JVM option ``dataverse.files.storage-driver-id``. You can do this by running the delete command ``./asadmin $ASADMIN_OPTS delete-jvm-options "\-Ddataverse.files.storage-driver-id=file"`` and then the create command ``./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.storage-driver-id=swift"``. 
+
+
 JVM Options
 -----------
 
@@ -187,6 +210,11 @@ dataverse.files.directory
 +++++++++++++++++++++++++
 
 This is how you configure the path to which files uploaded by users are stored.
+
+dataverse.files.storage-driver-id
++++++++++++++++++++++++++++++++++
+
+Initialized to file, this is what you would change if you were interested in a Swift backend for your installation. See above in the Swift Installation section.
 
 dataverse.auth.password-reset-timeout-in-minutes
 ++++++++++++++++++++++++++++++++++++++++++++++++
