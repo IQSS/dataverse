@@ -152,24 +152,31 @@ Enabling a second authentication provider will result in the Log In page showing
 Swift Installation
 ------------------
 
-On every generic Dataverse installation, datafiles are stored in local storage. You can opt for a experimental dataverse installation with a Swift Object Storage backend instead. Each dataset that you create is saved as a container. Each datafile is saved as a file within the container.
+By default, a Dataverse installation stores data files in local storage. You can opt for a experimental setup with a Swift Object Storage backend instead. Each dataset that you create is saved as a container. Each datafile is saved as a file within the container.
 
 In order to configure a Swift installation, there are two steps you need to complete before running the installer:
 
-First, you need to add a file called swift.properties in ``/glassfish4/glassfish/domains/domain1/config``. It needs to be configured as follows:
+First, create a file named "swift.properties" in to the ``/glassfish4/glassfish/domains/domain1/config`` directory, configured as follows:
 
 .. code-block:: none
-  swift.default.endpoint=endpoint1
-  swift.auth_url.endpoint1=your-auth-url
-  swift.tenant.endpoint1=your-tenant-name
-  swift.username.endpoint1=your-username
-  swift.password.endpoint1=your-password
-  swift.auth_type.endpoint1=your-authentication-type
-  swift.swift_endpoint.endpoint1=your-swift-endpoint
 
-where authentication type can either be "keystone" (without the quotes) or it will assumed to be basic. Additionally, authentication url should be your keystone authentication url which includes the tokens. For example, https://dataverse.org:35357/v2.0/tokens.  
+    swift.default.endpoint=endpoint1
+    swift.auth_url.endpoint1=your-auth-url
+    swift.tenant.endpoint1=your-tenant-name
+    swift.username.endpoint1=your-username
+    swift.password.endpoint1=your-password
+    swift.auth_type.endpoint1=your-authentication-type
+    swift.swift_endpoint.endpoint1=your-swift-endpoint
 
-Second, you need to update the JVM option ``dataverse.files.storage-driver-id``. You can do this by running the delete command ``./asadmin $ASADMIN_OPTS delete-jvm-options "\-Ddataverse.files.storage-driver-id=file"`` and then the create command ``./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.storage-driver-id=swift"``. 
+The authentication type can either be ``keystone`` or it will assumed to be basic. Additionally, authentication URL should be your keystone authentication URL which includes the tokens (e.g. ``https://dataverse.org:35357/v2.0/tokens``).
+
+Second, update the JVM option ``dataverse.files.storage-driver-id`` by running the delete command:
+
+``./asadmin $ASADMIN_OPTS delete-jvm-options "\-Ddataverse.files.storage-driver-id=file"``
+
+Then run the create command:
+
+``./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.storage-driver-id=swift"``
 
 
 JVM Options
