@@ -120,6 +120,8 @@ public abstract class DataFileIO {
     private String varHeader;
     private String errorMessage;
 
+    //private String swiftContainerName;
+
     private Boolean isLocalFile = false;
     private Boolean isRemoteAccess = false;
     private Boolean isHttpAccess = false;
@@ -271,6 +273,10 @@ public abstract class DataFileIO {
         return remoteUrl;
     }
 
+    // public String getSwiftContainerName(){
+    //     return swiftContainerName;
+    // }
+
     public GetMethod getHTTPMethod() {
         return method;
     }
@@ -355,6 +361,10 @@ public abstract class DataFileIO {
     public void setRemoteUrl(String u) {
         remoteUrl = u;
     }
+
+    // public void setSwiftContainerName(String u){
+    //     swiftContainerName = u;
+    // }
 
     public void setHTTPMethod(GetMethod hm) {
         method = hm;
