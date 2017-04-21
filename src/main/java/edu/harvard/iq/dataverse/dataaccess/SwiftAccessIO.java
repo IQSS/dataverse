@@ -313,7 +313,14 @@ public class SwiftAccessIO extends DataFileIO {
         if (!dataContainer.exists()) {
             if (writeAccess) {
                 dataContainer.create();
-                //dataContainer.makePublic();
+                try {
+                    dataContainer.makePublic();
+                }
+                catch (Exception ex) {
+                    ex.printStackTrace();
+                    throw new IOException("Failed to make container public");
+                }
+
             } else {
                 // This is a fatal condition - it has to exist, if we were to 
                 // read an existing object!
@@ -322,6 +329,7 @@ public class SwiftAccessIO extends DataFileIO {
         }
 
         StoredObject fileObject = dataContainer.getObject(swiftFileName);
+        dataContainer.makePublic(); //set public
         //file download url for public files
         DataAccess.swiftFileUri = DataAccess.getSwiftFileURI(fileObject);
         setRemoteUrl(DataAccess.getSwiftFileURI(fileObject));
