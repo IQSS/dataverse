@@ -4,8 +4,11 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileCategory;
 import edu.harvard.iq.dataverse.DataFileTag;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetField;
+import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
@@ -15,9 +18,9 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import org.junit.Test;
 
 public class JsonPrinterTest {
 
@@ -86,6 +89,23 @@ public class JsonPrinterTest {
         assertEquals("UNKNOWN", jsonObject.getJsonObject("dataFile").getString("originalFormatLabel"));
         assertEquals(-1, jsonObject.getJsonObject("dataFile").getInt("rootDataFileId"));
         assertEquals("Survey", jsonObject.getJsonObject("dataFile").getJsonArray("tabularTags").getString(0));
+    }
+
+    @Test
+    public void testDatasetContact() {
+        MetadataBlock block = new MetadataBlock();
+        List<DatasetField> fields = new ArrayList<>();
+        DatasetField datasetContactField = new DatasetField();
+        DatasetFieldType datasetContactFieldType = new DatasetFieldType("datasetContact", DatasetFieldType.FieldType.TEXT, true);
+        datasetContactField.setDatasetFieldType(datasetContactFieldType);
+        datasetContactField.setSingleValue("foo@bar.com");
+        fields.add(datasetContactField);
+        JsonObjectBuilder job = JsonPrinter.json(block, fields);
+        assertNotNull(job);
+        JsonObject jsonObject = job.build();
+        System.out.println("json: " + jsonObject);
+        System.out.println("json: " + JsonUtil.prettyPrint(jsonObject.toString()));
+        assertEquals("foo@bar.com", jsonObject.getJsonArray("fields").getJsonObject(0).getJsonArray("value").getString(0));
     }
 
 }
