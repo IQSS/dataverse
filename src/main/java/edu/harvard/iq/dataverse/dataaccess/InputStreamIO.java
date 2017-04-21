@@ -12,6 +12,7 @@ import java.nio.channels.Channel;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.logging.Logger;
 
 /**
@@ -52,6 +53,11 @@ public class InputStreamIO extends DataFileIO {
     }
     
     @Override
+    public void saveInputStream(InputStream inputStream) throws IOException {
+        throw new UnsupportedDataAccessOperationException("InputStreamIO: this method is not supported in this DataAccess driver.");
+    }
+    
+    @Override
     public void delete() throws IOException {
         throw new UnsupportedDataAccessOperationException("InputStreamIO: this method is not supported in this DataAccess driver.");
     }
@@ -86,6 +92,28 @@ public class InputStreamIO extends DataFileIO {
     }
     
     @Override
+    public void saveInputStreamAsAux(InputStream inputStream, String auxItemTag) throws IOException {
+        throw new UnsupportedDataAccessOperationException("InputStreamIO: this method is not supported in this DataAccess driver.");
+    }
+    
+    @Override
+    public List<String>listAuxObjects() throws IOException {
+        throw new UnsupportedDataAccessOperationException("InputStreamIO: this is a stream-only DataAccess IO object, it has no auxiliary objects associated with it.");
+    }
+        
+    
+    @Override
+    public void deleteAuxObject(String auxItemTag) throws IOException {
+        throw new UnsupportedDataAccessOperationException("InputStreamIO: this is a stream-only DataAccess IO object, it has no auxiliary objects associated with it.");
+    }
+    
+    @Override
+    public void deleteAllAuxObjects() throws IOException {
+        throw new UnsupportedDataAccessOperationException("InputStreamIO: this is a stream-only DataAccess IO object, it has no auxiliary objects associated with it.");
+    }
+    
+    
+    @Override
     public String getStorageLocation() {
         return null;
     }
@@ -93,6 +121,11 @@ public class InputStreamIO extends DataFileIO {
     @Override
     public Path getFileSystemPath() throws IOException {
         throw new UnsupportedDataAccessOperationException("InputStreamIO: this is a stream-only DataAccess IO object, it has no local filesystem path associated with it.");
+    }
+    
+    @Override
+    public boolean exists() throws IOException {
+        throw new UnsupportedDataAccessOperationException("InputStreamIO: this method is not supported in this DataAccess driver.");
     }
 
     @Override

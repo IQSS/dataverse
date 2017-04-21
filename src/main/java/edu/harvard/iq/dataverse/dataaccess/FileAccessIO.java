@@ -37,12 +37,11 @@ import java.util.Iterator;
 
 // Dataverse imports:
 import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import java.io.FileNotFoundException;
 import java.nio.channels.Channel;
-import java.nio.channels.FileChannel;
-import java.nio.channels.WritableByteChannel;
+import java.nio.file.DirectoryStream;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 
 
 public class FileAccessIO extends DataFileIO {
@@ -144,6 +143,51 @@ public class FileAccessIO extends DataFileIO {
     }
     
     @Override
+    public void savePath(Path fileSystemPath) throws IOException {
+        long newFileSize = -1;
+        // Since this is a local fileystem file, we can use the
+        // quick NIO Files.copy method: 
+
+        Path outputPath = getFileSystemPath();
+
+        if (outputPath == null) {
+            throw new FileNotFoundException("FileAccessIO: Could not locate aux file for writing.");
+        }
+        Files.copy(fileSystemPath, outputPath, StandardCopyOption.REPLACE_EXISTING);
+        newFileSize = outputPath.toFile().length();
+
+        // if it has worked successfully, we also need to reset the size
+        // of the object. 
+        setSize(newFileSize);
+    }
+    
+    @Override
+    public void saveInputStream(InputStream inputStream) throws IOException {
+        // Since this is a local fileystem file, we can use the
+        // quick NIO Files.copy method: 
+
+        File outputFile = getFileSystemPath().toFile();
+
+        if (outputFile == null) {
+            throw new FileNotFoundException("FileAccessIO: Could not locate file for writing.");
+        }
+        
+        OutputStream outputStream = new FileOutputStream(outputFile);
+        int read = 0;
+        byte[] bytes = new byte[1024];
+        while ((read = inputStream.read(bytes)) != -1) {
+            outputStream.write(bytes, 0, read);
+        }
+        
+        outputStream.close();
+        inputStream.close();
+
+        // if it has worked successfully, we also need to reset the size
+        // of the object. 
+        setSize(outputFile.length());
+    }
+    
+    @Override
     public Channel openAuxChannel(String auxItemTag, DataAccessOption... options) throws IOException {
 
         Path auxPath = getAuxObjectAsPath(auxItemTag);
@@ -220,9 +264,6 @@ public class FileAccessIO extends DataFileIO {
         
         return auxPath;
     }
-    /*public Path getAuxObjectAsPath(String auxItemTag, DataAccessOption... option) throws IOException {
-        
-    }*/
     
     @Override 
     public void backupAsAux(String auxItemTag) throws IOException {
@@ -230,6 +271,82 @@ public class FileAccessIO extends DataFileIO {
         
         Files.move(getFileSystemPath(), auxPath, StandardCopyOption.REPLACE_EXISTING);
     }
+    
+    // this method copies a local filesystem Path into this DataAccess Auxiliary location:
+    @Override
+    public void savePathAsAux(Path fileSystemPath, String auxItemTag) throws IOException {
+        // quick Files.copy method: 
+        Path auxPath = null;
+        try {
+            auxPath = getAuxObjectAsPath(auxItemTag);
+        } catch (IOException ex) {
+            return;
+        }
+
+        if (auxPath != null) {
+            Files.copy(fileSystemPath, auxPath, StandardCopyOption.REPLACE_EXISTING);
+        }
+    }
+    
+    @Override
+    public void saveInputStreamAsAux(InputStream inputStream, String auxItemTag) throws IOException {
+        
+        // Since this is a local fileystem file, we can use the
+        // quick NIO Files.copy method: 
+
+        File outputFile = getAuxObjectAsPath(auxItemTag).toFile();
+
+        if (outputFile == null) {
+            throw new FileNotFoundException("FileAccessIO: Could not locate aux file for writing.");
+        }
+        
+        OutputStream outputStream = new FileOutputStream(outputFile);
+        int read = 0;
+        byte[] bytes = new byte[1024];
+        while ((read = inputStream.read(bytes)) != -1) {
+            outputStream.write(bytes, 0, read);
+        }
+        
+        outputStream.close();
+        inputStream.close();
+    }
+    
+    @Override
+    public List<String>listAuxObjects() throws IOException {
+        List<Path> cachedFiles = listCachedFiles();
+        
+        if (cachedFiles == null) {
+            return null;
+        }
+        
+        List<String> cachedFileNames = new ArrayList<>();
+        for (Path auxPath : cachedFiles) {
+            cachedFileNames.add(auxPath.getFileName().toString());
+        }
+        
+        return cachedFileNames;
+    }
+    
+    @Override
+    public void deleteAuxObject(String auxItemTag) throws IOException {
+        Path auxPath = getAuxObjectAsPath(auxItemTag);
+        Files.delete(auxPath);
+    }
+    
+    @Override
+    public void deleteAllAuxObjects() throws IOException {
+        List<Path> cachedFiles = listCachedFiles();
+        
+        if (cachedFiles == null) {
+            return;
+        }
+        
+        for (Path auxPath : cachedFiles) {
+            Files.delete(auxPath);
+        }
+        
+    }
+    
     
     @Override
     public String getStorageLocation() {
@@ -266,6 +383,15 @@ public class FileAccessIO extends DataFileIO {
     }
     
     @Override
+    public boolean exists() throws IOException {
+        if (getFileSystemPath() == null) {
+            throw new FileNotFoundException("FileAccessIO: invalid Access IO object.");
+        }
+        
+        return getFileSystemPath().toFile().exists();
+    }
+    
+    @Override
     public void delete() throws IOException {
         Path victim = getFileSystemPath();
         
@@ -273,22 +399,6 @@ public class FileAccessIO extends DataFileIO {
             Files.delete(victim);
         } else {
             throw new IOException("Could not locate physical file location for the Filesystem object.");
-        }
-    }
-    
-    @Override
-    // this method copies a local filesystem Path into this DataAccess Auxiliary location:
-    public void savePathAsAux(Path fileSystemPath, String auxItemTag) throws IOException {
-        // quick Files.copy method: 
-        Path auxPath = null;
-        try {
-            auxPath = getAuxObjectAsPath(auxItemTag);
-        } catch (IOException ex) {
-            return;
-        }
-
-        if (auxPath != null) {
-            Files.copy(fileSystemPath, auxPath, StandardCopyOption.REPLACE_EXISTING);
         }
     }
     
@@ -394,6 +504,42 @@ public class FileAccessIO extends DataFileIO {
         return false; 
     }
     
-    
+    private List<Path> listCachedFiles() throws IOException {
+        List<Path> auxItems = new ArrayList<>();
+
+        // cached files for a given datafiles are stored on the filesystem
+        // as <filesystemname>.*; for example, <filename>.thumb64 or 
+        // <filename>.RData.
+        
+        if (this.getDataFile() == null || this.getDataFile().getStorageIdentifier() == null || this.getDataFile().getStorageIdentifier().equals("")) {
+            throw new IOException("Null or invalid DataFile in FileAccessIO object.");
+        }
+        
+        String baseName = this.getDataFile().getStorageIdentifier();
+
+        Path datasetDirectoryPath = this.getDataFile().getOwner().getFileSystemDirectory();
+
+        if (datasetDirectoryPath == null) {
+            throw new IOException("Could not determine the filesystem directory of the parent dataset.");
+        }
+        
+        DirectoryStream.Filter<Path> filter = new DirectoryStream.Filter<Path>() {
+            @Override
+            public boolean accept(Path file) throws IOException {
+                return (file.getFileName() != null
+                        && file.getFileName().toString().startsWith(baseName + "."));
+            }
+        };
+
+        DirectoryStream<Path> dirStream = Files.newDirectoryStream(datasetDirectoryPath, filter);
+        
+        if (dirStream != null) {
+            for (Path filePath : dirStream) {
+                auxItems.add(filePath);
+            }
+        }   
+
+        return auxItems;
+    }
 
 }

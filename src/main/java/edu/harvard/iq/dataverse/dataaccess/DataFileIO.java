@@ -81,6 +81,8 @@ public abstract class DataFileIO {
     // This method will return a Path, if the storage method is a 
     // local filesystem. Otherwise should throw an IOException. 
     public abstract Path getFileSystemPath() throws IOException;
+    
+    public abstract boolean exists() throws IOException; 
 
     // This method will delete the physical file (object), if delete
     // functionality is supported by the physical driver. 
@@ -90,6 +92,13 @@ public abstract class DataFileIO {
     // (there is now a dedicated exception for this purpose: UnsupportedDataAccessOperationException,
     // that extends IOException -- 4.6.2) 
     public abstract void delete() throws IOException;
+    
+    // this method for copies a local Path (for ex., a
+    // temp file, into this DataAccess location):
+    public abstract void savePath(Path fileSystemPath) throws IOException;
+    
+    // same, for an InputStream:
+    public abstract void saveInputStream(InputStream inputStream) throws IOException;
     
     // Auxiliary File Management: (new as of 4.0.2!)
     
@@ -111,6 +120,15 @@ public abstract class DataFileIO {
     
     // this method copies a local filesystem Path into this DataAccess Auxiliary location:
     public abstract void savePathAsAux(Path fileSystemPath, String auxItemTag) throws IOException;
+    
+    // this method copies a local InputStream into this DataAccess Auxiliary location:
+    public abstract void saveInputStreamAsAux(InputStream inputStream, String auxItemTag) throws IOException; 
+    
+    public abstract List<String>listAuxObjects() throws IOException;
+    
+    public abstract void deleteAuxObject(String auxItemTag) throws IOException; 
+    
+    public abstract void deleteAllAuxObjects() throws IOException;
     
 
     private DataFile dataFile;
@@ -143,71 +161,6 @@ public abstract class DataFileIO {
     private String remoteUrl;
     private GetMethod method = null;
     private Header[] responseHeaders;
-    
-    
-    // this is a convenience method for copying a local Path (for ex., a
-    // temp file, into this DataAccess location):
-    public void savePath(Path fileSystemPath) throws IOException {
-        long newFileSize = -1; 
-        // if this is a local fileystem file, we'll use a 
-        // quick Files.copy method: 
-        if (isLocalFile()) {
-            Path outputPath = null;
-            try {
-                outputPath = getFileSystemPath();
-            } catch (IOException ex) {
-                outputPath = null;
-            }
-            if (outputPath != null) {
-                Files.copy(fileSystemPath, outputPath, StandardCopyOption.REPLACE_EXISTING);
-                newFileSize = outputPath.toFile().length();
-            }
-            
-        } else {
-            // otherwise we'll open a writable byte channel and 
-            // copy the source file bytes using Channel.transferTo():
-            
-            WritableByteChannel writeChannel = null;
-            FileChannel readChannel = null;
-            String failureMsg = null; 
-
-            try {
-
-                open(DataAccessOption.WRITE_ACCESS);
-                writeChannel = getWriteChannel();
-                readChannel = new FileInputStream(fileSystemPath.toFile()).getChannel();
-
-                long bytesPerIteration = 16 * 1024; // 16K bytes
-                long start = 0;
-                while (start < readChannel.size()) {
-                    readChannel.transferTo(start, bytesPerIteration, writeChannel);
-                    start += bytesPerIteration;
-                }
-                newFileSize = readChannel.size(); 
-
-            } catch (IOException ioex) {
-                failureMsg = ioex.getMessage();
-                if (failureMsg == null) {
-                    failureMsg = "Unknown exception occured.";
-                }
-            } finally {
-                if (readChannel != null) {
-                    try {readChannel.close();}catch(IOException e){}
-                }
-                if (writeChannel != null) {
-                    try {writeChannel.close();}catch(IOException e){}
-                }
-            }
-            
-            if (failureMsg != null) {
-                throw new IOException(failureMsg);
-            }
-        }
-        
-        // if it has worked successfully, we also need to reset the size
-        // of the object. 
-        setSize(newFileSize);
-    }
 
     // getters:
     

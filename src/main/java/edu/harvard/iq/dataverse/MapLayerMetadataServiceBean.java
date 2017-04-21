@@ -8,14 +8,20 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
 import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
+import static edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter.THUMBNAIL_SUFFIX;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.nio.channels.Channel;
+import java.nio.channels.Channels;
+import java.nio.channels.WritableByteChannel;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
@@ -156,16 +162,23 @@ public class MapLayerMetadataServiceBean {
             return false;
         }
 
+        // TODO: This code uses direct filesystem access!! 
+        // it must be changed to use DataFileIO!! -- L.A. 4.6.2
+        
         // Retrieve the data file
         //
         DataFile df = mapLayerMetadata.getDataFile();
         
         try {
-            DataFileIO dataAccess = df.getDataFileIO();
+            DataFileIO dataFileIO = df.getDataFileIO();
 
-            if (dataAccess == null || !dataAccess.isLocalFile()) {
+            if (dataFileIO == null) {
+                logger.warning("Null DataFileIO in deleteOlderMapThumbnails()");
                 return false;
             }
+            
+            dataFileIO.deleteAllAuxObjects();
+            /*
             // Get the parent directory
             //
             Path fileDirname = dataAccess.getFileSystemPath().getParent();
@@ -190,17 +203,19 @@ public class MapLayerMetadataServiceBean {
                     14a5e4abf7d-e7eebfb6474d.img
                     14a5e4abf7d-e7eebfb6474d.img.thumb64
                     14a5e4abf7d-e7eebfb6474d.img.thumb400
-            */
+            *//*
             String iconBaseFilename = dataAccess.getFileSystemPath().toString() +  ".img";
+            String iconThumbFilename = dataAccess.getFileSystemPath().toString() +  ".thumb";
         
             for (File singleFile : fileDirectory.listFiles()) {
-                if (singleFile.toString().startsWith(iconBaseFilename)) {
+                if (singleFile.toString().startsWith(iconBaseFilename) || singleFile.toString().startsWith(iconThumbFilename)) {
                     //logger.info("file found: " + singleFile.toString());
                     singleFile.delete();
                     //results.add(file.getName());
                 }
-            }
+            }*/
         } catch (IOException ioEx) {
+            logger.warning("IOException in deleteOlderMapThumbnails(): "+ioEx.getMessage());
             return false; 
         }
                 
@@ -236,6 +251,7 @@ public class MapLayerMetadataServiceBean {
         }
         
         this.deleteOlderMapThumbnails(mapLayerMetadata);
+        
         if (true){
             // debug check
             // return false;
@@ -256,13 +272,11 @@ public class MapLayerMetadataServiceBean {
             dataAccess = null;
         }
 
-        if (dataAccess == null || !dataAccess.isLocalFile()) {
+        if (dataAccess == null) {
+            logger.warning("Failed to open Access IO on DataFile "+mapLayerMetadata.getDataFile().getId());
             return false;
         }
-        String destinationFile = dataAccess.getFileSystemPath().toString() +  ".img";
-        logger.info("destinationFile: getFileSystemLocation()" + dataAccess.getFileSystemPath().toString());
-        logger.info("destinationFile: " + destinationFile);
-        
+
         URL url = new URL(imageUrl);
         logger.info("retrieve url : " + imageUrl);
 
@@ -277,34 +291,15 @@ public class MapLayerMetadataServiceBean {
                 try { is.close(); } catch (IOException ignore) {}
             }
             return false;
-            
         }
         
-        OutputStream os = null;
-        
-        try{
-            logger.info("try to start OutputStream");
-            os = new FileOutputStream(destinationFile);
-        } catch (Exception ex){
-            logger.warning("Error when retrieving map icon image. Exception: " + ex.getMessage());
-            if (os!=null){
-                try { os.close(); } catch (IOException ignore) {}
-            }
+        try {
+            dataAccess.saveInputStreamAsAux(is, "img");
+        } catch (IOException ioex) {
+            logger.warning("Failed to save WorldMap-generated image; "+ioex.getMessage());
             return false;
         }
-        
-        byte[] b = new byte[2048];
-        int length;
-
-        logger.info("Writing file...");
-        while ((length = is.read(b)) != -1) {
-            os.write(b, 0, length);
-        }
-
-        logger.info("Closing streams...");
-        is.close();
-        os.close();
-        
+            
         logger.info("Done");
         return true;
     }   

@@ -26,15 +26,9 @@ import java.io.IOException;
 
 import java.util.Iterator;
 
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
-import java.awt.image.FilteredImageSource;
-import java.awt.image.ImageFilter;
-import java.awt.image.ImageProducer;
-import java.awt.image.RGBImageFilter;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriter;
@@ -374,7 +368,7 @@ public class ImageThumbConverter {
             outputStream = Channels.newOutputStream((WritableByteChannel) outputChannel);
             logger.fine("Opened an auxiliary channel/output stream " + THUMBNAIL_SUFFIX + size + " on " + dataFileIO.getDataFile().getStorageIdentifier());
         } catch (IOException ioex) {
-            logger.warning("Failed to open an auxiliary channel/output stream " + THUMBNAIL_SUFFIX + size + " on " + dataFileIO.getDataFile().getStorageIdentifier());
+            //logger.warning("Failed to open an auxiliary channel/output stream " + THUMBNAIL_SUFFIX + size + " on " + dataFileIO.getDataFile().getStorageIdentifier());
             tempFileRequired = true;
         }
 

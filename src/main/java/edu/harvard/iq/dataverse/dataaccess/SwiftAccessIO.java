@@ -12,6 +12,8 @@ import java.nio.channels.Channel;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Logger;
@@ -57,6 +59,8 @@ public class SwiftAccessIO extends DataFileIO {
     private Account account = null;
     private StoredObject swiftFileObject = null;
     private Container swiftContainer = null;
+    
+    private static int LIST_PAGE_LIMIT = 100;  
 
     @Override
     public boolean canRead() {
@@ -156,6 +160,33 @@ public class SwiftAccessIO extends DataFileIO {
         // of the object:
         setSize(newFileSize);
 
+    }
+    
+    @Override
+    public void saveInputStream(InputStream inputStream) throws IOException {
+        long newFileSize = -1;
+
+        if (swiftFileObject == null || !this.canWrite()) {
+            open(DataAccessOption.WRITE_ACCESS);
+        }
+
+        try {
+
+            swiftFileObject.uploadObject(inputStream);
+
+        } catch (Exception ioex) {
+            String failureMsg = ioex.getMessage();
+            if (failureMsg == null) {
+                failureMsg = "Swift AccessIO: Unknown exception occured while uploading a local file into a Swift StoredObject";
+            }
+
+            throw new IOException(failureMsg);
+        }
+
+        // if it has uploaded successfully, we can reset the size
+        // of this SwiftAccessIO object:
+        
+        setSize(swiftFileObject.getContentLength());
     }
     
     @Override
@@ -267,6 +298,82 @@ public class SwiftAccessIO extends DataFileIO {
 
     }
     
+    // this method copies a local InputStream into this DataAccess Auxiliary location:
+    @Override
+    public void saveInputStreamAsAux(InputStream inputStream, String auxItemTag) throws IOException {
+        if (swiftFileObject == null) {
+            open();
+        }
+
+        try {
+            StoredObject swiftAuxObject = openSwiftAuxFile(true, auxItemTag);
+            swiftAuxObject.uploadObject(inputStream);
+
+        } catch (Exception ex) {
+            String failureMsg = ex.getMessage();
+            
+            if (failureMsg == null) {
+                failureMsg = "Swift AccessIO: Unknown exception occured while saving a local InputStream as a Swift StoredObject";
+            }
+
+            throw new IOException(failureMsg);
+        }    
+    }
+    
+    @Override
+    public List<String>listAuxObjects() throws IOException {
+        if (this.swiftContainer == null || this.swiftFileObject == null) {
+            throw new IOException("This SwiftAccessIO() hasn't been properly initialized yet.");
+        }
+        
+        String namePrefix = this.swiftFileObject.getName()+".";
+        
+        Collection<StoredObject> items = null; 
+        String lastItemName = null; 
+        List<String> ret = new ArrayList<>();
+        
+        while ((items = this.swiftContainer.list(namePrefix, lastItemName, LIST_PAGE_LIMIT))!= null && items.size() > 0) {
+            for (StoredObject item : items) {
+                lastItemName = item.getName();
+                logger.info("Found AUX object "+lastItemName);
+                ret.add(lastItemName);
+            }
+        }
+        
+        return ret;
+    }
+    
+    @Override
+    public void deleteAuxObject(String auxItemTag) throws IOException {
+        StoredObject swiftAuxObject = openSwiftAuxFile(auxItemTag);
+        
+        if (swiftAuxObject == null) {
+            throw new FileNotFoundException("No such Aux object: "+auxItemTag);
+        }
+        
+        swiftAuxObject.delete();
+    }
+    
+    @Override
+    public void deleteAllAuxObjects() throws IOException {
+    if (this.swiftContainer == null || this.swiftFileObject == null) {
+            throw new IOException("This SwiftAccessIO() hasn't been properly initialized yet. (did you execute SwiftAccessIO.open()?)");
+        }
+        
+        Collection<StoredObject> victims = null; 
+        String lastVictim = null; 
+        
+        
+        while ((victims = this.swiftContainer.list(this.swiftFileObject.getName()+".", lastVictim, LIST_PAGE_LIMIT))!= null && victims.size() > 0) {
+            for (StoredObject victim : victims) {
+                lastVictim = victim.getName();
+                logger.info("trying to delete "+lastVictim);
+
+                victim.delete();
+            }
+        }
+    }
+    
     @Override
     public String getStorageLocation() {
         // What should this be, for a Swift file? 
@@ -279,6 +386,17 @@ public class SwiftAccessIO extends DataFileIO {
     @Override
     public Path getFileSystemPath() throws IOException {
         throw new UnsupportedDataAccessOperationException("SwiftAccessIO: this is a remote DataAccess IO object, it has no local filesystem path associated with it.");
+    }
+    
+    @Override
+    public boolean exists() throws IOException {
+        try {
+            swiftFileObject = initializeSwiftFileObject(false);
+        } catch (FileNotFoundException fnfe) {
+            return false;
+        }
+        
+        return true; 
     }
 
     @Override
@@ -302,7 +420,7 @@ public class SwiftAccessIO extends DataFileIO {
         String storageIdentifier = this.getDataFile().getStorageIdentifier();
 
         String swiftEndPoint = null;
-        String swiftContainer = null;
+        String swiftContainerName = null;
         String swiftFileName = null;
 
         
@@ -317,17 +435,17 @@ public class SwiftAccessIO extends DataFileIO {
             }
 
             swiftEndPoint = swiftStorageTokens[0];
-            swiftContainer = swiftStorageTokens[1];
+            swiftContainerName = swiftStorageTokens[1];
             swiftFileName = swiftStorageTokens[2];
 
-            if (StringUtil.isEmpty(swiftEndPoint) || StringUtil.isEmpty(swiftContainer) || StringUtil.isEmpty(swiftFileName)) {
+            if (StringUtil.isEmpty(swiftEndPoint) || StringUtil.isEmpty(swiftContainerName) || StringUtil.isEmpty(swiftFileName)) {
                 // all of these things need to be specified, for this to be a valid Swift location
                 // identifier.
                 throw new IOException("SwiftAccessIO: invalid swift storage token: " + storageIdentifier);
             }
             
             if (auxItemTag != null) {
-                swiftFileName = swiftFileName.concat(auxItemTag);
+                swiftFileName = swiftFileName.concat("."+auxItemTag);
             }
         } else if (this.isReadAccess) {
             // An attempt to call Swift driver,  in a Read mode on a non-swift stored datafile
@@ -355,31 +473,31 @@ public class SwiftAccessIO extends DataFileIO {
         account = authenticateWithSwift(swiftEndPoint);
 
         /*
-        The containers created is swiftEndPoint concatenated with the swiftContainer
+        The containers created is swiftEndPoint concatenated with the swiftContainerName
         property. Creating container with certain names throws 'Unable to create
         container' error on Openstack. 
         Any datafile with http://rdgw storage identifier i.e present on Object 
         store service endpoint already only needs to look-up for container using
-        just swiftContainer which is the concatenated name.
+        just swiftContainerName which is the concatenated name.
         In future, a container for the endpoint can be created and for every
-        other swiftContainer Object Store pseudo-folder can be created, which is
+        other swiftContainerName Object Store pseudo-folder can be created, which is
         not provide by the joss Java swift library as of yet.
          */
 
         if (storageIdentifier.startsWith("swift://")) {
-            this.swiftContainer = account.getContainer(swiftContainer);
+            this.swiftContainer = account.getContainer(swiftContainerName);
         } else {
             this.swiftContainer = account.getContainer(swiftFolderPath); //changed from swiftendpoint
         }
 
         if (!this.swiftContainer.exists()) {
             if (writeAccess) {
-                this.swiftContainer.create();
-                //this.swiftContainer.makePublic();
+                //this.swiftContainer.create();
+                this.swiftContainer.makePublic();
             } else {
                 // This is a fatal condition - it has to exist, if we were to 
                 // read an existing object!
-                throw new IOException("SwiftAccessIO: container " + swiftContainer + " does not exist.");
+                throw new IOException("SwiftAccessIO: container " + swiftContainerName + " does not exist.");
             }
         }
 
@@ -402,6 +520,20 @@ public class SwiftAccessIO extends DataFileIO {
             throw new FileNotFoundException("SwiftAccessIO: File object " + swiftFileName + " does not exist (Dataverse datafile id: " + this.getDataFile().getId());
         }
 
+        List<String> auxFiles = null; 
+        /*
+        try {
+            auxFiles = listAuxObjects();
+        } catch (IOException ioex) {
+            logger.info("caught exception trying to list aux objects:"+ioex.getMessage());
+        }
+        
+        if (auxFiles != null) {
+        for (String auxObject : auxFiles) {
+            logger.info("AUX object found for "+swiftFileName+": "+auxObject);
+        }
+        }*/
+        
         return fileObject;
     }
 
@@ -520,5 +652,7 @@ public class SwiftAccessIO extends DataFileIO {
         // By default, we open the file in read mode:
         return false;
     }
+    
+    
 
 }

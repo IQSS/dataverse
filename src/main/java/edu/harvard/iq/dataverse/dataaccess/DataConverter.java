@@ -34,8 +34,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap; 
 
 import edu.harvard.iq.dataverse.DataFile;
-import static edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter.THUMBNAIL_SUFFIX;
-import static edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter.WORLDMAP_IMAGE_SUFFIX;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VariableCategory;
 import edu.harvard.iq.dataverse.util.FileUtil;
