@@ -275,7 +275,9 @@ public class SwiftAccessIO extends DataFileIO {
 
             //swiftFolderPath = this.getDataFile().getOwner().getDisplayName();
             String swiftFolderPathSeparator = "_";
-            swiftFolderPath = this.getDataFile().getOwner().getAuthority().replace(this.getDataFile().getOwner().getDoiSeparator(), swiftFolderPathSeparator) +
+            String authorityNoSlashes = this.getDataFile().getOwner().getAuthority().replace(this.getDataFile().getOwner().getDoiSeparator(), swiftFolderPathSeparator);
+            swiftFolderPath = this.getDataFile().getOwner().getProtocol() + swiftFolderPathSeparator +
+                authorityNoSlashes.replace(".", swiftFolderPathSeparator) +
                 swiftFolderPathSeparator + this.getDataFile().getOwner().getIdentifier();
             swiftFileName = storageIdentifier;
             //swiftFileName = this.getDataFile().getDisplayName();
@@ -324,9 +326,6 @@ public class SwiftAccessIO extends DataFileIO {
         setRemoteUrl(DataAccess.getSwiftFileURI(fileObject));
 
         logger.info(DataAccess.swiftFileUri + " success");
-        //shows contents of container for public containers
-        DataAccess.swiftContainerUri = DataAccess.getSwiftContainerURI(fileObject);
-        logger.info(DataAccess.swiftContainerUri + " success");
 
         if (!writeAccess && !fileObject.exists()) {
             throw new IOException("SwiftAccessIO: File object " + swiftFileName + " does not exist (Dataverse datafile id: " + this.getDataFile().getId());
