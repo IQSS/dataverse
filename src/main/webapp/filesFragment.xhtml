@@ -139,6 +139,11 @@
                         <h:outputLink value="http://128.31.25.208:3000/dvinput/#{DatasetPage.dataset.getDisplayName()}" type="button" styleClass="btn btn-default">
                            <h:outputText id="compute-button" value="#{bundle['file.compute']}" />
                         </h:outputLink> 
+                        <p:commandLink type="button" styleClass="btn btn-default" action="#{DatasetPage.addItemtoCart(DatasetPage.dataset.getDisplayName())}"
+                                       disabled="#{DatasetPage.locked}" value="#{bundle['file.cart']}" update=":datasetForm">
+                            <span class="glyphicon glyphicon-bullhorn"/> #{bundle['file.cart']}
+                            <!--<f:ajax render=":datasetForm"/>-->
+                        </p:commandLink>
                     </div>               
                     <!--Compute button end--> 
                       

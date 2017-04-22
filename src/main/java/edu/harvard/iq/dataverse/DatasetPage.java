@@ -153,6 +153,8 @@ public class DatasetPage implements java.io.Serializable {
     DataverseRoleServiceBean dataverseRoleService;
     @EJB
     PrivateUrlServiceBean privateUrlService;
+    @EJB
+    Cart cart;
     @Inject
     DataverseRequestServiceBean dvRequestService;
     @Inject
@@ -243,6 +245,17 @@ public class DatasetPage implements java.io.Serializable {
         this.lazyModel = lazyModel;
     }
     
+    public List<String> getItems() {
+        return cart.getContents();
+    }
+
+    public void addItemtoCart(String title) {
+        cart.addItem(title);
+    }
+    
+    public void removeCartItem(String title) {
+        cart.removeItem(title);
+    }
     private String fileLabelSearchTerm;
 
     public String getFileLabelSearchTerm() {
@@ -258,7 +271,7 @@ public class DatasetPage implements java.io.Serializable {
     public List<FileMetadata> getFileMetadatasSearch() {
         return fileMetadatasSearch;
     }
-
+    
     public void setFileMetadatasSearch(List<FileMetadata> fileMetadatasSearch) {
         this.fileMetadatasSearch = fileMetadatasSearch;
     }
@@ -1016,7 +1029,6 @@ public class DatasetPage implements java.io.Serializable {
     
     private String init(boolean initFull) {
         //System.out.println("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
-               
         this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSize();
         setDataverseSiteUrl(systemConfig.getDataverseSiteUrl());
         /**

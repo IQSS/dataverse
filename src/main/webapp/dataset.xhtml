@@ -38,6 +38,17 @@
                     <!-- Header / Button Panel -->
                     <!-- View editMode -->
                     <div id="topDatasetBlock" jsf:rendered="#{empty DatasetPage.editMode}">
+                        <h:dataTable id="computeBatch" value="#{DatasetPage.getItems()}" var='o'>
+                            <h:column>
+                                <f:facet name = "header">Name</f:facet>
+                                <h:outputText value="#{o}" />`
+                            </h:column>
+                            <h:column>
+                                <f:facet name = "header">Delete</f:facet>
+                                <h:commandButton value = "Delete" 
+                                                 action = "#{DatasetPage.removeCartItem(o)}"  />     
+                            </h:column>
+                        </h:dataTable>
                         <div id="actionButtonBlock" class="button-block clearfix" jsf:rendered="#{!widgetWrapper.widgetView}">
                             <!-- Edit/Publish Button Group -->
                             <!-- Edit Button -->
