@@ -77,10 +77,6 @@
         <servlet-name>Citation Servlet</servlet-name>
         <servlet-class>edu.harvard.iq.dataverse.CitationServlet</servlet-class>
     </servlet>
-    <servlet>
-        <servlet-name>CartServlet</servlet-name>
-        <servlet-class>edu.harvard.iq.dataverse.CartServlet</servlet-class>
-    </servlet>
     <servlet-mapping>
         <servlet-name>Faces Servlet</servlet-name>
         <url-pattern>/faces/*</url-pattern>
@@ -108,12 +104,6 @@
     <servlet-mapping>
         <servlet-name>Citation Servlet</servlet-name>
         <url-pattern>/citation</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>CartServlet</servlet-name>
-        <url-pattern>/category</url-pattern>
-        <url-pattern>/addToCart</url-pattern>
-        <url-pattern>/viewCart</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>
