@@ -38,7 +38,7 @@
                     <!-- Header / Button Panel -->
                     <!-- View editMode -->
                     <div id="topDatasetBlock" jsf:rendered="#{empty DatasetPage.editMode}">
-                        <h:dataTable id="computeBatch" value="#{DatasetPage.getItems()}" var='o'>
+<!--                        <h:dataTable id="computeBatchin" value="#{DatasetPage.getItems()}" var='o'>
                             <h:column>
                                 <f:facet name = "header">Name</f:facet>
                                 <h:outputText value="#{o}" />`
@@ -48,7 +48,7 @@
                                 <h:commandButton value = "Delete" 
                                                  action = "#{DatasetPage.removeCartItem(o)}"  />     
                             </h:column>
-                        </h:dataTable>
+                        </h:dataTable>-->
                         <div id="actionButtonBlock" class="button-block clearfix" jsf:rendered="#{!widgetWrapper.widgetView}">
                             <!-- Edit/Publish Button Group -->
                             <!-- Edit Button -->
@@ -204,6 +204,13 @@
                             <!-- END: Edit/Publish Button Group -->
                             <!-- Email/Link/Share Button Group -->
                             <div class="btn-group pull-right" id="datasetButtonBar" role="group">
+                                <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip" rendered="#{!DatasetPage.workingVersion.deaccessioned}"
+                                               title="#{bundle['dataset.compute.computeBatchBtn']}"
+                                               value="#{bundle['dataset.compute.computeBatchBtn']}"
+                                               oncomplete="PF('cartDatasetForm').show();bind_bsui_components();"
+                                               update="cartDatasetForm">
+                                    <span class="glyphicon glyphicon-link no-text"/>
+                                </p:commandLink>
                                 <p:commandLink class="btn btn-default bootstrap-button-tooltip" title="#{bundle['dataset.email.datasetContactBtn']}"
                                                update=":contactDialog" oncomplete="PF('contactForm').show()" actionListener="#{sendFeedbackDialog.initUserInput}">
                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
@@ -1164,6 +1171,29 @@
                                            value="#{bundle['dataset.link.save']}" actionListener="#{DatasetPage.saveLinkedDataset()}"
                                            rendered="#{DatasetPage.dataversesForLinking.size() == 1}" />
                             <button type="button" class="btn btn-default" onclick="PF('linkDatasetForm').hide();PF('blockDatasetForm').hide();">
+                                #{bundle.cancel}
+                            </button>
+                        </div>
+                    </p:dialog>
+                    
+                    <p:dialog id="cartDatasetForm" header="#{bundle['dataset.compute.computeBatchBtn']}" widgetVar="cartDatasetForm" modal="true">
+                        <h:dataTable id="computeBatch" value="#{DatasetPage.getItems()}" var='o'>
+                            <h:column>
+                                <f:facet name = "header">Name</f:facet>
+                                <h:outputText value="#{o}" />`
+                            </h:column>
+                            <h:column>
+                                <f:facet name = "header">Delete</f:facet>
+                                <h:commandLink type="button" class="btn btn-default"
+                                                 value = "Delete" 
+                                                 action = "#{DatasetPage.removeCartItem(o)}"  />     
+                            </h:column>
+                        </h:dataTable>
+                        <div class="button-block">
+                            <p:commandLink type="button" styleClass="btn btn-default" value="#{bundle['dataset.compute.computeBtn']}"
+                                           action="#{DatasetPage.launchCompute}"
+                                           rendered="#{DatasetPage.getItems().size() > 0}" />
+                            <button type="button" class="btn btn-default" onclick="PF('cartDatasetForm').hide();PF('blockDatasetForm').hide();">
                                 #{bundle.cancel}
                             </button>
                         </div>

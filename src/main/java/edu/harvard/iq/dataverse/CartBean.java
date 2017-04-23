@@ -56,7 +56,8 @@ public class CartBean implements Cart {
 //    }
 
     public void addItem(String title) {
-        contents.add(title);
+        if (!contents.contains(title))
+            contents.add(title);
     }
 
     public void removeItem(String title){

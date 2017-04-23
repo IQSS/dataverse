@@ -74,13 +74,21 @@ import javax.faces.model.SelectItem;
 import java.util.logging.Level;
 import edu.harvard.iq.dataverse.datasetutility.TwoRavensHelper;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
+import javax.faces.context.ExternalContext;
 
 import javax.faces.event.AjaxBehaviorEvent;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.http.HttpResponse;
+//import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 
 import org.primefaces.component.tabview.TabView;
 import org.primefaces.event.TabChangeEvent;
+import org.primefaces.json.JSONObject;
 
 /**
  *
@@ -255,6 +263,32 @@ public class DatasetPage implements java.io.Serializable {
     
     public void removeCartItem(String title) {
         cart.removeItem(title);
+    }
+    
+    public void launchCompute() throws IOException{
+        String url="http://128.31.25.208:3000/dvinput/container";
+        
+        CloseableHttpClient client = HttpClients.createDefault();
+        HttpPost post = new HttpPost(url);
+        
+        JSONObject json = new JSONObject();
+        json.put("containerid", getItems());
+        System.out.println(json.toString());
+        
+        StringEntity input = new StringEntity(json.toString());
+        input.setContentType("application/json");
+        post.setEntity(input);
+        
+        HttpResponse response = client.execute(post);
+        if (response.getStatusLine().getStatusCode() != 200) {
+            throw new RuntimeException("Failed : HTTP error code : "
+                    + response.getStatusLine().getStatusCode());
+        } else {
+            ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
+            externalContext.redirect("http://128.31.25.208:3000/");
+        }
+        
+        
     }
     private String fileLabelSearchTerm;
 
