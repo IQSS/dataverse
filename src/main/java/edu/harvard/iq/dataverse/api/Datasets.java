@@ -473,7 +473,8 @@ public class Datasets extends AbstractApiBean {
                  * to getLatestVersion
                  */
                 final JsonObjectBuilder datasetAsJson = jsonAsDatasetDto(dataset.getLatestVersion());
-                xml = DdiExportUtil.datasetDtoAsJson2ddi(datasetAsJson.toString());
+                boolean excludeDatasetContactEmail = settingsSvc.isTrueForKey(SettingsServiceBean.Key.ExcludeDatasetContactEmailFromExport, false);
+                xml = DdiExportUtil.datasetDtoAsJson2ddi(datasetAsJson.toString(), excludeDatasetContactEmail);
             } else {
                 OutputStream outputStream = new ByteArrayOutputStream();
                 ddiExportService.exportDataset(dataset.getId(), outputStream, null, null);

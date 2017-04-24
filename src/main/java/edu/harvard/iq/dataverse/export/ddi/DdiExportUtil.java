@@ -55,7 +55,10 @@ public class DdiExportUtil {
     public static final String NOTE_TYPE_CONTENTTYPE = "DATAVERSE:CONTENTTYPE";
     public static final String NOTE_SUBJECT_CONTENTTYPE = "Content/MIME Type";
 
-    public static String datasetDtoAsJson2ddi(String datasetDtoAsJson) {
+    static boolean excludeDatasetContactEmail;
+
+    public static String datasetDtoAsJson2ddi(String datasetDtoAsJson, boolean excludeDatasetContactEmail) {
+        DdiExportUtil.excludeDatasetContactEmail = excludeDatasetContactEmail;
         logger.fine(JsonUtil.prettyPrint(datasetDtoAsJson));
         Gson gson = new Gson();
         DatasetDTO datasetDto = gson.fromJson(datasetDtoAsJson, DatasetDTO.class);
@@ -586,7 +589,9 @@ public class DdiExportUtil {
                                     datasetContactAffiliation =  next.getSinglePrimitive();
                                 }
                                 if (DatasetFieldConstant.datasetContactEmail.equals(next.getTypeName())) {
-                                    datasetContactEmail =  next.getSinglePrimitive();
+                                    if (!DdiExportUtil.excludeDatasetContactEmail) {
+                                        datasetContactEmail = next.getSinglePrimitive();
+                                    }
                                 }
                             }
                             if (!datasetContactName.isEmpty()){

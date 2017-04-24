@@ -19,11 +19,12 @@ public class DdiExportUtilTest {
         File ddiFile = new File("src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-finch1.xml");
         String datasetAsDdi = XmlPrinter.prettyPrintXml(new String(Files.readAllBytes(Paths.get(ddiFile.getAbsolutePath()))));
         logger.info(datasetAsDdi);
-        String result = DdiExportUtil.datasetDtoAsJson2ddi(datasetVersionAsJson);
+        boolean excludeDatasetContactEmail = false;
+        String result = DdiExportUtil.datasetDtoAsJson2ddi(datasetVersionAsJson, excludeDatasetContactEmail);
         logger.info(result);
         assertEquals(datasetAsDdi, result);
     }
-    
+
     @Test
     public void testJson2DdiwPrivacy() throws Exception {
         File datasetVersionJson = new File("src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-finch1.json");
@@ -34,15 +35,17 @@ public class DdiExportUtilTest {
         String datasetAsDdiOpen = XmlPrinter.prettyPrintXml(new String(Files.readAllBytes(Paths.get(ddiFileOpen.getAbsolutePath()))));
         String datasetAsDdiPrivate = XmlPrinter.prettyPrintXml(new String(Files.readAllBytes(Paths.get(ddiFilePrivate.getAbsolutePath()))));
         logger.info(datasetAsDdiPrivate);
-        String result = DdiExportUtil.datasetDtoAsJson2ddi(datasetVersionAsJson);
-        logger.info(result);
-               
-        boolean issue3443Complete = false;
-        if (issue3443Complete) {
-            assertEquals(datasetAsDdiPrivate, result);
-        } else {
-            assertEquals(datasetAsDdiOpen, result);
-        }
+
+        boolean doNotExclude = false;
+        String resultPublic = DdiExportUtil.datasetDtoAsJson2ddi(datasetVersionAsJson, doNotExclude);
+        logger.info(resultPublic);
+        assertEquals(datasetAsDdiOpen, resultPublic);
+
+        boolean excludeEmail = true;
+        String resultPrivate = DdiExportUtil.datasetDtoAsJson2ddi(datasetVersionAsJson, excludeEmail);
+        logger.info(resultPrivate);
+        assertEquals(datasetAsDdiPrivate, resultPrivate);
+
     }
 
     @Test
@@ -58,7 +61,8 @@ public class DdiExportUtilTest {
         File ddiFile = new File("src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-spruce1.xml");
         String datasetAsDdi = XmlPrinter.prettyPrintXml(new String(Files.readAllBytes(Paths.get(ddiFile.getAbsolutePath()))));
         logger.info(datasetAsDdi);
-        String result = DdiExportUtil.datasetDtoAsJson2ddi(datasetVersionAsJson);
+        boolean excludeDatasetContactEmail = false;
+        String result = DdiExportUtil.datasetDtoAsJson2ddi(datasetVersionAsJson, excludeDatasetContactEmail);
         logger.info(result);
         boolean filesMinimallySupported = false;
         // TODO: 
