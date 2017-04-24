@@ -241,13 +241,12 @@ public class SettingsServiceBean {
         /**
         * Whether Shibboleth passive authentication mode is enabled
         */
-       ShibPassiveLoginEnabled,
-               
+        ShibPassiveLoginEnabled,
         /**
-        * Whether Export should include the email address of 
-        * the Dataset Contacts
-        */
-       ExportDatasetContactEmail;
+         * Whether Export should exclude the email address of the Dataset
+         * Contacts
+         */
+        ExcludeDatasetContactEmailFromExport;
         
         @Override
         public String toString() {

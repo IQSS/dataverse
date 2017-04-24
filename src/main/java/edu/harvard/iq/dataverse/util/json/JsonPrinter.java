@@ -33,6 +33,7 @@ import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderRo
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.DatasetFieldWalker;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
@@ -70,6 +71,16 @@ import javax.json.JsonObject;
 public class JsonPrinter {
 
     private static final Logger logger = Logger.getLogger(JsonPrinter.class.getCanonicalName());
+
+    static SettingsServiceBean settingsService;
+
+    public JsonPrinter(SettingsServiceBean settingsService) {
+        this.settingsService = settingsService;
+    }
+
+    public JsonPrinter() {
+        this(null);
+    }
 
     public static final BriefJsonPrinter brief = new BriefJsonPrinter();
 
@@ -427,6 +438,12 @@ public class JsonPrinter {
 
         blockBld.add("displayName", block.getDisplayName());
         final JsonArrayBuilder fieldsArray = Json.createArrayBuilder();
+
+        // FIXME: really we should use isTrueForKey instead
+//        if (!settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeDatasetContactEmailFromExport, false)) {
+        if (!"true".equals(settingsService.getValueForKey(SettingsServiceBean.Key.ExcludeDatasetContactEmailFromExport))) {
+            exclude = Collections.emptyList();
+        }
 
         DatasetFieldWalker.walk(fields, exclude, new DatasetFieldsToJson(fieldsArray));
 

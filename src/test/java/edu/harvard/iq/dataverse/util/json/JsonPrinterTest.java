@@ -36,6 +36,8 @@ public class JsonPrinterTest {
 
     // Centralize JsonParserTest.MockDatasetFieldSvc? See also https://github.com/IQSS/dataverse/issues/3413 and https://github.com/IQSS/dataverse/issues/3777
     JsonParserTest.MockDatasetFieldSvc datasetFieldTypeSvc = null;
+    JsonParserTest.MockSettingsSvc settingsSvc = null;
+    JsonPrinter jsonPrinter;
 
     @Before
     public void setUp() {
@@ -99,6 +101,8 @@ public class JsonPrinterTest {
             t.setParentDatasetFieldType(compoundSingleType);
         }
         compoundSingleType.setChildDatasetFieldTypes(childTypes);
+        settingsSvc = new JsonParserTest.MockSettingsSvc();
+        jsonPrinter = new JsonPrinter(settingsSvc);
     }
 
     @Test
@@ -223,12 +227,7 @@ public class JsonPrinterTest {
 
         assertEquals("Foo Bar", jsonObject.getJsonArray("fields").getJsonObject(0).getJsonArray("value").getJsonObject(0).getJsonObject("datasetContactName").getString("value"));
         assertEquals("Bar University", jsonObject.getJsonArray("fields").getJsonObject(0).getJsonArray("value").getJsonObject(0).getJsonObject("datasetContactAffiliation").getString("value"));
-        boolean issue3443Complete = true;
-        if (issue3443Complete) {
-            assertEquals(null, jsonObject.getJsonArray("fields").getJsonObject(0).getJsonArray("value").getJsonObject(0).getJsonObject("datasetContactEmail"));
-        } else {
-            assertEquals("foo@bar.com", jsonObject.getJsonArray("fields").getJsonObject(0).getJsonArray("value").getJsonObject(0).getJsonObject("datasetContactEmail").getString("value"));
-        }
+        assertEquals(null, jsonObject.getJsonArray("fields").getJsonObject(0).getJsonArray("value").getJsonObject(0).getJsonObject("datasetContactEmail"));
 
     }
 
