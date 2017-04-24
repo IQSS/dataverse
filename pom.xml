@@ -370,7 +370,7 @@
             <version>1.9</version>
         </dependency>
 	<!-- JavaSwift/JOSS: for accessing OpenStack cloud storage -->
-	<dependency>
+        <dependency>
             <groupId>org.javaswift</groupId>
             <artifactId>joss</artifactId>
             <version>0.9.10</version>

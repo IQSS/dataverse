@@ -501,8 +501,8 @@ public class SwiftAccessIO extends DataFileIO {
                      this.swiftContainer.makePublic();
                  }
                  catch (Exception e){
-                     e.printStackTrace();
-                     logger.info("Creating dataContainer failed: caught exception "+e.getClass());
+                     //e.printStackTrace();
+                     logger.info("Caught exception "+e.getClass()+" while creating a swift container (it's likely not fatal!)");
                  }
             } else {
                 // This is a fatal condition - it has to exist, if we were to 
